@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6275 bytes
-Chloro size:   6273 bytes
+Chloro size:   6283 bytes
 Rustfmt size:  6621 bytes
 
 ✗ Outputs DIFFER
@@ -31,11 +31,18 @@ Rustfmt size:  6621 bytes
 -            ast_id_map.ast_id(&item).erase(),
 -        )
 -    };
-+    let item_to_entry =
-+        |item: ast::Item| (item.syntax().text_range().start(), ast_id_map.ast_id(&item).erase());
++    let item_to_entry = |item: ast::Item| (item.syntax().text_range().start(), ast_id_map.ast_id(&item).erase());
      // Top level items make for great anchors as they are the most stable and a decent boundary
      pairs.extend(tree.items().map(item_to_entry));
      // Unfortunately, assoc items are very common in Rust, so descend into those as well and make
+     // them anchors too, but only if they have no attributes attached, as those might be proc-macros
+     // and using different anchors inside of them will prevent spans from being joinable.
+-    tree.items().for_each(|item| match &item {
++    tree
++        .items()
++        .for_each(|item| match &item {
+         ast::Item::ExternBlock(it)
+             if !collect_attrs(it).map(TupleExt::tail).any(|it| it.is_left()) =>
          {
              if let Some(extern_item_list) = it.extern_item_list() {
                  pairs.extend(

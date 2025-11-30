@@ -100,8 +100,7 @@ impl flags::AnalysisStats {
             Some(build_scripts_sw.elapsed())
         };
 
-        let (db, vfs, _proc_macro) =
-            load_workspace(workspace.clone(), &cargo_config.extra_env, &load_cargo_config)?;
+        let (db, vfs, _proc_macro) = load_workspace(workspace.clone(), &cargo_config.extra_env, &load_cargo_config)?;
         eprint!("{:<20} {}", "Database loaded:", db_load_sw.elapsed());
         eprint!(" (metadata {metadata_time}");
         if let Some(build_scripts_time) = build_scripts_time {
@@ -644,13 +643,15 @@ impl flags::AnalysisStats {
         }
         let term_search_time = sw.elapsed();
 
-        bar.println(format!(
+        bar
+            .println(format!(
             "Tail Expr syntactic hits: {}/{} ({}%)",
             acc.tail_expr_syntax_hits,
             acc.total_tail_exprs,
             percentage(acc.tail_expr_syntax_hits, acc.total_tail_exprs)
         ));
-        bar.println(format!(
+        bar
+            .println(format!(
             "Tail Exprs found: {}/{} ({}%)",
             acc.total_tail_exprs - acc.tail_expr_no_term,
             acc.total_tail_exprs,
@@ -668,7 +669,8 @@ impl flags::AnalysisStats {
                 ));
             }
         }
-        bar.println(format!(
+        bar
+            .println(format!(
             "Term search avg time: {}ms",
             term_search_time.time.as_millis() as u64 / acc.total_tail_exprs
         ));
@@ -1295,8 +1297,7 @@ fn location_csv_expr(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, expr_id: 
     let path = vfs.file_path(original_range.file_id.file_id(db));
     let line_index = db.line_index(original_range.file_id.file_id(db));
     let text_range = original_range.range;
-    let (start, end) =
-        (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
+    let (start, end) = (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
     format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
 }
 
@@ -1311,8 +1312,7 @@ fn location_csv_pat(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, pat_id: Pa
     let path = vfs.file_path(original_range.file_id.file_id(db));
     let line_index = db.line_index(original_range.file_id.file_id(db));
     let text_range = original_range.range;
-    let (start, end) =
-        (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
+    let (start, end) = (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
     format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
 }
 
@@ -1396,7 +1396,7 @@ impl fmt::Display for UsizeWithUnderscore {
             result.push(ch);
         }
 
-        let result = result.chars().rev().collect::<String>();
+        let result = result.chars().rev().collect();
         write!(f, "{result}")
     }
 }

@@ -321,7 +321,9 @@ fn rename_mod(
 
     let def = Definition::Module(module);
     let usages = def.usages(sema).all();
-    let ref_edits = usages.iter().map(|(file_id, references)| {
+    let ref_edits = usages
+        .iter()
+        .map(|(file_id, references)| {
         let edition = file_id.edition(sema.db);
         (
             file_id.file_id(sema.db),
@@ -387,7 +389,8 @@ fn rename_reference(
         bail!("Cannot rename reference to `_` as it is being referenced multiple times");
     }
     let mut source_change = SourceChange::default();
-    source_change.extend(usages.iter().map(|(file_id, references)| {
+    source_change
+        .extend(usages.iter().map(|(file_id, references)| {
         let edition = file_id.edition(sema.db);
         (
             file_id.file_id(sema.db),

@@ -174,11 +174,13 @@ pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
         }
     });
 
-    sema.file_to_module_defs(file_id)
+    sema
+        .file_to_module_defs(file_id)
         .map(|it| runnable_mod_outline_definition(&sema, it))
         .for_each(|it| add_opt(it, None));
 
-    res.extend(in_macro_expansion.into_iter().flat_map(|(_, runnables)| {
+    res
+        .extend(in_macro_expansion.into_iter().flat_map(|(_, runnables)| {
         let use_name_in_title = runnables.len() != 1;
         runnables.into_iter().map(move |mut r| {
             r.use_name_in_title = use_name_in_title;
@@ -343,7 +345,7 @@ pub(crate) fn runnable_fn(
         fn_source.as_ref().map(|it| it as &dyn ast::HasName),
         SymbolKind::Function,
     )
-    .call_site();
+        .call_site();
 
     let file_range = fn_source.syntax().original_file_range_with_macro_call_input(sema.db);
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
@@ -528,14 +530,13 @@ fn module_def_doctest(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Op
         Some(path)
     })();
 
-    let test_id = path
-        .map_or_else(|| TestId::Name(def_name.display_no_db(edition).to_smolstr()), TestId::Path);
+    let test_id = path.map_or_else(|| TestId::Name(def_name.display_no_db(edition).to_smolstr()), TestId::Path);
 
     let mut nav = match def {
         Definition::Module(def) => NavigationTarget::from_module_to_decl(db, def),
         def => def.try_to_nav(sema)?,
     }
-    .call_site();
+        .call_site();
     nav.focus_range = None;
     nav.description = None;
     nav.docs = None;
@@ -676,7 +677,8 @@ impl UpdateTest {
             map.insert(krate_name, res);
         }
 
-        let mod_paths = SNAPSHOT_TEST_MACROS.get_or_init(|| {
+        let mod_paths = SNAPSHOT_TEST_MACROS
+            .get_or_init(|| {
             let mut map = FxHashMap::default();
             init(Self::EXPECT_CRATE, Self::EXPECT_MACROS, &mut map);
             init(Self::INSTA_CRATE, Self::INSTA_MACROS, &mut map);
@@ -765,13 +767,13 @@ mod tests {
                 a.push(')');
                 a
             })
-            .collect::<Vec<_>>();
+            .collect();
         expect.assert_debug_eq(&result);
     }
     fn check_tests(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);
         let tests = analysis.related_tests(position, None).unwrap();
-        let navigation_targets = tests.into_iter().map(|runnable| runnable.nav).collect::<Vec<_>>();
+        let navigation_targets = tests.into_iter().map(|runnable| runnable.nav).collect();
         expect.assert_debug_eq(&navigation_targets);
     }
     #[test]

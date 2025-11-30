@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   30739 bytes
+Chloro size:   30743 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
@@ -88,16 +88,27 @@ Rustfmt size:  31432 bytes
                      f.write_str(fields_str)?;
                  }
                  StructKind::Unit => {}
+                 ClauseKind::TypeOutlives(to) => to.0 == ty,
+                 _ => false,
+             })
+-            .collect::<Vec<_>>();
++            .collect();
+ 
+         match param_data {
+             TypeOrConstParamData::TypeParamData(p) => match p.provenance {
+         }
  
          let sized_trait = LangItem::Sized.resolve_trait(f.db, krate);
-         let has_only_sized_bound =
+-        let has_only_sized_bound =
 -            predicates
 -                .iter()
 -                .all(move |pred| match pred.kind().skip_binder() {
 -                    ClauseKind::Trait(it) => Some(it.def_id().0) == sized_trait,
 -                    _ => false,
 -                });
-+            predicates.iter().all(move |pred| match pred.kind().skip_binder() {
++        let has_only_sized_bound = predicates
++            .iter()
++            .all(move |pred| match pred.kind().skip_binder() {
 +                ClauseKind::Trait(it) => Some(it.def_id().0) == sized_trait,
 +                _ => false,
 +            });

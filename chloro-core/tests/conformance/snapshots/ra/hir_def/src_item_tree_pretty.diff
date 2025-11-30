@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12076 bytes
-Chloro size:   12076 bytes
+Chloro size:   12068 bytes
 Rustfmt size:  12861 bytes
 
 ✗ Outputs DIFFER
@@ -19,8 +19,7 @@ Rustfmt size:  12861 bytes
 -        needs_indent: true,
 -        edition,
 -    };
-+    let mut p =
-+        Printer { db, tree, buf: String::new(), indent_level: 0, needs_indent: true, edition };
++    let mut p = Printer { db, tree, buf: String::new(), indent_level: 0, needs_indent: true, edition };
  
      p.print_attrs(&tree.top_attrs, true, "\n");
      p.blank();

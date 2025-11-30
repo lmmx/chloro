@@ -119,8 +119,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
         let diverging_fallback_behavior = self.diverging_fallback_behavior();
 
-        let diverging_fallback =
-            self.calculate_diverging_fallback(&unresolved_variables, diverging_fallback_behavior);
+        let diverging_fallback = self.calculate_diverging_fallback(&unresolved_variables, diverging_fallback_behavior);
 
         // We do fallback in two passes, to try to generate
 
@@ -344,8 +343,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // reach a member of N. If so, it falls back to `()`. Else
 
         // `!`.
-        let mut diverging_fallback =
-            FxHashMap::with_capacity_and_hasher(diverging_vids.len(), FxBuildHasher);
+        let mut diverging_fallback = FxHashMap::with_capacity_and_hasher(diverging_vids.len(), FxBuildHasher);
 
         for &diverging_vid in &diverging_vids {
             let diverging_ty = Ty::new_var(self.interner(), diverging_vid);

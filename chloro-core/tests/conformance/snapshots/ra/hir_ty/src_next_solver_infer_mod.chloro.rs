@@ -523,13 +523,15 @@ impl<'db> InferCtxt<'db> {
             .into_iter()
             .map(|t| Ty::new_var(self.interner, t))
             .collect();
-        vars.extend(
+        vars
+            .extend(
             (0..inner.int_unification_table().len())
                 .map(IntVid::from_usize)
                 .filter(|&vid| inner.int_unification_table().probe_value(vid).is_unknown())
                 .map(|v| Ty::new_int_var(self.interner, v)),
         );
-        vars.extend(
+        vars
+            .extend(
             (0..inner.float_unification_table().len())
                 .map(FloatVid::from_usize)
                 .filter(|&vid| inner.float_unification_table().probe_value(vid).is_unknown())
@@ -564,7 +566,8 @@ impl<'db> InferCtxt<'db> {
         param_env: ParamEnv<'db>,
         predicate: PolyCoercePredicate<'db>,
     ) -> Result<InferResult<'db, ()>, (TyVid, TyVid)> {
-        let subtype_predicate = predicate.map_bound(|p| SubtypePredicate {
+        let subtype_predicate = predicate
+            .map_bound(|p| SubtypePredicate {
             a_is_expected: false, // when coercing from `a` to `b`, `b` is expected
             a: p.a,
             b: p.b,
@@ -687,8 +690,7 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_int_var(&self) -> Ty<'db> {
-        let next_int_var_id =
-            self.inner.borrow_mut().int_unification_table().new_key(IntVarValue::Unknown);
+        let next_int_var_id = self.inner.borrow_mut().int_unification_table().new_key(IntVarValue::Unknown);
         Ty::new_int_var(self.interner, next_int_var_id)
     }
 
@@ -719,8 +721,7 @@ impl<'db> InferCtxt<'db> {
     /// in the given universe; typically, you can use
     /// `next_region_var` and just use the maximal universe.
     pub fn next_region_var_in_universe(&self, universe: UniverseIndex) -> Region<'db> {
-        let region_var =
-            self.inner.borrow_mut().unwrap_region_constraints().new_region_var(universe);
+        let region_var = self.inner.borrow_mut().unwrap_region_constraints().new_region_var(universe);
         Region::new_var(self.interner, region_var)
     }
 

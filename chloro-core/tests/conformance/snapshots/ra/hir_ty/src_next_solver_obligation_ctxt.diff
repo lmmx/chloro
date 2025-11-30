@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6182 bytes
-Chloro size:   6182 bytes
+Chloro size:   6195 bytes
 Rustfmt size:  6332 bytes
 
 ✗ Outputs DIFFER
@@ -36,6 +36,15 @@ Rustfmt size:  6332 bytes
      }
  
      pub fn register_infer_ok_obligations<T>(&mut self, infer_ok: InferOk<'db, T>) -> T {
+         def_id: TraitId,
+     ) {
+         let trait_ref = TraitRef::new(self.infcx.interner, def_id.into(), [ty]);
+-        self.register_obligation(Obligation {
++        self
++            .register_obligation(Obligation {
+             cause,
+             recursion_depth: 0,
+             param_env,
  
      #[must_use]
      pub fn evaluate_obligations_error_on_ambiguity(&mut self) -> Vec<NextSolverError<'db>> {

@@ -13,8 +13,7 @@ use syntax::{
 };
 
 pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
-    let editioned_file_id_wrapper =
-        ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
+    let editioned_file_id_wrapper = ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
     let parse = db.parse(editioned_file_id_wrapper);
     let file = parse.tree();
     let token = file.syntax().token_at_offset(position.offset).left_biased()?;

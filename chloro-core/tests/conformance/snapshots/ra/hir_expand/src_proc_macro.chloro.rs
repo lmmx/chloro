@@ -75,7 +75,8 @@ impl ProcMacrosBuilder {
                     .cmp(&(proc_macro2.name.as_str(), proc_macro2.kind))
             });
         }
-        self.0.insert(
+        self.0
+            .insert(
             proc_macros_crate,
             match proc_macro {
                 Ok(it) => Arc::new(CrateProcMacros(Ok(it.into_boxed_slice()))),
@@ -89,7 +90,7 @@ impl ProcMacrosBuilder {
             .0
             .into_iter()
             .map(|(krate, proc_macro)| (crates_id_map[&krate], proc_macro))
-            .collect::<FxHashMap<_, _>>();
+            .collect();
         map.shrink_to_fit();
         ProcMacros(map)
     }

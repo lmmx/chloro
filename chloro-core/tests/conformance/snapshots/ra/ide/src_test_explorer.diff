@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6183 bytes
-Chloro size:   6183 bytes
+Chloro size:   6192 bytes
 Rustfmt size:  6291 bytes
 
 ✗ Outputs DIFFER
@@ -40,4 +40,9 @@ Rustfmt size:  6291 bytes
 +    let module_name = module_name.as_ref().map(|n| n.as_str()).unwrap_or("[mod without name]");
      id += module_name;
      let nav = NavigationTarget::from_module_to_decl(sema.db, module).call_site;
-     r.push(TestItem {
+-    r.push(TestItem {
++    r
++        .push(TestItem {
+         id: id.clone(),
+         kind: TestItemKind::Module,
+         label: module_name.to_owned(),

@@ -37,7 +37,8 @@ pub(crate) fn destructure_tuple_binding_impl(
         );
     }
 
-    acc.add(
+    acc
+        .add(
         AssistId::refactor_rewrite("destructure_tuple_binding"),
         if with_sub_pattern { "Destructure tuple in place" } else { "Destructure tuple" },
         data.ident_pat.syntax().text_range(),
@@ -88,7 +89,9 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
         return None;
     }
 
-    let usages = ctx.sema.to_def(&ident_pat).and_then(|def| {
+    let usages = ctx.sema
+        .to_def(&ident_pat)
+        .and_then(|def| {
         Definition::Local(def)
             .usages(&ctx.sema)
             .in_scope(&SearchScope::single_file(ctx.file_id()))
@@ -98,8 +101,7 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
             .map(|(_, refs)| refs.to_vec())
     });
 
-    let mut name_generator =
-        suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(ident_pat.syntax()));
+    let mut name_generator = suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(ident_pat.syntax()));
 
     let field_names = field_types
         .into_iter()
@@ -111,7 +113,7 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
             }
             .to_string()
         })
-        .collect::<Vec<_>>();
+        .collect();
 
     Some(TupleData { ident_pat, ref_type, field_names, usages })
 }

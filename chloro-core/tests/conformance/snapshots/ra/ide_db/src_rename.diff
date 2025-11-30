@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29385 bytes
-Chloro size:   29386 bytes
+Chloro size:   29413 bytes
 Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
@@ -61,3 +61,22 @@ Rustfmt size:  29385 bytes
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub enum RenameDefinition {
+ 
+     let def = Definition::Module(module);
+     let usages = def.usages(sema).all();
+-    let ref_edits = usages.iter().map(|(file_id, references)| {
++    let ref_edits = usages
++        .iter()
++        .map(|(file_id, references)| {
+         let edition = file_id.edition(sema.db);
+         (
+             file_id.file_id(sema.db),
+         bail!("Cannot rename reference to `_` as it is being referenced multiple times");
+     }
+     let mut source_change = SourceChange::default();
+-    source_change.extend(usages.iter().map(|(file_id, references)| {
++    source_change
++        .extend(usages.iter().map(|(file_id, references)| {
+         let edition = file_id.edition(sema.db);
+         (
+             file_id.file_id(sema.db),

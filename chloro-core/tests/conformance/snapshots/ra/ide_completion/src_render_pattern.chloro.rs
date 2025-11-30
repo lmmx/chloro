@@ -28,8 +28,7 @@ pub(crate) fn render_struct_pat(
     }
 
     let name = local_name.unwrap_or_else(|| strukt.name(ctx.db()));
-    let (name, escaped_name) =
-        (name.as_str(), name.display(ctx.db(), ctx.completion.edition).to_smolstr());
+    let (name, escaped_name) = (name.as_str(), name.display(ctx.db(), ctx.completion.edition).to_smolstr());
     let kind = strukt.kind(ctx.db());
     let label = format_literal_label(name, kind, ctx.snippet_cap());
     let lookup = format_literal_lookup(name, kind);
@@ -121,7 +120,8 @@ fn build_completion(
         label,
         ctx.completion.edition,
     );
-    item.set_documentation(ctx.docs(def))
+    item
+        .set_documentation(ctx.docs(def))
         .set_deprecated(ctx.is_deprecated(def))
         .detail(&pat)
         .lookup_by(lookup)

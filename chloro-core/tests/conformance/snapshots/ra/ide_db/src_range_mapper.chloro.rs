@@ -52,8 +52,7 @@ impl RangeMapper {
     pub fn map_offset_down(&self, offset: TextSize) -> Option<TextSize> {
         // Using a binary search here is a bit complicated because of the `None` entries.
         // But the number of lines in fixtures is usually low.
-        let (target_range, source_range) =
-            self.ranges.iter().find_map(|&(target_range, source_range)| {
+        let (target_range, source_range) = self.ranges.iter().find_map(|&(target_range, source_range)| {
                 let source_range = source_range?;
                 if !source_range.contains(offset) {
                     return None;

@@ -709,7 +709,8 @@ impl<'db> Evaluator<'db> {
             return *r;
         }
         let (ty, proj) = pair;
-        let r = proj.projected_ty(
+        let r = proj
+            .projected_ty(
             &self.infcx,
             ty,
             |c, subst, f| {
@@ -1091,8 +1092,7 @@ impl<'db> Evaluator<'db> {
         body: &Arc<MirBody<'db>>,
         destination: Option<Interval>,
     ) -> Result<'db, (Locals<'db>, usize)> {
-        let mut locals =
-            match self.unused_locals_store.borrow_mut().entry(body.owner).or_default().pop() {
+        let mut locals = match self.unused_locals_store.borrow_mut().entry(body.owner).or_default().pop() {
                 None => Locals {
                     ptr: ArenaMap::new(),
                     body: body.clone(),
@@ -2989,7 +2989,8 @@ pub fn render_const_using_debug_impl<'db>(
     // and its ABI doesn't break yet, we put it in memory manually.
     let a2 = evaluator.heap_allocate(evaluator.ptr_size() * 2, evaluator.ptr_size())?;
     evaluator.write_memory(a2, &data.addr.to_bytes())?;
-    let debug_fmt_fn_ptr = evaluator.vtable_map.id(Ty::new_fn_def(
+    let debug_fmt_fn_ptr = evaluator.vtable_map
+        .id(Ty::new_fn_def(
         evaluator.interner(),
         CallableDefId::FunctionId(debug_fmt_fn).into(),
         GenericArgs::new_from_iter(evaluator.interner(), [ty.into()]),
@@ -3015,8 +3016,7 @@ pub fn render_const_using_debug_impl<'db>(
             .into_iter(),
     )?;
     let message_string = interval.get(&evaluator)?;
-    let addr =
-        Address::from_bytes(&message_string[evaluator.ptr_size()..2 * evaluator.ptr_size()])?;
+    let addr = Address::from_bytes(&message_string[evaluator.ptr_size()..2 * evaluator.ptr_size()])?;
     let size = from_bytes!(usize, message_string[2 * evaluator.ptr_size()..]);
     Ok(std::string::String::from_utf8_lossy(evaluator.read_memory(addr, size)?).into_owned())
 }

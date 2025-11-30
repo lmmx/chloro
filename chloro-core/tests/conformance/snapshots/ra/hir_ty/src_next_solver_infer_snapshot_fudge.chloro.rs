@@ -144,10 +144,8 @@ impl SnapshotVarData {
             .unwrap_region_constraints()
             .vars_since_snapshot(vars_pre_snapshot.region_constraints_len);
         let type_vars = inner.type_variables().vars_since_snapshot(vars_pre_snapshot.type_var_len);
-        let int_vars =
-            vars_since_snapshot(&inner.int_unification_table(), vars_pre_snapshot.int_var_len);
-        let float_vars =
-            vars_since_snapshot(&inner.float_unification_table(), vars_pre_snapshot.float_var_len);
+        let int_vars = vars_since_snapshot(&inner.int_unification_table(), vars_pre_snapshot.int_var_len);
+        let float_vars = vars_since_snapshot(&inner.float_unification_table(), vars_pre_snapshot.float_var_len);
 
         let const_vars = const_vars_since_snapshot(
             &mut inner.const_unification_table(),

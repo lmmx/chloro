@@ -52,8 +52,7 @@ impl Node {
             }
         }
 
-        let overlapping =
-            equal_range_by(&self.nested, |n| TextRange::ordering(n.hl_range.range, hl_range.range));
+        let overlapping = equal_range_by(&self.nested, |n| TextRange::ordering(n.hl_range.range, hl_range.range));
 
         if overlapping.len() == 1
             && self.nested[overlapping.start].hl_range.range.contains_range(hl_range.range)
@@ -64,7 +63,7 @@ impl Node {
         let nested = self
             .nested
             .splice(overlapping.clone(), iter::once(Node::new(hl_range)))
-            .collect::<Vec<_>>();
+            .collect();
         self.nested[overlapping.start].nested = nested;
     }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27122 bytes
-Chloro size:   26684 bytes
+Chloro size:   26669 bytes
 Rustfmt size:  27284 bytes
 
 ✗ Outputs DIFFER
@@ -44,8 +44,7 @@ Rustfmt size:  27284 bytes
 -    let mut proposed_imports: Vec<_> = import_assets
 -        .search_for_relative_paths(&ctx.sema, cfg)
 -        .collect();
-+    let mut proposed_imports: Vec<_> =
-+        import_assets.search_for_relative_paths(&ctx.sema, cfg).collect();
++    let mut proposed_imports: Vec<_> = import_assets.search_for_relative_paths(&ctx.sema, cfg).collect();
      if proposed_imports.is_empty() {
          return None;
      }
@@ -65,11 +64,14 @@ Rustfmt size:  27284 bytes
 -    let current_edition = current_module
 -        .map(|it| it.krate().edition(ctx.db()))
 -        .unwrap_or(Edition::CURRENT);
-+    let current_edition =
-+        current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
++    let current_edition = current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
      // prioritize more relevant imports
-     proposed_imports.sort_by_key(|import| {
+-    proposed_imports.sort_by_key(|import| {
++    proposed_imports
++        .sort_by_key(|import| {
          Reverse(super::auto_import::relevance_score(
+             ctx,
+             import,
      }
      Some(())
  }
@@ -101,11 +103,18 @@ Rustfmt size:  27284 bytes
 -            .generic_arg_list()
 -            .as_ref()
 -            .map_or_else(String::new, ToString::to_string);
-+        let generics =
-+            mcall_expr.generic_arg_list().as_ref().map_or_else(String::new, ToString::to_string);
++        let generics = mcall_expr.generic_arg_list().as_ref().map_or_else(String::new, ToString::to_string);
          let arg_list = mcall_expr.arg_list().map(|arg_list| arg_list.args());
  
          if let Some(self_access) = hir_fn.self_param(db).map(|sp| sp.access(db)) {
+             &it.assoc_item_name
+         }
+     }
+-    .text();
++        .text();
+     GroupLabel(format!("Qualify {name}"))
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};

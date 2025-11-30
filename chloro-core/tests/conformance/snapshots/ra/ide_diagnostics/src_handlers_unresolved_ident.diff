@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1496 bytes
-Chloro size:   1387 bytes
+Chloro size:   1379 bytes
 Rustfmt size:  1537 bytes
 
 ✗ Outputs DIFFER
@@ -20,8 +20,7 @@ Rustfmt size:  1537 bytes
 -    let mut range = ctx
 -        .sema
 -        .diagnostics_display_range(d.node.map(|(node, _)| node.syntax_node_ptr()));
-+    let mut range =
-+        ctx.sema.diagnostics_display_range(d.node.map(|(node, _)| node.syntax_node_ptr()));
++    let mut range = ctx.sema.diagnostics_display_range(d.node.map(|(node, _)| node.syntax_node_ptr()));
      if let Some(in_node_range) = d.node.value.1 {
          range.range = in_node_range + range.range.start();
      }

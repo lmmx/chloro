@@ -151,7 +151,8 @@ pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
     };
 
     let mut res = vec![];
-    query.search::<()>(&indices, |f| {
+    query
+        .search(&indices, |f| {
         res.push(f.clone());
         ControlFlow::Continue(())
     });

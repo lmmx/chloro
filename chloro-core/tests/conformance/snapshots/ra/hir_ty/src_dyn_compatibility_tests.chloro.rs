@@ -27,8 +27,7 @@ fn check_dyn_compatibility<'a>(
     #[rust_analyzer::rust_fixture] ra_fixture: &str,
     expected: impl IntoIterator<Item = (&'a str, Vec<DynCompatibilityViolationKind>)>,
 ) {
-    let mut expected: FxHashMap<_, _> =
-        expected.into_iter().map(|(id, osvs)| (id, FxHashSet::from_iter(osvs))).collect();
+    let mut expected: FxHashMap<_, _> = expected.into_iter().map(|(id, osvs)| (id, FxHashSet::from_iter(osvs))).collect();
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
     for (trait_id, name) in file_ids.into_iter().flat_map(|file_id| {
         let module_id = db.module_for_file(file_id.file_id(&db));

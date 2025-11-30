@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44666 bytes
+Chloro size:   44713 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -97,6 +97,17 @@ Rustfmt size:  45288 bytes
  /// `find_struct_impl` looks for impl of a struct, but this also has additional feature
  /// where it takes a list of function names and check if they exist inside impl_, if
  /// even one match is found, it returns None.
+ 
+     let struct_def = ctx.sema.to_def(adt)?;
+ 
+-    let block = module.descendants().filter_map(ast::Impl::cast).find_map(|impl_blk| {
++    let block = module
++        .descendants()
++        .filter_map(ast::Impl::cast)
++        .find_map(|impl_blk| {
+         let blk = ctx.sema.to_def(&impl_blk)?;
+ 
+         // FIXME: handle e.g. `struct S<T>; impl<U> S<U> {}`
  }
  
  /// Find the end of the `impl` block for the given `ast::Impl`.
@@ -126,6 +137,16 @@ Rustfmt size:  45288 bytes
  pub(crate) fn generate_trait_impl_text_intransitive(
      adt: &ast::Adt,
      trait_text: &str,
+     code: &str,
+ ) -> String {
+     // Ensure lifetime params are before type & const params
+-    let generic_params = adt.generic_param_list().map(|generic_params| {
++    let generic_params = adt
++        .generic_param_list()
++        .map(|generic_params| {
+         let lifetime_params =
+             generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
+         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
      });
  
      // FIXME: use syntax::make & mutable AST apis instead
@@ -145,6 +166,30 @@ Rustfmt size:  45288 bytes
      generate_impl_inner(is_unsafe, adt, Some(trait_), true, None)
  }
  
+     body: Option<ast::AssocItemList>,
+ ) -> ast::Impl {
+     // Ensure lifetime params are before type & const params
+-    let generic_params = adt.generic_param_list().map(|generic_params| {
++    let generic_params = adt
++        .generic_param_list()
++        .map(|generic_params| {
+         let lifetime_params =
+             generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
+         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
+ 
+         make::generic_param_list(itertools::chain(lifetime_params, ty_or_const_params))
+     });
+-    let generic_args =
+-        generic_params.as_ref().map(|params| params.to_generic_args().clone_for_update());
++    let generic_args = generic_params.as_ref().map(|params| params.to_generic_args().clone_for_update());
+     let ty = make::ty_path(make::ext::ident_path(&adt.name().unwrap().text()));
+ 
+-    let cfg_attrs =
+-        adt.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
++    let cfg_attrs = adt.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
+     match trait_ {
+         Some(trait_) => make::impl_trait(
+             cfg_attrs,
      }
  }
  

@@ -39,8 +39,7 @@ pub(crate) fn goto_definition(
 ) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     let sema = &Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
-    let edition =
-        sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
+    let edition = sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
     let original_token = pick_best_token(file.token_at_offset(offset), |kind| match kind {
         IDENT
         | INT_NUMBER
@@ -512,8 +511,7 @@ pub(crate) fn find_loops(
             _ => None,
         }
     };
-    let label_matches =
-        |it: Option<ast::Label>| match (lbl.as_ref(), it.and_then(|it| it.lifetime())) {
+    let label_matches = |it: Option<ast::Label>| match (lbl.as_ref(), it.and_then(|it| it.lifetime())) {
             (Some(lbl), Some(it)) => lbl.text() == it.text(),
             (None, _) => true,
             (Some(_), None) => false,
@@ -617,12 +615,12 @@ mod tests {
             .into_iter()
             .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
             .sorted_by_key(cmp)
-            .collect::<Vec<_>>();
+            .collect();
         let expected = expected
             .into_iter()
             .map(|(FileRange { file_id, range }, _)| FileRange { file_id, range })
             .sorted_by_key(cmp)
-            .collect::<Vec<_>>();
+            .collect();
 
         assert_eq!(expected, navs);
     }

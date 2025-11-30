@@ -499,16 +499,16 @@ fn main() {
         let to_node = SourceFile::parse(to, Edition::CURRENT).tree().syntax().clone();
         let diff = super::diff(&from_node, &to_node);
 
-        let line_number =
-            |syn: &SyntaxElement| from[..syn.text_range().start().into()].lines().count();
+        let line_number = |syn: &SyntaxElement| from[..syn.text_range().start().into()].lines().count();
 
         let fmt_syntax = |syn: &SyntaxElement| match syn.kind() {
             SyntaxKind::WHITESPACE => format!("{:?}", syn.to_string()),
             _ => format!("{syn}"),
         };
 
-        let insertions =
-            diff.insertions.iter().format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
+        let insertions = diff.insertions
+            .iter()
+            .format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
                 f(&format!(
                     "Line {}: {:?}\n-> {}",
                     line_number(match k {

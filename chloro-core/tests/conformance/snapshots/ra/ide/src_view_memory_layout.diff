@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11061 bytes
-Chloro size:   10703 bytes
+Chloro size:   10731 bytes
 Rustfmt size:  11278 bytes
 
 ✗ Outputs DIFFER
@@ -34,8 +34,7 @@ Rustfmt size:  11278 bytes
 -    let token = pick_best_token(
 -        file.syntax().token_at_offset(position.offset),
 -        |kind| match kind {
-+    let token =
-+        pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
++    let token = pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
              SyntaxKind::IDENT => 3,
              _ => 0,
 -        },
@@ -93,6 +92,13 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_primitive() {
          expect![[r#"
+             foo: i32 (size: 4, align: 4, field offset: 0)
+         "#]]
+-        .assert_eq(
++            .assert_eq(
+             &make_memory_layout(
+                 r#"
+ fn main() {
              .to_string(),
          );
      }
@@ -100,6 +106,13 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_constant() {
          expect![[r#"
+             BLAH: bool (size: 1, align: 1, field offset: 0)
+         "#]]
+-        .assert_eq(
++            .assert_eq(
+             &make_memory_layout(
+                 r#"
+ const BLAH$0: bool = 0;
              .to_string(),
          );
      }
@@ -107,6 +120,13 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_static() {
          expect![[r#"
+             BLAH: bool (size: 1, align: 1, field offset: 0)
+         "#]]
+-        .assert_eq(
++            .assert_eq(
+             &make_memory_layout(
+                 r#"
+ static BLAH$0: bool = 0;
              .to_string(),
          );
      }
@@ -114,6 +134,14 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_tuple() {
          expect![[r#"
+             	.1: u8 (size: 1, align: 1, field offset: 8)
+             	.2: i64 (size: 8, align: 8, field offset: 16)
+         "#]]
+-        .assert_eq(
++            .assert_eq(
+             &make_memory_layout(
+                 r#"
+ fn main() {
              .to_string(),
          );
      }
@@ -121,6 +149,14 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_c_struct() {
          expect![[r#"
+             		.1: u8 (size: 1, align: 1, field offset: 4)
+             	c: i8 (size: 1, align: 1, field offset: 12)
+         "#]]
+-        .assert_eq(
++            .assert_eq(
+             &make_memory_layout(
+                 r#"
+ #[repr(C)]
              .to_string(),
          );
      }
@@ -128,6 +164,14 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_struct() {
          expect![[r#"
+             	a: u32 (size: 4, align: 4, field offset: 8)
+             	c: i8 (size: 1, align: 1, field offset: 12)
+         "#]]
+-        .assert_eq(
++            .assert_eq(
+             &make_memory_layout(
+                 r#"
+ struct Blah$0 {
              .to_string(),
          );
      }
@@ -135,6 +179,13 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_member() {
          expect![[r#"
+             a: bool (size: 1, align: 1, field offset: 0)
+         "#]]
+-        .assert_eq(
++            .assert_eq(
+             &make_memory_layout(
+                 r#"
+ #[repr(C)]
              .to_string(),
          );
      }
@@ -142,3 +193,19 @@ Rustfmt size:  11278 bytes
      #[test]
      fn view_memory_layout_alias() {
          let ml_a = make_memory_layout(
+ type Foo$0 = X;
+ "#,
+         )
+-        .unwrap();
++            .unwrap();
+ 
+         let ml_b = make_memory_layout(
+             r#"
+ }
+ "#,
+         )
+-        .unwrap();
++            .unwrap();
+ 
+         assert_eq!(ml_a.to_string(), ml_b.to_string());
+     }

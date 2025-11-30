@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29455 bytes
+Chloro size:   29469 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -147,7 +147,11 @@ Rustfmt size:  30449 bytes
                  definition_tree_id.file_id(),
                  ModuleSource::Module(
                      AstId::new(definition_tree_id.file_id(), definition).to_node(db),
-     .entered();
+             .map(|it| it.crate_name().to_smolstr())
+             .unwrap_or_default()
+     )
+-    .entered();
++        .entered();
  
      let module_data = ModuleData::new(
 -        ModuleOrigin::CrateRoot {
@@ -163,8 +167,7 @@ Rustfmt size:  30449 bytes
 -        module_data,
 -        None,
 -    );
-+    let def_map =
-+        DefMap::empty(crate_id, Arc::new(DefMapCrateData::new(krate.edition)), module_data, None);
++    let def_map = DefMap::empty(crate_id, Arc::new(DefMapCrateData::new(krate.edition)), module_data, None);
      let (def_map, local_def_map) = collector::collect_defs(
          db,
          def_map,
@@ -186,8 +189,7 @@ Rustfmt size:  30449 bytes
 -        },
 -        visibility,
 -    );
-+    let module_data =
-+        ModuleData::new(ModuleOrigin::BlockExpr { block: ast_id, id: block_id }, visibility);
++    let module_data = ModuleData::new(ModuleOrigin::BlockExpr { block: ast_id, id: block_id }, visibility);
  
      let local_def_map = crate_local_def_map(db, module.krate);
      let def_map = DefMap::empty(
@@ -288,6 +290,24 @@ Rustfmt size:  30449 bytes
              {
                  let path = format!("{path}::{}", name.display(db, Edition::LATEST));
                  buf.push('\n');
+         shadow: BuiltinShadowMode,
+         expected_macro_subns: Option<MacroSubNs>,
+     ) -> (PerNs, Option<usize>) {
+-        let res = self.resolve_path_fp_with_macro(
++        let res = self
++            .resolve_path_fp_with_macro(
+             local_def_map,
+             db,
+             ResolveMode::Other,
+         path: &ModPath,
+         shadow: BuiltinShadowMode,
+     ) -> (PerNs, Option<usize>, ResolvePathResultPrefixInfo) {
+-        let res = self.resolve_path_fp_with_macro_single(
++        let res = self
++            .resolve_path_fp_with_macro_single(
+             local_def_map,
+             db,
+             ResolveMode::Other,
              ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition } => {
                  definition.into()
              }

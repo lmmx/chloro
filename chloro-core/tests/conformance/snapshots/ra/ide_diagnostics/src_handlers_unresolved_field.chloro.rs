@@ -110,8 +110,7 @@ fn add_variant_to_union(
     let range = adt_syntax.original_file_range_rooted(ctx.sema.db);
     let field_name = make::name(field_name);
 
-    let (offset, record_field) =
-        record_field_layout(None, field_name, suggested_type, field_list, adt_syntax.value)?;
+    let (offset, record_field) = record_field_layout(None, field_name, suggested_type, field_list, adt_syntax.value)?;
 
     let mut src_change_builder = SourceChangeBuilder::new(range.file_id.file_id(ctx.sema.db));
     src_change_builder.insert(offset, record_field);

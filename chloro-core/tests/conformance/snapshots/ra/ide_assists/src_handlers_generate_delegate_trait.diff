@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 46739 bytes
-Chloro size:   45112 bytes
+Chloro size:   45130 bytes
 Rustfmt size:  47157 bytes
 
 ✗ Outputs DIFFER
@@ -176,7 +176,21 @@ Rustfmt size:  47157 bytes
  
              let type_gen_args = strukt_params.clone().map(|params| params.to_generic_args());
              let path_type =
-         .collect::<FxHashSet<_>>();
+     let target_scope = ctx.sema.scope(strukt.syntax())?;
+     let hir_old_impl = ctx.sema.to_impl_def(old_impl)?;
+ 
+-    let transform = args.as_ref().map_or_else(
++    let transform = args
++        .as_ref()
++        .map_or_else(
+         || PathTransform::generic_transformation(&target_scope, &source_scope),
+         |args| {
+             PathTransform::impl_transformation(
+         .flat_map(|ty| ty.generic_arg_list())
+         .flat_map(|gal| gal.generic_args())
+         .map(|x| x.to_string())
+-        .collect::<FxHashSet<_>>();
++        .collect();
  
      // Keep where-clauses that have generics after substitution, and remove the
 +
@@ -236,6 +250,14 @@ Rustfmt size:  47157 bytes
      // make::path_qualified(qual_path_ty, path_expr_segment.as_single_segment().unwrap());
      let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
      let inner = make::item_const(
+         item.ty()?,
+         make::expr_path(qualified_path),
+     )
+-    .clone_for_update();
++        .clone_for_update();
+ 
+     Some(AssocItem::Const(inner))
+ }
  
                  make::expr_call(make::expr_path(qualified_path), args)
              }
@@ -249,6 +271,30 @@ Rustfmt size:  47157 bytes
          },
          None => make::expr_call(
              make::expr_path(qualified_path),
+             convert_param_list_to_arg_list(make::param_list(None, Vec::new())),
+         ),
+     }
+-    .clone_for_update();
++        .clone_for_update();
+ 
+     let body = make::block_expr(vec![], Some(call.into())).clone_for_update();
+     let func = make::fn_(
+         item.unsafe_token().is_some(),
+         item.gen_token().is_some(),
+     )
+-    .clone_for_update();
++        .clone_for_update();
+ 
+     Some(AssocItem::Fn(func.indent(edit::IndentLevel(1))))
+ }
+         item.where_clause(),
+         Some((ty, None)),
+     )
+-    .indent(edit::IndentLevel(1));
++        .indent(edit::IndentLevel(1));
+ 
+     Some(AssocItem::TypeAlias(alias))
+ }
  
  #[cfg(test)]
  mod test {

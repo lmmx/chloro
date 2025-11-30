@@ -217,7 +217,8 @@ impl GenericParamsCollector {
         hrtb_lifetimes: Option<&[Name]>,
         target: Either<TypeRefId, LifetimeRefId>,
     ) {
-        let bound = ec.lower_type_bound(
+        let bound = ec
+            .lower_type_bound(
             bound,
             &mut Self::lower_argument_impl_trait(
                 &mut self.type_or_consts,
@@ -269,7 +270,8 @@ impl GenericParamsCollector {
 
     fn fill_self_param(&mut self, ec: &mut ExprCollector<'_>, bounds: Option<ast::TypeBoundList>) {
         let self_ = Name::new_symbol_root(sym::Self_);
-        let idx = self.type_or_consts.alloc(
+        let idx = self.type_or_consts
+            .alloc(
             TypeParamData {
                 name: Some(self_),
                 default: None,

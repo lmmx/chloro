@@ -54,7 +54,7 @@ fn find_arms(
     ctx: &AssistContext<'_>,
     match_expr: &ast::MatchExpr,
 ) -> Option<(ast::MatchArm, ast::MatchArm)> {
-    let arms = match_expr.match_arm_list()?.arms().collect::<Vec<_>>();
+    let arms = match_expr.match_arm_list()?.arms().collect();
     if arms.len() != 2 {
         return None;
     }
@@ -106,7 +106,7 @@ fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> Syn
         .iter()
         .map(|e| e.syntax().text_range() - pat.syntax().text_range().start())
         .map(|r| syntax.covering_element(r))
-        .collect::<Vec<_>>();
+        .collect();
     for extracted_syntax in extracted {
         // If `extracted` variable is a record field, we should rename it to `binding`,
         // otherwise we just need to replace `extracted` with `binding`.

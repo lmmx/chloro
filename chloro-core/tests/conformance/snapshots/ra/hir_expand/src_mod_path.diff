@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13520 bytes
-Chloro size:   13522 bytes
+Chloro size:   13549 bytes
 Rustfmt size:  13520 bytes
 
 ✗ Outputs DIFFER
@@ -52,6 +52,25 @@ Rustfmt size:  13520 bytes
      // We follow what it did anyway :)
      if mod_path.segments.len() == 1
          && mod_path.kind == PathKind::Plain
+ }
+ 
+ fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
+-    let mut leaves = tt.iter().filter_map(|tt| match tt {
++    let mut leaves = tt
++        .iter()
++        .filter_map(|tt| match tt {
+         tt::TtElement::Leaf(leaf) => Some(leaf),
+         tt::TtElement::Subtree(..) => None,
+     });
+         }
+         _ => return None,
+     };
+-    segments.extend(leaves.filter_map(|leaf| match leaf {
++    segments
++        .extend(leaves.filter_map(|leaf| match leaf {
+         ::tt::Leaf::Ident(ident) => Some(Name::new_symbol(ident.sym.clone(), ident.span.ctx)),
+         _ => None,
+     }));
      result_mark.map(|call| db.lookup_intern_macro_call(call.into()).def.krate)
  }
  

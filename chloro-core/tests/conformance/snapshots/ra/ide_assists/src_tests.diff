@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39798 bytes
-Chloro size:   39548 bytes
+Chloro size:   39534 bytes
 Rustfmt size:  40546 bytes
 
 ✗ Outputs DIFFER
@@ -112,6 +112,14 @@ Rustfmt size:  40546 bytes
                      FileSystemEdit::MoveFile { src, dst } => {
                          (dst, db.file_text(src).text(&db).as_ref().to_owned())
                      }
+             label.push('\n');
+             label
+         })
+-        .collect::<Vec<_>>();
++        .collect();
+     labels.dedup();
+     labels.into_iter().collect::<String>()
+ }
      let before = "struct Foo { $0bar: u32 }";
      let (before_cursor_pos, before) = extract_offset(before);
      let (db, file_id) = with_single_file(&before);
@@ -119,8 +127,7 @@ Rustfmt size:  40546 bytes
 -        file_id: file_id.file_id(&db),
 -        range: TextRange::empty(before_cursor_pos),
 -    };
-+    let frange =
-+        FileRange { file_id: file_id.file_id(&db), range: TextRange::empty(before_cursor_pos) };
++    let frange = FileRange { file_id: file_id.file_id(&db), range: TextRange::empty(before_cursor_pos) };
      let assists = assists(&db, &TEST_CONFIG, AssistResolveStrategy::None, frange);
      let mut assists = assists.iter();
  
@@ -168,6 +175,14 @@ Rustfmt size:  40546 bytes
      );
      let expected = labels(&assists);
  
+         Extract into...
+         Replace if let with match
+     "#]]
+-    .assert_eq(&expected);
++        .assert_eq(&expected);
+ }
+ 
+ #[test]
              &db,
              &cfg,
              AssistResolveStrategy::None,

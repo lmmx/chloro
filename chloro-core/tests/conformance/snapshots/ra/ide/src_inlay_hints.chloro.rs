@@ -754,8 +754,7 @@ fn label_of_ty(
         result: InlayHintLabel::default(),
         resolve: config.fields_to_resolve.resolve_label_location,
     };
-    let _ =
-        rec(sema, famous_defs, config.max_length, ty, &mut label_builder, config, display_target);
+    let _ = rec(sema, famous_defs, config.max_length, ty, &mut label_builder, config, display_target);
     let r = label_builder.finish();
     Some(r)
 }
@@ -889,10 +888,9 @@ mod tests {
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
         let actual = inlay_hints
             .into_iter()
-            // FIXME: We trim the start because some inlay produces leading whitespace which is not properly supported by our annotation extraction
             .map(|it| (it.range, it.label.to_string().trim_start().to_owned()))
             .sorted_by_key(|(range, _)| range.start())
-            .collect::<Vec<_>>();
+            .collect();
         expected.sort_by_key(|(range, _)| range.start());
 
         assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
@@ -905,8 +903,7 @@ mod tests {
     ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
-        let filtered =
-            inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect::<Vec<_>>();
+        let filtered = inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect();
         expect.assert_debug_eq(&filtered)
     }
     /// Computes inlay hints for the fixture, applies all the provided text edits and then runs
@@ -941,8 +938,7 @@ mod tests {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
 
-        let edits: Vec<_> =
-            inlay_hints.into_iter().filter_map(|hint| hint.text_edit?.computed()).collect();
+        let edits: Vec<_> = inlay_hints.into_iter().filter_map(|hint| hint.text_edit?.computed()).collect();
 
         assert!(edits.is_empty(), "unexpected edits: {edits:?}");
     }

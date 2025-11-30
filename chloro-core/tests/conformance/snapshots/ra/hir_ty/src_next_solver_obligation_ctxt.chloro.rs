@@ -53,7 +53,8 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         def_id: TraitId,
     ) {
         let trait_ref = TraitRef::new(self.infcx.interner, def_id.into(), [ty]);
-        self.register_obligation(Obligation {
+        self
+            .register_obligation(Obligation {
             cause,
             recursion_depth: 0,
             param_env,

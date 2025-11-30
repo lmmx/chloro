@@ -33,15 +33,18 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 _ => None,
             },
         },
-        text_document_sync: Some(TextDocumentSyncCapability::Options(TextDocumentSyncOptions {
+        text_document_sync: Some(
+            TextDocumentSyncCapability::Options(TextDocumentSyncOptions {
             open_close: Some(true),
             change: Some(TextDocumentSyncKind::INCREMENTAL),
             will_save: None,
             will_save_wait_until: None,
             save: Some(SaveOptions::default().into()),
-        })),
+        }),
+        ),
         hover_provider: Some(HoverProviderCapability::Simple(true)),
-        completion_provider: Some(CompletionOptions {
+        completion_provider: Some(
+            CompletionOptions {
             resolve_provider: if config.client_is_neovim() {
                 config.has_completion_item_resolve_additionalTextEdits().then_some(true)
             } else {
@@ -56,12 +59,15 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             all_commit_characters: None,
             completion_item: config.caps().completion_item(),
             work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-        }),
-        signature_help_provider: Some(SignatureHelpOptions {
+        },
+        ),
+        signature_help_provider: Some(
+            SignatureHelpOptions {
             trigger_characters: Some(vec!["(".to_owned(), ",".to_owned(), "<".to_owned()]),
             retrigger_characters: None,
             work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-        }),
+        },
+        ),
         declaration_provider: Some(DeclarationCapability::Simple(true)),
         definition_provider: Some(OneOf::Left(true)),
         type_definition_provider: Some(TypeDefinitionProviderCapability::Simple(true)),
@@ -77,24 +83,29 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             RustfmtConfig::Rustfmt { enable_range_formatting: true, .. } => Some(OneOf::Left(true)),
             _ => Some(OneOf::Left(false)),
         },
-        document_on_type_formatting_provider: Some({
+        document_on_type_formatting_provider: Some(
+            {
             let mut chars = ide::Analysis::SUPPORTED_TRIGGER_CHARS.iter();
             DocumentOnTypeFormattingOptions {
                 first_trigger_character: chars.next().unwrap().to_string(),
                 more_trigger_character: Some(chars.map(|c| c.to_string()).collect()),
             }
-        }),
+        },
+        ),
         selection_range_provider: Some(SelectionRangeProviderCapability::Simple(true)),
         folding_range_provider: Some(FoldingRangeProviderCapability::Simple(true)),
-        rename_provider: Some(OneOf::Right(RenameOptions {
+        rename_provider: Some(
+            OneOf::Right(RenameOptions {
             prepare_provider: Some(true),
             work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-        })),
+        }),
+        ),
         linked_editing_range_provider: None,
         document_link_provider: None,
         color_provider: None,
         execute_command_provider: None,
-        workspace: Some(WorkspaceServerCapabilities {
+        workspace: Some(
+            WorkspaceServerCapabilities {
             workspace_folders: Some(WorkspaceFoldersServerCapabilities {
                 supported: Some(true),
                 change_notifications: Some(OneOf::Left(true)),
@@ -126,7 +137,8 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 did_delete: None,
                 will_delete: None,
             }),
-        }),
+        },
+        ),
         call_hierarchy_provider: Some(CallHierarchyServerCapability::Simple(true)),
         semantic_tokens_provider: Some(
             SemanticTokensOptions {
@@ -142,14 +154,17 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             .into(),
         ),
         moniker_provider: None,
-        inlay_hint_provider: Some(OneOf::Right(InlayHintServerCapabilities::Options(
+        inlay_hint_provider: Some(
+            OneOf::Right(InlayHintServerCapabilities::Options(
             InlayHintOptions {
                 work_done_progress_options: Default::default(),
                 resolve_provider: Some(config.caps().inlay_hints_resolve_provider()),
             },
-        ))),
+        )),
+        ),
         inline_value_provider: None,
-        experimental: Some(json!({
+        experimental: Some(
+            json!({
             "externalDocs": true,
             "hoverRange": true,
             "joinLines": true,
@@ -164,8 +179,10 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             },
             "ssr": true,
             "workspaceSymbolScopeKindFiltering": true,
-        })),
-        diagnostic_provider: Some(lsp_types::DiagnosticServerCapabilities::Options(
+        }),
+        ),
+        diagnostic_provider: Some(
+            lsp_types::DiagnosticServerCapabilities::Options(
             lsp_types::DiagnosticOptions {
                 identifier: Some("rust-analyzer".to_owned()),
                 inter_file_dependencies: true,
@@ -173,7 +190,8 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 workspace_diagnostics: false,
                 work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
             },
-        )),
+        ),
+        ),
         inline_completion_provider: None,
     }
 }
@@ -188,15 +206,13 @@ impl ClientCapabilities {
 
     fn completions_resolve_provider(&self) -> bool {
         let client_capabilities = self.completion_resolve_support_properties();
-        let fields_to_resolve =
-            CompletionFieldsToResolve::from_client_capabilities(&client_capabilities);
+        let fields_to_resolve = CompletionFieldsToResolve::from_client_capabilities(&client_capabilities);
         fields_to_resolve != CompletionFieldsToResolve::empty()
     }
 
     fn inlay_hints_resolve_provider(&self) -> bool {
         let client_capabilities = self.inlay_hint_resolve_support_properties();
-        let fields_to_resolve =
-            InlayFieldsToResolve::from_client_capabilities(&client_capabilities);
+        let fields_to_resolve = InlayFieldsToResolve::from_client_capabilities(&client_capabilities);
         fields_to_resolve != InlayFieldsToResolve::empty()
     }
 
@@ -304,8 +320,7 @@ impl ClientCapabilities {
     }
 
     pub fn did_save_text_document_dynamic_registration(&self) -> bool {
-        let caps = (|| -> _ { self.0.text_document.as_ref()?.synchronization.clone() })()
-            .unwrap_or_default();
+        let caps = (|| -> _ { self.0.text_document.as_ref()?.synchronization.clone() })().unwrap_or_default();
         caps.did_save == Some(true) && caps.dynamic_registration == Some(true)
     }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58223 bytes
-Chloro size:   57244 bytes
+Chloro size:   57249 bytes
 Rustfmt size:  58223 bytes
 
 ✗ Outputs DIFFER
@@ -56,6 +56,15 @@ Rustfmt size:  58223 bytes
  pub(crate) fn highlight_related(
      sema: &Semantics<'_, RootDatabase>,
      config: HighlightRelatedConfig,
+         push_to_highlights(file_id, range);
+     }
+ 
+-    WalkExpandedExprCtx::new(sema).walk(&body, &mut |_, expr| {
++    WalkExpandedExprCtx::new(sema)
++        .walk(&body, &mut |_, expr| {
+         let file_id = sema.hir_file_for(expr.syntax());
+ 
+         let range = match &expr {
      });
  
      // We should handle `return` separately, because when it is used in a `try` block,
@@ -70,6 +79,16 @@ Rustfmt size:  58223 bytes
  pub(crate) fn highlight_exit_points(
      sema: &Semantics<'_, RootDatabase>,
      token: SyntaxToken,
+     let Some(new) = new else {
+         return;
+     };
+-    new.into_iter().for_each(|(file_id, ranges)| {
++    new
++        .into_iter()
++        .for_each(|(file_id, ranges)| {
+         res.entry(file_id).or_default().extend(ranges);
+     });
+ }
          })
      }
  
@@ -105,6 +124,15 @@ Rustfmt size:  58223 bytes
      #[track_caller]
      fn check_with_config(
          #[rust_analyzer::rust_fixture] ra_fixture: &str,
+ 
+         let hls = analysis.highlight_related(config, pos).unwrap().unwrap_or_default();
+ 
+-        let mut expected =
+-            annotations.into_iter().map(|(r, access)| (r.range, access)).collect::<Vec<_>>();
++        let mut expected = annotations.into_iter().map(|(r, access)| (r.range, access)).collect();
+ 
+         let mut actual: Vec<(TextRange, String)> = hls
+             .into_iter()
  
          assert_eq!(expected, actual);
      }

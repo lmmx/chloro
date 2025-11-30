@@ -83,7 +83,8 @@ fn variant_hints(
         })),
         None,
     );
-    acc.push(InlayHint {
+    acc
+        .push(InlayHint {
         range: match eq_token {
             Some(t) => range.cover(t.text_range()),
             _ => range,

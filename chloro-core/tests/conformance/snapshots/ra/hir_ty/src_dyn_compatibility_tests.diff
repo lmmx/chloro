@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8624 bytes
-Chloro size:   8622 bytes
+Chloro size:   8614 bytes
 Rustfmt size:  8816 bytes
 
 ✗ Outputs DIFFER
@@ -35,8 +35,7 @@ Rustfmt size:  8816 bytes
 -        .into_iter()
 -        .map(|(id, osvs)| (id, FxHashSet::from_iter(osvs)))
 -        .collect();
-+    let mut expected: FxHashMap<_, _> =
-+        expected.into_iter().map(|(id, osvs)| (id, FxHashSet::from_iter(osvs))).collect();
++    let mut expected: FxHashMap<_, _> = expected.into_iter().map(|(id, osvs)| (id, FxHashSet::from_iter(osvs))).collect();
      let (db, file_ids) = TestDB::with_many_files(ra_fixture);
      for (trait_id, name) in file_ids.into_iter().flat_map(|file_id| {
          let module_id = db.module_for_file(file_id.file_id(&db));

@@ -40,10 +40,8 @@ pub(crate) fn complete_mod(
         }
     }
 
-    let module_definition_file =
-        current_module.definition_source_file_id(ctx.db).original_file(ctx.db);
-    let source_root_id =
-        ctx.db.file_source_root(module_definition_file.file_id(ctx.db)).source_root_id(ctx.db);
+    let module_definition_file = current_module.definition_source_file_id(ctx.db).original_file(ctx.db);
+    let source_root_id = ctx.db.file_source_root(module_definition_file.file_id(ctx.db)).source_root_id(ctx.db);
     let source_root = ctx.db.source_root(source_root_id).source_root(ctx.db);
 
     let directory_to_look_for_submodules = directory_to_look_for_submodules(
@@ -56,10 +54,11 @@ pub(crate) fn complete_mod(
         .children(ctx.db)
         .filter_map(|module| Some(module.name(ctx.db)?.display(ctx.db, ctx.edition).to_string()))
         .filter(|module| module != ctx.original_token.text())
-        .collect::<FxHashSet<_>>();
+        .collect();
 
-    let module_declaration_file =
-        current_module.declaration_source_range(ctx.db).map(|module_declaration_source_file| {
+    let module_declaration_file = current_module
+        .declaration_source_range(ctx.db)
+        .map(|module_declaration_source_file| {
             module_declaration_source_file.file_id.original_file(ctx.db)
         });
 
@@ -151,10 +150,9 @@ fn module_chain_to_containing_module_file(
     current_module: Module,
     db: &RootDatabase,
 ) -> Vec<Module> {
-    let mut path =
-        iter::successors(Some(current_module), |current_module| current_module.parent(db))
-            .take_while(|current_module| current_module.is_inline(db))
-            .collect::<Vec<_>>();
+    let mut path = iter::successors(Some(current_module), |current_module| current_module.parent(db))
+        .take_while(|current_module| current_module.is_inline(db))
+        .collect();
     path.reverse();
     path
 }

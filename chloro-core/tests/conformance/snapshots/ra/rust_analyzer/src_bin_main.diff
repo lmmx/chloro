@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12893 bytes
-Chloro size:   12862 bytes
+Chloro size:   12854 bytes
 Rustfmt size:  12893 bytes
 
 ✗ Outputs DIFFER
@@ -14,6 +14,15 @@ Rustfmt size:  12893 bytes
 -extern crate rustc_driver as _;
  
  mod rustc_wrapper;
+ 
+     thread_intent: stdx::thread::ThreadIntent,
+     f: impl FnOnce() -> anyhow::Result<()> + Send + 'static,
+ ) -> anyhow::Result<()> {
+-    let handle =
+-        stdx::thread::Builder::new(thread_intent, thread_name).stack_size(STACK_SIZE).spawn(f)?;
++    let handle = stdx::thread::Builder::new(thread_intent, thread_name).stack_size(STACK_SIZE).spawn(f)?;
+ 
+     handle.join()?;
  
      }
  

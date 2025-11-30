@@ -18,8 +18,7 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         _ => return None,
     };
     let func = param.syntax().ancestors().find_map(ast::Fn::cast)?;
-    let is_self_present =
-        param.syntax().parent()?.children().find_map(ast::SelfParam::cast).is_some();
+    let is_self_present = param.syntax().parent()?.children().find_map(ast::SelfParam::cast).is_some();
 
     // check if fn is in impl Trait for ..
     if func
@@ -122,8 +121,7 @@ fn process_usage(
         return Some(elements_to_remove(arg.syntax()));
     }
 
-    let method_call_expr_opt: Option<ast::MethodCallExpr> =
-        find_node_at_range(source_file.syntax(), range);
+    let method_call_expr_opt: Option<ast::MethodCallExpr> = find_node_at_range(source_file.syntax(), range);
     if let Some(method_call_expr) = method_call_expr_opt {
         let method_call_expr_range = method_call_expr.name_ref()?.syntax().text_range();
         if !method_call_expr_range.contains_range(range) {
@@ -142,7 +140,8 @@ fn process_usage(
 }
 
 pub(crate) fn range_to_remove(node: &SyntaxNode) -> TextRange {
-    let up_to_comma = next_prev().find_map(|dir| {
+    let up_to_comma = next_prev()
+        .find_map(|dir| {
         node.siblings_with_tokens(dir)
             .filter_map(|it| it.into_token())
             .find(|it| it.kind() == T![,])
@@ -167,7 +166,8 @@ pub(crate) fn range_to_remove(node: &SyntaxNode) -> TextRange {
 }
 
 pub(crate) fn elements_to_remove(node: &SyntaxNode) -> Vec<SyntaxElement> {
-    let up_to_comma = next_prev().find_map(|dir| {
+    let up_to_comma = next_prev()
+        .find_map(|dir| {
         node.siblings_with_tokens(dir)
             .filter_map(|it| it.into_token())
             .find(|it| it.kind() == T![,])

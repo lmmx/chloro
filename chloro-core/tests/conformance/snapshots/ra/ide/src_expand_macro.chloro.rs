@@ -39,7 +39,10 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     // struct Bar;
 
     // ```
-    let derive = sema.descend_into_macros_exact(tok.clone()).into_iter().find_map(|descended| {
+    let derive = sema
+        .descend_into_macros_exact(tok.clone())
+        .into_iter()
+        .find_map(|descended| {
         let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
         if !macro_file.is_derive_attr_pseudo_expansion(db) {
             return None;
@@ -152,10 +155,10 @@ fn expand_macro_recur(
     if let Some(err) = err {
         format_to!(error, "\n{}", err.render_to_string(sema.db));
     }
-    let file_id =
-        sema.hir_file_for(&expanded).macro_file().expect("expansion must produce a macro file");
+    let file_id = sema.hir_file_for(&expanded).macro_file().expect("expansion must produce a macro file");
     let expansion_span_map = sema.db.expansion_span_map(file_id);
-    result_span_map.merge(
+    result_span_map
+        .merge(
         TextRange::at(offset_in_original_node, macro_call.syntax().text_range().len()),
         expanded.text_range().len(),
         &expansion_span_map,
@@ -236,8 +239,7 @@ fn _format(
     // hack until we get hygiene working (same character amount to preserve formatting as much as possible)
     const DOLLAR_CRATE_REPLACE: &str = "__r_a_";
     const BUILTIN_REPLACE: &str = "builtin__POUND";
-    let expansion =
-        expansion.replace("$crate", DOLLAR_CRATE_REPLACE).replace("builtin #", BUILTIN_REPLACE);
+    let expansion = expansion.replace("$crate", DOLLAR_CRATE_REPLACE).replace("builtin #", BUILTIN_REPLACE);
     let (prefix, suffix) = match kind {
         SyntaxKind::MACRO_PAT => ("fn __(", ": u32);"),
         SyntaxKind::MACRO_EXPR | SyntaxKind::MACRO_STMTS => ("fn __() {", "}"),
@@ -249,7 +251,6 @@ fn _format(
     let &crate_id = db.relevant_crates(file_id).iter().next()?;
     let edition = crate_id.data(db).edition;
 
-    #[allow(clippy::disallowed_methods)]
     let mut cmd = std::process::Command::new(toolchain::Tool::Rustfmt.path());
     cmd.arg("--edition");
     cmd.arg(edition.to_string());

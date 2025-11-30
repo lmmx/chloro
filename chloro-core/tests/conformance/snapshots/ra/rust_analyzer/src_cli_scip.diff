@@ -2,12 +2,21 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30603 bytes
+Chloro size:   30585 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+         let now = Instant::now();
+ 
+         let no_progress = &|s| eprintln!("rust-analyzer: Loading {s}");
+-        let root =
+-            vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
++        let root = vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
+ 
+         let mut config = crate::config::Config::new(
+             root.clone(),
          let vendored_libs_config = if self.exclude_vendored_libraries {
              VendoredLibrariesConfig::Excluded
          } else {
@@ -18,6 +27,15 @@ Rustfmt size:  31747 bytes
          };
  
          let si = StaticIndex::compute(&analysis, vendored_libs_config);
+         let mut duplicate_symbol_errors: Vec<(String, String)> = Vec::new();
+         // This is called after definitions have been deduplicated by token_ids_emitted. The purpose
+         // is to detect reuse of symbol names because this causes ambiguity about their meaning.
+-        let mut record_error_if_symbol_already_used =
+-            |symbol: String,
++        let mut record_error_if_symbol_already_used = |symbol: String,
+              is_inherent_impl: bool,
+              relative_path: &str,
+              line_index: &LineIndex,
          // Generates symbols from token monikers.
          let mut symbol_generator = SymbolGenerator::default();
  
@@ -77,6 +95,16 @@ Rustfmt size:  31747 bytes
  const DUPLICATE_SYMBOLS_MESSAGE: &str = "
  Encountered duplicate scip symbols, indicating an internal rust-analyzer bug. These duplicates are
  included in the output, but this causes information lookup to be ambiguous and so information about
+     };
+ 
+     let position_encoding = scip_types::PositionEncoding::UTF8CodeUnitOffsetFromLineStart.into();
+-    let signature_documentation = token.signature.clone().map(|text| scip_types::Document {
++    let signature_documentation = token.signature
++        .clone()
++        .map(|text| scip_types::Document {
+         relative_path: "".to_owned(),
+         language: "rust".to_owned(),
+         text,
      rootpath: &vfs::AbsPathBuf,
      file_id: ide::FileId,
  ) -> Option<String> {
@@ -147,8 +175,13 @@ Rustfmt size:  31747 bytes
 -                .unwrap_or_else(|| ".".to_owned()),
 +            version: moniker.package_information.version.clone().unwrap_or_else(|| ".".to_owned()),
              special_fields: Default::default(),
-         })
-         .into(),
+-        })
+-        .into(),
++        }).into(
++        ),
+         descriptors: moniker_descriptors(&moniker.identifier),
+         special_fields: Default::default(),
+     }
      use ide::{FilePosition, TextSize};
      use test_fixture::ChangeFixture;
      use vfs::VfsPath;
@@ -156,8 +189,10 @@ Rustfmt size:  31747 bytes
      fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (AnalysisHost, FilePosition) {
          let mut host = AnalysisHost::default();
          let change_fixture = ChangeFixture::parse(host.raw_database(), ra_fixture);
-         let (file_id, range_or_offset) =
-             change_fixture.file_position.expect("expected a marker ()");
+         host.raw_database_mut().apply_change(change_fixture.change);
+-        let (file_id, range_or_offset) =
+-            change_fixture.file_position.expect("expected a marker ()");
++        let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ()");
          let offset = range_or_offset.expect_offset();
 -        let position = FilePosition {
 -            file_id: file_id.file_id(host.raw_database()),

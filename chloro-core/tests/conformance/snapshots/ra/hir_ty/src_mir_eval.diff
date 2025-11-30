@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 131517 bytes
-Chloro size:   130948 bytes
+Chloro size:   130950 bytes
 Rustfmt size:  131517 bytes
 
 ✗ Outputs DIFFER
@@ -170,6 +170,15 @@ Rustfmt size:  131517 bytes
  #[cfg(not(test))]
  const EXECUTION_LIMIT: usize = 10_000_000;
  
+             return *r;
+         }
+         let (ty, proj) = pair;
+-        let r = proj.projected_ty(
++        let r = proj
++            .projected_ty(
+             &self.infcx,
+             ty,
+             |c, subst, f| {
      ) -> Result<'db, (Address, Ty<'db>, Option<IntervalOrOwned>)> {
          let mut addr = locals.ptr[p.local].addr;
          let mut ty: Ty<'db> = locals.body.locals[p.local].ty;
@@ -179,6 +188,15 @@ Rustfmt size:  131517 bytes
          for proj in p.projection.lookup(&locals.body.projection_store) {
              let prev_ty = ty;
              ty = self.projected_ty(ty, proj.clone());
+         body: &Arc<MirBody<'db>>,
+         destination: Option<Interval>,
+     ) -> Result<'db, (Locals<'db>, usize)> {
+-        let mut locals =
+-            match self.unused_locals_store.borrow_mut().entry(body.owner).or_default().pop() {
++        let mut locals = match self.unused_locals_store.borrow_mut().entry(body.owner).or_default().pop() {
+                 None => Locals {
+                     ptr: ArenaMap::new(),
+                     body: body.clone(),
  
      fn construct_with_layout(
          &mut self,
@@ -187,6 +205,24 @@ Rustfmt size:  131517 bytes
          variant_layout: &Layout,
          tag: Option<(usize, usize, i128)>,
          values: impl Iterator<Item = IntervalOrOwned>,
+     // and its ABI doesn't break yet, we put it in memory manually.
+     let a2 = evaluator.heap_allocate(evaluator.ptr_size() * 2, evaluator.ptr_size())?;
+     evaluator.write_memory(a2, &data.addr.to_bytes())?;
+-    let debug_fmt_fn_ptr = evaluator.vtable_map.id(Ty::new_fn_def(
++    let debug_fmt_fn_ptr = evaluator.vtable_map
++        .id(Ty::new_fn_def(
+         evaluator.interner(),
+         CallableDefId::FunctionId(debug_fmt_fn).into(),
+         GenericArgs::new_from_iter(evaluator.interner(), [ty.into()]),
+             .into_iter(),
+     )?;
+     let message_string = interval.get(&evaluator)?;
+-    let addr =
+-        Address::from_bytes(&message_string[evaluator.ptr_size()..2 * evaluator.ptr_size()])?;
++    let addr = Address::from_bytes(&message_string[evaluator.ptr_size()..2 * evaluator.ptr_size()])?;
+     let size = from_bytes!(usize, message_string[2 * evaluator.ptr_size()..]);
+     Ok(std::string::String::from_utf8_lossy(evaluator.read_memory(addr, size)?).into_owned())
+ }
          }
          for_each_int_type! { m, [] }
      }

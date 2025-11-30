@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21058 bytes
-Chloro size:   21096 bytes
+Chloro size:   21136 bytes
 Rustfmt size:  21705 bytes
 
 ✗ Outputs DIFFER
@@ -53,10 +53,11 @@ Rustfmt size:  21705 bytes
          iter: T,
      ) {
 -        iter.into_iter()
--            .for_each(|(file_id, (edit, snippet_edit))| {
++        iter
++            .into_iter()
+             .for_each(|(file_id, (edit, snippet_edit))| {
 -                self.insert_source_and_snippet_edit(file_id, edit, snippet_edit)
 -            });
-+        iter.into_iter().for_each(|(file_id, (edit, snippet_edit))| {
 +            self.insert_source_and_snippet_edit(file_id, edit, snippet_edit)
 +        });
      }
@@ -76,8 +77,7 @@ Rustfmt size:  21705 bytes
 -            .into_iter()
 -            .map(|(file_id, edit)| (file_id, (edit, None)))
 -            .collect();
-+        let source_file_edits =
-+            source_file_edits.into_iter().map(|(file_id, edit)| (file_id, (edit, None))).collect();
++        let source_file_edits = source_file_edits.into_iter().map(|(file_id, edit)| (file_id, (edit, None))).collect();
          SourceChange {
              source_file_edits,
              file_system_edits: Vec::new(),
@@ -123,7 +123,10 @@ Rustfmt size:  21705 bytes
          }
  
          // Apply mutable edits
-         let snippet_edit = self.snippet_builder.take().map(|builder| {
+-        let snippet_edit = self.snippet_builder.take().map(|builder| {
++        let snippet_edit = self.snippet_builder
++            .take()
++            .map(|builder| {
              SnippetEdit::new(
 -                builder
 -                    .places

@@ -285,8 +285,8 @@ fn find_in_prelude(
     }
 
     // Check if the name is in current scope and it points to the same def.
-    let found_and_same_def =
-        local_def_map.with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
+    let found_and_same_def = local_def_map
+        .with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
             let per_ns = def_map[local_id].scope.get(name);
             let same_def = match item {
                 ItemInNs::Types(it) => per_ns.take_types()? == it,
@@ -587,7 +587,7 @@ fn find_local_import_locations(
         .map(|&child| def_map.module_id(child))
         .chain(iter::successors(from.containing_module(db), |m| m.containing_module(db)))
         .zip(iter::repeat(false))
-        .collect::<Vec<_>>();
+        .collect();
 
     let def_map = def_map.crate_root().def_map(db);
     let mut block_def_map;
@@ -651,7 +651,10 @@ fn find_local_import_locations(
             }
         }
     }
-    worklist.into_iter().filter(|&(_, processed)| processed).for_each(|(module, _)| {
+    worklist
+        .into_iter()
+        .filter(|&(_, processed)| processed)
+        .for_each(|(module, _)| {
         visited_modules.remove(&(item, module));
     });
 }
@@ -682,14 +685,12 @@ mod tests {
     ) {
         let (db, pos) = TestDB::with_position(ra_fixture);
         let module = db.module_at_position(pos);
-        let parsed_path_file =
-            syntax::SourceFile::parse(&format!("use {path};"), span::Edition::CURRENT);
-        let ast_path =
-            parsed_path_file.syntax_node().descendants().find_map(syntax::ast::Path::cast).unwrap();
+        let parsed_path_file = syntax::SourceFile::parse(&format!("use {path};"), span::Edition::CURRENT);
+        let ast_path = parsed_path_file.syntax_node().descendants().find_map(syntax::ast::Path::cast).unwrap();
         let mod_path = ModPath::from_src(&db, ast_path, &mut |range| {
             db.span_map(pos.file_id.into()).as_ref().span_for_range(range).ctx
         })
-        .unwrap();
+            .unwrap();
 
         let (def_map, local_def_map) = module.local_def_map(&db);
         let resolved = def_map

@@ -68,10 +68,8 @@ impl<'a> AssistContext<'a> {
         let end = frange.range.end();
         let left = source_file.syntax().token_at_offset(start);
         let right = source_file.syntax().token_at_offset(end);
-        let left =
-            left.right_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Next));
-        let right =
-            right.left_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
+        let left = left.right_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Next));
+        let right = right.left_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
         let left = left.map(|t| t.text_range().start().clamp(start, end));
         let right = right.map(|t| t.text_range().end().clamp(start, end));
 

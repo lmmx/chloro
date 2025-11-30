@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9816 bytes
-Chloro size:   9822 bytes
+Chloro size:   9831 bytes
 Rustfmt size:  9843 bytes
 
 ✗ Outputs DIFFER
@@ -73,6 +73,15 @@ Rustfmt size:  9843 bytes
      let tt_delimiter = tt.left_delimiter_token()?.kind();
  
      let _ = ctx.sema.as_format_args_parts(&fmt_string)?;
+         return None;
+     }
+ 
+-    acc.add(
++    acc
++        .add(
+         AssistId(
+             "extract_expressions_from_format_string",
+             // if there aren't any expressions, then make the assist a RefactorExtract
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_no_snippet_cap};

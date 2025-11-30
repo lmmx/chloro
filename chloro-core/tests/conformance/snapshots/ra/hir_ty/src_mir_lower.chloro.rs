@@ -290,7 +290,8 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         infer: &'a InferenceResult<'db>,
     ) -> Self {
         let mut basic_blocks = Arena::new();
-        let start_block = basic_blocks.alloc(BasicBlock {
+        let start_block = basic_blocks
+            .alloc(BasicBlock {
             statements: vec![],
             terminator: None,
             is_cleanup: false,
@@ -1566,7 +1567,8 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
             TyKind::Adt(_, subst) => subst,
             _ => implementation_error!("Non ADT enum"),
         };
-        self.push_assignment(
+        self
+            .push_assignment(
             prev_block,
             place,
             Rvalue::Aggregate(AggregateKind::Adt(variant_id.into(), subst), fields),
@@ -1610,7 +1612,8 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         span: MirSpan,
     ) -> Result<'db, Option<BasicBlockId<'db>>> {
         let b = if is_uninhabited { None } else { Some(self.new_basic_block()) };
-        self.set_terminator(
+        self
+            .set_terminator(
             current,
             TerminatorKind::Call {
                 func,
@@ -1699,7 +1702,8 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         f: impl FnOnce(&mut MirLowerCtx<'_, 'db>, BasicBlockId<'db>) -> Result<'db, ()>,
     ) -> Result<'db, Option<BasicBlockId<'db>>> {
         let begin = self.new_basic_block();
-        let prev = self.current_loop_blocks.replace(LoopBlocks {
+        let prev = self.current_loop_blocks
+            .replace(LoopBlocks {
             begin,
             end: None,
             place,
@@ -1899,7 +1903,8 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
             }
             None => None,
         };
-        self.result.param_locals.extend(params.clone().map(|(it, ty)| {
+        self.result.param_locals
+            .extend(params.clone().map(|(it, ty)| {
             let local_id = self.result.locals.alloc(Local { ty });
             self.drop_scopes.last_mut().unwrap().locals.push(local_id);
             if let Pat::Bind { id, subpat: None } = self.body[it]
@@ -2105,7 +2110,8 @@ pub fn mir_body_for_closure_query<'db>(
     let mut ctx = MirLowerCtx::new(db, owner, &body, &infer);
     // 0 is return local
     ctx.result.locals.alloc(Local { ty: infer[*root] });
-    let closure_local = ctx.result.locals.alloc(Local {
+    let closure_local = ctx.result.locals
+        .alloc(Local {
         ty: match kind {
             FnTrait::FnOnce | FnTrait::AsyncFnOnce => infer[expr],
             FnTrait::FnMut | FnTrait::AsyncFnMut => Ty::new_ref(
@@ -2139,8 +2145,7 @@ pub fn mir_body_for_closure_query<'db>(
         let current = ctx.pop_drop_scope_assert_finished(current, root.into())?;
         ctx.set_terminator(current, TerminatorKind::Return, (*root).into());
     }
-    let mut upvar_map: FxHashMap<LocalId<'db>, Vec<(&CapturedItem<'_>, usize)>> =
-        FxHashMap::default();
+    let mut upvar_map: FxHashMap<LocalId<'db>, Vec<(&CapturedItem<'_>, usize)>> = FxHashMap::default();
     for (i, capture) in captures.iter().enumerate() {
         let local = ctx.binding_local(capture.place.local)?;
         upvar_map.entry(local).or_default().push((capture, i));
@@ -2153,7 +2158,8 @@ pub fn mir_body_for_closure_query<'db>(
             vec![ProjectionElem::Deref]
         }
     };
-    ctx.result.walk_places(|p, store| {
+    ctx.result
+        .walk_places(|p, store| {
         if let Some(it) = upvar_map.get(&p.local) {
             let r = it.iter().find(|it| {
                 if p.projection.lookup(store).len() < it.0.place.projections.len() {

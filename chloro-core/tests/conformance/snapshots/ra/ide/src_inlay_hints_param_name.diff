@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17010 bytes
-Chloro size:   16993 bytes
+Chloro size:   16984 bytes
 Rustfmt size:  17010 bytes
 
 ✗ Outputs DIFFER
@@ -34,6 +34,15 @@ Rustfmt size:  17010 bytes
      let param_name = param_name.trim_matches('_');
      if param_name.is_empty() {
          return true;
+     let param_name = param_name.split('_');
+     let argument = argument.iter().flat_map(|it| it.text_non_mutable().split('_'));
+ 
+-    let prefix_match = zip(argument.clone(), param_name.clone())
+-        .all(|(arg, param)| arg.eq_ignore_ascii_case(param));
++    let prefix_match = zip(argument.clone(), param_name.clone()).all(|(arg, param)| arg.eq_ignore_ascii_case(param));
+     let postfix_match = || {
+         zip(argument.rev(), param_name.rev()).all(|(arg, param)| arg.eq_ignore_ascii_case(param))
+     };
  #[cfg(test)]
  mod tests {
      use crate::{

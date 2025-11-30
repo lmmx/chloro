@@ -93,8 +93,7 @@ pub struct StaticIndexedFile {
 }
 
 fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
-    let mut worklist: Vec<_> =
-        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+    let mut worklist: Vec<_> = Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
     let mut modules = Vec::new();
 
     while let Some(module) = worklist.pop() {
@@ -194,15 +193,14 @@ impl StaticIndex<'_> {
         // hovers
         let sema = hir::Semantics::new(self.db);
         let root = sema.parse_guess_edition(file_id).syntax().clone();
-        let edition = sema
-            .attach_first_edition(file_id)
-            .map(|it| it.edition(self.db))
-            .unwrap_or(Edition::CURRENT);
+        let edition = sema.attach_first_edition(file_id).map(|it| it.edition(self.db)).unwrap_or(Edition::CURRENT);
         let display_target = match sema.first_crate(file_id) {
             Some(krate) => krate.to_display_target(sema.db),
             None => return,
         };
-        let tokens = root.descendants_with_tokens().filter_map(|it| match it {
+        let tokens = root
+            .descendants_with_tokens()
+            .filter_map(|it| match it {
             syntax::NodeOrToken::Node(_) => None,
             syntax::NodeOrToken::Token(it) => Some(it),
         });
@@ -219,7 +217,8 @@ impl StaticIndex<'_> {
             show_drop_glue: true,
             minicore: MiniCore::default(),
         };
-        let tokens = tokens.filter(|token| {
+        let tokens = tokens
+            .filter(|token| {
             matches!(
                 token.kind(),
                 IDENT | INT_NUMBER | LIFETIME_IDENT | T![self] | T![super] | T![crate] | T![Self]

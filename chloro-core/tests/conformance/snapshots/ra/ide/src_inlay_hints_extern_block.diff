@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3948 bytes
-Chloro size:   3947 bytes
+Chloro size:   3979 bytes
 Rustfmt size:  3948 bytes
 
 ✗ Outputs DIFFER
@@ -16,6 +16,33 @@ Rustfmt size:  3948 bytes
  
  use crate::{InlayHint, InlayHintsConfig};
  
+     }
+     let abi = extern_block.abi()?;
+     sema.to_def(&extern_block)?;
+-    acc.push(InlayHint {
++    acc
++        .push(InlayHint {
+         range: abi.syntax().text_range(),
+         position: crate::InlayHintPosition::Before,
+         pad_left: false,
+         pad_right: true,
+         kind: crate::InlayKind::ExternUnsafety,
+         label: crate::InlayHintLabel::from("unsafe"),
+-        text_edit: Some(config.lazy_text_edit(|| {
++        text_edit: Some(
++            config.lazy_text_edit(|| {
+             let mut builder = TextEdit::builder();
+             builder.insert(token.text_range().start(), "unsafe ".to_owned());
+             if extern_block.unsafe_token().is_none()
+                 builder.insert(abi.syntax().text_range().start(), "unsafe ".to_owned());
+             }
+             builder.finish()
+-        })),
++        }),
++        ),
+         resolve_parent: Some(extern_block.syntax().text_range()),
+     }
+ }
  
  #[cfg(test)]
  mod tests {

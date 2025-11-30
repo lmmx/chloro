@@ -31,7 +31,8 @@ pub(crate) fn generate_blanket_trait_impl(
         return None;
     }
 
-    acc.add(
+    acc
+        .add(
         AssistId("generate_blanket_trait_impl", AssistKind::Generate, None),
         "Generate blanket trait implementation",
         name.syntax().text_range(),
@@ -185,10 +186,7 @@ fn apply_sized(has_sized: bool, bounds: Option<ast::TypeBoundList>) -> Option<as
     if has_sized {
         return bounds;
     }
-    let bounds = bounds
-        .into_iter()
-        .flat_map(|bounds| bounds.bounds())
-        .chain([make::type_bound_text("?Sized")]);
+    let bounds = bounds.into_iter().flat_map(|bounds| bounds.bounds()).chain([make::type_bound_text("?Sized")]);
     make::type_bound_list(bounds)
 }
 
@@ -209,10 +207,9 @@ fn this_name(traitd: &ast::Trait) -> ast::Name {
             GenericParam::TypeParam(tp) => tp.name(),
         })
         .map(|name| name.to_string())
-        .collect::<Vec<_>>();
+        .collect();
 
-    let mut name_gen =
-        suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
+    let mut name_gen = suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
 
     make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
 }

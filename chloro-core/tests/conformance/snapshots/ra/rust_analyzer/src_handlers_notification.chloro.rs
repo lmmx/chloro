@@ -217,7 +217,8 @@ pub(crate) fn handle_did_change_configuration(
 ) -> anyhow::Result<()> {
     // As stated in https://github.com/microsoft/language-server-protocol/issues/676,
     // this notification's parameters should be ignored and the actual config queried separately.
-    state.send_request::<lsp_types::request::WorkspaceConfiguration>(
+    state
+        .send_request(
         lsp_types::ConfigurationParams {
             items: vec![lsp_types::ConfigurationItem {
                 scope_uri: None,

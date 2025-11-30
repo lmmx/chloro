@@ -92,10 +92,7 @@ pub mod keys {
         type V = ID;
 
         fn insert(map: &mut DynMap, key: AstPtr<AST>, value: ID) {
-            map.map
-                .entry::<FxHashMap<AstPtr<AST>, ID>>()
-                .or_insert_with(Default::default)
-                .insert(key, value);
+            map.map.entry().or_insert_with(Default::default).insert(key, value);
         }
 
         fn get<'a>(map: &'a DynMap, key: &AstPtr<AST>) -> Option<&'a ID> {
@@ -149,7 +146,7 @@ impl<K: Hash + Eq + 'static, V: 'static> Policy for (K, V) {
     type V = V;
 
     fn insert(map: &mut DynMap, key: K, value: V) {
-        map.map.entry::<FxHashMap<K, V>>().or_insert_with(Default::default).insert(key, value);
+        map.map.entry().or_insert_with(Default::default).insert(key, value);
     }
 
     fn get<'a>(map: &'a DynMap, key: &K) -> Option<&'a V> {

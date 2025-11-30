@@ -53,8 +53,7 @@ pub(crate) fn on_char_typed(
     let edition = Edition::CURRENT_FIXME;
     let editioned_file_id_wrapper = EditionedFileId::new(db, position.file_id, edition);
     let file = &db.parse(editioned_file_id_wrapper);
-    let char_matches_position =
-        file.tree().syntax().text().char_at(position.offset) == Some(char_typed);
+    let char_matches_position = file.tree().syntax().text().char_at(position.offset) == Some(char_typed);
     if !stdx::always!(char_matches_position) {
         return None;
     }
@@ -287,8 +286,7 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
 
 /// Returns an edit which should be applied when a dot ('.') is typed on a blank line, indenting the line appropriately.
 fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
-    let whitespace =
-        file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
+    let whitespace = file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
 
     // if prior is fn call over multiple lines dont indent
 
@@ -328,7 +326,7 @@ fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         // in all other cases, take previous indentation and indent once
         None => IndentLevel::from_node(&parent) + 1,
     }
-    .to_string();
+        .to_string();
 
     if current_indent_len == TextSize::of(&target_indent) {
         return None;
@@ -388,8 +386,7 @@ fn on_plus_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     }
     let mut ancestors = plus_token.parent_ancestors();
     ancestors.next().and_then(ast::TypeBoundList::cast)?;
-    let trait_type =
-        ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
+    let trait_type = ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
     let kind = ancestors.next()?.kind();
 
     if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)

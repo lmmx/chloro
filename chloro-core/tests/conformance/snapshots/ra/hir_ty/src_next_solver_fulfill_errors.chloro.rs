@@ -148,7 +148,8 @@ pub(super) fn fulfillment_error_for_stalled<'db>(
     infcx: &InferCtxt<'db>,
     root_obligation: PredicateObligation<'db>,
 ) -> FulfillmentError<'db> {
-    let (code, refine_obligation) = infcx.probe(|_| {
+    let (code, refine_obligation) = infcx
+        .probe(|_| {
         match <&SolverContext<'db>>::from(infcx).evaluate_root_goal(
             root_obligation.as_goal(),
             Span::dummy(),
@@ -674,8 +675,7 @@ mod wf {
             return None;
         }
 
-        let mut wf =
-            WfPredicates { infcx, param_env, out: PredicateObligations::new(), recursion_depth: 0 };
+        let mut wf = WfPredicates { infcx, param_env, out: PredicateObligations::new(), recursion_depth: 0 };
         wf.add_wf_preds_for_term(term);
         Some(wf.out)
     }

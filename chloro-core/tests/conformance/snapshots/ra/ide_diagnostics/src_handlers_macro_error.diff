@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7219 bytes
-Chloro size:   6964 bytes
+Chloro size:   6956 bytes
 Rustfmt size:  7310 bytes
 
 ✗ Outputs DIFFER
@@ -50,7 +50,12 @@ Rustfmt size:  7310 bytes
 -// This diagnostic is shown for macro expansion errors.
  pub(crate) fn macro_def_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroDefError) -> Diagnostic {
      // Use more accurate position if available.
-     let display_range =
+-    let display_range =
+-        ctx.resolve_precise_location(&d.node.map(|it| it.syntax_node_ptr()), d.name);
++    let display_range = ctx.resolve_precise_location(&d.node.map(|it| it.syntax_node_ptr()), d.name);
+     Diagnostic::new(
+         DiagnosticCode::Ra("macro-def-error", Severity::Error),
+         d.message.clone(),
          tests::{check_diagnostics, check_diagnostics_with_config},
          DiagnosticsConfig,
      };

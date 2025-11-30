@@ -81,8 +81,9 @@ fn render(
     let ret_type = func.ret_type(db);
     let assoc_item = func.as_assoc_item(db);
 
-    let trait_info =
-        assoc_item.and_then(|trait_| trait_.container_or_implemented_trait(db)).map(|trait_| {
+    let trait_info = assoc_item
+        .and_then(|trait_| trait_.container_or_implemented_trait(db))
+        .map(|trait_| {
             CompletionRelevanceTraitInfo {
                 notable_trait: completion.is_doc_notable_trait(trait_),
                 is_op_method: completion.is_ops_trait(trait_),
@@ -116,7 +117,8 @@ fn render(
             return_type,
         });
 
-    item.set_relevance(CompletionRelevance {
+    item
+        .set_relevance(CompletionRelevance {
         type_match: if has_call_parens || complete_call_parens.is_some() {
             compute_type_match(completion, &ret_type)
         } else {
@@ -148,7 +150,8 @@ fn render(
     } else {
         detail(ctx.completion, func)
     };
-    item.set_documentation(ctx.docs(func))
+    item
+        .set_documentation(ctx.docs(func))
         .set_deprecated(ctx.is_deprecated(func) || ctx.is_deprecated_assoc_item(func))
         .detail(detail)
         .lookup_by(name.as_str().to_smolstr());

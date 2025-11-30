@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   51325 bytes
+Chloro size:   51338 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -324,6 +324,15 @@ Rustfmt size:  52438 bytes
          )
      }
  
+         // cycle detection in fulfillment will not kick in, which leads
+         // to unnecessary overflows in async code. See the issue:
+         // <https://github.com/rust-lang/rust/issues/145151>.
+-        let coroutine_args = interner.mk_args_from_iter(coroutine_args.iter().map(|arg| {
++        let coroutine_args = interner
++            .mk_args_from_iter(coroutine_args.iter().map(|arg| {
+             match arg {
+                 GenericArg::Ty(_) | GenericArg::Const(_) => arg,
+                 GenericArg::Lifetime(_) => {
      }
  
      fn new_tup(interner: DbInterner<'db>, tys: &[<DbInterner<'db> as Interner>::Ty]) -> Self {

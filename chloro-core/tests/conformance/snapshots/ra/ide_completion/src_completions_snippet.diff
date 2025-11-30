@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4757 bytes
-Chloro size:   4756 bytes
+Chloro size:   4775 bytes
 Rustfmt size:  4729 bytes
 
 ✗ Outputs DIFFER
@@ -17,19 +17,15 @@ Rustfmt size:  4729 bytes
 -        label,
 -        ctx.edition,
 -    );
-+    let mut item =
-+        CompletionItem::new(CompletionItemKind::Snippet, ctx.source_range(), label, ctx.edition);
++    let mut item = CompletionItem::new(CompletionItemKind::Snippet, ctx.source_range(), label, ctx.edition);
      item.insert_snippet(cap, snippet);
      item
  }
-     scope: SnippetScope,
- ) -> Option<()> {
-     ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
--    ctx.config
--        .prefix_snippets()
--        .filter(|(_, snip)| snip.scope == scope)
+     ctx.config
+         .prefix_snippets()
+         .filter(|(_, snip)| snip.scope == scope)
 -        .for_each(|(trigger, snip)| {
-+    ctx.config.prefix_snippets().filter(|(_, snip)| snip.scope == scope).for_each(
++        .for_each(
 +        |(trigger, snip)| {
              let imports = match snip.imports(ctx) {
                  Some(imports) => imports,

@@ -435,10 +435,7 @@ fn handle_control_flow_keywords(
     FilePosition { file_id, offset }: FilePosition,
 ) -> Option<ReferenceSearchResult> {
     let file = sema.parse_guess_edition(file_id);
-    let edition = sema
-        .attach_first_edition(file_id)
-        .map(|it| it.edition(sema.db))
-        .unwrap_or(Edition::CURRENT);
+    let edition = sema.attach_first_edition(file_id).map(|it| it.edition(sema.db)).unwrap_or(Edition::CURRENT);
     let token = pick_best_token(file.syntax().token_at_offset(offset), |kind| match kind {
         _ if kind.is_keyword(edition) => 4,
         T![=>] => 3,
@@ -457,15 +454,15 @@ fn handle_control_flow_keywords(
         T![if] | T![=>] | T![match] => highlight_related::highlight_branch_exit_points(sema, token),
         _ => return None,
     }
-    .into_iter()
-    .map(|(file_id, ranges)| {
+        .into_iter()
+        .map(|(file_id, ranges)| {
         let ranges = ranges
             .into_iter()
             .map(|HighlightedRange { range, category }| (range, category))
             .collect();
         (file_id.file_id(sema.db), ranges)
     })
-    .collect();
+        .collect();
 
     Some(ReferenceSearchResult { declaration: None, references })
 }

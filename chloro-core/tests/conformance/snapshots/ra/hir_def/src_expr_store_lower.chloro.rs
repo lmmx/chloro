@@ -89,8 +89,8 @@ pub(super) fn lower_body(
         DefWithBodyId::ConstId(it) => db.attrs(it.into()),
         DefWithBodyId::VariantId(it) => db.attrs(it.into()),
     }
-    .rust_analyzer_tool()
-    .any(|attr| *attr.path() == tool_path![skip]);
+        .rust_analyzer_tool()
+        .any(|attr| *attr.path() == tool_path![skip]);
     // If #[rust_analyzer::skip] annotated, only construct enough information for the signature
     // and skip the body.
     if skip_body {
@@ -149,7 +149,8 @@ pub(super) fn lower_body(
         }
     };
 
-    let body_expr = collector.collect(
+    let body_expr = collector
+        .collect(
         body,
         if is_async_fn {
             Awaitable::Yes
@@ -176,8 +177,7 @@ pub(crate) fn lower_type_ref(
     type_ref: InFile<Option<ast::Type>>,
 ) -> (ExpressionStore, ExpressionStoreSourceMap, TypeRefId) {
     let mut expr_collector = ExprCollector::new(db, module, type_ref.file_id);
-    let type_ref =
-        expr_collector.lower_type_ref_opt(type_ref.value, &mut ExprCollector::impl_trait_allocator);
+    let type_ref = expr_collector.lower_type_ref_opt(type_ref.value, &mut ExprCollector::impl_trait_allocator);
     let (store, source_map) = expr_collector.store.finish();
     (store, source_map, type_ref)
 }
@@ -205,9 +205,10 @@ pub(crate) fn lower_impl(
     impl_id: ImplId,
 ) -> (ExpressionStore, ExpressionStoreSourceMap, TypeRefId, Option<TraitRef>, Arc<GenericParams>) {
     let mut expr_collector = ExprCollector::new(db, module, impl_syntax.file_id);
-    let self_ty =
-        expr_collector.lower_type_ref_opt_disallow_impl_trait(impl_syntax.value.self_ty());
-    let trait_ = impl_syntax.value.trait_().and_then(|it| match &it {
+    let self_ty = expr_collector.lower_type_ref_opt_disallow_impl_trait(impl_syntax.value.self_ty());
+    let trait_ = impl_syntax.value
+        .trait_()
+        .and_then(|it| match &it {
         ast::Type::PathType(path_type) => {
             let path = expr_collector
                 .lower_path_type(path_type, &mut ExprCollector::impl_trait_allocator)?;
@@ -216,7 +217,8 @@ pub(crate) fn lower_impl(
         _ => None,
     });
     let mut collector = generics::GenericParamsCollector::new(impl_id.into());
-    collector.lower(
+    collector
+        .lower(
         &mut expr_collector,
         impl_syntax.value.generic_param_list(),
         impl_syntax.value.where_clause(),
@@ -238,7 +240,8 @@ pub(crate) fn lower_trait(
         trait_id.into(),
         trait_syntax.value.type_bound_list(),
     );
-    collector.lower(
+    collector
+        .lower(
         &mut expr_collector,
         trait_syntax.value.generic_param_list(),
         trait_syntax.value.where_clause(),
@@ -274,7 +277,8 @@ pub(crate) fn lower_type_alias(
         })
         .unwrap_or_default();
     let mut collector = generics::GenericParamsCollector::new(type_alias_id.into());
-    collector.lower(
+    collector
+        .lower(
         &mut expr_collector,
         alias.value.generic_param_list(),
         alias.value.where_clause(),
@@ -308,7 +312,8 @@ pub(crate) fn lower_function(
     let mut params = vec![];
     let mut has_self_param = false;
     let mut has_variadic = false;
-    collector.collect_impl_trait(&mut expr_collector, |collector, mut impl_trait_lower_fn| {
+    collector
+        .collect_impl_trait(&mut expr_collector, |collector, mut impl_trait_lower_fn| {
         if let Some(param_list) = fn_.value.param_list() {
             if let Some(param) = param_list.self_param() {
                 let enabled = collector.check_cfg(&param);
@@ -361,7 +366,9 @@ pub(crate) fn lower_function(
         }
     });
     let generics = collector.finish();
-    let return_type = fn_.value.ret_type().map(|ret_type| {
+    let return_type = fn_.value
+        .ret_type()
+        .map(|ret_type| {
         expr_collector.lower_type_ref_opt(ret_type.ty(), &mut ExprCollector::impl_trait_allocator)
     });
 
@@ -1645,13 +1652,15 @@ impl ExprCollector<'_> {
     /// and save the `<new_label>` to use it as a break target for desugaring of the `?` operator.
     fn desugar_try_block(&mut self, e: BlockExpr) -> ExprId {
         let try_from_output = self.lang_path(LangItem::TryTraitFromOutput);
-        let label = self.alloc_label_desugared(Label {
+        let label = self
+            .alloc_label_desugared(Label {
             name: Name::generate_new_name(self.store.labels.len()),
         });
         let old_label = self.current_try_block_label.replace(label);
 
         let ptr = AstPtr::new(&e).upcast();
-        let (btail, expr_id) = self.with_labeled_rib(label, HygieneId::ROOT, |this| {
+        let (btail, expr_id) = self
+            .with_labeled_rib(label, HygieneId::ROOT, |this| {
             let mut btail = None;
             let block = this.collect_block_(e, |id, statements, tail| {
                 btail = tail;
@@ -1660,8 +1669,7 @@ impl ExprCollector<'_> {
             (btail, block)
         });
 
-        let callee = self
-            .alloc_expr_desugared_with_ptr(try_from_output.map_or(Expr::Missing, Expr::Path), ptr);
+        let callee = self.alloc_expr_desugared_with_ptr(try_from_output.map_or(Expr::Missing, Expr::Path), ptr);
         let next_tail = match btail {
             Some(tail) => self
                 .alloc_expr_desugared_with_ptr(Expr::Call { callee, args: Box::new([tail]) }, ptr),
@@ -1696,7 +1704,9 @@ impl ExprCollector<'_> {
     /// FIXME: Rustc wraps the condition in a construct equivalent to `{ let _t = <cond>; _t }`
     /// to preserve drop semantics. We should probably do the same in future.
     fn collect_while_loop(&mut self, syntax_ptr: AstPtr<ast::Expr>, e: ast::WhileExpr) -> ExprId {
-        let label = e.label().map(|label| {
+        let label = e
+            .label()
+            .map(|label| {
             (self.hygiene_id_for(label.syntax().text_range()), self.collect_label(label))
         });
         let body = self.collect_labelled_block_opt(label, e.loop_body());
@@ -1734,7 +1744,8 @@ impl ExprCollector<'_> {
         };
 
         let break_expr = self.alloc_expr(Expr::Break { expr: None, label: None }, syntax_ptr);
-        let if_expr = self.alloc_expr(
+        let if_expr = self
+            .alloc_expr(
             Expr::If { condition, then_branch: body, else_branch: Some(break_expr) },
             syntax_ptr,
         );
@@ -1760,9 +1771,9 @@ impl ExprCollector<'_> {
         let option_some = self.lang_path(LangItem::OptionSome);
         let option_none = self.lang_path(LangItem::OptionNone);
         let head = self.collect_expr_opt(e.iterable());
-        let into_iter_fn_expr =
-            self.alloc_expr(into_iter_fn.map_or(Expr::Missing, Expr::Path), syntax_ptr);
-        let iterator = self.alloc_expr(
+        let into_iter_fn_expr = self.alloc_expr(into_iter_fn.map_or(Expr::Missing, Expr::Path), syntax_ptr);
+        let iterator = self
+            .alloc_expr(
             Expr::Call { callee: into_iter_fn_expr, args: Box::new([head]) },
             syntax_ptr,
         );
@@ -1776,7 +1787,9 @@ impl ExprCollector<'_> {
             args: Box::new([self.collect_pat_top(e.pat())]),
             ellipsis: None,
         };
-        let label = e.label().map(|label| {
+        let label = e
+            .label()
+            .map(|label| {
             (self.hygiene_id_for(label.syntax().text_range()), self.collect_label(label))
         });
         let some_arm = MatchArm {
@@ -1788,21 +1801,24 @@ impl ExprCollector<'_> {
         };
         let iter_name = Name::generate_new_name(self.store.exprs.len());
         let iter_expr = self.alloc_expr(Expr::Path(Path::from(iter_name.clone())), syntax_ptr);
-        let iter_expr_mut = self.alloc_expr(
+        let iter_expr_mut = self
+            .alloc_expr(
             Expr::Ref { expr: iter_expr, rawness: Rawness::Ref, mutability: Mutability::Mut },
             syntax_ptr,
         );
-        let iter_next_fn_expr =
-            self.alloc_expr(iter_next_fn.map_or(Expr::Missing, Expr::Path), syntax_ptr);
-        let iter_next_expr = self.alloc_expr(
+        let iter_next_fn_expr = self.alloc_expr(iter_next_fn.map_or(Expr::Missing, Expr::Path), syntax_ptr);
+        let iter_next_expr = self
+            .alloc_expr(
             Expr::Call { callee: iter_next_fn_expr, args: Box::new([iter_expr_mut]) },
             syntax_ptr,
         );
-        let loop_inner = self.alloc_expr(
+        let loop_inner = self
+            .alloc_expr(
             Expr::Match { expr: iter_next_expr, arms: Box::new([none_arm, some_arm]) },
             syntax_ptr,
         );
-        let loop_inner = self.alloc_expr(
+        let loop_inner = self
+            .alloc_expr(
             Expr::Block {
                 id: None,
                 statements: Box::default(),
@@ -1811,10 +1827,8 @@ impl ExprCollector<'_> {
             },
             syntax_ptr,
         );
-        let loop_outer = self
-            .alloc_expr(Expr::Loop { body: loop_inner, label: label.map(|it| it.1) }, syntax_ptr);
-        let iter_binding =
-            self.alloc_binding(iter_name, BindingAnnotation::Mutable, HygieneId::ROOT);
+        let loop_outer = self.alloc_expr(Expr::Loop { body: loop_inner, label: label.map(|it| it.1) }, syntax_ptr);
+        let iter_binding = self.alloc_binding(iter_name, BindingAnnotation::Mutable, HygieneId::ROOT);
         let iter_pat = self.alloc_pat_desugared(Pat::Bind { id: iter_binding, subpat: None });
         self.add_definition_to_binding(iter_binding, iter_pat);
         self.alloc_expr(
@@ -1844,16 +1858,15 @@ impl ExprCollector<'_> {
         let try_from_residual = self.lang_path(LangItem::TryTraitFromResidual);
         let operand = self.collect_expr_opt(e.expr());
         let try_branch = self.alloc_expr(try_branch.map_or(Expr::Missing, Expr::Path), syntax_ptr);
-        let expr = self
-            .alloc_expr(Expr::Call { callee: try_branch, args: Box::new([operand]) }, syntax_ptr);
+        let expr = self.alloc_expr(Expr::Call { callee: try_branch, args: Box::new([operand]) }, syntax_ptr);
         let continue_name = Name::generate_new_name(self.store.bindings.len());
-        let continue_binding = self.alloc_binding(
+        let continue_binding = self
+            .alloc_binding(
             continue_name.clone(),
             BindingAnnotation::Unannotated,
             HygieneId::ROOT,
         );
-        let continue_bpat =
-            self.alloc_pat_desugared(Pat::Bind { id: continue_binding, subpat: None });
+        let continue_bpat = self.alloc_pat_desugared(Pat::Bind { id: continue_binding, subpat: None });
         self.add_definition_to_binding(continue_binding, continue_bpat);
         let continue_arm = MatchArm {
             pat: self.alloc_pat_desugared(Pat::TupleStruct {
@@ -1865,8 +1878,7 @@ impl ExprCollector<'_> {
             expr: self.alloc_expr(Expr::Path(Path::from(continue_name)), syntax_ptr),
         };
         let break_name = Name::generate_new_name(self.store.bindings.len());
-        let break_binding =
-            self.alloc_binding(break_name.clone(), BindingAnnotation::Unannotated, HygieneId::ROOT);
+        let break_binding = self.alloc_binding(break_name.clone(), BindingAnnotation::Unannotated, HygieneId::ROOT);
         let break_bpat = self.alloc_pat_desugared(Pat::Bind { id: break_binding, subpat: None });
         self.add_definition_to_binding(break_binding, break_bpat);
         let break_arm = MatchArm {
@@ -1908,7 +1920,8 @@ impl ExprCollector<'_> {
         let macro_call_ptr = self.expander.in_file(syntax_ptr);
         let module = self.module.local_id;
 
-        let block_call = self.def_map.modules[self.module.local_id].scope.macro_invoc(
+        let block_call = self.def_map.modules[self.module.local_id].scope
+            .macro_invoc(
             self.expander.in_file(self.expander.ast_id_map().ast_id_for_ptr(syntax_ptr)),
         );
         let res = match block_call {
@@ -1984,7 +1997,8 @@ impl ExprCollector<'_> {
         let mac_call = mac.macro_call()?;
         let syntax_ptr = AstPtr::new(&ast::Expr::from(mac));
         let macro_ptr = AstPtr::new(&mac_call);
-        let expansion = self.collect_macro_call(
+        let expansion = self
+            .collect_macro_call(
             mac_call,
             macro_ptr,
             false,
@@ -2099,13 +2113,15 @@ impl ExprCollector<'_> {
         block: ast::BlockExpr,
         mk_block: impl FnOnce(Option<BlockId>, Box<[Statement]>, Option<ExprId>) -> Expr,
     ) -> ExprId {
-        let block_id = self.expander.ast_id_map().ast_id_for_block(&block).map(|file_local_id| {
+        let block_id = self.expander
+            .ast_id_map()
+            .ast_id_for_block(&block)
+            .map(|file_local_id| {
             let ast_id = self.expander.in_file(file_local_id);
             self.db.intern_block(BlockLoc { ast_id, module: self.module })
         });
 
-        let (module, def_map) =
-            match block_id.map(|block_id| (block_def_map(self.db, block_id), block_id)) {
+        let (module, def_map) = match block_id.map(|block_id| (block_def_map(self.db, block_id), block_id)) {
                 Some((def_map, block_id)) => {
                     self.store.block_scopes.push(block_id);
                     (def_map.module_id(DefMap::ROOT), def_map)
@@ -2118,11 +2134,14 @@ impl ExprCollector<'_> {
 
         let mut statements = Vec::new();
         block.statements().for_each(|s| self.collect_stmt(&mut statements, s));
-        let tail = block.tail_expr().and_then(|e| match e {
+        let tail = block
+            .tail_expr()
+            .and_then(|e| match e {
             ast::Expr::MacroExpr(mac) => self.collect_macro_as_stmt(&mut statements, mac),
             expr => self.maybe_collect_expr(expr),
         });
-        let tail = tail.or_else(|| {
+        let tail = tail
+            .or_else(|| {
             let stmt = statements.pop()?;
             if let Statement::Expr { expr, has_semi: false } = stmt {
                 return Some(expr);
@@ -2132,8 +2151,7 @@ impl ExprCollector<'_> {
         });
 
         let syntax_node_ptr = AstPtr::new(&block.into());
-        let expr_id = self
-            .alloc_expr(mk_block(block_id, statements.into_boxed_slice(), tail), syntax_node_ptr);
+        let expr_id = self.alloc_expr(mk_block(block_id, statements.into_boxed_slice(), tail), syntax_node_ptr);
 
         self.def_map = prev_def_map;
         self.module = prev_local_module;
@@ -2519,8 +2537,7 @@ impl ExprCollector<'_> {
         lifetime: Option<ast::Lifetime>,
     ) -> Result<Option<LabelId>, ExpressionStoreDiagnostics> {
         let Some(lifetime) = lifetime else { return Ok(None) };
-        let mut hygiene_id =
-            self.expander.hygiene_for_range(self.db, lifetime.syntax().text_range());
+        let mut hygiene_id = self.expander.hygiene_for_range(self.db, lifetime.syntax().text_range());
         let mut hygiene_info = if hygiene_id.is_root() {
             None
         } else {
@@ -2594,7 +2611,8 @@ impl ExprCollector<'_> {
         hygiene: HygieneId,
         f: impl FnOnce(&mut Self) -> T,
     ) -> T {
-        self.label_ribs.push(LabelRib::new(RibKind::Normal(
+        self.label_ribs
+            .push(LabelRib::new(RibKind::Normal(
             self.store.labels[label].name.clone(),
             label,
             hygiene,
@@ -2641,7 +2659,9 @@ impl ExprCollector<'_> {
         syntax_ptr: AstPtr<ast::Expr>,
     ) -> ExprId {
         let mut args = FormatArgumentsCollector::default();
-        f.args().for_each(|arg| {
+        f
+            .args()
+            .for_each(|arg| {
             args.add(FormatArgument {
                 kind: match arg.name() {
                     Some(name) => FormatArgumentKind::Named(name.as_name()),
@@ -2651,7 +2671,9 @@ impl ExprCollector<'_> {
             });
         });
         let template = f.template();
-        let fmt_snippet = template.as_ref().and_then(|it| match it {
+        let fmt_snippet = template
+            .as_ref()
+            .and_then(|it| match it {
             ast::Expr::Literal(literal) => match literal.kind() {
                 ast::LiteralKind::String(s) => Some(s.text().to_owned()),
                 _ => None,
@@ -2740,9 +2762,9 @@ impl ExprCollector<'_> {
                 }
             })
             .collect();
-        let lit_pieces =
-            self.alloc_expr_desugared(Expr::Array(Array::ElementList { elements: lit_pieces }));
-        let lit_pieces = self.alloc_expr_desugared(Expr::Ref {
+        let lit_pieces = self.alloc_expr_desugared(Expr::Array(Array::ElementList { elements: lit_pieces }));
+        let lit_pieces = self
+            .alloc_expr_desugared(Expr::Ref {
             expr: lit_pieces,
             rawness: Rawness::Ref,
             mutability: Mutability::Shared,
@@ -2769,10 +2791,8 @@ impl ExprCollector<'_> {
         // Assume that rustc version >= 1.89.0 iff lang item `format_arguments` exists
 
         // but `format_unsafe_arg` does not
-        let fmt_args =
-            || crate::lang_item::lang_item(self.db, self.module.krate(), LangItem::FormatArguments);
-        let fmt_unsafe_arg =
-            || crate::lang_item::lang_item(self.db, self.module.krate(), LangItem::FormatUnsafeArg);
+        let fmt_args = || crate::lang_item::lang_item(self.db, self.module.krate(), LangItem::FormatArguments);
+        let fmt_unsafe_arg = || crate::lang_item::lang_item(self.db, self.module.krate(), LangItem::FormatUnsafeArg);
         let use_format_args_since_1_89_0 = fmt_args().is_some() && fmt_unsafe_arg().is_none();
 
         let idx = if use_format_args_since_1_89_0 {
@@ -2857,24 +2877,24 @@ impl ExprCollector<'_> {
         //         unsafe { ::core::fmt::UnsafeArg::new() }
 
         //     )
-        let new_v1_formatted = LangItem::FormatArguments.ty_rel_path(
+        let new_v1_formatted = LangItem::FormatArguments
+            .ty_rel_path(
             self.db,
             self.module.krate(),
             Name::new_symbol_root(sym::new_v1_formatted),
         );
-        let unsafe_arg_new = LangItem::FormatUnsafeArg.ty_rel_path(
+        let unsafe_arg_new = LangItem::FormatUnsafeArg
+            .ty_rel_path(
             self.db,
             self.module.krate(),
             Name::new_symbol_root(sym::new),
         );
-        let new_v1_formatted =
-            self.alloc_expr_desugared(new_v1_formatted.map_or(Expr::Missing, Expr::Path));
+        let new_v1_formatted = self.alloc_expr_desugared(new_v1_formatted.map_or(Expr::Missing, Expr::Path));
 
-        let unsafe_arg_new =
-            self.alloc_expr_desugared(unsafe_arg_new.map_or(Expr::Missing, Expr::Path));
-        let unsafe_arg_new =
-            self.alloc_expr_desugared(Expr::Call { callee: unsafe_arg_new, args: Box::default() });
-        let mut unsafe_arg_new = self.alloc_expr_desugared(Expr::Unsafe {
+        let unsafe_arg_new = self.alloc_expr_desugared(unsafe_arg_new.map_or(Expr::Missing, Expr::Path));
+        let unsafe_arg_new = self.alloc_expr_desugared(Expr::Call { callee: unsafe_arg_new, args: Box::default() });
+        let mut unsafe_arg_new = self
+            .alloc_expr_desugared(Expr::Unsafe {
             id: None,
             statements: Box::new([]),
             tail: Some(unsafe_arg_new),
@@ -3030,7 +3050,8 @@ impl ExprCollector<'_> {
         // Generate:
 
         //     &args
-        let args = self.alloc_expr_desugared(Expr::Ref {
+        let args = self
+            .alloc_expr_desugared(Expr::Ref {
             expr: args,
             rawness: Rawness::Ref,
             mutability: Mutability::Shared,

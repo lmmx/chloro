@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36630 bytes
-Chloro size:   36528 bytes
+Chloro size:   36538 bytes
 Rustfmt size:  36630 bytes
 
 ✗ Outputs DIFFER
@@ -37,6 +37,27 @@ Rustfmt size:  36630 bytes
  };
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+     });
+ 
+     let mut item = CompletionItem::new(completion_kind, replacement_range, label, ctx.edition);
+-    item.lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
++    item
++        .lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
+         .set_documentation(func.docs(ctx.db))
+         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+ 
+ 
+     let label = format_smolstr!("type {alias_name} =");
+ 
+-    let mut item =
+-        CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
+-    item.lookup_by(format!("type {alias_name}"))
++    let mut item = CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
++    item
++        .lookup_by(format!("type {alias_name}"))
+         .set_documentation(type_alias.docs(ctx.db))
+         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+ 
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

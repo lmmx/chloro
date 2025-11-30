@@ -1605,7 +1605,9 @@ impl ConfigErrors {
 
 impl fmt::Display for ConfigErrors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let errors = self.0.iter().format_with("\n", |inner, f| {
+        let errors = self.0
+            .iter()
+            .format_with("\n", |inner, f| {
             match &**inner {
                 ConfigErrorInner::Json { config_key: key, error: e } => {
                     f(key)?;
@@ -2073,8 +2075,7 @@ impl Config {
     }
 
     fn discovered_projects(&self) -> Vec<ManifestOrProjectJson> {
-        let exclude_dirs: Vec<_> =
-            self.files_exclude().iter().map(|p| self.root_path.join(p)).collect();
+        let exclude_dirs: Vec<_> = self.files_exclude().iter().map(|p| self.root_path.join(p)).collect();
 
         let mut projects = vec![];
         for fs_proj in &self.discovered_projects_from_filesystem {
@@ -2230,22 +2231,27 @@ impl Config {
     }
 
     pub fn cargo(&self, source_root: Option<SourceRootId>) -> CargoConfig {
-        let rustc_source = self.rustc_source(source_root).as_ref().map(|rustc_src| {
+        let rustc_source = self
+            .rustc_source(source_root)
+            .as_ref()
+            .map(|rustc_src| {
             if rustc_src == "discover" {
                 RustLibSource::Discover
             } else {
                 RustLibSource::Path(self.root_path.join(rustc_src))
             }
         });
-        let sysroot = self.cargo_sysroot(source_root).as_ref().map(|sysroot| {
+        let sysroot = self
+            .cargo_sysroot(source_root)
+            .as_ref()
+            .map(|sysroot| {
             if sysroot == "discover" {
                 RustLibSource::Discover
             } else {
                 RustLibSource::Path(self.root_path.join(sysroot))
             }
         });
-        let sysroot_src =
-            self.cargo_sysrootSrc(source_root).as_ref().map(|sysroot| self.root_path.join(sysroot));
+        let sysroot_src = self.cargo_sysrootSrc(source_root).as_ref().map(|sysroot| self.root_path.join(sysroot));
         let extra_includes = self
             .vfs_extraIncludes(source_root)
             .iter()
@@ -3452,7 +3458,7 @@ fn schema(fields: &[SchemaField]) -> serde_json::Value {
                 }
             })
         })
-        .collect::<Vec<_>>();
+        .collect();
     map.into()
 }
 
@@ -3486,7 +3492,7 @@ fn field_props(field: &str, ty: &str, doc: &[&str], default: &str) -> serde_json
         doc.ends_with('.') && doc.starts_with(char::is_uppercase),
         "bad docs for {field}: {doc:?}"
     );
-    let default = default.parse::<serde_json::Value>().unwrap();
+    let default = default.parse().unwrap();
 
     let mut map = serde_json::Map::default();
     macro_rules! set {
@@ -4009,7 +4015,7 @@ mod tests {
 
         // https://link[text] => [text](https://link)
         let url_matches = schema.match_indices("https://");
-        let mut url_offsets = url_matches.map(|(idx, _)| idx).collect::<Vec<usize>>();
+        let mut url_offsets = url_matches.map(|(idx, _)| idx).collect();
         url_offsets.reverse();
         for idx in url_offsets {
             let link = &schema[idx..];
@@ -4030,10 +4036,8 @@ mod tests {
         let package_json_path = project_root().join("editors/code/package.json");
         let mut package_json = fs::read_to_string(&package_json_path).unwrap();
 
-        let start_marker =
-            "            {\n                \"title\": \"$generated-start\"\n            },\n";
-        let end_marker =
-            "            {\n                \"title\": \"$generated-end\"\n            }\n";
+        let start_marker = "            {\n                \"title\": \"$generated-start\"\n            },\n";
+        let end_marker = "            {\n                \"title\": \"$generated-end\"\n            }\n";
 
         let start = package_json.find(start_marker).unwrap() + start_marker.len();
         let end = package_json.find(end_marker).unwrap();
@@ -4056,11 +4060,11 @@ mod tests {
     }
     #[test]
     fn proc_macro_srv_null() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
 
         let mut change = ConfigChange::default();
-        change.change_client_config(serde_json::json!({
+        change
+            .change_client_config(serde_json::json!({
             "procMacro" : {
                 "server": null,
         }}));
@@ -4070,10 +4074,10 @@ mod tests {
     }
     #[test]
     fn proc_macro_srv_abs() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
         let mut change = ConfigChange::default();
-        change.change_client_config(serde_json::json!({
+        change
+            .change_client_config(serde_json::json!({
         "procMacro" : {
             "server": project_root().to_string(),
         }}));
@@ -4083,12 +4087,12 @@ mod tests {
     }
     #[test]
     fn proc_macro_srv_rel() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
 
         let mut change = ConfigChange::default();
 
-        change.change_client_config(serde_json::json!({
+        change
+            .change_client_config(serde_json::json!({
         "procMacro" : {
             "server": "./server"
         }}));
@@ -4102,12 +4106,12 @@ mod tests {
     }
     #[test]
     fn cargo_target_dir_unset() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
 
         let mut change = ConfigChange::default();
 
-        change.change_client_config(serde_json::json!({
+        change
+            .change_client_config(serde_json::json!({
             "rust" : { "analyzerTargetDir" : null }
         }));
 
@@ -4123,19 +4127,18 @@ mod tests {
     }
     #[test]
     fn cargo_target_dir_subdir() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
 
         let mut change = ConfigChange::default();
-        change.change_client_config(serde_json::json!({
+        change
+            .change_client_config(serde_json::json!({
             "rust" : { "analyzerTargetDir" : true }
         }));
 
         (config, _, _) = config.apply_change(change);
 
         assert_eq!(config.cargo_targetDir(None), &Some(TargetDirectory::UseSubdirectory(true)));
-        let ws_target_dir =
-            Utf8PathBuf::from(std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_owned()));
+        let ws_target_dir = Utf8PathBuf::from(std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_owned()));
         assert!(matches!(
             config.flycheck(None),
             FlycheckConfig::CargoCommand {
@@ -4147,11 +4150,11 @@ mod tests {
     }
     #[test]
     fn cargo_target_dir_relative_dir() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
 
         let mut change = ConfigChange::default();
-        change.change_client_config(serde_json::json!({
+        change
+            .change_client_config(serde_json::json!({
             "rust" : { "analyzerTargetDir" : "other_folder" }
         }));
 

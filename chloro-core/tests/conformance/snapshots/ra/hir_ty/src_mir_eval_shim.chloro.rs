@@ -86,8 +86,11 @@ impl<'db> Evaluator<'db> {
                 .map(|()| true);
         }
 
-        let alloc_fn =
-            attrs.iter().filter_map(|it| it.path().as_ident()).map(|it| it.symbol()).find(|it| {
+        let alloc_fn = attrs
+            .iter()
+            .filter_map(|it| it.path().as_ident())
+            .map(|it| it.symbol())
+            .find(|it| {
                 [
                     &sym::rustc_allocator,
                     &sym::rustc_deallocator,
@@ -1438,8 +1441,7 @@ impl<'db> Evaluator<'db> {
             ));
         };
         let arg0_addr = Address::from_bytes(arg0.get(self)?)?;
-        let arg0_interval =
-            Interval::new(arg0_addr, self.size_of_sized(ty, locals, "atomic intrinsic type arg")?);
+        let arg0_interval = Interval::new(arg0_addr, self.size_of_sized(ty, locals, "atomic intrinsic type arg")?);
         if name.starts_with("load_") {
             return destination.write_from_interval(self, arg0_interval);
         }

@@ -27,7 +27,9 @@ fn run_rustc_skipping_cargo_checking(
     // script tries to invoke checks themselves
     // See https://github.com/rust-lang/rust-analyzer/issues/12973 for context
     let not_invoked_by_build_script = std::env::var_os("CARGO_CFG_TARGET_ARCH").is_none();
-    let is_cargo_check = args.iter().any(|arg| {
+    let is_cargo_check = args
+        .iter()
+        .any(|arg| {
         let arg = arg.to_string_lossy();
         // `cargo check` invokes `rustc` with `--emit=metadata` argument.
         //
@@ -47,7 +49,6 @@ fn run_rustc_skipping_cargo_checking(
 }
 
 fn run_rustc(rustc_executable: OsString, args: Vec<OsString>) -> io::Result<ExitCode> {
-    #[allow(clippy::disallowed_methods)]
     let mut child = Command::new(rustc_executable)
         .args(args)
         .stdin(Stdio::inherit())

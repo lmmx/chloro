@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   31937 bytes
+Chloro size:   31921 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -144,6 +144,13 @@ Rustfmt size:  33429 bytes
          MacroDefKind::BuiltInAttr(_, it) => it.expand(db, actual_macro_call, &tt, span),
      };
  
+     let expand_to = loc.expand_to();
+ 
+     fixup::reverse_fixups(&mut speculative_expansion.value, &undo_info);
+-    let (node, rev_tmap) =
+-        token_tree_to_syntax_node(db, &speculative_expansion.value, expand_to, loc.def.edition);
++    let (node, rev_tmap) = token_tree_to_syntax_node(db, &speculative_expansion.value, expand_to, loc.def.edition);
+ 
      let syntax_node = node.syntax_node();
      let token = rev_tmap
          .ranges_with_span(span_map.span_for_range(token_to_map.text_range()))
@@ -198,8 +205,7 @@ Rustfmt size:  33429 bytes
 -    } else {
 -        Some(Arc::new(e))
 -    }
-+    let e: ExpandResult<Arc<[SyntaxError]>> =
-+        db.parse_macro_expansion(macro_call_id).map(|it| Arc::from(it.0.errors()));
++    let e: ExpandResult<Arc<[SyntaxError]>> = db.parse_macro_expansion(macro_call_id).map(|it| Arc::from(it.0.errors()));
 +    if e.value.is_empty() && e.err.is_none() { None } else { Some(Arc::new(e)) }
  }
  

@@ -533,7 +533,10 @@ impl ItemScope {
         attr_call_id: MacroCallId,
         len: usize,
     ) {
-        self.derive_macros.entry(adt).or_default().push(DeriveMacroInvocation {
+        self.derive_macros
+            .entry(adt)
+            .or_default()
+            .push(DeriveMacroInvocation {
             attr_id,
             attr_call_id,
             derive_call_ids: smallvec![None; len],
@@ -828,20 +831,17 @@ impl ItemScope {
 
 impl ItemScope {
     pub(crate) fn update_visibility_types(&mut self, name: &Name, vis: Visibility) {
-        let res =
-            self.types.get_mut(name).expect("tried to update visibility of non-existent type");
+        let res = self.types.get_mut(name).expect("tried to update visibility of non-existent type");
         res.vis = vis;
     }
 
     pub(crate) fn update_visibility_values(&mut self, name: &Name, vis: Visibility) {
-        let res =
-            self.values.get_mut(name).expect("tried to update visibility of non-existent value");
+        let res = self.values.get_mut(name).expect("tried to update visibility of non-existent value");
         res.vis = vis;
     }
 
     pub(crate) fn update_visibility_macros(&mut self, name: &Name, vis: Visibility) {
-        let res =
-            self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
+        let res = self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
         res.vis = vis;
     }
 }

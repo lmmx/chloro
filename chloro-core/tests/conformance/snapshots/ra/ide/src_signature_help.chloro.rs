@@ -84,8 +84,7 @@ pub(crate) fn signature_help(
         // this prevents us from leaving the CallExpression
         .and_then(|tok| algo::skip_trivia_token(tok, Direction::Prev))?;
     let token = sema.descend_into_macros_single_exact(token);
-    let edition =
-        sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
+    let edition = sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
     let display_target = sema.first_crate(file_id)?.to_display_target(db);
 
     for node in token.parent_ancestors() {
@@ -164,11 +163,9 @@ fn signature_help_for_call(
     edition: Edition,
     display_target: DisplayTarget,
 ) -> Option<SignatureHelp> {
-    let (callable, active_parameter) =
-        callable_for_arg_list(sema, arg_list, token.text_range().start())?;
+    let (callable, active_parameter) = callable_for_arg_list(sema, arg_list, token.text_range().start())?;
 
-    let mut res =
-        SignatureHelp { doc: None, signature: String::new(), parameters: vec![], active_parameter };
+    let mut res = SignatureHelp { doc: None, signature: String::new(), parameters: vec![], active_parameter };
 
     let db = sema.db;
     let mut fn_params = None;
@@ -308,8 +305,7 @@ fn signature_help_for_generics(
     edition: Edition,
     display_target: DisplayTarget,
 ) -> Option<SignatureHelp> {
-    let (generics_def, mut active_parameter, first_arg_is_non_lifetime, variant) =
-        generic_def_for_node(sema, &arg_list, &token)?;
+    let (generics_def, mut active_parameter, first_arg_is_non_lifetime, variant) = generic_def_for_node(sema, &arg_list, &token)?;
     let mut res = SignatureHelp {
         doc: None,
         signature: String::new(),
@@ -356,8 +352,7 @@ fn signature_help_for_generics(
     }
 
     let params = generics_def.params(sema.db);
-    let num_lifetime_params =
-        params.iter().take_while(|param| matches!(param, GenericParam::LifetimeParam(_))).count();
+    let num_lifetime_params = params.iter().take_while(|param| matches!(param, GenericParam::LifetimeParam(_))).count();
     if first_arg_is_non_lifetime {
         // Lifetime parameters were omitted.
         active_parameter += num_lifetime_params;
@@ -417,7 +412,7 @@ fn add_assoc_type_bindings(
             ast::GenericArg::AssocTypeArg(arg) => arg.name_ref().map(|n| n.to_string()),
             _ => None,
         })
-        .collect::<BTreeSet<_>>();
+        .collect();
 
     let mut buf = String::new();
     for binding in &present_bindings {
@@ -657,8 +652,7 @@ fn signature_help_for_record_<'db>(
         }
     }
 
-    let mut fields =
-        fields.into_iter().map(|field| (field.name(db), Some(field))).collect::<FxIndexMap<_, _>>();
+    let mut fields = fields.into_iter().map(|field| (field.name(db), Some(field))).collect();
     let mut buf = String::new();
     for (field, ty) in fields2 {
         let name = field.name(db);
@@ -700,13 +694,9 @@ fn signature_help_for_tuple_pat_ish<'db>(
     display_target: DisplayTarget,
 ) -> SignatureHelp {
     let rest_pat = field_pats.find(|it| matches!(it, ast::Pat::RestPat(_)));
-    let is_left_of_rest_pat =
-        rest_pat.is_none_or(|it| token.text_range().start() < it.syntax().text_range().end());
+    let is_left_of_rest_pat = rest_pat.is_none_or(|it| token.text_range().start() < it.syntax().text_range().end());
 
-    let commas = pat
-        .children_with_tokens()
-        .filter_map(NodeOrToken::into_token)
-        .filter(|t| t.kind() == T![,]);
+    let commas = pat.children_with_tokens().filter_map(NodeOrToken::into_token).filter(|t| t.kind() == T![,]);
 
     res.active_parameter = {
         Some(if is_left_of_rest_pat {
@@ -746,8 +736,7 @@ mod tests {
         let mut database = RootDatabase::default();
         let change_fixture = ChangeFixture::parse(&database, ra_fixture);
         database.apply_change(change_fixture.change);
-        let (file_id, range_or_offset) =
-            change_fixture.file_position.expect("expected a marker ($0)");
+        let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ($0)");
         let offset = range_or_offset.expect_offset();
         let position = FilePosition { file_id: file_id.file_id(&database), offset };
         (database, position)

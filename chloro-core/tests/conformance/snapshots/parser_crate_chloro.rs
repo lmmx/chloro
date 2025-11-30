@@ -1478,9 +1478,7 @@ impl FnScopes {
 }
 
 fn foo() -> i32 {
-    [1, 2, 3].iter()
-        .map(|it|)
-        .max::<i32>();
+    [1, 2, 3].iter().map(|it|).max();
 }
 
 fn foo(foo: i32) {
@@ -1678,7 +1676,7 @@ fn main() {
         }
     }
     // still recover later
-    let;
+    let
     //~ ERROR: expected pattern
     let _ = 0;
 }
@@ -1861,8 +1859,8 @@ type X = <()>;
 type Y = <A as B>;
 
 fn func() {
-    foo.bar::<>
-    foo.bar::<i32>;
+    foo.bar()
+    foo.bar();
 }
 fn func() {
     let Some(_) = {Some(1)} else { panic!("h") };
@@ -2929,7 +2927,7 @@ fn foo() {
 }
 
 fn foo() {
-    || .. .method();
+    || ...method();
     || .. .field;
 }
 
@@ -2978,9 +2976,9 @@ type T = S<"hello", 0xdeadbeef>;
 
 fn foo() {
     x.foo();
-    y.bar::<T>(1, 2,);
+    y.bar(1, 2,);
     x.0.0.call();
-    x.0. call();
+    x.0.call();
     x.0()
 }
 
@@ -3003,7 +3001,7 @@ trait T {
 
 fn f() {
     let x: i32 = 92;
-    super let y;
+    let y;
     super::foo;
 }
 
@@ -3552,8 +3550,7 @@ fn union() {
 }
 
 fn special_characters() {
-    let val = !((|(..):(_,_),__@_|__)((&*"\\",'🤔')/**/,{})=={&[..=..][..];})//
-    ;
+    let val = !((|(..):(_,_),__@_|__)((&*"\\",'🤔')/**/,{})=={&[..=..][..];});
     assert!(!val);
 }
 
@@ -3646,7 +3643,7 @@ mod foo {
 type X = ();
 
 fn main() {
-    let ():::X = ();
+    let (): ::X = ();
 }
 
 fn foo(x: impl std::future::Future<Output = i32>) {
@@ -3723,7 +3720,6 @@ fn main() {
 }
 
 fn main() {
-    #[cfg(feature = "backtrace")]
     let exit_code = panic::catch_unwind(move || main());
 }
 
@@ -4528,7 +4524,8 @@ fn parse(entry: TopEntryPoint, text: &str, edition: Edition) -> (String, bool) {
     let mut indent = String::new();
     let mut depth = 0;
     let mut len = 0;
-    lexed.intersperse_trivia(&output, &mut |step| match step {
+    lexed
+        .intersperse_trivia(&output, &mut |step| match step {
         crate::StrStep::Token { kind, text } => {
             assert!(depth > 0);
             len += text.len();
@@ -4585,8 +4582,7 @@ impl TestCase {
         let dir = test_data_dir.join(path);
 
         let mut res = Vec::new();
-        let read_dir = fs::read_dir(&dir)
-            .unwrap_or_else(|err| panic!("can't `read_dir` {}: {err}", dir.display()));
+        let read_dir = fs::read_dir(&dir).unwrap_or_else(|err| panic!("can't `read_dir` {}: {err}", dir.display()));
         for file in read_dir {
             let file = file.unwrap();
             let path = file.path();
@@ -6977,8 +6973,7 @@ pub(super) fn atom_expr(
             return None;
         }
     };
-    let blocklike =
-        if BlockLike::is_blocklike(done.kind()) { BlockLike::Block } else { BlockLike::NotBlock };
+    let blocklike = if BlockLike::is_blocklike(done.kind()) { BlockLike::Block } else { BlockLike::NotBlock };
     Some((done, blocklike))
 }
 
@@ -8130,7 +8125,8 @@ fn expr_bp(
     r: Restrictions,
     bp: u8,
 ) -> Option<(CompletedMarker, BlockLike)> {
-    let m = m.unwrap_or_else(|| {
+    let m = m
+        .unwrap_or_else(|| {
         let m = p.start();
         attributes::outer_attrs(p);
         m
@@ -10334,8 +10330,7 @@ impl Builder<'_, '_> {
             State::Normal => (),
         }
 
-        let n_trivias =
-            (self.pos..self.lexed.len()).take_while(|&it| self.lexed.kind(it).is_trivia()).count();
+        let n_trivias = (self.pos..self.lexed.len()).take_while(|&it| self.lexed.kind(it).is_trivia()).count();
         let leading_trivias = self.pos..self.pos + n_trivias;
         let n_attached_trivias = n_attached_trivias(
             kind,
@@ -10616,8 +10611,7 @@ impl<'s> ScriptSource<'s> {
         source.close = Some(close_start..close_end);
 
         let nl = input.find_slice("\n");
-        let after_closing_fence =
-            input.next_slice(nl.map(|span| span.end).unwrap_or_else(|| input.eof_offset()));
+        let after_closing_fence = input.next_slice(nl.map(|span| span.end).unwrap_or_else(|| input.eof_offset()));
         let content_start = input.current_token_start();
         let extra_dashes = after_closing_fence.chars().take_while(|b| *b == FENCE_CHAR).count();
         if 0 < extra_dashes {

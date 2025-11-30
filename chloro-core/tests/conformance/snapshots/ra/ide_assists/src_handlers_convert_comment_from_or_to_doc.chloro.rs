@@ -234,8 +234,7 @@ fn line_comments_text_range(comment: &ast::Comment) -> Option<TextRange> {
     let comments = relevant_line_comments(comment);
     let first = comments.first()?;
     let indentation = IndentLevel::from_token(first.syntax());
-    let start =
-        first.syntax().text_range().start().checked_sub((indentation.0 as u32 * 4).into())?;
+    let start = first.syntax().text_range().start().checked_sub((indentation.0 as u32 * 4).into())?;
     let end = comments.last()?.syntax().text_range().end();
     Some(TextRange::new(start, end))
 }

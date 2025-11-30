@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26484 bytes
+Chloro size:   26460 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -24,8 +24,7 @@ Rustfmt size:  26702 bytes
 -        let pos = name
 -            .rfind(|c: char| !c.is_numeric())
 -            .expect("Name cannot be empty or all-numeric");
-+        let pos =
-+            name.rfind(|c: char| !c.is_numeric()).expect("Name cannot be empty or all-numeric");
++        let pos = name.rfind(|c: char| !c.is_numeric()).expect("Name cannot be empty or all-numeric");
          let (prefix, suffix) = name.split_at(pos + 1);
          (prefix, suffix.parse().ok())
      }
@@ -63,8 +62,7 @@ Rustfmt size:  26702 bytes
 -            .ancestors()
 -            .find_map(ast::Expr::cast)
 -            .expect("selection is not an expression");
-+        let expr =
-+            element.ancestors().find_map(ast::Expr::cast).expect("selection is not an expression");
++        let expr = element.ancestors().find_map(ast::Expr::cast).expect("selection is not an expression");
          assert_eq!(
              expr.syntax().text_range(),
              frange.range,

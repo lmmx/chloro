@@ -54,7 +54,7 @@ fn ok_if_any<T, E>(iter: impl Iterator<Item = Result<T, E>>) -> Result<Vec<T>, E
                 None
             }
         })
-        .collect::<Vec<_>>();
+        .collect();
     if !oks.is_empty() {
         Ok(oks)
     } else if let Some(err) = err {
@@ -120,8 +120,7 @@ pub(crate) fn rename(
     let (new_name, kind) = IdentifierKind::classify(edition, new_name)?;
 
     let defs = find_definitions(&sema, syntax, position, &new_name)?;
-    let alias_fallback =
-        alias_fallback(syntax, position, &new_name.display(db, edition).to_string());
+    let alias_fallback = alias_fallback(syntax, position, &new_name.display(db, edition).to_string());
 
     let ops: RenameResult<Vec<SourceChange>> = match alias_fallback {
         Some(_) => ok_if_any(
@@ -241,8 +240,7 @@ fn find_definitions(
     FilePosition { file_id, offset }: FilePosition,
     new_name: &Name,
 ) -> RenameResult<impl Iterator<Item = (FileRange, SyntaxKind, Definition, Name, RenameDefinition)>> {
-    let maybe_format_args =
-        syntax.token_at_offset(offset).find(|t| matches!(t.kind(), SyntaxKind::STRING));
+    let maybe_format_args = syntax.token_at_offset(offset).find(|t| matches!(t.kind(), SyntaxKind::STRING));
 
     if let Some((range, _, _, Some(resolution))) =
         maybe_format_args.and_then(|token| sema.check_for_format_args_template(token, offset))
@@ -270,8 +268,9 @@ fn find_definitions(
             }
         })
         .ok_or_else(|| format_err!("No references found at position"))?;
-    let symbols =
-        sema.find_namelike_at_offset_with_descend(syntax, offset).map(|name_like| {
+    let symbols = sema
+        .find_namelike_at_offset_with_descend(syntax, offset)
+        .map(|name_like| {
             let kind = name_like.syntax().kind();
             let range = sema
                 .original_range_opt(name_like.syntax())
@@ -513,7 +512,8 @@ fn rename_to_self(
     let def = Definition::Local(local);
     let usages = def.usages(sema).all();
     let mut source_change = SourceChange::default();
-    source_change.extend(usages.iter().map(|(file_id, references)| {
+    source_change
+        .extend(usages.iter().map(|(file_id, references)| {
         (
             file_id.file_id(sema.db),
             source_edit_from_references(
@@ -525,7 +525,8 @@ fn rename_to_self(
             ),
         )
     }));
-    source_change.insert_source_edit(
+    source_change
+        .insert_source_edit(
         file_id.original_file(sema.db).file_id(sema.db),
         TextEdit::replace(param_source.syntax().text_range(), String::from(self_param)),
     );
@@ -728,8 +729,7 @@ fn rename_self_to_param(
         _ => bail!("Cannot rename local to self outside of function"),
     };
 
-    let InFile { file_id, value: self_param } =
-        sema.source(self_param).ok_or_else(|| format_err!("cannot find function source"))?;
+    let InFile { file_id, value: self_param } = sema.source(self_param).ok_or_else(|| format_err!("cannot find function source"))?;
 
     let def = Definition::Local(local);
     let usages = def.usages(sema).all();
@@ -743,7 +743,8 @@ fn rename_self_to_param(
     }
     let mut source_change = SourceChange::default();
     source_change.insert_source_edit(file_id.original_file(sema.db).file_id(sema.db), edit);
-    source_change.extend(usages.iter().map(|(file_id, references)| {
+    source_change
+        .extend(usages.iter().map(|(file_id, references)| {
         (
             file_id.file_id(sema.db),
             source_edit_from_references(
@@ -896,7 +897,7 @@ mod tests {
             .source_file_edits
             .into_iter()
             .map(|(id, (text_edit, _))| (id, text_edit.into_iter().collect::<Vec<_>>()))
-            .collect::<Vec<_>>();
+            .collect();
 
         format!(
             "source_file_edits: {:#?}\nfile_system_edits: {:#?}\n",

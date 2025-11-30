@@ -315,8 +315,7 @@ fn import_assets_for_path<'db>(
     potential_import_name: &str,
     qualifier: Option<ast::Path>,
 ) -> Option<ImportAssets<'db>> {
-    let _p =
-        tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
+    let _p = tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
 
     let fuzzy_name_length = potential_import_name.len();
     let mut assets_for_path = ImportAssets::for_fuzzy_path(

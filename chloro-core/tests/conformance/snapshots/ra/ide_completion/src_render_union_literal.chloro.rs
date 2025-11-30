@@ -91,7 +91,8 @@ pub(crate) fn render_union_literal(
         if fields_omitted { ", .." } else { "" }
     );
 
-    item.set_documentation(ctx.docs(un))
+    item
+        .set_documentation(ctx.docs(un))
         .set_deprecated(ctx.is_deprecated(un))
         .detail(detail)
         .set_relevance(ctx.completion_relevance());

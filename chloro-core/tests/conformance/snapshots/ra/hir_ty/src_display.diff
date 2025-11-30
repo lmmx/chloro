@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99313 bytes
+Chloro size:   99340 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -118,6 +118,15 @@ Rustfmt size:  99713 bytes
          projection_tys_met: FxHashSet<AliasTy<'db>>,
      },
      #[default]
+         allow_opaque: bool,
+     ) -> Result<String, DisplaySourceCodeError> {
+         let mut result = String::new();
+-        let interner =
+-            DbInterner::new_with(db, Some(module_id.krate()), module_id.containing_block());
++        let interner = DbInterner::new_with(db, Some(module_id.krate()), module_id.containing_block());
+         match self.hir_fmt(&mut HirFormatter {
+             db,
+             interner,
      Diagnostics,
      /// Display types for inserting them in source files.
      /// The generated code should compile, so paths need to be qualified.
@@ -189,5 +198,11 @@ Rustfmt size:  99713 bytes
          // =>
 +
          // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
-         let trait_self_ty = self.segments().iter().find_map(|seg| {
+-        let trait_self_ty = self.segments().iter().find_map(|seg| {
++        let trait_self_ty = self
++            .segments()
++            .iter()
++            .find_map(|seg| {
              let generic_args = seg.args_and_bindings?;
+             generic_args.has_self_type.then(|| &generic_args.args[0])
+         });

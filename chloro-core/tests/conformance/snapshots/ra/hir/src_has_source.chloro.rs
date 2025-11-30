@@ -94,7 +94,8 @@ impl HasSource for Field {
     fn source(self, db: &dyn HirDatabase) -> Option<InFile<Self::Ast>> {
         let var = VariantId::from(self.parent);
         let src = var.child_source(db);
-        let field_source = src.map(|it| match it[self.id].clone() {
+        let field_source = src
+            .map(|it| match it[self.id].clone() {
             Either::Left(it) => FieldSource::Pos(it),
             Either::Right(it) => FieldSource::Named(it),
         });

@@ -311,9 +311,7 @@ mod tests {
             result.apply(&mut actual);
             actual
         };
-        let actual_cursor_pos = result
-            .apply_to_offset(before_cursor_pos)
-            .expect("cursor position is affected by the edit");
+        let actual_cursor_pos = result.apply_to_offset(before_cursor_pos).expect("cursor position is affected by the edit");
         let actual = add_cursor(&actual, actual_cursor_pos);
         assert_eq_text!(ra_fixture_after, &actual);
     }

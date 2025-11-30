@@ -409,8 +409,7 @@ fn to_adt_syntax(
     );
     let macro_items = ast::MacroItems::cast(parsed.syntax_node())
         .ok_or_else(|| ExpandError::other(call_site, "invalid item definition"))?;
-    let item =
-        macro_items.items().next().ok_or_else(|| ExpandError::other(call_site, "no item found"))?;
+    let item = macro_items.items().next().ok_or_else(|| ExpandError::other(call_site, "no item found"))?;
     let adt = ast::Adt::cast(item.syntax().clone())
         .ok_or_else(|| ExpandError::other(call_site, "expected struct, enum or union"))?;
     Ok((adt, tm))
@@ -504,8 +503,7 @@ fn expand_simple_derive_with_parsed(
     extra_impl_params: tt::TopSubtree,
 ) -> tt::TopSubtree {
     let trait_body = make_trait_body(&info);
-    let mut where_block: Vec<_> =
-        info.where_clause.into_iter().map(|w| quote! {invoc_span => #w , }).collect();
+    let mut where_block: Vec<_> = info.where_clause.into_iter().map(|w| quote! {invoc_span => #w , }).collect();
     let (params, args): (Vec<_>, Vec<_>) = info
         .param_types
         .into_iter()
@@ -870,7 +868,8 @@ fn self_and_other_patterns(
     name: &tt::Ident,
     span: Span,
 ) -> (Vec<tt::TopSubtree>, Vec<tt::TopSubtree>) {
-    let self_patterns = adt.shape.as_pattern_map(
+    let self_patterns = adt.shape
+        .as_pattern_map(
         name,
         |it| {
             let t = tt::Ident::new(&format!("{}_self", it.sym), it.span);
@@ -878,7 +877,8 @@ fn self_and_other_patterns(
         },
         span,
     );
-    let other_patterns = adt.shape.as_pattern_map(
+    let other_patterns = adt.shape
+        .as_pattern_map(
         name,
         |it| {
             let t = tt::Ident::new(&format!("{}_other", it.sym), it.span);
@@ -1044,7 +1044,9 @@ fn coerce_pointee_expand(
             ),
         );
     }
-    let is_repr_transparent = strukt.attrs().any(|attr| {
+    let is_repr_transparent = strukt
+        .attrs()
+        .any(|attr| {
         attr.as_simple_call().is_some_and(|(name, tt)| {
             name == "repr"
                 && tt.syntax().children_with_tokens().any(|it| {

@@ -97,8 +97,8 @@ impl LsifManager<'_, '_> {
             return *it;
         }
         let pi = package_information.clone();
-        let result_set_id =
-            self.add_vertex(lsif::Vertex::PackageInformation(lsif::PackageInformation {
+        let result_set_id = self
+            .add_vertex(lsif::Vertex::PackageInformation(lsif::PackageInformation {
                 name: pi.name,
                 manager: "cargo".to_owned(),
                 uri: None,
@@ -126,11 +126,13 @@ impl LsifManager<'_, '_> {
             encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             endings: LineEndings::Unix,
         };
-        let range_id = self.add_vertex(lsif::Vertex::Range {
+        let range_id = self
+            .add_vertex(lsif::Vertex::Range {
             range: to_proto::range(&line_index, id.range),
             tag: None,
         });
-        self.add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
+        self
+            .add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
             in_vs: vec![range_id.into()],
             out_v: doc_id.into(),
         }));
@@ -143,7 +145,8 @@ impl LsifManager<'_, '_> {
         }
         let path = self.vfs.file_path(id);
         let path = path.as_path().unwrap();
-        let doc_id = self.add_vertex(lsif::Vertex::Document(lsif::Document {
+        let doc_id = self
+            .add_vertex(lsif::Vertex::Document(lsif::Document {
             language_id: "rust".to_owned(),
             uri: lsp_types::Url::from_file_path(path).unwrap(),
         }));
@@ -247,12 +250,10 @@ impl LsifManager<'_, '_> {
             encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             endings: LineEndings::Unix,
         };
-        let result = folds
-            .into_iter()
-            .map(|it| to_proto::folding_range(&text, &line_index, false, it))
-            .collect();
+        let result = folds.into_iter().map(|it| to_proto::folding_range(&text, &line_index, false, it)).collect();
         let folding_id = self.add_vertex(lsif::Vertex::FoldingRangeResult { result });
-        self.add_edge(lsif::Edge::FoldingRange(lsif::EdgeData {
+        self
+            .add_edge(lsif::Edge::FoldingRange(lsif::EdgeData {
             in_v: folding_id.into(),
             out_v: doc_id.into(),
         }));
@@ -272,7 +273,8 @@ impl LsifManager<'_, '_> {
                 range_id.into()
             })
             .collect();
-        self.add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
+        self
+            .add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
             in_vs: tokens_id,
             out_v: doc_id.into(),
         }));
@@ -286,8 +288,7 @@ impl flags::Lsif {
         sysroot: Option<RustLibSource>,
     ) -> anyhow::Result<()> {
         let now = Instant::now();
-        let cargo_config =
-            &CargoConfig { sysroot, all_targets: true, set_test: true, ..Default::default() };
+        let cargo_config = &CargoConfig { sysroot, all_targets: true, set_test: true, ..Default::default() };
         let no_progress = &|_| ();
         let load_cargo_config = LoadCargoConfig {
             load_out_dirs_from_check: true,
@@ -302,8 +303,7 @@ impl flags::Lsif {
         let build_scripts = workspace.run_build_scripts(cargo_config, no_progress)?;
         workspace.set_build_scripts(build_scripts);
 
-        let (db, vfs, _proc_macro) =
-            load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
+        let (db, vfs, _proc_macro) = load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let analysis = host.analysis();
@@ -317,7 +317,8 @@ impl flags::Lsif {
         let si = StaticIndex::compute(&analysis, vendored_libs_config);
 
         let mut lsif = LsifManager::new(&analysis, db, &vfs, out);
-        lsif.add_vertex(lsif::Vertex::MetaData(lsif::MetaData {
+        lsif
+            .add_vertex(lsif::Vertex::MetaData(lsif::MetaData {
             version: String::from("0.5.0"),
             project_root: lsp_types::Url::from_file_path(path).unwrap(),
             position_encoding: lsif::Encoding::Utf16,

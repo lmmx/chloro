@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12611 bytes
-Chloro size:   12611 bytes
+Chloro size:   12627 bytes
 Rustfmt size:  12892 bytes
 
 ✗ Outputs DIFFER
@@ -22,6 +22,40 @@ Rustfmt size:  12892 bytes
          self.count += 1;
          id
      }
+             return *it;
+         }
+         let pi = package_information.clone();
+-        let result_set_id =
+-            self.add_vertex(lsif::Vertex::PackageInformation(lsif::PackageInformation {
++        let result_set_id = self
++            .add_vertex(lsif::Vertex::PackageInformation(lsif::PackageInformation {
+                 name: pi.name,
+                 manager: "cargo".to_owned(),
+                 uri: None,
+             encoding: PositionEncoding::Wide(WideEncoding::Utf16),
+             endings: LineEndings::Unix,
+         };
+-        let range_id = self.add_vertex(lsif::Vertex::Range {
++        let range_id = self
++            .add_vertex(lsif::Vertex::Range {
+             range: to_proto::range(&line_index, id.range),
+             tag: None,
+         });
+-        self.add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
++        self
++            .add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
+             in_vs: vec![range_id.into()],
+             out_v: doc_id.into(),
+         }));
+         }
+         let path = self.vfs.file_path(id);
+         let path = path.as_path().unwrap();
+-        let doc_id = self.add_vertex(lsif::Vertex::Document(lsif::Document {
++        let doc_id = self
++            .add_vertex(lsif::Vertex::Document(lsif::Document {
+             language_id: "rust".to_owned(),
+             uri: lsp_types::Url::from_file_path(path).unwrap(),
+         }));
              let mut edges = token.references.iter().fold(
                  FxHashMap::<_, Vec<lsp_types::NumberOrString>>::default(),
                  |mut edges, it| {
@@ -45,6 +79,21 @@ Rustfmt size:  12892 bytes
          let doc_id = self.get_file_id(file_id);
          let text = self.analysis.file_text(file_id).unwrap();
          let line_index = self.db.line_index(file_id);
+             encoding: PositionEncoding::Wide(WideEncoding::Utf16),
+             endings: LineEndings::Unix,
+         };
+-        let result = folds
+-            .into_iter()
+-            .map(|it| to_proto::folding_range(&text, &line_index, false, it))
+-            .collect();
++        let result = folds.into_iter().map(|it| to_proto::folding_range(&text, &line_index, false, it)).collect();
+         let folding_id = self.add_vertex(lsif::Vertex::FoldingRangeResult { result });
+-        self.add_edge(lsif::Edge::FoldingRange(lsif::EdgeData {
++        self
++            .add_edge(lsif::Edge::FoldingRange(lsif::EdgeData {
+             in_v: folding_id.into(),
+             out_v: doc_id.into(),
+         }));
                      range: to_proto::range(&line_index, range),
                      tag: None,
                  });
@@ -54,6 +103,15 @@ Rustfmt size:  12892 bytes
                  let result_set_id = self.get_token_id(id);
                  self.add_edge(lsif::Edge::Next(lsif::EdgeData {
                      in_v: result_set_id.into(),
+                 range_id.into()
+             })
+             .collect();
+-        self.add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
++        self
++            .add_edge(lsif::Edge::Contains(lsif::EdgeDataMultiIn {
+             in_vs: tokens_id,
+             out_v: doc_id.into(),
+         }));
          sysroot: Option<RustLibSource>,
      ) -> anyhow::Result<()> {
          let now = Instant::now();
@@ -63,11 +121,19 @@ Rustfmt size:  12892 bytes
 -            set_test: true,
 -            ..Default::default()
 -        };
-+        let cargo_config =
-+            &CargoConfig { sysroot, all_targets: true, set_test: true, ..Default::default() };
++        let cargo_config = &CargoConfig { sysroot, all_targets: true, set_test: true, ..Default::default() };
          let no_progress = &|_| ();
          let load_cargo_config = LoadCargoConfig {
              load_out_dirs_from_check: true,
+         let build_scripts = workspace.run_build_scripts(cargo_config, no_progress)?;
+         workspace.set_build_scripts(build_scripts);
+ 
+-        let (db, vfs, _proc_macro) =
+-            load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
++        let (db, vfs, _proc_macro) = load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
+         let host = AnalysisHost::with_database(db);
+         let db = host.raw_database();
+         let analysis = host.analysis();
          let vendored_libs_config = if self.exclude_vendored_libraries {
              VendoredLibrariesConfig::Excluded
          } else {
@@ -78,3 +144,11 @@ Rustfmt size:  12892 bytes
          };
  
          let si = StaticIndex::compute(&analysis, vendored_libs_config);
+ 
+         let mut lsif = LsifManager::new(&analysis, db, &vfs, out);
+-        lsif.add_vertex(lsif::Vertex::MetaData(lsif::MetaData {
++        lsif
++            .add_vertex(lsif::Vertex::MetaData(lsif::MetaData {
+             version: String::from("0.5.0"),
+             project_root: lsp_types::Url::from_file_path(path).unwrap(),
+             position_encoding: lsif::Encoding::Utf16,

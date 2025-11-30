@@ -80,7 +80,9 @@ impl RaFixtureAnalysis {
         }
 
         let active_parameter = ActiveParameter::at_token(sema, expanded.syntax().clone())?;
-        let has_rust_fixture_attr = active_parameter.attrs().is_some_and(|attrs| {
+        let has_rust_fixture_attr = active_parameter
+            .attrs()
+            .is_some_and(|attrs| {
             attrs.filter_map(|attr| attr.as_simple_path()).any(|path| {
                 path.segments()
                     .zip(["rust_analyzer", "rust_fixture"])
@@ -173,8 +175,7 @@ impl RaFixtureAnalysis {
 
         let combined = mapper.take_text();
         let combined_len = TextSize::of(&combined);
-        let (analysis, tmp_file_ids, sysroot_files) =
-            RootDatabase::from_ra_fixture(&combined, minicore).ok()?;
+        let (analysis, tmp_file_ids, sysroot_files) = RootDatabase::from_ra_fixture(&combined, minicore).ok()?;
 
         // We use a `Vec` because we know the `FileId`s will always be close.
         let mut virtual_file_id_to_line = Vec::new();
@@ -212,8 +213,7 @@ impl RaFixtureAnalysis {
         let inside_literal_range = self.literal.map_offset_down(offset)?;
         let combined_offset = self.mapper.map_offset_down(inside_literal_range)?;
         // There is usually a small number of files, so a linear search is smaller and faster.
-        let (_, &(file_id, file_line)) =
-            self.tmp_file_ids.iter().enumerate().find(|&(idx, &(_, file_line))| {
+        let (_, &(file_id, file_line)) = self.tmp_file_ids.iter().enumerate().find(|&(idx, &(_, file_line))| {
                 let file_start = self.line_offsets[file_line];
                 let file_end = self
                     .tmp_file_ids
@@ -314,7 +314,7 @@ where
     let result = collection
         .into_iter()
         .filter_map(|item| item.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id).ok())
-        .collect::<Collection>();
+        .collect();
     if result.is_empty() {
         // The collection was emptied by the upmapping - all items errored, therefore mark it as erroring as well.
         Err(())
@@ -390,7 +390,7 @@ impl<V: UpmapFromRaFixture, S: BuildHasher + Default> UpmapFromRaFixture for std
                     value.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id).ok()?,
                 ))
             })
-            .collect::<std::collections::HashMap<_, _, _>>();
+            .collect();
         if result.is_empty() { Err(()) } else { Ok(result) }
     }
 }

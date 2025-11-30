@@ -34,7 +34,10 @@ impl ChildBySource for TraitId {
     fn child_by_source_to(&self, db: &dyn DefDatabase, res: &mut DynMap, file_id: HirFileId) {
         let data = self.trait_items(db);
 
-        data.macro_calls().filter(|(ast_id, _)| ast_id.file_id == file_id).for_each(
+        data
+            .macro_calls()
+            .filter(|(ast_id, _)| ast_id.file_id == file_id)
+            .for_each(
             |(ast_id, call_id)| {
                 let ptr = ast_id.to_ptr(db);
                 if let Some(ptr) = ptr.cast::<ast::MacroCall>() {
@@ -44,11 +47,16 @@ impl ChildBySource for TraitId {
                 }
             },
         );
-        data.items.iter().for_each(|&(_, item)| {
+        data.items
+            .iter()
+            .for_each(|&(_, item)| {
             add_assoc_item(db, res, file_id, item);
         });
         let (_, source_map) = db.trait_signature_with_source_map(*self);
-        source_map.expansions().filter(|(ast, _)| ast.file_id == file_id).for_each(
+        source_map
+            .expansions()
+            .filter(|(ast, _)| ast.file_id == file_id)
+            .for_each(
             |(ast, &exp_id)| {
                 res[keys::MACRO_CALL].insert(ast.value, exp_id);
             },
@@ -59,7 +67,10 @@ impl ChildBySource for TraitId {
 impl ChildBySource for ImplId {
     fn child_by_source_to(&self, db: &dyn DefDatabase, res: &mut DynMap, file_id: HirFileId) {
         let data = self.impl_items(db);
-        data.macro_calls().filter(|(ast_id, _)| ast_id.file_id == file_id).for_each(
+        data
+            .macro_calls()
+            .filter(|(ast_id, _)| ast_id.file_id == file_id)
+            .for_each(
             |(ast_id, call_id)| {
                 let ptr = ast_id.to_ptr(db);
                 if let Some(ptr) = ptr.cast::<ast::MacroCall>() {
@@ -69,11 +80,16 @@ impl ChildBySource for ImplId {
                 }
             },
         );
-        data.items.iter().for_each(|&(_, item)| {
+        data.items
+            .iter()
+            .for_each(|&(_, item)| {
             add_assoc_item(db, res, file_id, item);
         });
         let (_, source_map) = db.impl_signature_with_source_map(*self);
-        source_map.expansions().filter(|(ast, _)| ast.file_id == file_id).for_each(
+        source_map
+            .expansions()
+            .filter(|(ast, _)| ast.file_id == file_id)
+            .for_each(
             |(ast, &exp_id)| {
                 res[keys::MACRO_CALL].insert(ast.value, exp_id);
             },
@@ -93,20 +109,29 @@ impl ChildBySource for ItemScope {
     fn child_by_source_to(&self, db: &dyn DefDatabase, res: &mut DynMap, file_id: HirFileId) {
         self.declarations().for_each(|item| add_module_def(db, res, file_id, item));
         self.impls().for_each(|imp| insert_item_loc(db, res, file_id, imp, keys::IMPL));
-        self.extern_blocks().for_each(|extern_block| {
+        self
+            .extern_blocks()
+            .for_each(|extern_block| {
             insert_item_loc(db, res, file_id, extern_block, keys::EXTERN_BLOCK)
         });
-        self.extern_crate_decls()
+        self
+            .extern_crate_decls()
             .for_each(|ext| insert_item_loc(db, res, file_id, ext, keys::EXTERN_CRATE));
         self.use_decls().for_each(|ext| insert_item_loc(db, res, file_id, ext, keys::USE));
-        self.unnamed_consts()
+        self
+            .unnamed_consts()
             .for_each(|konst| insert_item_loc(db, res, file_id, konst, keys::CONST));
-        self.attr_macro_invocs().filter(|(id, _)| id.file_id == file_id).for_each(
+        self
+            .attr_macro_invocs()
+            .filter(|(id, _)| id.file_id == file_id)
+            .for_each(
             |(ast_id, call_id)| {
                 res[keys::ATTR_MACRO_CALL].insert(ast_id.to_ptr(db), call_id);
             },
         );
-        self.legacy_macros().for_each(|(_, ids)| {
+        self
+            .legacy_macros()
+            .for_each(|(_, ids)| {
             ids.iter().for_each(|&id| {
                 if let MacroId::MacroRulesId(id) = id {
                     let loc = id.lookup(db);
@@ -116,7 +141,10 @@ impl ChildBySource for ItemScope {
                 }
             })
         });
-        self.derive_macro_invocs().filter(|(id, _)| id.file_id == file_id).for_each(
+        self
+            .derive_macro_invocs()
+            .filter(|(id, _)| id.file_id == file_id)
+            .for_each(
             |(ast_id, calls)| {
                 let adt = ast_id.to_node(db);
                 calls.for_each(|(attr_id, call_id, calls)| {
@@ -129,7 +157,10 @@ impl ChildBySource for ItemScope {
                 });
             },
         );
-        self.iter_macro_invoc().filter(|(id, _)| id.file_id == file_id).for_each(
+        self
+            .iter_macro_invoc()
+            .filter(|(id, _)| id.file_id == file_id)
+            .for_each(
             |(ast_id, &call)| {
                 let ast = ast_id.to_ptr(db);
                 res[keys::MACRO_CALL].insert(ast, call);
@@ -199,7 +230,9 @@ impl ChildBySource for EnumId {
 
         let ast_id_map = db.ast_id_map(loc.id.file_id);
 
-        self.enum_variants(db).variants.iter().for_each(|&(variant, _, _)| {
+        self.enum_variants(db).variants
+            .iter()
+            .for_each(|&(variant, _, _)| {
             res[keys::ENUM_VARIANT].insert(ast_id_map.get(variant.lookup(db).id.value), variant);
         });
         let (_, source_map) = db.enum_signature_with_source_map(*self);
@@ -217,7 +250,10 @@ impl ChildBySource for DefWithBodyId {
             VariantId::EnumVariantId(v).child_by_source_to(db, res, file_id)
         }
 
-        sm.expansions().filter(|(ast, _)| ast.file_id == file_id).for_each(|(ast, &exp_id)| {
+        sm
+            .expansions()
+            .filter(|(ast, _)| ast.file_id == file_id)
+            .for_each(|(ast, &exp_id)| {
             res[keys::MACRO_CALL].insert(ast.value, exp_id);
         });
 
@@ -237,8 +273,7 @@ impl ChildBySource for GenericDefId {
             return;
         }
 
-        let (generic_params, _, source_map) =
-            GenericParams::generic_params_and_store_and_source_map(db, *self);
+        let (generic_params, _, source_map) = GenericParams::generic_params_and_store_and_source_map(db, *self);
         let mut toc_idx_iter = generic_params.iter_type_or_consts().map(|(idx, _)| idx);
         let lts_idx_iter = generic_params.iter_lt().map(|(idx, _)| idx);
 

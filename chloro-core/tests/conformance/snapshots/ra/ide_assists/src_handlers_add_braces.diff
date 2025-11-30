@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5189 bytes
-Chloro size:   4633 bytes
+Chloro size:   4590 bytes
 Rustfmt size:  5232 bytes
 
 ✗ Outputs DIFFER
@@ -62,6 +62,14 @@ Rustfmt size:  5232 bytes
  
              editor.add_mappings(make.finish_with_mappings());
              builder.add_file_edits(ctx.vfs_file_id(), editor);
+ }
+ 
+ fn get_replacement_node(ctx: &AssistContext<'_>) -> Option<(ParentType, ast::Expr)> {
+-    let node = ctx.find_node_at_offset::<Either<ast::MatchArm, ast::ClosureExpr>>();
++    let node = ctx.find_node_at_offset();
+     let (parent_type, body) = if let Some(eq_token) = ctx.find_token_syntax_at_offset(T![=]) {
+         let parent = eq_token.parent()?;
+         let body = match_ast! {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

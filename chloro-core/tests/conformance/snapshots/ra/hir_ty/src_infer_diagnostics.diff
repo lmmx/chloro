@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4441 bytes
-Chloro size:   4077 bytes
+Chloro size:   4090 bytes
 Rustfmt size:  4556 bytes
 
 ✗ Outputs DIFFER
@@ -29,12 +29,16 @@ Rustfmt size:  4556 bytes
  #[derive(Debug, Default, Clone)]
  pub(super) struct Diagnostics<'db>(RefCell<Vec<InferenceDiagnostic<'db>>>);
  
+         source: InferenceTyDiagnosticSource,
          diagnostics: Vec<TyLoweringDiagnostic>,
      ) {
-         self.0.borrow_mut().extend(
+-        self.0.borrow_mut().extend(
 -            diagnostics
 -                .into_iter()
 -                .map(|diag| InferenceDiagnostic::TyDiagnostic { source, diag }),
++        self.0
++            .borrow_mut()
++            .extend(
 +            diagnostics.into_iter().map(|diag| InferenceDiagnostic::TyDiagnostic { source, diag }),
          );
      }
@@ -58,3 +62,11 @@ Rustfmt size:  4556 bytes
              },
          };
          PathLoweringContext::new(&mut self.ctx, on_diagnostic, path)
+ impl Drop for InferenceTyLoweringContext<'_, '_> {
+     #[inline]
+     fn drop(&mut self) {
+-        self.diagnostics
+-            .push_ty_diagnostics(self.source, std::mem::take(&mut self.ctx.diagnostics));
++        self.diagnostics.push_ty_diagnostics(self.source, std::mem::take(&mut self.ctx.diagnostics));
+     }
+ }

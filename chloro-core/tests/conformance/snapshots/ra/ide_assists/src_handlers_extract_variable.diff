@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51684 bytes
+Chloro size:   51690 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -114,6 +114,16 @@ Rustfmt size:  52351 bytes
  // ```
  pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let node = if ctx.has_empty_selection() {
+ 
+     let parent = to_extract.syntax().parent().and_then(ast::Expr::cast);
+     // Any expression that autoderefs may need adjustment.
+-    let mut needs_adjust = parent.as_ref().is_some_and(|it| match it {
++    let mut needs_adjust = parent
++        .as_ref()
++        .is_some_and(|it| match it {
+         ast::Expr::FieldExpr(_)
+         | ast::Expr::MethodCallExpr(_)
+         | ast::Expr::CallExpr(_)
  }
  
  impl ExtractionKind {
@@ -123,6 +133,15 @@ Rustfmt size:  52351 bytes
  
      fn assist_id(&self) -> AssistId {
          let s = match self {
+             }
+         }
+ 
+-        let mut name_generator =
+-            suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(to_extract.syntax()));
++        let mut name_generator = suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(to_extract.syntax()));
+         let var_name = if let Some(literal_name) = get_literal_name(ctx, to_extract) {
+             name_generator.suggest_name(&literal_name)
+         } else {
  
  #[cfg(test)]
  mod tests {

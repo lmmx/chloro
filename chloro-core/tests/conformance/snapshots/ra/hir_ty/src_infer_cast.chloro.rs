@@ -150,8 +150,7 @@ impl<'db> CastCheck<'db> {
     }
 
     fn do_check(&self, ctx: &mut InferenceContext<'_, 'db>) -> Result<(), CastError> {
-        let (t_from, t_cast) =
-            match (CastTy::from_ty(ctx.db, self.expr_ty), CastTy::from_ty(ctx.db, self.cast_ty)) {
+        let (t_from, t_cast) = match (CastTy::from_ty(ctx.db, self.expr_ty), CastTy::from_ty(ctx.db, self.cast_ty)) {
                 (Some(t_from), Some(t_cast)) => (t_from, t_cast),
                 (None, Some(t_cast)) => match self.expr_ty.kind() {
                     TyKind::FnDef(..) => {

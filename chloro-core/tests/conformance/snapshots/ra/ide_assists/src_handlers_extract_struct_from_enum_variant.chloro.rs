@@ -406,8 +406,7 @@ fn reference_to_node(
     sema: &hir::Semantics<'_, RootDatabase>,
     reference: FileReference,
 ) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
-    let segment =
-        reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
+    let segment = reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
 
     // filter out the reference in marco
     let segment_range = segment.syntax().text_range();

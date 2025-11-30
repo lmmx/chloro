@@ -71,8 +71,7 @@ impl<'db> InferCtxt<'db> {
 
     #[instrument(skip(self, snapshot), level = "debug")]
     fn commit_from(&self, snapshot: CombinedSnapshot) {
-        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot: _, universe: _ } =
-            snapshot;
+        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot: _, universe: _ } = snapshot;
 
         self.inner.borrow_mut().commit(undo_snapshot);
     }

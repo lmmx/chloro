@@ -73,8 +73,7 @@ impl Tester {
         };
 
         let mut sysroot = Sysroot::discover(tmp_file.parent().unwrap(), &cargo_config.extra_env);
-        let loaded_sysroot =
-            sysroot.load_workspace(&RustSourceWorkspaceConfig::default_cargo(), false, &|_| ());
+        let loaded_sysroot = sysroot.load_workspace(&RustSourceWorkspaceConfig::default_cargo(), false, &|_| ());
         if let Some(loaded_sysroot) = loaded_sysroot {
             sysroot.set_workspace(loaded_sysroot);
         }
@@ -103,8 +102,7 @@ impl Tester {
             with_proc_macro_server: ProcMacroServerChoice::Sysroot,
             prefill_caches: false,
         };
-        let (db, _vfs, _proc_macro) =
-            load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
+        let (db, _vfs, _proc_macro) = load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let krates = Crate::all(db);

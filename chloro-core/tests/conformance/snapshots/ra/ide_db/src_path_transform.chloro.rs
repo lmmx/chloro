@@ -182,12 +182,6 @@ impl<'a> PathTransform<'a> {
             .into_iter()
             .flat_map(|it| it.type_or_const_params(db))
             .skip(skip)
-            // The actual list of trait type parameters may be longer than the one
-            // used in the `impl` block due to trailing default type parameters.
-            // For that case we extend the `substs` with an empty iterator so we
-            // can still hit those trailing values and check if they actually have
-            // a default type. If they do, go for that type from `hir` to `ast` so
-            // the resulting change can be applied correctly.
             .zip(self.substs.types_and_consts.iter().map(Some).chain(std::iter::repeat(None)))
             .for_each(|(k, v)| match (k.split(db), v) {
                 (Either::Right(k), Some(TypeOrConst::Either(v))) => {
@@ -283,7 +277,9 @@ impl Ctx<'_> {
         // so that such operation is safe.
         let item = self.transform_path(item).clone_subtree();
         let mut editor = SyntaxEditor::new(item.clone());
-        preorder_rev(&item).filter_map(ast::Lifetime::cast).for_each(|lifetime| {
+        preorder_rev(&item)
+            .filter_map(ast::Lifetime::cast)
+            .for_each(|lifetime| {
             if let Some(subst) = self.lifetime_substs.get(&lifetime.syntax().text().to_string()) {
                 editor
                     .replace(lifetime.syntax(), subst.clone_subtree().clone_for_update().syntax());
@@ -579,7 +575,9 @@ fn get_syntactic_substs(impl_def: ast::Impl) -> Option<AstSubsts> {
 
 fn get_type_args_from_arg_list(generic_arg_list: ast::GenericArgList) -> Option<AstSubsts> {
     let mut result = AstSubsts::default();
-    generic_arg_list.generic_args().for_each(|generic_arg| match generic_arg {
+    generic_arg_list
+        .generic_args()
+        .for_each(|generic_arg| match generic_arg {
         // Const params are marked as consts on definition only,
         // being passed to the trait they are indistguishable from type params;
         // anyway, we don't really need to distinguish them here.

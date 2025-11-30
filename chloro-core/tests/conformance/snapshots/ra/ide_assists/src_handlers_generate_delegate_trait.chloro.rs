@@ -369,7 +369,9 @@ fn transform_impl<N: ast::AstNode>(
     let target_scope = ctx.sema.scope(strukt.syntax())?;
     let hir_old_impl = ctx.sema.to_impl_def(old_impl)?;
 
-    let transform = args.as_ref().map_or_else(
+    let transform = args
+        .as_ref()
+        .map_or_else(
         || PathTransform::generic_transformation(&target_scope, &source_scope),
         |args| {
             PathTransform::impl_transformation(
@@ -418,7 +420,7 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
         .flat_map(|ty| ty.generic_arg_list())
         .flat_map(|gal| gal.generic_args())
         .map(|x| x.to_string())
-        .collect::<FxHashSet<_>>();
+        .collect();
 
     // Keep where-clauses that have generics after substitution, and remove the
 
@@ -620,7 +622,7 @@ fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option
         item.ty()?,
         make::expr_path(qualified_path),
     )
-    .clone_for_update();
+        .clone_for_update();
 
     Some(AssocItem::Const(inner))
 }
@@ -679,7 +681,7 @@ fn func_assoc_item(
             convert_param_list_to_arg_list(make::param_list(None, Vec::new())),
         ),
     }
-    .clone_for_update();
+        .clone_for_update();
 
     let body = make::block_expr(vec![], Some(call.into())).clone_for_update();
     let func = make::fn_(
@@ -696,7 +698,7 @@ fn func_assoc_item(
         item.unsafe_token().is_some(),
         item.gen_token().is_some(),
     )
-    .clone_for_update();
+        .clone_for_update();
 
     Some(AssocItem::Fn(func.indent(edit::IndentLevel(1))))
 }
@@ -715,7 +717,7 @@ fn ty_assoc_item(item: syntax::ast::TypeAlias, qual_path_ty: Path) -> Option<Ass
         item.where_clause(),
         Some((ty, None)),
     )
-    .indent(edit::IndentLevel(1));
+        .indent(edit::IndentLevel(1));
 
     Some(AssocItem::TypeAlias(alias))
 }

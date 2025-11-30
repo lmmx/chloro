@@ -79,8 +79,7 @@ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option
     let in_assoc_non_trait_impl = matches!(kind, Some(ItemListKind::Impl | ItemListKind::Trait));
 
     let in_extern_block = matches!(kind, Some(ItemListKind::ExternBlock { .. }));
-    let in_unsafe_extern_block =
-        matches!(kind, Some(ItemListKind::ExternBlock { is_unsafe: true }));
+    let in_unsafe_extern_block = matches!(kind, Some(ItemListKind::ExternBlock { is_unsafe: true }));
 
     let in_trait = matches!(kind, Some(ItemListKind::Trait));
     let in_inherent_impl = matches!(kind, Some(ItemListKind::Impl));

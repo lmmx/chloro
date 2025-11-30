@@ -44,8 +44,7 @@ pub(crate) fn generate_single_field_struct_from(
         return None;
     }
 
-    let main_field_name =
-        names.as_ref().map_or(TokenText::borrowed("value"), |names| names[main_field_i].text());
+    let main_field_name = names.as_ref().map_or(TokenText::borrowed("value"), |names| names[main_field_i].text());
     let main_field_ty = types[main_field_i].clone();
 
     acc.add(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 210028 bytes
-Chloro size:   209817 bytes
+Chloro size:   209853 bytes
 Rustfmt size:  210967 bytes
 
 ✗ Outputs DIFFER
@@ -152,8 +152,9 @@ Rustfmt size:  210967 bytes
 -    hover
 -        .info
 -        .actions
--        .iter_mut()
--        .for_each(|action| match action {
++    hover.info.actions
+         .iter_mut()
+         .for_each(|action| match action {
 -            super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
 -                if data.nav.file_id == file_id {
 -                    return;
@@ -165,7 +166,6 @@ Rustfmt size:  210967 bytes
 -            }),
 -            _ => (),
 -        });
-+    hover.info.actions.iter_mut().for_each(|action| match action {
 +        super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
 +            if data.nav.file_id == file_id {
 +                return;
@@ -197,8 +197,9 @@ Rustfmt size:  210967 bytes
 -    hover
 -        .info
 -        .actions
--        .iter_mut()
--        .for_each(|action| match action {
++    hover.info.actions
+         .iter_mut()
+         .for_each(|action| match action {
 -            super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
 -                if data.nav.file_id == range.file_id {
 -                    return;
@@ -210,7 +211,6 @@ Rustfmt size:  210967 bytes
 -            }),
 -            _ => (),
 -        });
-+    hover.info.actions.iter_mut().for_each(|action| match action {
 +        super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
 +            if data.nav.file_id == range.file_id {
 +                return;

@@ -66,8 +66,7 @@ impl<'db> ObligationStorage<'db> {
     }
 
     fn clone_pending(&self) -> PredicateObligations<'db> {
-        let mut obligations: PredicateObligations<'db> =
-            self.pending.iter().map(|(o, _)| o.clone()).collect();
+        let mut obligations: PredicateObligations<'db> = self.pending.iter().map(|(o, _)| o.clone()).collect();
         obligations.extend(self.overflowed.iter().cloned());
         obligations
     }
@@ -76,8 +75,7 @@ impl<'db> ObligationStorage<'db> {
         &mut self,
         cond: impl Fn(&PredicateObligation<'db>) -> bool,
     ) -> PendingObligations<'db> {
-        let (not_stalled, pending) =
-            mem::take(&mut self.pending).into_iter().partition(|(o, _)| cond(o));
+        let (not_stalled, pending) = mem::take(&mut self.pending).into_iter().partition(|(o, _)| cond(o));
         self.pending = pending;
         not_stalled
     }

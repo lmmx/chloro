@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33895 bytes
-Chloro size:   33723 bytes
+Chloro size:   33753 bytes
 Rustfmt size:  33895 bytes
 
 ✗ Outputs DIFFER
@@ -88,13 +88,34 @@ Rustfmt size:  33895 bytes
      // Salsa caching + incremental re-parse would be better here
      for node in parse.syntax().descendants() {
          handlers::useless_braces::useless_braces(db, &mut res, editioned_file_id, &node);
-         .collect::<Vec<_>>();
+         res.push(d)
+     }
+ 
+-    res.retain(|d| {
++    res
++        .retain(|d| {
+         !(ctx.config.disabled.contains(d.code.as_str())
+             || ctx.config.disable_experimental && d.experimental)
+     });
+                 it,
+             ))
+         })
+-        .collect::<Vec<_>>();
++        .collect();
  
      // The edition isn't accurate (each diagnostics may have its own edition due to macros),
 +
      // but it's okay as it's only being used for error recovery.
      handle_lints(&ctx.sema, &mut lints, editioned_file_id.edition(db));
  
+     res.retain(|d| d.severity != Severity::Allow);
+ 
+-    res.retain_mut(|diag| {
++    res
++        .retain_mut(|diag| {
+         if let Some(node) = diag
+             .main_node
+             .map(|ptr| ptr.map(|node| node.to_node(&ctx.sema.parse_or_expand(ptr.file_id))))
      groups: Vec<&'static str>,
  }
  
@@ -113,3 +134,21 @@ Rustfmt size:  33895 bytes
  
  fn build_lints_map(
      lints: &'static [Lint],
+         ast::AnyHasAttrs::cast(module_source_file.value).expect("SourceFile always has attrs"),
+         edition,
+     )
+-    .for_each(|(lint, severity)| {
++        .for_each(|(lint, severity)| {
+         if lint_groups.contains(&lint) {
+             result = Some(severity);
+         }
+ ) {
+     let prev_len = lint_attrs.len();
+ 
+-    let mut iter = value.token_trees_and_tokens().filter(|it| match it {
++    let mut iter = value
++        .token_trees_and_tokens()
++        .filter(|it| match it {
+         NodeOrToken::Node(_) => true,
+         NodeOrToken::Token(it) => !it.kind().is_trivia(),
+     });

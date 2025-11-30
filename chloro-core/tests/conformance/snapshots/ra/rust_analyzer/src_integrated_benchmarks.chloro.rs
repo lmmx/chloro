@@ -362,7 +362,8 @@ fn integrated_diagnostics_benchmark() {
         term_search_fuel: 400,
         term_search_borrowck: true,
     };
-    host.analysis()
+    host
+        .analysis()
         .full_diagnostics(&diagnostics_config, ide::AssistResolveStrategy::None, file_id)
         .unwrap();
 

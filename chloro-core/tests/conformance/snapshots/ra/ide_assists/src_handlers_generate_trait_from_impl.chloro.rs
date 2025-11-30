@@ -41,7 +41,8 @@ pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_
 
     let impl_name = impl_ast.self_ty()?;
 
-    acc.add(
+    acc
+        .add(
         AssistId::generate("generate_trait_from_impl"),
         "Generate trait from impl",
         impl_ast.syntax().text_range(),

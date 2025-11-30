@@ -101,7 +101,8 @@ pub(super) fn hints(
         Some(name) => name.syntax().text_range(),
         None => pat.syntax().text_range(),
     };
-    acc.push(InlayHint {
+    acc
+        .push(InlayHint {
         range: match type_ascriptable {
             Some(Some(t)) => text_range.cover(t.text_range()),
             _ => text_range,
@@ -413,8 +414,7 @@ fn main() {
                 Some(TextRange::new(TextSize::from(491), TextSize::from(640))),
             )
             .unwrap();
-        let actual =
-            inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect::<Vec<_>>();
+        let actual = inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect();
         assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
     }
     #[test]

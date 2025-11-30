@@ -274,8 +274,9 @@ impl<'a> PathSegments<'a> {
         PathSegments {
             segments: self.segments.get(..self.segments.len().saturating_sub(2)).unwrap_or(&[]),
             generic_args: self
-                .generic_args
-                .map(|it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[])),
+                .generic_args.map(
+                |it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[]),
+            ),
         }
     }
 

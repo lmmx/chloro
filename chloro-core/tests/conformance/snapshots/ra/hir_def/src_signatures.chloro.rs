@@ -265,8 +265,7 @@ impl ConstSignature {
             flags.insert(ConstFlags::HAS_BODY);
         }
 
-        let (store, source_map, type_ref) =
-            crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
+        let (store, source_map, type_ref) = crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
 
         (
             Arc::new(ConstSignature {
@@ -337,8 +336,7 @@ impl StaticSignature {
             flags.insert(StaticFlags::EXPLICIT_SAFE);
         }
 
-        let (store, source_map, type_ref) =
-            crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
+        let (store, source_map, type_ref) = crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
 
         (
             Arc::new(StaticSignature {
@@ -386,8 +384,7 @@ impl ImplSignature {
             flags.insert(ImplFlags::DEFAULT);
         }
 
-        let (store, source_map, self_ty, target_trait, generic_params) =
-            crate::expr_store::lower::lower_impl(db, loc.container, src, id);
+        let (store, source_map, self_ty, target_trait, generic_params) = crate::expr_store::lower::lower_impl(db, loc.container, src, id);
 
         (
             Arc::new(ImplSignature {
@@ -463,8 +460,7 @@ impl TraitSignature {
         if attrs.by_key(sym::rustc_coinductive).exists() {
             flags |= TraitFlags::COINDUCTIVE;
         }
-        let mut skip_array_during_method_dispatch =
-            attrs.by_key(sym::rustc_skip_array_during_method_dispatch).exists();
+        let mut skip_array_during_method_dispatch = attrs.by_key(sym::rustc_skip_array_during_method_dispatch).exists();
         let mut skip_boxed_slice_during_method_dispatch = false;
         for tt in attrs.by_key(sym::rustc_skip_during_method_dispatch).tt_values() {
             for tt in tt.iter() {
@@ -575,11 +571,12 @@ impl FunctionSignature {
         }
 
         let name = as_name_opt(source.value.name());
-        let abi = source.value.abi().map(|abi| {
+        let abi = source.value
+            .abi()
+            .map(|abi| {
             abi.abi_string().map_or_else(|| sym::C, |it| Symbol::intern(it.text_without_quotes()))
         });
-        let (store, source_map, generic_params, params, ret_type, self_param, variadic) =
-            lower_function(db, module, source, id);
+        let (store, source_map, generic_params, params, ret_type, self_param, variadic) = lower_function(db, module, source, id);
         if self_param {
             flags.insert(FnFlags::HAS_SELF_PARAM);
         }
@@ -698,8 +695,7 @@ impl TypeAliasSignature {
         }
         let source = loc.source(db);
         let name = as_name_opt(source.value.name());
-        let (store, source_map, generic_params, bounds, ty) =
-            lower_type_alias(db, loc.container.module(db), source, id);
+        let (store, source_map, generic_params, bounds, ty) = lower_type_alias(db, loc.container.module(db), source, id);
 
         (
             Arc::new(TypeAliasSignature {
@@ -864,7 +860,8 @@ fn lower_fields<Field: ast::HasAttrs + ast::HasVisibility>(
 ) -> Option<(Arena<FieldData>, ExpressionStore, ExpressionStoreSourceMap)> {
     let cfg_options = module.krate.cfg_options(db);
     let mut col = ExprCollector::new(db, module, fields.file_id);
-    let override_visibility = override_visibility.map(|vis| {
+    let override_visibility = override_visibility
+        .map(|vis| {
         LazyCell::new(|| {
             let span_map = db.span_map(fields.file_id);
             visibility_from_ast(db, vis, &mut |range| span_map.span_for_range(range).ctx)

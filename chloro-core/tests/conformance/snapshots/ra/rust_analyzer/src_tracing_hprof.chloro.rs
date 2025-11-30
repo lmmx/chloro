@@ -144,7 +144,7 @@ where
 
     fn on_close(&self, id: Id, ctx: Context<'_, S>) {
         let span = ctx.span(&id).unwrap();
-        let data = span.extensions_mut().remove::<Data>().unwrap();
+        let data = span.extensions_mut().remove().unwrap();
         let mut node = data.into_node(span.name());
 
         match span.parent() {

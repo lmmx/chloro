@@ -371,8 +371,7 @@ impl<'a> Ranker<'a> {
         let both_idents = exact_same_kind || (tok_kind.is_any_identifier() && self.ident_kind);
         let same_text = tok.text() == self.text;
         // anything that mapped into a token tree has likely no semantic information
-        let no_tt_parent =
-            tok.parent().is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
+        let no_tt_parent = tok.parent().is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
         (both_idents as usize)
             | ((exact_same_kind as usize) << 1)
             | ((same_text as usize) << 2)

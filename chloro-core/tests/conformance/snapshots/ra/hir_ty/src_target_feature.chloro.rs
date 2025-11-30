@@ -21,7 +21,7 @@ impl TargetFeatures {
 
     fn expand_implications(&mut self) {
         let all_implications = LazyLock::force(&TARGET_FEATURE_IMPLICATIONS);
-        let mut queue = self.enabled.iter().cloned().collect::<Vec<_>>();
+        let mut queue = self.enabled.iter().cloned().collect();
         while let Some(feature) = queue.pop() {
             if let Some(implications) = all_implications.get(&feature) {
                 for implication in implications {

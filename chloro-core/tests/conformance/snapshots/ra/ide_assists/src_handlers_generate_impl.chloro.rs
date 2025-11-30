@@ -12,7 +12,8 @@ fn insert_impl(editor: &mut SyntaxEditor, impl_: &ast::Impl, nominal: &impl Inde
     let indent = nominal.indent_level();
 
     impl_.indent(indent);
-    editor.insert_all(
+    editor
+        .insert_all(
         Position::after(nominal.syntax()),
         vec![
             // Add a blank line after the ADT, and indentation for the impl to match the ADT

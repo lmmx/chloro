@@ -80,7 +80,8 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
     }
 
     let mut hasher = TentHash::new();
-    hasher.update([
+    hasher
+        .update([
         u8::from(is_ref_completion),
         u8::from(item.is_snippet),
         u8::from(item.deprecated),

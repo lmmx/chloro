@@ -82,14 +82,14 @@ impl ImportMap {
 
         let mut importables: Vec<_> = map
             .iter()
-            // We've only collected items, whose name cannot be tuple field so unwrapping is fine.
             .flat_map(|(&item, (info, _))| {
                 info.iter()
                     .enumerate()
                     .map(move |(idx, info)| (item, info.name.as_str(), idx as u32))
             })
             .collect();
-        importables.sort_by(|(_, l_info, _), (_, r_info, _)| {
+        importables
+            .sort_by(|(_, l_info, _), (_, r_info, _)| {
             let lhs_chars = l_info.chars().map(|c| c.to_ascii_lowercase());
             let rhs_chars = r_info.chars().map(|c| c.to_ascii_lowercase());
             lhs_chars.cmp(rhs_chars)
@@ -411,8 +411,7 @@ pub fn search_dependencies(
 ) -> FxHashSet<(ItemInNs, Complete)> {
     let _p = tracing::info_span!("search_dependencies", ?query).entered();
 
-    let import_maps: Vec<_> =
-        krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
+    let import_maps: Vec<_> = krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
 
     let mut op = fst::map::OpBuilder::new();
 
@@ -553,10 +552,8 @@ mod tests {
                     mark
                 ))
             })
-            // HashSet iteration order isn't defined - it's different on
-            // x86_64 and i686 at the very least
             .sorted()
-            .collect::<String>();
+            .collect();
         expect.assert_eq(&actual)
     }
     fn assoc_item_path(
@@ -605,7 +602,7 @@ mod tests {
                 Some(format!("{name}:\n{}\n", map.fmt_for_test(&db)))
             })
             .sorted()
-            .collect::<String>();
+            .collect();
 
         expect.assert_eq(&actual)
     }

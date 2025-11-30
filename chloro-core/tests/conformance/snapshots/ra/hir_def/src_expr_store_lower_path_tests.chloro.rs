@@ -18,8 +18,7 @@ use crate::{
 fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {
     let (db, file_id) = TestDB::with_single_file("");
     let krate = db.fetch_test_crate();
-    let mut ctx =
-        ExprCollector::new(&db, crate_def_map(&db, krate).root_module_id(), file_id.into());
+    let mut ctx = ExprCollector::new(&db, crate_def_map(&db, krate).root_module_id(), file_id.into());
     let lowered_path = ctx.lower_path(path, &mut ExprCollector::impl_trait_allocator);
     let (store, _) = ctx.store.finish();
     (db, store, lowered_path)
@@ -30,7 +29,8 @@ fn check_hir_to_ast(path: &str, ignore_segments: &[&str]) {
     let path = make::path_from_text(path);
     SEGMENT_LOWERING_MAP.with_borrow_mut(|map| map.clear());
     let _ = lower_path(path.clone()).2.expect("failed to lower path");
-    SEGMENT_LOWERING_MAP.with_borrow(|map| {
+    SEGMENT_LOWERING_MAP
+        .with_borrow(|map| {
         for (segment, segment_idx) in map {
             if ignore_segments.contains(&&*segment.to_string()) {
                 continue;

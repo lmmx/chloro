@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   33095 bytes
+Chloro size:   33096 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -202,6 +202,15 @@ Rustfmt size:  33868 bytes
      pub fn from_single_file(text: String) -> (Analysis, FileId) {
          let mut host = AnalysisHost::default();
          let file_id = FileId::from_raw(0);
+                 .unwrap(),
+         );
+         cfg_options.insert_atom(sym::test);
+-        crate_graph.add_crate_root(
++        crate_graph
++            .add_crate_root(
+             file_id,
+             Edition::CURRENT,
+             None,
              cfg_options,
              None,
              Env::default(),
@@ -213,15 +222,18 @@ Rustfmt size:  33868 bytes
              false,
              proc_macro_cwd,
              Arc::new(CrateWorkspaceData {
+         minicore: MiniCore<'_>,
+         on_cursor: &mut dyn FnMut(TextRange),
      ) -> Option<(Analysis, RaFixtureAnalysis)> {
-         let analysis =
-             RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
+-        let analysis =
+-            RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
 -        Some((
 -            Analysis {
 -                db: analysis.db.clone(),
 -            },
 -            analysis,
 -        ))
++        let analysis = RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
 +        Some((Analysis { db: analysis.db.clone() }, analysis))
      }
  

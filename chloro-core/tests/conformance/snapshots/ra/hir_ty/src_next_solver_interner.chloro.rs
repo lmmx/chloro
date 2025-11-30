@@ -1160,8 +1160,7 @@ impl<'db> Interner for DbInterner<'db> {
             self,
             args.as_slice()[0..trait_generics.own_params.len()].iter().cloned(),
         );
-        let alias_args =
-            GenericArgs::new_from_iter(self, args.iter().skip(trait_generics.own_params.len()));
+        let alias_args = GenericArgs::new_from_iter(self, args.iter().skip(trait_generics.own_params.len()));
         (TraitRef::new_from_args(self, trait_def_id.try_into().unwrap(), trait_args), alias_args)
     }
 
@@ -1269,8 +1268,7 @@ impl<'db> Interner for DbInterner<'db> {
     }
 
     fn generics_require_sized_self(self, def_id: Self::DefId) -> bool {
-        let sized_trait =
-            LangItem::Sized.resolve_trait(self.db(), self.krate.expect("Must have self.krate"));
+        let sized_trait = LangItem::Sized.resolve_trait(self.db(), self.krate.expect("Must have self.krate"));
         let Some(sized_id) = sized_trait else {
             return false; /* No Sized trait, can't require it! */
         };
@@ -1325,8 +1323,7 @@ impl<'db> Interner for DbInterner<'db> {
         def_id: Self::DefId,
     ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
         let all_bounds: FxHashSet<_> = self.item_bounds(def_id).skip_binder().into_iter().collect();
-        let own_bounds: FxHashSet<_> =
-            self.item_self_bounds(def_id).skip_binder().into_iter().collect();
+        let own_bounds: FxHashSet<_> = self.item_self_bounds(def_id).skip_binder().into_iter().collect();
         if all_bounds.len() == own_bounds.len() {
             EarlyBinder::bind(Clauses::new_from_iter(self, []))
         } else {
@@ -1473,7 +1470,7 @@ impl<'db> Interner for DbInterner<'db> {
             self.krate.expect("Must have self.krate"),
             lang_item,
         )
-        .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."));
+            .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."));
         match target {
             hir_def::lang_item::LangItemTarget::EnumId(enum_id) => enum_id.into(),
             hir_def::lang_item::LangItemTarget::Function(function_id) => function_id.into(),
@@ -1931,7 +1928,9 @@ impl<'db> Interner for DbInterner<'db> {
 
         // Collect coroutines.
         let body = self.db.body(def_id);
-        body.exprs().for_each(|(expr_id, expr)| {
+        body
+            .exprs()
+            .for_each(|(expr_id, expr)| {
             if matches!(
                 expr,
                 hir_def::hir::Expr::Async { .. }

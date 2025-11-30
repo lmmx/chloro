@@ -2,20 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20688 bytes
+Chloro size:   20693 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     }
  
      pub(crate) fn run_lsif(self) -> String {
-         let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
+-        let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
 -            if self.root_dir_contains_symlink {
 -                TestDir::new_symlink()
 -            } else {
 -                TestDir::new()
 -            }
++        let tmp_dir = self.tmp_dir
++            .unwrap_or_else(|| {
 +            if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
          });
  
@@ -30,18 +33,32 @@ Rustfmt size:  21158 bytes
                  exclude_vendored_libraries: false,
              },
              &mut buf,
+             None,
+         )
+-        .unwrap();
++            .unwrap();
+         String::from_utf8(buf).unwrap()
+     }
+ 
+             None
          };
  
-         let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
+-        let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
 -            if self.root_dir_contains_symlink {
 -                TestDir::new_symlink()
 -            } else {
 -                TestDir::new()
 -            }
++        let tmp_dir = self.tmp_dir
++            .unwrap_or_else(|| {
 +            if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
          });
  
          static INIT: Once = Once::new();
+-        INIT.call_once(|| {
++        INIT
++            .call_once(|| {
+             let _ = rust_analyzer::tracing::Config {
                  writer: TestWriter::default(),
                  // Deliberately enable all `error` logs if the user has not set RA_LOG, as there is usually
                  // useful information in there for debugging.
@@ -70,8 +87,7 @@ Rustfmt size:  21158 bytes
 -            .into_iter()
 -            .map(|root| tmp_dir_path.join(root))
 -            .collect::<Vec<_>>();
-+        let mut roots =
-+            self.roots.into_iter().map(|root| tmp_dir_path.join(root)).collect::<Vec<_>>();
++        let mut roots = self.roots.into_iter().map(|root| tmp_dir_path.join(root)).collect();
          if roots.is_empty() {
              roots.push(tmp_dir_path.clone());
          }
@@ -85,6 +101,14 @@ Rustfmt size:  21158 bytes
      }
  
      pub(crate) fn notification<N>(&self, params: N::Params)
+         R: lsp_types::request::Request,
+         R::Params: Serialize,
+     {
+-        let actual = self.send_request::<R>(params);
++        let actual = self.send_request(params);
+         if let Some((expected_part, actual_part)) = find_mismatch(&expected_resp, &actual) {
+             panic!(
+                 "JSON mismatch\nExpected:\n{}\nWas:\n{}\nExpected part:\n{}\nActual part:\n{}\n",
          let r = Request::new(id.into(), R::METHOD.to_owned(), params);
          self.send_request_(r)
      }
@@ -106,8 +130,12 @@ Rustfmt size:  21158 bytes
      }
 +
      pub(crate) fn wait_until_workspace_is_loaded(self) -> Server {
-         self.wait_for_message_cond(1, &|msg: &Message| match msg {
+-        self.wait_for_message_cond(1, &|msg: &Message| match msg {
++        self
++            .wait_for_message_cond(1, &|msg: &Message| match msg {
              Message::Notification(n) if n.method == "experimental/serverStatus" => {
+                 let status = n
+                     .clone()
                      .extract::<lsp::ext::ServerStatusParams>("experimental/serverStatus")
                      .unwrap();
                  if status.health != lsp::ext::Health::Ok {
@@ -119,7 +147,10 @@ Rustfmt size:  21158 bytes
                  }
                  status.quiescent
              }
-         .unwrap_or_else(|Timeout| panic!("timeout while waiting for ws to load"));
+             _ => false,
+         })
+-        .unwrap_or_else(|Timeout| panic!("timeout while waiting for ws to load"));
++            .unwrap_or_else(|Timeout| panic!("timeout while waiting for ws to load"));
          self
      }
 +
@@ -140,6 +171,16 @@ Rustfmt size:  21158 bytes
      fn send_notification(&self, not: Notification) {
          self.client.sender.send(Message::Notification(not)).unwrap();
      }
+ 
+ impl Drop for Server {
+     fn drop(&mut self) {
+-        self.request::<Shutdown>((), Value::Null);
+-        self.notification::<Exit>(());
++        self.request((), Value::Null);
++        self.notification(());
+     }
+ }
+ 
  struct Timeout;
  
  fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout> {
@@ -148,8 +189,7 @@ Rustfmt size:  21158 bytes
 -    } else {
 -        Duration::from_secs(120)
 -    };
-+    let timeout =
-+        if cfg!(target_os = "macos") { Duration::from_secs(300) } else { Duration::from_secs(120) };
++    let timeout = if cfg!(target_os = "macos") { Duration::from_secs(300) } else { Duration::from_secs(120) };
      select! {
          recv(receiver) -> msg => Ok(msg.ok()),
          recv(after(timeout)) -> _ => Err(Timeout),

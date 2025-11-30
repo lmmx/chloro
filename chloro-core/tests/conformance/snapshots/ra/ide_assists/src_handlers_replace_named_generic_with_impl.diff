@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11517 bytes
-Chloro size:   11243 bytes
+Chloro size:   11235 bytes
 Rustfmt size:  11571 bytes
 
 ✗ Outputs DIFFER
@@ -31,8 +31,7 @@ Rustfmt size:  11571 bytes
 -    let path_type = sema
 -        .ancestors_with_macros(param.syntax().clone())
 -        .find_map(ast::PathType::cast)?;
-+    let path_type =
-+        sema.ancestors_with_macros(param.syntax().clone()).find_map(ast::PathType::cast)?;
++    let path_type = sema.ancestors_with_macros(param.syntax().clone()).find_map(ast::PathType::cast)?;
  
      // Ignore any path types that look like `P::Assoc`
      if path_type.path()?.as_single_name_ref()?.text() != type_param_name.text() {

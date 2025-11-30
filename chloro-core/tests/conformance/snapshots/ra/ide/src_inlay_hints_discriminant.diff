@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5687 bytes
-Chloro size:   5682 bytes
+Chloro size:   5691 bytes
 Rustfmt size:  5814 bytes
 
 ✗ Outputs DIFFER
@@ -29,6 +29,15 @@ Rustfmt size:  5814 bytes
          None => name.syntax().text_range(),
      };
      let eq_ = if eq_token.is_none() { " =" } else { "" };
+         })),
+         None,
+     );
+-    acc.push(InlayHint {
++    acc
++        .push(InlayHint {
+         range: match eq_token {
+             Some(t) => range.cover(t.text_range()),
+             _ => range,
  
      Some(())
  }

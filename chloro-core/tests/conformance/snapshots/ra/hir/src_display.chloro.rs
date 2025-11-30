@@ -497,7 +497,7 @@ impl<'db> HirDisplay<'db> for TypeParam {
                 ClauseKind::TypeOutlives(to) => to.0 == ty,
                 _ => false,
             })
-            .collect::<Vec<_>>();
+            .collect();
 
         match param_data {
             TypeOrConstParamData::TypeParamData(p) => match p.provenance {
@@ -524,8 +524,9 @@ impl<'db> HirDisplay<'db> for TypeParam {
         }
 
         let sized_trait = LangItem::Sized.resolve_trait(f.db, krate);
-        let has_only_sized_bound =
-            predicates.iter().all(move |pred| match pred.kind().skip_binder() {
+        let has_only_sized_bound = predicates
+            .iter()
+            .all(move |pred| match pred.kind().skip_binder() {
                 ClauseKind::Trait(it) => Some(it.def_id().0) == sized_trait,
                 _ => false,
             });

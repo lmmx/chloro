@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7465 bytes
+Chloro size:   7457 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
@@ -54,6 +54,9 @@ Rustfmt size:  7718 bytes
  
      fn on_close(&self, id: Id, ctx: Context<'_, S>) {
          let span = ctx.span(&id).unwrap();
+-        let data = span.extensions_mut().remove::<Data>().unwrap();
++        let data = span.extensions_mut().remove().unwrap();
+         let mut node = data.into_node(span.name());
  
          match span.parent() {
              Some(parent_span) => {

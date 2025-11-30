@@ -46,8 +46,7 @@ pub(crate) fn generate_documentation_template(
 pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let tok: ast::Comment = ctx.find_token_at_offset()?;
     let node = tok.syntax().parent()?;
-    let last_doc_token =
-        ast::AnyHasDocComments::cast(node.clone())?.doc_comments().last()?.syntax().clone();
+    let last_doc_token = ast::AnyHasDocComments::cast(node.clone())?.doc_comments().last()?.syntax().clone();
     let next_token = skip_whitespace_token(last_doc_token.next_token()?, syntax::Direction::Next)?;
 
     let example = match_ast! {
@@ -302,7 +301,10 @@ fn self_type_without_lifetimes(ast_func: &ast::Fn) -> Option<String> {
         _ => return None,
     };
     let mut name = path_segment.name_ref()?.to_string();
-    let generics = path_segment.generic_arg_list().into_iter().flat_map(|list| {
+    let generics = path_segment
+        .generic_arg_list()
+        .into_iter()
+        .flat_map(|list| {
         list.generic_args()
             .filter(|generic| matches!(generic, ast::GenericArg::TypeArg(_)))
             .map(|generic| generic.to_string())
@@ -373,7 +375,9 @@ fn ref_mut_params(param_list: &ast::ParamList) -> Vec<String> {
 
 /// Helper function to build the comma-separated list of arguments of the function
 fn arguments_from_params(param_list: &ast::ParamList) -> String {
-    let args_iter = param_list.params().map(|param| match param.pat() {
+    let args_iter = param_list
+        .params()
+        .map(|param| match param.pat() {
         // To avoid `mut` in the function call (which would be a nonsense), `Pat` should not be
         // written as is so its variants must be managed independently. Other variants (for
         // instance `TuplePat`) could be managed later.

@@ -75,8 +75,7 @@ impl BodyValidationDiagnostic {
         let body = db.body(owner);
         let env = db.trait_environment_for_body(owner);
         let interner = DbInterner::new_with(db, Some(env.krate), env.block);
-        let infcx =
-            interner.infer_ctxt().build(TypingMode::typeck_for_body(interner, owner.into()));
+        let infcx = interner.infer_ctxt().build(TypingMode::typeck_for_body(interner, owner.into()));
         let mut validator = ExprValidator {
             owner,
             body,
@@ -256,8 +255,7 @@ impl<'db> ExprValidator<'db> {
         }
 
         let known_valid_scrutinee = Some(self.is_known_valid_scrutinee(scrutinee_expr));
-        let report =
-            match cx.compute_match_usefulness(m_arms.as_slice(), scrut_ty, known_valid_scrutinee) {
+        let report = match cx.compute_match_usefulness(m_arms.as_slice(), scrut_ty, known_valid_scrutinee) {
                 Ok(report) => report,
                 Err(()) => return,
             };

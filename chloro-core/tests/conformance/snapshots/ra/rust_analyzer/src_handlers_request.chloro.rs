@@ -108,7 +108,8 @@ pub(crate) fn handle_analyzer_status(
         );
     }
     buf.push_str("\nAnalysis:\n");
-    buf.push_str(
+    buf
+        .push_str(
         &snap
             .analysis
             .status(file_id)
@@ -458,8 +459,7 @@ pub(crate) fn handle_on_type_formatting(
         return Ok(None);
     }
 
-    let mut position =
-        try_default!(from_proto::file_position(&snap, params.text_document_position)?);
+    let mut position = try_default!(from_proto::file_position(&snap, params.text_document_position)?);
     let line_index = snap.file_line_index(position.file_id)?;
 
     // in `ide`, the `on_type` invariant is that
@@ -819,8 +819,7 @@ pub(crate) fn handle_goto_definition(
     params: lsp_types::GotoDefinitionParams,
 ) -> anyhow::Result<Option<lsp_types::GotoDefinitionResponse>> {
     let _p = tracing::info_span!("handle_goto_definition").entered();
-    let position =
-        try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
+    let position = try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
     let config = snap.config.goto_definition(snap.minicore());
     let nav_info = match snap.analysis.goto_definition(position, &config)? {
         None => return Ok(None),
@@ -855,10 +854,8 @@ pub(crate) fn handle_goto_implementation(
     params: lsp_types::request::GotoImplementationParams,
 ) -> anyhow::Result<Option<lsp_types::request::GotoImplementationResponse>> {
     let _p = tracing::info_span!("handle_goto_implementation").entered();
-    let position =
-        try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
-    let nav_info =
-        match snap.analysis.goto_implementation(&snap.config.goto_implementation(), position)? {
+    let position = try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
+    let nav_info = match snap.analysis.goto_implementation(&snap.config.goto_implementation(), position)? {
             None => return Ok(None),
             Some(it) => it,
         };
@@ -872,8 +869,7 @@ pub(crate) fn handle_goto_type_definition(
     params: lsp_types::request::GotoTypeDefinitionParams,
 ) -> anyhow::Result<Option<lsp_types::request::GotoTypeDefinitionResponse>> {
     let _p = tracing::info_span!("handle_goto_type_definition").entered();
-    let position =
-        try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
+    let position = try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
     let nav_info = match snap.analysis.goto_type_definition(position)? {
         None => return Ok(None),
         Some(it) => it,
@@ -1112,11 +1108,9 @@ pub(crate) fn handle_completion(
     }: lsp_types::CompletionParams,
 ) -> anyhow::Result<Option<lsp_types::CompletionResponse>> {
     let _p = tracing::info_span!("handle_completion").entered();
-    let mut position =
-        try_default!(from_proto::file_position(&snap, text_document_position.clone())?);
+    let mut position = try_default!(from_proto::file_position(&snap, text_document_position.clone())?);
     let line_index = snap.file_line_index(position.file_id)?;
-    let completion_trigger_character =
-        context.and_then(|ctx| ctx.trigger_character).and_then(|s| s.chars().next());
+    let completion_trigger_character = context.and_then(|ctx| ctx.trigger_character).and_then(|s| s.chars().next());
 
     let source_root = snap.analysis.source_root_id(position.file_id)?;
     let completion_config = &snap.config.completion(Some(source_root), snap.minicore());
@@ -1173,8 +1167,7 @@ pub(crate) fn handle_completion_resolve(
     };
     let source_root = snap.analysis.source_root_id(file_id)?;
 
-    let mut forced_resolve_completions_config =
-        snap.config.completion(Some(source_root), snap.minicore());
+    let mut forced_resolve_completions_config = snap.config.completion(Some(source_root), snap.minicore());
     forced_resolve_completions_config.fields_to_resolve = CompletionFieldsToResolve::empty();
 
     let position = FilePosition { file_id, offset };
@@ -1266,8 +1259,7 @@ pub(crate) fn handle_signature_help(
     params: lsp_types::SignatureHelpParams,
 ) -> anyhow::Result<Option<lsp_types::SignatureHelp>> {
     let _p = tracing::info_span!("handle_signature_help").entered();
-    let position =
-        try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
+    let position = try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
     let help = match snap.analysis.signature_help(position)? {
         Some(it) => it,
         None => return Ok(None),
@@ -1605,7 +1597,7 @@ pub(crate) fn handle_code_action_resolve(
 }
 
 fn parse_action_id(action_id: &str) -> anyhow::Result<(usize, SingleResolve), String> {
-    let id_parts = action_id.split(':').collect::<Vec<_>>();
+    let id_parts = action_id.split(':').collect();
     match id_parts.as_slice() {
         [assist_id_string, assist_kind_string, index_string, subtype_str] => {
             let assist_kind: AssistKind = assist_kind_string.parse()?;
@@ -1699,8 +1691,7 @@ pub(crate) fn handle_document_highlight(
     params: lsp_types::DocumentHighlightParams,
 ) -> anyhow::Result<Option<Vec<lsp_types::DocumentHighlight>>> {
     let _p = tracing::info_span!("handle_document_highlight").entered();
-    let position =
-        try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
+    let position = try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
     let line_index = snap.file_line_index(position.file_id)?;
     let source_root = snap.analysis.source_root_id(position.file_id)?;
 
@@ -1837,8 +1828,7 @@ pub(crate) fn handle_call_hierarchy_prepare(
     params: CallHierarchyPrepareParams,
 ) -> anyhow::Result<Option<Vec<CallHierarchyItem>>> {
     let _p = tracing::info_span!("handle_call_hierarchy_prepare").entered();
-    let position =
-        try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
+    let position = try_default!(from_proto::file_position(&snap, params.text_document_position_params)?);
 
     let config = snap.config.call_hierarchy(snap.minicore());
     let nav_info = match snap.analysis.call_hierarchy(position, &config)? {
@@ -2036,7 +2026,9 @@ pub(crate) fn handle_open_docs(
     let _p = tracing::info_span!("handle_open_docs").entered();
     let position = try_default!(from_proto::file_position(&snap, params)?);
 
-    let ws_and_sysroot = snap.workspaces.iter().find_map(|ws| match &ws.kind {
+    let ws_and_sysroot = snap.workspaces
+        .iter()
+        .find_map(|ws| match &ws.kind {
         ProjectWorkspaceKind::Cargo { cargo, .. }
         | ProjectWorkspaceKind::DetachedFile { cargo: Some((cargo, _, _)), .. } => {
             Some((cargo, &ws.sysroot))
@@ -2084,8 +2076,7 @@ pub(crate) fn handle_open_cargo_toml(
     };
 
     let cargo_toml_url = to_proto::url_from_abs_path(&cargo_spec.cargo_toml);
-    let res: lsp_types::GotoDefinitionResponse =
-        Location::new(cargo_toml_url, Range::default()).into();
+    let res: lsp_types::GotoDefinitionResponse = Location::new(cargo_toml_url, Range::default()).into();
     Ok(Some(res))
 }
 

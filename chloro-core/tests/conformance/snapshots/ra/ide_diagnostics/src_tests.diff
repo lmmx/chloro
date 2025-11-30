@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12274 bytes
+Chloro size:   12290 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,27 @@ Rustfmt size:  12328 bytes
  /// Takes a multi-file input fixture with annotated cursor positions,
  /// and checks that:
  ///  * a diagnostic is produced
+             file_position.file_id.file_id(&db),
+         )
      })
-     .pop()
-     .unwrap();
+-    .into_iter()
+-    .find(|d| {
++        .into_iter()
++        .find(|d| {
+         d.fixes
+             .as_ref()
+             .and_then(|fixes| {
+             file_position.file_id.file_id(&db),
+         )
+     })
+-    .pop()
+-    .unwrap();
 -    assert!(
 -        diagnostic.fixes.is_none(),
 -        "got a fix when none was expected: {diagnostic:?}"
 -    );
++        .pop()
++        .unwrap();
 +    assert!(diagnostic.fixes.is_none(), "got a fix when none was expected: {diagnostic:?}");
  }
  

@@ -27,7 +27,8 @@ pub(crate) fn complete_lifetime(
         return;
     };
 
-    ctx.process_all_names_raw(&mut |name, res| {
+    ctx
+        .process_all_names_raw(&mut |name, res| {
         if matches!(res, ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_))) {
             acc.add_lifetime(ctx, name);
         }
@@ -51,7 +52,8 @@ pub(crate) fn complete_label(
     if !matches!(lifetime_ctx, LifetimeContext { kind: LifetimeKind::LabelRef, .. }) {
         return;
     }
-    ctx.process_all_names_raw(&mut |name, res| {
+    ctx
+        .process_all_names_raw(&mut |name, res| {
         if let ScopeDef::Label(_) = res {
             acc.add_label(ctx, name);
         }

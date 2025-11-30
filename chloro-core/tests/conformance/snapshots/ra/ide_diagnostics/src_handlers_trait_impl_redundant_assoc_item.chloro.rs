@@ -51,8 +51,7 @@ pub(crate) fn trait_impl_redundant_assoc_item(
         }
     };
 
-    let hir::FileRange { file_id, range } =
-        hir::InFile::new(d.file_id, diagnostic_range).original_node_file_range_rooted(db);
+    let hir::FileRange { file_id, range } = hir::InFile::new(d.file_id, diagnostic_range).original_node_file_range_rooted(db);
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0407"),
         format!("{redundant_item_name} is not a member of trait `{trait_name}`"),

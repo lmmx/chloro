@@ -268,7 +268,8 @@ impl<'db> InferenceContext<'_, 'db> {
     /// `let (ref x0, ref x1) = *it;` we should use `Deref`.
     fn pat_bound_mutability(&self, pat: PatId) -> Mutability {
         let mut r = Mutability::Not;
-        self.body.walk_bindings_in_pat(pat, |b| {
+        self.body
+            .walk_bindings_in_pat(pat, |b| {
             if self.body[b].mode == BindingAnnotation::RefMut {
                 r = Mutability::Mut;
             }

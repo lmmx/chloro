@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29548 bytes
+Chloro size:   29476 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -35,13 +35,15 @@ Rustfmt size:  29841 bytes
      }
  }
  
+             &CanonicalizeAllFreeRegions,
              query_state,
          )
-         .unchecked_map(|(param_env, value)| ParamEnvAnd { param_env, value });
+-        .unchecked_map(|(param_env, value)| ParamEnvAnd { param_env, value });
 -        CanonicalQueryInput {
 -            canonical,
 -            typing_mode: self.typing_mode(),
 -        }
++            .unchecked_map(|(param_env, value)| ParamEnvAnd { param_env, value });
 +        CanonicalQueryInput { canonical, typing_mode: self.typing_mode() }
      }
  
@@ -81,8 +83,16 @@ Rustfmt size:  29841 bytes
          // anymore.
          debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
  
-             .max()
-             .unwrap_or(UniverseIndex::ROOT);
+-        let canonical_variables =
+-            CanonicalVars::new_from_iter(tcx, canonicalizer.universe_canonicalized_variables());
++        let canonical_variables = CanonicalVars::new_from_iter(tcx, canonicalizer.universe_canonicalized_variables());
+ 
+-        let max_universe = canonical_variables
+-            .iter()
+-            .map(|cvar| cvar.universe())
+-            .max()
+-            .unwrap_or(UniverseIndex::ROOT);
++        let max_universe = canonical_variables.iter().map(|cvar| cvar.universe()).max().unwrap_or(UniverseIndex::ROOT);
  
 -        Canonical {
 -            max_universe,
@@ -126,8 +136,7 @@ Rustfmt size:  29841 bytes
 -            .sub_root_lookup_table
 -            .entry(root_vid)
 -            .or_insert_with(|| self.variables.len());
-+        let idx =
-+            *self.sub_root_lookup_table.entry(root_vid).or_insert_with(|| self.variables.len());
++        let idx = *self.sub_root_lookup_table.entry(root_vid).or_insert_with(|| self.variables.len());
          BoundVar::from(idx)
      }
  

@@ -66,8 +66,7 @@ pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     let ty = ctx.sema.type_of_expr(&expr)?;
     let scope = ctx.sema.scope(statement.syntax())?;
     let constant_module = scope.module();
-    let type_name =
-        ty.original().display_source_code(ctx.db(), constant_module.into(), false).ok()?;
+    let type_name = ty.original().display_source_code(ctx.db(), constant_module.into(), false).ok()?;
     let target = statement.syntax().parent()?.text_range();
     let path = constant_token.syntax().ancestors().find_map(ast::Path::cast)?;
     if path.parent_path().is_some() {
@@ -98,8 +97,8 @@ pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
             }
         }
     }
-    let (offset, indent, file_id, post_string) =
-        target_data_for_generate_constant(ctx, current_module, constant_module).unwrap_or_else(
+    let (offset, indent, file_id, post_string) = target_data_for_generate_constant(ctx, current_module, constant_module)
+        .unwrap_or_else(
             || {
                 let indent = IndentLevel::from_node(statement.syntax());
                 (statement.syntax().text_range().start(), indent, None, format!("\n{indent}"))

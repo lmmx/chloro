@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 38709 bytes
-Chloro size:   38515 bytes
+Chloro size:   38426 bytes
 Rustfmt size:  39488 bytes
 
 ✗ Outputs DIFFER
@@ -15,6 +15,36 @@ Rustfmt size:  39488 bytes
  use test_utils::skip_slow_tests;
  use testdir::TestDir;
  
+ use std::collections::Spam;
+ "#,
+     )
+-    .with_config(serde_json::json!({
++        .with_config(serde_json::json!({
+         "cargo": { "sysroot": "discover" },
+     }))
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    let res = server.send_request::<Completion>(CompletionParams {
++    let res = server
++        .send_request(CompletionParams {
+         text_document_position: TextDocumentPositionParams::new(
+             server.doc_id("src/lib.rs"),
+             Position::new(0, 23),
+ }
+ "#,
+     )
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    let res = server.send_request::<InlayHintRequest>(InlayHintParams {
++    let res = server
++        .send_request(InlayHintParams {
+         range: Range::new(Position::new(0, 0), Position::new(3, 1)),
          text_document: server.doc_id("src/lib.rs"),
          work_done_progress_params: WorkDoneProgressParams::default(),
      });
@@ -25,6 +55,32 @@ Rustfmt size:  39488 bytes
      let hint = hints.pop().unwrap();
      assert!(hint.data.is_some());
      assert!(
+         matches!(&hint.label, InlayHintLabel::LabelParts(parts) if parts[1].location.is_none())
+     );
+-    let res = server.send_request::<InlayHintResolveRequest>(hint);
++    let res = server.send_request(hint);
+     let hint = serde_json::from_value::<InlayHint>(res).unwrap();
+     assert!(hint.data.is_none());
+     assert!(
+ use dependency2::Spam;
+ "#,
+     )
+-    .with_config(serde_json::json!({
++        .with_config(serde_json::json!({
+         "cargo": { "sysroot": null },
+         "linkedProjects": ["src/lib.rs"],
+     }))
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    let res = server.send_request::<Completion>(CompletionParams {
++    let res = server
++        .send_request(CompletionParams {
+         text_document_position: TextDocumentPositionParams::new(
+             server.doc_id("src/lib.rs"),
+             Position::new(5, 18),
          partial_result_params: PartialResultParams::default(),
          work_done_progress_params: WorkDoneProgressParams::default(),
      });
@@ -35,15 +91,58 @@ Rustfmt size:  39488 bytes
 -    );
 +    assert!(res.to_string().contains("SpecialHashMap"), "{}", res.to_string());
  
-     let res = server.send_request::<Completion>(CompletionParams {
+-    let res = server.send_request::<Completion>(CompletionParams {
++    let res = server
++        .send_request(CompletionParams {
          text_document_position: TextDocumentPositionParams::new(
-     .wait_until_workspace_is_loaded();
+             server.doc_id("src/lib.rs"),
+             Position::new(6, 18),
+     });
+     assert!(!res.to_string().contains("SpecialHashMap"));
  
-     server.request::<Runnables>(
+-    server.write_file_and_save(
++    server
++        .write_file_and_save(
+         "src/lib.rs",
+         r#"#!/usr/bin/env -S cargo +nightly -Zscript
+ ---
+ 
+     std::thread::sleep(std::time::Duration::from_secs(3));
+ 
+-    let res = server.send_request::<Completion>(CompletionParams {
++    let res = server
++        .send_request(CompletionParams {
+         text_document_position: TextDocumentPositionParams::new(
+             server.doc_id("src/lib.rs"),
+             Position::new(5, 18),
+     });
+     assert!(!res.to_string().contains("SpecialHashMap"));
+ 
+-    let res = server.send_request::<Completion>(CompletionParams {
++    let res = server
++        .send_request(CompletionParams {
+         text_document_position: TextDocumentPositionParams::new(
+             server.doc_id("src/lib.rs"),
+             Position::new(6, 18),
+ fn main() {}
+ "#,
+     )
+-    .root("foo")
+-    .root("bar")
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .root("foo")
++        .root("bar")
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<Runnables>(
 -        RunnablesParams {
 -            text_document: server.doc_id("foo/tests/spam.rs"),
 -            position: None,
 -        },
++    server
++        .request(
 +        RunnablesParams { text_document: server.doc_id("foo/tests/spam.rs"), position: None },
          json!([
            {
@@ -55,6 +154,22 @@ Rustfmt size:  39488 bytes
  #[test]
  fn test_path_dependency_runnables() {
      if skip_slow_tests() {
+ }
+         "#,
+     )
+-    .root("consumer")
+-    .root("dependency")
+-    .root("devdependency")
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .root("consumer")
++        .root("dependency")
++        .root("devdependency")
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+     for runnable in ["consumer", "dependency", "devdependency"] {
+         server.request::<Runnables>(
      }
  }
  
@@ -62,29 +177,95 @@ Rustfmt size:  39488 bytes
  #[test]
  fn test_runnables_cwd() {
      if skip_slow_tests() {
-     .wait_until_workspace_is_loaded();
+ fn otherpkg() {}
+ "#,
+     )
+-    .root("foo")
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .root("foo")
++        .server()
++        .wait_until_workspace_is_loaded();
  
-     server.request::<Runnables>(
+-    server.request::<Runnables>(
 -        RunnablesParams {
 -            text_document: server.doc_id("foo/mainpkg/src/main.rs"),
 -            position: None,
 -        },
++    server
++        .request(
 +        RunnablesParams { text_document: server.doc_id("foo/mainpkg/src/main.rs"), position: None },
          json!([
              "{...}",
              {
+         ]),
      );
  
-     server.request::<Runnables>(
+-    server.request::<Runnables>(
 -        RunnablesParams {
 -            text_document: server.doc_id("foo/otherpkg/src/lib.rs"),
 -            position: None,
 -        },
++    server
++        .request(
 +        RunnablesParams { text_document: server.doc_id("foo/otherpkg/src/lib.rs"), position: None },
          json!([
              "{...}",
              {
-     server.request::<RangeFormatting>(
+ pub use std::collections::HashMap;
+ "#,
+     )
+-    .wait_until_workspace_is_loaded();
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<Formatting>(
++    server
++        .request(
+         DocumentFormattingParams {
+             text_document: server.doc_id("src/lib.rs"),
+             options: FormattingOptions {
+ pub use std::collections::HashMap;
+ "#,
+     )
+-    .wait_until_workspace_is_loaded();
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<Formatting>(
++    server
++        .request(
+         DocumentFormattingParams {
+             text_document: server.doc_id("src/lib.rs"),
+             options: FormattingOptions {
+ fn main() {}
+ "#,
+     )
+-    .wait_until_workspace_is_loaded();
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<Formatting>(
++    server
++        .request(
+         DocumentFormattingParams {
+             text_document: server.doc_id("src/lib.rs"),
+             options: FormattingOptions {
+ }
+ "#,
+     )
+-    .with_config(serde_json::json!({
++        .with_config(serde_json::json!({
+         "rustfmt": {
+             "overrideCommand": [ "rustfmt", "+nightly", ],
+             "rangeFormatting": { "enable": true }
+         },
+     }))
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<RangeFormatting>(
++    server
++        .request(
          DocumentRangeFormattingParams {
              range: Range {
 -                end: Position {
@@ -100,6 +281,27 @@ Rustfmt size:  39488 bytes
              },
              text_document: server.doc_id("src/lib.rs"),
              options: FormattingOptions {
+ fn main() {}
+ "#,
+     )
+-    .wait_until_workspace_is_loaded();
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<CodeActionRequest>(
++    server
++        .request(
+         CodeActionParams {
+             text_document: server.doc_id("src/lib.rs"),
+             range: Range::new(Position::new(0, 4), Position::new(0, 7)),
+         ]),
+     );
+ 
+-    server.request::<CodeActionRequest>(
++    server
++        .request(
+         CodeActionParams {
+             text_document: server.doc_id("src/lib.rs"),
+             range: Range::new(Position::new(2, 8), Position::new(2, 8)),
  "#,
      );
  
@@ -107,12 +309,52 @@ Rustfmt size:  39488 bytes
 -        .tmp_dir(tmp_dir)
 -        .server()
 -        .wait_until_workspace_is_loaded();
-+    let server =
-+        Project::with_fixture(&code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
++    let server = Project::with_fixture(&code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
  
-     server.request::<CodeActionRequest>(
+-    server.request::<CodeActionRequest>(
++    server
++        .request(
          CodeActionParams {
-     server.request::<OnEnter>(
+             text_document: server.doc_id("src/lib.rs"),
+             range: Range::new(Position::new(0, 4), Position::new(0, 7)),
+         ]),
+     );
+ 
+-    server.request::<CodeActionRequest>(
++    server
++        .request(
+         CodeActionParams {
+             text_document: server.doc_id("src/lib.rs"),
+             range: Range::new(Position::new(2, 8), Position::new(2, 8)),
+     }
+ 
+     let librs: String = (0..10).fold(String::new(), |mut acc, i| format_to_acc!(acc, "mod m{i};"));
+-    let libs: String = (0..10).fold(String::new(), |mut acc, i| {
++    let libs: String = (0..10)
++        .fold(String::new(), |mut acc, i| {
+         format_to_acc!(acc, "//- /src/m{i}.rs\nfn foo() {{}}\n\n")
+     });
+     let server = Project::with_fixture(&format!(
+ fn main() {{}}
+ "#
+     ))
+-    .with_config(serde_json::json!({
++        .with_config(serde_json::json!({
+         "cargo": { "sysroot": "discover" },
+     }))
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+     for i in 0..10 {
+         server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+         });
+     }
+     let start = Instant::now();
+-    server.request::<OnEnter>(
++    server
++        .request(
          TextDocumentPositionParams {
              text_document: server.doc_id("src/m0.rs"),
 -            position: Position {
@@ -123,7 +365,17 @@ Rustfmt size:  39488 bytes
          },
          json!([{
              "insertTextFormat": 2,
-     server.request::<OnEnter>(
+ /// Some Docs\r\nfn main() {}
+ ",
+     )
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<OnEnter>(
++    server
++        .request(
          TextDocumentPositionParams {
              text_document: server.doc_id("src/main.rs"),
 -            position: Position {
@@ -134,6 +386,42 @@ Rustfmt size:  39488 bytes
          },
          json!([{
              "insertTextFormat": 2,
+         .server()
+         .wait_until_workspace_is_loaded();
+ 
+-    let res = server.send_request::<HoverRequest>(HoverParams {
++    let res = server
++        .send_request(HoverParams {
+         text_document_position_params: TextDocumentPositionParams::new(
+             server.doc_id("src/main.rs"),
+             Position::new(30, 10),
+     });
+     assert!(res.to_string().contains("&str"));
+ 
+-    let res = server.send_request::<HoverRequest>(HoverParams {
++    let res = server
++        .send_request(HoverParams {
+         text_document_position_params: TextDocumentPositionParams::new(
+             server.doc_id("src/main.rs"),
+             Position::new(31, 10),
+     });
+     assert!(res.to_string().contains("&str"));
+ 
+-    server.request::<GotoTypeDefinition>(
++    server
++        .request(
+         GotoDefinitionParams {
+             text_document_position_params: TextDocumentPositionParams::new(
+                 server.doc_id("src/main.rs"),
+         }]),
+     );
+ 
+-    server.request::<GotoTypeDefinition>(
++    server
++        .request(
+         GotoDefinitionParams {
+             text_document_position_params: TextDocumentPositionParams::new(
+                 server.doc_id("src/main.rs"),
  }
  
  #[test]
@@ -142,6 +430,32 @@ Rustfmt size:  39488 bytes
  fn root_contains_symlink_out_dirs_check() {
      if skip_slow_tests() {
          return;
+ 
+ "###,
+     )
+-    .with_config(serde_json::json!({
++        .with_config(serde_json::json!({
+         "cargo": {
+             "buildScripts": {
+                 "enable": true
+             "enable": true,
+         }
+     }))
+-    .root("foo")
+-    .root("bar")
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .root("foo")
++        .root("bar")
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    let res = server.send_request::<HoverRequest>(HoverParams {
++    let res = server
++        .send_request(HoverParams {
+         text_document_position_params: TextDocumentPositionParams::new(
+             server.doc_id("foo/src/main.rs"),
+             Position::new(8, 9),
          ),
          work_done_progress_params: Default::default(),
      });
@@ -156,6 +470,14 @@ Rustfmt size:  39488 bytes
  
      expect![[r#"
  
+         ```rust
+         fn bar()
+         ```"#]]
+-    .assert_eq(value);
++        .assert_eq(value);
+ }
+ 
+ #[test]
  //- /src/to_mod/foo.rs
  
  "#;
@@ -163,12 +485,21 @@ Rustfmt size:  39488 bytes
 -        .tmp_dir(tmp_dir)
 -        .server()
 -        .wait_until_workspace_is_loaded();
-+    let server =
-+        Project::with_fixture(code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
++    let server = Project::with_fixture(code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
  
      //rename same level file
-     server.request::<WillRenameFiles>(
-     server.request::<WillRenameFiles>(
+-    server.request::<WillRenameFiles>(
++    server
++        .request(
+         RenameFilesParams {
+             files: vec![FileRename {
+                 old_uri: base_path.join("src/old_file.rs").to_str().unwrap().to_owned(),
+     );
+ 
+     //rename file from mod.rs to foo.rs
+-    server.request::<WillRenameFiles>(
++    server
++        .request(
          RenameFilesParams {
              files: vec![FileRename {
 -                old_uri: base_path
@@ -186,7 +517,12 @@ Rustfmt size:  39488 bytes
              }],
          },
          json!(null),
-     server.request::<WillRenameFiles>(
+     );
+ 
+     //rename file from foo.rs to mod.rs
+-    server.request::<WillRenameFiles>(
++    server
++        .request(
          RenameFilesParams {
              files: vec![FileRename {
 -                old_uri: base_path
@@ -204,3 +540,60 @@ Rustfmt size:  39488 bytes
              }],
          },
          json!(null),
+     );
+ 
+     //rename same level file
+-    server.request::<WillRenameFiles>(
++    server
++        .request(
+         RenameFilesParams {
+             files: vec![FileRename {
+                 old_uri: base_path.join("src/old_folder").to_str().unwrap().to_owned(),
+ //- /bar/src/lib.rs
+ "#,
+     )
+-    .root("foo")
+-    .root("bar")
+-    .root("baz")
+-    .with_config(json!({
++        .root("foo")
++        .root("bar")
++        .root("baz")
++        .with_config(json!({
+        "files": {
+            "exclude": ["foo"]
+         }
+     }))
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<WorkspaceSymbolRequest>(Default::default(), json!([]));
++    server.request(Default::default(), json!([]));
+ 
+     let server = Project::with_fixture(
+         r#"
+ //- /baz/src/lib.rs
+ "#,
+     )
+-    .root("foo")
+-    .root("bar")
+-    .root("baz")
+-    .with_config(json!({
++        .root("foo")
++        .root("bar")
++        .root("baz")
++        .with_config(json!({
+        "files": {
+            "exclude": ["foo", "bar"]
+         }
+     }))
+-    .server()
+-    .wait_until_workspace_is_loaded();
++        .server()
++        .wait_until_workspace_is_loaded();
+ 
+-    server.request::<WorkspaceSymbolRequest>(Default::default(), json!([]));
++    server.request(Default::default(), json!([]));
+ }

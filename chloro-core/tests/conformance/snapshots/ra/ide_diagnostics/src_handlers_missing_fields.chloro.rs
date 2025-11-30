@@ -51,8 +51,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
 
     let root = ctx.sema.db.parse_or_expand(d.file);
 
-    let current_module =
-        ctx.sema.scope(d.field_list_parent.to_node(&root).syntax()).map(|it| it.module());
+    let current_module = ctx.sema.scope(d.field_list_parent.to_node(&root).syntax()).map(|it| it.module());
     let range = InFile::new(d.file, d.field_list_parent.text_range())
         .original_node_file_range_rooted_opt(ctx.sema.db)?;
 

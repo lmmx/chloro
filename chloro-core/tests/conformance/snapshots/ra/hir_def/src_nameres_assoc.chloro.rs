@@ -60,8 +60,7 @@ impl TraitItems {
             );
         }
 
-        let collector =
-            AssocItemCollector::new(db, module_id, ItemContainerId::TraitId(tr), ast_id.file_id);
+        let collector = AssocItemCollector::new(db, module_id, ItemContainerId::TraitId(tr), ast_id.file_id);
         let (items, macro_calls, diagnostics) = collector.collect(source.assoc_item_list());
 
         (TraitItems { macro_calls, items }, DefDiagnostics::new(diagnostics))
@@ -116,8 +115,7 @@ impl ImplItems {
         let _p = tracing::info_span!("impl_items_with_diagnostics_query").entered();
         let ItemLoc { container: module_id, id: ast_id } = id.lookup(db);
 
-        let collector =
-            AssocItemCollector::new(db, module_id, ItemContainerId::ImplId(id), ast_id.file_id);
+        let collector = AssocItemCollector::new(db, module_id, ItemContainerId::ImplId(id), ast_id.file_id);
         let source = ast_id.with_value(collector.ast_id_map.get(ast_id.value)).to_node(db);
         let (items, macro_calls, diagnostics) = collector.collect(source.assoc_item_list());
 

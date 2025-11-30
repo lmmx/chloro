@@ -740,7 +740,8 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         // INVARIANT: If this function returns `DynTy`, there should be at least one trait bound.
         // These invariants are utilized by `TyExt::dyn_trait()` and chalk.
         let mut lifetime = None;
-        let bounds = self.with_shifted_in(DebruijnIndex::from_u32(1), |ctx| {
+        let bounds = self
+            .with_shifted_in(DebruijnIndex::from_u32(1), |ctx| {
             let mut lowered_bounds: Vec<
                 rustc_type_ir::Binder<DbInterner<'db>, ExistentialPredicate<DbInterner<'db>>>,
             > = Vec::new();
@@ -897,7 +898,8 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             rustc_type_ir::AliasTyKind::Opaque,
             AliasTy::new_from_args(interner, def_id, args),
         );
-        let predicates = self.with_shifted_in(DebruijnIndex::from_u32(1), |ctx| {
+        let predicates = self
+            .with_shifted_in(DebruijnIndex::from_u32(1), |ctx| {
             let mut predicates = Vec::new();
             for b in bounds {
                 predicates.extend(ctx.lower_type_bound(b, self_ty, false));
@@ -996,14 +998,12 @@ pub(crate) fn return_type_impl_traits<'db>(
     // FIXME unify with fn_sig_for_fn instead of doing lowering twice, maybe
     let data = db.function_signature(def);
     let resolver = def.resolver(db);
-    let mut ctx_ret =
-        TyLoweringContext::new(db, &resolver, &data.store, def.into(), LifetimeElisionKind::Infer)
-            .with_impl_trait_mode(ImplTraitLoweringMode::Opaque);
+    let mut ctx_ret = TyLoweringContext::new(db, &resolver, &data.store, def.into(), LifetimeElisionKind::Infer)
+        .with_impl_trait_mode(ImplTraitLoweringMode::Opaque);
     if let Some(ret_type) = data.ret_type {
         let _ret = ctx_ret.lower_ty(ret_type);
     }
-    let return_type_impl_traits =
-        ImplTraits { impl_traits: ctx_ret.impl_trait_mode.opaque_type_data };
+    let return_type_impl_traits = ImplTraits { impl_traits: ctx_ret.impl_trait_mode.opaque_type_data };
     if return_type_impl_traits.impl_traits.is_empty() {
         None
     } else {
@@ -1024,7 +1024,7 @@ pub(crate) fn type_alias_impl_traits<'db>(
         def.into(),
         LifetimeElisionKind::AnonymousReportError,
     )
-    .with_impl_trait_mode(ImplTraitLoweringMode::Opaque);
+        .with_impl_trait_mode(ImplTraitLoweringMode::Opaque);
     if let Some(type_ref) = data.ty {
         let _ty = ctx.lower_ty(type_ref);
     }
@@ -1810,7 +1810,7 @@ pub(crate) fn generic_defaults_with_diagnostics_query(
         def,
         LifetimeElisionKind::AnonymousReportError,
     )
-    .with_impl_trait_mode(ImplTraitLoweringMode::Disallowed);
+        .with_impl_trait_mode(ImplTraitLoweringMode::Disallowed);
     let mut idx = 0;
     let mut has_any_default = false;
     let mut defaults = generic_params
@@ -1822,10 +1822,11 @@ pub(crate) fn generic_defaults_with_diagnostics_query(
             idx += 1;
             result
         })
-        .collect::<Vec<_>>();
+        .collect();
     ctx.diagnostics.clear();
     // Don't include diagnostics from the parent.
-    defaults.extend(generic_params.iter_self().map(|(_id, p)| {
+    defaults
+        .extend(generic_params.iter_self().map(|(_id, p)| {
         let (result, has_default) = handle_generic_param(&mut ctx, idx, p);
         has_any_default |= has_default;
         idx += 1;
@@ -1938,8 +1939,7 @@ fn fn_sig_for_struct_constructor<'db>(
     let params = field_tys.iter().map(|(_, ty)| ty.skip_binder());
     let ret = type_for_adt(db, def.into()).skip_binder();
 
-    let inputs_and_output =
-        Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
+    let inputs_and_output = Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
     EarlyBinder::bind(Binder::dummy(FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,
@@ -1957,8 +1957,7 @@ fn fn_sig_for_enum_variant_constructor<'db>(
     let parent = def.lookup(db).parent;
     let ret = type_for_adt(db, parent.into()).skip_binder();
 
-    let inputs_and_output =
-        Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
+    let inputs_and_output = Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
     EarlyBinder::bind(Binder::dummy(FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,

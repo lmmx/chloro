@@ -253,8 +253,7 @@ fn compute_expr_scopes(
     scopes: &mut ExprScopes,
     scope: &mut ScopeId,
 ) {
-    let make_label =
-        |label: &Option<LabelId>| label.map(|label| (label, store[label].name.clone()));
+    let make_label = |label: &Option<LabelId>| label.map(|label| (label, store[label].name.clone()));
 
     let compute_expr_scopes = |scopes: &mut ExprScopes, expr: ExprId, scope: &mut ScopeId| {
         compute_expr_scopes(expr, store, scopes, scope)
@@ -375,7 +374,7 @@ mod tests {
             .scope_chain(scope)
             .flat_map(|scope| scopes.entries(scope))
             .map(|it| it.name().as_str())
-            .collect::<Vec<_>>()
+            .collect()
             .join("\n");
         let expected = expected.join("\n");
         assert_eq_text!(&expected, &actual);
@@ -524,8 +523,7 @@ fn foo() {
         };
 
         let resolved = scopes.resolve_name_in_scope(expr_scope, &name_ref.as_name()).unwrap();
-        let pat_src =
-            source_map.pat_syntax(source_map.patterns_for_binding(resolved.binding())[0]).unwrap();
+        let pat_src = source_map.pat_syntax(source_map.patterns_for_binding(resolved.binding())[0]).unwrap();
 
         let local_name = pat_src.value.syntax_node_ptr().to_node(file.syntax());
         assert_eq!(local_name.text_range(), expected_name.syntax().text_range());

@@ -49,7 +49,8 @@ pub(super) fn hints(
         }
     };
 
-    acc.push(InlayHint {
+    acc
+        .push(InlayHint {
         range,
         kind: InlayKind::Dyn,
         label: InlayHintLabel::simple("dyn", None, None),

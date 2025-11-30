@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34234 bytes
+Chloro size:   34273 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -95,12 +95,15 @@ Rustfmt size:  35032 bytes
      }
  
      pub(super) fn obligations_for_self_ty(
+             self.infer_ctxt.visit_proof_tree(goal, &mut visitor);
          }
  
-         obligations_for_self_ty.retain_mut(|obligation| {
+-        obligations_for_self_ty.retain_mut(|obligation| {
 -            obligation.predicate = self
 -                .infer_ctxt
 -                .resolve_vars_if_possible(obligation.predicate);
++        obligations_for_self_ty
++            .retain_mut(|obligation| {
 +            obligation.predicate = self.infer_ctxt.resolve_vars_if_possible(obligation.predicate);
              !obligation.predicate.has_placeholders()
          });
@@ -203,6 +206,16 @@ Rustfmt size:  35032 bytes
      }
  
      pub(super) fn register_predicates<I>(&mut self, obligations: I)
+     where
+         I: IntoIterator<Item = PredicateObligation<'db>>,
+     {
+-        obligations.into_iter().for_each(|obligation| {
++        obligations
++            .into_iter()
++            .for_each(|obligation| {
+             self.register_predicate(obligation);
+         });
+     }
          num_args: usize,
      ) -> Option<(FnTrait, Vec<Ty<'db>>, Ty<'db>)> {
          for (fn_trait_name, output_assoc_name, subtraits) in [

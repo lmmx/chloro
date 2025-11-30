@@ -214,7 +214,8 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 
 fn make_function_name(semantics_scope: &hir::SemanticsScope<'_>) -> ast::NameRef {
     let mut names_in_scope = vec![];
-    semantics_scope.process_all_names(&mut |name, _| {
+    semantics_scope
+        .process_all_names(&mut |name, _| {
         names_in_scope.push(
             name.display(semantics_scope.db, semantics_scope.krate().edition(semantics_scope.db))
                 .to_string(),
@@ -802,7 +803,8 @@ impl FunctionBody {
                 }
             }
         };
-        self.walk_expr(&mut |expr| match expr {
+        self
+            .walk_expr(&mut |expr| match expr {
             ast::Expr::PathExpr(path_expr) => {
                 if let Some(local) = path_expr
                     .path()
@@ -1002,7 +1004,8 @@ impl FunctionBody {
         let mut unsafe_depth = 0;
         let mut loop_depth = 0;
 
-        self.preorder_expr(&mut |expr| {
+        self
+            .preorder_expr(&mut |expr| {
             let expr = match expr {
                 WalkEvent::Enter(e) => e,
                 WalkEvent::Leave(expr) => {
@@ -1313,7 +1316,8 @@ fn locals_defined_in_body(
     // FIXME: this doesn't work well with macros
     //        see https://github.com/rust-lang/rust-analyzer/pull/7535#discussion_r570048550
     let mut res = FxIndexSet::default();
-    body.walk_pat(&mut |pat| {
+    body
+        .walk_pat(&mut |pat| {
         if let ast::Pat::IdentPat(pat) = pat
             && let Some(local) = sema.to_def(&pat)
         {
@@ -1738,8 +1742,9 @@ fn resolved_type_param(ctx: &AssistContext<'_>, pred: &ast::WherePred) -> Option
 impl<'db> Function<'db> {
     /// Collect all the `TypeParam`s used in the `body` and `params`.
     fn type_params(&self, ctx: &AssistContext<'db>) -> Vec<TypeParam> {
-        let type_params_in_descendant_paths =
-            self.body.descendant_paths().filter_map(|it| match ctx.sema.resolve_path(&it) {
+        let type_params_in_descendant_paths = self.body
+            .descendant_paths()
+            .filter_map(|it| match ctx.sema.resolve_path(&it) {
                 Some(PathResolution::TypeParam(type_param)) => Some(type_param),
                 _ => None,
             });
@@ -1981,12 +1986,13 @@ fn with_default_tail_expr(block: ast::BlockExpr, tail_expr: ast::Expr) -> ast::B
 }
 
 fn with_tail_expr(block: ast::BlockExpr, tail_expr: ast::Expr) -> ast::BlockExpr {
-    let stmt_tail_opt: Option<ast::Stmt> =
-        block.tail_expr().map(|expr| make::expr_stmt(expr).into());
+    let stmt_tail_opt: Option<ast::Stmt> = block.tail_expr().map(|expr| make::expr_stmt(expr).into());
 
     let mut elements: Vec<SyntaxElement> = vec![];
 
-    block.statements().for_each(|stmt| {
+    block
+        .statements()
+        .for_each(|stmt| {
         elements.push(syntax::NodeOrToken::Node(stmt.syntax().clone()));
     });
 

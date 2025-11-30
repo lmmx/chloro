@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4854 bytes
-Chloro size:   4855 bytes
+Chloro size:   4881 bytes
 Rustfmt size:  4854 bytes
 
 ✗ Outputs DIFFER
@@ -22,3 +22,47 @@ Rustfmt size:  4854 bytes
  /// A rendered struct, union, or enum variant, split into fields for actual
  /// auto-completion (`literal`, using `field: ()`) and display in the
  /// completions menu (`detail`, using `field: type`).
+     if snippet_cap.is_none() {
+         return RenderedLiteral { literal: path.to_owned(), detail: path.to_owned() };
+     }
+-    let completions = fields.iter().enumerate().format_with(", ", |(idx, field), f| {
++    let completions = fields
++        .iter()
++        .enumerate()
++        .format_with(", ", |(idx, field), f| {
+         let mut fmt_field = |fill, tab| {
+             let field_name = field.name(ctx.db);
+ 
+         }
+     });
+ 
+-    let types = fields.iter().format_with(", ", |field, f| {
++    let types = fields
++        .iter()
++        .format_with(", ", |field, f| {
+         f(&format_args!(
+             "{}: {}",
+             field.name(ctx.db).display(ctx.db, ctx.edition),
+     if snippet_cap.is_none() {
+         return RenderedLiteral { literal: path.to_owned(), detail: path.to_owned() };
+     }
+-    let completions = fields.iter().enumerate().format_with(", ", |(idx, _), f| {
++    let completions = fields
++        .iter()
++        .enumerate()
++        .format_with(", ", |(idx, _), f| {
+         if snippet_cap.is_some() {
+             f(&format_args!("${{{}:()}}", idx + 1))
+         } else {
+ ) -> Option<(Vec<hir::Field>, bool)> {
+     let module = ctx.module;
+     let n_fields = fields.len();
+-    let fields = fields
+-        .iter()
+-        .filter(|field| field.is_visible_from(ctx.db, module))
+-        .copied()
+-        .collect::<Vec<_>>();
++    let fields = fields.iter().filter(|field| field.is_visible_from(ctx.db, module)).copied().collect();
+     let has_invisible_field = n_fields - fields.len() > 0;
+     let is_foreign_non_exhaustive = item.attrs(ctx.db).by_key(sym::non_exhaustive).exists()
+         && item.krate(ctx.db) != module.krate();

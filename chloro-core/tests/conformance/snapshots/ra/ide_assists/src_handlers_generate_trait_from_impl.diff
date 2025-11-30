@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10188 bytes
-Chloro size:   9051 bytes
+Chloro size:   9060 bytes
 Rustfmt size:  10188 bytes
 
 ✗ Outputs DIFFER
@@ -95,6 +95,15 @@ Rustfmt size:  10188 bytes
      // if no L_CURLY then return.
      let l_curly = impl_ast.assoc_item_list()?.l_curly_token()?;
  
+ 
+     let impl_name = impl_ast.self_ty()?;
+ 
+-    acc.add(
++    acc
++        .add(
+         AssistId::generate("generate_trait_from_impl"),
+         "Generate trait from impl",
+         impl_ast.syntax().text_range(),
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};

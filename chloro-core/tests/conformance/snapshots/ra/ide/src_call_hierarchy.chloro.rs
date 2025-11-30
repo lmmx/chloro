@@ -109,7 +109,8 @@ pub(crate) fn outgoing_calls(
     })?;
     let mut calls = CallLocations::default();
 
-    sema.descend_into_macros_exact(token)
+    sema
+        .descend_into_macros_exact(token)
         .into_iter()
         .filter_map(|it| it.parent_ancestors().nth(1).and_then(ast::Item::cast))
         .filter_map(|item| match item {
@@ -203,8 +204,7 @@ mod tests {
         let nav = navs.pop().unwrap();
         expected_nav.assert_eq(&nav.debug_render());
 
-        let item_pos =
-            FilePosition { file_id: nav.file_id, offset: nav.focus_or_full_range().start() };
+        let item_pos = FilePosition { file_id: nav.file_id, offset: nav.focus_or_full_range().start() };
         let incoming_calls = analysis.incoming_calls(&config, item_pos).unwrap().unwrap();
         expected_incoming.assert_eq(&incoming_calls.into_iter().map(debug_render).join("\n"));
 

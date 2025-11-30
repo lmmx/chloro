@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24849 bytes
-Chloro size:   18548 bytes
+Chloro size:   18549 bytes
 Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
@@ -207,7 +207,11 @@ Rustfmt size:  25118 bytes
      // an attribute nested in a macro call will not emit `inside_attribute`
      let mut inside_attribute = false;
  
-         FxHashMap::default();
+     // FIXME: accommodate range highlighting
+     let mut body_stack: Vec<Option<DefWithBody>> = vec![];
+-    let mut per_body_cache: FxHashMap<DefWithBody, (FxHashSet<_>, FxHashMap<Name, u32>)> =
+-        FxHashMap::default();
++    let mut per_body_cache: FxHashMap<DefWithBody, (FxHashSet<_>, FxHashMap<Name, u32>)> = FxHashMap::default();
  
      // Walk all nodes, keeping track of whether we are inside a macro or not.
 +
@@ -257,3 +261,12 @@ Rustfmt size:  25118 bytes
          }
      }
  }
+ 
+     let mut t = None;
+     let mut r = 0;
+-    sema.descend_into_macros_breakable(token.clone().into(), |tok, _ctx| {
++    sema
++        .descend_into_macros_breakable(token.clone().into(), |tok, _ctx| {
+         // FIXME: Consider checking ctx transparency for being opaque?
+         let my_rank = ranker.rank_token(&tok.value);
+ 

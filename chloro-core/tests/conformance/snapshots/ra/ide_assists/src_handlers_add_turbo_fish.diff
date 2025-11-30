@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12008 bytes
-Chloro size:   11703 bytes
+Chloro size:   11695 bytes
 Rustfmt size:  12073 bytes
 
 ✗ Outputs DIFFER
@@ -33,8 +33,7 @@ Rustfmt size:  12073 bytes
 -        .find_node_at_offset::<ast::PathSegment>()
 -        .map(Either::Left)
 -        .or_else(|| {
-+    let turbofish_target =
-+        ctx.find_node_at_offset::<ast::PathSegment>().map(Either::Left).or_else(|| {
++    let turbofish_target = ctx.find_node_at_offset::<ast::PathSegment>().map(Either::Left).or_else(|| {
              let callable_expr = ctx.find_node_at_offset::<ast::CallableExpr>()?;
  
              if callable_expr.arg_list()?.args().next().is_some() {

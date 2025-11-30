@@ -32,7 +32,9 @@ impl<'db> Diagnostics<'db> {
         source: InferenceTyDiagnosticSource,
         diagnostics: Vec<TyLoweringDiagnostic>,
     ) {
-        self.0.borrow_mut().extend(
+        self.0
+            .borrow_mut()
+            .extend(
             diagnostics.into_iter().map(|diag| InferenceDiagnostic::TyDiagnostic { source, diag }),
         );
     }
@@ -128,7 +130,6 @@ impl DerefMut for InferenceTyLoweringContext<'_, '_> {
 impl Drop for InferenceTyLoweringContext<'_, '_> {
     #[inline]
     fn drop(&mut self) {
-        self.diagnostics
-            .push_ty_diagnostics(self.source, std::mem::take(&mut self.ctx.diagnostics));
+        self.diagnostics.push_ty_diagnostics(self.source, std::mem::take(&mut self.ctx.diagnostics));
     }
 }

@@ -56,10 +56,7 @@ where
 
         let writer = self.writer;
 
-        let ra_fmt_layer = tracing_subscriber::fmt::layer()
-            .with_target(false)
-            .with_ansi(false)
-            .with_writer(writer);
+        let ra_fmt_layer = tracing_subscriber::fmt::layer().with_target(false).with_ansi(false).with_writer(writer);
 
         let ra_fmt_layer = match time::OffsetTime::local_rfc_3339() {
             Ok(timer) => {
@@ -72,7 +69,7 @@ where
                 ra_fmt_layer.boxed()
             }
         }
-        .with_filter(targets_filter);
+            .with_filter(targets_filter);
 
         let chalk_layer = match self.chalk_filter {
             Some(chalk_filter) => {

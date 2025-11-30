@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17943 bytes
-Chloro size:   16708 bytes
+Chloro size:   16711 bytes
 Rustfmt size:  17943 bytes
 
 ✗ Outputs DIFFER
@@ -53,6 +53,15 @@ Rustfmt size:  17943 bytes
  pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
      let _p = tracing::info_span!("world_symbols", query = ?query.query).entered();
  
+     };
+ 
+     let mut res = vec![];
+-    query.search::<()>(&indices, |f| {
++    query
++        .search(&indices, |f| {
+         res.push(f.clone());
+         ControlFlow::Continue(())
+     });
      }
  }
  

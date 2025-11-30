@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33395 bytes
-Chloro size:   33376 bytes
+Chloro size:   33140 bytes
 Rustfmt size:  34403 bytes
 
 ✗ Outputs DIFFER
@@ -21,6 +21,22 @@ Rustfmt size:  34403 bytes
              }
              format_to!(out, "\n");
          }
+ 
+         let mut importables: Vec<_> = map
+             .iter()
+-            // We've only collected items, whose name cannot be tuple field so unwrapping is fine.
+             .flat_map(|(&item, (info, _))| {
+                 info.iter()
+                     .enumerate()
+                     .map(move |(idx, info)| (item, info.name.as_str(), idx as u32))
+             })
+             .collect();
+-        importables.sort_by(|(_, l_info, _), (_, r_info, _)| {
++        importables
++            .sort_by(|(_, l_info, _), (_, r_info, _)| {
+             let lhs_chars = l_info.chars().map(|c| c.to_ascii_lowercase());
+             let rhs_chars = r_info.chars().map(|c| c.to_ascii_lowercase());
+             lhs_chars.cmp(rhs_chars)
              .dedup_by(|&(_, (_, lhs, _)), &(_, (_, rhs, _))| lhs.eq_ignore_ascii_case(rhs));
  
          let mut insert = |name: &str, start, end| {
@@ -158,8 +174,7 @@ Rustfmt size:  34403 bytes
 -        .iter()
 -        .map(|dep| db.import_map(dep.crate_id))
 -        .collect();
-+    let import_maps: Vec<_> =
-+        krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
++    let import_maps: Vec<_> = krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
  
      let mut op = fst::map::OpBuilder::new();
  
@@ -211,7 +226,14 @@ Rustfmt size:  34403 bytes
      fn check_search(
          #[rust_analyzer::rust_fixture] ra_fixture: &str,
          crate_name: &str,
-             .collect::<String>();
+                     mark
+                 ))
+             })
+-            // HashSet iteration order isn't defined - it's different on
+-            // x86_64 and i686 at the very least
+             .sorted()
+-            .collect::<String>();
++            .collect();
          expect.assert_eq(&actual)
      }
 -
@@ -225,6 +247,11 @@ Rustfmt size:  34403 bytes
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let db = TestDB::with_files(ra_fixture);
          let all_crates = db.all_crates();
+                 Some(format!("{name}:\n{}\n", map.fmt_for_test(&db)))
+             })
+             .sorted()
+-            .collect::<String>();
++            .collect();
  
          expect.assert_eq(&actual)
      }

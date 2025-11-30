@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   23123 bytes
+Chloro size:   23227 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -36,6 +36,24 @@ Rustfmt size:  23115 bytes
  use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
  
  pub fn incorrect_case(db: &dyn HirDatabase, owner: ModuleDefId) -> Vec<IncorrectCase> {
+         let Some(module_src) = module_data.declaration_source(self.db) else {
+             return;
+         };
+-        self.create_incorrect_case_diagnostic_for_ast_node(
++        self
++            .create_incorrect_case_diagnostic_for_ast_node(
+             module_name_replacement,
+             module_src.file_id,
+             &module_src.value,
+     fn validate_trait(&mut self, trait_id: TraitId) {
+         // Check the trait name.
+         let data = self.db.trait_signature(trait_id);
+-        self.create_incorrect_case_diagnostic_for_item_name(
++        self
++            .create_incorrect_case_diagnostic_for_item_name(
+             trait_id,
+             &data.name,
+             CaseType::UpperCamelCase,
          }
  
          // Check the function name.
@@ -43,6 +61,51 @@ Rustfmt size:  23115 bytes
          // Skipped if function is an associated item of a trait implementation.
          if !self.is_trait_impl_container(container) {
              let data = self.db.function_signature(func);
+     fn validate_struct(&mut self, struct_id: StructId) {
+         // Check the structure name.
+         let data = self.db.struct_signature(struct_id);
+-        self.create_incorrect_case_diagnostic_for_item_name(
++        self
++            .create_incorrect_case_diagnostic_for_item_name(
+             struct_id,
+             &data.name,
+             CaseType::UpperCamelCase,
+         let data = self.db.enum_signature(enum_id);
+ 
+         // Check the enum name.
+-        self.create_incorrect_case_diagnostic_for_item_name(
++        self
++            .create_incorrect_case_diagnostic_for_item_name(
+             enum_id,
+             &data.name,
+             CaseType::UpperCamelCase,
+         let Some(name) = &data.name else {
+             return;
+         };
+-        self.create_incorrect_case_diagnostic_for_item_name(
++        self
++            .create_incorrect_case_diagnostic_for_item_name(
+             const_id,
+             name,
+             CaseType::UpperSnakeCase,
+             return;
+         }
+ 
+-        self.create_incorrect_case_diagnostic_for_item_name(
++        self
++            .create_incorrect_case_diagnostic_for_item_name(
+             static_id,
+             &data.name,
+             CaseType::UpperSnakeCase,
+ 
+         // Check the type alias name.
+         let data = self.db.type_alias_signature(type_alias_id);
+-        self.create_incorrect_case_diagnostic_for_item_name(
++        self
++            .create_incorrect_case_diagnostic_for_item_name(
+             type_alias_id,
+             &data.name,
+             CaseType::UpperCamelCase,
          name: &Name,
          expected_case: CaseType,
          ident_type: IdentType,
@@ -52,6 +115,15 @@ Rustfmt size:  23115 bytes
          N: AstNode + HasName + fmt::Debug,
          S: HasSource<Value = N>,
          L: Lookup<Data = S, Database = dyn DefDatabase> + HasModule + Copy,
+ 
+         let item_loc = item_id.lookup(self.db);
+         let item_src = item_loc.source(self.db);
+-        self.create_incorrect_case_diagnostic_for_ast_node(
++        self
++            .create_incorrect_case_diagnostic_for_ast_node(
+             replacement,
+             item_src.file_id,
+             &item_src.value,
          file_id: HirFileId,
          node: &T,
          ident_type: IdentType,

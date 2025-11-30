@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6105 bytes
-Chloro size:   6110 bytes
+Chloro size:   6116 bytes
 Rustfmt size:  6316 bytes
 
 ✗ Outputs DIFFER
@@ -19,6 +19,45 @@ Rustfmt size:  6316 bytes
  };
  use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
  use parser::SyntaxKind;
+             stdx::thread::ThreadIntent::LatencySensitive,
+             "BIG_STACK_THREAD",
+         )
+-        .stack_size(STACK_SIZE)
+-        .spawn(|| self.run_())
+-        .unwrap();
++            .stack_size(STACK_SIZE)
++            .spawn(|| self.run_())
++            .unwrap();
+ 
+         handle.join()
+     }
+ 
+     fn run_(self) -> anyhow::Result<()> {
+-        let root =
+-            vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
++        let root = vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
+         let config = crate::config::Config::new(
+             root,
+             lsp_types::ClientCapabilities::default(),
+             with_proc_macro_server,
+             prefill_caches: false,
+         };
+-        let (db, vfs, _proc_macro) =
+-            load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
++        let (db, vfs, _proc_macro) = load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
+         let host = AnalysisHost::with_database(db);
+         let db = host.raw_database();
+         let sema = Semantics::new(db);
+ 
+         let mut visited_files = FxHashSet::default();
+ 
+-        let work = all_modules(db).into_iter().filter(|module| {
++        let work = all_modules(db)
++            .into_iter()
++            .filter(|module| {
+             let file_id = module.definition_source_file_id(db).original_file(db);
+             let source_root = db.file_source_root(file_id.file_id(db)).source_root_id(db);
+             let source_root = db.source_root(source_root).source_root(db);
              let file_id = module.definition_source_file_id(db).original_file(db);
              let file_id = file_id.file_id(db);
              if !visited_files.contains(&file_id) {
@@ -40,8 +79,7 @@ Rustfmt size:  6316 bytes
 -        .into_iter()
 -        .map(|krate| krate.root_module())
 -        .collect();
-+    let mut worklist: Vec<_> =
-+        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
++    let mut worklist: Vec<_> = Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
      let mut modules = Vec::new();
  
      while let Some(module) = worklist.pop() {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31299 bytes
-Chloro size:   31360 bytes
+Chloro size:   31340 bytes
 Rustfmt size:  31299 bytes
 
 ✗ Outputs DIFFER
@@ -28,6 +28,19 @@ Rustfmt size:  31299 bytes
 -};
  use toolchain::Tool;
  use triomphe::Arc;
+ 
+             ws_target_dir,
+         );
+         let (sender, receiver) = unbounded::<StateChange>();
+-        let thread =
+-            stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, format!("Flycheck{id}"))
+-                .spawn(move || actor.run(receiver))
+-                .expect("failed to spawn thread");
++        let thread = stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, format!("Flycheck{id}"))
++            .spawn(move || actor.run(receiver))
++            .expect("failed to spawn thread");
+         FlycheckHandle { id, generation: generation.into(), sender, _thread: thread }
+     }
  
      },
  

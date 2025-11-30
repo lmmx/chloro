@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12337 bytes
-Chloro size:   11772 bytes
+Chloro size:   11752 bytes
 Rustfmt size:  12415 bytes
 
 ✗ Outputs DIFFER
@@ -50,6 +50,12 @@ Rustfmt size:  12415 bytes
  fn find_arms(
      ctx: &AssistContext<'_>,
      match_expr: &ast::MatchExpr,
+ ) -> Option<(ast::MatchArm, ast::MatchArm)> {
+-    let arms = match_expr.match_arm_list()?.arms().collect::<Vec<_>>();
++    let arms = match_expr.match_arm_list()?.arms().collect();
+     if arms.len() != 2 {
+         return None;
+     }
      }
  }
  
@@ -76,6 +82,11 @@ Rustfmt size:  12415 bytes
  fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> SyntaxNode {
      let syntax = pat.syntax().clone_subtree();
      let mut editor = SyntaxEditor::new(syntax.clone());
+         .iter()
+         .map(|e| e.syntax().text_range() - pat.syntax().text_range().start())
+         .map(|r| syntax.covering_element(r))
+-        .collect::<Vec<_>>();
++        .collect();
      for extracted_syntax in extracted {
          // If `extracted` variable is a record field, we should rename it to `binding`,
          // otherwise we just need to replace `extracted` with `binding`.

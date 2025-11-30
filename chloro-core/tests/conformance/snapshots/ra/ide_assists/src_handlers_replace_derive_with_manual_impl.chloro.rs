@@ -40,7 +40,7 @@ pub(crate) fn replace_derive_with_manual_impl(
         .descendants()
         .filter_map(ast::Attr::cast)
         .filter_map(|attr| attr.path())
-        .collect::<Vec<_>>();
+        .collect();
 
     let adt = value.parent().and_then(ast::Adt::cast)?;
     let attr = ast::Attr::cast(value)?;
@@ -57,11 +57,11 @@ pub(crate) fn replace_derive_with_manual_impl(
         NameToImport::exact_case_sensitive(path.segments().last()?.to_string()),
         items_locator::AssocSearchMode::Exclude,
     )
-    .filter_map(|(item, _)| match item.into_module_def() {
+        .filter_map(|(item, _)| match item.into_module_def() {
         ModuleDef::Trait(trait_) => Some(trait_),
         _ => None,
     })
-    .flat_map(|trait_| {
+        .flat_map(|trait_| {
         current_module
             .find_path(ctx.sema.db, hir::ModuleDef::Trait(trait_), cfg)
             .as_ref()
@@ -177,16 +177,14 @@ fn impl_def_from_trait(
         IgnoreAssocItems::DocHiddenAttrPresent
     };
 
-    let trait_items =
-        filter_assoc_items(sema, &trait_.items(sema.db), DefaultMethods::No, ignore_items);
+    let trait_items = filter_assoc_items(sema, &trait_.items(sema.db), DefaultMethods::No, ignore_items);
 
     if trait_items.is_empty() {
         return None;
     }
     let impl_def = generate_trait_impl(impl_is_unsafe, adt, make::ty_path(trait_path.clone()));
 
-    let assoc_items =
-        add_trait_assoc_items_to_impl(sema, config, &trait_items, trait_, &impl_def, &target_scope);
+    let assoc_items = add_trait_assoc_items_to_impl(sema, config, &trait_items, trait_, &impl_def, &target_scope);
     let assoc_item_list = if let Some((first, other)) =
         assoc_items.split_first().map(|(first, other)| (first.clone_subtree(), other))
     {
@@ -205,7 +203,7 @@ fn impl_def_from_trait(
     } else {
         make::assoc_item_list(None)
     }
-    .clone_for_update();
+        .clone_for_update();
 
     let impl_def = impl_def.clone_subtree();
     let mut editor = SyntaxEditor::new(impl_def.syntax().clone());
@@ -221,10 +219,7 @@ fn update_attribute(
     old_trait_path: &ast::Path,
     attr: &ast::Attr,
 ) {
-    let new_derives = old_derives
-        .iter()
-        .filter(|t| t.to_string() != old_trait_path.to_string())
-        .collect::<Vec<_>>();
+    let new_derives = old_derives.iter().filter(|t| t.to_string() != old_trait_path.to_string()).collect();
     let has_more_derives = !new_derives.is_empty();
 
     if has_more_derives {

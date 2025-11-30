@@ -156,7 +156,8 @@ fn find_module_id_and_test_parents(
     let module_name = module_name.as_ref().map(|n| n.as_str()).unwrap_or("[mod without name]");
     id += module_name;
     let nav = NavigationTarget::from_module_to_decl(sema.db, module).call_site;
-    r.push(TestItem {
+    r
+        .push(TestItem {
         id: id.clone(),
         kind: TestItemKind::Module,
         label: module_name.to_owned(),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21087 bytes
-Chloro size:   20826 bytes
+Chloro size:   20816 bytes
 Rustfmt size:  21244 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,14 @@ Rustfmt size:  21244 bytes
  pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      // First, grab the uses that intersect with the current selection.
      let selected_el = match ctx.covering_element() {
+         .descendants()
+         .filter(|x| x.text_range().intersect(ctx.selection_trimmed()).is_some())
+         .filter_map(ast::Use::cast);
+-    let uses = uses_up.chain(uses_down).collect::<Vec<_>>();
++    let uses = uses_up.chain(uses_down).collect();
+ 
+     // Maps use nodes to the scope that we should search through to find
+     let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();
      t: &hir::Trait,
  ) -> bool {
      !std::iter::once((Definition::Trait(*t), u.rename()))

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33374 bytes
-Chloro size:   33206 bytes
+Chloro size:   33209 bytes
 Rustfmt size:  33374 bytes
 
 ✗ Outputs DIFFER
@@ -114,6 +114,17 @@ Rustfmt size:  33374 bytes
          self.macro_invocations.iter()
      }
  }
+         attr_call_id: MacroCallId,
+         len: usize,
+     ) {
+-        self.derive_macros.entry(adt).or_default().push(DeriveMacroInvocation {
++        self.derive_macros
++            .entry(adt)
++            .or_default()
++            .push(DeriveMacroInvocation {
+             attr_id,
+             attr_call_id,
+             derive_call_ids: smallvec![None; len],
          Some(self.derive_macros.get(&ast_id)?.iter().find(|it| it.attr_id == attr_id)?.attr_call_id)
      }
  
@@ -134,4 +145,23 @@ Rustfmt size:  33374 bytes
 -// These methods are a temporary measure only meant to be used by `DefCollector::push_res_and_update_glob_vis()`.
  impl ItemScope {
      pub(crate) fn update_visibility_types(&mut self, name: &Name, vis: Visibility) {
-         let res =
+-        let res =
+-            self.types.get_mut(name).expect("tried to update visibility of non-existent type");
++        let res = self.types.get_mut(name).expect("tried to update visibility of non-existent type");
+         res.vis = vis;
+     }
+ 
+     pub(crate) fn update_visibility_values(&mut self, name: &Name, vis: Visibility) {
+-        let res =
+-            self.values.get_mut(name).expect("tried to update visibility of non-existent value");
++        let res = self.values.get_mut(name).expect("tried to update visibility of non-existent value");
+         res.vis = vis;
+     }
+ 
+     pub(crate) fn update_visibility_macros(&mut self, name: &Name, vis: Visibility) {
+-        let res =
+-            self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
++        let res = self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
+         res.vis = vis;
+     }
+ }

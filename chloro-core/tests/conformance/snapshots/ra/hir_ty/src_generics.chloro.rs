@@ -153,7 +153,9 @@ impl Generics {
         let mut type_params = 0;
         let mut impl_trait_params = 0;
         let mut const_params = 0;
-        self.params.iter_type_or_consts().for_each(|(_, data)| match data {
+        self.params
+            .iter_type_or_consts()
+            .for_each(|(_, data)| match data {
             TypeOrConstParamData::TypeParamData(p) => match p.provenance {
                 TypeParamProvenance::TypeParamList => type_params += 1,
                 TypeParamProvenance::TraitSelf => self_param |= true,

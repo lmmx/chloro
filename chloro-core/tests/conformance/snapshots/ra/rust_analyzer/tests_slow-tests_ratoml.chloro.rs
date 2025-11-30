@@ -50,7 +50,7 @@ impl RatomlTest {
         let server = project.server_with_lock(true).wait_until_workspace_is_loaded();
 
         let mut case = Self { urls: vec![], server, tmp_path };
-        let urls = fixtures.iter().map(|fixture| case.fixture_path(fixture)).collect::<Vec<_>>();
+        let urls = fixtures.iter().map(|fixture| case.fixture_path(fixture)).collect();
         case.urls = urls;
         case
     }
@@ -58,8 +58,7 @@ impl RatomlTest {
     fn fixture_path(&self, fixture: &str) -> Url {
         let mut lines = fixture.trim().split('\n');
 
-        let mut path =
-            lines.next().expect("All files in a fixture are expected to have at least one line.");
+        let mut path = lines.next().expect("All files in a fixture are expected to have at least one line.");
 
         if path.starts_with("//- minicore") {
             path = lines.next().expect("A minicore line must be followed by a path.")
@@ -92,7 +91,8 @@ impl RatomlTest {
     fn create(&mut self, fixture_path: &str, text: String) {
         let url = self.fixture_path(fixture_path);
 
-        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+        self.server
+            .notification(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: url.clone(),
                 language_id: "rust".to_owned(),
@@ -101,7 +101,8 @@ impl RatomlTest {
             },
         });
 
-        self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+        self.server
+            .notification(DidChangeTextDocumentParams {
             text_document: VersionedTextDocumentIdentifier { uri: url, version: 0 },
             content_changes: vec![TextDocumentContentChangeEvent {
                 range: None,
@@ -112,7 +113,8 @@ impl RatomlTest {
     }
 
     fn delete(&mut self, file_idx: usize) {
-        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+        self.server
+            .notification(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: self.urls[file_idx].clone(),
                 language_id: "rust".to_owned(),
@@ -122,14 +124,16 @@ impl RatomlTest {
         });
 
         // See if deleting ratoml file will make the config of interest to return to its default value.
-        self.server.notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
+        self.server
+            .notification(DidSaveTextDocumentParams {
             text_document: TextDocumentIdentifier { uri: self.urls[file_idx].clone() },
             text: Some("".to_owned()),
         });
     }
 
     fn edit(&mut self, file_idx: usize, text: String) {
-        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+        self.server
+            .notification(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: self.urls[file_idx].clone(),
                 language_id: "rust".to_owned(),
@@ -138,7 +142,8 @@ impl RatomlTest {
             },
         });
 
-        self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+        self.server
+            .notification(DidChangeTextDocumentParams {
             text_document: VersionedTextDocumentIdentifier {
                 uri: self.urls[file_idx].clone(),
                 version: 0,
@@ -157,7 +162,8 @@ impl RatomlTest {
         source_file_idx: usize,
         expected: InternalTestingFetchConfigResponse,
     ) {
-        let res = self.server.send_request::<InternalTestingFetchConfig>(
+        let res = self.server
+            .send_request(
             InternalTestingFetchConfigParams {
                 text_document: Some(TextDocumentIdentifier {
                     uri: self.urls[source_file_idx].clone(),
@@ -203,7 +209,8 @@ enum Value {
         })),
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
@@ -368,7 +375,8 @@ enum Value {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         2,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
@@ -401,13 +409,15 @@ enum Value {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
     );
     server.create("//- /$$CONFIG_DIR$$/rust-analyzer.toml", RatomlTest::EMIT_MUST_USE.to_owned());
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
@@ -442,13 +452,15 @@ assist.emitMustUse = true"#,
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
     );
     server.edit(2, String::new());
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
@@ -483,13 +495,15 @@ assist.emitMustUse = true"#,
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
     );
     server.delete(2);
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
@@ -541,7 +555,8 @@ pub fn add(left: usize, right: usize) -> usize {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
@@ -592,13 +607,15 @@ pub fn add(left: usize, right: usize) -> usize {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
     );
     server.edit(1, "assist.emitMustUse = true".to_owned());
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
@@ -649,13 +666,15 @@ pub fn add(left: usize, right: usize) -> usize {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
     );
     server.delete(1);
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
@@ -706,13 +725,15 @@ pub fn add(left: usize, right: usize) -> usize {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
     );
     server.create("//- /p1/p2/rust-analyzer.toml", RatomlTest::EMIT_MUST_NOT_USE.to_owned());
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
@@ -764,13 +785,15 @@ pub fn add(left: usize, right: usize) -> usize {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
     );
     server.delete(1);
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
@@ -821,12 +844,14 @@ enum Value {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
     );
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         4,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
@@ -868,7 +893,8 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
@@ -1065,13 +1091,15 @@ fn main() {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::CheckWorkspace,
         2,
         InternalTestingFetchConfigResponse::CheckWorkspace(false),
     );
     server.edit(1, "check.workspace = true".to_owned());
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::CheckWorkspace,
         2,
         InternalTestingFetchConfigResponse::CheckWorkspace(true),
@@ -1107,13 +1135,15 @@ fn main() {
         None,
     );
 
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::CheckWorkspace,
         2,
         InternalTestingFetchConfigResponse::CheckWorkspace(false),
     );
     server.delete(1);
-    server.query(
+    server
+        .query(
         InternalTestingFetchConfigOption::CheckWorkspace,
         2,
         InternalTestingFetchConfigResponse::CheckWorkspace(true),

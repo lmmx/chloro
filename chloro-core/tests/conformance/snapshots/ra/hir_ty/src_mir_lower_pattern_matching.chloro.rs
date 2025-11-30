@@ -96,8 +96,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
         value: Place<'db>,
         pattern: PatId,
     ) -> Result<'db, BasicBlockId<'db>> {
-        let (current, _) =
-            self.pattern_match_inner(current, None, value, pattern, MatchingMode::Assign)?;
+        let (current, _) = self.pattern_match_inner(current, None, value, pattern, MatchingMode::Assign)?;
         Ok(current)
     }
 
@@ -530,7 +529,8 @@ impl<'db> MirLowerCtx<'_, 'db> {
         cond_place: Place<'db>,
         span: MirSpan,
     ) {
-        self.push_assignment(
+        self
+            .push_assignment(
             current,
             target_place.into(),
             match mode {
@@ -558,9 +558,9 @@ impl<'db> MirLowerCtx<'_, 'db> {
     ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
         let then_target = self.new_basic_block();
         let else_target = current_else.unwrap_or_else(|| self.new_basic_block());
-        let discr: Place<'db> =
-            self.temp(Ty::new_bool(self.interner()), current, pattern.into())?.into();
-        self.push_assignment(
+        let discr: Place<'db> = self.temp(Ty::new_bool(self.interner()), current, pattern.into())?.into();
+        self
+            .push_assignment(
             current,
             discr,
             Rvalue::CheckedBinaryOp(
@@ -571,7 +571,8 @@ impl<'db> MirLowerCtx<'_, 'db> {
             pattern.into(),
         );
         let discr = Operand { kind: OperandKind::Copy(discr), span: None };
-        self.set_terminator(
+        self
+            .set_terminator(
             current,
             TerminatorKind::SwitchInt {
                 discr,
@@ -708,11 +709,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
         mode: MatchingMode,
     ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
         let (al, ar) = args.split_at(ellipsis.map_or(args.len(), |it| it as usize));
-        let it = al
-            .iter()
-            .zip(fields.clone())
-            .chain(ar.iter().rev().zip(fields.rev()))
-            .map(|(x, y)| (y, *x));
+        let it = al.iter().zip(fields.clone()).chain(ar.iter().rev().zip(fields.rev())).map(|(x, y)| (y, *x));
         self.pattern_match_adt(current, current_else, it, cond_place, mode)
     }
 }

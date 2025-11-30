@@ -75,7 +75,7 @@ pub(super) fn expand_and_analyze<'db>(
         fake_ident_token.clone(),
         relative_offset,
     )
-    .unwrap_or(ExpansionResult {
+        .unwrap_or(ExpansionResult {
         original_file: original_file.value,
         speculative_file,
         original_offset: offset,
@@ -184,8 +184,7 @@ fn expand(
 ) -> Option<ExpansionResult> {
     let _p = tracing::info_span!("CompletionContext::expand").entered();
 
-    let parent_item =
-        |item: &ast::Item| item.syntax().ancestors().skip(1).find_map(ast::Item::cast);
+    let parent_item = |item: &ast::Item| item.syntax().ancestors().skip(1).find_map(ast::Item::cast);
     let original_node = token_at_offset_ignore_whitespace(&original_file.value, original_offset)
         .and_then(|token| token.parent_ancestors().find_map(ast::Item::cast));
     let ancestor_items = iter::successors(
@@ -794,8 +793,7 @@ fn classify_lifetime(
         return None;
     }
 
-    let lifetime =
-        find_node_at_offset::<ast::Lifetime>(original_file, lifetime.syntax().text_range().start());
+    let lifetime = find_node_at_offset::<ast::Lifetime>(original_file, lifetime.syntax().text_range().start());
     let kind = match_ast! {
         match parent {
             ast::LifetimeParam(_) => LifetimeKind::LifetimeParam,
@@ -1686,8 +1684,7 @@ fn pattern_context_for(
 
     let mut missing_variants = vec![];
 
-    let (refutability, has_type_ascription) =
-    pat
+    let (refutability, has_type_ascription) = pat
         .syntax()
         .ancestors()
         .find(|it| !ast::Pat::can_cast(it.kind()))
@@ -1960,8 +1957,7 @@ fn is_after_if_expr(node: SyntaxNode) -> bool {
         Some(stmt) => stmt.syntax().clone(),
         None => node,
     };
-    let prev_sibling =
-        non_trivia_sibling(node.into(), Direction::Prev).and_then(NodeOrToken::into_node);
+    let prev_sibling = non_trivia_sibling(node.into(), Direction::Prev).and_then(NodeOrToken::into_node);
     iter::successors(prev_sibling, |it| it.last_child_or_token()?.into_node())
         .find_map(ast::IfExpr::cast)
         .is_some()
@@ -1972,7 +1968,7 @@ fn next_non_trivia_token(e: impl Into<SyntaxElement>) -> Option<SyntaxToken> {
         SyntaxElement::Node(n) => n.last_token()?,
         SyntaxElement::Token(t) => t,
     }
-    .next_token();
+        .next_token();
     while let Some(inner) = token {
         if !inner.kind().is_trivia() {
             return Some(inner);

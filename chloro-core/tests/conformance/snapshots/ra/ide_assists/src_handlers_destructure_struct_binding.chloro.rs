@@ -23,7 +23,8 @@ pub(crate) fn destructure_struct_binding(
     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let data = collect_data(ident_pat, ctx)?;
 
-    acc.add(
+    acc
+        .add(
         AssistId::refactor_rewrite("destructure_struct_binding"),
         "Destructure struct binding",
         data.ident_pat.syntax().text_range(),
@@ -75,15 +76,13 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
     let fields = struct_type.fields(ctx.db());
     let n_fields = fields.len();
 
-    let visible_fields =
-        fields.into_iter().filter(|field| field.is_visible_from(ctx.db(), module)).collect_vec();
+    let visible_fields = fields.into_iter().filter(|field| field.is_visible_from(ctx.db(), module)).collect_vec();
 
     if visible_fields.is_empty() {
         return None;
     }
 
-    let has_private_members =
-        (is_non_exhaustive && is_foreign_crate) || visible_fields.len() < n_fields;
+    let has_private_members = (is_non_exhaustive && is_foreign_crate) || visible_fields.len() < n_fields;
 
     // If private members are present, we can only destructure records
     if !matches!(kind, hir::StructKind::Record) && has_private_members {
@@ -145,7 +144,8 @@ fn get_names_in_scope(
     let scope = ctx.sema.scope(node)?;
 
     let mut names = FxHashSet::default();
-    scope.process_all_names(&mut |name, scope| {
+    scope
+        .process_all_names(&mut |name, scope| {
         if let hir::ScopeDef::Local(_) = scope {
             names.insert(name.as_str().into());
         }

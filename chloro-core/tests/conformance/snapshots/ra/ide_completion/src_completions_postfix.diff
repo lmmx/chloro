@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32377 bytes
-Chloro size:   32363 bytes
+Chloro size:   32374 bytes
 Rustfmt size:  32377 bytes
 
 ✗ Outputs DIFFER
@@ -37,6 +37,15 @@ Rustfmt size:  32377 bytes
  };
  
  pub(crate) fn complete_postfix(
+     };
+     let expr_ctx = &dot_access.ctx;
+ 
+-    let receiver_text =
+-        get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
++    let receiver_text = get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
+ 
+     let cap = match ctx.config.snippet_cap {
+         Some(it) => it,
      postfix_snippet("deref", "*expr", &format!("*{receiver_text}")).add_to(acc, ctx.db);
  
      // The rest of the postfix completions create an expression that moves an argument,
@@ -44,8 +53,16 @@ Rustfmt size:  32377 bytes
  
 +    // so it's better to consider references now to avoid breaking the compilation
      let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
-     let mut receiver_text =
-         get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
+-    let mut receiver_text =
+-        get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
++    let mut receiver_text = get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
+     receiver_text.insert_str(0, &prefix);
+-    let postfix_snippet =
+-        match build_postfix_snippet_builder(ctx, cap, &dot_receiver_including_refs) {
++    let postfix_snippet = match build_postfix_snippet_builder(ctx, cap, &dot_receiver_including_refs) {
+             Some(it) => it,
+             None => return,
+         };
  
      postfix_snippet("box", "Box::new(expr)", &format!("Box::new({receiver_text})"))
          .add_to(acc, ctx.db);
@@ -55,6 +72,14 @@ Rustfmt size:  32377 bytes
      postfix_snippet("dbgr", "dbg!(&expr)", &format!("dbg!(&{receiver_text})")).add_to(acc, ctx.db);
      postfix_snippet("call", "function(expr)", &format!("${{1}}({receiver_text})"))
          .add_to(acc, ctx.db);
+             semi = if expr_ctx.in_block_expr { ";" } else { "" }
+         ),
+     )
+-    .add_to(acc, ctx.db);
++        .add_to(acc, ctx.db);
+ 
+     if let Some(BreakableKind::Block | BreakableKind::Loop) = expr_ctx.in_breakable {
+         postfix_snippet(
      let mut text = file_text.text(sema.db)[range.range].to_owned();
  
      // The receiver texts should be interpreted as-is, as they are expected to be
@@ -62,6 +87,17 @@ Rustfmt size:  32377 bytes
      // normal Rust expressions.
      escape_snippet_bits(&mut text);
      text
+     receiver_text: &str,
+ ) -> Option<()> {
+     ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
+-    ctx.config.postfix_snippets().filter(|(_, snip)| snip.scope == SnippetScope::Expr).for_each(
++    ctx.config
++        .postfix_snippets()
++        .filter(|(_, snip)| snip.scope == SnippetScope::Expr)
++        .for_each(
+         |(trigger, snippet)| {
+             let imports = match snippet.imports(ctx) {
+                 Some(imports) => imports,
  #[cfg(test)]
  mod tests {
      use expect_test::expect;
@@ -198,6 +234,14 @@ Rustfmt size:  32377 bytes
          let snippet = Snippet::new(
              &[],
              &["ok".into()],
+             &[],
+             crate::SnippetScope::Expr,
+         )
+-        .unwrap();
++            .unwrap();
+ 
+         check_edit_with_config(
+             CompletionConfig { snippets: vec![snippet.clone()], ..TEST_CONFIG },
              "#,
          );
      }

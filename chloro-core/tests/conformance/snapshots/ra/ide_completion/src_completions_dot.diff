@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35861 bytes
-Chloro size:   35813 bytes
+Chloro size:   35822 bytes
 Rustfmt size:  35861 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,15 @@ Rustfmt size:  35861 bytes
  };
  
  /// Complete dot accesses, i.e. fields or methods.
+         }
+     }
+ 
+-    receiver.iterate_method_candidates_split_inherent(
++    receiver
++        .iterate_method_candidates_split_inherent(
+         ctx.db,
+         &ctx.scope,
+         traits_in_scope,
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

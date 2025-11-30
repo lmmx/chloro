@@ -233,7 +233,8 @@ fn wrap_derive(
         edit.add_file_edits(ctx.vfs_file_id(), editor);
     };
 
-    acc.add(
+    acc
+        .add(
         AssistId::refactor("wrap_unwrap_cfg_attr"),
         format!("Wrap #[derive({path_text})] in `cfg_attr`",),
         range,
@@ -288,7 +289,8 @@ fn wrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>, attr: ast::Attr) ->
         editor.add_mappings(make.finish_with_mappings());
         edit.add_file_edits(ctx.vfs_file_id(), editor);
     };
-    acc.add(
+    acc
+        .add(
         AssistId::refactor("wrap_unwrap_cfg_attr"),
         "Convert to `cfg_attr`",
         range,
@@ -358,7 +360,8 @@ fn unwrap_cfg_attr(acc: &mut Assists, attr: ast::Attr) -> Option<()> {
         let inner_attrs = inner_attrs.iter().map(|it| it.to_string()).join("\n");
         f.replace(range, inner_attrs);
     };
-    acc.add(
+    acc
+        .add(
         AssistId::refactor("wrap_unwrap_cfg_attr"),
         "Extract Inner Attributes from `cfg_attr`",
         range,

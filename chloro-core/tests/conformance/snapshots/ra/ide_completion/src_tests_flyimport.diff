@@ -2,12 +2,18 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34327 bytes
-Chloro size:   34327 bytes
+Chloro size:   34319 bytes
 Rustfmt size:  34347 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     expect: Expect,
+ ) {
+     let (db, position) = crate::tests::position(ra_fixture);
+-    let (ctx, analysis) =
+-        crate::context::CompletionContext::new(&db, position, &config, None).unwrap();
++    let (ctx, analysis) = crate::context::CompletionContext::new(&db, position, &config, None).unwrap();
  
      let mut acc = crate::completions::Completions::default();
      hir::attach_db(ctx.db, || {

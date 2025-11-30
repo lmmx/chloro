@@ -267,8 +267,7 @@ fn contains_illegal_self_type_reference<'db, T: rustc_type_ir::TypeVisitable<DbI
         }
     }
 
-    let mut visitor =
-        IllegalSelfTypeVisitor { db, trait_, super_traits: None, allow_self_projection };
+    let mut visitor = IllegalSelfTypeVisitor { db, trait_, super_traits: None, allow_self_projection };
     t.visit_with(&mut visitor).is_break()
 }
 
@@ -406,8 +405,7 @@ fn receiver_is_dispatchable<'db>(
         parent: trait_.into(),
         local_id: LocalTypeOrConstParamId::from_raw(la_arena::RawIdx::from_u32(0)),
     });
-    let self_param_ty =
-        Ty::new(interner, rustc_type_ir::TyKind::Param(ParamTy { index: 0, id: self_param_id }));
+    let self_param_ty = Ty::new(interner, rustc_type_ir::TyKind::Param(ParamTy { index: 0, id: self_param_id }));
 
     // `self: Self` can't be dispatched on, but this is already considered dyn-compatible
 
@@ -470,8 +468,7 @@ fn receiver_is_dispatchable<'db>(
     };
 
     // Receiver: DispatchFromDyn<Receiver[Self => U]>
-    let predicate =
-        TraitRef::new(interner, dispatch_from_dyn_did.into(), [receiver_ty, unsized_receiver_ty]);
+    let predicate = TraitRef::new(interner, dispatch_from_dyn_did.into(), [receiver_ty, unsized_receiver_ty]);
     let goal = Goal::new(interner, param_env, predicate);
 
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());

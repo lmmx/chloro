@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28332 bytes
-Chloro size:   28291 bytes
+Chloro size:   28278 bytes
 Rustfmt size:  28759 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,15 @@ Rustfmt size:  28759 bytes
  use itertools::Itertools;
  use syntax::{
      ast::{self, AstNode, HasGenericArgs, HasName},
+         Some(name) => name.syntax().text_range(),
+         None => pat.syntax().text_range(),
+     };
+-    acc.push(InlayHint {
++    acc
++        .push(InlayHint {
+         range: match type_ascriptable {
+             Some(Some(t)) => text_range.cover(t.text_range()),
+             _ => text_range,
          }
      }?;
  
@@ -169,8 +178,7 @@ Rustfmt size:  28759 bytes
 -            expected, actual,
 -            "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}"
 -        );
-+        let actual =
-+            inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect::<Vec<_>>();
++        let actual = inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect();
 +        assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
      }
 -

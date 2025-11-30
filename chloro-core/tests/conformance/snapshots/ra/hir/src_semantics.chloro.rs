@@ -755,8 +755,7 @@ impl<'db> SemanticsImpl<'db> {
         ast::String,
         Option<Either<PathResolution, InlineAsmOperand>>,
     )> {
-        let original_token =
-            self.wrap_token_infile(original_token).map(ast::String::cast).transpose()?;
+        let original_token = self.wrap_token_infile(original_token).map(ast::String::cast).transpose()?;
         self.check_for_format_args_template_with_file(original_token, offset)
     }
 
@@ -776,8 +775,7 @@ impl<'db> SemanticsImpl<'db> {
         ast::String,
         Option<Either<PathResolution, InlineAsmOperand>>,
     )> {
-        let relative_offset =
-            offset.checked_sub(original_token.value.syntax().text_range().start())?;
+        let relative_offset = offset.checked_sub(original_token.value.syntax().text_range().start())?;
         self.descend_into_macros_breakable(
             original_token.as_ref().map(|it| it.syntax().clone()),
             |token, _| {
@@ -984,14 +982,16 @@ impl<'db> SemanticsImpl<'db> {
         token: SyntaxToken,
         mut cb: impl FnMut(InFile<SyntaxToken>, SyntaxContext),
     ) {
-        self.descend_into_macros_all(self.wrap_token_infile(token), false, &mut |t, ctx| {
+        self
+            .descend_into_macros_all(self.wrap_token_infile(token), false, &mut |t, ctx| {
             cb(t, ctx)
         });
     }
 
     pub fn descend_into_macros(&self, token: SyntaxToken) -> SmallVec<[SyntaxToken; 1]> {
         let mut res = smallvec![];
-        self.descend_into_macros_all(
+        self
+            .descend_into_macros_all(
             self.wrap_token_infile(token.clone()),
             false,
             &mut |t, _ctx| res.push(t.value),
@@ -1009,7 +1009,8 @@ impl<'db> SemanticsImpl<'db> {
     ) -> SmallVec<[InFile<SyntaxToken>; 1]> {
         let mut res = smallvec![];
         let token = self.wrap_token_infile(token);
-        self.descend_into_macros_all(token.clone(), always_descend_into_derives, &mut |t, ctx| {
+        self
+            .descend_into_macros_all(token.clone(), always_descend_into_derives, &mut |t, ctx| {
             if !ctx.is_opaque(self.db) {
                 // Don't descend into opaque contexts
                 res.push(t);
@@ -1036,7 +1037,8 @@ impl<'db> SemanticsImpl<'db> {
         let text = token.text();
         let kind = token.kind();
 
-        self.descend_into_macros_cb(token.clone(), |InFile { value, file_id: _ }, ctx| {
+        self
+            .descend_into_macros_cb(token.clone(), |InFile { value, file_id: _ }, ctx| {
             let mapped_kind = value.kind();
             let any_ident_match = || kind.is_any_identifier() && value.kind().is_any_identifier();
             let matches = (kind == mapped_kind || any_ident_match())
@@ -1062,7 +1064,8 @@ impl<'db> SemanticsImpl<'db> {
         let text = token.text();
         let kind = token.kind();
 
-        self.descend_into_macros_cb(token.clone(), |InFile { value, file_id }, ctx| {
+        self
+            .descend_into_macros_cb(token.clone(), |InFile { value, file_id }, ctx| {
             let mapped_kind = value.kind();
             let any_ident_match = || kind.is_any_identifier() && value.kind().is_any_identifier();
             let matches = (kind == mapped_kind || any_ident_match())
@@ -1102,7 +1105,8 @@ impl<'db> SemanticsImpl<'db> {
         always_descend_into_derives: bool,
         f: &mut dyn FnMut(InFile<SyntaxToken>, SyntaxContext),
     ) {
-        self.descend_into_macros_impl(token, always_descend_into_derives, &mut |tok, ctx| {
+        self
+            .descend_into_macros_impl(token, always_descend_into_derives, &mut |tok, ctx| {
             f(tok, ctx);
             CONTINUE_NO_BREAKS
         });
@@ -1120,8 +1124,7 @@ impl<'db> SemanticsImpl<'db> {
         let span = db.span_map(file_id).span_for_range(token.text_range());
 
         // Process the expansion of a call, pushing all tokens with our span in the expansion back onto our stack
-        let process_expansion_for_token =
-            |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
+        let process_expansion_for_token = |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
                 let InMacroFile { file_id, value: mapped_tokens } = ctx
                     .cache
                     .get_or_insert_expansion(ctx.db, macro_file)
@@ -1648,8 +1651,7 @@ impl<'db> SemanticsImpl<'db> {
     ) -> Option<Function> {
         let interner = DbInterner::new_with(self.db, None, None);
         let mut subst = subst.into_iter();
-        let substs =
-            hir_ty::next_solver::GenericArgs::for_item(interner, trait_.id.into(), |_, id, _| {
+        let substs = hir_ty::next_solver::GenericArgs::for_item(interner, trait_.id.into(), |_, id, _| {
                 assert!(matches!(id, hir_def::GenericParamId::TypeParamId(_)), "expected a type");
                 subst.next().expect("too few subst").ty.into()
             });
@@ -2024,7 +2026,9 @@ impl<'db> SemanticsImpl<'db> {
     /// Wraps the node in a [`InFile`] with the file id it belongs to.
     fn find_file<'node>(&self, node: &'node SyntaxNode) -> InFile<&'node SyntaxNode> {
         let root_node = find_root(node);
-        let file_id = self.lookup(&root_node).unwrap_or_else(|| {
+        let file_id = self
+            .lookup(&root_node)
+            .unwrap_or_else(|| {
             panic!(
                 "\n\nFailed to lookup {:?} in this Semantics.\n\
                  Make sure to only query nodes derived from this instance of Semantics.\n\

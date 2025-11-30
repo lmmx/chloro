@@ -25,8 +25,7 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let cfg = ctx.config.import_path_config();
 
-    let mut proposed_imports: Vec<_> =
-        import_assets.search_for_relative_paths(&ctx.sema, cfg).collect();
+    let mut proposed_imports: Vec<_> = import_assets.search_for_relative_paths(&ctx.sema, cfg).collect();
     if proposed_imports.is_empty() {
         return None;
     }
@@ -65,10 +64,10 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
 
-    let current_edition =
-        current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
+    let current_edition = current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
     // prioritize more relevant imports
-    proposed_imports.sort_by_key(|import| {
+    proposed_imports
+        .sort_by_key(|import| {
         Reverse(super::auto_import::relevance_score(
             ctx,
             import,
@@ -144,8 +143,7 @@ impl QualifyCandidate<'_> {
     ) -> Option<()> {
         let receiver = mcall_expr.receiver()?;
         let method_name = mcall_expr.name_ref()?;
-        let generics =
-            mcall_expr.generic_arg_list().as_ref().map_or_else(String::new, ToString::to_string);
+        let generics = mcall_expr.generic_arg_list().as_ref().map_or_else(String::new, ToString::to_string);
         let arg_list = mcall_expr.arg_list().map(|arg_list| arg_list.args());
 
         if let Some(self_access) = hir_fn.self_param(db).map(|sp| sp.access(db)) {
@@ -209,7 +207,7 @@ fn group_label(candidate: &ImportCandidate<'_>) -> GroupLabel {
             &it.assoc_item_name
         }
     }
-    .text();
+        .text();
     GroupLabel(format!("Qualify {name}"))
 }
 

@@ -125,7 +125,8 @@ impl GlobalState {
         if !self.config.work_done_progress() {
             return;
         }
-        let percentage = fraction.map(|f| {
+        let percentage = fraction
+            .map(|f| {
             assert!((0.0..=1.0).contains(&f));
             (f * 100.0) as u32
         });
@@ -159,7 +160,8 @@ impl GlobalState {
                 lsp_types::WorkDoneProgress::End(lsp_types::WorkDoneProgressEnd { message })
             }
         };
-        self.send_notification::<lsp_types::notification::Progress>(lsp_types::ProgressParams {
+        self
+            .send_notification(lsp_types::ProgressParams {
             token,
             value: lsp_types::ProgressParamsValue::WorkDone(work_done_progress),
         });
@@ -173,8 +175,7 @@ pub(crate) fn apply_document_changes(
 ) -> String {
     // If at least one of the changes is a full document change, use the last
     // of them as the starting point and ignore all previous changes.
-    let (mut text, content_changes) =
-        match content_changes.iter().rposition(|change| change.range.is_none()) {
+    let (mut text, content_changes) = match content_changes.iter().rposition(|change| change.range.is_none()) {
             Some(idx) => {
                 let text = mem::take(&mut content_changes[idx].text);
                 (text, &content_changes[idx + 1..])
@@ -292,8 +293,7 @@ mod tests {
         assert_eq!(text, "the");
         let text = apply_document_changes(encoding, &text, c![0, 3; 0, 3 => " quick"]);
         assert_eq!(text, "the quick");
-        let text =
-            apply_document_changes(encoding, &text, c![0, 0; 0, 4 => "", 0, 5; 0, 5 => " foxes"]);
+        let text = apply_document_changes(encoding, &text, c![0, 0; 0, 4 => "", 0, 5; 0, 5 => " foxes"]);
         assert_eq!(text, "quick foxes");
         let text = apply_document_changes(encoding, &text, c![0, 11; 0, 11 => "\ndream"]);
         assert_eq!(text, "quick foxes\ndream");
@@ -305,8 +305,7 @@ mod tests {
             c![0, 0; 0, 0 => "the ", 1, 4; 1, 4 => " quiet", 1, 16; 1, 16 => "s\n"],
         );
         assert_eq!(text, "the quick foxes\nhave quiet dreams\n");
-        let text =
-            apply_document_changes(encoding, &text, c![0, 15; 0, 15 => "\n", 2, 17; 2, 17 => "\n"]);
+        let text = apply_document_changes(encoding, &text, c![0, 15; 0, 15 => "\n", 2, 17; 2, 17 => "\n"]);
         assert_eq!(text, "the quick foxes\n\nhave quiet dreams\n\n");
         let text = apply_document_changes(
             encoding,
@@ -314,8 +313,7 @@ mod tests {
             c![1, 0; 1, 0 => "DREAM", 2, 0; 2, 0 => "they ", 3, 0; 3, 0 => "DON'T THEY?"],
         );
         assert_eq!(text, "the quick foxes\nDREAM\nthey have quiet dreams\nDON'T THEY?\n");
-        let text =
-            apply_document_changes(encoding, &text, c![0, 10; 1, 5 => "", 2, 0; 2, 12 => ""]);
+        let text = apply_document_changes(encoding, &text, c![0, 10; 1, 5 => "", 2, 0; 2, 12 => ""]);
         assert_eq!(text, "the quick \nthey have quiet dreams\n");
 
         let text = String::from("❤️");
@@ -323,13 +321,11 @@ mod tests {
         assert_eq!(text, "a❤️");
 
         let text = String::from("a\nb");
-        let text =
-            apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "\nțc", 0, 1; 1, 1 => "d"]);
+        let text = apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "\nțc", 0, 1; 1, 1 => "d"]);
         assert_eq!(text, "adcb");
 
         let text = String::from("a\nb");
-        let text =
-            apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "ț\nc", 0, 2; 0, 2 => "c"]);
+        let text = apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "ț\nc", 0, 2; 0, 2 => "c"]);
         assert_eq!(text, "ațc\ncb");
     }
     #[test]
@@ -385,8 +381,7 @@ mod tests {
             "new_text".to_owned(),
         );
 
-        let mut completion_with_joint_edits =
-            CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
+        let mut completion_with_joint_edits = CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
         completion_with_joint_edits.additional_text_edits =
             Some(vec![disjoint_edit.clone(), joint_edit.clone()]);
         assert!(
@@ -429,8 +424,7 @@ mod tests {
             "new_text".to_owned(),
         );
 
-        let mut completion_with_disjoint_edits =
-            CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
+        let mut completion_with_disjoint_edits = CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
         completion_with_disjoint_edits.text_edit = Some(CompletionTextEdit::Edit(disjoint_edit));
         let completion_with_disjoint_edits = completion_with_disjoint_edits;
 

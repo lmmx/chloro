@@ -54,7 +54,9 @@ fn generate_trait_impl_text_from_impl(
     trait_text: &str,
     code: &str,
 ) -> String {
-    let generic_params = impl_.generic_param_list().map(|generic_params| {
+    let generic_params = impl_
+        .generic_param_list()
+        .map(|generic_params| {
         let lifetime_params =
             generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {

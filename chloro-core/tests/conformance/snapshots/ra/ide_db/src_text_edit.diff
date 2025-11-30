@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9629 bytes
-Chloro size:   9665 bytes
+Chloro size:   9653 bytes
 Rustfmt size:  9801 bytes
 
 ✗ Outputs DIFFER
@@ -40,8 +40,7 @@ Rustfmt size:  9801 bytes
 -        let iter_merge = self
 -            .iter()
 -            .merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
-+        let iter_merge =
-+            self.iter().merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
++        let iter_merge = self.iter().merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
          if !check_disjoint(&mut iter_merge.clone()) {
              return Err(other);
          }

@@ -106,8 +106,7 @@ fn check_answer(
 fn pretty_print_err(e: ConstEvalError<'_>, db: &TestDB) -> String {
     let mut err = String::new();
     let span_formatter = |file, range| format!("{file:?} {range:?}");
-    let display_target =
-        DisplayTarget::from_crate(db, *db.all_crates().last().expect("no crate graph present"));
+    let display_target = DisplayTarget::from_crate(db, *db.all_crates().last().expect("no crate graph present"));
     match e {
         ConstEvalError::MirLowerError(e) => {
             e.pretty_print(&mut err, db, span_formatter, display_target)
@@ -116,7 +115,7 @@ fn pretty_print_err(e: ConstEvalError<'_>, db: &TestDB) -> String {
             e.pretty_print(&mut err, db, span_formatter, display_target)
         }
     }
-    .unwrap();
+        .unwrap();
     err
 }
 

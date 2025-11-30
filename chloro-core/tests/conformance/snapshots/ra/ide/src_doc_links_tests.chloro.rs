@@ -45,8 +45,7 @@ fn check_rewrite(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect
     let (analysis, position) = fixture::position(ra_fixture);
     let sema = &Semantics::new(&analysis.db);
     let (cursor_def, docs, range) = def_under_cursor(sema, &position);
-    let res =
-        hir::attach_db(sema.db, || rewrite_links(sema.db, docs.as_str(), cursor_def, Some(range)));
+    let res = hir::attach_db(sema.db, || rewrite_links(sema.db, docs.as_str(), cursor_def, Some(range)));
     expect.assert_eq(&res)
 }
 

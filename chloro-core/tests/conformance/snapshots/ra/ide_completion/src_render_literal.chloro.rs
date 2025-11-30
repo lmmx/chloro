@@ -129,7 +129,8 @@ fn render(
     item.set_documentation(thing.docs(db)).set_deprecated(thing.is_deprecated(&ctx));
 
     let ty = thing.ty(db);
-    item.set_relevance(CompletionRelevance {
+    item
+        .set_relevance(CompletionRelevance {
         type_match: compute_type_match(ctx.completion, &ty),
         // function is a misnomer here, this is more about constructor information
         function: Some(CompletionRelevanceFn {

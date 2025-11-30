@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4330 bytes
-Chloro size:   4324 bytes
+Chloro size:   4360 bytes
 Rustfmt size:  4425 bytes
 
 ✗ Outputs DIFFER
@@ -20,13 +20,9 @@ Rustfmt size:  4425 bytes
      let brace_offset = match braces {
          // escaped brace
          Some(((_, '{'), (_, '{'))) => return,
-     };
- 
-     let source_range = TextRange::new(brace_offset, cursor);
--    ctx.locals
--        .iter()
--        .sorted_by_key(|&(k, _)| k.clone())
--        .for_each(|(name, _)| {
+         .iter()
+         .sorted_by_key(|&(k, _)| k.clone())
+         .for_each(|(name, _)| {
 -            CompletionItem::new(
 -                CompletionItemKind::Binding,
 -                source_range,
@@ -35,7 +31,7 @@ Rustfmt size:  4425 bytes
 -            )
 -            .add_to(acc, ctx.db);
 -        });
-+    ctx.locals.iter().sorted_by_key(|&(k, _)| k.clone()).for_each(|(name, _)| {
+-    ctx.scope.process_all_names(&mut |name, scope| {
 +        CompletionItem::new(
 +            CompletionItemKind::Binding,
 +            source_range,
@@ -44,9 +40,11 @@ Rustfmt size:  4425 bytes
 +        )
 +        .add_to(acc, ctx.db);
 +    });
-     ctx.scope.process_all_names(&mut |name, scope| {
++    ctx.scope
++        .process_all_names(&mut |name, scope| {
          if let ScopeDef::ModuleDef(module_def) = scope {
              let symbol_kind = match module_def {
+                 ModuleDef::Const(..) => SymbolKind::Const,
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

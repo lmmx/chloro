@@ -58,7 +58,10 @@ fn edit_struct_def(
     tuple_fields: ast::TupleFieldList,
     names: Vec<ast::Name>,
 ) {
-    let record_fields = tuple_fields.fields().zip(names).filter_map(|(f, name)| {
+    let record_fields = tuple_fields
+        .fields()
+        .zip(names)
+        .filter_map(|(f, name)| {
         let field = ast::make::record_field(f.visibility(), name, f.ty()?);
         let mut field_editor = SyntaxEditor::new(field.syntax().clone());
         field_editor.insert_all(
@@ -244,8 +247,7 @@ fn generate_record_pat_list(
     let pure_fields = pat.fields().filter(|p| !matches!(p, ast::Pat::RestPat(_)));
     let rest_len = names.len().saturating_sub(pure_fields.clone().count());
     let rest_pat = pat.fields().find_map(|p| ast::RestPat::cast(p.syntax().clone()));
-    let rest_idx =
-        pat.fields().position(|p| ast::RestPat::can_cast(p.syntax().kind())).unwrap_or(names.len());
+    let rest_idx = pat.fields().position(|p| ast::RestPat::can_cast(p.syntax().kind())).unwrap_or(names.len());
     let before_rest = pat.fields().zip(names).take(rest_idx);
     let after_rest = pure_fields.zip(names.iter().skip(rest_len)).skip(rest_idx);
 

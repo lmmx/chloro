@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23187 bytes
-Chloro size:   22717 bytes
+Chloro size:   22719 bytes
 Rustfmt size:  23470 bytes
 
 ✗ Outputs DIFFER
@@ -46,6 +46,12 @@ Rustfmt size:  23470 bytes
      let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
      let data = collect_data(ident_pat, ctx)?;
  
+-    acc.add(
++    acc
++        .add(
+         AssistId::refactor_rewrite("destructure_struct_binding"),
+         "Destructure struct binding",
+         data.ident_pat.syntax().text_range(),
  
  fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<StructEditData> {
      let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
@@ -80,11 +86,18 @@ Rustfmt size:  23470 bytes
 -        .into_iter()
 -        .filter(|field| field.is_visible_from(ctx.db(), module))
 -        .collect_vec();
-+    let visible_fields =
-+        fields.into_iter().filter(|field| field.is_visible_from(ctx.db(), module)).collect_vec();
++    let visible_fields = fields.into_iter().filter(|field| field.is_visible_from(ctx.db(), module)).collect_vec();
  
      if visible_fields.is_empty() {
          return None;
+     }
+ 
+-    let has_private_members =
+-        (is_non_exhaustive && is_foreign_crate) || visible_fields.len() < n_fields;
++    let has_private_members = (is_non_exhaustive && is_foreign_crate) || visible_fields.len() < n_fields;
+ 
+     // If private members are present, we can only destructure records
+     if !matches!(kind, hir::StructKind::Record) && has_private_members {
      }
  
      // If available, find names visible to the last usage of the binding
@@ -92,6 +105,15 @@ Rustfmt size:  23470 bytes
      // else, find names visible to the binding itself
      let last_usage = last_usage(usages);
      let node = last_usage.as_ref().unwrap_or(ident_pat.syntax());
+     let scope = ctx.sema.scope(node)?;
+ 
+     let mut names = FxHashSet::default();
+-    scope.process_all_names(&mut |name, scope| {
++    scope
++        .process_all_names(&mut |name, scope| {
+         if let hir::ScopeDef::Local(_) = scope {
+             names.insert(name.as_str().into());
+         }
      };
  
      // If the binding is nested inside a record, we need to wrap the new

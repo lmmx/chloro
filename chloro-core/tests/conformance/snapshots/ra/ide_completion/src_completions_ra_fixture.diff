@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2773 bytes
-Chloro size:   2771 bytes
+Chloro size:   2763 bytes
 Rustfmt size:  2828 bytes
 
 ✗ Outputs DIFFER
@@ -22,8 +22,7 @@ Rustfmt size:  2828 bytes
 -    let completions = completions
 -        .upmap_from_ra_fixture(&analysis, virtual_file_id, ctx.position.file_id)
 -        .ok()?;
-+    let completions =
-+        completions.upmap_from_ra_fixture(&analysis, virtual_file_id, ctx.position.file_id).ok()?;
++    let completions = completions.upmap_from_ra_fixture(&analysis, virtual_file_id, ctx.position.file_id).ok()?;
      acc.add_many(completions);
      Some(())
  }

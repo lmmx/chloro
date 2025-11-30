@@ -18,8 +18,7 @@ pub(crate) fn incorrect_generics_order(
         GenericArgKind::Type => "type",
         GenericArgKind::Const => "constant",
     };
-    let message =
-        format!("{provided_description} provided when a {expected_description} was expected");
+    let message = format!("{provided_description} provided when a {expected_description} was expected");
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0747"),

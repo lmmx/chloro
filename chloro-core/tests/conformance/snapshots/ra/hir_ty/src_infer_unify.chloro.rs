@@ -234,7 +234,8 @@ impl<'db> InferenceTable<'db> {
             self.infer_ctxt.visit_proof_tree(goal, &mut visitor);
         }
 
-        obligations_for_self_ty.retain_mut(|obligation| {
+        obligations_for_self_ty
+            .retain_mut(|obligation| {
             obligation.predicate = self.infer_ctxt.resolve_vars_if_possible(obligation.predicate);
             !obligation.predicate.has_placeholders()
         });
@@ -629,7 +630,9 @@ impl<'db> InferenceTable<'db> {
     where
         I: IntoIterator<Item = PredicateObligation<'db>>,
     {
-        obligations.into_iter().for_each(|obligation| {
+        obligations
+            .into_iter()
+            .for_each(|obligation| {
             self.register_predicate(obligation);
         });
     }

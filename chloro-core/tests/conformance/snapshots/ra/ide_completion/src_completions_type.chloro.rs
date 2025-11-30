@@ -232,7 +232,7 @@ pub(crate) fn complete_ascribed_type(
             ctx.sema.type_of_expr(exp.as_ref()?)
         }
     }?
-    .adjusted();
+        .adjusted();
     if !ty.is_unknown() {
         let ty_string = ty.display_source_code(ctx.db, ctx.module.into(), true).ok()?;
         acc.add(render_type_inference(ty_string, ctx));

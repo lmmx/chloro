@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3507 bytes
-Chloro size:   3507 bytes
+Chloro size:   3495 bytes
 Rustfmt size:  3539 bytes
 
 ✗ Outputs DIFFER
@@ -16,8 +16,7 @@ Rustfmt size:  3539 bytes
 -            set_test: true,
 -            ..CargoConfig::default()
 -        };
-+        let cargo_config =
-+            CargoConfig { all_targets: true, set_test: true, ..CargoConfig::default() };
++        let cargo_config = CargoConfig { all_targets: true, set_test: true, ..CargoConfig::default() };
          let load_cargo_config = LoadCargoConfig {
              load_out_dirs_from_check: true,
              with_proc_macro_server: ProcMacroServerChoice::Sysroot,

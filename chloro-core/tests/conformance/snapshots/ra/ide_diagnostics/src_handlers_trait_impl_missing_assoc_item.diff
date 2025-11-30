@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3099 bytes
-Chloro size:   2996 bytes
+Chloro size:   3014 bytes
 Rustfmt size:  3144 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,14 @@ Rustfmt size:  3144 bytes
  pub(crate) fn trait_impl_missing_assoc_item(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::TraitImplMissingAssocItems,
+ ) -> Diagnostic {
+-    let missing = d.missing.iter().format_with(", ", |(name, item), f| {
++    let missing = d.missing
++        .iter()
++        .format_with(", ", |(name, item), f| {
+         f(&match *item {
+             hir::AssocItem::Function(_) => "`fn ",
+             hir::AssocItem::Const(_) => "`const ",
          format!("not all trait items implemented, missing: {missing}"),
          adjusted_display_range::<ast::Impl>(
              ctx,

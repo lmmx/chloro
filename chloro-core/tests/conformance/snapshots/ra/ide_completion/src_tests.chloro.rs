@@ -244,8 +244,7 @@ pub(crate) fn check_edit_with_config(
 ) {
     let ra_fixture_after = trim_indent(ra_fixture_after);
     let (db, position) = position(ra_fixture_before);
-    let completions: Vec<CompletionItem> =
-        hir::attach_db(&db, || crate::completions(&db, &config, position, None).unwrap());
+    let completions: Vec<CompletionItem> = hir::attach_db(&db, || crate::completions(&db, &config, position, None).unwrap());
     let Some((completion,)) = completions.iter().filter(|it| it.lookup() == what).collect_tuple()
     else {
         panic!("can't find {what:?} completion in {completions:#?}")
@@ -311,9 +310,11 @@ pub(crate) fn get_all_items(
         HirDatabase::zalsa_register_downcaster(&db);
         crate::completions(&db, &config, position, trigger_character)
     })
-    .map_or_else(Vec::default, Into::into);
+        .map_or_else(Vec::default, Into::into);
     // validate
-    res.iter().for_each(|it| {
+    res
+        .iter()
+        .for_each(|it| {
         let sr = it.source_range;
         assert!(
             sr.contains_inclusive(position.offset),

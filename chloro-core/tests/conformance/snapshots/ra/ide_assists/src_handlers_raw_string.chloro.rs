@@ -76,8 +76,7 @@ pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
 
     let text = token.text();
 
-    let existing_hashes =
-        text.chars().skip(token.raw_prefix().len()).take_while(|&it| it == '#').count();
+    let existing_hashes = text.chars().skip(token.raw_prefix().len()).take_while(|&it| it == '#').count();
 
     let text_range = token.syntax().text_range();
     let internal_text = &text[token.text_range_between_quotes()? - text_range.start()];

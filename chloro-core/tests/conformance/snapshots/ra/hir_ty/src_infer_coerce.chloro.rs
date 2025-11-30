@@ -526,8 +526,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
             return success(vec![], ty, obligations);
         }
 
-        let InferOk { value: mut adjustments, obligations: o } =
-            autoderef.adjust_steps_as_infer_ok();
+        let InferOk { value: mut adjustments, obligations: o } = autoderef.adjust_steps_as_infer_ok();
         obligations.extend(o);
 
         // Now apply the autoref. We have to extract the region out of
@@ -536,7 +535,8 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         let TyKind::Ref(region, _, _) = ty.kind() else {
             panic!("expected a ref type, got {:?}", ty);
         };
-        adjustments.push(Adjustment {
+        adjustments
+            .push(Adjustment {
             kind: Adjust::Borrow(AutoBorrow::Ref(region, mutbl_b)),
             target: ty,
         });
@@ -1589,8 +1589,7 @@ fn coerce<'db>(
         use_lub: false,
         target_features: &mut || (&target_features, TargetFeatureIsSafeInTarget::No),
     };
-    let InferOk { value: (adjustments, ty), obligations } =
-        coerce.coerce(ty1_with_vars, ty2_with_vars)?;
+    let InferOk { value: (adjustments, ty), obligations } = coerce.coerce(ty1_with_vars, ty2_with_vars)?;
     table.register_predicates(obligations);
 
     // default any type vars that weren't unified back to their original bound vars
@@ -1646,7 +1645,8 @@ fn coerce<'db>(
     };
     // FIXME also map the types in the adjustments
     // FIXME: We don't fallback correctly since this is done on `InferenceContext` and we only have `InferenceTable`.
-    let ty = table.resolve_with_fallback(
+    let ty = table
+        .resolve_with_fallback(
         ty,
         &mut fallback_ty,
         &mut fallback_const,

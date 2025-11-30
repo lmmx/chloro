@@ -93,8 +93,7 @@ fn find_path_type(
     type_param_name: &Name,
     param: &NameLike,
 ) -> Option<PathType> {
-    let path_type =
-        sema.ancestors_with_macros(param.syntax().clone()).find_map(ast::PathType::cast)?;
+    let path_type = sema.ancestors_with_macros(param.syntax().clone()).find_map(ast::PathType::cast)?;
 
     // Ignore any path types that look like `P::Assoc`
     if path_type.path()?.as_single_name_ref()?.text() != type_param_name.text() {

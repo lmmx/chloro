@@ -42,8 +42,7 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     };
 
     // Return early if we've found an existing new fn
-    let impl_def =
-        find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
+    let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
 
     let current_module = ctx.sema.scope(strukt.syntax())?.module();
 

@@ -162,7 +162,9 @@ impl DiagnosticCollection {
         }
 
         let check = &mut self.check[flycheck_id];
-        let package = check.per_package.entry(package_id.clone()).or_insert_with(|| {
+        let package = check.per_package
+            .entry(package_id.clone())
+            .or_insert_with(|| {
             PackageFlycheckDiagnostic { generation, per_file: FxHashMap::default() }
         });
         // Getting message from old generation. Might happen in restarting checks.
@@ -315,7 +317,7 @@ pub(crate) fn fetch_native_diagnostics(
                 .collect::<Vec<_>>();
             Some((file_id, diagnostics))
         })
-        .collect::<Vec<_>>();
+        .collect();
 
     // Add back any diagnostics that point to files we are subscribed to
     for (file_id, group) in odd_ones
@@ -349,9 +351,11 @@ pub(crate) fn convert_diagnostic(
         range: lsp::to_proto::range(line_index, d.range.range),
         severity: Some(lsp::to_proto::diagnostic_severity(d.severity)),
         code: Some(lsp_types::NumberOrString::String(d.code.as_str().to_owned())),
-        code_description: Some(lsp_types::CodeDescription {
+        code_description: Some(
+            lsp_types::CodeDescription {
             href: lsp_types::Url::parse(&d.code.url()).unwrap(),
-        }),
+        },
+        ),
         source: Some("rust-analyzer".to_owned()),
         message: d.message,
         related_information: None,

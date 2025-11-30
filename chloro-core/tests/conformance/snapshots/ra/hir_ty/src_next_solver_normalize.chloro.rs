@@ -40,8 +40,7 @@ pub fn deeply_normalize_with_skipped_universes<'db, T>(
 where
     T: TypeFoldable<DbInterner<'db>>,
 {
-    let (value, coroutine_goals) =
-        deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
+    let (value, coroutine_goals) = deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
             at, value, universes,
         )?;
     assert_eq!(coroutine_goals, vec![]);
@@ -142,7 +141,8 @@ impl<'db> NormalizationFolder<'_, 'db> {
             return Err(errors);
         }
 
-        self.stalled_coroutine_goals.extend(
+        self.stalled_coroutine_goals
+            .extend(
             self.fulfill_cx
                 .drain_stalled_obligations_for_coroutines(self.at.infcx)
                 .into_iter()
@@ -249,7 +249,8 @@ impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_
 
     fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
         let infcx = self.at.infcx;
-        let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
+        let result: Result<_, Vec<NextSolverError<'db>>> = infcx
+            .commit_if_ok(|_| {
             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
                 self.at,
                 ty,
@@ -264,7 +265,8 @@ impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_
 
     fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
         let infcx = self.at.infcx;
-        let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
+        let result: Result<_, Vec<NextSolverError<'db>>> = infcx
+            .commit_if_ok(|_| {
             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
                 self.at,
                 ct,

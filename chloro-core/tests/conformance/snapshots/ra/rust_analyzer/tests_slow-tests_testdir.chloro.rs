@@ -28,7 +28,6 @@ impl TestDir {
         //
         // Work-around this by canonicalizing. Note that we don't want to do this
         // on *every* OS, as on windows `canonicalize` itself creates problems.
-        #[cfg(target_os = "macos")]
         let temp_dir = temp_dir.canonicalize().unwrap();
 
         let base = temp_dir.join("testdir");
@@ -97,7 +96,8 @@ impl Drop for TestDir {
             })
         }
 
-        remove_dir_all(&self.path).unwrap_or_else(|err| {
+        remove_dir_all(&self.path)
+            .unwrap_or_else(|err| {
             panic!("failed to remove temporary directory {}: {err}", self.path)
         });
     }

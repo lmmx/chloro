@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4096 bytes
-Chloro size:   4095 bytes
+Chloro size:   4083 bytes
 Rustfmt size:  4239 bytes
 
 ✗ Outputs DIFFER
@@ -58,8 +58,7 @@ Rustfmt size:  4239 bytes
 -            region_constraints_snapshot: _,
 -            universe: _,
 -        } = snapshot;
-+        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot: _, universe: _ } =
-+            snapshot;
++        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot: _, universe: _ } = snapshot;
  
          self.inner.borrow_mut().commit(undo_snapshot);
      }

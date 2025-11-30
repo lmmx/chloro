@@ -34,8 +34,7 @@ pub(crate) fn complete_ra_fixture(
             ctx.trigger_character,
         )
     })?;
-    let completions =
-        completions.upmap_from_ra_fixture(&analysis, virtual_file_id, ctx.position.file_id).ok()?;
+    let completions = completions.upmap_from_ra_fixture(&analysis, virtual_file_id, ctx.position.file_id).ok()?;
     acc.add_many(completions);
     Some(())
 }

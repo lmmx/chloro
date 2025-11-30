@@ -171,10 +171,9 @@ impl FlycheckHandle {
             ws_target_dir,
         );
         let (sender, receiver) = unbounded::<StateChange>();
-        let thread =
-            stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, format!("Flycheck{id}"))
-                .spawn(move || actor.run(receiver))
-                .expect("failed to spawn thread");
+        let thread = stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, format!("Flycheck{id}"))
+            .spawn(move || actor.run(receiver))
+            .expect("failed to spawn thread");
         FlycheckHandle { id, generation: generation.into(), sender, _thread: thread }
     }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5686 bytes
-Chloro size:   5353 bytes
+Chloro size:   5363 bytes
 Rustfmt size:  5758 bytes
 
 ✗ Outputs DIFFER
@@ -31,8 +31,7 @@ Rustfmt size:  5758 bytes
 -        .syntax()
 -        .parent()
 -        .and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
-+    let record =
-+        path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
++    let record = path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
  
      let parent_node = match ctx.covering_element() {
          SyntaxElement::Node(n) => n,
@@ -46,6 +45,16 @@ Rustfmt size:  5758 bytes
      };
  
      let field_list = match &record {
+         )),
+     };
+ 
+-    let is_sorted = fields.as_ref().either(
++    let is_sorted = fields
++        .as_ref()
++        .either(
+         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
+         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
+     );
          cov_mark::hit!(reorder_sorted_fields);
          return None;
      }

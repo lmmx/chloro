@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6321 bytes
-Chloro size:   6208 bytes
+Chloro size:   6216 bytes
 Rustfmt size:  6321 bytes
 
 ✗ Outputs DIFFER
@@ -19,6 +19,16 @@ Rustfmt size:  6321 bytes
  pub(crate) fn inactive_code(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::InactiveCode,
+         message,
+         ctx.sema.diagnostics_display_range(d.node),
+     )
+-    .stable()
+-    .with_unused(true);
++        .stable()
++        .with_unused(true);
+     Some(res)
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::{tests::check_diagnostics_with_config, DiagnosticsConfig};

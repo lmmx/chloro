@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34740 bytes
+Chloro size:   34720 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -66,6 +66,15 @@ Rustfmt size:  36650 bytes
  pub(crate) fn on_char_typed(
      db: &RootDatabase,
      position: FilePosition,
+     let edition = Edition::CURRENT_FIXME;
+     let editioned_file_id_wrapper = EditionedFileId::new(db, position.file_id, edition);
+     let file = &db.parse(editioned_file_id_wrapper);
+-    let char_matches_position =
+-        file.tree().syntax().text().char_at(position.offset) == Some(char_typed);
++    let char_matches_position = file.tree().syntax().text().char_at(position.offset) == Some(char_typed);
+     if !stdx::always!(char_matches_position) {
+         return None;
+     }
  }
  
  fn conv(edit: TextEdit) -> ExtendedTextEdit {
@@ -231,14 +240,20 @@ Rustfmt size:  36650 bytes
 -        .token_at_offset(offset)
 -        .left_biased()
 -        .and_then(ast::Whitespace::cast)?;
-+    let whitespace =
-+        file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
++    let whitespace = file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
  
      // if prior is fn call over multiple lines dont indent
 +
      // or if previous is method call over multiples lines keep that indent
      let current_indent = {
          let text = whitespace.text();
+         // in all other cases, take previous indentation and indent once
+         None => IndentLevel::from_node(&parent) + 1,
+     }
+-    .to_string();
++        .to_string();
+ 
+     if current_indent_len == TextSize::of(&target_indent) {
          return None;
      }
  
@@ -280,8 +295,7 @@ Rustfmt size:  36650 bytes
 -    let trait_type = ancestors
 -        .next()
 -        .and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
-+    let trait_type =
-+        ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
++    let trait_type = ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
      let kind = ancestors.next()?.kind();
  
      if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)

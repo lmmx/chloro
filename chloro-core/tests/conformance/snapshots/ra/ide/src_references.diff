@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   66213 bytes
+Chloro size:   66198 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
@@ -99,6 +99,35 @@ Rustfmt size:  66636 bytes
  #[derive(Debug)]
  pub struct FindAllRefsConfig<'a> {
      pub search_scope: Option<SearchScope>,
+     FilePosition { file_id, offset }: FilePosition,
+ ) -> Option<ReferenceSearchResult> {
+     let file = sema.parse_guess_edition(file_id);
+-    let edition = sema
+-        .attach_first_edition(file_id)
+-        .map(|it| it.edition(sema.db))
+-        .unwrap_or(Edition::CURRENT);
++    let edition = sema.attach_first_edition(file_id).map(|it| it.edition(sema.db)).unwrap_or(Edition::CURRENT);
+     let token = pick_best_token(file.syntax().token_at_offset(offset), |kind| match kind {
+         _ if kind.is_keyword(edition) => 4,
+         T![=>] => 3,
+         T![if] | T![=>] | T![match] => highlight_related::highlight_branch_exit_points(sema, token),
+         _ => return None,
+     }
+-    .into_iter()
+-    .map(|(file_id, ranges)| {
++        .into_iter()
++        .map(|(file_id, ranges)| {
+         let ranges = ranges
+             .into_iter()
+             .map(|HighlightedRange { range, category }| (range, category))
+             .collect();
+         (file_id.file_id(sema.db), ranges)
+     })
+-    .collect();
++        .collect();
+ 
+     Some(ReferenceSearchResult { declaration: None, references })
+ }
  
  #[cfg(test)]
  mod tests {

@@ -131,8 +131,7 @@ fn traverse(
 
     // FIXME: accommodate range highlighting
     let mut body_stack: Vec<Option<DefWithBody>> = vec![];
-    let mut per_body_cache: FxHashMap<DefWithBody, (FxHashSet<_>, FxHashMap<Name, u32>)> =
-        FxHashMap::default();
+    let mut per_body_cache: FxHashMap<DefWithBody, (FxHashSet<_>, FxHashMap<Name, u32>)> = FxHashMap::default();
 
     // Walk all nodes, keeping track of whether we are inside a macro or not.
 
@@ -420,7 +419,8 @@ fn descend_token(
 
     let mut t = None;
     let mut r = 0;
-    sema.descend_into_macros_breakable(token.clone().into(), |tok, _ctx| {
+    sema
+        .descend_into_macros_breakable(token.clone().into(), |tok, _ctx| {
         // FIXME: Consider checking ctx transparency for being opaque?
         let my_rank = ranker.rank_token(&tok.value);
 

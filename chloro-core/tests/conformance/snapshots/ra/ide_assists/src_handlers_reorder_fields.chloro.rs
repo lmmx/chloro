@@ -7,8 +7,7 @@ use crate::{AssistContext, AssistId, Assists};
 
 pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path = ctx.find_node_at_offset::<ast::Path>()?;
-    let record =
-        path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
+    let record = path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
 
     let parent_node = match ctx.covering_element() {
         SyntaxElement::Node(n) => n,
@@ -43,7 +42,9 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         )),
     };
 
-    let is_sorted = fields.as_ref().either(
+    let is_sorted = fields
+        .as_ref()
+        .either(
         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
     );

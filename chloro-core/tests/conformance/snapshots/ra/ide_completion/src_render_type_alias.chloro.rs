@@ -46,7 +46,8 @@ fn render(
         name,
         ctx.completion.edition,
     );
-    item.set_documentation(ctx.docs(type_alias))
+    item
+        .set_documentation(ctx.docs(type_alias))
         .set_deprecated(ctx.is_deprecated(type_alias) || ctx.is_deprecated_assoc_item(type_alias))
         .detail(detail)
         .set_relevance(ctx.completion_relevance());

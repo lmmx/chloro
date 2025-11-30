@@ -135,8 +135,7 @@ impl DirPath {
         if self.0.is_empty() {
             return None;
         };
-        let idx =
-            self.0[..self.0.len() - '/'.len_utf8()].rfind('/').map_or(0, |it| it + '/'.len_utf8());
+        let idx = self.0[..self.0.len() - '/'.len_utf8()].rfind('/').map_or(0, |it| it + '/'.len_utf8());
         Some(&self.0[..idx])
     }
 

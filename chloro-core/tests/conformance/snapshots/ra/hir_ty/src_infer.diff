@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   73140 bytes
+Chloro size:   73231 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -274,6 +274,15 @@ Rustfmt size:  74236 bytes
      diagnostics: Diagnostics<'db>,
  }
  
+         owner: DefWithBodyId,
+         krate: Crate,
+     ) -> (&'a TargetFeatures, TargetFeatureIsSafeInTarget) {
+-        let (target_features, target_feature_is_safe) = target_features.get_or_init(|| {
++        let (target_features, target_feature_is_safe) = target_features
++            .get_or_init(|| {
+             let target_features = match owner {
+                 DefWithBodyId::FunctionId(id) => TargetFeatures::from_attrs(&db.attrs(id.into())),
+                 _ => TargetFeatures::default(),
      }
  
      /// Clones `self` and calls `resolve_all()` on it.
@@ -300,6 +309,42 @@ Rustfmt size:  74236 bytes
      fn resolve_all(self) -> InferenceResult<'db> {
          let InferenceContext {
              mut table, mut result, tuple_field_accesses_rev, diagnostics, ..
+             mismatch.actual = table.resolve_completely(mismatch.actual);
+         }
+         type_mismatches.shrink_to_fit();
+-        diagnostics.retain_mut(|diagnostic| {
++        diagnostics
++            .retain_mut(|diagnostic| {
+             use InferenceDiagnostic::*;
+             match diagnostic {
+                 ExpectedFunction { found: ty, .. }
+     }
+ 
+     fn collect_const(&mut self, id: ConstId, data: &ConstSignature) {
+-        let return_ty = self.make_ty(
++        let return_ty = self
++            .make_ty(
+             data.type_ref,
+             &data.store,
+             InferenceTyDiagnosticSource::Signature,
+     }
+ 
+     fn collect_static(&mut self, data: &StaticSignature) {
+-        let return_ty = self.make_ty(
++        let return_ty = self
++            .make_ty(
+             data.type_ref,
+             &data.store,
+             InferenceTyDiagnosticSource::Signature,
+ 
+     fn collect_fn(&mut self, func: FunctionId) {
+         let data = self.db.function_signature(func);
+-        let mut param_tys = self.with_ty_lowering(
++        let mut param_tys = self
++            .with_ty_lowering(
+             &data.store,
+             InferenceTyDiagnosticSource::Signature,
+             LifetimeElisionKind::for_fn_params(&data),
          );
  
          // Check if function contains a va_list, if it does then we append it to the parameter types
@@ -320,6 +365,42 @@ Rustfmt size:  74236 bytes
          self.result.method_resolutions.insert(expr, (func, subst));
      }
  
+         type_source: InferenceTyDiagnosticSource,
+         lifetime_elision: LifetimeElisionKind<'db>,
+     ) -> Ty<'db> {
+-        let ty = self
+-            .with_ty_lowering(store, type_source, lifetime_elision, |ctx| ctx.lower_ty(type_ref));
++        let ty = self.with_ty_lowering(store, type_source, lifetime_elision, |ctx| ctx.lower_ty(type_ref));
+         self.process_user_written_ty(ty)
+     }
+ 
+     }
+ 
+     fn make_body_const(&mut self, const_ref: ConstRef, ty: Ty<'db>) -> Const<'db> {
+-        let const_ = self.with_ty_lowering(
++        let const_ = self
++            .with_ty_lowering(
+             self.body,
+             InferenceTyDiagnosticSource::Body,
+             LifetimeElisionKind::Infer,
+     }
+ 
+     fn make_path_as_body_const(&mut self, path: &Path, ty: Ty<'db>) -> Const<'db> {
+-        let const_ = self.with_ty_lowering(
++        let const_ = self
++            .with_ty_lowering(
+             self.body,
+             InferenceTyDiagnosticSource::Body,
+             LifetimeElisionKind::Infer,
+     }
+ 
+     fn make_body_lifetime(&mut self, lifetime_ref: LifetimeRefId) -> Region<'db> {
+-        let lt = self.with_ty_lowering(
++        let lt = self
++            .with_ty_lowering(
+             self.body,
+             InferenceTyDiagnosticSource::Body,
+             LifetimeElisionKind::Infer,
          &mut self,
          inner_ty: Ty<'db>,
          assoc_ty: Option<TypeAliasId>,

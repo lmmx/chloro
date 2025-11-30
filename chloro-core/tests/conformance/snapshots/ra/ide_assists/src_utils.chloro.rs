@@ -514,7 +514,10 @@ pub(crate) fn find_struct_impl(
 
     let struct_def = ctx.sema.to_def(adt)?;
 
-    let block = module.descendants().filter_map(ast::Impl::cast).find_map(|impl_blk| {
+    let block = module
+        .descendants()
+        .filter_map(ast::Impl::cast)
+        .find_map(|impl_blk| {
         let blk = ctx.sema.to_def(&impl_blk)?;
 
         // FIXME: handle e.g. `struct S<T>; impl<U> S<U> {}`
@@ -600,7 +603,9 @@ fn generate_impl_text_inner(
     code: &str,
 ) -> String {
     // Ensure lifetime params are before type & const params
-    let generic_params = adt.generic_param_list().map(|generic_params| {
+    let generic_params = adt
+        .generic_param_list()
+        .map(|generic_params| {
         let lifetime_params =
             generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
@@ -712,7 +717,9 @@ fn generate_impl_inner(
     body: Option<ast::AssocItemList>,
 ) -> ast::Impl {
     // Ensure lifetime params are before type & const params
-    let generic_params = adt.generic_param_list().map(|generic_params| {
+    let generic_params = adt
+        .generic_param_list()
+        .map(|generic_params| {
         let lifetime_params =
             generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
@@ -743,12 +750,10 @@ fn generate_impl_inner(
 
         make::generic_param_list(itertools::chain(lifetime_params, ty_or_const_params))
     });
-    let generic_args =
-        generic_params.as_ref().map(|params| params.to_generic_args().clone_for_update());
+    let generic_args = generic_params.as_ref().map(|params| params.to_generic_args().clone_for_update());
     let ty = make::ty_path(make::ext::ident_path(&adt.name().unwrap().text()));
 
-    let cfg_attrs =
-        adt.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
+    let cfg_attrs = adt.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
     match trait_ {
         Some(trait_) => make::impl_trait(
             cfg_attrs,

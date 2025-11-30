@@ -200,8 +200,8 @@ impl<'a, 'db> At<'a, 'db> {
                         goal.param_env,
                         goal.predicate,
                     )
-                })
-                .collect(),
+                }).collect(
+            ),
         }
     }
 }

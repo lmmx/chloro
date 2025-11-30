@@ -42,8 +42,8 @@ pub(crate) fn complete_known_attribute_input(
     let attribute = fake_attribute_under_caret;
     let path = attribute.path()?;
     let segments = path.segments().map(|s| s.name_ref()).collect::<Option<Vec<_>>>()?;
-    let segments = segments.iter().map(|n| n.text()).collect::<Vec<_>>();
-    let segments = segments.iter().map(|t| t.as_str()).collect::<Vec<_>>();
+    let segments = segments.iter().map(|n| n.text()).collect();
+    let segments = segments.iter().map(|t| t.as_str()).collect();
     let tt = attribute.token_tree()?;
 
     match segments.as_slice() {
@@ -139,10 +139,10 @@ pub(crate) fn complete_attribute_path(
         }
         Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
     }
-    let qualifier_path =
-        if let Qualified::With { path, .. } = qualified { Some(path) } else { None };
+    let qualifier_path = if let Qualified::With { path, .. } = qualified { Some(path) } else { None };
 
-    let attributes = annotated_item_kind.and_then(|kind| {
+    let attributes = annotated_item_kind
+        .and_then(|kind| {
         if ast::Expr::can_cast(kind) {
             Some(EXPR_ATTRIBUTES)
         } else {
@@ -406,11 +406,7 @@ const ATTRIBUTES: &[AttrCompletion] = &[
 
 fn parse_comma_sep_expr(input: ast::TokenTree) -> Option<Vec<ast::Expr>> {
     let r_paren = input.r_paren_token()?;
-    let tokens = input
-        .syntax()
-        .children_with_tokens()
-        .skip(1)
-        .take_while(|it| it.as_token() != Some(&r_paren));
+    let tokens = input.syntax().children_with_tokens().skip(1).take_while(|it| it.as_token() != Some(&r_paren));
     let input_expressions = tokens.chunk_by(|tok| tok.kind() == T![,]);
     Some(
         input_expressions
@@ -428,7 +424,8 @@ fn attributes_are_sorted() {
     let mut attrs = ATTRIBUTES.iter().map(|attr| attr.key());
     let mut prev = attrs.next().unwrap();
 
-    attrs.for_each(|next| {
+    attrs
+        .for_each(|next| {
         assert!(
             prev < next,
             r#"ATTRIBUTES array is not sorted, "{prev}" should come after "{next}""#

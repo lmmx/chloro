@@ -4,8 +4,7 @@ pub(crate) fn unresolved_ident(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UnresolvedIdent,
 ) -> Diagnostic {
-    let mut range =
-        ctx.sema.diagnostics_display_range(d.node.map(|(node, _)| node.syntax_node_ptr()));
+    let mut range = ctx.sema.diagnostics_display_range(d.node.map(|(node, _)| node.syntax_node_ptr()));
     if let Some(in_node_range) = d.node.value.1 {
         range.range = in_node_range + range.range.start();
     }

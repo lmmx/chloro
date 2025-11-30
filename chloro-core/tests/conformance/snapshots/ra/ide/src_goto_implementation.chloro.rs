@@ -153,9 +153,8 @@ mod tests {
             .into_iter()
             .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
             .sorted_by_key(cmp)
-            .collect::<Vec<_>>();
-        let expected =
-            expected.into_iter().map(|(range, _)| range).sorted_by_key(cmp).collect::<Vec<_>>();
+            .collect();
+        let expected = expected.into_iter().map(|(range, _)| range).sorted_by_key(cmp).collect();
         assert_eq!(expected, actual);
     }
     #[test]

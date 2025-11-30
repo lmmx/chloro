@@ -273,7 +273,7 @@ mod tests {
         expect![[r#"
             SUBTREE $$ 937550:Root[0000, 0]@0..0#ROOT2024 937550:Root[0000, 0]@0..0#ROOT2024
               IDENT   hello 937550:Root[0000, 0]@0..0#ROOT2024"#]]
-        .assert_eq(&t);
+            .assert_eq(&t);
     }
     #[test]
     fn test_quote_simple_derive_copy() {

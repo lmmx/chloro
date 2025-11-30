@@ -200,8 +200,7 @@ impl PartialEq for ExpressionStoreSourceMap {
         // we only need to compare one of the two mappings
         // as the other is a reverse mapping and thus will compare
         // the same as normal mapping
-        let Self { expr_only, types_map_back, types_map: _, lifetime_map_back, lifetime_map: _ } =
-            self;
+        let Self { expr_only, types_map_back, types_map: _, lifetime_map_back, lifetime_map: _ } = self;
         *expr_only == other.expr_only
             && *types_map_back == other.types_map_back
             && *lifetime_map_back == other.lifetime_map_back
@@ -350,8 +349,7 @@ impl ExpressionStoreBuilder {
         }
         expansions.shrink_to_fit();
 
-        let has_exprs =
-            !exprs.is_empty() || !labels.is_empty() || !pats.is_empty() || !bindings.is_empty();
+        let has_exprs = !exprs.is_empty() || !labels.is_empty() || !pats.is_empty() || !bindings.is_empty();
 
         let store = {
             let expr_only = if has_exprs {
@@ -426,7 +424,8 @@ impl ExpressionStore {
     }
 
     pub fn walk_bindings_in_pat(&self, pat_id: PatId, mut f: impl FnMut(BindingId)) {
-        self.walk_pats(pat_id, &mut |pat| {
+        self
+            .walk_pats(pat_id, &mut |pat| {
             if let Pat::Bind { id, .. } = &self[pat] {
                 f(*id);
             }
@@ -749,7 +748,8 @@ impl ExpressionStore {
     }
 
     pub fn walk_exprs_in_pat(&self, pat_id: PatId, f: &mut impl FnMut(ExprId)) {
-        self.walk_pats(pat_id, &mut |pat| {
+        self
+            .walk_pats(pat_id, &mut |pat| {
             if let Pat::Expr(expr) | Pat::ConstBlock(expr) = self[pat] {
                 f(expr);
             }

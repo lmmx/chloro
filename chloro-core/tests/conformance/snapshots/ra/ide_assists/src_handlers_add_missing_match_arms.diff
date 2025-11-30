@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51270 bytes
-Chloro size:   50323 bytes
+Chloro size:   50213 bytes
 Rustfmt size:  51735 bytes
 
 ✗ Outputs DIFFER
@@ -53,6 +53,13 @@ Rustfmt size:  51735 bytes
  pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
      let match_arm_list = match_expr.match_arm_list()?;
+             has_catch_all_arm |= !has_guard && matches!(pat, Pat::WildcardPat(_));
+             pat
+         })
+-        // Exclude top level wildcards so that they are expanded by this assist, retains status quo in #8129.
+         .filter(|pat| !matches!(pat, Pat::WildcardPat(_)))
+         .collect();
+ 
  
      let scope = ctx.sema.scope(expr.syntax())?;
      let module = scope.module();

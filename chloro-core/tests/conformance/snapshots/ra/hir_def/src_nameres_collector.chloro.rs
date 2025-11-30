@@ -67,8 +67,7 @@ pub(super) fn collect_defs(
     let cfg_options = def_map.krate.cfg_options(db);
 
     // populate external prelude and dependency list
-    let mut deps =
-        FxIndexMap::with_capacity_and_hasher(krate.dependencies.len(), Default::default());
+    let mut deps = FxIndexMap::with_capacity_and_hasher(krate.dependencies.len(), Default::default());
     for dep in &krate.dependencies {
         tracing::debug!("crate dep {:?} -> {:?}", dep.name, dep.crate_id);
 
@@ -160,7 +159,8 @@ impl Import {
     ) {
         let it = &tree[item];
         let visibility = &tree[it.visibility];
-        it.expand(|idx, path, kind, alias| {
+        it
+            .expand(|idx, path, kind, alias| {
             cb(Self {
                 path,
                 alias,
@@ -355,7 +355,7 @@ impl<'db> DefCollector<'db> {
             item_tree,
             mod_dir: ModDir::root(),
         }
-        .collect_in_top_module(item_tree.top_level_items());
+            .collect_in_top_module(item_tree.top_level_items());
         Arc::get_mut(&mut self.def_map.data).unwrap().shrink_to_fit();
     }
 
@@ -451,8 +451,10 @@ impl<'db> DefCollector<'db> {
     fn reseed_with_unresolved_attribute(&mut self) -> ReachedFixedPoint {
         cov_mark::hit!(unresolved_attribute_fallback);
 
-        let unresolved_attr =
-            self.unresolved_macros.iter().enumerate().find_map(|(idx, directive)| match &directive
+        let unresolved_attr = self.unresolved_macros
+            .iter()
+            .enumerate()
+            .find_map(|(idx, directive)| match &directive
                 .kind
             {
                 MacroDirectiveKind::Attr { ast_id, mod_item, attr, tree, item_tree } => {
@@ -534,7 +536,8 @@ impl<'db> DefCollector<'db> {
             [krate, Name::new_symbol_root(sym::prelude), edition],
         );
 
-        let (per_ns, _) = self.def_map.resolve_path(
+        let (per_ns, _) = self.def_map
+            .resolve_path(
             self.crate_local_def_map.unwrap_or(&self.local_def_map),
             self.db,
             DefMap::ROOT,
@@ -598,7 +601,7 @@ impl<'db> DefCollector<'db> {
             kind,
             edition: self.def_map.data.edition,
         }
-        .intern(self.db);
+            .intern(self.db);
 
         self.def_map.macro_def_to_macro_id.insert(ast_id.erase(), proc_macro_id.into());
         self.define_proc_macro(def.name.clone(), proc_macro_id);
@@ -694,7 +697,8 @@ impl<'db> DefCollector<'db> {
             )
             .unwrap_or(Visibility::Public);
         self.def_map.modules[module_id].scope.declare(macro_.into());
-        self.update(
+        self
+            .update(
             module_id,
             &[(Some(name), PerNs::macros(macro_.into(), Visibility::Public, None))],
             vis,
@@ -709,7 +713,8 @@ impl<'db> DefCollector<'db> {
     fn define_proc_macro(&mut self, name: Name, macro_: ProcMacroId) {
         let module_id = DefMap::ROOT;
         self.def_map.modules[module_id].scope.declare(macro_.into());
-        self.update(
+        self
+            .update(
             module_id,
             &[(Some(name), PerNs::macros(macro_.into(), Visibility::Public, None))],
             Visibility::Public,
@@ -784,7 +789,8 @@ impl<'db> DefCollector<'db> {
 
         // correctly
         let mut indeterminate_imports = std::mem::take(&mut self.indeterminate_imports);
-        indeterminate_imports.retain_mut(|(directive, partially_resolved)| {
+        indeterminate_imports
+            .retain_mut(|(directive, partially_resolved)| {
             let partially_resolved = partially_resolved.availability();
             directive.status = self.resolve_import(directive.module_id, &directive.import);
             match directive.status {
@@ -812,8 +818,8 @@ impl<'db> DefCollector<'db> {
         let _p = tracing::info_span!("resolve_import", import_path = %import.path.display(self.db, Edition::LATEST))
             .entered();
         tracing::debug!("resolving import: {:?} ({:?})", import, self.def_map.data.edition);
-        let ResolvePathResult { resolved_def, segment_index, reached_fixedpoint, prefix_info } =
-            self.def_map.resolve_path_fp_with_macro(
+        let ResolvePathResult { resolved_def, segment_index, reached_fixedpoint, prefix_info } = self.def_map
+            .resolve_path_fp_with_macro(
                 self.crate_local_def_map.unwrap_or(&self.local_def_map),
                 self.db,
                 ResolveMode::Import,
@@ -1143,7 +1149,7 @@ impl<'db> DefCollector<'db> {
                 vis.is_visible_from_def_map(self.db, &self.def_map, *glob_importing_module)
             })
             .cloned()
-            .collect::<Vec<_>>();
+            .collect();
 
         for (glob_importing_module, glob_import_vis, glob) in glob_imports {
             let vis = glob_import_vis.min(vis, &self.def_map).unwrap_or(glob_import_vis);
@@ -1557,7 +1563,7 @@ impl<'db> DefCollector<'db> {
             item_tree,
             mod_dir,
         }
-        .collect(item_tree.top_level_items(), container);
+            .collect(item_tree.top_level_items(), container);
     }
 
     fn finish(mut self) -> (DefMap, LocalDefMap) {
@@ -1672,8 +1678,7 @@ impl ModCollector<'_, '_> {
 
     fn collect(&mut self, items: &[ModItemId], container: ItemContainerId) {
         let krate = self.def_collector.def_map.krate;
-        let is_crate_root =
-            self.module_id == DefMap::ROOT && self.def_collector.def_map.block.is_none();
+        let is_crate_root = self.module_id == DefMap::ROOT && self.def_collector.def_map.block.is_none();
 
         // Note: don't assert that inserted value is fresh: it's simply not true
 
@@ -1694,8 +1699,7 @@ impl ModCollector<'_, '_> {
         }
         let db = self.def_collector.db;
         let module_id = self.module_id;
-        let update_def =
-            |def_collector: &mut DefCollector<'_>, id, name: &Name, vis, has_constructor| {
+        let update_def = |def_collector: &mut DefCollector<'_>, id, name: &Name, vis, has_constructor| {
                 def_collector.def_map.modules[module_id].scope.declare(id);
                 def_collector.update(
                     module_id,
@@ -2014,7 +2018,8 @@ impl ModCollector<'_, '_> {
             }
         }
 
-        self.def_collector.import_macros_from_extern_crate(
+        self.def_collector
+            .import_macros_from_extern_crate(
             target_crate,
             Some(single_imports),
             Some(extern_crate_id),
@@ -2168,7 +2173,8 @@ impl ModCollector<'_, '_> {
         let def = ModuleDefId::from(module);
 
         def_map.modules[self.module_id].scope.declare(def);
-        self.def_collector.update(
+        self.def_collector
+            .update(
             self.module_id,
             &[(Some(name), PerNs::from_def(def, vis, false, None))],
             vis,
@@ -2316,9 +2322,10 @@ impl ModCollector<'_, '_> {
             expander,
             edition: self.def_collector.def_map.data.edition,
         }
-        .intern(self.def_collector.db);
+            .intern(self.def_collector.db);
         self.def_collector.def_map.macro_def_to_macro_id.insert(f_ast_id.erase(), macro_id.into());
-        self.def_collector.define_macro_rules(
+        self.def_collector
+            .define_macro_rules(
             self.module_id,
             mac.name.clone(),
             macro_id,
@@ -2381,9 +2388,10 @@ impl ModCollector<'_, '_> {
             allow_internal_unsafe,
             edition: self.def_collector.def_map.data.edition,
         }
-        .intern(self.def_collector.db);
+            .intern(self.def_collector.db);
         self.def_collector.def_map.macro_def_to_macro_id.insert(f_ast_id.erase(), macro_id.into());
-        self.def_collector.define_macro_def(
+        self.def_collector
+            .define_macro_def(
             self.module_id,
             mac.name.clone(),
             macro_id,
@@ -2469,7 +2477,8 @@ impl ModCollector<'_, '_> {
         }
 
         // Case 2: resolve in module scope, expand during name resolution.
-        self.def_collector.unresolved_macros.push(MacroDirective {
+        self.def_collector.unresolved_macros
+            .push(MacroDirective {
             module_id: self.module_id,
             depth: self.macro_depth + 1,
             kind: MacroDirectiveKind::FnLike { ast_id, expand_to, ctxt },
@@ -2521,7 +2530,8 @@ impl ModCollector<'_, '_> {
     }
 
     fn emit_unconfigured_diagnostic(&mut self, ast_id: ErasedAstId, cfg: &CfgExpr) {
-        self.def_collector.def_map.diagnostics.push(DefDiagnostic::unconfigured_code(
+        self.def_collector.def_map.diagnostics
+            .push(DefDiagnostic::unconfigured_code(
             self.module_id,
             ast_id,
             cfg.clone(),

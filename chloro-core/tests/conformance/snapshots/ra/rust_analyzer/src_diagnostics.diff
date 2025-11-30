@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13221 bytes
-Chloro size:   13203 bytes
+Chloro size:   13242 bytes
 Rustfmt size:  13526 bytes
 
 ✗ Outputs DIFFER
@@ -74,12 +74,13 @@ Rustfmt size:  13526 bytes
          let check = &mut self.check[flycheck_id];
 -        let package = check
 -            .per_package
--            .entry(package_id.clone())
++        let package = check.per_package
+             .entry(package_id.clone())
 -            .or_insert_with(|| PackageFlycheckDiagnostic {
 -                generation,
 -                per_file: FxHashMap::default(),
 -            });
-+        let package = check.per_package.entry(package_id.clone()).or_insert_with(|| {
++            .or_insert_with(|| {
 +            PackageFlycheckDiagnostic { generation, per_file: FxHashMap::default() }
 +        });
          // Getting message from old generation. Might happen in restarting checks.
@@ -110,16 +111,28 @@ Rustfmt size:  13526 bytes
      // put those into here and filter later
      let mut odd_ones = Vec::new();
      let mut diagnostics = subscriptions[slice]
+                 .collect::<Vec<_>>();
+             Some((file_id, diagnostics))
+         })
+-        .collect::<Vec<_>>();
++        .collect();
+ 
+     // Add back any diagnostics that point to files we are subscribed to
+     for (file_id, group) in odd_ones
      lsp_types::Diagnostic {
          range: lsp::to_proto::range(line_index, d.range.range),
          severity: Some(lsp::to_proto::diagnostic_severity(d.severity)),
 -        code: Some(lsp_types::NumberOrString::String(
 -            d.code.as_str().to_owned(),
 -        )),
+-        code_description: Some(lsp_types::CodeDescription {
 +        code: Some(lsp_types::NumberOrString::String(d.code.as_str().to_owned())),
-         code_description: Some(lsp_types::CodeDescription {
++        code_description: Some(
++            lsp_types::CodeDescription {
              href: lsp_types::Url::parse(&d.code.url()).unwrap(),
-         }),
+-        }),
++        },
++        ),
          source: Some("rust-analyzer".to_owned()),
          message: d.message,
          related_information: None,

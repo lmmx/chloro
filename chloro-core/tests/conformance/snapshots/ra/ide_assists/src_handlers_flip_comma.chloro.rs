@@ -48,8 +48,7 @@ pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
 
 fn flip_tree(tree: ast::TokenTree, comma: SyntaxToken) -> (ast::TokenTree, SyntaxMapping) {
     let mut tree_iter = tree.token_trees_and_tokens();
-    let before: Vec<_> =
-        tree_iter.by_ref().take_while(|it| it.as_token() != Some(&comma)).collect();
+    let before: Vec<_> = tree_iter.by_ref().take_while(|it| it.as_token() != Some(&comma)).collect();
     let after: Vec<_> = tree_iter.collect();
 
     let not_ws = |element: &NodeOrToken<_, SyntaxToken>| match element {
@@ -86,7 +85,7 @@ fn flip_tree(tree: ast::TokenTree, comma: SyntaxToken) -> (ast::TokenTree, Synta
         &before[prev_start..prev_end],
         &after[next_end..after.len() - 1],
     ]
-    .concat();
+        .concat();
 
     let make = SyntaxFactory::with_mappings();
     let new_token_tree = make.token_tree(tree.left_delimiter_token().unwrap().kind(), result);

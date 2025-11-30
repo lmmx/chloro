@@ -52,11 +52,15 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
         // Because cargo only outputs one JSON object per line, we can
         // simply skip a line if it doesn't parse, which just ignores any
         // erroneous output.
-        let mut stdout = outfile.as_ref().and_then(|path| {
+        let mut stdout = outfile
+            .as_ref()
+            .and_then(|path| {
             _ = std::fs::create_dir_all(path);
             Some(BufWriter::new(std::fs::File::create(path.join("stdout")).ok()?))
         });
-        let mut stderr = outfile.as_ref().and_then(|path| {
+        let mut stderr = outfile
+            .as_ref()
+            .and_then(|path| {
             _ = std::fs::create_dir_all(path);
             Some(BufWriter::new(std::fs::File::create(path.join("stderr")).ok()?))
         });
@@ -102,8 +106,7 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
             },
         );
 
-        let read_at_least_one_message =
-            read_at_least_one_stdout_message || read_at_least_one_stderr_message;
+        let read_at_least_one_message = read_at_least_one_stdout_message || read_at_least_one_stderr_message;
         let mut error = stdout_errors;
         error.push_str(&stderr_errors);
         match output {
@@ -154,13 +157,11 @@ impl<T: Sized + Send + 'static> CommandHandle<T> {
         command.stdout(Stdio::piped()).stderr(Stdio::piped()).stdin(Stdio::null());
 
         let program = command.get_program().into();
-        let arguments = command.get_args().map(|arg| arg.into()).collect::<Vec<OsString>>();
+        let arguments = command.get_args().map(|arg| arg.into()).collect();
         let current_dir = command.get_current_dir().map(|arg| arg.to_path_buf());
 
         let mut child = StdCommandWrap::from(command);
-        #[cfg(unix)]
         child.wrap(process_wrap::std::ProcessSession);
-        #[cfg(windows)]
         child.wrap(process_wrap::std::JobObject);
         let mut child = child.spawn().map(JodGroupChild)?;
 
@@ -168,10 +169,9 @@ impl<T: Sized + Send + 'static> CommandHandle<T> {
         let stderr = child.0.stderr().take().unwrap();
 
         let actor = CargoActor::<T>::new(parser, sender, stdout, stderr);
-        let thread =
-            stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, "CommandHandle")
-                .spawn(move || actor.run(out_file))
-                .expect("failed to spawn thread");
+        let thread = stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, "CommandHandle")
+            .spawn(move || actor.run(out_file))
+            .expect("failed to spawn thread");
         Ok(CommandHandle { program, arguments, current_dir, child, thread, _phantom: PhantomData })
     }
 

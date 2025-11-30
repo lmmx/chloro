@@ -134,8 +134,7 @@ impl Completions {
         kw: &str,
         snippet: &str,
     ) {
-        let mut item =
-            CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+        let mut item = CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
 
         match ctx.config.snippet_cap {
             Some(cap) => {
@@ -160,8 +159,7 @@ impl Completions {
         kw: &str,
         snippet: &str,
     ) {
-        let mut item =
-            CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+        let mut item = CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
 
         match ctx.config.snippet_cap {
             Some(cap) => item.insert_snippet(cap, snippet),
@@ -185,7 +183,8 @@ impl Completions {
         ctx: &CompletionContext<'_>,
         path_ctx: &PathCompletionCtx<'_>,
     ) {
-        ctx.process_all_names(&mut |name, res, doc_aliases| match res {
+        ctx
+            .process_all_names(&mut |name, res, doc_aliases| match res {
             ScopeDef::ModuleDef(hir::ModuleDef::Module(m)) if m.is_crate_root() => {
                 self.add_module(ctx, path_ctx, m, name, doc_aliases);
             }
@@ -206,7 +205,8 @@ impl Completions {
             Visible::Editable => true,
             Visible::No => return,
         };
-        self.add(
+        self
+            .add(
             render_path_resolution(
                 RenderContext::new(ctx)
                     .private_editable(is_private_editable)
@@ -231,7 +231,8 @@ impl Completions {
             Visible::Editable => true,
             Visible::No => return,
         };
-        self.add(
+        self
+            .add(
             render_pattern_resolution(
                 RenderContext::new(ctx).private_editable(is_private_editable),
                 pattern_ctx,
@@ -251,7 +252,8 @@ impl Completions {
         if !ctx.check_stability_and_hidden(e) {
             return;
         }
-        e.variants(ctx.db)
+        e
+            .variants(ctx.db)
             .into_iter()
             .for_each(|variant| self.add_enum_variant(ctx, path_ctx, variant, None));
     }
@@ -264,7 +266,8 @@ impl Completions {
         local_name: hir::Name,
         doc_aliases: Vec<syntax::SmolStr>,
     ) {
-        self.add_path_resolution(
+        self
+            .add_path_resolution(
             ctx,
             path_ctx,
             local_name,
@@ -285,7 +288,8 @@ impl Completions {
             Visible::Editable => true,
             Visible::No => return,
         };
-        self.add(
+        self
+            .add(
             render_macro(
                 RenderContext::new(ctx).private_editable(is_private_editable),
                 path_ctx,
@@ -309,7 +313,8 @@ impl Completions {
             Visible::No => return,
         };
         let doc_aliases = ctx.doc_aliases(&func);
-        self.add(
+        self
+            .add(
             render_fn(
                 RenderContext::new(ctx)
                     .private_editable(is_private_editable)
@@ -336,7 +341,8 @@ impl Completions {
             Visible::No => return,
         };
         let doc_aliases = ctx.doc_aliases(&func);
-        self.add(
+        self
+            .add(
             render_method(
                 RenderContext::new(ctx)
                     .private_editable(is_private_editable)
@@ -363,7 +369,8 @@ impl Completions {
             Visible::No => return,
         };
         let doc_aliases = ctx.doc_aliases(&func);
-        self.add(
+        self
+            .add(
             render_method(
                 RenderContext::new(ctx)
                     .private_editable(is_private_editable)
@@ -384,7 +391,8 @@ impl Completions {
             Visible::Editable => true,
             Visible::No => return,
         };
-        self.add_opt(render_const(
+        self
+            .add_opt(render_const(
             RenderContext::new(ctx).private_editable(is_private_editable),
             konst,
         ));
@@ -400,7 +408,8 @@ impl Completions {
             Visible::Editable => true,
             Visible::No => return,
         };
-        self.add_opt(render_type_alias(
+        self
+            .add_opt(render_type_alias(
             RenderContext::new(ctx).private_editable(is_private_editable),
             type_alias,
         ));
@@ -570,7 +579,8 @@ impl Completions {
         if !ctx.check_stability_and_hidden(variant) {
             return;
         }
-        self.add_opt(render_variant_pat(
+        self
+            .add_opt(render_variant_pat(
             RenderContext::new(ctx),
             pattern_ctx,
             path_ctx,
@@ -591,7 +601,8 @@ impl Completions {
             return;
         }
         let path = Some(&path);
-        self.add_opt(render_variant_pat(
+        self
+            .add_opt(render_variant_pat(
             RenderContext::new(ctx),
             pattern_ctx,
             None,
@@ -613,7 +624,8 @@ impl Completions {
             Visible::Editable => true,
             Visible::No => return,
         };
-        self.add_opt(render_struct_pat(
+        self
+            .add_opt(render_struct_pat(
             RenderContext::new(ctx).private_editable(is_private_editable),
             pattern_ctx,
             strukt,

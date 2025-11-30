@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30597 bytes
+Chloro size:   30602 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -17,8 +17,7 @@ Rustfmt size:  30951 bytes
 -        db,
 -    }
 -    .solve();
-+    let mut variances =
-+        Context { generics, variances: vec![Variance::Bivariant; count], db }.solve();
++    let mut variances = Context { generics, variances: vec![Variance::Bivariant; count], db }.solve();
  
      // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
 +
@@ -133,6 +132,15 @@ Rustfmt size:  30951 bytes
              }
          }
      }
+     /// Adds constraints appropriate for a mutability-type pair
+     /// appearing in a context with ambient variance `variance`
+     fn add_constraints_from_mt(&mut self, ty: Ty<'db>, mt: Mutability, variance: Variance) {
+-        self.add_constraints_from_ty(
++        self
++            .add_constraints_from_ty(
+             ty,
+             match mt {
+                 Mutability::Mut => Variance::Invariant,
      use stdx::format_to;
      use syntax::{ast::HasName, AstNode};
      use test_fixture::WithFixture;

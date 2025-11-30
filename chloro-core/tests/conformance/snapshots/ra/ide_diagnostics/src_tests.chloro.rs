@@ -138,8 +138,8 @@ pub(crate) fn check_has_fix(
             file_position.file_id.file_id(&db),
         )
     })
-    .into_iter()
-    .find(|d| {
+        .into_iter()
+        .find(|d| {
         d.fixes
             .as_ref()
             .and_then(|fixes| {
@@ -179,8 +179,8 @@ pub(crate) fn check_no_fix(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
             file_position.file_id.file_id(&db),
         )
     })
-    .pop()
-    .unwrap();
+        .pop()
+        .unwrap();
     assert!(diagnostic.fixes.is_none(), "got a fix when none was expected: {diagnostic:?}");
 }
 

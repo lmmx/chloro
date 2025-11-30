@@ -118,8 +118,7 @@ macro_rules! $1 {
 }
 
 fn snippet(ctx: &CompletionContext<'_>, cap: SnippetCap, label: &str, snippet: &str) -> Builder {
-    let mut item =
-        CompletionItem::new(CompletionItemKind::Snippet, ctx.source_range(), label, ctx.edition);
+    let mut item = CompletionItem::new(CompletionItemKind::Snippet, ctx.source_range(), label, ctx.edition);
     item.insert_snippet(cap, snippet);
     item
 }
@@ -131,7 +130,10 @@ fn add_custom_completions(
     scope: SnippetScope,
 ) -> Option<()> {
     ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
-    ctx.config.prefix_snippets().filter(|(_, snip)| snip.scope == scope).for_each(
+    ctx.config
+        .prefix_snippets()
+        .filter(|(_, snip)| snip.scope == scope)
+        .for_each(
         |(trigger, snip)| {
             let imports = match snip.imports(ctx) {
                 Some(imports) => imports,

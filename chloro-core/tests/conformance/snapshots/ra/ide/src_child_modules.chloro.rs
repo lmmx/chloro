@@ -57,7 +57,7 @@ mod tests {
         let navs = navs
             .iter()
             .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
-            .collect::<Vec<_>>();
+            .collect();
         assert_eq!(expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(), navs);
     }
     #[test]

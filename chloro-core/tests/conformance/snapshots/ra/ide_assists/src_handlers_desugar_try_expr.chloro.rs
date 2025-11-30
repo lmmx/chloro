@@ -59,7 +59,8 @@ pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
     let try_enum = TryEnum::from_ty(&ctx.sema, &expr_type_info.original)?;
 
     let target = try_expr.syntax().text_range();
-    acc.add(
+    acc
+        .add(
         AssistId::refactor_rewrite("desugar_try_expr_match"),
         "Replace try expression with match",
         target,

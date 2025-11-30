@@ -285,7 +285,8 @@ impl GlobalState {
     ) {
         info!(%cause, "will fetch workspaces");
 
-        self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, {
+        self.task_pool.handle
+            .spawn_with_sender(ThreadIntent::Worker, {
             let linked_projects = self.config.linked_or_discovered_projects();
             let detached_files: Vec<_> = self
                 .config
@@ -390,7 +391,8 @@ impl GlobalState {
         let config = self.config.cargo(None);
         let root_path = self.config.root_path().clone();
 
-        self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, move |sender| {
+        self.task_pool.handle
+            .spawn_with_sender(ThreadIntent::Worker, move |sender| {
             sender.send(Task::FetchBuildData(BuildDataProgress::Begin)).unwrap();
 
             let progress = {
@@ -420,7 +422,8 @@ impl GlobalState {
         let ignored_proc_macros = self.config.ignored_proc_macros(None).clone();
         let proc_macro_clients = self.proc_macro_clients.clone();
 
-        self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, move |sender| {
+        self.task_pool.handle
+            .spawn_with_sender(ThreadIntent::Worker, move |sender| {
             sender.send(Task::LoadProcMacros(ProcMacroProgress::Begin)).unwrap();
 
             let ignored_proc_macros = &ignored_proc_macros;
@@ -487,8 +490,7 @@ impl GlobalState {
             return;
         }
 
-        let workspaces =
-            workspaces.iter().filter_map(|res| res.as_ref().ok().cloned()).collect::<Vec<_>>();
+        let workspaces = workspaces.iter().filter_map(|res| res.as_ref().ok().cloned()).collect();
 
         let same_workspaces = workspaces.len() == self.workspaces.len()
             && workspaces
@@ -716,7 +718,8 @@ impl GlobalState {
             FilesWatcher::Server => project_folders.watch,
         };
         self.vfs_config_version += 1;
-        self.loader.handle.set_config(vfs::loader::Config {
+        self.loader.handle
+            .set_config(vfs::loader::Config {
             load: project_folders.load,
             watch,
             version: self.vfs_config_version,
@@ -732,7 +735,8 @@ impl GlobalState {
 
     fn recreate_crate_graph(&mut self, cause: String, initial_build: bool) {
         info!(?cause, "Building Crate Graph");
-        self.report_progress(
+        self
+            .report_progress(
             "Building CrateGraph",
             crate::lsp::utils::Progress::Begin,
             None,
@@ -796,7 +800,8 @@ impl GlobalState {
             self.fetch_proc_macros_queue.request_op(cause, (change, proc_macro_paths));
         }
 
-        self.report_progress(
+        self
+            .report_progress(
             "Building CrateGraph",
             crate::lsp::utils::Progress::End,
             None,
@@ -865,8 +870,7 @@ impl GlobalState {
         let config = self.config.flycheck(None);
         let sender = &self.flycheck_sender;
         let invocation_strategy = config.invocation_strategy();
-        let next_gen =
-            self.flycheck.iter().map(FlycheckHandle::generation).max().unwrap_or_default() + 1;
+        let next_gen = self.flycheck.iter().map(FlycheckHandle::generation).max().unwrap_or_default() + 1;
 
         self.flycheck = match invocation_strategy {
             crate::flycheck::InvocationStrategy::Once => {

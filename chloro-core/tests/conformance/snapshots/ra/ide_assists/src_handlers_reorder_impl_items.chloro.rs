@@ -27,7 +27,7 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         return None;
     }
 
-    let assoc_items = items.assoc_items().collect::<Vec<_>>();
+    let assoc_items = items.assoc_items().collect();
 
     let path = impl_ast
         .trait_()

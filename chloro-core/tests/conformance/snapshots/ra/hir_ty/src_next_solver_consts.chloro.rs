@@ -129,7 +129,10 @@ impl std::fmt::Debug for ParamConst {
 
 impl ParamConst {
     pub fn find_const_ty_from_env<'db>(self, env: ParamEnv<'db>) -> Ty<'db> {
-        let mut candidates = env.caller_bounds().iter().filter_map(|clause| {
+        let mut candidates = env
+            .caller_bounds()
+            .iter()
+            .filter_map(|clause| {
             // `ConstArgHasType` are never desugared to be higher ranked.
             match clause.kind().skip_binder() {
                 ClauseKind::ConstArgHasType(param_ct, ty) => {
@@ -155,7 +158,9 @@ impl ParamConst {
         // items. It's advised to fix the underlying issue rather than trying
 
         // to modify this function.
-        let ty = candidates.next().unwrap_or_else(|| {
+        let ty = candidates
+            .next()
+            .unwrap_or_else(|| {
             panic!("cannot find `{self:?}` in param-env: {env:#?}");
         });
         assert!(

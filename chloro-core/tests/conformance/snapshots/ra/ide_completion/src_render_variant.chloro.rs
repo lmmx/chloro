@@ -26,7 +26,10 @@ pub(crate) fn render_record_lit(
     if snippet_cap.is_none() {
         return RenderedLiteral { literal: path.to_owned(), detail: path.to_owned() };
     }
-    let completions = fields.iter().enumerate().format_with(", ", |(idx, field), f| {
+    let completions = fields
+        .iter()
+        .enumerate()
+        .format_with(", ", |(idx, field), f| {
         let mut fmt_field = |fill, tab| {
             let field_name = field.name(ctx.db);
 
@@ -47,7 +50,9 @@ pub(crate) fn render_record_lit(
         }
     });
 
-    let types = fields.iter().format_with(", ", |field, f| {
+    let types = fields
+        .iter()
+        .format_with(", ", |field, f| {
         f(&format_args!(
             "{}: {}",
             field.name(ctx.db).display(ctx.db, ctx.edition),
@@ -72,7 +77,10 @@ pub(crate) fn render_tuple_lit(
     if snippet_cap.is_none() {
         return RenderedLiteral { literal: path.to_owned(), detail: path.to_owned() };
     }
-    let completions = fields.iter().enumerate().format_with(", ", |(idx, _), f| {
+    let completions = fields
+        .iter()
+        .enumerate()
+        .format_with(", ", |(idx, _), f| {
         if snippet_cap.is_some() {
             f(&format_args!("${{{}:()}}", idx + 1))
         } else {
@@ -100,11 +108,7 @@ pub(crate) fn visible_fields(
 ) -> Option<(Vec<hir::Field>, bool)> {
     let module = ctx.module;
     let n_fields = fields.len();
-    let fields = fields
-        .iter()
-        .filter(|field| field.is_visible_from(ctx.db, module))
-        .copied()
-        .collect::<Vec<_>>();
+    let fields = fields.iter().filter(|field| field.is_visible_from(ctx.db, module)).copied().collect();
     let has_invisible_field = n_fields - fields.len() > 0;
     let is_foreign_non_exhaustive = item.attrs(ctx.db).by_key(sym::non_exhaustive).exists()
         && item.krate(ctx.db) != module.krate();

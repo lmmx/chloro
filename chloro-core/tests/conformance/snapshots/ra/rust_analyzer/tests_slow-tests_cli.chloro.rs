@@ -32,8 +32,8 @@ mod tests {
 }
 "#,
     )
-    .root("foo")
-    .run_lsif();
+        .root("foo")
+        .run_lsif();
     let n = stdout.find(r#"{"id":2,"#).unwrap();
     // the first 2 entries contain paths that are not stable
     let stdout = &stdout[n..];
@@ -128,5 +128,6 @@ mod tests {
         {"id":89,"type":"vertex","label":"referenceResult"}
         {"id":90,"type":"edge","label":"textDocument/references","inV":89,"outV":26}
         {"id":91,"type":"edge","label":"item","document":1,"property":"definitions","inVs":[25],"outV":89}
-    "#]].assert_eq(stdout);
+    "#]]
+        .assert_eq(stdout);
 }

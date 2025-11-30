@@ -144,11 +144,12 @@ pub fn pseudo_derive_attr_expansion(
     args: &tt::TopSubtree,
     call_site: Span,
 ) -> ExpandResult<tt::TopSubtree> {
-    let mk_leaf =
-        |char| tt::Leaf::Punct(tt::Punct { char, spacing: tt::Spacing::Alone, span: call_site });
+    let mk_leaf = |char| tt::Leaf::Punct(tt::Punct { char, spacing: tt::Spacing::Alone, span: call_site });
 
     let mut token_trees = tt::TopSubtreeBuilder::new(args.top_subtree().delimiter);
-    let iter = args.token_trees().split(|tt| {
+    let iter = args
+        .token_trees()
+        .split(|tt| {
         matches!(tt, tt::TtElement::Leaf(tt::Leaf::Punct(tt::Punct { char: ',', .. })))
     });
     for tts in iter {

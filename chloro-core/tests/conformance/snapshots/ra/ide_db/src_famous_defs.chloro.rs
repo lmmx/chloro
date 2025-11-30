@@ -240,8 +240,7 @@ impl FamousDefs<'_, '_> {
                 if name.as_str() == segment { Some(child) } else { None }
             })?;
         }
-        let def =
-            module.scope(db, None).into_iter().find(|(name, _def)| name.as_str() == trait_)?.1;
+        let def = module.scope(db, None).into_iter().find(|(name, _def)| name.as_str() == trait_)?.1;
         Some(def)
     }
 }

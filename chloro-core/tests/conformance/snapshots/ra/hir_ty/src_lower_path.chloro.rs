@@ -135,8 +135,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         lifetime_elision: LifetimeElisionKind<'db>,
         f: impl FnOnce(&mut PathLoweringContext<'_, '_, 'db>) -> T,
     ) -> T {
-        let old_lifetime_elision =
-            std::mem::replace(&mut self.ctx.lifetime_elision, lifetime_elision);
+        let old_lifetime_elision = std::mem::replace(&mut self.ctx.lifetime_elision, lifetime_elision);
         let result = f(self);
         self.ctx.lifetime_elision = old_lifetime_elision;
         result
@@ -327,8 +326,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     #[tracing::instrument(skip(self), ret)]
     pub(crate) fn resolve_path_in_type_ns(&mut self) -> Option<(TypeNs, Option<usize>)> {
-        let (resolution, remaining_index, _, prefix_info) =
-            self.ctx.resolver.resolve_path_in_type_ns_with_prefix_info(self.ctx.db, self.path)?;
+        let (resolution, remaining_index, _, prefix_info) = self.ctx.resolver.resolve_path_in_type_ns_with_prefix_info(self.ctx.db, self.path)?;
 
         let segments = self.segments;
         if segments.is_empty() || matches!(self.path, Path::LangItem(..)) {
@@ -573,7 +571,8 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 var.lookup(self.ctx.db).parent.into()
             }
         };
-        let result = self.substs_from_path_segment(
+        let result = self
+            .substs_from_path_segment(
             generic_def,
             infer_args,
             None,
@@ -625,7 +624,8 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 LifetimeElisionKind::AnonymousCreateParameter { report_in_path: false };
         }
 
-        let result = self.substs_from_args_and_bindings(
+        let result = self
+            .substs_from_args_and_bindings(
             self.current_or_prev_segment.args_and_bindings,
             def,
             infer_args,
@@ -1054,8 +1054,7 @@ fn check_generic_args_len<'db>(
         had_error = true;
     }
 
-    let defaults_count =
-        def_generics.iter_self_type_or_consts().filter(|(_, param)| param.has_default()).count();
+    let defaults_count = def_generics.iter_self_type_or_consts().filter(|(_, param)| param.has_default()).count();
     let named_type_and_const_params_count = def_generics
         .iter_self_type_or_consts()
         .filter(|(_, param)| match param {
@@ -1066,8 +1065,7 @@ fn check_generic_args_len<'db>(
         })
         .count();
     let expected_max = named_type_and_const_params_count;
-    let expected_min =
-        if infer_args { 0 } else { named_type_and_const_params_count - defaults_count };
+    let expected_min = if infer_args { 0 } else { named_type_and_const_params_count - defaults_count };
     if provided_types_and_consts_count < expected_min
         || expected_max < provided_types_and_consts_count
     {
@@ -1111,8 +1109,7 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
     let args_slice = args_and_bindings.map(|it| &*it.args).unwrap_or_default();
 
     // We do not allow inference if there are specified args, i.e. we do not allow partial inference.
-    let has_non_lifetime_args =
-        args_slice.iter().any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
+    let has_non_lifetime_args = args_slice.iter().any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
     infer_args &= !has_non_lifetime_args;
 
     let had_count_error = check_generic_args_len(
