@@ -3,7 +3,7 @@
 use std::any::type_name_of_val;
 
 use rustc_type_ir::inherent::SliceLike;
-use rustc_type_ir::{self as ty, ir_print::IrPrint};
+use rustc_type_ir::{ir_print::IrPrint, self as ty};
 
 use super::SolverDefId;
 use super::interner::DbInterner;

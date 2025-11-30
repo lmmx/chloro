@@ -12,11 +12,9 @@ Rustfmt size:  11433 bytes
      SolverDefId, Span, Ty, TyKind,
  };
 -
--use super::{relate::RelateResult, BoundRegionConversionTime, InferCtxt};
-+use super::{BoundRegionConversionTime, InferCtxt, relate::RelateResult};
+ use super::{relate::RelateResult, BoundRegionConversionTime, InferCtxt};
  
  impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
-     type Interner = DbInterner<'db>;
      }
  
      fn universe_of_lt(&self, lt: RegionVid) -> Option<UniverseIndex> {

@@ -8,14 +8,6 @@ Rustfmt size:  2641 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     MiniCore, SnippetCap,
- };
- 
--use crate::{snippet::Snippet, CompletionFieldsToResolve};
-+use crate::{CompletionFieldsToResolve, snippet::Snippet};
- 
- #[derive(Clone, Debug)]
- pub struct CompletionConfig<'a> {
  
  impl CompletionConfig<'_> {
      pub fn postfix_snippets(&self) -> impl Iterator<Item = (&str, &Snippet)> {

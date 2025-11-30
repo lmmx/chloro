@@ -8,14 +8,6 @@ Rustfmt size:  34530 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     name::{AsName, Name},
-     InFile, Intern, Lookup,
- };
--use intern::{sym, Symbol};
-+use intern::{Symbol, sym};
- use la_arena::{Arena, Idx};
- use rustc_abi::{IntegerType, ReprOptions};
- use syntax::{
      db::DefDatabase,
      expr_store::{
          lower::{

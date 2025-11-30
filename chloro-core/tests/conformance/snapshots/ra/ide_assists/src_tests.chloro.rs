@@ -1,7 +1,7 @@
 mod generated;
 
 use expect_test::expect;
-use hir::{Semantics, db::HirDatabase, setup_tracing};
+use hir::{db::HirDatabase, setup_tracing, Semantics};
 use ide_db::{
     assists::ExprFillDefaultMode,
     base_db::SourceDatabase,

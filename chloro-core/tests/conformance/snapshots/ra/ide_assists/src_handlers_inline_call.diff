@@ -28,7 +28,8 @@ Rustfmt size:  41039 bytes
      syntax_helpers::{node_ext::expr_as_name_ref, prettify_macro_expansion},
 +    EditionedFileId, RootDatabase,
  };
- use itertools::{Itertools, izip};
+-use itertools::{Itertools, izip};
++use itertools::{izip, Itertools};
  use syntax::{
 -    AstNode, NodeOrToken, SyntaxKind,
      ast::{

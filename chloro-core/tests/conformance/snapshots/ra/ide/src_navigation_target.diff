@@ -626,9 +626,8 @@ Rustfmt size:  42083 bytes
  mod tests {
      use expect_test::expect;
 -
--    use crate::{fixture, Query};
+     use crate::{fixture, Query};
 -
-+    use crate::{Query, fixture};
      #[test]
      fn test_nav_for_symbol() {
          let (analysis, _) = fixture::file(

@@ -1,6 +1,6 @@
 use std::iter::successors;
 
-use ide_db::{RootDatabase, defs::NameClass, ty_filter::TryEnum};
+use ide_db::{defs::NameClass, ty_filter::TryEnum, RootDatabase};
 use syntax::{
     ast::{edit::IndentLevel, edit_in_place::Indent, self, syntax_factory::SyntaxFactory, HasName},
     syntax_editor::SyntaxEditor,

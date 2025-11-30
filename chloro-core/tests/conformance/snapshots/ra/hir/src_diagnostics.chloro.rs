@@ -15,7 +15,7 @@ use hir_def::{
     hir::ExprOrPatId,
     DefWithBodyId, GenericParamId, SyntheticSyntax,
 };
-use hir_expand::{HirFileId, InFile, mod_path::ModPath, name::Name};
+use hir_expand::{mod_path::ModPath, name::Name, HirFileId, InFile};
 use hir_ty::{
     db::HirDatabase,
     diagnostics::{BodyValidationDiagnostic, UnsafetyReason},

@@ -1,6 +1,6 @@
 use std::iter;
 
-use expect_test::{Expect, expect};
+use expect_test::{expect, Expect};
 use hir::Semantics;
 use ide_db::{
     defs::Definition,
@@ -8,7 +8,7 @@ use ide_db::{
     FilePosition, FileRange, RootDatabase,
 };
 use itertools::Itertools;
-use syntax::{AstNode, SyntaxNode, ast, match_ast};
+use syntax::{ast, match_ast, AstNode, SyntaxNode};
 
 use crate::{
     doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links},

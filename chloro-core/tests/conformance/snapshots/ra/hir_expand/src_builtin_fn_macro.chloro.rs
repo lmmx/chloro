@@ -3,12 +3,9 @@
 use base_db::AnchoredPath;
 use cfg::CfgExpr;
 use either::Either;
-use intern::{
-    Symbol,
-    sym::{self},
-};
+use intern::{sym::self, Symbol};
 use itertools::Itertools;
-use mbe::{DelimiterKind, expect_fragment};
+use mbe::{expect_fragment, DelimiterKind};
 use span::{Edition, FileId, Span};
 use stdx::format_to;
 use syntax::{

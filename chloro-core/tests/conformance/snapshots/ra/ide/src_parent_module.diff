@@ -8,7 +8,8 @@ Rustfmt size:  4004 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::{Semantics, crate_def_map};
+-use hir::{Semantics, crate_def_map};
++use hir::{crate_def_map, Semantics};
  use ide_db::{
 -    FileId, FilePosition, RootDatabase,
      base_db::{Crate, RootQueryDb},

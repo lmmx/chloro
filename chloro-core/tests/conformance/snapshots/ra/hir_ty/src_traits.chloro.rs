@@ -4,7 +4,7 @@ use core::fmt;
 use std::hash::Hash;
 
 use base_db::Crate;
-use hir_def::{BlockId, TraitId, lang_item::LangItem};
+use hir_def::{lang_item::LangItem, BlockId, TraitId};
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_next_trait_solver::solve::{HasChanged, SolverDelegateEvalExt};

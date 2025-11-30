@@ -14,11 +14,7 @@ Rustfmt size:  4344 bytes
 +
  use ide_db::famous_defs::FamousDefs;
  use ide_db::text_edit::{TextRange, TextSize};
--use stdx::{never, TupleExt};
-+use stdx::{TupleExt, never};
- use syntax::ast::{self, AstNode};
- 
- use crate::{
+ use stdx::{never, TupleExt};
                  // force cache the source file, otherwise sema lookup will potentially panic
                  _ = sema.parse_or_expand(source.file());
                  source.name().and_then(|name| {

@@ -2,7 +2,7 @@ use std::iter::once;
 
 use either::Either;
 use hir::{Semantics, TypeInfo};
-use ide_db::{RootDatabase, ty_filter::TryEnum};
+use ide_db::{ty_filter::TryEnum, RootDatabase};
 use syntax::{
     ast::{edit::{AstNodeEdit, IndentLevel}, make, self},
     AstNode,

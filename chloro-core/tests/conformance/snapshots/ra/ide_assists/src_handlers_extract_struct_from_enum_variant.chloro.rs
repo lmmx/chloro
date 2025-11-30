@@ -21,7 +21,7 @@ use syntax::{
     SyntaxNode, T,
 };
 
-use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
 
 pub(crate) fn extract_struct_from_enum_variant(
     acc: &mut Assists,

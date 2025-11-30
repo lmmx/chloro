@@ -8,11 +8,6 @@ Rustfmt size:  34347 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use expect_test::{expect, Expect};
-+use expect_test::{Expect, expect};
- 
- use crate::{
-     context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
  
      let mut acc = crate::completions::Completions::default();
      hir::attach_db(ctx.db, || {

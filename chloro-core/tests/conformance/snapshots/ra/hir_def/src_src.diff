@@ -8,16 +8,6 @@ Rustfmt size:  6876 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Utilities for mapping between hir IDs and the surface syntax.
- 
- use either::Either;
- use hir_expand::{AstId, InFile};
- use la_arena::{Arena, ArenaMap, Idx};
--use syntax::{ast, AstNode, AstPtr};
-+use syntax::{AstNode, AstPtr, ast};
- 
- use crate::{
-     attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,
  };
  
  pub trait HasSource {

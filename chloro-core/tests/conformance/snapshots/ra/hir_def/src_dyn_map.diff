@@ -23,12 +23,10 @@ Rustfmt size:  6980 bytes
  pub mod keys {
      use std::marker::PhantomData;
 -
--    use hir_expand::{attrs::AttrId, MacroCallId};
-+    use hir_expand::{MacroCallId, attrs::AttrId};
+     use hir_expand::{attrs::AttrId, MacroCallId};
      use rustc_hash::FxHashMap;
--    use syntax::{ast, AstNode, AstPtr};
+     use syntax::{ast, AstNode, AstPtr};
 -
-+    use syntax::{AstNode, AstPtr, ast};
      use crate::{
          dyn_map::{DynMap, Policy},
          BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,

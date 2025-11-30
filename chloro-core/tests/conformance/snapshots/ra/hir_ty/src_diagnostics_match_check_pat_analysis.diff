@@ -8,11 +8,7 @@ Rustfmt size:  22047 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     IndexVec, PatCx, PrivateUninhabitedField,
- };
- use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
--use smallvec::{smallvec, SmallVec};
-+use smallvec::{SmallVec, smallvec};
+ use smallvec::{smallvec, SmallVec};
  use stdx::never;
  use triomphe::Arc;
 +use Constructor::*;

@@ -8,17 +8,6 @@ Rustfmt size:  6864 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Compiled declarative macro expanders (`macro_rules!` and `macro`)
- 
- use base_db::Crate;
- use intern::sym;
- use span::{Edition, Span, SyntaxContext};
- use stdx::TupleExt;
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
- use syntax_bridge::DocCommentDesugarMode;
- use triomphe::Arc;
- 
          let loc = db.lookup_intern_macro_call(call_id);
          match self.mac.err() {
              Some(_) => ExpandResult::new(

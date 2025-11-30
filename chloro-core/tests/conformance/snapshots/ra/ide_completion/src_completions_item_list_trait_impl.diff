@@ -8,7 +8,11 @@ Rustfmt size:  36630 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::{MacroCallId, Name, db::ExpandDatabase};
+ //! }
+ //! ```
+ 
+-use hir::{MacroCallId, Name, db::ExpandDatabase};
++use hir::{db::ExpandDatabase, MacroCallId, Name};
  use ide_db::text_edit::TextEdit;
  use ide_db::{
 -    SymbolKind, documentation::HasDocs, path_transform::PathTransform,

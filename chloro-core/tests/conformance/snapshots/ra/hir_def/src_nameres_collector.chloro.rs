@@ -17,8 +17,8 @@ use hir_expand::{
     EditionedFileId, ErasedAstId, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind,
     MacroDefId, MacroDefKind,
 };
-use intern::{Interned, sym};
-use itertools::{Itertools, izip};
+use intern::{sym, Interned};
+use itertools::{izip, Itertools};
 use la_arena::Idx;
 use rustc_hash::{FxHashMap, FxHashSet};
 use span::{Edition, FileAstId, SyntaxContext};

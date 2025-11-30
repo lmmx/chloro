@@ -18,7 +18,7 @@ use ide_db::{
     RootDatabase,
 };
 use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
-use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
+use pulldown_cmark_to_cmark::{cmark_resume_with_options, Options as CMarkOptions};
 use stdx::format_to;
 use syntax::{
     ast::{self, IsString},

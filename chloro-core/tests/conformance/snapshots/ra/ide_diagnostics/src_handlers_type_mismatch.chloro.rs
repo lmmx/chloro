@@ -1,5 +1,5 @@
 use either::Either;
-use hir::{CallableKind, ClosureStyle, HirDisplay, InFile, db::ExpandDatabase};
+use hir::{db::ExpandDatabase, CallableKind, ClosureStyle, HirDisplay, InFile};
 use ide_db::{
     famous_defs::FamousDefs,
     source_change::{SourceChange, SourceChangeBuilder},
@@ -13,7 +13,7 @@ use syntax::{
     AstNode, AstPtr, TextSize,
 };
 
-use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
+use crate::{adjusted_display_range, fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn type_mismatch(
     ctx: &DiagnosticsContext<'_>,

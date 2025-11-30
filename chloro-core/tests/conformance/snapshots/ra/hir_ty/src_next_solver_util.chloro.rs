@@ -6,7 +6,7 @@ use std::{
 };
 
 use base_db::Crate;
-use hir_def::{BlockId, HasModule, lang_item::LangItem};
+use hir_def::{lang_item::LangItem, BlockId, HasModule};
 use la_arena::Idx;
 use rustc_abi::{Float, HasDataLayout, Integer, IntegerType, Primitive, ReprOptions};
 use rustc_type_ir::{

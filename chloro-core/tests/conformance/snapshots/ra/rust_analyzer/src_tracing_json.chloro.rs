@@ -15,7 +15,7 @@ use tracing::{
     span::{Attributes, Id},
     Event, Subscriber,
 };
-use tracing_subscriber::{Layer, fmt::MakeWriter, layer::Context, registry::LookupSpan};
+use tracing_subscriber::{fmt::MakeWriter, layer::Context, registry::LookupSpan, Layer};
 
 struct JsonData {
     name: &'static str,

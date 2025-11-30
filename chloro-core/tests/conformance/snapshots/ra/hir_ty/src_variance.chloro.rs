@@ -13,7 +13,7 @@
 //! by the next salsa version. If not, we will likely have to adapt and go with the rustc approach
 //! while installing firewall per item queries to prevent invalidation issues.
 
-use hir_def::{AdtId, GenericDefId, GenericParamId, VariantId, signatures::StructFlags};
+use hir_def::{signatures::StructFlags, AdtId, GenericDefId, GenericParamId, VariantId};
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
     inherent::{AdtDef, IntoKind, SliceLike},
@@ -397,14 +397,14 @@ impl<'db> Context<'db> {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use hir_def::{
         hir::generics::GenericParamDataRef, src::HasSource, AdtId, GenericDefId, ModuleDefId,
     };
     use itertools::Itertools;
-    use rustc_type_ir::{Variance, inherent::SliceLike};
+    use rustc_type_ir::{inherent::SliceLike, Variance};
     use stdx::format_to;
-    use syntax::{AstNode, ast::HasName};
+    use syntax::{ast::HasName, AstNode};
     use test_fixture::WithFixture;
     use hir_def::Lookup;
     use crate::{db::HirDatabase, test_db::TestDB, variance::generics};

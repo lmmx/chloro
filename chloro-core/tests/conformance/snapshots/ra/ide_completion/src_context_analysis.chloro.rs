@@ -3,7 +3,7 @@
 use std::iter;
 
 use hir::{ExpandResult, InFile, Semantics, Type, TypeInfo, Variant};
-use ide_db::{RootDatabase, active_parameter::ActiveParameter};
+use ide_db::{active_parameter::ActiveParameter, RootDatabase};
 use itertools::Either;
 use stdx::always;
 use syntax::{

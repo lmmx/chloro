@@ -1,9 +1,9 @@
-use hir::{FileRange, db::ExpandDatabase, diagnostics::RemoveTrailingReturn};
+use hir::{db::ExpandDatabase, diagnostics::RemoveTrailingReturn, FileRange};
 use ide_db::text_edit::TextEdit;
 use ide_db::{assists::Assist, source_change::SourceChange};
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
+use crate::{adjusted_display_range, fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn remove_trailing_return(
     ctx: &DiagnosticsContext<'_>,

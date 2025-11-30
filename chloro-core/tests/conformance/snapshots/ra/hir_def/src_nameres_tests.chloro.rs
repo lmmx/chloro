@@ -5,7 +5,7 @@ mod mod_resolution;
 mod primitives;
 
 use base_db::RootQueryDb;
-use expect_test::{Expect, expect};
+use expect_test::{expect, Expect};
 use test_fixture::WithFixture;
 
 use crate::{

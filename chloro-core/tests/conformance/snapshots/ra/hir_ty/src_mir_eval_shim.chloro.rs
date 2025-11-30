@@ -6,9 +6,9 @@ mod simd;
 
 use std::cmp::{self, Ordering};
 
-use hir_def::{CrateRootModuleId, resolver::HasResolver, signatures::FunctionSignature};
+use hir_def::{resolver::HasResolver, signatures::FunctionSignature, CrateRootModuleId};
 use hir_expand::name::Name;
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike, Ty as _};
 use stdx::never;
 

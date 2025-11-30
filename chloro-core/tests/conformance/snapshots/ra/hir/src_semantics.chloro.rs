@@ -32,12 +32,12 @@ use hir_ty::{
     diagnostics::{unsafe_operations, unsafe_operations_for_body},
     next_solver::DbInterner,
 };
-use intern::{Interned, Symbol, sym};
+use intern::{sym, Interned, Symbol};
 use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use span::{Edition, FileId, SyntaxContext};
-use stdx::{TupleExt, always};
+use stdx::{always, TupleExt};
 use syntax::{
     algo::skip_trivia_token,
     ast::{self, HasAttrs as _, HasGenericParams},

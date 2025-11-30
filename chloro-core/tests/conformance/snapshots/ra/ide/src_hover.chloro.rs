@@ -16,7 +16,7 @@ use ide_db::{
     ra_fixture::UpmapFromRaFixture,
     FileRange, FxIndexSet, MiniCore, Ranker, RootDatabase,
 };
-use itertools::{Itertools, multizip};
+use itertools::{multizip, Itertools};
 use macros::UpmapFromRaFixture;
 use span::{Edition, TextRange};
 use syntax::{

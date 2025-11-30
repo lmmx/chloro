@@ -1,4 +1,4 @@
-use ide_db::{EditionedFileId, defs::Definition, search::FileReference};
+use ide_db::{defs::Definition, search::FileReference, EditionedFileId};
 use syntax::{
     algo::{find_node_at_range, least_common_ancestor_element},
     ast::{self, HasArgList},

@@ -1,4 +1,4 @@
-use hir::{FileRange, HirDisplay, InFile, db::ExpandDatabase};
+use hir::{db::ExpandDatabase, FileRange, HirDisplay, InFile};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
     assists::{Assist, AssistId},
@@ -10,7 +10,7 @@ use syntax::{
     format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
 };
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn unresolved_method(
     ctx: &DiagnosticsContext<'_>,

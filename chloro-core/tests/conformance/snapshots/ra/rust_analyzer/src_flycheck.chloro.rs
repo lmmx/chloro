@@ -12,7 +12,7 @@ use cargo_metadata::PackageId;
 pub(crate) use cargo_metadata::diagnostic::{
     Applicability, Diagnostic, DiagnosticCode, DiagnosticLevel, DiagnosticSpan,
 };
-use crossbeam_channel::{Receiver, Sender, select_biased, unbounded};
+use crossbeam_channel::{select_biased, unbounded, Receiver, Sender};
 use ide_db::FxHashSet;
 use itertools::Itertools;
 use paths::{AbsPath, AbsPathBuf, Utf8Path, Utf8PathBuf};

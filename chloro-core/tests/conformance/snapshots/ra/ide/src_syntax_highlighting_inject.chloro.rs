@@ -3,7 +3,7 @@
 use std::mem;
 
 use either::Either;
-use hir::{EditionedFileId, HirFileId, InFile, Semantics, sym};
+use hir::{sym, EditionedFileId, HirFileId, InFile, Semantics};
 use ide_db::range_mapper::RangeMapper;
 use ide_db::{
     defs::Definition, documentation::docs_with_rangemap, rust_doc::is_rust_fence, SymbolKind,

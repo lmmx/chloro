@@ -10,7 +10,7 @@ use hir_expand::{
     span_map::SpanMapRef,
     HirFileId, InFile,
 };
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use la_arena::{ArenaMap, Idx, RawIdx};
 use mbe::DelimiterKind;
 use rustc_abi::ReprOptions;
@@ -851,8 +851,8 @@ mod tests {
     use triomphe::Arc;
     use hir_expand::span_map::{RealSpanMap, SpanMap};
     use span::FileId;
-    use syntax::{AstNode, TextRange, ast};
-    use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
+    use syntax::{ast, AstNode, TextRange};
+    use syntax_bridge::{syntax_node_to_token_tree, DocCommentDesugarMode};
     use crate::attr::{DocAtom, DocExpr};
     fn assert_parse_result(input: &str, expected: DocExpr) {
         let source_file = ast::SourceFile::parse(input, span::Edition::CURRENT).ok().unwrap();

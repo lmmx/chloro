@@ -10,7 +10,7 @@ use syntax::{
     SyntaxToken, T,
 };
 
-use crate::{AssistContext, Assists, utils};
+use crate::{utils, AssistContext, Assists};
 
 
 // Assist: extract_expressions_from_format_string

@@ -9,7 +9,7 @@ use ide_db::{
     search::FileReference,
     FileRange, FxIndexMap, MiniCore, RootDatabase,
 };
-use syntax::{AstNode, SyntaxKind::IDENT, ast};
+use syntax::{ast, AstNode, SyntaxKind::IDENT};
 
 use crate::{
     goto_definition, FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav,
@@ -173,7 +173,7 @@ impl CallLocations {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use ide_db::{FilePosition, MiniCore};
     use itertools::Itertools;
     use crate::fixture;

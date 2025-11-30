@@ -1,7 +1,7 @@
 use hir::InFile;
 use syntax::ast;
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range};
+use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 
 pub(crate) fn trait_impl_incorrect_safety(
     ctx: &DiagnosticsContext<'_>,

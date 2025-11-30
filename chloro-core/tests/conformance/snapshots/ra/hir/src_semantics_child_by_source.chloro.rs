@@ -16,9 +16,9 @@ use hir_def::{
     LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
     VariantId,
 };
-use hir_expand::{HirFileId, attrs::collect_attrs};
+use hir_expand::{attrs::collect_attrs, HirFileId};
 use span::AstIdNode;
-use syntax::{AstPtr, ast};
+use syntax::{ast, AstPtr};
 
 pub(crate) trait ChildBySource {
     fn child_by_source(&self, db: &dyn DefDatabase, file_id: HirFileId) -> DynMap {

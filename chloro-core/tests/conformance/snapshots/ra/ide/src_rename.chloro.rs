@@ -6,7 +6,7 @@
 
 use std::fmt::Write;
 
-use hir::{AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics, sym};
+use hir::{sym, AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics};
 pub use ide_db::rename::RenameError;
 use ide_db::text_edit::TextEdit;
 use ide_db::{
@@ -780,7 +780,7 @@ fn text_edit_from_self_param(self_param: &ast::SelfParam, new_name: String) -> O
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use ide_db::source_change::SourceChange;
     use ide_db::text_edit::TextEdit;
     use itertools::Itertools;

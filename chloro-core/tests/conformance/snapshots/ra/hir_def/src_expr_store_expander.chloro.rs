@@ -13,7 +13,7 @@ use hir_expand::{
 };
 use span::{AstIdMap, Edition, SyntaxContext};
 use syntax::ast::HasAttrs;
-use syntax::{AstNode, Parse, ast};
+use syntax::{ast, AstNode, Parse};
 use triomphe::Arc;
 use tt::TextRange;
 
@@ -21,7 +21,7 @@ use crate::attr::Attrs;
 use crate::expr_store::HygieneId;
 use crate::macro_call_as_call_id;
 use crate::nameres::DefMap;
-use crate::{MacroId, UnresolvedMacro, db::DefDatabase};
+use crate::{db::DefDatabase, MacroId, UnresolvedMacro};
 
 #[derive(Debug)]
 pub(super) struct Expander {

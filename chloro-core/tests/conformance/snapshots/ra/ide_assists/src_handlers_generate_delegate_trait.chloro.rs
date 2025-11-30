@@ -1,7 +1,7 @@
 use std::ops::Not;
 
 use either::Either;
-use hir::{HasVisibility, db::HirDatabase};
+use hir::{db::HirDatabase, HasVisibility};
 use ide_db::{
     assists::{AssistId, GroupLabel},
     path_transform::PathTransform,

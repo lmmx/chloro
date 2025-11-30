@@ -6,7 +6,7 @@ use ide_db::imports::{
     insert_use::ImportScope,
 };
 use itertools::Itertools;
-use syntax::{AstNode, SyntaxNode, ast};
+use syntax::{ast, AstNode, SyntaxNode};
 
 use crate::{
     config::AutoImportExclusionType,

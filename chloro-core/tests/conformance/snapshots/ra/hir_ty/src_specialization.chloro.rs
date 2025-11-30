@@ -1,6 +1,6 @@
 //! Impl specialization related things
 
-use hir_def::{ImplId, nameres::crate_def_map};
+use hir_def::{nameres::crate_def_map, ImplId};
 use intern::sym;
 use tracing::debug;
 

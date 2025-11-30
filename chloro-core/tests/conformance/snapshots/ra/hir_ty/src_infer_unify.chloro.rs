@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use hir_def::{AdtId, DefWithBodyId, GenericParamId, lang_item::LangItem};
+use hir_def::{lang_item::LangItem, AdtId, DefWithBodyId, GenericParamId};
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_hash::FxHashSet;

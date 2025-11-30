@@ -8,15 +8,6 @@ Rustfmt size:  21861 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion of names from the current scope in expression position.
- 
- use std::ops::ControlFlow;
- 
--use hir::{sym, Complete, Name, PathCandidateCallback, ScopeDef};
-+use hir::{Complete, Name, PathCandidateCallback, ScopeDef, sym};
- use ide_db::FxHashSet;
- use syntax::ast;
- 
  
      let (has_raw_token, has_const_token, has_mut_token) = ref_expr_parent
          .as_ref()

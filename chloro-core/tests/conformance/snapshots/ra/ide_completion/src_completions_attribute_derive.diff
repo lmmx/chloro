@@ -11,11 +11,8 @@ Rustfmt size:  4862 bytes
  //! Completion for derives
 +
  use hir::ScopeDef;
--use ide_db::{documentation::HasDocs, SymbolKind};
-+use ide_db::{SymbolKind, documentation::HasDocs};
+ use ide_db::{documentation::HasDocs, SymbolKind};
  use itertools::Itertools;
- use syntax::{SmolStr, ToSmolStr};
- 
  /// Standard Rust derives that have dependencies
  /// (the dependencies are needed so that the main derive don't break the compilation when added)
  const DEFAULT_DERIVE_DEPENDENCIES: &[DeriveDependencies] = &[

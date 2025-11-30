@@ -1,6 +1,6 @@
 //! See [`patch_json_for_outdated_configs`]
 
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 /// This function patches the json config to the new expected keys.
 /// That is we try to load old known config keys here and convert them to the new ones.

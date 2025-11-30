@@ -50,12 +50,10 @@ Rustfmt size:  34938 bytes
          {
              return Some(StructureNode {
                  parent: None,
- 
  #[cfg(test)]
  mod tests {
--    use expect_test::{expect, Expect};
+     use expect_test::{expect, Expect};
 -
-+    use expect_test::{Expect, expect};
      use super::*;
 -
 -    const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig {

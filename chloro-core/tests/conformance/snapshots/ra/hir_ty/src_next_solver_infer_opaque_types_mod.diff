@@ -12,16 +12,13 @@ Rustfmt size:  976 bytes
  
  pub(crate) mod table;
  
-+use macros::{TypeFoldable, TypeVisitable};
- pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
- 
--use macros::{TypeFoldable, TypeVisitable};
+-pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
 -
--use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
-+use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
+ use macros::{TypeFoldable, TypeVisitable};
++pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
  
- #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
- pub struct OpaqueHiddenType<'db> {
+ use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
+ 
          opaque_type_key: OpaqueTypeKey<'db>,
          hidden_ty: OpaqueHiddenType<'db>,
      ) -> Option<Ty<'db>> {

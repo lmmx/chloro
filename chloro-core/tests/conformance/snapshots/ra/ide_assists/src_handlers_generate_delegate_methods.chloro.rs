@@ -1,5 +1,5 @@
 use hir::{HasCrate, HasVisibility};
-use ide_db::{FxHashSet, path_transform::PathTransform};
+use ide_db::{path_transform::PathTransform, FxHashSet};
 use syntax::{
     ast::{
         edit::{AstNodeEdit, IndentLevel}, make, self, AstNode, HasGenericParams, HasName,

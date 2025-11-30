@@ -5,7 +5,7 @@ use syntax::{
     AstNode, TextRange,
 };
 
-use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
 
 static ASSIST_NAME: &str = "introduce_named_lifetime";
 

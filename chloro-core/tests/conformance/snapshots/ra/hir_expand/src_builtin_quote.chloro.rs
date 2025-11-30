@@ -2,7 +2,7 @@
 
 #![allow(clippy::crate_in_macro_def)]
 
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 pub use quote;
 pub use quote_impl__ as __quote;
 use span::Span;
@@ -228,7 +228,7 @@ mod tests {
     use ::tt::IdentIsRaw;
     use expect_test::expect;
     use intern::Symbol;
-    use span::{Edition, ROOT_ERASED_FILE_AST_ID, SpanAnchor, SyntaxContext};
+    use span::{Edition, SpanAnchor, SyntaxContext, ROOT_ERASED_FILE_AST_ID};
     use syntax::{TextRange, TextSize};
     const DUMMY: tt::Span = tt::Span {
         range: TextRange::empty(TextSize::new(0)),

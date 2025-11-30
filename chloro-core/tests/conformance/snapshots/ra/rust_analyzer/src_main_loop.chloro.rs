@@ -8,13 +8,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-use crossbeam_channel::{Receiver, never, select};
-use ide_db::base_db::{SourceDatabase, VfsPath, salsa::Database as _};
+use crossbeam_channel::{never, select, Receiver};
+use ide_db::base_db::{salsa::Database as _, SourceDatabase, VfsPath};
 use lsp_server::{Connection, Notification, Request};
-use lsp_types::{TextDocumentIdentifier, notification::Notification as _};
+use lsp_types::{notification::Notification as _, TextDocumentIdentifier};
 use stdx::thread::ThreadIntent;
-use tracing::{Level, error, span};
-use vfs::{AbsPathBuf, FileId, loader::LoadingProgress};
+use tracing::{error, span, Level};
+use vfs::{loader::LoadingProgress, AbsPathBuf, FileId};
 
 use crate::{
     config::Config,

@@ -2,7 +2,7 @@
 //!
 //! Currently this renders the implied `Sized` bound.
 
-use ide_db::{FileRange, famous_defs::FamousDefs};
+use ide_db::{famous_defs::FamousDefs, FileRange};
 use syntax::ast::{self, AstNode, HasTypeBounds};
 
 use crate::{
@@ -82,7 +82,7 @@ pub(super) fn hints(
 mod tests {
     use expect_test::expect;
     use crate::inlay_hints::InlayHintsConfig;
-    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_expect, check_with_config};
+    use crate::inlay_hints::tests::{check_expect, check_with_config, DISABLED_CONFIG};
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(InlayHintsConfig { sized_bound: true, ..DISABLED_CONFIG }, ra_fixture);

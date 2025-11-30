@@ -11,13 +11,12 @@ Rustfmt size:  16197 bytes
  mod block;
  
 -use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};
--use expect_test::{expect, Expect};
-+use expect_test::{Expect, expect};
+ use expect_test::{expect, Expect};
  use la_arena::RawIdx;
  use test_fixture::WithFixture;
  use triomphe::Arc;
  
-+use crate::{DefWithBodyId, ModuleDefId, hir::MatchArm, nameres::crate_def_map, test_db::TestDB};
++use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};
  use super::super::*;
  
  fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>, DefWithBodyId) {

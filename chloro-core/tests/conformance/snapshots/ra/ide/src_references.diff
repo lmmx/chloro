@@ -99,12 +99,18 @@ Rustfmt size:  66636 bytes
  #[derive(Debug)]
  pub struct FindAllRefsConfig<'a> {
      pub search_scope: Option<SearchScope>,
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{Expect, expect};
++    use expect_test::{expect, Expect};
      use hir::EditionedFileId;
      use ide_db::{FileId, MiniCore, RootDatabase};
      use stdx::format_to;
 -
-     use crate::{SearchScope, fixture, references::FindAllRefsConfig};
+-    use crate::{SearchScope, fixture, references::FindAllRefsConfig};
 -
++    use crate::{fixture, references::FindAllRefsConfig, SearchScope};
      #[test]
      fn exclude_tests() {
          check(

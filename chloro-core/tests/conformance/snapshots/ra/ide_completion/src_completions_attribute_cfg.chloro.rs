@@ -2,9 +2,9 @@
 
 use ide_db::SymbolKind;
 use itertools::Itertools;
-use syntax::{AstToken, Direction, NodeOrToken, SyntaxKind, algo, ast::Ident};
+use syntax::{algo, ast::Ident, AstToken, Direction, NodeOrToken, SyntaxKind};
 
-use crate::{CompletionItem, completions::Completions, context::CompletionContext};
+use crate::{completions::Completions, context::CompletionContext, CompletionItem};
 
 pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
     let add_completion = |item: &str| {

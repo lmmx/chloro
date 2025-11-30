@@ -1,7 +1,7 @@
 use either::Either;
 use ide_db::FxHashMap;
 use itertools::Itertools;
-use syntax::{AstNode, SmolStr, SyntaxElement, ToSmolStr, ast, syntax_editor::SyntaxEditor};
+use syntax::{ast, syntax_editor::SyntaxEditor, AstNode, SmolStr, SyntaxElement, ToSmolStr};
 
 use crate::{AssistContext, AssistId, Assists};
 

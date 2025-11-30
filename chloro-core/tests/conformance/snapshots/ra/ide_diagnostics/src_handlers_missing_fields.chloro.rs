@@ -19,7 +19,7 @@ use syntax::{
     AstNode, Edition, SyntaxNode, SyntaxNodePtr, ToSmolStr,
 };
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Diagnostic {
     let mut message = String::from("missing structure fields:\n");

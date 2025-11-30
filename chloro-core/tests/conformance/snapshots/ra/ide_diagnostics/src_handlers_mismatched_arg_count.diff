@@ -8,11 +8,8 @@ Rustfmt size:  10774 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     AstNode, AstPtr,
- };
  
--use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+ use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: mismatched-tuple-struct-pat-arg-count
 -//

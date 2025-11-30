@@ -17,7 +17,7 @@ use hir_def::{
 };
 use intern::sym;
 use rustc_abi::TargetDataLayout;
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use span::Edition;
 
 use crate::{

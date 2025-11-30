@@ -4,7 +4,7 @@
 use hir::Semantics;
 use ide_assists::utils::test_related_attribute_syn;
 use ide_db::RootDatabase;
-use syntax::{AstNode, SyntaxNode, TextRange, ast, ast::HasName};
+use syntax::{ast, ast::HasName, AstNode, SyntaxNode, TextRange};
 
 use crate::FileId;
 

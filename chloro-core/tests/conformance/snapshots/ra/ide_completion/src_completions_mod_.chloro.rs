@@ -7,9 +7,9 @@ use ide_db::{
     base_db::{SourceDatabase, VfsPath},
     FxHashSet, RootDatabase, SymbolKind,
 };
-use syntax::{AstNode, SyntaxKind, ast};
+use syntax::{ast, AstNode, SyntaxKind};
 
-use crate::{CompletionItem, Completions, context::CompletionContext};
+use crate::{context::CompletionContext, CompletionItem, Completions};
 
 /// Complete mod declaration, i.e. `mod $0;`
 pub(crate) fn complete_mod(

@@ -8,14 +8,6 @@ Rustfmt size:  12328 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use itertools::Itertools;
- use stdx::trim_indent;
- use test_fixture::WithFixture;
--use test_utils::{assert_eq_text, extract_annotations, MiniCore};
-+use test_utils::{MiniCore, assert_eq_text, extract_annotations};
- 
- use crate::{DiagnosticsConfig, Severity};
- 
  ) {
      check_nth_fix(0, ra_fixture_before, ra_fixture_after);
  }

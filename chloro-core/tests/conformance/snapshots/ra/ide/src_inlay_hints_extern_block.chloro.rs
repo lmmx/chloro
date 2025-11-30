@@ -1,7 +1,7 @@
 //! Extern block hints
 
 use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
-use syntax::{AstNode, SyntaxToken, ast};
+use syntax::{ast, AstNode, SyntaxToken};
 
 use crate::{InlayHint, InlayHintsConfig};
 
@@ -95,7 +95,7 @@ fn item_hint(
 
 #[cfg(test)]
 mod tests {
-    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
+    use crate::inlay_hints::tests::{check_with_config, DISABLED_CONFIG};
     #[test]
     fn unadorned() {
         check_with_config(

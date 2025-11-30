@@ -247,7 +247,7 @@ fn structure_token(token: SyntaxToken) -> Option<StructureNode> {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use super::*;
     const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig { exclude_locals: true };
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

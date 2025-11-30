@@ -4,7 +4,7 @@
 
 use ide_db::famous_defs::FamousDefs;
 use ide_db::text_edit::{TextRange, TextSize};
-use stdx::{TupleExt, never};
+use stdx::{never, TupleExt};
 use syntax::ast::{self, AstNode};
 
 use crate::{

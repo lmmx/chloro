@@ -1,7 +1,4 @@
-use hir::{
-    Name,
-    sym::{self},
-};
+use hir::{sym::self, Name};
 use ide_db::{famous_defs::FamousDefs, syntax_helpers::suggest_name};
 use syntax::{
     ast::{edit::IndentLevel, make, self, syntax_factory::SyntaxFactory, HasLoopBody},

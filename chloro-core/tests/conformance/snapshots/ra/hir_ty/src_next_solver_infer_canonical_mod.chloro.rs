@@ -27,7 +27,7 @@ pub mod instantiate;
 use instantiate::CanonicalExt;
 use rustc_index::IndexVec;
 use rustc_type_ir::inherent::IntoKind;
-use rustc_type_ir::{CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex, inherent::Ty as _};
+use rustc_type_ir::{inherent::Ty as _, CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex};
 
 use crate::next_solver::{
     infer::InferCtxt, Canonical, CanonicalVarValues, Const, DbInterner, GenericArg,

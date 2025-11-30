@@ -8,16 +8,6 @@ Rustfmt size:  6436 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Unification keyes for the infer context the next-trait-solver.
- 
- use std::cmp;
- use std::marker::PhantomData;
- 
- use ena::unify::{NoError, UnifyKey, UnifyValue};
--use rustc_type_ir::{inherent::IntoKind, ConstVid, RegionKind, RegionVid, UniverseIndex};
-+use rustc_type_ir::{ConstVid, RegionKind, RegionVid, UniverseIndex, inherent::IntoKind};
- 
- use crate::next_solver::{Const, Region};
  
  #[derive(Clone, Debug)]
  pub(crate) enum RegionVariableValue<'db> {

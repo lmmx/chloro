@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use span::{Edition, SyntaxContext};
 use syntax::utils::is_raw_identifier;
 use syntax::{ast, format_smolstr};

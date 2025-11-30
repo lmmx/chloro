@@ -60,7 +60,7 @@ use std::panic::{AssertUnwindSafe, UnwindSafe};
 use cfg::CfgOptions;
 use fetch_crates::CrateInfo;
 pub use hir::Semantics;
-use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
+use hir::{crate_def_map, sym, ChangeWithProcMacros, EditionedFileId};
 pub use ide_assists::{
     Assist, AssistConfig, AssistId, AssistKind, AssistResolveStrategy, SingleResolve,
 };
@@ -88,15 +88,15 @@ use ide_db::{
     },
     prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
 };
-use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
+use ide_db::{ra_fixture::RaFixtureAnalysis, MiniCore};
 pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
 pub use ide_ssr::SsrError;
 use macros::UpmapFromRaFixture;
 pub use span::Edition;
-use syntax::{SourceFile, ast};
+use syntax::{ast, SourceFile};
 pub use syntax::{TextRange, TextSize};
 use triomphe::Arc;
-use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
+use view_memory_layout::{view_memory_layout, RecursiveMemoryLayout};
 
 use crate::navigation_target::ToNav;
 pub use crate::{

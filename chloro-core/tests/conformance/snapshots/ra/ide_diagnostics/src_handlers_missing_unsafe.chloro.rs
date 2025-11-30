@@ -2,10 +2,10 @@ use hir::db::ExpandDatabase;
 use hir::{UnsafeLint, UnsafetyReason};
 use ide_db::text_edit::TextEdit;
 use ide_db::{assists::Assist, source_change::SourceChange};
-use syntax::{AstNode, match_ast};
-use syntax::{SyntaxNode, ast};
+use syntax::{match_ast, AstNode};
+use syntax::{ast, SyntaxNode};
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn missing_unsafe(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Diagnostic {
     let code = match d.lint {

@@ -13,11 +13,3 @@ Rustfmt size:  2269 bytes
  use ide_db::{
      defs::Definition,
      syntax_helpers::format_string::{is_format_string, lex_format_specifiers, FormatSpecifier},
-     SymbolKind,
- };
- use span::Edition;
--use syntax::{ast, AstToken};
-+use syntax::{AstToken, ast};
- 
- use crate::{
-     syntax_highlighting::{highlight::highlight_def, highlights::Highlights},

@@ -8,16 +8,6 @@ Rustfmt size:  8767 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! This module provides an SSR assist. It is not desirable to include this
- //! assist in ide_assists because that would require the ide_assists crate
- //! depend on the ide_ssr crate.
- 
- use ide_assists::{Assist, AssistId, AssistResolveStrategy, GroupLabel};
--use ide_db::{label::Label, source_change::SourceChange, FileRange, RootDatabase};
-+use ide_db::{FileRange, RootDatabase, label::Label, source_change::SourceChange};
- 
- pub(crate) fn ssr_assists(
-     db: &RootDatabase,
  
          let source_change_for_workspace = SourceChange::from_iter(match_finder.edits());
  

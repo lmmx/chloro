@@ -48,7 +48,7 @@ use rustc_type_ir::{
     TypeVisitableExt,
 };
 use salsa::plumbing::AsId;
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use stdx::{impl_from, never};
 use triomphe::{Arc, ThinArc};
 

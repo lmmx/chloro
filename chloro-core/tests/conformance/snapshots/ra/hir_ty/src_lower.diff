@@ -54,7 +54,9 @@ Rustfmt size:  87058 bytes
 -    inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
  };
  use salsa::plumbing::AsId;
- use smallvec::{SmallVec, smallvec};
+-use smallvec::{SmallVec, smallvec};
++use smallvec::{smallvec, SmallVec};
+ use stdx::{impl_from, never};
  use triomphe::{Arc, ThinArc};
  
  use crate::{

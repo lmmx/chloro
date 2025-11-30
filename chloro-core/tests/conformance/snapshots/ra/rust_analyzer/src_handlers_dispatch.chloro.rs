@@ -10,7 +10,7 @@ use ide_db::base_db::{
     DbPanicContext,
 };
 use lsp_server::{ExtractError, Response, ResponseError};
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use stdx::thread::ThreadIntent;
 
 use crate::{

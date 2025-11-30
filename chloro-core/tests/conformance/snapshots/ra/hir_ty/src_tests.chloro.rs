@@ -24,7 +24,7 @@ use hir_def::{
     src::HasSource,
     AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
 };
-use hir_expand::{FileRange, InFile, db::ExpandDatabase};
+use hir_expand::{db::ExpandDatabase, FileRange, InFile};
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use stdx::format_to;

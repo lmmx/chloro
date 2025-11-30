@@ -8,8 +8,13 @@ Rustfmt size:  8070 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Things related to IR printing in the next-trait-solver.
+ 
+ use std::any::type_name_of_val;
+ 
  use rustc_type_ir::inherent::SliceLike;
- use rustc_type_ir::{self as ty, ir_print::IrPrint};
+-use rustc_type_ir::{self as ty, ir_print::IrPrint};
++use rustc_type_ir::{ir_print::IrPrint, self as ty};
  
 -use super::interner::DbInterner;
  use super::SolverDefId;

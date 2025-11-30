@@ -14,7 +14,7 @@ use rustc_type_ir::{
 use smallvec::SmallVec;
 
 use crate::next_solver::{InternedWrapperNoDebug, TraitIdWrapper};
-use super::{Binder, BoundVarKinds, DbInterner, Region, Ty, interned_vec_db};
+use super::{interned_vec_db, Binder, BoundVarKinds, DbInterner, Region, Ty};
 
 pub type BoundExistentialPredicate<'db> = Binder<'db, ExistentialPredicate<'db>>;
 

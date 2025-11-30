@@ -58,7 +58,15 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
         // See: https://github.com/rust-lang/rustfmt/issues/6727
         buf.push_str(&vis_text);
         buf.push_str("use ");
-        buf.push_str(&use_tree_text);
+
+        // Sort even for single-line output
+        if use_tree_text.contains('{') {
+            let sorted = sort_nested_items(&use_tree_text);
+            buf.push_str(&sorted);
+        } else {
+            buf.push_str(&use_tree_text);
+        }
+
         buf.push_str(";\n");
         return;
     }

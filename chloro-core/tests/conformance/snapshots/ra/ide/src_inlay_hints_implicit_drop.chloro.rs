@@ -11,7 +11,7 @@ use hir::{
     mir::{MirSpan, TerminatorKind},
     DefWithBody,
 };
-use ide_db::{FileRange, famous_defs::FamousDefs};
+use ide_db::{famous_defs::FamousDefs, FileRange};
 use syntax::{
     ast::{self, AstNode},
     match_ast, ToSmolStr,

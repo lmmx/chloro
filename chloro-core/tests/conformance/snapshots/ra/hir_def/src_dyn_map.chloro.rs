@@ -35,9 +35,9 @@ use stdx::anymap::Map;
 
 pub mod keys {
     use std::marker::PhantomData;
-    use hir_expand::{MacroCallId, attrs::AttrId};
+    use hir_expand::{attrs::AttrId, MacroCallId};
     use rustc_hash::FxHashMap;
-    use syntax::{AstNode, AstPtr, ast};
+    use syntax::{ast, AstNode, AstPtr};
     use crate::{
         dyn_map::{DynMap, Policy},
         BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,

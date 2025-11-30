@@ -1,4 +1,4 @@
-use hir::{HasSource, Name, sym};
+use hir::{sym, HasSource, Name};
 use syntax::{
     ast::{self, HasName},
     AstNode,

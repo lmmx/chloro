@@ -8,14 +8,6 @@ Rustfmt size:  10776 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion of names from the current scope in type position.
- 
- use hir::{HirDisplay, ScopeDef};
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
- 
- use crate::{
-     context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},
      };
  
      match qualified {

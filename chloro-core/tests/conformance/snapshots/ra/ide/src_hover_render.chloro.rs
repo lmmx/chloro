@@ -23,7 +23,7 @@ use rustc_apfloat::{
 };
 use span::{Edition, TextSize};
 use stdx::format_to;
-use syntax::{AstNode, AstToken, Direction, SyntaxToken, T, algo, ast, match_ast};
+use syntax::{algo, ast, match_ast, AstNode, AstToken, Direction, SyntaxToken, T};
 
 use crate::{
     doc_links::{remove_links, rewrite_links},

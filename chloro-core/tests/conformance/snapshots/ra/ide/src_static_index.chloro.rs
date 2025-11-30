@@ -2,7 +2,7 @@
 //! read-only code browsers and emitting LSIF
 
 use arrayvec::ArrayVec;
-use hir::{Crate, Module, Semantics, db::HirDatabase};
+use hir::{db::HirDatabase, Crate, Module, Semantics};
 use ide_db::{
     base_db::{RootQueryDb, SourceDatabase, VfsPath},
     defs::{Definition, IdentClass},
@@ -11,7 +11,7 @@ use ide_db::{
     FileId, FileRange, FxHashMap, FxHashSet, MiniCore, RootDatabase,
 };
 use span::Edition;
-use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, T, TextRange};
+use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, TextRange, T};
 
 use crate::navigation_target::UpmappingResult;
 use crate::{
@@ -335,8 +335,8 @@ impl StaticIndex<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{StaticIndex, fixture};
-    use ide_db::{FileRange, FxHashMap, FxHashSet, base_db::VfsPath};
+    use crate::{fixture, StaticIndex};
+    use ide_db::{base_db::VfsPath, FileRange, FxHashMap, FxHashSet};
     use syntax::TextSize;
     use super::VendoredLibrariesConfig;
     fn check_all_ranges(

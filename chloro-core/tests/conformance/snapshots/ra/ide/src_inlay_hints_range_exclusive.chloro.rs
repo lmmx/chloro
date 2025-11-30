@@ -5,7 +5,7 @@
 //! ```
 
 use ide_db::famous_defs::FamousDefs;
-use syntax::{SyntaxToken, T, ast};
+use syntax::{ast, SyntaxToken, T};
 
 use crate::{InlayHint, InlayHintsConfig};
 

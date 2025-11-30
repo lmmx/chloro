@@ -25,9 +25,9 @@ use hir_expand::{
     span_map::SpanMapRef,
     AstId, InFile, MacroCallId, MacroCallKind, MacroKind,
 };
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use itertools::Itertools;
-use span::{Edition, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor, SyntaxContext};
+use span::{Edition, Span, SpanAnchor, SyntaxContext, ROOT_ERASED_FILE_AST_ID};
 use stdx::{format_to, format_to_acc};
 use syntax::{
     ast::{edit::IndentLevel, self},

@@ -3,9 +3,9 @@ use hir::GenericArgsProhibitedReason;
 use ide_db::assists::Assist;
 use ide_db::source_change::SourceChange;
 use ide_db::text_edit::TextEdit;
-use syntax::{AstNode, TextRange, ast};
+use syntax::{ast, AstNode, TextRange};
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn generic_args_prohibited(
     ctx: &DiagnosticsContext<'_>,

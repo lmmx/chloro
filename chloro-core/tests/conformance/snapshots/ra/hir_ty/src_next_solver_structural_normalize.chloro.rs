@@ -1,4 +1,4 @@
-use rustc_type_ir::{AliasRelationDirection, inherent::Term as _};
+use rustc_type_ir::{inherent::Term as _, AliasRelationDirection};
 
 use crate::next_solver::{
     fulfill::{FulfillmentCtxt, NextSolverError},

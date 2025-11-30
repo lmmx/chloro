@@ -15,7 +15,7 @@ use tracing::{debug, instrument, warn};
 
 use crate::next_solver::infer::type_variable::TypeVariableValue;
 use crate::next_solver::infer::unify_key::ConstVariableValue;
-use crate::next_solver::infer::{InferCtxt, relate};
+use crate::next_solver::infer::{relate, InferCtxt};
 use crate::next_solver::util::MaxUniverse;
 use crate::next_solver::{
     AliasTy, Binder, ClauseKind, Const, ConstKind, DbInterner, GenericArgs, PredicateKind, Region,

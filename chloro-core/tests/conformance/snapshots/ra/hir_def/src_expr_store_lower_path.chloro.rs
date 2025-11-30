@@ -9,7 +9,7 @@ use hir_expand::{
     mod_path::{resolve_crate_root, ModPath, PathKind},
     name::{AsName, Name},
 };
-use intern::{Interned, sym};
+use intern::{sym, Interned};
 use syntax::{
     ast::{self, AstNode, HasGenericArgs},
     AstPtr,

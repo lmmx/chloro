@@ -1,4 +1,4 @@
-use hir::{HasVisibility, sym};
+use hir::{sym, HasVisibility};
 use ide_db::{
     assists::AssistId,
     defs::Definition,
@@ -7,9 +7,9 @@ use ide_db::{
     FxHashMap, FxHashSet,
 };
 use itertools::Itertools;
-use syntax::ast::{HasName, syntax_factory::SyntaxFactory};
+use syntax::ast::{syntax_factory::SyntaxFactory, HasName};
 use syntax::syntax_editor::SyntaxEditor;
-use syntax::{AstNode, Edition, SmolStr, SyntaxNode, ToSmolStr, ast};
+use syntax::{ast, AstNode, Edition, SmolStr, SyntaxNode, ToSmolStr};
 
 use crate::{
     assist_context::{AssistContext, Assists, SourceChangeBuilder},

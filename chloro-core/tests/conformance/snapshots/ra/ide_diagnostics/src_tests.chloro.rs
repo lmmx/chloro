@@ -11,7 +11,7 @@ use ide_db::{
 use itertools::Itertools;
 use stdx::trim_indent;
 use test_fixture::WithFixture;
-use test_utils::{MiniCore, assert_eq_text, extract_annotations};
+use test_utils::{assert_eq_text, extract_annotations, MiniCore};
 
 use crate::{DiagnosticsConfig, Severity};
 

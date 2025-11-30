@@ -8,11 +8,8 @@ Rustfmt size:  23945 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     SyntaxKind,
- };
  
--use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+ use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
  
 -// Assist: convert_named_struct_to_tuple_struct
 -//

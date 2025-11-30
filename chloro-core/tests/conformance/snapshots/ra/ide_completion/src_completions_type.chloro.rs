@@ -1,7 +1,7 @@
 //! Completion of names from the current scope in type position.
 
 use hir::{HirDisplay, ScopeDef};
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 
 use crate::{
     context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},

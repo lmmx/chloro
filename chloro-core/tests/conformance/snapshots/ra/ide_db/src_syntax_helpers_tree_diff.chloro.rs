@@ -3,7 +3,7 @@
 use rustc_hash::FxHashMap;
 use syntax::{NodeOrToken, SyntaxElement, SyntaxNode};
 
-use crate::{FxIndexMap, text_edit::TextEditBuilder};
+use crate::{text_edit::TextEditBuilder, FxIndexMap};
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 enum TreeDiffInsertPos {
@@ -154,7 +154,7 @@ pub fn diff(from: &SyntaxNode, to: &SyntaxNode) -> TreeDiff {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use itertools::Itertools;
     use parser::{Edition, SyntaxKind};
     use syntax::{AstNode, SourceFile, SyntaxElement};

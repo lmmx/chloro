@@ -25,7 +25,8 @@ Rustfmt size:  26763 bytes
 +    SyntaxElement, SyntaxKind, SyntaxNode, TextSize, T,
  };
  
- use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+-use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
++use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
  
 -// Assist: convert_tuple_struct_to_named_struct
 -//

@@ -1,5 +1,5 @@
 use ide_db::{assists::AssistId, base_db::AnchoredPathBuf};
-use syntax::{AstNode, ToSmolStr, ast};
+use syntax::{ast, AstNode, ToSmolStr};
 
 use crate::{
     assist_context::{AssistContext, Assists},

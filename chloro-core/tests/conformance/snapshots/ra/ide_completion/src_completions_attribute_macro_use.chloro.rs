@@ -4,7 +4,7 @@ use hir::ModuleDef;
 use ide_db::SymbolKind;
 use syntax::ast;
 
-use crate::{Completions, context::CompletionContext, item::CompletionItem};
+use crate::{context::CompletionContext, item::CompletionItem, Completions};
 
 pub(super) fn complete_macro_use(
     acc: &mut Completions,

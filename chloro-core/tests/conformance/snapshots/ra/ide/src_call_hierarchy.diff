@@ -8,14 +8,6 @@ Rustfmt size:  18564 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     search::FileReference,
-     FileRange, FxIndexMap, MiniCore, RootDatabase,
- };
--use syntax::{ast, AstNode, SyntaxKind::IDENT};
-+use syntax::{AstNode, SyntaxKind::IDENT, ast};
- 
- use crate::{
-     goto_definition, FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav,
      goto_definition::goto_definition(
          db,
          position,
@@ -64,10 +56,7 @@ Rustfmt size:  18564 bytes
      }
  }
  
- #[cfg(test)]
- mod tests {
--    use expect_test::{expect, Expect};
-+    use expect_test::{Expect, expect};
+     use expect_test::{expect, Expect};
      use ide_db::{FilePosition, MiniCore};
      use itertools::Itertools;
 -

@@ -6,7 +6,7 @@ use syntax::{
     AstNode, AstPtr,
 };
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn mismatched_tuple_struct_pat_arg_count(
     ctx: &DiagnosticsContext<'_>,

@@ -8,17 +8,6 @@ Rustfmt size:  8918 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Stuff for handling `#[target_feature]` (needed for unsafe check).
- 
- use std::sync::LazyLock;
- 
- use hir_def::attr::Attrs;
- use hir_def::tt;
--use intern::{sym, Symbol};
-+use intern::{Symbol, sym};
- use rustc_hash::{FxHashMap, FxHashSet};
- 
- #[derive(Debug, Default, Clone)]
  }
  
  // List of the target features each target feature implies.

@@ -1,4 +1,4 @@
-use hir::{AsAssocItem, Semantics, sym};
+use hir::{sym, AsAssocItem, Semantics};
 use ide_db::{
     famous_defs::FamousDefs,
     syntax_helpers::node_ext::{

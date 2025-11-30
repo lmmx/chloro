@@ -6,7 +6,7 @@ use ide_db::{
 };
 use span::{SpanMap, SyntaxContext, TextRange, TextSize};
 use stdx::format_to;
-use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast, ted};
+use syntax::{ast, ted, AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T};
 
 use crate::FilePosition;
 
@@ -287,7 +287,7 @@ fn _format(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use crate::fixture;
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

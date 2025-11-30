@@ -31,7 +31,7 @@
 //! }
 //! ```
 
-use hir::{MacroCallId, Name, db::ExpandDatabase};
+use hir::{db::ExpandDatabase, MacroCallId, Name};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
     documentation::HasDocs, path_transform::PathTransform,

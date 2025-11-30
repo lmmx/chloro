@@ -3,7 +3,7 @@ use ide_db::{
     defs::{Definition, NameClass, NameRefClass},
     RootDatabase,
 };
-use syntax::{AstNode, SyntaxKind::*, T, ast, match_ast};
+use syntax::{ast, match_ast, AstNode, SyntaxKind::*, T};
 
 use crate::{
     goto_definition::goto_definition, navigation_target::TryToNav, FilePosition,
@@ -73,7 +73,7 @@ pub(crate) fn goto_declaration(
 mod tests {
     use ide_db::{FileRange, MiniCore};
     use itertools::Itertools;
-    use crate::{GotoDefinitionConfig, fixture};
+    use crate::{fixture, GotoDefinitionConfig};
     const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig { minicore: MiniCore::default() };
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);

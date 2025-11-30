@@ -8,14 +8,6 @@ Rustfmt size:  11841 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use base_db::SourceDatabase;
- use expect_test::Expect;
- use hir::db::HirDatabase;
--use hir::{setup_tracing, PrefixKind};
-+use hir::{PrefixKind, setup_tracing};
- use ide_db::{
-     imports::insert_use::{ImportGranularity, InsertUseConfig},
-     FilePosition, MiniCore, RootDatabase, SnippetCap,
      let change_fixture = ChangeFixture::parse(&database, ra_fixture);
      database.enable_proc_attr_macros();
      database.apply_change(change_fixture.change);

@@ -11,8 +11,7 @@ Rustfmt size:  2085 bytes
  use hir::InFile;
  use syntax::{AstNode, TextRange};
  
--use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+ use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: incoherent-impl
 -//

@@ -1,7 +1,7 @@
 use either::Either;
-use hir::{HasSource, HirDisplay, Semantics, VariantId, db::ExpandDatabase};
+use hir::{db::ExpandDatabase, HasSource, HirDisplay, Semantics, VariantId};
 use ide_db::text_edit::TextEdit;
-use ide_db::{EditionedFileId, RootDatabase, source_change::SourceChange};
+use ide_db::{source_change::SourceChange, EditionedFileId, RootDatabase};
 use syntax::{
     ast::{edit::IndentLevel, make, self},
     AstNode,

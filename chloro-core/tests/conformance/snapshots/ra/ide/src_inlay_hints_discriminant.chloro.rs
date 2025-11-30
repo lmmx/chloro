@@ -7,7 +7,7 @@
 
 use hir::Semantics;
 use ide_db::text_edit::TextEdit;
-use ide_db::{RootDatabase, famous_defs::FamousDefs};
+use ide_db::{famous_defs::FamousDefs, RootDatabase};
 use syntax::ast::{self, AstNode, HasName};
 
 use crate::{

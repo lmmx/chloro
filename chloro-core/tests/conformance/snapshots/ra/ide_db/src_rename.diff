@@ -20,9 +20,11 @@ Rustfmt size:  29385 bytes
 -};
  use base_db::AnchoredPathBuf;
  use either::Either;
- use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
+-use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
++use hir::{sym, FieldSource, FileRange, InFile, ModuleSource, Name, Semantics};
  use span::{Edition, FileId, SyntaxContext};
- use stdx::{TupleExt, never};
+-use stdx::{TupleExt, never};
++use stdx::{never, TupleExt};
  use syntax::{
 -    AstNode, SyntaxKind, T, TextRange,
      ast::{self, HasName},

@@ -13,11 +13,10 @@ Rustfmt size:  28759 bytes
  //! fn f(a: i32, b: i32) -> i32 { a + b }
  //! let _x /* i32 */= f(4, 4);
  //! ```
--use hir::{DisplayTarget, Semantics};
--use ide_db::{famous_defs::FamousDefs, RootDatabase};
- 
-+use hir::{DisplayTarget, Semantics};
-+use ide_db::{RootDatabase, famous_defs::FamousDefs};
++
+ use hir::{DisplayTarget, Semantics};
+ use ide_db::{famous_defs::FamousDefs, RootDatabase};
+-
  use itertools::Itertools;
  use syntax::{
      ast::{self, AstNode, HasGenericArgs, HasName},
@@ -63,9 +62,8 @@ Rustfmt size:  28759 bytes
      use syntax::{TextRange, TextSize};
      use test_utils::extract_annotations;
 -
--    use crate::{fixture, inlay_hints::InlayHintsConfig, ClosureReturnTypeHints};
+     use crate::{fixture, inlay_hints::InlayHintsConfig, ClosureReturnTypeHints};
 -
-+    use crate::{ClosureReturnTypeHints, fixture, inlay_hints::InlayHintsConfig};
      use crate::inlay_hints::tests::{
          check, check_edit, check_no_edit, check_with_config, DISABLED_CONFIG, TEST_CONFIG,
      };

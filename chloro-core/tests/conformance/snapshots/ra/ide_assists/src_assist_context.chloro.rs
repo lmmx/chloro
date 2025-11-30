@@ -2,7 +2,7 @@
 
 use hir::{EditionedFileId, FileRange, Semantics};
 pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
-use ide_db::{FileId, RootDatabase, label::Label};
+use ide_db::{label::Label, FileId, RootDatabase};
 use syntax::Edition;
 use syntax::{
     algo::{find_node_at_offset, find_node_at_range, self},

@@ -30,17 +30,17 @@ use hir::{
 use ide_db::{
     famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
 };
-use ide_db::{FxHashSet, text_edit::TextEdit};
+use ide_db::{text_edit::TextEdit, FxHashSet};
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use stdx::never;
 use syntax::{
     ast::{self, AstNode, HasGenericParams},
     format_smolstr, match_ast, SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
 };
 
-use crate::{FileId, navigation_target::TryToNav};
+use crate::{navigation_target::TryToNav, FileId};
 
 pub(crate) fn inlay_hints(
     db: &RootDatabase,
@@ -832,7 +832,7 @@ mod tests {
     use test_utils::extract_annotations;
     use crate::DiscriminantHints;
     use crate::inlay_hints::{AdjustmentHints, AdjustmentHintsMode};
-    use crate::{LifetimeElisionHints, fixture, inlay_hints::InlayHintsConfig};
+    use crate::{fixture, inlay_hints::InlayHintsConfig, LifetimeElisionHints};
     use super::{ClosureReturnTypeHints, GenericParameterHints, InlayFieldsToResolve};
     pub(super) const DISABLED_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {
         discriminant_hints: DiscriminantHints::Never,

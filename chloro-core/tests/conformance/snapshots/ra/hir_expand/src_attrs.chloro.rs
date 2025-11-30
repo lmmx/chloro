@@ -6,13 +6,13 @@ use std::{borrow::Cow, fmt, ops};
 use base_db::Crate;
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
-use intern::{Interned, Symbol, sym};
+use intern::{sym, Interned, Symbol};
 use mbe::{DelimiterKind, Punct};
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use span::{Span, SyntaxContext};
 use syntax::unescape;
-use syntax::{AstNode, AstToken, SyntaxNode, ast, match_ast};
-use syntax_bridge::{DocCommentDesugarMode, desugar_doc_comment_text, syntax_node_to_token_tree};
+use syntax::{ast, match_ast, AstNode, AstToken, SyntaxNode};
+use syntax_bridge::{desugar_doc_comment_text, syntax_node_to_token_tree, DocCommentDesugarMode};
 use triomphe::ThinArc;
 
 use crate::{

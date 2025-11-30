@@ -1,7 +1,7 @@
 //! Renderer for patterns.
 
-use hir::{Name, StructKind, db::HirDatabase};
-use ide_db::{SnippetCap, documentation::HasDocs};
+use hir::{db::HirDatabase, Name, StructKind};
+use ide_db::{documentation::HasDocs, SnippetCap};
 use itertools::Itertools;
 use syntax::{Edition, SmolStr, ToSmolStr};
 

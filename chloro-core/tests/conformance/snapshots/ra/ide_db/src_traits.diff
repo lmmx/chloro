@@ -11,14 +11,12 @@ Rustfmt size:  8222 bytes
  //! Functionality for obtaining data related to traits from the DB.
  
 -use crate::{defs::Definition, RootDatabase};
--use hir::{db::HirDatabase, AsAssocItem, Semantics};
-+use hir::{AsAssocItem, Semantics, db::HirDatabase};
+ use hir::{db::HirDatabase, AsAssocItem, Semantics};
  use rustc_hash::FxHashSet;
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
-+
-+use crate::{RootDatabase, defs::Definition};
+ use syntax::{ast, AstNode};
  
++use crate::{defs::Definition, RootDatabase};
++
  /// Given the `impl` block, attempts to find the trait this `impl` corresponds to.
  pub fn resolve_target_trait(
      sema: &Semantics<'_, RootDatabase>,
@@ -41,13 +39,6 @@ Rustfmt size:  8222 bytes
      // may share the same name as a function or constant.
      let mut impl_fns_consts = FxHashSet::default();
      let mut impl_type = FxHashSet::default();
- 
- #[cfg(test)]
- mod tests {
--    use expect_test::{expect, Expect};
-+    use expect_test::{Expect, expect};
-     use hir::FilePosition;
-     use hir::Semantics;
      use span::Edition;
      use syntax::ast::{self, AstNode};
      use test_fixture::ChangeFixture;

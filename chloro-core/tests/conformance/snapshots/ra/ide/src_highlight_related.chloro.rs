@@ -1,6 +1,6 @@
 use std::iter;
 
-use hir::{EditionedFileId, FilePosition, FileRange, HirFileId, InFile, Semantics, db};
+use hir::{db, EditionedFileId, FilePosition, FileRange, HirFileId, InFile, Semantics};
 use ide_db::{
     defs::{Definition, IdentClass},
     helpers::pick_best_token,
@@ -18,7 +18,7 @@ use syntax::{
     SyntaxToken, TextRange, WalkEvent, T,
 };
 
-use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};
+use crate::{goto_definition, navigation_target::ToNav, NavigationTarget, TryToNav};
 
 #[derive(PartialEq, Eq, Hash)]
 pub struct HighlightedRange {

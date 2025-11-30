@@ -15,7 +15,7 @@ use tracing::debug;
 
 use crate::next_solver::SolverDefId;
 use crate::next_solver::Ty;
-use crate::next_solver::infer::{InferCtxtUndoLogs, iter_idx_range};
+use crate::next_solver::infer::{iter_idx_range, InferCtxtUndoLogs};
 
 /// Represents a single undo-able action that affects a type inference variable.
 #[derive(Clone)]

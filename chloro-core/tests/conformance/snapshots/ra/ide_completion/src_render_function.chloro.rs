@@ -1,10 +1,10 @@
 //! Renderer for function calls.
 
-use hir::{AsAssocItem, HirDisplay, db::HirDatabase};
+use hir::{db::HirDatabase, AsAssocItem, HirDisplay};
 use ide_db::{SnippetCap, SymbolKind};
 use itertools::Itertools;
 use stdx::{format_to, to_lower_snake_case};
-use syntax::{AstNode, SmolStr, ToSmolStr, format_smolstr};
+use syntax::{format_smolstr, AstNode, SmolStr, ToSmolStr};
 
 use crate::{
     context::{

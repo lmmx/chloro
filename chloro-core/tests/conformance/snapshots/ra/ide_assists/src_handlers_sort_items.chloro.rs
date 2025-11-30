@@ -6,7 +6,7 @@ use syntax::{
     AstNode, SyntaxNode,
 };
 
-use crate::{AssistContext, AssistId, Assists, utils::get_methods};
+use crate::{utils::get_methods, AssistContext, AssistId, Assists};
 
 pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {

@@ -8,8 +8,11 @@ Rustfmt size:  17943 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ };
+ 
  use base_db::{RootQueryDb, SourceRootId};
- use fst::{Automaton, Streamer, raw::IndexedValue};
+-use fst::{Automaton, Streamer, raw::IndexedValue};
++use fst::{raw::IndexedValue, Automaton, Streamer};
  use hir::{
 -    Crate, Module,
      db::HirDatabase,
@@ -65,8 +68,9 @@ Rustfmt size:  17943 bytes
 -
      use expect_test::expect_file;
      use salsa::Setter;
-     use test_fixture::{WORKSPACE, WithFixture};
+-    use test_fixture::{WORKSPACE, WithFixture};
 -
++    use test_fixture::{WithFixture, WORKSPACE};
      use super::*;
 -
      #[test]

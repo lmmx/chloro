@@ -27,7 +27,7 @@ use syntax::{
     format_smolstr, SmolStr, SyntaxNode, ToSmolStr,
 };
 
-use crate::{FileId, NavigationTarget, ToNav, TryToNav, references};
+use crate::{references, FileId, NavigationTarget, ToNav, TryToNav};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, UpmapFromRaFixture)]
 pub struct Runnable {
@@ -746,7 +746,7 @@ impl UpdateTest {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use crate::fixture;
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);

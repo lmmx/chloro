@@ -29,7 +29,7 @@ Rustfmt size:  71259 bytes
      helpers::pick_best_token,
 +    RootDatabase, SymbolKind,
  };
-+use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
++use ide_db::{ra_fixture::UpmapFromRaFixture, MiniCore};
  use itertools::Itertools;
  use span::{Edition, FileId};
  use syntax::{
@@ -82,7 +82,11 @@ Rustfmt size:  71259 bytes
      // that is we are the string input of it
      if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
          .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
-     use crate::{GotoDefinitionConfig, fixture};
+ 
+ #[cfg(test)]
+ mod tests {
+-    use crate::{GotoDefinitionConfig, fixture};
++    use crate::{fixture, GotoDefinitionConfig};
      use ide_db::{FileRange, MiniCore};
      use itertools::Itertools;
 -

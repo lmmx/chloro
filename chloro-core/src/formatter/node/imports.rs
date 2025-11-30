@@ -84,6 +84,26 @@ mod tests {
     use ra_ap_syntax::{Edition, SourceFile};
 
     #[test]
+    fn test_sort_imports_simple() {
+        let input = "use a::{A, Ab, Ac, a, ab, ac};";
+
+        let parse = SourceFile::parse(input, Edition::CURRENT);
+        let root = parse.syntax_node();
+
+        let mut use_items = Vec::new();
+        for item in root.descendants() {
+            if let Some(use_) = Use::cast(item) {
+                use_items.push((Vec::new(), use_, Vec::new()));
+            }
+        }
+
+        let mut buf = String::new();
+        sort_and_format_imports(&use_items, &mut buf, 0);
+
+        assert_snapshot!(buf, @"use a::{a, ab, ac, Ab, Ac, A};");
+    }
+
+    #[test]
     fn test_sort_imports_with_line_width() {
         // This test was lexicographically sorted at line width 100
         let input = r#"use a::{
@@ -122,7 +142,9 @@ mod tests {
     zaZ, zaZA, zaZZ, zaZa, zaZz, zaa, zaaA, zaaZ, zaaa,
     zaaz, zaz, zazA, zazZ, zaza, zazz, zz, zzA, zzAA, zzAZ,
     zzAa, zzAz, zzZ, zzZA, zzZZ, zzZa, zzZz, zza, zzaA,
-    zzaZ, zzaa, zzaz, zzz, zzzA, zzzZ, zzza, zzzz
+    zzaZ, zzaa, zzaz, zzz, zzzA, zzzZ, zzza, zzzz, _A, _Aa,
+    _AaA, _Aaa, __A, __Aa, ___A, ___a, __a, __aA, _a, _aA,
+    _aAA
 };"#;
 
         let parse = SourceFile::parse(input, Edition::CURRENT);
@@ -159,8 +181,9 @@ mod tests {
             ZZaA, ZZaZ, ZZaa, ZZaz, ZZz, ZZzA, ZZzZ, ZZza, ZZzz, Za, ZaA, ZaAA, ZaAZ, ZaAa, ZaAz, ZaZ,
             ZaZA, ZaZZ, ZaZa, ZaZz, Zaa, ZaaA, ZaaZ, Zaaa, Zaaz, Zaz, ZazA, ZazZ, Zaza, Zazz, Zz, ZzA,
             ZzAA, ZzAZ, ZzAa, ZzAz, ZzZ, ZzZA, ZzZZ, ZzZa, ZzZz, Zza, ZzaA, ZzaZ, Zzaa, Zzaz, Zzz, ZzzA,
-            ZzzZ, Zzza, Zzzz, A, AA, AAA, AAAA, AAAZ, AAZ, AAZA, AAZZ, AZ, AZA, AZAA, AZAZ, AZZ, AZZA,
-            AZZZ, Z, ZA, ZAA, ZAAA, ZAAZ, ZAZ, ZAZA, ZAZZ, ZZ, ZZA, ZZAA, ZZAZ, ZZZ, ZZZA, ZZZZ,
+            ZzzZ, Zzza, Zzzz, _Aa, _AaA, _Aaa, __Aa, ___a, __a, __aA, _a, _aA, _aAA, A, AA, AAA, AAAA,
+            AAAZ, AAZ, AAZA, AAZZ, AZ, AZA, AZAA, AZAZ, AZZ, AZZA, AZZZ, Z, ZA, ZAA, ZAAA, ZAAZ, ZAZ, ZAZA,
+            ZAZZ, ZZ, ZZA, ZZAA, ZZAZ, ZZZ, ZZZA, ZZZZ, _A, __A, ___A,
         };
         ");
     }

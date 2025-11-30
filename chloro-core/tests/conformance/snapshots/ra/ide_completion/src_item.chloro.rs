@@ -12,7 +12,7 @@ use itertools::Itertools;
 use macros::UpmapFromRaFixture;
 use smallvec::SmallVec;
 use stdx::{format_to, impl_from, never};
-use syntax::{Edition, SmolStr, TextRange, TextSize, format_smolstr};
+use syntax::{format_smolstr, Edition, SmolStr, TextRange, TextSize};
 
 use crate::{
     context::{CompletionContext, PathCompletionCtx},

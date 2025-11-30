@@ -28,7 +28,7 @@ use std::{
 };
 
 use base_db::{RootQueryDb, SourceRootId};
-use fst::{Automaton, Streamer, raw::IndexedValue};
+use fst::{raw::IndexedValue, Automaton, Streamer};
 use hir::{
     db::HirDatabase,
     import_map::{AssocSearchMode, SearchMode},
@@ -402,7 +402,7 @@ impl Query {
 mod tests {
     use expect_test::expect_file;
     use salsa::Setter;
-    use test_fixture::{WORKSPACE, WithFixture};
+    use test_fixture::{WithFixture, WORKSPACE};
     use super::*;
     #[test]
     fn test_symbol_index_collection() {

@@ -30,8 +30,11 @@ Rustfmt size:  23725 bytes
      // Ignoring extra whitespace and comments
      let next = tokens.next()?.kind();
      if next == SyntaxKind::WHITESPACE {
+ 
+ #[cfg(test)]
  mod tests {
-     use expect_test::{Expect, expect};
+-    use expect_test::{Expect, expect};
++    use expect_test::{expect, Expect};
      use ide_db::text_edit::{TextRange, TextSize};
 -
      use crate::{

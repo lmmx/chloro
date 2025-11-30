@@ -53,7 +53,7 @@ pub(super) fn strip_prefixes_suffixes(s: &str) -> &str {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use super::*;
     fn check(link: &str, expected: Expect) {
         let (l, a) = parse_intra_doc_link(link);

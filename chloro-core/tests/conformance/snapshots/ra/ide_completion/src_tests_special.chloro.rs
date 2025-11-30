@@ -1,6 +1,6 @@
 //! Tests that don't fit into a specific category.
 
-use expect_test::{Expect, expect};
+use expect_test::{expect, Expect};
 use ide_db::SymbolKind;
 
 use crate::{

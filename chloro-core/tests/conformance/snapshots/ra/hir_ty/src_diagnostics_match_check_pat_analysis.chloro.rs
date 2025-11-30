@@ -10,7 +10,7 @@ use rustc_pattern_analysis::{
     IndexVec, PatCx, PrivateUninhabitedField,
 };
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use stdx::never;
 use triomphe::Arc;
 use Constructor::*;

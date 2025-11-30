@@ -3,10 +3,10 @@
 pub use span::RealSpanMap;
 use span::{Span, SyntaxContext};
 use stdx::TupleExt;
-use syntax::{AstNode, TextRange, ast};
+use syntax::{ast, AstNode, TextRange};
 use triomphe::Arc;
 
-use crate::{HirFileId, MacroCallId, attrs::collect_attrs, db::ExpandDatabase};
+use crate::{attrs::collect_attrs, db::ExpandDatabase, HirFileId, MacroCallId};
 
 pub type ExpansionSpanMap = span::SpanMap<SyntaxContext>;
 

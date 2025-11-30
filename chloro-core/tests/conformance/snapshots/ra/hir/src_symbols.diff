@@ -8,22 +8,6 @@ Rustfmt size:  19198 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     AdtId, AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule, ImplId, Lookup, MacroId,
-     ModuleDefId, ModuleId, TraitId,
- };
--use hir_expand::{name::Name, HirFileId};
-+use hir_expand::{HirFileId, name::Name};
- use hir_ty::{
-     db::HirDatabase,
-     display::{hir_display_with_store, HirDisplay},
- };
- use intern::Symbol;
- use rustc_hash::FxHashMap;
--use syntax::{ast::HasName, AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, ToSmolStr};
-+use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, ToSmolStr, ast::HasName};
- 
- use crate::{HasCrate, Module, ModuleDef, Semantics};
- 
          tracing::info!(?module, "SymbolCollector::collect");
  
          // The initial work is the root module we're collecting, additional work will

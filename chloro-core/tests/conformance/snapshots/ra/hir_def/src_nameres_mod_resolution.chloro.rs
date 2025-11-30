@@ -2,9 +2,9 @@
 
 use arrayvec::ArrayVec;
 use base_db::AnchoredPath;
-use hir_expand::{EditionedFileId, name::Name};
+use hir_expand::{name::Name, EditionedFileId};
 
-use crate::{HirFileId, db::DefDatabase};
+use crate::{db::DefDatabase, HirFileId};
 
 const MOD_DEPTH_LIMIT: usize = 32;
 

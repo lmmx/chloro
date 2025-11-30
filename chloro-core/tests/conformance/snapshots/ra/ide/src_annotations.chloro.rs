@@ -6,7 +6,7 @@ use ide_db::{
     MiniCore, RootDatabase,
 };
 use itertools::Itertools;
-use syntax::{AstNode, TextRange, ast::HasName};
+use syntax::{ast::HasName, AstNode, TextRange};
 
 use crate::{
     annotations::fn_references::find_all_methods,
@@ -243,9 +243,9 @@ fn should_skip_runnable(kind: &RunnableKind, binary_target: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use ide_db::MiniCore;
-    use crate::{Annotation, AnnotationConfig, fixture};
+    use crate::{fixture, Annotation, AnnotationConfig};
     use super::AnnotationLocation;
     const DEFAULT_CONFIG: AnnotationConfig<'_> = AnnotationConfig {
         binary_target: true,

@@ -1,4 +1,4 @@
-use hir::{Semantics, crate_def_map};
+use hir::{crate_def_map, Semantics};
 use ide_db::{
     base_db::{Crate, RootQueryDb},
     FileId, FilePosition, RootDatabase,

@@ -1,5 +1,5 @@
 use hir::HasCrate;
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 
 use crate::{AssistContext, AssistId, Assists};
 

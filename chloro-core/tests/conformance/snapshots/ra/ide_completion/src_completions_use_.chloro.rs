@@ -2,7 +2,7 @@
 
 use hir::ScopeDef;
 use ide_db::{FxHashSet, SymbolKind};
-use syntax::{AstNode, ast, format_smolstr};
+use syntax::{ast, format_smolstr, AstNode};
 
 use crate::{
     context::{CompletionContext, PathCompletionCtx, Qualified},

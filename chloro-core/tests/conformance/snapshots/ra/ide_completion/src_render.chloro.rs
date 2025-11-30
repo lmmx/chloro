@@ -10,7 +10,7 @@ pub(crate) mod type_alias;
 pub(crate) mod union_literal;
 pub(crate) mod variant;
 
-use hir::{AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type, sym};
+use hir::{sym, AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
     documentation::{Documentation, HasDocs},
@@ -18,7 +18,7 @@ use ide_db::{
     imports::import_assets::LocatedImport,
     RootDatabase, SnippetCap, SymbolKind,
 };
-use syntax::{AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr, ast, format_smolstr};
+use syntax::{ast, format_smolstr, AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr};
 
 use crate::{
     context::{DotAccess, DotAccessKind, PathCompletionCtx, PathKind, PatternContext},
@@ -668,7 +668,7 @@ fn path_ref_match(
 #[cfg(test)]
 mod tests {
     use std::cmp;
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use ide_db::SymbolKind;
     use itertools::Itertools;
     use crate::{
