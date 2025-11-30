@@ -32,7 +32,7 @@ Rustfmt size:  91697 bytes
 -use std::fmt::Write;
  use stdx::{always, format_to, never};
  use syntax::{
-+    ast::{prec::ExprPrecedence, self, HasArgList},
++    ast::{self, prec::ExprPrecedence, HasArgList},
      AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
 -    ast::{self, HasArgList, prec::ExprPrecedence},
  };

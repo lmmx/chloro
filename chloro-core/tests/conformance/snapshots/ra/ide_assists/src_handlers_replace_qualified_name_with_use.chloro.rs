@@ -4,7 +4,7 @@ use ide_db::{
     imports::insert_use::{insert_use, ImportScope},
 };
 use syntax::{
-    ast::{make, self, HasGenericArgs},
+    ast::{self, make, HasGenericArgs},
     match_ast, ted, AstNode, Edition, SyntaxNode,
 };
 

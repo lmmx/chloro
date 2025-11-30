@@ -1,7 +1,7 @@
 use either::Either;
 use syntax::{
     ast::{
-        edit_in_place::{GenericParamsOwnerEdit, Removable}, make, self, AstNode, HasName,
+        self, edit_in_place::{GenericParamsOwnerEdit, Removable}, make, AstNode, HasName,
         HasTypeBounds,
     },
     match_ast,

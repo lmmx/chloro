@@ -3,7 +3,7 @@ use ide_db::{
     use_trivial_constructor::use_trivial_constructor,
 };
 use syntax::{
-    ast::{edit_in_place::Indent, make, self, AstNode, HasName, HasVisibility, StructKind},
+    ast::{self, edit_in_place::Indent, make, AstNode, HasName, HasVisibility, StructKind},
     syntax_editor::Position,
 };
 

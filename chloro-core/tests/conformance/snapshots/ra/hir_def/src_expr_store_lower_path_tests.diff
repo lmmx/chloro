@@ -8,12 +8,6 @@ Rustfmt size:  3774 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use expect_test::{expect, Expect};
- use span::Edition;
--use syntax::ast::{self, make};
-+use syntax::ast::{make, self};
- use test_fixture::WithFixture;
- 
  use crate::{
      expr_store::{
          lower::{

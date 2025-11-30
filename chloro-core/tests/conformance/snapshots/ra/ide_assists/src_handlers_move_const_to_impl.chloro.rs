@@ -1,7 +1,7 @@
 use hir::{AsAssocItem, AssocItemContainer, FileRange, HasCrate, HasSource};
 use ide_db::{assists::AssistId, defs::Definition, search::SearchScope};
 use syntax::{
-    ast::{edit::IndentLevel, edit_in_place::Indent, self, AstNode},
+    ast::{self, edit::IndentLevel, edit_in_place::Indent, AstNode},
     SyntaxKind,
 };
 

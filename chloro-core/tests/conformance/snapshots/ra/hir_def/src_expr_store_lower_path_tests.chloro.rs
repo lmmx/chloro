@@ -1,6 +1,6 @@
 use expect_test::{expect, Expect};
 use span::Edition;
-use syntax::ast::{make, self};
+use syntax::ast::{self, make};
 use test_fixture::WithFixture;
 
 use crate::{

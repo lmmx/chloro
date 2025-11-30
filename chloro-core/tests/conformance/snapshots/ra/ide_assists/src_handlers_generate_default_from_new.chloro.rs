@@ -1,7 +1,7 @@
 use ide_db::famous_defs::FamousDefs;
 use stdx::format_to;
 use syntax::{
-    ast::{make, self, HasGenericParams, HasName, HasTypeBounds, Impl},
+    ast::{self, make, HasGenericParams, HasName, HasTypeBounds, Impl},
     AstNode,
 };
 

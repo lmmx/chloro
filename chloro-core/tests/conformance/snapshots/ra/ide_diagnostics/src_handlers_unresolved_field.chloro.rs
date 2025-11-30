@@ -9,7 +9,7 @@ use ide_db::{
 };
 use syntax::{
     algo,
-    ast::{edit::IndentLevel, make, self, FieldList, Name, Visibility},
+    ast::{self, edit::IndentLevel, make, FieldList, Name, Visibility},
     AstNode, AstPtr, Direction, SyntaxKind, TextSize,
 };
 use syntax::{

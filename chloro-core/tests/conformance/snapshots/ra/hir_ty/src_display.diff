@@ -66,8 +66,7 @@ Rustfmt size:  99713 bytes
 +        TypingMode,
      },
      primitive,
--    utils::{self, detect_variant_from_bytes},
-+    utils::{detect_variant_from_bytes, self},
+     utils::{self, detect_variant_from_bytes},
 +    CallableDefId, FnAbi, ImplTraitId, MemoryMap, TraitEnvironment,
  };
  

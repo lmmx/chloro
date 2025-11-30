@@ -23,7 +23,7 @@ Rustfmt size:  20506 bytes
      ast::{
 -        self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
 -        edit_in_place::Removable, make,
-+        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasModuleItem, HasVisibility,
++        self, edit_in_place::Removable, make, AstNode, HasAttrs, HasModuleItem, HasVisibility,
 +        PathSegmentKind,
      },
 -    ted,

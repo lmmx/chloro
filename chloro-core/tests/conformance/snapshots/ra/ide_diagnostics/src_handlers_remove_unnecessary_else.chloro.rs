@@ -3,7 +3,7 @@ use ide_db::text_edit::TextEdit;
 use ide_db::{assists::Assist, source_change::SourceChange};
 use itertools::Itertools;
 use syntax::{
-    ast::{edit::{AstNodeEdit, IndentLevel}, self},
+    ast::{self, edit::{AstNodeEdit, IndentLevel}},
     AstNode, SyntaxToken, TextRange,
 };
 

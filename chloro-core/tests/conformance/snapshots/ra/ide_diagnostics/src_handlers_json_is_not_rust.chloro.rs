@@ -12,7 +12,7 @@ use ide_db::{
 use itertools::Itertools;
 use stdx::{format_to, never};
 use syntax::{
-    ast::{make, self},
+    ast::{self, make},
     Edition, SyntaxKind, SyntaxNode,
 };
 

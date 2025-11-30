@@ -3,7 +3,7 @@ use std::iter;
 use either::Either;
 use ide_db::syntax_helpers::node_ext::is_pattern_cond;
 use syntax::{
-    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, HasLoopBody},
+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, HasLoopBody},
     AstNode, T,
 };
 

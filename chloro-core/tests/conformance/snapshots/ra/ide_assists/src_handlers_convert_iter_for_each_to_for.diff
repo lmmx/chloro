@@ -8,14 +8,6 @@ Rustfmt size:  13343 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::{sym, Name};
- use ide_db::famous_defs::FamousDefs;
- use stdx::format_to;
- use syntax::{
--    ast::{self, edit_in_place::Indent, make, HasArgList, HasLoopBody},
-+    ast::{edit_in_place::Indent, make, self, HasArgList, HasLoopBody},
-     AstNode,
- };
  
  use crate::{AssistContext, AssistId, Assists};
  

@@ -10,7 +10,7 @@ use hir::Semantics;
 use syntax::{
     algo,
     ast::{
-        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasModuleItem, HasVisibility,
+        self, edit_in_place::Removable, make, AstNode, HasAttrs, HasModuleItem, HasVisibility,
         PathSegmentKind,
     },
     ted, Direction, NodeOrToken, SyntaxKind, SyntaxNode,

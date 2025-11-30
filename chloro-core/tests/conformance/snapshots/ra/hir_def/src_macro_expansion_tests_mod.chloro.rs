@@ -30,7 +30,7 @@ use itertools::Itertools;
 use span::{Edition, Span, SpanAnchor, SyntaxContext, ROOT_ERASED_FILE_AST_ID};
 use stdx::{format_to, format_to_acc};
 use syntax::{
-    ast::{edit::IndentLevel, self},
+    ast::{self, edit::IndentLevel},
     AstNode, AstPtr,
     SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
     SyntaxNode, T,

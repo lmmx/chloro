@@ -7,7 +7,7 @@ use ide_db::{
 };
 use syntax::{
     ast::{
-        prec::{ExprPrecedence, precedence}, self, syntax_factory::SyntaxFactory, AstNode,
+        self, prec::{ExprPrecedence, precedence}, syntax_factory::SyntaxFactory, AstNode,
         Expr::BinExpr, HasArgList,
     },
     syntax_editor::{Position, SyntaxEditor},

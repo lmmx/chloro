@@ -21,7 +21,7 @@ use ide_db::{
 use stdx::format_to;
 use syntax::{
     ast::{
-        edit::{AstNodeEdit, IndentLevel}, edit_in_place::AttrsOwnerEdit, make, self,
+        self, edit::{AstNodeEdit, IndentLevel}, edit_in_place::AttrsOwnerEdit, make,
         syntax_factory::SyntaxFactory, HasArgList, HasAttrs, HasGenericParams, HasName,
         HasTypeBounds, Whitespace,
     },

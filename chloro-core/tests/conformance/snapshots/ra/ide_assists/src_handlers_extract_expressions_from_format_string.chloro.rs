@@ -4,7 +4,7 @@ use ide_db::{
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{make, self, syntax_factory::SyntaxFactory, TokenTree},
+    ast::{self, make, syntax_factory::SyntaxFactory, TokenTree},
     AstNode, AstToken, NodeOrToken,
     SyntaxKind::WHITESPACE,
     SyntaxToken, T,

@@ -19,7 +19,7 @@ use crate::{
     db::HirDatabase,
     infer::InferenceContext,
     next_solver::{
-        fulfill::{FulfillmentCtxt, NextSolverError},
+        self, fulfill::{FulfillmentCtxt, NextSolverError},
         infer::{
             DbInternerInferExt, InferCtxt, InferOk, InferResult,
             at::ToTrace,
@@ -27,9 +27,9 @@ use crate::{
             traits::{Obligation, ObligationCause, PredicateObligation},
         },
         inspect::{InspectConfig, InspectGoal, ProofTreeVisitor}, obligation_ctxt::ObligationCtxt,
-        self, AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner,
-        ErrorGuaranteed, GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind,
-        SolverDefId, TraitRef, Ty, TyKind, TypingMode,
+        AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner, ErrorGuaranteed,
+        GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind, SolverDefId,
+        TraitRef, Ty, TyKind, TypingMode,
     },
     traits::{
         next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt, FnTrait,

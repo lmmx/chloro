@@ -1,7 +1,7 @@
 use hir::{sym::self, Name};
 use ide_db::{famous_defs::FamousDefs, syntax_helpers::suggest_name};
 use syntax::{
-    ast::{edit::IndentLevel, make, self, syntax_factory::SyntaxFactory, HasLoopBody},
+    ast::{self, edit::IndentLevel, make, syntax_factory::SyntaxFactory, HasLoopBody},
     syntax_editor::Position,
     AstNode,
 };

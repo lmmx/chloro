@@ -5,7 +5,7 @@
 //! based on the parent of the existing expression.
 
 use syntax::{
-    ast::{make, self, FieldExpr, MethodCallExpr},
+    ast::{self, make, FieldExpr, MethodCallExpr},
     AstNode, T,
 };
 

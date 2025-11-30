@@ -14,7 +14,7 @@ Rustfmt size:  22284 bytes
 -    TextRange,
 -    ast::{self, AstNode, HasName, HasVisibility, edit_in_place::Indent, make},
 -    ted,
-+    ast::{edit_in_place::Indent, make, self, AstNode, HasName, HasVisibility},
++    ast::{self, edit_in_place::Indent, make, AstNode, HasName, HasVisibility},
 +    ted, TextRange,
  };
  

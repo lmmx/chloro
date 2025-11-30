@@ -26,7 +26,7 @@ Rustfmt size:  20081 bytes
 -    AstNode, SyntaxNode,
 -    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
 -    match_ast, ted,
-+    ast::{edit::IndentLevel, edit_in_place::Indent, make, self, HasName},
++    ast::{self, edit::IndentLevel, edit_in_place::Indent, make, HasName},
 +    match_ast, ted, AstNode, SyntaxNode,
  };
  

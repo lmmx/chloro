@@ -1,7 +1,7 @@
 use either::Either;
 use ide_db::syntax_helpers::node_ext::walk_ty;
 use syntax::{
-    ast::{edit::IndentLevel, make, self, AstNode, HasGenericArgs, HasGenericParams, HasName},
+    ast::{self, edit::IndentLevel, make, AstNode, HasGenericArgs, HasGenericParams, HasName},
     syntax_editor,
 };
 

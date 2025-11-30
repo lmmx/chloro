@@ -1,6 +1,6 @@
 use hir::HasSource;
 use syntax::{
-    ast::{make, self, AstNode},
+    ast::{self, make, AstNode},
     syntax_editor::{Position, SyntaxEditor},
     Edition,
 };

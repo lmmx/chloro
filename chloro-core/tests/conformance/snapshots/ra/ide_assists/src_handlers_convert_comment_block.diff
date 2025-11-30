@@ -8,12 +8,6 @@ Rustfmt size:  9185 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use itertools::Itertools;
- use syntax::{
--    ast::{self, edit::IndentLevel, Comment, CommentKind, CommentShape, Whitespace},
-+    ast::{edit::IndentLevel, self, Comment, CommentKind, CommentShape, Whitespace},
-     AstToken, Direction, SyntaxElement, TextRange,
- };
  
  use crate::{AssistContext, AssistId, Assists};
  

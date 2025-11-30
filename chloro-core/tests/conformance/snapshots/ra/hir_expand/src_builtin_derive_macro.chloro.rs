@@ -9,7 +9,7 @@ use span::{Edition, Span, SyntaxContext};
 use stdx::never;
 use syntax::{
     ast::{
-        edit_in_place::GenericParamsOwnerEdit, make, self, AstNode, FieldList, HasAttrs,
+        self, edit_in_place::GenericParamsOwnerEdit, make, AstNode, FieldList, HasAttrs,
         HasGenericArgs, HasGenericParams, HasModuleItem, HasName, HasTypeBounds,
     },
     ted,

@@ -13,7 +13,7 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{
-        edit::{AstNodeEdit, IndentLevel}, make, self, AstNode, HasAttrs, HasGenericParams,
+        self, edit::{AstNodeEdit, IndentLevel}, make, AstNode, HasAttrs, HasGenericParams,
         HasName, HasVisibility,
     },
     match_ast, ted, Edition, SyntaxElement,

@@ -18,7 +18,7 @@ use ide_db::{
 use itertools::Itertools;
 use stdx::{always, format_to, never};
 use syntax::{
-    ast::{prec::ExprPrecedence, self, HasArgList},
+    ast::{self, prec::ExprPrecedence, HasArgList},
     AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
 };
 

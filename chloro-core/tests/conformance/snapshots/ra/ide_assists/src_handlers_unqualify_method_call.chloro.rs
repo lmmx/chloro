@@ -1,6 +1,6 @@
 use hir::AsAssocItem;
 use syntax::{
-    ast::{prec::ExprPrecedence, self, AstNode, HasArgList},
+    ast::{self, prec::ExprPrecedence, AstNode, HasArgList},
     TextRange,
 };
 

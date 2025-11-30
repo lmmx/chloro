@@ -18,7 +18,7 @@ Rustfmt size:  18486 bytes
 -        HasArgList,
 -        prec::{ExprPrecedence, precedence},
 -        syntax_factory::SyntaxFactory,
-+        prec::{ExprPrecedence, precedence}, self, syntax_factory::SyntaxFactory, AstNode,
++        self, prec::{ExprPrecedence, precedence}, syntax_factory::SyntaxFactory, AstNode,
 +        Expr::BinExpr, HasArgList,
      },
      syntax_editor::{Position, SyntaxEditor},

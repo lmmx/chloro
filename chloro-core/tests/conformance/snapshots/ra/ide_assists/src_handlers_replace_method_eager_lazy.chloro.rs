@@ -1,6 +1,6 @@
 use ide_db::assists::AssistId;
 use syntax::{
-    ast::{make, self, Expr, HasArgList},
+    ast::{self, make, Expr, HasArgList},
     AstNode,
 };
 

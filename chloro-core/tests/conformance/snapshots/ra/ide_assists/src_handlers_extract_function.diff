@@ -33,7 +33,7 @@ Rustfmt size:  141954 bytes
      ast::{
 -        self, AstNode, AstToken, HasGenericParams, HasName, edit::IndentLevel,
 -        edit_in_place::Indent,
-+        edit::IndentLevel, edit_in_place::Indent, self, AstNode, AstToken, HasGenericParams,
++        self, edit::IndentLevel, edit_in_place::Indent, AstNode, AstToken, HasGenericParams,
 +        HasName,
      },
 -    match_ast, ted,

@@ -3,7 +3,7 @@ use itertools::Itertools;
 use syntax::{
     algo::previous_non_trivia_token,
     ast::{
-        edit::AstNodeEdit, make, self, syntax_factory::SyntaxFactory, HasArgList, HasLoopBody,
+        self, edit::AstNodeEdit, make, syntax_factory::SyntaxFactory, HasArgList, HasLoopBody,
         HasName, RangeItem,
     },
     syntax_editor::{Element, Position},

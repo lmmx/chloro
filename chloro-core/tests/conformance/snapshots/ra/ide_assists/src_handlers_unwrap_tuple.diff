@@ -9,9 +9,9 @@ Rustfmt size:  3645 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  use syntax::{
-+    ast::{edit::AstNodeEdit, self},
-     AstNode, T,
--    ast::{self, edit::AstNodeEdit},
+-    AstNode, T,
+     ast::{self, edit::AstNodeEdit},
++    AstNode, T,
  };
  
  use crate::{AssistContext, AssistId, Assists};

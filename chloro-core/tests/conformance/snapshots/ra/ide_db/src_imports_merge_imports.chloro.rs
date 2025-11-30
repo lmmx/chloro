@@ -7,7 +7,7 @@ use parser::T;
 use syntax::{
     algo,
     ast::{
-        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasName, HasVisibility,
+        self, edit_in_place::Removable, make, AstNode, HasAttrs, HasName, HasVisibility,
         PathSegmentKind,
     },
     ted::{self, Position},

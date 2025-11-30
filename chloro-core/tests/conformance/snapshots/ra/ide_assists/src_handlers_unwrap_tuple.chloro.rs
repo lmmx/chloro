@@ -1,5 +1,5 @@
 use syntax::{
-    ast::{edit::AstNodeEdit, self},
+    ast::{self, edit::AstNodeEdit},
     AstNode, T,
 };
 

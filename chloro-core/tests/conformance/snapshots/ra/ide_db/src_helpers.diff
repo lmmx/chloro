@@ -11,9 +11,9 @@ Rustfmt size:  4302 bytes
  use hir::{Crate, ItemInNs, ModuleDef, Name, Semantics};
  use span::{Edition, FileId};
  use syntax::{
-+    ast::{make, self},
-     AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
--    ast::{self, make},
+-    AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
+     ast::{self, make},
++    AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
  };
  
  use crate::{

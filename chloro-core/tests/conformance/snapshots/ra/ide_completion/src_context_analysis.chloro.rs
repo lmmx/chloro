@@ -8,8 +8,8 @@ use itertools::Either;
 use stdx::always;
 use syntax::{
     algo::{
-        ancestors_at_offset, find_node_at_offset, non_trivia_sibling, previous_non_trivia_token,
-        self,
+        self, ancestors_at_offset, find_node_at_offset, non_trivia_sibling,
+        previous_non_trivia_token,
     },
     ast::{
         self, AttrKind, HasArgList, HasGenericArgs, HasGenericParams, HasLoopBody, HasName,

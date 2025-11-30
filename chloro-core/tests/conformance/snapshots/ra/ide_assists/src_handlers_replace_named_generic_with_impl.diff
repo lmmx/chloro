@@ -8,13 +8,6 @@ Rustfmt size:  11571 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     EditionedFileId, RootDatabase,
- };
- use syntax::{
--    ast::{self, make, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType},
-+    ast::{make, self, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType},
-     match_ast, AstNode,
- };
  
  use crate::{AssistContext, AssistId, Assists};
  

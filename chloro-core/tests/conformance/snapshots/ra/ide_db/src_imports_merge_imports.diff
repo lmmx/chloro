@@ -13,14 +13,6 @@ Rustfmt size:  36357 bytes
  use std::cmp::Ordering;
  
  use itertools::{EitherOrBoth, Itertools};
- use syntax::{
-     algo,
-     ast::{
--        self, edit_in_place::Removable, make, AstNode, HasAttrs, HasName, HasVisibility,
-+        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasName, HasVisibility,
-         PathSegmentKind,
-     },
-     ted::{self, Position},
      Some(lhs)
  }
  

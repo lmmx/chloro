@@ -8,13 +8,6 @@ Rustfmt size:  11546 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::FxHashSet;
- use syntax::{
--    ast::{self, edit_in_place::GenericParamsOwnerEdit, make, HasGenericParams},
-+    ast::{edit_in_place::GenericParamsOwnerEdit, make, self, HasGenericParams},
-     ted::{self, Position},
-     AstNode, TextRange,
- };
  use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
  
  static ASSIST_NAME: &str = "introduce_named_lifetime";

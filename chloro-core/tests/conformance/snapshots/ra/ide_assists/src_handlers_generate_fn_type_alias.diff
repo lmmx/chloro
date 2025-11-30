@@ -14,7 +14,7 @@ Rustfmt size:  11167 bytes
 -    AstNode,
 -    ast::{self, HasGenericParams, HasName, edit::IndentLevel, make},
 -    syntax_editor,
-+    ast::{edit::IndentLevel, make, self, HasGenericParams, HasName},
++    ast::{self, edit::IndentLevel, make, HasGenericParams, HasName},
 +    syntax_editor, AstNode,
  };
  

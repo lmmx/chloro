@@ -6,7 +6,7 @@ use ide_db::{
     EditionedFileId, RootDatabase,
 };
 use syntax::{
-    ast::{make, self, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType},
+    ast::{self, make, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType},
     match_ast, AstNode,
 };
 

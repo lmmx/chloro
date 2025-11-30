@@ -12,11 +12,6 @@ Rustfmt size:  8317 bytes
  use hir::{HasVisibility, HirDisplay, Module};
  use ide_db::{
      assists::AssistId,
-     FileId,
- };
- use syntax::{
--    ast::{self, edit::IndentLevel, NameRef},
-+    ast::{edit::IndentLevel, self, NameRef},
      AstNode, Direction, SyntaxKind, TextSize,
  };
  

@@ -7,7 +7,7 @@ use ide_db::{
 use stdx::format_to;
 use syntax::{
     algo::{skip_trivia_token, skip_whitespace_token},
-    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, HasArgList, HasGenericParams, HasName},
+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, HasArgList, HasGenericParams, HasName},
     hacks::parse_expr_from_str,
     ted, AstNode, Direction, SyntaxKind, SyntaxNode, TextSize, ToSmolStr, T,
 };

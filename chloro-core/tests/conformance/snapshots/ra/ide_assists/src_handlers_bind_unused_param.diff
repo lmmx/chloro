@@ -11,8 +11,7 @@ Rustfmt size:  3796 bytes
 -use crate::assist_context::{AssistContext, Assists};
  use ide_db::{assists::AssistId, defs::Definition, LineIndexDatabase};
  use syntax::{
--    ast::{self, edit_in_place::Indent, HasName},
-+    ast::{edit_in_place::Indent, self, HasName},
+     ast::{self, edit_in_place::Indent, HasName},
      AstNode,
  };
  

@@ -11,7 +11,7 @@ use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 use syntax::{
-    ast::{make, self, HasName},
+    ast::{self, make, HasName},
     AstNode, SyntaxNode,
 };
 

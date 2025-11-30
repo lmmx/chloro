@@ -18,7 +18,7 @@ Rustfmt size:  5418 bytes
 -        edit::{AstNodeEdit, IndentLevel},
 -        make, HasLoopBody,
 -    },
-+    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, HasLoopBody},
++    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, HasLoopBody},
      AstNode, T,
  };
  
