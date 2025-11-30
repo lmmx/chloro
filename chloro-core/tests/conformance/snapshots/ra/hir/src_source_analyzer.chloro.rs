@@ -6,7 +6,7 @@
 //! So, this modules should not be used during hir construction, it exists
 //! purely for "IDE needs".
 
-use std::iter::{once, self};
+use std::iter::{self, once};
 
 use either::Either;
 use hir_def::{

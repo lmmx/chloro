@@ -1,6 +1,6 @@
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{edit::AstNodeEdit, self, syntax_factory::SyntaxFactory, HasName, Name},
+    ast::{self, edit::AstNodeEdit, syntax_factory::SyntaxFactory, HasName, Name},
     syntax_editor::SyntaxEditor,
     AstNode, SyntaxNode,
 };

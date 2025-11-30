@@ -8,13 +8,6 @@ Rustfmt size:  15544 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::source_change::SourceChangeBuilder;
- use syntax::{
--    ast::{self, make::tokens::literal, IsString},
-+    ast::{make::tokens::literal, self, IsString},
-     AstToken,
- };
- 
      AssistContext, AssistId, Assists,
  };
  

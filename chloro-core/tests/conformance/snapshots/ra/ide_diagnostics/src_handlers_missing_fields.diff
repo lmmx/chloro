@@ -27,9 +27,9 @@ Rustfmt size:  19114 bytes
  };
  use stdx::format_to;
  use syntax::{
-+    ast::{make, self},
-     AstNode, Edition, SyntaxNode, SyntaxNodePtr, ToSmolStr,
--    ast::{self, make},
+-    AstNode, Edition, SyntaxNode, SyntaxNodePtr, ToSmolStr,
+     ast::{self, make},
++    AstNode, Edition, SyntaxNode, SyntaxNodePtr, ToSmolStr,
  };
  
 -use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};

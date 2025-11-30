@@ -16,7 +16,7 @@ Rustfmt size:  15808 bytes
  };
  use paths::Utf8Component;
  use syntax::{
-+    ast::{edit::IndentLevel, self, HasModuleItem, HasName},
++    ast::{self, edit::IndentLevel, HasModuleItem, HasName},
      AstNode, TextRange,
 -    ast::{self, HasModuleItem, HasName, edit::IndentLevel},
  };

@@ -15,7 +15,7 @@ use ide_db::{
 };
 use stdx::format_to;
 use syntax::{
-    ast::{make, self},
+    ast::{self, make},
     AstNode, Edition, SyntaxNode, SyntaxNodePtr, ToSmolStr,
 };
 

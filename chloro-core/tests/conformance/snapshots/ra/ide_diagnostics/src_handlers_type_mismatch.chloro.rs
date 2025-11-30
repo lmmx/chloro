@@ -7,7 +7,7 @@ use ide_db::{
 };
 use syntax::{
     ast::{
-        edit::{AstNodeEdit, IndentLevel}, self, syntax_factory::SyntaxFactory, BlockExpr, Expr,
+        self, edit::{AstNodeEdit, IndentLevel}, syntax_factory::SyntaxFactory, BlockExpr, Expr,
         ExprStmt, HasArgList,
     },
     AstNode, AstPtr, TextSize,

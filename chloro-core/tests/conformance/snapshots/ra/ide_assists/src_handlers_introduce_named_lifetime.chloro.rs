@@ -1,6 +1,6 @@
 use ide_db::FxHashSet;
 use syntax::{
-    ast::{edit_in_place::GenericParamsOwnerEdit, make, self, HasGenericParams},
+    ast::{self, edit_in_place::GenericParamsOwnerEdit, make, HasGenericParams},
     ted::{self, Position},
     AstNode, TextRange,
 };

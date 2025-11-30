@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use syntax::{
-    ast::{edit::IndentLevel, self, Comment, CommentPlacement, Whitespace},
+    ast::{self, edit::IndentLevel, Comment, CommentPlacement, Whitespace},
     AstToken, Direction, SyntaxElement, TextRange,
 };
 

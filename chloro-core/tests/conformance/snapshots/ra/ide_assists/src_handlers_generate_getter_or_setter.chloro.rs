@@ -1,7 +1,7 @@
 use ide_db::{famous_defs::FamousDefs, source_change::SourceChangeBuilder};
 use stdx::{format_to, to_lower_snake_case};
 use syntax::{
-    ast::{edit_in_place::Indent, make, self, AstNode, HasName, HasVisibility},
+    ast::{self, edit_in_place::Indent, make, AstNode, HasName, HasVisibility},
     ted, TextRange,
 };
 

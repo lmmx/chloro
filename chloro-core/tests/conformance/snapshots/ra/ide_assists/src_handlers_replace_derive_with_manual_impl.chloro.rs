@@ -2,7 +2,7 @@ use hir::{InFile, ModuleDef};
 use ide_db::{helpers::mod_path_to_ast, imports::import_assets::NameToImport, items_locator};
 use itertools::Itertools;
 use syntax::{
-    ast::{make, self, AstNode, HasName},
+    ast::{self, make, AstNode, HasName},
     syntax_editor::{Position, SyntaxEditor},
     SyntaxKind::WHITESPACE,
     T,

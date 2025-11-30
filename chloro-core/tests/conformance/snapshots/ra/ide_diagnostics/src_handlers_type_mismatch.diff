@@ -15,7 +15,7 @@ Rustfmt size:  28292 bytes
 -        edit::{AstNodeEdit, IndentLevel},
 -        syntax_factory::SyntaxFactory,
 -        BlockExpr, Expr, ExprStmt, HasArgList,
-+        edit::{AstNodeEdit, IndentLevel}, self, syntax_factory::SyntaxFactory, BlockExpr, Expr,
++        self, edit::{AstNodeEdit, IndentLevel}, syntax_factory::SyntaxFactory, BlockExpr, Expr,
 +        ExprStmt, HasArgList,
      },
      AstNode, AstPtr, TextSize,

@@ -19,7 +19,7 @@ use ide_db::{
 use itertools::{izip, Itertools};
 use syntax::{
     ast::{
-        edit::IndentLevel, edit_in_place::Indent, self, HasArgList, HasGenericArgs, Pat, PathExpr,
+        self, edit::IndentLevel, edit_in_place::Indent, HasArgList, HasGenericArgs, Pat, PathExpr,
     },
     ted, AstNode, NodeOrToken, SyntaxKind,
 };

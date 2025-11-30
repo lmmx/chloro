@@ -6,7 +6,7 @@ use ide_db::text_edit::TextEdit;
 use ide_db::{FilePosition, RootDatabase};
 use syntax::{
     algo::find_node_at_offset,
-    ast::{edit::IndentLevel, self, AstToken},
+    ast::{self, edit::IndentLevel, AstToken},
     AstNode, SmolStr, SourceFile,
     SyntaxKind::*,
     SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset,

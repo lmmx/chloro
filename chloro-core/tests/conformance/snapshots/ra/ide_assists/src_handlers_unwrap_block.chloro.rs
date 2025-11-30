@@ -1,5 +1,5 @@
 use syntax::{
-    ast::{edit::{AstNodeEdit, IndentLevel}, make, self},
+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
     AstNode, SyntaxKind, TextRange, T,
 };
 

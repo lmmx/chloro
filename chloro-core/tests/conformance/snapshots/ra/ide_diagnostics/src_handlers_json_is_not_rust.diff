@@ -8,14 +8,6 @@ Rustfmt size:  11337 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use itertools::Itertools;
- use stdx::{format_to, never};
- use syntax::{
--    ast::{self, make},
-+    ast::{make, self},
-     Edition, SyntaxKind, SyntaxNode,
- };
- 
                      Diagnostic::new(
                          DiagnosticCode::Ra("json-is-not-rust", Severity::WeakWarning),
                          "JSON syntax is not valid as a Rust item",

@@ -11,7 +11,7 @@ use ide_db::{
     FxHashSet,
 };
 use syntax::{
-    ast::{edit::IndentLevel, edit_in_place::Indent, make, self, HasName},
+    ast::{self, edit::IndentLevel, edit_in_place::Indent, make, HasName},
     match_ast, ted, AstNode, SyntaxNode,
 };
 

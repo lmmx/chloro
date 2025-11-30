@@ -5,7 +5,7 @@ use ide_db::{
 };
 use syntax::{
     algo::ancestors_at_offset,
-    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, syntax_factory::SyntaxFactory, AstNode},
+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory, AstNode},
     syntax_editor::Position,
     NodeOrToken, SyntaxKind, SyntaxNode, T,
 };

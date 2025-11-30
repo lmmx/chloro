@@ -22,7 +22,7 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{
-        edit::IndentLevel, edit_in_place::Indent, self, AstNode, AstToken, HasGenericParams,
+        self, edit::IndentLevel, edit_in_place::Indent, AstNode, AstToken, HasGenericParams,
         HasName,
     },
     match_ast, ted, Edition, SyntaxElement,

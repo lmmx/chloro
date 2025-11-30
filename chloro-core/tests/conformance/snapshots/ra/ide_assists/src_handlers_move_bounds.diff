@@ -14,7 +14,7 @@ Rustfmt size:  4748 bytes
 -        self,
 -        edit_in_place::{GenericParamsOwnerEdit, Removable},
 -        make, AstNode, HasName, HasTypeBounds,
-+        edit_in_place::{GenericParamsOwnerEdit, Removable}, make, self, AstNode, HasName,
++        self, edit_in_place::{GenericParamsOwnerEdit, Removable}, make, AstNode, HasName,
 +        HasTypeBounds,
      },
      match_ast,

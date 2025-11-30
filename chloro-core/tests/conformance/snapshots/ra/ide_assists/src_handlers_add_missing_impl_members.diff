@@ -12,7 +12,7 @@ Rustfmt size:  45986 bytes
  use syntax::{
 -    Edition,
 -    ast::{self, AstNode, make},
-+    ast::{make, self, AstNode},
++    ast::{self, make, AstNode},
      syntax_editor::{Position, SyntaxEditor},
 +    Edition,
  };

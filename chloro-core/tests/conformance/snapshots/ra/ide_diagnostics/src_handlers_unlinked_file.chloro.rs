@@ -11,7 +11,7 @@ use ide_db::{
 };
 use paths::Utf8Component;
 use syntax::{
-    ast::{edit::IndentLevel, self, HasModuleItem, HasName},
+    ast::{self, edit::IndentLevel, HasModuleItem, HasName},
     AstNode, TextRange,
 };
 

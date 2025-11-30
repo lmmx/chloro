@@ -135,7 +135,7 @@ expression: cleaned_diff
 +use std::{collections};
 +use std::{error::Error;
 +
-+pub(super) use atom::{EXPR_RECOVERY_SET, LITERAL_FIRST, literal, parse_asm_expr};
++pub(super) use atom::{literal, parse_asm_expr, EXPR_RECOVERY_SET, LITERAL_FIRST};
 +pub(crate) use atom::{block_expr, match_arm_list};
 +use b;
 +use drop_bomb::DropBomb;
@@ -147,7 +147,7 @@ expression: cleaned_diff
 +use foo::*;
 +use foo::bar;
 +use foo::bar::baz;
-+use foo::{a as b, *, ::*, ::foo as x};
++use foo::{a as b, ::foo as x, *, ::*};
 +use foo::{};
 +use outer::tree::{inner::tree};
 +use std as stdlib;
@@ -159,7 +159,7 @@ expression: cleaned_diff
 +pub use T_ as T;
 +use Trait as _;
 +use {a;
-+use {a ,, b};
++use {a, b};
 +use {a, b, c};
 +use ;
 +use ;

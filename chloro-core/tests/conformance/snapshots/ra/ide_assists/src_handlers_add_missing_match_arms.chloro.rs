@@ -10,7 +10,7 @@ use itertools::Itertools;
 use syntax::ToSmolStr;
 use syntax::ast::edit::{AstNodeEdit, IndentLevel};
 use syntax::ast::syntax_factory::SyntaxFactory;
-use syntax::ast::{make, self, AstNode, MatchArmList, MatchExpr, Pat};
+use syntax::ast::{self, make, AstNode, MatchArmList, MatchExpr, Pat};
 
 use crate::{utils, AssistContext, AssistId, Assists};
 

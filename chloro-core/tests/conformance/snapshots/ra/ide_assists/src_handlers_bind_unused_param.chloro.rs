@@ -1,6 +1,6 @@
 use ide_db::{assists::AssistId, defs::Definition, LineIndexDatabase};
 use syntax::{
-    ast::{edit_in_place::Indent, self, HasName},
+    ast::{self, edit_in_place::Indent, HasName},
     AstNode,
 };
 

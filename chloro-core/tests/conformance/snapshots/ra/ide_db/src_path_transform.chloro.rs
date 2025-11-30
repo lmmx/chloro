@@ -9,7 +9,7 @@ use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use span::Edition;
 use syntax::{
-    ast::{make, self, AstNode, HasGenericArgs, HasName},
+    ast::{self, make, AstNode, HasGenericArgs, HasName},
     syntax_editor::{self, SyntaxEditor},
     NodeOrToken, SyntaxNode,
 };

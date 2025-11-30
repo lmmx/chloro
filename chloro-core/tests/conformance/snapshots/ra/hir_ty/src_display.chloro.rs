@@ -60,7 +60,7 @@ use crate::{
         TypingMode,
     },
     primitive,
-    utils::{detect_variant_from_bytes, self},
+    utils::{self, detect_variant_from_bytes},
     CallableDefId, FnAbi, ImplTraitId, MemoryMap, TraitEnvironment,
 };
 

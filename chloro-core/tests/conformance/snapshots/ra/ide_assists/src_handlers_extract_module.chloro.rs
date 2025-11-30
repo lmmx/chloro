@@ -11,7 +11,7 @@ use itertools::Itertools;
 use smallvec::SmallVec;
 use syntax::{
     algo::find_node_at_range,
-    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, HasVisibility},
+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, HasVisibility},
     match_ast, ted, AstNode,
     SyntaxKind::{self, WHITESPACE},
     SyntaxNode, TextRange, TextSize,

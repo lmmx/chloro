@@ -5,7 +5,7 @@ use ide_db::{
     FileId,
 };
 use syntax::{
-    ast::{edit::IndentLevel, self, NameRef},
+    ast::{self, edit::IndentLevel, NameRef},
     AstNode, Direction, SyntaxKind, TextSize,
 };
 

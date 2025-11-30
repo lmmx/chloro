@@ -12,7 +12,7 @@ use ide_db::{
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{edit::IndentLevel, edit_in_place::Indent, make, self, HasName},
+    ast::{self, edit::IndentLevel, edit_in_place::Indent, make, HasName},
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T,
 };
 

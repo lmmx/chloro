@@ -7,7 +7,7 @@ use ide_db::{
 };
 use stdx::never;
 use syntax::{
-    ast::{make, self, Use, UseTree, VisibilityKind},
+    ast::{self, make, Use, UseTree, VisibilityKind},
     AstNode, Direction, SyntaxNode, SyntaxToken, T,
 };
 

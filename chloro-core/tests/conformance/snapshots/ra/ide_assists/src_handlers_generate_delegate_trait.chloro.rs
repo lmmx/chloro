@@ -11,7 +11,7 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{
-        edit::{self, AstNodeEdit}, make, self, AssocItem, GenericArgList, GenericParamList,
+        self, edit::{self, AstNodeEdit}, make, AssocItem, GenericArgList, GenericParamList,
         HasAttrs, HasGenericArgs, HasGenericParams, HasName, HasTypeBounds,
         HasVisibility as astHasVisibility, Path, WherePred,
     },

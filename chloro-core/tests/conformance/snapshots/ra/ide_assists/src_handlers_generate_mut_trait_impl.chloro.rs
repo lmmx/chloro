@@ -1,6 +1,6 @@
 use ide_db::{famous_defs::FamousDefs, traits::resolve_target_trait};
 use syntax::{
-    ast::{edit_in_place::Indent, make, self},
+    ast::{self, edit_in_place::Indent, make},
     ted, AstNode, T,
 };
 

@@ -29,7 +29,7 @@ Rustfmt size:  75023 bytes
      ast::{
 -        self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
 -        HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
-+        edit::IndentLevel, edit_in_place::Indent, make, self, AstNode, BlockExpr, CallExpr,
++        self, edit::IndentLevel, edit_in_place::Indent, make, AstNode, BlockExpr, CallExpr,
 +        HasArgList, HasGenericParams, HasModuleItem, HasTypeBounds,
      },
 -    ted,

@@ -25,7 +25,7 @@ Rustfmt size:  36630 bytes
 -    AstNode, SmolStr, SyntaxElement, SyntaxKind, T, TextRange, ToSmolStr,
 -    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
 -    format_smolstr, ted,
-+    ast::{edit_in_place::AttrsOwnerEdit, make, self, HasGenericArgs, HasTypeBounds},
++    ast::{self, edit_in_place::AttrsOwnerEdit, make, HasGenericArgs, HasTypeBounds},
 +    format_smolstr, ted, AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr, T,
  };
  

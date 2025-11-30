@@ -13,7 +13,7 @@ use hir::{
 };
 use ide_db::famous_defs::FamousDefs;
 use ide_db::text_edit::TextEditBuilder;
-use syntax::ast::{prec::ExprPrecedence, self, AstNode};
+use syntax::ast::{self, prec::ExprPrecedence, AstNode};
 
 use crate::{
     AdjustmentHints, AdjustmentHintsMode, InlayHint, InlayHintLabel, InlayHintLabelPart,

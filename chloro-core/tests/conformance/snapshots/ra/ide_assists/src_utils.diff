@@ -41,7 +41,7 @@ Rustfmt size:  45288 bytes
 -        edit_in_place::AttrsOwnerEdit,
 -        make,
 -        syntax_factory::SyntaxFactory,
-+        edit::{AstNodeEdit, IndentLevel}, edit_in_place::AttrsOwnerEdit, make, self,
++        self, edit::{AstNodeEdit, IndentLevel}, edit_in_place::AttrsOwnerEdit, make,
 +        syntax_factory::SyntaxFactory, HasArgList, HasAttrs, HasGenericParams, HasName,
 +        HasTypeBounds, Whitespace,
      },

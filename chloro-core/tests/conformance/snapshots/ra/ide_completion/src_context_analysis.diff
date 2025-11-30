@@ -21,12 +21,8 @@ Rustfmt size:  89146 bytes
 -    AstNode, AstToken, Direction, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, SyntaxToken,
 -    T, TextRange, TextSize,
      algo::{
--        self, ancestors_at_offset, find_node_at_offset, non_trivia_sibling,
--        previous_non_trivia_token,
-+        ancestors_at_offset, find_node_at_offset, non_trivia_sibling, previous_non_trivia_token,
-+        self,
-     },
-     ast::{
+         self, ancestors_at_offset, find_node_at_offset, non_trivia_sibling,
+         previous_non_trivia_token,
          self, AttrKind, HasArgList, HasGenericArgs, HasGenericParams, HasLoopBody, HasName,
          NameOrNameRef,
      },

@@ -2,7 +2,7 @@ use hir::{HasCrate, HasVisibility};
 use ide_db::{path_transform::PathTransform, FxHashSet};
 use syntax::{
     ast::{
-        edit::{AstNodeEdit, IndentLevel}, make, self, AstNode, HasGenericParams, HasName,
+        self, edit::{AstNodeEdit, IndentLevel}, make, AstNode, HasGenericParams, HasName,
         HasVisibility as _,
     },
     syntax_editor::Position,

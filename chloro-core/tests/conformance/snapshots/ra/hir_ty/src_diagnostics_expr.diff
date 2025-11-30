@@ -40,7 +40,7 @@ Rustfmt size:  25126 bytes
      diagnostics::match_check::{
 -        self,
 -        pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat},
-+        pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat}, self,
++        self, pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat},
      },
      display::{DisplayTarget, HirDisplay},
 -    next_solver::{

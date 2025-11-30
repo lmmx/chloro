@@ -2,7 +2,7 @@ use hir::{sym, Name};
 use ide_db::famous_defs::FamousDefs;
 use stdx::format_to;
 use syntax::{
-    ast::{edit_in_place::Indent, make, self, HasArgList, HasLoopBody},
+    ast::{self, edit_in_place::Indent, make, HasArgList, HasLoopBody},
     AstNode,
 };
 

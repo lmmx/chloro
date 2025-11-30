@@ -32,7 +32,7 @@ use typed_arena::Arena;
 use crate::{
     db::HirDatabase,
     diagnostics::match_check::{
-        pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat}, self,
+        self, pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat},
     },
     display::{DisplayTarget, HirDisplay},
     next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, Ty, TyKind, TypingMode},

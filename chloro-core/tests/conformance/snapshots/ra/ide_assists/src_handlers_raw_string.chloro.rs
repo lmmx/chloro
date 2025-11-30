@@ -1,6 +1,6 @@
 use ide_db::source_change::SourceChangeBuilder;
 use syntax::{
-    ast::{make::tokens::literal, self, IsString},
+    ast::{self, make::tokens::literal, IsString},
     AstToken,
 };
 
