@@ -10,7 +10,7 @@ use ide_db::{
     helpers::pick_best_token,
     RootDatabase, SymbolKind,
 };
-use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
+use ide_db::{ra_fixture::UpmapFromRaFixture, MiniCore};
 use itertools::Itertools;
 use span::{Edition, FileId};
 use syntax::{
@@ -599,7 +599,7 @@ fn expr_to_nav(
 
 #[cfg(test)]
 mod tests {
-    use crate::{GotoDefinitionConfig, fixture};
+    use crate::{fixture, GotoDefinitionConfig};
     use ide_db::{FileRange, MiniCore};
     use itertools::Itertools;
     const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig { minicore: MiniCore::default() };

@@ -17,10 +17,7 @@ Rustfmt size:  9410 bytes
  };
 -
  use itertools::Itertools;
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
- 
- use crate::assist_context::{AssistContext, Assists};
+ use syntax::{ast, AstNode};
  
          return None;
      }

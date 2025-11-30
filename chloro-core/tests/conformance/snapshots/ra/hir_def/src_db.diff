@@ -16,9 +16,8 @@ Rustfmt size:  13097 bytes
  };
  use intern::sym;
  use la_arena::ArenaMap;
--use syntax::{ast, AstPtr};
 +use salsa::plumbing::AsId;
-+use syntax::{AstPtr, ast};
+ use syntax::{ast, AstPtr};
  use triomphe::Arc;
  
  use crate::{

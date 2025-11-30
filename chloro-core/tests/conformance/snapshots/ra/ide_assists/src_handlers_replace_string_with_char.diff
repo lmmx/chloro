@@ -8,11 +8,8 @@ Rustfmt size:  7531 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     TextRange, TextSize,
- };
  
--use crate::{utils::string_suffix, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, utils::string_suffix};
+ use crate::{utils::string_suffix, AssistContext, AssistId, Assists};
  
 -// Assist: replace_string_with_char
 -//

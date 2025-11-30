@@ -1,4 +1,4 @@
-use hir::{InFile, db::ExpandDatabase};
+use hir::{db::ExpandDatabase, InFile};
 use ide_db::source_change::SourceChange;
 use ide_db::text_edit::TextEdit;
 use syntax::{
@@ -6,7 +6,7 @@ use syntax::{
     AstNode, TextRange,
 };
 
-use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn replace_filter_map_next_with_find_map(
     ctx: &DiagnosticsContext<'_>,

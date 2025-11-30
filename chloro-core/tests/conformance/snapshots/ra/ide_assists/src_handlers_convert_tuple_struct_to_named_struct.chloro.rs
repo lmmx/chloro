@@ -10,7 +10,7 @@ use syntax::{
     SyntaxElement, SyntaxKind, SyntaxNode, TextSize, T,
 };
 
-use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
 
 pub(crate) fn convert_tuple_struct_to_named_struct(
     acc: &mut Assists,

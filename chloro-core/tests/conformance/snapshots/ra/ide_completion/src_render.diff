@@ -8,7 +8,11 @@ Rustfmt size:  98473 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::{AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type, sym};
+ pub(crate) mod union_literal;
+ pub(crate) mod variant;
+ 
+-use hir::{AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type, sym};
++use hir::{sym, AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type};
  use ide_db::text_edit::TextEdit;
  use ide_db::{
 -    RootDatabase, SnippetCap, SymbolKind,
@@ -17,7 +21,8 @@ Rustfmt size:  98473 bytes
      imports::import_assets::LocatedImport,
 +    RootDatabase, SnippetCap, SymbolKind,
  };
- use syntax::{AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr, ast, format_smolstr};
+-use syntax::{AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr, ast, format_smolstr};
++use syntax::{ast, format_smolstr, AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr};
  
  use crate::{
 -    CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
@@ -76,7 +81,8 @@ Rustfmt size:  98473 bytes
  mod tests {
      use std::cmp;
 -
-     use expect_test::{Expect, expect};
+-    use expect_test::{Expect, expect};
++    use expect_test::{expect, Expect};
      use ide_db::SymbolKind;
      use itertools::Itertools;
 -

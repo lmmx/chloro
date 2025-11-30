@@ -6,7 +6,7 @@ use ide_db::{
     famous_defs::FamousDefs,
 };
 use itertools::Itertools;
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 
 use crate::assist_context::{AssistContext, Assists};
 

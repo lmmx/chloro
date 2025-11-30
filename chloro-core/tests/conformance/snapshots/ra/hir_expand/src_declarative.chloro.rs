@@ -4,7 +4,7 @@ use base_db::Crate;
 use intern::sym;
 use span::{Edition, Span, SyntaxContext};
 use stdx::TupleExt;
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
 

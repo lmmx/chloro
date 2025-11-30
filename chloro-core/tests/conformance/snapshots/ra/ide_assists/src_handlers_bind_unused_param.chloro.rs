@@ -1,4 +1,4 @@
-use ide_db::{LineIndexDatabase, assists::AssistId, defs::Definition};
+use ide_db::{assists::AssistId, defs::Definition, LineIndexDatabase};
 use syntax::{
     ast::{edit_in_place::Indent, self, HasName},
     AstNode,

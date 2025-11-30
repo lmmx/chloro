@@ -1,4 +1,4 @@
-use hir::{CaseType, InFile, db::ExpandDatabase};
+use hir::{db::ExpandDatabase, CaseType, InFile};
 use ide_db::{assists::Assist, defs::NameClass, rename::RenameDefinition};
 use syntax::AstNode;
 

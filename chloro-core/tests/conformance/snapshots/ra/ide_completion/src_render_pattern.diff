@@ -8,14 +8,6 @@ Rustfmt size:  7454 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Renderer for patterns.
- 
--use hir::{db::HirDatabase, Name, StructKind};
--use ide_db::{documentation::HasDocs, SnippetCap};
-+use hir::{Name, StructKind, db::HirDatabase};
-+use ide_db::{SnippetCap, documentation::HasDocs};
- use itertools::Itertools;
- use syntax::{Edition, SmolStr, ToSmolStr};
  
  use crate::{
      context::{ParamContext, ParamKind, PathCompletionCtx, PatternContext},

@@ -8,16 +8,8 @@ Rustfmt size:  5400 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use hir::{db::ExpandDatabase, InFile};
-+use hir::{InFile, db::ExpandDatabase};
- use ide_db::source_change::SourceChange;
- use ide_db::text_edit::TextEdit;
- use syntax::{
-     AstNode, TextRange,
- };
  
--use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+ use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: replace-filter-map-next-with-find-map
 -//

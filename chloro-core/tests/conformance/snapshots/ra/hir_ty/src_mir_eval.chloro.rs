@@ -6,7 +6,7 @@ mod tests;
 
 use std::{borrow::Cow, cell::RefCell, fmt::Write, iter, mem, ops::Range};
 
-use base_db::{Crate, target::TargetLoadError};
+use base_db::{target::TargetLoadError, Crate};
 use either::Either;
 use hir_def::{
     expr_store::HygieneId,
@@ -18,7 +18,7 @@ use hir_def::{
     AdtId, DefWithBodyId, EnumVariantId, FunctionId, GeneralConstId, HasModule, ItemContainerId,
     Lookup, StaticId, VariantId,
 };
-use hir_expand::{InFile, mod_path::path, name::Name};
+use hir_expand::{mod_path::path, name::Name, InFile};
 use intern::sym;
 use la_arena::ArenaMap;
 use rustc_abi::TargetDataLayout;

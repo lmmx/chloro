@@ -1,6 +1,6 @@
 //! Utilities for computing drop info about types.
 
-use hir_def::{AdtId, lang_item::LangItem, signatures::StructFlags};
+use hir_def::{lang_item::LangItem, signatures::StructFlags, AdtId};
 use rustc_hash::FxHashSet;
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 use stdx::never;

@@ -1,6 +1,6 @@
-use expect_test::{Expect, expect};
+use expect_test::{expect, Expect};
 use hir::setup_tracing;
-use ide_db::{FileRange, MiniCore, base_db::SourceDatabase};
+use ide_db::{base_db::SourceDatabase, FileRange, MiniCore};
 use syntax::TextRange;
 
 use crate::{

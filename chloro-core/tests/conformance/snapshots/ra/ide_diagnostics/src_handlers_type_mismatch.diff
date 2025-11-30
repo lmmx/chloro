@@ -8,12 +8,6 @@ Rustfmt size:  28292 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use either::Either;
--use hir::{db::ExpandDatabase, CallableKind, ClosureStyle, HirDisplay, InFile};
-+use hir::{CallableKind, ClosureStyle, HirDisplay, InFile, db::ExpandDatabase};
- use ide_db::{
-     famous_defs::FamousDefs,
-     source_change::{SourceChange, SourceChangeBuilder},
  };
  use syntax::{
      ast::{
@@ -27,8 +21,7 @@ Rustfmt size:  28292 bytes
      AstNode, AstPtr, TextSize,
  };
  
--use crate::{adjusted_display_range, fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
+ use crate::{adjusted_display_range, fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: type-mismatch
 -//

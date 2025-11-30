@@ -14,9 +14,10 @@ Rustfmt size:  91697 bytes
  //! tests. This module also implements a couple of magic tricks, like renaming
  //! `self` and to `self` (to switch between associated function and method).
  
+-use hir::{AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics, sym};
 +use std::fmt::Write;
 +
- use hir::{AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics, sym};
++use hir::{sym, AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics};
 +pub use ide_db::rename::RenameError;
 +use ide_db::text_edit::TextEdit;
  use ide_db::{
@@ -76,6 +77,13 @@ Rustfmt size:  91697 bytes
      let maybe_format_args =
          syntax.token_at_offset(offset).find(|t| matches!(t.kind(), SyntaxKind::STRING));
  
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{Expect, expect};
++    use expect_test::{expect, Expect};
+     use ide_db::source_change::SourceChange;
+     use ide_db::text_edit::TextEdit;
      use itertools::Itertools;
      use stdx::trim_indent;
      use test_utils::assert_eq_text;

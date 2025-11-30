@@ -1,7 +1,7 @@
 use std::iter::{self, Peekable};
 
 use either::Either;
-use hir::{Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics, sym};
+use hir::{sym, Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics};
 use ide_db::RootDatabase;
 use ide_db::assists::ExprFillDefaultMode;
 use ide_db::syntax_helpers::suggest_name;
@@ -10,9 +10,9 @@ use itertools::Itertools;
 use syntax::ToSmolStr;
 use syntax::ast::edit::{AstNodeEdit, IndentLevel};
 use syntax::ast::syntax_factory::SyntaxFactory;
-use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
+use syntax::ast::{make, self, AstNode, MatchArmList, MatchExpr, Pat};
 
-use crate::{AssistContext, AssistId, Assists, utils};
+use crate::{utils, AssistContext, AssistId, Assists};
 
 pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;

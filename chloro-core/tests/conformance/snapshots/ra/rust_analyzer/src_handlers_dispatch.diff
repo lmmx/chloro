@@ -21,4 +21,8 @@ Rustfmt size:  15570 bytes
 +    DbPanicContext,
  };
  use lsp_server::{ExtractError, Response, ResponseError};
- use serde::{Serialize, de::DeserializeOwned};
+-use serde::{Serialize, de::DeserializeOwned};
++use serde::{de::DeserializeOwned, Serialize};
+ use stdx::thread::ThreadIntent;
+ 
+ use crate::{

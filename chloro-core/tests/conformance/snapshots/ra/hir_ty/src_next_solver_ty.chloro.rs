@@ -7,9 +7,9 @@ use hir_def::{
     lang_item::LangItem,
     AdtId, HasModule, TypeParamId,
 };
-use hir_def::{TraitId, type_ref::Rawness};
+use hir_def::{type_ref::Rawness, TraitId};
 use rustc_abi::{Float, Integer, Size};
-use rustc_ast_ir::{Mutability, try_visit, visit::VisitorResult};
+use rustc_ast_ir::{try_visit, visit::VisitorResult, Mutability};
 use rustc_type_ir::{
     inherent::{
         AdtDef as _, BoundExistentialPredicates, BoundVarLike, Const as _, GenericArgs as _,

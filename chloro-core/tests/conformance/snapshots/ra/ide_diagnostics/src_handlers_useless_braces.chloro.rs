@@ -1,11 +1,11 @@
 use hir::InFile;
 use ide_db::RootDatabase;
 use ide_db::text_edit::TextEdit;
-use ide_db::{EditionedFileId, FileRange, source_change::SourceChange};
+use ide_db::{source_change::SourceChange, EditionedFileId, FileRange};
 use itertools::Itertools;
-use syntax::{AstNode, SyntaxNode, SyntaxNodePtr, ast};
+use syntax::{ast, AstNode, SyntaxNode, SyntaxNodePtr};
 
-use crate::{Diagnostic, DiagnosticCode, fix};
+use crate::{fix, Diagnostic, DiagnosticCode};
 
 pub(crate) fn useless_braces(
     db: &RootDatabase,

@@ -8,16 +8,6 @@ Rustfmt size:  34403 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! A map of all publicly exported items in a crate.
- 
- use std::fmt;
- 
- use base_db::Crate;
--use fst::{raw::IndexedValue, Automaton, Streamer};
-+use fst::{Automaton, Streamer, raw::IndexedValue};
- use hir_expand::name::Name;
- use itertools::Itertools;
- use rustc_hash::FxHashSet;
          for (k, v) in self.item_to_info_map.iter() {
              format_to!(out, "{:?} ({:?}) -> ", k, v.1);
              for v in &v.0 {
@@ -203,16 +193,12 @@ Rustfmt size:  34403 bytes
                  })
                  .map(|(item, import_info)| (item, import_info.complete));
              res.extend(iter);
- #[cfg(test)]
- mod tests {
      use base_db::RootQueryDb;
--    use expect_test::{expect, Expect};
-+    use expect_test::{Expect, expect};
+     use expect_test::{expect, Expect};
      use test_fixture::WithFixture;
 -
--    use crate::{nameres::assoc::TraitItems, test_db::TestDB, ItemContainerId, Lookup};
+     use crate::{nameres::assoc::TraitItems, test_db::TestDB, ItemContainerId, Lookup};
 -
-+    use crate::{ItemContainerId, Lookup, nameres::assoc::TraitItems, test_db::TestDB};
      use super::*;
 -
      impl ImportMap {

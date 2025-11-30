@@ -18,7 +18,7 @@ pub mod type_ref;
 
 use std::fmt;
 
-use hir_expand::{MacroDefId, name::Name};
+use hir_expand::{name::Name, MacroDefId};
 use intern::Symbol;
 use la_arena::Idx;
 use rustc_apfloat::ieee::{Half as f16, Quad as f128};

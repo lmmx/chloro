@@ -6,7 +6,7 @@ use syntax::{
     TextRange, TextSize,
 };
 
-use crate::{AssistContext, AssistId, Assists, utils::string_suffix};
+use crate::{utils::string_suffix, AssistContext, AssistId, Assists};
 
 pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_syntax_at_offset(STRING).and_then(ast::String::cast)?;

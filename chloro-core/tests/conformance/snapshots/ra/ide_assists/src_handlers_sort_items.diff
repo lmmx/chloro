@@ -15,10 +15,8 @@ Rustfmt size:  13263 bytes
  use syntax::{
      ast::{self, HasName},
      AstNode, SyntaxNode,
- };
  
--use crate::{utils::get_methods, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, utils::get_methods};
+ use crate::{utils::get_methods, AssistContext, AssistId, Assists};
  
 -// Assist: sort_items
 -//

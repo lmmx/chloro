@@ -10,11 +10,9 @@ Rustfmt size:  3144 bytes
 === DIFF (- rustfmt, + chloro) ===
  use hir::InFile;
  use itertools::Itertools;
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
+ use syntax::{ast, AstNode};
  
--use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+ use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: trait-impl-missing-assoc_item
 -//

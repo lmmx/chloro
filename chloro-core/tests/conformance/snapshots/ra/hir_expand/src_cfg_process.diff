@@ -13,7 +13,9 @@ Rustfmt size:  14552 bytes
  use std::iter::Peekable;
  
  use base_db::Crate;
- use intern::{Symbol, sym};
+ use cfg::{CfgAtom, CfgExpr};
+-use intern::{Symbol, sym};
++use intern::{sym, Symbol};
  use rustc_hash::FxHashSet;
  use syntax::{
 -    AstNode, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, T,
@@ -22,6 +24,11 @@ Rustfmt size:  14552 bytes
  };
  use tracing::{debug, warn};
  
+-use crate::{MacroCallLoc, MacroDefKind, db::ExpandDatabase, proc_macro::ProcMacroKind};
++use crate::{db::ExpandDatabase, proc_macro::ProcMacroKind, MacroCallLoc, MacroDefKind};
+ 
+ fn check_cfg(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool> {
+     if !attr.simple_name().as_deref().map(|v| v == "cfg")? {
      StrippigCfgExpr,
      /// Found the comma after the CFGExpr. Will keep all tokens until the next comma or the end of the attribute
      FoundComma,
@@ -67,9 +74,11 @@ Rustfmt size:  14552 bytes
  #[cfg(test)]
  mod tests {
      use cfg::DnfExpr;
-     use expect_test::{Expect, expect};
-     use syntax::{AstNode, SourceFile, ast::Attr};
+-    use expect_test::{Expect, expect};
+-    use syntax::{AstNode, SourceFile, ast::Attr};
 -
++    use expect_test::{expect, Expect};
++    use syntax::{ast::Attr, AstNode, SourceFile};
      use crate::cfg_process::parse_from_attr_token_tree;
 -
      fn check_dnf_from_syntax(input: &str, expect: Expect) {

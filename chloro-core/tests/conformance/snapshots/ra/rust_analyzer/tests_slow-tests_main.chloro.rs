@@ -36,7 +36,7 @@ use stdx::format_to_acc;
 use test_utils::skip_slow_tests;
 use testdir::TestDir;
 
-use crate::support::{Project, project};
+use crate::support::{project, Project};
 
 #[test]
 fn completes_items_from_standard_library() {

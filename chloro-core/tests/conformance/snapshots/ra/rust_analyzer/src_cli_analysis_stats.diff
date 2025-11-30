@@ -44,7 +44,11 @@ Rustfmt size:  58546 bytes
 -    base_db::{SourceDatabase, salsa::Database},
  };
  use itertools::Itertools;
- use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
+-use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
++use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
+ use oorandom::Rand32;
+ use profile::StopWatch;
+ use project_model::{CargoConfig, CfgOverrides, ProjectManifest, ProjectWorkspace, RustLibSource};
  use vfs::{AbsPathBuf, Vfs, VfsPath};
  
  use crate::cli::{

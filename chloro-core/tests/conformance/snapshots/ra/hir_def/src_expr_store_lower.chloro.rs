@@ -16,7 +16,7 @@ use hir_expand::{
     span_map::SpanMapRef,
     HirFileId, InFile, MacroDefId,
 };
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use rustc_hash::FxHashMap;
 use stdx::never;
 use syntax::{

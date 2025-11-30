@@ -3,11 +3,11 @@
 use std::ops::Not;
 
 use cfg::{CfgExpr, CfgOptions};
-use hir_expand::{ErasedAstId, ExpandErrorKind, MacroCallKind, attrs::AttrId, mod_path::ModPath};
+use hir_expand::{attrs::AttrId, mod_path::ModPath, ErasedAstId, ExpandErrorKind, MacroCallKind};
 use la_arena::Idx;
 use syntax::ast;
 
-use crate::{AstId, nameres::LocalModuleId};
+use crate::{nameres::LocalModuleId, AstId};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum DefDiagnosticKind {

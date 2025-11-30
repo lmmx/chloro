@@ -2,7 +2,7 @@
 
 use std::ops::ControlFlow::{self, Break, Continue};
 
-use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility};
+use hir_def::{visibility::Visibility, AdtId, EnumVariantId, ModuleId, VariantId};
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
     inherent::{AdtDef, IntoKind},

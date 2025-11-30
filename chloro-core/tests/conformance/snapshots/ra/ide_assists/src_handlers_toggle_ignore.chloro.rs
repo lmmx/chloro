@@ -3,7 +3,7 @@ use syntax::{
     AstNode, AstToken,
 };
 
-use crate::{AssistContext, AssistId, Assists, utils::test_related_attribute_syn};
+use crate::{utils::test_related_attribute_syn, AssistContext, AssistId, Assists};
 
 pub(crate) fn toggle_ignore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let attr: ast::Attr = ctx.find_node_at_offset()?;

@@ -12,7 +12,7 @@ Rustfmt size:  2543 bytes
  
  use hir::Semantics;
 -use syntax::ast::{self, make, Pat};
-+use syntax::ast::{self, Pat, make};
++use syntax::ast::{make, self, Pat};
  
  use crate::RootDatabase;
  

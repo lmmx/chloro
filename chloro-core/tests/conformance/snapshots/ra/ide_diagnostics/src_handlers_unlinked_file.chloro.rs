@@ -15,7 +15,7 @@ use syntax::{
     AstNode, TextRange,
 };
 
-use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
+use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 
 pub(crate) fn unlinked_file(
     ctx: &DiagnosticsContext<'_>,

@@ -10,7 +10,7 @@ use rustc_hash::FxHashMap;
 use span::Span;
 use triomphe::Arc;
 
-use crate::{ExpandError, ExpandErrorKind, ExpandResult, db::ExpandDatabase, tt};
+use crate::{db::ExpandDatabase, tt, ExpandError, ExpandErrorKind, ExpandResult};
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug, Hash)]
 pub enum ProcMacroKind {

@@ -9,12 +9,10 @@ Rustfmt size:  76019 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  //! Completion tests for expressions.
--use expect_test::{expect, Expect};
 +
-+use expect_test::{Expect, expect};
+ use expect_test::{expect, Expect};
  
  use crate::{
-     config::AutoImportExclusionType,
  #[test]
  fn return_unit_block() {
      cov_mark::check!(return_unit_block);

@@ -13,14 +13,6 @@ Rustfmt size:  113494 bytes
  use std::{
      iter::once,
      mem,
-     sync::atomic::{AtomicU32, Ordering},
- };
- 
--use base64::{prelude::BASE64_STANDARD, Engine};
-+use base64::{Engine, prelude::BASE64_STANDARD};
- use ide::{
-     Annotation, AnnotationKind, Assist, AssistKind, Cancellable, CompletionFieldsToResolve,
-     CompletionItem, CompletionItemKind, CompletionRelevance, Documentation, FileId, FileRange,
      global_state::GlobalStateSnapshot,
      line_index::{LineEndings, LineIndex, PositionEncoding},
      lsp::{
@@ -658,12 +650,6 @@ Rustfmt size:  113494 bytes
  }
  
  pub(crate) fn markup_content(
- 
- #[cfg(test)]
- mod tests {
--    use expect_test::{expect, Expect};
-+    use expect_test::{Expect, expect};
-     use ide::{Analysis, FilePosition};
      use ide_db::source_change::Snippet;
      use test_utils::extract_offset;
      use triomphe::Arc;

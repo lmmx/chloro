@@ -1,8 +1,8 @@
 use hir::InFile;
 use itertools::Itertools;
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn trait_impl_missing_assoc_item(
     ctx: &DiagnosticsContext<'_>,

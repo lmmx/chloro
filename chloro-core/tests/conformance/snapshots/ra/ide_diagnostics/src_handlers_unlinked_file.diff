@@ -21,7 +21,8 @@ Rustfmt size:  15808 bytes
 -    ast::{self, HasModuleItem, HasName, edit::IndentLevel},
  };
  
- use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
+-use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
++use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
  
 -// Diagnostic: unlinked-file
 -//

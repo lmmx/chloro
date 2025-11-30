@@ -70,7 +70,7 @@ use la_arena::Arena;
 use rustc_hash::{FxHashMap, FxHashSet};
 use span::{Edition, FileAstId, FileId, ROOT_ERASED_FILE_AST_ID};
 use stdx::format_to;
-use syntax::{AstNode, SmolStr, SyntaxNode, ToSmolStr, ast};
+use syntax::{ast, AstNode, SmolStr, SyntaxNode, ToSmolStr};
 use triomphe::Arc;
 use tt::TextRange;
 

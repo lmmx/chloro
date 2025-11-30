@@ -15,14 +15,6 @@ Rustfmt size:  30449 bytes
  #[cfg(test)]
  mod tests;
  
- use rustc_hash::{FxHashMap, FxHashSet};
- use span::{Edition, FileAstId, FileId, ROOT_ERASED_FILE_AST_ID};
- use stdx::format_to;
--use syntax::{ast, AstNode, SmolStr, SyntaxNode, ToSmolStr};
-+use syntax::{AstNode, SmolStr, SyntaxNode, ToSmolStr, ast};
- use triomphe::Arc;
- use tt::TextRange;
- 
      AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
      LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
  };

@@ -15,10 +15,7 @@ Rustfmt size:  3239 bytes
  //! ```
 +
  use ide_db::famous_defs::FamousDefs;
--use syntax::{ast, SyntaxToken, T};
-+use syntax::{SyntaxToken, T, ast};
- 
- use crate::{InlayHint, InlayHintsConfig};
+ use syntax::{ast, SyntaxToken, T};
  
  ) -> Option<()> {
      (config.range_exclusive_hints && range.end().is_some())

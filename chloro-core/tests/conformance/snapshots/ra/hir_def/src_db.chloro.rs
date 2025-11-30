@@ -9,7 +9,7 @@ use hir_expand::{
 use intern::sym;
 use la_arena::ArenaMap;
 use salsa::plumbing::AsId;
-use syntax::{AstPtr, ast};
+use syntax::{ast, AstPtr};
 use triomphe::Arc;
 
 use crate::{

@@ -1,9 +1,9 @@
 //! Completion for lints
 
-use ide_db::{SymbolKind, documentation::Documentation, generated::lints::Lint};
+use ide_db::{documentation::Documentation, generated::lints::Lint, SymbolKind};
 use syntax::ast;
 
-use crate::{Completions, context::CompletionContext, item::CompletionItem};
+use crate::{context::CompletionContext, item::CompletionItem, Completions};
 
 pub(super) fn complete_lint(
     acc: &mut Completions,

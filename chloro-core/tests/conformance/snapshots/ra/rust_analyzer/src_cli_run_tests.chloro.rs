@@ -2,13 +2,13 @@
 
 use hir::{Crate, Module};
 use hir_ty::db::HirDatabase;
-use ide_db::{LineIndexDatabase, base_db::SourceDatabase};
-use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
+use ide_db::{base_db::SourceDatabase, LineIndexDatabase};
+use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
 use profile::StopWatch;
 use project_model::{CargoConfig, RustLibSource};
 use syntax::TextRange;
 
-use crate::cli::{Result, flags, full_name_of_item};
+use crate::cli::{flags, full_name_of_item, Result};
 
 impl flags::RunTests {
     pub fn run(self) -> Result<()> {

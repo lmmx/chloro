@@ -28,7 +28,7 @@ use hir_def::{
     ModuleId, TraitId,
 };
 use hir_expand::{mod_path::PathKind, name::Name};
-use intern::{Internable, Interned, sym};
+use intern::{sym, Internable, Interned};
 use itertools::Itertools;
 use la_arena::ArenaMap;
 use rustc_apfloat::{

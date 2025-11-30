@@ -1,5 +1,5 @@
 use either::Either;
-use hir::{Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union, db::ExpandDatabase};
+use hir::{db::ExpandDatabase, Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
     assists::{Assist, AssistId},
@@ -17,7 +17,7 @@ use syntax::{
     SyntaxNode,
 };
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn unresolved_field(
     ctx: &DiagnosticsContext<'_>,

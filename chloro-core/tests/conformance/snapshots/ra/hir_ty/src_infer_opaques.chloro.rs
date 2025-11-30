@@ -1,6 +1,6 @@
 //! Defining opaque types via inference.
 
-use rustc_type_ir::{TypeVisitableExt, fold_regions};
+use rustc_type_ir::{fold_regions, TypeVisitableExt};
 use tracing::{debug, instrument};
 
 use crate::{

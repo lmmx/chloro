@@ -25,9 +25,9 @@ use std::fmt::{self, Display};
 
 use base_db::AnchoredPathBuf;
 use either::Either;
-use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
+use hir::{sym, FieldSource, FileRange, InFile, ModuleSource, Name, Semantics};
 use span::{Edition, FileId, SyntaxContext};
-use stdx::{TupleExt, never};
+use stdx::{never, TupleExt};
 use syntax::{
     ast::{self, HasName},
     AstNode, SyntaxKind, TextRange, T,

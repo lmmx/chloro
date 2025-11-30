@@ -37,7 +37,8 @@ Rustfmt size:  62523 bytes
  #[cfg(test)]
  mod tests {
 -
-     use expect_test::{Expect, expect};
+-    use expect_test::{Expect, expect};
++    use expect_test::{expect, Expect};
      use ide_db::FilePosition;
      use stdx::format_to;
      use test_fixture::ChangeFixture;

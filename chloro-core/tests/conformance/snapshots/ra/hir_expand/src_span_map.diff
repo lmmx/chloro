@@ -13,17 +13,14 @@ Rustfmt size:  6621 bytes
 +pub use span::RealSpanMap;
  use span::{Span, SyntaxContext};
  use stdx::TupleExt;
--use syntax::{ast, AstNode, TextRange};
-+use syntax::{AstNode, TextRange, ast};
+ use syntax::{ast, AstNode, TextRange};
  use triomphe::Arc;
  
 -pub use span::RealSpanMap;
 -
--use crate::{attrs::collect_attrs, db::ExpandDatabase, HirFileId, MacroCallId};
-+use crate::{HirFileId, MacroCallId, attrs::collect_attrs, db::ExpandDatabase};
+ use crate::{attrs::collect_attrs, db::ExpandDatabase, HirFileId, MacroCallId};
  
  pub type ExpansionSpanMap = span::SpanMap<SyntaxContext>;
- 
      // them again, something we might get access to in the future. But even then, proc-macros doing
      // this kind of joining makes them as stable as the AstIdMap (which is basically changing on
      // every input of the file)…

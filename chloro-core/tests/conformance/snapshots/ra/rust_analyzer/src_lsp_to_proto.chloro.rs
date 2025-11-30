@@ -7,7 +7,7 @@ use std::{
     sync::atomic::{AtomicU32, Ordering},
 };
 
-use base64::{Engine, prelude::BASE64_STANDARD};
+use base64::{prelude::BASE64_STANDARD, Engine};
 use ide::{
     Annotation, AnnotationKind, Assist, AssistKind, Cancellable, CompletionFieldsToResolve,
     CompletionItem, CompletionItemKind, CompletionRelevance, Documentation, FileId, FileRange,
@@ -1975,7 +1975,7 @@ pub(crate) fn rename_error(err: RenameError) -> LspError {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use ide::{Analysis, FilePosition};
     use ide_db::source_change::Snippet;
     use test_utils::extract_offset;

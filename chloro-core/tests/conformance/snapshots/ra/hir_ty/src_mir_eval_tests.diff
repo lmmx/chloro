@@ -12,11 +12,9 @@ Rustfmt size:  19179 bytes
      test_db::TestDB,
  };
 -
--use super::{interpret_mir, MirEvalError};
-+use super::{MirEvalError, interpret_mir};
+ use super::{interpret_mir, MirEvalError};
  
  fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {
-     crate::attach_db(db, || {
              .declarations()
              .find_map(|x| match x {
                  hir_def::ModuleDefId::FunctionId(x) => {

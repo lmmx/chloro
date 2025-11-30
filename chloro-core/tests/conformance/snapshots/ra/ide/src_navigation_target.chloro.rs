@@ -1073,7 +1073,7 @@ fn orig_range_r(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
-    use crate::{Query, fixture};
+    use crate::{fixture, Query};
     #[test]
     fn test_nav_for_symbol() {
         let (analysis, _) = fixture::file(

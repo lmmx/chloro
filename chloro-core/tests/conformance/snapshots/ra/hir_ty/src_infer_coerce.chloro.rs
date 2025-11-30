@@ -48,7 +48,7 @@ use rustc_type_ir::{
     inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
     BoundVar, TypeAndMut,
 };
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use tracing::{debug, instrument};
 use triomphe::Arc;
 

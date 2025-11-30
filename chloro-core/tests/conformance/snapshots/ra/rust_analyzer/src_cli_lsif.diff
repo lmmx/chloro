@@ -8,16 +8,6 @@ Rustfmt size:  12892 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
-     VendoredLibrariesConfig,
- };
--use ide_db::{line_index::WideEncoding, LineIndexDatabase};
--use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
-+use ide_db::{LineIndexDatabase, line_index::WideEncoding};
-+use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
- use lsp_types::lsif;
- use project_model::{CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource};
- use rustc_hash::FxHashMap;
  
      fn add(&mut self, data: lsif::Element) -> Id {
          let id = Id(self.count);

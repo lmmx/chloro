@@ -8,13 +8,6 @@ Rustfmt size:  27179 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Tests that don't fit into a specific category.
- 
--use expect_test::{expect, Expect};
-+use expect_test::{Expect, expect};
- use ide_db::SymbolKind;
- 
- use crate::{
  #[test]
  fn fn_generic_params_const_param_snippet() {
      check_edit("const", "fn foo<c$0>() {}", "fn foo<const $1: $0>() {}");

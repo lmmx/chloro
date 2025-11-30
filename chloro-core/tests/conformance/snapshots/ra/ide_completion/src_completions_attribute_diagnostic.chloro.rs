@@ -3,7 +3,7 @@
 use ide_db::SymbolKind;
 use syntax::ast;
 
-use crate::{CompletionItem, Completions, context::CompletionContext};
+use crate::{context::CompletionContext, CompletionItem, Completions};
 use super::AttrCompletion;
 
 pub(super) fn complete_on_unimplemented(

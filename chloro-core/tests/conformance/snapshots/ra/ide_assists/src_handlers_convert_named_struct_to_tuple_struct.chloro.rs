@@ -8,7 +8,7 @@ use syntax::{
     SyntaxKind,
 };
 
-use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
 
 pub(crate) fn convert_named_struct_to_tuple_struct(
     acc: &mut Assists,

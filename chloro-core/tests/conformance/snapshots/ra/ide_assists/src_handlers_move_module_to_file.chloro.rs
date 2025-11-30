@@ -1,7 +1,7 @@
 use std::iter;
 
 use ast::edit::IndentLevel;
-use hir::{HasAttrs, sym};
+use hir::{sym, HasAttrs};
 use ide_db::base_db::AnchoredPathBuf;
 use itertools::Itertools;
 use stdx::format_to;

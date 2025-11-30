@@ -9,12 +9,10 @@ Rustfmt size:  19938 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  //! Name resolution for expressions.
--use hir_expand::{name::Name, MacroDefId};
 +
-+use hir_expand::{MacroDefId, name::Name};
+ use hir_expand::{name::Name, MacroDefId};
  use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
  use triomphe::Arc;
- 
      }
  
      /// If `scope` refers to a macro def scope, returns the corresponding `MacroId`.
@@ -132,14 +130,7 @@ Rustfmt size:  19938 bytes
              let mut then_branch_scope = scopes.new_scope(*scope);
              compute_expr_scopes(scopes, condition, &mut then_branch_scope);
              compute_expr_scopes(scopes, then_branch, &mut then_branch_scope);
- #[cfg(test)]
- mod tests {
-     use base_db::RootQueryDb;
--    use hir_expand::{name::AsName, InFile};
-+    use hir_expand::{InFile, name::AsName};
-     use span::FileId;
--    use syntax::{algo::find_node_at_offset, ast, AstNode};
-+    use syntax::{AstNode, algo::find_node_at_offset, ast};
+     use syntax::{algo::find_node_at_offset, ast, AstNode};
      use test_fixture::WithFixture;
      use test_utils::{assert_eq_text, extract_offset};
 -

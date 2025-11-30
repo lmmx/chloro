@@ -5,7 +5,7 @@
 
 use std::panic::AssertUnwindSafe;
 
-use hir::{Symbol, db::DefDatabase};
+use hir::{db::DefDatabase, Symbol};
 use rustc_hash::FxHashMap;
 use salsa::{Cancelled, Database};
 

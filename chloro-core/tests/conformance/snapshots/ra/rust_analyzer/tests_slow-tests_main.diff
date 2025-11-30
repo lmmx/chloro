@@ -15,11 +15,6 @@ Rustfmt size:  39488 bytes
  use test_utils::skip_slow_tests;
  use testdir::TestDir;
  
--use crate::support::{project, Project};
-+use crate::support::{Project, project};
- 
- #[test]
- fn completes_items_from_standard_library() {
          text_document: server.doc_id("src/lib.rs"),
          work_done_progress_params: WorkDoneProgressParams::default(),
      });

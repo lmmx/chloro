@@ -8,7 +8,7 @@ use syntax::{
     SyntaxNode, T,
 };
 
-use crate::{AssistContext, AssistId, Assists, utils::vis_offset};
+use crate::{utils::vis_offset, AssistContext, AssistId, Assists};
 
 pub(crate) fn change_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if let Some(vis) = ctx.find_node_at_offset::<ast::Visibility>() {

@@ -21,7 +21,7 @@
 
 use base_db::Crate;
 use span::SyntaxContext;
-use syntax::{AstPtr, Parse, SyntaxElement, SyntaxNode, TextSize, WalkEvent, ted};
+use syntax::{ted, AstPtr, Parse, SyntaxElement, SyntaxNode, TextSize, WalkEvent};
 use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
 

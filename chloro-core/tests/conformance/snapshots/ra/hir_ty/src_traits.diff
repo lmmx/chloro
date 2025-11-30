@@ -8,17 +8,6 @@ Rustfmt size:  8412 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Trait solving using next trait solver.
- 
- use core::fmt;
- use std::hash::Hash;
- 
- use base_db::Crate;
--use hir_def::{lang_item::LangItem, BlockId, TraitId};
-+use hir_def::{BlockId, TraitId, lang_item::LangItem};
- use hir_expand::name::Name;
- use intern::sym;
- use rustc_next_trait_solver::solve::{HasChanged, SolverDelegateEvalExt};
  use crate::{
      db::HirDatabase,
      next_solver::{

@@ -13,9 +13,8 @@ Rustfmt size:  2157 bytes
  use ide_db::SymbolKind;
  use syntax::ast;
  
--use crate::{context::CompletionContext, CompletionItem, Completions};
+ use crate::{context::CompletionContext, CompletionItem, Completions};
 -
-+use crate::{CompletionItem, Completions, context::CompletionContext};
  use super::AttrCompletion;
  
  pub(super) fn complete_on_unimplemented(

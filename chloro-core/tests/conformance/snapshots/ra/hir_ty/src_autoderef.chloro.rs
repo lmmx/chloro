@@ -5,7 +5,7 @@
 
 use std::fmt;
 
-use hir_def::{TraitId, TypeAliasId, lang_item::LangItem};
+use hir_def::{lang_item::LangItem, TraitId, TypeAliasId};
 use rustc_type_ir::inherent::{IntoKind, Ty as _};
 use tracing::debug;
 use triomphe::Arc;

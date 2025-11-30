@@ -8,14 +8,6 @@ Rustfmt size:  9083 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::fmt::Display;
- 
- use hir::{ModPath, ModuleDef};
--use ide_db::{famous_defs::FamousDefs, RootDatabase};
-+use ide_db::{RootDatabase, famous_defs::FamousDefs};
- use syntax::{
-     ast::{self, HasName},
-     AstNode, Edition, SyntaxNode,
      AssistId,
  };
  

@@ -20,7 +20,7 @@ use std::iter;
 use either::Either;
 use hir::EditionedFileId;
 use ide_db::text_edit::TextEdit;
-use ide_db::{FilePosition, RootDatabase, base_db::RootQueryDb};
+use ide_db::{base_db::RootQueryDb, FilePosition, RootDatabase};
 pub(crate) use on_enter::on_enter;
 use span::Edition;
 use syntax::{

@@ -20,7 +20,7 @@ use rustc_type_ir::{
     inherent::{AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
     FloatTy, IntTy, TypeVisitableExt, UintTy,
 };
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use stdx::never;
 use triomphe::Arc;
 

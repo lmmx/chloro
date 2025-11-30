@@ -1,6 +1,6 @@
 //! MIR lowering for patterns
 
-use hir_def::{AssocItemId, hir::ExprId, signatures::VariantFields};
+use hir_def::{hir::ExprId, signatures::VariantFields, AssocItemId};
 use rustc_type_ir::inherent::{IntoKind, SliceLike, Ty as _};
 
 use crate::next_solver::GenericArgs;

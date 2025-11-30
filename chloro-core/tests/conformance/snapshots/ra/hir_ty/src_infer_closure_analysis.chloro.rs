@@ -19,7 +19,7 @@ use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::inherent::{IntoKind, SliceLike, Ty as _};
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use stdx::{format_to, never};
 use syntax::utils::is_raw_identifier;
 

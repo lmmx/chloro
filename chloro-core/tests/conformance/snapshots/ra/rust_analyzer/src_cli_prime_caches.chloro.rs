@@ -5,7 +5,7 @@
 //! attempt to simulate the full IDE experience through the lifetime of the
 //! an editing session.
 
-use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
+use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
 use profile::StopWatch;
 use project_model::{ProjectManifest, ProjectWorkspace};
 use vfs::AbsPathBuf;

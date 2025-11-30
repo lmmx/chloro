@@ -6,10 +6,10 @@ use base_db::{
     Crate, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
     SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
 };
-use hir_expand::{InFile, files::FilePosition};
+use hir_expand::{files::FilePosition, InFile};
 use salsa::Durability;
 use span::FileId;
-use syntax::{AstNode, algo, ast};
+use syntax::{algo, ast, AstNode};
 use triomphe::Arc;
 
 use crate::{

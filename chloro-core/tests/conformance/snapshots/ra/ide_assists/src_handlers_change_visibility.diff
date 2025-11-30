@@ -8,11 +8,8 @@ Rustfmt size:  10260 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     SyntaxNode, T,
- };
  
--use crate::{utils::vis_offset, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, utils::vis_offset};
+ use crate::{utils::vis_offset, AssistContext, AssistId, Assists};
  
 -// Assist: change_visibility
 -//

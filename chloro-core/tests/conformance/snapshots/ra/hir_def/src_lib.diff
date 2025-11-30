@@ -56,31 +56,22 @@ Rustfmt size:  45085 bytes
  #[cfg(test)]
  mod macro_expansion_tests;
  #[cfg(test)]
- 
- use std::hash::{Hash, Hasher};
- 
--use base_db::{impl_intern_key, Crate};
-+use base_db::{Crate, impl_intern_key};
- use hir_expand::{
-     builtin::{BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander},
-     db::ExpandDatabase,
      AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
      MacroDefKind,
  };
-+pub use hir_expand::{Intern, Lookup, tt};
-+use intern::{Interned, Symbol, sym};
++pub use hir_expand::{tt, Intern, Lookup};
++use intern::{sym, Interned, Symbol};
  use la_arena::Idx;
  use nameres::DefMap;
 +pub use rustc_abi as layout;
  use span::{AstIdNode, Edition, FileAstId, SyntaxContext};
  use stdx::impl_from;
--use syntax::{ast, AstNode};
--
--pub use hir_expand::{tt, Intern, Lookup};
-+use syntax::{AstNode, ast};
+ use syntax::{ast, AstNode};
 +use thin_vec::ThinVec;
 +use triomphe::Arc;
  
+-pub use hir_expand::{tt, Intern, Lookup};
+-
 +pub use crate::signatures::LocalFieldId;
  use crate::{
      attr::Attrs,

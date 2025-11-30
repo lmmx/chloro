@@ -472,11 +472,11 @@ fn handle_control_flow_keywords(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use hir::EditionedFileId;
     use ide_db::{FileId, MiniCore, RootDatabase};
     use stdx::format_to;
-    use crate::{SearchScope, fixture, references::FindAllRefsConfig};
+    use crate::{fixture, references::FindAllRefsConfig, SearchScope};
     #[test]
     fn exclude_tests() {
         check(

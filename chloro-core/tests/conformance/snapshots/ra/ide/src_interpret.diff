@@ -8,22 +8,19 @@ Rustfmt size:  3508 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
--use ide_db::{base_db::SourceDatabase, FilePosition, LineIndexDatabase, RootDatabase};
- use std::time::{Duration, Instant};
--use stdx::format_to;
--use syntax::{algo::ancestors_at_offset, ast, AstNode, TextRange};
++use std::time::{Duration, Instant};
++
+ use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
+ use ide_db::{base_db::SourceDatabase, FilePosition, LineIndexDatabase, RootDatabase};
+-use std::time::{Duration, Instant};
+ use stdx::format_to;
+ use syntax::{algo::ancestors_at_offset, ast, AstNode, TextRange};
  
 -// Feature: Interpret A Function, Static Or Const.
 -//
 -// | Editor  | Action Name |
 -// |---------|-------------|
 -// | VS Code | **rust-analyzer: Interpret** |
-+use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
-+use ide_db::{FilePosition, LineIndexDatabase, RootDatabase, base_db::SourceDatabase};
-+use stdx::format_to;
-+use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
-+
  pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
      match find_and_interpret(db, position) {
          Some((duration, mut result)) => {

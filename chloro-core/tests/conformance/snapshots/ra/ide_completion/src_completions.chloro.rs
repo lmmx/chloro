@@ -25,9 +25,9 @@ pub(crate) mod vis;
 
 use std::iter;
 
-use hir::{HasAttrs, Name, ScopeDef, Variant, sym};
-use ide_db::{RootDatabase, SymbolKind, imports::import_assets::LocatedImport};
-use syntax::{SmolStr, ToSmolStr, ast};
+use hir::{sym, HasAttrs, Name, ScopeDef, Variant};
+use ide_db::{imports::import_assets::LocatedImport, RootDatabase, SymbolKind};
+use syntax::{ast, SmolStr, ToSmolStr};
 
 use crate::{
     context::{

@@ -10,7 +10,7 @@ use ide_db::{
     MiniCore, SnippetCap,
 };
 
-use crate::{CompletionFieldsToResolve, snippet::Snippet};
+use crate::{snippet::Snippet, CompletionFieldsToResolve};
 
 #[derive(Clone, Debug)]
 pub struct CompletionConfig<'a> {

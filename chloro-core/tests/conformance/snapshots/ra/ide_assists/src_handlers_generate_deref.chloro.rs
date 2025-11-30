@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use hir::{ModPath, ModuleDef};
-use ide_db::{RootDatabase, famous_defs::FamousDefs};
+use ide_db::{famous_defs::FamousDefs, RootDatabase};
 use syntax::{
     ast::{self, HasName},
     AstNode, Edition, SyntaxNode,

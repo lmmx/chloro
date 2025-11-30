@@ -10,7 +10,8 @@ Rustfmt size:  49350 bytes
 === DIFF (- rustfmt, + chloro) ===
  use std::iter::successors;
  
- use ide_db::{RootDatabase, defs::NameClass, ty_filter::TryEnum};
+-use ide_db::{RootDatabase, defs::NameClass, ty_filter::TryEnum};
++use ide_db::{defs::NameClass, ty_filter::TryEnum, RootDatabase};
  use syntax::{
 -    AstNode, Edition, SyntaxKind, T, TextRange,
 -    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},

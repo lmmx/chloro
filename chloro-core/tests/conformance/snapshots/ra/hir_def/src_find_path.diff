@@ -63,6 +63,14 @@ Rustfmt size:  62212 bytes
      // of its (recursive) parent modules.
      let mut worklist = def_map[from.local_id]
          .children
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{Expect, expect};
++    use expect_test::{expect, Expect};
+     use hir_expand::db::ExpandDatabase;
+     use itertools::Itertools;
+     use span::Edition;
      use stdx::format_to;
      use syntax::ast::AstNode;
      use test_fixture::WithFixture;

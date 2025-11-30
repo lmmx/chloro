@@ -29,8 +29,7 @@ Rustfmt size:  32663 bytes
  
  use crate::next_solver::{InternedWrapperNoDebug, TraitIdWrapper};
 -
--use super::{interned_vec_db, Binder, BoundVarKinds, DbInterner, Region, Ty};
-+use super::{Binder, BoundVarKinds, DbInterner, Region, Ty, interned_vec_db};
+ use super::{interned_vec_db, Binder, BoundVarKinds, DbInterner, Region, Ty};
  
  pub type BoundExistentialPredicate<'db> = Binder<'db, ExistentialPredicate<'db>>;
  

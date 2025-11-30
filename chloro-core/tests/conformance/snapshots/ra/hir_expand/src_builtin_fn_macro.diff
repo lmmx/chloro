@@ -2,12 +2,28 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   32314 bytes
+Chloro size:   32301 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Builtin macro
+ 
+ use base_db::AnchoredPath;
+ use cfg::CfgExpr;
+ use either::Either;
+-use intern::{
+-    Symbol,
+-    sym::{self},
+-};
++use intern::{sym::self, Symbol};
+ use itertools::Itertools;
+-use mbe::{DelimiterKind, expect_fragment};
++use mbe::{expect_fragment, DelimiterKind};
+ use span::{Edition, FileId, Span};
+ use stdx::format_to;
+ use syntax::{
  use syntax_bridge::syntax_node_to_token_tree;
  
  use crate::{

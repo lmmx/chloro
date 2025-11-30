@@ -4,7 +4,7 @@ use std::sync::LazyLock;
 
 use hir_def::attr::Attrs;
 use hir_def::tt;
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 #[derive(Debug, Default, Clone)]

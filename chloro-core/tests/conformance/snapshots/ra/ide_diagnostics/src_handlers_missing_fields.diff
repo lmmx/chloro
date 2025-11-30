@@ -32,7 +32,8 @@ Rustfmt size:  19114 bytes
 -    ast::{self, make},
  };
  
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
++use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: missing-fields
 -//

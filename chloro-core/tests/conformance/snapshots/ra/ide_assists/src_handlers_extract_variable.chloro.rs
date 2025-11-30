@@ -10,7 +10,7 @@ use syntax::{
     NodeOrToken, SyntaxKind, SyntaxNode, T,
 };
 
-use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
+use crate::{utils::is_body_const, AssistContext, AssistId, Assists};
 
 
 // Assist: extract_variable

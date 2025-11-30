@@ -5,7 +5,7 @@
 use std::iter;
 
 use hir::Semantics;
-use syntax::ast::{self, Pat, make};
+use syntax::ast::{make, self, Pat};
 
 use crate::RootDatabase;
 

@@ -2,7 +2,7 @@
 
 use either::Either;
 use intern::sym;
-use itertools::{Itertools, izip};
+use itertools::{izip, Itertools};
 use parser::SyntaxKind;
 use rustc_hash::FxHashSet;
 use span::{Edition, Span, SyntaxContext};

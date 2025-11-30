@@ -8,12 +8,10 @@ Rustfmt size:  21200 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
  use smallvec::SmallVec;
  
--use crate::next_solver::{interned_vec_db, PolyFnSig};
+ use crate::next_solver::{interned_vec_db, PolyFnSig};
 -
-+use crate::next_solver::{PolyFnSig, interned_vec_db};
  use super::{
      generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
      SolverDefId, Ty, Tys,

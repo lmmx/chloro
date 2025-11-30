@@ -18,6 +18,11 @@ Rustfmt size:  21133 bytes
  };
  use span::{SpanMap, SyntaxContext, TextRange, TextSize};
  use stdx::format_to;
+-use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast, ted};
++use syntax::{ast, ted, AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T};
+ 
+ use crate::FilePosition;
+ 
      pub expansion: String,
  }
  
@@ -55,10 +60,12 @@ Rustfmt size:  21133 bytes
      let derive = sema.descend_into_macros_exact(tok.clone()).into_iter().find_map(|descended| {
          let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
          if !macro_file.is_derive_attr_pseudo_expansion(db) {
+ 
  #[cfg(test)]
  mod tests {
-     use expect_test::{Expect, expect};
+-    use expect_test::{Expect, expect};
 -
++    use expect_test::{expect, Expect};
      use crate::fixture;
 -
      #[track_caller]

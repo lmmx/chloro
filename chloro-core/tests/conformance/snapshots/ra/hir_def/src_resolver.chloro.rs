@@ -8,10 +8,10 @@ use hir_expand::{
     name::{AsName, Name},
     MacroDefId,
 };
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use itertools::Itertools as _;
 use rustc_hash::FxHashSet;
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use span::SyntaxContext;
 use syntax::ast::HasName;
 use triomphe::Arc;

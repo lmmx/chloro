@@ -12,7 +12,7 @@ Rustfmt size:  33768 bytes
  
  use hir::TraitRef;
 -use syntax::ast::{self, edit::AstNodeEdit, make, AstNode, BinaryOp, CmpOp, HasName, LogicOp};
-+use syntax::ast::{self, AstNode, BinaryOp, CmpOp, HasName, LogicOp, edit::AstNodeEdit, make};
++use syntax::ast::{edit::AstNodeEdit, make, self, AstNode, BinaryOp, CmpOp, HasName, LogicOp};
  
  /// Generate custom trait bodies without default implementation where possible.
  ///

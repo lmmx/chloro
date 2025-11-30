@@ -10,7 +10,7 @@ use rustc_type_ir::{
 };
 use smallvec::SmallVec;
 
-use crate::next_solver::{PolyFnSig, interned_vec_db};
+use crate::next_solver::{interned_vec_db, PolyFnSig};
 use super::{
     generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
     SolverDefId, Ty, Tys,

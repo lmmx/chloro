@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use ide_db::{FxHashSet, syntax_helpers::node_ext::vis_eq};
+use ide_db::{syntax_helpers::node_ext::vis_eq, FxHashSet};
 use syntax::{
     ast::{self, AstNode, AstToken},
     match_ast, Direction, NodeOrToken, SourceFile,

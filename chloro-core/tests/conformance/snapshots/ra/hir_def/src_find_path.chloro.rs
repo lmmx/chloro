@@ -658,7 +658,7 @@ fn find_local_import_locations(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use hir_expand::db::ExpandDatabase;
     use itertools::Itertools;
     use span::Edition;

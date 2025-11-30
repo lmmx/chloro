@@ -6,7 +6,7 @@ use ide_db::{
     SymbolKind,
 };
 use span::Edition;
-use syntax::{AstToken, ast};
+use syntax::{ast, AstToken};
 
 use crate::{
     syntax_highlighting::{highlight::highlight_def, highlights::Highlights},

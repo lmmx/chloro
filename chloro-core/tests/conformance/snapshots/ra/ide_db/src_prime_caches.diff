@@ -15,11 +15,7 @@ Rustfmt size:  12243 bytes
 +
  use std::panic::AssertUnwindSafe;
  
--use hir::{db::DefDatabase, Symbol};
-+use hir::{Symbol, db::DefDatabase};
- use rustc_hash::FxHashMap;
- use salsa::{Cancelled, Database};
- 
+ use hir::{db::DefDatabase, Symbol};
      }
  
      // The setup here is a bit complicated. We try to make best use of compute resources.

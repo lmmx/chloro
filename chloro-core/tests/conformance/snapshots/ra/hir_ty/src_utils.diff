@@ -8,14 +8,6 @@ Rustfmt size:  7929 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- use intern::sym;
- use rustc_abi::TargetDataLayout;
--use smallvec::{smallvec, SmallVec};
-+use smallvec::{SmallVec, smallvec};
- use span::Edition;
- 
- use crate::{
  pub fn all_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[TraitId; 4]> {
      // we need to take care a bit here to avoid infinite loops in case of cycles
      // (i.e. if we have `trait A: B; trait B: A;`)

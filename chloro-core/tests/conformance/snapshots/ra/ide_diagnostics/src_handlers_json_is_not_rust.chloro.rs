@@ -16,7 +16,7 @@ use syntax::{
     Edition, SyntaxKind, SyntaxNode,
 };
 
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity, fix};
+use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity};
 
 #[derive(Default)]
 struct State {

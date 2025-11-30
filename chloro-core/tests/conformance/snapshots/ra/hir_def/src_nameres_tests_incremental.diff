@@ -8,15 +8,6 @@ Rustfmt size:  16061 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use base_db::{
-     CrateDisplayName, CrateGraphBuilder, CrateName, CrateOrigin, CrateWorkspaceData,
-     DependencyBuilder, Env, RootQueryDb, SourceDatabase,
- };
--use expect_test::{expect, Expect};
-+use expect_test::{Expect, expect};
- use intern::Symbol;
- use span::Edition;
- use test_fixture::WithFixture;
                  Default::default(),
                  None,
                  Env::default(),

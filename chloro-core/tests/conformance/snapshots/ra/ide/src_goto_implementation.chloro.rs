@@ -4,7 +4,7 @@ use ide_db::{
     helpers::pick_best_token,
     RootDatabase,
 };
-use syntax::{AstNode, SyntaxKind::*, T, ast};
+use syntax::{ast, AstNode, SyntaxKind::*, T};
 
 use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
 
@@ -132,7 +132,7 @@ fn impls_for_trait_item(
 mod tests {
     use ide_db::FileRange;
     use itertools::Itertools;
-    use crate::{GotoImplementationConfig, fixture};
+    use crate::{fixture, GotoImplementationConfig};
     const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig { filter_adjacent_derive_implementations: false };
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

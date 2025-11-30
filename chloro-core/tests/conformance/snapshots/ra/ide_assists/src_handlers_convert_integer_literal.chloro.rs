@@ -1,4 +1,4 @@
-use syntax::{AstToken, ast, ast::Radix};
+use syntax::{ast, ast::Radix, AstToken};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 

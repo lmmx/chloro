@@ -8,21 +8,6 @@ Rustfmt size:  20051 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::iter;
- 
--use expect_test::{expect, Expect};
-+use expect_test::{Expect, expect};
- use hir::Semantics;
- use ide_db::{
-     defs::Definition,
-     FilePosition, FileRange, RootDatabase,
- };
- use itertools::Itertools;
--use syntax::{ast, match_ast, AstNode, SyntaxNode};
-+use syntax::{AstNode, SyntaxNode, ast, match_ast};
- 
- use crate::{
-     doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links},
      sysroot: Option<&str>,
  ) {
      let (analysis, position) = fixture::position(ra_fixture);

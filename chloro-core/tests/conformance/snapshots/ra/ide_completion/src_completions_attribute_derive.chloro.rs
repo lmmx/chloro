@@ -1,7 +1,7 @@
 //! Completion for derives
 
 use hir::ScopeDef;
-use ide_db::{SymbolKind, documentation::HasDocs};
+use ide_db::{documentation::HasDocs, SymbolKind};
 use itertools::Itertools;
 use syntax::{SmolStr, ToSmolStr};
 

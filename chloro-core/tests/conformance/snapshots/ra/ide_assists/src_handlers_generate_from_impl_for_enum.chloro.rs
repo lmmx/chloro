@@ -1,8 +1,8 @@
 use hir::next_solver::{DbInterner, TypingMode};
-use ide_db::{RootDatabase, famous_defs::FamousDefs};
+use ide_db::{famous_defs::FamousDefs, RootDatabase};
 use syntax::ast::{self, AstNode, HasName};
 
-use crate::{AssistContext, AssistId, Assists, utils::generate_trait_impl_text_intransitive};
+use crate::{utils::generate_trait_impl_text_intransitive, AssistContext, AssistId, Assists};
 
 pub(crate) fn generate_from_impl_for_enum(
     acc: &mut Assists,

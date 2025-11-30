@@ -9,8 +9,7 @@ Rustfmt size:  3796 bytes
 
 === DIFF (- rustfmt, + chloro) ===
 -use crate::assist_context::{AssistContext, Assists};
--use ide_db::{assists::AssistId, defs::Definition, LineIndexDatabase};
-+use ide_db::{LineIndexDatabase, assists::AssistId, defs::Definition};
+ use ide_db::{assists::AssistId, defs::Definition, LineIndexDatabase};
  use syntax::{
 -    ast::{self, edit_in_place::Indent, HasName},
 +    ast::{edit_in_place::Indent, self, HasName},

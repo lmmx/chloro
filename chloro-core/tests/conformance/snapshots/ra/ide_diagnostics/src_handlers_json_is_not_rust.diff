@@ -16,11 +16,6 @@ Rustfmt size:  11337 bytes
      Edition, SyntaxKind, SyntaxNode,
  };
  
--use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity};
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity, fix};
- 
- #[derive(Default)]
- struct State {
                      Diagnostic::new(
                          DiagnosticCode::Ra("json-is-not-rust", Severity::WeakWarning),
                          "JSON syntax is not valid as a Rust item",

@@ -1,6 +1,6 @@
 use hir::{AsAssocItem, HirDisplay};
 use ide_db::{assists::AssistId, famous_defs::FamousDefs};
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 
 use crate::assist_context::{AssistContext, Assists};
 

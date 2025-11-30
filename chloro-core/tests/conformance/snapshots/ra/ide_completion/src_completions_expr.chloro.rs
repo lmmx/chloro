@@ -2,7 +2,7 @@
 
 use std::ops::ControlFlow;
 
-use hir::{Complete, Name, PathCandidateCallback, ScopeDef, sym};
+use hir::{sym, Complete, Name, PathCandidateCallback, ScopeDef};
 use ide_db::FxHashSet;
 use syntax::ast;
 

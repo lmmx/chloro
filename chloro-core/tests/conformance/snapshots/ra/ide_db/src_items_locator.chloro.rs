@@ -6,7 +6,7 @@
 use std::ops::ControlFlow;
 
 use either::Either;
-use hir::{Complete, Crate, ItemInNs, Module, import_map};
+use hir::{import_map, Complete, Crate, ItemInNs, Module};
 pub use import_map::AssocSearchMode;
 
 use crate::{

@@ -14,11 +14,7 @@ Rustfmt size:  10879 bytes
 +
  use base_db::Crate;
  use span::SyntaxContext;
--use syntax::{ted, AstPtr, Parse, SyntaxElement, SyntaxNode, TextSize, WalkEvent};
-+use syntax::{AstPtr, Parse, SyntaxElement, SyntaxNode, TextSize, WalkEvent, ted};
- use syntax_bridge::DocCommentDesugarMode;
- use triomphe::Arc;
- 
+ use syntax::{ted, AstPtr, Parse, SyntaxElement, SyntaxNode, TextSize, WalkEvent};
      MacroCallId, MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
  };
  

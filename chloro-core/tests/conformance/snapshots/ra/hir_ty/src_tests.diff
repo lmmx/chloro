@@ -8,14 +8,6 @@ Rustfmt size:  23079 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     src::HasSource,
-     AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
- };
--use hir_expand::{db::ExpandDatabase, FileRange, InFile};
-+use hir_expand::{FileRange, InFile, db::ExpandDatabase};
- use itertools::Itertools;
- use rustc_hash::FxHashMap;
- use stdx::format_to;
      InferenceResult,
  };
  

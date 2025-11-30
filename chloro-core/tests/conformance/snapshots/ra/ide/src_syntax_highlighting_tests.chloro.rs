@@ -1,11 +1,11 @@
 use std::time::Instant;
 
-use expect_test::{ExpectFile, expect_file};
+use expect_test::{expect_file, ExpectFile};
 use ide_db::{MiniCore, SymbolKind};
 use span::Edition;
-use test_utils::{AssertLinear, bench, bench_fixture, skip_slow_tests};
+use test_utils::{bench, bench_fixture, skip_slow_tests, AssertLinear};
 
-use crate::{FileRange, HighlightConfig, HlTag, TextRange, fixture};
+use crate::{fixture, FileRange, HighlightConfig, HlTag, TextRange};
 
 const HL_CONFIG: HighlightConfig<'_> = HighlightConfig {
     strings: true,

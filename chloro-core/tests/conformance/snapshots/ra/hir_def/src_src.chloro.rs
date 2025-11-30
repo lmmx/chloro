@@ -3,7 +3,7 @@
 use either::Either;
 use hir_expand::{AstId, InFile};
 use la_arena::{Arena, ArenaMap, Idx};
-use syntax::{AstNode, AstPtr, ast};
+use syntax::{ast, AstNode, AstPtr};
 
 use crate::{
     attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,

@@ -734,7 +734,7 @@ fn signature_help_for_tuple_pat_ish<'db>(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use ide_db::FilePosition;
     use stdx::format_to;
     use test_fixture::ChangeFixture;

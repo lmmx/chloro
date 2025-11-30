@@ -16,7 +16,7 @@ use ide_db::{
     syntax_helpers::{node_ext::expr_as_name_ref, prettify_macro_expansion},
     EditionedFileId, RootDatabase,
 };
-use itertools::{Itertools, izip};
+use itertools::{izip, Itertools};
 use syntax::{
     ast::{
         edit::IndentLevel, edit_in_place::Indent, self, HasArgList, HasGenericArgs, Pat, PathExpr,

@@ -8,12 +8,6 @@ Rustfmt size:  5762 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Defining opaque types via inference.
- 
--use rustc_type_ir::{fold_regions, TypeVisitableExt};
-+use rustc_type_ir::{TypeVisitableExt, fold_regions};
- use tracing::{debug, instrument};
- 
  use crate::{
      infer::InferenceContext,
      next_solver::{

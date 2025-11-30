@@ -8,11 +8,6 @@ Rustfmt size:  5772 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use hir::{sym, HasSource, Name};
-+use hir::{HasSource, Name, sym};
- use syntax::{
-     ast::{self, HasName},
-     AstNode,
      AssistId,
  };
  

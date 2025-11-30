@@ -462,7 +462,7 @@ fn reverse_fixups_(tt: &mut TopSubtree, undo_info: &[TopSubtree]) {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use span::{Edition, EditionedFileId, FileId};
     use syntax::TextRange;
     use syntax_bridge::DocCommentDesugarMode;

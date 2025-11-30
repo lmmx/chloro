@@ -5,7 +5,7 @@
 //! ```
 
 use hir::{DisplayTarget, Semantics};
-use ide_db::{RootDatabase, famous_defs::FamousDefs};
+use ide_db::{famous_defs::FamousDefs, RootDatabase};
 use itertools::Itertools;
 use syntax::{
     ast::{self, AstNode, HasGenericArgs, HasName},
@@ -178,7 +178,7 @@ mod tests {
     use hir::ClosureStyle;
     use syntax::{TextRange, TextSize};
     use test_utils::extract_annotations;
-    use crate::{ClosureReturnTypeHints, fixture, inlay_hints::InlayHintsConfig};
+    use crate::{fixture, inlay_hints::InlayHintsConfig, ClosureReturnTypeHints};
     use crate::inlay_hints::tests::{
         check, check_edit, check_no_edit, check_with_config, DISABLED_CONFIG, TEST_CONFIG,
     };

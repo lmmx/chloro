@@ -6,7 +6,7 @@
 use std::fmt;
 
 use hir_expand::name::{AsName, Name};
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 
 /// Different signed int types.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

@@ -13,7 +13,7 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{AstNode, SyntaxKind::*, T};
 
-use crate::{RangeInfo, doc_links::token_as_doc_comment, parent_module::crates_for};
+use crate::{doc_links::token_as_doc_comment, parent_module::crates_for, RangeInfo};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum MonikerDescriptorKind {
@@ -401,7 +401,7 @@ fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, 
 
 #[cfg(test)]
 mod tests {
-    use crate::{MonikerResult, fixture};
+    use crate::{fixture, MonikerResult};
     use super::MonikerKind;
     #[allow(dead_code)]
     #[track_caller]

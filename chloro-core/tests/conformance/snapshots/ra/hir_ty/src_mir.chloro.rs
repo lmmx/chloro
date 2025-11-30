@@ -9,7 +9,7 @@ mod pretty;
 use std::{collections::hash_map::Entry, fmt::Display, iter};
 
 use base_db::Crate;
-pub use borrowck::{BorrowckResult, MutabilityReason, borrowck_query};
+pub use borrowck::{borrowck_query, BorrowckResult, MutabilityReason};
 use either::Either;
 pub use eval::{
     interpret_mir, pad16, render_const_using_debug_impl, Evaluator, MirEvalError, VTableMap,
@@ -21,7 +21,7 @@ use hir_def::{
 };
 use la_arena::{Arena, ArenaMap, Idx, RawIdx};
 pub(crate) use lower::mir_body_cycle_result;
-pub use lower::{MirLowerError, lower_to_mir, mir_body_for_closure_query, mir_body_query};
+pub use lower::{lower_to_mir, mir_body_for_closure_query, mir_body_query, MirLowerError};
 pub(crate) use monomorphization::monomorphized_mir_body_cycle_result;
 pub use monomorphization::{
     monomorphized_mir_body_for_closure_query, monomorphized_mir_body_query,
@@ -29,7 +29,7 @@ pub use monomorphization::{
 use rustc_ast_ir::Mutability;
 use rustc_hash::FxHashMap;
 use rustc_type_ir::inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _};
-use smallvec::{SmallVec, smallvec};
+use smallvec::{smallvec, SmallVec};
 use stdx::{impl_from, never};
 
 use crate::{

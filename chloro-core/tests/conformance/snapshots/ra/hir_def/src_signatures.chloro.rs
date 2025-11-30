@@ -8,7 +8,7 @@ use hir_expand::{
     name::{AsName, Name},
     InFile, Intern, Lookup,
 };
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 use la_arena::{Arena, Idx};
 use rustc_abi::{IntegerType, ReprOptions};
 use syntax::{

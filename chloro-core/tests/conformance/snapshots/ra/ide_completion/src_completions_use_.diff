@@ -8,7 +8,12 @@ Rustfmt size:  5785 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{AstNode, ast, format_smolstr};
+ //! Completion for use trees
+ 
+ use hir::ScopeDef;
+ use ide_db::{FxHashSet, SymbolKind};
+-use syntax::{AstNode, ast, format_smolstr};
++use syntax::{ast, format_smolstr, AstNode};
  
  use crate::{
 -    CompletionItem, CompletionItemKind, CompletionRelevance, Completions,

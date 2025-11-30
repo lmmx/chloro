@@ -8,14 +8,6 @@ Rustfmt size:  21116 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use itertools::Itertools;
- use syntax::{AstNode, SyntaxKind::*, T};
- 
--use crate::{doc_links::token_as_doc_comment, parent_module::crates_for, RangeInfo};
-+use crate::{RangeInfo, doc_links::token_as_doc_comment, parent_module::crates_for};
- 
- #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
- pub enum MonikerDescriptorKind {
      Meta,
  }
  
@@ -115,12 +107,10 @@ Rustfmt size:  21116 bytes
              tracing::error!(
                  display = %fallback_result, "`display_source_code` failed; falling back to using display"
              );
- 
  #[cfg(test)]
  mod tests {
--    use crate::{fixture, MonikerResult};
+     use crate::{fixture, MonikerResult};
 -
-+    use crate::{MonikerResult, fixture};
      use super::MonikerKind;
 -
      #[allow(dead_code)]

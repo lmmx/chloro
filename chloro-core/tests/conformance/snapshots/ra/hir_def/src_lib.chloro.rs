@@ -36,7 +36,7 @@ mod test_db;
 
 use std::hash::{Hash, Hasher};
 
-use base_db::{Crate, impl_intern_key};
+use base_db::{impl_intern_key, Crate};
 use hir_expand::{
     builtin::{BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander},
     db::ExpandDatabase,
@@ -48,14 +48,14 @@ use hir_expand::{
     AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
     MacroDefKind,
 };
-pub use hir_expand::{Intern, Lookup, tt};
-use intern::{Interned, Symbol, sym};
+pub use hir_expand::{tt, Intern, Lookup};
+use intern::{sym, Interned, Symbol};
 use la_arena::Idx;
 use nameres::DefMap;
 pub use rustc_abi as layout;
 use span::{AstIdNode, Edition, FileAstId, SyntaxContext};
 use stdx::impl_from;
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 use thin_vec::ThinVec;
 use triomphe::Arc;
 

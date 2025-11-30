@@ -8,18 +8,6 @@ Rustfmt size:  10686 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     Crate, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
-     SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
- };
--use hir_expand::{files::FilePosition, InFile};
-+use hir_expand::{InFile, files::FilePosition};
- use salsa::Durability;
- use span::FileId;
--use syntax::{algo, ast, AstNode};
-+use syntax::{AstNode, algo, ast};
- use triomphe::Arc;
- 
- use crate::{
  }
  
  #[salsa_macros::db]

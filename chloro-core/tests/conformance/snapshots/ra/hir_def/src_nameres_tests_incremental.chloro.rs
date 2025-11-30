@@ -2,7 +2,7 @@ use base_db::{
     CrateDisplayName, CrateGraphBuilder, CrateName, CrateOrigin, CrateWorkspaceData,
     DependencyBuilder, Env, RootQueryDb, SourceDatabase,
 };
-use expect_test::{Expect, expect};
+use expect_test::{expect, Expect};
 use intern::Symbol;
 use span::Edition;
 use test_fixture::WithFixture;

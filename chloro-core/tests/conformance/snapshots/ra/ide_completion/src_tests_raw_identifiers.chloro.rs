@@ -1,8 +1,8 @@
 use base_db::SourceDatabase;
-use expect_test::{Expect, expect};
+use expect_test::{expect, Expect};
 use itertools::Itertools;
 
-use crate::tests::{TEST_CONFIG, completion_list_with_config_raw, position};
+use crate::tests::{completion_list_with_config_raw, position, TEST_CONFIG};
 
 fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let completions = completion_list_with_config_raw(TEST_CONFIG, ra_fixture, true, None);

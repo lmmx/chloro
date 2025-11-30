@@ -11,14 +11,14 @@ use hir_def::{
     AdtId, AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule, ImplId, Lookup, MacroId,
     ModuleDefId, ModuleId, TraitId,
 };
-use hir_expand::{HirFileId, name::Name};
+use hir_expand::{name::Name, HirFileId};
 use hir_ty::{
     db::HirDatabase,
     display::{hir_display_with_store, HirDisplay},
 };
 use intern::Symbol;
 use rustc_hash::FxHashMap;
-use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, ToSmolStr, ast::HasName};
+use syntax::{ast::HasName, AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, ToSmolStr};
 
 use crate::{HasCrate, Module, ModuleDef, Semantics};
 

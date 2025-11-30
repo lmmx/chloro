@@ -17,7 +17,8 @@ Rustfmt size:  144317 bytes
      span_map::SpanMapRef,
 +    HirFileId, InFile, MacroDefId,
  };
- use intern::{Symbol, sym};
+-use intern::{Symbol, sym};
++use intern::{sym, Symbol};
  use rustc_hash::FxHashMap;
  use stdx::never;
  use syntax::{

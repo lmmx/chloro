@@ -9,7 +9,7 @@ use base_db::Crate;
 use intern::sym;
 use smallvec::SmallVec;
 use span::{Edition, SyntaxContext};
-use syntax::{AstNode, ast};
+use syntax::{ast, AstNode};
 
 pub use crate::__path as path;
 pub use crate::__tool_path as tool_path;

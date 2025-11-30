@@ -3,9 +3,9 @@ use std::{iter::once, mem};
 use hir::Semantics;
 use ide_db::syntax_helpers::tree_diff::diff;
 use ide_db::text_edit::{TextEdit, TextEditBuilder};
-use ide_db::{FileRange, RootDatabase, helpers::pick_best_token};
+use ide_db::{helpers::pick_best_token, FileRange, RootDatabase};
 use itertools::Itertools;
-use syntax::{AstNode, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, ast, match_ast};
+use syntax::{ast, match_ast, AstNode, SyntaxElement, SyntaxKind, SyntaxNode, TextRange};
 
 #[derive(Copy, Clone, Debug)]
 pub enum Direction {
@@ -167,7 +167,7 @@ fn replace_nodes<'a>(
 #[cfg(test)]
 mod tests {
     use crate::fixture;
-    use expect_test::{Expect, expect};
+    use expect_test::{expect, Expect};
     use crate::Direction;
     fn check(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,

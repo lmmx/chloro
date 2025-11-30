@@ -19,7 +19,7 @@ use ide_db::{
     syntax_helpers::format_string_exprs::{parse_format_exprs, with_placeholders, Arg},
     SnippetCap,
 };
-use syntax::{AstToken, ast};
+use syntax::{ast, AstToken};
 
 use crate::{
     completions::postfix::{build_postfix_snippet_builder, escape_snippet_bits},

@@ -80,12 +80,6 @@ Rustfmt size:  28368 bytes
              ctx: SyntaxContext::root(span::Edition::Edition2015),
          };
          delimiter.open = span(delimiter.open.anchor.file_id);
- 
- #[cfg(test)]
- mod tests {
--    use expect_test::{expect, Expect};
-+    use expect_test::{Expect, expect};
-     use span::{Edition, EditionedFileId, FileId};
      use syntax::TextRange;
      use syntax_bridge::DocCommentDesugarMode;
      use triomphe::Arc;

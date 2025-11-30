@@ -14,7 +14,7 @@ use syntax::{
     NodeOrToken, SyntaxKind, T,
 };
 
-use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};
+use crate::{utils::invert_boolean_expression, AssistContext, AssistId, Assists};
 
 pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let mut bin_expr = if let Some(not) = ctx.find_token_syntax_at_offset(T![!])

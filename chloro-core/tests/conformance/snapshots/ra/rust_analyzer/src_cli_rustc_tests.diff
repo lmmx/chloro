@@ -11,9 +11,10 @@ Rustfmt size:  12430 bytes
  use ide::{AnalysisHost, DiagnosticCode, DiagnosticsConfig};
  use ide_db::base_db;
  use itertools::Either;
-+use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
++use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
  use profile::StopWatch;
- use project_model::toolchain_info::{QueryConfig, target_data};
+-use project_model::toolchain_info::{QueryConfig, target_data};
++use project_model::toolchain_info::{target_data, QueryConfig};
  use project_model::{
      CargoConfig, ManifestPath, ProjectWorkspace, ProjectWorkspaceKind, RustLibSource,
      RustSourceWorkspaceConfig, Sysroot,
@@ -23,3 +24,9 @@ Rustfmt size:  12430 bytes
  use rustc_hash::FxHashMap;
  use vfs::{AbsPathBuf, FileId};
  use walkdir::WalkDir;
+ 
+-use crate::cli::{Result, flags, report_metric};
++use crate::cli::{flags, report_metric, Result};
+ 
+ struct Tester {
+     host: AnalysisHost,

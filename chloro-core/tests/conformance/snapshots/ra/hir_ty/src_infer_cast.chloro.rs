@@ -1,6 +1,6 @@
 //! Type cast logic. Basically coercion + additional casts.
 
-use hir_def::{AdtId, hir::ExprId, signatures::TraitFlags};
+use hir_def::{hir::ExprId, signatures::TraitFlags, AdtId};
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
     inherent::{AdtDef, BoundExistentialPredicates as _, IntoKind, SliceLike, Ty as _},

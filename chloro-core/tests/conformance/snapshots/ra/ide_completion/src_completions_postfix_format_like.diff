@@ -15,12 +15,6 @@ Rustfmt size:  3554 bytes
  use ide_db::{
      syntax_helpers::format_string_exprs::{parse_format_exprs, with_placeholders, Arg},
      SnippetCap,
- };
--use syntax::{ast, AstToken};
-+use syntax::{AstToken, ast};
- 
- use crate::{
-     completions::postfix::{build_postfix_snippet_builder, escape_snippet_bits},
  #[cfg(test)]
  mod tests {
      use super::*;

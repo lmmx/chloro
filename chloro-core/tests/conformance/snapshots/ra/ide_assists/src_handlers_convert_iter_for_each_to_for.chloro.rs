@@ -1,4 +1,4 @@
-use hir::{Name, sym};
+use hir::{sym, Name};
 use ide_db::famous_defs::FamousDefs;
 use stdx::format_to;
 use syntax::{

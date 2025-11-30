@@ -13,14 +13,6 @@ Rustfmt size:  15488 bytes
  use hir::{ItemInNs, ModuleDef};
  use ide_db::imports::{
      import_assets::{ImportAssets, LocatedImport},
-     insert_use::ImportScope,
- };
- use itertools::Itertools;
--use syntax::{ast, AstNode, SyntaxNode};
-+use syntax::{AstNode, SyntaxNode, ast};
- 
- use crate::{
-     config::AutoImportExclusionType,
      Completions,
  };
  

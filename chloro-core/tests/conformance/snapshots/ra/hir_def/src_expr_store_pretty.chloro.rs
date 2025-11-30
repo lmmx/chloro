@@ -7,7 +7,7 @@ use std::{
     mem,
 };
 
-use hir_expand::{Lookup, mod_path::PathKind};
+use hir_expand::{mod_path::PathKind, Lookup};
 use itertools::Itertools;
 use span::Edition;
 use syntax::ast::HasName;
@@ -24,7 +24,7 @@ use crate::{
     type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef},
     AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
 };
-use crate::{LifetimeParamId, signatures::StructFlags};
+use crate::{signatures::StructFlags, LifetimeParamId};
 use crate::{item_tree::FieldsShape, signatures::FieldData};
 use super::*;
 

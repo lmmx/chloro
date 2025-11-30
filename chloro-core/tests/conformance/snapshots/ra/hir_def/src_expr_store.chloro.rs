@@ -17,12 +17,12 @@ use std::{
 
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
-use hir_expand::{InFile, MacroCallId, mod_path::ModPath, name::Name};
+use hir_expand::{mod_path::ModPath, name::Name, InFile, MacroCallId};
 use la_arena::{Arena, ArenaMap};
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 use span::{Edition, SyntaxContext};
-use syntax::{AstPtr, SyntaxNodePtr, ast};
+use syntax::{ast, AstPtr, SyntaxNodePtr};
 use thin_vec::ThinVec;
 use triomphe::Arc;
 use tt::TextRange;

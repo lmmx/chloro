@@ -5,13 +5,13 @@
 
 use std::iter;
 
-use ide_db::{FxHashMap, famous_defs::FamousDefs, syntax_helpers::node_ext::walk_ty};
+use ide_db::{famous_defs::FamousDefs, syntax_helpers::node_ext::walk_ty, FxHashMap};
 use itertools::Itertools;
 use syntax::{
     ast::{self, AstNode, HasGenericParams, HasName},
     SyntaxKind, SyntaxToken,
 };
-use syntax::{SmolStr, format_smolstr};
+use syntax::{format_smolstr, SmolStr};
 
 use crate::{
     inlay_hints::InlayHintCtx, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,

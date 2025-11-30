@@ -1,5 +1,5 @@
 use hir::HirDisplay;
-use syntax::{AstNode, SyntaxKind, SyntaxToken, TextRange, TextSize, ast, match_ast};
+use syntax::{ast, match_ast, AstNode, SyntaxKind, SyntaxToken, TextRange, TextSize};
 
 use crate::{AssistContext, AssistId, Assists};
 

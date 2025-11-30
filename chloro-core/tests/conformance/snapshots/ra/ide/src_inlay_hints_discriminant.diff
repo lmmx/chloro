@@ -17,11 +17,7 @@ Rustfmt size:  5814 bytes
 +
  use hir::Semantics;
  use ide_db::text_edit::TextEdit;
--use ide_db::{famous_defs::FamousDefs, RootDatabase};
-+use ide_db::{RootDatabase, famous_defs::FamousDefs};
- use syntax::ast::{self, AstNode, HasName};
- 
- use crate::{
+ use ide_db::{famous_defs::FamousDefs, RootDatabase};
      let d = v.eval(sema.db);
  
      let range = match variant.field_list() {

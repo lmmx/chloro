@@ -40,9 +40,9 @@ mod tests;
 use std::hash::Hash;
 
 pub use autoderef::autoderef;
-use hir_def::{CallableDefId, TypeOrConstParamId, type_ref::Rawness};
+use hir_def::{type_ref::Rawness, CallableDefId, TypeOrConstParamId};
 use hir_expand::name::Name;
-use indexmap::{IndexMap, map::Entry};
+use indexmap::{map::Entry, IndexMap};
 pub use infer::{
     cast::CastError,
     closure::analysis::{CaptureKind, CapturedItem},
@@ -50,7 +50,7 @@ pub use infer::{
     InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref,
     PointerCast,
 };
-use intern::{Symbol, sym};
+use intern::{sym, Symbol};
 pub use lower::{
     associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
     TyLoweringContext, ValueTyDefId,
@@ -63,7 +63,7 @@ use rustc_type_ir::{
     inherent::{IntoKind, SliceLike, Ty as _},
     BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
 };
-use syntax::ast::{ConstArg, make};
+use syntax::ast::{make, ConstArg};
 pub use target_feature::TargetFeatures;
 use traits::FnTrait;
 pub use traits::TraitEnvironment;

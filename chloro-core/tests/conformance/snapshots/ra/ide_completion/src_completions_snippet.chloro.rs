@@ -1,6 +1,6 @@
 //! This file provides snippet completions, like `pd` => `eprintln!(...)`.
 
-use ide_db::{SnippetCap, documentation::Documentation, imports::insert_use::ImportScope};
+use ide_db::{documentation::Documentation, imports::insert_use::ImportScope, SnippetCap};
 
 use crate::{
     context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},

@@ -40,7 +40,8 @@ Rustfmt size:  30062 bytes
 -    match_ast, ted,
  };
  
- use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+-use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
++use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
  
 -// Assist: extract_struct_from_enum_variant
 -//

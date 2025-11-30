@@ -25,7 +25,8 @@ Rustfmt size:  18486 bytes
 +    NodeOrToken, SyntaxKind, T,
  };
  
- use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};
+-use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};
++use crate::{utils::invert_boolean_expression, AssistContext, AssistId, Assists};
  
 -// Assist: apply_demorgan
 -//

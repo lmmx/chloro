@@ -1,4 +1,4 @@
-use crate::{Diagnostic, DiagnosticsContext, adjusted_display_range};
+use crate::{adjusted_display_range, Diagnostic, DiagnosticsContext};
 
 pub(crate) fn await_outside_of_async(
     ctx: &DiagnosticsContext<'_>,

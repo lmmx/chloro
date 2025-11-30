@@ -8,17 +8,6 @@ Rustfmt size:  2808 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! This module implements a methods and free functions search in the specified file.
- //! We have to skip tests, so cannot reuse file_structure module.
- 
- use hir::Semantics;
- use ide_assists::utils::test_related_attribute_syn;
- use ide_db::RootDatabase;
--use syntax::{ast, ast::HasName, AstNode, SyntaxNode, TextRange};
-+use syntax::{AstNode, SyntaxNode, TextRange, ast, ast::HasName};
- 
- use crate::FileId;
- 
  ) -> Vec<(TextRange, Option<TextRange>)> {
      let sema = Semantics::new(db);
      let source_file = sema.parse_guess_edition(file_id);

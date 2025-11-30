@@ -29,7 +29,7 @@ use ide_db::{
     EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
 };
 use itertools::Itertools;
-use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
+use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
 use oorandom::Rand32;
 use profile::StopWatch;
 use project_model::{CargoConfig, CfgOverrides, ProjectManifest, ProjectWorkspace, RustLibSource};
