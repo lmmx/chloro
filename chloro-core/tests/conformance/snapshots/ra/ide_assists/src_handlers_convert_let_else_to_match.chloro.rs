@@ -40,7 +40,7 @@ pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'
                 None
             }
         })
-        .collect();
+        .collect::<Vec<_>>();
 
     acc.add(
         AssistId::refactor_rewrite("convert_let_else_to_match"),

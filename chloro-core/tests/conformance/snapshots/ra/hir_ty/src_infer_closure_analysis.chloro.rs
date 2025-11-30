@@ -306,7 +306,8 @@ impl<'db> CapturedItemWithoutTy<'db> {
 impl<'db> InferenceContext<'_, 'db> {
     fn place_of_expr(&mut self, tgt_expr: ExprId) -> Option<HirPlace<'db>> {
         let r = self.place_of_expr_without_adjust(tgt_expr)?;
-        let adjustments = self.result.expr_adjustments.get(&tgt_expr).map(|it| &**it).unwrap_or_default();
+        let adjustments =
+            self.result.expr_adjustments.get(&tgt_expr).map(|it| &**it).unwrap_or_default();
         apply_adjusts_to_place(&mut self.current_capture_span_stack, r, adjustments)
     }
 
@@ -366,8 +367,7 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     fn push_capture(&mut self, place: HirPlace<'db>, kind: CaptureKind) {
-        self.current_captures
-            .push(CapturedItemWithoutTy {
+        self.current_captures.push(CapturedItemWithoutTy {
             place,
             kind,
             span_stacks: smallvec![self.current_capture_span_stack.iter().copied().collect()],
@@ -746,8 +746,7 @@ impl<'db> InferenceContext<'_, 'db> {
             None => *result = Some(ck),
         };
 
-        self
-            .walk_pat_inner(
+        self.walk_pat_inner(
             pat,
             &mut update_result,
             BorrowKind::Mut { kind: MutBorrowKind::Default },
@@ -933,7 +932,8 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     fn consume_with_pat(&mut self, mut place: HirPlace<'db>, tgt_pat: PatId) {
-        let adjustments_count = self.result.pat_adjustments.get(&tgt_pat).map(|it| it.len()).unwrap_or_default();
+        let adjustments_count =
+            self.result.pat_adjustments.get(&tgt_pat).map(|it| it.len()).unwrap_or_default();
         place.projections.extend((0..adjustments_count).map(|_| ProjectionElem::Deref));
         self.current_capture_span_stack
             .extend((0..adjustments_count).map(|_| MirSpan::PatId(tgt_pat)));
@@ -1125,7 +1125,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.minimize_captures();
         self.strip_captures_ref_span();
         let result = mem::take(&mut self.current_captures);
-        let captures = result.into_iter().map(|it| it.with_ty(self)).collect();
+        let captures = result.into_iter().map(|it| it.with_ty(self)).collect::<Vec<_>>();
         self.result.closure_info.insert(closure, (captures, closure_kind));
         closure_kind
     }
@@ -1181,13 +1181,15 @@ impl<'db> InferenceContext<'_, 'db> {
         &mut self,
     ) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
         let mut deferred_closures = mem::take(&mut self.deferred_closures);
-        let mut dependents_count: FxHashMap<InternedClosureId, usize> = deferred_closures.keys().map(|it| (*it, 0)).collect();
+        let mut dependents_count: FxHashMap<InternedClosureId, usize> =
+            deferred_closures.keys().map(|it| (*it, 0)).collect();
         for deps in self.closure_dependencies.values() {
             for dep in deps {
                 *dependents_count.entry(*dep).or_default() += 1;
             }
         }
-        let mut queue: Vec<_> = deferred_closures.keys().copied().filter(|&it| dependents_count[&it] == 0).collect();
+        let mut queue: Vec<_> =
+            deferred_closures.keys().copied().filter(|&it| dependents_count[&it] == 0).collect();
         let mut result = vec![];
         while let Some(it) = queue.pop() {
             if let Some(d) = deferred_closures.remove(&it) {

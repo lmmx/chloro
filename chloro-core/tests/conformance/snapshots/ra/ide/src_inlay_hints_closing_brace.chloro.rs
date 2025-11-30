@@ -138,9 +138,9 @@ pub(super) fn hints(
         return None;
     }
 
-    let linked_location = name_range.map(|range| FileRange { file_id: file_id.file_id(sema.db), range });
-    acc
-        .push(InlayHint {
+    let linked_location =
+        name_range.map(|range| FileRange { file_id: file_id.file_id(sema.db), range });
+    acc.push(InlayHint {
         range: closing_token.text_range(),
         kind: InlayKind::ClosingBrace,
         label: InlayHintLabel::simple(label, None, linked_location.map(LazyProperty::Computed)),

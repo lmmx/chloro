@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   22036 bytes
+Chloro size:   22052 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
@@ -216,7 +216,8 @@ Rustfmt size:  22967 bytes
 -        binder: rustc_type_ir::DebruijnIndex::ZERO,
 -        interner,
 -    };
-+    let mut error_replacer = ErrorReplacer { vars: Vec::new(), binder: rustc_type_ir::DebruijnIndex::ZERO, interner };
++    let mut error_replacer =
++        ErrorReplacer { vars: Vec::new(), binder: rustc_type_ir::DebruijnIndex::ZERO, interner };
      let value = match t.clone().try_fold_with(&mut error_replacer) {
          Ok(t) => t,
          Err(_) => panic!("Encountered unbound or inference vars in {t:?}"),
@@ -264,7 +265,8 @@ Rustfmt size:  22967 bytes
 -        .ok()
 -        .and_then(|it| it.parse().ok())
 -        .unwrap_or_default();
-+    let filter: tracing_subscriber::filter::Targets = env::var("CHALK_DEBUG").ok().and_then(|it| it.parse().ok()).unwrap_or_default();
++    let filter: tracing_subscriber::filter::Targets =
++        env::var("CHALK_DEBUG").ok().and_then(|it| it.parse().ok()).unwrap_or_default();
      let layer = HierarchicalLayer::default()
          .with_indent_lines(true)
          .with_ansi(false)

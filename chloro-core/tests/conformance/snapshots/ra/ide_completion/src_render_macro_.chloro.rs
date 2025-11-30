@@ -45,7 +45,8 @@ fn render(
         ctx.source_range()
     };
 
-    let (name, escaped_name) = (name.as_str(), name.display(ctx.db(), completion.edition).to_smolstr());
+    let (name, escaped_name) =
+        (name.as_str(), name.display(ctx.db(), completion.edition).to_smolstr());
     let docs = ctx.docs(macro_);
     let docs_str = docs.as_ref().map(Documentation::as_str).unwrap_or_default();
     let is_fn_like = macro_.is_fn_like(completion.db);
@@ -59,8 +60,7 @@ fn render(
         label(&ctx, needs_bang, bra, ket, &name.to_smolstr()),
         completion.edition,
     );
-    item
-        .set_deprecated(ctx.is_deprecated(macro_))
+    item.set_deprecated(ctx.is_deprecated(macro_))
         .detail(macro_.display(completion.db, completion.display_target).to_string())
         .set_documentation(docs)
         .set_relevance(ctx.completion_relevance());
@@ -129,7 +129,11 @@ fn guess_macro_braces(macro_name: &str, docs: &str) -> (&'static str, &'static s
     // Insert a space before `{}`.
 
     // We prefer the last one when some votes equal.
-    let (_vote, (bra, ket)) = votes.iter().zip(&[(" {", "}"), ("[", "]"), ("(", ")")]).max_by_key(|&(&vote, _)| vote).unwrap();
+    let (_vote, (bra, ket)) = votes
+        .iter()
+        .zip(&[(" {", "}"), ("[", "]"), ("(", ")")])
+        .max_by_key(|&(&vote, _)| vote)
+        .unwrap();
     (*bra, *ket)
 }
 

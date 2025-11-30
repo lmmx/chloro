@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4202 bytes
-Chloro size:   3902 bytes
+Chloro size:   3893 bytes
 Rustfmt size:  4224 bytes
 
 ✗ Outputs DIFFER
@@ -51,12 +51,6 @@ Rustfmt size:  4224 bytes
          return None;
      }
  
--    acc.add(
-+    acc
-+        .add(
-         AssistId::refactor_rewrite("add_explicit_enum_discriminant"),
-         "Add explicit enum discriminants",
-         enum_node.syntax().text_range(),
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

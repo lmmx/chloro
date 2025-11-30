@@ -150,7 +150,7 @@ mod tests {
                 command: None,
             }
         "#]]
-            .assert_debug_eq(&apply_in_file_assist);
+        .assert_debug_eq(&apply_in_file_assist);
 
         let apply_in_workspace_assist = assists.next().unwrap();
         expect![[r#"
@@ -208,7 +208,7 @@ mod tests {
                 command: None,
             }
         "#]]
-            .assert_debug_eq(&apply_in_workspace_assist);
+        .assert_debug_eq(&apply_in_workspace_assist);
     }
     #[test]
     fn resolve_edits_false() {
@@ -248,7 +248,7 @@ mod tests {
                 command: None,
             }
         "#]]
-            .assert_debug_eq(&apply_in_file_assist);
+        .assert_debug_eq(&apply_in_file_assist);
 
         let apply_in_workspace_assist = assists.next().unwrap();
         expect![[r#"
@@ -269,6 +269,6 @@ mod tests {
                 command: None,
             }
         "#]]
-            .assert_debug_eq(&apply_in_workspace_assist);
+        .assert_debug_eq(&apply_in_workspace_assist);
     }
 }

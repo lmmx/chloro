@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9225 bytes
+Chloro size:   9212 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -108,12 +108,3 @@ Rustfmt size:  10026 bytes
          }))
      }
  
-     }
- 
-     fn register_alias_relate_predicate(&mut self, a: Ty<'db>, b: Ty<'db>) {
--        self.register_predicates([Binder::dummy(PredicateKind::AliasRelate(
-+        self
-+            .register_predicates([Binder::dummy(PredicateKind::AliasRelate(
-             a.into(),
-             b.into(),
-             // FIXME(deferred_projection_equality): This isn't right, I think?

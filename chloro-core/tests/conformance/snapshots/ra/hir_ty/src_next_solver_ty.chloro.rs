@@ -1022,8 +1022,7 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
         // cycle detection in fulfillment will not kick in, which leads
         // to unnecessary overflows in async code. See the issue:
         // <https://github.com/rust-lang/rust/issues/145151>.
-        let coroutine_args = interner
-            .mk_args_from_iter(coroutine_args.iter().map(|arg| {
+        let coroutine_args = interner.mk_args_from_iter(coroutine_args.iter().map(|arg| {
             match arg {
                 GenericArg::Ty(_) | GenericArg::Const(_) => arg,
                 GenericArg::Lifetime(_) => {

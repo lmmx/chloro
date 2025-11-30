@@ -244,7 +244,8 @@ pub(crate) fn diff_tokens(
     let (_, old) = old.split_at(offset);
     let (_, new) = new.split_at(offset);
 
-    let offset_from_end = new.iter().rev().zip(old.iter().rev()).take_while(|&(n, p)| n == p).count();
+    let offset_from_end =
+        new.iter().rev().zip(old.iter().rev()).take_while(|&(n, p)| n == p).count();
 
     let (old, _) = old.split_at(old.len() - offset_from_end);
     let (new, _) = new.split_at(new.len() - offset_from_end);

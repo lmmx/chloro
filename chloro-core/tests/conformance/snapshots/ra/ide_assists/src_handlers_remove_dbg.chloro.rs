@@ -24,7 +24,8 @@ pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
             .collect()
     };
 
-    let replacements = macro_calls.into_iter().filter_map(compute_dbg_replacement).collect();
+    let replacements =
+        macro_calls.into_iter().filter_map(compute_dbg_replacement).collect::<Vec<_>>();
     let target = replacements
         .iter()
         .flat_map(|(node_or_token, _)| node_or_token.iter())
@@ -196,7 +197,8 @@ fn replace_nested_dbgs(expanded: ast::Expr) -> ast::Expr {
     let expanded = expanded.clone_subtree();
     let mut editor = SyntaxEditor::new(expanded.syntax().clone());
     // We need to collect to avoid mutation during traversal.
-    let macro_exprs: Vec<_> = expanded.syntax().descendants().filter_map(ast::MacroExpr::cast).collect();
+    let macro_exprs: Vec<_> =
+        expanded.syntax().descendants().filter_map(ast::MacroExpr::cast).collect();
 
     for mac in macro_exprs {
         let expr_opt = match compute_dbg_replacement(mac.clone()) {

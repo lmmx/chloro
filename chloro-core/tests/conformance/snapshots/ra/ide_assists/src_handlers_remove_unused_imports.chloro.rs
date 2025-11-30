@@ -30,7 +30,7 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
         .descendants()
         .filter(|x| x.text_range().intersect(ctx.selection_trimmed()).is_some())
         .filter_map(ast::Use::cast);
-    let uses = uses_up.chain(uses_down).collect();
+    let uses = uses_up.chain(uses_down).collect::<Vec<_>>();
 
     // Maps use nodes to the scope that we should search through to find
     let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();

@@ -59,8 +59,7 @@ pub(crate) fn extract_expressions_from_format_string(
         return None;
     }
 
-    acc
-        .add(
+    acc.add(
         AssistId(
             "extract_expressions_from_format_string",
             // if there aren't any expressions, then make the assist a RefactorExtract

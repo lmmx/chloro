@@ -591,21 +591,18 @@ impl<'db> Resolver<'db> {
         //         def: m.module.into(),
         //     }),
         // );
-        def_map[module_id].scope
-            .entries()
+        def_map[module_id].scope.entries()
             .for_each(|(name, def)| {
             res.add_per_ns(name, def);
         });
 
-        def_map[module_id].scope
-            .legacy_macros()
+        def_map[module_id].scope.legacy_macros()
             .for_each(|(name, macs)| {
             macs.iter().for_each(|&mac| {
                 res.add(name, ScopeDef::ModuleDef(ModuleDefId::MacroId(mac)));
             })
         });
-        def_map
-            .macro_use_prelude()
+        def_map.macro_use_prelude()
             .iter()
             .sorted_by_key(|&(k, _)| k.clone())
             .for_each(
@@ -613,13 +610,11 @@ impl<'db> Resolver<'db> {
                 res.add(name, ScopeDef::ModuleDef(def.into()));
             },
         );
-        local_def_map
-            .extern_prelude()
+        local_def_map.extern_prelude()
             .for_each(|(name, (def, _extern_crate))| {
             res.add(name, ScopeDef::ModuleDef(ModuleDefId::ModuleId(def.into())));
         });
-        BUILTIN_SCOPE
-            .iter()
+        BUILTIN_SCOPE.iter()
             .for_each(|(name, &def)| {
             res.add_per_ns(name, def);
         });
@@ -972,7 +967,8 @@ impl<'db> Resolver<'db> {
     ) -> PerNs {
         let (item_map, item_local_map, module) = self.item_scope_();
         // This method resolves `path` just like import paths, so no expected macro subns is given.
-        let (module_res, segment_index) = item_map.resolve_path(item_local_map, db, module, path, shadow, None);
+        let (module_res, segment_index) =
+            item_map.resolve_path(item_local_map, db, module, path, shadow, None);
         if segment_index.is_some() {
             return PerNs::none();
         }
@@ -1077,7 +1073,7 @@ fn resolver_for_scope_<'db>(
     mut r: Resolver<'db>,
     owner: DefWithBodyId,
 ) -> Resolver<'db> {
-    let scope_chain = scopes.scope_chain(scope_id).collect();
+    let scope_chain = scopes.scope_chain(scope_id).collect::<Vec<_>>();
     r.scopes.reserve(scope_chain.len());
 
     for scope in scope_chain.into_iter().rev() {
@@ -1140,8 +1136,7 @@ impl<'db> ModuleItemMap<'db> {
         db: &'db dyn DefDatabase,
         path: &ModPath,
     ) -> Option<(ResolveValueResult, ResolvePathResultPrefixInfo)> {
-        let (module_def, unresolved_idx, prefix_info) = self.def_map
-            .resolve_path_locally(
+        let (module_def, unresolved_idx, prefix_info) = self.def_map.resolve_path_locally(
             self.local_def_map,
             db,
             self.module_id,
@@ -1178,8 +1173,7 @@ impl<'db> ModuleItemMap<'db> {
         db: &dyn DefDatabase,
         path: &ModPath,
     ) -> Option<(TypeNs, Option<usize>, Option<ImportOrExternCrate>, ResolvePathResultPrefixInfo)> {
-        let (module_def, idx, prefix_info) = self.def_map
-            .resolve_path_locally(
+        let (module_def, idx, prefix_info) = self.def_map.resolve_path_locally(
             self.local_def_map,
             db,
             self.module_id,

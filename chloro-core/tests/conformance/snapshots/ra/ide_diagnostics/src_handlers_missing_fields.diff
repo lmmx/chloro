@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19114 bytes
-Chloro size:   18850 bytes
+Chloro size:   18858 bytes
 Rustfmt size:  19114 bytes
 
 ✗ Outputs DIFFER
@@ -49,15 +49,6 @@ Rustfmt size:  19114 bytes
  pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Diagnostic {
      let mut message = String::from("missing structure fields:\n");
      for field in &d.missed_fields {
- 
-     let root = ctx.sema.db.parse_or_expand(d.file);
- 
--    let current_module =
--        ctx.sema.scope(d.field_list_parent.to_node(&root).syntax()).map(|it| it.module());
-+    let current_module = ctx.sema.scope(d.field_list_parent.to_node(&root).syntax()).map(|it| it.module());
-     let range = InFile::new(d.file, d.field_list_parent.text_range())
-         .original_node_file_range_rooted_opt(ctx.sema.db)?;
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_diagnostics, check_fix};

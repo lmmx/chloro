@@ -14,7 +14,8 @@ static ASSIST_LABEL: &str = "Introduce named lifetime";
 pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // FIXME: How can we handle renaming any one of multiple anonymous lifetimes?
     // FIXME: should also add support for the case fun(f: &Foo) -> &$0Foo
-    let lifetime = ctx.find_node_at_offset::<ast::Lifetime>().filter(|lifetime| lifetime.text() == "'_")?;
+    let lifetime =
+        ctx.find_node_at_offset::<ast::Lifetime>().filter(|lifetime| lifetime.text() == "'_")?;
     let lifetime_loc = lifetime.lifetime_ident_token()?.text_range();
 
     if let Some(fn_def) = lifetime.syntax().ancestors().find_map(ast::Fn::cast) {
@@ -35,7 +36,9 @@ fn generate_fn_def_assist(
 ) -> Option<()> {
     let param_list: ast::ParamList = fn_def.param_list()?;
     let new_lifetime_param = generate_unique_lifetime_param_name(fn_def.generic_param_list())?;
-    let self_param = param_list.self_param().filter(|p| p.lifetime().is_none() && p.amp_token().is_some());
+    let self_param =
+        // use the self if it's a reference and has no explicit lifetime
+        param_list.self_param().filter(|p| p.lifetime().is_none() && p.amp_token().is_some());
     // compute the location which implicitly has the same lifetime as the anonymous lifetime
     let loc_needing_lifetime = if let Some(self_param) = self_param {
         // if we have a self reference, use that

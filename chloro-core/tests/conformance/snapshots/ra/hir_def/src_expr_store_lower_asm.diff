@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14081 bytes
-Chloro size:   14095 bytes
+Chloro size:   14082 bytes
 Rustfmt size:  14081 bytes
 
 ✗ Outputs DIFFER
@@ -20,12 +20,3 @@ Rustfmt size:  14081 bytes
  };
  use tt::TextRange;
  
-             InlineAsmKind::Asm
-         };
- 
--        let idx = self.alloc_expr(
-+        let idx = self
-+            .alloc_expr(
-             Expr::InlineAsm(InlineAsm { operands: operands.into_boxed_slice(), options, kind }),
-             syntax_ptr,
-         );

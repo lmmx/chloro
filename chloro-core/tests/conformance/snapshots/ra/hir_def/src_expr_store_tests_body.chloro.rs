@@ -529,7 +529,8 @@ fn foo() {
     expect![[r#"
         fn foo() {
             let v @ u = 123;
-        }"#]].assert_eq(&printed);
+        }"#]]
+    .assert_eq(&printed);
 }
 
 #[test]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10280 bytes
-Chloro size:   10284 bytes
+Chloro size:   10280 bytes
 Rustfmt size:  10776 bytes
 
 ✗ Outputs DIFFER
@@ -100,11 +100,8 @@ Rustfmt size:  10776 bytes
  
                              let n_params = trait_.type_or_const_param_count(ctx.sema.db, false);
                              if arg_idx >= n_params {
-             ctx.sema.type_of_expr(exp.as_ref()?)
-         }
      }?
--    .adjusted();
-+        .adjusted();
+     .adjusted();
      if !ty.is_unknown() {
 -        let ty_string = ty
 -            .display_source_code(ctx.db, ctx.module.into(), true)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5770 bytes
-Chloro size:   5582 bytes
+Chloro size:   5606 bytes
 Rustfmt size:  5934 bytes
 
 ✗ Outputs DIFFER
@@ -82,19 +82,14 @@ Rustfmt size:  5934 bytes
 -
      #[test]
      fn test_format_docs_skips_comments_in_rust_block() {
--        let comment =
--            "```rust\n # skip1\n# skip2\n#stay1\nstay2\n#\n #\n   #    \n #\tskip3\n\t#\t\n```";
-+        let comment = "```rust\n # skip1\n# skip2\n#stay1\nstay2\n#\n #\n   #    \n #\tskip3\n\t#\t\n```";
+         let comment =
+             "```rust\n # skip1\n# skip2\n#stay1\nstay2\n#\n #\n   #    \n #\tskip3\n\t#\t\n```";
          assert_eq!(format_docs_(comment), "```rust\n#stay1\nstay2\n```");
      }
 -
      #[test]
      fn test_format_docs_does_not_skip_lines_if_plain_text() {
--        let comment =
--            "```text\n # stay1\n# stay2\n#stay3\nstay4\n#\n #\n   #    \n #\tstay5\n\t#\t\n```";
-+        let comment = "```text\n # stay1\n# stay2\n#stay3\nstay4\n#\n #\n   #    \n #\tstay5\n\t#\t\n```";
-         assert_eq!(
-             format_docs_(comment),
+         let comment =
              "```text\n # stay1\n# stay2\n#stay3\nstay4\n#\n #\n   #    \n #\tstay5\n\t#\t\n```",
          );
      }

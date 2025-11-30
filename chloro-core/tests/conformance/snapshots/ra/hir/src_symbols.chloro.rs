@@ -221,7 +221,8 @@ impl<'a> SymbolCollector<'a> {
             });
         };
 
-        let push_extern_crate = |this: &mut Self, i: ExternCrateId, name: &Name, def: ModuleDefId, vis| {
+        let push_extern_crate =
+            |this: &mut Self, i: ExternCrateId, name: &Name, def: ModuleDefId, vis| {
                 if collect_pub_only && vis != Visibility::Public {
                     return;
                 }
@@ -361,8 +362,7 @@ impl<'a> SymbolCollector<'a> {
 
     fn collect_from_trait(&mut self, trait_id: TraitId, trait_do_not_complete: Complete) {
         let trait_data = self.db.trait_signature(trait_id);
-        self
-            .with_container_name(Some(Symbol::intern(trait_data.name.as_str())), |s| {
+        self.with_container_name(Some(Symbol::intern(trait_data.name.as_str())), |s| {
             for &(ref name, assoc_item_id) in &trait_id.trait_items(self.db).items {
                 s.push_assoc_item(assoc_item_id, name, Some(trait_do_not_complete));
             }
@@ -436,8 +436,7 @@ impl<'a> SymbolCollector<'a> {
             }
         }
 
-        self.symbols
-            .insert(FileSymbol {
+        self.symbols.insert(FileSymbol {
             name: name.symbol().clone(),
             def,
             container_name: self.current_container_name.clone(),
@@ -483,8 +482,7 @@ impl<'a> SymbolCollector<'a> {
             }
         }
 
-        self.symbols
-            .insert(FileSymbol {
+        self.symbols.insert(FileSymbol {
             name: name.symbol().clone(),
             def: ModuleDef::Module(module_id.into()),
             container_name: self.current_container_name.clone(),

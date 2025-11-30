@@ -31,8 +31,7 @@ pub(crate) fn format_string(
     };
 
     let source_range = TextRange::new(brace_offset, cursor);
-    ctx.locals
-        .iter()
+    ctx.locals.iter()
         .sorted_by_key(|&(k, _)| k.clone())
         .for_each(|(name, _)| {
         CompletionItem::new(
@@ -43,8 +42,7 @@ pub(crate) fn format_string(
         )
         .add_to(acc, ctx.db);
     });
-    ctx.scope
-        .process_all_names(&mut |name, scope| {
+    ctx.scope.process_all_names(&mut |name, scope| {
         if let ScopeDef::ModuleDef(module_def) = scope {
             let symbol_kind = match module_def {
                 ModuleDef::Const(..) => SymbolKind::Const,

@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1553 bytes
-Chloro size:   1512 bytes
+Chloro size:   1553 bytes
 Rustfmt size:  1553 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- }
- 
- fn set_commit_info() {
--    #[allow(clippy::disallowed_methods)]
-     let output = match Command::new("git")
-         .arg("log")
-         .arg("-1")
+✓ Outputs are IDENTICAL

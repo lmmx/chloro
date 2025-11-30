@@ -200,8 +200,7 @@ fn check_actions(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect
         .unwrap()
         .unwrap();
     // stub out ranges into minicore as they can change every now and then
-    hover.info.actions
-        .iter_mut()
+    hover.info.actions.iter_mut()
         .for_each(|action| match action {
         super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
             if data.nav.file_id == file_id {
@@ -230,8 +229,7 @@ fn check_hover_range_actions(#[rust_analyzer::rust_fixture] ra_fixture: &str, ex
         .unwrap()
         .unwrap();
     // stub out ranges into minicore as they can change every now and then
-    hover.info.actions
-        .iter_mut()
+    hover.info.actions.iter_mut()
         .for_each(|action| match action {
         super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
             if data.nav.file_id == range.file_id {
@@ -6856,8 +6854,7 @@ pub fn foo() {}
 #[test]
 fn hover_feature() {
     let (analysis, position) = fixture::position(r#"#![feature(intrinsics$0)]"#);
-    analysis
-        .hover(
+    analysis.hover(
             &HoverConfig { links_in_hover: true, ..HOVER_BASE_CONFIG },
             FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
         )

@@ -300,9 +300,7 @@ fn convert_path(
 }
 
 fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
-    let mut leaves = tt
-        .iter()
-        .filter_map(|tt| match tt {
+    let mut leaves = tt.iter().filter_map(|tt| match tt {
         tt::TtElement::Leaf(leaf) => Some(leaf),
         tt::TtElement::Subtree(..) => None,
     });
@@ -336,8 +334,7 @@ fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Optio
         }
         _ => return None,
     };
-    segments
-        .extend(leaves.filter_map(|leaf| match leaf {
+    segments.extend(leaves.filter_map(|leaf| match leaf {
         ::tt::Leaf::Ident(ident) => Some(Name::new_symbol(ident.sym.clone(), ident.span.ctx)),
         _ => None,
     }));

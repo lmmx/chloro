@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 57017 bytes
-Chloro size:   56994 bytes
+Chloro size:   56998 bytes
 Rustfmt size:  57422 bytes
 
 ✗ Outputs DIFFER
@@ -39,23 +39,6 @@ Rustfmt size:  57422 bytes
          }
      })
  }
- fn pretty_print_err(e: ConstEvalError<'_>, db: &TestDB) -> String {
-     let mut err = String::new();
-     let span_formatter = |file, range| format!("{file:?} {range:?}");
--    let display_target =
--        DisplayTarget::from_crate(db, *db.all_crates().last().expect("no crate graph present"));
-+    let display_target = DisplayTarget::from_crate(db, *db.all_crates().last().expect("no crate graph present"));
-     match e {
-         ConstEvalError::MirLowerError(e) => {
-             e.pretty_print(&mut err, db, span_formatter, display_target)
-             e.pretty_print(&mut err, db, span_formatter, display_target)
-         }
-     }
--    .unwrap();
-+        .unwrap();
-     err
- }
- 
          .declarations()
          .find_map(|x| match x {
              hir_def::ModuleDefId::ConstId(x) => {

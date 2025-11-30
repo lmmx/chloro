@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5686 bytes
-Chloro size:   5363 bytes
+Chloro size:   5344 bytes
 Rustfmt size:  5758 bytes
 
 ✗ Outputs DIFFER
@@ -31,7 +31,8 @@ Rustfmt size:  5758 bytes
 -        .syntax()
 -        .parent()
 -        .and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
-+    let record = path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
++    let record =
++        path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
  
      let parent_node = match ctx.covering_element() {
          SyntaxElement::Node(n) => n,
@@ -45,16 +46,6 @@ Rustfmt size:  5758 bytes
      };
  
      let field_list = match &record {
-         )),
-     };
- 
--    let is_sorted = fields.as_ref().either(
-+    let is_sorted = fields
-+        .as_ref()
-+        .either(
-         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
-         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
-     );
          cov_mark::hit!(reorder_sorted_fields);
          return None;
      }
@@ -66,6 +57,15 @@ Rustfmt size:  5758 bytes
      acc.add(
          AssistId::refactor_rewrite("reorder_fields"),
          "Reorder record fields",
+     fields: impl Iterator<Item = T>,
+     sorted_fields: impl IntoIterator<Item = T>,
+ ) {
+-    fields
+-        .zip(sorted_fields)
++    fields.zip(sorted_fields)
+         .for_each(|(field, sorted_field)| editor.replace(field.syntax(), sorted_field.syntax()));
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

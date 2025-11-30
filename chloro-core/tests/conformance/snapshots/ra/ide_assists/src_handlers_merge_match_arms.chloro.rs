@@ -44,7 +44,7 @@ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             }
             _ => false,
         })
-        .collect();
+        .collect::<Vec<_>>();
 
     if arms_to_merge.len() <= 1 {
         return None;

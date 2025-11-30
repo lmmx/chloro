@@ -128,9 +128,7 @@ fn find_items(
     // NOTE: `external_query` includes `assoc_item_search`, so we don't need to
 
     // filter on our own.
-    let external_importables = krate
-        .query_external_importables(db, external_query)
-        .map(
+    let external_importables = krate.query_external_importables(db, external_query).map(
         |(external_importable, do_not_complete)| {
             let external_importable = match external_importable {
                 Either::Left(module_def) => ItemInNs::from(module_def),
@@ -142,8 +140,7 @@ fn find_items(
 
     // Query the local crate using the symbol index.
     let mut local_results = Vec::new();
-    local_query
-        .search(&symbol_index::crate_symbols(db, krate), |local_candidate| {
+    local_query.search(&symbol_index::crate_symbols(db, krate), |local_candidate| {
         let def = match local_candidate.def {
             hir::ModuleDef::Macro(macro_def) => ItemInNs::Macros(macro_def),
             def => ItemInNs::from(def),

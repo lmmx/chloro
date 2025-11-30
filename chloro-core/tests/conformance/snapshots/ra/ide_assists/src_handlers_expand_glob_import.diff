@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23406 bytes
-Chloro size:   22517 bytes
+Chloro size:   22521 bytes
 Rustfmt size:  23406 bytes
 
 ✗ Outputs DIFFER
@@ -77,23 +77,6 @@ Rustfmt size:  23406 bytes
  pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let star = ctx.find_token_syntax_at_offset(T![*])?;
      let use_tree = star.parent().and_then(ast::UseTree::cast)?;
-     let refs_in_target = find_refs_in_mod(ctx, target_module, visible_from, must_be_pub);
-     let imported_defs = find_imported_defs(ctx, use_item);
- 
--    let filtered_defs =
--        if reexport_public_items { refs_in_target } else { refs_in_target.used_refs(ctx) };
-+    let filtered_defs = if reexport_public_items { refs_in_target } else { refs_in_target.used_refs(ctx) };
- 
-     let names_to_import = find_names_to_import(filtered_defs, imported_defs);
-     let expanded = make::use_tree_list(names_to_import.iter().map(|n| {
-         );
-         make::use_tree(path, None, None, false)
-     }))
--    .clone_for_update();
-+        .clone_for_update();
- 
-     let mut editor = builder.make_editor(use_tree.syntax());
-     match use_tree.star_token() {
      }
  }
  

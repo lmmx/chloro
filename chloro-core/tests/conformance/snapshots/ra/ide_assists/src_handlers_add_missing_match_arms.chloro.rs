@@ -47,6 +47,7 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
             has_catch_all_arm |= !has_guard && matches!(pat, Pat::WildcardPat(_));
             pat
         })
+        // Exclude top level wildcards so that they are expanded by this assist, retains status quo in #8129.
         .filter(|pat| !matches!(pat, Pat::WildcardPat(_)))
         .collect();
 

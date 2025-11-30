@@ -824,9 +824,7 @@ impl ExpansionInfo {
         &self,
         span: Span,
     ) -> Option<InMacroFile<impl Iterator<Item = (SyntaxToken, SyntaxContext)> + '_>> {
-        let tokens = self.exp_map
-            .ranges_with_span_exact(span)
-            .flat_map(move |(range, ctx)| {
+        let tokens = self.exp_map.ranges_with_span_exact(span).flat_map(move |(range, ctx)| {
             self.expanded.value.covering_element(range).into_token().zip(Some(ctx))
         });
 
@@ -841,9 +839,7 @@ impl ExpansionInfo {
         &self,
         span: Span,
     ) -> Option<InMacroFile<impl Iterator<Item = (SyntaxToken, SyntaxContext)> + '_>> {
-        let tokens = self.exp_map
-            .ranges_with_span(span)
-            .flat_map(move |(range, ctx)| {
+        let tokens = self.exp_map.ranges_with_span(span).flat_map(move |(range, ctx)| {
             self.expanded.value.covering_element(range).into_token().zip(Some(ctx))
         });
 
@@ -940,7 +936,8 @@ pub fn map_node_range_up_rooted(
         end = end.max(span.range.end());
     }
     let file_id = EditionedFileId::from_span(db, anchor.file_id);
-    let anchor_offset = db.ast_id_map(file_id.into()).get_erased(anchor.ast_id).text_range().start();
+    let anchor_offset =
+        db.ast_id_map(file_id.into()).get_erased(anchor.ast_id).text_range().start();
     Some(FileRange { file_id, range: TextRange::new(start, end) + anchor_offset })
 }
 
@@ -965,7 +962,8 @@ pub fn map_node_range_up(
         end = end.max(span.range.end());
     }
     let file_id = EditionedFileId::from_span(db, anchor.file_id);
-    let anchor_offset = db.ast_id_map(file_id.into()).get_erased(anchor.ast_id).text_range().start();
+    let anchor_offset =
+        db.ast_id_map(file_id.into()).get_erased(anchor.ast_id).text_range().start();
     Some((FileRange { file_id, range: TextRange::new(start, end) + anchor_offset }, ctx))
 }
 
@@ -1001,7 +999,8 @@ pub fn span_for_offset(
 ) -> (FileRange, SyntaxContext) {
     let span = exp_map.span_at(offset);
     let file_id = EditionedFileId::from_span(db, span.anchor.file_id);
-    let anchor_offset = db.ast_id_map(file_id.into()).get_erased(span.anchor.ast_id).text_range().start();
+    let anchor_offset =
+        db.ast_id_map(file_id.into()).get_erased(span.anchor.ast_id).text_range().start();
     (FileRange { file_id, range: span.range + anchor_offset }, span.ctx)
 }
 

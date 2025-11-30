@@ -789,7 +789,8 @@ fn lookup_impl_assoc_item_for_trait_ref<'db>(
     name: &Name,
 ) -> Option<(AssocItemId, GenericArgs<'db>)> {
     let (impl_id, impl_subst) = find_matching_impl(infcx, &env, trait_ref)?;
-    let item = impl_id.impl_items(infcx.interner.db).items.iter().find_map(|(n, it)| match *it {
+    let item =
+        impl_id.impl_items(infcx.interner.db).items.iter().find_map(|(n, it)| match *it {
             AssocItemId::FunctionId(f) => (n == name).then_some(AssocItemId::FunctionId(f)),
             AssocItemId::ConstId(c) => (n == name).then_some(AssocItemId::ConstId(c)),
             AssocItemId::TypeAliasId(_) => None,
@@ -802,7 +803,8 @@ pub(crate) fn find_matching_impl<'db>(
     env: &TraitEnvironment<'db>,
     trait_ref: TraitRef<'db>,
 ) -> Option<(ImplId, GenericArgs<'db>)> {
-    let trait_ref = infcx.at(&ObligationCause::dummy(), env.env).deeply_normalize(trait_ref).ok()?;
+    let trait_ref =
+        infcx.at(&ObligationCause::dummy(), env.env).deeply_normalize(trait_ref).ok()?;
 
     let obligation = Obligation::new(infcx.interner, ObligationCause::dummy(), env.env, trait_ref);
 
@@ -969,9 +971,7 @@ pub fn check_orphan_rules<'db>(db: &'db dyn HirDatabase, impl_: ImplId) -> bool 
     // FIXME: param coverage
 
     //   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
-    let is_not_orphan = trait_ref.args
-        .types()
-        .any(|ty| match unwrap_fundamental(ty).kind() {
+    let is_not_orphan = trait_ref.args.types().any(|ty| match unwrap_fundamental(ty).kind() {
         TyKind::Adt(adt_def, _) => is_local(adt_def.def_id().0.module(db).krate()),
         TyKind::Error(_) => true,
         TyKind::Dynamic(it, _) => {
@@ -1043,7 +1043,7 @@ fn iterate_method_candidates_dyn_impl<'db>(
         ?name,
         traits_in_scope_len = traits_in_scope.len()
     )
-        .entered();
+    .entered();
 
     match mode {
         LookupMode::MethodCall => {
@@ -1783,8 +1783,9 @@ fn generic_implements_goal_ns<'db>(
 ) -> Canonical<'db, Goal<'db, Predicate<'db>>> {
     let args = table.infer_ctxt.fresh_args_for_item(SolverDefId::TraitId(trait_));
     let self_ty = table.instantiate_canonical(self_ty);
-    let trait_ref = rustc_type_ir::TraitRef::new_from_args(table.infer_ctxt.interner, trait_.into(), args)
-        .with_replaced_self_ty(table.infer_ctxt.interner, self_ty);
+    let trait_ref =
+        rustc_type_ir::TraitRef::new_from_args(table.infer_ctxt.interner, trait_.into(), args)
+            .with_replaced_self_ty(table.infer_ctxt.interner, self_ty);
     let goal = Goal::new(table.infer_ctxt.interner, table.trait_env.env, trait_ref);
 
     table.canonicalize(goal)

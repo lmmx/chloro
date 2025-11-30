@@ -310,11 +310,12 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
         ImportScopeKind::Module(m) => m.items(),
         ImportScopeKind::Block(b) => b.items(),
     }
-        .filter_map(use_stmt);
+    .filter_map(use_stmt);
     let mut res = ImportGranularityGuess::Unknown;
     let Some((mut prev, mut prev_vis, mut prev_attrs)) = use_stmts.next() else { return res };
 
-    let is_tree_one_style = |use_tree: &ast::UseTree| use_tree.path().is_none() && use_tree.use_tree_list().is_some();
+    let is_tree_one_style =
+        |use_tree: &ast::UseTree| use_tree.path().is_none() && use_tree.use_tree_list().is_some();
     let mut seen_one_style_groups = Vec::new();
 
     loop {
@@ -381,7 +382,8 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
 
 fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
     let scope_syntax = scope.as_syntax_node();
-    let insert_use_tree = use_item.use_tree().expect("`use_item` should have a use tree for `insert_path`");
+    let insert_use_tree =
+        use_item.use_tree().expect("`use_item` should have a use tree for `insert_path`");
     let group = ImportGroup::new(&insert_use_tree);
     let path_node_iter = scope_syntax
         .children()

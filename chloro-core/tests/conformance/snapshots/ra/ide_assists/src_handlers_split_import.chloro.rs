@@ -8,7 +8,10 @@ pub(crate) fn split_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
 
     let use_tree = path.top_path().syntax().ancestors().find_map(ast::UseTree::cast)?;
 
-    let has_errors = use_tree.syntax().descendants_with_tokens().any(|it| it.kind() == syntax::SyntaxKind::ERROR);
+    let has_errors = use_tree
+        .syntax()
+        .descendants_with_tokens()
+        .any(|it| it.kind() == syntax::SyntaxKind::ERROR);
     let last_segment = use_tree.path().and_then(|it| it.segment());
     if has_errors || last_segment.is_none() {
         return None;

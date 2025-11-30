@@ -258,7 +258,8 @@ impl<'db> InferenceContext<'_, 'db> {
         id: ExprOrPatId,
     ) -> Option<(ValueNs, GenericArgs<'db>)> {
         let trait_ = trait_ref.def_id.0;
-        let item = trait_.trait_items(self.db).items.iter().map(|(_name, id)| *id).find_map(|item| {
+        let item =
+            trait_.trait_items(self.db).items.iter().map(|(_name, id)| *id).find_map(|item| {
                 match item {
                     AssocItemId::FunctionId(func) => {
                         if segment.name == &self.db.function_signature(func).name {

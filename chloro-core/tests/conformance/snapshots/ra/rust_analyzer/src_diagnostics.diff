@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13221 bytes
-Chloro size:   13242 bytes
+Chloro size:   13226 bytes
 Rustfmt size:  13526 bytes
 
 ✗ Outputs DIFFER
@@ -74,13 +74,12 @@ Rustfmt size:  13526 bytes
          let check = &mut self.check[flycheck_id];
 -        let package = check
 -            .per_package
-+        let package = check.per_package
-             .entry(package_id.clone())
+-            .entry(package_id.clone())
 -            .or_insert_with(|| PackageFlycheckDiagnostic {
 -                generation,
 -                per_file: FxHashMap::default(),
 -            });
-+            .or_insert_with(|| {
++        let package = check.per_package.entry(package_id.clone()).or_insert_with(|| {
 +            PackageFlycheckDiagnostic { generation, per_file: FxHashMap::default() }
 +        });
          // Getting message from old generation. Might happen in restarting checks.
@@ -111,14 +110,6 @@ Rustfmt size:  13526 bytes
      // put those into here and filter later
      let mut odd_ones = Vec::new();
      let mut diagnostics = subscriptions[slice]
-                 .collect::<Vec<_>>();
-             Some((file_id, diagnostics))
-         })
--        .collect::<Vec<_>>();
-+        .collect();
- 
-     // Add back any diagnostics that point to files we are subscribed to
-     for (file_id, group) in odd_ones
      lsp_types::Diagnostic {
          range: lsp::to_proto::range(line_index, d.range.range),
          severity: Some(lsp::to_proto::diagnostic_severity(d.severity)),

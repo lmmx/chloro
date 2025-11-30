@@ -66,7 +66,8 @@ impl<'db> InferenceContext<'_, 'db> {
             None => (None, None),
         };
 
-        let ClosureSignatures { bound_sig, liberated_sig } = self.sig_of_closure(arg_types, ret_type, expected_sig);
+        let ClosureSignatures { bound_sig, liberated_sig } =
+            self.sig_of_closure(arg_types, ret_type, expected_sig);
         let body_ret_ty = bound_sig.output().skip_binder();
         let sig_ty = Ty::new_fn_ptr(interner, bound_sig);
 
@@ -204,8 +205,7 @@ impl<'db> InferenceContext<'_, 'db> {
         let prev_ret_coercion = self.return_coercion.replace(CoerceMany::new(body_ret_ty));
         let prev_resume_yield_tys = mem::replace(&mut self.resume_yield_tys, resume_yield_tys);
 
-        self
-            .with_breakable_ctx(BreakableKind::Border, None, None, |this| {
+        self.with_breakable_ctx(BreakableKind::Border, None, None, |this| {
             this.infer_return(body);
         });
 
@@ -471,8 +471,7 @@ impl<'db> InferenceContext<'_, 'db> {
         let ret_param_ty = projection.skip_binder().term.expect_type();
         debug!(?ret_param_ty);
 
-        let sig = projection
-            .rebind(self.interner().mk_fn_sig(
+        let sig = projection.rebind(self.interner().mk_fn_sig(
             input_tys,
             ret_param_ty,
             false,
@@ -577,8 +576,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // that does not misuse a `FnSig` type, but that can be done separately.
         let return_ty = return_ty.unwrap_or_else(|| self.table.next_ty_var());
 
-        let sig = projection
-            .rebind(self.interner().mk_fn_sig(
+        let sig = projection.rebind(self.interner().mk_fn_sig(
             input_tys,
             return_ty,
             false,
@@ -683,8 +681,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
         // in this binder we are creating.
         assert!(!expected_sig.skip_binder().has_vars_bound_above(rustc_type_ir::INNERMOST));
-        let bound_sig = expected_sig
-            .map_bound(|sig| {
+        let bound_sig = expected_sig.map_bound(|sig| {
             self.interner().mk_fn_sig(
                 sig.inputs(),
                 sig.output(),
@@ -837,9 +834,7 @@ impl<'db> InferenceContext<'_, 'db> {
             None => self.table.next_ty_var(),
         };
         // First, convert the types that the user supplied (if any).
-        let supplied_arguments = decl_inputs
-            .iter()
-            .map(|&input| match input {
+        let supplied_arguments = decl_inputs.iter().map(|&input| match input {
             Some(input) => {
                 let input = self.make_body_ty(input);
                 self.process_user_written_ty(input)
@@ -870,9 +865,7 @@ impl<'db> InferenceContext<'_, 'db> {
         if let Some(output) = decl_output {
             self.make_body_ty(output);
         }
-        let supplied_arguments = decl_inputs
-            .iter()
-            .map(|&input| match input {
+        let supplied_arguments = decl_inputs.iter().map(|&input| match input {
             Some(input) => {
                 self.make_body_ty(input);
                 err_ty

@@ -124,8 +124,7 @@ impl Extend<(FileId, (TextEdit, Option<SnippetEdit>))> for SourceChange {
         &mut self,
         iter: T,
     ) {
-        iter
-            .into_iter()
+        iter.into_iter()
             .for_each(|(file_id, (edit, snippet_edit))| {
             self.insert_source_and_snippet_edit(file_id, edit, snippet_edit)
         });
@@ -140,7 +139,8 @@ impl Extend<FileSystemEdit> for SourceChange {
 
 impl From<IntMap<FileId, TextEdit>> for SourceChange {
     fn from(source_file_edits: IntMap<FileId, TextEdit>) -> SourceChange {
-        let source_file_edits = source_file_edits.into_iter().map(|(file_id, edit)| (file_id, (edit, None))).collect();
+        let source_file_edits =
+            source_file_edits.into_iter().map(|(file_id, edit)| (file_id, (edit, None))).collect();
         SourceChange {
             source_file_edits,
             file_system_edits: Vec::new(),
@@ -350,9 +350,7 @@ impl SourceChangeBuilder {
         }
 
         // Apply mutable edits
-        let snippet_edit = self.snippet_builder
-            .take()
-            .map(|builder| {
+        let snippet_edit = self.snippet_builder.take().map(|builder| {
             SnippetEdit::new(
                 builder.places.into_iter().flat_map(PlaceSnippet::finalize_position).collect(),
             )

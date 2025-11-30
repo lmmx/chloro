@@ -227,8 +227,7 @@ impl GlobalState {
     }
 
     fn register_did_save_capability(&mut self, additional_patterns: impl Iterator<Item = String>) {
-        let additional_filters = additional_patterns
-            .map(|pattern| lsp_types::DocumentFilter {
+        let additional_filters = additional_patterns.map(|pattern| lsp_types::DocumentFilter {
             language: None,
             scheme: None,
             pattern: (Some(pattern)),
@@ -265,8 +264,7 @@ impl GlobalState {
             method: "textDocument/didSave".to_owned(),
             register_options: Some(serde_json::to_value(save_registration_options).unwrap()),
         };
-        self
-            .send_request(
+        self.send_request::<lsp_types::request::RegisterCapability>(
             lsp_types::RegistrationParams { registrations: vec![registration] },
             |_, _| (),
         );
@@ -558,8 +556,7 @@ impl GlobalState {
         tracing::debug!(%cause, "will prime caches");
         let num_worker_threads = self.config.prime_caches_num_threads();
 
-        self.task_pool.handle
-            .spawn_with_sender(ThreadIntent::Worker, {
+        self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, {
             let analysis = AssertUnwindSafe(self.snapshot().analysis);
             move |sender| {
                 sender.send(Task::PrimeCaches(PrimeCachesProgress::Begin)).unwrap();
@@ -678,14 +675,13 @@ impl GlobalState {
                 let source_root = db.source_root(source_root_id).source_root(db);
                 !source_root.is_library
             })
-            .collect();
+            .collect::<Vec<_>>();
         tracing::trace!("updating tests for {:?}", subscriptions);
 
         // Updating tests are triggered by the user typing
 
         // so we run them on a latency sensitive thread.
-        self.task_pool.handle
-            .spawn(ThreadIntent::LatencySensitive, {
+        self.task_pool.handle.spawn(ThreadIntent::LatencySensitive, {
             let snapshot = self.snapshot();
             move || {
                 let tests = subscriptions
@@ -1126,7 +1122,8 @@ impl GlobalState {
 
     /// Registers and handles a request. This should only be called once per incoming request.
     fn on_new_request(&mut self, request_received: Instant, req: Request) {
-        let _p = span!(Level::INFO, "GlobalState::on_new_request", req.method = ?req.method).entered();
+        let _p =
+            span!(Level::INFO, "GlobalState::on_new_request", req.method = ?req.method).entered();
         self.register_request(&req, request_received);
         self.on_request(req);
     }
@@ -1134,8 +1131,7 @@ impl GlobalState {
     /// Handles a request.
     fn on_request(&mut self, req: Request) {
         let mut dispatcher = RequestDispatcher { req: Some(req), global_state: self };
-        dispatcher
-            .on_sync_mut(|s, ()| {
+        dispatcher.on_sync_mut::<lsp_types::request::Shutdown>(|s, ()| {
             s.shutdown_requested = true;
             Ok(())
         });
@@ -1158,8 +1154,7 @@ impl GlobalState {
         const RETRY: bool = true;
         const NO_RETRY: bool = false;
 
-        dispatcher
-            .on_sync_mut(handlers::handle_workspace_reload)
+        dispatcher.on_sync_mut(handlers::handle_workspace_reload)
             .on_sync_mut(handlers::handle_proc_macros_rebuild)
             .on_sync_mut(handlers::handle_memory_usage)
             .on_sync_mut(handlers::handle_run_test)
@@ -1231,12 +1226,12 @@ impl GlobalState {
 
     /// Handles an incoming notification.
     fn on_notification(&mut self, not: Notification) {
-        let _p = span!(Level::INFO, "GlobalState::on_notification", not.method = ?not.method).entered();
+        let _p =
+            span!(Level::INFO, "GlobalState::on_notification", not.method = ?not.method).entered();
         use crate::handlers::notification as handlers;
         use lsp_types::notification as notifs;
 
-        NotificationDispatcher { not: Some(not), global_state: self }
-            .on_sync_mut(handlers::handle_cancel)
+        NotificationDispatcher { not: Some(not), global_state: self }.on_sync_mut(handlers::handle_cancel)
             .on_sync_mut(
                 handlers::handle_work_done_progress_cancel,
             )

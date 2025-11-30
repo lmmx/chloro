@@ -11,7 +11,8 @@ pub fn resolve_target_trait(
     sema: &Semantics<'_, RootDatabase>,
     impl_def: &ast::Impl,
 ) -> Option<hir::Trait> {
-    let ast_path = impl_def.trait_().map(|it| it.syntax().clone()).and_then(ast::PathType::cast)?.path()?;
+    let ast_path =
+        impl_def.trait_().map(|it| it.syntax().clone()).and_then(ast::PathType::cast)?.path()?;
 
     match sema.resolve_path(&ast_path) {
         Some(hir::PathResolution::Def(hir::ModuleDef::Trait(def))) => Some(def),
@@ -128,7 +129,8 @@ mod tests {
         let mut database = RootDatabase::default();
         let change_fixture = ChangeFixture::parse(&database, ra_fixture);
         database.apply_change(change_fixture.change);
-        let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ($0)");
+        let (file_id, range_or_offset) =
+            change_fixture.file_position.expect("expected a marker ($0)");
         let offset = range_or_offset.expect_offset();
         (database, FilePosition { file_id, offset })
     }
@@ -137,7 +139,8 @@ mod tests {
         let sema = Semantics::new(&db);
 
         let file = sema.parse(position.file_id);
-        let impl_block: ast::Impl = sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
+        let impl_block: ast::Impl =
+            sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
         let trait_ = crate::traits::resolve_target_trait(&sema, &impl_block);
         let actual = match trait_ {
             Some(trait_) => trait_.name(&db).display(&db, Edition::CURRENT).to_string(),
@@ -150,12 +153,13 @@ mod tests {
         let sema = Semantics::new(&db);
 
         let file = sema.parse(position.file_id);
-        let impl_block: ast::Impl = sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
+        let impl_block: ast::Impl =
+            sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
         let items = crate::traits::get_missing_assoc_items(&sema, &impl_block);
         let actual = items
             .into_iter()
             .map(|item| item.name(&db).unwrap().display(&db, Edition::CURRENT).to_string())
-            .collect()
+            .collect::<Vec<_>>()
             .join("\n");
         expect.assert_eq(&actual);
     }

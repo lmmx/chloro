@@ -38,8 +38,7 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
 
     let setter_info = AssistInfo { impl_def, strukt, assist_type: AssistType::Set };
 
-    acc
-        .add_group(
+    acc.add_group(
         &GroupLabel("Generate getter/setter".to_owned()),
         AssistId::generate("generate_setter"),
         "Generate a setter method",
@@ -82,7 +81,8 @@ pub(crate) fn generate_getter_impl(
     ctx: &AssistContext<'_>,
     mutable: bool,
 ) -> Option<()> {
-    let (strukt, info_of_record_fields, fn_names) = extract_and_parse(ctx, if mutable { AssistType::MutGet } else { AssistType::Get })?;
+    let (strukt, info_of_record_fields, fn_names) =
+        extract_and_parse(ctx, if mutable { AssistType::MutGet } else { AssistType::Get })?;
     // No record fields to do work on :(
     if info_of_record_fields.is_empty() {
         return None;
@@ -193,7 +193,8 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
     // Make the param list
 
     // `(&mut self, $field_name: $field_ty)`
-    let field_param = make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
+    let field_param =
+        make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
     let params = make::param_list(Some(make::mut_self_param()), [field_param]);
 
     // Make the assignment body

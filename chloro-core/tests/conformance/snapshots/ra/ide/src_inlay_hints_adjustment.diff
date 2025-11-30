@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23884 bytes
-Chloro size:   23803 bytes
+Chloro size:   23811 bytes
 Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
@@ -27,15 +27,6 @@ Rustfmt size:  23884 bytes
  
  use crate::{
      AdjustmentHints, AdjustmentHintsMode, InlayHint, InlayHintLabel, InlayHintLabelPart,
-         }
-     }
- 
--    let (postfix, needs_outer_parens, needs_inner_parens) =
--        mode_and_needs_parens_for_adjustment_hints(expr, config.adjustment_hints_mode);
-+    let (postfix, needs_outer_parens, needs_inner_parens) = mode_and_needs_parens_for_adjustment_hints(expr, config.adjustment_hints_mode);
- 
-     let range = expr.syntax().text_range();
-     let mut pre = InlayHint {
  #[cfg(test)]
  mod tests {
      use crate::{

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12897 bytes
+Chloro size:   12917 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -105,7 +105,8 @@ Rustfmt size:  13256 bytes
 -            self.table.trait_env.env,
 -            trait_ref,
 -        );
-+        let obligation = Obligation::new(interner, ObligationCause::new(), self.table.trait_env.env, trait_ref);
++        let obligation =
++            Obligation::new(interner, ObligationCause::new(), self.table.trait_env.env, trait_ref);
          // We detect whether the self type implements `Deref` before trying to
          // structurally normalize. We use `predicate_may_hold_opaque_types_jank`
          // to support not-yet-defined opaque types. It will succeed for `impl Deref`
@@ -145,7 +146,8 @@ Rustfmt size:  13256 bytes
 -        table,
 -        Ty::new_projection(interner, trait_target.into(), [ty]),
 -    )?;
-+    let (normalized_ty, obligations) = structurally_normalize_ty(table, Ty::new_projection(interner, trait_target.into(), [ty]))?;
++    let (normalized_ty, obligations) =
++        structurally_normalize_ty(table, Ty::new_projection(interner, trait_target.into(), [ty]))?;
  
 -    Some(InferOk {
 -        value: normalized_ty,

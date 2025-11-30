@@ -68,8 +68,7 @@ fn direct_super_traits_cb(db: &dyn DefDatabase, trait_: TraitId, cb: impl FnMut(
     let resolver = LazyCell::new(|| trait_.resolver(db));
     let (generic_params, store) = db.generic_params_and_store(trait_.into());
     let trait_self = generic_params.trait_self_param();
-    generic_params
-        .where_predicates()
+    generic_params.where_predicates()
         .iter()
         .filter_map(|pred| match pred {
             WherePredicate::ForLifetime { target, bound, .. }

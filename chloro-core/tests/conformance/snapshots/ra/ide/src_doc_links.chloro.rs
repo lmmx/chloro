@@ -92,7 +92,7 @@ pub(crate) fn rewrite_links(
         None,
         CMarkOptions { code_block_token_count: 3, ..Default::default() },
     )
-        .ok();
+    .ok();
     out
 }
 
@@ -105,8 +105,7 @@ pub(crate) fn remove_links(markdown: &str) -> String {
         Some((CowStr::Inlined(empty), CowStr::Inlined(empty)))
     };
     let doc = Parser::new_with_broken_link_callback(markdown, MARKDOWN_OPTIONS, Some(&mut cb));
-    let doc = doc
-        .filter_map(move |evt| match evt {
+    let doc = doc.filter_map(move |evt| match evt {
         Event::Start(Tag::Link(link_type, target, title)) => {
             if link_type == LinkType::Inline && target.contains("://") {
                 Some(Event::Start(Tag::Link(link_type, target, title)))
@@ -129,7 +128,7 @@ pub(crate) fn remove_links(markdown: &str) -> String {
         None,
         CMarkOptions { code_block_token_count: 3, ..Default::default() },
     )
-        .ok();
+    .ok();
     out
 }
 

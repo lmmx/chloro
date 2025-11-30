@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34097 bytes
+Chloro size:   34297 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
@@ -113,15 +113,6 @@ Rustfmt size:  36233 bytes
  fn hints(
      hints: &mut Vec<InlayHint>,
      ctx: &mut InlayHintCtx,
-         result: InlayHintLabel::default(),
-         resolve: config.fields_to_resolve.resolve_label_location,
-     };
--    let _ =
--        rec(sema, famous_defs, config.max_length, ty, &mut label_builder, config, display_target);
-+    let _ = rec(sema, famous_defs, config.max_length, ty, &mut label_builder, config, display_target);
-     let r = label_builder.finish();
-     Some(r)
- }
  
  #[cfg(test)]
  mod tests {
@@ -154,15 +145,6 @@ Rustfmt size:  36233 bytes
      #[track_caller]
      pub(super) fn check_with_config(
          config: InlayHintsConfig<'_>,
-         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
-         let actual = inlay_hints
-             .into_iter()
--            // FIXME: We trim the start because some inlay produces leading whitespace which is not properly supported by our annotation extraction
-             .map(|it| (it.range, it.label.to_string().trim_start().to_owned()))
-             .sorted_by_key(|(range, _)| range.start())
--            .collect::<Vec<_>>();
-+            .collect();
-         expected.sort_by_key(|(range, _)| range.start());
  
          assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
      }
@@ -170,12 +152,7 @@ Rustfmt size:  36233 bytes
      #[track_caller]
      pub(super) fn check_expect(
          config: InlayHintsConfig<'_>,
-     ) {
-         let (analysis, file_id) = fixture::file(ra_fixture);
-         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
--        let filtered =
--            inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect::<Vec<_>>();
-+        let filtered = inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect();
+             inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect::<Vec<_>>();
          expect.assert_debug_eq(&filtered)
      }
 -
@@ -189,12 +166,6 @@ Rustfmt size:  36233 bytes
      #[track_caller]
      pub(super) fn check_no_edit(
          config: InlayHintsConfig<'_>,
-         let (analysis, file_id) = fixture::file(ra_fixture);
-         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
- 
--        let edits: Vec<_> =
--            inlay_hints.into_iter().filter_map(|hint| hint.text_edit?.computed()).collect();
-+        let edits: Vec<_> = inlay_hints.into_iter().filter_map(|hint| hint.text_edit?.computed()).collect();
  
          assert!(edits.is_empty(), "unexpected edits: {edits:?}");
      }

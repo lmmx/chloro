@@ -423,7 +423,7 @@ fn labels(assists: &[Assist]) -> String {
             label.push('\n');
             label
         })
-        .collect();
+        .collect::<Vec<_>>();
     labels.dedup();
     labels.into_iter().collect::<String>()
 }
@@ -433,7 +433,8 @@ fn assist_order_field_struct() {
     let before = "struct Foo { $0bar: u32 }";
     let (before_cursor_pos, before) = extract_offset(before);
     let (db, file_id) = with_single_file(&before);
-    let frange = FileRange { file_id: file_id.file_id(&db), range: TextRange::empty(before_cursor_pos) };
+    let frange =
+        FileRange { file_id: file_id.file_id(&db), range: TextRange::empty(before_cursor_pos) };
     let assists = assists(&db, &TEST_CONFIG, AssistResolveStrategy::None, frange);
     let mut assists = assists.iter();
 
@@ -472,7 +473,7 @@ pub fn test_some_range(a: int) -> bool {
         Extract into...
         Replace if let with match
     "#]]
-        .assert_eq(&expected);
+    .assert_eq(&expected);
 }
 
 #[test]

@@ -20,10 +20,7 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
         // Not inside the parameter list.
         return None;
     }
-    let closure_name = closure
-        .syntax()
-        .parent()
-        .and_then(|parent| {
+    let closure_name = closure.syntax().parent().and_then(|parent| {
         let closure_decl = ast::LetStmt::cast(parent)?;
         match closure_decl.pat()? {
             ast::Pat::IdentPat(pat) => Some((closure_decl, pat.clone(), pat.name()?)),
@@ -313,7 +310,7 @@ fn compute_closure_type_params(
             }
             hir::GenericParam::LifetimeParam(_) => None,
         })
-        .collect();
+        .collect::<FxHashSet<_>>();
 
     let Some((container_params, container_where, container)) =
         closure.syntax().ancestors().find_map(ast::AnyHasGenericParams::cast).and_then(
@@ -338,7 +335,7 @@ fn compute_closure_type_params(
         .type_or_const_params()
         .chain(containing_impl.iter().flat_map(|(param_list, _)| param_list.type_or_const_params()))
         .filter_map(|param| Some(param.name()?.text().to_smolstr()))
-        .collect();
+        .collect::<FxHashSet<_>>();
 
     // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
 
@@ -421,8 +418,9 @@ fn compute_closure_type_params(
                 .iter()
                 .filter_map(|&index| where_.predicates().nth(index))
         }))
-        .collect();
-    let where_clause = (!include_where_bounds.is_empty()).then(|| make::where_clause(include_where_bounds));
+        .collect::<Vec<_>>();
+    let where_clause =
+        (!include_where_bounds.is_empty()).then(|| make::where_clause(include_where_bounds));
 
     // FIXME: Consider generic parameters that do not appear in params/return type/captures but
 
@@ -537,12 +535,11 @@ fn handle_call(
     closure_ref: ast::Expr,
     captures_as_args: &[ast::Expr],
 ) -> Option<()> {
-    let call = ast::CallExpr::cast(peel_blocks_and_refs_and_parens(closure_ref).syntax().parent()?)?;
+    let call =
+        ast::CallExpr::cast(peel_blocks_and_refs_and_parens(closure_ref).syntax().parent()?)?;
     let args = call.arg_list()?;
     // The really last token is `)`; we need one before that.
-    let has_trailing_comma = args.syntax().last_token()?
-        .prev_token()
-        .is_some_and(|token| {
+    let has_trailing_comma = args.syntax().last_token()?.prev_token().is_some_and(|token| {
         skip_trivia_token(token, Direction::Prev).is_some_and(|token| token.kind() == T![,])
     });
     let has_existing_args = args.args().next().is_some();
@@ -550,8 +547,10 @@ fn handle_call(
     let FileRangeWrapper { file_id, range } = ctx.sema.original_range_opt(args.syntax())?;
     let first_arg_indent = args.args().next().map(|it| it.indent_level());
     let arg_list_indent = args.indent_level();
-    let insert_newlines = first_arg_indent.is_some_and(|first_arg_indent| first_arg_indent != arg_list_indent);
-    let indent = if insert_newlines { first_arg_indent.unwrap().to_string() } else { String::new() };
+    let insert_newlines =
+        first_arg_indent.is_some_and(|first_arg_indent| first_arg_indent != arg_list_indent);
+    let indent =
+        if insert_newlines { first_arg_indent.unwrap().to_string() } else { String::new() };
     // FIXME: This text manipulation seems risky.
     let text = ctx.db().file_text(file_id.file_id(ctx.db())).text(ctx.db());
     let mut text = text[..u32::from(range.end()).try_into().unwrap()].trim_end();
@@ -568,7 +567,8 @@ fn handle_call(
     if insert_newlines {
         to_insert.push('\n');
     }
-    let (last_arg, rest_args) = captures_as_args.split_last().expect("already checked has captures");
+    let (last_arg, rest_args) =
+        captures_as_args.split_last().expect("already checked has captures");
     if !insert_newlines && has_existing_args {
         to_insert.push(' ');
     }

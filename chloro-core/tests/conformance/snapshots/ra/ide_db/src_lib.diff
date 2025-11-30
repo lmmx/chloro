@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   12249 bytes
+Chloro size:   12261 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
@@ -186,7 +186,8 @@ Rustfmt size:  12539 bytes
 -        let no_tt_parent = tok
 -            .parent()
 -            .is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
-+        let no_tt_parent = tok.parent().is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
++        let no_tt_parent =
++            tok.parent().is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
          (both_idents as usize)
              | ((exact_same_kind as usize) << 1)
              | ((same_text as usize) << 2)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37899 bytes
-Chloro size:   37849 bytes
+Chloro size:   37855 bytes
 Rustfmt size:  37899 bytes
 
 ✗ Outputs DIFFER
@@ -138,25 +138,6 @@ Rustfmt size:  37899 bytes
  
  impl GlobalState {
      pub(crate) fn new(sender: Sender<lsp_server::Message>, config: Config) -> GlobalState {
-         // that can be used by the config module because config talks
-         // in `SourceRootId`s instead of `FileId`s and `FileId` -> `SourceRootId`
-         // mapping is not ready until `AnalysisHost::apply_changes` has been called.
--        let mut modified_ratoml_files: FxHashMap<FileId, (ChangeKind, vfs::VfsPath)> =
--            FxHashMap::default();
-+        let mut modified_ratoml_files: FxHashMap<FileId, (ChangeKind, vfs::VfsPath)> = FxHashMap::default();
- 
-         let mut change = ChangeWithProcMacros::default();
-         let mut guard = self.vfs.write();
-             return false;
-         }
- 
--        let (change, modified_rust_files, workspace_structure_change) =
--            self.cancellation_pool.scoped(|s| {
-+        let (change, modified_rust_files, workspace_structure_change) = self.cancellation_pool
-+            .scoped(|s| {
-                 // start cancellation in parallel, this will kick off lru eviction
-                 // allowing us to do meaningful work while waiting
-                 let analysis_host = AssertUnwindSafe(&mut self.analysis_host);
          }
  
          // FIXME: `workspace_structure_change` is computed from `should_refresh_for_change` which is
@@ -170,15 +151,6 @@ Rustfmt size:  37899 bytes
          // didn't find anything (to make up for the lack of precision).
          {
              if !matches!(&workspace_structure_change, Some((.., true))) {
-         mut diagnostics: Vec<lsp_types::Diagnostic>,
-     ) {
-         // We put this on a separate thread to avoid blocking the main thread with serialization work
--        self.task_pool.handle.spawn_with_sender(stdx::thread::ThreadIntent::Worker, {
-+        self.task_pool.handle
-+            .spawn_with_sender(stdx::thread::ThreadIntent::Worker, {
-             let sender = self.sender.clone();
-             move |_| {
-                 // VSCode assumes diagnostic messages to be non-empty strings, so we need to patch
      }
  
      /// Returns `None` if the file was excluded.
@@ -190,12 +162,3 @@ Rustfmt size:  37899 bytes
          vfs_path_to_file_id(&self.vfs_read(), vfs_path)
      }
  
-     vfs: &vfs::Vfs,
-     vfs_path: &VfsPath,
- ) -> anyhow::Result<Option<FileId>> {
--    let (file_id, excluded) =
--        vfs.file_id(vfs_path).ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
-+    let (file_id, excluded) = vfs.file_id(vfs_path).ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
-     match excluded {
-         vfs::FileExcluded::Yes => Ok(None),
-         vfs::FileExcluded::No => Ok(Some(file_id)),

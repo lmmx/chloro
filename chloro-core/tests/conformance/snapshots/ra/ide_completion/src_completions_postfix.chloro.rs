@@ -50,7 +50,8 @@ pub(crate) fn complete_postfix(
     };
     let expr_ctx = &dot_access.ctx;
 
-    let receiver_text = get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
+    let receiver_text =
+        get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
 
     let cap = match ctx.config.snippet_cap {
         Some(it) => it,
@@ -87,9 +88,11 @@ pub(crate) fn complete_postfix(
 
     // so it's better to consider references now to avoid breaking the compilation
     let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
-    let mut receiver_text = get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
+    let mut receiver_text =
+        get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
     receiver_text.insert_str(0, &prefix);
-    let postfix_snippet = match build_postfix_snippet_builder(ctx, cap, &dot_receiver_including_refs) {
+    let postfix_snippet =
+        match build_postfix_snippet_builder(ctx, cap, &dot_receiver_including_refs) {
             Some(it) => it,
             None => return,
         };
@@ -284,7 +287,7 @@ pub(crate) fn complete_postfix(
             semi = if expr_ctx.in_block_expr { ";" } else { "" }
         ),
     )
-        .add_to(acc, ctx.db);
+    .add_to(acc, ctx.db);
 
     if let Some(BreakableKind::Block | BreakableKind::Loop) = expr_ctx.in_breakable {
         postfix_snippet(
@@ -427,8 +430,7 @@ fn add_custom_postfix_completions(
     receiver_text: &str,
 ) -> Option<()> {
     ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
-    ctx.config
-        .postfix_snippets()
+    ctx.config.postfix_snippets()
         .filter(|(_, snip)| snip.scope == SnippetScope::Expr)
         .for_each(
         |(trigger, snippet)| {
@@ -976,7 +978,7 @@ fn main() {
             &[],
             crate::SnippetScope::Expr,
         )
-            .unwrap();
+        .unwrap();
 
         check_edit_with_config(
             CompletionConfig { snippets: vec![snippet.clone()], ..TEST_CONFIG },

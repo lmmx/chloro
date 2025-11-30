@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18328 bytes
-Chloro size:   18307 bytes
+Chloro size:   18310 bytes
 Rustfmt size:  18564 bytes
 
 ✗ Outputs DIFFER
@@ -45,15 +45,6 @@ Rustfmt size:  18564 bytes
  
              if let Some((def, nav)) = def_nav {
                  if config.exclude_tests && def.is_test(db) {
-     })?;
-     let mut calls = CallLocations::default();
- 
--    sema.descend_into_macros_exact(token)
-+    sema
-+        .descend_into_macros_exact(token)
-         .into_iter()
-         .filter_map(|it| it.parent_ancestors().nth(1).and_then(ast::Item::cast))
-         .filter_map(|item| match item {
      }
  
      fn into_items(self) -> Vec<CallItem> {
@@ -105,7 +96,8 @@ Rustfmt size:  18564 bytes
 -            file_id: nav.file_id,
 -            offset: nav.focus_or_full_range().start(),
 -        };
-+        let item_pos = FilePosition { file_id: nav.file_id, offset: nav.focus_or_full_range().start() };
++        let item_pos =
++            FilePosition { file_id: nav.file_id, offset: nav.focus_or_full_range().start() };
          let incoming_calls = analysis.incoming_calls(&config, item_pos).unwrap().unwrap();
          expected_incoming.assert_eq(&incoming_calls.into_iter().map(debug_render).join("\n"));
  

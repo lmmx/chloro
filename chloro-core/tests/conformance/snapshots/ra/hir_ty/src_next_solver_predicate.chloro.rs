@@ -148,13 +148,11 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for BoundExistentialPre
         let mut a_v: Vec<_> = a.into_iter().collect();
         let mut b_v: Vec<_> = b.into_iter().collect();
         // `skip_binder` here is okay because `stable_cmp` doesn't look at binders
-        a_v
-            .sort_by(|a, b| {
+        a_v.sort_by(|a, b| {
             stable_cmp_existential_predicate(a.as_ref().skip_binder(), b.as_ref().skip_binder())
         });
         a_v.dedup();
-        b_v
-            .sort_by(|a, b| {
+        b_v.sort_by(|a, b| {
             stable_cmp_existential_predicate(a.as_ref().skip_binder(), b.as_ref().skip_binder())
         });
         b_v.dedup();
@@ -162,8 +160,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for BoundExistentialPre
             return Err(TypeError::ExistentialMismatch(ExpectedFound::new(a, b)));
         }
 
-        let v = std::iter::zip(a_v, b_v)
-            .map(
+        let v = std::iter::zip(a_v, b_v).map(
             |(ep_a, ep_b): (
                 Binder<'_, ty::ExistentialPredicate<_>>,
                 Binder<'_, ty::ExistentialPredicate<_>>,
@@ -395,7 +392,8 @@ impl<'db> rustc_type_ir::TypeFoldable<DbInterner<'db>> for Clauses<'db> {
         folder: &mut F,
     ) -> Result<Self, F::Error> {
         use rustc_type_ir::inherent::SliceLike as _;
-        let inner: smallvec::SmallVec<[_; 2]> = self.iter().map(|v| v.try_fold_with(folder)).collect::<Result<_, _>>()?;
+        let inner: smallvec::SmallVec<[_; 2]> =
+            self.iter().map(|v| v.try_fold_with(folder)).collect::<Result<_, _>>()?;
         Ok(Clauses::new_from_iter(folder.cx(), inner))
     }
 
@@ -900,13 +898,16 @@ impl<'db> rustc_type_ir::inherent::Clause<DbInterner<'db>> for Clause<'db> {
         let pred_bound_vars = bound_pred.bound_vars();
         let trait_bound_vars = trait_ref.bound_vars();
         // 1) Self: Bar1<'a, '^0.0> -> Self: Bar1<'a, '^0.1>
-        let shifted_pred = cx.shift_bound_var_indices(trait_bound_vars.len(), bound_pred.skip_binder());
+        let shifted_pred =
+            cx.shift_bound_var_indices(trait_bound_vars.len(), bound_pred.skip_binder());
         // 2) Self: Bar1<'a, '^0.1> -> T: Bar1<'^0.0, '^0.1>
         let new = EarlyBinder::bind(shifted_pred).instantiate(cx, trait_ref.skip_binder().args);
         // 3) ['x] + ['b] -> ['x, 'b]
-        let bound_vars = BoundVarKinds::new_from_iter(cx, trait_bound_vars.iter().chain(pred_bound_vars.iter()));
+        let bound_vars =
+            BoundVarKinds::new_from_iter(cx, trait_bound_vars.iter().chain(pred_bound_vars.iter()));
 
-        let predicate: Predicate<'db> = ty::Binder::bind_with_vars(PredicateKind::Clause(new), bound_vars).upcast(cx);
+        let predicate: Predicate<'db> =
+            ty::Binder::bind_with_vars(PredicateKind::Clause(new), bound_vars).upcast(cx);
         predicate.expect_clause()
     }
 }

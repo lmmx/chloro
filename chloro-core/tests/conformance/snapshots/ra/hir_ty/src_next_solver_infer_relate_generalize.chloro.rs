@@ -203,8 +203,7 @@ impl<'db> InferCtxt<'db> {
             panic!("unconstrained ty var when generalizing `{source_ct:?}`");
         }
 
-        self.inner
-            .borrow_mut()
+        self.inner.borrow_mut()
             .const_unification_table()
             .union_value(target_vid, ConstVariableValue::Known { value: generalized_ct });
 

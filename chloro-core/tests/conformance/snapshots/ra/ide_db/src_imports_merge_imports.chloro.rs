@@ -698,8 +698,12 @@ pub fn eq_attrs(
     attrs1: impl Iterator<Item = ast::Attr>,
 ) -> bool {
     // FIXME order of attributes should not matter
-    let attrs0 = attrs0.flat_map(|attr| attr.syntax().descendants_with_tokens()).flat_map(|it| it.into_token());
-    let attrs1 = attrs1.flat_map(|attr| attr.syntax().descendants_with_tokens()).flat_map(|it| it.into_token());
+    let attrs0 = attrs0
+        .flat_map(|attr| attr.syntax().descendants_with_tokens())
+        .flat_map(|it| it.into_token());
+    let attrs1 = attrs1
+        .flat_map(|attr| attr.syntax().descendants_with_tokens())
+        .flat_map(|it| it.into_token());
     stdx::iter_eq_by(attrs0, attrs1, |tok, tok2| tok.text() == tok2.text())
 }
 

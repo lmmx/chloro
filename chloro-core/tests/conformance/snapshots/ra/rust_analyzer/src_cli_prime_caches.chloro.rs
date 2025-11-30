@@ -14,7 +14,8 @@ use crate::cli::flags;
 
 impl flags::PrimeCaches {
     pub fn run(self) -> anyhow::Result<()> {
-        let root = vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
+        let root =
+            vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
         let config = crate::config::Config::new(
             root.clone(),
             lsp_types::ClientCapabilities::default(),

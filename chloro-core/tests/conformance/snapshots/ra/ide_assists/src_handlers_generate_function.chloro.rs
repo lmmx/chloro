@@ -41,7 +41,8 @@ fn gen_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     }
 
     let fn_name = &*name_ref.text();
-    let TargetInfo { target_module, adt_info, target, file } = fn_target_info(ctx, path, &call, fn_name)?;
+    let TargetInfo { target_module, adt_info, target, file } =
+        fn_target_info(ctx, path, &call, fn_name)?;
 
     if let Some(m) = target_module
         && !is_editable_crate(m.krate(), ctx.db())
@@ -49,7 +50,8 @@ fn gen_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
         return None;
     }
 
-    let function_builder = FunctionBuilder::from_call(ctx, &call, fn_name, target_module, target, &adt_info)?;
+    let function_builder =
+        FunctionBuilder::from_call(ctx, &call, fn_name, target_module, target, &adt_info)?;
     let text_range = call.syntax().text_range();
     let label = format!("Generate {} function", function_builder.fn_name);
     add_func_to_accumulator(acc, ctx, text_range, function_builder, file, adt_info, label)
@@ -180,7 +182,8 @@ fn get_adt_source(
     let range = adt.source(ctx.sema.db)?.syntax().original_file_range_rooted(ctx.sema.db);
 
     let file = ctx.sema.parse(range.file_id);
-    let adt_source = ctx.sema.find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
+    let adt_source =
+        ctx.sema.find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
     find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()])
         .map(|impl_| (impl_, range.file_id.file_id(ctx.db())))
 }
@@ -210,7 +213,8 @@ impl FunctionBuilder {
         target: GeneratedFunctionTarget,
         adt_info: &Option<AdtInfo>,
     ) -> Option<Self> {
-        let target_module = target_module.or_else(|| ctx.sema.scope(target.syntax()).map(|it| it.module()))?;
+        let target_module =
+            target_module.or_else(|| ctx.sema.scope(target.syntax()).map(|it| it.module()))?;
         let target_edition = target_module.krate().edition(ctx.db());
 
         let current_module = ctx.sema.scope(call.syntax())?.module();
@@ -256,7 +260,8 @@ impl FunctionBuilder {
             fn_body = make::block_expr(vec![], Some(placeholder_expr));
         };
 
-        let (generic_param_list, where_clause) = fn_generic_params(ctx, necessary_generic_params, &target)?;
+        let (generic_param_list, where_clause) =
+            fn_generic_params(ctx, necessary_generic_params, &target)?;
 
         Some(Self {
             target,
@@ -300,9 +305,11 @@ impl FunctionBuilder {
         let is_async = await_expr.is_some();
 
         let expr_for_ret_ty = await_expr.map_or_else(|| call.clone().into(), |it| it.into());
-        let (ret_type, should_focus_return_type) = make_return_type(ctx, &expr_for_ret_ty, target_module, &mut necessary_generic_params);
+        let (ret_type, should_focus_return_type) =
+            make_return_type(ctx, &expr_for_ret_ty, target_module, &mut necessary_generic_params);
 
-        let (generic_param_list, where_clause) = fn_generic_params(ctx, necessary_generic_params, &target)?;
+        let (generic_param_list, where_clause) =
+            fn_generic_params(ctx, necessary_generic_params, &target)?;
 
         let placeholder_expr = match ctx.config.expr_fill_default {
             ExprFillDefaultMode::Todo => make::ext::expr_todo(),
@@ -332,7 +339,8 @@ impl FunctionBuilder {
             Visibility::Crate => Some(make::visibility_pub_crate()),
             Visibility::Pub => Some(make::visibility_pub()),
         };
-        let type_params = self.generic_param_list.filter(|list| list.generic_params().next().is_some());
+        let type_params =
+            self.generic_param_list.filter(|list| list.generic_params().next().is_some());
         let fn_def = make::fn_(
             None,
             visibility,
@@ -347,7 +355,7 @@ impl FunctionBuilder {
             false,
             false,
         )
-            .clone_for_update();
+        .clone_for_update();
 
         let ret_type = fn_def.ret_type();
         // PANIC: we guarantee we always create a function body with a tail expr
@@ -660,10 +668,7 @@ fn fn_args(
         arg_types.push(fn_arg_type(ctx, target_module, &arg, necessary_generic_params));
     }
     deduplicate_arg_names(&mut arg_names);
-    let params = arg_names
-        .into_iter()
-        .zip(arg_types)
-        .map(|(name, ty)| {
+    let params = arg_names.into_iter().zip(arg_types).map(|(name, ty)| {
         make::param(make::ext::simple_ident_pat(make::name(&name)).into(), make::ty(&ty))
     });
 
@@ -711,10 +716,13 @@ fn fn_generic_params(
     filter_unnecessary_bounds(&mut generic_params, &mut where_preds, necessary_params);
     filter_bounds_in_scope(&mut generic_params, &mut where_preds, ctx, target);
 
-    let generic_params: Vec<ast::GenericParam> = generic_params.into_iter().map(|it| it.node.clone_for_update()).collect();
-    let where_preds: Vec<ast::WherePred> = where_preds.into_iter().map(|it| it.node.clone_for_update()).collect();
+    let generic_params: Vec<ast::GenericParam> =
+        generic_params.into_iter().map(|it| it.node.clone_for_update()).collect();
+    let where_preds: Vec<ast::WherePred> =
+        where_preds.into_iter().map(|it| it.node.clone_for_update()).collect();
 
-    let (generic_params, where_preds): (Vec<ast::GenericParam>, Vec<ast::WherePred>) = if let Some(param) = generic_params.first()
+    let (generic_params, where_preds): (Vec<ast::GenericParam>, Vec<ast::WherePred>) =
+        if let Some(param) = generic_params.first()
             && let source_scope = ctx.sema.scope(param.syntax())?
             && let target_scope = ctx.sema.scope(&target.parent())?
             && source_scope.module() != target_scope.module()
@@ -739,7 +747,8 @@ fn fn_generic_params(
         };
 
     let generic_param_list = make::generic_param_list(generic_params);
-    let where_clause = if where_preds.is_empty() { None } else { Some(make::where_clause(where_preds)) };
+    let where_clause =
+        if where_preds.is_empty() { None } else { Some(make::where_clause(where_preds)) };
 
     Some((Some(generic_param_list), where_clause))
 }
@@ -904,7 +913,11 @@ fn compute_contained_params_in_where_pred(
     let self_ty = node.ty()?;
     let bound_list = node.type_bound_list()?;
 
-    let self_ty_params = self_ty.syntax().descendants().filter_map(|node| filter_generic_params(ctx, node)).collect();
+    let self_ty_params = self_ty
+        .syntax()
+        .descendants()
+        .filter_map(|node| filter_generic_params(ctx, node))
+        .collect();
 
     let other_params = bound_list
         .bounds()
@@ -955,7 +968,8 @@ fn filter_unnecessary_bounds(
     necessary_params: FxHashSet<hir::GenericParam>,
 ) {
     // All `self_ty_param` should be unique as they were collected from `ast::GenericParamList`s.
-    let param_map: FxHashMap<hir::GenericParam, usize> = generic_params.iter().map(|it| it.self_ty_param).zip(0..).collect();
+    let param_map: FxHashMap<hir::GenericParam, usize> =
+        generic_params.iter().map(|it| it.self_ty_param).zip(0..).collect();
     let param_count = param_map.len();
     let generic_params_upper_bound = param_count + generic_params.len();
     let node_count = generic_params_upper_bound + where_preds.len();
@@ -1029,8 +1043,7 @@ fn filter_bounds_in_scope(
 
     // filter them out just by looking at their parent.
     generic_params.retain(|it| !matches!(it.self_ty_param.parent(), hir::GenericDef::Impl(_)));
-    where_preds
-        .retain(|it| {
+    where_preds.retain(|it| {
         it.node.syntax().parent().and_then(|it| it.parent()).and_then(ast::Impl::cast).is_none()
     });
 

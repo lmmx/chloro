@@ -101,8 +101,7 @@ pub(super) fn hints(
         Some(name) => name.syntax().text_range(),
         None => pat.syntax().text_range(),
     };
-    acc
-        .push(InlayHint {
+    acc.push(InlayHint {
         range: match type_ascriptable {
             Some(Some(t)) => text_range.cover(t.text_range()),
             _ => text_range,
@@ -297,8 +296,7 @@ fn main(a: SliceIter<'_, Container>) {
 }
 "#,
         );
-        analysis
-            .inlay_hints(
+        analysis.inlay_hints(
                 &InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG },
                 file_id,
                 None,
@@ -414,7 +412,8 @@ fn main() {
                 Some(TextRange::new(TextSize::from(491), TextSize::from(640))),
             )
             .unwrap();
-        let actual = inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect();
+        let actual =
+            inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect::<Vec<_>>();
         assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
     }
     #[test]

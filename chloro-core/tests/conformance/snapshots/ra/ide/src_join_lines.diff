@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22055 bytes
-Chloro size:   21476 bytes
+Chloro size:   21502 bytes
 Rustfmt size:  22055 bytes
 
 ✗ Outputs DIFFER
@@ -52,13 +52,6 @@ Rustfmt size:  22055 bytes
      fn check_join_lines(
          #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
          #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
-             result.apply(&mut actual);
-             actual
-         };
--        let actual_cursor_pos = result
--            .apply_to_offset(before_cursor_pos)
--            .expect("cursor position is affected by the edit");
-+        let actual_cursor_pos = result.apply_to_offset(before_cursor_pos).expect("cursor position is affected by the edit");
          let actual = add_cursor(&actual, actual_cursor_pos);
          assert_eq_text!(ra_fixture_after, &actual);
      }

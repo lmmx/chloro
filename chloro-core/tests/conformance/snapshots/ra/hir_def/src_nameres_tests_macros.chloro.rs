@@ -1460,7 +1460,8 @@ fn proc_attr(a: TokenStream, b: TokenStream) -> TokenStream { a }
     expect![[r#"
         legacy
         macro20
-        proc_attr"#]].assert_eq(&actual);
+        proc_attr"#]]
+    .assert_eq(&actual);
 }
 
 #[test]

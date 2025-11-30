@@ -20,15 +20,6 @@ Rustfmt size:  28759 bytes
  use itertools::Itertools;
  use syntax::{
      ast::{self, AstNode, HasGenericArgs, HasName},
-         Some(name) => name.syntax().text_range(),
-         None => pat.syntax().text_range(),
-     };
--    acc.push(InlayHint {
-+    acc
-+        .push(InlayHint {
-         range: match type_ascriptable {
-             Some(Some(t)) => text_range.cover(t.text_range()),
-             _ => text_range,
          }
      }?;
  
@@ -120,13 +111,16 @@ Rustfmt size:  28759 bytes
      #[test]
      fn iterator_hint_regression_issue_12674() {
          // Ensure we don't crash while solving the projection type of iterators.
+ }
+ "#,
          );
-         analysis
-             .inlay_hints(
+-        analysis
+-            .inlay_hints(
 -                &InlayHintsConfig {
 -                    chaining_hints: true,
 -                    ..DISABLED_CONFIG
 -                },
++        analysis.inlay_hints(
 +                &InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG },
                  file_id,
                  None,
@@ -178,7 +172,8 @@ Rustfmt size:  28759 bytes
 -            expected, actual,
 -            "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}"
 -        );
-+        let actual = inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect();
++        let actual =
++            inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect::<Vec<_>>();
 +        assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
      }
 -

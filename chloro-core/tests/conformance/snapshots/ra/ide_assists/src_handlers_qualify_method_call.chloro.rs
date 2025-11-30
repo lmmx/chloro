@@ -29,8 +29,7 @@ pub(crate) fn qualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) ->
 
     let qualify_candidate = QualifyCandidate::ImplMethod(ctx.sema.db, call, resolved_call);
 
-    acc
-        .add(
+    acc.add(
         AssistId::refactor_rewrite("qualify_method_call"),
         format!("Qualify `{ident}` method call"),
         range,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 77855 bytes
-Chloro size:   77858 bytes
+Chloro size:   77870 bytes
 Rustfmt size:  77855 bytes
 
 ✗ Outputs DIFFER
@@ -50,17 +50,14 @@ Rustfmt size:  77855 bytes
      }
 -
 -    fn check_with_config(config: DiagnosticsMapConfig, diagnostics_json: &str, expect: ExpectFile) {
--        let diagnostic: crate::flycheck::Diagnostic =
--            serde_json::from_str(diagnostics_json).unwrap();
 +    fn check_with_config(
 +        config: DiagnosticsMapConfig,
 +        diagnostics_json: &str,
 +        expect: ExpectFile,
 +    ) {
-+        let diagnostic: crate::flycheck::Diagnostic = serde_json::from_str(diagnostics_json).unwrap();
+         let diagnostic: crate::flycheck::Diagnostic =
+             serde_json::from_str(diagnostics_json).unwrap();
          let workspace_root: &AbsPath = Utf8Path::new("/test/").try_into().unwrap();
-         let (sender, _) = crossbeam_channel::unbounded();
-         let state = GlobalState::new(
          actual.iter_mut().for_each(|diag| diag.diagnostic.data = None);
          expect.assert_debug_eq(&actual)
      }

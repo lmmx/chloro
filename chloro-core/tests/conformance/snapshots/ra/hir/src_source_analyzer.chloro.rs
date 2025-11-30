@@ -276,7 +276,7 @@ impl<'db> SourceAnalyzer<'db> {
             // small problem).
             LifetimeElisionKind::Infer,
         )
-            .lower_ty(type_ref);
+        .lower_ty(type_ref);
         Some(Type::new_with_resolver(db, &self.resolver, ty))
     }
 
@@ -618,7 +618,8 @@ impl<'db> SourceAnalyzer<'db> {
         let base_ty = self.ty_of_expr(index_expr.base()?)?;
         let index_ty = self.ty_of_expr(index_expr.index()?)?;
 
-        let (_index_trait, index_fn) = self.lang_trait_fn(db, LangItem::Index, &Name::new_symbol_root(sym::index))?;
+        let (_index_trait, index_fn) =
+            self.lang_trait_fn(db, LangItem::Index, &Name::new_symbol_root(sym::index))?;
         let op_fn = self
             .infer()
             .and_then(|infer| {
@@ -980,7 +981,8 @@ impl<'db> SourceAnalyzer<'db> {
 
         // FIXME: collectiong here shouldnt be necessary?
         let mut collector = ExprCollector::new(db, self.resolver.module(), self.file_id);
-        let hir_path = collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
+        let hir_path =
+            collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
         let parent_hir_path = path
             .parent_path()
             .and_then(|p| collector.lower_path(p, &mut ExprCollector::impl_trait_error_allocator));
@@ -1189,7 +1191,8 @@ impl<'db> SourceAnalyzer<'db> {
         path: &ast::Path,
     ) -> Option<PathResolutionPerNs> {
         let mut collector = ExprCollector::new(db, self.resolver.module(), self.file_id);
-        let hir_path = collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
+        let hir_path =
+            collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
         let (store, _) = collector.store.finish();
         Some(resolve_hir_path_(
             db,
@@ -1236,7 +1239,8 @@ impl<'db> SourceAnalyzer<'db> {
         let pat_id = self.pat_id(&pattern.clone().into())?.as_pat()?;
         let substs = infer[pat_id].as_adt()?.1;
 
-        let (variant, missing_fields, _exhaustive) = record_pattern_missing_fields(db, infer, pat_id, &body[pat_id])?;
+        let (variant, missing_fields, _exhaustive) =
+            record_pattern_missing_fields(db, infer, pat_id, &body[pat_id])?;
         let res = self.missing_fields(db, substs, variant, missing_fields);
         Some(res)
     }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17448 bytes
-Chloro size:   17345 bytes
+Chloro size:   17448 bytes
 Rustfmt size:  17677 bytes
 
 ✗ Outputs DIFFER
@@ -35,15 +35,6 @@ Rustfmt size:  17677 bytes
                  );
              }
          }
-         if !self.config.work_done_progress() {
-             return;
-         }
--        let percentage = fraction.map(|f| {
-+        let percentage = fraction
-+            .map(|f| {
-             assert!((0.0..=1.0).contains(&f));
-             (f * 100.0) as u32
-         });
          let work_done_progress = match state {
              Progress::Begin => {
                  self.send_request::<lsp_types::request::WorkDoneProgressCreate>(
@@ -54,15 +45,6 @@ Rustfmt size:  17677 bytes
                      |_, _| (),
                  );
  
-                 lsp_types::WorkDoneProgress::End(lsp_types::WorkDoneProgressEnd { message })
-             }
-         };
--        self.send_notification::<lsp_types::notification::Progress>(lsp_types::ProgressParams {
-+        self
-+            .send_notification(lsp_types::ProgressParams {
-             token,
-             value: lsp_types::ProgressParamsValue::WorkDone(work_done_progress),
-         });
  ) -> String {
      // If at least one of the changes is a full document change, use the last
      // of them as the starting point and ignore all previous changes.
@@ -76,7 +58,8 @@ Rustfmt size:  17677 bytes
 -        }
 -        None => (file_contents.to_owned(), &content_changes[..]),
 -    };
-+    let (mut text, content_changes) = match content_changes.iter().rposition(|change| change.range.is_none()) {
++    let (mut text, content_changes) =
++        match content_changes.iter().rposition(|change| change.range.is_none()) {
 +            Some(idx) => {
 +                let text = mem::take(&mut content_changes[idx].text);
 +                (text, &content_changes[idx + 1..])
@@ -116,7 +99,8 @@ Rustfmt size:  17677 bytes
 -            &text,
 -            c![0, 0; 0, 4 => "", 0, 5; 0, 5 => " foxes"],
 -        );
-+        let text = apply_document_changes(encoding, &text, c![0, 0; 0, 4 => "", 0, 5; 0, 5 => " foxes"]);
++        let text =
++            apply_document_changes(encoding, &text, c![0, 0; 0, 4 => "", 0, 5; 0, 5 => " foxes"]);
          assert_eq!(text, "quick foxes");
          let text = apply_document_changes(encoding, &text, c![0, 11; 0, 11 => "\ndream"]);
          assert_eq!(text, "quick foxes\ndream");
@@ -128,7 +112,8 @@ Rustfmt size:  17677 bytes
 -            &text,
 -            c![0, 15; 0, 15 => "\n", 2, 17; 2, 17 => "\n"],
 -        );
-+        let text = apply_document_changes(encoding, &text, c![0, 15; 0, 15 => "\n", 2, 17; 2, 17 => "\n"]);
++        let text =
++            apply_document_changes(encoding, &text, c![0, 15; 0, 15 => "\n", 2, 17; 2, 17 => "\n"]);
          assert_eq!(text, "the quick foxes\n\nhave quiet dreams\n\n");
          let text = apply_document_changes(
              encoding,
@@ -139,25 +124,11 @@ Rustfmt size:  17677 bytes
 -            text,
 -            "the quick foxes\nDREAM\nthey have quiet dreams\nDON'T THEY?\n"
 -        );
--        let text =
--            apply_document_changes(encoding, &text, c![0, 10; 1, 5 => "", 2, 0; 2, 12 => ""]);
 +        assert_eq!(text, "the quick foxes\nDREAM\nthey have quiet dreams\nDON'T THEY?\n");
-+        let text = apply_document_changes(encoding, &text, c![0, 10; 1, 5 => "", 2, 0; 2, 12 => ""]);
+         let text =
+             apply_document_changes(encoding, &text, c![0, 10; 1, 5 => "", 2, 0; 2, 12 => ""]);
          assert_eq!(text, "the quick \nthey have quiet dreams\n");
- 
-         let text = String::from("❤️");
-         assert_eq!(text, "a❤️");
- 
-         let text = String::from("a\nb");
--        let text =
--            apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "\nțc", 0, 1; 1, 1 => "d"]);
-+        let text = apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "\nțc", 0, 1; 1, 1 => "d"]);
-         assert_eq!(text, "adcb");
- 
-         let text = String::from("a\nb");
--        let text =
--            apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "ț\nc", 0, 2; 0, 2 => "c"]);
-+        let text = apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "ț\nc", 0, 2; 0, 2 => "c"]);
+             apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "ț\nc", 0, 2; 0, 2 => "c"]);
          assert_eq!(text, "ațc\ncb");
      }
 -
@@ -171,15 +142,6 @@ Rustfmt size:  17677 bytes
      #[test]
      fn completion_with_joint_edits_disjoint_tests() {
          let disjoint_edit = lsp_types::TextEdit::new(
-             "new_text".to_owned(),
-         );
- 
--        let mut completion_with_joint_edits =
--            CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
-+        let mut completion_with_joint_edits = CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
-         completion_with_joint_edits.additional_text_edits =
-             Some(vec![disjoint_edit.clone(), joint_edit.clone()]);
-         assert!(
              "Completion with disjoint edits fails the validation even with empty extra edits"
          );
      }
@@ -187,12 +149,3 @@ Rustfmt size:  17677 bytes
      #[test]
      fn completion_with_disjoint_edits_disjoint_tests() {
          let disjoint_edit = lsp_types::TextEdit::new(
-             "new_text".to_owned(),
-         );
- 
--        let mut completion_with_disjoint_edits =
--            CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
-+        let mut completion_with_disjoint_edits = CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
-         completion_with_disjoint_edits.text_edit = Some(CompletionTextEdit::Edit(disjoint_edit));
-         let completion_with_disjoint_edits = completion_with_disjoint_edits;
- 

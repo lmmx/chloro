@@ -90,7 +90,7 @@ impl<'db> InferCtxt<'db> {
             &CanonicalizeAllFreeRegions,
             query_state,
         )
-            .unchecked_map(|(param_env, value)| ParamEnvAnd { param_env, value });
+        .unchecked_map(|(param_env, value)| ParamEnvAnd { param_env, value });
         CanonicalQueryInput { canonical, typing_mode: self.typing_mode() }
     }
 
@@ -594,9 +594,14 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         // anymore.
         debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
 
-        let canonical_variables = CanonicalVars::new_from_iter(tcx, canonicalizer.universe_canonicalized_variables());
+        let canonical_variables =
+            CanonicalVars::new_from_iter(tcx, canonicalizer.universe_canonicalized_variables());
 
-        let max_universe = canonical_variables.iter().map(|cvar| cvar.universe()).max().unwrap_or(UniverseIndex::ROOT);
+        let max_universe = canonical_variables
+            .iter()
+            .map(|cvar| cvar.universe())
+            .max()
+            .unwrap_or(UniverseIndex::ROOT);
 
         Canonical { max_universe, variables: canonical_variables, value: (base.value, out_value) }
     }
@@ -671,7 +676,8 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
 
     fn get_or_insert_sub_root(&mut self, vid: TyVid) -> BoundVar {
         let root_vid = self.infcx.sub_unification_table_root_var(vid);
-        let idx = *self.sub_root_lookup_table.entry(root_vid).or_insert_with(|| self.variables.len());
+        let idx =
+            *self.sub_root_lookup_table.entry(root_vid).or_insert_with(|| self.variables.len());
         BoundVar::from(idx)
     }
 

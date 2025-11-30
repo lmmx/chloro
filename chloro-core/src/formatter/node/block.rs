@@ -76,26 +76,14 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         if let Some(expr_stmt) = ast::ExprStmt::cast(n.clone()) {
                             if let Some(expr) = expr_stmt.expr() {
                                 format_expr(&expr, buf, indent);
+                                if expr_stmt.semicolon_token().is_some() {
+                                    buf.push(';');
+                                }
                             } else {
-                                buf.push_str(&n.text().to_string().trim_end());
-                            }
-                            if expr_stmt.semicolon_token().is_some() {
-                                buf.push(';');
+                                buf.push_str(n.text().to_string().trim_end());
                             }
                         } else {
-                            buf.push_str(&n.text().to_string().trim_end());
-                        }
-                        buf.push('\n');
-                        prev_was_item = true;
-                        prev_was_comment = false;
-                    }
-
-                    SyntaxKind::LET_STMT => {
-                        write_indent(buf, indent);
-                        if let Some(let_stmt) = ast::LetStmt::cast(n.clone()) {
-                            format_let_stmt(&let_stmt, buf, indent);
-                        } else {
-                            buf.push_str(&n.text().to_string().trim_end());
+                            buf.push_str(n.text().to_string().trim_end());
                         }
                         buf.push('\n');
                         prev_was_item = true;
@@ -133,22 +121,49 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
     }
 }
 
-/// Format an expression, handling method chains and other complex expressions
+/// Format an expression, handling method chains specially
 fn format_expr(expr: &ast::Expr, buf: &mut String, indent: usize) {
-    match expr {
-        ast::Expr::MethodCallExpr(method_call) => {
-            format_method_call_chain(method_call, buf, indent);
-        }
-        _ => {
-            buf.push_str(&expr.syntax().text().to_string().trim_end());
+    let text = expr.syntax().text().to_string();
+
+    // Check if it's a method chain that needs breaking
+    if let ast::Expr::MethodCallExpr(method_call) = expr {
+        // Count chain length
+        let chain_len = count_method_chain_length(&method_call);
+        if chain_len >= 2 {
+            // Check if single line exceeds width
+            let single_line_len = indent + text.len();
+            if single_line_len > MAX_WIDTH {
+                format_method_chain(&method_call, buf, indent);
+                return;
+            }
         }
     }
+
+    // Default: output as-is
+    buf.push_str(text.trim_end());
 }
 
-/// Format a method call chain, breaking across lines if needed
-fn format_method_call_chain(method_call: &ast::MethodCallExpr, buf: &mut String, indent: usize) {
-    // Collect all segments of the chain
-    let mut segments: Vec<MethodSegment> = Vec::new();
+/// Count how many method calls are chained
+fn count_method_chain_length(method_call: &ast::MethodCallExpr) -> usize {
+    let mut count = 1;
+    let mut current = method_call.receiver();
+
+    while let Some(recv) = current {
+        if let ast::Expr::MethodCallExpr(mc) = recv {
+            count += 1;
+            current = mc.receiver();
+        } else {
+            break;
+        }
+    }
+
+    count
+}
+
+/// Format a method chain across multiple lines
+fn format_method_chain(method_call: &ast::MethodCallExpr, buf: &mut String, indent: usize) {
+    // Collect chain segments in reverse order (innermost first)
+    let mut segments: Vec<(String, String)> = Vec::new(); // (method_name, args)
     let mut current: ast::Expr = ast::Expr::MethodCallExpr(method_call.clone());
     let mut receiver_text = String::new();
 
@@ -164,7 +179,7 @@ fn format_method_call_chain(method_call: &ast::MethodCallExpr, buf: &mut String,
                     .map(|a| a.syntax().text().to_string())
                     .unwrap_or_else(|| "()".to_string());
 
-                segments.push(MethodSegment { method_name, args });
+                segments.push((method_name, args));
 
                 if let Some(receiver) = mc.receiver() {
                     current = receiver;
@@ -179,69 +194,24 @@ fn format_method_call_chain(method_call: &ast::MethodCallExpr, buf: &mut String,
         }
     }
 
+    // Reverse to get correct order (outermost first)
     segments.reverse();
 
-    // Calculate single-line length
-    let single_line = format_chain_single_line(&receiver_text, &segments);
-    let line_len = indent + single_line.len();
-
-    if line_len <= MAX_WIDTH {
-        buf.push_str(&single_line);
-    } else {
-        // Multi-line format
-        buf.push_str(&receiver_text);
-        for segment in &segments {
-            buf.push('\n');
-            write_indent(buf, indent + 4);
-            buf.push('.');
-            buf.push_str(&segment.method_name);
-            buf.push_str(&segment.args);
-        }
-    }
-}
-
-struct MethodSegment {
-    method_name: String,
-    args: String,
-}
-
-fn format_chain_single_line(receiver: &str, segments: &[MethodSegment]) -> String {
-    let mut result = receiver.to_string();
-    for segment in segments {
-        result.push('.');
-        result.push_str(&segment.method_name);
-        result.push_str(&segment.args);
-    }
-    result
-}
-
-/// Format a let statement
-fn format_let_stmt(let_stmt: &ast::LetStmt, buf: &mut String, indent: usize) {
-    // If this is a let-else statement, preserve it exactly as-is for now
-    // since let-else has complex formatting requirements
-    if let_stmt.let_else().is_some() {
-        buf.push_str(&let_stmt.syntax().text().to_string().trim_end());
-        return;
+    // Write receiver + first method call on same line
+    buf.push_str(&receiver_text);
+    if let Some((method_name, args)) = segments.first() {
+        buf.push('.');
+        buf.push_str(method_name);
+        buf.push_str(args);
     }
 
-    buf.push_str("let ");
-
-    if let Some(pat) = let_stmt.pat() {
-        buf.push_str(&pat.syntax().text().to_string());
-    }
-
-    if let Some(ty) = let_stmt.ty() {
-        buf.push_str(": ");
-        buf.push_str(&ty.syntax().text().to_string());
-    }
-
-    if let Some(init) = let_stmt.initializer() {
-        buf.push_str(" = ");
-        format_expr(&init, buf, indent);
-    }
-
-    if let_stmt.semicolon_token().is_some() {
-        buf.push(';');
+    // Write remaining method calls on new lines
+    for (method_name, args) in segments.iter().skip(1) {
+        buf.push('\n');
+        write_indent(buf, indent + 4);
+        buf.push('.');
+        buf.push_str(method_name);
+        buf.push_str(args);
     }
 }
 

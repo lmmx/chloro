@@ -18,9 +18,9 @@ impl flags::Diagnostics {
             stdx::thread::ThreadIntent::LatencySensitive,
             "BIG_STACK_THREAD",
         )
-            .stack_size(STACK_SIZE)
-            .spawn(|| self.run_())
-            .unwrap();
+        .stack_size(STACK_SIZE)
+        .spawn(|| self.run_())
+        .unwrap();
 
         handle.join()
     }
@@ -42,7 +42,8 @@ impl flags::Diagnostics {
             with_proc_macro_server,
             prefill_caches: false,
         };
-        let (db, _vfs, _proc_macro) = load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
+        let (db, _vfs, _proc_macro) =
+            load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let analysis = host.analysis();
@@ -59,7 +60,7 @@ impl flags::Diagnostics {
                 let source_root = db.source_root(source_root).source_root(db);
                 !source_root.is_library
             })
-            .collect();
+            .collect::<Vec<_>>();
 
         let mut bar = ProgressReport::new(work.len());
         for module in work {
@@ -120,7 +121,8 @@ impl flags::Diagnostics {
 }
 
 fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
-    let mut worklist: Vec<_> = Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+    let mut worklist: Vec<_> =
+        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
     let mut modules = Vec::new();
 
     while let Some(module) = worklist.pop() {

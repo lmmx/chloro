@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12654 bytes
-Chloro size:   12538 bytes
+Chloro size:   12544 bytes
 Rustfmt size:  13004 bytes
 
 ✗ Outputs DIFFER
@@ -32,23 +32,6 @@ Rustfmt size:  13004 bytes
  type StoredProcMacroLoadResult = Result<Box<[ProcMacro]>, ProcMacroLoadingError>;
  
  #[derive(Default, Debug)]
-                     .cmp(&(proc_macro2.name.as_str(), proc_macro2.kind))
-             });
-         }
--        self.0.insert(
-+        self.0
-+            .insert(
-             proc_macros_crate,
-             match proc_macro {
-                 Ok(it) => Arc::new(CrateProcMacros(Ok(it.into_boxed_slice()))),
-             .0
-             .into_iter()
-             .map(|(krate, proc_macro)| (crates_id_map[&krate], proc_macro))
--            .collect::<FxHashMap<_, _>>();
-+            .collect();
-         map.shrink_to_fit();
-         ProcMacros(map)
-     }
  
  #[derive(Default, Debug)]
  pub struct ProcMacros(FxHashMap<Crate, Arc<CrateProcMacros>>);

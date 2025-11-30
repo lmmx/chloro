@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11413 bytes
-Chloro size:   10634 bytes
+Chloro size:   10642 bytes
 Rustfmt size:  11741 bytes
 
 ✗ Outputs DIFFER
@@ -93,7 +93,8 @@ Rustfmt size:  11741 bytes
 -        self_param.syntax(),
 -        mut_self_param.clone_for_update().syntax(),
 -    );
-+    let self_param: ast::SelfParam = impl_def.syntax().descendants().find_map(ast::SelfParam::cast)?;
++    let self_param: ast::SelfParam =
++        impl_def.syntax().descendants().find_map(ast::SelfParam::cast)?;
 +    ted::replace(self_param.syntax(), mut_self_param.clone_for_update().syntax());
  
      // &Self::Output -> &mut Self::Output

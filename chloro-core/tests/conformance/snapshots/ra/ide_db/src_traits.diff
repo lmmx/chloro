@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8057 bytes
-Chloro size:   7999 bytes
+Chloro size:   8053 bytes
 Rustfmt size:  8222 bytes
 
 ✗ Outputs DIFFER
@@ -27,7 +27,8 @@ Rustfmt size:  8222 bytes
 -        .map(|it| it.syntax().clone())
 -        .and_then(ast::PathType::cast)?
 -        .path()?;
-+    let ast_path = impl_def.trait_().map(|it| it.syntax().clone()).and_then(ast::PathType::cast)?.path()?;
++    let ast_path =
++        impl_def.trait_().map(|it| it.syntax().clone()).and_then(ast::PathType::cast)?.path()?;
  
      match sema.resolve_path(&ast_path) {
          Some(hir::PathResolution::Def(hir::ModuleDef::Trait(def))) => Some(def),
@@ -53,7 +54,8 @@ Rustfmt size:  8222 bytes
 -        let (file_id, range_or_offset) = change_fixture
 -            .file_position
 -            .expect("expected a marker ($0)");
-+        let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ($0)");
++        let (file_id, range_or_offset) =
++            change_fixture.file_position.expect("expected a marker ($0)");
          let offset = range_or_offset.expect_offset();
          (database, FilePosition { file_id, offset })
      }
@@ -66,7 +68,8 @@ Rustfmt size:  8222 bytes
 -        let impl_block: ast::Impl = sema
 -            .find_node_at_offset_with_descend(file.syntax(), position.offset)
 -            .unwrap();
-+        let impl_block: ast::Impl = sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
++        let impl_block: ast::Impl =
++            sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
          let trait_ = crate::traits::resolve_target_trait(&sema, &impl_block);
          let actual = match trait_ {
              Some(trait_) => trait_.name(&db).display(&db, Edition::CURRENT).to_string(),
@@ -82,7 +85,8 @@ Rustfmt size:  8222 bytes
 -        let impl_block: ast::Impl = sema
 -            .find_node_at_offset_with_descend(file.syntax(), position.offset)
 -            .unwrap();
-+        let impl_block: ast::Impl = sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
++        let impl_block: ast::Impl =
++            sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
          let items = crate::traits::get_missing_assoc_items(&sema, &impl_block);
          let actual = items
              .into_iter()
@@ -92,9 +96,8 @@ Rustfmt size:  8222 bytes
 -                    .display(&db, Edition::CURRENT)
 -                    .to_string()
 -            })
--            .collect::<Vec<_>>()
 +            .map(|item| item.name(&db).unwrap().display(&db, Edition::CURRENT).to_string())
-+            .collect()
+             .collect::<Vec<_>>()
              .join("\n");
          expect.assert_eq(&actual);
      }

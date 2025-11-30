@@ -87,8 +87,7 @@ impl Project<'_> {
     }
 
     pub(crate) fn run_lsif(self) -> String {
-        let tmp_dir = self.tmp_dir
-            .unwrap_or_else(|| {
+        let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
             if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
         });
 
@@ -120,7 +119,7 @@ impl Project<'_> {
             &mut buf,
             None,
         )
-            .unwrap();
+        .unwrap();
         String::from_utf8(buf).unwrap()
     }
 
@@ -156,14 +155,12 @@ impl Project<'_> {
             None
         };
 
-        let tmp_dir = self.tmp_dir
-            .unwrap_or_else(|| {
+        let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
             if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
         });
 
         static INIT: Once = Once::new();
-        INIT
-            .call_once(|| {
+        INIT.call_once(|| {
             let _ = rust_analyzer::tracing::Config {
                 writer: TestWriter::default(),
                 // Deliberately enable all `error` logs if the user has not set RA_LOG, as there is usually
@@ -200,7 +197,8 @@ impl Project<'_> {
         }
 
         let tmp_dir_path = AbsPathBuf::assert(tmp_dir.path().to_path_buf());
-        let mut roots = self.roots.into_iter().map(|root| tmp_dir_path.join(root)).collect();
+        let mut roots =
+            self.roots.into_iter().map(|root| tmp_dir_path.join(root)).collect::<Vec<_>>();
         if roots.is_empty() {
             roots.push(tmp_dir_path.clone());
         }
@@ -336,7 +334,7 @@ impl Server {
         R: lsp_types::request::Request,
         R::Params: Serialize,
     {
-        let actual = self.send_request(params);
+        let actual = self.send_request::<R>(params);
         if let Some((expected_part, actual_part)) = find_mismatch(&expected_resp, &actual) {
             panic!(
                 "JSON mismatch\nExpected:\n{}\nWas:\n{}\nExpected part:\n{}\nActual part:\n{}\n",
@@ -393,8 +391,7 @@ impl Server {
     }
 
     pub(crate) fn wait_until_workspace_is_loaded(self) -> Server {
-        self
-            .wait_for_message_cond(1, &|msg: &Message| match msg {
+        self.wait_for_message_cond(1, &|msg: &Message| match msg {
             Message::Notification(n) if n.method == "experimental/serverStatus" => {
                 let status = n
                     .clone()
@@ -460,15 +457,16 @@ impl Server {
 
 impl Drop for Server {
     fn drop(&mut self) {
-        self.request((), Value::Null);
-        self.notification(());
+        self.request::<Shutdown>((), Value::Null);
+        self.notification::<Exit>(());
     }
 }
 
 struct Timeout;
 
 fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout> {
-    let timeout = if cfg!(target_os = "macos") { Duration::from_secs(300) } else { Duration::from_secs(120) };
+    let timeout =
+        if cfg!(target_os = "macos") { Duration::from_secs(300) } else { Duration::from_secs(120) };
     select! {
         recv(receiver) -> msg => Ok(msg.ok()),
         recv(after(timeout)) -> _ => Err(Timeout),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31919 bytes
-Chloro size:   31213 bytes
+Chloro size:   31249 bytes
 Rustfmt size:  31919 bytes
 
 ✗ Outputs DIFFER
@@ -78,15 +78,6 @@ Rustfmt size:  31919 bytes
  pub(crate) fn generate_blanket_trait_impl(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
-         return None;
-     }
- 
--    acc.add(
-+    acc
-+        .add(
-         AssistId("generate_blanket_trait_impl", AssistKind::Generate, None),
-         "Generate blanket trait implementation",
-         name.syntax().text_range(),
      Some(())
  }
  
@@ -109,29 +100,6 @@ Rustfmt size:  31919 bytes
      let traitd = sema.to_def(traitd)?;
      let sized = FamousDefs(sema, traitd.krate(sema.db)).core_marker_Sized()?;
  
-     if has_sized {
-         return bounds;
-     }
--    let bounds = bounds
--        .into_iter()
--        .flat_map(|bounds| bounds.bounds())
--        .chain([make::type_bound_text("?Sized")]);
-+    let bounds = bounds.into_iter().flat_map(|bounds| bounds.bounds()).chain([make::type_bound_text("?Sized")]);
-     make::type_bound_list(bounds)
- }
- 
-             GenericParam::TypeParam(tp) => tp.name(),
-         })
-         .map(|name| name.to_string())
--        .collect::<Vec<_>>();
-+        .collect();
- 
--    let mut name_gen =
--        suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
-+    let mut name_gen = suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
- 
-     make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
- }
  
  #[cfg(test)]
  mod test {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5345 bytes
-Chloro size:   5358 bytes
+Chloro size:   5348 bytes
 Rustfmt size:  5475 bytes
 
 ✗ Outputs DIFFER
@@ -62,17 +62,15 @@ Rustfmt size:  5475 bytes
 -            span: call_site,
 -        })
 -    };
-+    let mk_leaf = |char| tt::Leaf::Punct(tt::Punct { char, spacing: tt::Spacing::Alone, span: call_site });
++    let mk_leaf =
++        |char| tt::Leaf::Punct(tt::Punct { char, spacing: tt::Spacing::Alone, span: call_site });
  
      let mut token_trees = tt::TopSubtreeBuilder::new(args.top_subtree().delimiter);
--    let iter = args.token_trees().split(|tt| {
+     let iter = args.token_trees().split(|tt| {
 -        matches!(
 -            tt,
 -            tt::TtElement::Leaf(tt::Leaf::Punct(tt::Punct { char: ',', .. }))
 -        )
-+    let iter = args
-+        .token_trees()
-+        .split(|tt| {
 +        matches!(tt, tt::TtElement::Leaf(tt::Leaf::Punct(tt::Punct { char: ',', .. })))
      });
      for tts in iter {

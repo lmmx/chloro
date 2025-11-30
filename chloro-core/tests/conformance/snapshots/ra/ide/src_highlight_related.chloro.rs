@@ -395,8 +395,7 @@ fn hl_exit_points(
         push_to_highlights(file_id, range);
     }
 
-    WalkExpandedExprCtx::new(sema)
-        .walk(&body, &mut |_, expr| {
+    WalkExpandedExprCtx::new(sema).walk(&body, &mut |_, expr| {
         let file_id = sema.hir_file_for(expr.syntax());
 
         let range = match &expr {
@@ -415,8 +414,7 @@ fn hl_exit_points(
     // We should handle `return` separately, because when it is used in a `try` block,
 
     // it will exit the outside function instead of the block itself.
-    WalkExpandedExprCtx::new(sema)
-        .with_check_ctx(&WalkExpandedExprCtx::is_async_const_block_or_closure)
+    WalkExpandedExprCtx::new(sema).with_check_ctx(&WalkExpandedExprCtx::is_async_const_block_or_closure)
         .walk(&body, &mut |_, expr| {
             let file_id = sema.hir_file_for(expr.syntax());
 
@@ -677,8 +675,7 @@ fn merge_map(res: &mut HighlightMap, new: Option<HighlightMap>) {
     let Some(new) = new else {
         return;
     };
-    new
-        .into_iter()
+    new.into_iter()
         .for_each(|(file_id, ranges)| {
         res.entry(file_id).or_default().extend(ranges);
     });
@@ -838,7 +835,8 @@ mod tests {
 
         let hls = analysis.highlight_related(config, pos).unwrap().unwrap_or_default();
 
-        let mut expected = annotations.into_iter().map(|(r, access)| (r.range, access)).collect();
+        let mut expected =
+            annotations.into_iter().map(|(r, access)| (r.range, access)).collect::<Vec<_>>();
 
         let mut actual: Vec<(TextRange, String)> = hls
             .into_iter()

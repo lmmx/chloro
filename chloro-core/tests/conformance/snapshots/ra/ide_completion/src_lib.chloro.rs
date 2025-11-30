@@ -330,7 +330,8 @@ pub fn resolve_completion_edits(
     let editioned_file_id = sema.attach_first_edition(file_id)?;
 
     let original_file = sema.parse(editioned_file_id);
-    let original_token = syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
+    let original_token =
+        syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
     let position_for_import = &original_token.parent()?;
     let scope = ImportScope::find_insert_use_container(position_for_import, &sema)?;
 
@@ -340,8 +341,7 @@ pub fn resolve_completion_edits(
     let new_ast = scope.clone_for_update();
     let mut import_insert = TextEdit::builder();
 
-    imports
-        .into_iter()
+    imports.into_iter()
         .for_each(|full_import_path| {
         insert_use::insert_use(
             &new_ast,

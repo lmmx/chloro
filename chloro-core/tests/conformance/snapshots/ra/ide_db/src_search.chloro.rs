@@ -263,7 +263,8 @@ impl SearchScope {
             mem::swap(&mut small, &mut large)
         }
 
-        let intersect_ranges = |r1: Option<TextRange>, r2: Option<TextRange>| -> Option<Option<TextRange>> {
+        let intersect_ranges =
+            |r1: Option<TextRange>, r2: Option<TextRange>| -> Option<Option<TextRange>> {
                 match (r1, r2) {
                     (None, r) | (r, None) => Some(r),
                     (Some(r1), Some(r2)) => r1.intersect(r2).map(Some),
@@ -477,8 +478,7 @@ impl<'a> FindUsages<'a> {
 
     pub fn all(self) -> UsageSearchResult {
         let mut res = UsageSearchResult::default();
-        self
-            .search(&mut |file_id, reference| {
+        self.search(&mut |file_id, reference| {
             res.references.entry(file_id).or_default().push(reference);
             false
         });
@@ -853,8 +853,7 @@ impl<'a> FindUsages<'a> {
         let finder = Finder::new(name.as_bytes());
         // The search for `Self` may return duplicate results with `ContainerName`, so deduplicate them.
         let mut self_positions = FxHashSet::default();
-        tracing::info_span!("Self_search")
-            .in_scope(|| {
+        tracing::info_span!("Self_search").in_scope(|| {
             search(
                 self,
                 &finder,
@@ -874,8 +873,7 @@ impl<'a> FindUsages<'a> {
                 sink,
             )
         });
-        tracing::info_span!("aliases_search")
-            .in_scope(|| {
+        tracing::info_span!("aliases_search").in_scope(|| {
             search(
                 self,
                 &finder,
@@ -954,7 +952,8 @@ impl<'a> FindUsages<'a> {
         }
 
         let finder = &Finder::new(name);
-        let include_self_kw_refs = self.include_self_kw_refs.as_ref().map(|ty| (ty, Finder::new("Self")));
+        let include_self_kw_refs =
+            self.include_self_kw_refs.as_ref().map(|ty| (ty, Finder::new("Self")));
         for (text, file_id, search_range) in Self::scope_files(sema.db, &search_scope) {
             let tree = LazyCell::new(move || sema.parse(file_id).syntax().clone());
 
@@ -1347,10 +1346,7 @@ impl ReferenceCategory {
             return result;
         }
 
-        let mode = r
-            .syntax()
-            .ancestors()
-            .find_map(|node| {
+        let mode = r.syntax().ancestors().find_map(|node| {
             match_ast! {
                 match node {
                     ast::BinExpr(expr) => {
@@ -1367,8 +1363,7 @@ impl ReferenceCategory {
                     _ => None,
                 }
             }
-        })
-            .unwrap_or(ReferenceCategory::READ);
+        }).unwrap_or(ReferenceCategory::READ);
 
         result | mode
     }

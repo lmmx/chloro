@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10705 bytes
-Chloro size:   10326 bytes
+Chloro size:   10317 bytes
 Rustfmt size:  10723 bytes
 
 ✗ Outputs DIFFER
@@ -49,15 +49,6 @@ Rustfmt size:  10723 bytes
      let receiver_path = current_module.find_path(
          ctx.sema.db,
          item_for_path_search(ctx.sema.db, item_in_ns)?,
- 
-     let qualify_candidate = QualifyCandidate::ImplMethod(ctx.sema.db, call, resolved_call);
- 
--    acc.add(
-+    acc
-+        .add(
-         AssistId::refactor_rewrite("qualify_method_call"),
-         format!("Qualify `{ident}` method call"),
-         range,
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable};

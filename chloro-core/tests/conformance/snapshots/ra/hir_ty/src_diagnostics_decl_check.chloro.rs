@@ -167,8 +167,7 @@ impl<'a> DeclValidator<'a> {
         let Some(module_src) = module_data.declaration_source(self.db) else {
             return;
         };
-        self
-            .create_incorrect_case_diagnostic_for_ast_node(
+        self.create_incorrect_case_diagnostic_for_ast_node(
             module_name_replacement,
             module_src.file_id,
             &module_src.value,
@@ -179,8 +178,7 @@ impl<'a> DeclValidator<'a> {
     fn validate_trait(&mut self, trait_id: TraitId) {
         // Check the trait name.
         let data = self.db.trait_signature(trait_id);
-        self
-            .create_incorrect_case_diagnostic_for_item_name(
+        self.create_incorrect_case_diagnostic_for_item_name(
             trait_id,
             &data.name,
             CaseType::UpperCamelCase,
@@ -295,8 +293,7 @@ impl<'a> DeclValidator<'a> {
     fn validate_struct(&mut self, struct_id: StructId) {
         // Check the structure name.
         let data = self.db.struct_signature(struct_id);
-        self
-            .create_incorrect_case_diagnostic_for_item_name(
+        self.create_incorrect_case_diagnostic_for_item_name(
             struct_id,
             &data.name,
             CaseType::UpperCamelCase,
@@ -384,8 +381,7 @@ impl<'a> DeclValidator<'a> {
         let data = self.db.enum_signature(enum_id);
 
         // Check the enum name.
-        self
-            .create_incorrect_case_diagnostic_for_item_name(
+        self.create_incorrect_case_diagnostic_for_item_name(
             enum_id,
             &data.name,
             CaseType::UpperCamelCase,
@@ -553,8 +549,7 @@ impl<'a> DeclValidator<'a> {
         let Some(name) = &data.name else {
             return;
         };
-        self
-            .create_incorrect_case_diagnostic_for_item_name(
+        self.create_incorrect_case_diagnostic_for_item_name(
             const_id,
             name,
             CaseType::UpperSnakeCase,
@@ -569,8 +564,7 @@ impl<'a> DeclValidator<'a> {
             return;
         }
 
-        self
-            .create_incorrect_case_diagnostic_for_item_name(
+        self.create_incorrect_case_diagnostic_for_item_name(
             static_id,
             &data.name,
             CaseType::UpperSnakeCase,
@@ -587,8 +581,7 @@ impl<'a> DeclValidator<'a> {
 
         // Check the type alias name.
         let data = self.db.type_alias_signature(type_alias_id);
-        self
-            .create_incorrect_case_diagnostic_for_item_name(
+        self.create_incorrect_case_diagnostic_for_item_name(
             type_alias_id,
             &data.name,
             CaseType::UpperCamelCase,
@@ -624,8 +617,7 @@ impl<'a> DeclValidator<'a> {
 
         let item_loc = item_id.lookup(self.db);
         let item_src = item_loc.source(self.db);
-        self
-            .create_incorrect_case_diagnostic_for_ast_node(
+        self.create_incorrect_case_diagnostic_for_ast_node(
             replacement,
             item_src.file_id,
             &item_src.value,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58546 bytes
-Chloro size:   58591 bytes
+Chloro size:   58590 bytes
 Rustfmt size:  58546 bytes
 
 ✗ Outputs DIFFER
@@ -61,15 +61,6 @@ Rustfmt size:  58546 bytes
  };
  
  impl flags::AnalysisStats {
-             Some(build_scripts_sw.elapsed())
-         };
- 
--        let (db, vfs, _proc_macro) =
--            load_workspace(workspace.clone(), &cargo_config.extra_env, &load_cargo_config)?;
-+        let (db, vfs, _proc_macro) = load_workspace(workspace.clone(), &cargo_config.extra_env, &load_cargo_config)?;
-         eprint!("{:<20} {}", "Database loaded:", db_load_sw.elapsed());
-         eprint!(" (metadata {metadata_time}");
-         if let Some(build_scripts_time) = build_scripts_time {
          eprintln!("  dependency item stats: {dep_item_stats}");
  
          // FIXME(salsa-transition): bring back stats for ParseQuery (file size)
@@ -105,32 +96,6 @@ Rustfmt size:  58546 bytes
          eprintln!("{:<20} {}", "Item Tree Collection:", item_tree_time);
          report_metric("item tree time", item_tree_time.time.as_millis() as u64, "ms");
          eprintln!("  Total Statistics:");
-         }
-         let term_search_time = sw.elapsed();
- 
--        bar.println(format!(
-+        bar
-+            .println(format!(
-             "Tail Expr syntactic hits: {}/{} ({}%)",
-             acc.tail_expr_syntax_hits,
-             acc.total_tail_exprs,
-             percentage(acc.tail_expr_syntax_hits, acc.total_tail_exprs)
-         ));
--        bar.println(format!(
-+        bar
-+            .println(format!(
-             "Tail Exprs found: {}/{} ({}%)",
-             acc.total_tail_exprs - acc.tail_expr_no_term,
-             acc.total_tail_exprs,
-                 ));
-             }
-         }
--        bar.println(format!(
-+        bar
-+            .println(format!(
-             "Term search avg time: {}ms",
-             term_search_time.time.as_millis() as u64 / acc.total_tail_exprs
-         ));
          eprintln!("{:<20} {} ({} files)", "IDE:", ide_time, file_ids.len());
      }
  
@@ -144,24 +109,6 @@ Rustfmt size:  58546 bytes
          if let Some(only_name) = self.only.as_deref() {
              let name = body_id.name(db).unwrap_or_else(Name::missing);
  
-     let path = vfs.file_path(original_range.file_id.file_id(db));
-     let line_index = db.line_index(original_range.file_id.file_id(db));
-     let text_range = original_range.range;
--    let (start, end) =
--        (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
-+    let (start, end) = (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
-     format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
- }
- 
-     let path = vfs.file_path(original_range.file_id.file_id(db));
-     let line_index = db.line_index(original_range.file_id.file_id(db));
-     let text_range = original_range.range;
--    let (start, end) =
--        (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
-+    let (start, end) = (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
-     format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
- }
- 
          None
      }
  }
@@ -169,14 +116,6 @@ Rustfmt size:  58546 bytes
  fn pat_syntax_range<'a>(
      db: &RootDatabase,
      vfs: &'a Vfs,
-             result.push(ch);
-         }
- 
--        let result = result.chars().rev().collect::<String>();
-+        let result = result.chars().rev().collect();
-         write!(f, "{result}")
-     }
- }
          )
      }
  }

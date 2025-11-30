@@ -252,7 +252,8 @@ impl NameGenerator {
     /// # Examples
     /// `a1b2c3` -> `a1b2c`
     fn split_numeric_suffix(name: &str) -> (&str, Option<usize>) {
-        let pos = name.rfind(|c: char| !c.is_numeric()).expect("Name cannot be empty or all-numeric");
+        let pos =
+            name.rfind(|c: char| !c.is_numeric()).expect("Name cannot be empty or all-numeric");
         let (prefix, suffix) = name.split_at(pos + 1);
         (prefix, suffix.parse().ok())
     }
@@ -461,7 +462,8 @@ mod tests {
         let source_file = sema.parse(frange.file_id);
 
         let element = source_file.syntax().covering_element(frange.range);
-        let expr = element.ancestors().find_map(ast::Expr::cast).expect("selection is not an expression");
+        let expr =
+            element.ancestors().find_map(ast::Expr::cast).expect("selection is not an expression");
         assert_eq!(
             expr.syntax().text_range(),
             frange.range,

@@ -175,7 +175,7 @@ pub(crate) fn moniker(
         })
         .flatten()
         .unique()
-        .collect();
+        .collect::<Vec<_>>();
     Some(RangeInfo::new(original_token.text_range(), navs))
 }
 

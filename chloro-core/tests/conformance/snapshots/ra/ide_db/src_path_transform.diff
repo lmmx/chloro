@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25826 bytes
-Chloro size:   25248 bytes
+Chloro size:   25213 bytes
 Rustfmt size:  25826 bytes
 
 ✗ Outputs DIFFER
@@ -48,7 +48,12 @@ Rustfmt size:  25826 bytes
  type DefaultedParam = Either<hir::TypeParam, hir::ConstParam>;
  
  /// `PathTransform` substitutes path in SyntaxNodes in bulk.
-             .into_iter()
+         let mut const_substs: FxHashMap<hir::ConstParam, SyntaxNode> = Default::default();
+         let mut defaulted_params: Vec<DefaultedParam> = Default::default();
+         let target_edition = target_module.krate().edition(self.source_scope.db);
+-        self.generic_def
+-            .into_iter()
++        self.generic_def.into_iter()
              .flat_map(|it| it.type_or_const_params(db))
              .skip(skip)
 -            // The actual list of trait type parameters may be longer than the one
@@ -64,8 +69,7 @@ Rustfmt size:  25826 bytes
          let item = self.transform_path(item).clone_subtree();
          let mut editor = SyntaxEditor::new(item.clone());
 -        preorder_rev(&item).filter_map(ast::Lifetime::cast).for_each(|lifetime| {
-+        preorder_rev(&item)
-+            .filter_map(ast::Lifetime::cast)
++        preorder_rev(&item).filter_map(ast::Lifetime::cast)
 +            .for_each(|lifetime| {
              if let Some(subst) = self.lifetime_substs.get(&lifetime.syntax().text().to_string()) {
                  editor
@@ -89,8 +93,7 @@ Rustfmt size:  25826 bytes
  fn get_type_args_from_arg_list(generic_arg_list: ast::GenericArgList) -> Option<AstSubsts> {
      let mut result = AstSubsts::default();
 -    generic_arg_list.generic_args().for_each(|generic_arg| match generic_arg {
-+    generic_arg_list
-+        .generic_args()
++    generic_arg_list.generic_args()
 +        .for_each(|generic_arg| match generic_arg {
          // Const params are marked as consts on definition only,
          // being passed to the trait they are indistguishable from type params;

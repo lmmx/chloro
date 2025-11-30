@@ -8,9 +8,7 @@ pub(crate) fn trait_impl_missing_assoc_item(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::TraitImplMissingAssocItems,
 ) -> Diagnostic {
-    let missing = d.missing
-        .iter()
-        .format_with(", ", |(name, item), f| {
+    let missing = d.missing.iter().format_with(", ", |(name, item), f| {
         f(&match *item {
             hir::AssocItem::Function(_) => "`fn ",
             hir::AssocItem::Const(_) => "`const ",

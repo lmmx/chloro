@@ -65,8 +65,10 @@ pub fn expand_eager_macro_input(
         ctxt: call_site,
     };
     let arg_id = db.intern_macro_call(loc);
+    #[allow(deprecated)] // builtin eager macros are never derives
     let (_, _, span) = db.macro_arg(arg_id);
-    let ExpandResult { value: (arg_exp, arg_exp_map), err: parse_err } = db.parse_macro_expansion(arg_id);
+    let ExpandResult { value: (arg_exp, arg_exp_map), err: parse_err } =
+        db.parse_macro_expansion(arg_id);
 
     let mut arg_map = ExpansionSpanMap::empty();
 
@@ -130,8 +132,7 @@ fn lazy_expand(
     eager_callback: EagerCallBackFn<'_>,
 ) -> ExpandResult<(InFile<Parse<SyntaxNode>>, Arc<ExpansionSpanMap>)> {
     let expand_to = ExpandTo::from_call_site(macro_call);
-    let id = def
-        .make_call(
+    let id = def.make_call(
         db,
         krate,
         MacroCallKind::FnLike { ast_id, expand_to, eager: None },

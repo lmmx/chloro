@@ -227,7 +227,8 @@ fn extract_child_target(
         .collect_vec();
     let start = selected_nodes.first()?.syntax().clone();
     let end = selected_nodes.last()?.syntax().clone();
-    let (use_items, body_items): (Vec<ast::Item>, Vec<ast::Item>) = selected_nodes.into_iter().partition(|item| matches!(item, ast::Item::Use(..)));
+    let (use_items, body_items): (Vec<ast::Item>, Vec<ast::Item>) =
+        selected_nodes.into_iter().partition(|item| matches!(item, ast::Item::Use(..)));
     Some((Module { name: "modname", body_items, use_items }, start..=end))
 }
 
@@ -375,7 +376,8 @@ impl Module {
     }
 
     fn change_visibility(&mut self, record_fields: Vec<SyntaxNode>) {
-        let (mut replacements, record_field_parents, impls) = get_replacements_for_visibility_change(&mut self.body_items, false);
+        let (mut replacements, record_field_parents, impls) =
+            get_replacements_for_visibility_change(&mut self.body_items, false);
 
         let mut impl_items = impls
             .into_iter()
@@ -383,7 +385,8 @@ impl Module {
             .filter_map(ast::Item::cast)
             .collect_vec();
 
-        let (mut impl_item_replacements, _, _) = get_replacements_for_visibility_change(&mut impl_items, true);
+        let (mut impl_item_replacements, _, _) =
+            get_replacements_for_visibility_change(&mut impl_items, true);
 
         replacements.append(&mut impl_item_replacements);
 
@@ -498,9 +501,7 @@ impl Module {
             .filter(|(use_file_id, _)| *use_file_id == file_id)
             .flat_map(|(_, refs)| refs.into_iter().rev())
             .find_map(|fref| find_node_at_range(file.syntax(), fref.range));
-        let use_stmt_not_in_sel = use_stmt
-            .as_ref()
-            .is_some_and(|use_stmt| {
+        let use_stmt_not_in_sel = use_stmt.as_ref().is_some_and(|use_stmt| {
             !selection_range.contains_range(use_stmt.syntax().text_range())
         });
 

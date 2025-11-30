@@ -612,8 +612,7 @@ impl CompletionContext<'_> {
         mut cb: impl FnMut(hir::AssocItem),
     ) {
         let mut seen = FxHashSet::default();
-        ty
-            .iterate_path_candidates(
+        ty.iterate_path_candidates(
             self.db,
             &self.scope,
             &self.traits_in_scope(),
@@ -634,8 +633,7 @@ impl CompletionContext<'_> {
     /// passes all doc-aliases along, to funnel it into [`Completions::add_path_resolution`].
     pub(crate) fn process_all_names(&self, f: &mut dyn FnMut(Name, ScopeDef, Vec<SmolStr>)) {
         let _p = tracing::info_span!("CompletionContext::process_all_names").entered();
-        self.scope
-            .process_all_names(&mut |name, def| {
+        self.scope.process_all_names(&mut |name, def| {
             if self.is_scope_def_hidden(def) {
                 return;
             }
@@ -777,8 +775,7 @@ impl<'db> CompletionContext<'db> {
         let is_nightly = matches!(toolchain, Some(base_db::ReleaseChannel::Nightly) | None);
 
         let mut locals = FxHashMap::default();
-        scope
-            .process_all_names(&mut |name, scope| {
+        scope.process_all_names(&mut |name, scope| {
             if let ScopeDef::Local(local) = scope {
                 // synthetic names currently leak out as we lack synthetic hygiene, so filter them
                 // out here
@@ -790,8 +787,10 @@ impl<'db> CompletionContext<'db> {
         });
 
         let depth_from_crate_root = iter::successors(Some(module), |m| m.parent(db))
+            // `BlockExpr` modules do not count towards module depth
             .filter(|m| !matches!(m.definition_source(db).value, ModuleSource::BlockExpr(_)))
             .count()
+            // exclude `m` itself
             .saturating_sub(1);
 
         let exclude_traits: FxHashSet<_> = config

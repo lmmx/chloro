@@ -1109,8 +1109,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
         // FIXME: We should handle async blocks like we handle closures
         let expected = &Expectation::has_type(ret_ty);
-        let (_, inner_ty) = self
-            .with_breakable_ctx(BreakableKind::Border, None, None, |this| {
+        let (_, inner_ty) = self.with_breakable_ctx(BreakableKind::Border, None, None, |this| {
             let ty = this.infer_block(tgt_expr, *id, statements, *tail, None, expected);
             if let Some(target) = expected.only_has_type(&mut this.table) {
                 match this.coerce(tgt_expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes)
@@ -1278,7 +1277,8 @@ impl<'db> InferenceContext<'_, 'db> {
             .as_mut()
             .expect("infer_return called outside function body")
             .expected_ty();
-        let return_expr_ty = self.infer_expr_inner(expr, &Expectation::HasType(ret_ty), ExprIsRead::Yes);
+        let return_expr_ty =
+            self.infer_expr_inner(expr, &Expectation::HasType(ret_ty), ExprIsRead::Yes);
         let mut coerce_many = self.return_coercion.take().unwrap();
         coerce_many.coerce(self, &ObligationCause::new(), expr, return_expr_ty);
         self.return_coercion = Some(coerce_many);
@@ -1372,8 +1372,7 @@ impl<'db> InferenceContext<'_, 'db> {
         let lhs_ty = self.infer_expr(lhs, &lhs_expectation, is_read);
         let rhs_ty = self.table.next_ty_var();
 
-        let trait_func = lang_items_for_bin_op(op)
-            .and_then(|(name, lang_item)| {
+        let trait_func = lang_items_for_bin_op(op).and_then(|(name, lang_item)| {
             let trait_id = self.resolve_lang_item(lang_item)?.as_trait()?;
             let func = trait_id.trait_items(self.db).method_by_name(&name)?;
             Some((trait_id, func))
@@ -1466,16 +1465,15 @@ impl<'db> InferenceContext<'_, 'db> {
     ) -> Ty<'db> {
         let coerce_ty = expected.coercion_target_type(&mut self.table);
         let g = self.resolver.update_to_inner_scope(self.db, self.owner, expr);
-        let prev_state = block_id
-            .map(|block_id| {
+        let prev_state = block_id.map(|block_id| {
             let prev_env = self.table.trait_env.clone();
             TraitEnvironment::with_block(&mut self.table.trait_env, block_id);
             let prev_block = self.table.infer_ctxt.interner.block.replace(block_id);
             (prev_env, prev_block)
         });
 
-        let (break_ty, ty) = self
-            .with_breakable_ctx(BreakableKind::Block, Some(coerce_ty), label, |this| {
+        let (break_ty, ty) =
+            self.with_breakable_ctx(BreakableKind::Block, Some(coerce_ty), label, |this| {
                 for stmt in statements {
                     match stmt {
                         Statement::Let { pat, type_ref, initializer, else_branch } => {
@@ -1602,9 +1600,7 @@ impl<'db> InferenceContext<'_, 'db> {
         let interner = self.interner();
         let mut autoderef = self.table.autoderef(receiver_ty);
         let mut private_field = None;
-        let res = autoderef
-            .by_ref()
-            .find_map(|(derefed_ty, _)| {
+        let res = autoderef.by_ref().find_map(|(derefed_ty, _)| {
             let (field_id, parameters) = match derefed_ty.kind() {
                 TyKind::Tuple(substs) => {
                     return name.as_tuple_index().and_then(|idx| {
@@ -1821,8 +1817,7 @@ impl<'db> InferenceContext<'_, 'db> {
     ) -> Ty<'db> {
         self.register_obligations_for_call(callee_ty);
 
-        self
-            .check_call_arguments(
+        self.check_call_arguments(
             tgt_expr,
             param_tys,
             ret_ty,
@@ -1985,7 +1980,8 @@ impl<'db> InferenceContext<'_, 'db> {
         expected: &Expectation<'db>,
     ) -> Ty<'db> {
         self.register_obligations_for_call(method_ty);
-        let ((formal_receiver_ty, param_tys), ret_ty, is_varargs) = match method_ty.callable_sig(self.interner()) {
+        let ((formal_receiver_ty, param_tys), ret_ty, is_varargs) =
+            match method_ty.callable_sig(self.interner()) {
                 Some(sig) => {
                     let sig = sig.skip_binder();
                     (
@@ -2554,8 +2550,7 @@ impl<'db> InferenceContext<'_, 'db> {
         label: Option<LabelId>,
         cb: impl FnOnce(&mut Self) -> T,
     ) -> (Option<Ty<'db>>, T) {
-        self.breakables
-            .push({
+        self.breakables.push({
             BreakableContext { kind, may_break: false, coerce: ty.map(CoerceMany::new), label }
         });
         let res = cb(self);

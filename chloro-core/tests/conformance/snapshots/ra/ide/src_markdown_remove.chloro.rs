@@ -151,8 +151,7 @@ book] or the [Reference].
 
             Along with being made public via pub, fn can also have an extern added for use in FFI.
 
-            For more information on the various types of functions and how they're used, consult the Rust book or the Reference."#]]
-            .assert_eq(&res);
+            For more information on the various types of functions and how they're used, consult the Rust book or the Reference."#]].assert_eq(&res);
     }
     #[test]
     fn on_char_boundary() {

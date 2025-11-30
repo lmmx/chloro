@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11544 bytes
-Chloro size:   11398 bytes
+Chloro size:   11425 bytes
 Rustfmt size:  11544 bytes
 
 ✗ Outputs DIFFER
@@ -27,14 +27,3 @@ Rustfmt size:  11544 bytes
  pub fn lex_format_specifiers(
      string: &ast::String,
      mut callback: &mut dyn FnMut(TextRange, FormatSpecifier),
- ) {
-     let mut char_ranges = Vec::new();
-     string.escaped_char_ranges(&mut |range, res| char_ranges.push((range, res)));
--    let mut chars = char_ranges
--        .iter()
--        .filter_map(|(range, res)| Some((*range, *res.as_ref().ok()?)))
--        .peekable();
-+    let mut chars = char_ranges.iter().filter_map(|(range, res)| Some((*range, *res.as_ref().ok()?))).peekable();
- 
-     while let Some((range, first_char)) = chars.next() {
-         if let '{' = first_char {

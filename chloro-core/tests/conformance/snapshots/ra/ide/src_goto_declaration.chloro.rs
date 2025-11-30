@@ -91,12 +91,12 @@ mod tests {
             .into_iter()
             .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
             .sorted_by_key(cmp)
-            .collect();
+            .collect::<Vec<_>>();
         let expected = expected
             .into_iter()
             .map(|(FileRange { file_id, range }, _)| FileRange { file_id, range })
             .sorted_by_key(cmp)
-            .collect();
+            .collect::<Vec<_>>();
         assert_eq!(expected, navs);
     }
     #[test]

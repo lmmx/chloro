@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4302 bytes
-Chloro size:   4160 bytes
+Chloro size:   4142 bytes
 Rustfmt size:  4302 bytes
 
 ✗ Outputs DIFFER
@@ -31,17 +31,12 @@ Rustfmt size:  4302 bytes
  pub fn pick_token<T: AstToken>(mut tokens: TokenAtOffset<SyntaxToken>) -> Option<T> {
      tokens.find_map(T::cast)
  }
-         hir::PathKind::Abs => is_abs = true,
-     }
+     module.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
  
--    segments.extend(path.segments().iter().map(|segment| {
-+    segments
-+        .extend(path.segments().iter().map(|segment| {
-         make::path_segment(make::name_ref(&segment.display_no_db(edition).to_smolstr()))
-     }));
-     make::path_from_segments(segments, is_abs)
-     module
-         .legacy_macros(db)
+     let is_root = module.is_crate_root();
+-    module
+-        .legacy_macros(db)
++    module.legacy_macros(db)
          .into_iter()
 -        // don't show legacy macros declared in the crate-root that were already covered in declarations earlier
          .filter(|it| !(is_root && it.is_macro_export(db)))

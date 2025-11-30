@@ -916,8 +916,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         owner: DefWithBodyId,
         krate: Crate,
     ) -> (&'a TargetFeatures, TargetFeatureIsSafeInTarget) {
-        let (target_features, target_feature_is_safe) = target_features
-            .get_or_init(|| {
+        let (target_features, target_feature_is_safe) = target_features.get_or_init(|| {
             let target_features = match owner {
                 DefWithBodyId::FunctionId(id) => TargetFeatures::from_attrs(&db.attrs(id.into())),
                 _ => TargetFeatures::default(),
@@ -1015,8 +1014,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             mismatch.actual = table.resolve_completely(mismatch.actual);
         }
         type_mismatches.shrink_to_fit();
-        diagnostics
-            .retain_mut(|diagnostic| {
+        diagnostics.retain_mut(|diagnostic| {
             use InferenceDiagnostic::*;
             match diagnostic {
                 ExpectedFunction { found: ty, .. }
@@ -1081,8 +1079,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     }
 
     fn collect_const(&mut self, id: ConstId, data: &ConstSignature) {
-        let return_ty = self
-            .make_ty(
+        let return_ty = self.make_ty(
             data.type_ref,
             &data.store,
             InferenceTyDiagnosticSource::Signature,
@@ -1093,8 +1090,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     }
 
     fn collect_static(&mut self, data: &StaticSignature) {
-        let return_ty = self
-            .make_ty(
+        let return_ty = self.make_ty(
             data.type_ref,
             &data.store,
             InferenceTyDiagnosticSource::Signature,
@@ -1106,8 +1102,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
 
     fn collect_fn(&mut self, func: FunctionId) {
         let data = self.db.function_signature(func);
-        let mut param_tys = self
-            .with_ty_lowering(
+        let mut param_tys = self.with_ty_lowering(
             &data.store,
             InferenceTyDiagnosticSource::Signature,
             LifetimeElisionKind::for_fn_params(&data),
@@ -1291,7 +1286,8 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         type_source: InferenceTyDiagnosticSource,
         lifetime_elision: LifetimeElisionKind<'db>,
     ) -> Ty<'db> {
-        let ty = self.with_ty_lowering(store, type_source, lifetime_elision, |ctx| ctx.lower_ty(type_ref));
+        let ty = self
+            .with_ty_lowering(store, type_source, lifetime_elision, |ctx| ctx.lower_ty(type_ref));
         self.process_user_written_ty(ty)
     }
 
@@ -1305,8 +1301,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     }
 
     fn make_body_const(&mut self, const_ref: ConstRef, ty: Ty<'db>) -> Const<'db> {
-        let const_ = self
-            .with_ty_lowering(
+        let const_ = self.with_ty_lowering(
             self.body,
             InferenceTyDiagnosticSource::Body,
             LifetimeElisionKind::Infer,
@@ -1316,8 +1311,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     }
 
     fn make_path_as_body_const(&mut self, path: &Path, ty: Ty<'db>) -> Const<'db> {
-        let const_ = self
-            .with_ty_lowering(
+        let const_ = self.with_ty_lowering(
             self.body,
             InferenceTyDiagnosticSource::Body,
             LifetimeElisionKind::Infer,
@@ -1331,8 +1325,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     }
 
     fn make_body_lifetime(&mut self, lifetime_ref: LifetimeRefId) -> Region<'db> {
-        let lt = self
-            .with_ty_lowering(
+        let lt = self.with_ty_lowering(
             self.body,
             InferenceTyDiagnosticSource::Body,
             LifetimeElisionKind::Infer,

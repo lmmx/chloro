@@ -51,7 +51,8 @@ pub(super) fn hints(
         label.prepend_str(" -> ");
     }
 
-    let offset_to_insert_ty = arrow.as_ref().map_or_else(|| param_list.syntax().text_range(), |t| t.text_range()).end();
+    let offset_to_insert_ty =
+        arrow.as_ref().map_or_else(|| param_list.syntax().text_range(), |t| t.text_range()).end();
 
     // Insert braces if necessary
     let insert_braces = |builder: &mut TextEditBuilder| {
@@ -71,8 +72,7 @@ pub(super) fn hints(
         if arrow.is_none() { " -> " } else { "" },
     );
 
-    acc
-        .push(InlayHint {
+    acc.push(InlayHint {
         range: param_list.syntax().text_range(),
         kind: InlayKind::Type,
         label,

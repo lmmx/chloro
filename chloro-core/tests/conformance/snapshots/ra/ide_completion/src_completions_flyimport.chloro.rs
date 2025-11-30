@@ -169,8 +169,7 @@ fn import_on_the_fly(
 
     let import_cfg = ctx.config.import_path_config();
 
-    import_assets
-        .search_for_imports(&ctx.sema, import_cfg, ctx.config.insert_use.prefix_kind)
+    import_assets.search_for_imports(&ctx.sema, import_cfg, ctx.config.insert_use.prefix_kind)
         .filter(ns_filter)
         .filter(|import| {
             let original_item = &import.original_item;
@@ -216,8 +215,7 @@ fn import_on_the_fly_pat_(
     let user_input_lowercased = potential_import_name.to_lowercase();
     let cfg = ctx.config.import_path_config();
 
-    import_assets
-        .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
+    import_assets.search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
         .filter(ns_filter)
         .filter(|import| {
             let original_item = &import.original_item;
@@ -258,8 +256,7 @@ fn import_on_the_fly_method(
 
     let cfg = ctx.config.import_path_config();
 
-    import_assets
-        .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
+    import_assets.search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
         .filter(|import| {
             !ctx.is_item_hidden(&import.item_to_import)
                 && !ctx.is_item_hidden(&import.original_item)
@@ -315,7 +312,8 @@ fn import_assets_for_path<'db>(
     potential_import_name: &str,
     qualifier: Option<ast::Path>,
 ) -> Option<ImportAssets<'db>> {
-    let _p = tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
+    let _p =
+        tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
 
     let fuzzy_name_length = potential_import_name.len();
     let mut assets_for_path = ImportAssets::for_fuzzy_path(

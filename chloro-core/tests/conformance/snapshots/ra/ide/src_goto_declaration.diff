@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6351 bytes
-Chloro size:   5877 bytes
+Chloro size:   5897 bytes
 Rustfmt size:  6484 bytes
 
 ✗ Outputs DIFFER
@@ -71,14 +71,9 @@ Rustfmt size:  6484 bytes
 -            })
 +            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
              .sorted_by_key(cmp)
--            .collect::<Vec<_>>();
-+            .collect();
+             .collect::<Vec<_>>();
          let expected = expected
-             .into_iter()
-             .map(|(FileRange { file_id, range }, _)| FileRange { file_id, range })
-             .sorted_by_key(cmp)
--            .collect::<Vec<_>>();
-+            .collect();
+             .collect::<Vec<_>>();
          assert_eq!(expected, navs);
      }
 -

@@ -41,8 +41,11 @@ pub(super) fn lower_path(
     let mut type_anchor = None;
     let mut segments = Vec::new();
     let mut generic_args = Vec::new();
+    #[cfg(test)]
     let mut ast_segments = Vec::new();
+    #[cfg(test)]
     let mut ast_segments_offset = 0;
+    #[allow(unused_mut)]
     let mut push_segment = |_segment: &ast::PathSegment, segments: &mut Vec<Name>, name| {
         #[cfg(test)]
         ast_segments.push(_segment.clone());

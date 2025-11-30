@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27066 bytes
-Chloro size:   26495 bytes
+Chloro size:   26503 bytes
 Rustfmt size:  27358 bytes
 
 ✗ Outputs DIFFER
@@ -48,7 +48,8 @@ Rustfmt size:  27358 bytes
 -        .map_or(TokenText::borrowed("value"), |names| {
 -            names[main_field_i].text()
 -        });
-+    let main_field_name = names.as_ref().map_or(TokenText::borrowed("value"), |names| names[main_field_i].text());
++    let main_field_name =
++        names.as_ref().map_or(TokenText::borrowed("value"), |names| names[main_field_i].text());
      let main_field_ty = types[main_field_i].clone();
  
      acc.add(

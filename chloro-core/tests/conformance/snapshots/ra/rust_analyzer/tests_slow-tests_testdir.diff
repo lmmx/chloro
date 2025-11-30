@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3669 bytes
-Chloro size:   3647 bytes
+Chloro size:   3670 bytes
 Rustfmt size:  3740 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         //
-         // Work-around this by canonicalizing. Note that we don't want to do this
-         // on *every* OS, as on windows `canonicalize` itself creates problems.
--        #[cfg(target_os = "macos")]
-         let temp_dir = temp_dir.canonicalize().unwrap();
- 
-         let base = temp_dir.join("testdir");
                  };
              }
  
@@ -43,12 +36,3 @@ Rustfmt size:  3740 bytes
  
          if let Some(actual_path) = actual_path {
              remove_dir_all(Utf8Path::from_path(&actual_path).unwrap()).unwrap_or_else(|err| {
-             })
-         }
- 
--        remove_dir_all(&self.path).unwrap_or_else(|err| {
-+        remove_dir_all(&self.path)
-+            .unwrap_or_else(|err| {
-             panic!("failed to remove temporary directory {}: {err}", self.path)
-         });
-     }

@@ -179,7 +179,8 @@ pub fn parallel_prime_caches(
     // an index map is used to preserve ordering so we can sort the progress report in order of
 
     // "longest crate to index" first
-    let mut crates_currently_indexing = FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
+    let mut crates_currently_indexing =
+        FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
 
     for (&krate, &to_be_done_deps) in &to_be_done_deps {
         if to_be_done_deps != 0 {

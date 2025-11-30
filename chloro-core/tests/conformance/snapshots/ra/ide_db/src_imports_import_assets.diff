@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31662 bytes
-Chloro size:   31678 bytes
+Chloro size:   31687 bytes
 Rustfmt size:  32318 bytes
 
 ✗ Outputs DIFFER
@@ -80,15 +80,6 @@ Rustfmt size:  32318 bytes
      let mut result = SmallVec::new();
      let ty = match qualifier {
          ModuleDef::Module(module) => {
-         ModuleDef::Adt(adt) => adt.ty(db),
-         _ => return SmallVec::new(),
-     };
--    ty.iterate_path_candidates::<Infallible>(
-+    ty
-+        .iterate_path_candidates(
-         db,
-         scope,
-         &FxHashSet::default(),
              let is_match = match candidate {
                  NameToImport::Prefix(text, true) => name.as_str().starts_with(text),
                  NameToImport::Prefix(text, false) => {
@@ -113,24 +104,6 @@ Rustfmt size:  32318 bytes
                  }),
              };
              if !is_match {
- 
-     let inherent_traits = trait_candidate.receiver_ty.applicable_inherent_traits(db);
-     let env_traits = trait_candidate.receiver_ty.env_traits(db);
--    let related_traits = inherent_traits.chain(env_traits).collect::<FxHashSet<_>>();
-+    let related_traits = inherent_traits.chain(env_traits).collect();
- 
-     let mut required_assoc_items = FxHashMap::default();
-     let mut trait_candidates: FxHashSet<_> = items_locator::items_with_name(
-         trait_candidate.assoc_item_name.clone(),
-         AssocSearchMode::AssocItemsOnly,
-     )
--    .filter_map(|(input, do_not_complete)| Some((item_as_assoc(db, input)?, do_not_complete)))
--    .filter_map(|(assoc, do_not_complete)| {
-+        .filter_map(|(input, do_not_complete)| Some((item_as_assoc(db, input)?, do_not_complete)))
-+        .filter_map(|(assoc, do_not_complete)| {
-         if !trait_assoc_item && matches!(assoc, AssocItem::Const(_) | AssocItem::TypeAlias(_)) {
-             return None;
-         }
          if related_traits.contains(&assoc_item_trait) {
              return None;
          }
@@ -142,8 +115,7 @@ Rustfmt size:  32318 bytes
 +            .insert(assoc, CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport));
          Some(assoc_item_trait.into())
      })
--    .collect();
-+        .collect();
+     .collect();
  
      let autoderef_method_receiver = {
 -        let mut deref_chain = trait_candidate

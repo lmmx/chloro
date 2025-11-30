@@ -160,8 +160,7 @@ impl DefMap {
         shadow: BuiltinShadowMode,
         expected_macro_subns: Option<MacroSubNs>,
     ) -> ResolvePathResult {
-        let mut result = self
-            .resolve_path_fp_with_macro_single(
+        let mut result = self.resolve_path_fp_with_macro_single(
             local_def_map,
             db,
             mode,
@@ -658,6 +657,7 @@ impl DefMap {
         let from_legacy_macro = self[module]
             .scope
             .get_legacy_macro(name)
+            // FIXME: shadowing
             .and_then(|it| it.last())
             .copied()
             .filter(|&id| {

@@ -289,7 +289,8 @@ mod tests {
         let mut features = vec![];
         required_features(&cfg_expr, &mut features);
 
-        let expected_features = expected_features.iter().map(|&it| SmolStr::new(it)).collect();
+        let expected_features =
+            expected_features.iter().map(|&it| SmolStr::new(it)).collect::<Vec<_>>();
 
         assert_eq!(features, expected_features);
     }

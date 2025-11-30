@@ -9,7 +9,8 @@ use crate::{
 fn check_expected_type_and_name(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let (db, pos) = position(ra_fixture);
     let config = TEST_CONFIG;
-    let (completion_context, _analysis) = hir::attach_db(&db, || CompletionContext::new(&db, pos, &config, None).unwrap());
+    let (completion_context, _analysis) =
+        hir::attach_db(&db, || CompletionContext::new(&db, pos, &config, None).unwrap());
 
     let ty = completion_context
         .expected_type
@@ -20,7 +21,8 @@ fn check_expected_type_and_name(#[rust_analyzer::rust_fixture] ra_fixture: &str,
         })
         .unwrap_or("?".to_owned());
 
-    let name = completion_context.expected_name.map_or_else(|| "?".to_owned(), |name| name.to_string());
+    let name =
+        completion_context.expected_name.map_or_else(|| "?".to_owned(), |name| name.to_string());
 
     expect.assert_eq(&format!("ty: {ty}, name: {name}"));
 }

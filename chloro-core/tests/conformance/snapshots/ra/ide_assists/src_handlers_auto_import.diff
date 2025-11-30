@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   45540 bytes
+Chloro size:   45559 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -208,14 +208,6 @@ Rustfmt size:  46663 bytes
  pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let cfg = ctx.config.import_path_config();
  
-     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
--    let mut proposed_imports: Vec<_> = import_assets
--        .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
--        .collect();
-+    let mut proposed_imports: Vec<_> = import_assets.search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind).collect();
-     if proposed_imports.is_empty() {
-         return None;
-     }
      proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
      proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
  
@@ -225,15 +217,13 @@ Rustfmt size:  46663 bytes
 -        .map(|scope| scope.module());
 +    let current_module = ctx.sema.scope(scope.as_syntax_node()).map(|scope| scope.module());
      // prioritize more relevant imports
--    proposed_imports.sort_by_key(|import| {
+     proposed_imports.sort_by_key(|import| {
 -        Reverse(relevance_score(
 -            ctx,
 -            import,
 -            expected.as_ref(),
 -            current_module.as_ref(),
 -        ))
-+    proposed_imports
-+        .sort_by_key(|import| {
 +        Reverse(relevance_score(ctx, import, expected.as_ref(), current_module.as_ref()))
      });
 -    let edition = current_module
@@ -362,7 +352,7 @@ Rustfmt size:  46663 bytes
 -            .iter()
 -            .map(|assist| assist.label.to_string())
 -            .collect::<Vec<_>>();
-+        let labels = assists.iter().map(|assist| assist.label.to_string()).collect();
++        let labels = assists.iter().map(|assist| assist.label.to_string()).collect::<Vec<_>>();
  
          assert_eq!(labels, order);
      }

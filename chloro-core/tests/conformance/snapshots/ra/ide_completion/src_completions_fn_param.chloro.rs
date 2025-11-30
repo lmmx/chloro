@@ -173,7 +173,8 @@ fn should_add_self_completions(
 }
 
 fn comma_wrapper(ctx: &CompletionContext<'_>) -> Option<(impl Fn(&str) -> String, TextRange)> {
-    let param = ctx.original_token.parent_ancestors().find(|node| node.kind() == SyntaxKind::PARAM)?;
+    let param =
+        ctx.original_token.parent_ancestors().find(|node| node.kind() == SyntaxKind::PARAM)?;
 
     let next_token_kind = {
         let t = param.last_token()?.next_token()?;
@@ -186,10 +187,12 @@ fn comma_wrapper(ctx: &CompletionContext<'_>) -> Option<(impl Fn(&str) -> String
         t.kind()
     };
 
-    let has_trailing_comma = matches!(next_token_kind, SyntaxKind::COMMA | SyntaxKind::R_PAREN | SyntaxKind::PIPE);
+    let has_trailing_comma =
+        matches!(next_token_kind, SyntaxKind::COMMA | SyntaxKind::R_PAREN | SyntaxKind::PIPE);
     let trailing = if has_trailing_comma { "" } else { "," };
 
-    let has_leading_comma = matches!(prev_token_kind, SyntaxKind::COMMA | SyntaxKind::L_PAREN | SyntaxKind::PIPE);
+    let has_leading_comma =
+        matches!(prev_token_kind, SyntaxKind::COMMA | SyntaxKind::L_PAREN | SyntaxKind::PIPE);
     let leading = if has_leading_comma { "" } else { ", " };
 
     Some((move |label: &_| format!("{leading}{label}{trailing}"), param.text_range()))

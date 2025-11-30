@@ -53,7 +53,8 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
     if count == 0 {
         return VariancesOf::new_from_iter(interner, []);
     }
-    let mut variances = Context { generics, variances: vec![Variance::Bivariant; count], db }.solve();
+    let mut variances =
+        Context { generics, variances: vec![Variance::Bivariant; count], db }.solve();
 
     // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
 
@@ -374,8 +375,7 @@ impl<'db> Context<'db> {
     /// Adds constraints appropriate for a mutability-type pair
     /// appearing in a context with ambient variance `variance`
     fn add_constraints_from_mt(&mut self, ty: Ty<'db>, mt: Mutability, variance: Variance) {
-        self
-            .add_constraints_from_ty(
+        self.add_constraints_from_ty(
             ty,
             match mt {
                 Mutability::Mut => Variance::Invariant,

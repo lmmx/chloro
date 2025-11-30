@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11057 bytes
-Chloro size:   11041 bytes
+Chloro size:   11057 bytes
 Rustfmt size:  11096 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,8 @@ Rustfmt size:  11096 bytes
 -    let (completion_context, _analysis) = hir::attach_db(&db, || {
 -        CompletionContext::new(&db, pos, &config, None).unwrap()
 -    });
-+    let (completion_context, _analysis) = hir::attach_db(&db, || CompletionContext::new(&db, pos, &config, None).unwrap());
++    let (completion_context, _analysis) =
++        hir::attach_db(&db, || CompletionContext::new(&db, pos, &config, None).unwrap());
  
      let ty = completion_context
          .expected_type
@@ -30,7 +31,8 @@ Rustfmt size:  11096 bytes
 -    let name = completion_context
 -        .expected_name
 -        .map_or_else(|| "?".to_owned(), |name| name.to_string());
-+    let name = completion_context.expected_name.map_or_else(|| "?".to_owned(), |name| name.to_string());
++    let name =
++        completion_context.expected_name.map_or_else(|| "?".to_owned(), |name| name.to_string());
  
      expect.assert_eq(&format!("ty: {ty}, name: {name}"));
  }

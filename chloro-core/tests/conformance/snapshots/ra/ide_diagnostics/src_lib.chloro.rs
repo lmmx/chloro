@@ -491,8 +491,7 @@ pub fn semantic_diagnostics(
         res.push(d)
     }
 
-    res
-        .retain(|d| {
+    res.retain(|d| {
         !(ctx.config.disabled.contains(d.code.as_str())
             || ctx.config.disable_experimental && d.experimental)
     });
@@ -508,7 +507,7 @@ pub fn semantic_diagnostics(
                 it,
             ))
         })
-        .collect();
+        .collect::<Vec<_>>();
 
     // The edition isn't accurate (each diagnostics may have its own edition due to macros),
 
@@ -517,8 +516,7 @@ pub fn semantic_diagnostics(
 
     res.retain(|d| d.severity != Severity::Allow);
 
-    res
-        .retain_mut(|diag| {
+    res.retain_mut(|diag| {
         if let Some(node) = diag
             .main_node
             .map(|ptr| ptr.map(|node| node.to_node(&ctx.sema.parse_or_expand(ptr.file_id))))
@@ -679,7 +677,7 @@ fn find_outline_mod_lint_severity(
         ast::AnyHasAttrs::cast(module_source_file.value).expect("SourceFile always has attrs"),
         edition,
     )
-        .for_each(|(lint, severity)| {
+    .for_each(|(lint, severity)| {
         if lint_groups.contains(&lint) {
             result = Some(severity);
         }
@@ -746,9 +744,7 @@ fn cfg_attr_lint_attrs(
 ) {
     let prev_len = lint_attrs.len();
 
-    let mut iter = value
-        .token_trees_and_tokens()
-        .filter(|it| match it {
+    let mut iter = value.token_trees_and_tokens().filter(|it| match it {
         NodeOrToken::Node(_) => true,
         NodeOrToken::Token(it) => !it.kind().is_trivia(),
     });

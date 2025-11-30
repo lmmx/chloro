@@ -56,7 +56,8 @@ impl RequestDispatcher<'_> {
             Some(it) => it,
             None => return self,
         };
-        let _guard = tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
+        let _guard =
+            tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
         tracing::debug!(?params);
         let result = {
             let _pctx = DbPanicContext::enter(panic_context);
@@ -83,7 +84,8 @@ impl RequestDispatcher<'_> {
             Some(it) => it,
             None => return self,
         };
-        let _guard = tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
+        let _guard =
+            tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
         tracing::debug!(?params);
         let global_state_snapshot = self.global_state.snapshot();
 
@@ -247,7 +249,8 @@ impl RequestDispatcher<'_> {
             Some(it) => it,
             None => return self,
         };
-        let _guard = tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
+        let _guard =
+            tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
         tracing::debug!(?params);
 
         let world = self.global_state.snapshot();
@@ -256,7 +259,7 @@ impl RequestDispatcher<'_> {
         } else {
             &mut self.global_state.task_pool.handle
         }
-            .spawn(intent, move || {
+        .spawn(intent, move || {
             let result = panic::catch_unwind(move || {
                 let _pctx = DbPanicContext::enter(panic_context);
                 f(world, params)
@@ -422,7 +425,8 @@ impl NotificationDispatcher<'_> {
 
         tracing::debug!(?params);
 
-        let _pctx = DbPanicContext::enter(format!("\nversion: {}\nnotification: {}", version(), N::METHOD));
+        let _pctx =
+            DbPanicContext::enter(format!("\nversion: {}\nnotification: {}", version(), N::METHOD));
         if let Err(e) = f(self.global_state, params) {
             tracing::error!(handler = %N::METHOD, error = %e, "notification handler failed");
         }

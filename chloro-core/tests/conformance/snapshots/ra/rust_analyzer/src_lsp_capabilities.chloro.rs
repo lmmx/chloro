@@ -206,13 +206,15 @@ impl ClientCapabilities {
 
     fn completions_resolve_provider(&self) -> bool {
         let client_capabilities = self.completion_resolve_support_properties();
-        let fields_to_resolve = CompletionFieldsToResolve::from_client_capabilities(&client_capabilities);
+        let fields_to_resolve =
+            CompletionFieldsToResolve::from_client_capabilities(&client_capabilities);
         fields_to_resolve != CompletionFieldsToResolve::empty()
     }
 
     fn inlay_hints_resolve_provider(&self) -> bool {
         let client_capabilities = self.inlay_hint_resolve_support_properties();
-        let fields_to_resolve = InlayFieldsToResolve::from_client_capabilities(&client_capabilities);
+        let fields_to_resolve =
+            InlayFieldsToResolve::from_client_capabilities(&client_capabilities);
         fields_to_resolve != InlayFieldsToResolve::empty()
     }
 
@@ -320,7 +322,8 @@ impl ClientCapabilities {
     }
 
     pub fn did_save_text_document_dynamic_registration(&self) -> bool {
-        let caps = (|| -> _ { self.0.text_document.as_ref()?.synchronization.clone() })().unwrap_or_default();
+        let caps = (|| -> _ { self.0.text_document.as_ref()?.synchronization.clone() })()
+            .unwrap_or_default();
         caps.did_save == Some(true) && caps.dynamic_registration == Some(true)
     }
 

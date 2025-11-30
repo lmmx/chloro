@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6625 bytes
-Chloro size:   6629 bytes
+Chloro size:   6611 bytes
 Rustfmt size:  6782 bytes
 
 ✗ Outputs DIFFER
@@ -32,13 +32,11 @@ Rustfmt size:  6782 bytes
          return;
      };
  
--    ctx.process_all_names_raw(&mut |name, res| {
+     ctx.process_all_names_raw(&mut |name, res| {
 -        if matches!(
 -            res,
 -            ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_))
 -        ) {
-+    ctx
-+        .process_all_names_raw(&mut |name, res| {
 +        if matches!(res, ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_))) {
              acc.add_lifetime(ctx, name);
          }
@@ -56,12 +54,7 @@ Rustfmt size:  6782 bytes
 +    if !matches!(lifetime_ctx, LifetimeContext { kind: LifetimeKind::LabelRef, .. }) {
          return;
      }
--    ctx.process_all_names_raw(&mut |name, res| {
-+    ctx
-+        .process_all_names_raw(&mut |name, res| {
-         if let ScopeDef::Label(_) = res {
-             acc.add_label(ctx, name);
-         }
+     ctx.process_all_names_raw(&mut |name, res| {
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

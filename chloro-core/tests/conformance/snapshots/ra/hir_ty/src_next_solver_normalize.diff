@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9759 bytes
+Chloro size:   9728 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -31,15 +31,6 @@ Rustfmt size:  9886 bytes
  where
      T: TypeFoldable<DbInterner<'db>>,
  {
- where
-     T: TypeFoldable<DbInterner<'db>>,
- {
--    let (value, coroutine_goals) =
--        deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
-+    let (value, coroutine_goals) = deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
-             at, value, universes,
-         )?;
-     assert_eq!(coroutine_goals, vec![]);
          stalled_coroutine_goals: vec![],
      };
      let value = value.try_fold_with(&mut folder)?;
@@ -69,15 +60,6 @@ Rustfmt size:  9886 bytes
          // so we can super fold here.
          let term = infcx.resolve_vars_if_possible(infer_term);
          // super-folding the `term` will directly fold the `Ty` or `Const` so
-             return Err(errors);
-         }
- 
--        self.stalled_coroutine_goals.extend(
-+        self.stalled_coroutine_goals
-+            .extend(
-             self.fulfill_cx
-                 .drain_stalled_obligations_for_coroutines(self.at.infcx)
-                 .into_iter()
              return Ok(ty);
          }
  
@@ -105,21 +87,3 @@ Rustfmt size:  9886 bytes
  pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(
      infcx: &InferCtxt<'db>,
      param_env: ParamEnv<'db>,
- 
-     fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
-         let infcx = self.at.infcx;
--        let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
-+        let result: Result<_, Vec<NextSolverError<'db>>> = infcx
-+            .commit_if_ok(|_| {
-             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
-                 self.at,
-                 ty,
- 
-     fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
-         let infcx = self.at.infcx;
--        let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
-+        let result: Result<_, Vec<NextSolverError<'db>>> = infcx
-+            .commit_if_ok(|_| {
-             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
-                 self.at,
-                 ct,

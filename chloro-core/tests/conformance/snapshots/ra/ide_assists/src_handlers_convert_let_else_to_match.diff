@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14334 bytes
-Chloro size:   13984 bytes
+Chloro size:   13994 bytes
 Rustfmt size:  14420 bytes
 
 ✗ Outputs DIFFER
@@ -51,12 +51,6 @@ Rustfmt size:  14420 bytes
              } else {
                  None
              }
-         })
--        .collect::<Vec<_>>();
-+        .collect();
- 
-     acc.add(
-         AssistId::refactor_rewrite("convert_let_else_to_match"),
              }
              non_mut_pat.into()
          }

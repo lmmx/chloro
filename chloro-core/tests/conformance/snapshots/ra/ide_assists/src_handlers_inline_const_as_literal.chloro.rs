@@ -103,8 +103,7 @@ mod tests {
     ];
     #[test]
     fn inline_const_as_literal_const_fn_call_slice() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist_not_applicable(
                 inline_const_as_literal,
@@ -199,8 +198,7 @@ mod tests {
     // ----------------------------
     #[test]
     fn inline_const_as_literal_const_expr() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist(
                 inline_const_as_literal,
@@ -221,8 +219,7 @@ mod tests {
     }
     #[test]
     fn inline_const_as_literal_const_block_expr() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist(
                 inline_const_as_literal,
@@ -243,8 +240,7 @@ mod tests {
     }
     #[test]
     fn inline_const_as_literal_const_block_eval_expr() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist(
                 inline_const_as_literal,
@@ -265,8 +261,7 @@ mod tests {
     }
     #[test]
     fn inline_const_as_literal_const_block_eval_block_expr() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist(
                 inline_const_as_literal,
@@ -287,8 +282,7 @@ mod tests {
     }
     #[test]
     fn inline_const_as_literal_const_fn_call_block_nested_builtin() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist(
                 inline_const_as_literal,
@@ -311,8 +305,7 @@ mod tests {
     }
     #[test]
     fn inline_const_as_literal_const_fn_call_tuple() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist(
                 inline_const_as_literal,
@@ -335,8 +328,7 @@ mod tests {
     }
     #[test]
     fn inline_const_as_literal_const_fn_call_builtin() {
-        TEST_PAIRS
-            .iter()
+        TEST_PAIRS.iter()
             .for_each(|(ty, val, _)| {
             check_assist(
                 inline_const_as_literal,

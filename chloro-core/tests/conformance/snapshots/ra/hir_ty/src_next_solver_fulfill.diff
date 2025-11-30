@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12366 bytes
+Chloro size:   12390 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -41,21 +41,3 @@ Rustfmt size:  12418 bytes
      /// The snapshot in which this context was created. Using the context
      /// outside of this snapshot leads to subtle bugs if the snapshot
      /// gets rolled back. Because of this we explicitly check that we only
-     }
- 
-     fn clone_pending(&self) -> PredicateObligations<'db> {
--        let mut obligations: PredicateObligations<'db> =
--            self.pending.iter().map(|(o, _)| o.clone()).collect();
-+        let mut obligations: PredicateObligations<'db> = self.pending.iter().map(|(o, _)| o.clone()).collect();
-         obligations.extend(self.overflowed.iter().cloned());
-         obligations
-     }
-         &mut self,
-         cond: impl Fn(&PredicateObligation<'db>) -> bool,
-     ) -> PendingObligations<'db> {
--        let (not_stalled, pending) =
--            mem::take(&mut self.pending).into_iter().partition(|(o, _)| cond(o));
-+        let (not_stalled, pending) = mem::take(&mut self.pending).into_iter().partition(|(o, _)| cond(o));
-         self.pending = pending;
-         not_stalled
-     }

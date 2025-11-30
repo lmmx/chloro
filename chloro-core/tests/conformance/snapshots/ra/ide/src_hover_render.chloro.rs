@@ -161,7 +161,8 @@ pub(super) fn deref_expr(
     display_target: DisplayTarget,
 ) -> Option<HoverResult> {
     let inner_ty = sema.type_of_expr(&deref_expr.expr()?)?.original;
-    let TypeInfo { original, adjusted } = sema.type_of_expr(&ast::Expr::from(deref_expr.clone()))?;
+    let TypeInfo { original, adjusted } =
+        sema.type_of_expr(&ast::Expr::from(deref_expr.clone()))?;
 
     let mut res = HoverResult::default();
     let mut targets: Vec<hir::ModuleDef> = Vec::new();
@@ -284,11 +285,13 @@ pub(super) fn keyword(
     let parent = token.parent()?;
     let famous_defs = FamousDefs(sema, sema.scope(&parent)?.krate());
 
-    let KeywordHint { description, keyword_mod, actions } = keyword_hints(sema, token, parent, edition, display_target);
+    let KeywordHint { description, keyword_mod, actions } =
+        keyword_hints(sema, token, parent, edition, display_target);
 
     let doc_owner = find_std_module(&famous_defs, &keyword_mod, edition)?;
     let (docs, range_map) = doc_owner.docs_with_rangemap(sema.db)?;
-    let (markup, range_map) = markup(Some(docs.into()), Some(range_map), description, None, None, String::new());
+    let (markup, range_map) =
+        markup(Some(docs.into()), Some(range_map), description, None, None, String::new());
     let markup = process_markup(sema.db, Definition::Module(doc_owner), &markup, range_map, config);
     Some(HoverResult { markup, actions })
 }
@@ -367,7 +370,8 @@ pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<Hove
         token.text()
     };
 
-    let lint = lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
+    let lint =
+        lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
     Some(HoverResult {
         markup: Markup::from(format!("```\n{}\n```\n---\n\n{}", lint.label, lint.description)),
         ..Default::default()
@@ -528,7 +532,8 @@ pub(super) fn definition(
         }
         _ => def.label(db, display_target),
     };
-    let (docs, range_map) = if let Some((docs, doc_range)) = def.docs_with_rangemap(db, famous_defs, display_target) {
+    let (docs, range_map) =
+        if let Some((docs, doc_range)) = def.docs_with_rangemap(db, famous_defs, display_target) {
             (Some(docs), doc_range)
         } else {
             (None, None)
@@ -1051,8 +1056,7 @@ fn closure_ty(
     display_target: DisplayTarget,
 ) -> Option<HoverResult> {
     let c = original.as_closure()?;
-    let mut captures_rendered = c
-        .captured_items(sema.db)
+    let mut captures_rendered = c.captured_items(sema.db)
         .into_iter()
         .map(|it| {
             let borrow_kind = match it.kind() {
@@ -1074,8 +1078,7 @@ fn closure_ty(
         }
     };
     walk_and_push_ty(sema.db, original, &mut push_new_def);
-    c
-        .capture_types(sema.db)
+    c.capture_types(sema.db)
         .into_iter()
         .for_each(|ty| {
         walk_and_push_ty(sema.db, &ty, &mut push_new_def);

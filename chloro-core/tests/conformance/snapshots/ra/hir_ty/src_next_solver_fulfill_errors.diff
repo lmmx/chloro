@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50698 bytes
+Chloro size:   50701 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -46,15 +46,6 @@ Rustfmt size:  50684 bytes
      ConstEquate(ExpectedFound<Const<'db>>, TypeError<'db>),
      Ambiguity {
          /// Overflow is only `Some(suggest_recursion_limit)` when using the next generation
-     infcx: &InferCtxt<'db>,
-     root_obligation: PredicateObligation<'db>,
- ) -> FulfillmentError<'db> {
--    let (code, refine_obligation) = infcx.probe(|_| {
-+    let (code, refine_obligation) = infcx
-+        .probe(|_| {
-         match <&SolverContext<'db>>::from(infcx).evaluate_root_goal(
-             root_obligation.as_goal(),
-             Span::dummy(),
          };
  
          // // Don't walk into impls that have `do_not_recommend`.
@@ -129,11 +120,6 @@ Rustfmt size:  50684 bytes
          // cycles where we say "?0 is WF if ?0 is WF".
          if term.is_infer() {
              return None;
-         }
- 
--        let mut wf =
--            WfPredicates { infcx, param_env, out: PredicateObligations::new(), recursion_depth: 0 };
-+        let mut wf = WfPredicates { infcx, param_env, out: PredicateObligations::new(), recursion_depth: 0 };
          wf.add_wf_preds_for_term(term);
          Some(wf.out)
      }

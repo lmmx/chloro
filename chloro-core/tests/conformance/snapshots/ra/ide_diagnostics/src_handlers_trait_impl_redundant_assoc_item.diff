@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6565 bytes
-Chloro size:   6449 bytes
+Chloro size:   6457 bytes
 Rustfmt size:  6901 bytes
 
 ✗ Outputs DIFFER
@@ -57,11 +57,6 @@ Rustfmt size:  6901 bytes
                  ),
              )
          }
-     };
- 
--    let hir::FileRange { file_id, range } =
--        hir::InFile::new(d.file_id, diagnostic_range).original_node_file_range_rooted(db);
-+    let hir::FileRange { file_id, range } = hir::InFile::new(d.file_id, diagnostic_range).original_node_file_range_rooted(db);
      Diagnostic::new(
          DiagnosticCode::RustcHardError("E0407"),
          format!("{redundant_item_name} is not a member of trait `{trait_name}`"),

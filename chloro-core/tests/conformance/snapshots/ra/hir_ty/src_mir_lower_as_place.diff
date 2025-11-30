@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15480 bytes
-Chloro size:   15468 bytes
+Chloro size:   15480 bytes
 Rustfmt size:  15480 bytes
 
 ✗ Outputs DIFFER
@@ -23,12 +23,3 @@ Rustfmt size:  15480 bytes
  
  macro_rules! not_supported {
      ($it: expr) => {
-             Some((_, _, mutability)) => mutability,
-             None => Mutability::Not,
-         };
--        let result_ref =
--            Ty::new_ref(self.interner(), Region::error(self.interner()), result_ty, mutability);
-+        let result_ref = Ty::new_ref(self.interner(), Region::error(self.interner()), result_ty, mutability);
-         let mut result: Place<'db> = self.temp(result_ref, current, span)?.into();
-         let index_fn_op = Operand::const_zst(Ty::new_fn_def(
-             self.interner(),

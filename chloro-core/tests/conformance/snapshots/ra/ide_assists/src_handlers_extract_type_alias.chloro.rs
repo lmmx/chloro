@@ -14,10 +14,9 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 
     let ty = ctx.find_node_at_range::<ast::Type>()?;
     let item = ty.syntax().ancestors().find_map(ast::Item::cast)?;
-    let assoc_owner = item.syntax().ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
-    let node = assoc_owner
-        .as_ref()
-        .map_or_else(
+    let assoc_owner =
+        item.syntax().ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
+    let node = assoc_owner.as_ref().map_or_else(
         || item.syntax(),
         |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
     );
@@ -166,8 +165,7 @@ fn collect_used_generics<'gp>(
         false
     });
     // stable resort to lifetime, type, const
-    generics
-        .sort_by_key(|gp| match gp {
+    generics.sort_by_key(|gp| match gp {
         ast::GenericParam::ConstParam(_) => 2,
         ast::GenericParam::LifetimeParam(_) => 0,
         ast::GenericParam::TypeParam(_) => 1,

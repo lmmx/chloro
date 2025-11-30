@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   37075 bytes
+Chloro size:   36983 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -52,24 +52,6 @@ Rustfmt size:  36953 bytes
  use super::{Expectation, InferenceContext};
  
  #[derive(Debug)]
-             None => (None, None),
-         };
- 
--        let ClosureSignatures { bound_sig, liberated_sig } =
--            self.sig_of_closure(arg_types, ret_type, expected_sig);
-+        let ClosureSignatures { bound_sig, liberated_sig } = self.sig_of_closure(arg_types, ret_type, expected_sig);
-         let body_ret_ty = bound_sig.output().skip_binder();
-         let sig_ty = Ty::new_fn_ptr(interner, bound_sig);
- 
-         let prev_ret_coercion = self.return_coercion.replace(CoerceMany::new(body_ret_ty));
-         let prev_resume_yield_tys = mem::replace(&mut self.resume_yield_tys, resume_yield_tys);
- 
--        self.with_breakable_ctx(BreakableKind::Border, None, None, |this| {
-+        self
-+            .with_breakable_ctx(BreakableKind::Border, None, None, |this| {
-             this.infer_return(body);
-         });
- 
          let lang_item = self.db.lang_attr(def_id.into());
  
          // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,
@@ -77,15 +59,6 @@ Rustfmt size:  36953 bytes
          // for closures and async closures, respectively.
          match closure_kind {
              ClosureKind::Closure if lang_item == Some(LangItem::FnOnceOutput) => {
-         let ret_param_ty = projection.skip_binder().term.expect_type();
-         debug!(?ret_param_ty);
- 
--        let sig = projection.rebind(self.interner().mk_fn_sig(
-+        let sig = projection
-+            .rebind(self.interner().mk_fn_sig(
-             input_tys,
-             ret_param_ty,
-             false,
          };
  
          // If the return type is a type variable, look for bounds on it.
@@ -130,12 +103,6 @@ Rustfmt size:  36953 bytes
          // that does not misuse a `FnSig` type, but that can be done separately.
          let return_ty = return_ty.unwrap_or_else(|| self.table.next_ty_var());
  
--        let sig = projection.rebind(self.interner().mk_fn_sig(
-+        let sig = projection
-+            .rebind(self.interner().mk_fn_sig(
-             input_tys,
-             return_ty,
-             false,
          }
  
          // Create a `PolyFnSig`. Note the oddity that late bound
@@ -144,12 +111,7 @@ Rustfmt size:  36953 bytes
 +
          // in this binder we are creating.
          assert!(!expected_sig.skip_binder().has_vars_bound_above(rustc_type_ir::INNERMOST));
--        let bound_sig = expected_sig.map_bound(|sig| {
-+        let bound_sig = expected_sig
-+            .map_bound(|sig| {
-             self.interner().mk_fn_sig(
-                 sig.inputs(),
-                 sig.output(),
+         let bound_sig = expected_sig.map_bound(|sig| {
          });
  
          // `deduce_expectations_from_expected_type` introduces
@@ -203,23 +165,3 @@ Rustfmt size:  36953 bytes
          // [c2]: https://github.com/rust-lang/rust/pull/45072#issuecomment-341096796
          self.table.commit_if_ok(|table| {
              let mut all_obligations = PredicateObligations::new();
-             None => self.table.next_ty_var(),
-         };
-         // First, convert the types that the user supplied (if any).
--        let supplied_arguments = decl_inputs.iter().map(|&input| match input {
-+        let supplied_arguments = decl_inputs
-+            .iter()
-+            .map(|&input| match input {
-             Some(input) => {
-                 let input = self.make_body_ty(input);
-                 self.process_user_written_ty(input)
-         if let Some(output) = decl_output {
-             self.make_body_ty(output);
-         }
--        let supplied_arguments = decl_inputs.iter().map(|&input| match input {
-+        let supplied_arguments = decl_inputs
-+            .iter()
-+            .map(|&input| match input {
-             Some(input) => {
-                 self.make_body_ty(input);
-                 err_ty

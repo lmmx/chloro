@@ -321,7 +321,8 @@ impl GlobalState {
         // that can be used by the config module because config talks
         // in `SourceRootId`s instead of `FileId`s and `FileId` -> `SourceRootId`
         // mapping is not ready until `AnalysisHost::apply_changes` has been called.
-        let mut modified_ratoml_files: FxHashMap<FileId, (ChangeKind, vfs::VfsPath)> = FxHashMap::default();
+        let mut modified_ratoml_files: FxHashMap<FileId, (ChangeKind, vfs::VfsPath)> =
+            FxHashMap::default();
 
         let mut change = ChangeWithProcMacros::default();
         let mut guard = self.vfs.write();
@@ -330,8 +331,8 @@ impl GlobalState {
             return false;
         }
 
-        let (change, modified_rust_files, workspace_structure_change) = self.cancellation_pool
-            .scoped(|s| {
+        let (change, modified_rust_files, workspace_structure_change) =
+            self.cancellation_pool.scoped(|s| {
                 // start cancellation in parallel, this will kick off lru eviction
                 // allowing us to do meaningful work while waiting
                 let analysis_host = AssertUnwindSafe(&mut self.analysis_host);
@@ -640,8 +641,7 @@ impl GlobalState {
         mut diagnostics: Vec<lsp_types::Diagnostic>,
     ) {
         // We put this on a separate thread to avoid blocking the main thread with serialization work
-        self.task_pool.handle
-            .spawn_with_sender(stdx::thread::ThreadIntent::Worker, {
+        self.task_pool.handle.spawn_with_sender(stdx::thread::ThreadIntent::Worker, {
             let sender = self.sender.clone();
             move |_| {
                 // VSCode assumes diagnostic messages to be non-empty strings, so we need to patch
@@ -878,7 +878,8 @@ pub(crate) fn vfs_path_to_file_id(
     vfs: &vfs::Vfs,
     vfs_path: &VfsPath,
 ) -> anyhow::Result<Option<FileId>> {
-    let (file_id, excluded) = vfs.file_id(vfs_path).ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
+    let (file_id, excluded) =
+        vfs.file_id(vfs_path).ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
     match excluded {
         vfs::FileExcluded::Yes => Ok(None),
         vfs::FileExcluded::No => Ok(Some(file_id)),

@@ -124,7 +124,8 @@ impl TextEdit {
     }
 
     pub fn union(&mut self, other: TextEdit) -> Result<(), TextEdit> {
-        let iter_merge = self.iter().merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
+        let iter_merge =
+            self.iter().merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
         if !check_disjoint(&mut iter_merge.clone()) {
             return Err(other);
         }

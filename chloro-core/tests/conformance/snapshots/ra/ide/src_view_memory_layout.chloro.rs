@@ -76,7 +76,8 @@ pub(crate) fn view_memory_layout(
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(position.file_id);
     let display_target = sema.first_crate(position.file_id)?.to_display_target(db);
-    let token = pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
+    let token =
+        pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
             SyntaxKind::IDENT => 3,
             _ => 0,
         })?;
@@ -220,7 +221,7 @@ mod tests {
         expect![[r#"
             foo: i32 (size: 4, align: 4, field offset: 0)
         "#]]
-            .assert_eq(
+        .assert_eq(
             &make_memory_layout(
                 r#"
 fn main() {
@@ -237,7 +238,7 @@ fn main() {
         expect![[r#"
             BLAH: bool (size: 1, align: 1, field offset: 0)
         "#]]
-            .assert_eq(
+        .assert_eq(
             &make_memory_layout(
                 r#"
 const BLAH$0: bool = 0;
@@ -252,7 +253,7 @@ const BLAH$0: bool = 0;
         expect![[r#"
             BLAH: bool (size: 1, align: 1, field offset: 0)
         "#]]
-            .assert_eq(
+        .assert_eq(
             &make_memory_layout(
                 r#"
 static BLAH$0: bool = 0;
@@ -270,7 +271,7 @@ static BLAH$0: bool = 0;
             	.1: u8 (size: 1, align: 1, field offset: 8)
             	.2: i64 (size: 8, align: 8, field offset: 16)
         "#]]
-            .assert_eq(
+        .assert_eq(
             &make_memory_layout(
                 r#"
 fn main() {
@@ -292,7 +293,7 @@ fn main() {
             		.1: u8 (size: 1, align: 1, field offset: 4)
             	c: i8 (size: 1, align: 1, field offset: 12)
         "#]]
-            .assert_eq(
+        .assert_eq(
             &make_memory_layout(
                 r#"
 #[repr(C)]
@@ -317,7 +318,7 @@ struct Blah$0 {
             	a: u32 (size: 4, align: 4, field offset: 8)
             	c: i8 (size: 1, align: 1, field offset: 12)
         "#]]
-            .assert_eq(
+        .assert_eq(
             &make_memory_layout(
                 r#"
 struct Blah$0 {
@@ -336,7 +337,7 @@ struct Blah$0 {
         expect![[r#"
             a: bool (size: 1, align: 1, field offset: 0)
         "#]]
-            .assert_eq(
+        .assert_eq(
             &make_memory_layout(
                 r#"
 #[repr(C)]
@@ -362,7 +363,7 @@ struct X {
 type Foo$0 = X;
 "#,
         )
-            .unwrap();
+        .unwrap();
 
         let ml_b = make_memory_layout(
             r#"
@@ -373,7 +374,7 @@ struct X$0 {
 }
 "#,
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(ml_a.to_string(), ml_b.to_string());
     }

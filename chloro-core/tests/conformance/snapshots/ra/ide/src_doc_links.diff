@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30809 bytes
+Chloro size:   30792 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -67,28 +67,6 @@ Rustfmt size:  31554 bytes
  
  /// Rewrite documentation links in markdown to point to an online host (e.g. docs.rs)
  pub(crate) fn rewrite_links(
-         None,
-         CMarkOptions { code_block_token_count: 3, ..Default::default() },
-     )
--    .ok();
-+        .ok();
-     out
- }
- 
-         Some((CowStr::Inlined(empty), CowStr::Inlined(empty)))
-     };
-     let doc = Parser::new_with_broken_link_callback(markdown, MARKDOWN_OPTIONS, Some(&mut cb));
--    let doc = doc.filter_map(move |evt| match evt {
-+    let doc = doc
-+        .filter_map(move |evt| match evt {
-         Event::Start(Tag::Link(link_type, target, title)) => {
-             if link_type == LinkType::Inline && target.contains("://") {
-                 Some(Event::Start(Tag::Link(link_type, target, title)))
-         None,
-         CMarkOptions { code_block_token_count: 3, ..Default::default() },
-     )
--    .ok();
-+        .ok();
      out
  }
  

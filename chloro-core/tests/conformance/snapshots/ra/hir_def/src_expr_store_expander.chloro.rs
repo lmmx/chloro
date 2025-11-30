@@ -93,8 +93,7 @@ impl Expander {
         // FIXME: within_limit should support this, instead of us having to extract the error
         let mut unresolved_macro_err = None;
 
-        let result = self
-            .within_limit(db, |this| {
+        let result = self.within_limit(db, |this| {
             let macro_call = this.in_file(&macro_call);
 
             let expands_to = hir_expand::ExpandTo::from_call_site(macro_call.value);

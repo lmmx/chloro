@@ -246,8 +246,7 @@ impl<'db> PredicateEmittingRelation<InferCtxt<'db>> for LatticeOp<'_, 'db> {
     }
 
     fn register_alias_relate_predicate(&mut self, a: Ty<'db>, b: Ty<'db>) {
-        self
-            .register_predicates([Binder::dummy(PredicateKind::AliasRelate(
+        self.register_predicates([Binder::dummy(PredicateKind::AliasRelate(
             a.into(),
             b.into(),
             // FIXME(deferred_projection_equality): This isn't right, I think?

@@ -243,8 +243,7 @@ impl Analysis {
                 .unwrap(),
         );
         cfg_options.insert_atom(sym::test);
-        crate_graph
-            .add_crate_root(
+        crate_graph.add_crate_root(
             file_id,
             Edition::CURRENT,
             None,
@@ -284,7 +283,8 @@ impl Analysis {
         minicore: MiniCore<'_>,
         on_cursor: &mut dyn FnMut(TextRange),
     ) -> Option<(Analysis, RaFixtureAnalysis)> {
-        let analysis = RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
+        let analysis =
+            RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
         Some((Analysis { db: analysis.db.clone() }, analysis))
     }
 

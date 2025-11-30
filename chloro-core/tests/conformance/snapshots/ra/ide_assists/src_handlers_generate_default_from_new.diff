@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13010 bytes
-Chloro size:   12436 bytes
+Chloro size:   12418 bytes
 Rustfmt size:  13024 bytes
 
 ✗ Outputs DIFFER
@@ -51,16 +51,12 @@ Rustfmt size:  13024 bytes
  fn generate_trait_impl_text_from_impl(
      impl_: &ast::Impl,
      self_ty: ast::Type,
-     trait_text: &str,
      code: &str,
  ) -> String {
--    let generic_params = impl_.generic_param_list().map(|generic_params| {
+     let generic_params = impl_.generic_param_list().map(|generic_params| {
 -        let lifetime_params = generic_params
 -            .lifetime_params()
 -            .map(ast::GenericParam::LifetimeParam);
-+    let generic_params = impl_
-+        .generic_param_list()
-+        .map(|generic_params| {
 +        let lifetime_params =
 +            generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
          let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {

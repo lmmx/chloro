@@ -259,7 +259,8 @@ fn hints_(
         acc
     };
 
-    let mut used_names: FxHashMap<SmolStr, usize> = ctx.lifetime_stacks.iter().flat_map(|it| it.iter()).cloned().zip(iter::repeat(0)).collect();
+    let mut used_names: FxHashMap<SmolStr, usize> =
+        ctx.lifetime_stacks.iter().flat_map(|it| it.iter()).cloned().zip(iter::repeat(0)).collect();
     // allocate names
     let mut gen_idx_name = {
         let mut generic = (0u8..).map(|idx| match idx {

@@ -533,8 +533,7 @@ impl ItemScope {
         attr_call_id: MacroCallId,
         len: usize,
     ) {
-        self.derive_macros
-            .entry(adt)
+        self.derive_macros.entry(adt)
             .or_default()
             .push(DeriveMacroInvocation {
             attr_id,
@@ -726,8 +725,7 @@ impl ItemScope {
 
     /// Marks everything that is not a procedural macro as private to `this_module`.
     pub(crate) fn censor_non_proc_macros(&mut self, krate: Crate) {
-        self.types
-            .values_mut()
+        self.types.values_mut()
             .map(|def| &mut def.vis)
             .chain(self.values.values_mut().map(|def| &mut def.vis))
             .chain(self.unnamed_trait_imports.iter_mut().map(|(_, def)| &mut def.vis))
@@ -831,17 +829,20 @@ impl ItemScope {
 
 impl ItemScope {
     pub(crate) fn update_visibility_types(&mut self, name: &Name, vis: Visibility) {
-        let res = self.types.get_mut(name).expect("tried to update visibility of non-existent type");
+        let res =
+            self.types.get_mut(name).expect("tried to update visibility of non-existent type");
         res.vis = vis;
     }
 
     pub(crate) fn update_visibility_values(&mut self, name: &Name, vis: Visibility) {
-        let res = self.values.get_mut(name).expect("tried to update visibility of non-existent value");
+        let res =
+            self.values.get_mut(name).expect("tried to update visibility of non-existent value");
         res.vis = vis;
     }
 
     pub(crate) fn update_visibility_macros(&mut self, name: &Name, vis: Visibility) {
-        let res = self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
+        let res =
+            self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
         res.vis = vis;
     }
 }

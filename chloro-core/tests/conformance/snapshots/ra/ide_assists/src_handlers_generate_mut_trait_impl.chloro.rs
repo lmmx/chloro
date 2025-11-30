@@ -45,7 +45,8 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
 
     // &self -> &mut self
     let mut_self_param = make::mut_self_param();
-    let self_param: ast::SelfParam = impl_def.syntax().descendants().find_map(ast::SelfParam::cast)?;
+    let self_param: ast::SelfParam =
+        impl_def.syntax().descendants().find_map(ast::SelfParam::cast)?;
     ted::replace(self_param.syntax(), mut_self_param.clone_for_update().syntax());
 
     // &Self::Output -> &mut Self::Output

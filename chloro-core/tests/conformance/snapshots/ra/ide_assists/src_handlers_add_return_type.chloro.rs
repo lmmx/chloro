@@ -123,7 +123,8 @@ fn peel_blocks(mut expr: ast::Expr) -> ast::Expr {
 }
 
 fn extract_tail(ctx: &AssistContext<'_>) -> Option<(FnType, ast::Expr, InsertOrReplace)> {
-    let (fn_type, tail_expr, return_type_range, action) = if let Some(closure) = ctx.find_node_at_offset::<ast::ClosureExpr>() {
+    let (fn_type, tail_expr, return_type_range, action) =
+        if let Some(closure) = ctx.find_node_at_offset::<ast::ClosureExpr>() {
             let rpipe = closure.param_list()?.syntax().last_token()?;
             let rpipe_pos = rpipe.text_range().end();
 

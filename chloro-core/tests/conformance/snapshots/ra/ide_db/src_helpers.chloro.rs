@@ -51,8 +51,7 @@ pub fn mod_path_to_ast(path: &hir::ModPath, edition: Edition) -> ast::Path {
         hir::PathKind::Abs => is_abs = true,
     }
 
-    segments
-        .extend(path.segments().iter().map(|segment| {
+    segments.extend(path.segments().iter().map(|segment| {
         make::path_segment(make::name_ref(&segment.display_no_db(edition).to_smolstr()))
     }));
     make::path_from_segments(segments, is_abs)
@@ -82,8 +81,7 @@ pub fn visit_file_defs(
     module.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
 
     let is_root = module.is_crate_root();
-    module
-        .legacy_macros(db)
+    module.legacy_macros(db)
         .into_iter()
         .filter(|it| !(is_root && it.is_macro_export(db)))
         .for_each(|mac| cb(mac.into()));

@@ -414,13 +414,14 @@ pub(crate) fn for_trait_impls(
         _ => None,
     };
 
-    let mut def_blocks = [trait_module.containing_block(), type_module.and_then(|it| it.containing_block())];
+    let mut def_blocks =
+        [trait_module.containing_block(), type_module.and_then(|it| it.containing_block())];
 
     let block_impls = iter::successors(block, |&block_id| {
         cov_mark::hit!(block_local_impls);
         block_id.loc(db).module.containing_block()
     })
-        .inspect(|&block_id| {
+    .inspect(|&block_id| {
         // make sure we don't search the same block twice
         def_blocks.iter_mut().for_each(|block| {
             if *block == Some(block_id) {
@@ -428,7 +429,7 @@ pub(crate) fn for_trait_impls(
             }
         });
     })
-        .filter_map(|block_id| db.trait_impls_in_block(block_id));
+    .filter_map(|block_id| db.trait_impls_in_block(block_id));
     for it in in_self_and_deps.iter().map(ops::Deref::deref) {
         f(it)?;
     }

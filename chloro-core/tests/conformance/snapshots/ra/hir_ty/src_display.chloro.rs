@@ -307,7 +307,8 @@ pub trait HirDisplay<'db> {
         allow_opaque: bool,
     ) -> Result<String, DisplaySourceCodeError> {
         let mut result = String::new();
-        let interner = DbInterner::new_with(db, Some(module_id.krate()), module_id.containing_block());
+        let interner =
+            DbInterner::new_with(db, Some(module_id.krate()), module_id.containing_block());
         match self.hir_fmt(&mut HirFormatter {
             db,
             interner,
@@ -2396,10 +2397,7 @@ impl<'db> HirDisplayWithExpressionStore<'db> for Path {
         // =>
 
         // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
-        let trait_self_ty = self
-            .segments()
-            .iter()
-            .find_map(|seg| {
+        let trait_self_ty = self.segments().iter().find_map(|seg| {
             let generic_args = seg.args_and_bindings?;
             generic_args.has_self_type.then(|| &generic_args.args[0])
         });

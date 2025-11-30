@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4512 bytes
+Chloro size:   4490 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -22,13 +22,6 @@ Rustfmt size:  4581 bytes
          if self.is_builtin_or_registered_attr(&ast_id.path) {
              return Ok(ResolvedAttr::Other);
          }
- 
--        let resolved_res = self.resolve_path_fp_with_macro(
-+        let resolved_res = self
-+            .resolve_path_fp_with_macro(
-             local_def_map,
-             db,
-             ResolveMode::Other,
                      return Ok(ResolvedAttr::Other);
                  }
              }
@@ -47,10 +40,7 @@ Rustfmt size:  4581 bytes
 -        .ok_or_else(|| UnresolvedMacro {
 -            path: item_attr.path.as_ref().clone(),
 -        })?;
--    let call_id = def_id.make_call(
 +        .ok_or_else(|| UnresolvedMacro { path: item_attr.path.as_ref().clone() })?;
-+    let call_id = def_id
-+        .make_call(
+     let call_id = def_id.make_call(
          db,
          krate,
-         MacroCallKind::Derive {

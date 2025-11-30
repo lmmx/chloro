@@ -204,7 +204,8 @@ pub(crate) fn snippet_text_edit(
 ) -> lsp_ext::SnippetTextEdit {
     let annotation_id = annotation.filter(|_| client_supports_annotations).map(|it| it.to_string());
     let text_edit = text_edit(line_index, indel);
-    let insert_text_format = if is_snippet { Some(lsp_types::InsertTextFormat::SNIPPET) } else { None };
+    let insert_text_format =
+        if is_snippet { Some(lsp_types::InsertTextFormat::SNIPPET) } else { None };
     lsp_ext::SnippetTextEdit {
         range: text_edit.range,
         new_text: text_edit.new_text,
@@ -537,9 +538,7 @@ pub(crate) fn signature_help(
         }
     };
 
-    let documentation = call_info.doc
-        .filter(|_| config.docs)
-        .map(|doc| {
+    let documentation = call_info.doc.filter(|_| config.docs).map(|doc| {
         lsp_types::Documentation::MarkupContent(lsp_types::MarkupContent {
             kind: lsp_types::MarkupKind::Markdown,
             value: format_docs(&doc),
@@ -578,8 +577,7 @@ pub(crate) fn inlay_hint(
         })
     };
 
-    let resolve_range_and_hash = hint_needs_resolve(&inlay_hint)
-        .map(|range| {
+    let resolve_range_and_hash = hint_needs_resolve(&inlay_hint).map(|range| {
         (
             range,
             std::hash::BuildHasher::hash_one(
@@ -1066,7 +1064,8 @@ fn location_info(
 
     let target_uri = url(snap, target.file_id);
     let target_range = range(&line_index, target.full_range);
-    let target_selection_range = target.focus_range.map(|it| range(&line_index, it)).unwrap_or(target_range);
+    let target_selection_range =
+        target.focus_range.map(|it| range(&line_index, it)).unwrap_or(target_range);
     Ok((target_uri, target_range, target_selection_range))
 }
 
@@ -1232,8 +1231,7 @@ fn merge_text_and_snippet_edits(
     }
 
     // insert any remaining tabstops
-    edits
-        .extend(snippets.map(|(snippet_index, snippet_range)| {
+    edits.extend(snippets.map(|(snippet_index, snippet_range)| {
         // adjust the snippet range into the corresponding initial source location
         let snippet_range = offset_range(snippet_range, source_text_offset);
 
@@ -2008,7 +2006,8 @@ fn main() {
             endings: LineEndings::Unix,
             encoding: PositionEncoding::Utf8,
         };
-        let converted: Vec<lsp_types::FoldingRange> = folds.into_iter().map(|it| folding_range(text, &line_index, true, it)).collect();
+        let converted: Vec<lsp_types::FoldingRange> =
+            folds.into_iter().map(|it| folding_range(text, &line_index, true, it)).collect();
 
         let expected_lines = [(0, 2), (4, 10), (5, 6), (7, 9)];
         assert_eq!(converted.len(), expected_lines.len());
@@ -2273,7 +2272,8 @@ fn bar(_: usize) {}
         let mut edit = TextEdit::builder();
         edit.insert(2.into(), "abc".to_owned());
         let edit = edit.finish();
-        let snippets = SnippetEdit::new(vec![Snippet::Tabstop(0.into()), Snippet::Tabstop(0.into())]);
+        let snippets =
+            SnippetEdit::new(vec![Snippet::Tabstop(0.into()), Snippet::Tabstop(0.into())]);
 
         check_rendered_snippets(
             edit,
@@ -2340,7 +2340,8 @@ fn bar(_: usize) {}
         edit.insert(7.into(), "abc".to_owned());
         let edit = edit.finish();
         // Note: tabstops are positioned in the source where all text edits have been applied
-        let snippets = SnippetEdit::new(vec![Snippet::Tabstop(7.into()), Snippet::Tabstop(7.into())]);
+        let snippets =
+            SnippetEdit::new(vec![Snippet::Tabstop(7.into()), Snippet::Tabstop(7.into())]);
 
         check_rendered_snippets(
             edit,
@@ -2565,8 +2566,7 @@ fn bar(_: usize) {}
         // negative offset from inserting a smaller range
         let mut edit = TextEdit::builder();
         edit.replace(TextRange::new(47.into(), 56.into()), "let".to_owned());
-        edit
-            .replace(
+        edit.replace(
             TextRange::new(57.into(), 89.into()),
             "disabled = false;\n    ProcMacro {\n        disabled,\n    }".to_owned(),
         );
@@ -2629,8 +2629,7 @@ struct ProcMacro {
         // positive offset from inserting a larger range
         let mut edit = TextEdit::builder();
         edit.replace(TextRange::new(39.into(), 40.into()), "let".to_owned());
-        edit
-            .replace(
+        edit.replace(
             TextRange::new(41.into(), 73.into()),
             "disabled = false;\n    ProcMacro {\n        disabled,\n    }".to_owned(),
         );
@@ -2693,13 +2692,13 @@ struct P {
         // negative offset from inserting a smaller range
         let mut edit = TextEdit::builder();
         edit.replace(TextRange::new(47.into(), 56.into()), "let".to_owned());
-        edit
-            .replace(
+        edit.replace(
             TextRange::new(57.into(), 89.into()),
             "disabled = false;\n    ProcMacro {\n        disabled,\n    }".to_owned(),
         );
         let edit = edit.finish();
-        let snippets = SnippetEdit::new(vec![Snippet::Placeholder(TextRange::new(51.into(), 59.into()))]);
+        let snippets =
+            SnippetEdit::new(vec![Snippet::Placeholder(TextRange::new(51.into(), 59.into()))]);
 
         check_rendered_snippets_in_source(
             r"
@@ -2757,13 +2756,13 @@ struct ProcMacro {
         // positive offset from inserting a larger range
         let mut edit = TextEdit::builder();
         edit.replace(TextRange::new(39.into(), 40.into()), "let".to_owned());
-        edit
-            .replace(
+        edit.replace(
             TextRange::new(41.into(), 73.into()),
             "disabled = false;\n    ProcMacro {\n        disabled,\n    }".to_owned(),
         );
         let edit = edit.finish();
-        let snippets = SnippetEdit::new(vec![Snippet::Placeholder(TextRange::new(43.into(), 51.into()))]);
+        let snippets =
+            SnippetEdit::new(vec![Snippet::Placeholder(TextRange::new(43.into(), 51.into()))]);
 
         check_rendered_snippets_in_source(
             r"
@@ -2821,8 +2820,7 @@ struct P {
         // inserting between edits, tabstop should be at (1, 14)
         let mut edit = TextEdit::builder();
         edit.replace(TextRange::new(47.into(), 56.into()), "let".to_owned());
-        edit
-            .replace(
+        edit.replace(
             TextRange::new(58.into(), 90.into()),
             "disabled = false;\n    ProcMacro {\n        disabled,\n    }".to_owned(),
         );
@@ -2901,8 +2899,7 @@ struct ProcMacro {
         // inserting after edits, tabstop should be before the closing curly of the fn
         let mut edit = TextEdit::builder();
         edit.replace(TextRange::new(47.into(), 56.into()), "let".to_owned());
-        edit
-            .replace(
+        edit.replace(
             TextRange::new(57.into(), 89.into()),
             "disabled = false;\n    ProcMacro {\n        disabled,\n    }".to_owned(),
         );

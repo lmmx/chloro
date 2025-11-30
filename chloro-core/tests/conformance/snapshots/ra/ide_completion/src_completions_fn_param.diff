@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7434 bytes
-Chloro size:   7363 bytes
+Chloro size:   7387 bytes
 Rustfmt size:  7434 bytes
 
 ✗ Outputs DIFFER
@@ -31,26 +31,3 @@ Rustfmt size:  7434 bytes
  /// Complete repeated parameters, both name and type. For example, if all
  /// functions in a file have a `spam: &mut Spam` parameter, a completion with
  /// `spam: &mut Spam` insert text/label will be suggested.
- }
- 
- fn comma_wrapper(ctx: &CompletionContext<'_>) -> Option<(impl Fn(&str) -> String, TextRange)> {
--    let param =
--        ctx.original_token.parent_ancestors().find(|node| node.kind() == SyntaxKind::PARAM)?;
-+    let param = ctx.original_token.parent_ancestors().find(|node| node.kind() == SyntaxKind::PARAM)?;
- 
-     let next_token_kind = {
-         let t = param.last_token()?.next_token()?;
-         t.kind()
-     };
- 
--    let has_trailing_comma =
--        matches!(next_token_kind, SyntaxKind::COMMA | SyntaxKind::R_PAREN | SyntaxKind::PIPE);
-+    let has_trailing_comma = matches!(next_token_kind, SyntaxKind::COMMA | SyntaxKind::R_PAREN | SyntaxKind::PIPE);
-     let trailing = if has_trailing_comma { "" } else { "," };
- 
--    let has_leading_comma =
--        matches!(prev_token_kind, SyntaxKind::COMMA | SyntaxKind::L_PAREN | SyntaxKind::PIPE);
-+    let has_leading_comma = matches!(prev_token_kind, SyntaxKind::COMMA | SyntaxKind::L_PAREN | SyntaxKind::PIPE);
-     let leading = if has_leading_comma { "" } else { ", " };
- 
-     Some((move |label: &_| format!("{leading}{label}{trailing}"), param.text_range()))

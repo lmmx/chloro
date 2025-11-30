@@ -19,21 +19,20 @@ pub(crate) fn hints(
     config: &InlayHintsConfig<'_>,
     node: AnyHasGenericArgs,
 ) -> Option<()> {
-    let GenericParameterHints { type_hints, lifetime_hints, const_hints } = config.generic_parameter_hints;
+    let GenericParameterHints { type_hints, lifetime_hints, const_hints } =
+        config.generic_parameter_hints;
     if !(type_hints || lifetime_hints || const_hints) {
         return None;
     }
 
     let generic_arg_list = node.generic_arg_list()?;
 
-    let (generic_def, _, _, _) = generic_def_for_node(sema, &generic_arg_list, &node.syntax().first_token()?)?;
+    let (generic_def, _, _, _) =
+        generic_def_for_node(sema, &generic_arg_list, &node.syntax().first_token()?)?;
 
     let mut args = generic_arg_list.generic_args().peekable();
     let start_with_lifetime = matches!(args.peek()?, ast::GenericArg::LifetimeArg(_));
-    let params = generic_def
-        .params(sema.db)
-        .into_iter()
-        .filter(|p| {
+    let params = generic_def.params(sema.db).into_iter().filter(|p| {
         if let hir::GenericParam::TypeParam(it) = p
             && it.is_implicit(sema.db)
         {
@@ -45,9 +44,7 @@ pub(crate) fn hints(
         true
     });
 
-    let hints = params
-        .zip(args)
-        .filter_map(|(param, arg)| {
+    let hints = params.zip(args).filter_map(|(param, arg)| {
         if matches!(arg, ast::GenericArg::AssocTypeArg(_)) {
             return None;
         }

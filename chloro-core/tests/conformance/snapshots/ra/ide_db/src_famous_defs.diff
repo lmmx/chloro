@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7323 bytes
-Chloro size:   7312 bytes
+Chloro size:   7324 bytes
 Rustfmt size:  7435 bytes
 
 ✗ Outputs DIFFER
@@ -31,7 +31,8 @@ Rustfmt size:  7435 bytes
 -            .into_iter()
 -            .find(|(name, _def)| name.as_str() == trait_)?
 -            .1;
-+        let def = module.scope(db, None).into_iter().find(|(name, _def)| name.as_str() == trait_)?.1;
++        let def =
++            module.scope(db, None).into_iter().find(|(name, _def)| name.as_str() == trait_)?.1;
          Some(def)
      }
  }

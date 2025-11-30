@@ -438,11 +438,11 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
     ) -> Self {
         let infcx = <&SolverContext<'db>>::from(infcx);
 
-        let inspect::GoalEvaluation { uncanonicalized_goal, orig_values, final_revision, result } = root;
+        let inspect::GoalEvaluation { uncanonicalized_goal, orig_values, final_revision, result } =
+            root;
         // If there's a normalizes-to goal, AND the evaluation result with the result of
         // constraining the normalizes-to RHS and computing the nested goals.
-        let result = result
-            .and_then(|ok| {
+        let result = result.and_then(|ok| {
             let nested_goals_certainty =
                 term_hack_and_nested_certainty.map_or(Ok(Certainty::Yes), |(_, c)| c)?;
             Ok(ok.value.certainty.and(nested_goals_certainty))
@@ -495,7 +495,8 @@ impl<'db> InferCtxt<'db> {
         depth: usize,
         visitor: &mut V,
     ) -> V::Result {
-        let (_, proof_tree) = <&SolverContext<'db>>::from(self).evaluate_root_goal_for_proof_tree(goal, Span::dummy());
+        let (_, proof_tree) = <&SolverContext<'db>>::from(self)
+            .evaluate_root_goal_for_proof_tree(goal, Span::dummy());
         visitor.visit_goal(&InspectGoal::new(self, depth, proof_tree, None, GoalSource::Misc))
     }
 }

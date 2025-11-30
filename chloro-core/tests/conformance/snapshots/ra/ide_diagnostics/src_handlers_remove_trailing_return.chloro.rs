@@ -37,12 +37,14 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<A
     let return_expr = d.return_expr.value.to_node(&root);
     let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);
 
-    let FileRange { range, file_id } = ctx.sema.original_range_opt(stmt.as_ref().map_or(return_expr.syntax(), AstNode::syntax))?;
+    let FileRange { range, file_id } =
+        ctx.sema.original_range_opt(stmt.as_ref().map_or(return_expr.syntax(), AstNode::syntax))?;
     if Some(file_id) != d.return_expr.file_id.file_id() {
         return None;
     }
 
-    let replacement = return_expr.expr().map_or_else(String::new, |expr| format!("{}", expr.syntax().text()));
+    let replacement =
+        return_expr.expr().map_or_else(String::new, |expr| format!("{}", expr.syntax().text()));
     let edit = TextEdit::replace(range, replacement);
     let source_change = SourceChange::from_text_edit(file_id.file_id(ctx.sema.db), edit);
 

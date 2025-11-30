@@ -26,7 +26,8 @@ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let module_name = module_ast.name()?;
 
     // get to the outermost module syntax so we can grab the module of file we are in
-    let outermost_mod_decl = iter::successors(Some(module_ast.clone()), |module| module.parent()).last()?;
+    let outermost_mod_decl =
+        iter::successors(Some(module_ast.clone()), |module| module.parent()).last()?;
     let module_def = ctx.sema.to_def(&outermost_mod_decl)?;
     let parent_module = module_def.parent(ctx.db())?;
 

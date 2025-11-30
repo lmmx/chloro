@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16405 bytes
+Chloro size:   16417 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -55,15 +55,6 @@ Rustfmt size:  16583 bytes
          // We skip cast checks for such cases for now, until the next-gen solver.
          if contains_dyn_trait(self.cast_ty) {
              return Ok(());
-     }
- 
-     fn do_check(&self, ctx: &mut InferenceContext<'_, 'db>) -> Result<(), CastError> {
--        let (t_from, t_cast) =
--            match (CastTy::from_ty(ctx.db, self.expr_ty), CastTy::from_ty(ctx.db, self.cast_ty)) {
-+        let (t_from, t_cast) = match (CastTy::from_ty(ctx.db, self.expr_ty), CastTy::from_ty(ctx.db, self.cast_ty)) {
-                 (Some(t_from), Some(t_cast)) => (t_from, t_cast),
-                 (None, Some(t_cast)) => match self.expr_ty.kind() {
-                     TyKind::FnDef(..) => {
              };
  
          // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym

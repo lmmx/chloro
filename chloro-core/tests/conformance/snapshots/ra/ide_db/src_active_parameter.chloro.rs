@@ -97,9 +97,7 @@ pub fn callable_for_node<'db>(
         ast::CallableExpr::Call(call) => sema.resolve_expr_as_callable(&call.expr()?),
         ast::CallableExpr::MethodCall(call) => sema.resolve_method_call_as_callable(call),
     }?;
-    let active_param = calling_node
-        .arg_list()
-        .map(|arg_list| {
+    let active_param = calling_node.arg_list().map(|arg_list| {
         arg_list
             .syntax()
             .children_with_tokens()

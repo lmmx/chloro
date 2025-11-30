@@ -503,8 +503,7 @@ fn validate_resolvable(
         ModuleDef::Adt(adt) => adt.ty(db),
         _ => return SmallVec::new(),
     };
-    ty
-        .iterate_path_candidates(
+    ty.iterate_path_candidates::<Infallible>(
         db,
         scope,
         &FxHashSet::default(),
@@ -577,7 +576,7 @@ fn trait_applicable_items<'db>(
 
     let inherent_traits = trait_candidate.receiver_ty.applicable_inherent_traits(db);
     let env_traits = trait_candidate.receiver_ty.env_traits(db);
-    let related_traits = inherent_traits.chain(env_traits).collect();
+    let related_traits = inherent_traits.chain(env_traits).collect::<FxHashSet<_>>();
 
     let mut required_assoc_items = FxHashMap::default();
     let mut trait_candidates: FxHashSet<_> = items_locator::items_with_name(
@@ -586,8 +585,8 @@ fn trait_applicable_items<'db>(
         trait_candidate.assoc_item_name.clone(),
         AssocSearchMode::AssocItemsOnly,
     )
-        .filter_map(|(input, do_not_complete)| Some((item_as_assoc(db, input)?, do_not_complete)))
-        .filter_map(|(assoc, do_not_complete)| {
+    .filter_map(|(input, do_not_complete)| Some((item_as_assoc(db, input)?, do_not_complete)))
+    .filter_map(|(assoc, do_not_complete)| {
         if !trait_assoc_item && matches!(assoc, AssocItem::Const(_) | AssocItem::TypeAlias(_)) {
             return None;
         }
@@ -600,7 +599,7 @@ fn trait_applicable_items<'db>(
             .insert(assoc, CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport));
         Some(assoc_item_trait.into())
     })
-        .collect();
+    .collect();
 
     let autoderef_method_receiver = {
         let mut deref_chain = trait_candidate.receiver_ty.autoderef(db).collect::<Vec<_>>();

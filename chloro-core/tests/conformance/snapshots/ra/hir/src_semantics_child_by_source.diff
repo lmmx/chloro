@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12477 bytes
-Chloro size:   12910 bytes
+Chloro size:   12701 bytes
 Rustfmt size:  12826 bytes
 
 ✗ Outputs DIFFER
@@ -41,12 +41,8 @@ Rustfmt size:  12826 bytes
      fn child_by_source_to(&self, db: &dyn DefDatabase, map: &mut DynMap, file_id: HirFileId);
  }
  
-     fn child_by_source_to(&self, db: &dyn DefDatabase, res: &mut DynMap, file_id: HirFileId) {
-         let data = self.trait_items(db);
  
--        data.macro_calls()
-+        data
-+            .macro_calls()
+         data.macro_calls()
              .filter(|(ast_id, _)| ast_id.file_id == file_id)
 -            .for_each(|(ast_id, call_id)| {
 +            .for_each(
@@ -61,14 +57,14 @@ Rustfmt size:  12826 bytes
 -        data.items.iter().for_each(|&(_, item)| {
 +            },
 +        );
-+        data.items
-+            .iter()
++        data.items.iter()
 +            .for_each(|&(_, item)| {
              add_assoc_item(db, res, file_id, item);
          });
          let (_, source_map) = db.trait_signature_with_source_map(*self);
-         source_map
-             .expansions()
+-        source_map
+-            .expansions()
++        source_map.expansions()
              .filter(|(ast, _)| ast.file_id == file_id)
 -            .for_each(|(ast, &exp_id)| {
 +            .for_each(
@@ -80,12 +76,8 @@ Rustfmt size:  12826 bytes
      }
  }
  
- impl ChildBySource for ImplId {
-     fn child_by_source_to(&self, db: &dyn DefDatabase, res: &mut DynMap, file_id: HirFileId) {
          let data = self.impl_items(db);
--        data.macro_calls()
-+        data
-+            .macro_calls()
+         data.macro_calls()
              .filter(|(ast_id, _)| ast_id.file_id == file_id)
 -            .for_each(|(ast_id, call_id)| {
 +            .for_each(
@@ -100,14 +92,14 @@ Rustfmt size:  12826 bytes
 -        data.items.iter().for_each(|&(_, item)| {
 +            },
 +        );
-+        data.items
-+            .iter()
++        data.items.iter()
 +            .for_each(|&(_, item)| {
              add_assoc_item(db, res, file_id, item);
          });
          let (_, source_map) = db.impl_signature_with_source_map(*self);
-         source_map
-             .expansions()
+-        source_map
+-            .expansions()
++        source_map.expansions()
              .filter(|(ast, _)| ast.file_id == file_id)
 -            .for_each(|(ast, &exp_id)| {
 +            .for_each(
@@ -129,25 +121,18 @@ Rustfmt size:  12826 bytes
 -        self.extern_blocks().for_each(|extern_block| {
 +        self.declarations().for_each(|item| add_module_def(db, res, file_id, item));
 +        self.impls().for_each(|imp| insert_item_loc(db, res, file_id, imp, keys::IMPL));
-+        self
-+            .extern_blocks()
++        self.extern_blocks()
 +            .for_each(|extern_block| {
              insert_item_loc(db, res, file_id, extern_block, keys::EXTERN_BLOCK)
          });
--        self.extern_crate_decls()
-+        self
-+            .extern_crate_decls()
+         self.extern_crate_decls()
              .for_each(|ext| insert_item_loc(db, res, file_id, ext, keys::EXTERN_CRATE));
 -        self.use_decls()
 -            .for_each(|ext| insert_item_loc(db, res, file_id, ext, keys::USE));
--        self.unnamed_consts()
 +        self.use_decls().for_each(|ext| insert_item_loc(db, res, file_id, ext, keys::USE));
-+        self
-+            .unnamed_consts()
+         self.unnamed_consts()
              .for_each(|konst| insert_item_loc(db, res, file_id, konst, keys::CONST));
--        self.attr_macro_invocs()
-+        self
-+            .attr_macro_invocs()
+         self.attr_macro_invocs()
              .filter(|(id, _)| id.file_id == file_id)
 -            .for_each(|(ast_id, call_id)| {
 +            .for_each(
@@ -157,18 +142,13 @@ Rustfmt size:  12826 bytes
 -        self.legacy_macros().for_each(|(_, ids)| {
 +            },
 +        );
-+        self
-+            .legacy_macros()
++        self.legacy_macros()
 +            .for_each(|(_, ids)| {
              ids.iter().for_each(|&id| {
                  if let MacroId::MacroRulesId(id) = id {
                      let loc = id.lookup(db);
-                 }
-             })
          });
--        self.derive_macro_invocs()
-+        self
-+            .derive_macro_invocs()
+         self.derive_macro_invocs()
              .filter(|(id, _)| id.file_id == file_id)
 -            .for_each(|(ast_id, calls)| {
 +            .for_each(
@@ -180,11 +160,9 @@ Rustfmt size:  12826 bytes
                      }
                  });
 -            });
--        self.iter_macro_invoc()
 +            },
 +        );
-+        self
-+            .iter_macro_invoc()
+         self.iter_macro_invoc()
              .filter(|(id, _)| id.file_id == file_id)
 -            .for_each(|(ast_id, &call)| {
 +            .for_each(
@@ -211,8 +189,8 @@ Rustfmt size:  12826 bytes
  
 -        self.enum_variants(db)
 -            .variants
-+        self.enum_variants(db).variants
-             .iter()
+-            .iter()
++        self.enum_variants(db).variants.iter()
              .for_each(|&(variant, _, _)| {
 -                res[keys::ENUM_VARIANT]
 -                    .insert(ast_id_map.get(variant.lookup(db).id.value), variant);
@@ -220,14 +198,13 @@ Rustfmt size:  12826 bytes
 +            res[keys::ENUM_VARIANT].insert(ast_id_map.get(variant.lookup(db).id.value), variant);
 +        });
          let (_, source_map) = db.enum_signature_with_source_map(*self);
-         source_map
-             .expansions()
-             VariantId::EnumVariantId(v).child_by_source_to(db, res, file_id)
-         }
- 
--        sm.expansions()
-+        sm
-+            .expansions()
+-        source_map
+-            .expansions()
++        source_map.expansions()
+             .filter(|(ast, _)| ast.file_id == file_id)
+             .for_each(|(ast, &exp_id)| res[keys::MACRO_CALL].insert(ast.value, exp_id));
+     }
+         sm.expansions()
              .filter(|(ast, _)| ast.file_id == file_id)
              .for_each(|(ast, &exp_id)| {
 -                res[keys::MACRO_CALL].insert(ast.value, exp_id);
@@ -245,15 +222,6 @@ Rustfmt size:  12826 bytes
              res[keys::BLOCK].insert(block.lookup(db).ast_id.to_ptr(db), block);
          }
      }
-             return;
-         }
- 
--        let (generic_params, _, source_map) =
--            GenericParams::generic_params_and_store_and_source_map(db, *self);
-+        let (generic_params, _, source_map) = GenericParams::generic_params_and_store_and_source_map(db, *self);
-         let mut toc_idx_iter = generic_params.iter_type_or_consts().map(|(idx, _)| idx);
-         let lts_idx_iter = generic_params.iter_lt().map(|(idx, _)| idx);
- 
              for (local_id, ast_param) in
                  toc_idx_iter.zip(generic_params_list.type_or_const_params())
              {
@@ -276,6 +244,13 @@ Rustfmt size:  12826 bytes
                  res[keys::LIFETIME_PARAM].insert(AstPtr::new(&ast_param), id);
              }
          }
+ 
+-        source_map
+-            .expansions()
++        source_map.expansions()
+             .filter(|(ast, _)| ast.file_id == file_id)
+             .for_each(|(ast, &exp_id)| res[keys::MACRO_CALL].insert(ast.value, exp_id));
+     }
      file_id: HirFileId,
      id: ID,
      key: Key<N, ID>,

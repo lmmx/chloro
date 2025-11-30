@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15690 bytes
-Chloro size:   15449 bytes
+Chloro size:   15457 bytes
 Rustfmt size:  15822 bytes
 
 ✗ Outputs DIFFER
@@ -61,7 +61,8 @@ Rustfmt size:  15822 bytes
 -        field_list,
 -        adt_syntax.value,
 -    )?;
-+    let (offset, record_field) = record_field_layout(None, field_name, suggested_type, field_list, adt_syntax.value)?;
++    let (offset, record_field) =
++        record_field_layout(None, field_name, suggested_type, field_list, adt_syntax.value)?;
  
      let mut src_change_builder = SourceChangeBuilder::new(range.file_id.file_id(ctx.sema.db));
      src_change_builder.insert(offset, record_field);

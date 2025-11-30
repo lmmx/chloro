@@ -115,7 +115,8 @@ fn build_expanded_import(
     let refs_in_target = find_refs_in_mod(ctx, target_module, visible_from, must_be_pub);
     let imported_defs = find_imported_defs(ctx, use_item);
 
-    let filtered_defs = if reexport_public_items { refs_in_target } else { refs_in_target.used_refs(ctx) };
+    let filtered_defs =
+        if reexport_public_items { refs_in_target } else { refs_in_target.used_refs(ctx) };
 
     let names_to_import = find_names_to_import(filtered_defs, imported_defs);
     let expanded = make::use_tree_list(names_to_import.iter().map(|n| {
@@ -124,7 +125,7 @@ fn build_expanded_import(
         );
         make::use_tree(path, None, None, false)
     }))
-        .clone_for_update();
+    .clone_for_update();
 
     let mut editor = builder.make_editor(use_tree.syntax());
     match use_tree.star_token() {

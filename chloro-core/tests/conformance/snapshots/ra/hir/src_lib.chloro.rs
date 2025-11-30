@@ -523,7 +523,7 @@ impl Module {
             .children
             .values()
             .map(|module_id| Module { id: def_map.module_id(*module_id) })
-            .collect();
+            .collect::<Vec<_>>();
         children.into_iter()
     }
 
@@ -1702,7 +1702,8 @@ impl Variant {
     }
 
     pub fn instantiate_infer<'db>(self, infer_ctxt: &InferCtxt<'db>) -> InstantiatedVariant<'db> {
-        let args = infer_ctxt.fresh_args_for_item(self.parent_enum(infer_ctxt.interner.db()).id.into());
+        let args =
+            infer_ctxt.fresh_args_for_item(self.parent_enum(infer_ctxt.interner.db()).id.into());
         InstantiatedVariant { inner: self, args }
     }
 }
@@ -2205,7 +2206,8 @@ fn expr_store_diagnostics<'db>(
         });
     }
 
-    source_map.macro_calls().for_each(|(_ast_id, call_id)| macro_call_diagnostics(db, call_id, acc));
+    source_map.macro_calls()
+        .for_each(|(_ast_id, call_id)| macro_call_diagnostics(db, call_id, acc));
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -2241,7 +2243,11 @@ impl Function {
     pub fn ret_type(self, db: &dyn HirDatabase) -> Type<'_> {
         let resolver = self.id.resolver(db);
         // FIXME: This shouldn't be `instantiate_identity()`, we shouldn't leak `TyKind::Param`s.
-        let ty = db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder().output();
+        let ty = db
+            .callable_item_signature(self.id.into())
+            .instantiate_identity()
+            .skip_binder()
+            .output();
         Type::new_with_resolver_inner(db, &resolver, ty)
     }
 
@@ -2269,7 +2275,11 @@ impl Function {
         }
         let resolver = self.id.resolver(db);
         // FIXME: This shouldn't be `instantiate_identity()`, we shouldn't leak `TyKind::Param`s.
-        let ret_ty = db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder().output();
+        let ret_ty = db
+            .callable_item_signature(self.id.into())
+            .instantiate_identity()
+            .skip_binder()
+            .output();
         for pred in ret_ty.impl_trait_bounds(db).into_iter().flatten() {
             if let ClauseKind::Projection(projection) = pred.kind().skip_binder()
                 && let Some(output_ty) = projection.term.as_type()
@@ -2291,7 +2301,8 @@ impl Function {
     pub fn assoc_fn_params(self, db: &dyn HirDatabase) -> Vec<Param<'_>> {
         let environment = db.trait_environment(self.id.into());
         // FIXME: This shouldn't be `instantiate_identity()`, we shouldn't leak `TyKind::Param`s.
-        let callable_sig = db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
+        let callable_sig =
+            db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
         callable_sig
             .inputs()
             .iter()
@@ -2315,7 +2326,8 @@ impl Function {
     pub fn params_without_self(self, db: &dyn HirDatabase) -> Vec<Param<'_>> {
         let environment = db.trait_environment(self.id.into());
         // FIXME: This shouldn't be `instantiate_identity()`, we shouldn't leak `TyKind::Param`s.
-        let callable_sig = db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
+        let callable_sig =
+            db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
         let skip = if db.function_signature(self.id).has_self_param() { 1 } else { 0 };
         callable_sig
             .inputs()
@@ -2337,7 +2349,8 @@ impl Function {
         let environment = db.trait_environment(self.id.into());
         let interner = DbInterner::new_with(db, None, None);
         let args = generic_args_from_tys(interner, self.id.into(), generics.map(|ty| ty.ty));
-        let callable_sig = db.callable_item_signature(self.id.into()).instantiate(interner, args).skip_binder();
+        let callable_sig =
+            db.callable_item_signature(self.id.into()).instantiate(interner, args).skip_binder();
         let skip = if db.function_signature(self.id).has_self_param() { 1 } else { 0 };
         callable_sig
             .inputs()
@@ -2630,7 +2643,8 @@ impl SelfParam {
 
     pub fn ty<'db>(&self, db: &'db dyn HirDatabase) -> Type<'db> {
         // FIXME: This shouldn't be `instantiate_identity()`, we shouldn't leak `TyKind::Param`s.
-        let callable_sig = db.callable_item_signature(self.func.into()).instantiate_identity().skip_binder();
+        let callable_sig =
+            db.callable_item_signature(self.func.into()).instantiate_identity().skip_binder();
         let environment = db.trait_environment(self.func.into());
         let ty = callable_sig.inputs().as_slice()[0];
         Type { env: environment, ty }
@@ -2643,7 +2657,8 @@ impl SelfParam {
     ) -> Type<'db> {
         let interner = DbInterner::new_with(db, None, None);
         let args = generic_args_from_tys(interner, self.func.into(), generics.map(|ty| ty.ty));
-        let callable_sig = db.callable_item_signature(self.func.into()).instantiate(interner, args).skip_binder();
+        let callable_sig =
+            db.callable_item_signature(self.func.into()).instantiate(interner, args).skip_binder();
         let environment = db.trait_environment(self.func.into());
         let ty = callable_sig.inputs().as_slice()[0];
         Type { env: environment, ty }
@@ -3576,9 +3591,7 @@ impl_from!(
 impl GenericDef {
     pub fn params(self, db: &dyn HirDatabase) -> Vec<GenericParam> {
         let generics = db.generic_params(self.into());
-        let ty_params = generics
-            .iter_type_or_consts()
-            .map(|(local_id, _)| {
+        let ty_params = generics.iter_type_or_consts().map(|(local_id, _)| {
             let toc = TypeOrConstParam { id: TypeOrConstParamId { parent: self.into(), local_id } };
             match toc.split(db) {
                 Either::Left(it) => GenericParam::ConstParam(it),
@@ -3720,9 +3733,7 @@ impl<'db> GenericSubstitution<'db> {
                     .collect::<Vec<_>>()
             });
         let generics = db.generic_params(self.def);
-        let type_params = generics
-            .iter_type_or_consts()
-            .filter_map(|param| match param.1 {
+        let type_params = generics.iter_type_or_consts().filter_map(|param| match param.1 {
             TypeOrConstParamData::TypeParamData(param) => Some(param.name.clone()),
             TypeOrConstParamData::ConstParamData(_) => None,
         });
@@ -3735,7 +3746,10 @@ impl<'db> GenericSubstitution<'db> {
             .iter()
             .filter_map(|param| param.ty())
             .zip(container_type_params.into_iter().flatten());
-        let self_params = self.subst.as_slice()[parent_len..].iter().filter_map(|param| param.ty()).zip(type_params);
+        let self_params = self.subst.as_slice()[parent_len..]
+            .iter()
+            .filter_map(|param| param.ty())
+            .zip(type_params);
         container_params
             .chain(self_params)
             .filter_map(|(ty, name)| {
@@ -3978,7 +3992,8 @@ pub struct ToolModule {
 impl ToolModule {
     pub(crate) fn by_name(db: &dyn HirDatabase, krate: Crate, name: &str) -> Option<Self> {
         let krate = krate.id;
-        let idx = crate_def_map(db, krate).registered_tools().iter().position(|it| it.as_str() == name)?
+        let idx =
+            crate_def_map(db, krate).registered_tools().iter().position(|it| it.as_str() == name)?
                 as u32;
         Some(ToolModule { krate, idx })
     }
@@ -4337,8 +4352,7 @@ impl Impl {
         };
 
         let mut all = Vec::new();
-        def_crates
-            .iter()
+        def_crates.iter()
             .for_each(|&id| {
             all.extend(
                 db.inherent_impls_in_crate(id)
@@ -5012,7 +5026,8 @@ impl<'db> Type<'db> {
             return None;
         }
 
-        let output_assoc_type = trait_.trait_items(db).associated_type_by_name(&Name::new_symbol_root(sym::Output))?;
+        let output_assoc_type =
+            trait_.trait_items(db).associated_type_by_name(&Name::new_symbol_root(sym::Output))?;
         self.normalize_trait_assoc_type(db, &[], output_assoc_type.into())
     }
 
@@ -5263,8 +5278,7 @@ impl<'db> Type<'db> {
         mut callback: impl FnMut(AssocItem) -> Option<T>,
     ) -> Option<T> {
         let mut slot = None;
-        self
-            .iterate_assoc_items_dyn(db, krate, &mut |assoc_item_id| {
+        self.iterate_assoc_items_dyn(db, krate, &mut |assoc_item_id| {
             slot = callback(assoc_item_id.into());
             slot.is_some()
         });
@@ -5388,8 +5402,7 @@ impl<'db> Type<'db> {
     ) -> Option<T> {
         let _p = tracing::info_span!("iterate_method_candidates_with_traits").entered();
         let mut slot = None;
-        self
-            .iterate_method_candidates_split_inherent(
+        self.iterate_method_candidates_split_inherent(
             db,
             scope,
             traits_in_scope,
@@ -5473,7 +5486,7 @@ impl<'db> Type<'db> {
             traits_in_scope = traits_in_scope.len(),
             ?name,
         )
-            .entered();
+        .entered();
         let interner = DbInterner::new_with(db, None, None);
         // There should be no inference vars in types passed here
         let canonical = hir_ty::replace_errors_with_variables(interner, &self.ty);
@@ -5509,8 +5522,7 @@ impl<'db> Type<'db> {
         let _p = tracing::info_span!("iterate_path_candidates").entered();
         let mut slot = None;
 
-        self
-            .iterate_path_candidates_split_inherent(
+        self.iterate_path_candidates_split_inherent(
             db,
             scope,
             traits_in_scope,
@@ -5673,7 +5685,8 @@ impl<'db> Type<'db> {
             }
         }
 
-        let mut visitor = Visitor { db, env: self.env.clone(), callback, visited: FxHashSet::default() };
+        let mut visitor =
+            Visitor { db, env: self.env.clone(), callback, visited: FxHashSet::default() };
         self.ty.visit_with(&mut visitor);
     }
 
@@ -5987,7 +6000,8 @@ impl Layout {
     }
 
     pub fn enum_tag_size(&self) -> Option<usize> {
-        let tag_size = if let layout::Variants::Multiple { tag, tag_encoding, .. } = &self.0.variants {
+        let tag_size =
+            if let layout::Variants::Multiple { tag, tag_encoding, .. } = &self.0.variants {
                 match tag_encoding {
                     TagEncoding::Direct => tag.size(&*self.1).bytes_usize(),
                     TagEncoding::Niche { .. } => 0,

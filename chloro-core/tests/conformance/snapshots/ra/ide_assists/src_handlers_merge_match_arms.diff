@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18737 bytes
-Chloro size:   18186 bytes
+Chloro size:   18196 bytes
 Rustfmt size:  18737 bytes
 
 ✗ Outputs DIFFER
@@ -53,14 +53,6 @@ Rustfmt size:  18737 bytes
      // compare to the previous match arm as well.
      let arms_to_merge = successors(Some(current_arm), |it| neighbor(it, Direction::Next))
          .take_while(|arm| match arm.expr() {
-             }
-             _ => false,
-         })
--        .collect::<Vec<_>>();
-+        .collect();
- 
-     if arms_to_merge.len() <= 1 {
-         return None;
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   32009 bytes
+Chloro size:   32008 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -225,7 +225,8 @@ Rustfmt size:  33070 bytes
 -        let break_or_continue = source_map
 -            .node_expr(src.with_value(&break_or_continue))?
 -            .as_expr()?;
-+        let break_or_continue = source_map.node_expr(src.with_value(&break_or_continue))?.as_expr()?;
++        let break_or_continue =
++            source_map.node_expr(src.with_value(&break_or_continue))?.as_expr()?;
          let (Expr::Break { label, .. } | Expr::Continue { label }) = body[break_or_continue] else {
              return None;
          };
@@ -319,14 +320,6 @@ Rustfmt size:  33070 bytes
          })
      }
  
-     pub(super) fn find_container(&mut self, src: InFile<&SyntaxNode>) -> Option<ChildContainer> {
-         let _p = tracing::info_span!("find_container").entered();
--        let def = self.parent_ancestors_with_macros(src, |this, container, child| {
-+        let def = self
-+            .parent_ancestors_with_macros(src, |this, container, child| {
-             this.container_to_def(container, child)
-         });
-         if let Some(def) = def {
                  }
                  ast::Item::Enum(it) => this.enum_to_def(InFile::new(file_id, it)).map(Into::into),
                  ast::Item::Trait(it) => this.trait_to_def(InFile::new(file_id, it)).map(Into::into),

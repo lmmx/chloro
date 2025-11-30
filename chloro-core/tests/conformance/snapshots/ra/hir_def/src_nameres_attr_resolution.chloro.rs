@@ -40,8 +40,7 @@ impl DefMap {
             return Ok(ResolvedAttr::Other);
         }
 
-        let resolved_res = self
-            .resolve_path_fp_with_macro(
+        let resolved_res = self.resolve_path_fp_with_macro(
             local_def_map,
             db,
             ResolveMode::Other,
@@ -139,8 +138,7 @@ pub(super) fn derive_macro_as_call_id(
     let (macro_id, def_id) = resolver(&item_attr.path)
         .filter(|(_, def_id)| def_id.is_derive())
         .ok_or_else(|| UnresolvedMacro { path: item_attr.path.as_ref().clone() })?;
-    let call_id = def_id
-        .make_call(
+    let call_id = def_id.make_call(
         db,
         krate,
         MacroCallKind::Derive {

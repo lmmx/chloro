@@ -1154,13 +1154,6 @@ expression: cleaned_diff
  }
  
  fn foo() -> i32 {
--    [1, 2, 3].iter()
--        .map(|it|)
--        .max::<i32>();
-+    [1, 2, 3].iter().map(|it|).max();
- }
- 
- fn foo(foo: i32) {
      )
      return 92;
  }
@@ -1343,7 +1336,7 @@ expression: cleaned_diff
      }
      // still recover later
 -    let; //~ ERROR: expected pattern
-+    let
++    let;
 +    //~ ERROR: expected pattern
      let _ = 0;
  }
@@ -1561,14 +1554,12 @@ expression: cleaned_diff
  type Y = <A as B>;
  
  fn func() {
--    foo.bar::<>
--    foo.bar::<i32>;
-+    foo.bar()
-+    foo.bar();
-+}
+     foo.bar::<>
+     foo.bar::<i32>;
+ }
 +fn func() {
 +    let Some(_) = {Some(1)} else { panic!("h") };
- }
++}
  
 -foo
 +impl Type {
@@ -2506,14 +2497,6 @@ expression: cleaned_diff
  fn foo() {
  }
  
- fn foo() {
--    || .. .method();
-+    || ...method();
-     || .. .field;
- }
- 
- }
- 
  type F = Box<Fn(i32) -> ()>;
 +
  type F = Box<::Fn(i32) -> ()>;
@@ -2545,14 +2528,6 @@ expression: cleaned_diff
  
  fn foo() {
      while true {};
- 
- fn foo() {
-     x.foo();
--    y.bar::<T>(1, 2,);
-+    y.bar(1, 2,);
-     x.0.0.call();
--    x.0. call();
-+    x.0.call();
      x.0()
  }
  
@@ -2580,7 +2555,7 @@ expression: cleaned_diff
 -fn f() { let x: i32 = 92; super let y; super::foo; }
 +fn f() {
 +    let x: i32 = 92;
-+    let y;
++    super let y;
 +    super::foo;
 +}
  
@@ -3051,15 +3026,6 @@ expression: cleaned_diff
      assert_eq!(String::from(".................................................."),
  }
  
- fn special_characters() {
--    let val = !((|(..):(_,_),__@_|__)((&*"\\",'🤔')/**/,{})=={&[..=..][..];})//
--    ;
-+    let val = !((|(..):(_,_),__@_|__)((&*"\\",'🤔')/**/,{})=={&[..=..][..];});
-     assert!(!val);
- }
- 
- }
- 
  fn ktulhu() {
 -    ;;;();;;;;;;;;()
 +    ();
@@ -3151,9 +3117,7 @@ expression: cleaned_diff
  
  type X = ();
  
- fn main() {
--    let ():::X = ();
-+    let (): ::X = ();
+     let ():::X = ();
  }
  
 -use *;
@@ -3255,10 +3219,8 @@ expression: cleaned_diff
  
 -// https://github.com/rust-lang/rust-analyzer/issues/677
  fn main() {
--    #[cfg(feature = "backtrace")]
+     #[cfg(feature = "backtrace")]
      let exit_code = panic::catch_unwind(move || main());
- }
- 
      let x = 1..;
  }
  
@@ -4282,24 +4244,6 @@ expression: cleaned_diff
  fn infer_edition(file_path: &Path) -> Edition {
      let file_content = std::fs::read_to_string(file_path).unwrap();
      if let Some(edition) = file_content.strip_prefix("//@ edition: ") {
-     let mut indent = String::new();
-     let mut depth = 0;
-     let mut len = 0;
--    lexed.intersperse_trivia(&output, &mut |step| match step {
-+    lexed
-+        .intersperse_trivia(&output, &mut |step| match step {
-         crate::StrStep::Token { kind, text } => {
-             assert!(depth > 0);
-             len += text.len();
-         let dir = test_data_dir.join(path);
- 
-         let mut res = Vec::new();
--        let read_dir = fs::read_dir(&dir)
--            .unwrap_or_else(|err| panic!("can't `read_dir` {}: {err}", dir.display()));
-+        let read_dir = fs::read_dir(&dir).unwrap_or_else(|err| panic!("can't `read_dir` {}: {err}", dir.display()));
-         for file in read_dir {
-             let file = file.unwrap();
-             let path = file.path();
      p.set_extension("rast");
      expect_file![p].assert_eq(&actual)
  }
@@ -5055,12 +4999,6 @@ expression: cleaned_diff
  
  pub(super) fn atom_expr(
      p: &mut Parser<'_>,
-             return None;
-         }
-     };
--    let blocklike =
--        if BlockLike::is_blocklike(done.kind()) { BlockLike::Block } else { BlockLike::NotBlock };
-+    let blocklike = if BlockLike::is_blocklike(done.kind()) { BlockLike::Block } else { BlockLike::NotBlock };
      Some((done, blocklike))
  }
  
@@ -5535,15 +5473,6 @@ expression: cleaned_diff
  fn expr_bp(
      p: &mut Parser<'_>,
      m: Option<Marker>,
-     r: Restrictions,
-     bp: u8,
- ) -> Option<(CompletedMarker, BlockLike)> {
--    let m = m.unwrap_or_else(|| {
-+    let m = m
-+        .unwrap_or_else(|| {
-         let m = p.start();
-         attributes::outer_attrs(p);
-         m
      Some((lhs, BlockLike::NotBlock))
  }
  
@@ -6304,15 +6233,6 @@ expression: cleaned_diff
  }
  
  impl LexedStr<'_> {
-             State::Normal => (),
-         }
- 
--        let n_trivias =
--            (self.pos..self.lexed.len()).take_while(|&it| self.lexed.kind(it).is_trivia()).count();
-+        let n_trivias = (self.pos..self.lexed.len()).take_while(|&it| self.lexed.kind(it).is_trivia()).count();
-         let leading_trivias = self.pos..self.pos + n_trivias;
-         let n_attached_trivias = n_attached_trivias(
-             kind,
  }
  
  // Copied from https://github.com/rust-lang/cargo/blob/367fd9f213750cd40317803dd0a5a3ce3f0c676d/src/cargo/util/frontmatter.rs
@@ -6347,15 +6267,6 @@ expression: cleaned_diff
          let _ = input.next_slice(frontmatter_nl.start + 1);
          let frontmatter_end = input.current_token_start();
          source.frontmatter = Some(frontmatter_start..frontmatter_end);
-         source.close = Some(close_start..close_end);
- 
-         let nl = input.find_slice("\n");
--        let after_closing_fence =
--            input.next_slice(nl.map(|span| span.end).unwrap_or_else(|| input.eof_offset()));
-+        let after_closing_fence = input.next_slice(nl.map(|span| span.end).unwrap_or_else(|| input.eof_offset()));
-         let content_start = input.current_token_start();
-         let extra_dashes = after_closing_fence.chars().take_while(|b| *b == FENCE_CHAR).count();
-         if 0 < extra_dashes {
      //
      // Note that this set is stable (ie, it doesn't change with different
      // Unicode versions), so it's ok to just hard-code the values.

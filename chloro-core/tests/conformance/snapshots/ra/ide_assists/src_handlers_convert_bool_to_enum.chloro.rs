@@ -22,7 +22,8 @@ use crate::{
 };
 
 pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-    let BoolNodeData { target_node, name, ty_annotation, initializer, definition } = find_bool_node(ctx)?;
+    let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
+        find_bool_node(ctx)?;
     let target_module = ctx.sema.scope(&target_node)?.module().nearest_non_block_module(ctx.db());
 
     let target = name.syntax().text_range();
@@ -453,8 +454,7 @@ fn add_enum_def(
     let indent = IndentLevel::from_node(&insert_before);
     enum_def.reindent_to(indent);
 
-    edit
-        .insert(
+    edit.insert(
         insert_before.text_range().start(),
         format!("{}\n\n{indent}", enum_def.syntax().text()),
     );

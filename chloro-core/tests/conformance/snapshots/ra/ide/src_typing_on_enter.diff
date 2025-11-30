@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12984 bytes
-Chloro size:   11619 bytes
+Chloro size:   11627 bytes
 Rustfmt size:  13116 bytes
 
 ✗ Outputs DIFFER
@@ -58,9 +58,8 @@ Rustfmt size:  13116 bytes
 -//
 -// ![On Enter](https://user-images.githubusercontent.com/48062697/113065578-04c21800-91b1-11eb-82b8-22b8c481e645.gif)
  pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
--    let editioned_file_id_wrapper =
--        ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
-+    let editioned_file_id_wrapper = ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
+     let editioned_file_id_wrapper =
+         ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
      let parse = db.parse(editioned_file_id_wrapper);
      let file = parse.tree();
 -    let token = file

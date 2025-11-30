@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40489 bytes
-Chloro size:   39818 bytes
+Chloro size:   39817 bytes
 Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
@@ -53,7 +53,8 @@ Rustfmt size:  41249 bytes
 -        .scope(&target_node)?
 -        .module()
 -        .nearest_non_block_module(ctx.db());
-+    let BoolNodeData { target_node, name, ty_annotation, initializer, definition } = find_bool_node(ctx)?;
++    let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
++        find_bool_node(ctx)?;
 +    let target_module = ctx.sema.scope(&target_node)?.module().nearest_non_block_module(ctx.db());
  
      let target = name.syntax().text_range();
@@ -209,15 +210,6 @@ Rustfmt size:  41249 bytes
      let receiver = method_call.receiver()?;
  
      if !receiver.syntax().descendants().contains(name.syntax()) {
-     let indent = IndentLevel::from_node(&insert_before);
-     enum_def.reindent_to(indent);
- 
--    edit.insert(
-+    edit
-+        .insert(
-         insert_before.text_range().start(),
-         format!("{}\n\n{indent}", enum_def.syntax().text()),
-     );
      ));
      make::enum_(
          [derive_eq],

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11017 bytes
-Chloro size:   11040 bytes
+Chloro size:   11014 bytes
 Rustfmt size:  11350 bytes
 
 ✗ Outputs DIFFER
@@ -71,15 +71,6 @@ Rustfmt size:  11350 bytes
              self.lower_type_bound_as_predicate(ec, bound, None, target);
          }
      }
-         hrtb_lifetimes: Option<&[Name]>,
-         target: Either<TypeRefId, LifetimeRefId>,
-     ) {
--        let bound = ec.lower_type_bound(
-+        let bound = ec
-+            .lower_type_bound(
-             bound,
-             &mut Self::lower_argument_impl_trait(
-                 &mut self.type_or_consts,
                      target: type_ref,
                      bound,
                  },
@@ -120,12 +111,3 @@ Rustfmt size:  11350 bytes
              }
              type_ref
          }
- 
-     fn fill_self_param(&mut self, ec: &mut ExprCollector<'_>, bounds: Option<ast::TypeBoundList>) {
-         let self_ = Name::new_symbol_root(sym::Self_);
--        let idx = self.type_or_consts.alloc(
-+        let idx = self.type_or_consts
-+            .alloc(
-             TypeParamData {
-                 name: Some(self_),
-                 default: None,

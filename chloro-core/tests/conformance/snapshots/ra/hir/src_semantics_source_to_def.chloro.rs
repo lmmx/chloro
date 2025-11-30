@@ -403,7 +403,8 @@ impl SourceToDefCtx<'_, '_> {
         let break_or_continue = ast::Expr::cast(src.value.syntax().parent()?)?;
         let container = self.find_pat_or_label_container(src.syntax_ref())?;
         let (body, source_map) = self.db.body_with_source_map(container);
-        let break_or_continue = source_map.node_expr(src.with_value(&break_or_continue))?.as_expr()?;
+        let break_or_continue =
+            source_map.node_expr(src.with_value(&break_or_continue))?.as_expr()?;
         let (Expr::Break { label, .. } | Expr::Continue { label }) = body[break_or_continue] else {
             return None;
         };
@@ -540,8 +541,7 @@ impl SourceToDefCtx<'_, '_> {
 
     pub(super) fn find_container(&mut self, src: InFile<&SyntaxNode>) -> Option<ChildContainer> {
         let _p = tracing::info_span!("find_container").entered();
-        let def = self
-            .parent_ancestors_with_macros(src, |this, container, child| {
+        let def = self.parent_ancestors_with_macros(src, |this, container, child| {
             this.container_to_def(container, child)
         });
         if let Some(def) = def {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5110 bytes
-Chloro size:   5092 bytes
+Chloro size:   5110 bytes
 Rustfmt size:  5354 bytes
 
 ✗ Outputs DIFFER
@@ -23,15 +23,6 @@ Rustfmt size:  5354 bytes
  
  use crate::cli::{flags, progress_report::ProgressReport};
  
-             stdx::thread::ThreadIntent::LatencySensitive,
-             "BIG_STACK_THREAD",
-         )
--        .stack_size(STACK_SIZE)
--        .spawn(|| self.run_())
--        .unwrap();
-+            .stack_size(STACK_SIZE)
-+            .spawn(|| self.run_())
-+            .unwrap();
  
          handle.join()
      }
@@ -39,23 +30,6 @@ Rustfmt size:  5354 bytes
      fn run_(self) -> anyhow::Result<()> {
          let cargo_config = CargoConfig {
              sysroot: Some(RustLibSource::Discover),
-             with_proc_macro_server,
-             prefill_caches: false,
-         };
--        let (db, _vfs, _proc_macro) =
--            load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
-+        let (db, _vfs, _proc_macro) = load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
-         let host = AnalysisHost::with_database(db);
-         let db = host.raw_database();
-         let analysis = host.analysis();
-                 let source_root = db.source_root(source_root).source_root(db);
-                 !source_root.is_library
-             })
--            .collect::<Vec<_>>();
-+            .collect();
- 
-         let mut bar = ProgressReport::new(work.len());
-         for module in work {
              if !visited_files.contains(&file_id) {
                  let message = format!("processing {}", _vfs.file_path(file_id.file_id(db)));
                  bar.set_message(move || message.clone());
@@ -91,7 +65,8 @@ Rustfmt size:  5354 bytes
 -        .into_iter()
 -        .map(|krate| krate.root_module())
 -        .collect();
-+    let mut worklist: Vec<_> = Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
++    let mut worklist: Vec<_> =
++        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
      let mut modules = Vec::new();
  
      while let Some(module) = worklist.pop() {

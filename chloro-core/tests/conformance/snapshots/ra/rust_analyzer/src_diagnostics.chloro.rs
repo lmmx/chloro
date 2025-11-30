@@ -162,9 +162,7 @@ impl DiagnosticCollection {
         }
 
         let check = &mut self.check[flycheck_id];
-        let package = check.per_package
-            .entry(package_id.clone())
-            .or_insert_with(|| {
+        let package = check.per_package.entry(package_id.clone()).or_insert_with(|| {
             PackageFlycheckDiagnostic { generation, per_file: FxHashMap::default() }
         });
         // Getting message from old generation. Might happen in restarting checks.
@@ -317,7 +315,7 @@ pub(crate) fn fetch_native_diagnostics(
                 .collect::<Vec<_>>();
             Some((file_id, diagnostics))
         })
-        .collect();
+        .collect::<Vec<_>>();
 
     // Add back any diagnostics that point to files we are subscribed to
     for (file_id, group) in odd_ones

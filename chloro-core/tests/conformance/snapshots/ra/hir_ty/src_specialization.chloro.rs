@@ -81,7 +81,8 @@ fn specializes_query(
     // Create an infcx, taking the predicates of the specializing impl as assumptions:
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
 
-    let specializing_impl_trait_ref = db.impl_trait(specializing_impl_def_id).unwrap().instantiate_identity();
+    let specializing_impl_trait_ref =
+        db.impl_trait(specializing_impl_def_id).unwrap().instantiate_identity();
     let cause = &ObligationCause::dummy();
     debug!(
         "fulfill_implication({:?}, trait_ref={:?} |- {:?} applies)",

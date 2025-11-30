@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   100390 bytes
+Chloro size:   100334 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -125,14 +125,6 @@ Rustfmt size:  101650 bytes
      pub fn check_for_format_args_template(
          &self,
          original_token: SyntaxToken,
-         ast::String,
-         Option<Either<PathResolution, InlineAsmOperand>>,
-     )> {
--        let original_token =
--            self.wrap_token_infile(original_token).map(ast::String::cast).transpose()?;
-+        let original_token = self.wrap_token_infile(original_token).map(ast::String::cast).transpose()?;
-         self.check_for_format_args_template_with_file(original_token, offset)
-     }
  
      /// Retrieves the formatting part of the format_args! template string at the given offset.
      ///
@@ -140,15 +132,6 @@ Rustfmt size:  101650 bytes
      /// Returns the range (pre-expansion) in the string literal corresponding to the resolution,
      /// absolute file range (post-expansion)
      /// of the part in the format string, the corresponding string token and the resolution if it
-         ast::String,
-         Option<Either<PathResolution, InlineAsmOperand>>,
-     )> {
--        let relative_offset =
--            offset.checked_sub(original_token.value.syntax().text_range().start())?;
-+        let relative_offset = offset.checked_sub(original_token.value.syntax().text_range().start())?;
-         self.descend_into_macros_breakable(
-             original_token.as_ref().map(|it| it.syntax().clone()),
-             |token, _| {
      ///
      /// Note that if this token itself is within the context of a macro expansion does not matter.
      /// That is, we strictly check if it lies inside the input of a macro call.
@@ -160,69 +143,6 @@ Rustfmt size:  101650 bytes
          value.parent_ancestors().any(|ancestor| {
              if ast::MacroCall::can_cast(ancestor.kind()) {
                  return true;
-         token: SyntaxToken,
-         mut cb: impl FnMut(InFile<SyntaxToken>, SyntaxContext),
-     ) {
--        self.descend_into_macros_all(self.wrap_token_infile(token), false, &mut |t, ctx| {
-+        self
-+            .descend_into_macros_all(self.wrap_token_infile(token), false, &mut |t, ctx| {
-             cb(t, ctx)
-         });
-     }
- 
-     pub fn descend_into_macros(&self, token: SyntaxToken) -> SmallVec<[SyntaxToken; 1]> {
-         let mut res = smallvec![];
--        self.descend_into_macros_all(
-+        self
-+            .descend_into_macros_all(
-             self.wrap_token_infile(token.clone()),
-             false,
-             &mut |t, _ctx| res.push(t.value),
-     ) -> SmallVec<[InFile<SyntaxToken>; 1]> {
-         let mut res = smallvec![];
-         let token = self.wrap_token_infile(token);
--        self.descend_into_macros_all(token.clone(), always_descend_into_derives, &mut |t, ctx| {
-+        self
-+            .descend_into_macros_all(token.clone(), always_descend_into_derives, &mut |t, ctx| {
-             if !ctx.is_opaque(self.db) {
-                 // Don't descend into opaque contexts
-                 res.push(t);
-         let text = token.text();
-         let kind = token.kind();
- 
--        self.descend_into_macros_cb(token.clone(), |InFile { value, file_id: _ }, ctx| {
-+        self
-+            .descend_into_macros_cb(token.clone(), |InFile { value, file_id: _ }, ctx| {
-             let mapped_kind = value.kind();
-             let any_ident_match = || kind.is_any_identifier() && value.kind().is_any_identifier();
-             let matches = (kind == mapped_kind || any_ident_match())
-         let text = token.text();
-         let kind = token.kind();
- 
--        self.descend_into_macros_cb(token.clone(), |InFile { value, file_id }, ctx| {
-+        self
-+            .descend_into_macros_cb(token.clone(), |InFile { value, file_id }, ctx| {
-             let mapped_kind = value.kind();
-             let any_ident_match = || kind.is_any_identifier() && value.kind().is_any_identifier();
-             let matches = (kind == mapped_kind || any_ident_match())
-         always_descend_into_derives: bool,
-         f: &mut dyn FnMut(InFile<SyntaxToken>, SyntaxContext),
-     ) {
--        self.descend_into_macros_impl(token, always_descend_into_derives, &mut |tok, ctx| {
-+        self
-+            .descend_into_macros_impl(token, always_descend_into_derives, &mut |tok, ctx| {
-             f(tok, ctx);
-             CONTINUE_NO_BREAKS
-         });
-         let span = db.span_map(file_id).span_for_range(token.text_range());
- 
-         // Process the expansion of a call, pushing all tokens with our span in the expansion back onto our stack
--        let process_expansion_for_token =
--            |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
-+        let process_expansion_for_token = |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
-                 let InMacroFile { file_id, value: mapped_tokens } = ctx
-                     .cache
-                     .get_or_insert_expansion(ctx.db, macro_file)
              };
  
          // A stack of tokens to process, along with the file they came from
@@ -265,15 +185,6 @@ Rustfmt size:  101650 bytes
      pub fn resolve_trait_impl_method(
          &self,
          env: Type<'db>,
-     ) -> Option<Function> {
-         let interner = DbInterner::new_with(self.db, None, None);
-         let mut subst = subst.into_iter();
--        let substs =
--            hir_ty::next_solver::GenericArgs::for_item(interner, trait_.id.into(), |_, id, _| {
-+        let substs = hir_ty::next_solver::GenericArgs::for_item(interner, trait_.id.into(), |_, id, _| {
-                 assert!(matches!(id, hir_def::GenericParamId::TypeParamId(_)), "expected a type");
-                 subst.next().expect("too few subst").ty.into()
-             });
          self.analyze(try_expr.syntax())?.resolve_try_expr(self.db, try_expr)
      }
  
@@ -305,16 +216,6 @@ Rustfmt size:  101650 bytes
          infer_body: bool,
      ) -> Option<SourceAnalyzer<'db>> {
          let _p = tracing::info_span!("SemanticsImpl::analyze_impl").entered();
-     /// Wraps the node in a [`InFile`] with the file id it belongs to.
-     fn find_file<'node>(&self, node: &'node SyntaxNode) -> InFile<&'node SyntaxNode> {
-         let root_node = find_root(node);
--        let file_id = self.lookup(&root_node).unwrap_or_else(|| {
-+        let file_id = self
-+            .lookup(&root_node)
-+            .unwrap_or_else(|| {
-             panic!(
-                 "\n\nFailed to lookup {:?} in this Semantics.\n\
-                  Make sure to only query nodes derived from this instance of Semantics.\n\
      }
  }
  

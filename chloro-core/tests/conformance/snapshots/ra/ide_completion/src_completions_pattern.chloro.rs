@@ -85,8 +85,7 @@ pub(crate) fn complete_pattern(
     // FIXME: ideally, we should look at the type we are matching against and
 
     // suggest variants + auto-imports
-    ctx
-        .process_all_names(&mut |name, res, _| {
+    ctx.process_all_names(&mut |name, res, _| {
         let add_simple_path = match res {
             hir::ScopeDef::ModuleDef(def) => match def {
                 hir::ModuleDef::Adt(hir::Adt::Struct(strukt)) => {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19259 bytes
-Chloro size:   19126 bytes
+Chloro size:   19156 bytes
 Rustfmt size:  19938 bytes
 
 ✗ Outputs DIFFER
@@ -68,15 +68,6 @@ Rustfmt size:  19938 bytes
                  if let Some(expr) = initializer {
                      compute_expr_scopes(*expr, store, scopes, scope);
                  }
-     scopes: &mut ExprScopes,
-     scope: &mut ScopeId,
- ) {
--    let make_label =
--        |label: &Option<LabelId>| label.map(|label| (label, store[label].name.clone()));
-+    let make_label = |label: &Option<LabelId>| label.map(|label| (label, store[label].name.clone()));
- 
-     let compute_expr_scopes = |scopes: &mut ExprScopes, expr: ExprId, scope: &mut ScopeId| {
-         compute_expr_scopes(expr, store, scopes, scope)
  
      scopes.set_scope(expr, *scope);
      match &store[expr] {
@@ -168,12 +159,6 @@ Rustfmt size:  19938 bytes
              .unwrap()
              .as_expr()
              .unwrap();
-             .scope_chain(scope)
-             .flat_map(|scope| scopes.entries(scope))
-             .map(|it| it.name().as_str())
--            .collect::<Vec<_>>()
-+            .collect()
-             .join("\n");
          let expected = expected.join("\n");
          assert_eq_text!(&expected, &actual);
      }
@@ -272,7 +257,8 @@ Rustfmt size:  19938 bytes
 -            .pat_syntax(source_map.patterns_for_binding(resolved.binding())[0])
 -            .unwrap();
 +        let resolved = scopes.resolve_name_in_scope(expr_scope, &name_ref.as_name()).unwrap();
-+        let pat_src = source_map.pat_syntax(source_map.patterns_for_binding(resolved.binding())[0]).unwrap();
++        let pat_src =
++            source_map.pat_syntax(source_map.patterns_for_binding(resolved.binding())[0]).unwrap();
  
          let local_name = pat_src.value.syntax_node_ptr().to_node(file.syntax());
          assert_eq!(local_name.text_range(), expected_name.syntax().text_range());

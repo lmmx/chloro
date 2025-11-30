@@ -292,9 +292,7 @@ impl<'a> Ctx<'a> {
         extern_crate: &ast::ExternCrate,
     ) -> Option<ItemTreeAstId<ExternCrate>> {
         let name = extern_crate.name_ref()?.as_name();
-        let alias = extern_crate
-            .rename()
-            .map(|a| {
+        let alias = extern_crate.rename().map(|a| {
             a.name().map(|it| it.as_name()).map_or(ImportAlias::Underscore, ImportAlias::Alias)
         });
         let visibility = self.lower_visibility(extern_crate);
@@ -341,9 +339,7 @@ impl<'a> Ctx<'a> {
 
     fn lower_extern_block(&mut self, block: &ast::ExternBlock) -> ItemTreeAstId<ExternBlock> {
         let ast_id = self.source_ast_id_map.ast_id(block);
-        let children: Box<[_]> = block
-            .extern_item_list()
-            .map_or(Box::new([]), |list| {
+        let children: Box<[_]> = block.extern_item_list().map_or(Box::new([]), |list| {
             list.extern_items()
                 .filter_map(|item| {
                     // Note: All items in an `extern` block need to be lowered as if they're outside of one

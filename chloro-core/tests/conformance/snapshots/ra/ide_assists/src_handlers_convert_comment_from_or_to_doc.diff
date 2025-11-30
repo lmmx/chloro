@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18595 bytes
-Chloro size:   18315 bytes
+Chloro size:   18323 bytes
 Rustfmt size:  18641 bytes
 
 ✗ Outputs DIFFER
@@ -74,7 +74,8 @@ Rustfmt size:  18641 bytes
 -        .text_range()
 -        .start()
 -        .checked_sub((indentation.0 as u32 * 4).into())?;
-+    let start = first.syntax().text_range().start().checked_sub((indentation.0 as u32 * 4).into())?;
++    let start =
++        first.syntax().text_range().start().checked_sub((indentation.0 as u32 * 4).into())?;
      let end = comments.last()?.syntax().text_range().end();
      Some(TextRange::new(start, end))
  }

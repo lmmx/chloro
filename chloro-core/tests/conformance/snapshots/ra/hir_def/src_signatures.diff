@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33467 bytes
-Chloro size:   33325 bytes
+Chloro size:   33362 bytes
 Rustfmt size:  34530 bytes
 
 ✗ Outputs DIFFER
@@ -99,15 +99,6 @@ Rustfmt size:  34530 bytes
  bitflags::bitflags! {
      #[derive(Debug, Clone, Copy, Eq, PartialEq, Default)]
      pub struct ConstFlags: u8 {
-             flags.insert(ConstFlags::HAS_BODY);
-         }
- 
--        let (store, source_map, type_ref) =
--            crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
-+        let (store, source_map, type_ref) = crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
- 
-         (
-             Arc::new(ConstSignature {
  #[derive(Debug, PartialEq, Eq)]
  pub struct StaticSignature {
      pub name: Name,
@@ -127,24 +118,6 @@ Rustfmt size:  34530 bytes
          let loc = id.lookup(db);
  
          let module = loc.container.module(db);
-             flags.insert(StaticFlags::EXPLICIT_SAFE);
-         }
- 
--        let (store, source_map, type_ref) =
--            crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
-+        let (store, source_map, type_ref) = crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
- 
-         (
-             Arc::new(StaticSignature {
-             flags.insert(ImplFlags::DEFAULT);
-         }
- 
--        let (store, source_map, self_ty, target_trait, generic_params) =
--            crate::expr_store::lower::lower_impl(db, loc.container, src, id);
-+        let (store, source_map, self_ty, target_trait, generic_params) = crate::expr_store::lower::lower_impl(db, loc.container, src, id);
- 
-         (
-             Arc::new(ImplSignature {
          if attrs.by_key(sym::fundamental).exists() {
              flags |= TraitFlags::FUNDAMENTAL;
          }
@@ -162,7 +135,8 @@ Rustfmt size:  34530 bytes
 -        let mut skip_array_during_method_dispatch = attrs
 -            .by_key(sym::rustc_skip_array_during_method_dispatch)
 -            .exists();
-+        let mut skip_array_during_method_dispatch = attrs.by_key(sym::rustc_skip_array_during_method_dispatch).exists();
++        let mut skip_array_during_method_dispatch =
++            attrs.by_key(sym::rustc_skip_array_during_method_dispatch).exists();
          let mut skip_boxed_slice_during_method_dispatch = false;
 -        for tt in attrs
 -            .by_key(sym::rustc_skip_during_method_dispatch)
@@ -185,23 +159,15 @@ Rustfmt size:  34530 bytes
              Arc::new(source_map),
          )
      }
-         }
  
          let name = as_name_opt(source.value.name());
--        let abi = source.value.abi().map(|abi| {
+         let abi = source.value.abi().map(|abi| {
 -            abi.abi_string()
 -                .map_or_else(|| sym::C, |it| Symbol::intern(it.text_without_quotes()))
-+        let abi = source.value
-+            .abi()
-+            .map(|abi| {
 +            abi.abi_string().map_or_else(|| sym::C, |it| Symbol::intern(it.text_without_quotes()))
          });
--        let (store, source_map, generic_params, params, ret_type, self_param, variadic) =
--            lower_function(db, module, source, id);
-+        let (store, source_map, generic_params, params, ret_type, self_param, variadic) = lower_function(db, module, source, id);
-         if self_param {
-             flags.insert(FnFlags::HAS_SELF_PARAM);
-         }
+         let (store, source_map, generic_params, params, ret_type, self_param, variadic) =
+             lower_function(db, module, source, id);
  
          let mut flags = TypeAliasFlags::empty();
          let attrs = db.attrs(id.into());
@@ -213,15 +179,6 @@ Rustfmt size:  34530 bytes
              flags.insert(TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL);
          }
          if attrs.by_key(sym::rustc_allow_incoherent_impl).exists() {
-         }
-         let source = loc.source(db);
-         let name = as_name_opt(source.value.name());
--        let (store, source_map, generic_params, bounds, ty) =
--            lower_type_alias(db, loc.container.module(db), source, id);
-+        let (store, source_map, generic_params, bounds, ty) = lower_type_alias(db, loc.container.module(db), source, id);
- 
-         (
-             Arc::new(TypeAliasSignature {
  pub struct SimpleBody {
      pub store: Arc<ExpressionStore>,
  }
@@ -268,15 +225,6 @@ Rustfmt size:  34530 bytes
      }
  }
  
- ) -> Option<(Arena<FieldData>, ExpressionStore, ExpressionStoreSourceMap)> {
-     let cfg_options = module.krate.cfg_options(db);
-     let mut col = ExprCollector::new(db, module, fields.file_id);
--    let override_visibility = override_visibility.map(|vis| {
-+    let override_visibility = override_visibility
-+        .map(|vis| {
-         LazyCell::new(|| {
-             let span_map = db.span_map(fields.file_id);
-             visibility_from_ast(db, vis, &mut |range| span_map.span_for_range(range).ctx)
                      .filter_map(NodeOrToken::into_token)
                      .any(|token| token.kind() == T![unsafe]);
                  let name = field_name(idx, &field);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21912 bytes
-Chloro size:   21590 bytes
+Chloro size:   21598 bytes
 Rustfmt size:  21912 bytes
 
 ✗ Outputs DIFFER
@@ -47,15 +47,6 @@ Rustfmt size:  21912 bytes
 -// ```
  pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
- 
-     };
- 
-     // Return early if we've found an existing new fn
--    let impl_def =
--        find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
-+    let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
- 
-     let current_module = ctx.sema.scope(strukt.syntax())?.module();
  
  #[cfg(test)]
  mod record_tests {

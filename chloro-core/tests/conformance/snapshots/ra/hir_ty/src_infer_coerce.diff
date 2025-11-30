@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 68687 bytes
-Chloro size:   68815 bytes
+Chloro size:   68813 bytes
 Rustfmt size:  68687 bytes
 
 ✗ Outputs DIFFER
@@ -119,12 +119,6 @@ Rustfmt size:  68687 bytes
          // confusing.
          let Some(InferOk { value: ty, mut obligations }) = found else {
              if let Some(first_error) = first_error {
-             return success(vec![], ty, obligations);
-         }
- 
--        let InferOk { value: mut adjustments, obligations: o } =
--            autoderef.adjust_steps_as_infer_ok();
-+        let InferOk { value: mut adjustments, obligations: o } = autoderef.adjust_steps_as_infer_ok();
          obligations.extend(o);
  
          // Now apply the autoref. We have to extract the region out of
@@ -132,13 +126,6 @@ Rustfmt size:  68687 bytes
          // the final ref type we got.
          let TyKind::Ref(region, _, _) = ty.kind() else {
              panic!("expected a ref type, got {:?}", ty);
-         };
--        adjustments.push(Adjustment {
-+        adjustments
-+            .push(Adjustment {
-             kind: Adjust::Borrow(AutoBorrow::Ref(region, mutbl_b)),
-             target: ty,
-         });
          debug_assert!(self.table.shallow_resolve(target) == target);
  
          // We don't apply any coercions incase either the source or target
@@ -287,12 +274,6 @@ Rustfmt size:  68687 bytes
          // but only if the new expression has no coercion already applied to it.
          let mut first_error = None;
          if !self.result.expr_adjustments.contains_key(&new) {
-         use_lub: false,
-         target_features: &mut || (&target_features, TargetFeatureIsSafeInTarget::No),
-     };
--    let InferOk { value: (adjustments, ty), obligations } =
--        coerce.coerce(ty1_with_vars, ty2_with_vars)?;
-+    let InferOk { value: (adjustments, ty), obligations } = coerce.coerce(ty1_with_vars, ty2_with_vars)?;
      table.register_predicates(obligations);
  
      // default any type vars that weren't unified back to their original bound vars
@@ -300,12 +281,3 @@ Rustfmt size:  68687 bytes
      // (kind of hacky)
      let mut fallback_ty = |debruijn, infer| {
          let var = vars.var_values.iter().position(|arg| {
-     };
-     // FIXME also map the types in the adjustments
-     // FIXME: We don't fallback correctly since this is done on `InferenceContext` and we only have `InferenceTable`.
--    let ty = table.resolve_with_fallback(
-+    let ty = table
-+        .resolve_with_fallback(
-         ty,
-         &mut fallback_ty,
-         &mut fallback_const,

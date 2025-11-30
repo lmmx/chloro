@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6490 bytes
-Chloro size:   6507 bytes
+Chloro size:   6498 bytes
 Rustfmt size:  6748 bytes
 
 ✗ Outputs DIFFER
@@ -79,12 +79,7 @@ Rustfmt size:  6748 bytes
 +    item.set_documentation(thing.docs(db)).set_deprecated(thing.is_deprecated(&ctx));
  
      let ty = thing.ty(db);
--    item.set_relevance(CompletionRelevance {
-+    item
-+        .set_relevance(CompletionRelevance {
-         type_match: compute_type_match(ctx.completion, &ty),
-         // function is a misnomer here, this is more about constructor information
-         function: Some(CompletionRelevanceFn {
+     item.set_relevance(CompletionRelevance {
              Variant::Struct(it) => visible_fields(ctx, &fields, it)?,
              Variant::EnumVariant(it) => visible_fields(ctx, &fields, it)?,
          };

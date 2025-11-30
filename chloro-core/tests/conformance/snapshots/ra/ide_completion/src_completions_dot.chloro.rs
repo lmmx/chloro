@@ -266,8 +266,7 @@ fn complete_methods(
         }
     }
 
-    receiver
-        .iterate_method_candidates_split_inherent(
+    receiver.iterate_method_candidates_split_inherent(
         ctx.db,
         &ctx.scope,
         traits_in_scope,

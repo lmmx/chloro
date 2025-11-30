@@ -202,7 +202,8 @@ impl<'db> InferenceContext<'_, 'db> {
             }
             None => ((subs, &[][..]), 0),
         };
-        let mut expectations_iter = expectations.iter().chain(repeat_with(|| self.table.next_ty_var()));
+        let mut expectations_iter =
+            expectations.iter().chain(repeat_with(|| self.table.next_ty_var()));
 
         let mut inner_tys = Vec::with_capacity(n_uncovered_patterns + subs.len());
 
@@ -635,8 +636,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
 pub(super) fn contains_explicit_ref_binding(body: &Body, pat_id: PatId) -> bool {
     let mut res = false;
-    body
-        .walk_pats(pat_id, &mut |pat| {
+    body.walk_pats(pat_id, &mut |pat| {
         res |= matches!(body[pat], Pat::Bind { id, .. } if body[id].mode == BindingAnnotation::Ref);
     });
     res

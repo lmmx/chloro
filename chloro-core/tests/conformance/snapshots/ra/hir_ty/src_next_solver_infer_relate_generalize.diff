@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31093 bytes
-Chloro size:   31124 bytes
+Chloro size:   31111 bytes
 Rustfmt size:  31849 bytes
 
 ✗ Outputs DIFFER
@@ -154,8 +154,12 @@ Rustfmt size:  31849 bytes
  
          debug_assert!(!generalized_ct.is_ct_infer());
          if has_unconstrained_ty_var {
-         self.inner
-             .borrow_mut()
+             panic!("unconstrained ty var when generalizing `{source_ct:?}`");
+         }
+ 
+-        self.inner
+-            .borrow_mut()
++        self.inner.borrow_mut()
              .const_unification_table()
 -            .union_value(
 -                target_vid,

@@ -97,15 +97,15 @@ mod tests {
     ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let mut inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
-        inlay_hints
-            .iter_mut()
+        inlay_hints.iter_mut()
             .flat_map(|hint| &mut hint.label.parts)
             .for_each(|hint| {
             if let Some(LazyProperty::Computed(loc)) = &mut hint.linked_location {
                 loc.range = TextRange::empty(TextSize::from(0));
             }
         });
-        let filtered = inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect();
+        let filtered =
+            inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect::<Vec<_>>();
         expect.assert_debug_eq(&filtered)
     }
     #[test]

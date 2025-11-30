@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15808 bytes
-Chloro size:   15583 bytes
+Chloro size:   15573 bytes
 Rustfmt size:  15808 bytes
 
 ✗ Outputs DIFFER
@@ -31,15 +31,6 @@ Rustfmt size:  15808 bytes
  pub(crate) fn unlinked_file(
      ctx: &DiagnosticsContext<'_>,
      acc: &mut Vec<Diagnostic>,
-         unused = false;
-     }
- 
--    acc.push(
-+    acc
-+        .push(
-         Diagnostic::new(
-             DiagnosticCode::Ra("unlinked-file", Severity::WeakWarning),
-             message,
  ) -> Option<Vec<Assist>> {
      // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
      // suggest that as a fix.
@@ -47,23 +38,6 @@ Rustfmt size:  15808 bytes
      let db = ctx.sema.db;
  
      let source_root = ctx.sema.db.file_source_root(file_id).source_root_id(db);
-     // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
- 
-     // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
--    let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
-+    let paths = iter::successors(Some(parent), |prev| prev.parent())
-+        .filter_map(|path| {
-         let parent = path.parent()?;
-         let (name, _) = path.name_and_extension()?;
-         Some(([parent.join(&format!("{name}.rs"))?, path.join("mod.rs")?], name.to_owned()))
-     });
-     let mut stack = vec![];
--    let &parent_id =
--        paths.inspect(|(_, name)| stack.push(name.clone())).find_map(|(paths, _)| {
-+    let &parent_id = paths.inspect(|(_, name)| stack.push(name.clone())).find_map(|(paths, _)| {
-             paths.into_iter().find_map(|path| source_root.file_for_path(&path))
-         })?;
-     stack.pop();
      };
  
      // If there's an existing `mod m;` statement matching the new one, don't emit a fix (it's

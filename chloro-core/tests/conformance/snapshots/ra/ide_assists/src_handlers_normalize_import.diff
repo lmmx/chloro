@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7100 bytes
-Chloro size:   6916 bytes
+Chloro size:   6924 bytes
 Rustfmt size:  7241 bytes
 
 ✗ Outputs DIFFER
@@ -33,9 +33,8 @@ Rustfmt size:  7241 bytes
      };
  
      let target = use_item.syntax().text_range();
--    let normalized_use_item =
--        try_normalize_import(&use_item, ctx.config.insert_use.granularity.into())?;
-+    let normalized_use_item = try_normalize_import(&use_item, ctx.config.insert_use.granularity.into())?;
+     let normalized_use_item =
+         try_normalize_import(&use_item, ctx.config.insert_use.granularity.into())?;
  
 -    acc.add(
 -        AssistId::refactor_rewrite("normalize_import"),

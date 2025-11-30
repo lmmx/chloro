@@ -23,9 +23,7 @@ pub(super) fn hints(
     }
 
     let outer_paren_pat = pat.syntax().ancestors().skip(1).map_while(ast::ParenPat::cast).last();
-    let range = outer_paren_pat
-        .as_ref()
-        .map_or_else(
+    let range = outer_paren_pat.as_ref().map_or_else(
         || match pat {
             // for ident patterns that @ bind a name, render the un-ref patterns in front of the inner pattern
             // instead of the name as that makes it more clear and doesn't really change the outcome
@@ -48,8 +46,7 @@ pub(super) fn hints(
     };
     let pattern_adjustments = sema.pattern_adjustments(pat);
     let mut was_mut_last = false;
-    pattern_adjustments
-        .iter()
+    pattern_adjustments.iter()
         .for_each(|ty| {
         let reference = ty.is_reference();
         let mut_reference = ty.is_mutable_reference();

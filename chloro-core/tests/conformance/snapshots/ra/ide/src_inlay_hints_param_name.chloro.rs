@@ -194,7 +194,8 @@ pub(super) fn is_argument_similar_to_param_name(
     let param_name = param_name.split('_');
     let argument = argument.iter().flat_map(|it| it.text_non_mutable().split('_'));
 
-    let prefix_match = zip(argument.clone(), param_name.clone()).all(|(arg, param)| arg.eq_ignore_ascii_case(param));
+    let prefix_match = zip(argument.clone(), param_name.clone())
+        .all(|(arg, param)| arg.eq_ignore_ascii_case(param));
     let postfix_match = || {
         zip(argument.rev(), param_name.rev()).all(|(arg, param)| arg.eq_ignore_ascii_case(param))
     };

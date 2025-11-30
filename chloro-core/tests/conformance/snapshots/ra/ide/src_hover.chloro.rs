@@ -106,7 +106,7 @@ impl HoverAction {
                     nav: it.try_to_nav(sema)?.call_site(),
                 })
             })
-            .collect();
+            .collect::<Vec<_>>();
         targets.is_empty().not().then_some(HoverAction::GoToType(targets))
     }
 }
@@ -131,7 +131,8 @@ pub(crate) fn hover(
 ) -> Option<RangeInfo<HoverResult>> {
     let sema = &hir::Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
-    let edition = sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
+    let edition =
+        sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
     let display_target = sema.first_crate(file_id)?.to_display_target(db);
     let mut res = if range.is_empty() {
         hover_offset(
@@ -432,7 +433,8 @@ fn hover_ranged(
         }
         _ => None,
     };
-    let res = res.or_else(|| render::type_info_of(sema, config, &expr_or_pat, edition, display_target));
+    let res =
+        res.or_else(|| render::type_info_of(sema, config, &expr_or_pat, edition, display_target));
     res.map(|it| {
         let range = match expr_or_pat {
             Either::Left(it) => it.syntax().text_range(),
@@ -658,8 +660,7 @@ fn walk_and_push_ty(
     ty: &hir::Type<'_>,
     push_new_def: &mut dyn FnMut(hir::ModuleDef),
 ) {
-    ty
-        .walk(db, |t| {
+    ty.walk(db, |t| {
         if let Some(adt) = t.as_adt() {
             push_new_def(adt.into());
         } else if let Some(trait_) = t.as_dyn_trait() {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27466 bytes
-Chloro size:   27457 bytes
+Chloro size:   27462 bytes
 Rustfmt size:  27512 bytes
 
 ✗ Outputs DIFFER
@@ -45,12 +45,3 @@ Rustfmt size:  27512 bytes
      check(
          r#"
  //- /lib.rs
-     expect![[r#"
-         legacy
-         macro20
--        proc_attr"#]]
--    .assert_eq(&actual);
-+        proc_attr"#]].assert_eq(&actual);
- }
- 
- #[test]

@@ -11,7 +11,8 @@ pub(crate) fn goto_type_definition(
     let sema = hir::Semantics::new(db);
 
     let file: ast::SourceFile = sema.parse_guess_edition(file_id);
-    let token: SyntaxToken = pick_best_token(file.syntax().token_at_offset(offset), |kind| match kind {
+    let token: SyntaxToken =
+        pick_best_token(file.syntax().token_at_offset(offset), |kind| match kind {
             IDENT | INT_NUMBER | T![self] => 3,
             kind if kind.is_trivia() => 0,
             T![;] => 1,
@@ -60,8 +61,7 @@ pub(crate) fn goto_type_definition(
     }
 
     let range = token.text_range();
-    sema
-        .descend_into_macros_no_opaque(token, false)
+    sema.descend_into_macros_no_opaque(token, false)
         .into_iter()
         .filter_map(|token| {
             sema.token_ancestors_with_macros(token.value)
@@ -115,8 +115,12 @@ mod tests {
             .into_iter()
             .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
             .sorted_by_key(cmp)
-            .collect();
-        let expected = expected.into_iter().map(|(file_range, _)| file_range).sorted_by_key(cmp).collect();
+            .collect::<Vec<_>>();
+        let expected = expected
+            .into_iter()
+            .map(|(file_range, _)| file_range)
+            .sorted_by_key(cmp)
+            .collect::<Vec<_>>();
         assert_eq!(expected, navs);
     }
     #[test]

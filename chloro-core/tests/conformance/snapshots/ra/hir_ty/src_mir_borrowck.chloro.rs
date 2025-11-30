@@ -407,7 +407,8 @@ fn ever_initialized_map<'db>(
     db: &'db dyn HirDatabase,
     body: &MirBody<'db>,
 ) -> ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> {
-    let mut result: ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> = body.basic_blocks.iter().map(|it| (it.0, ArenaMap::default())).collect();
+    let mut result: ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> =
+        body.basic_blocks.iter().map(|it| (it.0, ArenaMap::default())).collect();
     fn dfs<'db>(
         db: &'db dyn HirDatabase,
         body: &MirBody<'db>,
@@ -534,7 +535,8 @@ fn mutability_of_locals<'db>(
     body: &MirBody<'db>,
 ) -> ArenaMap<LocalId<'db>, MutabilityReason> {
     let db = infcx.interner.db;
-    let mut result: ArenaMap<LocalId<'db>, MutabilityReason> = body.locals.iter().map(|it| (it.0, MutabilityReason::Unused)).collect();
+    let mut result: ArenaMap<LocalId<'db>, MutabilityReason> =
+        body.locals.iter().map(|it| (it.0, MutabilityReason::Unused)).collect();
 
     let ever_init_maps = ever_initialized_map(db, body);
     for (block_id, mut ever_init_map) in ever_init_maps.into_iter() {

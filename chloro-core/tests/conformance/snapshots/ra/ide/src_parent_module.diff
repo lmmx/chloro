@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4004 bytes
-Chloro size:   3994 bytes
+Chloro size:   4004 bytes
 Rustfmt size:  4004 bytes
 
 ✗ Outputs DIFFER
@@ -59,11 +59,7 @@ Rustfmt size:  4004 bytes
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position, expected) = fixture::annotations(ra_fixture);
          let navs = analysis.parent_module(position).unwrap();
-         let navs = navs
-             .iter()
-             .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
--            .collect::<Vec<_>>();
-+            .collect();
+             .collect::<Vec<_>>();
          assert_eq!(expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(), navs);
      }
 -

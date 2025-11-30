@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30062 bytes
-Chloro size:   29578 bytes
+Chloro size:   29586 bytes
 Rustfmt size:  30062 bytes
 
 ✗ Outputs DIFFER
@@ -68,15 +68,6 @@ Rustfmt size:  30062 bytes
  fn take_all_comments(node: &SyntaxNode) -> Vec<SyntaxElement> {
      let mut remove_next_ws = false;
      node.children_with_tokens()
-     sema: &hir::Semantics<'_, RootDatabase>,
-     reference: FileReference,
- ) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
--    let segment =
--        reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
-+    let segment = reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
- 
-     // filter out the reference in marco
-     let segment_range = segment.syntax().text_range();
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -9,8 +9,7 @@ use crate::{HlRange, HlTag};
 pub(super) fn highlight_escape_string<T: IsString>(stack: &mut Highlights, string: &T) {
     let text = string.text();
     let start = string.syntax().text_range().start();
-    string
-        .escaped_char_ranges(&mut |piece_range, char| {
+    string.escaped_char_ranges(&mut |piece_range, char| {
         if text[piece_range.start().into()..].starts_with('\\') {
             let highlight = match char {
                 Ok(_) => HlTag::EscapeSequence,

@@ -223,8 +223,7 @@ fn add_function_impl_(
     });
 
     let mut item = CompletionItem::new(completion_kind, replacement_range, label, ctx.edition);
-    item
-        .lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
+    item.lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
         .set_documentation(func.docs(ctx.db))
         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
 
@@ -366,9 +365,9 @@ fn add_type_alias_impl(
 
     let label = format_smolstr!("type {alias_name} =");
 
-    let mut item = CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
-    item
-        .lookup_by(format!("type {alias_name}"))
+    let mut item =
+        CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
+    item.lookup_by(format!("type {alias_name}"))
         .set_documentation(type_alias.docs(ctx.db))
         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
 

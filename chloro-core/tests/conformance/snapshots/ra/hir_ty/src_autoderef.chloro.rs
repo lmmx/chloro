@@ -258,7 +258,8 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
         let AutoderefTraits { trait_, trait_target } = self.autoderef_traits()?;
 
         let trait_ref = TraitRef::new(interner, trait_.into(), [ty]);
-        let obligation = Obligation::new(interner, ObligationCause::new(), self.table.trait_env.env, trait_ref);
+        let obligation =
+            Obligation::new(interner, ObligationCause::new(), self.table.trait_env.env, trait_ref);
         // We detect whether the self type implements `Deref` before trying to
         // structurally normalize. We use `predicate_may_hold_opaque_types_jank`
         // to support not-yet-defined opaque types. It will succeed for `impl Deref`
@@ -347,7 +348,8 @@ pub(crate) fn overloaded_deref_ty<'db>(
 
     let trait_target = LangItem::DerefTarget.resolve_type_alias(table.db, table.trait_env.krate)?;
 
-    let (normalized_ty, obligations) = structurally_normalize_ty(table, Ty::new_projection(interner, trait_target.into(), [ty]))?;
+    let (normalized_ty, obligations) =
+        structurally_normalize_ty(table, Ty::new_projection(interner, trait_target.into(), [ty]))?;
 
     Some(InferOk { value: normalized_ty, obligations })
 }

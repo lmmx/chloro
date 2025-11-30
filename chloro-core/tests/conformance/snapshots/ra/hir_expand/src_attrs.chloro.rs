@@ -67,7 +67,8 @@ impl RawAttrs {
         span_map: SpanMapRef<'_>,
         cfg_options: &CfgOptions,
     ) -> Self {
-        let entries: Vec<_> = Self::attrs_iter_expanded::<true>(db, owner, span_map, cfg_options).collect();
+        let entries: Vec<_> =
+            Self::attrs_iter_expanded::<true>(db, owner, span_map, cfg_options).collect();
 
         let entries = if entries.is_empty() {
             None
@@ -141,13 +142,18 @@ impl RawAttrs {
 
     /// Processes `cfg_attr`s
     pub fn expand_cfg_attr(self, db: &dyn ExpandDatabase, krate: Crate) -> RawAttrs {
-        let has_cfg_attrs = self.iter().any(|attr| attr.path.as_ident().is_some_and(|name| *name == sym::cfg_attr));
+        let has_cfg_attrs =
+            self.iter().any(|attr| attr.path.as_ident().is_some_and(|name| *name == sym::cfg_attr));
         if !has_cfg_attrs {
             return self;
         }
 
         let cfg_options = krate.cfg_options(db);
-        let new_attrs = self.iter().cloned().flat_map(|attr| attr.expand_cfg_attr(db, cfg_options)).collect();
+        let new_attrs = self
+            .iter()
+            .cloned()
+            .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
+            .collect::<Vec<_>>();
         let entries = if new_attrs.is_empty() {
             None
         } else {
@@ -450,7 +456,8 @@ fn unescape(s: &str) -> Option<Cow<'_, str>> {
 pub fn collect_attrs(
     owner: &dyn ast::HasAttrs,
 ) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
-    let inner_attrs = inner_attributes(owner.syntax()).into_iter().flatten().zip(iter::repeat(true));
+    let inner_attrs =
+        inner_attributes(owner.syntax()).into_iter().flatten().zip(iter::repeat(true));
     let outer_attrs = ast::AttrDocCommentIter::from_syntax_node(owner.syntax())
         .filter(|el| match el {
             Either::Left(attr) => attr.kind().is_outer(),
@@ -483,8 +490,7 @@ fn inner_attributes(
         }
     };
 
-    let attrs = ast::AttrDocCommentIter::from_syntax_node(&node)
-        .filter(|el| match el {
+    let attrs = ast::AttrDocCommentIter::from_syntax_node(&node).filter(|el| match el {
         Either::Left(attr) => attr.kind().is_inner(),
         Either::Right(comment) => comment.is_inner(),
     });

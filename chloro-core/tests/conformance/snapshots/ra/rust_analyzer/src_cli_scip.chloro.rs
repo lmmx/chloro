@@ -26,7 +26,8 @@ impl flags::Scip {
         let now = Instant::now();
 
         let no_progress = &|s| eprintln!("rust-analyzer: Loading {s}");
-        let root = vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
+        let root =
+            vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
 
         let mut config = crate::config::Config::new(
             root.clone(),
@@ -100,7 +101,8 @@ impl flags::Scip {
         let mut duplicate_symbol_errors: Vec<(String, String)> = Vec::new();
         // This is called after definitions have been deduplicated by token_ids_emitted. The purpose
         // is to detect reuse of symbol names because this causes ambiguity about their meaning.
-        let mut record_error_if_symbol_already_used = |symbol: String,
+        let mut record_error_if_symbol_already_used =
+            |symbol: String,
              is_inherent_impl: bool,
              relative_path: &str,
              line_index: &LineIndex,
@@ -307,9 +309,7 @@ fn compute_symbol_info(
     };
 
     let position_encoding = scip_types::PositionEncoding::UTF8CodeUnitOffsetFromLineStart.into();
-    let signature_documentation = token.signature
-        .clone()
-        .map(|text| scip_types::Document {
+    let signature_documentation = token.signature.clone().map(|text| scip_types::Document {
         relative_path: "".to_owned(),
         language: "rust".to_owned(),
         text,
@@ -510,7 +510,8 @@ mod test {
         let mut host = AnalysisHost::default();
         let change_fixture = ChangeFixture::parse(host.raw_database(), ra_fixture);
         host.raw_database_mut().apply_change(change_fixture.change);
-        let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ()");
+        let (file_id, range_or_offset) =
+            change_fixture.file_position.expect("expected a marker ()");
         let offset = range_or_offset.expect_offset();
         let position = FilePosition { file_id: file_id.file_id(host.raw_database()), offset };
         (host, position)

@@ -39,8 +39,7 @@ impl<'db> MirBody<'db> {
     pub fn pretty_print(&self, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> String {
         let hir_body = db.body(self.owner);
         let mut ctx = MirPrettyCtx::new(self, &hir_body, db, display_target);
-        ctx
-            .for_body(|this| match ctx.body.owner {
+        ctx.for_body(|this| match ctx.body.owner {
             hir_def::DefWithBodyId::FunctionId(id) => {
                 let data = db.function_signature(id);
                 w!(this, "fn {}() ", data.name.display(db, this.display_target.edition));
@@ -134,8 +133,7 @@ impl<'db> HirDisplay<'db> for LocalName<'db> {
 impl<'a, 'db> MirPrettyCtx<'a, 'db> {
     fn for_body(&mut self, name: impl FnOnce(&mut MirPrettyCtx<'_, 'db>)) {
         name(self);
-        self
-            .with_block(|this| {
+        self.with_block(|this| {
             this.locals();
             wln!(this);
             this.blocks();

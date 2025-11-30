@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14963 bytes
-Chloro size:   14953 bytes
+Chloro size:   14951 bytes
 Rustfmt size:  15195 bytes
 
 ✗ Outputs DIFFER
@@ -118,16 +118,10 @@ Rustfmt size:  15195 bytes
 +        let to_node = SourceFile::parse(to, Edition::CURRENT).tree().syntax().clone();
          let diff = super::diff(&from_node, &to_node);
  
--        let line_number =
--            |syn: &SyntaxElement| from[..syn.text_range().start().into()].lines().count();
-+        let line_number = |syn: &SyntaxElement| from[..syn.text_range().start().into()].lines().count();
- 
-         let fmt_syntax = |syn: &SyntaxElement| match syn.kind() {
-             SyntaxKind::WHITESPACE => format!("{:?}", syn.to_string()),
-             _ => format!("{syn}"),
+         let line_number =
          };
  
--        let insertions =
+         let insertions =
 -            diff.insertions
 -                .iter()
 -                .format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
@@ -141,9 +135,7 @@ Rustfmt size:  15195 bytes
 -                        v.iter().format_with("\n-> ", |v, f| f(&fmt_syntax(v)))
 -                    ))
 -                });
-+        let insertions = diff.insertions
-+            .iter()
-+            .format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
++            diff.insertions.iter().format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
 +                f(&format!(
 +                    "Line {}: {:?}\n-> {}",
 +                    line_number(match k {

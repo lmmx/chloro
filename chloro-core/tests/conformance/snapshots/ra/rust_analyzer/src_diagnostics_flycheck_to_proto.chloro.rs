@@ -526,7 +526,8 @@ mod tests {
         diagnostics_json: &str,
         expect: ExpectFile,
     ) {
-        let diagnostic: crate::flycheck::Diagnostic = serde_json::from_str(diagnostics_json).unwrap();
+        let diagnostic: crate::flycheck::Diagnostic =
+            serde_json::from_str(diagnostics_json).unwrap();
         let workspace_root: &AbsPath = Utf8Path::new("/test/").try_into().unwrap();
         let (sender, _) = crossbeam_channel::unbounded();
         let state = GlobalState::new(

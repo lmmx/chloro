@@ -298,7 +298,8 @@ impl<'db> MirLowerCtx<'_, 'db> {
             Some((_, _, mutability)) => mutability,
             None => Mutability::Not,
         };
-        let result_ref = Ty::new_ref(self.interner(), Region::error(self.interner()), result_ty, mutability);
+        let result_ref =
+            Ty::new_ref(self.interner(), Region::error(self.interner()), result_ty, mutability);
         let mut result: Place<'db> = self.temp(result_ref, current, span)?.into();
         let index_fn_op = Operand::const_zst(Ty::new_fn_def(
             self.interner(),

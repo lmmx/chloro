@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11998 bytes
-Chloro size:   11641 bytes
+Chloro size:   11649 bytes
 Rustfmt size:  12025 bytes
 
 ✗ Outputs DIFFER
@@ -46,15 +46,6 @@ Rustfmt size:  12025 bytes
  }
  
  /// If we're looking at a block that is supposed to return `()`, type inference
- }
- 
- fn extract_tail(ctx: &AssistContext<'_>) -> Option<(FnType, ast::Expr, InsertOrReplace)> {
--    let (fn_type, tail_expr, return_type_range, action) =
--        if let Some(closure) = ctx.find_node_at_offset::<ast::ClosureExpr>() {
-+    let (fn_type, tail_expr, return_type_range, action) = if let Some(closure) = ctx.find_node_at_offset::<ast::ClosureExpr>() {
-             let rpipe = closure.param_list()?.syntax().last_token()?;
-             let rpipe_pos = rpipe.text_range().end();
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

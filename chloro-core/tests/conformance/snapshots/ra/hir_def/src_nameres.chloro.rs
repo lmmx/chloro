@@ -381,14 +381,15 @@ pub(crate) fn crate_local_def_map(db: &dyn DefDatabase, crate_id: Crate) -> DefM
             .map(|it| it.crate_name().to_smolstr())
             .unwrap_or_default()
     )
-        .entered();
+    .entered();
 
     let module_data = ModuleData::new(
         ModuleOrigin::CrateRoot { definition: krate.root_file_id(db) },
         Visibility::Public,
     );
 
-    let def_map = DefMap::empty(crate_id, Arc::new(DefMapCrateData::new(krate.edition)), module_data, None);
+    let def_map =
+        DefMap::empty(crate_id, Arc::new(DefMapCrateData::new(krate.edition)), module_data, None);
     let (def_map, local_def_map) = collector::collect_defs(
         db,
         def_map,
@@ -407,7 +408,8 @@ pub fn block_def_map(db: &dyn DefDatabase, block_id: BlockId) -> DefMap {
         ModuleId { krate: module.krate, local_id: DefMap::ROOT, block: module.block },
         VisibilityExplicitness::Implicit,
     );
-    let module_data = ModuleData::new(ModuleOrigin::BlockExpr { block: ast_id, id: block_id }, visibility);
+    let module_data =
+        ModuleData::new(ModuleOrigin::BlockExpr { block: ast_id, id: block_id }, visibility);
 
     let local_def_map = crate_local_def_map(db, module.krate);
     let def_map = DefMap::empty(
@@ -657,8 +659,7 @@ impl DefMap {
         shadow: BuiltinShadowMode,
         expected_macro_subns: Option<MacroSubNs>,
     ) -> (PerNs, Option<usize>) {
-        let res = self
-            .resolve_path_fp_with_macro(
+        let res = self.resolve_path_fp_with_macro(
             local_def_map,
             db,
             ResolveMode::Other,
@@ -680,8 +681,7 @@ impl DefMap {
         path: &ModPath,
         shadow: BuiltinShadowMode,
     ) -> (PerNs, Option<usize>, ResolvePathResultPrefixInfo) {
-        let res = self
-            .resolve_path_fp_with_macro_single(
+        let res = self.resolve_path_fp_with_macro_single(
             local_def_map,
             db,
             ResolveMode::Other,

@@ -57,9 +57,7 @@ fn edit_struct_def(
 ) {
     // Note that we don't need to consider macro files in this function because this is
     // currently not triggered for struct definitions inside macro calls.
-    let tuple_fields = record_fields
-        .fields()
-        .filter_map(|f| {
+    let tuple_fields = record_fields.fields().filter_map(|f| {
         let field = ast::make::tuple_field(f.visibility(), f.ty()?);
         let mut editor = SyntaxEditor::new(field.syntax().clone());
         editor.insert_all(
@@ -140,7 +138,8 @@ fn process_struct_name_reference(
     let name_ref = r.name.as_name_ref()?;
     let path_segment = name_ref.syntax().parent().and_then(ast::PathSegment::cast)?;
     // A `PathSegment` always belongs to a `Path`, so there's at least one `Path` at this point.
-    let full_path = path_segment.syntax().parent()?.ancestors().map_while(ast::Path::cast).last()?;
+    let full_path =
+        path_segment.syntax().parent()?.ancestors().map_while(ast::Path::cast).last()?;
 
     if full_path.segment()?.name_ref()? != *name_ref {
         // `name_ref` isn't the last segment of the path, so `full_path` doesn't point to the

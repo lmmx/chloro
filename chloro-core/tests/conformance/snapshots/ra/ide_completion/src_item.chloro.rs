@@ -90,8 +90,7 @@ pub struct CompletionItemLabel {
 impl fmt::Debug for CompletionItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = f.debug_struct("CompletionItem");
-        s
-            .field("label", &self.label.primary)
+        s.field("label", &self.label.primary)
             .field("detail_left", &self.label.detail_left)
             .field("detail_right", &self.label.detail_right)
             .field("source_range", &self.source_range);

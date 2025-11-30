@@ -178,8 +178,7 @@ impl<'a> PathTransform<'a> {
         let mut const_substs: FxHashMap<hir::ConstParam, SyntaxNode> = Default::default();
         let mut defaulted_params: Vec<DefaultedParam> = Default::default();
         let target_edition = target_module.krate().edition(self.source_scope.db);
-        self.generic_def
-            .into_iter()
+        self.generic_def.into_iter()
             .flat_map(|it| it.type_or_const_params(db))
             .skip(skip)
             .zip(self.substs.types_and_consts.iter().map(Some).chain(std::iter::repeat(None)))
@@ -277,8 +276,7 @@ impl Ctx<'_> {
         // so that such operation is safe.
         let item = self.transform_path(item).clone_subtree();
         let mut editor = SyntaxEditor::new(item.clone());
-        preorder_rev(&item)
-            .filter_map(ast::Lifetime::cast)
+        preorder_rev(&item).filter_map(ast::Lifetime::cast)
             .for_each(|lifetime| {
             if let Some(subst) = self.lifetime_substs.get(&lifetime.syntax().text().to_string()) {
                 editor
@@ -575,8 +573,7 @@ fn get_syntactic_substs(impl_def: ast::Impl) -> Option<AstSubsts> {
 
 fn get_type_args_from_arg_list(generic_arg_list: ast::GenericArgList) -> Option<AstSubsts> {
     let mut result = AstSubsts::default();
-    generic_arg_list
-        .generic_args()
+    generic_arg_list.generic_args()
         .for_each(|generic_arg| match generic_arg {
         // Const params are marked as consts on definition only,
         // being passed to the trait they are indistguishable from type params;

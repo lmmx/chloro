@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2116 bytes
-Chloro size:   1906 bytes
+Chloro size:   1933 bytes
 Rustfmt size:  2254 bytes
 
 ✗ Outputs DIFFER
@@ -34,14 +34,8 @@ Rustfmt size:  2254 bytes
 -        .find_map(ast::UseTree::cast)?;
 +    let use_tree = path.top_path().syntax().ancestors().find_map(ast::UseTree::cast)?;
  
--    let has_errors = use_tree
--        .syntax()
--        .descendants_with_tokens()
--        .any(|it| it.kind() == syntax::SyntaxKind::ERROR);
-+    let has_errors = use_tree.syntax().descendants_with_tokens().any(|it| it.kind() == syntax::SyntaxKind::ERROR);
-     let last_segment = use_tree.path().and_then(|it| it.segment());
-     if has_errors || last_segment.is_none() {
-         return None;
+     let has_errors = use_tree
+         .syntax()
      }
  
      let target = colon_colon.text_range();

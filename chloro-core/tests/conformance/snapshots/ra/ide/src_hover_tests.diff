@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 210028 bytes
-Chloro size:   209853 bytes
+Chloro size:   209826 bytes
 Rustfmt size:  210967 bytes
 
 ✗ Outputs DIFFER
@@ -152,8 +152,8 @@ Rustfmt size:  210967 bytes
 -    hover
 -        .info
 -        .actions
-+    hover.info.actions
-         .iter_mut()
+-        .iter_mut()
++    hover.info.actions.iter_mut()
          .for_each(|action| match action {
 -            super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
 -                if data.nav.file_id == file_id {
@@ -197,8 +197,8 @@ Rustfmt size:  210967 bytes
 -    hover
 -        .info
 -        .actions
-+    hover.info.actions
-         .iter_mut()
+-        .iter_mut()
++    hover.info.actions.iter_mut()
          .for_each(|action| match action {
 -            super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
 -                if data.nav.file_id == range.file_id {
@@ -303,9 +303,11 @@ Rustfmt size:  210967 bytes
  #[test]
  fn hover_generic_assoc() {
      check(
+ #[test]
+ fn hover_feature() {
      let (analysis, position) = fixture::position(r#"#![feature(intrinsics$0)]"#);
-     analysis
-         .hover(
+-    analysis
+-        .hover(
 -            &HoverConfig {
 -                links_in_hover: true,
 -                ..HOVER_BASE_CONFIG
@@ -314,6 +316,7 @@ Rustfmt size:  210967 bytes
 -                file_id: position.file_id,
 -                range: TextRange::empty(position.offset),
 -            },
++    analysis.hover(
 +            &HoverConfig { links_in_hover: true, ..HOVER_BASE_CONFIG },
 +            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
          )

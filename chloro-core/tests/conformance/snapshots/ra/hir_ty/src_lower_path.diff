@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55200 bytes
+Chloro size:   55222 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -83,15 +83,6 @@ Rustfmt size:  55742 bytes
  }
  
  pub(crate) struct PathLoweringContext<'a, 'b, 'db> {
-         lifetime_elision: LifetimeElisionKind<'db>,
-         f: impl FnOnce(&mut PathLoweringContext<'_, '_, 'db>) -> T,
-     ) -> T {
--        let old_lifetime_elision =
--            std::mem::replace(&mut self.ctx.lifetime_elision, lifetime_elision);
-+        let old_lifetime_elision = std::mem::replace(&mut self.ctx.lifetime_elision, lifetime_elision);
-         let result = f(self);
-         self.ctx.lifetime_elision = old_lifetime_elision;
-         result
      pub(crate) fn lower_ty_relative_path(
          &mut self,
          ty: Ty<'db>,
@@ -106,15 +97,6 @@ Rustfmt size:  55742 bytes
      pub(crate) fn lower_partly_resolved_path(
          &mut self,
          resolution: TypeNs,
- 
-     #[tracing::instrument(skip(self), ret)]
-     pub(crate) fn resolve_path_in_type_ns(&mut self) -> Option<(TypeNs, Option<usize>)> {
--        let (resolution, remaining_index, _, prefix_info) =
--            self.ctx.resolver.resolve_path_in_type_ns_with_prefix_info(self.ctx.db, self.path)?;
-+        let (resolution, remaining_index, _, prefix_info) = self.ctx.resolver.resolve_path_in_type_ns_with_prefix_info(self.ctx.db, self.path)?;
- 
-         let segments = self.segments;
-         if segments.is_empty() || matches!(self.path, Path::LangItem(..)) {
      /// `create_substs_for_ast_path` and `def_to_ty` in rustc.
      pub(crate) fn substs_from_path(
          &mut self,
@@ -124,24 +106,6 @@ Rustfmt size:  55742 bytes
          resolved: ValueTyDefId,
          infer_args: bool,
          lowering_assoc_type_generics: bool,
-                 var.lookup(self.ctx.db).parent.into()
-             }
-         };
--        let result = self.substs_from_path_segment(
-+        let result = self
-+            .substs_from_path_segment(
-             generic_def,
-             infer_args,
-             None,
-                 LifetimeElisionKind::AnonymousCreateParameter { report_in_path: false };
-         }
- 
--        let result = self.substs_from_args_and_bindings(
-+        let result = self
-+            .substs_from_args_and_bindings(
-             self.current_or_prev_segment.args_and_bindings,
-             def,
-             infer_args,
          arg: &HirGenericArg,
      ) -> GenericArg<'db>;
  
@@ -155,24 +119,6 @@ Rustfmt size:  55742 bytes
  
      fn inferred_kind(
          &mut self,
-         had_error = true;
-     }
- 
--    let defaults_count =
--        def_generics.iter_self_type_or_consts().filter(|(_, param)| param.has_default()).count();
-+    let defaults_count = def_generics.iter_self_type_or_consts().filter(|(_, param)| param.has_default()).count();
-     let named_type_and_const_params_count = def_generics
-         .iter_self_type_or_consts()
-         .filter(|(_, param)| match param {
-         })
-         .count();
-     let expected_max = named_type_and_const_params_count;
--    let expected_min =
--        if infer_args { 0 } else { named_type_and_const_params_count - defaults_count };
-+    let expected_min = if infer_args { 0 } else { named_type_and_const_params_count - defaults_count };
-     if provided_types_and_consts_count < expected_min
-         || expected_max < provided_types_and_consts_count
-     {
      tracing::debug!(?args_and_bindings);
  
      // Order is
@@ -186,14 +132,6 @@ Rustfmt size:  55742 bytes
      // - Type or Const parameters
      let def_generics = generics(db, def);
      let args_slice = args_and_bindings.map(|it| &*it.args).unwrap_or_default();
- 
-     // We do not allow inference if there are specified args, i.e. we do not allow partial inference.
--    let has_non_lifetime_args =
--        args_slice.iter().any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
-+    let has_non_lifetime_args = args_slice.iter().any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
-     infer_args &= !has_non_lifetime_args;
- 
-     let had_count_error = check_generic_args_len(
      let mut params = def_generics.iter_self().peekable();
  
      // If we encounter a type or const when we expect a lifetime, we infer the lifetimes.

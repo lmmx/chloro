@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6348 bytes
-Chloro size:   5792 bytes
+Chloro size:   5800 bytes
 Rustfmt size:  6412 bytes
 
 ✗ Outputs DIFFER
@@ -67,7 +67,8 @@ Rustfmt size:  6412 bytes
 -        .impl_trait(specializing_impl_def_id)
 -        .unwrap()
 -        .instantiate_identity();
-+    let specializing_impl_trait_ref = db.impl_trait(specializing_impl_def_id).unwrap().instantiate_identity();
++    let specializing_impl_trait_ref =
++        db.impl_trait(specializing_impl_def_id).unwrap().instantiate_identity();
      let cause = &ObligationCause::dummy();
      debug!(
          "fulfill_implication({:?}, trait_ref={:?} |- {:?} applies)",

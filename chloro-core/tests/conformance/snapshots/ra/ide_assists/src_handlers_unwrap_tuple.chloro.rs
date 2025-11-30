@@ -18,8 +18,7 @@ pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         ast::Pat::TuplePat(pat) => pat,
         _ => return None,
     };
-    let tuple_ty = ty
-        .and_then(|it| match it {
+    let tuple_ty = ty.and_then(|it| match it {
         ast::Type::TupleType(ty) => Some(ty),
         _ => None,
     });

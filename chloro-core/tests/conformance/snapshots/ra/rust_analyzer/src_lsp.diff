@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5113 bytes
-Chloro size:   5125 bytes
+Chloro size:   5116 bytes
 Rustfmt size:  5253 bytes
 
 ✗ Outputs DIFFER
@@ -73,15 +73,6 @@ Rustfmt size:  5253 bytes
              let discriminant: u8 = match function.return_type {
                  CompletionRelevanceReturnType::Other => 0,
                  CompletionRelevanceReturnType::DirectConstructor => 1,
-     }
- 
-     let mut hasher = TentHash::new();
--    hasher.update([
-+    hasher
-+        .update([
-         u8::from(is_ref_completion),
-         u8::from(item.is_snippet),
-         u8::from(item.deprecated),
      }
  
      // NB: do not hash edits or source range, as those may change between the time the client sends the resolve request

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6390 bytes
-Chloro size:   5822 bytes
+Chloro size:   5832 bytes
 Rustfmt size:  6460 bytes
 
 ✗ Outputs DIFFER
@@ -55,14 +55,6 @@ Rustfmt size:  6460 bytes
      // if cursor is in assoc_items, abort
      let assoc_range = items.syntax().text_range();
      let cursor_position = ctx.offset();
-         return None;
-     }
- 
--    let assoc_items = items.assoc_items().collect::<Vec<_>>();
-+    let assoc_items = items.assoc_items().collect();
- 
-     let path = impl_ast
-         .trait_()
                  ast::AssocItem::MacroCall(_) => None,
              };
  

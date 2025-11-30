@@ -58,8 +58,7 @@ pub(crate) fn unlinked_file(
         unused = false;
     }
 
-    acc
-        .push(
+    acc.push(
         Diagnostic::new(
             DiagnosticCode::Ra("unlinked-file", Severity::WeakWarning),
             message,
@@ -142,14 +141,14 @@ fn fixes(
     // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
 
     // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
-    let paths = iter::successors(Some(parent), |prev| prev.parent())
-        .filter_map(|path| {
+    let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
         let parent = path.parent()?;
         let (name, _) = path.name_and_extension()?;
         Some(([parent.join(&format!("{name}.rs"))?, path.join("mod.rs")?], name.to_owned()))
     });
     let mut stack = vec![];
-    let &parent_id = paths.inspect(|(_, name)| stack.push(name.clone())).find_map(|(paths, _)| {
+    let &parent_id =
+        paths.inspect(|(_, name)| stack.push(name.clone())).find_map(|(paths, _)| {
             paths.into_iter().find_map(|path| source_root.file_for_path(&path))
         })?;
     stack.pop();

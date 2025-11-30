@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18777 bytes
-Chloro size:   18429 bytes
+Chloro size:   18411 bytes
 Rustfmt size:  18816 bytes
 
 ✗ Outputs DIFFER
@@ -36,16 +36,6 @@ Rustfmt size:  18816 bytes
      let root = match item {
          SyntaxElement::Node(node) => node,
          SyntaxElement::Token(token) => token.parent()?,
-     range: TextRange,
-     direction: Direction,
- ) -> Option<TextEdit> {
--    let list_lookup = list.tuple_windows().find(|(l, r)| match direction {
-+    let list_lookup = list
-+        .tuple_windows()
-+        .find(|(l, r)| match direction {
-         Direction::Up => r.syntax().text_range().contains_range(range),
-         Direction::Down => l.syntax().text_range().contains_range(range),
-     });
  mod tests {
      use crate::fixture;
      use expect_test::{expect, Expect};

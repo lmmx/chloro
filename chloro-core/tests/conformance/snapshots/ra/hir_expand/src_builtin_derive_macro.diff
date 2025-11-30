@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53967 bytes
-Chloro size:   53900 bytes
+Chloro size:   53880 bytes
 Rustfmt size:  56860 bytes
 
 ✗ Outputs DIFFER
@@ -159,7 +159,8 @@ Rustfmt size:  56860 bytes
 -        .items()
 -        .next()
 -        .ok_or_else(|| ExpandError::other(call_site, "no item found"))?;
-+    let item = macro_items.items().next().ok_or_else(|| ExpandError::other(call_site, "no item found"))?;
++    let item =
++        macro_items.items().next().ok_or_else(|| ExpandError::other(call_site, "no item found"))?;
      let adt = ast::Adt::cast(item.syntax().clone())
          .ok_or_else(|| ExpandError::other(call_site, "expected struct, enum or union"))?;
      Ok((adt, tm))
@@ -182,7 +183,8 @@ Rustfmt size:  56860 bytes
 -        .into_iter()
 -        .map(|w| quote! {invoc_span => #w , })
 -        .collect();
-+    let mut where_block: Vec<_> = info.where_clause.into_iter().map(|w| quote! {invoc_span => #w , }).collect();
++    let mut where_block: Vec<_> =
++        info.where_clause.into_iter().map(|w| quote! {invoc_span => #w , }).collect();
      let (params, args): (Vec<_>, Vec<_>) = info
          .param_types
          .into_iter()
@@ -643,24 +645,6 @@ Rustfmt size:  56860 bytes
  }
  
  fn self_and_other_patterns(
-     name: &tt::Ident,
-     span: Span,
- ) -> (Vec<tt::TopSubtree>, Vec<tt::TopSubtree>) {
--    let self_patterns = adt.shape.as_pattern_map(
-+    let self_patterns = adt.shape
-+        .as_pattern_map(
-         name,
-         |it| {
-             let t = tt::Ident::new(&format!("{}_self", it.sym), it.span);
-         },
-         span,
-     );
--    let other_patterns = adt.shape.as_pattern_map(
-+    let other_patterns = adt.shape
-+        .as_pattern_map(
-         name,
-         |it| {
-             let t = tt::Ident::new(&format!("{}_other", it.sym), it.span);
      tt: &tt::TopSubtree,
  ) -> ExpandResult<tt::TopSubtree> {
      let krate = &dollar_crate(span);
@@ -891,16 +875,6 @@ Rustfmt size:  56860 bytes
  }
  
  fn coerce_pointee_expand(
-             ),
-         );
-     }
--    let is_repr_transparent = strukt.attrs().any(|attr| {
-+    let is_repr_transparent = strukt
-+        .attrs()
-+        .any(|attr| {
-         attr.as_simple_call().is_some_and(|(name, tt)| {
-             name == "repr"
-                 && tt.syntax().children_with_tokens().any(|it| {
          // Regardless of the only type param being designed as `#[pointee]` or not, we can just use it as such.
          (type_params[0].clone(), 0)
      } else {

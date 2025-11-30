@@ -16,8 +16,7 @@ pub(super) fn extern_block_hints(
     }
     let abi = extern_block.abi()?;
     sema.to_def(&extern_block)?;
-    acc
-        .push(InlayHint {
+    acc.push(InlayHint {
         range: abi.syntax().text_range(),
         position: crate::InlayHintPosition::Before,
         pad_left: false,

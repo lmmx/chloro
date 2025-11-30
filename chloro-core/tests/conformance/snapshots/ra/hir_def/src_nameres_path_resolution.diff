@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32320 bytes
+Chloro size:   32339 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -49,12 +49,7 @@ Rustfmt size:  32996 bytes
 -        // resolving them to. Pass `None` otherwise, e.g. when we're resolving import paths.
          expected_macro_subns: Option<MacroSubNs>,
      ) -> ResolvePathResult {
--        let mut result = self.resolve_path_fp_with_macro_single(
-+        let mut result = self
-+            .resolve_path_fp_with_macro_single(
-             local_def_map,
-             db,
-             mode,
+         let mut result = self.resolve_path_fp_with_macro_single(
                  // FIXME: If the next segment doesn't resolve in the module and
                  // BuiltinShadowMode wasn't Module, then we need to try
                  // resolving it as a builtin.
@@ -68,13 +63,6 @@ Rustfmt size:  32996 bytes
  
                  tracing::debug!("resolving {:?} in module", segment);
                  self.resolve_name_in_module(
-         let from_legacy_macro = self[module]
-             .scope
-             .get_legacy_macro(name)
--            // FIXME: shadowing
-             .and_then(|it| it.last())
-             .copied()
-             .filter(|&id| {
                  sub_namespace_match(Some(MacroSubNs::from_id(db, id)), expected_macro_subns)
              })
              .map_or_else(PerNs::none, |m| PerNs::macros(m, Visibility::Public, None));

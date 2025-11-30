@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3645 bytes
-Chloro size:   3387 bytes
+Chloro size:   3378 bytes
 Rustfmt size:  3645 bytes
 
 ✗ Outputs DIFFER
@@ -36,15 +36,6 @@ Rustfmt size:  3645 bytes
  pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let let_kw = ctx.find_token_syntax_at_offset(T![let])?;
      let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;
-         ast::Pat::TuplePat(pat) => pat,
-         _ => return None,
-     };
--    let tuple_ty = ty.and_then(|it| match it {
-+    let tuple_ty = ty
-+        .and_then(|it| match it {
-         ast::Type::TupleType(ty) => Some(ty),
-         _ => None,
-     });
  #[cfg(test)]
  mod tests {
      use crate::tests::check_assist;

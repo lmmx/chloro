@@ -472,11 +472,8 @@ pub fn parse_tt_as_comma_sep_paths(
     edition: Edition,
 ) -> Option<Vec<ast::Path>> {
     let r_paren = input.r_paren_token();
-    let tokens = input
-        .syntax()
-        .children_with_tokens()
-        .skip(1)
-        .map_while(|it| match it.into_token() {
+    let tokens =
+        input.syntax().children_with_tokens().skip(1).map_while(|it| match it.into_token() {
             // seeing a keyword means the attribute is unclosed so stop parsing here
             Some(tok) if tok.kind().is_keyword(edition) => None,
             // don't include the right token tree parenthesis if it exists

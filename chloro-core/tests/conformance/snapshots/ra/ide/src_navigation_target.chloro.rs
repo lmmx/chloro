@@ -193,7 +193,8 @@ impl NavigationTarget {
         InFile { file_id, value }: InFile<&dyn ast::HasName>,
         kind: SymbolKind,
     ) -> UpmappingResult<NavigationTarget> {
-        let name = value.name().map(|it| Symbol::intern(&it.text())).unwrap_or_else(|| sym::underscore);
+        let name =
+            value.name().map(|it| Symbol::intern(&it.text())).unwrap_or_else(|| sym::underscore);
 
         orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
@@ -936,11 +937,13 @@ pub(crate) fn orig_range_with_focus_r(
 
     let call_kind = || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).kind;
 
-    let def_range = || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).def.definition_range(db);
+    let def_range =
+        || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).def.definition_range(db);
 
     // FIXME: Also make use of the syntax context to determine which site we are at?
     let value_range = InFile::new(hir_file, value).original_node_file_range_opt(db);
-    let ((call_site_range, call_site_focus), def_site) = match InFile::new(hir_file, name).original_node_file_range_opt(db) {
+    let ((call_site_range, call_site_focus), def_site) =
+        match InFile::new(hir_file, name).original_node_file_range_opt(db) {
             // call site name
             Some((focus_range, ctxt)) if ctxt.is_root() => {
                 // Try to upmap the node as well, if it ends up in the def site, go back to the call site
@@ -1108,7 +1111,7 @@ fn foo() { enum FooInner { } }
                 },
             ]
         "#]]
-            .assert_debug_eq(&navs);
+        .assert_debug_eq(&navs);
     }
     #[test]
     fn test_world_symbols_are_case_sensitive() {

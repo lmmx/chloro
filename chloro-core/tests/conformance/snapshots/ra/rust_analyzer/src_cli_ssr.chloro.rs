@@ -50,7 +50,8 @@ impl flags::Search {
     /// for much else.
     pub fn run(self) -> anyhow::Result<()> {
         use ide_db::base_db::SourceDatabase;
-        let cargo_config = CargoConfig { all_targets: true, set_test: true, ..CargoConfig::default() };
+        let cargo_config =
+            CargoConfig { all_targets: true, set_test: true, ..CargoConfig::default() };
         let load_cargo_config = LoadCargoConfig {
             load_out_dirs_from_check: true,
             with_proc_macro_server: ProcMacroServerChoice::Sysroot,

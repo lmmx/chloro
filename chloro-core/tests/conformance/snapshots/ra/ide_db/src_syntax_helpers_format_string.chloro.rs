@@ -47,7 +47,10 @@ pub fn lex_format_specifiers(
 ) {
     let mut char_ranges = Vec::new();
     string.escaped_char_ranges(&mut |range, res| char_ranges.push((range, res)));
-    let mut chars = char_ranges.iter().filter_map(|(range, res)| Some((*range, *res.as_ref().ok()?))).peekable();
+    let mut chars = char_ranges
+        .iter()
+        .filter_map(|(range, res)| Some((*range, *res.as_ref().ok()?)))
+        .peekable();
 
     while let Some((range, first_char)) = chars.next() {
         if let '{' = first_char {

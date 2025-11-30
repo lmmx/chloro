@@ -18,9 +18,7 @@ pub(crate) fn change_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 }
 
 fn add_vis(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-    let item_keyword = ctx
-        .token_at_offset()
-        .find(|leaf| {
+    let item_keyword = ctx.token_at_offset().find(|leaf| {
         matches!(
             leaf.kind(),
             T![const]

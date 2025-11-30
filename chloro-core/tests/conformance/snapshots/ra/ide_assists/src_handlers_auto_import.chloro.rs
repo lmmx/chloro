@@ -132,7 +132,9 @@ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     let cfg = ctx.config.import_path_config();
 
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
-    let mut proposed_imports: Vec<_> = import_assets.search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind).collect();
+    let mut proposed_imports: Vec<_> = import_assets
+        .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
+        .collect();
     if proposed_imports.is_empty() {
         return None;
     }
@@ -146,8 +148,7 @@ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
 
     let current_module = ctx.sema.scope(scope.as_syntax_node()).map(|scope| scope.module());
     // prioritize more relevant imports
-    proposed_imports
-        .sort_by_key(|import| {
+    proposed_imports.sort_by_key(|import| {
         Reverse(relevance_score(ctx, import, expected.as_ref(), current_module.as_ref()))
     });
     let edition = current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
@@ -386,7 +387,7 @@ mod tests {
         auto_import(&mut acc, &ctx);
         let assists = acc.finish();
 
-        let labels = assists.iter().map(|assist| assist.label.to_string()).collect();
+        let labels = assists.iter().map(|assist| assist.label.to_string()).collect::<Vec<_>>();
 
         assert_eq!(labels, order);
     }

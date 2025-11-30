@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   11557 bytes
+Chloro size:   11556 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
@@ -209,21 +209,11 @@ Rustfmt size:  11494 bytes
      // so try to suppress completions in those cases
      if trigger_character == Some('_')
          && ctx.original_token.kind() == syntax::SyntaxKind::UNDERSCORE
-     let editioned_file_id = sema.attach_first_edition(file_id)?;
- 
-     let original_file = sema.parse(editioned_file_id);
--    let original_token =
--        syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
-+    let original_token = syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
-     let position_for_import = &original_token.parent()?;
-     let scope = ImportScope::find_insert_use_container(position_for_import, &sema)?;
- 
      let new_ast = scope.clone_for_update();
      let mut import_insert = TextEdit::builder();
  
 -    imports.into_iter().for_each(|full_import_path| {
-+    imports
-+        .into_iter()
++    imports.into_iter()
 +        .for_each(|full_import_path| {
          insert_use::insert_use(
              &new_ast,

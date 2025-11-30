@@ -28,8 +28,7 @@ pub(crate) fn add_explicit_enum_discriminant(
         return None;
     }
 
-    acc
-        .add(
+    acc.add(
         AssistId::refactor_rewrite("add_explicit_enum_discriminant"),
         "Add explicit enum discriminants",
         enum_node.syntax().text_range(),

@@ -41,7 +41,8 @@ fn if_expr_to_guarded_return(
     let if_token_range = if_expr.if_token()?.text_range();
     let if_cond_range = cond.syntax().text_range();
 
-    let cursor_in_range = if_token_range.cover(if_cond_range).contains_range(ctx.selection_trimmed());
+    let cursor_in_range =
+        if_token_range.cover(if_cond_range).contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
@@ -144,13 +145,15 @@ fn let_stmt_to_guarded_return(
 
     let let_token_range = let_stmt.let_token()?.text_range();
     let let_pattern_range = pat.syntax().text_range();
-    let cursor_in_range = let_token_range.cover(let_pattern_range).contains_range(ctx.selection_trimmed());
+    let cursor_in_range =
+        let_token_range.cover(let_pattern_range).contains_range(ctx.selection_trimmed());
 
     if !cursor_in_range || let_stmt.let_else().is_some() {
         return None;
     }
 
-    let try_enum = ctx.sema.type_of_expr(&expr).and_then(|ty| TryEnum::from_ty(&ctx.sema, &ty.adjusted()))?;
+    let try_enum =
+        ctx.sema.type_of_expr(&expr).and_then(|ty| TryEnum::from_ty(&ctx.sema, &ty.adjusted()))?;
 
     let happy_pattern = try_enum.happy_pattern(pat);
     let target = let_stmt.syntax().text_range();
@@ -252,7 +255,8 @@ fn clean_stmt_block(block: &ast::BlockExpr) -> ast::BlockExpr {
 }
 
 fn is_early_block(then_block: &ast::StmtList) -> bool {
-    let is_early_expr = |expr| matches!(expr, ast::Expr::ReturnExpr(_) | ast::Expr::ContinueExpr(_));
+    let is_early_expr =
+        |expr| matches!(expr, ast::Expr::ReturnExpr(_) | ast::Expr::ContinueExpr(_));
     let into_expr = |stmt| match stmt {
         ast::Stmt::ExprStmt(expr_stmt) => expr_stmt.expr(),
         _ => None,

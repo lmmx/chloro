@@ -171,17 +171,17 @@ impl FlycheckHandle {
             ws_target_dir,
         );
         let (sender, receiver) = unbounded::<StateChange>();
-        let thread = stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, format!("Flycheck{id}"))
-            .spawn(move || actor.run(receiver))
-            .expect("failed to spawn thread");
+        let thread =
+            stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, format!("Flycheck{id}"))
+                .spawn(move || actor.run(receiver))
+                .expect("failed to spawn thread");
         FlycheckHandle { id, generation: generation.into(), sender, _thread: thread }
     }
 
     /// Schedule a re-start of the cargo check worker to do a workspace wide check.
     pub(crate) fn restart_workspace(&self, saved_file: Option<AbsPathBuf>) {
         let generation = self.generation.fetch_add(1, Ordering::Relaxed) + 1;
-        self.sender
-            .send(StateChange::Restart {
+        self.sender.send(StateChange::Restart {
                 generation,
                 scope: FlycheckScope::Workspace,
                 saved_file,
@@ -198,8 +198,7 @@ impl FlycheckHandle {
         workspace_deps: Option<FxHashSet<Arc<PackageId>>>,
     ) {
         let generation = self.generation.fetch_add(1, Ordering::Relaxed) + 1;
-        self.sender
-            .send(StateChange::Restart {
+        self.sender.send(StateChange::Restart {
                 generation,
                 scope: FlycheckScope::Package { package, workspace_deps },
                 saved_file: None,

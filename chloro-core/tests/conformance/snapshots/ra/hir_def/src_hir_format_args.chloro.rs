@@ -192,7 +192,8 @@ pub(crate) fn parse(
         }
         None => None,
     };
-    let mut parser = parse::Parser::new(&text, str_style, fmt_snippet, false, parse::ParseMode::Format);
+    let mut parser =
+        parse::Parser::new(&text, str_style, fmt_snippet, false, parse::ParseMode::Format);
 
     let mut pieces = Vec::new();
     while let Some(piece) = parser.next() {
@@ -428,7 +429,7 @@ pub(crate) fn parse(
             let named = matches!(args.explicit_args()[i].kind, FormatArgumentKind::Named(_));
             (args.explicit_args()[i].expr, named)
         })
-        .collect();
+        .collect::<Vec<_>>();
 
     if !unused.is_empty() {
         // FIXME: Diagnose

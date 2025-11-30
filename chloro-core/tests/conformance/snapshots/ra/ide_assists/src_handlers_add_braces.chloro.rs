@@ -39,7 +39,7 @@ enum ParentType {
 }
 
 fn get_replacement_node(ctx: &AssistContext<'_>) -> Option<(ParentType, ast::Expr)> {
-    let node = ctx.find_node_at_offset();
+    let node = ctx.find_node_at_offset::<Either<ast::MatchArm, ast::ClosureExpr>>();
     let (parent_type, body) = if let Some(eq_token) = ctx.find_token_syntax_at_offset(T![=]) {
         let parent = eq_token.parent()?;
         let body = match_ast! {

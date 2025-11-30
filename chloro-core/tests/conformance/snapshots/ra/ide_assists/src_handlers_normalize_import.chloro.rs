@@ -14,7 +14,8 @@ pub(crate) fn normalize_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
     };
 
     let target = use_item.syntax().text_range();
-    let normalized_use_item = try_normalize_import(&use_item, ctx.config.insert_use.granularity.into())?;
+    let normalized_use_item =
+        try_normalize_import(&use_item, ctx.config.insert_use.granularity.into())?;
 
     acc.add(AssistId::refactor_rewrite("normalize_import"), "Normalize import", target, |builder| {
         builder.replace_ast(use_item, normalized_use_item);

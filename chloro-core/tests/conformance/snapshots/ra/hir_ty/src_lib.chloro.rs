@@ -445,7 +445,8 @@ where
         }
     }
 
-    let mut error_replacer = ErrorReplacer { vars: Vec::new(), binder: rustc_type_ir::DebruijnIndex::ZERO, interner };
+    let mut error_replacer =
+        ErrorReplacer { vars: Vec::new(), binder: rustc_type_ir::DebruijnIndex::ZERO, interner };
     let value = match t.clone().try_fold_with(&mut error_replacer) {
         Ok(t) => t,
         Err(_) => panic!("Encountered unbound or inference vars in {t:?}"),
@@ -593,7 +594,8 @@ pub fn setup_tracing() -> Option<tracing::subscriber::DefaultGuard> {
         return None;
     }
 
-    let filter: tracing_subscriber::filter::Targets = env::var("CHALK_DEBUG").ok().and_then(|it| it.parse().ok()).unwrap_or_default();
+    let filter: tracing_subscriber::filter::Targets =
+        env::var("CHALK_DEBUG").ok().and_then(|it| it.parse().ok()).unwrap_or_default();
     let layer = HierarchicalLayer::default()
         .with_indent_lines(true)
         .with_ansi(false)
