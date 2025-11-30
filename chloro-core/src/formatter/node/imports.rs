@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_sort_imports_simple() {
-        let input = "use a::{A, Ab, Ac, a, ab, ac};";
+        let input = "use a::{A, Ab, Ac, a, ab, ac, self};";
 
         let parse = SourceFile::parse(input, Edition::CURRENT);
         let root = parse.syntax_node();
@@ -100,7 +100,7 @@ mod tests {
         let mut buf = String::new();
         sort_and_format_imports(&use_items, &mut buf, 0);
 
-        assert_snapshot!(buf, @"use a::{a, ab, ac, Ab, Ac, A};");
+        assert_snapshot!(buf, @"use a::{self, a, ab, ac, Ab, Ac, A};");
     }
 
     #[test]
