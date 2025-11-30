@@ -84,6 +84,26 @@ mod tests {
     use ra_ap_syntax::{Edition, SourceFile};
 
     #[test]
+    fn test_sort_imports_simple() {
+        let input = "use a::{A, Ab, Ac, a, ab, ac};";
+
+        let parse = SourceFile::parse(input, Edition::CURRENT);
+        let root = parse.syntax_node();
+
+        let mut use_items = Vec::new();
+        for item in root.descendants() {
+            if let Some(use_) = Use::cast(item) {
+                use_items.push((Vec::new(), use_, Vec::new()));
+            }
+        }
+
+        let mut buf = String::new();
+        sort_and_format_imports(&use_items, &mut buf, 0);
+
+        assert_snapshot!(buf, @"use a::{a, ab, ac, Ab, Ac, A};");
+    }
+
+    #[test]
     fn test_sort_imports_with_line_width() {
         // This test was lexicographically sorted at line width 100
         let input = r#"use a::{
