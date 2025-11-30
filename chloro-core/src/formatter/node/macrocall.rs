@@ -1,5 +1,8 @@
 // chloro-core/src/formatter/node/macrocall.rs
-use ra_ap_syntax::{AstNode, SyntaxNode, ast};
+use ra_ap_syntax::{
+    AstNode, AstToken, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments},
+};
 
 use crate::formatter::write_indent;
 
@@ -13,6 +16,20 @@ pub fn format_macro_call(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
+    // Format doc comments using HasDocComments trait
+    for doc_comment in macro_call.doc_comments() {
+        write_indent(buf, indent);
+        buf.push_str(doc_comment.text().trim());
+        buf.push('\n');
+    }
+
+    // Format attributes using HasAttrs trait
+    for attr in macro_call.attrs() {
+        write_indent(buf, indent);
+        buf.push_str(&attr.syntax().text().to_string());
+        buf.push('\n');
+    }
+
     write_indent(buf, indent);
 
     // Find where the actual macro call starts (after doc comments and attributes)
@@ -22,7 +39,7 @@ pub fn format_macro_call(node: &SyntaxNode, buf: &mut String, indent: usize) {
         let node_start = node.text_range().start();
         let offset = usize::from(path_start - node_start);
 
-        // Get everything from the path onwards
+        // Get everything from the path onwards (preserves spacing before delimiters)
         let full_text = node.text().to_string();
         buf.push_str(&full_text[offset..]);
     } else {

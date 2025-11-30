@@ -1,5 +1,6 @@
 use crate::format_source;
 
+mod attributes;
 mod comments;
 mod functions;
 mod impl_blocks;
