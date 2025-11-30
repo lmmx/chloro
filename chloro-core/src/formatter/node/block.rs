@@ -1,7 +1,7 @@
 // chloro-core/src/formatter/node/block.rs
-use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, ast};
+use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode};
 
-use super::try_format_record_expr;
+use super::expr::{FormatResult, try_format_expr};
 use crate::formatter::write_indent;
 
 pub fn format_block(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -33,47 +33,24 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 match n.kind() {
                     SyntaxKind::WHITESPACE => continue,
 
-                    SyntaxKind::RECORD_EXPR if !is_last_node => {
-                        // Non-tail record expression - try to format, fall back to default
-                        write_indent(buf, indent);
-                        if let Some(record_expr) = ast::RecordExpr::cast(n.clone())
-                            && try_format_record_expr(&record_expr, buf, indent)
-                        {
-                            buf.push_str(";\n");
-                            prev_was_item = true;
-                            prev_was_comment = false;
-                            continue;
-                        }
-                        // Fall through to default
-                        buf.push_str(&n.text().to_string());
-                        buf.push_str(";\n");
-                        prev_was_item = true;
-                        prev_was_comment = false;
-                    }
-
-                    SyntaxKind::RECORD_EXPR if is_last_node => {
-                        // Tail expression record - format without semicolon
-                        write_indent(buf, indent);
-                        if let Some(record_expr) = ast::RecordExpr::cast(n.clone())
-                            && try_format_record_expr(&record_expr, buf, indent)
-                        {
-                            buf.push('\n');
-                            prev_was_item = true;
-                            prev_was_comment = false;
-                            continue;
-                        }
-                        // Fall through to default
-                        buf.push_str(&n.text().to_string());
-                        buf.push('\n');
-                        prev_was_item = true;
-                        prev_was_comment = false;
-                    }
-
                     _ => {
-                        // Everything else: preserve exactly as-is
                         write_indent(buf, indent);
-                        buf.push_str(&n.text().to_string());
-                        buf.push('\n');
+
+                        // Try to format the expression; fall back to verbatim if unsupported
+                        match try_format_expr(n, indent) {
+                            FormatResult::Formatted(s) => {
+                                buf.push_str(&s);
+                                if !is_last_node {
+                                    buf.push(';');
+                                }
+                                buf.push('\n');
+                            }
+                            FormatResult::Unsupported => {
+                                buf.push_str(&n.text().to_string());
+                                buf.push('\n');
+                            }
+                        }
+
                         prev_was_item = true;
                         prev_was_comment = false;
                     }
