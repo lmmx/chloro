@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3077 bytes
-Chloro size:   2877 bytes
+Chloro size:   2957 bytes
 Rustfmt size:  3122 bytes
 
 ✗ Outputs DIFFER
@@ -37,33 +37,19 @@ Rustfmt size:  3122 bytes
 -                value: d.impl_,
 -            },
 -            &|impl_| {
--                if d.should_be_safe {
--                    Some(match (impl_.unsafe_token(), impl_.impl_token()) {
--                        (None, None) => return None,
--                        (None, Some(t)) | (Some(t), None) => t.text_range(),
--                        (Some(t1), Some(t2)) => t1.text_range().cover(t2.text_range()),
--                    })
--                } else {
--                    impl_.impl_token().map(|t| t.text_range())
--                }
--            },
--        ),
 +        ctx,
 +        InFile {
 +        file_id: d.file_id,
 +        value: d.impl_,
 +    },
 +        &|impl_| {
-+        if d.should_be_safe {
-+            Some(match (impl_.unsafe_token(), impl_.impl_token()) {
-+                (None, None) => return None,
-+                (None, Some(t)) | (Some(t), None) => t.text_range(),
-+                (Some(t1), Some(t2)) => t1.text_range().cover(t2.text_range()),
-+            })
-+        } else {
-+            impl_.impl_token().map(|t| t.text_range())
-+        }
-+    },
+                 if d.should_be_safe {
+                     Some(match (impl_.unsafe_token(), impl_.impl_token()) {
+                         (None, None) => return None,
+                     impl_.impl_token().map(|t| t.text_range())
+                 }
+             },
+-        ),
 +    ),
 +    ).stable(
      )

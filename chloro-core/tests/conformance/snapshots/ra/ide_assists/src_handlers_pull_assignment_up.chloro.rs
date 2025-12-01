@@ -83,14 +83,15 @@ pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         "Pull assignment up",
         target,
         move |edit| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = edit.make_editor(tgt.syntax());
-        let assign_expr = make.expr_assignment(collector.common_lhs, new_tgt.clone());
-        let assign_stmt = make.expr_stmt(assign_expr.into());
-        editor.replace(tgt.syntax(), assign_stmt.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        edit.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = edit.make_editor(tgt.syntax());
+            let assign_expr = make.expr_assignment(collector.common_lhs, new_tgt.clone());
+            let assign_stmt = make.expr_stmt(assign_expr.into());
+
+            editor.replace(tgt.syntax(), assign_stmt.syntax());
+            editor.add_mappings(make.finish_with_mappings());
+            edit.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -122,7 +123,7 @@ impl AssignmentsCollector<'_> {
             ast::ElseBranch::IfExpr(expr) => {
                 cov_mark::hit!(test_pull_assignment_up_chained_if);
                 self.collect_if(&expr)
-            },
+            }
         }
     }
 
@@ -159,7 +160,7 @@ fn is_equivalent(
         (ast::Expr::FieldExpr(field_expr0), ast::Expr::FieldExpr(field_expr1)) => {
             cov_mark::hit!(test_pull_assignment_up_field_assignment);
             sema.resolve_field(field_expr0) == sema.resolve_field(field_expr1)
-        },
+        }
         (ast::Expr::PathExpr(path0), ast::Expr::PathExpr(path1)) => {
             let path0 = path0.path();
             let path1 = path1.path();
@@ -168,7 +169,7 @@ fn is_equivalent(
             } else {
                 false
             }
-        },
+        }
         (ast::Expr::PrefixExpr(prefix0), ast::Expr::PrefixExpr(prefix1)) if prefix0.op_kind() == Some(ast::UnaryOp::Deref) && prefix1.op_kind() == Some(ast::UnaryOp::Deref) => {
             cov_mark::hit!(test_pull_assignment_up_deref);
             if let (Some(prefix0), Some(prefix1)) = (prefix0.expr(), prefix1.expr()) {
@@ -176,7 +177,7 @@ fn is_equivalent(
             } else {
                 false
             }
-        },
+        }
         _ => false,
     }
 }

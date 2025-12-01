@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10884 bytes
-Chloro size:   10839 bytes
+Chloro size:   10837 bytes
 Rustfmt size:  11524 bytes
 
 ✗ Outputs DIFFER
@@ -178,20 +178,10 @@ Rustfmt size:  11524 bytes
 -            params
 -                .trait_self_param()
 -                .map(|idx| idx.into_raw().into_u32() as usize)
--        }
 +            params.trait_self_param().map(|idx| idx.into_raw().into_u32() as usize)
-+        },
+         }
          GenericDefId::ImplId(_) => None,
          _ => {
-             let parent_def = parent_generic_def(db, def)?;
-             let parent_params = db.generic_params(parent_def);
-             let parent_self_idx = parent_params.trait_self_param()?.into_raw().into_u32() as usize;
-             Some(parent_self_idx)
--        }
-+        },
-     }
- }
- 
      (LocalTypeOrConstParamId, &'a TypeOrConstParamData),
  ) -> (GenericParamId, GenericParamDataRef<'a>) {
      move |(local_id, p): (_, _)| {

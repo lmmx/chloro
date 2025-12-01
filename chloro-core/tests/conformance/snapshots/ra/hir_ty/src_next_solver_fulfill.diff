@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   11853 bytes
+Chloro size:   12349 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -41,18 +41,6 @@ Rustfmt size:  12418 bytes
      /// The snapshot in which this context was created. Using the context
      /// outside of this snapshot leads to subtle bugs if the snapshot
      /// gets rolled back. Because of this we explicitly check that we only
- 
-     fn on_fulfillment_overflow(&mut self, infcx: &InferCtxt<'db>) {
-         infcx.probe(|_| {
--            // IMPORTANT: we must not use solve any inference variables in the obligations
--            // as this is all happening inside of a probe. We use a probe to make sure
--            // we get all obligations involved in the overflow. We pretty much check: if
--            // we were to do another step of `try_evaluate_obligations`, which goals would
--            // change.
--            // FIXME: <https://github.com/Gankra/thin-vec/pull/66> is merged, this can be removed.
-             self.overflowed.extend(
-                 self.pending
-                     .extract_if(.., |(o, stalled_on)| {
          &mut self,
          _infcx: &InferCtxt<'db>,
      ) -> Vec<NextSolverError<'db>> {
@@ -76,23 +64,18 @@ Rustfmt size:  12418 bytes
  
 -        self.obligations
 -            .drain_pending(|obl| {
--                infcx.probe(|_| {
--                    infcx
 +        self.obligations.drain_pending(|obl| {
-+            infcx.probe(|_| {
-+                infcx
+                 infcx.probe(|_| {
+                     infcx
                          .visit_proof_tree(
-                             obl.as_goal(),
-                             &mut StalledOnCoroutines {
-                             },
                          )
                          .is_break()
--                })
-             })
+                 })
+-            })
 -            .into_iter()
 -            .map(|(o, _)| o)
 -            .collect()
-+        }).into_iter(
++            }).into_iter(
 +        ).map(
 +            |(o, _)| o,
 +        ).collect(

@@ -359,7 +359,7 @@ fn find_definitions(
             ).collect::<Vec<_>>(
             ).into_iter(
             ))
-        },
+        }
         Err(e) => Err(e),
     }
 }

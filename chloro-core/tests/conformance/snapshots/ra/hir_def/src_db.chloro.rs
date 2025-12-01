@@ -286,8 +286,10 @@ fn include_macro_invoc(
     krate: Crate,
 ) -> Arc<[(MacroCallId, EditionedFileId)]> {
     crate_def_map(db, krate).modules.values().flat_map(|m| m.scope.iter_macro_invoc()).filter_map(|invoc| {
-        db.lookup_intern_macro_call(*invoc.1).include_file_id(db, *invoc.1).map(|x| (*invoc.1, x))
-    }).collect(
+            db.lookup_intern_macro_call(*invoc.1)
+                .include_file_id(db, *invoc.1)
+                .map(|x| (*invoc.1, x))
+        }).collect(
     )
 }
 
@@ -346,7 +348,7 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
                 allow_internal_unsafe: loc.allow_internal_unsafe,
                 edition: loc.edition,
             }
-        },
+        }
         MacroId::MacroRulesId(it) => {
             let loc: MacroRulesLoc = it.lookup(db);
             MacroDefId {
@@ -356,7 +358,7 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
                 allow_internal_unsafe: loc.flags.contains(MacroRulesLocFlags::ALLOW_INTERNAL_UNSAFE),
                 edition: loc.edition,
             }
-        },
+        }
         MacroId::ProcMacroId(it) => {
             let loc = it.lookup(db);
             MacroDefId {
@@ -366,6 +368,6 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
                 allow_internal_unsafe: false,
                 edition: loc.edition,
             }
-        },
+        }
     }
 }

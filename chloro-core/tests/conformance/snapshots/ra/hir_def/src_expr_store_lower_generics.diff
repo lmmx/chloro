@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11017 bytes
-Chloro size:   10999 bytes
+Chloro size:   10996 bytes
 Rustfmt size:  11350 bytes
 
 ✗ Outputs DIFFER
@@ -53,11 +53,8 @@ Rustfmt size:  11350 bytes
                      let default = type_param.default_type().map(|it| {
                          ec.lower_type_ref(it, &mut ExprCollector::impl_trait_error_allocator)
                      });
-                         }));
-                     let type_ref = ec.alloc_type_ref_desugared(type_ref);
                      self.lower_bounds(ec, type_param.type_bound_list(), Either::Left(type_ref));
--                }
-+                },
+                 }
                  ast::GenericParam::ConstParam(const_param) => {
 -                    let name = const_param
 -                        .name()
@@ -66,22 +63,6 @@ Rustfmt size:  11350 bytes
                      let ty = ec.lower_type_ref_opt(
                          const_param.ty(),
                          &mut ExprCollector::impl_trait_error_allocator,
-                         default: const_param.default_val().map(|it| ec.lower_const_arg(it)),
-                     };
-                     let _idx = self.type_or_consts.alloc(param.into());
--                }
-+                },
-                 ast::GenericParam::LifetimeParam(lifetime_param) => {
-                     let lifetime = ec.lower_lifetime_ref_opt(lifetime_param.lifetime());
-                     if let LifetimeRef::Named(name) = &ec.store.lifetimes[lifetime] {
-                             Either::Right(lifetime),
-                         );
-                     }
--                }
-+                },
-             }
-         }
-     }
              } else {
                  continue;
              };

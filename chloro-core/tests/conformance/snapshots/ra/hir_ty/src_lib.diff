@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   22055 bytes
+Chloro size:   22052 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
@@ -115,18 +115,6 @@ Rustfmt size:  22967 bytes
  /// A constant can have reference to other things. Memory map job is holding
  /// the necessary bits of memory of the const eval session to keep the constant
  /// meaningful.
-                 if e.get().len() < val.len() {
-                     e.insert(val);
-                 }
--            }
-+            },
-             Entry::Vacant(e) => {
-                 e.insert(val);
--            }
-+            },
-         }
-     }
- }
      ) -> Result<FxHashMap<usize, usize>, MirEvalError<'db>> {
          let mut transform = |(addr, val): (&usize, &[u8])| {
              let addr = *addr;
@@ -149,7 +137,7 @@ Rustfmt size:  22967 bytes
 -                .collect(),
 +            MemoryMap::Complex(cm) => {
 +                cm.memory.iter().map(|(addr, val)| transform((addr, val))).collect()
-+            },
++            }
          }
      }
  

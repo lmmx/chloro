@@ -120,9 +120,12 @@ fn add_assist(
             replace_trait_path,
             impl_is_unsafe,
         );
+
         let mut editor = builder.make_editor(attr.syntax());
         update_attribute(&mut editor, old_derives, old_tree, old_trait_path, attr);
+
         let trait_path = make::ty_path(replace_trait_path.clone());
+
         let (impl_def, first_assoc_item) = if let Some(impl_def) = impl_def {
             (
                 impl_def.clone(),
@@ -131,6 +134,7 @@ fn add_assist(
         } else {
             (generate_trait_impl(impl_is_unsafe, adt, trait_path), None)
         };
+
         if let Some(cap) = ctx.config.snippet_cap {
             if let Some(first_assoc_item) = first_assoc_item {
                 if let ast::AssocItem::Fn(ref func) = first_assoc_item
@@ -149,6 +153,7 @@ fn add_assist(
                 builder.add_tabstop_after_token(cap, l_curly);
             }
         }
+
         editor.insert_all(
             insert_after,
             vec![make::tokens::blank_line().into(), impl_def.syntax().clone().into()],

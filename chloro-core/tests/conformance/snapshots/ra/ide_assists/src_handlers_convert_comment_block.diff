@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9045 bytes
-Chloro size:   8053 bytes
+Chloro size:   8381 bytes
 Rustfmt size:  9185 bytes
 
 ✗ Outputs DIFFER
@@ -29,78 +29,30 @@ Rustfmt size:  9185 bytes
  pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let comment = ctx.find_token_at_offset::<ast::Comment>()?;
      // Only allow comments which are alone on their line
-         "Replace block comment with line comments",
          target,
          |edit| {
--            let indentation = IndentLevel::from_token(comment.syntax());
+             let indentation = IndentLevel::from_token(comment.syntax());
 -            let line_prefix = CommentKind {
 -                shape: CommentShape::Line,
 -                ..comment.kind()
 -            }
 -            .prefix();
--
--            let text = comment.text();
--            let text = &text[comment.prefix().len()..(text.len() - "*/".len())].trim();
--
--            let lines = text.lines().peekable();
--
--            let indent_spaces = indentation.to_string();
--            let output = lines
-+        let indentation = IndentLevel::from_token(comment.syntax());
-+        let line_prefix = CommentKind { shape: CommentShape::Line, ..comment.kind() }.prefix();
-+        let text = comment.text();
-+        let text = &text[comment.prefix().len()..(text.len() - "*/".len())].trim();
-+        let lines = text.lines().peekable();
-+        let indent_spaces = indentation.to_string();
-+        let output = lines
-                 .map(|line| {
-                     let line = line.trim_start_matches(&indent_spaces);
++            let line_prefix = CommentKind { shape: CommentShape::Line, ..comment.kind() }.prefix();
  
-                     }
-                 })
-                 .join(&format!("\n{indent_spaces}"));
--
--            edit.replace(target, output)
--        },
-+        edit.replace(target, output)
-+    },
-     )
- }
- 
-         "Replace line comments with a single block comment",
-         target,
-         |edit| {
--            // We pick a single indentation level for the whole block comment based on the
--            // comment where the assist was invoked. This will be prepended to the
--            // contents of each line comment when they're put into the block comment.
--            let indentation = IndentLevel::from_token(comment.syntax());
--
--            let block_comment_body = comments
-+        let indentation = IndentLevel::from_token(comment.syntax());
-+        let block_comment_body = comments
-                 .into_iter()
-                 .map(|c| line_comment_text(indentation, c))
-                 .collect::<Vec<String>>()
+             let text = comment.text();
+             let text = &text[comment.prefix().len()..(text.len() - "*/".len())].trim();
                  .into_iter()
                  .join("\n");
--
+ 
 -            let block_prefix = CommentKind {
 -                shape: CommentShape::Block,
 -                ..comment.kind()
 -            }
 -            .prefix();
--
--            let output = format!("{block_prefix}\n{block_comment_body}\n{indentation}*/");
--
--            edit.replace(target, output)
--        },
-+        let block_prefix =
++            let block_prefix =
 +                CommentKind { shape: CommentShape::Block, ..comment.kind() }.prefix();
-+        let output = format!("{block_prefix}\n{block_comment_body}\n{indentation}*/");
-+        edit.replace(target, output)
-+    },
-     )
- }
+ 
+             let output = format!("{block_prefix}\n{block_comment_body}\n{indentation}*/");
  
          .map(|not| not.into_token().and_then(Comment::cast).filter(same_prefix))
          .take_while(|opt_com| opt_com.is_some())

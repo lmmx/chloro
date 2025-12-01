@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12112 bytes
-Chloro size:   11210 bytes
+Chloro size:   11207 bytes
 Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
@@ -121,8 +121,7 @@ Rustfmt size:  12243 bytes
 -            } => {
 +            ParallelPrimeCacheWorkerProgress::BeginCrateDefMap { crate_id, crate_name } => {
                  crates_currently_indexing.insert(crate_id, crate_name);
--            }
-+            },
+             }
              ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {
                  crates_currently_indexing.swap_remove(&crate_id);
                  crate_def_maps_done += 1;
@@ -159,20 +158,13 @@ Rustfmt size:  12243 bytes
                      let modules = hir::Crate::from(crate_id).modules(db);
                      module_symbols_total += modules.len();
                      for module in modules {
-                         symbols_work_sender.send(module).ok();
-                     }
-                 }
--            }
-+            },
              ParallelPrimeCacheWorkerProgress::EndCrateImportMap => crate_import_maps_done += 1,
              ParallelPrimeCacheWorkerProgress::EndModuleSymbols => module_symbols_done += 1,
              ParallelPrimeCacheWorkerProgress::Cancelled(cancelled) => {
 -                // Cancelled::throw should probably be public
                  std::panic::resume_unwind(Box::new(cancelled));
--            }
-+            },
+             }
          }
-     }
  }
  
  fn crate_name(db: &RootDatabase, krate: Crate) -> Symbol {

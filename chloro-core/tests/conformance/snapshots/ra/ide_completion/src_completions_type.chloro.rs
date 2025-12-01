@@ -58,7 +58,7 @@ pub(crate) fn complete_type_path(
         ),
         Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
-        },
+        }
         Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
             ctx.iterate_path_candidates(ty, |item| {
                 add_assoc_item(acc, item);
@@ -69,9 +69,9 @@ pub(crate) fn complete_type_path(
                 }
                 None::<()>
             });
-        },
+        }
         Qualified::With { resolution: None, .. } => {
-        },
+        }
         Qualified::With { resolution: Some(resolution), .. } => {
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
                 acc.add_type_alias(ctx, alias);
@@ -84,7 +84,7 @@ pub(crate) fn complete_type_path(
                             acc.add_path_resolution(ctx, path_ctx, name, def, vec![]);
                         }
                     }
-                },
+                }
                 hir::PathResolution::Def(
                     def @ (hir::ModuleDef::Adt(_)
                     | hir::ModuleDef::TypeAlias(_)
@@ -105,12 +105,12 @@ pub(crate) fn complete_type_path(
                         }
                         None::<()>
                     });
-                },
+                }
                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
                     for item in t.items(ctx.db) {
                         add_assoc_item(acc, item);
                     }
-                },
+                }
                 hir::PathResolution::TypeParam(_) | hir::PathResolution::SelfType(_) => {
                     let ty = match resolution {
                         hir::PathResolution::TypeParam(param) => param.ty(ctx.db),
@@ -120,10 +120,10 @@ pub(crate) fn complete_type_path(
                     ctx.iterate_path_candidates(&ty, |item| {
                         add_assoc_item(acc, item);
                     });
-                },
+                }
                 _ => (),
             }
-        },
+        }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No => {
             match location {
@@ -197,7 +197,7 @@ pub(crate) fn complete_type_path(
                     acc.add_path_resolution(ctx, path_ctx, name, def, doc_aliases);
                 }
             });
-        },
+        }
     }
 }
 

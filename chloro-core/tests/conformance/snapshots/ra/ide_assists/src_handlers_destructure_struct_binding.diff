@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23187 bytes
-Chloro size:   22484 bytes
+Chloro size:   22512 bytes
 Rustfmt size:  23470 bytes
 
 ✗ Outputs DIFFER
@@ -119,8 +119,9 @@ Rustfmt size:  23470 bytes
 -            .iter()
 -            .enumerate()
 -            .map(|(index, _)| {
--                let new_name = new_field_name((format!("_{index}")).into(), &data.names_in_scope);
--                (index.to_string().into(), new_name)
++        hir::StructKind::Tuple => data.visible_fields.iter().enumerate().map(|(index, _)| {
+                 let new_name = new_field_name((format!("_{index}")).into(), &data.names_in_scope);
+                 (index.to_string().into(), new_name)
 -            })
 -            .collect(),
 -        hir::StructKind::Record => data
@@ -131,20 +132,15 @@ Rustfmt size:  23470 bytes
 -                    .name(ctx.db())
 -                    .display_no_db(data.edition)
 -                    .to_smolstr();
--                let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
--                (field_name, new_name)
--            })
--            .collect(),
-+        hir::StructKind::Tuple => data.visible_fields.iter().enumerate().map(|(index, _)| {
-+            let new_name = new_field_name((format!("_{index}")).into(), &data.names_in_scope);
-+            (index.to_string().into(), new_name)
-+        }).collect(
++            }).collect(
 +        ),
 +        hir::StructKind::Record => data.visible_fields.iter().map(|field| {
-+            let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
-+            let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
-+            (field_name, new_name)
-+        }).collect(
++                let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
+                 let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
+                 (field_name, new_name)
+-            })
+-            .collect(),
++            }).collect(
 +        ),
          hir::StructKind::Unit => Vec::new(),
      }

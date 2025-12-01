@@ -66,7 +66,7 @@ impl<'db> AlternativeExprs<'db> {
                     }
                     tts.insert(it);
                 }
-            },
+            }
             AlternativeExprs::Many => (),
         }
     }
@@ -183,13 +183,13 @@ impl<'db> LookupTable<'db> {
                 if it.is_many() {
                     self.types_wishlist.remove(&ty);
                 }
-            },
+            }
             None => {
                 self.data.insert(ty.clone(), AlternativeExprs::new(self.many_threshold, exprs));
                 for it in self.new_types.values_mut() {
                     it.push(ty.clone());
                 }
-            },
+            }
         }
     }
 

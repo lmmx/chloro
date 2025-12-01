@@ -55,7 +55,7 @@ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         "Merge match arms",
         current_text_range,
         |edit| {
-        let pats = if arms_to_merge.iter().any(contains_placeholder) {
+            let pats = if arms_to_merge.iter().any(contains_placeholder) {
                 "_".into()
             } else {
                 arms_to_merge
@@ -65,13 +65,16 @@ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                     .collect::<Vec<String>>()
                     .join(" | ")
             };
-        let arm = format!("{pats} => {current_expr},");
-        if let [first, .., last] = &*arms_to_merge {
-            let start = first.syntax().text_range().start();
-            let end = last.syntax().text_range().end();
-            edit.replace(TextRange::new(start, end), arm);
-        }
-    },
+
+            let arm = format!("{pats} => {current_expr},");
+
+            if let [first, .., last] = &*arms_to_merge {
+                let start = first.syntax().text_range().start();
+                let end = last.syntax().text_range().end();
+
+                edit.replace(TextRange::new(start, end), arm);
+            }
+        },
     )
 }
 

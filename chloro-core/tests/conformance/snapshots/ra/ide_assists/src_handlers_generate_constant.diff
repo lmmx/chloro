@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7755 bytes
-Chloro size:   7809 bytes
+Chloro size:   7808 bytes
 Rustfmt size:  8317 bytes
 
 ✗ Outputs DIFFER
@@ -188,17 +188,16 @@ Rustfmt size:  8317 bytes
 -                Some(file_id.file_id(ctx.db())),
 -                post_string,
 -            ))
--        }
++            let post_string =
++                if siblings_has_newline { format!("{indent}") } else { format!("\n{indent}") };
++            Some((offset, indent + 1, Some(file_id.file_id(ctx.db())), post_string))
+         }
 -        _ => Some((
 -            TextSize::from(0),
 -            0.into(),
 -            Some(file_id.file_id(ctx.db())),
 -            "\n".into(),
 -        )),
-+            let post_string =
-+                if siblings_has_newline { format!("{indent}") } else { format!("\n{indent}") };
-+            Some((offset, indent + 1, Some(file_id.file_id(ctx.db())), post_string))
-+        },
 +        _ => Some((TextSize::from(0), 0.into(), Some(file_id.file_id(ctx.db())), "\n".into())),
      }
  }

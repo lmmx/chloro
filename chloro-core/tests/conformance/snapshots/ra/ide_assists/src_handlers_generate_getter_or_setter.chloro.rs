@@ -281,7 +281,7 @@ fn extract_and_parse_record_fields(
                 return None;
             }
             Some((info_of_record_fields_in_selection, field_names))
-        },
+        }
         ast::FieldList::TupleFieldList(_) => None,
     }
 }

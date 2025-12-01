@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3398 bytes
-Chloro size:   3402 bytes
+Chloro size:   3398 bytes
 Rustfmt size:  3608 bytes
 
 ✗ Outputs DIFFER
@@ -58,16 +58,16 @@ Rustfmt size:  3608 bytes
 -            } => (Name::new_symbol_root(sym::gt), LangItem::PartialOrd),
 +            CmpOp::Ord { ordering: Ordering::Less, strict: false } => {
 +                (Name::new_symbol_root(sym::le), LangItem::PartialOrd)
-+            },
++            }
 +            CmpOp::Ord { ordering: Ordering::Less, strict: true } => {
 +                (Name::new_symbol_root(sym::lt), LangItem::PartialOrd)
-+            },
++            }
 +            CmpOp::Ord { ordering: Ordering::Greater, strict: false } => {
 +                (Name::new_symbol_root(sym::ge), LangItem::PartialOrd)
-+            },
++            }
 +            CmpOp::Ord { ordering: Ordering::Greater, strict: true } => {
 +                (Name::new_symbol_root(sym::gt), LangItem::PartialOrd)
-+            },
++            }
          },
          BinaryOp::Assignment { op: None } => return None,
      })

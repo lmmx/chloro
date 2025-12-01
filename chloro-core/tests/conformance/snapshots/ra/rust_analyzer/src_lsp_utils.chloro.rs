@@ -86,13 +86,13 @@ impl GlobalState {
                     message,
                     tracing::enabled!(tracing::Level::ERROR),
                 );
-            },
+            }
             None => {
                 tracing::error!("{message}");
                 self.send_notification::<lsp_types::notification::ShowMessage>(
                     lsp_types::ShowMessageParams { typ: lsp_types::MessageType::ERROR, message },
                 );
-            },
+            }
         }
     }
 

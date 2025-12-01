@@ -251,9 +251,10 @@ fn wrapper_alias<'db>(
             hir::ModuleDef::TypeAlias(alias) => {
                 let enum_ty = alias.ty(ctx.db()).as_adt()?.as_enum()?;
                 (enum_ty == core_wrapper).then_some((alias, enum_ty))
-            },
+            }
             _ => None,
-        }).find_map(|(alias, enum_ty)| {
+        })
+        .find_map(|(alias, enum_ty)| {
             let mut inserted_ret_type = false;
             let generic_args =
                 alias.source(ctx.db())?.value.generic_param_list()?.generic_params().map(|param| {
@@ -269,13 +270,16 @@ fn wrapper_alias<'db>(
                         _ => make.type_arg(make.ty_infer().into()).into(),
                     }
                 });
+
             let name = alias.name(ctx.db());
             let generic_arg_list = make.generic_arg_list(generic_args, false);
             let path = make.path_unqualified(
                 make.path_segment_generics(make.name_ref(name.as_str()), generic_arg_list),
             );
+
             let new_ty =
                 hir::Adt::from(enum_ty).ty_with_args(ctx.db(), [semantic_ret_type.clone()]);
+
             Some((make.ty_path(path), new_ty))
         })
     })
@@ -287,9 +291,9 @@ fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
             if let Some(break_expr_arg) = break_expr.expr() {
                 for_each_tail_expr(&break_expr_arg, &mut |e| tail_cb_impl(acc, e))
             }
-        },
+        }
         Expr::ReturnExpr(_) => {
-        },
+        }
         e => acc.push(e.clone()),
     }
 }

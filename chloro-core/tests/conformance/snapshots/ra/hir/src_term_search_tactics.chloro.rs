@@ -74,14 +74,18 @@ pub(super) fn trivial<'a, 'lt, 'db, DB: HirDatabase>(
             }
             _ => None,
         }?;
+
         let ty = expr.ty(db);
         lookup.insert(ty.clone(), std::iter::once(expr.clone()));
+
+        // Don't suggest local references as they are not valid for return
         if matches!(expr, Expr::Local(_))
             && ty.contains_reference(db)
             && ctx.config.enable_borrowcheck
         {
             return None;
         }
+
         ty.could_unify_with_deeply(db, &ctx.goal).then_some(expr)
     })
 }
@@ -109,9 +113,9 @@ pub(super) fn assoc_const<'a, 'lt, 'db, DB: HirDatabase>(
     let module = ctx.scope.module();
 
     defs.iter().filter_map(|def| match def {
-        ScopeDef::ModuleDef(ModuleDef::Adt(it)) => Some(it),
-        _ => None,
-    }).flat_map(
+            ScopeDef::ModuleDef(ModuleDef::Adt(it)) => Some(it),
+            _ => None,
+        }).flat_map(
         |it| Impl::all_for_type(db, it.ty(db)),
     ).filter(
         |it| !it.is_unsafe(db),
@@ -122,17 +126,21 @@ pub(super) fn assoc_const<'a, 'lt, 'db, DB: HirDatabase>(
     ).filter_map(
         AssocItem::as_const,
     ).filter_map(|it| {
-        if it.attrs(db).is_unstable() {
+            if it.attrs(db).is_unstable() {
                 return None;
             }
-        let expr = Expr::Const(it);
-        let ty = it.ty(db);
-        if ty.contains_unknown() {
+
+            let expr = Expr::Const(it);
+            let ty = it.ty(db);
+
+            if ty.contains_unknown() {
                 return None;
             }
-        lookup.insert(ty.clone(), std::iter::once(expr.clone()));
-        ty.could_unify_with_deeply(db, &ctx.goal).then_some(expr)
-    })
+
+            lookup.insert(ty.clone(), std::iter::once(expr.clone()));
+
+            ty.could_unify_with_deeply(db, &ctx.goal).then_some(expr)
+        })
 }
 
 /// # Data constructor tactic
@@ -160,30 +168,45 @@ pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(
     ).filter(
         |_| should_continue(),
     ).filter_map(move |(adt, ty)| match adt {
-        Adt::Struct(strukt) => {
-            if strukt.is_unstable(db) || !strukt.is_visible_from(db, module) {
+            Adt::Struct(strukt) => {
+                // Ignore unstable or not visible
+                if strukt.is_unstable(db) || !strukt.is_visible_from(db, module) {
                     return None;
                 }
-            let generics = GenericDef::from(strukt);
-            if !generics.lifetime_params(db).is_empty() {
+
+                let generics = GenericDef::from(strukt);
+
+                // We currently do not check lifetime bounds so ignore all types that have something to do
+                // with them
+                if !generics.lifetime_params(db).is_empty() {
                     return None;
                 }
-            if ty.contains_unknown() {
+
+                if ty.contains_unknown() {
                     return None;
                 }
-            if ctx.config.enable_borrowcheck && ty.contains_reference(db) {
+
+                // Ignore types that have something to do with lifetimes
+                if ctx.config.enable_borrowcheck && ty.contains_reference(db) {
                     return None;
                 }
-            let fields = strukt.fields(db);
-            if fields.iter().any(|it| !it.is_visible_from(db, module)) {
+                let fields = strukt.fields(db);
+                // Check if all fields are visible, otherwise we cannot fill them
+                if fields.iter().any(|it| !it.is_visible_from(db, module)) {
                     return None;
                 }
-            let generics: Vec<_> = ty.type_arguments().collect();
-            let param_exprs: Vec<Vec<Expr<'_>>> = fields
+
+                let generics: Vec<_> = ty.type_arguments().collect();
+
+                // Early exit if some param cannot be filled from lookup
+                let param_exprs: Vec<Vec<Expr<'_>>> = fields
                     .into_iter()
                     .map(|field| lookup.find(db, &field.ty_with_args(db, generics.iter().cloned())))
                     .collect::<Option<_>>()?;
-            let exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
+
+                // Note that we need special case for 0 param constructors because of multi cartesian
+                // product
+                let exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
                     vec![Expr::Struct { strukt, generics, params: Vec::new() }]
                 } else {
                     param_exprs
@@ -192,25 +215,34 @@ pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(
                         .map(|params| Expr::Struct { strukt, generics: generics.clone(), params })
                         .collect()
                 };
-            lookup.insert(ty.clone(), exprs.iter().cloned());
-            Some((ty, exprs))
-        },
-        Adt::Enum(enum_) => {
-            if enum_.is_unstable(db) || !enum_.is_visible_from(db, module) {
+
+                lookup.insert(ty.clone(), exprs.iter().cloned());
+                Some((ty, exprs))
+            }
+            Adt::Enum(enum_) => {
+                // Ignore unstable or not visible
+                if enum_.is_unstable(db) || !enum_.is_visible_from(db, module) {
                     return None;
                 }
-            let generics = GenericDef::from(enum_);
-            if !generics.lifetime_params(db).is_empty() {
+
+                let generics = GenericDef::from(enum_);
+                // We currently do not check lifetime bounds so ignore all types that have something to do
+                // with them
+                if !generics.lifetime_params(db).is_empty() {
                     return None;
                 }
-            if ty.contains_unknown() {
+
+                if ty.contains_unknown() {
                     return None;
                 }
-            if ctx.config.enable_borrowcheck && ty.contains_reference(db) {
+
+                // Ignore types that have something to do with lifetimes
+                if ctx.config.enable_borrowcheck && ty.contains_reference(db) {
                     return None;
                 }
-            let generics: Vec<_> = ty.type_arguments().collect();
-            let exprs = enum_
+
+                let generics: Vec<_> = ty.type_arguments().collect();
+                let exprs = enum_
                     .variants(db)
                     .into_iter()
                     .filter_map(|variant| {
@@ -247,10 +279,11 @@ pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(
                     })
                     .flatten()
                     .collect();
-            Some((ty, exprs))
-        },
-        Adt::Union(_) => None,
-    }).filter_map(
+
+                Some((ty, exprs))
+            }
+            Adt::Union(_) => None,
+        }).filter_map(
         |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
     ).flatten(
     )
@@ -278,30 +311,42 @@ pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(
     let db = ctx.sema.db;
     let module = ctx.scope.module();
     defs.iter().filter_map(move |def| match def {
-        ScopeDef::ModuleDef(ModuleDef::Function(it)) => {
-            let generics = GenericDef::from(*it);
-            let type_params = generics
+            ScopeDef::ModuleDef(ModuleDef::Function(it)) => {
+                let generics = GenericDef::from(*it);
+
+                // Ignore const params for now
+                let type_params = generics
                     .type_or_const_params(db)
                     .into_iter()
                     .map(|it| it.as_type_param(db))
                     .collect::<Option<Vec<TypeParam>>>()?;
-            if !generics.lifetime_params(db).is_empty() {
+
+                // Ignore lifetimes as we do not check them
+                if !generics.lifetime_params(db).is_empty() {
                     return None;
                 }
-            if type_params.iter().any(|it| it.is_unstable(db) && it.default(db).is_none()) {
+
+                // Only account for stable type parameters for now, unstable params can be default
+                // tho, for example in `Box<T, #[unstable] A: Allocator>`
+                if type_params.iter().any(|it| it.is_unstable(db) && it.default(db).is_none()) {
                     return None;
                 }
-            let non_default_type_params_len =
+
+                let non_default_type_params_len =
                     type_params.iter().filter(|it| it.default(db).is_none()).count();
-            if non_default_type_params_len > 0 {
+
+                // Ignore bigger number of generics for now as they kill the performance
+                if non_default_type_params_len > 0 {
                     return None;
                 }
-            let generic_params = lookup
+
+                let generic_params = lookup
                     .iter_types()
                     .collect::<Vec<_>>() // Force take ownership
                     .into_iter()
                     .permutations(non_default_type_params_len);
-            let exprs: Vec<_> = generic_params
+
+                let exprs: Vec<_> = generic_params
                     .filter(|_| should_continue())
                     .filter_map(|generics| {
                         // Insert default type params
@@ -363,10 +408,10 @@ pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(
                         Some((ret_ty, fn_exprs))
                     })
                     .collect();
-            Some(exprs)
-        },
-        _ => None,
-    }).flatten(
+                Some(exprs)
+            }
+            _ => None,
+        }).flatten(
     ).filter_map(
         |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
     ).flatten(
@@ -401,55 +446,75 @@ pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(
     ).filter(
         |_| should_continue(),
     ).flat_map(|ty| {
-        Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
-    }).flat_map(
+            Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
+        }).flat_map(
         |(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)),
     ).filter_map(|(imp, ty, it)| match it {
-        AssocItem::Function(f) => Some((imp, ty, f)),
-        _ => None,
-    }).filter(
+            AssocItem::Function(f) => Some((imp, ty, f)),
+            _ => None,
+        }).filter(
         |_| should_continue(),
     ).filter_map(move |(imp, ty, it)| {
-        let fn_generics = GenericDef::from(it);
-        let imp_generics = GenericDef::from(imp);
-        if !fn_generics.lifetime_params(db).is_empty()
+            let fn_generics = GenericDef::from(it);
+            let imp_generics = GenericDef::from(imp);
+
+            // Ignore all functions that have something to do with lifetimes as we don't check them
+            if !fn_generics.lifetime_params(db).is_empty()
                 || !imp_generics.lifetime_params(db).is_empty()
             {
                 return None;
             }
-        if !it.has_self_param(db) {
+
+            // Ignore functions without self param
+            if !it.has_self_param(db) {
                 return None;
             }
-        if !it.is_visible_from(db, module)
+
+            // Filter out private and unsafe functions
+            if !it.is_visible_from(db, module)
                 || it.is_unsafe_to_call(db, None, Edition::CURRENT_FIXME)
                 || it.is_unstable(db)
             {
                 return None;
             }
-        if !fn_generics.type_or_const_params(db).is_empty() {
+
+            // Ignore functions with generics for now as they kill the performance
+            // Also checking bounds for generics is problematic
+            if !fn_generics.type_or_const_params(db).is_empty() {
                 return None;
             }
-        let ret_ty = it.ret_type_with_args(db, ty.type_arguments());
-        if ctx.config.enable_borrowcheck && ret_ty.contains_reference(db) || ret_ty.is_raw_ptr()
+
+            let ret_ty = it.ret_type_with_args(db, ty.type_arguments());
+            // Filter out functions that return references
+            if ctx.config.enable_borrowcheck && ret_ty.contains_reference(db) || ret_ty.is_raw_ptr()
             {
                 return None;
             }
-        if ty.could_unify_with_deeply(db, &ret_ty) {
+
+            // Ignore functions that do not change the type
+            if ty.could_unify_with_deeply(db, &ret_ty) {
                 return None;
             }
-        let self_ty =
+
+            let self_ty =
                 it.self_param(db).expect("No self param").ty_with_args(db, ty.type_arguments());
-        if !self_ty.autoderef(db).any(|s_ty| ty == s_ty) {
+
+            // Ignore functions that have different self type
+            if !self_ty.autoderef(db).any(|s_ty| ty == s_ty) {
                 return None;
             }
-        let target_type_exprs = lookup.find(db, &ty).expect("Type not in lookup");
-        let param_exprs: Vec<Vec<Expr<'_>>> = it
+
+            let target_type_exprs = lookup.find(db, &ty).expect("Type not in lookup");
+
+            // Early exit if some param cannot be filled from lookup
+            let param_exprs: Vec<Vec<Expr<'_>>> = it
                 .params_without_self_with_args(db, ty.type_arguments())
                 .into_iter()
                 .map(|field| lookup.find_autoref(db, field.ty()))
                 .collect::<Option<_>>()?;
-        let generics: Vec<_> = ty.type_arguments().collect();
-        let fn_exprs: Vec<Expr<'_>> = std::iter::once(target_type_exprs)
+
+            let generics: Vec<_> = ty.type_arguments().collect();
+            let fn_exprs: Vec<Expr<'_>> = std::iter::once(target_type_exprs)
                 .chain(param_exprs)
                 .multi_cartesian_product()
                 .map(|params| {
@@ -463,8 +528,9 @@ pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(
                     }
                 })
                 .collect();
-        Some((ret_ty, fn_exprs))
-    }).filter_map(
+
+            Some((ret_ty, fn_exprs))
+        }).filter_map(
         |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
     ).flatten(
     )
@@ -495,17 +561,17 @@ pub(super) fn struct_projection<'a, 'lt, 'db, DB: HirDatabase>(
     ).filter(
         |_| should_continue(),
     ).flat_map(move |(ty, targets)| {
-        ty.fields(db).into_iter().filter_map(move |(field, filed_ty)| {
-            if !field.is_visible_from(db, module) {
+            ty.fields(db).into_iter().filter_map(move |(field, filed_ty)| {
+                if !field.is_visible_from(db, module) {
                     return None;
                 }
-            let exprs = targets
+                let exprs = targets
                     .clone()
                     .into_iter()
                     .map(move |target| Expr::Field { field, expr: Box::new(target) });
-            Some((filed_ty, exprs))
-        })
-    }).filter_map(
+                Some((filed_ty, exprs))
+            })
+        }).filter_map(
         |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
     ).flatten(
     )
@@ -580,48 +646,64 @@ pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(
     ).filter(
         |_| should_continue(),
     ).flat_map(|ty| {
-        Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
-    }).filter(
+            Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
+        }).filter(
         |(_, imp)| !imp.is_unsafe(db),
     ).flat_map(
         |(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)),
     ).filter_map(|(imp, ty, it)| match it {
-        AssocItem::Function(f) => Some((imp, ty, f)),
-        _ => None,
-    }).filter(
+            AssocItem::Function(f) => Some((imp, ty, f)),
+            _ => None,
+        }).filter(
         |_| should_continue(),
     ).filter_map(move |(imp, ty, it)| {
-        let fn_generics = GenericDef::from(it);
-        let imp_generics = GenericDef::from(imp);
-        if !fn_generics.lifetime_params(db).is_empty()
+            let fn_generics = GenericDef::from(it);
+            let imp_generics = GenericDef::from(imp);
+
+            // Ignore all functions that have something to do with lifetimes as we don't check them
+            if !fn_generics.lifetime_params(db).is_empty()
                 || !imp_generics.lifetime_params(db).is_empty()
             {
                 return None;
             }
-        if it.has_self_param(db) {
+
+            // Ignore functions with self param
+            if it.has_self_param(db) {
                 return None;
             }
-        if !it.is_visible_from(db, module)
+
+            // Filter out private and unsafe functions
+            if !it.is_visible_from(db, module)
                 || it.is_unsafe_to_call(db, None, Edition::CURRENT_FIXME)
                 || it.is_unstable(db)
             {
                 return None;
             }
-        if !fn_generics.type_or_const_params(db).is_empty() {
+
+            // Ignore functions with generics for now as they kill the performance
+            // Also checking bounds for generics is problematic
+            if !fn_generics.type_or_const_params(db).is_empty() {
                 return None;
             }
-        let ret_ty = it.ret_type_with_args(db, ty.type_arguments());
-        if ctx.config.enable_borrowcheck && ret_ty.contains_reference(db) || ret_ty.is_raw_ptr()
+
+            let ret_ty = it.ret_type_with_args(db, ty.type_arguments());
+            // Filter out functions that return references
+            if ctx.config.enable_borrowcheck && ret_ty.contains_reference(db) || ret_ty.is_raw_ptr()
             {
                 return None;
             }
-        let param_exprs: Vec<Vec<Expr<'_>>> = it
+
+            // Early exit if some param cannot be filled from lookup
+            let param_exprs: Vec<Vec<Expr<'_>>> = it
                 .params_without_self_with_args(db, ty.type_arguments())
                 .into_iter()
                 .map(|field| lookup.find_autoref(db, field.ty()))
                 .collect::<Option<_>>()?;
-        let generics = ty.type_arguments().collect();
-        let fn_exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
+
+            // Note that we need special case for 0 param constructors because of multi cartesian
+            // product
+            let generics = ty.type_arguments().collect();
+            let fn_exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
                 vec![Expr::Function { func: it, generics, params: Vec::new() }]
             } else {
                 param_exprs
@@ -630,9 +712,11 @@ pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(
                     .map(|params| Expr::Function { func: it, generics: generics.clone(), params })
                     .collect()
             };
-        lookup.insert(ret_ty.clone(), fn_exprs.iter().cloned());
-        Some((ret_ty, fn_exprs))
-    }).filter_map(
+
+            lookup.insert(ret_ty.clone(), fn_exprs.iter().cloned());
+
+            Some((ret_ty, fn_exprs))
+        }).filter_map(
         |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
     ).flatten(
     )
@@ -662,15 +746,21 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
     lookup.types_wishlist().clone().into_iter().filter(|_| should_continue()).filter(
         |ty| ty.is_tuple(),
     ).filter_map(move |ty| {
-        if ty.contains_unknown() {
+            // Double check to not contain unknown
+            if ty.contains_unknown() {
                 return None;
             }
-        if ctx.config.enable_borrowcheck && ty.contains_reference(db) {
+
+            // Ignore types that have something to do with lifetimes
+            if ctx.config.enable_borrowcheck && ty.contains_reference(db) {
                 return None;
             }
-        let param_exprs: Vec<Vec<Expr<'db>>> =
+
+            // Early exit if some param cannot be filled from lookup
+            let param_exprs: Vec<Vec<Expr<'db>>> =
                 ty.type_arguments().map(|field| lookup.find(db, &field)).collect::<Option<_>>()?;
-        let exprs: Vec<Expr<'db>> = param_exprs
+
+            let exprs: Vec<Expr<'db>> = param_exprs
                 .into_iter()
                 .multi_cartesian_product()
                 .filter(|_| should_continue())
@@ -683,8 +773,9 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
                     expr
                 })
                 .collect();
-        Some(exprs)
-    }).flatten(
+
+            Some(exprs)
+        }).flatten(
     ).filter_map(
         |expr| expr.ty(db).could_unify_with_deeply(db, &ctx.goal).then_some(expr),
     )

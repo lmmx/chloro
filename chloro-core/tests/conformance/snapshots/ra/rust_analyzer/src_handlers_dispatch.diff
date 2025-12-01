@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15570 bytes
-Chloro size:   15520 bytes
+Chloro size:   15517 bytes
 Rustfmt size:  15570 bytes
 
 ✗ Outputs DIFFER
@@ -26,22 +26,6 @@ Rustfmt size:  15570 bytes
  use stdx::thread::ThreadIntent;
  
  use crate::{
-                 let panic_context =
-                     format!("\nversion: {}\nrequest: {} {params:#?}", version(), R::METHOD);
-                 Some((req, params, panic_context))
--            }
-+            },
-             Err(err) => {
-                 let response = lsp_server::Response::new_err(
-                     req.id,
-                 );
-                 self.global_state.respond(response);
-                 None
--            }
-+            },
-         }
-     }
- 
                  .downcast_ref::<String>()
                  .map(String::as_str)
                  .or_else(|| panic.downcast_ref::<&str>().copied());
@@ -58,14 +42,12 @@ Rustfmt size:  15570 bytes
 -                lsp_server::ErrorCode::InternalError as i32,
 -                message,
 -            ))
--        }
 +            Ok(
 +                lsp_server::Response::new_err(id, lsp_server::ErrorCode::InternalError as i32, message),
 +            )
-+        },
+         }
      }
  }
- 
      }
  
      pub(crate) fn finish(&mut self) {

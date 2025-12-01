@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   110659 bytes
+Chloro size:   110943 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -26,22 +26,6 @@ Rustfmt size:  113494 bytes
      },
      lsp_ext::{self, SnippetTextEdit},
      target_spec::{CargoTargetSpec, TargetSpec},
-         PositionEncoding::Wide(enc) => {
-             let line_col = line_index.index.to_wide(enc, line_col).unwrap();
-             lsp_types::Position::new(line_col.line, line_col.col)
--        }
-+        },
-     }
- }
- 
-         SymbolKind::Module | SymbolKind::ToolModule => lsp_types::SymbolKind::MODULE,
-         SymbolKind::TypeAlias | SymbolKind::TypeParam | SymbolKind::SelfType => {
-             lsp_types::SymbolKind::TYPE_PARAMETER
--        }
-+        },
-         SymbolKind::Field => lsp_types::SymbolKind::FIELD,
-         SymbolKind::Static => lsp_types::SymbolKind::CONSTANT,
-         SymbolKind::Const => lsp_types::SymbolKind::CONSTANT,
          Severity::Error => lsp_types::DiagnosticSeverity::ERROR,
          Severity::Warning => lsp_types::DiagnosticSeverity::WARNING,
          Severity::WeakWarning => lsp_types::DiagnosticSeverity::HINT,
@@ -105,24 +89,16 @@ Rustfmt size:  113494 bytes
 -    text_edit
 -        .into_iter()
 -        .map(|indel| {
--            self::snippet_text_edit(
--                line_index,
--                is_snippet,
--                indel,
--                annotation,
--                clients_support_annotations,
--            )
++    text_edit.into_iter().map(|indel| {
+             self::snippet_text_edit(
+                 line_index,
+                 is_snippet,
+                 annotation,
+                 clients_support_annotations,
+             )
 -        })
 -        .collect()
-+    text_edit.into_iter().map(|indel| {
-+        self::snippet_text_edit(
-+            line_index,
-+            is_snippet,
-+            indel,
-+            annotation,
-+            clients_support_annotations,
-+        )
-+    }).collect(
++        }).collect(
 +    )
  }
  
@@ -538,41 +514,6 @@ Rustfmt size:  113494 bytes
              .collect(),
          )
      }
-         lsp_types::WorkspaceEdit {
-             changes: None,
-             document_changes: snippet_workspace_edit.document_changes.map(|changes| {
--                lsp_types::DocumentChanges::Operations(
--                    changes
--                        .into_iter()
--                        .map(|change| match change {
--                            lsp_ext::SnippetDocumentChangeOperation::Op(op) => {
--                                lsp_types::DocumentChangeOperation::Op(op)
--                            }
--                            lsp_ext::SnippetDocumentChangeOperation::Edit(edit) => {
--                                lsp_types::DocumentChangeOperation::Edit(
--                                    lsp_types::TextDocumentEdit {
--                                        text_document: edit.text_document,
--                                        edits: edit.edits.into_iter().map(From::from).collect(),
--                                    },
--                                )
--                            }
-+                lsp_types::DocumentChanges::Operations(changes.into_iter().map(|change| match change {
-+                    lsp_ext::SnippetDocumentChangeOperation::Op(op) => {
-+                        lsp_types::DocumentChangeOperation::Op(op)
-+                    },
-+                    lsp_ext::SnippetDocumentChangeOperation::Edit(edit) => {
-+                        lsp_types::DocumentChangeOperation::Edit(lsp_types::TextDocumentEdit {
-+                            text_document: edit.text_document,
-+                            edits: edit.edits.into_iter().map(From::from).collect(),
-                         })
--                        .collect(),
--                )
-+                    },
-+                }).collect(
-+                ))
-             }),
-             change_annotations: snippet_workspace_edit.change_annotations,
-         }
      }
  }
  
@@ -637,11 +578,6 @@ Rustfmt size:  113494 bytes
              Ok(Some(lsp_ext::Runnable {
                  label,
                  location: Some(location),
-                         .collect(),
-                 }),
-             }))
--        }
-+        },
          Some(TargetSpec::ProjectJson(spec)) => {
              let label = runnable.label(Some(&spec.label));
              let location = location_link(snap, None, runnable.nav)?;
@@ -649,18 +585,6 @@ Rustfmt size:  113494 bytes
              match spec.runnable_args(&runnable.kind) {
                  Some(json_shell_runnable_args) => {
                      let runnable_args = ShellRunnableArgs {
-                         kind: lsp_ext::RunnableKind::Shell,
-                         args: lsp_ext::RunnableArgs::Shell(runnable_args),
-                     }))
--                }
-+                },
-                 None => Ok(None),
-             }
--        }
-+        },
-         None => {
-             let Some(path) = snap.file_id_to_file_path(runnable.nav.file_id).parent() else {
-                 return Ok(None);
              };
              let (cargo_args, executable_args) =
                  CargoTargetSpec::runnable_args(snap, None, &runnable.kind, &runnable.cfg);
@@ -671,14 +595,6 @@ Rustfmt size:  113494 bytes
              Ok(Some(lsp_ext::Runnable {
                  label,
                  location: Some(location),
-                     environment: Default::default(),
-                 }),
-             }))
--        }
-+        },
-     }
- }
- 
                      .filter_map(|target| {
                          location(
                              snap,

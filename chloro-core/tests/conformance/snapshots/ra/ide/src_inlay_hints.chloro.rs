@@ -155,7 +155,7 @@ fn handle_event(ctx: &mut InlayHintCtx, node: WalkEvent<SyntaxNode>) -> Option<S
                 ctx.extern_block_parent = Some(node);
             }
             Some(node)
-        },
+        }
         WalkEvent::Leave(n) => {
             if ast::AnyHasGenericParams::can_cast(n.kind()) {
                 ctx.lifetime_stacks.pop();
@@ -164,7 +164,7 @@ fn handle_event(ctx: &mut InlayHintCtx, node: WalkEvent<SyntaxNode>) -> Option<S
                 ctx.extern_block_parent = None;
             }
             None
-        },
+        }
     }
 }
 
@@ -522,7 +522,7 @@ impl InlayHintLabel {
         match &mut *self.parts {
             [InlayHintLabelPart { text, linked_location: None, tooltip: None }, ..] => {
                 text.insert_str(0, s)
-            },
+            }
             _ => self.parts.insert(
                 0,
                 InlayHintLabelPart {
@@ -538,7 +538,7 @@ impl InlayHintLabel {
         match &mut *self.parts {
             [.., InlayHintLabelPart { text, linked_location: None, tooltip: None }] => {
                 text.push_str(s)
-            },
+            }
             _ => self.parts.push(InlayHintLabelPart {
                 text: s.into(),
                 linked_location: None,
@@ -619,7 +619,7 @@ impl fmt::Debug for InlayHintLabelPart {
         match self {
             Self { text, linked_location: None, tooltip: None | Some(LazyProperty::Lazy) } => {
                 text.fmt(f)
-            },
+            }
             Self { text, linked_location, tooltip } => f.debug_struct("InlayHintLabelPart").field("text", text).field(
                 "linked_location",
                 linked_location,
@@ -628,11 +628,11 @@ impl fmt::Debug for InlayHintLabelPart {
                 &tooltip.as_ref().map_or(
                 "",
                 |it| match it {
-                LazyProperty::Computed(
+                        LazyProperty::Computed(
                             InlayTooltip::String(it) | InlayTooltip::Markdown(it),
                         ) => it,
-                LazyProperty::Lazy => "",
-            },
+                        LazyProperty::Lazy => "",
+                    },
             ),
             ).finish(
             ),
@@ -816,7 +816,9 @@ fn ty_to_text_edit(
         let mut builder = TextEdit::builder();
         builder.insert(offset_to_insert_ty, prefix.into());
         builder.insert(offset_to_insert_ty, rendered);
+
         additional_edits(&mut builder);
+
         builder.finish()
     }))
 }

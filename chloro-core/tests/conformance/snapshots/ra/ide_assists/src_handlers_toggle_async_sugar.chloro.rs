@@ -43,7 +43,7 @@ pub(crate) fn sugar_impl_future_into_async(
         "Convert `impl Future` into async",
         function.syntax().text_range(),
         |builder| {
-        match future_output {
+            match future_output {
                 // Empty tuple
                 ast::Type::TupleType(t) if t.fields().next().is_none() => {
                     let mut ret_type_range = ret_type.syntax().text_range();
@@ -69,12 +69,13 @@ pub(crate) fn sugar_impl_future_into_async(
                     );
                 }
             }
-        let (place_for_async, async_kw) = match function.visibility() {
+
+            let (place_for_async, async_kw) = match function.visibility() {
                 Some(vis) => (vis.syntax().text_range().end(), " async"),
                 None => (function.syntax().text_range().start(), "async "),
             };
-        builder.insert(place_for_async, async_kw);
-    },
+            builder.insert(place_for_async, async_kw);
+        },
     )
 }
 
@@ -106,19 +107,24 @@ pub(crate) fn desugar_async_into_impl_future(
         "Convert async into `impl Future`",
         function.syntax().text_range(),
         |builder| {
-        let mut async_range = async_token.text_range();
-        if let Some(whitespace_range) = following_whitespace(NodeOrToken::Token(async_token)) {
+            let mut async_range = async_token.text_range();
+
+            if let Some(whitespace_range) = following_whitespace(NodeOrToken::Token(async_token)) {
                 async_range = TextRange::new(async_range.start(), whitespace_range.end());
             }
-        builder.delete(async_range);
-        match return_type {
-            Some(ret_type) => builder.replace(
-                ret_type.syntax().text_range(),
-                format!("impl {trait_path}<Output = {ret_type}>"),
-            ),
-            None => builder.insert(rparen.text_range().end(), format!(" -> impl {trait_path}<Output = ()>")),
-        }
-    },
+            builder.delete(async_range);
+
+            match return_type {
+                Some(ret_type) => builder.replace(
+                    ret_type.syntax().text_range(),
+                    format!("impl {trait_path}<Output = {ret_type}>"),
+                ),
+                None => builder.insert(
+                    rparen.text_range().end(),
+                    format!(" -> impl {trait_path}<Output = ()>"),
+                ),
+            }
+        },
     )
 }
 

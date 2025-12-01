@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20575 bytes
+Chloro size:   20573 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -203,14 +203,6 @@ Rustfmt size:  21158 bytes
              if !l.is_empty() {
                  assert!(!r.is_empty());
                  Some((l[0], r[0]))
-                 assert_eq!(r.len(), 0);
-                 None
-             }
--        }
-+        },
-         (Value::Object(l), Value::Object(r)) => {
-             fn sorted_values(obj: &serde_json::Map<String, Value>) -> Vec<&Value> {
-                 let mut entries = obj.iter().collect::<Vec<_>>();
                  entries.sort_by_key(|it| it.0);
                  entries.into_iter().map(|(_k, v)| v).collect::<Vec<_>>()
              }
@@ -224,8 +216,7 @@ Rustfmt size:  21158 bytes
              let r = sorted_values(r);
 -
              l.into_iter().zip(r).find_map(|(l, r)| find_mismatch(l, r))
--        }
-+        },
+         }
          (Value::Null, Value::Null) => None,
 -        // magic string literal "{...}" acts as wildcard for any sub-JSON
          (Value::String(l), _) if l == "{...}" => None,

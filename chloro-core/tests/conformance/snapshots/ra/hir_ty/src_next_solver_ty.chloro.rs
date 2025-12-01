@@ -68,9 +68,9 @@ impl<'db> Ty<'db> {
     pub fn inner(&self) -> &WithCachedTypeInfo<TyKind<'db>> {
         crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
-            unsafe {
-                std::mem::transmute(inner)
-            }
+            // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
+            // make sure that our returned value is valid for the lifetime `'db`.
+            unsafe { std::mem::transmute(inner) }
         })
     }
 
@@ -190,19 +190,19 @@ impl<'db> Ty<'db> {
             },
             TyKind::Tuple(tys) => {
                 tys.last().is_none_or(|ty| ty.has_trivial_sizedness(tcx, sizedness))
-            },
+            }
             TyKind::Adt(def, args) => def.sizedness_constraint(tcx, sizedness).is_none_or(
                 |ty| ty.instantiate(tcx, args).has_trivial_sizedness(tcx, sizedness),
             ),
             TyKind::Alias(..) | TyKind::Param(_) | TyKind::Placeholder(..) | TyKind::Bound(..) => {
                 false
-            },
+            }
             TyKind::Infer(InferTy::TyVar(_)) => false,
             TyKind::Infer(
                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_),
             ) => {
                 panic!("`has_trivial_sizedness` applied to unexpected type: {self:?}")
-            },
+            }
         }
     }
 
@@ -226,7 +226,7 @@ impl<'db> Ty<'db> {
             TyKind::Array(element_ty, _len) => element_ty.is_trivially_pure_clone_copy(),
             TyKind::Tuple(field_tys) => {
                 field_tys.len() <= 3 && field_tys.iter().all(Self::is_trivially_pure_clone_copy)
-            },
+            }
             TyKind::Pat(ty, _) => ty.is_trivially_pure_clone_copy(),
             TyKind::FnPtr(..) => false,
             TyKind::Ref(_, _, Mutability::Mut) => false,
@@ -257,11 +257,11 @@ impl<'db> Ty<'db> {
             | TyKind::Bound(..) => true,
             TyKind::Slice(ty) => {
                 ty.is_trivially_wf(tcx) && ty.has_trivial_sizedness(tcx, SizedTraitKind::Sized)
-            },
+            }
             TyKind::RawPtr(ty, _) => ty.is_trivially_wf(tcx),
             TyKind::FnPtr(sig_tys, _) => {
                 sig_tys.skip_binder().inputs_and_output.iter().all(|ty| ty.is_trivially_wf(tcx))
-            },
+            }
             TyKind::Ref(_, ty, _) => ty.is_global() && ty.is_trivially_wf(tcx),
             TyKind::Infer(infer) => match infer {
                 InferTy::TyVar(_) => false,
@@ -346,7 +346,7 @@ impl<'db> Ty<'db> {
         match self.kind() {
             TyKind::Adt(adt, substs) if crate::lang_items::is_box(db, adt.def_id().0) => {
                 Some(substs.as_slice()[0].expect_ty())
-            },
+            }
             TyKind::Ref(_, ty, _) => Some(ty),
             TyKind::RawPtr(ty, _) if explicit => Some(ty),
             _ => None,
@@ -362,7 +362,7 @@ impl<'db> Ty<'db> {
         match self.kind() {
             TyKind::FnDef(callable, args) => {
                 Some(interner.fn_sig(callable).instantiate(interner, args))
-            },
+            }
             TyKind::FnPtr(sig, hdr) => Some(sig.with(hdr)),
             TyKind::Closure(_, closure_args) => closure_args.split_closure_args_untupled().closure_sig_as_fn_ptr_ty.callable_sig(
                 interner,
@@ -390,14 +390,17 @@ impl<'db> Ty<'db> {
                     FnSig {
                         inputs_and_output: Tys::new_from_iter(
                             interner,
-                            sig.tupled_inputs_ty.tuple_fields().iter().chain(std::iter::once(return_ty)),
+                            sig.tupled_inputs_ty
+                                .tuple_fields()
+                                .iter()
+                                .chain(std::iter::once(return_ty)),
                         ),
                         c_variadic: sig.c_variadic,
                         safety: sig.safety,
                         abi: sig.abi,
                     }
                 }))
-            },
+            }
             _ => None,
         }
     }
@@ -527,20 +530,20 @@ impl<'db> Ty<'db> {
                         db.return_type_impl_traits(func).map(|it| {
                             let data =
                                 (*it).as_ref().map_bound(|rpit| &rpit.impl_traits[idx].predicates);
-                            data.iter_instantiated_copied(interner, opaque_ty.args.as_slice()).collect(
-                            )
+                            data.iter_instantiated_copied(interner, opaque_ty.args.as_slice())
+                                .collect()
                         })
-                    },
+                    }
                     ImplTraitId::TypeAliasImplTrait(alias, idx) => {
                         db.type_alias_impl_traits(alias).map(|it| {
                             let data =
                                 (*it).as_ref().map_bound(|rpit| &rpit.impl_traits[idx].predicates);
-                            data.iter_instantiated_copied(interner, opaque_ty.args.as_slice()).collect(
-                            )
+                            data.iter_instantiated_copied(interner, opaque_ty.args.as_slice())
+                                .collect()
                         })
-                    },
+                    }
                 }
-            },
+            }
             TyKind::Param(param) => {
                 let generic_params = db.generic_params(param.id.parent());
                 let param_data = &generic_params[param.id.local_id()];
@@ -560,12 +563,12 @@ impl<'db> Ty<'db> {
                                 })
                                 .collect::<Vec<_>>();
                             Some(predicates)
-                        },
+                        }
                         _ => None,
                     },
                     _ => None,
                 }
-            },
+            }
             TyKind::Coroutine(coroutine_id, _args) => {
                 let InternedCoroutine(owner, _) = coroutine_id.0.loc(db);
                 let krate = owner.module(db).krate();
@@ -580,7 +583,7 @@ impl<'db> Ty<'db> {
                 } else {
                     None
                 }
-            },
+            }
             _ => None,
         }
     }
@@ -591,17 +594,17 @@ impl<'db> Ty<'db> {
             (TyKind::Adt(adt, ..), TyKind::Adt(adt2, ..)) => adt.def_id() == adt2.def_id(),
             (TyKind::Slice(_), TyKind::Slice(_)) | (TyKind::Array(_, _), TyKind::Array(_, _)) => {
                 true
-            },
+            }
             (TyKind::FnDef(def_id, ..), TyKind::FnDef(def_id2, ..)) => def_id == def_id2,
             (TyKind::Alias(_, alias, ..), TyKind::Alias(_, alias2)) => {
                 alias.def_id == alias2.def_id
-            },
+            }
             (TyKind::Foreign(ty_id, ..), TyKind::Foreign(ty_id2, ..)) => ty_id == ty_id2,
             (TyKind::Closure(id1, _), TyKind::Closure(id2, _)) => id1 == id2,
             (TyKind::Ref(.., mutability), TyKind::Ref(.., mutability2))
             | (TyKind::RawPtr(.., mutability), TyKind::RawPtr(.., mutability2)) => {
                 mutability == mutability2
-            },
+            }
             (TyKind::FnPtr(sig, hdr), TyKind::FnPtr(sig2, hdr2)) => sig == sig2 && hdr == hdr2,
             (TyKind::Tuple(tys), TyKind::Tuple(tys2)) => tys.len() == tys2.len(),
             (TyKind::Str, TyKind::Str)
@@ -680,13 +683,13 @@ impl<'db> TypeSuperVisitable<DbInterner<'db>> for Ty<'db> {
             TyKind::Array(typ, sz) => {
                 try_visit!(typ.visit_with(visitor));
                 sz.visit_with(visitor)
-            },
+            }
             TyKind::Slice(typ) => typ.visit_with(visitor),
             TyKind::Adt(_, args) => args.visit_with(visitor),
             TyKind::Dynamic(ref trait_ty, ref reg) => {
                 try_visit!(trait_ty.visit_with(visitor));
                 reg.visit_with(visitor)
-            },
+            }
             TyKind::Tuple(ts) => ts.visit_with(visitor),
             TyKind::FnDef(_, args) => args.visit_with(visitor),
             TyKind::FnPtr(ref sig_tys, _) => sig_tys.visit_with(visitor),
@@ -694,7 +697,7 @@ impl<'db> TypeSuperVisitable<DbInterner<'db>> for Ty<'db> {
             TyKind::Ref(r, ty, _) => {
                 try_visit!(r.visit_with(visitor));
                 ty.visit_with(visitor)
-            },
+            }
             TyKind::Coroutine(_did, ref args) => args.visit_with(visitor),
             TyKind::CoroutineWitness(_did, ref args) => args.visit_with(visitor),
             TyKind::Closure(_did, ref args) => args.visit_with(visitor),
@@ -703,7 +706,7 @@ impl<'db> TypeSuperVisitable<DbInterner<'db>> for Ty<'db> {
             TyKind::Pat(ty, pat) => {
                 try_visit!(ty.visit_with(visitor));
                 pat.visit_with(visitor)
-            },
+            }
             TyKind::Error(guar) => guar.visit_with(visitor),
             TyKind::Bool
             | TyKind::Char
@@ -1088,7 +1091,7 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
             },
             TyKind::Bound(..) | TyKind::Placeholder(_) | TyKind::Param(_) | TyKind::Infer(_) => {
                 None
-            },
+            }
             TyKind::Error(_) => Some(ClosureKind::Fn),
             _ => unreachable!("cannot convert type `{:?}` to a closure kind", self),
         }
@@ -1122,7 +1125,7 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
             TyKind::Coroutine(_, args) => args.as_coroutine().discr_ty(interner),
             TyKind::Param(_) | TyKind::Alias(..) | TyKind::Infer(InferTy::TyVar(_)) => {
                 unimplemented!()
-            },
+            }
             TyKind::Pat(ty, _) => ty.discriminant_ty(interner),
             TyKind::Bool
             | TyKind::Char
@@ -1147,7 +1150,7 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
             | TyKind::Error(_)
             | TyKind::Infer(InferTy::IntVar(_) | InferTy::FloatVar(_)) => {
                 Ty::new(interner, TyKind::Uint(UintTy::U8))
-            },
+            }
             TyKind::Bound(..)
             | TyKind::Placeholder(_)
             | TyKind::Infer(
@@ -1156,7 +1159,7 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
                 panic!(
                     "`dself.iter().map(|v| v.try_fold_with(folder)).collect::<Result<_, _>>()?iscriminant_ty` applied to unexpected type: {self:?}"
                 )
-            },
+            }
             TyKind::UnsafeBinder(..) => unimplemented!(),
         }
     }

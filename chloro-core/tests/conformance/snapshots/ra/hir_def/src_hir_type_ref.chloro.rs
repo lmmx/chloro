@@ -298,7 +298,7 @@ impl LiteralConstRef {
         match self {
             LiteralConstRef::UInt(_) | LiteralConstRef::Unknown => {
                 BuiltinType::Uint(BuiltinUint::U128)
-            },
+            }
             LiteralConstRef::Int(_) => BuiltinType::Int(BuiltinInt::I128),
             LiteralConstRef::Char(_) => BuiltinType::Char,
             LiteralConstRef::Bool(_) => BuiltinType::Bool,

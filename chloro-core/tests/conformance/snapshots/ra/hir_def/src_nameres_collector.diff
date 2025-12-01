@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 108302 bytes
-Chloro size:   105681 bytes
+Chloro size:   105666 bytes
 Rustfmt size:  108302 bytes
 
 ✗ Outputs DIFFER
@@ -135,11 +135,8 @@ Rustfmt size:  108302 bytes
                  self.unresolved_macros.swap_remove(pos);
 -                // Continue name resolution with the new data.
                  ReachedFixedPoint::No
--            }
-+            },
+             }
              None => ReachedFixedPoint::Yes,
-         }
-     }
  
      fn inject_prelude(&mut self) {
          // See compiler/rustc_builtin_macros/src/standard_library_imports.rs
@@ -147,22 +144,6 @@ Rustfmt size:  108302 bytes
          if self.def_map.data.no_core {
              // libcore does not get a prelude.
              return;
-         match per_ns.types {
-             Some(Item { def: ModuleDefId::ModuleId(m), import, .. }) => {
-                 self.def_map.prelude = Some((m, import.and_then(ImportOrExternCrate::use_)));
--            }
-+            },
-             types => {
-                 tracing::debug!(
-                     "could not resolve prelude path `{}` to module (resolved to {:?})",
-                     path.display(self.db, Edition::LATEST),
-                     types
-                 );
--            }
-+            },
-         }
-     }
- 
          self.define_legacy_macro(module_id, name.clone(), macro_.into());
  
          // Module scoping
@@ -179,18 +160,6 @@ Rustfmt size:  108302 bytes
                      if let Some(def) = root_scope.get(&name).take_macros() {
                          self.def_map.macro_use_prelude.insert(name, (def, extern_crate));
                      }
-                 }
--            }
-+            },
-             None => {
-                 for (name, it) in root_scope.macros() {
-                     self.def_map.macro_use_prelude.insert(name.clone(), (it.def, extern_crate));
-                 }
--            }
-+            },
-         }
-     }
- 
              .collect();
  
          // Resolve all indeterminate resolved imports again
@@ -227,11 +196,8 @@ Rustfmt size:  108302 bytes
                  }
 -
                  self.update(module_id, &[(name.cloned(), def)], vis, Some(imp));
--            }
-+            },
+             }
              ImportSource { kind: ImportKind::Glob, id, is_prelude, use_tree, .. } => {
-                 tracing::debug!("glob import: {:?}", import);
-                 let glob = GlobId { use_: id, idx: use_tree };
                  match def.take_types() {
                      Some(ModuleDefId::ModuleId(m)) => {
                          if is_prelude {
@@ -287,26 +253,15 @@ Rustfmt size:  108302 bytes
                              let glob_imports = self.glob_imports.entry(m.local_id).or_default();
                              match glob_imports.iter_mut().find(|(mid, _, _)| *mid == module_id) {
                                  None => glob_imports.push((module_id, vis, glob)),
-                                     if let Some(new_vis) = old_vis.max(vis, &self.def_map) {
-                                         *old_vis = new_vis;
-                                     }
--                                }
-+                                },
-                             }
-                         }
--                    }
-+                    },
+                     }
                      Some(ModuleDefId::AdtId(AdtId::EnumId(e))) => {
                          cov_mark::hit!(glob_enum);
 -                        // glob import from enum => just import all the variants
                          let resolutions = e
                              .enum_variants(self.db)
                              .variants
-                             vis,
-                             Some(ImportOrExternCrate::Glob(glob)),
                          );
--                    }
-+                    },
+                     }
                      Some(ModuleDefId::TraitId(it)) => {
 -                        // FIXME: Implement this correctly
 -                        // We can't actually call `trait_items`, the reason being that if macro calls
@@ -317,24 +272,6 @@ Rustfmt size:  108302 bytes
                          let resolutions = if true {
                              vec![]
                          } else {
-                             vis,
-                             Some(ImportOrExternCrate::Glob(glob)),
-                         );
--                    }
-+                    },
-                     Some(d) => {
-                         tracing::debug!("glob import {:?} from non-module/enum {:?}", import, d);
--                    }
-+                    },
-                     None => {
-                         tracing::debug!("glob import {:?} didn't resolve as type", import);
--                    }
-+                    },
-                 }
--            }
-+            },
-         }
-     }
  
      fn update(
          &mut self,
@@ -386,23 +323,13 @@ Rustfmt size:  108302 bytes
                  let Some(mod_dir) =
                      self.mod_dir.descend_into_definition(&module.name, path_attr.as_deref())
                  else {
-                 if is_macro_use {
                      self.import_all_legacy_macros(module_id);
                  }
--            }
+             }
 -            // out of line module, resolve, parse and recurse
-+            },
              ModKind::Outline => {
                  let ast_id = AstId::new(self.file_id(), module_ast_id);
                  let db = self.def_collector.db;
-                         );
-                     }
-                 };
--            }
-+            },
-         }
-     }
- 
              macro_id,
              &self.item_tree[mac.visibility],
          );

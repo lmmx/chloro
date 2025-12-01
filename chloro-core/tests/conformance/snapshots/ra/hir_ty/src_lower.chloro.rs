@@ -146,13 +146,13 @@ impl<'db> LifetimeElisionKind<'db> {
         match const_parent {
             ItemContainerId::ExternBlockId(_) | ItemContainerId::ModuleId(_) => {
                 LifetimeElisionKind::Elided(Region::new_static(interner))
-            },
+            }
             ItemContainerId::ImplId(_) => {
                 LifetimeElisionKind::StaticIfNoLifetimeInScope { only_lint: true }
-            },
+            }
             ItemContainerId::TraitId(_) => {
                 LifetimeElisionKind::StaticIfNoLifetimeInScope { only_lint: false }
-            },
+            }
         }
     }
 
@@ -276,7 +276,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         match const_ref {
             hir_def::hir::Expr::Path(path) => {
                 self.path_to_const(path).unwrap_or_else(|| unknown_const(const_type))
-            },
+            }
             hir_def::hir::Expr::Literal(literal) => intern_const_ref(
                 self.db,
                 &match *literal {
@@ -306,13 +306,13 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                             } else {
                                 unknown_const(const_type)
                             }
-                        },
+                        }
                         _ => unknown_const(const_type),
                     }
                 } else {
                     unknown_const(const_type)
                 }
-            },
+            }
             _ => unknown_const(const_type),
         }
     }
@@ -331,9 +331,9 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                             p
                         );
                         None
-                    },
+                    }
                 }
-            },
+            }
             Some(ValueNs::ConstId(c)) => {
                 let args = GenericArgs::new_from_iter(self.interner, []);
                 Some(Const::new(
@@ -342,7 +342,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                     UnevaluatedConst::new(SolverDefId::ConstId(c), args),
                 ),
                 ))
-            },
+            }
             _ => None,
         }
     }
@@ -640,7 +640,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                 }
                 let self_ty = self.lower_ty(*target);
                 Either::Left(Either::Right(self.lower_type_bound(bound, self_ty, ignore_bindings)))
-            },
+            }
             &WherePredicate::Lifetime { bound, target } => {
                 Either::Right(iter::once(Clause(Predicate::new(
                     self.interner,
@@ -648,7 +648,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                     OutlivesPredicate(self.lower_lifetime(bound), self.lower_lifetime(target)),
                 ))),
                 ))))
-            },
+            }
         }.into_iter(
         )
     }
@@ -929,7 +929,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                         Some(idx) => idx,
                     };
                     self.region_param(id, idx as u32)
-                },
+                }
             },
             None => Region::error(self.interner),
         }
@@ -1133,7 +1133,7 @@ fn type_for_struct_constructor<'db>(
                 CallableDefId::StructId(def).into(),
                 GenericArgs::identity_for_item(interner, def.into()),
             )))
-        },
+        }
     }
 }
 
@@ -1153,7 +1153,7 @@ fn type_for_enum_variant_constructor<'db>(
                 CallableDefId::EnumVariantId(def).into(),
                 GenericArgs::identity_for_item(interner, def.loc(db).parent.into()),
             )))
-        },
+        }
     }
 }
 
@@ -1733,22 +1733,18 @@ fn implicitly_sized_clauses<'a, 'subst, 'db>(
     let trait_self_idx = trait_self_param_idx(db, def);
 
     Some(args.iter().enumerate().filter_map(move |(idx, generic_arg)| {
-        if Some(idx) == trait_self_idx {
-            None
-        } else {
-            Some(generic_arg)
-        }
-    }).filter_map(
+                    if Some(idx) == trait_self_idx { None } else { Some(generic_arg) }
+                }).filter_map(
         |generic_arg| generic_arg.as_type(),
     ).filter(
         move |self_ty| !explicitly_unsized_tys.contains(self_ty),
     ).map(move |self_ty| {
-        let trait_ref = TraitRef::new_from_args(
+                let trait_ref = TraitRef::new_from_args(
                     interner,
                     sized_trait.into(),
                     GenericArgs::new_from_iter(interner, [self_ty.into()]),
                 );
-        Clause(Predicate::new(
+                Clause(Predicate::new(
                     interner,
                     Binder::dummy(rustc_type_ir::PredicateKind::Clause(
                         rustc_type_ir::ClauseKind::Trait(TraitPredicate {
@@ -1757,7 +1753,7 @@ fn implicitly_sized_clauses<'a, 'subst, 'db>(
                         }),
                     )),
                 ))
-    }))
+            }))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -2132,7 +2128,7 @@ fn named_associated_type_shorthand_candidates<'db, R>(
         TypeNs::SelfType(impl_id) => {
             let trait_ref = db.impl_trait(impl_id)?;
             search(trait_ref.skip_binder())
-        },
+        }
         TypeNs::GenericParam(param_id) => {
             if let GenericDefId::TraitId(trait_id) = param_id.parent() {
                 let trait_name = &db.trait_signature(trait_id).name;
@@ -2149,17 +2145,17 @@ fn named_associated_type_shorthand_candidates<'db, R>(
             let predicates =
                 db.generic_predicates_for_param(def, param_id.into(), assoc_name.clone());
             predicates.iter().find_map(|pred| match (*pred).kind().skip_binder() {
-                rustc_type_ir::ClauseKind::Trait(trait_predicate) => Some(trait_predicate),
-                _ => None,
-            }).and_then(|trait_predicate| {
-                let trait_ref = trait_predicate.trait_ref;
-                assert!(
+                    rustc_type_ir::ClauseKind::Trait(trait_predicate) => Some(trait_predicate),
+                    _ => None,
+                }).and_then(|trait_predicate| {
+                    let trait_ref = trait_predicate.trait_ref;
+                    assert!(
                         !trait_ref.has_escaping_bound_vars(),
                         "FIXME unexpected higher-ranked trait bound"
                     );
-                search(trait_ref)
-            })
-        },
+                    search(trait_ref)
+                })
+        }
         _ => None,
     }
 }

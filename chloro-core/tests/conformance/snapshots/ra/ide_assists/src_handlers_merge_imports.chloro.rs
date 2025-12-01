@@ -68,6 +68,7 @@ pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
         |builder| {
         let make = SyntaxFactory::with_mappings();
         let mut editor = builder.make_editor(&parent_node);
+
         for edit in edits {
             match edit {
                 Remove(it) => {

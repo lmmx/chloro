@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18922 bytes
-Chloro size:   18957 bytes
+Chloro size:   18958 bytes
 Rustfmt size:  19198 bytes
 
 ✗ Outputs DIFFER
@@ -61,9 +61,7 @@ Rustfmt size:  19198 bytes
              for &(ref name, assoc_item_id) in &impl_id.impl_items(self.db).items {
                  if s.collect_pub_only && s.db.assoc_visibility(assoc_item_id) != Visibility::Public
                  {
-                     continue;
-                 }
--
+ 
                  s.push_assoc_item(assoc_item_id, name, None)
              }
 -        })

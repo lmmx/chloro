@@ -34,14 +34,16 @@ pub(crate) fn unresolved_method(
         ctx,
         d.expr,
         &|expr| {
-        Some(match expr.left()? {
-            ast::Expr::MethodCallExpr(it) => it.name_ref(),
-            ast::Expr::FieldExpr(it) => it.name_ref(),
-            _ => None,
-        }?.syntax(
-        ).text_range(
-        ))
-    },
+            Some(
+                match expr.left()? {
+                    ast::Expr::MethodCallExpr(it) => it.name_ref(),
+                    ast::Expr::FieldExpr(it) => it.name_ref(),
+                    _ => None,
+                }?
+                .syntax()
+                .text_range(),
+            )
+        },
     ),
     ).with_fixes(
         fixes(ctx, d),

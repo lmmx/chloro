@@ -34,7 +34,7 @@ impl MergeBehavior {
             MergeBehavior::Crate | MergeBehavior::One => true,
             MergeBehavior::Module => {
                 tree.use_tree_list().is_none() && tree.path().map(path_len) <= Some(1)
-            },
+            }
         }
     }
 }
@@ -520,7 +520,7 @@ pub fn common_prefix(lhs: &ast::Path, rhs: &ast::Path) -> Option<(ast::Path, ast
             Some((lhs, rhs)) => {
                 lhs_curr = lhs;
                 rhs_curr = rhs;
-            },
+            }
             _ => break res,
         }
     }
@@ -571,20 +571,20 @@ pub(super) fn use_tree_cmp(a: &ast::UseTree, b: &ast::UseTree) -> Ordering {
         (None, Some(_)) => Ordering::Less,
         (Some(a_path), Some(b_path)) => {
             a_path.segments().zip_longest(b_path.segments()).find_map(|zipped| match zipped {
-                EitherOrBoth::Both(a_segment, b_segment) => {
-                    match path_segment_cmp(&a_segment, &b_segment) {
-                        Ordering::Equal => None,
-                        ord => Some(ord),
+                    EitherOrBoth::Both(a_segment, b_segment) => {
+                        match path_segment_cmp(&a_segment, &b_segment) {
+                            Ordering::Equal => None,
+                            ord => Some(ord),
+                        }
                     }
-                },
-                EitherOrBoth::Left(_) if b_is_simple_path => Some(Ordering::Greater),
-                EitherOrBoth::Left(_) => Some(Ordering::Less),
-                EitherOrBoth::Right(_) if a_is_simple_path => Some(Ordering::Less),
-                EitherOrBoth::Right(_) => Some(Ordering::Greater),
-            }).unwrap_or_else(
+                    EitherOrBoth::Left(_) if b_is_simple_path => Some(Ordering::Greater),
+                    EitherOrBoth::Left(_) => Some(Ordering::Less),
+                    EitherOrBoth::Right(_) if a_is_simple_path => Some(Ordering::Less),
+                    EitherOrBoth::Right(_) => Some(Ordering::Greater),
+                }).unwrap_or_else(
                 || use_tree_cmp_by_tree_list_glob_or_alias(a, b, true),
             )
-        },
+        }
     }
 }
 
@@ -614,9 +614,9 @@ fn path_segment_cmp(a: &ast::PathSegment, b: &ast::PathSegment) -> Ordering {
                     let a_text = a_name.as_str().trim_start_matches("r#");
                     let b_text = b_name.as_str().trim_start_matches("r#");
                     version_sort::version_sort(a_text, b_text)
-                },
+                }
             }
-        },
+        }
     }
 }
 
@@ -660,13 +660,13 @@ fn use_tree_cmp_by_tree_list_glob_or_alias(
         (Some(_), None) => Ordering::Greater,
         (None, Some(_)) => Ordering::Less,
         (Some(a_list), Some(b_list)) if strict => a_list.use_trees().zip_longest(b_list.use_trees()).find_map(|zipped| match zipped {
-            EitherOrBoth::Both(a_tree, b_tree) => match use_tree_cmp(&a_tree, &b_tree) {
-                Ordering::Equal => None,
-                ord => Some(ord),
-            },
-            EitherOrBoth::Left(_) => Some(Ordering::Greater),
-            EitherOrBoth::Right(_) => Some(Ordering::Less),
-        }).unwrap_or_else(
+                EitherOrBoth::Both(a_tree, b_tree) => match use_tree_cmp(&a_tree, &b_tree) {
+                    Ordering::Equal => None,
+                    ord => Some(ord),
+                },
+                EitherOrBoth::Left(_) => Some(Ordering::Greater),
+                EitherOrBoth::Right(_) => Some(Ordering::Less),
+            }).unwrap_or_else(
             cmp_by_glob_or_alias,
         ),
         _ => cmp_by_glob_or_alias(),
@@ -714,7 +714,7 @@ fn remove_subtree_if_only_self(use_tree: &ast::UseTree) {
     match (use_tree.path(), single_subtree.path()) {
         (Some(_), Some(inner)) if path_is_self(&inner) => {
             ted::remove_all_iter(single_subtree.syntax().children_with_tokens());
-        },
+        }
         _ => (),
     }
 }

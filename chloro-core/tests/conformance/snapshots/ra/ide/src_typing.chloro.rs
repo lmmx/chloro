@@ -356,8 +356,10 @@ fn on_left_angle_typed(
     }
 
     if ancestors_at_offset(file.syntax(), offset).take_while(|n| !ast::Item::can_cast(n.kind())).any(|n| {
-        ast::GenericParamList::can_cast(n.kind()) || ast::GenericArgList::can_cast(n.kind()) || ast::UseBoundGenericArgs::can_cast(n.kind())
-    }) {
+            ast::GenericParamList::can_cast(n.kind())
+                || ast::GenericArgList::can_cast(n.kind())
+                || ast::UseBoundGenericArgs::can_cast(n.kind())
+        }) {
         Some(TextEdit::insert(offset + TextSize::of('<'), '>'.to_string()))
     } else {
         None

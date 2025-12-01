@@ -178,10 +178,10 @@ impl Crate {
 
     pub fn dependencies(self, db: &dyn HirDatabase) -> Vec<CrateDependency> {
         self.id.data(db).dependencies.iter().map(|dep| {
-            let krate = Crate { id: dep.crate_id };
-            let name = dep.as_name();
-            CrateDependency { krate, name }
-        }).collect(
+                let krate = Crate { id: dep.crate_id };
+                let name = dep.as_name();
+                CrateDependency { krate, name }
+            }).collect(
         )
     }
 
@@ -234,12 +234,12 @@ impl Crate {
     ) -> impl Iterator<Item = (Either<ModuleDef, Macro>, Complete)> {
         let _p = tracing::info_span!("query_external_importables").entered();
         import_map::search_dependencies(db, self.into(), &query).into_iter().map(|(item, do_not_complete)| {
-            let item = match ItemInNs::from(item) {
+                let item = match ItemInNs::from(item) {
                     ItemInNs::Types(mod_id) | ItemInNs::Values(mod_id) => Either::Left(mod_id),
                     ItemInNs::Macros(mac_id) => Either::Right(mac_id),
                 };
-            (item, do_not_complete)
-        })
+                (item, do_not_complete)
+            })
     }
 
     pub fn all(db: &dyn HirDatabase) -> Vec<Crate> {
@@ -269,8 +269,8 @@ impl Crate {
 
     fn core(db: &dyn HirDatabase) -> Option<Crate> {
         db.all_crates().iter().copied().find(|&krate| {
-            matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Core))
-        }).map(
+                matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Core))
+            }).map(
             Crate::from,
         )
     }
@@ -551,19 +551,15 @@ impl Module {
         visible_from: Option<Module>,
     ) -> Vec<(Name, ScopeDef)> {
         self.id.def_map(db)[self.id.local_id].scope.entries().filter_map(|(name, def)| {
-            if let Some(m) = visible_from {
-                let filtered = def.filter_visibility(|vis| vis.is_visible_from(db, m.id));
-                if filtered.is_none() && !def.is_none() {
-                    None
+                if let Some(m) = visible_from {
+                    let filtered = def.filter_visibility(|vis| vis.is_visible_from(db, m.id));
+                    if filtered.is_none() && !def.is_none() { None } else { Some((name, filtered)) }
                 } else {
-                    Some((name, filtered))
+                    Some((name, def))
                 }
-            } else {
-                Some((name, def))
-            }
-        }).flat_map(|(name, def)| {
-            ScopeDef::all_items(def).into_iter().map(move |item| (name.clone(), item))
-        }).collect(
+            }).flat_map(|(name, def)| {
+                ScopeDef::all_items(def).into_iter().map(move |item| (name.clone(), item))
+            }).collect(
         )
     }
 
@@ -1010,11 +1006,11 @@ fn emit_def_diagnostic_<'db>(
                 candidates: candidates.clone(),
             }.into(
             ))
-        },
+        }
         DefDiagnosticKind::UnresolvedExternCrate { ast } => {
             let item = ast.to_ptr(db);
             acc.push(UnresolvedExternCrate { decl: InFile::new(ast.file_id, item) }.into());
-        },
+        }
         DefDiagnosticKind::MacroError { ast, path, err } => {
             let item = ast.to_ptr(db);
             let RenderedExpandError { message, error, kind } = err.render_to_string(db);
@@ -1028,14 +1024,14 @@ fn emit_def_diagnostic_<'db>(
                 }
                 .into(),
             )
-        },
+        }
         DefDiagnosticKind::UnresolvedImport { id, index } => {
             let file_id = id.file_id;
             let use_tree = hir_def::src::use_tree_to_ast(db, *id, *index);
             acc.push(
                 UnresolvedImport { decl: InFile::new(file_id, AstPtr::new(&use_tree)) }.into(),
             );
-        },
+        }
         DefDiagnosticKind::UnconfiguredCode { ast_id, cfg, opts } => {
             let ast_id_map = db.ast_id_map(ast_id.file_id);
             let ptr = ast_id_map.get_erased(ast_id.value);
@@ -1047,7 +1043,7 @@ fn emit_def_diagnostic_<'db>(
                 }
                 .into(),
             );
-        },
+        }
         DefDiagnosticKind::UnresolvedMacroCall { ast, path } => {
             let (node, precise_location) = precise_macro_call_location(ast, db);
             acc.push(
@@ -1059,7 +1055,7 @@ fn emit_def_diagnostic_<'db>(
                 }
                 .into(),
             );
-        },
+        }
         DefDiagnosticKind::UnimplementedBuiltinMacro { ast } => {
             let node = ast.to_node(db);
             let name = node.name().expect("unimplemented builtin macro with no name");
@@ -1069,7 +1065,7 @@ fn emit_def_diagnostic_<'db>(
                 }
                 .into(),
             );
-        },
+        }
         DefDiagnosticKind::InvalidDeriveTarget { ast, id } => {
             let node = ast.to_node(db);
             let derive = node.attrs().nth(*id);
@@ -1081,10 +1077,10 @@ fn emit_def_diagnostic_<'db>(
                         }
                         .into(),
                     );
-                },
+                }
                 None => stdx::never!("derive diagnostic on item without derive attribute"),
             }
-        },
+        }
         DefDiagnosticKind::MalformedDerive { ast, id } => {
             let node = ast.to_node(db);
             let derive = node.attrs().nth(*id);
@@ -1096,10 +1092,10 @@ fn emit_def_diagnostic_<'db>(
                         }
                         .into(),
                     );
-                },
+                }
                 None => stdx::never!("derive diagnostic on item without derive attribute"),
             }
-        },
+        }
         DefDiagnosticKind::MacroDefError { ast, message } => {
             let node = ast.to_node(db);
             acc.push(
@@ -1110,7 +1106,7 @@ fn emit_def_diagnostic_<'db>(
                 }
                 .into(),
             );
-        },
+        }
     }
 }
 
@@ -1129,7 +1125,7 @@ fn precise_macro_call_location(
                 |it| it.syntax().text_range(),
             ),
             )
-        },
+        }
         MacroCallKind::Derive { ast_id, derive_attr_index, derive_index, .. } => {
             let node = ast_id.to_node(db);
             let token = (|| {
@@ -1155,7 +1151,7 @@ fn precise_macro_call_location(
                 ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&node))),
                 token.as_ref().map(|tok| tok.text_range()),
             )
-        },
+        }
         MacroCallKind::Attr { ast_id, invoc_attr_index, .. } => {
             let node = ast_id.to_node(db);
             let attr = collect_attrs(&node)
@@ -1168,7 +1164,7 @@ fn precise_macro_call_location(
                 ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&attr))),
                 Some(attr.syntax().text_range()),
             )
-        },
+        }
     }
 }
 
@@ -1305,7 +1301,7 @@ impl Field {
             db.trait_environment(match hir_def::VariantId::from(self.parent) {
             hir_def::VariantId::EnumVariantId(id) => {
                 GenericDefId::AdtId(id.lookup(db).parent.into())
-            },
+            }
             hir_def::VariantId::StructId(id) => GenericDefId::AdtId(id.into()),
             hir_def::VariantId::UnionId(id) => GenericDefId::AdtId(id.into()),
         }),
@@ -1403,9 +1399,9 @@ pub struct InstantiatedStruct<'db> {
 impl<'db> InstantiatedStruct<'db> {
     pub fn fields(self, db: &dyn HirDatabase) -> Vec<InstantiatedField<'db>> {
         self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
-            inner: Field { parent: self.inner.into(), id },
-            args: self.args,
-        }).collect(
+                inner: Field { parent: self.inner.into(), id },
+                args: self.args,
+            }).collect(
         )
     }
 
@@ -1672,9 +1668,9 @@ impl<'db> InstantiatedVariant<'db> {
 
     pub fn fields(self, db: &dyn HirDatabase) -> Vec<InstantiatedField<'db>> {
         self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
-            inner: Field { parent: self.inner.into(), id },
-            args: self.args,
-        }).collect(
+                inner: Field { parent: self.inner.into(), id },
+                args: self.args,
+            }).collect(
         )
     }
 }
@@ -1769,8 +1765,11 @@ impl Adt {
             Adt::Enum(e) => e.id.resolver(db),
         };
         resolver.generic_params().and_then(|gp| {
-            gp.iter_lt().nth(0)
-        }).map(
+                gp.iter_lt()
+                    // there should only be a single lifetime
+                    // but `Arena` requires to use an iterator
+                    .nth(0)
+            }).map(
             |arena| arena.1.clone(),
         )
     }
@@ -2253,9 +2252,9 @@ impl Function {
         let callable_sig =
             db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
         callable_sig.inputs().iter().enumerate().map(|(idx, ty)| {
-            let ty = Type { env: environment.clone(), ty };
-            Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
-        }).collect(
+                let ty = Type { env: environment.clone(), ty };
+                Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
+            }).collect(
         )
     }
 
@@ -2275,9 +2274,9 @@ impl Function {
             db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
         let skip = if db.function_signature(self.id).has_self_param() { 1 } else { 0 };
         callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
-            let ty = Type { env: environment.clone(), ty };
-            Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
-        }).collect(
+                let ty = Type { env: environment.clone(), ty };
+                Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
+            }).collect(
         )
     }
 
@@ -2293,9 +2292,9 @@ impl Function {
             db.callable_item_signature(self.id.into()).instantiate(interner, args).skip_binder();
         let skip = if db.function_signature(self.id).has_self_param() { 1 } else { 0 };
         callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
-            let ty = Type { env: environment.clone(), ty };
-            Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
-        }).collect(
+                let ty = Type { env: environment.clone(), ty };
+                Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
+            }).collect(
         )
     }
 
@@ -2335,10 +2334,10 @@ impl Function {
 
         let mut has_impl_future = false;
         impl_traits.filter(|t| {
-            let fut = t.id == future_trait_id;
-            has_impl_future |= fut;
-            !fut && t.id != sized_trait_id
-        }).all(
+                let fut = t.id == future_trait_id;
+                has_impl_future |= fut;
+                !fut && t.id != sized_trait_id
+            }).all(
             |t| t.is_auto(db),
         ) && has_impl_future
     }
@@ -2526,7 +2525,7 @@ impl<'db> Param<'db> {
                 } else {
                     None
                 }
-            },
+            }
             Callee::Closure(closure, _) => {
                 let c = db.lookup_intern_closure(closure);
                 let body = db.body(c.0);
@@ -2536,7 +2535,7 @@ impl<'db> Param<'db> {
                     return Some(Local { parent: c.0, binding_id: *id });
                 }
                 None
-            },
+            }
             _ => None,
         }
     }
@@ -2555,12 +2554,12 @@ impl SelfParam {
     pub fn access(self, db: &dyn HirDatabase) -> Access {
         let func_data = db.function_signature(self.func);
         func_data.params.first().map(|&param| match &func_data.store[param] {
-            TypeRef::Reference(ref_) => match ref_.mutability {
-                hir_def::type_ref::Mutability::Shared => Access::Shared,
-                hir_def::type_ref::Mutability::Mut => Access::Exclusive,
-            },
-            _ => Access::Owned,
-        }).unwrap_or(
+                TypeRef::Reference(ref_) => match ref_.mutability {
+                    hir_def::type_ref::Mutability::Shared => Access::Shared,
+                    hir_def::type_ref::Mutability::Mut => Access::Exclusive,
+                },
+                _ => Access::Owned,
+            }).unwrap_or(
             Access::Owned,
         )
     }
@@ -2617,11 +2616,7 @@ impl ExternCrateDecl {
             Some(krate.into())
         } else {
             krate.data(db).dependencies.iter().find_map(|dep| {
-                if dep.name.symbol() == name.symbol() {
-                    Some(dep.crate_id.into())
-                } else {
-                    None
-                }
+                if dep.name.symbol() == name.symbol() { Some(dep.crate_id.into()) } else { None }
             })
         }
     }
@@ -2814,7 +2809,8 @@ impl Trait {
     }
 
     pub fn function(self, db: &dyn HirDatabase, name: impl PartialEq<Name>) -> Option<Function> {
-        self.id.trait_items(db).items.iter().find(|(n, _)| name == *n).and_then(|&(_, it)| match it {
+        self.id.trait_items(db).items.iter().find(|(n, _)| name == *n).and_then(|&(_, it)| match it
+        {
             AssocItemId::FunctionId(id) => Some(Function { id }),
             _ => None,
         })
@@ -3035,12 +3031,12 @@ impl Macro {
                 let loc = id.lookup(db);
                 let source = loc.source(db);
                 as_name_opt(source.value.name())
-            },
+            }
             MacroId::MacroRulesId(id) => {
                 let loc = id.lookup(db);
                 let source = loc.source(db);
                 as_name_opt(source.value.name())
-            },
+            }
             MacroId::ProcMacroId(id) => {
                 let loc = id.lookup(db);
                 let source = loc.source(db);
@@ -3051,7 +3047,7 @@ impl Macro {
                     ),
                     ProcMacroKind::Bang | ProcMacroKind::Attr => as_name_opt(source.value.name()),
                 }
-            },
+            }
         }
     }
 
@@ -3069,7 +3065,7 @@ impl Macro {
                 MacroExpander::Declarative => MacroKind::Declarative,
                 MacroExpander::BuiltIn(_) | MacroExpander::BuiltInEager(_) => {
                     MacroKind::DeclarativeBuiltIn
-                },
+                }
                 MacroExpander::BuiltInAttr(_) => MacroKind::AttrBuiltIn,
                 MacroExpander::BuiltInDerive(_) => MacroKind::DeriveBuiltIn,
             },
@@ -3077,7 +3073,7 @@ impl Macro {
                 MacroExpander::Declarative => MacroKind::Declarative,
                 MacroExpander::BuiltIn(_) | MacroExpander::BuiltInEager(_) => {
                     MacroKind::DeclarativeBuiltIn
-                },
+                }
                 MacroExpander::BuiltInAttr(_) => MacroKind::AttrBuiltIn,
                 MacroExpander::BuiltInDerive(_) => MacroKind::DeriveBuiltIn,
             },
@@ -3100,10 +3096,10 @@ impl Macro {
         match self.id {
             MacroId::Macro2Id(it) => {
                 matches!(it.lookup(db).expander, MacroExpander::BuiltInDerive(_))
-            },
+            }
             MacroId::MacroRulesId(it) => {
                 matches!(it.lookup(db).expander, MacroExpander::BuiltInDerive(_))
-            },
+            }
             MacroId::ProcMacroId(_) => false,
         }
     }
@@ -3112,10 +3108,10 @@ impl Macro {
         match self.id {
             MacroId::Macro2Id(it) => {
                 matches!(it.lookup(db).expander, MacroExpander::BuiltInEager(eager) if eager.is_env_or_option_env())
-            },
+            }
             MacroId::MacroRulesId(it) => {
                 matches!(it.lookup(db).expander, MacroExpander::BuiltInEager(eager) if eager.is_env_or_option_env())
-            },
+            }
             MacroId::ProcMacroId(_) => false,
         }
     }
@@ -3125,10 +3121,10 @@ impl Macro {
         match self.id {
             MacroId::Macro2Id(it) => {
                 matches!(it.lookup(db).expander, MacroExpander::BuiltIn(m) if m.is_asm())
-            },
+            }
             MacroId::MacroRulesId(it) => {
                 matches!(it.lookup(db).expander, MacroExpander::BuiltIn(m) if m.is_asm())
-            },
+            }
             MacroId::ProcMacroId(_) => false,
         }
     }
@@ -3149,7 +3145,7 @@ impl HasVisibility for Macro {
                 let loc = id.lookup(db);
                 let source = loc.source(db);
                 visibility_from_ast(db, id, source.map(|src| src.visibility()))
-            },
+            }
             MacroId::MacroRulesId(_) => Visibility::Public,
             MacroId::ProcMacroId(_) => Visibility::Public,
         }
@@ -3174,7 +3170,7 @@ impl From<ModuleDef> for ItemInNs {
         match module_def {
             ModuleDef::Static(_) | ModuleDef::Const(_) | ModuleDef::Function(_) => {
                 ItemInNs::Values(module_def)
-            },
+            }
             ModuleDef::Macro(it) => ItemInNs::Macros(it),
             _ => ItemInNs::Types(module_def),
         }
@@ -3324,7 +3320,7 @@ where
         ItemContainerId::ExternBlockId(_) => Some(ctor(DEF::from(id))),
         ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) | ItemContainerId::ModuleId(_) => {
             None
-        },
+        }
     }
 }
 
@@ -3395,7 +3391,7 @@ impl AssocItem {
             ItemContainerId::ImplId(id) => AssocItemContainer::Impl(id.into()),
             ItemContainerId::ModuleId(_) | ItemContainerId::ExternBlockId(_) => {
                 panic!("invalid AssocItem")
-            },
+            }
         }
     }
 
@@ -3458,11 +3454,11 @@ impl AssocItem {
             AssocItem::Function(func) => {
                 GenericDef::Function(func).diagnostics(db, acc);
                 DefWithBody::from(func).diagnostics(db, acc, style_lints);
-            },
+            }
             AssocItem::Const(const_) => {
                 GenericDef::Const(const_).diagnostics(db, acc);
                 DefWithBody::from(const_).diagnostics(db, acc, style_lints);
-            },
+            }
             AssocItem::TypeAlias(type_alias) => {
                 GenericDef::TypeAlias(type_alias).diagnostics(db, acc);
                 push_ty_diagnostics(
@@ -3474,7 +3470,7 @@ impl AssocItem {
                 for diag in hir_ty::diagnostics::incorrect_case(db, type_alias.id.into()) {
                     acc.push(diag.into());
                 }
-            },
+            }
         }
     }
 }
@@ -3678,8 +3674,8 @@ impl<'db> GenericSubstitution<'db> {
             .filter_map(|param| param.ty())
             .zip(type_params);
         container_params.chain(self_params).filter_map(|(ty, name)| {
-            Some((name?.symbol().clone(), Type { ty, env: self.env.clone() }))
-        }).collect(
+                Some((name?.symbol().clone(), Type { ty, env: self.env.clone() }))
+            }).collect(
         )
     }
 }
@@ -3797,18 +3793,18 @@ impl Local {
                     local: self,
                     source: source.map(|ast| Either::Right(ast.to_node(&root))),
                 }]
-            },
+            }
             _ => source_map.patterns_for_binding(self.binding_id).iter().map(|&definition| {
-                let src = source_map.pat_syntax(definition).unwrap();
-                let root = src.file_syntax(db);
-                LocalSource {
-                    local: self,
-                    source: src.map(|ast| match ast.to_node(&root) {
-                        Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
-                        _ => unreachable!("local with non ident-pattern"),
-                    }),
-                }
-            }).collect(
+                    let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
+                    let root = src.file_syntax(db);
+                    LocalSource {
+                        local: self,
+                        source: src.map(|ast| match ast.to_node(&root) {
+                            Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
+                            _ => unreachable!("local with non ident-pattern"),
+                        }),
+                    }
+                }).collect(
             ),
         }
     }
@@ -3823,18 +3819,18 @@ impl Local {
                     local: self,
                     source: source.map(|ast| Either::Right(ast.to_node(&root))),
                 }
-            },
+            }
             _ => source_map.patterns_for_binding(self.binding_id).first().map(|&definition| {
-                let src = source_map.pat_syntax(definition).unwrap();
-                let root = src.file_syntax(db);
-                LocalSource {
-                    local: self,
-                    source: src.map(|ast| match ast.to_node(&root) {
-                        Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
-                        _ => unreachable!("local with non ident-pattern"),
-                    }),
-                }
-            }).unwrap(
+                    let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
+                    let root = src.file_syntax(db);
+                    LocalSource {
+                        local: self,
+                        source: src.map(|ast| match ast.to_node(&root) {
+                            Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
+                            _ => unreachable!("local with non ident-pattern"),
+                        }),
+                    }
+                }).unwrap(
             ),
         }
     }
@@ -4077,9 +4073,9 @@ impl TypeParam {
     /// the parameter comes from an impl!
     pub fn trait_bounds(self, db: &dyn HirDatabase) -> Vec<Trait> {
         db.generic_predicates_for_param(self.id.parent(), self.id.into(), None).iter().filter_map(|pred| match &pred.kind().skip_binder() {
-            ClauseKind::Trait(trait_ref) => Some(Trait::from(trait_ref.def_id().0)),
-            _ => None,
-        }).collect(
+                ClauseKind::Trait(trait_ref) => Some(Trait::from(trait_ref.def_id().0)),
+                _ => None,
+            }).collect(
         )
     }
 
@@ -4089,7 +4085,7 @@ impl TypeParam {
         match ty {
             GenericArg::Ty(it) if !it.is_ty_error() => {
                 Some(Type::new_with_resolver_inner(db, &resolver, it))
-            },
+            }
             _ => None,
         }
     }
@@ -4136,7 +4132,7 @@ impl ConstParam {
             None => {
                 never!();
                 Name::missing()
-            },
+            }
         }
     }
 
@@ -4197,10 +4193,10 @@ impl TypeOrConstParam {
         match &params[self.id.local_id] {
             TypeOrConstParamData::TypeParamData(_) => {
                 Either::Right(TypeParam { id: TypeParamId::from_unchecked(self.id) })
-            },
+            }
             TypeOrConstParamData::ConstParamData(_) => {
                 Either::Left(ConstParam { id: ConstParamId::from_unchecked(self.id) })
-            },
+            }
         }
     }
 
@@ -4216,7 +4212,7 @@ impl TypeOrConstParam {
         match &params[self.id.local_id] {
             TypeOrConstParamData::TypeParamData(_) => {
                 Some(TypeParam { id: TypeParamId::from_unchecked(self.id) })
-            },
+            }
             TypeOrConstParamData::ConstParamData(_) => None,
         }
     }
@@ -4227,7 +4223,7 @@ impl TypeOrConstParam {
             TypeOrConstParamData::TypeParamData(_) => None,
             TypeOrConstParamData::ConstParamData(_) => {
                 Some(ConstParam { id: ConstParamId::from_unchecked(self.id) })
-            },
+            }
         }
     }
 }
@@ -4458,7 +4454,7 @@ impl<'db> Closure<'db> {
             AnyClosureId::ClosureId(id) => Ty::new_closure(interner, id.into(), self.subst),
             AnyClosureId::CoroutineClosureId(id) => {
                 Ty::new_coroutine_closure(interner, id.into(), self.subst)
-            },
+            }
         }
     }
 
@@ -4497,10 +4493,7 @@ impl<'db> Closure<'db> {
         let infer = db.infer(owner);
         let (captures, _) = infer.closure_info(id);
         let env = db.trait_environment_for_body(owner);
-        captures.iter().map(|capture| Type {
-            env: env.clone(),
-            ty: capture.ty(db, self.subst),
-        }).collect(
+        captures.iter().map(|capture| Type { env: env.clone(), ty: capture.ty(db, self.subst) }).collect(
         )
     }
 
@@ -4511,14 +4504,14 @@ impl<'db> Closure<'db> {
                 let infer = db.infer(owner);
                 let info = infer.closure_info(id);
                 info.1
-            },
+            }
             AnyClosureId::CoroutineClosureId(_id) => {
                 match self.subst.as_coroutine_closure().kind() {
                     rustc_type_ir::ClosureKind::Fn => FnTrait::AsyncFn,
                     rustc_type_ir::ClosureKind::FnMut => FnTrait::AsyncFnMut,
                     rustc_type_ir::ClosureKind::FnOnce => FnTrait::AsyncFnOnce,
                 }
-            },
+            }
         }
     }
 }
@@ -5077,10 +5070,10 @@ impl<'db> Type<'db> {
         match self.ty.kind() {
             TyKind::Closure(id, subst) => {
                 Some(Closure { id: AnyClosureId::ClosureId(id.0), subst })
-            },
+            }
             TyKind::CoroutineClosure(id, subst) => {
                 Some(Closure { id: AnyClosureId::CoroutineClosureId(id.0), subst })
-            },
+            }
             _ => None,
         }
     }
@@ -5137,10 +5130,10 @@ impl<'db> Type<'db> {
         };
 
         db.field_types(variant_id).iter().map(|(local_id, ty)| {
-            let def = Field { parent: variant_id.into(), id: local_id };
-            let ty = ty.instantiate(interner, substs);
-            (def, self.derived(ty))
-        }).collect(
+                let def = Field { parent: variant_id.into(), id: local_id };
+                let ty = ty.instantiate(interner, substs);
+                (def, self.derived(ty))
+            }).collect(
         )
     }
 
@@ -5245,7 +5238,7 @@ impl<'db> Type<'db> {
             TyKind::Adt(_, substs) => Either::Left(substs.types().map(move |ty| self.derived(ty))),
             TyKind::Tuple(substs) => {
                 Either::Right(Either::Left(substs.iter().map(move |ty| self.derived(ty))))
-            },
+            }
             _ => Either::Right(Either::Right(std::iter::empty())),
         }
     }
@@ -5274,12 +5267,12 @@ impl<'db> Type<'db> {
         display_target: DisplayTarget,
     ) -> impl Iterator<Item = SmolStr> + 'a {
         self.ty.strip_references().as_adt().into_iter().flat_map(|(_, substs)| substs.iter()).filter_map(move |arg| match arg {
-            GenericArg::Ty(ty) => Some(format_smolstr!("{}", ty.display(db, display_target))),
-            GenericArg::Const(const_) => {
-                Some(format_smolstr!("{}", const_.display(db, display_target)))
-            },
-            GenericArg::Lifetime(_) => None,
-        })
+                GenericArg::Ty(ty) => Some(format_smolstr!("{}", ty.display(db, display_target))),
+                GenericArg::Const(const_) => {
+                    Some(format_smolstr!("{}", const_.display(db, display_target)))
+                }
+                GenericArg::Lifetime(_) => None,
+            })
     }
 
     /// Combines lifetime indicators, type and constant parameters into a single `Iterator`
@@ -5290,8 +5283,9 @@ impl<'db> Type<'db> {
     ) -> impl Iterator<Item = SmolStr> + 'a {
         // iterate the lifetime
         self.as_adt().and_then(|a| {
-            a.lifetime(db).map(|lt| lt.name.display_no_db(Edition::Edition2015).to_smolstr())
-        }).into_iter(
+                // Lifetimes do not need edition-specific handling as they cannot be escaped.
+                a.lifetime(db).map(|lt| lt.name.display_no_db(Edition::Edition2015).to_smolstr())
+            }).into_iter(
         ).chain(
             self.type_and_const_arguments(db, display_target),
         )
@@ -5532,8 +5526,10 @@ impl<'db> Type<'db> {
     pub fn env_traits(&self, db: &'db dyn HirDatabase) -> impl Iterator<Item = Trait> {
         let _p = tracing::info_span!("env_traits").entered();
         self.autoderef_(db).filter(|ty| matches!(ty.kind(), TyKind::Param(_))).flat_map(|ty| {
-            self.env.traits_in_scope_from_clauses(ty).flat_map(|t| hir_ty::all_super_traits(db, t))
-        }).map(
+                self.env
+                    .traits_in_scope_from_clauses(ty)
+                    .flat_map(|t| hir_ty::all_super_traits(db, t))
+            }).map(
             Trait::from,
         )
     }
@@ -5752,13 +5748,13 @@ impl<'db> Callable<'db> {
             Callee::Def(CallableDefId::StructId(it)) => CallableKind::TupleStruct(it.into()),
             Callee::Def(CallableDefId::EnumVariantId(it)) => {
                 CallableKind::TupleEnumVariant(it.into())
-            },
+            }
             Callee::Closure(id, subst) => {
                 CallableKind::Closure(Closure { id: AnyClosureId::ClosureId(id), subst })
-            },
+            }
             Callee::CoroutineClosure(id, subst) => {
                 CallableKind::Closure(Closure { id: AnyClosureId::CoroutineClosureId(id), subst })
-            },
+            }
             Callee::FnPtr => CallableKind::FnPtr,
             Callee::FnImpl(fn_) => CallableKind::FnImpl(fn_),
         }
@@ -5833,10 +5829,10 @@ impl Layout {
             layout::FieldsShape::Array { stride, count } => {
                 let i = u64::try_from(field.index()).ok()?;
                 (i < count).then_some((stride * i).bytes())
-            },
+            }
             layout::FieldsShape::Arbitrary { ref offsets, .. } => {
                 Some(offsets.get(RustcFieldIdx(field.id))?.bytes())
-            },
+            }
         }
     }
 
@@ -5847,10 +5843,10 @@ impl Layout {
             layout::FieldsShape::Array { stride, count } => {
                 let i = u64::try_from(field).ok()?;
                 (i < count).then_some((stride * i).bytes())
-            },
+            }
             layout::FieldsShape::Arbitrary { ref offsets, .. } => {
                 Some(offsets.get(RustcFieldIdx::new(field))?.bytes())
-            },
+            }
         }
     }
 
@@ -5868,7 +5864,7 @@ impl Layout {
                 let tail_field_size = field_size(tail.0.into_raw().into_u32() as usize)?;
                 let offset = offsets.get(tail)?.bytes();
                 self.0.size.bytes().checked_sub(offset)?.checked_sub(tail_field_size)
-            },
+            }
         }
     }
 
@@ -5883,7 +5879,7 @@ impl Layout {
             layout::FieldsShape::Array { stride, .. } => {
                 let size = field_size(0)?;
                 stride.bytes().checked_sub(size)
-            },
+            }
             layout::FieldsShape::Arbitrary { ref offsets, ref memory_index } => {
                 let mut reverse_index = vec![None; memory_index.len()];
                 for (src, (mem, offset)) in memory_index.iter().zip(offsets.iter()).enumerate() {
@@ -5895,11 +5891,11 @@ impl Layout {
                 }
                 reverse_index.into_iter().flatten().chain(std::iter::once((0, self.0.size.bytes()))).tuple_windows(
                 ).filter_map(|((i, start), (_, end))| {
-                    let size = field_size(i)?;
-                    end.checked_sub(start)?.checked_sub(size)
-                }).max(
+                        let size = field_size(i)?;
+                        end.checked_sub(start)?.checked_sub(size)
+                    }).max(
                 )
-            },
+            }
         }
     }
 
@@ -6306,16 +6302,21 @@ pub fn resolve_absolute_path<'a, I: Iterator<Item = Symbol> + Clone + 'a>(
     mut segments: I,
 ) -> impl Iterator<Item = ItemInNs> + use<'a, I> {
     segments.next().into_iter().flat_map(move |crate_name| {
-        db.all_crates().iter().filter(|&krate| {
-            krate.extra_data(db).display_name.as_ref().is_some_and(
-                |name| *name.crate_name().symbol() == crate_name,
-            )
-        }).filter_map(|&krate| {
-            let segments = segments.clone();
-            let mut def_map = crate_def_map(db, krate);
-            let mut module = &def_map[DefMap::ROOT];
-            let mut segments = segments.with_position().peekable();
-            while let Some((_, segment)) = segments.next_if(|&(position, _)| {
+            db.all_crates()
+                .iter()
+                .filter(|&krate| {
+                    krate
+                        .extra_data(db)
+                        .display_name
+                        .as_ref()
+                        .is_some_and(|name| *name.crate_name().symbol() == crate_name)
+                })
+                .filter_map(|&krate| {
+                    let segments = segments.clone();
+                    let mut def_map = crate_def_map(db, krate);
+                    let mut module = &def_map[DefMap::ROOT];
+                    let mut segments = segments.with_position().peekable();
+                    while let Some((_, segment)) = segments.next_if(|&(position, _)| {
                         !matches!(position, itertools::Position::Last | itertools::Position::Only)
                     }) {
                         let res = module
@@ -6329,12 +6330,12 @@ pub fn resolve_absolute_path<'a, I: Iterator<Item = Symbol> + Clone + 'a>(
                         def_map = res.def_map(db);
                         module = &def_map[res.local_id];
                     }
-            let (_, item_name) = segments.next()?;
-            let res = module.scope.get(&Name::new_symbol_root(item_name));
-            Some(res.iter_items().map(|(item, _)| item.into()))
-        }).collect::<Vec<_>>(
-        )
-    }).flatten(
+                    let (_, item_name) = segments.next()?;
+                    let res = module.scope.get(&Name::new_symbol_root(item_name));
+                    Some(res.iter_items().map(|(item, _)| item.into()))
+                })
+                .collect::<Vec<_>>()
+        }).flatten(
     )
 }
 
@@ -6352,7 +6353,9 @@ fn generic_args_from_tys<'db>(
         interner,
         def_id,
         |_, id, _| {
-        if matches!(id, GenericParamId::TypeParamId(_)) && let Some(arg) = args.next() {
+        if matches!(id, GenericParamId::TypeParamId(_))
+            && let Some(arg) = args.next()
+        {
             arg.into()
         } else {
             next_solver::GenericArg::error_from_id(interner, id)
@@ -6369,9 +6372,9 @@ fn has_non_default_type_params(db: &dyn HirDatabase, generic_def: GenericDefId) 
     ).map(
         |(local_id, _)| TypeOrConstParamId { parent: generic_def, local_id },
     ).any(|param| {
-        let Some(param) = hir_ty::param_idx(db, param) else {
+            let Some(param) = hir_ty::param_idx(db, param) else {
                 return false;
             };
-        defaults.get(param).is_none()
-    })
+            defaults.get(param).is_none()
+        })
 }

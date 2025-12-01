@@ -20,7 +20,7 @@ pub fn target_data_layout_query(
                         format!(
                             r#"invalid address space `{addr_space}` for `{cause}` in "data-layout": {err}"#
                         )
-                    },
+                    }
                     TargetDataLayoutErrors::InvalidBits { kind, bit, cause, err } => format!(r#"invalid {kind} `{bit}` for `{cause}` in "data-layout": {err}"#),
                     TargetDataLayoutErrors::MissingAlignment { cause } => format!(r#"missing alignment for `{cause}` in "data-layout""#),
                     TargetDataLayoutErrors::InvalidAlignment { cause, err } => format!(
@@ -33,7 +33,7 @@ pub fn target_data_layout_query(
                     ),
                     TargetDataLayoutErrors::InconsistentTargetArchitecture { dl, target } => {
                         format!(r#"inconsistent target specification: "data-layout" claims architecture is {dl}-endian, while "target-endian" is `{target}`"#)
-                    },
+                    }
                     TargetDataLayoutErrors::InconsistentTargetPointerWidth {
                         pointer_size,
                         target,
@@ -42,7 +42,7 @@ pub fn target_data_layout_query(
                     TargetDataLayoutErrors::UnknownPointerSpecification { err } => format!(r#"use of unknown pointer specifier in "data-layout": {err}"#),
                 }.into(
                 ))
-            },
+            }
         },
         Err(e) => Err(e.clone()),
     }

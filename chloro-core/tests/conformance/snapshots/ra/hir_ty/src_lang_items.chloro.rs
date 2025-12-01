@@ -44,16 +44,16 @@ pub fn lang_items_for_bin_op(op: syntax::ast::BinaryOp) -> Option<(Name, LangIte
             CmpOp::Eq { negated: true } => (Name::new_symbol_root(sym::ne), LangItem::PartialEq),
             CmpOp::Ord { ordering: Ordering::Less, strict: false } => {
                 (Name::new_symbol_root(sym::le), LangItem::PartialOrd)
-            },
+            }
             CmpOp::Ord { ordering: Ordering::Less, strict: true } => {
                 (Name::new_symbol_root(sym::lt), LangItem::PartialOrd)
-            },
+            }
             CmpOp::Ord { ordering: Ordering::Greater, strict: false } => {
                 (Name::new_symbol_root(sym::ge), LangItem::PartialOrd)
-            },
+            }
             CmpOp::Ord { ordering: Ordering::Greater, strict: true } => {
                 (Name::new_symbol_root(sym::gt), LangItem::PartialOrd)
-            },
+            }
         },
         BinaryOp::Assignment { op: None } => return None,
     })

@@ -42,14 +42,15 @@ pub(crate) fn convert_two_arm_bool_match_to_matches_macro(
         "Convert to matches!",
         target_range,
         |builder| {
-        let mut arm_str = String::new();
-        if let Some(pat) = &first_arm.pat() {
+            let mut arm_str = String::new();
+            if let Some(pat) = &first_arm.pat() {
                 format_to!(arm_str, "{pat}");
             }
-        if let Some(guard) = &first_arm.guard() {
+            if let Some(guard) = &first_arm.guard() {
                 arm_str += &format!(" {guard}");
             }
-        let replace_with = match (first_arm_body, second_arm_body) {
+
+            let replace_with = match (first_arm_body, second_arm_body) {
                 (Literal(true), Literal(false)) => {
                     format!("matches!({expr}, {arm_str})")
                 }
@@ -67,8 +68,8 @@ pub(crate) fn convert_two_arm_bool_match_to_matches_macro(
                     unreachable!()
                 }
             };
-        builder.replace(target_range, replace_with);
-    },
+            builder.replace(target_range, replace_with);
+        },
     )
 }
 

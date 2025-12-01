@@ -589,16 +589,19 @@ impl<'db> InferenceResult<'db> {
 
     pub fn type_of_expr_with_adjust(&self, id: ExprId) -> Option<Ty<'db>> {
         match self.expr_adjustments.get(&id).and_then(|adjustments| {
-            adjustments.iter().filter(|adj| {
-                !matches!(
+            adjustments
+                .iter()
+                .filter(|adj| {
+                    // https://github.com/rust-lang/rust/blob/67819923ac8ea353aaa775303f4c3aacbf41d010/compiler/rustc_mir_build/src/thir/cx/expr.rs#L140
+                    !matches!(
                         adj,
                         Adjustment {
                             kind: Adjust::NeverToAny,
                             target,
                         } if target.is_never()
                     )
-            }).next_back(
-            )
+                })
+                .next_back()
         }) {
             Some(adjustment) => Some(adjustment.target),
             None => self.type_of_expr.get(id).copied(),
@@ -1170,7 +1173,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                     &Expectation::has_type(self.return_ty),
                     ExprIsRead::Yes,
                 )
-            },
+            }
         }
     }
 
@@ -1190,15 +1193,15 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                         [.., Adjustment { target: new_target, .. }],
                     ) => {
                         *target = *new_target;
-                    },
+                    }
                     _ => {
                         *entry.get_mut() = adjustments;
-                    },
+                    }
                 }
-            },
+            }
             std::collections::hash_map::Entry::Vacant(entry) => {
                 entry.insert(adjustments);
-            },
+            }
         }
     }
 
@@ -1458,7 +1461,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                     ),
                 );
                 self.table.try_structurally_resolve_type(alias)
-            },
+            }
             None => self.err_ty(),
         }
     }
@@ -1679,7 +1682,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                     }
                 });
                 (ty, variant)
-            },
+            }
             Some(1) => {
                 let segment = path.segments().last().unwrap();
                 if let Some((AdtId::EnumId(enum_id), _)) = ty.as_adt() {
@@ -1689,10 +1692,10 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                     }
                 }
                 (self.err_ty(), None)
-            },
+            }
             Some(_) => {
                 (self.err_ty(), None)
-            },
+            }
         }
     }
 
@@ -1831,7 +1834,7 @@ impl<'db> Expectation<'db> {
         match ctx.struct_tail_without_normalization(ty).kind() {
             TyKind::Slice(_) | TyKind::Str | TyKind::Dynamic(..) => {
                 Expectation::RValueLikeUnsized(ty)
-            },
+            }
             _ => Expectation::has_type(ty),
         }
     }
@@ -1848,7 +1851,7 @@ impl<'db> Expectation<'db> {
             Expectation::Castable(t) => Expectation::Castable(table.shallow_resolve(*t)),
             Expectation::RValueLikeUnsized(t) => {
                 Expectation::RValueLikeUnsized(table.shallow_resolve(*t))
-            },
+            }
         }
     }
 
@@ -1866,7 +1869,7 @@ impl<'db> Expectation<'db> {
             Expectation::HasType(t) => Some(table.shallow_resolve(*t)),
             Expectation::Castable(_) | Expectation::RValueLikeUnsized(_) | Expectation::None => {
                 None
-            },
+            }
         }
     }
 
@@ -1900,7 +1903,7 @@ impl<'db> Expectation<'db> {
                 } else {
                     Expectation::HasType(ety)
                 }
-            },
+            }
             Expectation::RValueLikeUnsized(ety) => Expectation::RValueLikeUnsized(ety),
             _ => Expectation::None,
         }

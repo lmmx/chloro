@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2564 bytes
-Chloro size:   2236 bytes
+Chloro size:   2375 bytes
 Rustfmt size:  2696 bytes
 
 ✗ Outputs DIFFER
@@ -33,7 +33,8 @@ Rustfmt size:  2696 bytes
                      last
                  )
 -            }
-         },
+-        },
++        }
 +    },
          d.decl.map(|it| it.into()),
 +    ).stable(
@@ -51,41 +52,28 @@ Rustfmt size:  2696 bytes
 -        d.candidates
 -            .iter()
 -            .map(|candidate| {
--                fix(
--                    "create_module",
--                    &format!("Create module at `{candidate}`"),
--                    FileSystemEdit::CreateFile {
--                        dst: AnchoredPathBuf {
++    Some(d.candidates.iter().map(|candidate| {
+                 fix(
+                     "create_module",
+                     &format!("Create module at `{candidate}`"),
+                     FileSystemEdit::CreateFile {
+                         dst: AnchoredPathBuf {
 -                            anchor: d
 -                                .decl
 -                                .file_id
 -                                .original_file(ctx.sema.db)
 -                                .file_id(ctx.sema.db),
--                            path: candidate.clone(),
--                        },
--                        initial_contents: "".to_owned(),
--                    }
--                    .into(),
--                    unresolved_module.syntax().text_range(),
--                )
++                            anchor: d.decl.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+                             path: candidate.clone(),
+                         },
+                         initial_contents: "".to_owned(),
+                     .into(),
+                     unresolved_module.syntax().text_range(),
+                 )
 -            })
 -            .collect(),
 -    )
-+    Some(d.candidates.iter().map(|candidate| {
-+        fix(
-+            "create_module",
-+            &format!("Create module at `{candidate}`"),
-+            FileSystemEdit::CreateFile {
-+            dst: AnchoredPathBuf {
-+                anchor: d.decl.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
-+                path: candidate.clone(),
-+            },
-+            initial_contents: "".to_owned(),
-+        }.into(
-+        ),
-+            unresolved_module.syntax().text_range(),
-+        )
-+    }).collect(
++            }).collect(
 +    ))
  }
  

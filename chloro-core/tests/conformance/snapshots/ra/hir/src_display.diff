@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   30729 bytes
+Chloro size:   30727 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
@@ -39,19 +39,6 @@ Rustfmt size:  31432 bytes
                  f.write_char('&')?;
                  if let Some(lifetime) = &ref_.lifetime {
                      lifetime.hir_fmt(f, &data.store)?;
-                     f.write_str("mut ")?;
-                 }
-                 f.write_str("self")
--            }
-+            },
-             _ => {
-                 f.write_str("self: ")?;
-                 param.hir_fmt(f, &data.store)
--            }
-+            },
-         }
-     }
- }
                  let mut it = variant_data.fields().iter().peekable();
  
                  while let Some((id, _)) = it.next() {

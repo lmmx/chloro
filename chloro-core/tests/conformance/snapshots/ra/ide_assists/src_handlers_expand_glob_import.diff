@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23406 bytes
-Chloro size:   22002 bytes
+Chloro size:   22251 bytes
 Rustfmt size:  23406 bytes
 
 ✗ Outputs DIFFER
@@ -50,29 +50,6 @@ Rustfmt size:  23406 bytes
  pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let star = ctx.find_token_syntax_at_offset(T![*])?;
      let use_tree = star.parent().and_then(ast::UseTree::cast)?;
-         "Expand glob import",
-         target.text_range(),
-         |builder| {
--            build_expanded_import(
--                ctx,
--                builder,
--                use_tree,
--                use_item,
--                target_module,
--                current_module,
--                false,
--            )
--        },
-+        build_expanded_import(
-+            ctx,
-+            builder,
-+            use_tree,
-+            use_item,
-+            target_module,
-+            current_module,
-+            false,
-+        )
-+    },
      )
  }
  
@@ -100,24 +77,6 @@ Rustfmt size:  23406 bytes
  pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let star = ctx.find_token_syntax_at_offset(T![*])?;
      let use_tree = star.parent().and_then(ast::UseTree::cast)?;
-         "Expand glob reexport",
-         target.text_range(),
-         |builder| {
--            build_expanded_import(
--                ctx,
--                builder,
--                use_tree,
--                use_item,
--                target_module,
--                current_module,
--                true,
--            )
--        },
-+        build_expanded_import(ctx, builder, use_tree, use_item, target_module, current_module, true)
-+    },
-     )
- }
- 
              VisibilityKind::PubCrate => VisibilityKind::PubCrate,
              VisibilityKind::Pub => VisibilityKind::Pub,
              VisibilityKind::PubSelf => VisibilityKind::PubSelf,
@@ -133,46 +92,36 @@ Rustfmt size:  23406 bytes
 -                .clone()
 -                .into_iter()
 -                .filter(|r| {
--                    if let Definition::Trait(tr) = r.def
 +        Refs(self.0.clone().into_iter().filter(|r| {
-+            if let Definition::Trait(tr) = r.def
+                     if let Definition::Trait(tr) = r.def
                          && tr.items(ctx.db()).into_iter().any(|ai| {
                              if let AssocItem::Function(f) = ai {
-                                 def_is_referenced_in(Definition::Function(f), ctx)
-                     {
-                         return true;
                      }
--
--                    def_is_referenced_in(r.def, ctx)
+ 
+                     def_is_referenced_in(r.def, ctx)
 -                })
 -                .collect(),
 -        )
-+            def_is_referenced_in(r.def, ctx)
-+        }).collect(
++                }).collect(
 +        ))
      }
  
      fn filter_out_by_defs(&self, defs: Vec<Definition>) -> Refs {
-                 .filter(|r| !must_be_pub || r.is_pub)
                  .collect();
              Refs(refs)
--        }
+         }
 -        Expandable::Enum(enm) => Refs(
 -            enm.variants(ctx.db())
 -                .into_iter()
 -                .map(|v| Ref {
--                    visible_name: v.name(ctx.db()),
--                    def: Definition::Variant(v),
--                    is_pub: true,
++        Expandable::Enum(enm) => Refs(enm.variants(ctx.db()).into_iter().map(|v| Ref {
+                     visible_name: v.name(ctx.db()),
+                     def: Definition::Variant(v),
+                     is_pub: true,
 -                })
 -                .collect(),
 -        ),
-+        },
-+        Expandable::Enum(enm) => Refs(enm.variants(ctx.db()).into_iter().map(|v| Ref {
-+            visible_name: v.name(ctx.db()),
-+            def: Definition::Variant(v),
-+            is_pub: true,
-+        }).collect(
++                }).collect(
 +        )),
      }
  }
@@ -182,18 +131,16 @@ Rustfmt size:  23406 bytes
              Some(parent) => {
 -                module.visibility(ctx.db()).is_visible_from(ctx.db(), from.into())
 -                    && is_mod_visible_from(ctx, parent, from)
--            }
 +                module.visibility(ctx.db()).is_visible_from(ctx.db(), from.into()) && is_mod_visible_from(ctx, parent, from)
-+            },
+             }
              None => true,
          },
          Expandable::Enum(enm) => {
              let module = enm.module(ctx.db());
 -            enm.visibility(ctx.db()).is_visible_from(ctx.db(), from.into())
 -                && is_mod_visible_from(ctx, module, from)
--        }
 +            enm.visibility(ctx.db()).is_visible_from(ctx.db(), from.into()) && is_mod_visible_from(ctx, module, from)
-+        },
+         }
      }
  }
  
@@ -215,28 +162,23 @@ Rustfmt size:  23406 bytes
 -    [Direction::Prev, Direction::Next]
 -        .into_iter()
 -        .flat_map(|dir| {
--            use_item.syntax().siblings(dir.to_owned()).filter(|n| ast::Use::can_cast(n.kind()))
++    [Direction::Prev, Direction::Next].into_iter().flat_map(|dir| {
+             use_item.syntax().siblings(dir.to_owned()).filter(|n| ast::Use::can_cast(n.kind()))
 -        })
 -        .flat_map(|n| n.descendants().filter_map(ast::NameRef::cast))
 -        .filter_map(|r| match NameRefClass::classify(&ctx.sema, &r)? {
--            NameRefClass::Definition(
-+    [Direction::Prev, Direction::Next].into_iter().flat_map(|dir| {
-+        use_item.syntax().siblings(dir.to_owned()).filter(|n| ast::Use::can_cast(n.kind()))
-+    }).flat_map(
++        }).flat_map(
 +        |n| n.descendants().filter_map(ast::NameRef::cast),
 +    ).filter_map(|r| match NameRefClass::classify(&ctx.sema, &r)? {
-+        NameRefClass::Definition(
+             NameRefClass::Definition(
                  def @ (Definition::Macro(_)
                  | Definition::Module(_)
-                 | Definition::Function(_)
-                 | Definition::TypeAlias(_)),
                  _,
              ) => Some(def),
--            _ => None,
+             _ => None,
 -        })
 -        .collect()
-+        _ => None,
-+    }).collect(
++        }).collect(
 +    )
  }
  

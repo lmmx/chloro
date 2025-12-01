@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19839 bytes
-Chloro size:   18741 bytes
+Chloro size:   18736 bytes
 Rustfmt size:  20426 bytes
 
 ✗ Outputs DIFFER
@@ -146,11 +146,8 @@ Rustfmt size:  20426 bytes
                  let (proof_tree, nested_goals_result) = infcx.probe(|_| {
                      // Here, if we have any nested goals, then we make sure to apply them
                      // considering the constrained RHS, and pass the resulting certainty to
-                     Some((normalizes_to_term_hack, nested_goals_result)),
-                     source,
                  )
--            }
-+            },
+             }
              _ => {
 -                // We're using a probe here as evaluating a goal could constrain
 -                // inference variables by choosing one candidate. If we then recurse
@@ -165,11 +162,8 @@ Rustfmt size:  20426 bytes
 +                let proof_tree =
 +                    infcx.probe(|_| infcx.evaluate_root_goal_for_proof_tree(goal, Span::dummy()).1);
                  InspectGoal::new(infcx, self.goal.depth + 1, proof_tree, None, source)
--            }
-+            },
+             }
          }
-     }
- 
          &self,
          visitor: &mut V,
      ) -> V::Result {
@@ -197,18 +191,16 @@ Rustfmt size:  20426 bytes
                      ));
                  }
                  inspect::ProbeStep::NestedProbe(ref probe) => {
-             inspect::ProbeKind::ProjectionCompatibility
              | inspect::ProbeKind::ShadowedEnvProbing => {
                  panic!()
--            }
+             }
 -
 -            inspect::ProbeKind::NormalizedSelfTyAssembly | inspect::ProbeKind::UnsizeAssembly => {}
 -
 -            // We add a candidate even for the root evaluation if there
 -            // is only one way to prove a given goal, e.g. for `WellFormed`.
-+            },
 +            inspect::ProbeKind::NormalizedSelfTyAssembly | inspect::ProbeKind::UnsizeAssembly => {
-+            },
++            }
              inspect::ProbeKind::Root { result }
              | inspect::ProbeKind::TraitCandidate { source: _, result }
              | inspect::ProbeKind::OpaqueTypeStorageLookup { result }
@@ -218,14 +210,6 @@ Rustfmt size:  20426 bytes
                  if let Some(shallow_certainty) = shallow_certainty {
                      candidates.push(InspectCandidate {
                          goal: self,
-                         result,
-                     });
-                 }
--            }
-+            },
-         }
-     }
- 
      ) -> Self {
          let infcx = <&SolverContext<'db>>::from(infcx);
  

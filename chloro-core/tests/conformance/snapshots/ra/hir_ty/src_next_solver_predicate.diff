@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   31887 bytes
+Chloro size:   32234 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -87,16 +87,12 @@ Rustfmt size:  32663 bytes
          (ExistentialPredicate::Projection(_a), ExistentialPredicate::Projection(_b)) => {
 -            // Should sort by def path hash
              Ordering::Equal
--        }
-+        },
+         }
          (ExistentialPredicate::AutoTrait(_a), ExistentialPredicate::AutoTrait(_b)) => {
 -            // Should sort by def path hash
              Ordering::Equal
--        }
-+        },
+         }
          (ExistentialPredicate::Trait(_), _) => Ordering::Less,
-         (ExistentialPredicate::Projection(_), ExistentialPredicate::Trait(_)) => Ordering::Greater,
-         (ExistentialPredicate::Projection(_), _) => Ordering::Less,
          (ExistentialPredicate::AutoTrait(_), _) => Ordering::Greater,
      }
  }
@@ -119,14 +115,12 @@ Rustfmt size:  32663 bytes
      > {
 -        self.inner()[0]
 -            .map_bound(|this| match this {
--                ExistentialPredicate::Trait(tr) => Some(tr),
--                _ => None,
++        self.inner()[0].map_bound(|this| match this {
+                 ExistentialPredicate::Trait(tr) => Some(tr),
+                 _ => None,
 -            })
 -            .transpose()
-+        self.inner()[0].map_bound(|this| match this {
-+            ExistentialPredicate::Trait(tr) => Some(tr),
-+            _ => None,
-+        }).transpose(
++            }).transpose(
 +        )
      }
  
@@ -143,23 +137,6 @@ Rustfmt size:  32663 bytes
      }
  
      fn projection_bounds(
-         >,
-     > {
-         self.iter().filter_map(|predicate| {
--            predicate
--                .map_bound(|pred| match pred {
--                    ExistentialPredicate::Projection(projection) => Some(projection),
--                    _ => None,
--                })
--                .transpose()
-+            predicate.map_bound(|pred| match pred {
-+                ExistentialPredicate::Projection(projection) => Some(projection),
-+                _ => None,
-+            }).transpose(
-+            )
-         })
-     }
- }
                  match (ep_a.skip_binder(), ep_b.skip_binder()) {
                      (ty::ExistentialPredicate::Trait(a), ty::ExistentialPredicate::Trait(b)) => {
                          Ok(ep_a.rebind(ty::ExistentialPredicate::Trait(
@@ -204,18 +181,6 @@ Rustfmt size:  32663 bytes
      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
          write!(f, "Binder<")?;
          match self.0.internee.skip_binder() {
-     pub fn inner(&self) -> &WithCachedTypeInfo<Binder<'db, PredicateKind<'db>>> {
-         crate::with_attached_db(|db| {
-             let inner = &self.kind_(db).0;
--            // SAFETY: The caller already has access to a `Predicate<'db>`, so borrowchecking will
--            // make sure that our returned value is valid for the lifetime `'db`.
--            unsafe { std::mem::transmute(inner) }
-+            unsafe {
-+                std::mem::transmute(inner)
-+            }
-         })
-     }
- 
  }
  
  // FIXME: should make a "header" in interned_vec
@@ -232,18 +197,6 @@ Rustfmt size:  32663 bytes
  
  impl<'db> std::hash::Hash for InternedClausesWrapper<'db> {
      fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-     pub fn inner(&self) -> &InternedClausesWrapper<'db> {
-         crate::with_attached_db(|db| {
-             let inner = self.inner_(db);
--            // SAFETY: The caller already has access to a `Clauses<'db>`, so borrowchecking will
--            // make sure that our returned value is valid for the lifetime `'db`.
--            unsafe { std::mem::transmute(inner) }
-+            unsafe {
-+                std::mem::transmute(inner)
-+            }
-         })
-     }
- }
      }
  }
  

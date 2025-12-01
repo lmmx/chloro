@@ -57,8 +57,9 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         "Reorder record fields",
         target,
         |builder| {
-        let mut editor = builder.make_editor(&parent_node);
-        match fields {
+            let mut editor = builder.make_editor(&parent_node);
+
+            match fields {
                 Either::Left((sorted, field_list)) => {
                     replace(&mut editor, field_list.fields(), sorted)
                 }
@@ -66,8 +67,9 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                     replace(&mut editor, field_list.fields(), sorted)
                 }
             }
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

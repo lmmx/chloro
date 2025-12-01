@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32105 bytes
-Chloro size:   32037 bytes
+Chloro size:   32098 bytes
 Rustfmt size:  32250 bytes
 
 ✗ Outputs DIFFER
@@ -13,21 +13,17 @@ Rustfmt size:  32250 bytes
      static BUILTIN_LOOKUP_TABLE: OnceLock<FxHashMap<Symbol, usize>> = OnceLock::new();
 -    BUILTIN_LOOKUP_TABLE
 -        .get_or_init(|| {
--            INERT_ATTRIBUTES
--                .iter()
--                .map(|attr| attr.name)
--                .enumerate()
--                .map(|(a, b)| (Symbol::intern(b), a))
--                .collect()
++    BUILTIN_LOOKUP_TABLE.get_or_init(|| {
+             INERT_ATTRIBUTES
+                 .iter()
+                 .map(|attr| attr.name)
+                 .enumerate()
+                 .map(|(a, b)| (Symbol::intern(b), a))
+                 .collect()
 -        })
 -        .get(name)
 -        .copied()
-+    BUILTIN_LOOKUP_TABLE.get_or_init(|| {
-+        INERT_ATTRIBUTES.iter().map(|attr| attr.name).enumerate().map(
-+            |(a, b)| (Symbol::intern(b), a),
-+        ).collect(
-+        )
-+    }).get(
++        }).get(
 +        name,
 +    ).copied(
 +    )

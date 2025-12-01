@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   31710 bytes
+Chloro size:   31881 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -39,11 +39,7 @@ Rustfmt size:  32290 bytes
  };
  
  macro_rules! register_builtin {
-             });
-             builder.extend_with_tt(expand_to);
-             ExpandResult::ok(builder.build())
--        }
-+        },
+         }
          None => ExpandResult::new(
              tt::TopSubtree::empty(tt::DelimSpan::from_single(span)),
 -            ExpandError::other(
@@ -79,22 +75,6 @@ Rustfmt size:  32290 bytes
  }
  
  fn concat_expand(
- fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
-     let mut tt = TtElement::Subtree(tt.top_subtree(), tt.iter());
-     (|| {
--        // FIXME: We wrap expression fragments in parentheses which can break this expectation
--        // here
--        // Remove this once we handle none delims correctly
-         while let TtElement::Subtree(sub, tt_iter) = &mut tt
-             && let DelimiterKind::Parenthesis | DelimiterKind::Invisible = sub.delimiter.kind
-         {
-             tt =
-                 tt_iter.exactly_one().map_err(|_| sub.delimiter.open.cover(sub.delimiter.close))?;
-         }
--
-         match tt {
-             TtElement::Leaf(tt::Leaf::Literal(tt::Literal {
-                 symbol: text,
              TtElement::Leaf(l) => Err(*l.span()),
              TtElement::Subtree(tt, _) => Err(tt.delimiter.open.cover(tt.delimiter.close)),
          }

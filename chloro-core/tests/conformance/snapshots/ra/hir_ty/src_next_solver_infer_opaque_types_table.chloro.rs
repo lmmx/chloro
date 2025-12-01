@@ -42,9 +42,9 @@ impl<'db> OpaqueTypeStorage<'db> {
             match self.opaque_types.swap_remove(&key) {
                 None => {
                     panic!("reverted opaque type inference that was never registered: {key:?}")
-                },
+                }
                 Some(_) => {
-                },
+                }
             }
         }
     }

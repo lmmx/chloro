@@ -95,6 +95,7 @@ fn invalid_args_range(
                 return Some(arg.cover(r_paren.text_range()));
             }
         }
+
         None
     },
     )

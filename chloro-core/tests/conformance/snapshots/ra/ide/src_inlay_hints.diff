@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34327 bytes
+Chloro size:   34348 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
@@ -105,19 +105,6 @@ Rustfmt size:  36233 bytes
  pub(crate) fn inlay_hints(
      db: &RootDatabase,
      file_id: FileId,
-                 ctx.extern_block_parent = Some(node);
-             }
-             Some(node)
--        }
-+        },
-         WalkEvent::Leave(n) => {
-             if ast::AnyHasGenericParams::can_cast(n.kind()) {
-                 ctx.lifetime_stacks.pop();
-                 ctx.extern_block_parent = None;
-             }
-             None
--        }
-+        },
      }
  }
  
@@ -136,11 +123,7 @@ Rustfmt size:  36233 bytes
              LazyProperty::Lazy
          } else {
              let tooltip = finish();
-         match &mut *self.parts {
-             [InlayHintLabelPart { text, linked_location: None, tooltip: None }, ..] => {
-                 text.insert_str(0, s)
--            }
-+            },
+             }
              _ => self.parts.insert(
                  0,
 -                InlayHintLabelPart { text: s.into(), linked_location: None, tooltip: None },
@@ -152,18 +135,9 @@ Rustfmt size:  36233 bytes
              ),
          }
      }
-         match &mut *self.parts {
-             [.., InlayHintLabelPart { text, linked_location: None, tooltip: None }] => {
-                 text.push_str(s)
--            }
-+            },
-             _ => self.parts.push(InlayHintLabelPart {
-                 text: s.into(),
-                 linked_location: None,
-         match self {
              Self { text, linked_location: None, tooltip: None | Some(LazyProperty::Lazy) } => {
                  text.fmt(f)
--            }
+             }
 -            Self { text, linked_location, tooltip } => f
 -                .debug_struct("InlayHintLabelPart")
 -                .field("text", text)
@@ -171,8 +145,6 @@ Rustfmt size:  36233 bytes
 -                .field(
 -                    "tooltip",
 -                    &tooltip.as_ref().map_or("", |it| match it {
--                        LazyProperty::Computed(
-+            },
 +            Self { text, linked_location, tooltip } => f.debug_struct("InlayHintLabelPart").field("text", text).field(
 +                "linked_location",
 +                linked_location,
@@ -181,29 +153,19 @@ Rustfmt size:  36233 bytes
 +                &tooltip.as_ref().map_or(
 +                "",
 +                |it| match it {
-+                LazyProperty::Computed(
+                         LazyProperty::Computed(
                              InlayTooltip::String(it) | InlayTooltip::Markdown(it),
                          ) => it,
--                        LazyProperty::Lazy => "",
+                         LazyProperty::Lazy => "",
 -                    }),
 -                )
 -                .finish(),
-+                LazyProperty::Lazy => "",
-+            },
++                    },
 +            ),
 +            ).finish(
 +            ),
          }
      }
- }
-         let mut builder = TextEdit::builder();
-         builder.insert(offset_to_insert_ty, prefix.into());
-         builder.insert(offset_to_insert_ty, rendered);
--
-         additional_edits(&mut builder);
--
-         builder.finish()
-     }))
  }
  
  #[cfg(test)]

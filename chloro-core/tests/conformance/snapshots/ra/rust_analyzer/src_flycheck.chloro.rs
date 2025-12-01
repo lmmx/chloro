@@ -109,7 +109,7 @@ impl FlycheckConfig {
             FlycheckConfig::CargoCommand { .. } => InvocationStrategy::PerWorkspace,
             FlycheckConfig::CustomCommand { invocation_strategy, .. } => {
                 invocation_strategy.clone()
-            },
+            }
         }
     }
 }
@@ -124,7 +124,7 @@ impl fmt::Display for FlycheckConfig {
                     .map(|arg| if arg == SAVED_FILE_PLACEHOLDER { "..." } else { arg })
                     .collect::<Vec<_>>();
                 write!(f, "{command} {}", display_args.join(" "))
-            },
+            }
         }
     }
 }
@@ -274,10 +274,10 @@ impl fmt::Debug for FlycheckMessage {
             ),
             FlycheckMessage::ClearDiagnostics { id, kind } => {
                 f.debug_struct("ClearDiagnostics").field("id", id).field("kind", kind).finish()
-            },
+            }
             FlycheckMessage::Progress { id, progress } => {
                 f.debug_struct("Progress").field("id", id).field("progress", progress).finish()
-            },
+            }
         }
     }
 }
@@ -695,7 +695,7 @@ impl FlycheckActor {
                 );
                 cmd.args(&options.extra_args);
                 Some(cmd)
-            },
+            }
             FlycheckConfig::CustomCommand { command, args, extra_env, invocation_strategy } => {
                 let root = match invocation_strategy {
                     InvocationStrategy::Once => &*self.root,
@@ -725,7 +725,7 @@ impl FlycheckActor {
                     }
                 }
                 Some(cmd)
-            },
+            }
         }
     }
 

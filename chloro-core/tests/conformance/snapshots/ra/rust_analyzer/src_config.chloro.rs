@@ -2019,7 +2019,7 @@ impl Config {
             granularity: match self.imports_granularity_group(source_root) {
                 ImportGranularityDef::Item | ImportGranularityDef::Preserve => {
                     ImportGranularity::Item
-                },
+                }
                 ImportGranularityDef::Crate => ImportGranularity::Crate,
                 ImportGranularityDef::Module => ImportGranularity::Module,
                 ImportGranularityDef::One => ImportGranularity::One,
@@ -2074,6 +2074,8 @@ impl Config {
     pub fn linked_manifests(&self) -> impl Iterator<Item = &Utf8Path> + '_ {
         self.linkedProjects().iter().filter_map(|it| match it {
             ManifestOrProjectJson::Manifest(p) => Some(&**p),
+            // despite having a buildfile, using this variant as a manifest
+            // will fail.
             ManifestOrProjectJson::DiscoveredProjectJson { .. } => None,
             ManifestOrProjectJson::ProjectJson { .. } => None,
         })
@@ -2123,23 +2125,22 @@ impl Config {
         };
 
         projects.iter().filter_map(|linked_project| match linked_project {
-            ManifestOrProjectJson::Manifest(it) => {
-                let path = self.root_path.join(it);
-                ProjectManifest::from_manifest_file(path).map_err(
-                    |e| tracing::error!("failed to load linked project: {}", e),
-                ).ok(
-                ).map(
-                    Into::into,
-                )
-            },
-            ManifestOrProjectJson::DiscoveredProjectJson { data, buildfile } => {
-                let root_path = buildfile.parent().expect("Unable to get parent of buildfile");
-                Some(ProjectJson::new(None, root_path, data.clone()).into())
-            },
-            ManifestOrProjectJson::ProjectJson(it) => {
-                Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
-            },
-        }).collect(
+                ManifestOrProjectJson::Manifest(it) => {
+                    let path = self.root_path.join(it);
+                    ProjectManifest::from_manifest_file(path)
+                        .map_err(|e| tracing::error!("failed to load linked project: {}", e))
+                        .ok()
+                        .map(Into::into)
+                }
+                ManifestOrProjectJson::DiscoveredProjectJson { data, buildfile } => {
+                    let root_path = buildfile.parent().expect("Unable to get parent of buildfile");
+
+                    Some(ProjectJson::new(None, root_path, data.clone()).into())
+                }
+                ManifestOrProjectJson::ProjectJson(it) => {
+                    Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
+                }
+            }).collect(
         )
     }
 
@@ -2220,7 +2221,7 @@ impl Config {
             watcher: match self.files_watcher() {
                 FilesWatcherDef::Client if self.did_change_watched_files_dynamic_registration() => {
                     FilesWatcher::Client
-                },
+                }
                 _ => FilesWatcher::Server,
             },
             exclude: self.excluded().collect(),
@@ -2385,7 +2386,7 @@ impl Config {
                 let mut args = args.clone();
                 let command = args.remove(0);
                 RustfmtConfig::CustomCommand { command, args }
-            },
+            }
             Some(_) | None => RustfmtConfig::Rustfmt {
                 extra_args: self.rustfmt_extraArgs(source_root_id).clone(),
                 enable_range_formatting: *self.rustfmt_rangeFormatting_enable(source_root_id),
@@ -2431,16 +2432,16 @@ impl Config {
                         }
                     },
                 }
-            },
+            }
             Some(_) | None => FlycheckConfig::CargoCommand {
                 command: self.check_command(source_root).clone(),
                 options: CargoOptions {
                     target_tuples: self.check_targets(source_root).clone().and_then(|targets| match &targets.0[..] {
-                        [] => None,
-                        targets => Some(targets.into()),
-                    }).unwrap_or_else(|| {
-                        self.cargo_target(source_root).clone().into_iter().collect()
-                    }),
+                            [] => None,
+                            targets => Some(targets.into()),
+                        }).unwrap_or_else(|| {
+                            self.cargo_target(source_root).clone().into_iter().collect()
+                        }),
                     all_targets: self.check_allTargets(source_root).unwrap_or(
                         *self.cargo_allTargets(source_root),
                     ),
@@ -2551,7 +2552,7 @@ impl Config {
                 WorkspaceSymbolSearchScopeDef::Workspace => WorkspaceSymbolSearchScope::Workspace,
                 WorkspaceSymbolSearchScopeDef::WorkspaceAndDependencies => {
                     WorkspaceSymbolSearchScope::WorkspaceAndDependencies
-                },
+                }
             },
             search_kind: match self.workspace_symbol_search_kind(source_root) {
                 WorkspaceSymbolSearchKindDef::OnlyTypes => WorkspaceSymbolSearchKind::OnlyTypes,
@@ -2588,7 +2589,7 @@ impl Config {
         match self.numThreads() {
             Some(NumThreads::Concrete(0)) | None | Some(NumThreads::Physical) => {
                 num_cpus::get_physical()
-            },
+            }
             &Some(NumThreads::Concrete(n)) => n,
             Some(NumThreads::Logical) => num_cpus::get(),
         }
@@ -3363,19 +3364,18 @@ fn get_field_json<T: DeserializeOwned>(
     // XXX: check alias first, to work around the VS Code where it pre-fills the
     // defaults instead of sending an empty object.
     alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
-        let mut pointer = field.replace('_', "/");
-        pointer.insert(0, '/');
-        json.pointer_mut(&pointer).map(
-            |it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)),
-        )
-    }).flat_map(|res| match res {
-        Ok(it) => Some(it),
-        Err((e, pointer)) => {
-            tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
-            error_sink.push((pointer, e));
-            None
-        },
-    }).next(
+            let mut pointer = field.replace('_', "/");
+            pointer.insert(0, '/');
+            json.pointer_mut(&pointer)
+                .map(|it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)))
+        }).flat_map(|res| match res {
+            Ok(it) => Some(it),
+            Err((e, pointer)) => {
+                tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
+                error_sink.push((pointer, e));
+                None
+            }
+        }).next(
     )
 }
 
@@ -3388,21 +3388,20 @@ fn get_field_toml<T: DeserializeOwned>(
     // XXX: check alias first, to work around the VS Code where it pre-fills the
     // defaults instead of sending an empty object.
     alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
-        let mut pointer = field.replace('_', "/");
-        pointer.insert(0, '/');
-        toml_pointer(toml, &pointer).map(
-            |it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)),
-        )
-    }).find(
+            let mut pointer = field.replace('_', "/");
+            pointer.insert(0, '/');
+            toml_pointer(toml, &pointer)
+                .map(|it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)))
+        }).find(
         Result::is_ok,
     ).and_then(|res| match res {
-        Ok(it) => Some(it),
-        Err((e, pointer)) => {
-            tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
-            error_sink.push((pointer, e));
-            None
-        },
-    })
+            Ok(it) => Some(it),
+            Err((e, pointer)) => {
+                tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
+                error_sink.push((pointer, e));
+                None
+            }
+        })
 }
 
 fn toml_pointer<'a>(toml: &'a toml::Table, pointer: &str) -> Option<&'a toml::Value> {

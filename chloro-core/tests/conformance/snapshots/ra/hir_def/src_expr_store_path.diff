@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11045 bytes
-Chloro size:   10978 bytes
+Chloro size:   10974 bytes
 Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
@@ -46,14 +46,16 @@ Rustfmt size:  11497 bytes
 -            Path::BarePath(mod_path) => PathSegments {
 -                segments: mod_path.segments(),
 -                generic_args: None,
+-            },
 +            Path::BarePath(mod_path) => {
 +                PathSegments {
 +                    segments: mod_path.segments(),
 +                    generic_args: None,
 +                }
-             },
++            }
              Path::Normal(path) => PathSegments {
                  segments: path.mod_path.segments(),
+                 generic_args: Some(&path.generic_args),
                  }
                  Some(Path::BarePath(Interned::new(ModPath::from_segments(
                      mod_path.kind,
@@ -62,11 +64,8 @@ Rustfmt size:  11497 bytes
 -                        .cloned(),
 +                    mod_path.segments()[..mod_path.segments().len() - 1].iter().cloned(),
                  ))))
--            }
-+            },
+             }
              Path::Normal(path) => {
-                 let mod_path = &path.mod_path;
-                 if mod_path.is_ident() {
                  let generic_args = &path.generic_args;
                  let qualifier_mod_path = Interned::new(ModPath::from_segments(
                      mod_path.kind,
@@ -77,26 +76,16 @@ Rustfmt size:  11497 bytes
                  ));
                  let qualifier_generic_args = &generic_args[..generic_args.len() - 1];
                  if type_anchor.is_none() && qualifier_generic_args.iter().all(|it| it.is_none()) {
-                         generic_args: qualifier_generic_args.iter().cloned().collect(),
-                     })))
-                 }
--            }
-+            },
-             Path::LangItem(..) => None,
-         }
-     }
          match self {
              Path::BarePath(mod_path) => mod_path.is_Self(),
              Path::Normal(path) => {
 -                path.type_anchor.is_none()
 -                    && path.mod_path.is_Self()
 -                    && path.generic_args.iter().all(|args| args.is_none())
--            }
 +                path.type_anchor.is_none() && path.mod_path.is_Self() && path.generic_args.iter().all(|args| args.is_none())
-+            },
+             }
              Path::LangItem(..) => false,
          }
-     }
  }
  
  impl PathSegment<'_> {

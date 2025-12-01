@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2772 bytes
-Chloro size:   2751 bytes
+Chloro size:   2767 bytes
 Rustfmt size:  2808 bytes
 
 ✗ Outputs DIFFER
@@ -20,19 +20,6 @@ Rustfmt size:  2808 bytes
  }
  
  fn method_range(item: SyntaxNode) -> Option<(TextRange, Option<TextRange>)> {
-         if test_related_attribute_syn(&fn_def).is_some() {
-             None
-         } else {
--            Some((
--                fn_def.syntax().text_range(),
--                fn_def.name().map(|name| name.syntax().text_range()),
--            ))
-+            Some(
-+                (fn_def.syntax().text_range(), fn_def.name().map(|name| name.syntax().text_range())),
-+            )
-         }
-     })
- }
  #[cfg(test)]
  mod tests {
      use syntax::TextRange;

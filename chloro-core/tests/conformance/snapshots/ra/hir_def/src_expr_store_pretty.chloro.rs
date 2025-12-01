@@ -168,19 +168,19 @@ pub fn print_signature(db: &dyn DefDatabase, owner: GenericDefId, edition: Editi
             AdtId::StructId(id) => {
                 let signature = db.struct_signature(id);
                 print_struct(db, &signature, edition)
-            },
+            }
             AdtId::UnionId(id) => {
                 format!("unimplemented {id:?}")
-            },
+            }
             AdtId::EnumId(id) => {
                 format!("unimplemented {id:?}")
-            },
+            }
         },
         GenericDefId::ConstId(id) => format!("unimplemented {id:?}"),
         GenericDefId::FunctionId(id) => {
             let signature = db.function_signature(id);
             print_function(db, &signature, edition)
-        },
+        }
         GenericDefId::ImplId(id) => format!("unimplemented {id:?}"),
         GenericDefId::StaticId(id) => format!("unimplemented {id:?}"),
         GenericDefId::TraitId(id) => format!("unimplemented {id:?}"),
@@ -483,7 +483,7 @@ impl Printer<'_> {
     fn whitespace(&mut self) {
         match self.buf.chars().next_back() {
             None | Some('\n' | ' ') => {
-            },
+            }
             _ => self.buf.push(' '),
         }
     }
@@ -492,21 +492,21 @@ impl Printer<'_> {
         if matches!(self.line_format, LineFormat::Oneline) {
             match self.buf.chars().last() {
                 Some(' ') | None => {
-                },
+                }
                 Some(_) => {
                     w!(self, " ");
-                },
+                }
             }
         } else {
             match self.buf.chars().rev().find_position(|ch| *ch != ' ') {
                 Some((_, '\n')) | None => {
-                },
+                }
                 Some((idx, _)) => {
                     if idx != 0 {
                         self.buf.drain(self.buf.len() - idx..);
                     }
                     w!(self, "\n");
-                },
+                }
             }
         }
     }
@@ -530,7 +530,7 @@ impl Printer<'_> {
                         .iter()
                         .format_with(".", |field, f| f(&field.display(self.db, edition)))
                 );
-            },
+            }
             Expr::Path(path) => self.print_path(path),
             Expr::If { condition, then_branch, else_branch } => {
                 w!(self, "if ");
@@ -541,20 +541,20 @@ impl Printer<'_> {
                     w!(self, " else ");
                     self.print_expr(els);
                 }
-            },
+            }
             Expr::Let { pat, expr } => {
                 w!(self, "let ");
                 self.print_pat(*pat);
                 w!(self, " = ");
                 self.print_expr(*expr);
-            },
+            }
             Expr::Loop { body, label } => {
                 if let Some(lbl) = label {
                     w!(self, "{}: ", self.store[*lbl].name.display(self.db, self.edition));
                 }
                 w!(self, "loop ");
                 self.print_expr(*body);
-            },
+            }
             Expr::Call { callee, args } => {
                 self.print_expr(*callee);
                 w!(self, "(");
@@ -567,7 +567,7 @@ impl Printer<'_> {
                     });
                 }
                 w!(self, ")");
-            },
+            }
             Expr::MethodCall { receiver, method_name, args, generic_args } => {
                 self.print_expr(*receiver);
                 w!(self, ".{}", method_name.display(self.db, self.edition));
@@ -586,7 +586,7 @@ impl Printer<'_> {
                     });
                 }
                 w!(self, ")");
-            },
+            }
             Expr::Match { expr, arms } => {
                 w!(self, "match ");
                 self.print_expr(*expr);
@@ -604,13 +604,13 @@ impl Printer<'_> {
                     }
                 });
                 wln!(self, "}}");
-            },
+            }
             Expr::Continue { label } => {
                 w!(self, "continue");
                 if let Some(lbl) = label {
                     w!(self, " {}", self.store[*lbl].name.display(self.db, self.edition));
                 }
-            },
+            }
             Expr::Break { expr, label } => {
                 w!(self, "break");
                 if let Some(lbl) = label {
@@ -620,26 +620,26 @@ impl Printer<'_> {
                     self.whitespace();
                     self.print_expr(*expr);
                 }
-            },
+            }
             Expr::Return { expr } => {
                 w!(self, "return");
                 if let Some(expr) = expr {
                     self.whitespace();
                     self.print_expr(*expr);
                 }
-            },
+            }
             Expr::Become { expr } => {
                 w!(self, "become");
                 self.whitespace();
                 self.print_expr(*expr);
-            },
+            }
             Expr::Yield { expr } => {
                 w!(self, "yield");
                 if let Some(expr) = expr {
                     self.whitespace();
                     self.print_expr(*expr);
                 }
-            },
+            }
             Expr::Yeet { expr } => {
                 w!(self, "do");
                 self.whitespace();
@@ -648,7 +648,7 @@ impl Printer<'_> {
                     self.whitespace();
                     self.print_expr(*expr);
                 }
-            },
+            }
             Expr::RecordLit { path, fields, spread } => {
                 match path {
                     Some(path) => self.print_path(path),
@@ -669,20 +669,20 @@ impl Printer<'_> {
                     }
                 });
                 w!(self, "}}");
-            },
+            }
             Expr::Field { expr, name } => {
                 self.print_expr(*expr);
                 w!(self, ".{}", name.display(self.db, self.edition));
-            },
+            }
             Expr::Await { expr } => {
                 self.print_expr(*expr);
                 w!(self, ".await");
-            },
+            }
             Expr::Cast { expr, type_ref } => {
                 self.print_expr(*expr);
                 w!(self, " as ");
                 self.print_type_ref(*type_ref);
-            },
+            }
             Expr::Ref { expr, rawness, mutability } => {
                 w!(self, "&");
                 if rawness.is_raw() {
@@ -692,11 +692,11 @@ impl Printer<'_> {
                     w!(self, "mut ");
                 }
                 self.print_expr(*expr);
-            },
+            }
             Expr::Box { expr } => {
                 w!(self, "box ");
                 self.print_expr(*expr);
-            },
+            }
             Expr::UnaryOp { expr, op } => {
                 let op = match op {
                     ast::UnaryOp::Deref => "*",
@@ -705,7 +705,7 @@ impl Printer<'_> {
                 };
                 w!(self, "{}", op);
                 self.print_expr(*expr);
-            },
+            }
             Expr::BinaryOp { lhs, rhs, op } => {
                 let (bra, ket) = match op {
                     None | Some(ast::BinaryOp::Assignment { .. }) => ("", ""),
@@ -721,7 +721,7 @@ impl Printer<'_> {
                 w!(self, " {}", bra);
                 self.print_expr(*rhs);
                 w!(self, "{}", ket);
-            },
+            }
             Expr::Range { lhs, rhs, range_type } => {
                 if let Some(lhs) = lhs {
                     w!(self, "(");
@@ -738,13 +738,13 @@ impl Printer<'_> {
                     self.print_expr(*rhs);
                     w!(self, ") ");
                 }
-            },
+            }
             Expr::Index { base, index } => {
                 self.print_expr(*base);
                 w!(self, "[");
                 self.print_expr(*index);
                 w!(self, "]");
-            },
+            }
             Expr::Closure { args, arg_types, ret_type, body, closure_kind, capture_by } => {
                 match closure_kind {
                     ClosureKind::Coroutine(Movability::Static) => {
@@ -779,7 +779,7 @@ impl Printer<'_> {
                 }
                 self.whitespace();
                 self.print_expr(*body);
-            },
+            }
             Expr::Tuple { exprs } => {
                 w!(self, "(");
                 for expr in exprs.iter() {
@@ -787,7 +787,7 @@ impl Printer<'_> {
                     w!(self, ", ");
                 }
                 w!(self, ")");
-            },
+            }
             Expr::Array(arr) => {
                 w!(self, "[");
                 if !matches!(arr, Array::ElementList { elements, .. } if elements.is_empty()) {
@@ -807,28 +807,28 @@ impl Printer<'_> {
                     self.newline();
                 }
                 w!(self, "]");
-            },
+            }
             Expr::Literal(lit) => self.print_literal(lit),
             Expr::Block { id: _, statements, tail, label } => {
                 let label = label.map(|lbl| {
                     format!("{}: ", self.store[lbl].name.display(self.db, self.edition))
                 });
                 self.print_block(label.as_deref(), statements, tail);
-            },
+            }
             Expr::Unsafe { id: _, statements, tail } => {
                 self.print_block(Some("unsafe "), statements, tail);
-            },
+            }
             Expr::Async { id: _, statements, tail } => {
                 self.print_block(Some("async "), statements, tail);
-            },
+            }
             Expr::Const(id) => {
                 w!(self, "const {{ /* {id:?} */ }}");
-            },
+            }
             &Expr::Assignment { target, value } => {
                 self.print_pat(target);
                 w!(self, " = ");
                 self.print_expr(value);
-            },
+            }
         }
     }
 
@@ -875,7 +875,7 @@ impl Printer<'_> {
                     self.print_pat(*pat);
                 }
                 w!(self, ")");
-            },
+            }
             Pat::Or(pats) => {
                 w!(self, "(");
                 for (i, pat) in pats.iter().enumerate() {
@@ -885,7 +885,7 @@ impl Printer<'_> {
                     self.print_pat(*pat);
                 }
                 w!(self, ")");
-            },
+            }
             Pat::Record { path, args, ellipsis } => {
                 match path {
                     Some(path) => self.print_path(path),
@@ -927,7 +927,7 @@ impl Printer<'_> {
                     }
                 });
                 w!(self, "}}");
-            },
+            }
             Pat::Range { start, end } => {
                 if let Some(start) = start {
                     self.print_expr(*start);
@@ -936,7 +936,7 @@ impl Printer<'_> {
                 if let Some(end) = end {
                     self.print_expr(*end);
                 }
-            },
+            }
             Pat::Slice { prefix, slice, suffix } => {
                 w!(self, "[");
                 for pat in prefix.iter() {
@@ -952,7 +952,7 @@ impl Printer<'_> {
                     w!(self, ", ");
                 }
                 w!(self, "]");
-            },
+            }
             Pat::Path(path) => self.print_path(path),
             Pat::Lit(expr) => self.print_expr(*expr),
             Pat::Bind { id, subpat } => {
@@ -962,7 +962,7 @@ impl Printer<'_> {
                     w!(self, "@ ");
                     self.print_pat(*pat);
                 }
-            },
+            }
             Pat::TupleStruct { path, args, ellipsis } => {
                 match path {
                     Some(path) => self.print_path(path),
@@ -979,25 +979,25 @@ impl Printer<'_> {
                     self.print_pat(*arg);
                 }
                 w!(self, ")");
-            },
+            }
             Pat::Ref { pat, mutability } => {
                 w!(self, "&");
                 if mutability.is_mut() {
                     w!(self, "mut ");
                 }
                 self.print_pat(*pat);
-            },
+            }
             Pat::Box { inner } => {
                 w!(self, "box ");
                 self.print_pat(*inner);
-            },
+            }
             Pat::ConstBlock(c) => {
                 w!(self, "const ");
                 self.print_expr(*c);
-            },
+            }
             Pat::Expr(expr) => {
                 self.print_expr(*expr);
-            },
+            }
         }
     }
 
@@ -1019,14 +1019,14 @@ impl Printer<'_> {
                     self.print_expr(*els);
                 }
                 wln!(self, ";");
-            },
+            }
             Statement::Expr { expr, has_semi } => {
                 self.print_expr(*expr);
                 if *has_semi {
                     w!(self, ";");
                 }
                 wln!(self);
-            },
+            }
             Statement::Item(_) => (),
         }
     }
@@ -1043,19 +1043,19 @@ impl Printer<'_> {
                 if let Some(suffix) = suffix {
                     w!(self, "{}", suffix);
                 }
-            },
+            }
             Literal::Uint(i, suffix) => {
                 w!(self, "{}", i);
                 if let Some(suffix) = suffix {
                     w!(self, "{}", suffix);
                 }
-            },
+            }
             Literal::Float(f, suffix) => {
                 w!(self, "{}", f);
                 if let Some(suffix) = suffix {
                     w!(self, "{}", suffix);
                 }
-            },
+            }
         }
     }
 
@@ -1203,7 +1203,7 @@ impl Printer<'_> {
             LifetimeRef::Static => w!(self, "'static"),
             LifetimeRef::Named(lt) => {
                 w!(self, "{}", lt.display(self.db, self.edition))
-            },
+            }
             LifetimeRef::Placeholder => w!(self, "'_"),
             LifetimeRef::Error => w!(self, "'{{error}}"),
             &LifetimeRef::Param(p) => self.print_lifetime_param(p),
@@ -1225,7 +1225,7 @@ impl Printer<'_> {
                     self.print_type_ref(*field);
                 }
                 w!(self, ")");
-            },
+            }
             TypeRef::Path(path) => self.print_path(path),
             TypeRef::RawPtr(pointee, mtbl) => {
                 let mtbl = match mtbl {
@@ -1234,7 +1234,7 @@ impl Printer<'_> {
                 };
                 w!(self, "{mtbl} ");
                 self.print_type_ref(*pointee);
-            },
+            }
             TypeRef::Reference(ref_) => {
                 let mtbl = match ref_.mutability {
                     Mutability::Shared => "",
@@ -1247,19 +1247,19 @@ impl Printer<'_> {
                 }
                 w!(self, "{mtbl}");
                 self.print_type_ref(ref_.ty);
-            },
+            }
             TypeRef::Array(array) => {
                 w!(self, "[");
                 self.print_type_ref(array.ty);
                 w!(self, "; ");
                 self.print_generic_arg(&GenericArg::Const(array.len));
                 w!(self, "]");
-            },
+            }
             TypeRef::Slice(elem) => {
                 w!(self, "[");
                 self.print_type_ref(*elem);
                 w!(self, "]");
-            },
+            }
             TypeRef::Fn(fn_) => {
                 let ((_, return_type), args) =
                     fn_.params.split_last().expect("TypeRef::Fn is missing return type");
@@ -1286,16 +1286,16 @@ impl Printer<'_> {
                 }
                 w!(self, ") -> ");
                 self.print_type_ref(*return_type);
-            },
+            }
             TypeRef::Error => w!(self, "{{error}}"),
             TypeRef::ImplTrait(bounds) => {
                 w!(self, "impl ");
                 self.print_type_bounds(bounds);
-            },
+            }
             TypeRef::DynTrait(bounds) => {
                 w!(self, "dyn ");
                 self.print_type_bounds(bounds);
-            },
+            }
         }
     }
 
@@ -1311,7 +1311,7 @@ impl Printer<'_> {
                         TraitBoundModifier::Maybe => w!(self, "?"),
                     }
                     self.print_path(&self.store[*path]);
-                },
+                }
                 TypeBound::ForLifetime(lifetimes, path) => {
                     w!(
                         self,
@@ -1323,7 +1323,7 @@ impl Printer<'_> {
                             .to_string()
                     );
                     self.print_path(&self.store[*path]);
-                },
+                }
                 TypeBound::Lifetime(lt) => self.print_lifetime_ref(*lt),
                 TypeBound::Use(args) => {
                     w!(self, "use<");
@@ -1340,7 +1340,7 @@ impl Printer<'_> {
                         }
                     }
                     w!(self, ">")
-                },
+                }
                 TypeBound::Error => w!(self, "{{unknown}}"),
             }
         }

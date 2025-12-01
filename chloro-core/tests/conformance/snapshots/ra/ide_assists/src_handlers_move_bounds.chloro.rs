@@ -32,9 +32,10 @@ pub(crate) fn move_bounds_to_where_clause(
         "Move to where clause",
         target,
         |edit| {
-        let type_param_list = edit.make_mut(type_param_list);
-        let parent = edit.make_syntax_mut(parent);
-        let where_clause: ast::WhereClause = match_ast! {
+            let type_param_list = edit.make_mut(type_param_list);
+            let parent = edit.make_syntax_mut(parent);
+
+            let where_clause: ast::WhereClause = match_ast! {
                 match parent {
                     ast::Fn(it) => it.get_or_create_where_clause(),
                     ast::Trait(it) => it.get_or_create_where_clause(),
@@ -45,20 +46,21 @@ pub(crate) fn move_bounds_to_where_clause(
                     _ => return,
                 }
             };
-        for generic_param in type_param_list.generic_params() {
-            let param: &dyn HasTypeBounds = match &generic_param {
+
+            for generic_param in type_param_list.generic_params() {
+                let param: &dyn HasTypeBounds = match &generic_param {
                     ast::GenericParam::TypeParam(t) => t,
                     ast::GenericParam::LifetimeParam(l) => l,
                     ast::GenericParam::ConstParam(_) => continue,
                 };
-            if let Some(tbl) = param.type_bound_list() {
-                if let Some(predicate) = build_predicate(generic_param) {
+                if let Some(tbl) = param.type_bound_list() {
+                    if let Some(predicate) = build_predicate(generic_param) {
                         where_clause.add_predicate(predicate)
                     }
-                tbl.remove()
+                    tbl.remove()
+                }
             }
-        }
-    },
+        },
     )
 }
 

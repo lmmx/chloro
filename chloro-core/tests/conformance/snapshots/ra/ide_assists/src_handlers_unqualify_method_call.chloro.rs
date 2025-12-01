@@ -55,16 +55,21 @@ pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) 
         "Unqualify method call",
         call.syntax().text_range(),
         |edit| {
-        edit.delete(delete_path);
-        if let Some((open, close)) = parens {
+            edit.delete(delete_path);
+            if let Some((open, close)) = parens {
                 edit.insert(open, "(");
                 edit.insert(close, ")");
             }
-        edit.replace(replace_comma, format!(".{method_name}("));
-        if let Some(fun) = fun.as_assoc_item(ctx.db()) && let Some(trait_) = fun.container_or_implemented_trait(ctx.db()) && !scope.can_use_trait_methods(trait_) {
-            add_import(qualifier, ctx, edit);
-        }
-    },
+            edit.replace(replace_comma, format!(".{method_name}("));
+
+            if let Some(fun) = fun.as_assoc_item(ctx.db())
+                && let Some(trait_) = fun.container_or_implemented_trait(ctx.db())
+                && !scope.can_use_trait_methods(trait_)
+            {
+                // Only add an import for trait methods that are not already imported.
+                add_import(qualifier, ctx, edit);
+            }
+        },
     )
 }
 

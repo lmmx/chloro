@@ -161,7 +161,7 @@ pub fn is_fn_unsafe_to_call(
                     Unsafety::Unsafe
                 }
             }
-        },
+        }
         _ => Unsafety::Safe,
     }
 }

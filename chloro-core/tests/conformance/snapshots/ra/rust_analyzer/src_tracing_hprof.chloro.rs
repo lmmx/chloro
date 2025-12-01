@@ -150,13 +150,13 @@ where
         match span.parent() {
             Some(parent_span) => {
                 parent_span.extensions_mut().get_mut::<Data>().unwrap().children.push(node);
-            },
+            }
             None => {
                 if self.aggregate {
                     node.aggregate()
                 }
                 node.print(&self.write_filter)
-            },
+            }
         }
     }
 }

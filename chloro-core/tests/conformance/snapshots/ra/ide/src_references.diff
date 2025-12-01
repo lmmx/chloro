@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   66144 bytes
+Chloro size:   66171 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
@@ -99,19 +99,6 @@ Rustfmt size:  66636 bytes
  #[derive(Debug)]
  pub struct FindAllRefsConfig<'a> {
      pub search_scope: Option<SearchScope>,
-                 }
-             };
-             Some(vec![make_searcher(true)(def)])
--        }
-+        },
-         None => {
-             let search = make_searcher(false);
-             Some(find_defs(sema, &syntax, position.offset)?.into_iter().map(search).collect())
--        }
-+        },
-     }
- }
- 
          return resolution.map(Definition::from).map(|it| vec![it]);
      }
  
@@ -120,42 +107,29 @@ Rustfmt size:  66636 bytes
 -            .into_iter()
 -            .filter_map(|it| ast::NameLike::cast(it.parent()?))
 -            .filter_map(move |name_like| {
--                let def = match name_like {
 +    Some(sema.descend_into_macros_exact(token).into_iter().filter_map(
 +        |it| ast::NameLike::cast(it.parent()?),
 +    ).filter_map(move |name_like| {
-+        let def = match name_like {
+                 let def = match name_like {
                      ast::NameLike::NameRef(name_ref) => {
                          match NameRefClass::classify(sema, &name_ref)? {
-                             NameRefClass::Definition(def, _) => def,
-                             })?
                      }
                  };
--                Some(def)
+                 Some(def)
 -            })
 -            .collect(),
 -    )
-+        Some(def)
-+    }).collect(
++            }).collect(
 +    ))
  }
  
  /// Filter out all non-literal usages for adt-defs
-                 })
              });
              usages.references.retain(|_, it| !it.is_empty());
--        }
-+        },
-         Definition::Adt(_) | Definition::Variant(_) => {
-             refs.for_each(|it| {
-                 it.retain(|reference| reference.name.as_name_ref().is_some_and(is_lit_name_ref))
-             });
-             usages.references.retain(|_, it| !it.is_empty());
--        }
+         }
 -        _ => {}
-+        },
 +        _ => {
-+        },
++        }
      }
  }
  
@@ -178,18 +152,16 @@ Rustfmt size:  66636 bytes
 -        .syntax()
 -        .ancestors()
 -        .find_map(|ancestor| {
--            match_ast! {
 +    name_ref.syntax().ancestors().find_map(|ancestor| {
-+        match_ast! {
+             match_ast! {
                  match ancestor {
                      ast::PathExpr(path_expr) => path_expr.path().map(path_is_variant_of_enum),
-                     ast::RecordExpr(record_expr) => record_expr.path().map(path_is_variant_of_enum),
                      _ => None,
                  }
              }
 -        })
 -        .unwrap_or(false)
-+    }).unwrap_or(
++        }).unwrap_or(
 +        false,
 +    )
  }

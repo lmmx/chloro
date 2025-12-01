@@ -290,7 +290,7 @@ fn mode_and_needs_parens_for_adjustment_hints(
             let postfix = matches!(mode, Postfix);
             let (inside, outside) = needs_parens_for_adjustment_hints(expr, postfix);
             (postfix, inside, outside)
-        },
+        }
         PreferPrefix | PreferPostfix => {
             let prefer_postfix = matches!(mode, PreferPostfix);
             let (pre_inside, pre_outside) = needs_parens_for_adjustment_hints(expr, false);
@@ -305,7 +305,7 @@ fn mode_and_needs_parens_for_adjustment_hints(
                 Equal if prefer_postfix => postfix,
                 Equal => prefix,
             }
-        },
+        }
     }
 }
 

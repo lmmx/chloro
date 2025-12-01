@@ -29,15 +29,17 @@ pub(crate) fn generate_documentation_template(
         "Generate a documentation template",
         text_range,
         |builder| {
-        let mut doc_lines = vec![introduction_builder(&ast_func, ctx).unwrap_or(".".into())];
-        for section_builder in [panics_builder, errors_builder, safety_builder] {
+            // Introduction / short function description before the sections
+            let mut doc_lines = vec![introduction_builder(&ast_func, ctx).unwrap_or(".".into())];
+            // Then come the sections
+            for section_builder in [panics_builder, errors_builder, safety_builder] {
                 if let Some(mut lines) = section_builder(&ast_func) {
                     doc_lines.push("".into());
                     doc_lines.append(&mut lines);
                 }
             }
-        builder.insert(text_range.start(), documentation_from_lines(doc_lines, indent_level));
-    },
+            builder.insert(text_range.start(), documentation_from_lines(doc_lines, indent_level));
+        },
     )
 }
 
@@ -65,11 +67,11 @@ pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -
         "Generate a documentation example",
         node.text_range(),
         |builder| {
-        builder.insert(
+            builder.insert(
                 next_token.text_range().start(),
                 documentation_from_lines(lines, indent_level),
             );
-    },
+        },
     )
 }
 
@@ -355,9 +357,12 @@ fn is_a_ref_mut_param(param: &ast::Param) -> bool {
 /// Helper function to build the list of `&mut` parameters
 fn ref_mut_params(param_list: &ast::ParamList) -> Vec<String> {
     param_list.params().filter_map(|param| match is_a_ref_mut_param(&param) {
-        true => Some(param.pat()?.to_string()),
-        false => None,
-    }).collect(
+            // Maybe better filter the param name (to do this maybe extract a function from
+            // `arguments_from_params`?) in case of a `mut a: &mut T`. Anyway managing most (not
+            // all) cases might be enough, the goal is just to produce a template.
+            true => Some(param.pat()?.to_string()),
+            false => None,
+        }).collect(
     )
 }
 

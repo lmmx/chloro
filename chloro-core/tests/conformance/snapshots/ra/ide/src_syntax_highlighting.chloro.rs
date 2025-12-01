@@ -433,6 +433,7 @@ fn descend_token(
 
     let token = t.unwrap_or_else(|| token.into());
     token.map(|token| match token.parent().and_then(ast::NameLike::cast) {
+        // Remap the token into the wrapping single token nodes
         Some(parent) => match (token.kind(), parent.syntax().kind()) {
             (T![ident] | T![self], NAME)
             | (T![ident] | T![self] | T![super] | T![crate] | T![Self], NAME_REF)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14570 bytes
-Chloro size:   14241 bytes
+Chloro size:   14237 bytes
 Rustfmt size:  14570 bytes
 
 ✗ Outputs DIFFER
@@ -66,41 +66,29 @@ Rustfmt size:  14570 bytes
          [] => {
              match_ast! {
                  match parent {
-                     _ => (vec![macro_call.syntax().clone().into()], Some(make::ext::expr_unit())),
                  }
              }
--        }
+         }
 -        // dbg!(2, 'x', &x, x, ...);
-+        },
          exprs if ast::ExprStmt::can_cast(parent.kind()) && exprs.iter().all(pure_expr) => {
              let mut replace = vec![parent.clone().into()];
              if let Some(prev_sibling) = parent.prev_sibling_or_token()
-                 replace.push(prev_sibling);
              }
              (replace, None)
--        }
+         }
 -        // dbg!(expr0)
-+        },
          [expr] => {
 -            // dbg!(expr, &parent);
              let wrap = match ast::Expr::cast(parent) {
                  Some(parent) => match (expr, parent) {
                      (ast::Expr::CastExpr(_), ast::Expr::CastExpr(_)) => false,
-             let expr = replace_nested_dbgs(expr.clone());
              let expr = if wrap { make::expr_paren(expr).into() } else { expr.clone_subtree() };
              (vec![macro_call.syntax().clone().into()], Some(expr))
--        }
+         }
 -        // dbg!(expr0, expr1, ...)
-+        },
          exprs => {
              let exprs = exprs.iter().cloned().map(replace_nested_dbgs);
              let expr = make::expr_tuple(exprs);
-             (vec![macro_call.syntax().clone().into()], Some(expr.into()))
--        }
-+        },
-     })
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

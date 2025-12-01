@@ -48,7 +48,7 @@ impl Attrs {
             Some(match derive {
                 Some((name, helpers)) => {
                     ProcMacroDef { name, kind: ProcMacroKind::Derive { helpers } }
-                },
+                }
                 None => ProcMacroDef {
                     name: func_name.clone(),
                     kind: ProcMacroKind::Derive { helpers: Box::default() },
@@ -93,7 +93,7 @@ pub(crate) fn parse_macro_name_and_helper_attrs(tt: &TopSubtree) -> Option<(Name
                 })
                 .collect::<Option<Box<[_]>>>()?;
             Some((trait_name.as_name(), helpers))
-        },
+        }
         _ => None,
     }
 }

@@ -265,12 +265,9 @@ fn find_in_scope(
         db,
         from.local_id,
         &mut |def_map, local_id| {
-        def_map[local_id].scope.names_of(
-            item,
-            |name, _, declared| {
+        def_map[local_id].scope.names_of(item, |name, _, declared| {
             (declared || !ignore_local_imports).then(|| name.clone())
-        },
-        )
+        })
     },
     )
 }

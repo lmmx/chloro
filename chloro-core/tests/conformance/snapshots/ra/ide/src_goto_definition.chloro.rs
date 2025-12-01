@@ -288,7 +288,7 @@ fn try_filter_trait_item_definition(
             ).map(
                 |it| it.collect(),
             )
-        },
+        }
     }
 }
 
@@ -301,7 +301,7 @@ fn handle_control_flow_keywords(
         T![loop] | T![while] | T![break] | T![continue] => nav_for_break_points(sema, token),
         T![for] if token.parent().and_then(ast::ForExpr::cast).is_some() => {
             nav_for_break_points(sema, token)
-        },
+        }
         T![match] | T![=>] | T![if] => nav_for_branch_exit_points(sema, token),
         _ => None,
     }
@@ -428,6 +428,7 @@ pub(crate) fn find_branch_root(
         T![=>] => find_nodes(|node| Some(ast::MatchArm::cast(node)?.syntax().clone())),
         T![if] => find_nodes(|node| {
             let if_expr = ast::IfExpr::cast(node)?;
+
             let root_if = iter::successors(Some(if_expr.clone()), |if_expr| {
                 let parent_if = if_expr.syntax().parent().and_then(ast::IfExpr::cast)?;
                 let ast::ElseBranch::IfExpr(else_branch) = parent_if.else_branch()? else {
@@ -437,6 +438,7 @@ pub(crate) fn find_branch_root(
                 (else_branch.syntax() == if_expr.syntax()).then_some(parent_if)
             })
             .last()?;
+
             Some(root_if.syntax().clone())
         }),
         _ => vec![],

@@ -1700,9 +1700,7 @@ expression: cleaned_diff
 -type F = unsafe ();
 +type F;
 +fn foo() {
-+    || -> A {
-+        let x = 1;
-+    }
++    || -> A { let x = 1; }
 +}
  
 -fn foo() { || -> A> { let x = 1; } }
@@ -1809,9 +1807,9 @@ expression: cleaned_diff
 -        ..0 => {}
 -        1..2 => {}
 +        ..0 => {
-+        },
++        }
 +        1..2 => {
-+        },
++        }
      }
  }
  
@@ -2489,11 +2487,11 @@ expression: cleaned_diff
 -        () => {}
 -        [] => {}
 +        _ => {
-+        },
++        }
 +        () => {
-+        },
++        }
 +        [] => {
-+        },
++        }
      }
  }
 -
@@ -2556,7 +2554,7 @@ expression: cleaned_diff
 -        _ => {}
 -        _ => ()
 +        _ => {
-+        },
++        }
 +        _ => (),
      }
  }
@@ -4360,24 +4358,6 @@ expression: cleaned_diff
  fn err_to_msg(error: EscapeError, mode: Mode) -> String {
      match error {
          EscapeError::ZeroChars => "empty character literal",
-         EscapeError::LoneSlash => "",
-         EscapeError::InvalidEscape if mode == Mode::Byte || mode == Mode::ByteStr => {
-             "unknown byte escape"
--        }
-+        },
-         EscapeError::InvalidEscape => "unknown character escape",
-         EscapeError::BareCarriageReturn => "",
-         EscapeError::BareCarriageReturnInRawString => "",
-         EscapeError::UnicodeEscapeInByte => "unicode escape in byte string",
-         EscapeError::NonAsciiCharInByte if mode == Mode::Byte => {
-             "non-ASCII character in byte literal"
--        }
-+        },
-         EscapeError::NonAsciiCharInByte if mode == Mode::ByteStr => {
-             "non-ASCII character in byte string literal"
--        }
-+        },
-         EscapeError::NonAsciiCharInByte => "non-ASCII character in raw byte string literal",
          EscapeError::NulInCStr => "null character in C string literal",
          EscapeError::UnskippedWhitespaceWarning => "",
          EscapeError::MultipleSkippedLinesWarning => "",
@@ -4820,25 +4800,6 @@ expression: cleaned_diff
      const SPLIT_EVENT: u8 = 3;
  
      pub fn iter(&self) -> impl Iterator<Item = Step<'_>> {
-                     let n_input_tokens =
-                         ((event & Self::N_INPUT_TOKEN_MASK) >> Self::N_INPUT_TOKEN_SHIFT) as u8;
-                     Step::Token { kind, n_input_tokens }
--                }
-+                },
-                 Self::ENTER_EVENT => {
-                     let kind: SyntaxKind =
-                         (((event & Self::KIND_MASK) >> Self::KIND_SHIFT) as u16).into();
-                     Step::Enter { kind }
--                }
-+                },
-                 Self::EXIT_EVENT => Step::Exit,
-                 Self::SPLIT_EVENT => {
-                     Step::FloatSplit { ends_in_dot: event & Self::N_INPUT_TOKEN_MASK != 0 }
--                }
-+                },
-                 _ => unreachable!(),
-             }
-         })
      }
  }
  
@@ -5099,14 +5060,6 @@ expression: cleaned_diff
      // macro_rules! []
      if paths::is_use_path_start(p) {
          paths::use_path(p);
-             p.error("unmatched `}`");
-             p.bump(T!['}']);
-             e.complete(p, ERROR);
--        }
-+        },
-         EOF | T!['}'] => p.error("expected an item"),
-         T![let] => error_let_stmt(p, "expected an item"),
-         _ => p.err_and_bump("expected an item"),
      }
  
      // test_err async_without_semicolon
@@ -5244,24 +5197,6 @@ expression: cleaned_diff
      // trait T { fn foo(); }
      if !p.eat(T![;]) {
          expressions::block_expr(p);
-         T!['{'] => {
-             token_tree(p);
-             BlockLike::Block
--        }
-+        },
-         T!['('] | T!['['] => {
-             token_tree(p);
-             BlockLike::NotBlock
--        }
-+        },
-         _ => {
-             p.error("expected `{`, `[`, `(`");
-             BlockLike::NotBlock
--        }
-+        },
-     }
- }
- 
      m.complete(p, TOKEN_TREE);
  }
  
@@ -5856,18 +5791,6 @@ expression: cleaned_diff
  pub(super) fn let_stmt(p: &mut Parser<'_>, with_semi: Semicolon) {
      p.eat(T![super]);
      p.bump(T![let]);
-         Semicolon::Forbidden => (),
-         Semicolon::Optional => {
-             p.eat(T![;]);
--        }
-+        },
-         Semicolon::Required => {
-             p.expect(T![;]);
--        }
-+        },
-     }
- }
- 
      attributes::inner_attrs(p);
  
      while !p.at(EOF) && !p.at(T!['}']) {
@@ -6105,17 +6028,6 @@ expression: cleaned_diff
  fn path_expr(p: &mut Parser<'_>, r: Restrictions) -> (CompletedMarker, BlockLike) {
      assert!(paths::is_path_start(p));
      let m = p.start();
-         T!['{'] if !r.forbid_structs => {
-             record_expr_field_list(p);
-             (m.complete(p, RECORD_EXPR), BlockLike::NotBlock)
--        }
-+        },
-         T![!] if !p.at(T![!=]) => {
-             let block_like = items::macro_call_after_excl(p);
-             (m.complete(p, MACRO_CALL).precede(p).complete(p, MACRO_EXPR), block_like)
--        }
-+        },
-         _ => (m.complete(p, PATH_EXPR), BlockLike::NotBlock),
      }
  }
  
@@ -6170,42 +6082,35 @@ expression: cleaned_diff
 -        // type T = S<{90 + 2}>;
          T!['{'] => {
              expressions::block_expr(p);
--        }
+         }
 -        // test const_arg_literal
 -        // type T = S<"hello", 0xdeadbeef>;
-+        },
          k if k.is_literal() => {
              expressions::literal(p);
--        }
+         }
 -        // test const_arg_bool_literal
 -        // type T = S<true>;
-+        },
          T![true] | T![false] => {
              expressions::literal(p);
--        }
+         }
 -        // test const_arg_negative_number
 -        // type T = S<-92>;
-+        },
          T![-] => {
              let lm = p.start();
              p.bump(T![-]);
-             expressions::literal(p);
              lm.complete(p, PREFIX_EXPR);
--        }
-+        },
+         }
          _ if paths::is_path_start(p) => {
 -            // This shouldn't be hit by `const_arg`
              let lm = p.start();
              paths::expr_path(p);
              lm.complete(p, PATH_EXPR);
--        }
-+        },
+         }
          _ => {
 -            // test_err recover_from_missing_const_default
 -            // struct A<const N: i32 = , const M: i32 =>;
              p.err_recover("expected a generic const argument", GENERIC_ARG_RECOVERY_SET);
--        }
-+        },
+         }
      }
  }
  
@@ -6309,14 +6214,6 @@ expression: cleaned_diff
          T![<] => path_type_bounds(p, allow_bounds),
          T![ident] if !p.edition().at_least_2018() && is_dyn_weak(p) => dyn_trait_type_weak(p),
          _ if paths::is_path_start(p) => path_or_macro_type(p, allow_bounds),
-         LIFETIME_IDENT if p.nth_at(1, T![+]) => bare_dyn_trait_type(p),
-         _ => {
-             p.err_recover("expected type", TYPE_RECOVERY_SET);
--        }
-+        },
-     }
- }
- 
      m.complete(p, kind);
  }
  
@@ -6646,31 +6543,21 @@ expression: cleaned_diff
 -            // test record_field_pat_leading_or
 -            // fn foo() { let R { a: | 1 | 2 } = 0; }
              pattern(p);
--        }
+         }
 -        // test_err record_pat_field_eq_recovery
 -        // fn main() {
 -        //     let S { field = foo };
 -        // }
-+        },
          IDENT | INT_NUMBER if p.nth(1) == T![=] => {
              name_ref_or_index(p);
              p.err_and_bump("expected `:`");
              pattern(p);
--        }
-+        },
+         }
          T![box] => {
 -            // FIXME: not all box patterns should be allowed
              box_pat(p);
--        }
-+        },
+         }
          T![ref] | T![mut] | IDENT => {
-             ident_pat(p, false);
--        }
-+        },
-         _ => {
-             p.err_and_bump("expected identifier");
--        }
-+        },
      }
  }
  
@@ -6855,7 +6742,7 @@ expression: cleaned_diff
      match mode {
 -        Mode::Use | Mode::Attr | Mode::Vis => {}
 +        Mode::Use | Mode::Attr | Mode::Vis => {
-+        },
++        }
          Mode::Type => opt_path_type_args(p),
          Mode::Expr => generic_args::opt_generic_arg_list_expr(p),
      }
@@ -6916,14 +6803,6 @@ expression: cleaned_diff
              while let Some((i, (kind, text))) = trivias.next() {
                  match kind {
                      WHITESPACE if text.contains("\n\n") => {
-                 }
-             }
-             res
--        }
-+        },
-         _ => 0,
-     }
- }
  }
  
  // Copied from https://github.com/rust-lang/cargo/blob/367fd9f213750cd40317803dd0a5a3ce3f0c676d/src/cargo/util/frontmatter.rs

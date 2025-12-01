@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5559 bytes
-Chloro size:   5273 bytes
+Chloro size:   5269 bytes
 Rustfmt size:  5644 bytes
 
 ✗ Outputs DIFFER
@@ -63,18 +63,6 @@ Rustfmt size:  5644 bytes
                  let ty = self.delegate.replace_ty(bound_ty);
                  debug_assert!(!ty.has_vars_bound_above(DebruijnIndex::ZERO));
                  rustc_type_ir::shift_vars(self.interner, ty, self.current_index.as_u32())
--            }
-+            },
-             _ => {
-                 if !t.has_vars_bound_at_or_above(self.current_index) {
-                     t
-                 } else {
-                     t.super_fold_with(self)
-                 }
--            }
-+            },
-         }
-     }
  
      fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
          match r.kind() {
@@ -93,13 +81,6 @@ Rustfmt size:  5644 bytes
                      assert_eq!(debruijn1, DebruijnIndex::ZERO);
                      Region::new_bound(self.interner, debruijn, br)
                  } else {
-                     region
-                 }
--            }
-+            },
-             _ => r,
-         }
-     }
  
      fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
          match ct.kind() {
@@ -110,8 +91,3 @@ Rustfmt size:  5644 bytes
                  let ct = self.delegate.replace_const(bound_const);
                  debug_assert!(!ct.has_vars_bound_above(DebruijnIndex::ZERO));
                  rustc_type_ir::shift_vars(self.interner, ct, self.current_index.as_u32())
--            }
-+            },
-             _ => ct.super_fold_with(self),
-         }
-     }

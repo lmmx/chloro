@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34564 bytes
+Chloro size:   34604 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -264,9 +264,10 @@ Rustfmt size:  36650 bytes
 -    if ancestors_at_offset(file.syntax(), offset)
 -        .take_while(|n| !ast::Item::can_cast(n.kind()))
 -        .any(|n| {
--            ast::GenericParamList::can_cast(n.kind())
--                || ast::GenericArgList::can_cast(n.kind())
--                || ast::UseBoundGenericArgs::can_cast(n.kind())
++    if ancestors_at_offset(file.syntax(), offset).take_while(|n| !ast::Item::can_cast(n.kind())).any(|n| {
+             ast::GenericParamList::can_cast(n.kind())
+                 || ast::GenericArgList::can_cast(n.kind())
+                 || ast::UseBoundGenericArgs::can_cast(n.kind())
 -        })
 -    {
 -        // Insert the closing bracket right after
@@ -274,9 +275,7 @@ Rustfmt size:  36650 bytes
 -            offset + TextSize::of('<'),
 -            '>'.to_string(),
 -        ))
-+    if ancestors_at_offset(file.syntax(), offset).take_while(|n| !ast::Item::can_cast(n.kind())).any(|n| {
-+        ast::GenericParamList::can_cast(n.kind()) || ast::GenericArgList::can_cast(n.kind()) || ast::UseBoundGenericArgs::can_cast(n.kind())
-+    }) {
++        }) {
 +        Some(TextEdit::insert(offset + TextSize::of('<'), '>'.to_string()))
      } else {
          None

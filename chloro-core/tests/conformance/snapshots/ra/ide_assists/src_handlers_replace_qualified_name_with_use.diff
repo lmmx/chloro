@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10666 bytes
-Chloro size:   9931 bytes
+Chloro size:   10210 bytes
 Rustfmt size:  10666 bytes
 
 ✗ Outputs DIFFER
@@ -42,37 +42,6 @@ Rustfmt size:  10666 bytes
  pub(crate) fn replace_qualified_name_with_use(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
-         "Replace qualified path with use",
-         target,
-         |builder| {
--            // Now that we've brought the name into scope, re-qualify all paths that could be
--            // affected (that is, all paths inside the node we added the `use` to).
--            let scope = builder.make_import_scope_mut(scope);
--            shorten_paths(scope.as_syntax_node(), &original_path);
--            let path = drop_generic_args(&original_path);
--            let edition = ctx
-+        let scope = builder.make_import_scope_mut(scope);
-+        shorten_paths(scope.as_syntax_node(), &original_path);
-+        let path = drop_generic_args(&original_path);
-+        let edition = ctx
-                 .sema
-                 .scope(original_path.syntax())
-                 .map(|semantics_scope| semantics_scope.krate().edition(ctx.db()))
-                 .unwrap_or(Edition::CURRENT);
--            // stick the found import in front of the to be replaced path
--            let path =
-+        let path =
-                 match path_to_qualifier.and_then(|it| mod_path_to_ast(&it, edition).qualifier()) {
-                     Some(qualifier) => make::path_concat(qualifier, path),
-                     None => path,
-                 };
--            insert_use(&scope, path, &ctx.config.insert_use);
--        },
-+        insert_use(&scope, path, &ctx.config.insert_use);
-+    },
-     )
- }
- 
                          .is_some_and(|(lhs, rhs)| lhs.text() == rhs.text()) => {}
              _ => return false,
          }
@@ -80,12 +49,6 @@ Rustfmt size:  10666 bytes
          match (lhs_curr.qualifier(), rhs_curr.qualifier()) {
              (Some(lhs), Some(rhs)) => {
                  lhs_curr = lhs;
-                 rhs_curr = rhs;
--            }
-+            },
-             (None, None) => return true,
-             _ => return false,
-         }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

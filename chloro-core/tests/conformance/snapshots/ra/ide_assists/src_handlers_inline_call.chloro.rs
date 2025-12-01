@@ -63,10 +63,11 @@ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         "Inline into all callers",
         name.syntax().text_range(),
         |builder| {
-        let mut usages = usages.all();
-        let current_file_usage = usages.references.remove(&def_file);
-        let mut remove_def = true;
-        let mut inline_refs_for_file = |file_id: EditionedFileId, refs: Vec<FileReference>| {
+            let mut usages = usages.all();
+            let current_file_usage = usages.references.remove(&def_file);
+
+            let mut remove_def = true;
+            let mut inline_refs_for_file = |file_id: EditionedFileId, refs: Vec<FileReference>| {
                 let file_id = file_id.file_id(ctx.db());
                 builder.edit_file(file_id);
                 let call_krate = ctx.sema.file_to_module_def(file_id).map(|it| it.krate());
@@ -99,17 +100,17 @@ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                     remove_def = false;
                 }
             };
-        for (file_id, refs) in usages.into_iter() {
+            for (file_id, refs) in usages.into_iter() {
                 inline_refs_for_file(file_id, refs);
             }
-        match current_file_usage {
+            match current_file_usage {
                 Some(refs) => inline_refs_for_file(def_file, refs),
                 None => builder.edit_file(vfs_def_file),
             }
-        if remove_def {
-            builder.delete(ast_func.syntax().text_range());
-        }
-    },
+            if remove_def {
+                builder.delete(ast_func.syntax().text_range());
+            }
+        },
     )
 }
 
@@ -119,12 +120,12 @@ pub(super) fn split_refs_and_uses<T: ast::AstNode>(
     mut map_ref: impl FnMut(ast::NameRef) -> Option<T>,
 ) -> (Vec<T>, Vec<ast::Path>) {
     iter.into_iter().filter_map(|file_ref| match file_ref.name {
-        FileReferenceNode::NameRef(name_ref) => Some(name_ref),
-        _ => None,
-    }).filter_map(|name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
-        Some(use_tree) => builder.make_mut(use_tree).path().map(Either::Right),
-        None => map_ref(name_ref).map(Either::Left),
-    }).partition_map(
+            FileReferenceNode::NameRef(name_ref) => Some(name_ref),
+            _ => None,
+        }).filter_map(|name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
+            Some(use_tree) => builder.make_mut(use_tree).path().map(Either::Right),
+            None => map_ref(name_ref).map(Either::Left),
+        }).partition_map(
         |either| either,
     )
 }
@@ -515,12 +516,12 @@ fn inline(
     match body.tail_expr() {
         Some(expr) if matches!(expr, ast::Expr::ClosureExpr(_)) && no_stmts => {
             make::expr_paren(expr).clone_for_update().into()
-        },
+        }
         Some(expr) if !is_async_fn && no_stmts => expr,
         _ => match node.syntax().parent().and_then(ast::BinExpr::cast).and_then(|bin_expr| bin_expr.lhs()) {
             Some(lhs) if lhs.syntax() == node.syntax() => {
                 make::expr_paren(ast::Expr::BlockExpr(body)).clone_for_update().into()
-            },
+            }
             _ => ast::Expr::BlockExpr(body),
         },
     }

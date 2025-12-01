@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3945 bytes
-Chloro size:   3669 bytes
+Chloro size:   3681 bytes
 Rustfmt size:  3979 bytes
 
 ✗ Outputs DIFFER
@@ -37,14 +37,10 @@ Rustfmt size:  3979 bytes
 -            let changes = def
 -                .rename(&ctx.sema, new_name, RenameDefinition::Yes)
 -                .unwrap();
--            builder.source_change = changes;
--        },
-+        let changes = def.rename(&ctx.sema, new_name, RenameDefinition::Yes).unwrap();
-+        builder.source_change = changes;
-+    },
++            let changes = def.rename(&ctx.sema, new_name, RenameDefinition::Yes).unwrap();
+             builder.source_change = changes;
+         },
      )
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

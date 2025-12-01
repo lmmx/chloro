@@ -345,8 +345,9 @@ impl<'db> ImportAssets<'db> {
                 matches!(self.import_candidate, ImportCandidate::TraitAssocItem(_)),
                 mod_path,
                 |trait_to_import| {
-                !scope_definitions.contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
-            },
+                    !scope_definitions
+                        .contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
+                },
             ),
         }.into_iter(
         )
@@ -396,13 +397,15 @@ fn path_applicable_imports(
                 DEFAULT_QUERY_SEARCH_LIMIT,
             ).collect(
             )
-        },
+        }
         [first_qsegment, qualifier_rest @ ..] => items_locator::items_with_name(
             db,
             current_crate,
             NameToImport::Exact(first_qsegment.as_str().to_owned(), true),
             AssocSearchMode::Exclude,
         ).flat_map(|(item, do_not_complete)| {
+            // we found imports for `first_qsegment`, now we need to filter these imports by whether
+            // they result in resolving the rest of the path successfully
             validate_resolvable(
                 db,
                 scope,
@@ -540,7 +543,7 @@ fn item_for_path_search_assoc(db: &RootDatabase, assoc_item: AssocItem) -> Optio
         AssocItemContainer::Trait(trait_) => ItemInNs::from(ModuleDef::from(trait_)),
         AssocItemContainer::Impl(impl_) => {
             ItemInNs::from(ModuleDef::from(impl_.self_ty(db).as_adt()?))
-        },
+        }
     })
 }
 
@@ -787,13 +790,13 @@ fn path_import_candidate<'db>(
                 } else {
                     return None;
                 }
-            },
+            }
             Some(PathResolution::Def(ModuleDef::Adt(assoc_item_path))) => {
                 ImportCandidate::TraitAssocItem(TraitImportCandidate {
                     receiver_ty: assoc_item_path.ty(sema.db),
                     assoc_item_name: name,
                 })
-            },
+            }
             Some(PathResolution::Def(ModuleDef::TypeAlias(alias))) => {
                 let ty = alias.ty(sema.db);
                 if ty.as_adt().is_some() {
@@ -804,7 +807,7 @@ fn path_import_candidate<'db>(
                 } else {
                     return None;
                 }
-            },
+            }
             Some(_) => return None,
         },
         None => ImportCandidate::Path(PathImportCandidate { qualifier: vec![], name }),

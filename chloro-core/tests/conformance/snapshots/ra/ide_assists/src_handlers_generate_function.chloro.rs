@@ -85,7 +85,7 @@ fn fn_target_info(
         Some(qualifier) => match ctx.sema.resolve_path(&qualifier) {
             Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))) => {
                 get_fn_target_info(ctx, Some(module), call.clone())
-            },
+            }
             Some(hir::PathResolution::Def(hir::ModuleDef::Adt(adt))) => {
                 if let hir::Adt::Enum(_) = adt {
                     // Don't suggest generating function if the name starts with an uppercase letter
@@ -94,11 +94,11 @@ fn fn_target_info(
                     }
                 }
                 assoc_fn_target_info(ctx, call, adt, fn_name)
-            },
+            }
             Some(hir::PathResolution::SelfType(impl_)) => {
                 let adt = impl_.self_ty(ctx.db()).as_adt()?;
                 assoc_fn_target_info(ctx, call, adt, fn_name)
-            },
+            }
             _ => None,
         },
         _ => get_fn_target_info(ctx, None, call.clone()),
@@ -152,19 +152,22 @@ fn add_func_to_accumulator(
         text_range,
         |edit| {
         edit.edit_file(file);
+
         let target = function_builder.target.clone();
         let edition = function_builder.target_edition;
         let func = function_builder.render(ctx.config.snippet_cap, edit);
-        if let Some(adt) = adt_info.and_then(|adt_info| if adt_info.impl_exists {
-            None
-        } else {
-            Some(adt_info.adt)
-        }) {
+
+        if let Some(adt) = adt_info
+            .and_then(|adt_info| if adt_info.impl_exists { None } else { Some(adt_info.adt) })
+        {
             let name = make::ty_path(make::ext::ident_path(&format!(
                 "{}",
                 adt.name(ctx.db()).display(ctx.db(), edition)
             )));
+
+            // FIXME: adt may have generic params.
             let impl_ = make::impl_(None, None, None, name, None, None).clone_for_update();
+
             func.indent(IndentLevel(1));
             impl_.get_or_create_assoc_item_list().add_item(func.into());
             target.insert_impl_at(edit, impl_);
@@ -569,7 +572,7 @@ impl GeneratedFunctionTarget {
                 let leading_ws = make::tokens::whitespace(&format!("\n{indent}"));
                 impl_.indent(indent);
                 ted::insert_all(position, vec![leading_ws.into(), impl_.syntax().clone().into()]);
-            },
+            }
             GeneratedFunctionTarget::InEmptyItemList(item_list) => {
                 let item_list = edit.make_syntax_mut(item_list.clone());
                 let insert_after =
@@ -583,10 +586,10 @@ impl GeneratedFunctionTarget {
                 let leading_ws = make::tokens::whitespace(&format!("\n{leading_indent}"));
                 impl_.indent(indent);
                 ted::insert_all(position, vec![leading_ws.into(), impl_.syntax().clone().into()]);
-            },
+            }
             GeneratedFunctionTarget::InImpl(_) => {
                 unreachable!("can't insert an impl inside an impl")
-            },
+            }
         }
     }
 
@@ -606,7 +609,7 @@ impl GeneratedFunctionTarget {
                     position,
                     vec![leading_ws.into(), func.syntax().clone().into()],
                 );
-            },
+            }
             GeneratedFunctionTarget::InEmptyItemList(item_list) => {
                 let item_list = edit.make_syntax_mut(item_list.clone());
                 let insert_after =
@@ -624,13 +627,13 @@ impl GeneratedFunctionTarget {
                     position,
                     vec![leading_ws.into(), func.syntax().clone().into(), trailing_ws.into()],
                 );
-            },
+            }
             GeneratedFunctionTarget::InImpl(impl_) => {
                 let impl_ = edit.make_mut(impl_.clone());
                 let leading_indent = impl_.indent_level() + 1;
                 func.indent(leading_indent);
                 impl_.get_or_create_assoc_item_list().add_item(func.into());
-            },
+            }
         }
     }
 }
@@ -884,14 +887,14 @@ fn compute_contained_params_in_generic_param(
                 .filter_map(|node| filter_generic_params(ctx, node))
                 .collect();
             Some(ParamBoundWithParams { node, self_ty_param, other_params })
-        },
+        }
         ast::GenericParam::ConstParam(ct) => {
             let self_ty_param = ctx.sema.to_def(ct)?.into();
             Some(ParamBoundWithParams { node, self_ty_param, other_params: FxHashSet::default() })
-        },
+        }
         ast::GenericParam::LifetimeParam(_) => {
             None
-        },
+        }
     }
 }
 
@@ -1093,7 +1096,7 @@ fn fn_arg_name(sema: &Semantics<'_, RootDatabase>, arg_expr: &ast::Expr) -> Stri
         Some(mut name) if name.starts_with(|c: char| c.is_ascii_digit()) => {
             name.insert_str(0, "arg");
             name
-        },
+        }
         Some(name) => name,
         None => "arg".to_owned(),
     }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   16145 bytes
+Chloro size:   16161 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
@@ -276,13 +276,12 @@ Rustfmt size:  16896 bytes
 -            .into_iter()
 -            .filter_map(|(is_sep, group)| (!is_sep).then_some(group))
 -            .filter_map(|mut tokens| {
--                syntax::hacks::parse_expr_from_str(&tokens.join(""), Edition::CURRENT)
++    Some(input_expressions.into_iter().filter_map(|(is_sep, group)| (!is_sep).then_some(group)).filter_map(|mut tokens| {
+                 syntax::hacks::parse_expr_from_str(&tokens.join(""), Edition::CURRENT)
 -            })
 -            .collect::<Vec<ast::Expr>>(),
 -    )
-+    Some(input_expressions.into_iter().filter_map(|(is_sep, group)| (!is_sep).then_some(group)).filter_map(|mut tokens| {
-+        syntax::hacks::parse_expr_from_str(&tokens.join(""), Edition::CURRENT)
-+    }).collect::<Vec<ast::Expr>>(
++            }).collect::<Vec<ast::Expr>>(
 +    ))
  }
  

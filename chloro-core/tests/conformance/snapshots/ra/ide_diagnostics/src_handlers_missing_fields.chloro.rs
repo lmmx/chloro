@@ -143,7 +143,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
                 new_field_list.add_field(field.clone_for_update());
             }
             build_text_edit(new_field_list.syntax(), old_field_list.syntax())
-        },
+        }
         Either::Right(field_list_parent) => {
             let missing_fields = ctx.sema.record_pattern_missing_fields(field_list_parent);
             let old_field_list = field_list_parent.record_pat_field_list()?;
@@ -160,7 +160,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
                 new_field_list.add_field(field.clone_for_update());
             }
             build_text_edit(new_field_list.syntax(), old_field_list.syntax())
-        },
+        }
     }
 }
 

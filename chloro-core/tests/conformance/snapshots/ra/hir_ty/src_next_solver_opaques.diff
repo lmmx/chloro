@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3353 bytes
-Chloro size:   2987 bytes
+Chloro size:   2996 bytes
 Rustfmt size:  3353 bytes
 
 ✗ Outputs DIFFER
@@ -20,17 +20,6 @@ Rustfmt size:  3353 bytes
  
  interned_vec_nolifetime_salsa!(SolverDefIds, SolverDefId);
  
-     pub fn inner(&self) -> &ExternalConstraintsData<'db> {
-         crate::with_attached_db(|db| {
-             let inner = self.kind_(db);
--            // SAFETY: ¯\_(ツ)_/¯
--            unsafe { std::mem::transmute(inner) }
-+            unsafe {
-+                std::mem::transmute(inner)
-+            }
-         })
-     }
- }
          Ok(ExternalConstraints::new(
              folder.cx(),
              ExternalConstraintsData {

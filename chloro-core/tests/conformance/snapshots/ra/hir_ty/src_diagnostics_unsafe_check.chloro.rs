@@ -208,16 +208,16 @@ impl<'db> UnsafeVisitor<'db> {
         );
         match unsafety {
             crate::utils::Unsafety::Safe => {
-            },
+            }
             crate::utils::Unsafety::Unsafe => {
                 self.on_unsafe_op(node.into(), UnsafetyReason::UnsafeFnCall)
-            },
+            }
             crate::utils::Unsafety::DeprecatedSafe2024 => {
                 (self.callback)(UnsafeDiagnostic::DeprecatedSafe2024 {
                     node,
                     inside_unsafe_block: self.inside_unsafe_block,
                 })
-            },
+            }
         }
     }
 

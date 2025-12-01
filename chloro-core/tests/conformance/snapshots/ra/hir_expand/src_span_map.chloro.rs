@@ -60,7 +60,7 @@ impl SpanMap {
             HirFileId::FileId(file_id) => SpanMap::RealSpanMap(db.real_span_map(file_id)),
             HirFileId::MacroFile(m) => {
                 SpanMap::ExpansionSpanMap(db.parse_macro_expansion(m).value.1)
-            },
+            }
         }
     }
 }

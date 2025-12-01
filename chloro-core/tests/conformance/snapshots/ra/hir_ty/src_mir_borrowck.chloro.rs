@@ -83,7 +83,7 @@ fn all_mir_bodies<'db>(
         Ok(body) => {
             cb(body.clone());
             body.closures.iter().try_for_each(|&it| for_closure(db, it, &mut cb))
-        },
+        }
         Err(e) => Err(e),
     }
 }

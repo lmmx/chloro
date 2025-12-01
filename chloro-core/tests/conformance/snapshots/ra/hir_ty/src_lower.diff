@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   85673 bytes
+Chloro size:   85693 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -99,27 +99,6 @@ Rustfmt size:  87058 bytes
  
      /// Signal we cannot find which should be the anonymous lifetime.
      ElisionFailure,
-         match const_parent {
-             ItemContainerId::ExternBlockId(_) | ItemContainerId::ModuleId(_) => {
-                 LifetimeElisionKind::Elided(Region::new_static(interner))
--            }
-+            },
-             ItemContainerId::ImplId(_) => {
-                 LifetimeElisionKind::StaticIfNoLifetimeInScope { only_lint: true }
--            }
-+            },
-             ItemContainerId::TraitId(_) => {
-                 LifetimeElisionKind::StaticIfNoLifetimeInScope { only_lint: false }
--            }
-+            },
-         }
-     }
- 
-         match const_ref {
-             hir_def::hir::Expr::Path(path) => {
-                 self.path_to_const(path).unwrap_or_else(|| unknown_const(const_type))
--            }
-+            },
              hir_def::hir::Expr::Literal(literal) => intern_const_ref(
                  self.db,
                  &match *literal {
@@ -147,31 +126,13 @@ Rustfmt size:  87058 bytes
                      match literal {
                          hir_def::hir::Literal::Int(_, _) | hir_def::hir::Literal::Float(_, _) => {
                              if let Some(negated_literal) = literal.clone().negate() {
-                             } else {
                                  unknown_const(const_type)
                              }
--                        }
+                         }
 -                        // For unsigned integers, chars, bools, etc., negation is not meaningful
-+                        },
                          _ => unknown_const(const_type),
                      }
                  } else {
-                     unknown_const(const_type)
-                 }
--            }
-+            },
-             _ => unknown_const(const_type),
-         }
-     }
-                             p
-                         );
-                         None
--                    }
-+                    },
-                 }
--            }
-+            },
-             Some(ValueNs::ConstId(c)) => {
                  let args = GenericArgs::new_from_iter(self.interner, []);
                  Some(Const::new(
                      self.interner,
@@ -183,11 +144,8 @@ Rustfmt size:  87058 bytes
 +                    UnevaluatedConst::new(SolverDefId::ConstId(c), args),
 +                ),
                  ))
--            }
-+            },
+             }
              _ => None,
-         }
-     }
      }
  
      fn param_index_is_disallowed(&self, index: u32) -> bool {
@@ -230,11 +188,6 @@ Rustfmt size:  87058 bytes
          // Resolve the path (in type namespace)
          if let Some(type_ref) = path.type_anchor() {
              let (ty, res) = self.lower_ty_ext(type_ref);
-                 }
-                 let self_ty = self.lower_ty(*target);
-                 Either::Left(Either::Right(self.lower_type_bound(bound, self_ty, ignore_bindings)))
--            }
-+            },
              &WherePredicate::Lifetime { bound, target } => {
                  Either::Right(iter::once(Clause(Predicate::new(
                      self.interner,
@@ -248,10 +201,9 @@ Rustfmt size:  87058 bytes
 +                    OutlivesPredicate(self.lower_lifetime(bound), self.lower_lifetime(target)),
 +                ))),
                  ))))
--            }
+             }
 -        }
 -        .into_iter()
-+            },
 +        }.into_iter(
 +        )
      }
@@ -265,14 +217,6 @@ Rustfmt size:  87058 bytes
              Ty::new_error(self.interner, ErrorGuaranteed)
          }
      }
-                         Some(idx) => idx,
-                     };
-                     self.region_param(id, idx as u32)
--                }
-+                },
-             },
-             None => Region::error(self.interner),
-         }
      AdtId(AdtId),
      TypeAliasId(TypeAliasId),
  }
@@ -301,22 +245,6 @@ Rustfmt size:  87058 bytes
          TyDefId::TypeAliasId(it) => db.type_for_type_alias_with_diagnostics(it).0,
      }
  }
-                 CallableDefId::StructId(def).into(),
-                 GenericArgs::identity_for_item(interner, def.into()),
-             )))
--        }
-+        },
-     }
- }
- 
-                 CallableDefId::EnumVariantId(def).into(),
-                 GenericArgs::identity_for_item(interner, def.loc(db).parent.into()),
-             )))
--        }
-+        },
-     }
- }
- 
      db.const_param_ty_with_diagnostics(def).0
  }
  
@@ -353,40 +281,27 @@ Rustfmt size:  87058 bytes
 -            .enumerate()
 -            .filter_map(
 -                move |(idx, generic_arg)| {
--                    if Some(idx) == trait_self_idx { None } else { Some(generic_arg) }
++    Some(args.iter().enumerate().filter_map(move |(idx, generic_arg)| {
+                     if Some(idx) == trait_self_idx { None } else { Some(generic_arg) }
 -                },
 -            )
 -            .filter_map(|generic_arg| generic_arg.as_type())
 -            .filter(move |self_ty| !explicitly_unsized_tys.contains(self_ty))
 -            .map(move |self_ty| {
--                let trait_ref = TraitRef::new_from_args(
-+    Some(args.iter().enumerate().filter_map(move |(idx, generic_arg)| {
-+        if Some(idx) == trait_self_idx {
-+            None
-+        } else {
-+            Some(generic_arg)
-+        }
-+    }).filter_map(
++                }).filter_map(
 +        |generic_arg| generic_arg.as_type(),
 +    ).filter(
 +        move |self_ty| !explicitly_unsized_tys.contains(self_ty),
 +    ).map(move |self_ty| {
-+        let trait_ref = TraitRef::new_from_args(
+                 let trait_ref = TraitRef::new_from_args(
                      interner,
                      sized_trait.into(),
-                     GenericArgs::new_from_iter(interner, [self_ty.into()]),
-                 );
--                Clause(Predicate::new(
-+        Clause(Predicate::new(
-                     interner,
-                     Binder::dummy(rustc_type_ir::PredicateKind::Clause(
-                         rustc_type_ir::ClauseKind::Trait(TraitPredicate {
                          }),
                      )),
                  ))
 -            }),
 -    )
-+    }))
++            }))
  }
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -440,8 +355,7 @@ Rustfmt size:  87058 bytes
 -            // we're _in_ the impl -- the binders get added back later. Correct,
 -            // but it would be nice to make this more explicit
              search(trait_ref.skip_binder())
--        }
-+        },
+         }
          TypeNs::GenericParam(param_id) => {
 -            // Handle `Self::Type` referring to own associated type in trait definitions
 -            // This *must* be done first to avoid cycles with
@@ -458,27 +372,12 @@ Rustfmt size:  87058 bytes
 -            predicates
 -                .iter()
 -                .find_map(|pred| match (*pred).kind().skip_binder() {
--                    rustc_type_ir::ClauseKind::Trait(trait_predicate) => Some(trait_predicate),
--                    _ => None,
++            predicates.iter().find_map(|pred| match (*pred).kind().skip_binder() {
+                     rustc_type_ir::ClauseKind::Trait(trait_predicate) => Some(trait_predicate),
+                     _ => None,
 -                })
 -                .and_then(|trait_predicate| {
--                    let trait_ref = trait_predicate.trait_ref;
--                    assert!(
-+            predicates.iter().find_map(|pred| match (*pred).kind().skip_binder() {
-+                rustc_type_ir::ClauseKind::Trait(trait_predicate) => Some(trait_predicate),
-+                _ => None,
-+            }).and_then(|trait_predicate| {
-+                let trait_ref = trait_predicate.trait_ref;
-+                assert!(
++                }).and_then(|trait_predicate| {
+                     let trait_ref = trait_predicate.trait_ref;
+                     assert!(
                          !trait_ref.has_escaping_bound_vars(),
-                         "FIXME unexpected higher-ranked trait bound"
-                     );
--                    search(trait_ref)
--                })
--        }
-+                search(trait_ref)
-+            })
-+        },
-         _ => None,
-     }
- }

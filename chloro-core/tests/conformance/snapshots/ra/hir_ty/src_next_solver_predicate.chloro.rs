@@ -77,10 +77,10 @@ fn stable_cmp_existential_predicate<'db>(
         (ExistentialPredicate::Trait(_), ExistentialPredicate::Trait(_)) => Ordering::Equal,
         (ExistentialPredicate::Projection(_a), ExistentialPredicate::Projection(_b)) => {
             Ordering::Equal
-        },
+        }
         (ExistentialPredicate::AutoTrait(_a), ExistentialPredicate::AutoTrait(_b)) => {
             Ordering::Equal
-        },
+        }
         (ExistentialPredicate::Trait(_), _) => Ordering::Less,
         (ExistentialPredicate::Projection(_), ExistentialPredicate::Trait(_)) => Ordering::Greater,
         (ExistentialPredicate::Projection(_), _) => Ordering::Less,
@@ -101,9 +101,9 @@ impl<'db> rustc_type_ir::inherent::BoundExistentialPredicates<DbInterner<'db>> f
         rustc_type_ir::Binder<DbInterner<'db>, rustc_type_ir::ExistentialTraitRef<DbInterner<'db>>>,
     > {
         self.inner()[0].map_bound(|this| match this {
-            ExistentialPredicate::Trait(tr) => Some(tr),
-            _ => None,
-        }).transpose(
+                ExistentialPredicate::Trait(tr) => Some(tr),
+                _ => None,
+            }).transpose(
         )
     }
 
@@ -123,11 +123,12 @@ impl<'db> rustc_type_ir::inherent::BoundExistentialPredicates<DbInterner<'db>> f
         >,
     > {
         self.iter().filter_map(|predicate| {
-            predicate.map_bound(|pred| match pred {
-                ExistentialPredicate::Projection(projection) => Some(projection),
-                _ => None,
-            }).transpose(
-            )
+            predicate
+                .map_bound(|pred| match pred {
+                    ExistentialPredicate::Projection(projection) => Some(projection),
+                    _ => None,
+                })
+                .transpose()
         })
     }
 }
@@ -247,9 +248,9 @@ impl<'db> Predicate<'db> {
     pub fn inner(&self) -> &WithCachedTypeInfo<Binder<'db, PredicateKind<'db>>> {
         crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
-            unsafe {
-                std::mem::transmute(inner)
-            }
+            // SAFETY: The caller already has access to a `Predicate<'db>`, so borrowchecking will
+            // make sure that our returned value is valid for the lifetime `'db`.
+            unsafe { std::mem::transmute(inner) }
         })
     }
 
@@ -315,9 +316,9 @@ impl<'db> Clauses<'db> {
     pub fn inner(&self) -> &InternedClausesWrapper<'db> {
         crate::with_attached_db(|db| {
             let inner = self.inner_(db);
-            unsafe {
-                std::mem::transmute(inner)
-            }
+            // SAFETY: The caller already has access to a `Clauses<'db>`, so borrowchecking will
+            // make sure that our returned value is valid for the lifetime `'db`.
+            unsafe { std::mem::transmute(inner) }
         })
     }
 }

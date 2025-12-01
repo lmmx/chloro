@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8029 bytes
-Chloro size:   8022 bytes
+Chloro size:   8005 bytes
 Rustfmt size:  8029 bytes
 
 ✗ Outputs DIFFER
@@ -54,11 +54,9 @@ Rustfmt size:  8029 bytes
 -        Self::all_builtin_types()
 -            .iter()
 -            .find_map(|(n, ty)| if n == name { Some(*ty) } else { None })
-+        Self::all_builtin_types().iter().find_map(|(n, ty)| if n == name {
-+            Some(*ty)
-+        } else {
-+            None
-+        })
++        Self::all_builtin_types().iter().find_map(
++            |(n, ty)| if n == name { Some(*ty) } else { None },
++        )
      }
  }
  

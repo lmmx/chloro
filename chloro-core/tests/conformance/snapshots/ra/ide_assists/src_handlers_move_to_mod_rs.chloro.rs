@@ -30,8 +30,8 @@ pub(crate) fn move_to_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         format!("Convert {module_name}.rs to {module_name}/mod.rs"),
         target,
         |builder| {
-        builder.move_file(ctx.vfs_file_id(), dst);
-    },
+            builder.move_file(ctx.vfs_file_id(), dst);
+        },
     )
 }
 

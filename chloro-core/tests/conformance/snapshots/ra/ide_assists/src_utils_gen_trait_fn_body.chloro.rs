@@ -21,21 +21,21 @@ pub(crate) fn gen_trait_fn_body(
         "Clone" => {
             stdx::always!(func.name().is_some_and(|name| name.text() == "clone"));
             gen_clone_impl(adt)
-        },
+        }
         "Debug" => gen_debug_impl(adt),
         "Default" => gen_default_impl(adt),
         "Hash" => {
             stdx::always!(func.name().is_some_and(|name| name.text() == "hash"));
             gen_hash_impl(adt)
-        },
+        }
         "PartialEq" => {
             stdx::always!(func.name().is_some_and(|name| name.text() == "eq"));
             gen_partial_eq(adt, trait_ref)
-        },
+        }
         "PartialOrd" => {
             stdx::always!(func.name().is_some_and(|name| name.text() == "partial_cmp"));
             gen_partial_ord(adt, trait_ref)
-        },
+        }
         _ => None,
     }
 }
@@ -252,7 +252,7 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
             let body = make::block_expr(None, Some(match_expr.into()));
             let body = body.indent(ast::edit::IndentLevel(1));
             Some(body)
-        },
+        }
         ast::Adt::Struct(strukt) => {
             let name = format!("\"{annotated_name}\"");
             let args = make::arg_list(Some(make::expr_literal(&name).into()));
@@ -296,7 +296,7 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
             let expr = make::expr_method_call(expr, method, make::arg_list(None)).into();
             let body = make::block_expr(None, Some(expr)).indent(ast::edit::IndentLevel(1));
             Some(body)
-        },
+        }
     }
 }
 
@@ -339,7 +339,7 @@ fn gen_default_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
             };
             let body = make::block_expr(None, Some(expr)).indent(ast::edit::IndentLevel(1));
             Some(body)
-        },
+        }
     }
 }
 

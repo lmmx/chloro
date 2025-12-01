@@ -45,7 +45,7 @@ pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         "Desugar doc-comment to attribute macro",
         target,
         |edit| {
-        let text = match comments {
+            let text = match comments {
                 Either::Left(comment) => {
                     let text = comment.text();
                     text[comment.prefix().len()..(text.len() - "*/".len())]
@@ -60,14 +60,18 @@ pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                     .collect::<Vec<_>>()
                     .join("\n"),
             };
-        let hashes = "#".repeat(required_hashes(&text));
-        let prefix = match placement {
+
+            let hashes = "#".repeat(required_hashes(&text));
+
+            let prefix = match placement {
                 CommentPlacement::Inner => "#!",
                 CommentPlacement::Outer => "#",
             };
-        let output = format!(r#"{prefix}[doc = r{hashes}"{text}"{hashes}]"#);
-        edit.replace(target, output)
-    },
+
+            let output = format!(r#"{prefix}[doc = r{hashes}"{text}"{hashes}]"#);
+
+            edit.replace(target, output)
+        },
     )
 }
 

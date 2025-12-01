@@ -35,25 +35,28 @@ pub(crate) fn convert_range_for_to_while(
         description,
         for_.syntax().text_range(),
         |builder| {
-        let mut edit = builder.make_editor(for_.syntax());
-        let make = SyntaxFactory::with_mappings();
-        let indent = for_.indent_level();
-        let pat = make.ident_pat(pat.ref_token().is_some(), true, name.clone());
-        let let_stmt = make.let_stmt(pat.into(), None, Some(start));
-        edit.insert_all(
+            let mut edit = builder.make_editor(for_.syntax());
+            let make = SyntaxFactory::with_mappings();
+
+            let indent = for_.indent_level();
+            let pat = make.ident_pat(pat.ref_token().is_some(), true, name.clone());
+            let let_stmt = make.let_stmt(pat.into(), None, Some(start));
+            edit.insert_all(
                 Position::before(for_.syntax()),
                 vec![
                     let_stmt.syntax().syntax_element(),
                     make.whitespace(&format!("\n{}", indent)).syntax_element(),
                 ],
             );
-        let mut elements = vec![];
-        let var_expr = make.expr_path(make.ident_path(&name.text()));
-        let op = ast::BinaryOp::CmpOp(ast::CmpOp::Ord {
+
+            let mut elements = vec![];
+
+            let var_expr = make.expr_path(make.ident_path(&name.text()));
+            let op = ast::BinaryOp::CmpOp(ast::CmpOp::Ord {
                 ordering: ast::Ordering::Less,
                 strict: !inclusive,
             });
-        if let Some(end) = end {
+            if let Some(end) = end {
                 elements.extend([
                     make.token(T![while]).syntax_element(),
                     make.whitespace(" ").syntax_element(),
@@ -62,12 +65,14 @@ pub(crate) fn convert_range_for_to_while(
             } else {
                 elements.push(make.token(T![loop]).syntax_element());
             }
-        edit.replace_all(
+
+            edit.replace_all(
                 for_kw.syntax_element()..=iterable.syntax().syntax_element(),
                 elements,
             );
-        let op = ast::BinaryOp::Assignment { op: Some(ast::ArithOp::Add) };
-        edit.insert_all(
+
+            let op = ast::BinaryOp::Assignment { op: Some(ast::ArithOp::Add) };
+            edit.insert_all(
                 Position::after(last),
                 vec![
                     make.whitespace(&format!("\n{}", indent + 1)).syntax_element(),
@@ -75,9 +80,10 @@ pub(crate) fn convert_range_for_to_while(
                     make.token(T![;]).syntax_element(),
                 ],
             );
-        edit.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), edit);
-    },
+
+            edit.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), edit);
+        },
     )
 }
 
@@ -87,12 +93,12 @@ fn extract_range(iterable: &ast::Expr) -> Option<(ast::Expr, Option<ast::Expr>, 
         ast::Expr::RangeExpr(range) => {
             let inclusive = range.op_kind()? == ast::RangeOp::Inclusive;
             (range.start()?, range.end(), make::expr_literal("1").into(), inclusive)
-        },
+        }
         ast::Expr::MethodCallExpr(call) if call.name_ref()?.text() == "step_by" => {
             let [step] = call.arg_list()?.args().collect_array()?;
             let (start, end, _, inclusive) = extract_range(&call.receiver()?)?;
             (start, end, step, inclusive)
-        },
+        }
         _ => return None,
     })
 }

@@ -153,10 +153,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             0 => (ty, res),
             1 => {
                 (self.select_associated_type(res, infer_args), None)
-            },
+            }
             _ => {
                 (Ty::new_error(self.ctx.interner, ErrorGuaranteed), None)
-            },
+            }
         }
     }
 
@@ -1311,11 +1311,11 @@ fn unknown_subst<'db>(
     GenericArgs::new_from_iter(
         interner,
         params.iter_id().map(|id| match id {
-        GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
-        GenericParamId::ConstParamId(id) => {
-            unknown_const_as_generic(const_param_ty_query(interner.db(), id))
-        },
-        GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
-    }),
+            GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
+            GenericParamId::ConstParamId(id) => {
+                unknown_const_as_generic(const_param_ty_query(interner.db(), id))
+            }
+            GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
+        }),
     )
 }

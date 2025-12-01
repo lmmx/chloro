@@ -338,7 +338,7 @@ fn patch_path_prefix(path: PathBuf) -> PathBuf {
                 path.push(prefix);
                 path.extend(comps);
                 path
-            },
+            }
             _ => path,
         }
     } else {

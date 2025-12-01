@@ -232,7 +232,7 @@ impl<'db, N> ImplSource<'db, N> {
             ImplSource::Param(n) => ImplSource::Param(n.into_iter().map(f).collect()),
             ImplSource::Builtin(source, n) => {
                 ImplSource::Builtin(source, n.into_iter().map(f).collect())
-            },
+            }
         }
     }
 }
@@ -342,7 +342,7 @@ fn candidate_should_be_dropped_in_favor_of<'db>(
     match (victim_source, other_source) {
         (_, CandidateSource::CoherenceUnknowable) | (CandidateSource::CoherenceUnknowable, _) => {
             panic!("should not have assembled a CoherenceUnknowable candidate")
-        },
+        }
         (
             CandidateSource::BuiltinImpl(BuiltinImplSource::Object(a)),
             CandidateSource::BuiltinImpl(BuiltinImplSource::Object(b)),
@@ -359,7 +359,7 @@ fn candidate_should_be_dropped_in_favor_of<'db>(
         ) => true,
         (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => {
             victim.goal().infcx().interner.impl_specializes(other_def_id, victim_def_id)
-        },
+        }
         _ => false,
     }
 }
@@ -393,14 +393,14 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
                     args: cand.instantiate_impl_args(),
                     nested,
                 })
-            },
+            }
             CandidateSource::BuiltinImpl(builtin) => ImplSource::Builtin(builtin, nested),
             CandidateSource::ParamEnv(_) | CandidateSource::AliasBound(_) => {
                 ImplSource::Param(nested)
-            },
+            }
             CandidateSource::CoherenceUnknowable => {
                 panic!("didn't expect to select an unknowable candidate")
-            },
+            }
         },
         ProbeKind::NormalizedSelfTyAssembly
         | ProbeKind::UnsizeAssembly
@@ -410,6 +410,6 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
         | ProbeKind::ShadowedEnvProbing
         | ProbeKind::RigidAlias { result: _ } => {
             panic!("didn't expect to assemble trait candidate from {:#?}", cand.kind())
-        },
+        }
     })
 }

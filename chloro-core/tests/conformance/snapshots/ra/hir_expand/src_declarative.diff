@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6595 bytes
-Chloro size:   6607 bytes
+Chloro size:   6651 bytes
 Rustfmt size:  6864 bytes
 
 ✗ Outputs DIFFER
@@ -30,18 +30,16 @@ Rustfmt size:  6864 bytes
 -                .expand(
 -                    &tt,
 -                    |s| {
--                        s.ctx =
--                            apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
--                    },
++            None => self.mac.expand(
++                &tt,
++                |s| {
+                         s.ctx =
+                             apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
+                     },
 -                    span,
 -                    loc.def.edition,
 -                )
 -                .map_err(Into::into),
-+            None => self.mac.expand(
-+                &tt,
-+                |s| {
-+                s.ctx = apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
-+            },
 +                span,
 +                loc.def.edition,
 +            ).map_err(

@@ -356,6 +356,7 @@ impl<'a> SymbolCollector<'a> {
                 {
                     continue;
                 }
+
                 s.push_assoc_item(assoc_item_id, name, None)
             }
         },

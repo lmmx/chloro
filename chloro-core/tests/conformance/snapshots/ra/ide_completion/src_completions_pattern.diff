@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8413 bytes
-Chloro size:   8303 bytes
+Chloro size:   8298 bytes
 Rustfmt size:  8413 bytes
 
 ✗ Outputs DIFFER
@@ -38,12 +38,6 @@ Rustfmt size:  8413 bytes
                          if add_resolution {
                              acc.add_path_resolution(ctx, path_ctx, name, def, vec![]);
                          }
-                     }
--                }
-+                },
-                 res => {
-                     let ty = match res {
-                         hir::PathResolution::TypeParam(param) => param.ty(ctx.db),
                          hir::PathResolution::Def(hir::ModuleDef::TypeAlias(ty)) => ty.ty(ctx.db),
                          _ => return,
                      };
@@ -55,13 +49,7 @@ Rustfmt size:  8413 bytes
                      ctx.iterate_path_candidates(&ty, |item| match item {
                          AssocItem::TypeAlias(ta) => acc.add_type_alias(ctx, ta),
                          AssocItem::Const(c) => acc.add_const(ctx, c),
-                         _ => {}
-                     });
--                }
-+                },
-             }
--        }
-+        },
+         }
          Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
          Qualified::No => {
 -            // this will only be hit if there are brackets or braces, otherwise this will be parsed as an ident pattern
@@ -73,10 +61,9 @@ Rustfmt size:  8413 bytes
              });
 -
              acc.add_nameref_keywords_with_colon(ctx);
--        }
+         }
 -        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
-+        },
 +        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
-+        },
++        }
      }
  }

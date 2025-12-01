@@ -126,7 +126,7 @@ impl NameGenerator {
             Entry::Vacant(entry) => {
                 entry.insert(suffix);
                 SmolStr::from_str(name).unwrap()
-            },
+            }
             Entry::Occupied(mut entry) => {
                 let count = entry.get_mut();
                 *count = (*count + 1).max(suffix);
@@ -134,7 +134,7 @@ impl NameGenerator {
                 new_name.push_str(&prefix);
                 new_name.push_str(count.to_string().as_str());
                 new_name.finish()
-            },
+            }
         }
     }
 
@@ -238,11 +238,11 @@ impl NameGenerator {
         match self.pool.entry(prefix) {
             Entry::Vacant(entry) => {
                 entry.insert(suffix);
-            },
+            }
             Entry::Occupied(mut entry) => {
                 let count = entry.get_mut();
                 *count = (*count).max(suffix);
-            },
+            }
         }
     }
 

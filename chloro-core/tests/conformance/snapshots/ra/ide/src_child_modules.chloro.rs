@@ -34,13 +34,13 @@ pub(crate) fn child_modules(db: &RootDatabase, position: FilePosition) -> Vec<Na
                 |module| NavigationTarget::from_module_to_decl(db, module).call_site(),
             ).collect(
             )
-        },
+        }
         None => {
             sema.file_to_module_defs(position.file_id).flat_map(|module| module.children(db)).map(
                 |module| NavigationTarget::from_module_to_decl(db, module).call_site(),
             ).collect(
             )
-        },
+        }
     }
 }
 

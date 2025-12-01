@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6079 bytes
-Chloro size:   5847 bytes
+Chloro size:   5875 bytes
 Rustfmt size:  6079 bytes
 
 ✗ Outputs DIFFER
@@ -27,37 +27,6 @@ Rustfmt size:  6079 bytes
  pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let comment = ctx.find_token_at_offset::<ast::Comment>()?;
      // Only allow doc comments
-         "Desugar doc-comment to attribute macro",
-         target,
-         |edit| {
--            let text = match comments {
-+        let text = match comments {
-                 Either::Left(comment) => {
-                     let text = comment.text();
-                     text[comment.prefix().len()..(text.len() - "*/".len())]
-                     .collect::<Vec<_>>()
-                     .join("\n"),
-             };
--
--            let hashes = "#".repeat(required_hashes(&text));
--
--            let prefix = match placement {
-+        let hashes = "#".repeat(required_hashes(&text));
-+        let prefix = match placement {
-                 CommentPlacement::Inner => "#!",
-                 CommentPlacement::Outer => "#",
-             };
--
--            let output = format!(r#"{prefix}[doc = r{hashes}"{text}"{hashes}]"#);
--
--            edit.replace(target, output)
--        },
-+        let output = format!(r#"{prefix}[doc = r{hashes}"{text}"{hashes}]"#);
-+        edit.replace(target, output)
-+    },
-     )
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

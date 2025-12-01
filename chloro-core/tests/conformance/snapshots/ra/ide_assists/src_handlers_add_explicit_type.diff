@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8388 bytes
-Chloro size:   8155 bytes
+Chloro size:   8181 bytes
 Rustfmt size:  8479 bytes
 
 ✗ Outputs DIFFER
@@ -53,24 +53,6 @@ Rustfmt size:  8479 bytes
      acc.add(
          AssistId::refactor_rewrite("add_explicit_type"),
          format!("Insert explicit type `{inferred_type}`"),
-         pat_range,
-         |builder| match ascribed_ty {
--            Some(ascribed_ty) => {
--                builder.replace(ascribed_ty.syntax().text_range(), inferred_type);
--            }
--            None => {
--                builder.insert(pat_range.end(), format!(": {inferred_type}"));
--            }
-+        Some(ascribed_ty) => {
-+            builder.replace(ascribed_ty.syntax().text_range(), inferred_type);
-         },
-+        None => {
-+            builder.insert(pat_range.end(), format!(": {inferred_type}"));
-+        },
-+    },
-     )
- }
- 
  #[cfg(test)]
  mod tests {
      use super::*;

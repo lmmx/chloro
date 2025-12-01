@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17858 bytes
-Chloro size:   17639 bytes
+Chloro size:   17620 bytes
 Rustfmt size:  18799 bytes
 
 ✗ Outputs DIFFER
@@ -62,12 +62,10 @@ Rustfmt size:  18799 bytes
 -                    n.display(f.db, f.edition()),
 -                    u32::from(l.into_raw())
 -                )
--            }
 +                write!(f, "{}_{}", n.display(f.db, f.edition()), u32::from(l.into_raw()))
-+            },
+             }
          }
      }
- }
              wln!(
                  self,
                  "let {}: {};",
@@ -95,18 +93,9 @@ Rustfmt size:  18799 bytes
                              );
                          }
                          StatementKind::Deinit(p) => {
-                     Some(terminator) => match &terminator.kind {
-                         TerminatorKind::Goto { target } => {
-                             wln!(this, "goto 'bb{};", u32::from(target.into_raw()))
--                        }
-+                        },
-                         TerminatorKind::SwitchInt { discr, targets } => {
-                             w!(this, "switch ");
-                             this.operand(discr);
-                                 }
                                  wln!(this, "_ => {},", this.basic_block_id(targets.otherwise()));
                              });
--                        }
+                         }
 -                        TerminatorKind::Call {
 -                            func,
 -                            args,
@@ -114,19 +103,10 @@ Rustfmt size:  18799 bytes
 -                            target,
 -                            ..
 -                        } => {
-+                        },
 +                        TerminatorKind::Call { func, args, destination, target, .. } => {
                              w!(this, "Call ");
                              this.with_block(|this| {
                                  w!(this, "func: ");
-                                 }
-                                 wln!(this, ",");
-                             });
--                        }
-+                        },
-                         _ => wln!(this, "{:?};", terminator),
-                     },
-                     None => wln!(this, "<no-terminator>;"),
          ) {
              let Some((last, head)) = projections.split_last() else {
                  // no projection
@@ -178,11 +158,8 @@ Rustfmt size:  18799 bytes
 -                // MIR at the time of writing doesn't have difference between move and copy, so we show them
 -                // equally. Feel free to change it.
                  self.place(p);
--            }
-+            },
+             }
              OperandKind::Constant { konst, .. } => w!(self, "Const({})", self.hir_display(konst)),
-             OperandKind::Static(s) => w!(self, "Static({:?})", s),
-         }
                  match r {
                      BorrowKind::Shared => w!(self, "&"),
                      BorrowKind::Shallow => w!(self, "&shallow "),
@@ -193,22 +170,6 @@ Rustfmt size:  18799 bytes
                      BorrowKind::Mut {
                          kind: MutBorrowKind::Default | MutBorrowKind::TwoPhasedBorrow,
                      } => w!(self, "&mut "),
-                 }
-                 self.place(p);
--            }
-+            },
-             Rvalue::Aggregate(AggregateKind::Tuple(_), it) => {
-                 w!(self, "(");
-                 self.operand_list(it);
-                 w!(self, ")");
--            }
-+            },
-             Rvalue::Aggregate(AggregateKind::Array(_), it) => {
-                 w!(self, "[");
-                 self.operand_list(it);
-                 w!(self, "]");
--            }
-+            },
              Rvalue::Repeat(op, len) => {
                  w!(self, "[");
                  self.operand(op);
@@ -217,72 +178,10 @@ Rustfmt size:  18799 bytes
 -                    "; {}]",
 -                    len.display_test(self.db, self.display_target)
 -                );
--            }
 +                w!(self, "; {}]", len.display_test(self.db, self.display_target));
-+            },
+             }
              Rvalue::Aggregate(AggregateKind::Adt(_, _), it) => {
                  w!(self, "Adt(");
-                 self.operand_list(it);
-                 w!(self, ")");
--            }
-+            },
-             Rvalue::Aggregate(AggregateKind::Closure(_), it) => {
-                 w!(self, "Closure(");
-                 self.operand_list(it);
-                 w!(self, ")");
--            }
-+            },
-             Rvalue::Aggregate(AggregateKind::Union(_, _), it) => {
-                 w!(self, "Union(");
-                 self.operand_list(it);
-                 w!(self, ")");
--            }
-+            },
-             Rvalue::Len(p) => {
-                 w!(self, "Len(");
-                 self.place(p);
-                 w!(self, ")");
--            }
-+            },
-             Rvalue::Cast(ck, op, ty) => {
-                 w!(self, "Cast({ck:?}, ");
-                 self.operand(op);
-                 w!(self, ", {})", self.hir_display(ty));
--            }
-+            },
-             Rvalue::CheckedBinaryOp(b, o1, o2) => {
-                 self.operand(o1);
-                 w!(self, " {b} ");
-                 self.operand(o2);
--            }
-+            },
-             Rvalue::UnaryOp(u, o) => {
-                 let u = match u {
-                     UnOp::Not => "!",
-                 };
-                 w!(self, "{u} ");
-                 self.operand(o);
--            }
-+            },
-             Rvalue::Discriminant(p) => {
-                 w!(self, "Discriminant(");
-                 self.place(p);
-                 w!(self, ")");
--            }
-+            },
-             Rvalue::ShallowInitBoxWithAlloc(_) => w!(self, "ShallowInitBoxWithAlloc"),
-             Rvalue::ShallowInitBox(op, _) => {
-                 w!(self, "ShallowInitBox(");
-                 self.operand(op);
-                 w!(self, ")");
--            }
-+            },
-             Rvalue::CopyForDeref(p) => {
-                 w!(self, "CopyForDeref(");
-                 self.place(p);
-                 w!(self, ")");
--            }
-+            },
              Rvalue::ThreadLocalRef(n)
              | Rvalue::AddressOf(n)
              | Rvalue::BinaryOp(n)

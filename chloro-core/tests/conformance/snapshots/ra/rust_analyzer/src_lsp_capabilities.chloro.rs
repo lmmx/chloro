@@ -193,10 +193,7 @@ impl ClientCapabilities {
     }
 
     fn experimental_bool(&self, index: &'static str) -> bool {
-        || -> _ {
-            self.0.experimental.as_ref()?.get(index)?.as_bool()
-        }().unwrap_or_default(
-        )
+        || -> _ { self.0.experimental.as_ref()?.get(index)?.as_bool() }().unwrap_or_default()
     }
 
     fn experimental<T: serde::de::DeserializeOwned>(&self, index: &'static str) -> Option<T> {
@@ -206,18 +203,34 @@ impl ClientCapabilities {
     #[allow(non_snake_case)]
     pub fn has_completion_item_resolve_additionalTextEdits(&self) -> bool {
         (|| {
-            Some(self.0.text_document.as_ref()?.completion.as_ref()?.completion_item.as_ref()?.resolve_support.as_ref(
-            )?.properties.iter(
-            ).any(
-                |cap_string| cap_string.as_str() == "additionalTextEdits",
-            ))
+            Some(
+                self.0
+                    .text_document
+                    .as_ref()?
+                    .completion
+                    .as_ref()?
+                    .completion_item
+                    .as_ref()?
+                    .resolve_support
+                    .as_ref()?
+                    .properties
+                    .iter()
+                    .any(|cap_string| cap_string.as_str() == "additionalTextEdits"),
+            )
         })(
         ) == Some(true)
     }
 
     pub fn completion_label_details_support(&self) -> bool {
         (|| -> _ {
-            self.0.text_document.as_ref()?.completion.as_ref()?.completion_item.as_ref()?.label_details_support
+            self.0
+                .text_document
+                .as_ref()?
+                .completion
+                .as_ref()?
+                .completion_item
+                .as_ref()?
+                .label_details_support
         })(
         ) == Some(true)
     }
@@ -234,8 +247,11 @@ impl ClientCapabilities {
         ).map_or(
             CodeActionProviderCapability::Simple(true),
             |_| {
-            CodeActionProviderCapability::Options(CodeActionOptions {
-                code_action_kinds: Some(vec![
+                CodeActionProviderCapability::Options(CodeActionOptions {
+                    // Advertise support for all built-in CodeActionKinds.
+                    // Ideally we would base this off of the client capabilities
+                    // but the client is supposed to fall back gracefully for unknown values.
+                    code_action_kinds: Some(vec![
                         CodeActionKind::EMPTY,
                         CodeActionKind::QUICKFIX,
                         CodeActionKind::REFACTOR,
@@ -243,10 +259,10 @@ impl ClientCapabilities {
                         CodeActionKind::REFACTOR_INLINE,
                         CodeActionKind::REFACTOR_REWRITE,
                     ]),
-                resolve_provider: Some(true),
-                work_done_progress_options: Default::default(),
-            })
-        },
+                    resolve_provider: Some(true),
+                    work_done_progress_options: Default::default(),
+                })
+            },
         )
     }
 
@@ -306,23 +322,22 @@ impl ClientCapabilities {
     }
 
     pub fn location_link(&self) -> bool {
-        (|| -> _ {
-            self.0.text_document.as_ref()?.definition?.link_support
-        })().unwrap_or_default(
-        )
+        (|| -> _ { self.0.text_document.as_ref()?.definition?.link_support })().unwrap_or_default()
     }
 
     pub fn line_folding_only(&self) -> bool {
-        (|| -> _ {
-            self.0.text_document.as_ref()?.folding_range.as_ref()?.line_folding_only
-        })(
-        ).unwrap_or_default(
+        (|| -> _ { self.0.text_document.as_ref()?.folding_range.as_ref()?.line_folding_only })().unwrap_or_default(
         )
     }
 
     pub fn hierarchical_symbols(&self) -> bool {
         (|| -> _ {
-            self.0.text_document.as_ref()?.document_symbol.as_ref()?.hierarchical_document_symbol_support
+            self.0
+                .text_document
+                .as_ref()?
+                .document_symbol
+                .as_ref()?
+                .hierarchical_document_symbol_support
         })(
         ).unwrap_or_default(
         )
@@ -330,25 +345,24 @@ impl ClientCapabilities {
 
     pub fn code_action_literals(&self) -> bool {
         (|| -> _ {
-            self.0.text_document.as_ref()?.code_action.as_ref()?.code_action_literal_support.as_ref(
-            )
+            self.0
+                .text_document
+                .as_ref()?
+                .code_action
+                .as_ref()?
+                .code_action_literal_support
+                .as_ref()
         })(
         ).is_some(
         )
     }
 
     pub fn work_done_progress(&self) -> bool {
-        (|| -> _ {
-            self.0.window.as_ref()?.work_done_progress
-        })().unwrap_or_default(
-        )
+        (|| -> _ { self.0.window.as_ref()?.work_done_progress })().unwrap_or_default()
     }
 
     pub fn will_rename(&self) -> bool {
-        (|| -> _ {
-            self.0.workspace.as_ref()?.file_operations.as_ref()?.will_rename
-        })(
-        ).unwrap_or_default(
+        (|| -> _ { self.0.workspace.as_ref()?.file_operations.as_ref()?.will_rename })().unwrap_or_default(
         )
     }
 
@@ -362,8 +376,17 @@ impl ClientCapabilities {
 
     pub fn code_action_resolve(&self) -> bool {
         (|| -> _ {
-            Some(self.0.text_document.as_ref()?.code_action.as_ref()?.resolve_support.as_ref()?.properties.as_slice(
-            ))
+            Some(
+                self.0
+                    .text_document
+                    .as_ref()?
+                    .code_action
+                    .as_ref()?
+                    .resolve_support
+                    .as_ref()?
+                    .properties
+                    .as_slice(),
+            )
         })(
         ).unwrap_or_default(
         ).iter(
@@ -374,25 +397,27 @@ impl ClientCapabilities {
 
     pub fn signature_help_label_offsets(&self) -> bool {
         (|| -> _ {
-            self.0.text_document.as_ref()?.signature_help.as_ref()?.signature_information.as_ref()?.parameter_information.as_ref(
-            )?.label_offset_support
+            self.0
+                .text_document
+                .as_ref()?
+                .signature_help
+                .as_ref()?
+                .signature_information
+                .as_ref()?
+                .parameter_information
+                .as_ref()?
+                .label_offset_support
         })(
         ).unwrap_or_default(
         )
     }
 
     pub fn text_document_diagnostic(&self) -> bool {
-        (|| -> _ {
-            self.0.text_document.as_ref()?.diagnostic.as_ref()
-        })().is_some(
-        )
+        (|| -> _ { self.0.text_document.as_ref()?.diagnostic.as_ref() })().is_some()
     }
 
     pub fn text_document_diagnostic_related_document_support(&self) -> bool {
-        (|| -> _ {
-            self.0.text_document.as_ref()?.diagnostic.as_ref()?.related_document_support
-        })(
-        ) == Some(true)
+        (|| -> _ { self.0.text_document.as_ref()?.diagnostic.as_ref()?.related_document_support })() == Some(true)
     }
 
     pub fn code_action_group(&self) -> bool {
@@ -434,41 +459,36 @@ impl ClientCapabilities {
 
     pub fn completion_snippet(&self) -> bool {
         (|| -> _ {
-            self.0.text_document.as_ref()?.completion.as_ref()?.completion_item.as_ref()?.snippet_support
+            self.0
+                .text_document
+                .as_ref()?
+                .completion
+                .as_ref()?
+                .completion_item
+                .as_ref()?
+                .snippet_support
         })(
         ).unwrap_or_default(
         )
     }
 
     pub fn semantic_tokens_refresh(&self) -> bool {
-        (|| -> _ {
-            self.0.workspace.as_ref()?.semantic_tokens.as_ref()?.refresh_support
-        })(
-        ).unwrap_or_default(
+        (|| -> _ { self.0.workspace.as_ref()?.semantic_tokens.as_ref()?.refresh_support })().unwrap_or_default(
         )
     }
 
     pub fn code_lens_refresh(&self) -> bool {
-        (|| -> _ {
-            self.0.workspace.as_ref()?.code_lens.as_ref()?.refresh_support
-        })(
-        ).unwrap_or_default(
+        (|| -> _ { self.0.workspace.as_ref()?.code_lens.as_ref()?.refresh_support })().unwrap_or_default(
         )
     }
 
     pub fn inlay_hints_refresh(&self) -> bool {
-        (|| -> _ {
-            self.0.workspace.as_ref()?.inlay_hint.as_ref()?.refresh_support
-        })(
-        ).unwrap_or_default(
+        (|| -> _ { self.0.workspace.as_ref()?.inlay_hint.as_ref()?.refresh_support })().unwrap_or_default(
         )
     }
 
     pub fn diagnostics_refresh(&self) -> bool {
-        (|| -> _ {
-            self.0.workspace.as_ref()?.diagnostic.as_ref()?.refresh_support
-        })(
-        ).unwrap_or_default(
+        (|| -> _ { self.0.workspace.as_ref()?.diagnostic.as_ref()?.refresh_support })().unwrap_or_default(
         )
     }
 
@@ -512,7 +532,14 @@ impl ClientCapabilities {
 
     pub fn insert_replace_support(&self) -> bool {
         (|| -> _ {
-            self.0.text_document.as_ref()?.completion.as_ref()?.completion_item.as_ref()?.insert_replace_support
+            self.0
+                .text_document
+                .as_ref()?
+                .completion
+                .as_ref()?
+                .completion_item
+                .as_ref()?
+                .insert_replace_support
         })(
         ).unwrap_or_default(
         )

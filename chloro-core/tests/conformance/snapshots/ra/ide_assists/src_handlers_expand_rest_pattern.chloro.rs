@@ -31,9 +31,9 @@ fn expand_record_rest_pattern(
         "Fill struct fields",
         rest_pat.syntax().text_range(),
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = builder.make_editor(rest_pat.syntax());
-        let new_fields = old_field_list.fields().chain(missing_fields.iter().map(|(f, _)| {
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = builder.make_editor(rest_pat.syntax());
+            let new_fields = old_field_list.fields().chain(missing_fields.iter().map(|(f, _)| {
                 make.record_pat_field_shorthand(
                     make.ident_pat(
                         false,
@@ -43,11 +43,13 @@ fn expand_record_rest_pattern(
                     .into(),
                 )
             }));
-        let new_field_list = make.record_pat_field_list(new_fields, None);
-        editor.replace(old_field_list.syntax(), new_field_list.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            let new_field_list = make.record_pat_field_list(new_fields, None);
+
+            editor.replace(old_field_list.syntax(), new_field_list.syntax());
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -89,10 +91,11 @@ fn expand_tuple_struct_rest_pattern(
         "Fill tuple struct fields",
         rest_pat.syntax().text_range(),
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = builder.make_editor(rest_pat.syntax());
-        let mut name_gen = NameGenerator::new_from_scope_locals(ctx.sema.scope(pat.syntax()));
-        let new_pat = make.tuple_struct_pat(
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = builder.make_editor(rest_pat.syntax());
+
+            let mut name_gen = NameGenerator::new_from_scope_locals(ctx.sema.scope(pat.syntax()));
+            let new_pat = make.tuple_struct_pat(
                 path,
                 pat.fields()
                     .take(prefix_count)
@@ -107,10 +110,12 @@ fn expand_tuple_struct_rest_pattern(
                     }))
                     .chain(pat.fields().skip(prefix_count + 1)),
             );
-        editor.replace(pat.syntax(), new_pat.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            editor.replace(pat.syntax(), new_pat.syntax());
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -141,10 +146,11 @@ fn expand_tuple_rest_pattern(
         "Fill tuple fields",
         rest_pat.syntax().text_range(),
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = builder.make_editor(rest_pat.syntax());
-        let mut name_gen = NameGenerator::new_from_scope_locals(ctx.sema.scope(pat.syntax()));
-        let new_pat = make.tuple_pat(
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = builder.make_editor(rest_pat.syntax());
+
+            let mut name_gen = NameGenerator::new_from_scope_locals(ctx.sema.scope(pat.syntax()));
+            let new_pat = make.tuple_pat(
                 pat.fields()
                     .take(prefix_count)
                     .chain(fields[prefix_count..len - suffix_count].iter().enumerate().map(
@@ -154,10 +160,12 @@ fn expand_tuple_rest_pattern(
                     ))
                     .chain(pat.fields().skip(prefix_count + 1)),
             );
-        editor.replace(pat.syntax(), new_pat.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            editor.replace(pat.syntax(), new_pat.syntax());
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -187,10 +195,11 @@ fn expand_slice_rest_pattern(
         "Fill slice fields",
         rest_pat.syntax().text_range(),
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = builder.make_editor(rest_pat.syntax());
-        let mut name_gen = NameGenerator::new_from_scope_locals(ctx.sema.scope(pat.syntax()));
-        let new_pat = make.slice_pat(
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = builder.make_editor(rest_pat.syntax());
+
+            let mut name_gen = NameGenerator::new_from_scope_locals(ctx.sema.scope(pat.syntax()));
+            let new_pat = make.slice_pat(
                 pat.pats()
                     .take(prefix_count)
                     .chain(
@@ -199,10 +208,12 @@ fn expand_slice_rest_pattern(
                     )
                     .chain(pat.pats().skip(prefix_count + 1)),
             );
-        editor.replace(pat.syntax(), new_pat.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            editor.replace(pat.syntax(), new_pat.syntax());
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

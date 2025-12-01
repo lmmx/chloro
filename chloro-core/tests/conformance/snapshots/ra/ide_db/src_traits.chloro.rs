@@ -57,17 +57,21 @@ pub fn get_missing_assoc_items(
     resolve_target_trait(sema, impl_def).map_or(
         vec![],
         |target_trait| {
-        target_trait.items(sema.db).into_iter().filter(|i| match i {
-            hir::AssocItem::Function(f) => !impl_fns_consts.contains(&f.name(sema.db).display(sema.db, edition).to_string()),
-            hir::AssocItem::TypeAlias(t) => {
-                !impl_type.contains(&t.name(sema.db).display(sema.db, edition).to_string())
-            },
-            hir::AssocItem::Const(c) => c.name(sema.db).map(
-                |n| !impl_fns_consts.contains(&n.display(sema.db, edition).to_string()),
-            ).unwrap_or_default(
-            ),
-        }).collect(
-        )
+        target_trait
+            .items(sema.db)
+            .into_iter()
+            .filter(|i| match i {
+                hir::AssocItem::Function(f) => !impl_fns_consts
+                    .contains(&f.name(sema.db).display(sema.db, edition).to_string()),
+                hir::AssocItem::TypeAlias(t) => {
+                    !impl_type.contains(&t.name(sema.db).display(sema.db, edition).to_string())
+                }
+                hir::AssocItem::Const(c) => c
+                    .name(sema.db)
+                    .map(|n| !impl_fns_consts.contains(&n.display(sema.db, edition).to_string()))
+                    .unwrap_or_default(),
+            })
+            .collect()
     },
     )
 }

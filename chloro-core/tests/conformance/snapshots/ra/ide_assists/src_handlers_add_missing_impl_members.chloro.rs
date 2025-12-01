@@ -98,9 +98,11 @@ fn add_missing_impl_members_inner(
             &impl_def,
             &target_scope,
         );
+
         let Some((first_new_item, other_items)) = new_item.split_first() else {
             return;
         };
+
         let mut first_new_item = if let DefaultMethods::No = mode
             && let ast::AssocItem::Fn(func) = &first_new_item
             && let Some(body) = try_gen_trait_body(
@@ -118,11 +120,13 @@ fn add_missing_impl_members_inner(
         } else {
             Some(first_new_item.clone())
         };
+
         let new_assoc_items = first_new_item
             .clone()
             .into_iter()
             .chain(other_items.iter().cloned())
             .collect::<Vec<_>>();
+
         let mut editor = edit.make_editor(impl_def.syntax());
         if let Some(assoc_item_list) = impl_def.assoc_item_list() {
             assoc_item_list.add_items(&mut editor, new_assoc_items);
@@ -134,6 +138,7 @@ fn add_missing_impl_members_inner(
             );
             first_new_item = assoc_item_list.assoc_items().next();
         }
+
         if let Some(cap) = ctx.config.snippet_cap {
             let mut placeholder = None;
             if let DefaultMethods::No = mode

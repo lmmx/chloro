@@ -40,16 +40,16 @@ pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         "Expand glob import",
         target.text_range(),
         |builder| {
-        build_expanded_import(
-            ctx,
-            builder,
-            use_tree,
-            use_item,
-            target_module,
-            current_module,
-            false,
-        )
-    },
+            build_expanded_import(
+                ctx,
+                builder,
+                use_tree,
+                use_item,
+                target_module,
+                current_module,
+                false,
+            )
+        },
     )
 }
 
@@ -80,8 +80,16 @@ pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -
         "Expand glob reexport",
         target.text_range(),
         |builder| {
-        build_expanded_import(ctx, builder, use_tree, use_item, target_module, current_module, true)
-    },
+            build_expanded_import(
+                ctx,
+                builder,
+                use_tree,
+                use_item,
+                target_module,
+                current_module,
+                true,
+            )
+        },
     )
 }
 
@@ -212,7 +220,7 @@ struct Refs(Vec<Ref>);
 impl Refs {
     fn used_refs(&self, ctx: &AssistContext<'_>) -> Refs {
         Refs(self.0.clone().into_iter().filter(|r| {
-            if let Definition::Trait(tr) = r.def
+                    if let Definition::Trait(tr) = r.def
                         && tr.items(ctx.db()).into_iter().any(|ai| {
                             if let AssocItem::Function(f) = ai {
                                 def_is_referenced_in(Definition::Function(f), ctx)
@@ -223,8 +231,9 @@ impl Refs {
                     {
                         return true;
                     }
-            def_is_referenced_in(r.def, ctx)
-        }).collect(
+
+                    def_is_referenced_in(r.def, ctx)
+                }).collect(
         ))
     }
 
@@ -248,12 +257,12 @@ fn find_refs_in_mod(
                 .filter(|r| !must_be_pub || r.is_pub)
                 .collect();
             Refs(refs)
-        },
+        }
         Expandable::Enum(enm) => Refs(enm.variants(ctx.db()).into_iter().map(|v| Ref {
-            visible_name: v.name(ctx.db()),
-            def: Definition::Variant(v),
-            is_pub: true,
-        }).collect(
+                    visible_name: v.name(ctx.db()),
+                    def: Definition::Variant(v),
+                    is_pub: true,
+                }).collect(
         )),
     }
 }
@@ -273,23 +282,23 @@ fn is_visible_from(ctx: &AssistContext<'_>, expandable: &Expandable, from: Modul
         Expandable::Module(module) => match module.parent(ctx.db()) {
             Some(parent) => {
                 module.visibility(ctx.db()).is_visible_from(ctx.db(), from.into()) && is_mod_visible_from(ctx, parent, from)
-            },
+            }
             None => true,
         },
         Expandable::Enum(enm) => {
             let module = enm.module(ctx.db());
             enm.visibility(ctx.db()).is_visible_from(ctx.db(), from.into()) && is_mod_visible_from(ctx, module, from)
-        },
+        }
     }
 }
 
 fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition> {
     [Direction::Prev, Direction::Next].into_iter().flat_map(|dir| {
-        use_item.syntax().siblings(dir.to_owned()).filter(|n| ast::Use::can_cast(n.kind()))
-    }).flat_map(
+            use_item.syntax().siblings(dir.to_owned()).filter(|n| ast::Use::can_cast(n.kind()))
+        }).flat_map(
         |n| n.descendants().filter_map(ast::NameRef::cast),
     ).filter_map(|r| match NameRefClass::classify(&ctx.sema, &r)? {
-        NameRefClass::Definition(
+            NameRefClass::Definition(
                 def @ (Definition::Macro(_)
                 | Definition::Module(_)
                 | Definition::Function(_)
@@ -301,8 +310,8 @@ fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition>
                 | Definition::TypeAlias(_)),
                 _,
             ) => Some(def),
-        _ => None,
-    }).collect(
+            _ => None,
+        }).collect(
     )
 }
 

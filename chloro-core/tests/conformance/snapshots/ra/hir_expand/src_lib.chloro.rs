@@ -215,7 +215,7 @@ impl ExpandErrorKind {
                         kind: RenderedExpandError::GENERAL_KIND,
                     },
                 }
-            },
+            }
             ExpandErrorKind::MacroDefinition => RenderedExpandError {
                 message: "macro definition has parse errors".to_owned(),
                 error: true,
@@ -359,7 +359,7 @@ impl HirFileId {
                 HirFileId::FileId(id) => break id,
                 HirFileId::MacroFile(macro_call_id) => {
                     file_id = db.lookup_intern_macro_call(macro_call_id).kind.file_id()
-                },
+                }
             }
         }
     }
@@ -380,7 +380,7 @@ impl HirFileId {
                         break it;
                     }
                     self = loc.kind.file_id();
-                },
+                }
             }
         }
     }
@@ -391,10 +391,10 @@ impl HirFileId {
             match call.file_id {
                 HirFileId::FileId(file_id) => {
                     break Some(InRealFile { file_id, value: call.value });
-                },
+                }
                 HirFileId::MacroFile(macro_call_id) => {
                     call = db.lookup_intern_macro_call(macro_call_id).to_node(db);
-                },
+                }
             }
         }
     }
@@ -467,7 +467,7 @@ impl MacroCallId {
             MacroDefKind::Declarative(..) => MacroKind::Declarative,
             MacroDefKind::BuiltIn(..) | MacroDefKind::BuiltInEager(..) => {
                 MacroKind::DeclarativeBuiltIn
-            },
+            }
             MacroDefKind::BuiltInDerive(..) => MacroKind::DeriveBuiltIn,
             MacroDefKind::ProcMacro(_, _, ProcMacroKind::CustomDerive) => MacroKind::Derive,
             MacroDefKind::ProcMacro(_, _, ProcMacroKind::Attr) => MacroKind::Attr,
@@ -526,10 +526,10 @@ impl MacroDefId {
             | MacroDefKind::BuiltInDerive(id, _)
             | MacroDefKind::BuiltInEager(id, _) => {
                 id.with_value(db.ast_id_map(id.file_id).get(id.value).text_range())
-            },
+            }
             MacroDefKind::ProcMacro(id, _, _) => {
                 id.with_value(db.ast_id_map(id.file_id).get(id.value).text_range())
-            },
+            }
         }
     }
 
@@ -595,31 +595,33 @@ impl MacroCallLoc {
         match self.kind {
             MacroCallKind::FnLike { ast_id, .. } => {
                 ast_id.with_value(ast_id.to_node(db).syntax().clone())
-            },
+            }
             MacroCallKind::Derive { ast_id, derive_attr_index, .. } => {
                 ast_id.with_value(ast_id.to_node(db)).map(|it| {
-                    collect_attrs(&it).nth(derive_attr_index.ast_index()).and_then(|it| match it.1 {
-                        Either::Left(attr) => Some(attr.syntax().clone()),
-                        Either::Right(_) => None,
-                    }).unwrap_or_else(
-                        || it.syntax().clone(),
-                    )
+                    collect_attrs(&it)
+                        .nth(derive_attr_index.ast_index())
+                        .and_then(|it| match it.1 {
+                            Either::Left(attr) => Some(attr.syntax().clone()),
+                            Either::Right(_) => None,
+                        })
+                        .unwrap_or_else(|| it.syntax().clone())
                 })
-            },
+            }
             MacroCallKind::Attr { ast_id, invoc_attr_index, .. } => {
                 if self.def.is_attribute_derive() {
                     ast_id.with_value(ast_id.to_node(db)).map(|it| {
-                        collect_attrs(&it).nth(invoc_attr_index.ast_index()).and_then(|it| match it.1 {
-                            Either::Left(attr) => Some(attr.syntax().clone()),
-                            Either::Right(_) => None,
-                        }).unwrap_or_else(
-                            || it.syntax().clone(),
-                        )
+                        collect_attrs(&it)
+                            .nth(invoc_attr_index.ast_index())
+                            .and_then(|it| match it.1 {
+                                Either::Left(attr) => Some(attr.syntax().clone()),
+                                Either::Right(_) => None,
+                            })
+                            .unwrap_or_else(|| it.syntax().clone())
                     })
                 } else {
                     ast_id.with_value(ast_id.to_node(db).syntax().clone())
                 }
-            },
+            }
         }
     }
 
@@ -627,10 +629,10 @@ impl MacroCallLoc {
         match self.kind {
             MacroCallKind::FnLike { ast_id, .. } => {
                 InFile::new(ast_id.file_id, ast_id.map(FileAstId::upcast).to_node(db))
-            },
+            }
             MacroCallKind::Derive { ast_id, .. } => {
                 InFile::new(ast_id.file_id, ast_id.map(FileAstId::upcast).to_node(db))
-            },
+            }
             MacroCallKind::Attr { ast_id, .. } => InFile::new(ast_id.file_id, ast_id.to_node(db)),
         }
     }
@@ -642,7 +644,7 @@ impl MacroCallLoc {
             MacroCallKind::Attr { .. } if self.def.is_attribute_derive() => ExpandTo::Items,
             MacroCallKind::Attr { .. } => {
                 ExpandTo::Items
-            },
+            }
         }
     }
 
@@ -769,13 +771,13 @@ impl MacroCallKind {
         match self {
             MacroCallKind::FnLike { ast_id, .. } => {
                 ast_id.to_in_file_node(db).map(|it| Some(it.token_tree()?.syntax().clone()))
-            },
+            }
             MacroCallKind::Derive { ast_id, .. } => {
                 ast_id.to_in_file_node(db).syntax().cloned().map(Some)
-            },
+            }
             MacroCallKind::Attr { ast_id, .. } => {
                 ast_id.to_in_file_node(db).syntax().cloned().map(Some)
-            },
+            }
         }
     }
 }
@@ -877,7 +879,7 @@ impl ExpansionInfo {
                 let anchor_offset =
                     db.ast_id_map(file_id).get_erased(span.anchor.ast_id).text_range().start();
                 InFile { file_id, value: smallvec::smallvec![span.range + anchor_offset] }
-            },
+            }
             SpanMap::ExpansionSpanMap(arg_map) => {
                 let Some(arg_node) = &self.arg.value else {
                     return InFile::new(self.arg.file_id, smallvec::smallvec![]);
@@ -892,7 +894,7 @@ impl ExpansionInfo {
                 ).collect(
                 ),
                 )
-            },
+            }
         }
     }
 
@@ -1057,7 +1059,7 @@ impl ExpandTo {
             | TUPLE_EXPR | WHILE_EXPR | MACRO_EXPR => ExpandTo::Expr,
             _ => {
                 ExpandTo::Items
-            },
+            }
         }
     }
 }

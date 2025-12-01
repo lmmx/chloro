@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4699 bytes
-Chloro size:   4383 bytes
+Chloro size:   4385 bytes
 Rustfmt size:  4770 bytes
 
 ✗ Outputs DIFFER
@@ -35,19 +35,19 @@ Rustfmt size:  4770 bytes
          |edit| {
 -            let flip_cond = invert_boolean_expression_legacy(cond.clone());
 -            edit.replace_ast(cond, flip_cond);
--
++        let flip_cond = invert_boolean_expression_legacy(cond.clone());
++        edit.replace_ast(cond, flip_cond);
+ 
 -            let else_node = else_block.syntax();
 -            let else_range = else_node.text_range();
 -            let then_range = then_node.text_range();
--
--            edit.replace(else_range, then_node.text());
--            edit.replace(then_range, else_node.text());
--        },
-+        let flip_cond = invert_boolean_expression_legacy(cond.clone());
-+        edit.replace_ast(cond, flip_cond);
 +        let else_node = else_block.syntax();
 +        let else_range = else_node.text_range();
 +        let then_range = then_node.text_range();
+ 
+-            edit.replace(else_range, then_node.text());
+-            edit.replace(then_range, else_node.text());
+-        },
 +        edit.replace(else_range, then_node.text());
 +        edit.replace(then_range, else_node.text());
 +    },

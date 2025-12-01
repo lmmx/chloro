@@ -27,13 +27,16 @@ fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
         "Replace block comment with line comments",
         target,
         |edit| {
-        let indentation = IndentLevel::from_token(comment.syntax());
-        let line_prefix = CommentKind { shape: CommentShape::Line, ..comment.kind() }.prefix();
-        let text = comment.text();
-        let text = &text[comment.prefix().len()..(text.len() - "*/".len())].trim();
-        let lines = text.lines().peekable();
-        let indent_spaces = indentation.to_string();
-        let output = lines
+            let indentation = IndentLevel::from_token(comment.syntax());
+            let line_prefix = CommentKind { shape: CommentShape::Line, ..comment.kind() }.prefix();
+
+            let text = comment.text();
+            let text = &text[comment.prefix().len()..(text.len() - "*/".len())].trim();
+
+            let lines = text.lines().peekable();
+
+            let indent_spaces = indentation.to_string();
+            let output = lines
                 .map(|line| {
                     let line = line.trim_start_matches(&indent_spaces);
 
@@ -45,8 +48,9 @@ fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
                     }
                 })
                 .join(&format!("\n{indent_spaces}"));
-        edit.replace(target, output)
-    },
+
+            edit.replace(target, output)
+        },
     )
 }
 
@@ -65,18 +69,25 @@ fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
         "Replace line comments with a single block comment",
         target,
         |edit| {
-        let indentation = IndentLevel::from_token(comment.syntax());
-        let block_comment_body = comments
+            // We pick a single indentation level for the whole block comment based on the
+            // comment where the assist was invoked. This will be prepended to the
+            // contents of each line comment when they're put into the block comment.
+            let indentation = IndentLevel::from_token(comment.syntax());
+
+            let block_comment_body = comments
                 .into_iter()
                 .map(|c| line_comment_text(indentation, c))
                 .collect::<Vec<String>>()
                 .into_iter()
                 .join("\n");
-        let block_prefix =
+
+            let block_prefix =
                 CommentKind { shape: CommentShape::Block, ..comment.kind() }.prefix();
-        let output = format!("{block_prefix}\n{block_comment_body}\n{indentation}*/");
-        edit.replace(target, output)
-    },
+
+            let output = format!("{block_prefix}\n{block_comment_body}\n{indentation}*/");
+
+            edit.replace(target, output)
+        },
     )
 }
 

@@ -23,8 +23,8 @@ pub fn prettify_macro_expansion(
     syntax_bridge::prettify_macro_expansion::prettify_macro_expansion(
         syn,
         &mut |dollar_crate| {
-        let ctx = span_map.span_at(dollar_crate.text_range().start() + span_offset).ctx;
-        let replacement =
+            let ctx = span_map.span_at(dollar_crate.text_range().start() + span_offset).ctx;
+            let replacement =
                 syntax_ctx_id_to_dollar_crate_replacement.entry(ctx).or_insert_with(|| {
                     let macro_call_id = ctx
                         .outer_expn(db)
@@ -49,15 +49,17 @@ pub fn prettify_macro_expansion(
                         dollar_crate.clone()
                     }
                 });
-        if replacement.text() == "$crate" {
+            if replacement.text() == "$crate" {
                 // The parent may have many children, and looking for the token may yield incorrect results.
                 return None;
             }
-        let parent = replacement.parent().unwrap().clone_subtree().clone_for_update();
-        parent.children_with_tokens().filter_map(NodeOrToken::into_token).find(
-            |it| it.kind() == replacement.kind(),
-        )
-    },
+            // We need to `clone_subtree()` but rowan doesn't provide such operation for tokens.
+            let parent = replacement.parent().unwrap().clone_subtree().clone_for_update();
+            parent
+                .children_with_tokens()
+                .filter_map(NodeOrToken::into_token)
+                .find(|it| it.kind() == replacement.kind())
+        },
         |_| (),
     )
 }

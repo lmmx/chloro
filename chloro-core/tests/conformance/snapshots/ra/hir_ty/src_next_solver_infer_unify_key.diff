@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6088 bytes
-Chloro size:   5310 bytes
+Chloro size:   5303 bytes
 Rustfmt size:  6436 bytes
 
 ✗ Outputs DIFFER
@@ -56,12 +56,10 @@ Rustfmt size:  6436 bytes
  impl<'db> UnifyValue for RegionVariableValue<'db> {
      type Error = RegionUnificationError;
  
-         match (value1, value2) {
              (RegionVariableValue::Known { .. }, RegionVariableValue::Known { .. }) => {
                  Err(RegionUnificationError)
--            }
+             }
 -
-+            },
              (RegionVariableValue::Known { value }, RegionVariableValue::Unknown { universe })
              | (RegionVariableValue::Unknown { universe }, RegionVariableValue::Known { value }) => {
                  let universe_of_value = match (*value).kind() {
@@ -74,9 +72,8 @@ Rustfmt size:  6436 bytes
                  } else {
                      Err(RegionUnificationError)
                  }
--            }
+             }
 -
-+            },
              (
                  RegionVariableValue::Unknown { universe: a },
                  RegionVariableValue::Unknown { universe: b },
@@ -89,9 +86,8 @@ Rustfmt size:  6436 bytes
 -                Ok(RegionVariableValue::Unknown {
 -                    universe: (*a).min(*b),
 -                })
--            }
 +                Ok(RegionVariableValue::Unknown { universe: (*a).min(*b) })
-+            },
+             }
          }
      }
  }
@@ -136,23 +132,19 @@ Rustfmt size:  6436 bytes
      fn order_roots(a: Self, _: &Self::Value, b: Self, _: &Self::Value) -> Option<(Self, Self)> {
          if a.vid.as_u32() < b.vid.as_u32() {
              Some((a, b))
-         match (value1, value2) {
              (ConstVariableValue::Known { .. }, ConstVariableValue::Known { .. }) => {
                  panic!("equating two const variables, both of which have known values")
--            }
+             }
 -
 -            // If one side is known, prefer that one.
-+            },
              (ConstVariableValue::Known { .. }, ConstVariableValue::Unknown { .. }) => {
                  Ok(value1.clone())
--            }
-+            },
+             }
              (ConstVariableValue::Unknown { .. }, ConstVariableValue::Known { .. }) => {
                  Ok(value2.clone())
--            }
+             }
 -
 -            // If both sides are *unknown*, it hardly matters, does it?
-+            },
              (
 -                ConstVariableValue::Unknown {
 -                    origin,
@@ -175,9 +167,7 @@ Rustfmt size:  6436 bytes
 -                    origin: *origin,
 -                    universe,
 -                })
--            }
 +                Ok(ConstVariableValue::Unknown { origin: *origin, universe })
-+            },
+             }
          }
      }
- }

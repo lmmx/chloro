@@ -16,10 +16,10 @@ pub(super) fn hints(
     range: impl ast::RangeItem,
 ) -> Option<()> {
     (config.range_exclusive_hints && range.end().is_some()).then(|| {
-        range.op_token().filter(|token| token.kind() == T![..]).map(|token| {
-            acc.push(inlay_hint(token));
-        })
-    }).flatten(
+            range.op_token().filter(|token| token.kind() == T![..]).map(|token| {
+                acc.push(inlay_hint(token));
+            })
+        }).flatten(
     )
 }
 

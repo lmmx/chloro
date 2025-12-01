@@ -287,7 +287,7 @@ impl PrimitiveExt for Primitive {
             Primitive::Pointer(_) => {
                 let signed = false;
                 interner.data_layout().ptr_sized_integer().to_ty(interner, signed)
-            },
+            }
             Primitive::Float(_) => panic!("floats do not have an int type"),
         }
     }
@@ -464,7 +464,7 @@ pub fn sizedness_constraint_for_ty<'db>(
         Param(..) | Alias(..) | Error(_) => Some(ty),
         UnsafeBinder(inner_ty) => {
             sizedness_constraint_for_ty(interner, sizedness, inner_ty.skip_binder()).map(|_| ty)
-        },
+        }
         Foreign(..) => Some(ty),
         Pat(ty, _) => sizedness_constraint_for_ty(interner, sizedness, ty),
         Tuple(tys) => tys.into_iter().next_back().and_then(
@@ -475,10 +475,10 @@ pub fn sizedness_constraint_for_ty<'db>(
                 EarlyBinder::bind(adt.all_field_tys(interner).skip_binder().into_iter().last()?)
                     .instantiate(interner, args);
             sizedness_constraint_for_ty(interner, sizedness, tail_ty)
-        },
+        }
         Placeholder(..) | Bound(..) | Infer(..) => {
             panic!("unexpected type `{ty:?}` in sizedness_constraint_for_ty")
-        },
+        }
     }
 }
 
@@ -541,7 +541,7 @@ pub fn explicit_item_bounds<'db>(
                 bounds.shrink_to_fit();
             }
             rustc_type_ir::EarlyBinder::bind(Clauses::new_from_iter(interner, bounds))
-        },
+        }
         SolverDefId::InternedOpaqueTyId(id) => {
             let full_id = db.lookup_intern_impl_trait_id(id);
             match full_id {
@@ -552,7 +552,7 @@ pub fn explicit_item_bounds<'db>(
                     let datas = (*datas).as_ref().skip_binder();
                     let data = &datas.impl_traits[Idx::from_raw(idx.into_raw())];
                     EarlyBinder::bind(Clauses::new_from_iter(interner, data.predicates.clone()))
-                },
+                }
                 crate::ImplTraitId::TypeAliasImplTrait(alias, idx) => {
                     let datas = db
                         .type_alias_impl_traits(alias)
@@ -560,9 +560,9 @@ pub fn explicit_item_bounds<'db>(
                     let datas = (*datas).as_ref().skip_binder();
                     let data = &datas.impl_traits[Idx::from_raw(idx.into_raw())];
                     EarlyBinder::bind(Clauses::new_from_iter(interner, data.predicates.clone()))
-                },
+                }
             }
-        },
+        }
         _ => panic!("Unexpected GenericDefId"),
     }
 }
@@ -682,16 +682,16 @@ impl<'db> TypeFolder<DbInterner<'db>> for PlaceholderReplacer<'_, 'db> {
                             self.universe_indices.len() - index + self.current_index.as_usize() - 1,
                         );
                         Ty::new_bound(self.infcx.interner, db, *replace_var)
-                    },
+                    }
                     None => {
                         if ty.has_infer() {
                             ty.super_fold_with(self)
                         } else {
                             ty
                         }
-                    },
+                    }
                 }
-            },
+            }
             _ if ty.has_placeholders() || ty.has_infer() => ty.super_fold_with(self),
             _ => ty,
         }
@@ -712,14 +712,14 @@ impl<'db> TypeFolder<DbInterner<'db>> for PlaceholderReplacer<'_, 'db> {
                         self.universe_indices.len() - index + self.current_index.as_usize() - 1,
                     );
                     Const::new_bound(self.infcx.interner, db, *replace_var)
-                },
+                }
                 None => {
                     if ct.has_infer() {
                         ct.super_fold_with(self)
                     } else {
                         ct
                     }
-                },
+                }
             }
         } else {
             ct.super_fold_with(self)

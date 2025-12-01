@@ -148,12 +148,17 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         debug!("unify(a: {:?}, b: {:?}, use_lub: {})", a, b, self.use_lub);
         self.commit_if_ok(|this| {
             let at = this.infer_ctxt().at(&this.cause, this.table.trait_env.env);
+
             let res = if this.use_lub {
                 at.lub(b, a)
             } else {
                 at.sup(b, a)
                     .map(|InferOk { value: (), obligations }| InferOk { value: b, obligations })
             };
+
+            // In the new solver, lazy norm may allow us to shallowly equate
+            // more types, but we emit possibly impossible-to-satisfy obligations.
+            // Filter these cases out to make sure our coercion is more accurate.
             match res {
                 Ok(InferOk { value, obligations }) => {
                     let mut ocx = ObligationCtxt::new(this.infer_ctxt());
@@ -163,7 +168,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                     } else {
                         Err(TypeError::Mismatch)
                     }
-                },
+                }
                 res => res,
             }
         })
@@ -186,11 +191,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
     ) -> CoerceResult<'db> {
         self.unify_raw(a, b).and_then(|InferOk { value: ty, obligations }| {
             success(
-                adjustments.into_iter().chain(std::iter::once(Adjustment {
-                target: ty,
-                kind: final_adjustment,
-            })).collect(
-            ),
+                adjustments
+                    .into_iter()
+                    .chain(std::iter::once(Adjustment { target: ty, kind: final_adjustment }))
+                    .collect(),
                 ty,
                 obligations,
             )
@@ -270,16 +274,16 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         match a.kind() {
             TyKind::FnDef(..) => {
                 self.coerce_from_fn_item(a, b)
-            },
+            }
             TyKind::FnPtr(a_sig_tys, a_hdr) => {
                 self.coerce_from_fn_pointer(a_sig_tys.with(a_hdr), b)
-            },
+            }
             TyKind::Closure(closure_def_id_a, args_a) => {
                 self.coerce_closure_to_fn(a, closure_def_id_a.0, args_a, b)
-            },
+            }
             _ => {
                 self.unify(a, b)
-            },
+            }
         }
     }
 
@@ -829,7 +833,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         debug_assert!(self.table.shallow_resolve(b) == b);
 
         self.commit_if_ok(|this| {
-            if let TyKind::FnPtr(_, hdr_b) = b.kind() && fn_ty_a.safety().is_safe() && !hdr_b.safety.is_safe() {
+            if let TyKind::FnPtr(_, hdr_b) = b.kind()
+                && fn_ty_a.safety().is_safe()
+                && !hdr_b.safety.is_safe()
+            {
                 let unsafe_a = Ty::safe_to_unsafe_fn_ty(this.interner(), fn_ty_a);
                 this.unify_and(
                     unsafe_a,
@@ -903,7 +910,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                     b,
                     Some(Adjust::Pointer(PointerCast::ReifyFnPointer)),
                 )
-            },
+            }
             _ => self.unify(a, b),
         }
     }
@@ -935,7 +942,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                     [],
                     Adjust::Pointer(PointerCast::ClosureFnPointer(safety)),
                 )
-            },
+            }
             _ => self.unify(a, b),
         }
     }
@@ -1227,14 +1234,14 @@ impl<'db> InferenceContext<'_, 'db> {
                     Err(e)
                 } else {
                     Err(self.table.commit_if_ok(|table| {
-                        table.infer_ctxt.at(&ObligationCause::new(), table.trait_env.env).lub(
-                            prev_ty,
-                            new_ty,
-                        )
-                    }).unwrap_err(
+                            table
+                                .infer_ctxt
+                                .at(&ObligationCause::new(), table.trait_env.env)
+                                .lub(prev_ty, new_ty)
+                        }).unwrap_err(
                     ))
                 }
-            },
+            }
             Ok(ok) => {
                 let (adjustments, target) = self.table.register_infer_ok(ok);
                 for &expr in exprs {
@@ -1245,7 +1252,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     prev_ty, new_ty, target
                 );
                 Ok(target)
-            },
+            }
         }
     }
 }

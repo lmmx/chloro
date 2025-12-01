@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   7573 bytes
+Chloro size:   7569 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -53,21 +53,12 @@ Rustfmt size:  10026 bytes
 +                    self.infcx.at(&self.trace.cause, self.param_env).eq(a, b)?.into_obligations(),
                  );
                  Ok(a)
--            }
-+            },
+             }
              Variance::Covariant => self.relate(a, b),
 -            // FIXME(#41044) -- not correct, need test
              Variance::Bivariant => Ok(a),
              Variance::Contravariant => {
                  self.kind = self.kind.invert();
-                 let res = self.relate(a, b);
-                 self.kind = self.kind.invert();
-                 res
--            }
-+            },
-         }
-     }
- 
          let b = infcx.shallow_resolve(b);
  
          match (a.kind(), b.kind()) {
@@ -92,16 +83,10 @@ Rustfmt size:  10026 bytes
              (TyKind::Infer(rustc_type_ir::TyVar(..)), _) => {
                  let v = infcx.next_ty_var();
                  self.relate_bound(v, b, a)?;
-                 Ok(v)
--            }
-+            },
-             (_, TyKind::Infer(rustc_type_ir::TyVar(..))) => {
-                 let v = infcx.next_ty_var();
                  self.relate_bound(v, a, b)?;
                  Ok(v)
--            }
+             }
 -
-+            },
              (
 -                TyKind::Alias(
 -                    rustc_type_ir::Opaque,

@@ -149,7 +149,7 @@ pub(crate) fn complete_pattern_path(
                             acc.add_path_resolution(ctx, path_ctx, name, def, vec![]);
                         }
                     }
-                },
+                }
                 res => {
                     let ty = match res {
                         hir::PathResolution::TypeParam(param) => param.ty(ctx.db),
@@ -175,9 +175,9 @@ pub(crate) fn complete_pattern_path(
                         AssocItem::Const(c) => acc.add_const(ctx, c),
                         _ => {}
                     });
-                },
+                }
             }
-        },
+        }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No => {
             ctx.process_all_names(&mut |name, res, doc_aliases| {
@@ -195,8 +195,8 @@ pub(crate) fn complete_pattern_path(
                 }
             });
             acc.add_nameref_keywords_with_colon(ctx);
-        },
+        }
         Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
-        },
+        }
     }
 }

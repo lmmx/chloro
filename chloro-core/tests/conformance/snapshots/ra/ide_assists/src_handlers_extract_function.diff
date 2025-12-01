@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 141954 bytes
-Chloro size:   140300 bytes
+Chloro size:   140964 bytes
 Rustfmt size:  141954 bytes
 
 ✗ Outputs DIFFER
@@ -79,103 +79,6 @@ Rustfmt size:  141954 bytes
  pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let range = ctx.selection_trimmed();
      if range.is_empty() {
-         "Extract into function",
-         target_range,
-         move |builder| {
--            let outliving_locals: Vec<_> = ret_values.collect();
--            if stdx::never!(!outliving_locals.is_empty() && !ret_ty.is_unit()) {
-+        let outliving_locals: Vec<_> = ret_values.collect();
-+        if stdx::never!(!outliving_locals.is_empty() && !ret_ty.is_unit()) {
-                 // We should not have variables that outlive body if we have expression block
-                 return;
-             }
--
--            let params = body.extracted_function_params(ctx, &container_info, locals_used);
--
--            let name = make_function_name(&semantics_scope);
--
--            let fun = Function {
-+        let params = body.extracted_function_params(ctx, &container_info, locals_used);
-+        let name = make_function_name(&semantics_scope);
-+        let fun = Function {
-                 name,
-                 self_param,
-                 params,
-                 contains_tail_expr,
-                 mods: container_info,
-             };
--
--            let new_indent = IndentLevel::from_node(&insert_after);
--            let old_indent = fun.body.indent_level();
--
--            let insert_after = builder.make_syntax_mut(insert_after);
--
--            let call_expr = make_call(ctx, &fun, old_indent);
--
--            // Map the element range to replace into the mutable version
--            let elements = match &fun.body {
-+        let new_indent = IndentLevel::from_node(&insert_after);
-+        let old_indent = fun.body.indent_level();
-+        let insert_after = builder.make_syntax_mut(insert_after);
-+        let call_expr = make_call(ctx, &fun, old_indent);
-+        let elements = match &fun.body {
-                 FunctionBody::Expr(expr) => {
-                     // expr itself becomes the replacement target
-                     let expr = &builder.make_mut(expr.clone());
-                     start..=end
-                 }
-             };
--
--            let has_impl_wrapper =
-+        let has_impl_wrapper =
-                 insert_after.ancestors().any(|a| a.kind() == SyntaxKind::IMPL && a != insert_after);
--
--            let fn_def = format_function(ctx, module, &fun, old_indent).clone_for_update();
--
--            if let Some(cap) = ctx.config.snippet_cap
-+        let fn_def = format_function(ctx, module, &fun, old_indent).clone_for_update();
-+        if let Some(cap) = ctx.config.snippet_cap
-                 && let Some(name) = fn_def.name()
-             {
-                 builder.add_tabstop_before(cap, name);
-             }
--
--            let fn_def = match fun.self_param_adt(ctx) {
-+        let fn_def = match fun.self_param_adt(ctx) {
-                 Some(adt) if anchor == Anchor::Method && !has_impl_wrapper => {
-                     fn_def.indent(1.into());
- 
-                     fn_def.syntax().clone()
-                 }
-             };
--
--            // There are external control flows
--            if fun
-+        if fun
-                 .control_flow
-                 .kind
-                 .is_some_and(|kind| matches!(kind, FlowKind::Break(_, _) | FlowKind::Continue(_)))
-                     }
-                 }
-             }
--
--            // Replace the call site with the call to the new function
--            fixup_call_site(builder, &fun.body);
--            ted::replace_all(elements, vec![call_expr.into()]);
--
--            // Insert the newly extracted function (or impl)
--            ted::insert_all_raw(
-+        fixup_call_site(builder, &fun.body);
-+        ted::replace_all(elements, vec![call_expr.into()]);
-+        ted::insert_all_raw(
-                 ted::Position::after(insert_after),
-                 vec![make::tokens::whitespace(&format!("\n\n{new_indent}")).into(), fn_def.into()],
-             );
--        },
-+    },
-     )
- }
- 
      Method,
  }
  
@@ -220,40 +123,6 @@ Rustfmt size:  141954 bytes
      }
  
      fn iter(&self) -> impl Iterator<Item = &FileReference> + '_ {
-                 vars => {
-                     let types = vars.iter().map(|v| v.local.ty(ctx.db())).collect();
-                     FunType::Tuple(types)
--                }
-+                },
-             },
-         }
-     }
-             FlowKind::Try { .. } => {
-                 stdx::never!("cannot have result handler with try");
-                 expr.unwrap_or_else(|| make::expr_return(None))
--            }
-+            },
-             FlowKind::Continue(label) => {
-                 stdx::always!(expr.is_none(), "continue with value is not possible");
-                 make::expr_continue(label.clone())
--            }
-+            },
-         }
-     }
- 
-         match self {
-             FlowKind::Return(Some(expr)) | FlowKind::Break(_, Some(expr)) => {
-                 ctx.sema.type_of_expr(expr).map(TypeInfo::adjusted)
--            }
-+            },
-             FlowKind::Try { .. } => {
-                 stdx::never!("try does not have defined expr_ty");
-                 None
--            }
-+            },
-             _ => None,
-         }
-     }
          let first_element = stmts_in_selection.next();
  
          // If the tail expr is part of the selection too, make that the last element
@@ -261,14 +130,6 @@ Rustfmt size:  141954 bytes
          // Otherwise use the last stmt
          let last_element = if let Some(tail_expr) =
              parent.tail_expr().filter(|it| selected.intersect(it.syntax().text_range()).is_some())
-             FunctionBody::Span { parent, text_range, .. } => {
-                 let tail_expr = parent.tail_expr()?;
-                 text_range.contains_range(tail_expr.syntax().text_range()).then_some(tail_expr)
--            }
-+            },
-         }
-     }
- 
                          ast::Stmt::LetStmt(stmt) => stmt.initializer(),
                      })
                      .for_each(|expr| walk_expr(&expr, cb));
@@ -279,11 +140,7 @@ Rustfmt size:  141954 bytes
 +                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
                      walk_expr(&expr, cb);
                  }
--            }
-+            },
-         }
-     }
- 
+             }
                          ast::Stmt::LetStmt(stmt) => stmt.initializer(),
                      })
                      .for_each(|expr| preorder_expr(&expr, cb));
@@ -294,11 +151,7 @@ Rustfmt size:  141954 bytes
 +                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
                      preorder_expr(&expr, cb);
                  }
--            }
-+            },
-         }
-     }
- 
+             }
                              }
                          }
                      });
@@ -309,11 +162,7 @@ Rustfmt size:  141954 bytes
 +                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
                      walk_patterns_in_expr(&expr, cb);
                  }
--            }
-+            },
-         }
-     }
- 
+             }
      ) -> impl Iterator<Item = OutlivedLocal> + 'a {
          let parent = parent.clone();
          let range = self.text_range();
@@ -335,50 +184,26 @@ Rustfmt size:  141954 bytes
 -            .map(|local| (local, local.primary_source(ctx.db())))
 -            .filter(|(_, src)| is_defined_outside_of_body(ctx, self, src))
 -            .filter_map(|(local, src)| match src.into_ident_pat() {
--                Some(src) => Some((local, src)),
--                None => {
--                    stdx::never!(false, "Local::is_self returned false, but source is SelfParam");
--                    None
--                }
--            })
--            .map(|(var, src)| {
--                let usages = LocalUsages::find_local_usages(ctx, var);
--                let ty = var.ty(ctx.db());
--
--                let defined_outside_parent_loop = container_info
 +        locals.into_iter().sorted().map(|local| (local, local.primary_source(ctx.db()))).filter(
 +            |(_, src)| is_defined_outside_of_body(ctx, self, src),
 +        ).filter_map(|(local, src)| match src.into_ident_pat() {
-+            Some(src) => Some((local, src)),
-+            None => {
-+                stdx::never!(false, "Local::is_self returned false, but source is SelfParam");
-+                None
-+            },
-+        }).map(|(var, src)| {
-+            let usages = LocalUsages::find_local_usages(ctx, var);
-+            let ty = var.ty(ctx.db());
-+            let defined_outside_parent_loop = container_info
-                     .parent_loop
-                     .as_ref()
-                     .is_none_or(|it| it.text_range().contains_range(src.syntax().text_range()));
--
--                let is_copy = ty.is_copy(ctx.db());
--                let has_usages = self.has_usages_after_body(&usages);
--                let requires_mut =
-+            let is_copy = ty.is_copy(ctx.db());
-+            let has_usages = self.has_usages_after_body(&usages);
-+            let requires_mut =
-                     !ty.is_mutable_reference() && has_exclusive_usages(ctx, &usages, self);
--                // We can move the value into the function call if it's not used after the call,
--                // if the var is not used but defined outside a loop we are extracting from we can't move it either
--                // as the function will reuse it in the next iteration.
--                let move_local = (!has_usages && defined_outside_parent_loop) || ty.is_reference();
--                Param { var, ty, move_local, requires_mut, is_copy }
+                 Some(src) => Some((local, src)),
+                 None => {
+                     stdx::never!(false, "Local::is_self returned false, but source is SelfParam");
+                     None
+                 }
+-            })
+-            .map(|(var, src)| {
++            }).map(|(var, src)| {
+                 let usages = LocalUsages::find_local_usages(ctx, var);
+                 let ty = var.ty(ctx.db());
+ 
+                 // as the function will reuse it in the next iteration.
+                 let move_local = (!has_usages && defined_outside_parent_loop) || ty.is_reference();
+                 Param { var, ty, move_local, requires_mut, is_copy }
 -            })
 -            .collect()
-+            let move_local = (!has_usages && defined_outside_parent_loop) || ty.is_reference();
-+            Param { var, ty, move_local, requires_mut, is_copy }
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -396,25 +221,6 @@ Rustfmt size:  141954 bytes
  }
  
  /// checks if this reference requires `&mut` access inside node
-                         } else {
-                             TokenAtOffset::None
-                         }
--                    }
-+                    },
-                     TokenAtOffset::Between(a, b) => {
-                         match (
-                             text_range.contains_range(a.text_range()),
-                             (false, true) => TokenAtOffset::Single(b),
-                             (false, false) => TokenAtOffset::None,
-                         }
--                    }
-+                    },
-                 }
--            }
-+            },
-         }
-     }
- }
      let impl_type = Some(impl_type_name(&as_impl)?);
  
      let siblings = trait_impl.parent()?.children();
@@ -483,50 +289,13 @@ Rustfmt size:  141954 bytes
  }
  
  impl<'db> FlowHandler<'db> {
-             match action {
-                 FlowKind::Return(None) | FlowKind::Break(_, None) | FlowKind::Continue(_) => {
-                     FlowHandler::If { action }
--                }
-+                },
-                 FlowKind::Return(_) | FlowKind::Break(_, _) => FlowHandler::IfOption { action },
-                 FlowKind::Try { kind } => FlowHandler::Try { kind },
              }
-             match action {
-                 FlowKind::Return(None) | FlowKind::Break(_, None) | FlowKind::Continue(_) => {
-                     FlowHandler::MatchOption { none: action }
--                }
-+                },
-                 FlowKind::Return(_) | FlowKind::Break(_, _) => {
-                     FlowHandler::MatchResult { err: action }
--                }
-+                },
-                 FlowKind::Try { kind } => FlowHandler::Try { kind },
-             }
-         }
-                     call_expr,
-                 );
-                 make::expr_if(condition.into(), block, None).into()
--            }
-+            },
-             FlowHandler::IfOption { action } => {
-                 let path = make::ext::ident_path("Some");
-                 let value_pat = make::ext::simple_ident_pat(make::name("value"));
-                 let action_stmt = make::expr_stmt(action_expr);
-                 let then = make::block_expr(iter::once(action_stmt.into()), None);
-                 make::expr_if(cond.into(), then, None).into()
--            }
-+            },
              FlowHandler::MatchOption { none } => {
                  let some_name = "value";
 -
                  let some_arm = {
                      let path = make::ext::ident_path("Some");
                      let value_pat = make::ext::simple_ident_pat(make::name(some_name));
-                 };
-                 let arms = make::match_arm_list(vec![some_arm, none_arm]);
-                 make::expr_match(call_expr, arms).into()
--            }
-+            },
              FlowHandler::MatchResult { err } => {
                  let ok_name = "value";
                  let err_name = "value";
@@ -534,14 +303,6 @@ Rustfmt size:  141954 bytes
                  let ok_arm = {
                      let path = make::ext::ident_path("Ok");
                      let value_pat = make::ext::simple_ident_pat(make::name(ok_name));
-                 };
-                 let arms = make::match_arm_list(vec![ok_arm, err_arm]);
-                 make::expr_match(call_expr, arms).into()
--            }
-+            },
-         }
-     }
- }
          })
          .peekable();
  
@@ -554,24 +315,6 @@ Rustfmt size:  141954 bytes
  }
  
  fn pred_is_required(
-                 [] => {
-                     stdx::never!("tuple type with 0 elements");
-                     make::ty_unit()
--                }
-+                },
-                 [ty] => {
-                     stdx::never!("tuple type with 1 element");
-                     make_ty(ty, ctx, module)
--                }
-+                },
-                 types => {
-                     let types = types.iter().map(|ty| make_ty(ty, ctx, module));
-                     make::ty_tuple(types)
--                }
-+                },
-             },
-         }
-     }
          FlowHandler::None => block,
          FlowHandler::Try { kind } => {
              let block = with_default_tail_expr(block, make::ext::expr_unit());
@@ -586,24 +329,15 @@ Rustfmt size:  141954 bytes
                  let args = make::arg_list(iter::once(tail_expr));
                  make::expr_call(func, args).into()
 -            })
--        }
 +            },
 +            )
-+        },
+         }
          FlowHandler::If { .. } => {
              let controlflow_continue = make::expr_call(
-                 make::expr_path(make::path_from_text("ControlFlow::Continue")),
-             )
-             .into();
-             with_tail_expr(block, controlflow_continue)
--        }
-+        },
-         FlowHandler::IfOption { .. } => {
              let none = make::expr_path(make::ext::ident_path("None"));
              with_tail_expr(block, none)
--        }
+         }
 -        FlowHandler::MatchOption { .. } => map_tail_expr(block, |tail_expr| {
-+        },
 +        FlowHandler::MatchOption { .. } => map_tail_expr(
 +            block,
 +            |tail_expr| {

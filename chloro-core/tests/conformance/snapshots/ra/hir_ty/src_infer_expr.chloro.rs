@@ -112,7 +112,7 @@ impl<'db> InferenceContext<'_, 'db> {
                         .type_mismatches
                         .insert(expr.into(), TypeMismatch { expected: target, actual: ty });
                     target
-                },
+                }
             }
         } else {
             ty
@@ -177,7 +177,7 @@ impl<'db> InferenceContext<'_, 'db> {
             Pat::Wild => false,
             Pat::Or(subpats) => {
                 subpats.iter().all(|pat| self.pat_guaranteed_to_constitute_read_for_never(*pat))
-            },
+            }
             Pat::Bind { .. }
             | Pat::TupleStruct { .. }
             | Pat::Path(_)
@@ -1637,7 +1637,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 let adjustments = autoderef.adjust_steps();
                 let ty = self.process_remote_user_written_ty(ty);
                 (ty, field_id, adjustments, true)
-            },
+            }
             None => {
                 let (field_id, subst) = private_field?;
                 let adjustments = autoderef.adjust_steps();
@@ -1645,7 +1645,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     .instantiate(self.interner(), subst);
                 let ty = self.process_remote_user_written_ty(ty);
                 (ty, Either::Left(field_id), adjustments, false)
-            },
+            }
         })
     }
 
@@ -1677,7 +1677,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     });
                 }
                 ty
-            },
+            }
             None => {
                 let canonicalized_receiver = self.canonicalize(receiver_ty);
                 let resolved = method_resolution::lookup_method(
@@ -1708,10 +1708,10 @@ impl<'db> InferenceContext<'_, 'db> {
                             ty,
                             expected,
                         )
-                    },
+                    }
                     None => self.err_ty(),
                 }
-            },
+            }
         }
     }
 
@@ -1864,7 +1864,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     ty,
                     expected,
                 )
-            },
+            }
             None => {
                 let field_with_same_name_exists = match self.lookup_field(receiver_ty, method_name)
                 {
@@ -1928,15 +1928,15 @@ impl<'db> InferenceContext<'_, 'db> {
                             true,
                             expected,
                         )
-                    },
+                    }
                     None => {
                         for &arg in args.iter() {
                             self.infer_expr_no_expect(arg, ExprIsRead::Yes);
                         }
                         self.err_ty()
-                    },
+                    }
                 }
-            },
+            }
         }
     }
 
@@ -2339,9 +2339,9 @@ impl<'db> InferenceContext<'_, 'db> {
                             TraitRef::new(self.interner(), trait_.into(), substs),
                         ));
                     }
-                },
+                }
                 CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {
-                },
+                }
             }
         }
     }
@@ -2397,7 +2397,7 @@ impl<'db> InferenceContext<'_, 'db> {
         match ty.kind() {
             TyKind::Ref(_, inner, Mutability::Not) => {
                 self.table.try_structurally_resolve_type(inner)
-            },
+            }
             _ => ty,
         }
     }
@@ -2473,15 +2473,15 @@ impl<'db> InferenceContext<'_, 'db> {
             BinaryOp::LogicOp(_) => true,
             BinaryOp::ArithOp(ArithOp::Shl | ArithOp::Shr) => {
                 lhs.is_integral() && rhs.is_integral()
-            },
+            }
             BinaryOp::ArithOp(
                 ArithOp::Add | ArithOp::Sub | ArithOp::Mul | ArithOp::Div | ArithOp::Rem,
             ) => {
                 lhs.is_integral() && rhs.is_integral() || lhs.is_floating_point() && rhs.is_floating_point()
-            },
+            }
             BinaryOp::ArithOp(ArithOp::BitAnd | ArithOp::BitOr | ArithOp::BitXor) => {
                 lhs.is_integral() && rhs.is_integral() || lhs.is_floating_point() && rhs.is_floating_point() || matches!((lhs.kind(), rhs.kind()), (TyKind::Bool, TyKind::Bool))
-            },
+            }
             BinaryOp::CmpOp(_) => {
                 let is_scalar = |kind| {
                     matches!(
@@ -2498,11 +2498,11 @@ impl<'db> InferenceContext<'_, 'db> {
                     )
                 };
                 is_scalar(lhs.kind()) && is_scalar(rhs.kind())
-            },
+            }
             BinaryOp::Assignment { op: None } => {
                 stdx::never!("Simple assignment operator is not binary op.");
                 false
-            },
+            }
             BinaryOp::Assignment { .. } => unreachable!("handled above"),
         }
     }

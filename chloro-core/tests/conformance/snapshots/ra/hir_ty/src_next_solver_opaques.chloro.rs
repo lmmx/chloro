@@ -29,9 +29,8 @@ impl<'db> ExternalConstraints<'db> {
     pub fn inner(&self) -> &ExternalConstraintsData<'db> {
         crate::with_attached_db(|db| {
             let inner = self.kind_(db);
-            unsafe {
-                std::mem::transmute(inner)
-            }
+            // SAFETY: ¯\_(ツ)_/¯
+            unsafe { std::mem::transmute(inner) }
         })
     }
 }

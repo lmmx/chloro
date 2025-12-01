@@ -299,12 +299,12 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
                     Some((normalizes_to_term_hack, nested_goals_result)),
                     source,
                 )
-            },
+            }
             _ => {
                 let proof_tree =
                     infcx.probe(|_| infcx.evaluate_root_goal_for_proof_tree(goal, Span::dummy()).1);
                 InspectGoal::new(infcx, self.goal.depth + 1, proof_tree, None, source)
-            },
+            }
         }
     }
 
@@ -386,9 +386,9 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
             inspect::ProbeKind::ProjectionCompatibility
             | inspect::ProbeKind::ShadowedEnvProbing => {
                 panic!()
-            },
+            }
             inspect::ProbeKind::NormalizedSelfTyAssembly | inspect::ProbeKind::UnsizeAssembly => {
-            },
+            }
             inspect::ProbeKind::Root { result }
             | inspect::ProbeKind::TraitCandidate { source: _, result }
             | inspect::ProbeKind::OpaqueTypeStorageLookup { result }
@@ -403,7 +403,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
                         result,
                     });
                 }
-            },
+            }
         }
     }
 

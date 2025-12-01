@@ -206,7 +206,7 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
             } else {
                 Function
             }
-        },
+        }
         Definition::Adt(Adt::Struct(..)) => Struct,
         Definition::Adt(Adt::Union(..)) => Union,
         Definition::Adt(Adt::Enum(..)) => Enum,
@@ -220,7 +220,7 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
             } else {
                 TypeAlias
             }
-        },
+        }
         Definition::BuiltinType(..) => Type,
         Definition::BuiltinLifetime(_) => TypeParameter,
         Definition::SelfType(..) => TypeAlias,
@@ -233,7 +233,7 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
             } else {
                 Variable
             }
-        },
+        }
         Definition::Label(..) | Definition::InlineAsmOperand(_) => Variable,
         Definition::DeriveHelper(..) => Attribute,
         Definition::BuiltinAttr(..) => Attribute,
@@ -402,7 +402,7 @@ fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, 
                 display = %fallback_result, "`display_source_code` failed; falling back to using display"
             );
             fallback_result
-        },
+        }
     }
 }
 
@@ -433,13 +433,13 @@ mod tests {
                 assert_eq!(identifier, x.identifier.to_string());
                 assert_eq!(package, format!("{:?}", x.package_information));
                 assert_eq!(kind, x.kind);
-            },
+            }
             MonikerResult::Local { enclosing_moniker: None } => {
                 panic!("Unexpected local with no enclosing moniker");
-            },
+            }
             MonikerResult::Moniker(_) => {
                 panic!("Unexpected non-local moniker");
-            },
+            }
         }
     }
     #[track_caller]
@@ -455,12 +455,12 @@ mod tests {
         match x.into_iter().next().unwrap() {
             MonikerResult::Local { enclosing_moniker } => {
                 panic!("Unexpected local enclosed in {enclosing_moniker:?}");
-            },
+            }
             MonikerResult::Moniker(x) => {
                 assert_eq!(identifier, x.identifier.to_string());
                 assert_eq!(package, format!("{:?}", x.package_information));
                 assert_eq!(kind, x.kind);
-            },
+            }
         }
     }
     #[test]

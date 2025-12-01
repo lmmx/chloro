@@ -590,8 +590,8 @@ const fn f(x: i32) -> i32 {
             let hir_end = &body[end.unwrap()];
             assert!(matches!(hir_start, Expr::Path { .. }));
             assert!(matches!(hir_end, Expr::Path { .. }));
-        },
+        }
         _ => {
-        },
+        }
     }
 }

@@ -154,7 +154,7 @@ pub(crate) fn wrap_unwrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>) -
     match option {
         WrapUnwrapOption::WrapAttr(attr) if attr.simple_name().as_deref() == Some("cfg_attr") => {
             unwrap_cfg_attr(acc, attr)
-        },
+        }
         WrapUnwrapOption::WrapAttr(attr) => wrap_cfg_attr(acc, ctx, attr),
         WrapUnwrapOption::WrapDerive { derive, attr } => wrap_derive(acc, ctx, attr, derive),
     }

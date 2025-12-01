@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25126 bytes
-Chloro size:   24202 bytes
+Chloro size:   24195 bytes
 Rustfmt size:  25126 bytes
 
 ✗ Outputs DIFFER
@@ -114,14 +114,6 @@ Rustfmt size:  25126 bytes
      fn is_known_valid_scrutinee(&self, scrutinee_expr: ExprId) -> bool {
          let db = self.db();
  
-                     self.body.expr_path_hygiene(scrutinee_expr),
-                 );
-                 value_or_partial.is_none_or(|v| !matches!(v, ValueNs::StaticId(_)))
--            }
-+            },
-             Expr::Field { expr, .. } => match self.infer.type_of_expr[*expr].kind() {
-                 TyKind::Adt(adt, ..) if matches!(adt.def_id().0, AdtId::UnionId(_)) => false,
-                 _ => self.is_known_valid_scrutinee(*expr),
              if ty.references_non_lt_error() {
                  continue;
              }
@@ -137,34 +129,6 @@ Rustfmt size:  25126 bytes
              let match_arm = rustc_pattern_analysis::MatchArm {
                  pat: pattern_arena.alloc(deconstructed_pat),
                  has_guard: false,
-                 if let Some(last_stmt) = last_stmt {
-                     self.check_for_trailing_return(last_stmt, body);
-                 }
--            }
-+            },
-             Expr::If { then_branch, else_branch, .. } => {
-                 self.check_for_trailing_return(*then_branch, body);
-                 if let Some(else_branch) = else_branch {
-                     self.check_for_trailing_return(*else_branch, body);
-                 }
--            }
-+            },
-             Expr::Match { arms, .. } => {
-                 for arm in arms.iter() {
-                     let MatchArm { expr, .. } = arm;
-                     self.check_for_trailing_return(*expr, body);
-                 }
--            }
-+            },
-             Expr::Return { .. } => {
-                 self.diagnostics.push(BodyValidationDiagnostic::RemoveTrailingReturn {
-                     return_expr: body_expr,
-                 });
--            }
-+            },
-             _ => (),
-         }
-     }
                      Statement::Expr { expr, .. } => Some(*expr),
                      _ => None,
                  });
@@ -192,17 +156,3 @@ Rustfmt size:  25126 bytes
      fn check(
          &mut self,
          current_expr_id: ExprId,
-             [head @ .., tail] if head.len() < LIMIT => {
-                 let head = head.iter().map(pat_display);
-                 format!("`{}` and `{}` not covered", head.format("`, `"), pat_display(tail))
--            }
-+            },
-             _ => {
-                 let (head, tail) = witnesses.split_at(LIMIT);
-                 let head = head.iter().map(pat_display);
-                 format!("`{}` and {} more not covered", head.format("`, `"), tail.len())
--            }
-+            },
-         }
-     }
- }

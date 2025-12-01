@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9897 bytes
-Chloro size:   9949 bytes
+Chloro size:   9948 bytes
 Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
@@ -81,11 +81,3 @@ Rustfmt size:  10040 bytes
      Unknown,
  }
  
-         match self {
-             LiteralConstRef::UInt(_) | LiteralConstRef::Unknown => {
-                 BuiltinType::Uint(BuiltinUint::U128)
--            }
-+            },
-             LiteralConstRef::Int(_) => BuiltinType::Int(BuiltinInt::I128),
-             LiteralConstRef::Char(_) => BuiltinType::Char,
-             LiteralConstRef::Bool(_) => BuiltinType::Bool,

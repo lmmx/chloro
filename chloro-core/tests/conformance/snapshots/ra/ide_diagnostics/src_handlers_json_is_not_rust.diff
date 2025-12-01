@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11256 bytes
-Chloro size:   11308 bytes
+Chloro size:   11306 bytes
 Rustfmt size:  11337 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-             _ => {
-                 never!();
-                 "".to_owned()
--            }
-+            },
-         }
-     }
- 
          match value {
              serde_json::Value::Null => make::ty_unit(),
              serde_json::Value::Bool(_) => make::ty("bool"),
@@ -28,14 +20,6 @@ Rustfmt size:  11337 bytes
              serde_json::Value::String(_) => make::ty("String"),
              serde_json::Value::Array(it) => {
                  let ty = match it.iter().next() {
-                     None => make::ty_placeholder(),
-                 };
-                 make::ty(&format!("Vec<{ty}>"))
--            }
-+            },
-             serde_json::Value::Object(x) => self.build_struct(name, x),
-         }
-     }
                      Diagnostic::new(
                          DiagnosticCode::Ra("json-is-not-rust", Severity::WeakWarning),
                          "JSON syntax is not valid as a Rust item",

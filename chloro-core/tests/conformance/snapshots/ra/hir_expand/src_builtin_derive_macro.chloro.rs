@@ -120,7 +120,7 @@ impl VariantShape {
                 quote! {span =>
                     #path { # #fields }
                 }
-            },
+            }
             &VariantShape::Tuple(n) => {
                 let fields = tuple_field_iterator(span, n).map(|it| {
                     let mapped = field_map(&it);
@@ -131,7 +131,7 @@ impl VariantShape {
                 quote! {span =>
                     #path ( # #fields )
                 }
-            },
+            }
             VariantShape::Unit => path,
         }
     }
@@ -174,14 +174,14 @@ impl AdtShape {
         match self {
             AdtShape::Struct(s) => {
                 vec![s.field_names(span)]
-            },
+            }
             AdtShape::Enum { variants, .. } => {
                 variants.iter().map(|(_, fields)| fields.field_names(span)).collect()
-            },
+            }
             AdtShape::Union => {
                 never!("using fields of union in derive is always wrong");
                 vec![]
-            },
+            }
         }
     }
 
@@ -194,15 +194,15 @@ impl AdtShape {
         match self {
             AdtShape::Struct(s) => {
                 vec![s.as_pattern_map(quote! {span => #name }, span, field_map)]
-            },
+            }
             AdtShape::Enum { variants, .. } => variants.iter().map(|(v, fields)| {
-                fields.as_pattern_map(quote! {span => #name :: #v }, span, &field_map)
-            }).collect(
+                    fields.as_pattern_map(quote! {span => #name :: #v }, span, &field_map)
+                }).collect(
             ),
             AdtShape::Union => {
                 never!("pattern matching on union is always wrong");
                 vec![quote! {span => un }]
-            },
+            }
         }
     }
 }
@@ -597,6 +597,7 @@ fn clone_expand(
                 #pat #fat_arrow #expr,
             }
         });
+
         quote! {span =>
             fn clone(&self) -> Self {
                 match self {
@@ -674,12 +675,12 @@ fn default_expand(
         adt,
         quote! {span => #krate::default::Default },
         |_adt| {
-        quote! {span =>
+            quote! {span =>
                 fn default() -> Self {
                     #body
                 }
             }
-    },
+        },
         constrain_to_trait,
         tt::TopSubtree::empty(tt::DelimSpan::from_single(span)),
     ))
@@ -849,6 +850,7 @@ fn partial_eq_expand(
         false,
         |adt| {
         let name = &adt.name;
+
         let (self_patterns, other_patterns) = self_and_other_patterns(adt, name, span);
         let arms = izip!(self_patterns, other_patterns, adt.shape.field_names(span)).map(
             |(pat1, pat2, names)| {
@@ -875,6 +877,7 @@ fn partial_eq_expand(
                 quote! {span => ( #pat1 , #pat2 ) #fat_arrow #body , }
             },
         );
+
         let fat_arrow = fat_arrow(span);
         quote! {span =>
             fn eq(&self, other: &Self) -> bool {
@@ -1010,6 +1013,7 @@ fn partial_ord_expand(
         }
         let left = quote!(span =>#krate::intrinsics::discriminant_value(self));
         let right = quote!(span =>#krate::intrinsics::discriminant_value(other));
+
         let (self_patterns, other_patterns) = self_and_other_patterns(adt, &adt.name, span);
         let arms = izip!(self_patterns, other_patterns, adt.shape.field_names(span)).map(
             |(pat1, pat2, fields)| {

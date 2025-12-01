@@ -78,8 +78,8 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
         format!("Replace if{let_} with match"),
         available_range,
         move |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let match_expr: ast::Expr = {
+            let make = SyntaxFactory::with_mappings();
+            let match_expr: ast::Expr = {
                 let else_arm = make_else_arm(ctx, &make, else_block, &cond_bodies);
                 let make_match_arm =
                     |(pat, guard, body): (_, Option<ast::Expr>, ast::BlockExpr)| {
@@ -100,9 +100,10 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
                 match_expr.indent(indent);
                 match_expr.into()
             };
-        let has_preceding_if_expr =
+
+            let has_preceding_if_expr =
                 if_expr.syntax().parent().is_some_and(|it| ast::IfExpr::can_cast(it.kind()));
-        let expr = if has_preceding_if_expr {
+            let expr = if has_preceding_if_expr {
                 // make sure we replace the `else if let ...` with a block so we don't end up with `else expr`
                 match_expr.dedent(indent);
                 match_expr.indent(IndentLevel(1));
@@ -112,11 +113,12 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
             } else {
                 match_expr
             };
-        let mut editor = builder.make_editor(if_expr.syntax());
-        editor.replace(if_expr.syntax(), expr.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            let mut editor = builder.make_editor(if_expr.syntax());
+            editor.replace(if_expr.syntax(), expr.syntax());
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -206,8 +208,8 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
         format!("Replace match with if{let_}"),
         match_expr.syntax().text_range(),
         move |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let make_block_expr = |expr: ast::Expr| {
+            let make = SyntaxFactory::with_mappings();
+            let make_block_expr = |expr: ast::Expr| {
                 // Blocks with modifiers (unsafe, async, etc.) are parsed as BlockExpr, but are
                 // formatted without enclosing braces. If we encounter such block exprs,
                 // wrap them in another BlockExpr.
@@ -219,7 +221,8 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
                     }
                 }
             };
-        let condition = match if_let_pat {
+
+            let condition = match if_let_pat {
                 ast::Pat::LiteralPat(p)
                     if p.literal().is_some_and(|it| it.token().kind() == T![true]) =>
                 {
@@ -232,28 +235,29 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
                 }
                 _ => make.expr_let(if_let_pat, scrutinee).into(),
             };
-        let condition = if let Some(guard) = guard {
+            let condition = if let Some(guard) = guard {
                 make.expr_bin(condition, ast::BinaryOp::LogicOp(ast::LogicOp::And), guard).into()
             } else {
                 condition
             };
-        let then_expr = then_expr.clone_for_update();
-        let else_expr = else_expr.clone_for_update();
-        then_expr.reindent_to(IndentLevel::single());
-        else_expr.reindent_to(IndentLevel::single());
-        let then_block = make_block_expr(then_expr);
-        let else_expr = if is_empty_expr(&else_expr) { None } else { Some(else_expr) };
-        let if_let_expr = make.expr_if(
+            let then_expr = then_expr.clone_for_update();
+            let else_expr = else_expr.clone_for_update();
+            then_expr.reindent_to(IndentLevel::single());
+            else_expr.reindent_to(IndentLevel::single());
+            let then_block = make_block_expr(then_expr);
+            let else_expr = if is_empty_expr(&else_expr) { None } else { Some(else_expr) };
+            let if_let_expr = make.expr_if(
                 condition,
                 then_block,
                 else_expr.map(make_block_expr).map(ast::ElseBranch::Block),
             );
-        if_let_expr.indent(IndentLevel::from_node(match_expr.syntax()));
-        let mut editor = builder.make_editor(match_expr.syntax());
-        editor.replace(match_expr.syntax(), if_let_expr.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            if_let_expr.indent(IndentLevel::from_node(match_expr.syntax()));
+
+            let mut editor = builder.make_editor(match_expr.syntax());
+            editor.replace(match_expr.syntax(), if_let_expr.syntax());
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

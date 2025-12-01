@@ -486,7 +486,7 @@ impl<'db> DefCollector<'db> {
                 .collect(&[mod_item], container);
                 self.unresolved_macros.swap_remove(pos);
                 ReachedFixedPoint::No
-            },
+            }
             None => ReachedFixedPoint::Yes,
         }
     }
@@ -536,14 +536,14 @@ impl<'db> DefCollector<'db> {
         match per_ns.types {
             Some(Item { def: ModuleDefId::ModuleId(m), import, .. }) => {
                 self.def_map.prelude = Some((m, import.and_then(ImportOrExternCrate::use_)));
-            },
+            }
             types => {
                 tracing::debug!(
                     "could not resolve prelude path `{}` to module (resolved to {:?})",
                     path.display(self.db, Edition::LATEST),
                     types
                 );
-            },
+            }
         }
     }
 
@@ -730,12 +730,12 @@ impl<'db> DefCollector<'db> {
                         self.def_map.macro_use_prelude.insert(name, (def, extern_crate));
                     }
                 }
-            },
+            }
             None => {
                 for (name, it) in root_scope.macros() {
                     self.def_map.macro_use_prelude.insert(name.clone(), (it.def, extern_crate));
                 }
-            },
+            }
         }
     }
 
@@ -890,7 +890,7 @@ impl<'db> DefCollector<'db> {
                     }
                 }
                 self.update(module_id, &[(name.cloned(), def)], vis, Some(imp));
-            },
+            }
             ImportSource { kind: ImportKind::Glob, id, is_prelude, use_tree, .. } => {
                 tracing::debug!("glob import: {:?}", import);
                 let glob = GlobId { use_: id, idx: use_tree };
@@ -955,10 +955,10 @@ impl<'db> DefCollector<'db> {
                                     if let Some(new_vis) = old_vis.max(vis, &self.def_map) {
                                         *old_vis = new_vis;
                                     }
-                                },
+                                }
                             }
                         }
-                    },
+                    }
                     Some(ModuleDefId::AdtId(AdtId::EnumId(e))) => {
                         cov_mark::hit!(glob_enum);
                         let resolutions = e
@@ -976,7 +976,7 @@ impl<'db> DefCollector<'db> {
                             vis,
                             Some(ImportOrExternCrate::Glob(glob)),
                         );
-                    },
+                    }
                     Some(ModuleDefId::TraitId(it)) => {
                         let resolutions = if true {
                             vec![]
@@ -1006,15 +1006,15 @@ impl<'db> DefCollector<'db> {
                             vis,
                             Some(ImportOrExternCrate::Glob(glob)),
                         );
-                    },
+                    }
                     Some(d) => {
                         tracing::debug!("glob import {:?} from non-module/enum {:?}", import, d);
-                    },
+                    }
                     None => {
                         tracing::debug!("glob import {:?} didn't resolve as type", import);
-                    },
+                    }
                 }
-            },
+            }
         }
     }
 
@@ -2010,7 +2010,7 @@ impl ModCollector<'_, '_> {
                 if is_macro_use {
                     self.import_all_legacy_macros(module_id);
                 }
-            },
+            }
             ModKind::Outline => {
                 let ast_id = AstId::new(self.file_id(), module_ast_id);
                 let db = self.def_collector.db;
@@ -2074,7 +2074,7 @@ impl ModCollector<'_, '_> {
                         );
                     }
                 };
-            },
+            }
         }
     }
 

@@ -129,15 +129,14 @@ impl CrateProcMacros {
             }
         };
         proc_macros.get(idx as usize).ok_or_else(|| {
-            ExpandError::other(
-                err_span,
-                format!(
+                ExpandError::other(err_span,
+                    format!(
                         "internal error: proc-macro index out of bounds: the length is {} but the index is {}",
                         proc_macros.len(),
                         idx
-                    ),
-            )
-        })
+                    )
+                )
+            })
     }
 
     pub fn get_error(&self) -> Option<&ProcMacroLoadingError> {
@@ -151,9 +150,9 @@ impl CrateProcMacros {
     ) -> Option<Box<[(crate::name::Name, CustomProcMacroExpander, bool)]>> {
         match &self.0 {
             Ok(proc_macros) => Some(proc_macros.iter().enumerate().map(|(idx, it)| {
-                let name = crate::name::Name::new_symbol(it.name.clone(), def_site_ctx);
-                (name, CustomProcMacroExpander::new(idx as u32), it.disabled)
-            }).collect(
+                        let name = crate::name::Name::new_symbol(it.name.clone(), def_site_ctx);
+                        (name, CustomProcMacroExpander::new(idx as u32), it.disabled)
+                    }).collect(
             )),
             _ => None,
         }
@@ -325,7 +324,7 @@ impl CustomProcMacroExpander {
                                 value: tt.clone(),
                                 err: Some(ExpandError::other(call_site, text)),
                             }
-                        },
+                        }
                         ProcMacroExpansionError::System(text)
                         | ProcMacroExpansionError::Panic(text) => ExpandResult::new(
                             tt::TopSubtree::empty(tt::DelimSpan {
@@ -339,7 +338,7 @@ impl CustomProcMacroExpander {
                         ),
                     },
                 }
-            },
+            }
         }
     }
 }

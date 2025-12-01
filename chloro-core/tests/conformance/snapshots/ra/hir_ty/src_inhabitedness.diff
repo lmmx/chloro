@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6415 bytes
-Chloro size:   6226 bytes
+Chloro size:   6225 bytes
 Rustfmt size:  6524 bytes
 
 ✗ Outputs DIFFER
@@ -71,14 +71,6 @@ Rustfmt size:  6524 bytes
                  for &(variant, _, _) in enum_data.variants.iter() {
                      let variant_inhabitedness = self.visit_variant(variant.into(), subst);
                      match variant_inhabitedness {
-                     }
-                 }
-                 BREAK_VISIBLY_UNINHABITED
--            }
-+            },
-         }
-     }
- 
  
          let is_enum = matches!(variant, VariantId::EnumVariantId(..));
          let field_tys = self.db().field_types(variant);

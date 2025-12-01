@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2543 bytes
-Chloro size:   2545 bytes
+Chloro size:   2543 bytes
 Rustfmt size:  2543 bytes
 
 ✗ Outputs DIFFER
@@ -18,18 +18,6 @@ Rustfmt size:  2543 bytes
              TryEnum::Option => make::ext::simple_ident_pat(make::name("None")).into(),
          }
      }
-         match self {
-             TryEnum::Result => {
-                 make::tuple_struct_pat(make::ext::ident_path("Ok"), iter::once(pat)).into()
--            }
-+            },
-             TryEnum::Option => {
-                 make::tuple_struct_pat(make::ext::ident_path("Some"), iter::once(pat)).into()
--            }
-+            },
-         }
-     }
- 
              TryEnum::Result => make::tuple_struct_pat(
                  make::ext::ident_path("Ok"),
                  iter::once(make::wildcard_pat().into()),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   22487 bytes
+Chloro size:   22486 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -40,11 +40,9 @@ Rustfmt size:  23115 bytes
              AdtId::EnumId(enum_id) => self.validate_enum(enum_id),
              AdtId::UnionId(_) => {
 -                // FIXME: Unions aren't yet supported by this validator.
--            }
-+            },
+             }
          }
      }
- 
          }
  
          // Check the function name.

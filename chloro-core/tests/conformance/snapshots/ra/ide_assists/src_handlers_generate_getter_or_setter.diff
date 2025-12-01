@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22284 bytes
-Chloro size:   20672 bytes
+Chloro size:   20671 bytes
 Rustfmt size:  22284 bytes
 
 ✗ Outputs DIFFER
@@ -159,11 +159,8 @@ Rustfmt size:  22284 bytes
              }
 -
              Some((info_of_record_fields_in_selection, field_names))
--        }
-+        },
+         }
          ast::FieldList::TupleFieldList(_) => None,
-     }
- }
      let assoc_item_list = impl_def.get_or_create_assoc_item_list();
  
      for (i, record_field_info) in info_of_record_fields.iter().enumerate() {

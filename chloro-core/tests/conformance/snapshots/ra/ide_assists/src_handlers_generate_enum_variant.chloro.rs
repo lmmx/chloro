@@ -99,7 +99,7 @@ impl PathParent {
                     make.tuple_field(None, ty)
                 });
                 Some(make.tuple_field_list(tuple_fields).into())
-            },
+            }
             PathParent::RecordExpr(it) => {
                 let fields = it.record_expr_field_list()?.fields();
                 let record_fields = fields.map(|field| {
@@ -113,7 +113,7 @@ impl PathParent {
                     make.record_field(None, name, ty)
                 });
                 Some(make.record_field_list(record_fields).into())
-            },
+            }
             PathParent::UseTree(_) | PathParent::PathPat(_) => None,
         }
     }

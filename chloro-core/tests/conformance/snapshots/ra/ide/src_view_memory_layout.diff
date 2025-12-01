@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11061 bytes
-Chloro size:   10663 bytes
+Chloro size:   10690 bytes
 Rustfmt size:  11278 bytes
 
 ✗ Outputs DIFFER
@@ -62,12 +62,10 @@ Rustfmt size:  11278 bytes
  
 -    ty.layout(db)
 -        .map(|layout| {
--            let item_name = match def {
 +    ty.layout(db).map(|layout| {
-+        let item_name = match def {
+             let item_name = match def {
                  // def is a datatype
                  Definition::Adt(_)
-                 | Definition::TypeAlias(_)
                  | Definition::SelfType(_) => "[ROOT]".to_owned(),
  
                  // def is an item
@@ -77,26 +75,14 @@ Rustfmt size:  11278 bytes
 -                    .unwrap_or("[ROOT]".to_owned()),
 +                def => def.name(db).map(|n| n.as_str().to_owned()).unwrap_or("[ROOT]".to_owned()),
              };
--
--            let typename = ty.display(db, display_target).to_string();
--
--            let mut nodes = vec![MemoryLayoutNode {
-+        let typename = ty.display(db, display_target).to_string();
-+        let mut nodes = vec![MemoryLayoutNode {
-                 item_name,
-                 typename,
-                 size: layout.size(),
-                 children_start: -1,
-                 children_len: 0,
-             }];
--            read_layout(&mut nodes, db, &ty, &layout, 0, display_target);
--
--            RecursiveMemoryLayout { nodes }
+ 
+             let typename = ty.display(db, display_target).to_string();
+             read_layout(&mut nodes, db, &ty, &layout, 0, display_target);
+ 
+             RecursiveMemoryLayout { nodes }
 -        })
 -        .ok()
-+        read_layout(&mut nodes, db, &ty, &layout, 0, display_target);
-+        RecursiveMemoryLayout { nodes }
-+    }).ok(
++        }).ok(
 +    )
  }
  

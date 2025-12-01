@@ -224,11 +224,11 @@ impl<'db> HirDisplay<'db> for SelfParam {
                     f.write_str("mut ")?;
                 }
                 f.write_str("self")
-            },
+            }
             _ => {
                 f.write_str("self: ")?;
                 param.hir_fmt(f, &data.store)
-            },
+            }
         }
     }
 }

@@ -25,15 +25,16 @@ pub(crate) fn convert_nested_function_to_closure(
         "Convert nested function to closure",
         target,
         |edit| {
-        let params = &param_list.syntax().text().to_string();
-        let params = params.strip_prefix('(').unwrap_or(params);
-        let params = params.strip_suffix(')').unwrap_or(params);
-        let mut body = body.to_string();
-        if !has_semicolon(&function) {
+            let params = &param_list.syntax().text().to_string();
+            let params = params.strip_prefix('(').unwrap_or(params);
+            let params = params.strip_suffix(')').unwrap_or(params);
+
+            let mut body = body.to_string();
+            if !has_semicolon(&function) {
                 body.push(';');
             }
-        edit.replace(target, format!("let {name} = |{params}| {body}"));
-    },
+            edit.replace(target, format!("let {name} = |{params}| {body}"));
+        },
     )
 }
 

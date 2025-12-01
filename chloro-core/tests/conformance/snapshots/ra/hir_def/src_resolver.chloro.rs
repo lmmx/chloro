@@ -294,13 +294,13 @@ impl<'db> Resolver<'db> {
                     module,
                     visibility,
                     self.scopes().any(|scope| {
-                    matches!(scope, Scope::GenericParams { def: GenericDefId::ImplId(_), .. })
-                }),
+                        matches!(scope, Scope::GenericParams { def: GenericDefId::ImplId(_), .. })
+                    }),
                 )
-            },
+            }
             RawVisibility::PubSelf(explicitness) => {
                 Some(Visibility::Module(self.module(), *explicitness))
-            },
+            }
             RawVisibility::PubCrate => Some(Visibility::PubCrate(self.krate())),
             RawVisibility::Public => Some(Visibility::Public),
         }
@@ -522,13 +522,13 @@ impl<'db> Resolver<'db> {
             LifetimeRef::Named(name) => self.scopes().find_map(|scope| match scope {
                 Scope::GenericParams { def, params } => {
                     params.find_lifetime_by_name(name, *def).map(LifetimeNs::LifetimeParam)
-                },
+                }
                 _ => None,
             }),
             LifetimeRef::Placeholder | LifetimeRef::Error => None,
             LifetimeRef::Param(lifetime_param_id) => {
                 Some(LifetimeNs::LifetimeParam(*lifetime_param_id))
-            },
+            }
         }
     }
 
@@ -622,12 +622,16 @@ impl<'db> Resolver<'db> {
         db: &'a dyn DefDatabase,
     ) -> impl Iterator<Item = Name> + 'a {
         self.module_scope.def_map[self.module_scope.module_id].scope.extern_crate_decls().filter_map(|id| {
-            let loc = id.lookup(db);
-            let extern_crate = loc.source(db);
-            extern_crate.value.rename().map(|a| a.name().map(|it| it.as_name())).unwrap_or_else(
-                || extern_crate.value.name_ref().map(|it| it.as_name()),
-            )
-        })
+                let loc = id.lookup(db);
+                let extern_crate = loc.source(db);
+                // If there is a rename (`as x`), extract the renamed name, or remove the `extern crate`
+                // if it is an underscore.
+                extern_crate
+                    .value
+                    .rename()
+                    .map(|a| a.name().map(|it| it.as_name()))
+                    .unwrap_or_else(|| extern_crate.value.name_ref().map(|it| it.as_name()))
+            })
     }
 
     pub fn extern_crates_in_scope(&self) -> impl Iterator<Item = (Name, ModuleId)> + '_ {
@@ -669,9 +673,9 @@ impl<'db> Resolver<'db> {
 
     pub fn traits_in_scope_from_block_scopes(&self) -> impl Iterator<Item = TraitId> + '_ {
         self.scopes().filter_map(|scope| match scope {
-            Scope::BlockScope(m) => Some(m.def_map[m.module_id].scope.traits()),
-            _ => None,
-        }).flatten(
+                Scope::BlockScope(m) => Some(m.def_map[m.module_id].scope.traits()),
+                _ => None,
+            }).flatten(
         )
     }
 
@@ -953,9 +957,9 @@ impl<'db> Resolver<'db> {
     /// The innermost block scope that contains items or the module scope that contains this resolver.
     fn item_scope_(&self) -> (&DefMap, &LocalDefMap, LocalModuleId) {
         self.scopes().find_map(|scope| match scope {
-            Scope::BlockScope(m) => Some((m.def_map, m.local_def_map, m.module_id)),
-            _ => None,
-        }).unwrap_or(
+                Scope::BlockScope(m) => Some((m.def_map, m.local_def_map, m.module_id)),
+                _ => None,
+            }).unwrap_or(
             (self.module_scope.def_map, self.module_scope.local_def_map, self.module_scope.module_id),
         )
     }
@@ -984,7 +988,7 @@ impl<'db> Scope<'db> {
                         acc.add(name, ScopeDef::ModuleDef(ModuleDefId::MacroId(mac)));
                     })
                 });
-            },
+            }
             &Scope::GenericParams { ref params, def: parent } => {
                 if let GenericDefId::ImplId(impl_) = parent {
                     acc.add(&Name::new_symbol_root(sym::Self_), ScopeDef::ImplSelfType(impl_));
@@ -1012,7 +1016,7 @@ impl<'db> Scope<'db> {
                     let id = LifetimeParamId { parent, local_id };
                     acc.add(&param.name, ScopeDef::GenericParam(id.into()))
                 }
-            },
+            }
             Scope::ExprScope(scope) => {
                 if let Some((label, name)) = scope.expr_scopes.label(scope.scope_id) {
                     acc.add(&name, ScopeDef::Label(label))
@@ -1020,9 +1024,9 @@ impl<'db> Scope<'db> {
                 scope.expr_scopes.entries(scope.scope_id).iter().for_each(|e| {
                     acc.add_local(e.name(), e.binding());
                 });
-            },
+            }
             Scope::MacroDefScope(_) => {
-            },
+            }
         }
     }
 }
@@ -1118,7 +1122,7 @@ impl<'db> ModuleItemMap<'db> {
             None => {
                 let (value, import) = to_value_ns(module_def)?;
                 Some((ResolveValueResult::ValueNs(value, import), prefix_info))
-            },
+            }
             Some(unresolved_idx) => {
                 let def = module_def.take_types_full()?;
                 let ty = match def.def {
@@ -1135,7 +1139,7 @@ impl<'db> ModuleItemMap<'db> {
                     | ModuleDefId::StaticId(_) => return None,
                 };
                 Some((ResolveValueResult::Partial(ty, unresolved_idx, def.import), prefix_info))
-            },
+            }
         }
     }
 

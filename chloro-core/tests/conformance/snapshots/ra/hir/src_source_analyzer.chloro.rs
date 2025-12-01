@@ -188,7 +188,7 @@ impl<'db> SourceAnalyzer<'db> {
         self.body_or_sig.as_ref().and_then(|it| match it {
             BodyOrSig::Body { def, body, source_map, infer } => {
                 Some((*def, &**body, &**source_map, infer.as_deref()))
-            },
+            }
             _ => None,
         })
     }
@@ -355,10 +355,10 @@ impl<'db> SourceAnalyzer<'db> {
             hir_ty::BindingMode::Move => BindingMode::Move,
             hir_ty::BindingMode::Ref(hir_ty::next_solver::Mutability::Mut) => {
                 BindingMode::Ref(Mutability::Mut)
-            },
+            }
             hir_ty::BindingMode::Ref(hir_ty::next_solver::Mutability::Not) => {
                 BindingMode::Ref(Mutability::Shared)
-            },
+            }
         })
     }
 
@@ -416,12 +416,12 @@ impl<'db> SourceAnalyzer<'db> {
                     Either::Left(fn_.into()),
                     Some(GenericSubstitution::new(fn_.into(), subst, self.trait_environment(db))),
                 ))
-            },
+            }
             None => {
                 inference_result.field_resolution(expr_id).and_then(Either::left).map(|field| {
                     (Either::Right(field.into()), self.field_subst(expr_id, inference_result, db))
                 })
-            },
+            }
         }
     }
 
@@ -441,14 +441,7 @@ impl<'db> SourceAnalyzer<'db> {
         let (def, ..) = self.body_()?;
         let expr_id = self.expr_id(field.clone().into())?.as_expr()?;
         self.infer()?.field_resolution(expr_id).map(|it| {
-            it.map_either(
-                Into::into,
-                |f| TupleField {
-                owner: def,
-                tuple: f.tuple,
-                index: f.index,
-            },
-            )
+            it.map_either(Into::into, |f| TupleField { owner: def, tuple: f.tuple, index: f.index })
         })
     }
 
@@ -1263,10 +1256,10 @@ impl<'db> SourceAnalyzer<'db> {
         let field_types = db.field_types(variant);
 
         missing_fields.into_iter().map(|local_id| {
-            let field = FieldId { parent: variant, local_id };
-            let ty = field_types[local_id].instantiate(interner, substs);
-            (field.into(), Type::new_with_resolver_inner(db, &self.resolver, ty))
-        }).collect(
+                let field = FieldId { parent: variant, local_id };
+                let ty = field_types[local_id].instantiate(interner, substs);
+                (field.into(), Type::new_with_resolver_inner(db, &self.resolver, ty))
+            }).collect(
         )
     }
 
@@ -1313,14 +1306,15 @@ impl<'db> SourceAnalyzer<'db> {
             (
                 *range,
                 resolve_hir_value_path(
-                db,
-                &self.resolver,
-                self.resolver.body_owner(),
-                &Path::from_known_path_with_no_generic(
-                ModPath::from_segments(PathKind::Plain, Some(name.clone())),
-            ),
-                hygiene,
-            ),
+                    db,
+                    &self.resolver,
+                    self.resolver.body_owner(),
+                    &Path::from_known_path_with_no_generic(ModPath::from_segments(
+                        PathKind::Plain,
+                        Some(name.clone()),
+                    )),
+                    hygiene,
+                ),
             )
         })
     }
@@ -1348,14 +1342,15 @@ impl<'db> SourceAnalyzer<'db> {
             (
                 *range,
                 resolve_hir_value_path(
-                db,
-                &self.resolver,
-                self.resolver.body_owner(),
-                &Path::from_known_path_with_no_generic(
-                ModPath::from_segments(PathKind::Plain, Some(name.clone())),
-            ),
-                hygiene,
-            ),
+                    db,
+                    &self.resolver,
+                    self.resolver.body_owner(),
+                    &Path::from_known_path_with_no_generic(ModPath::from_segments(
+                        PathKind::Plain,
+                        Some(name.clone()),
+                    )),
+                    hygiene,
+                ),
             )
         }))
     }
@@ -1430,9 +1425,12 @@ fn scope_for(
     node: InFile<&SyntaxNode>,
 ) -> Option<ScopeId> {
     node.ancestors_with_macros(db).take_while(|it| {
-        let kind = it.kind();
-        !ast::Item::can_cast(kind) || ast::MacroCall::can_cast(kind) || ast::Use::can_cast(kind) || ast::AsmExpr::can_cast(kind)
-    }).filter_map(
+            let kind = it.kind();
+            !ast::Item::can_cast(kind)
+                || ast::MacroCall::can_cast(kind)
+                || ast::Use::can_cast(kind)
+                || ast::AsmExpr::can_cast(kind)
+        }).filter_map(
         |it| it.map(ast::Expr::cast).transpose(),
     ).filter_map(
         |it| source_map.node_expr(it.as_ref())?.as_expr(),
@@ -1449,23 +1447,25 @@ fn scope_for_offset(
     offset: TextSize,
 ) -> Option<ScopeId> {
     scopes.scope_by_expr().iter().filter_map(|(id, scope)| {
-        let InFile { file_id, value } = source_map.expr_syntax(id).ok()?;
-        if from_file == file_id {
+            let InFile { file_id, value } = source_map.expr_syntax(id).ok()?;
+            if from_file == file_id {
                 return Some((value.text_range(), scope));
             }
-        let source = iter::successors(file_id.macro_file().map(|it| it.call_node(db)), |it| {
+
+            // FIXME handle attribute expansion
+            let source = iter::successors(file_id.macro_file().map(|it| it.call_node(db)), |it| {
                 Some(it.file_id.macro_file()?.call_node(db))
             })
             .find(|it| it.file_id == from_file)
             .filter(|it| it.kind() == SyntaxKind::MACRO_CALL)?;
-        Some((source.text_range(), scope))
-    }).filter(
+            Some((source.text_range(), scope))
+        }).filter(
         |(expr_range, _scope)| expr_range.start() <= offset && offset <= expr_range.end(),
     ).min_by_key(
         |(expr_range, _scope)| expr_range.len(),
     ).map(|(expr_range, scope)| {
-        adjust(db, scopes, source_map, expr_range, from_file, offset).unwrap_or(*scope)
-    })
+            adjust(db, scopes, source_map, expr_range, from_file, offset).unwrap_or(*scope)
+        })
 }
 
 fn adjust(
@@ -1494,14 +1494,14 @@ fn adjust(
         });
 
     child_scopes.max_by(|&(r1, _), &(r2, _)| {
-        if r1.contains_range(r2) {
-            std::cmp::Ordering::Greater
-        } else if r2.contains_range(r1) {
-            std::cmp::Ordering::Less
-        } else {
-            r1.start().cmp(&r2.start())
-        }
-    }).map(
+            if r1.contains_range(r2) {
+                std::cmp::Ordering::Greater
+            } else if r2.contains_range(r1) {
+                std::cmp::Ordering::Less
+            } else {
+                r1.start().cmp(&r2.start())
+            }
+        }).map(
         |(_ptr, scope)| *scope,
     )
 }
@@ -1707,12 +1707,16 @@ fn resolve_hir_path_qualifier(
                 }
             }
         }?;
+
+        // If we are in a TypeNs for a Trait, and we have an unresolved name, try to resolve it as a type
+        // within the trait's associated types.
         if let (Some(unresolved), &TypeNs::TraitId(trait_id)) = (&unresolved, &ty)
             && let Some(type_alias_id) =
                 trait_id.trait_items(db).associated_type_by_name(unresolved.name)
         {
             return Some(PathResolution::Def(ModuleDefId::from(type_alias_id).into()));
         }
+
         let res = match ty {
             TypeNs::SelfType(it) => PathResolution::SelfType(it.into()),
             TypeNs::GenericParam(id) => PathResolution::TypeParam(id.into()),
@@ -1726,27 +1730,27 @@ fn resolve_hir_path_qualifier(
             TypeNs::ModuleId(it) => PathResolution::Def(ModuleDef::Module(it.into())),
         };
         match unresolved {
-            Some(unresolved) => resolver.generic_def().and_then(|def| {
-                hir_ty::associated_type_shorthand_candidates(
-                    db,
-                    def,
-                    res.in_type_ns()?,
-                    |name, _| name == unresolved.name,
-                )
-            }).map(
-                TypeAlias::from,
-            ).map(
-                Into::into,
-            ).map(
-                PathResolution::Def,
-            ),
+            Some(unresolved) => resolver
+                .generic_def()
+                .and_then(|def| {
+                    hir_ty::associated_type_shorthand_candidates(
+                        db,
+                        def,
+                        res.in_type_ns()?,
+                        |name, _| name == unresolved.name,
+                    )
+                })
+                .map(TypeAlias::from)
+                .map(Into::into)
+                .map(PathResolution::Def),
             None => Some(res),
         }
     })(
     ).or_else(|| {
-        resolver.resolve_module_path_in_items(db, path.mod_path()?).take_types().map(
-            |it| PathResolution::Def(it.into()),
-        )
+        resolver
+            .resolve_module_path_in_items(db, path.mod_path()?)
+            .take_types()
+            .map(|it| PathResolution::Def(it.into()))
     })
 }
 

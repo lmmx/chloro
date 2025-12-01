@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32624 bytes
-Chloro size:   32626 bytes
+Chloro size:   32722 bytes
 Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
@@ -58,17 +58,7 @@ Rustfmt size:  32624 bytes
 +
      // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
      crate_local_def_map(db, start_crate).local(db).extern_prelude().find_map(|(_, (krate, _))| {
--        // Some crates declares themselves as extern crate like `extern crate self as core`.
--        // Ignore these to prevent cycles.
--        if krate.krate == start_crate { None } else { lang_item(db, krate.krate, item) }
-+        if krate.krate == start_crate {
-+            None
-+        } else {
-+            lang_item(db, krate.krate, item)
-+        }
-     })
- }
- 
+         // Some crates declares themselves as extern crate like `extern crate self as core`.
          db: &dyn DefDatabase,
          item: T,
          constructor: fn(T) -> LangItemTarget,

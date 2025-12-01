@@ -77,7 +77,7 @@ impl DocsRangeMap {
                     string.syntax().text_range().len().min(range.len()),
                 );
                 Some((InFile { file_id, value: range }, idx))
-            },
+            }
             Either::Right(comment) => {
                 let text_range = comment.syntax().text_range();
                 let range = TextRange::at(
@@ -88,7 +88,7 @@ impl DocsRangeMap {
                     text_range.len().min(range.len()),
                 );
                 Some((InFile { file_id, value: range }, idx))
-            },
+            }
         }
     }
 
@@ -278,7 +278,7 @@ impl HasDocs for hir::ExternCrateDecl {
                 decl_docs.push('\n');
                 decl_docs += &crate_docs;
                 Some(decl_docs)
-            },
+            }
         }.map(
             Documentation::new,
         )
@@ -302,7 +302,7 @@ impl HasDocs for hir::ExternCrateDecl {
                 let crate_range_map = crate_range_map.shift_docstring_line_range(offset);
                 decl_range_map.mapping.extend(crate_range_map.mapping);
                 Some((Documentation(decl_docs), decl_range_map))
-            },
+            }
         }
     }
 
@@ -325,7 +325,7 @@ fn get_doc_string_in_attr(it: &ast::Attr) -> Option<ast::String> {
         },
         None => {
             None
-        },
+        }
         _ => None,
     }
 }

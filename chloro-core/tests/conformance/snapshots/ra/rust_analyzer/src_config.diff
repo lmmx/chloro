@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166047 bytes
+Chloro size:   166263 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -327,22 +327,6 @@ Rustfmt size:  167117 bytes
              goto_type_def: enable && self.hover_actions_gotoTypeDef_enable().to_owned(),
          }
      }
-             granularity: match self.imports_granularity_group(source_root) {
-                 ImportGranularityDef::Item | ImportGranularityDef::Preserve => {
-                     ImportGranularity::Item
--                }
-+                },
-                 ImportGranularityDef::Crate => ImportGranularity::Crate,
-                 ImportGranularityDef::Module => ImportGranularity::Module,
-                 ImportGranularityDef::One => ImportGranularity::One,
-     pub fn linked_manifests(&self) -> impl Iterator<Item = &Utf8Path> + '_ {
-         self.linkedProjects().iter().filter_map(|it| match it {
-             ManifestOrProjectJson::Manifest(p) => Some(&**p),
--            // despite having a buildfile, using this variant as a manifest
--            // will fail.
-             ManifestOrProjectJson::DiscoveredProjectJson { .. } => None,
-             ManifestOrProjectJson::ProjectJson { .. } => None,
-         })
      }
  
      pub fn has_linked_project_jsons(&self) -> bool {
@@ -361,53 +345,20 @@ Rustfmt size:  167117 bytes
 -        projects
 -            .iter()
 -            .filter_map(|linked_project| match linked_project {
--                ManifestOrProjectJson::Manifest(it) => {
--                    let path = self.root_path.join(it);
--                    ProjectManifest::from_manifest_file(path)
--                        .map_err(|e| tracing::error!("failed to load linked project: {}", e))
--                        .ok()
--                        .map(Into::into)
--                }
--                ManifestOrProjectJson::DiscoveredProjectJson { data, buildfile } => {
--                    let root_path = buildfile.parent().expect("Unable to get parent of buildfile");
--
--                    Some(ProjectJson::new(None, root_path, data.clone()).into())
--                }
--                ManifestOrProjectJson::ProjectJson(it) => {
--                    Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
--                }
++        projects.iter().filter_map(|linked_project| match linked_project {
+                 ManifestOrProjectJson::Manifest(it) => {
+                     let path = self.root_path.join(it);
+                     ProjectManifest::from_manifest_file(path)
+                 ManifestOrProjectJson::ProjectJson(it) => {
+                     Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
+                 }
 -            })
 -            .collect()
-+        projects.iter().filter_map(|linked_project| match linked_project {
-+            ManifestOrProjectJson::Manifest(it) => {
-+                let path = self.root_path.join(it);
-+                ProjectManifest::from_manifest_file(path).map_err(
-+                    |e| tracing::error!("failed to load linked project: {}", e),
-+                ).ok(
-+                ).map(
-+                    Into::into,
-+                )
-+            },
-+            ManifestOrProjectJson::DiscoveredProjectJson { data, buildfile } => {
-+                let root_path = buildfile.parent().expect("Unable to get parent of buildfile");
-+                Some(ProjectJson::new(None, root_path, data.clone()).into())
-+            },
-+            ManifestOrProjectJson::ProjectJson(it) => {
-+                Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
-+            },
-+        }).collect(
++            }).collect(
 +        )
      }
  
      pub fn prefill_caches(&self) -> bool {
-             watcher: match self.files_watcher() {
-                 FilesWatcherDef::Client if self.did_change_watched_files_dynamic_registration() => {
-                     FilesWatcher::Client
--                }
-+                },
-                 _ => FilesWatcher::Server,
-             },
-             exclude: self.excluded().collect(),
      }
  
      pub(crate) fn completion_snippets_default() -> FxIndexMap<String, SnippetDef> {
@@ -427,19 +378,6 @@ Rustfmt size:  167117 bytes
      }
  
      pub fn rustfmt(&self, source_root_id: Option<SourceRootId>) -> RustfmtConfig {
-                 let mut args = args.clone();
-                 let command = args.remove(0);
-                 RustfmtConfig::CustomCommand { command, args }
--            }
-+            },
-             Some(_) | None => RustfmtConfig::Rustfmt {
-                 extra_args: self.rustfmt_extraArgs(source_root_id).clone(),
-                 enable_range_formatting: *self.rustfmt_rangeFormatting_enable(source_root_id),
-                         }
-                     },
-                 }
--            }
-+            },
              Some(_) | None => FlycheckConfig::CargoCommand {
                  command: self.check_command(source_root).clone(),
                  options: CargoOptions {
@@ -447,24 +385,20 @@ Rustfmt size:  167117 bytes
 -                        .check_targets(source_root)
 -                        .clone()
 -                        .and_then(|targets| match &targets.0[..] {
--                            [] => None,
--                            targets => Some(targets.into()),
++                    target_tuples: self.check_targets(source_root).clone().and_then(|targets| match &targets.0[..] {
+                             [] => None,
+                             targets => Some(targets.into()),
 -                        })
 -                        .unwrap_or_else(|| {
--                            self.cargo_target(source_root).clone().into_iter().collect()
--                        }),
++                        }).unwrap_or_else(|| {
+                             self.cargo_target(source_root).clone().into_iter().collect()
+                         }),
 -                    all_targets: self
 -                        .check_allTargets(source_root)
 -                        .unwrap_or(*self.cargo_allTargets(source_root)),
 -                    no_default_features: self
 -                        .check_noDefaultFeatures(source_root)
 -                        .unwrap_or(*self.cargo_noDefaultFeatures(source_root)),
-+                    target_tuples: self.check_targets(source_root).clone().and_then(|targets| match &targets.0[..] {
-+                        [] => None,
-+                        targets => Some(targets.into()),
-+                    }).unwrap_or_else(|| {
-+                        self.cargo_target(source_root).clone().into_iter().collect()
-+                    }),
 +                    all_targets: self.check_allTargets(source_root).unwrap_or(
 +                        *self.cargo_allTargets(source_root),
 +                    ),
@@ -507,22 +441,6 @@ Rustfmt size:  167117 bytes
          }
      }
  
-                 WorkspaceSymbolSearchScopeDef::Workspace => WorkspaceSymbolSearchScope::Workspace,
-                 WorkspaceSymbolSearchScopeDef::WorkspaceAndDependencies => {
-                     WorkspaceSymbolSearchScope::WorkspaceAndDependencies
--                }
-+                },
-             },
-             search_kind: match self.workspace_symbol_search_kind(source_root) {
-                 WorkspaceSymbolSearchKindDef::OnlyTypes => WorkspaceSymbolSearchKind::OnlyTypes,
-         match self.numThreads() {
-             Some(NumThreads::Concrete(0)) | None | Some(NumThreads::Physical) => {
-                 num_cpus::get_physical()
--            }
-+            },
-             &Some(NumThreads::Concrete(n)) => n,
-             Some(NumThreads::Logical) => num_cpus::get(),
-         }
          self.typing_triggerChars().as_deref().unwrap_or_default()
      }
  
@@ -683,34 +601,23 @@ Rustfmt size:  167117 bytes
 -        .into_iter()
 -        .chain(iter::once(field))
 -        .filter_map(move |field| {
--            let mut pointer = field.replace('_', "/");
--            pointer.insert(0, '/');
--            json.pointer_mut(&pointer)
--                .map(|it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)))
++    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
+             let mut pointer = field.replace('_', "/");
+             pointer.insert(0, '/');
+             json.pointer_mut(&pointer)
+                 .map(|it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)))
 -        })
 -        .flat_map(|res| match res {
--            Ok(it) => Some(it),
--            Err((e, pointer)) => {
--                tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
--                error_sink.push((pointer, e));
--                None
--            }
++        }).flat_map(|res| match res {
+             Ok(it) => Some(it),
+             Err((e, pointer)) => {
+                 tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
+                 error_sink.push((pointer, e));
+                 None
+             }
 -        })
 -        .next()
-+    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
-+        let mut pointer = field.replace('_', "/");
-+        pointer.insert(0, '/');
-+        json.pointer_mut(&pointer).map(
-+            |it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)),
-+        )
-+    }).flat_map(|res| match res {
-+        Ok(it) => Some(it),
-+        Err((e, pointer)) => {
-+            tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
-+            error_sink.push((pointer, e));
-+            None
-+        },
-+    }).next(
++        }).next(
 +    )
  }
  
@@ -722,39 +629,20 @@ Rustfmt size:  167117 bytes
 -        .into_iter()
 -        .chain(iter::once(field))
 -        .filter_map(move |field| {
--            let mut pointer = field.replace('_', "/");
--            pointer.insert(0, '/');
--            toml_pointer(toml, &pointer)
--                .map(|it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)))
++    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
+             let mut pointer = field.replace('_', "/");
+             pointer.insert(0, '/');
+             toml_pointer(toml, &pointer)
+                 .map(|it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)))
 -        })
 -        .find(Result::is_ok)
 -        .and_then(|res| match res {
--            Ok(it) => Some(it),
--            Err((e, pointer)) => {
--                tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
--                error_sink.push((pointer, e));
--                None
--            }
--        })
-+    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
-+        let mut pointer = field.replace('_', "/");
-+        pointer.insert(0, '/');
-+        toml_pointer(toml, &pointer).map(
-+            |it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)),
-+        )
-+    }).find(
++        }).find(
 +        Result::is_ok,
 +    ).and_then(|res| match res {
-+        Ok(it) => Some(it),
-+        Err((e, pointer)) => {
-+            tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
-+            error_sink.push((pointer, e));
-+            None
-+        },
-+    })
- }
- 
- fn toml_pointer<'a>(toml: &'a toml::Table, pointer: &str) -> Option<&'a toml::Value> {
+             Ok(it) => Some(it),
+             Err((e, pointer)) => {
+                 tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
      let mut parts = pointer.split('/').skip(1);
      let first = parts.next()?;
      let init = toml.get(first)?;

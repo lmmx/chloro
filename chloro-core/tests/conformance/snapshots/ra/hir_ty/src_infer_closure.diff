@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36567 bytes
+Chloro size:   36654 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -73,17 +73,15 @@ Rustfmt size:  36953 bytes
              TyKind::Dynamic(object_type, ..) => {
                  let sig = object_type.projection_bounds().into_iter().find_map(|pb| {
                      let pb = pb.with_self_ty(self.interner(), Ty::new_unit(self.interner()));
-                     .principal_def_id()
                      .and_then(|did| self.fn_trait_kind_from_def_id(did.0));
                  (sig, kind)
--            }
+             }
 -            TyKind::Infer(rustc_type_ir::TyVar(vid)) => self
 -                .deduce_closure_signature_from_predicates(
 -                    Ty::new_var(self.interner(), self.table.infer_ctxt.root_var(vid)),
 -                    closure_kind,
 -                    self.table.obligations_for_self_ty(vid).into_iter().map(|obl| obl.predicate),
 -                ),
-+            },
 +            TyKind::Infer(rustc_type_ir::TyVar(vid)) => self.deduce_closure_signature_from_predicates(
 +                Ty::new_var(self.interner(), self.table.infer_ctxt.root_var(vid)),
 +                closure_kind,
@@ -92,12 +90,6 @@ Rustfmt size:  36953 bytes
              TyKind::FnPtr(sig_tys, hdr) => match closure_kind {
                  ClosureKind::Closure => {
                      let expected_sig = sig_tys.with(hdr);
-                     (Some(expected_sig), Some(rustc_type_ir::ClosureKind::Fn))
--                }
-+                },
-                 ClosureKind::Coroutine(_) | ClosureKind::Async => (None, None),
-             },
-             _ => (None, None),
          let lang_item = self.db.lang_attr(def_id.into());
  
          // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,
@@ -105,23 +97,15 @@ Rustfmt size:  36953 bytes
          // for closures and async closures, respectively.
          match closure_kind {
              ClosureKind::Closure if lang_item == Some(LangItem::FnOnceOutput) => {
-                 self.extract_sig_from_projection(projection)
--            }
-+            },
              ClosureKind::Async if lang_item == Some(LangItem::AsyncFnOnceOutput) => {
                  self.extract_sig_from_projection(projection)
--            }
+             }
 -            // It's possible we've passed the closure to a (somewhat out-of-fashion)
 -            // `F: FnOnce() -> Fut, Fut: Future<Output = T>` style bound. Let's still
 -            // guide inference here, since it's beneficial for the user.
-+            },
              ClosureKind::Async if lang_item == Some(LangItem::FnOnceOutput) => {
                  self.extract_sig_from_projection_and_future_bound(projection)
--            }
-+            },
-             _ => None,
-         }
-     }
+             }
          };
  
          // If the return type is a type variable, look for bounds on it.
@@ -228,43 +212,3 @@ Rustfmt size:  36953 bytes
          // [c2]: https://github.com/rust-lang/rust/pull/45072#issuecomment-341096796
          self.table.commit_if_ok(|table| {
              let mut all_obligations = PredicateObligations::new();
-                 BoundRegionConversionTime::FnCall,
-                 supplied_sig,
-             );
--
--            // The liberated version of this signature should be a subtype
--            // of the liberated form of the expectation.
-             for (supplied_ty, expected_ty) in
-                 iter::zip(supplied_sig.inputs(), expected_sigs.liberated_sig.inputs())
-             {
-                     .eq(expected_ty, supplied_ty)?;
-                 all_obligations.extend(obligations);
-             }
--
-             let supplied_output_ty = supplied_sig.output();
-             let cause = ObligationCause::new();
-             let InferOk { value: (), obligations } = table
-                 .at(&cause, table.trait_env.env)
-                 .eq(expected_sigs.liberated_sig.output(), supplied_output_ty)?;
-             all_obligations.extend(obligations);
--
-             let inputs = supplied_sig
-                 .inputs()
-                 .into_iter()
-                 .map(|ty| table.infer_ctxt.resolve_vars_if_possible(ty));
--
-             expected_sigs.liberated_sig = table.interner().mk_fn_sig(
-                 inputs,
-                 supplied_output_ty,
-                 Safety::Safe,
-                 FnAbi::RustCall,
-             );
--
--            Ok(InferOk { value: expected_sigs, obligations: all_obligations })
-+            Ok(InferOk {
-+                value: expected_sigs,
-+                obligations: all_obligations,
-+            })
-         })
-     }
- 

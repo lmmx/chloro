@@ -119,8 +119,8 @@ fn documentation_for_definition(
         sema.db,
         famous_defs.as_ref(),
         def.krate(sema.db).unwrap_or_else(|| {
-        (*sema.db.all_crates().last().expect("no crate graph present")).into()
-    }).to_display_target(
+                (*sema.db.all_crates().last().expect("no crate graph present")).into()
+            }).to_display_target(
         sema.db,
     ),
     )

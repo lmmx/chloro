@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29386 bytes
+Chloro size:   29394 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -117,19 +117,11 @@ Rustfmt size:  30449 bytes
 -            } => Some(AstId::new(definition_tree_id.file_id(), definition)),
 +            &ModuleOrigin::File { declaration, declaration_tree_id, .. } => {
 +                Some(AstId::new(declaration_tree_id.file_id(), declaration))
-+            },
++            }
 +            &ModuleOrigin::Inline { definition, definition_tree_id } => {
 +                Some(AstId::new(definition_tree_id.file_id(), definition))
-+            },
++            }
              ModuleOrigin::CrateRoot { .. } | ModuleOrigin::BlockExpr { .. } => None,
-         }
-     }
-         match self {
-             ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition } => {
-                 Some(*definition)
--            }
-+            },
-             _ => None,
          }
      }
      /// That is, a file or a `mod foo {}` with items.
@@ -146,12 +138,11 @@ Rustfmt size:  30449 bytes
 +            | &ModuleOrigin::CrateRoot { definition: editioned_file_id } => {
                  let sf = db.parse(editioned_file_id).tree();
                  InFile::new(editioned_file_id.into(), ModuleSource::SourceFile(sf))
--            }
+             }
 -            &ModuleOrigin::Inline {
 -                definition,
 -                definition_tree_id,
 -            } => InFile::new(
-+            },
 +            &ModuleOrigin::Inline { definition, definition_tree_id } => InFile::new(
                  definition_tree_id.file_id(),
 -                ModuleSource::Module(
@@ -161,11 +152,6 @@ Rustfmt size:  30449 bytes
              ),
              ModuleOrigin::BlockExpr { block, .. } => {
                  InFile::new(block.file_id, ModuleSource::BlockExpr(block.to_node(db)))
--            }
-+            },
-         }
-     }
- }
      .entered();
  
      let module_data = ModuleData::new(
@@ -234,12 +220,11 @@ Rustfmt size:  30449 bytes
 -        self.modules
 -            .iter()
 -            .filter(move |(_id, data)| {
--                data.origin.file_id().map(|file_id| file_id.file_id(db)) == Some(file_id)
++        self.modules.iter().filter(move |(_id, data)| {
+                 data.origin.file_id().map(|file_id| file_id.file_id(db)) == Some(file_id)
 -            })
 -            .map(|(id, _data)| id)
-+        self.modules.iter().filter(move |(_id, data)| {
-+            data.origin.file_id().map(|file_id| file_id.file_id(db)) == Some(file_id)
-+        }).map(
++            }).map(
 +            |(id, _data)| id,
 +        )
      }
@@ -296,9 +281,9 @@ Rustfmt size:  30449 bytes
 -            ),
 +            None => {
 +                self.block.map(|BlockInfo { parent: BlockRelativeModuleId { block, local_id }, .. }| {
-+                    ModuleId { krate: self.krate, block, local_id }
-+                })
-+            },
++                        ModuleId { krate: self.krate, block, local_id }
++                    })
++            }
          }
      }
  
@@ -322,27 +307,23 @@ Rustfmt size:  30449 bytes
              {
                  let path = format!("{path}::{}", name.display(db, Edition::LATEST));
                  buf.push('\n');
-         match self.origin {
              ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition } => {
                  definition.into()
--            }
+             }
 -            ModuleOrigin::Inline {
 -                definition_tree_id, ..
 -            } => definition_tree_id.file_id(),
-+            },
 +            ModuleOrigin::Inline { definition_tree_id, .. } => definition_tree_id.file_id(),
              ModuleOrigin::BlockExpr { block, .. } => block.file_id,
          }
      }
-                     definition.into(),
                      ErasedAstId::new(definition.into(), ROOT_ERASED_FILE_AST_ID).to_range(db),
                  )
--            }
+             }
 -            &ModuleOrigin::Inline {
 -                definition,
 -                definition_tree_id,
 -            } => InFile::new(
-+            },
 +            &ModuleOrigin::Inline { definition, definition_tree_id } => InFile::new(
                  definition_tree_id.file_id(),
                  AstId::new(definition_tree_id.file_id(), definition).to_range(db),

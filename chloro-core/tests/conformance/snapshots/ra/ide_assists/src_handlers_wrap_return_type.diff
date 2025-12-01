@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53059 bytes
-Chloro size:   52837 bytes
+Chloro size:   52846 bytes
 Rustfmt size:  53059 bytes
 
 ✗ Outputs DIFFER
@@ -85,46 +85,13 @@ Rustfmt size:  53059 bytes
  fn wrapper_alias<'db>(
      ctx: &AssistContext<'db>,
      make: &SyntaxFactory,
-             hir::ModuleDef::TypeAlias(alias) => {
-                 let enum_ty = alias.ty(ctx.db()).as_adt()?.as_enum()?;
-                 (enum_ty == core_wrapper).then_some((alias, enum_ty))
--            }
-+            },
-             _ => None,
--        })
--        .find_map(|(alias, enum_ty)| {
-+        }).find_map(|(alias, enum_ty)| {
-             let mut inserted_ret_type = false;
-             let generic_args =
-                 alias.source(ctx.db())?.value.generic_param_list()?.generic_params().map(|param| {
-                         _ => make.type_arg(make.ty_infer().into()).into(),
-                     }
-                 });
--
-             let name = alias.name(ctx.db());
-             let generic_arg_list = make.generic_arg_list(generic_args, false);
-             let path = make.path_unqualified(
-                 make.path_segment_generics(make.name_ref(name.as_str()), generic_arg_list),
-             );
--
-             let new_ty =
-                 hir::Adt::from(enum_ty).ty_with_args(ctx.db(), [semantic_ret_type.clone()]);
--
-             Some((make.ty_path(path), new_ty))
-         })
-     })
-             if let Some(break_expr_arg) = break_expr.expr() {
-                 for_each_tail_expr(&break_expr_arg, &mut |e| tail_cb_impl(acc, e))
              }
--        }
-+        },
+         }
          Expr::ReturnExpr(_) => {
 -            // all return expressions have already been handled by the walk loop
--        }
-+        },
+         }
          e => acc.push(e.clone()),
      }
- }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist_by_label, check_assist_not_applicable_by_label};

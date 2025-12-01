@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34217 bytes
+Chloro size:   34209 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -105,26 +105,6 @@ Rustfmt size:  35032 bytes
              !obligation.predicate.has_placeholders()
          });
          obligations_for_self_ty
-         match predicate.kind().skip_binder() {
-             PredicateKind::Clause(ClauseKind::Trait(data)) => {
-                 self.type_matches_expected_vid(expected_vid, data.self_ty())
--            }
-+            },
-             PredicateKind::Clause(ClauseKind::Projection(data)) => {
-                 self.type_matches_expected_vid(expected_vid, data.projection_term.self_ty())
--            }
-+            },
-             PredicateKind::Clause(ClauseKind::ConstArgHasType(..))
-             | PredicateKind::Subtype(..)
-             | PredicateKind::Coerce(..)
-         match ty.kind() {
-             TyKind::Infer(rustc_type_ir::TyVar(found_vid)) => {
-                 self.infer_ctxt.root_var(expected_vid) == self.infer_ctxt.root_var(found_vid)
--            }
-+            },
-             _ => false,
-         }
-     }
          self.diverging_type_vars.insert(ty);
      }
  
@@ -248,20 +228,12 @@ Rustfmt size:  35032 bytes
 -            Ok((_, Certainty::Yes)) => {}
 -            Err(rustc_type_ir::solve::NoSolution) => {}
 +            Ok((_, Certainty::Yes)) => {
-+            },
++            }
 +            Err(rustc_type_ir::solve::NoSolution) => {
-+            },
++            }
              Ok((_, Certainty::Maybe { .. })) => {
                  self.fulfillment_cx.register_predicate_obligation(
                      &self.infer_ctxt,
-                         goal.predicate,
-                     ),
-                 );
--            }
-+            },
-         }
-     }
- 
      }
  
      pub(crate) fn select_obligations_where_possible(&mut self) {
@@ -280,19 +252,6 @@ Rustfmt size:  35032 bytes
      }
  
      pub(super) fn register_predicates<I>(&mut self, obligations: I)
-             Some(sig) => {
-                 let sig = sig.skip_binder();
-                 Some((None, sig.inputs_and_output.inputs().to_vec(), sig.output()))
--            }
-+            },
-             None => {
-                 let (f, args_ty, return_ty) = self.callable_sig_from_fn_trait(ty, num_args)?;
-                 Some((Some(f), args_ty, return_ty))
--            }
-+            },
-         }
-     }
- 
          num_args: usize,
      ) -> Option<(FnTrait, Vec<Ty<'db>>, Ty<'db>)> {
          for (fn_trait_name, output_assoc_name, subtraits) in [

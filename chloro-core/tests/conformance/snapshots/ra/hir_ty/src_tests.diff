@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22393 bytes
+Chloro size:   22395 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
@@ -83,22 +83,6 @@ Rustfmt size:  23079 bytes
          }
          if !mismatches.is_empty() {
              format_to!(buf, "Unchecked mismatch annotations:\n");
-         Ok(sp) => {
-             let root = db.parse_or_expand(sp.file_id);
-             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
--        }
-+        },
-         Err(SyntheticSyntax) => return None,
-     })
- }
-         Ok(sp) => {
-             let root = db.parse_or_expand(sp.file_id);
-             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
--        }
-+        },
-         Err(SyntheticSyntax) => return None,
-     })
- }
      let _tracing = setup_tracing();
      let (db, file_id) = TestDB::with_single_file(content);
  
@@ -107,10 +91,8 @@ Rustfmt size:  23079 bytes
 +        &db,
 +        || {
          let mut buf = String::new();
--
+ 
          let mut infer_def = |inference_result: Arc<InferenceResult<'_>>,
-                              body: Arc<Body>,
-                              body_source_map: Arc<BodySourceMap>,
              for (node, ty) in &types {
                  let (range, text) =
                      if let Some(self_param) = ast::SelfParam::cast(node.value.clone()) {
@@ -128,20 +110,7 @@ Rustfmt size:  23079 bytes
                      };
                  let macro_prefix = if node.file_id != file_id { "!" } else { "" };
                  format_to!(
-                 }
-             }
-         };
--
-         let module = db.module_for_file(file_id.file_id(&db));
-         let def_map = module.def_map(&db);
--
-         let mut defs: Vec<(DefWithBodyId, Crate)> = Vec::new();
-         visit_module(&db, def_map, module.local_id, &mut |it| {
-             let def = match it {
-             let infer = db.infer(def);
-             infer_def(infer, body, source_map, krate);
-         }
--
+ 
          buf.truncate(buf.trim_end().len());
          buf
 -    })

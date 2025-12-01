@@ -50,12 +50,12 @@ impl<'db> Evaluator<'db> {
                             ));
                         };
                         Ok((len as usize, ty))
-                    },
+                    }
                     None => Err(
                         MirEvalError::InternalError("simd type with unevaluatable len param".into()),
                     ),
                 }
-            },
+            }
             _ => Err(MirEvalError::InternalError("simd type which is not a struct".into())),
         }
     }
@@ -88,7 +88,7 @@ impl<'db> Evaluator<'db> {
                     })
                     .collect::<Vec<_>>();
                 destination.write_from_bytes(self, &result)
-            },
+            }
             "eq" | "ne" | "lt" | "le" | "gt" | "ge" => {
                 let [left, right] = args else {
                     return Err(MirEvalError::InternalError("simd args are not provided".into()));
@@ -123,7 +123,7 @@ impl<'db> Evaluator<'db> {
                     destination_bytes.extend(std::iter::repeat_n(result, dest_size));
                 }
                 destination.write_from_bytes(self, &destination_bytes)
-            },
+            }
             "bitmask" => {
                 let [op] = args else {
                     return Err(MirEvalError::InternalError(
@@ -139,7 +139,7 @@ impl<'db> Evaluator<'db> {
                     }
                 }
                 destination.write_from_bytes(self, &result.to_le_bytes()[0..destination.size])
-            },
+            }
             "shuffle" => {
                 let [left, right, index] = args else {
                     return Err(MirEvalError::InternalError(
@@ -177,7 +177,7 @@ impl<'db> Evaluator<'db> {
                     result.extend(val);
                 }
                 destination.write_from_bytes(self, &result)
-            },
+            }
             _ => not_supported!("unknown simd intrinsic {name}"),
         }
     }

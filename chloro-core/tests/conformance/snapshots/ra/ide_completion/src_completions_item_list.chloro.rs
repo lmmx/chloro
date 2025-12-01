@@ -53,7 +53,7 @@ pub(crate) fn complete_item_list(
                 }
             }
             acc.add_super_keyword(ctx, *super_chain_len);
-        },
+        }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No if ctx.qualifier_ctx.none() => {
             ctx.process_all_names(&mut |name, def, doc_aliases| match def {
@@ -66,9 +66,9 @@ pub(crate) fn complete_item_list(
                 _ => (),
             });
             acc.add_nameref_keywords_with_colon(ctx);
-        },
+        }
         Qualified::TypeAnchor { .. } | Qualified::No | Qualified::With { .. } => {
-        },
+        }
     }
 }
 

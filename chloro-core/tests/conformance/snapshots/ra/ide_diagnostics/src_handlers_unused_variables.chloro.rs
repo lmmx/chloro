@@ -43,16 +43,16 @@ pub(crate) fn unused_variables(
         "unused variable",
         ast,
     ).with_fixes(name_range.and_then(|it| {
-        fixes(
-            ctx.sema.db,
-            var_name,
-            it.range,
-            diagnostic_range,
-            ast.file_id.is_macro(),
-            is_shorthand_field,
-            ctx.edition,
-        )
-    })))
+            fixes(
+                ctx.sema.db,
+                var_name,
+                it.range,
+                diagnostic_range,
+                ast.file_id.is_macro(),
+                is_shorthand_field,
+                ctx.edition,
+            )
+        })))
 }
 
 fn fixes(

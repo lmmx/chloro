@@ -216,15 +216,15 @@ fn generate_field_names(
 ) -> Vec<(SmolStr, SmolStr)> {
     match data.kind {
         hir::StructKind::Tuple => data.visible_fields.iter().enumerate().map(|(index, _)| {
-            let new_name = new_field_name((format!("_{index}")).into(), &data.names_in_scope);
-            (index.to_string().into(), new_name)
-        }).collect(
+                let new_name = new_field_name((format!("_{index}")).into(), &data.names_in_scope);
+                (index.to_string().into(), new_name)
+            }).collect(
         ),
         hir::StructKind::Record => data.visible_fields.iter().map(|field| {
-            let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
-            let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
-            (field_name, new_name)
-        }).collect(
+                let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
+                let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
+                (field_name, new_name)
+            }).collect(
         ),
         hir::StructKind::Unit => Vec::new(),
     }

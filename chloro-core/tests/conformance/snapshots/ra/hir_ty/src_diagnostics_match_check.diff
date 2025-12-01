@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   15897 bytes
+Chloro size:   15869 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
@@ -38,72 +38,22 @@ Rustfmt size:  15979 bytes
  use self::pat_util::EnumerateAndAdjustIterator;
  
  #[derive(Clone, Debug)]
-         let unadjusted_pat = self.lower_pattern_unadjusted(pat);
-         self.infer.pat_adjustments.get(&pat).map(|it| &**it).unwrap_or_default().iter().rev().fold(
-             unadjusted_pat,
--            |subpattern, ref_ty| Pat { ty: *ref_ty, kind: Box::new(PatKind::Deref { subpattern }) },
-+            |subpattern, ref_ty| Pat {
-+            ty: *ref_ty,
-+            kind: Box::new(PatKind::Deref { subpattern }),
-+        },
-         )
-     }
- 
              return Vec::new();
          }
  
 -        pats.iter()
 -            .enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize))
 -            .map(|(i, &subpattern)| FieldPat {
--                field: LocalFieldId::from_raw((i as u32).into()),
--                pattern: self.lower_pattern(subpattern),
++        pats.iter().enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize)).map(|(i, &subpattern)| FieldPat {
+                 field: LocalFieldId::from_raw((i as u32).into()),
+                 pattern: self.lower_pattern(subpattern),
 -            })
 -            .collect()
-+        pats.iter().enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize)).map(|(i, &subpattern)| FieldPat {
-+            field: LocalFieldId::from_raw((i as u32).into()),
-+            pattern: self.lower_pattern(subpattern),
-+        }).collect(
++            }).collect(
 +        )
      }
  
      fn lower_patterns(&mut self, pats: &[PatId]) -> Vec<Pat<'db>> {
-                 } else {
-                     PatKind::Leaf { subpatterns }
-                 }
--            }
-+            },
-             None => {
-                 self.errors.push(PatternError::UnresolvedVariant);
-                 PatKind::Wild
--            }
-+            },
-         }
-     }
- 
-             None => {
-                 self.errors.push(PatternError::UnresolvedVariant);
-                 pat_from_kind(PatKind::Wild)
--            }
-+            },
-         }
-     }
- 
-             _ => {
-                 self.errors.push(PatternError::Unimplemented);
-                 PatKind::Wild
--            }
-+            },
-         }
-     }
- }
-                     subpattern.hir_fmt(f)?;
-                 }
-                 Ok(())
--            }
-+            },
-             PatKind::Variant { subpatterns, .. } | PatKind::Leaf { subpatterns } => {
-                 let variant = match *self.kind {
-                     PatKind::Variant { enum_variant, .. } => Some(VariantId::from(enum_variant)),
                          AdtId::EnumId(_) => None,
                      }),
                  };
@@ -123,19 +73,8 @@ Rustfmt size:  15979 bytes
                  }
 -
                  Ok(())
--            }
-+            },
+             }
              PatKind::Deref { subpattern } => {
-                 match self.ty.kind() {
-                     TyKind::Ref(.., mutbl) => {
-                     _ => never!("{:?} is a bad Deref pattern type", self.ty),
-                 }
-                 subpattern.hir_fmt(f)
--            }
-+            },
-             PatKind::LiteralBool { value } => write!(f, "{value}"),
-             PatKind::Or { pats } => f.write_joined(pats.iter(), " | "),
-         }
      }
  }
  

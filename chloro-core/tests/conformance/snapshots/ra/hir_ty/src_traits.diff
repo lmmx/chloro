@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8324 bytes
-Chloro size:   8281 bytes
+Chloro size:   8287 bytes
 Rustfmt size:  8412 bytes
 
 ✗ Outputs DIFFER
@@ -63,24 +63,6 @@ Rustfmt size:  8412 bytes
      ty.replace_infer_with_error(infcx.interner)
  }
  
- ) -> NextTraitSolveResult {
-     infer_ctxt.probe(|_| {
-         let context = <&SolverContext<'db>>::from(infer_ctxt);
--
-         tracing::info!(?goal);
--
-         let (goal, var_values) = context.instantiate_canonical(&goal);
-         tracing::info!(?var_values);
--
-         let res = context.evaluate_root_goal(goal, Span::dummy(), None);
--
-         let res = res.map(|r| (r.has_changed, r.certainty));
--
-         tracing::debug!("solve_nextsolver({:?}) => {:?}", goal, res);
--
-         match res {
-             Err(_) => NextTraitSolveResult::NoSolution,
-             Ok((_, Certainty::Yes)) => NextTraitSolveResult::Certain,
      env: Arc<TraitEnvironment<'db>>,
      trait_: TraitId,
  ) -> bool {

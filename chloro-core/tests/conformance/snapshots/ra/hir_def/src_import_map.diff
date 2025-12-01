@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33395 bytes
-Chloro size:   33377 bytes
+Chloro size:   33371 bytes
 Rustfmt size:  34403 bytes
 
 ✗ Outputs DIFFER
@@ -103,14 +103,6 @@ Rustfmt size:  34403 bytes
  impl PartialEq for ImportMap {
      fn eq(&self, other: &Self) -> bool {
          // `fst` and `importables` are built from `map`, so we don't need to compare them.
-                         prefix.eq_ignore_ascii_case(query)
-                     }
-                 }
--            }
-+            },
-             SearchMode::Fuzzy => {
-                 let mut name = candidate;
-                 query.chars().all(|query_char| {
                      let m = if case_sensitive {
                          name.match_indices(query_char).next()
                      } else {
@@ -125,16 +117,8 @@ Rustfmt size:  34403 bytes
 -                                .unwrap_or_default();
 +                            name = name[index..].strip_prefix(|_: char| true).unwrap_or_default();
                              true
--                        }
-+                        },
+                         }
                          None => false,
-                     }
-                 })
--            }
-+            },
-         }
-     }
- }
  
      /// Fuzzy finds items instead of exact matching.
      pub fn fuzzy(self) -> Self {
@@ -194,30 +178,20 @@ Rustfmt size:  34403 bytes
              for map in &import_maps {
                  op = op.add(map.fst.search(&automaton));
              }
-             search_maps(db, &import_maps, op.union(), query)
--        }
-+        },
+         }
          SearchMode::Fuzzy => {
              let automaton = fst::automaton::Subsequence::new(&query.lowercased);
 -
              for map in &import_maps {
                  op = op.add(map.fst.search(&automaton));
              }
-             search_maps(db, &import_maps, op.union(), query)
--        }
-+        },
+         }
          SearchMode::Prefix => {
              let automaton = fst::automaton::Str::new(&query.lowercased).starts_with();
 -
              for map in &import_maps {
                  op = op.add(map.fst.search(&automaton));
              }
-             search_maps(db, &import_maps, op.union(), query)
--        }
-+        },
-     }
- }
- 
  ) -> FxHashSet<(ItemInNs, Complete)> {
      let mut res = FxHashSet::default();
      while let Some((_, indexed_values)) = stream.next() {

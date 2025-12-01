@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58838 bytes
-Chloro size:   57876 bytes
+Chloro size:   57856 bytes
 Rustfmt size:  58838 bytes
 
 ✗ Outputs DIFFER
@@ -132,32 +132,19 @@ Rustfmt size:  58838 bytes
              Task::Retry(req) if !self.is_completed(&req) => self.on_request(req),
              Task::Retry(_) => (),
              Task::Diagnostics(kind) => {
-                 self.diagnostics.set_native_diagnostics(kind);
--            }
-+            },
-             Task::PrimeCaches(progress) => match progress {
-                 PrimeCachesProgress::Begin => prime_caches_progress.push(progress),
                  PrimeCachesProgress::Report(_) => {
                      match prime_caches_progress.last_mut() {
                          Some(last @ PrimeCachesProgress::Report(_)) => {
 -                            // Coalesce subsequent update events.
                              *last = progress;
--                        }
-+                        },
+                         }
                          _ => prime_caches_progress.push(progress),
-                     }
--                }
-+                },
-                 PrimeCachesProgress::End { .. } => prime_caches_progress.push(progress),
-             },
-             Task::FetchWorkspace(progress) => {
                          (Progress::End, None)
                      }
                  };
 -
                  self.report_progress("Fetching", state, msg, None, None);
--            }
-+            },
+             }
              Task::DiscoverLinkedProjects(arg) => {
 -                if let Some(cfg) = self.config.discover_workspace_config()
 -                    && !self.discover_workspace_queue.op_in_progress()
@@ -182,14 +169,6 @@ Rustfmt size:  58838 bytes
                      let handle = discover.spawn(
                          arg,
                          &std::env::current_dir()
-                         panic!("Failed to spawn project discovery command: {e}")
-                     }));
-                 }
--            }
-+            },
-             Task::FetchBuildData(progress) => {
-                 let (state, msg) = match progress {
-                     BuildDataProgress::Begin => (Some(Progress::Begin), None),
                          (Some(Progress::End), None)
                      }
                  };
@@ -197,11 +176,6 @@ Rustfmt size:  58838 bytes
                  if let Some(state) = state {
                      self.report_progress("Building compile-time-deps", state, msg, None, None);
                  }
--            }
-+            },
-             Task::LoadProcMacros(progress) => {
-                 let (state, msg) = match progress {
-                     ProcMacroProgress::Begin => (Some(Progress::Begin), None),
                          (Some(Progress::End), None)
                      }
                  };
@@ -209,16 +183,6 @@ Rustfmt size:  58838 bytes
                  if let Some(state) = state {
                      self.report_progress("Loading proc-macros", state, msg, None, None);
                  }
--            }
-+            },
-             Task::BuildDepsHaveChanged => self.build_deps_changed = true,
-             Task::DiscoverTest(tests) => {
-                 self.send_notification::<lsp_ext::DiscoveredTests>(tests);
--            }
-+            },
-         }
-     }
- 
                              .as_ref()
                              .and_then(|contents| String::from_utf8(contents.clone()).ok());
                      }
@@ -233,8 +197,6 @@ Rustfmt size:  58838 bytes
                          vfs.set_file_contents(path, contents);
                      }
                  }
--            }
-+            },
              vfs::loader::Message::Progress { n_total, n_done, dir, config_version } => {
                  let _p = span!(Level::INFO, "GlobalState::handle_vfs_msg/progress").entered();
                  stdx::always!(config_version <= self.vfs_config_version);
@@ -259,14 +221,6 @@ Rustfmt size:  58838 bytes
                  self.report_progress(
                      "Roots Scanned",
                      state,
-                     Some(Progress::fraction(n_done, n_total)),
-                     None,
-                 );
--            }
-+            },
-         }
-     }
- 
          match task {
              QueuedTask::CheckIfIndexed(uri) => {
                  let snap = self.snapshot();
@@ -274,22 +228,6 @@ Rustfmt size:  58838 bytes
                  self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, move |sender| {
                      let _p = tracing::info_span!("GlobalState::check_if_indexed").entered();
                      tracing::debug!(?uri, "handling uri");
-                         }
-                     }
-                 });
--            }
-+            },
-             QueuedTask::CheckProcMacroSources(modified_rust_files) => {
-                 let analysis = AssertUnwindSafe(self.snapshot().analysis);
-                 self.task_pool.handle.spawn_with_sender(stdx::thread::ThreadIntent::Worker, {
-                         }
-                     }
-                 });
--            }
-+            },
-         }
-     }
- 
                  self.discover_handle = None;
                  self.report_progress(&title, Progress::End, None, None, None);
                  self.discover_workspace_queue.op_completed(());
@@ -297,23 +235,6 @@ Rustfmt size:  58838 bytes
                  let mut config = Config::clone(&*self.config);
                  config.add_discovered_project_from_command(project, buildfile);
                  self.update_configuration(config);
--            }
-+            },
-             DiscoverProjectMessage::Progress { message } => {
-                 self.report_progress(&title, Progress::Report, Some(message), None, None)
--            }
-+            },
-             DiscoverProjectMessage::Error { error, source } => {
-                 self.discover_handle = None;
-                 let message = format!("Project discovery failed: {error}");
-                 self.discover_workspace_queue.op_completed(());
-                 self.show_and_log_error(message.clone(), source);
-                 self.report_progress(&title, Progress::End, Some(message), None, None)
--            }
-+            },
-         }
-     }
- 
                      TestState::Ok => lsp_ext::TestState::Passed,
                      TestState::Failed { stdout } => lsp_ext::TestState::Failed { message: stdout },
                  };
@@ -324,31 +245,6 @@ Rustfmt size:  58838 bytes
                  self.send_notification::<lsp_ext::ChangeTestState>(
                      lsp_ext::ChangeTestStateParams { test_id, state },
                  );
--            }
-+            },
-             CargoTestOutput::Suite => (),
-             CargoTestOutput::Finished => {
-                 self.test_run_remaining_jobs = self.test_run_remaining_jobs.saturating_sub(1);
-                     self.send_notification::<lsp_ext::EndRunTest>(());
-                     self.test_run_session = None;
-                 }
--            }
-+            },
-             CargoTestOutput::Custom { text } => {
-                 self.send_notification::<lsp_ext::AppendOutputToRunTest>(text);
--            }
-+            },
-         }
-     }
- 
-                         }
-                     };
-                 }
--            }
-+            },
-             FlycheckMessage::ClearDiagnostics {
-                 id,
-                 kind: ClearDiagnosticsKind::All(ClearScope::Workspace),
                          (Progress::End, None)
                      }
                  };
@@ -358,11 +254,3 @@ Rustfmt size:  58838 bytes
                  let title = if self.flycheck.len() == 1 {
                      format!("{}", self.config.flycheck(None))
                  } else {
-                     None,
-                     Some(format!("rust-analyzer/flycheck/{id}")),
-                 );
--            }
-+            },
-         }
-     }
- 

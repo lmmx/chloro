@@ -52,10 +52,10 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
                     .structurally_normalize_ty(&ObligationCause::dummy(), self.trait_env.env, ty)
                     .map_err(|_| MirLowerError::NotSupported("can't normalize alias".to_owned()))?;
                 ty.try_super_fold_with(self)
-            },
+            }
             TyKind::Param(param) => Ok(self.subst.as_slice().get(param.index as usize).and_then(|arg| arg.ty()).ok_or_else(|| {
-                MirLowerError::GenericArgNotProvided(param.id.into(), self.subst)
-            })?),
+                    MirLowerError::GenericArgNotProvided(param.id.into(), self.subst)
+                })?),
             _ => ty.try_super_fold_with(self),
         }
     }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6757 bytes
-Chloro size:   6251 bytes
+Chloro size:   6268 bytes
 Rustfmt size:  6791 bytes
 
 ✗ Outputs DIFFER
@@ -49,23 +49,10 @@ Rustfmt size:  6791 bytes
 -            let vis = parent_enum
 -                .visibility()
 -                .map_or(String::new(), |v| format!("{v} "));
--            let method = format!(
-+        let vis = parent_enum.visibility().map_or(String::new(), |v| format!("{v} "));
-+        let method = format!(
++            let vis = parent_enum.visibility().map_or(String::new(), |v| format!("{v} "));
+             let method = format!(
                  "    /// Returns `true` if the {enum_lowercase_name} is [`{variant_name}`].
      ///
-     /// [`{variant_name}`]: {enum_name}::{variant_name}
-         matches!(self, Self::{variant_name}{pattern_suffix})
-     }}",
-             );
--
--            add_method_to_adt(builder, &parent_enum, impl_def, &method);
--        },
-+        add_method_to_adt(builder, &parent_enum, impl_def, &method);
-+    },
-     )
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -55,7 +55,7 @@ impl<'db> FulfillmentError<'db> {
             | FulfillmentErrorCode::ConstEquate(_, _) => true,
             FulfillmentErrorCode::Cycle(_) | FulfillmentErrorCode::Ambiguity { overflow: _ } => {
                 false
-            },
+            }
         }
     }
 }
@@ -633,13 +633,13 @@ impl<'db> NextSolverError<'db> {
         match self {
             NextSolverError::TrueError(obligation) => {
                 fulfillment_error_for_no_solution(infcx, obligation.clone())
-            },
+            }
             NextSolverError::Ambiguity(obligation) => {
                 fulfillment_error_for_stalled(infcx, obligation.clone())
-            },
+            }
             NextSolverError::Overflow(obligation) => {
                 fulfillment_error_for_overflow(infcx, obligation.clone())
-            },
+            }
         }
     }
 }
@@ -739,15 +739,15 @@ mod wf {
             }
 
             self.interner().predicates_of(def_id).iter_instantiated(self.interner(), args).map(|pred| {
-                let cause = ObligationCause::new();
-                Obligation::with_depth(
-                    self.interner(),
-                    cause,
-                    self.recursion_depth,
-                    self.param_env,
-                    pred,
-                )
-            }).filter(
+                    let cause = ObligationCause::new();
+                    Obligation::with_depth(
+                        self.interner(),
+                        cause,
+                        self.recursion_depth,
+                        self.param_env,
+                        pred,
+                    )
+                }).filter(
                 |pred| !pred.has_escaping_bound_vars(),
             ).collect(
             )
@@ -1151,16 +1151,25 @@ mod wf {
             .map(|predicate| predicate.with_self_ty(interner, erased_self_ty));
 
         rustc_type_ir::elaborate::elaborate(interner, predicates).filter_map(|pred| {
-            debug!(?pred);
-            match pred.kind().skip_binder() {
-                ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
-                    if t == &erased_self_ty && !r.has_escaping_bound_vars() {
-                        Some(*r)
-                    } else {
-                        None
+                debug!(?pred);
+                match pred.kind().skip_binder() {
+                    ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
+                        // Search for a bound of the form `erased_self_ty
+                        // : 'a`, but be wary of something like `for<'a>
+                        // erased_self_ty : 'a` (we interpret a
+                        // higher-ranked bound like that as 'static,
+                        // though at present the code in `fulfill.rs`
+                        // considers such bounds to be unsatisfiable, so
+                        // it's kind of a moot point since you could never
+                        // construct such an object, but this seems
+                        // correct even if that code changes).
+                        if t == &erased_self_ty && !r.has_escaping_bound_vars() {
+                            Some(*r)
+                        } else {
+                            None
+                        }
                     }
-                },
-                ClauseKind::Trait(_)
+                    ClauseKind::Trait(_)
                     | ClauseKind::HostEffect(..)
                     | ClauseKind::RegionOutlives(_)
                     | ClauseKind::Projection(_)
@@ -1168,8 +1177,8 @@ mod wf {
                     | ClauseKind::WellFormed(_)
                     | ClauseKind::UnstableFeature(_)
                     | ClauseKind::ConstEvaluatable(_) => None,
-            }
-        }).collect(
+                }
+            }).collect(
         )
     }
 }

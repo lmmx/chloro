@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21087 bytes
-Chloro size:   20785 bytes
+Chloro size:   20817 bytes
 Rustfmt size:  21244 bytes
 
 ✗ Outputs DIFFER
@@ -30,22 +30,6 @@ Rustfmt size:  21244 bytes
  pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      // First, grab the uses that intersect with the current selection.
      let selected_el = match ctx.covering_element() {
-             "Remove all unused imports",
-             selected_el.text_range(),
-             |builder| {
--                let unused: Vec<ast::UseTree> = unused.map(|x| builder.make_mut(x)).collect();
--                for node in unused {
--                    node.remove_recursive();
--                }
--            },
-+            let unused: Vec<ast::UseTree> = unused.map(|x| builder.make_mut(x)).collect();
-+            for node in unused {
-+                node.remove_recursive();
-+            }
-+        },
-         )
-     } else {
-         None
      scope: &mut Vec<SearchScope>,
      path: &[Option<PathResolution>],
  ) -> bool {
@@ -53,14 +37,12 @@ Rustfmt size:  21244 bytes
 -        .iter()
 -        .filter_map(|path| *path)
 -        .filter_map(|res| match res {
--            PathResolution::Def(d) => Some(Definition::from(d)),
--            _ => None,
++    !path.iter().filter_map(|path| *path).filter_map(|res| match res {
+             PathResolution::Def(d) => Some(Definition::from(d)),
+             _ => None,
 -        })
 -        .any(|def| used_once_in_scope(ctx, def, u.rename(), scope))
-+    !path.iter().filter_map(|path| *path).filter_map(|res| match res {
-+        PathResolution::Def(d) => Some(Definition::from(d)),
-+        _ => None,
-+    }).any(
++        }).any(
 +        |def| used_once_in_scope(ctx, def, u.rename(), scope),
 +    )
  }

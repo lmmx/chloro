@@ -27,17 +27,17 @@ pub struct TestItem {
 
 pub(crate) fn discover_test_roots(db: &RootDatabase) -> Vec<TestItem> {
     db.all_crates().iter().copied().filter(|&id| id.data(db).origin.is_local()).filter_map(|id| {
-        let test_id = id.extra_data(db).display_name.as_ref()?.to_string();
-        Some(TestItem {
-            kind: TestItemKind::Crate(id),
-            label: test_id.clone(),
-            id: test_id,
-            parent: None,
-            file: None,
-            text_range: None,
-            runnable: None,
-        })
-    }).collect(
+            let test_id = id.extra_data(db).display_name.as_ref()?.to_string();
+            Some(TestItem {
+                kind: TestItemKind::Crate(id),
+                label: test_id.clone(),
+                id: test_id,
+                parent: None,
+                file: None,
+                text_range: None,
+                runnable: None,
+            })
+        }).collect(
     )
 }
 
@@ -45,7 +45,8 @@ fn find_crate_by_id(db: &RootDatabase, crate_id: &str) -> Option<base_db::Crate>
     // here, we use display_name as the crate id. This is not super ideal, but it works since we
     // only show tests for the local crates.
     db.all_crates().iter().copied().find(|&id| {
-        id.data(db).origin.is_local() && id.extra_data(db).display_name.as_ref().is_some_and(|x| x.to_string() == crate_id)
+        id.data(db).origin.is_local()
+            && id.extra_data(db).display_name.as_ref().is_some_and(|x| x.to_string() == crate_id)
     })
 }
 

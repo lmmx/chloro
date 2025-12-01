@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27066 bytes
-Chloro size:   26376 bytes
+Chloro size:   26481 bytes
 Rustfmt size:  27358 bytes
 
 ✗ Outputs DIFFER
@@ -53,83 +53,29 @@ Rustfmt size:  27358 bytes
      let main_field_ty = types[main_field_i].clone();
  
      acc.add(
-         "Generate single field `From`",
-         strukt.syntax().text_range(),
-         |builder| {
--            let indent = strukt.indent_level();
--            let ty_where_clause = strukt.where_clause();
--            let type_gen_params = strukt.generic_param_list();
+             let indent = strukt.indent_level();
+             let ty_where_clause = strukt.where_clause();
+             let type_gen_params = strukt.generic_param_list();
 -            let type_gen_args = type_gen_params
 -                .as_ref()
 -                .map(|params| params.to_generic_args());
--            let trait_gen_args = Some(make::generic_arg_list([ast::GenericArg::TypeArg(
-+        let indent = strukt.indent_level();
-+        let ty_where_clause = strukt.where_clause();
-+        let type_gen_params = strukt.generic_param_list();
-+        let type_gen_args = type_gen_params.as_ref().map(|params| params.to_generic_args());
-+        let trait_gen_args = Some(make::generic_arg_list([ast::GenericArg::TypeArg(
++            let type_gen_args = type_gen_params.as_ref().map(|params| params.to_generic_args());
+             let trait_gen_args = Some(make::generic_arg_list([ast::GenericArg::TypeArg(
                  make::type_arg(main_field_ty.clone()),
              )]));
--
--            let ty = make::ty(&strukt_name.text());
--
--            let constructor =
-+        let ty = make::ty(&strukt_name.text());
-+        let constructor =
-                 make_adt_constructor(names.as_deref(), constructors, &main_field_name);
--            let body = make::block_expr([], Some(constructor));
--
--            let fn_ = make::fn_(
-+        let body = make::block_expr([], Some(constructor));
-+        let fn_ = make::fn_(
-                 None,
-                 None,
-                 make::name("from"),
-                 false,
              )
              .indent(1.into());
--
+ 
 -            let cfg_attrs = strukt.attrs().filter(|attr| {
 -                attr.as_simple_call()
 -                    .is_some_and(|(name, _arg)| name == "cfg")
 -            });
--
--            let impl_ = make::impl_trait(
-+        let cfg_attrs = strukt
++            let cfg_attrs = strukt
 +                .attrs()
 +                .filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
-+        let impl_ = make::impl_trait(
-                 cfg_attrs,
-                 false,
-                 None,
-                 None,
-             )
-             .clone_for_update();
--
--            impl_.get_or_create_assoc_item_list().add_item(fn_.into());
--            let impl_ = impl_.indent(indent);
--
--            let mut edit = builder.make_editor(strukt.syntax());
--
--            edit.insert_all(
-+        impl_.get_or_create_assoc_item_list().add_item(fn_.into());
-+        let impl_ = impl_.indent(indent);
-+        let mut edit = builder.make_editor(strukt.syntax());
-+        edit.insert_all(
-                 Position::after(strukt.syntax()),
-                 vec![
-                     make::tokens::whitespace(&format!("\n\n{indent}")).syntax_element(),
-                     impl_.syntax().syntax_element(),
-                 ],
-             );
--
--            builder.add_file_edits(ctx.vfs_file_id(), edit);
--        },
-+        builder.add_file_edits(ctx.vfs_file_id(), edit);
-+    },
-     )
- }
  
+             let impl_ = make::impl_trait(
+                 cfg_attrs,
      types: &[ast::Type],
  ) -> Vec<Option<ast::Expr>> {
      let (db, sema) = (ctx.db(), &ctx.sema);
@@ -139,27 +85,17 @@ Rustfmt size:  27358 bytes
 -    types
 -        .iter()
 -        .map(|ty| {
--            let ty = sema.resolve_type(ty)?;
--            if ty.is_unit() {
 +    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
 +    types.iter().map(|ty| {
-+        let ty = sema.resolve_type(ty)?;
-+        if ty.is_unit() {
+             let ty = sema.resolve_type(ty)?;
+             if ty.is_unit() {
                  return Some(make::expr_tuple([]).into());
-             }
--            let item_in_ns = ModuleDef::Adt(ty.as_adt()?).into();
--            let edition = module.krate().edition(db);
--
--            let ty_path = module.find_path(db, item_for_path_search(db, item_in_ns)?, cfg)?;
--
--            use_trivial_constructor(db, mod_path_to_ast(&ty_path, edition), &ty, edition)
+             let ty_path = module.find_path(db, item_for_path_search(db, item_in_ns)?, cfg)?;
+ 
+             use_trivial_constructor(db, mod_path_to_ast(&ty_path, edition), &ty, edition)
 -        })
 -        .collect()
-+        let item_in_ns = ModuleDef::Adt(ty.as_adt()?).into();
-+        let edition = module.krate().edition(db);
-+        let ty_path = module.find_path(db, item_for_path_search(db, item_in_ns)?, cfg)?;
-+        use_trivial_constructor(db, mod_path_to_ast(&ty_path, edition), &ty, edition)
-+    }).collect(
++        }).collect(
 +    )
  }
  
@@ -178,7 +114,7 @@ Rustfmt size:  27358 bytes
 +            let names = fields.fields().map(|field| field.name()).collect::<Option<_>>()?;
 +            let types = fields.fields().map(|field| field.ty()).collect::<Option<_>>()?;
              (Some(names), types)
--        }
+         }
 -        ast::StructKind::Tuple(fields) => (
 -            None,
 -            fields
@@ -186,10 +122,9 @@ Rustfmt size:  27358 bytes
 -                .map(|field| field.ty())
 -                .collect::<Option<_>>()?,
 -        ),
-+        },
 +        ast::StructKind::Tuple(fields) => {
 +            (None, fields.fields().map(|field| field.ty()).collect::<Option<_>>()?)
-+        },
++        }
      })
  }
  

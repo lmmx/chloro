@@ -40,13 +40,13 @@ pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'
         "Convert match to let-else",
         let_stmt.syntax().text_range(),
         |builder| {
-        let extracting_arm_pat =
+            let extracting_arm_pat =
                 rename_variable(&extracting_arm_pat, &extracted_variable_positions, pat);
-        builder.replace(
-            let_stmt.syntax().text_range(),
-            format!("let {extracting_arm_pat} = {initializer_expr} else {diverging_arm_expr};"),
-        )
-    },
+            builder.replace(
+                let_stmt.syntax().text_range(),
+                format!("let {extracting_arm_pat} = {initializer_expr} else {diverging_arm_expr};"),
+            )
+        },
     )
 }
 
@@ -74,7 +74,7 @@ fn find_arms(
         _ => {
             cov_mark::hit!(non_diverging_match);
             None
-        },
+        }
     }
 }
 
@@ -87,14 +87,14 @@ fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Opti
                     let source =
                         local.sources(ctx.db()).into_iter().map(|x| x.into_ident_pat()?.name());
                     source.collect()
-                },
+                }
                 _ => None,
             }
-        },
+        }
         _ => {
             cov_mark::hit!(extracting_arm_is_not_an_identity_expr);
             None
-        },
+        }
     }
 }
 

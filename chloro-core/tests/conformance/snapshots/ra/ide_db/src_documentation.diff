@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11810 bytes
-Chloro size:   11711 bytes
+Chloro size:   11706 bytes
 Rustfmt size:  12398 bytes
 
 ✗ Outputs DIFFER
@@ -64,12 +64,10 @@ Rustfmt size:  12398 bytes
 -                    },
 -                    idx,
 -                ))
--            }
 +                Some((InFile { file_id, value: range }, idx))
-+            },
+             }
              Either::Right(comment) => {
                  let text_range = comment.syntax().text_range();
-                 let range = TextRange::at(
                          + relative_range.start(),
                      text_range.len().min(range.len()),
                  );
@@ -80,12 +78,10 @@ Rustfmt size:  12398 bytes
 -                    },
 -                    idx,
 -                ))
--            }
 +                Some((InFile { file_id, value: range }, idx))
-+            },
+             }
          }
      }
- 
                  (buf_offset, id, base_offset)
              })
              .collect_vec();
@@ -130,24 +126,18 @@ Rustfmt size:  12398 bytes
              });
  
              buf.extend(Itertools::intersperse(lines, "\n"));
-                 decl_docs.push('\n');
                  decl_docs += &crate_docs;
                  Some(decl_docs)
--            }
+             }
 -        }
 -        .map(Documentation::new)
-+            },
 +        }.map(
 +            Documentation::new,
 +        )
      }
  
      fn docs_with_rangemap(self, db: &dyn HirDatabase) -> Option<(Documentation, DocsRangeMap)> {
-                 let crate_range_map = crate_range_map.shift_docstring_line_range(offset);
-                 decl_range_map.mapping.extend(crate_range_map.mapping);
-                 Some((Documentation(decl_docs), decl_range_map))
--            }
-+            },
+             }
          }
      }
 +
@@ -166,11 +156,8 @@ Rustfmt size:  12398 bytes
          None => {
 -            // FIXME: See highlight injection for what to do here
              None
--        }
-+        },
+         }
          _ => None,
-     }
- }
  
  fn doc_indent(attrs: &hir::Attrs) -> usize {
      let mut min = !0;

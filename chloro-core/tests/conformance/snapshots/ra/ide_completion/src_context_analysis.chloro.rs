@@ -154,8 +154,8 @@ fn expand_maybe_stop(
 
     // But hopefully checking just the real one should be enough.
     if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset).is_some_and(|original_token| {
-        !sema.is_inside_macro_call(original_file.with_value(&original_token))
-    }) {
+            !sema.is_inside_macro_call(original_file.with_value(&original_token))
+        }) {
         Some(ExpansionResult {
             original_file: original_file.value,
             speculative_file,
@@ -396,22 +396,23 @@ fn expand(
             let mut accumulated_offset_from_fake_tokens = 0;
             let actual_range = actual_expansion.text_range().end();
             fake_mapped_tokens.into_iter().filter_map(|(fake_mapped_token, rank)| {
-                let accumulated_offset = accumulated_offset_from_fake_tokens;
-                if !fake_mapped_token.text().contains(COMPLETION_MARKER) {
+                    let accumulated_offset = accumulated_offset_from_fake_tokens;
+                    if !fake_mapped_token.text().contains(COMPLETION_MARKER) {
                         // Proc macros can make the same span with different text, we don't
                         // want them to participate in completion because the macro author probably
                         // didn't intend them to.
                         return None;
                     }
-                accumulated_offset_from_fake_tokens += COMPLETION_MARKER.len();
-                let new_offset = fake_mapped_token.text_range().start()
+                    accumulated_offset_from_fake_tokens += COMPLETION_MARKER.len();
+
+                    let new_offset = fake_mapped_token.text_range().start()
                         - TextSize::new(accumulated_offset as u32);
-                if new_offset + relative_offset > actual_range {
+                    if new_offset + relative_offset > actual_range {
                         // offset outside of bounds from the original expansion,
                         // stop here to prevent problems from happening
                         return None;
                     }
-                let result = expand_maybe_stop(
+                    let result = expand_maybe_stop(
                         sema,
                         actual_expansion.clone(),
                         fake_expansion.clone(),
@@ -419,13 +420,13 @@ fn expand(
                         fake_mapped_token,
                         relative_offset,
                     )?;
-                Some((result, rank))
-            }).min_by_key(
+                    Some((result, rank))
+                }).min_by_key(
                 |(_, rank)| *rank,
             ).map(
                 |(result, _)| result,
             )
-        },
+        }
         _ => None,
     }
 }
@@ -1661,8 +1662,8 @@ fn has_parens(node: &dyn HasArgList) -> bool {
         it.prev_sibling_or_token()
     });
     prev_siblings.take_while(|syntax| syntax.kind().is_trivia()).filter_map(|syntax| {
-        syntax.into_token().filter(|token| token.kind() == SyntaxKind::WHITESPACE)
-    }).all(
+            syntax.into_token().filter(|token| token.kind() == SyntaxKind::WHITESPACE)
+        }).all(
         |whitespace| !whitespace.text().contains('\n'),
     )
 }
@@ -1886,10 +1887,10 @@ fn is_in_token_of_for_loop(path: &ast::Path) -> bool {
         Some(match next_sibl {
             syntax::NodeOrToken::Node(n) => {
                 n.text_range().start() == path.syntax().text_range().start()
-            },
+            }
             syntax::NodeOrToken::Token(t) => {
                 t.text_range().start() == path.syntax().text_range().start()
-            },
+            }
         })
     })(
     ).unwrap_or(
@@ -1901,7 +1902,7 @@ fn is_in_breakable(node: &SyntaxNode) -> Option<(BreakableKind, SyntaxNode)> {
     node.ancestors().take_while(
         |it| it.kind() != SyntaxKind::FN && it.kind() != SyntaxKind::CLOSURE_EXPR,
     ).find_map(|it| {
-        let (breakable, loop_body) = match_ast! {
+            let (breakable, loop_body) = match_ast! {
                 match it {
                     ast::ForExpr(it) => (BreakableKind::For, it.loop_body()?),
                     ast::WhileExpr(it) => (BreakableKind::While, it.loop_body()?),
@@ -1910,8 +1911,9 @@ fn is_in_breakable(node: &SyntaxNode) -> Option<(BreakableKind, SyntaxNode)> {
                     _ => return None,
                 }
             };
-        loop_body.syntax().text_range().contains_range(node.text_range()).then_some((breakable, it))
-    })
+            loop_body.syntax().text_range().contains_range(node.text_range())
+                .then_some((breakable, it))
+        })
 }
 
 fn is_in_block(node: &SyntaxNode) -> bool {

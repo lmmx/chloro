@@ -42,10 +42,10 @@ pub(crate) fn convert_named_struct_to_tuple_struct(
         "Convert to tuple struct",
         strukt_or_variant.syntax().text_range(),
         |edit| {
-        edit_field_references(ctx, edit, record_fields.fields());
-        edit_struct_references(ctx, edit, strukt_def);
-        edit_struct_def(ctx, edit, &strukt_or_variant, record_fields);
-    },
+            edit_field_references(ctx, edit, record_fields.fields());
+            edit_struct_references(ctx, edit, strukt_def);
+            edit_struct_def(ctx, edit, &strukt_or_variant, record_fields);
+        },
     )
 }
 

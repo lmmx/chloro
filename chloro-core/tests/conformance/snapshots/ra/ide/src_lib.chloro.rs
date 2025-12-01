@@ -272,14 +272,7 @@ impl Analysis {
         expanded: &ast::String,
         minicore: MiniCore<'_>,
     ) -> Option<(Analysis, RaFixtureAnalysis)> {
-        Self::from_ra_fixture_with_on_cursor(
-            sema,
-            literal,
-            expanded,
-            minicore,
-            &mut |_| {
-        },
-        )
+        Self::from_ra_fixture_with_on_cursor(sema, literal, expanded, minicore, &mut |_| {})
     }
 
     /// Like [`Analysis::from_ra_fixture()`], but also calls `on_cursor` with the cursor position.
@@ -328,6 +321,7 @@ impl Analysis {
         // FIXME edition
         self.with_db(|db| {
             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
+
             db.parse(editioned_file_id_wrapper).tree()
         })
     }
@@ -497,6 +491,7 @@ impl Analysis {
     pub fn folding_ranges(&self, file_id: FileId) -> Cancellable<Vec<Fold>> {
         self.with_db(|db| {
             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
+
             folding_ranges::folding_ranges(&db.parse(editioned_file_id_wrapper).tree())
         })
     }
@@ -507,17 +502,14 @@ impl Analysis {
         // if we were to attach it here.
         Cancelled::catch(|| {
             let symbols = symbol_index::world_symbols(&self.db, query);
-            hir::attach_db(
-                &self.db,
-                || {
-                symbols.into_iter().filter_map(|s| s.try_to_nav(&Semantics::new(&self.db))).take(
-                    limit,
-                ).map(
-                    UpmappingResult::call_site,
-                ).collect::<Vec<_>>(
-                )
-            },
-            )
+            hir::attach_db(&self.db, || {
+                symbols
+                    .into_iter()
+                    .filter_map(|s| s.try_to_nav(&Semantics::new(&self.db)))
+                    .take(limit)
+                    .map(UpmappingResult::call_site)
+                    .collect::<Vec<_>>()
+            })
         })
     }
 
@@ -820,9 +812,11 @@ impl Analysis {
             };
             let ssr_assists = ssr::ssr_assists(db, &resolve, frange);
             let assists = ide_assists::assists(db, assist_config, resolve, frange);
+
             let mut res = diagnostic_assists;
             res.extend(ssr_assists);
             res.extend(assists);
+
             res
         })
     }

@@ -551,7 +551,7 @@ impl ModuleId {
             None => {
                 let def_map = crate_local_def_map(db, self.krate);
                 (def_map.def_map(db), def_map.local(db))
-            },
+            }
         }
     }
 
@@ -571,11 +571,7 @@ impl ModuleId {
         let def_map = self.def_map(db);
         let parent = def_map[self.local_id].parent?;
         def_map[parent].children.iter().find_map(|(name, module_id)| {
-            if *module_id == self.local_id {
-                Some(name.clone())
-            } else {
-                None
-            }
+            if *module_id == self.local_id { Some(name.clone()) } else { None }
         })
     }
 
@@ -809,13 +805,13 @@ impl GeneralConstId {
         match self {
             GeneralConstId::StaticId(it) => {
                 db.static_signature(it).name.display(db, Edition::CURRENT).to_string()
-            },
+            }
             GeneralConstId::ConstId(const_id) => {
                 db.const_signature(const_id).name.as_ref().map_or_else(
                     || "_".to_owned(),
                     |name| name.display(db, Edition::CURRENT).to_string(),
                 )
-            },
+            }
         }
     }
 }

@@ -84,6 +84,12 @@ impl<'db> ObligationStorage<'db> {
 
     fn on_fulfillment_overflow(&mut self, infcx: &InferCtxt<'db>) {
         infcx.probe(|_| {
+            // IMPORTANT: we must not use solve any inference variables in the obligations
+            // as this is all happening inside of a probe. We use a probe to make sure
+            // we get all obligations involved in the overflow. We pretty much check: if
+            // we were to do another step of `try_evaluate_obligations`, which goals would
+            // change.
+            // FIXME: <https://github.com/Gankra/thin-vec/pull/66> is merged, this can be removed.
             self.overflowed.extend(
                 self.pending
                     .extract_if(.., |(o, stalled_on)| {
@@ -245,8 +251,8 @@ impl<'db> FulfillmentCtxt<'db> {
         }
 
         self.obligations.drain_pending(|obl| {
-            infcx.probe(|_| {
-                infcx
+                infcx.probe(|_| {
+                    infcx
                         .visit_proof_tree(
                             obl.as_goal(),
                             &mut StalledOnCoroutines {
@@ -255,8 +261,8 @@ impl<'db> FulfillmentCtxt<'db> {
                             },
                         )
                         .is_break()
-            })
-        }).into_iter(
+                })
+            }).into_iter(
         ).map(
             |(o, _)| o,
         ).collect(

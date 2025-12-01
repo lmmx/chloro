@@ -40,37 +40,37 @@ impl std::fmt::Debug for SolverDefId {
         match *self {
             SolverDefId::AdtId(AdtId::StructId(id)) => {
                 f.debug_tuple("AdtId").field(&db.struct_signature(id).name.as_str()).finish()
-            },
+            }
             SolverDefId::AdtId(AdtId::EnumId(id)) => {
                 f.debug_tuple("AdtId").field(&db.enum_signature(id).name.as_str()).finish()
-            },
+            }
             SolverDefId::AdtId(AdtId::UnionId(id)) => {
                 f.debug_tuple("AdtId").field(&db.union_signature(id).name.as_str()).finish()
-            },
+            }
             SolverDefId::ConstId(id) => f.debug_tuple("ConstId").field(
                 &db.const_signature(id).name.as_ref().map_or("_", |name| name.as_str()),
             ).finish(
             ),
             SolverDefId::FunctionId(id) => {
                 f.debug_tuple("FunctionId").field(&db.function_signature(id).name.as_str()).finish()
-            },
+            }
             SolverDefId::ImplId(id) => f.debug_tuple("ImplId").field(&id).finish(),
             SolverDefId::StaticId(id) => {
                 f.debug_tuple("StaticId").field(&db.static_signature(id).name.as_str()).finish()
-            },
+            }
             SolverDefId::TraitId(id) => {
                 f.debug_tuple("TraitId").field(&db.trait_signature(id).name.as_str()).finish()
-            },
+            }
             SolverDefId::TypeAliasId(id) => f.debug_tuple("TypeAliasId").field(&db.type_alias_signature(id).name.as_str()).finish(),
             SolverDefId::InternedClosureId(id) => {
                 f.debug_tuple("InternedClosureId").field(&id).finish()
-            },
+            }
             SolverDefId::InternedCoroutineId(id) => {
                 f.debug_tuple("InternedCoroutineId").field(&id).finish()
-            },
+            }
             SolverDefId::InternedOpaqueTyId(id) => {
                 f.debug_tuple("InternedOpaqueTyId").field(&id).finish()
-            },
+            }
             SolverDefId::EnumVariantId(id) => {
                 let parent_enum = id.loc(db).parent;
                 f.debug_tuple("EnumVariantId").field(&format_args!(
@@ -79,10 +79,10 @@ impl std::fmt::Debug for SolverDefId {
                         parent_enum.enum_variants(db).variant_name_by_id(id).unwrap().as_str()
                     )).finish(
                 )
-            },
+            }
             SolverDefId::Ctor(Ctor::Struct(id)) => {
                 f.debug_tuple("Ctor").field(&db.struct_signature(id).name.as_str()).finish()
-            },
+            }
             SolverDefId::Ctor(Ctor::Enum(id)) => {
                 let parent_enum = id.loc(db).parent;
                 f.debug_tuple("Ctor").field(&format_args!(
@@ -91,7 +91,7 @@ impl std::fmt::Debug for SolverDefId {
                         parent_enum.enum_variants(db).variant_name_by_id(id).unwrap().as_str()
                     )).finish(
                 )
-            },
+            }
         }
     }
 }

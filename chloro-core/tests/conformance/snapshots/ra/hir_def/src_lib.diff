@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43778 bytes
+Chloro size:   43719 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -365,14 +365,6 @@ Rustfmt size:  45085 bytes
          if block.is_none() && local_id == DefMap::ROOT {
              Ok(CrateRootModuleId { krate })
          } else {
-             None => {
-                 let def_map = crate_local_def_map(db, self.krate);
-                 (def_map.def_map(db), def_map.local(db))
--            }
-+            },
-         }
-     }
- 
      pub fn name(self, db: &dyn DefDatabase) -> Option<Name> {
          let def_map = self.def_map(db);
          let parent = def_map[self.local_id].parent?;
@@ -387,11 +379,7 @@ Rustfmt size:  45085 bytes
 -                }
 -            })
 +        def_map[parent].children.iter().find_map(|(name, module_id)| {
-+            if *module_id == self.local_id {
-+                Some(name.clone())
-+            } else {
-+                None
-+            }
++            if *module_id == self.local_id { Some(name.clone()) } else { None }
 +        })
      }
  
@@ -455,17 +443,10 @@ Rustfmt size:  45085 bytes
 -                .to_string(),
 +            GeneralConstId::StaticId(it) => {
 +                db.static_signature(it).name.display(db, Edition::CURRENT).to_string()
-+            },
++            }
              GeneralConstId::ConstId(const_id) => {
                  db.const_signature(const_id).name.as_ref().map_or_else(
                      || "_".to_owned(),
-                     |name| name.display(db, Edition::CURRENT).to_string(),
-                 )
--            }
-+            },
-         }
-     }
- }
      StaticId(StaticId),
      ConstId(ConstId),
      VariantId(EnumVariantId),

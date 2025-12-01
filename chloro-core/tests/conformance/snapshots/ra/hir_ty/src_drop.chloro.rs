@@ -85,36 +85,37 @@ fn has_drop_glue_impl<'db>(
                         return DropGlue::None;
                     }
                     db.field_types(id.into()).iter().map(|(_, field_ty)| {
-                        has_drop_glue_impl(
-                            infcx,
-                            field_ty.instantiate(infcx.interner, subst),
-                            env.clone(),
-                            visited,
-                        )
-                    }).max(
+                            has_drop_glue_impl(
+                                infcx,
+                                field_ty.instantiate(infcx.interner, subst),
+                                env.clone(),
+                                visited,
+                            )
+                        }).max(
                     ).unwrap_or(
                         DropGlue::None,
                     )
-                },
+                }
                 AdtId::UnionId(_) => DropGlue::None,
                 AdtId::EnumId(id) => id.enum_variants(db).variants.iter().map(|&(variant, _, _)| {
-                    db.field_types(variant.into()).iter().map(|(_, field_ty)| {
-                        has_drop_glue_impl(
-                            infcx,
-                            field_ty.instantiate(infcx.interner, subst),
-                            env.clone(),
-                            visited,
-                        )
+                        db.field_types(variant.into())
+                            .iter()
+                            .map(|(_, field_ty)| {
+                                has_drop_glue_impl(
+                                    infcx,
+                                    field_ty.instantiate(infcx.interner, subst),
+                                    env.clone(),
+                                    visited,
+                                )
+                            })
+                            .max()
+                            .unwrap_or(DropGlue::None)
                     }).max(
-                    ).unwrap_or(
-                        DropGlue::None,
-                    )
-                }).max(
                 ).unwrap_or(
                     DropGlue::None,
                 ),
             }
-        },
+        }
         TyKind::Tuple(tys) => tys.iter().map(|ty| has_drop_glue_impl(infcx, ty, env.clone(), visited)).max().unwrap_or(
             DropGlue::None,
         ),
@@ -124,7 +125,7 @@ fn has_drop_glue_impl<'db>(
                 return DropGlue::None;
             }
             has_drop_glue_impl(infcx, ty, env, visited)
-        },
+        }
         TyKind::Slice(ty) => has_drop_glue_impl(infcx, ty, env, visited),
         TyKind::Closure(closure_id, subst) => {
             let owner = db.lookup_intern_closure(closure_id.0).0;
@@ -132,15 +133,15 @@ fn has_drop_glue_impl<'db>(
             let (captures, _) = infer.closure_info(closure_id.0);
             let env = db.trait_environment_for_body(owner);
             captures.iter().map(|capture| {
-                has_drop_glue_impl(infcx, capture.ty(db, subst), env.clone(), visited)
-            }).max(
+                    has_drop_glue_impl(infcx, capture.ty(db, subst), env.clone(), visited)
+                }).max(
             ).unwrap_or(
                 DropGlue::None,
             )
-        },
+        }
         TyKind::Coroutine(..) | TyKind::CoroutineWitness(..) | TyKind::CoroutineClosure(..) => {
             DropGlue::None
-        },
+        }
         TyKind::Ref(..)
         | TyKind::RawPtr(..)
         | TyKind::FnDef(..)
@@ -163,18 +164,18 @@ fn has_drop_glue_impl<'db>(
             } else {
                 DropGlue::HasDropGlue
             }
-        },
+        }
         TyKind::Param(_) => {
             if infcx.type_is_copy_modulo_regions(env.env, ty) {
                 DropGlue::None
             } else {
                 DropGlue::DependOnParams
             }
-        },
+        }
         TyKind::Infer(..) => unreachable!("inference vars shouldn't exist out of inference"),
         TyKind::Pat(..) | TyKind::UnsafeBinder(..) => {
             never!("we do not handle pattern and unsafe binder types");
             DropGlue::None
-        },
+        }
     }
 }

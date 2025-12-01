@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11079 bytes
-Chloro size:   10891 bytes
+Chloro size:   10884 bytes
 Rustfmt size:  11433 bytes
 
 ✗ Outputs DIFFER
@@ -49,8 +49,7 @@ Rustfmt size:  11433 bytes
              GenericArgKind::Lifetime(_) => {
 -                // Lifetimes should not change affect trait selection.
                  false
--            }
-+            },
+             }
              GenericArgKind::Type(ty) => {
                  if let TyKind::Infer(infer_ty) = ty.kind() {
                      match infer_ty {
@@ -59,33 +58,10 @@ Rustfmt size:  11433 bytes
 -                            .is_err_and(|_| self.root_var(vid) == vid),
 +                        InferTy::TyVar(vid) => {
 +                            !self.probe_ty_var(vid).is_err_and(|_| self.root_var(vid) == vid)
-+                        },
++                        }
                          InferTy::IntVar(vid) => {
                              let mut inner = self.inner.borrow_mut();
                              !matches!(
-                                 IntVarValue::Unknown
-                                     if inner.int_unification_table().find(vid) == vid
-                             )
--                        }
-+                        },
-                         InferTy::FloatVar(vid) => {
-                             let mut inner = self.inner.borrow_mut();
-                             !matches!(
-                                 FloatVarValue::Unknown
-                                     if inner.float_unification_table().find(vid) == vid
-                             )
--                        }
-+                        },
-                         InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => {
-                             true
--                        }
-+                        },
-                     }
-                 } else {
-                     true
-                 }
--            }
-+            },
              GenericArgKind::Const(ct) => {
                  if let ConstKind::Infer(infer_ct) = ct.kind() {
                      match infer_ct {
@@ -96,13 +72,6 @@ Rustfmt size:  11433 bytes
                          InferConst::Fresh(_) => true,
                      }
                  } else {
-                     true
-                 }
--            }
-+            },
-         }
-     }
- 
      }
  
      fn equate_float_vids_raw(&self, a: rustc_type_ir::FloatVid, b: rustc_type_ir::FloatVid) {

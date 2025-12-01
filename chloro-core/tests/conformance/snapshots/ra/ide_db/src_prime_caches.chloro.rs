@@ -216,7 +216,7 @@ pub fn parallel_prime_caches(
         match progress {
             ParallelPrimeCacheWorkerProgress::BeginCrateDefMap { crate_id, crate_name } => {
                 crates_currently_indexing.insert(crate_id, crate_name);
-            },
+            }
             ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {
                 crates_currently_indexing.swap_remove(&crate_id);
                 crate_def_maps_done += 1;
@@ -247,12 +247,12 @@ pub fn parallel_prime_caches(
                         symbols_work_sender.send(module).ok();
                     }
                 }
-            },
+            }
             ParallelPrimeCacheWorkerProgress::EndCrateImportMap => crate_import_maps_done += 1,
             ParallelPrimeCacheWorkerProgress::EndModuleSymbols => module_symbols_done += 1,
             ParallelPrimeCacheWorkerProgress::Cancelled(cancelled) => {
                 std::panic::resume_unwind(Box::new(cancelled));
-            },
+            }
         }
     }
 }

@@ -67,7 +67,7 @@ fn validate_type_recursively(
         ),
         (true, Some(ty)) if refed && ty.is_slice() => {
             validate_type_recursively(ctx, ty.as_slice().as_ref(), false, fuel - 1)
-        },
+        }
         (_, Some(ty)) => match ty.as_builtin() {
             Some(builtin) if refed || !builtin.is_str() => Some(()),
             _ => None,

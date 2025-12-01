@@ -71,8 +71,8 @@ fn add_vis(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
         "Change visibility to pub(crate)",
         target,
         |edit| {
-        edit.insert(offset, "pub(crate) ");
-    },
+            edit.insert(offset, "pub(crate) ");
+        },
     )
 }
 

@@ -225,7 +225,7 @@ fn generate_impl(
             let source_scope = ctx.sema.scope(bound_def.syntax())?;
             let transform = PathTransform::generic_transformation(&target_scope, &source_scope);
             ast::Impl::cast(transform.apply(delegate.syntax()))
-        },
+        }
         Delegee::Impls(trait_, old_impl) => {
             let old_impl = ctx.sema.source(old_impl.to_owned())?.value;
             let old_impl_params = old_impl.generic_param_list();
@@ -310,7 +310,7 @@ fn generate_impl(
                 remove_useless_where_clauses(&delegate.trait_()?, &delegate.self_ty()?, wc);
             }
             Some(delegate)
-        },
+        }
     }
 }
 
@@ -348,7 +348,9 @@ fn remove_instantiated_params(
     match self_ty {
         ast::Type::PathType(path_type) => {
             old_impl_params.and_then(|gpl| {
+                // Remove generic parameters in field_ty (which is instantiated).
                 let new_gpl = gpl.clone_for_update();
+
                 path_type
                     .path()?
                     .segments()
@@ -361,7 +363,7 @@ fn remove_instantiated_params(
                     .for_each(|arg| new_gpl.remove_generic_arg(&arg));
                 (new_gpl.generic_params().count() > 0).then_some(new_gpl)
             })
-        },
+        }
         _ => old_impl_params,
     }
 }
@@ -524,7 +526,7 @@ fn resolve_name_conflicts(
                 }
             }
             Some(params)
-        },
+        }
         (Some(old_strukt_gpl), None) => Some(old_strukt_gpl),
         _ => None,
     }
@@ -540,7 +542,7 @@ fn process_assoc_item(
         AssocItem::Fn(f) => func_assoc_item(f, qual_path_ty, base_name),
         AssocItem::MacroCall(_) => {
             None
-        },
+        }
         AssocItem::TypeAlias(ta) => ty_assoc_item(ta, qual_path_ty),
     }
 }

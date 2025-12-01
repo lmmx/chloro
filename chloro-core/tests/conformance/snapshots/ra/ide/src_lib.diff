@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   33191 bytes
+Chloro size:   33078 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -213,21 +213,6 @@ Rustfmt size:  33868 bytes
              false,
              proc_macro_cwd,
              Arc::new(CrateWorkspaceData {
-         expanded: &ast::String,
-         minicore: MiniCore<'_>,
-     ) -> Option<(Analysis, RaFixtureAnalysis)> {
--        Self::from_ra_fixture_with_on_cursor(sema, literal, expanded, minicore, &mut |_| {})
-+        Self::from_ra_fixture_with_on_cursor(
-+            sema,
-+            literal,
-+            expanded,
-+            minicore,
-+            &mut |_| {
-+        },
-+        )
-     }
- 
-     /// Like [`Analysis::from_ra_fixture()`], but also calls `on_cursor` with the cursor position.
      ) -> Option<(Analysis, RaFixtureAnalysis)> {
          let analysis =
              RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
@@ -241,13 +226,6 @@ Rustfmt size:  33868 bytes
      }
  
      /// Debug info about the current state of the analysis.
-         // FIXME edition
-         self.with_db(|db| {
-             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
--
-             db.parse(editioned_file_id_wrapper).tree()
-         })
-     }
          self.with_db(test_explorer::discover_test_roots)
      }
  
@@ -278,38 +256,6 @@ Rustfmt size:  33868 bytes
      pub fn inlay_hints_resolve(
          &self,
          config: &InlayHintsConfig<'_>,
-     pub fn folding_ranges(&self, file_id: FileId) -> Cancellable<Vec<Fold>> {
-         self.with_db(|db| {
-             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
--
-             folding_ranges::folding_ranges(&db.parse(editioned_file_id_wrapper).tree())
-         })
-     }
-         // if we were to attach it here.
-         Cancelled::catch(|| {
-             let symbols = symbol_index::world_symbols(&self.db, query);
--            hir::attach_db(&self.db, || {
--                symbols
--                    .into_iter()
--                    .filter_map(|s| s.try_to_nav(&Semantics::new(&self.db)))
--                    .take(limit)
--                    .map(UpmappingResult::call_site)
--                    .collect::<Vec<_>>()
--            })
-+            hir::attach_db(
-+                &self.db,
-+                || {
-+                symbols.into_iter().filter_map(|s| s.try_to_nav(&Semantics::new(&self.db))).take(
-+                    limit,
-+                ).map(
-+                    UpmappingResult::call_site,
-+                ).collect::<Vec<_>>(
-+                )
-+            },
-+            )
-         })
-     }
- 
          position: FilePosition,
          imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe,
      ) -> Cancellable<Vec<TextEdit>> {
@@ -321,17 +267,6 @@ Rustfmt size:  33868 bytes
      }
  
      /// Computes the set of parser level diagnostics for the given file.
-             };
-             let ssr_assists = ssr::ssr_assists(db, &resolve, frange);
-             let assists = ide_assists::assists(db, assist_config, resolve, frange);
--
-             let mut res = diagnostic_assists;
-             res.extend(ssr_assists);
-             res.extend(assists);
--
-             res
-         })
-     }
              let mut match_finder =
                  ide_ssr::MatchFinder::in_context(db, resolve_context, selections)?;
              match_finder.add_rule(rule)?;

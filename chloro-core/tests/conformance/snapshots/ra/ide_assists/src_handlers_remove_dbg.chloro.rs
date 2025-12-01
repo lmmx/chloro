@@ -102,7 +102,7 @@ fn compute_dbg_replacement(
                     _ => (vec![macro_call.syntax().clone().into()], Some(make::ext::expr_unit())),
                 }
             }
-        },
+        }
         exprs if ast::ExprStmt::can_cast(parent.kind()) && exprs.iter().all(pure_expr) => {
             let mut replace = vec![parent.clone().into()];
             if let Some(prev_sibling) = parent.prev_sibling_or_token()
@@ -111,7 +111,7 @@ fn compute_dbg_replacement(
                 replace.push(prev_sibling);
             }
             (replace, None)
-        },
+        }
         [expr] => {
             let wrap = match ast::Expr::cast(parent) {
                 Some(parent) => match (expr, parent) {
@@ -151,12 +151,12 @@ fn compute_dbg_replacement(
             let expr = replace_nested_dbgs(expr.clone());
             let expr = if wrap { make::expr_paren(expr).into() } else { expr.clone_subtree() };
             (vec![macro_call.syntax().clone().into()], Some(expr))
-        },
+        }
         exprs => {
             let exprs = exprs.iter().cloned().map(replace_nested_dbgs);
             let expr = make::expr_tuple(exprs);
             (vec![macro_call.syntax().clone().into()], Some(expr.into()))
-        },
+        }
     })
 }
 

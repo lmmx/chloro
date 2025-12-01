@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   223745 bytes
+Chloro size:   224421 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -235,16 +235,13 @@ Rustfmt size:  227843 bytes
 -            .dependencies
 -            .iter()
 -            .map(|dep| {
--                let krate = Crate { id: dep.crate_id };
--                let name = dep.as_name();
--                CrateDependency { krate, name }
++        self.id.data(db).dependencies.iter().map(|dep| {
+                 let krate = Crate { id: dep.crate_id };
+                 let name = dep.as_name();
+                 CrateDependency { krate, name }
 -            })
 -            .collect()
-+        self.id.data(db).dependencies.iter().map(|dep| {
-+            let krate = Crate { id: dep.crate_id };
-+            let name = dep.as_name();
-+            CrateDependency { krate, name }
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -270,17 +267,15 @@ Rustfmt size:  227843 bytes
          let _p = tracing::info_span!("query_external_importables").entered();
 -        import_map::search_dependencies(db, self.into(), &query).into_iter().map(
 -            |(item, do_not_complete)| {
--                let item = match ItemInNs::from(item) {
 +        import_map::search_dependencies(db, self.into(), &query).into_iter().map(|(item, do_not_complete)| {
-+            let item = match ItemInNs::from(item) {
+                 let item = match ItemInNs::from(item) {
                      ItemInNs::Types(mod_id) | ItemInNs::Values(mod_id) => Either::Left(mod_id),
                      ItemInNs::Macros(mac_id) => Either::Right(mac_id),
                  };
--                (item, do_not_complete)
+                 (item, do_not_complete)
 -            },
 -        )
-+            (item, do_not_complete)
-+        })
++            })
      }
  
      pub fn all(db: &dyn HirDatabase) -> Vec<Crate> {
@@ -291,12 +286,11 @@ Rustfmt size:  227843 bytes
 -            .iter()
 -            .copied()
 -            .find(|&krate| {
--                matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Core))
++        db.all_crates().iter().copied().find(|&krate| {
+                 matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Core))
 -            })
 -            .map(Crate::from)
-+        db.all_crates().iter().copied().find(|&krate| {
-+            matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Core))
-+        }).map(
++            }).map(
 +            Crate::from,
 +        )
      }
@@ -323,29 +317,20 @@ Rustfmt size:  227843 bytes
 -            .scope
 -            .entries()
 -            .filter_map(|(name, def)| {
--                if let Some(m) = visible_from {
--                    let filtered = def.filter_visibility(|vis| vis.is_visible_from(db, m.id));
--                    if filtered.is_none() && !def.is_none() { None } else { Some((name, filtered)) }
 +        self.id.def_map(db)[self.id.local_id].scope.entries().filter_map(|(name, def)| {
-+            if let Some(m) = visible_from {
-+                let filtered = def.filter_visibility(|vis| vis.is_visible_from(db, m.id));
-+                if filtered.is_none() && !def.is_none() {
-+                    None
+                 if let Some(m) = visible_from {
+                     let filtered = def.filter_visibility(|vis| vis.is_visible_from(db, m.id));
+                     if filtered.is_none() && !def.is_none() { None } else { Some((name, filtered)) }
                  } else {
--                    Some((name, def))
-+                    Some((name, filtered))
+                     Some((name, def))
                  }
 -            })
 -            .flat_map(|(name, def)| {
--                ScopeDef::all_items(def).into_iter().map(move |item| (name.clone(), item))
++            }).flat_map(|(name, def)| {
+                 ScopeDef::all_items(def).into_iter().map(move |item| (name.clone(), item))
 -            })
 -            .collect()
-+            } else {
-+                Some((name, def))
-+            }
-+        }).flat_map(|(name, def)| {
-+            ScopeDef::all_items(def).into_iter().map(move |item| (name.clone(), item))
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -458,27 +443,21 @@ Rustfmt size:  227843 bytes
 -                }
 -                .into(),
 -            )
--        }
 +            acc.push(UnresolvedModule {
 +                decl: InFile::new(declaration.file_id, decl),
 +                candidates: candidates.clone(),
 +            }.into(
 +            ))
-+        },
+         }
          DefDiagnosticKind::UnresolvedExternCrate { ast } => {
              let item = ast.to_ptr(db);
              acc.push(UnresolvedExternCrate { decl: InFile::new(ast.file_id, item) }.into());
--        }
+         }
 -
-+        },
          DefDiagnosticKind::MacroError { ast, path, err } => {
              let item = ast.to_ptr(db);
              let RenderedExpandError { message, error, kind } = err.render_to_string(db);
-                 }
-                 .into(),
-             )
--        }
-+        },
+         }
          DefDiagnosticKind::UnresolvedImport { id, index } => {
              let file_id = id.file_id;
 -
@@ -486,71 +465,18 @@ Rustfmt size:  227843 bytes
              acc.push(
                  UnresolvedImport { decl: InFile::new(file_id, AstPtr::new(&use_tree)) }.into(),
              );
--        }
+         }
 -
-+        },
          DefDiagnosticKind::UnconfiguredCode { ast_id, cfg, opts } => {
              let ast_id_map = db.ast_id_map(ast_id.file_id);
              let ptr = ast_id_map.get_erased(ast_id.value);
-                 }
-                 .into(),
-             );
--        }
-+        },
-         DefDiagnosticKind::UnresolvedMacroCall { ast, path } => {
-             let (node, precise_location) = precise_macro_call_location(ast, db);
-             acc.push(
-                 }
-                 .into(),
-             );
--        }
-+        },
+         }
          DefDiagnosticKind::UnimplementedBuiltinMacro { ast } => {
              let node = ast.to_node(db);
 -            // Must have a name, otherwise we wouldn't emit it.
              let name = node.name().expect("unimplemented builtin macro with no name");
              acc.push(
                  UnimplementedBuiltinMacro {
-                 }
-                 .into(),
-             );
--        }
-+        },
-         DefDiagnosticKind::InvalidDeriveTarget { ast, id } => {
-             let node = ast.to_node(db);
-             let derive = node.attrs().nth(*id);
-                         }
-                         .into(),
-                     );
--                }
-+                },
-                 None => stdx::never!("derive diagnostic on item without derive attribute"),
-             }
--        }
-+        },
-         DefDiagnosticKind::MalformedDerive { ast, id } => {
-             let node = ast.to_node(db);
-             let derive = node.attrs().nth(*id);
-                         }
-                         .into(),
-                     );
--                }
-+                },
-                 None => stdx::never!("derive diagnostic on item without derive attribute"),
-             }
--        }
-+        },
-         DefDiagnosticKind::MacroDefError { ast, message } => {
-             let node = ast.to_node(db);
-             acc.push(
-                 }
-                 .into(),
-             );
--        }
-+        },
-     }
- }
- 
              let node = ast_id.to_node(db);
              (
                  ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&node))),
@@ -562,8 +488,7 @@ Rustfmt size:  227843 bytes
 +                |it| it.syntax().text_range(),
 +            ),
              )
--        }
-+        },
+         }
          MacroCallKind::Derive { ast_id, derive_attr_index, derive_index, .. } => {
              let node = ast_id.to_node(db);
 -            // Compute the precise location of the macro name's token in the derive
@@ -571,14 +496,6 @@ Rustfmt size:  227843 bytes
              let token = (|| {
                  let derive_attr = collect_attrs(&node)
                      .nth(derive_attr_index.ast_index())
-                 ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&node))),
-                 token.as_ref().map(|tok| tok.text_range()),
-             )
--        }
-+        },
-         MacroCallKind::Attr { ast_id, invoc_attr_index, .. } => {
-             let node = ast_id.to_node(db);
-             let attr = collect_attrs(&node)
                  .unwrap_or_else(|| {
                      panic!("cannot find attribute #{}", invoc_attr_index.ast_index())
                  });
@@ -586,12 +503,6 @@ Rustfmt size:  227843 bytes
              (
                  ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&attr))),
                  Some(attr.syntax().text_range()),
-             )
--        }
-+        },
-     }
- }
- 
          TypeNs::new(db, var_id, ty)
      }
  
@@ -610,7 +521,7 @@ Rustfmt size:  227843 bytes
 -            }),
 +            hir_def::VariantId::EnumVariantId(id) => {
 +                GenericDefId::AdtId(id.lookup(db).parent.into())
-+            },
++            }
 +            hir_def::VariantId::StructId(id) => GenericDefId::AdtId(id.into()),
 +            hir_def::VariantId::UnionId(id) => GenericDefId::AdtId(id.into()),
 +        }),
@@ -644,14 +555,12 @@ Rustfmt size:  227843 bytes
 -            .fields()
 -            .iter()
 -            .map(|(id, _)| InstantiatedField {
--                inner: Field { parent: self.inner.into(), id },
--                args: self.args,
++        self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
+                 inner: Field { parent: self.inner.into(), id },
+                 args: self.args,
 -            })
 -            .collect()
-+        self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
-+            inner: Field { parent: self.inner.into(), id },
-+            args: self.args,
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -790,14 +699,12 @@ Rustfmt size:  227843 bytes
 -            .fields()
 -            .iter()
 -            .map(|(id, _)| InstantiatedField {
--                inner: Field { parent: self.inner.into(), id },
--                args: self.args,
++        self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
+                 inner: Field { parent: self.inner.into(), id },
+                 args: self.args,
 -            })
 -            .collect()
-+        self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
-+            inner: Field { parent: self.inner.into(), id },
-+            args: self.args,
-+        }).collect(
++            }).collect(
 +        )
      }
  }
@@ -826,15 +733,14 @@ Rustfmt size:  227843 bytes
 -        resolver
 -            .generic_params()
 -            .and_then(|gp| {
--                gp.iter_lt()
--                    // there should only be a single lifetime
--                    // but `Arena` requires to use an iterator
--                    .nth(0)
++        resolver.generic_params().and_then(|gp| {
+                 gp.iter_lt()
+                     // there should only be a single lifetime
+                     // but `Arena` requires to use an iterator
+                     .nth(0)
 -            })
 -            .map(|arena| arena.1.clone())
-+        resolver.generic_params().and_then(|gp| {
-+            gp.iter_lt().nth(0)
-+        }).map(
++            }).map(
 +            |arena| arena.1.clone(),
 +        )
      }
@@ -894,14 +800,12 @@ Rustfmt size:  227843 bytes
 -            .iter()
 -            .enumerate()
 -            .map(|(idx, ty)| {
--                let ty = Type { env: environment.clone(), ty };
--                Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
++        callable_sig.inputs().iter().enumerate().map(|(idx, ty)| {
+                 let ty = Type { env: environment.clone(), ty };
+                 Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
 -            })
 -            .collect()
-+        callable_sig.inputs().iter().enumerate().map(|(idx, ty)| {
-+            let ty = Type { env: environment.clone(), ty };
-+            Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -915,14 +819,12 @@ Rustfmt size:  227843 bytes
 -            .enumerate()
 -            .skip(skip)
 -            .map(|(idx, ty)| {
--                let ty = Type { env: environment.clone(), ty };
--                Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
++        callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
+                 let ty = Type { env: environment.clone(), ty };
+                 Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
 -            })
 -            .collect()
-+        callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
-+            let ty = Type { env: environment.clone(), ty };
-+            Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -939,14 +841,12 @@ Rustfmt size:  227843 bytes
 -            .enumerate()
 -            .skip(skip)
 -            .map(|(idx, ty)| {
--                let ty = Type { env: environment.clone(), ty };
--                Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
++        callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
+                 let ty = Type { env: environment.clone(), ty };
+                 Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
 -            })
 -            .collect()
-+        callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
-+            let ty = Type { env: environment.clone(), ty };
-+            Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -956,18 +856,15 @@ Rustfmt size:  227843 bytes
          let mut has_impl_future = false;
 -        impl_traits
 -            .filter(|t| {
--                let fut = t.id == future_trait_id;
--                has_impl_future |= fut;
--                !fut && t.id != sized_trait_id
++        impl_traits.filter(|t| {
+                 let fut = t.id == future_trait_id;
+                 has_impl_future |= fut;
+                 !fut && t.id != sized_trait_id
 -            })
 -            // all traits but the future trait must be auto traits
 -            .all(|t| t.is_auto(db))
 -            && has_impl_future
-+        impl_traits.filter(|t| {
-+            let fut = t.id == future_trait_id;
-+            has_impl_future |= fut;
-+            !fut && t.id != sized_trait_id
-+        }).all(
++            }).all(
 +            |t| t.is_auto(db),
 +        ) && has_impl_future
      }
@@ -1008,20 +905,6 @@ Rustfmt size:  227843 bytes
                      Some(Local { parent, binding_id: *id })
                  } else {
                      None
-                 }
--            }
-+            },
-             Callee::Closure(closure, _) => {
-                 let c = db.lookup_intern_closure(closure);
-                 let body = db.body(c.0);
-                     return Some(Local { parent: c.0, binding_id: *id });
-                 }
-                 None
--            }
-+            },
-             _ => None,
-         }
-     }
  impl SelfParam {
      pub fn access(self, db: &dyn HirDatabase) -> Access {
          let func_data = db.function_signature(self.func);
@@ -1029,20 +912,15 @@ Rustfmt size:  227843 bytes
 -            .params
 -            .first()
 -            .map(|&param| match &func_data.store[param] {
--                TypeRef::Reference(ref_) => match ref_.mutability {
--                    hir_def::type_ref::Mutability::Shared => Access::Shared,
--                    hir_def::type_ref::Mutability::Mut => Access::Exclusive,
--                },
--                _ => Access::Owned,
++        func_data.params.first().map(|&param| match &func_data.store[param] {
+                 TypeRef::Reference(ref_) => match ref_.mutability {
+                     hir_def::type_ref::Mutability::Shared => Access::Shared,
+                     hir_def::type_ref::Mutability::Mut => Access::Exclusive,
+                 },
+                 _ => Access::Owned,
 -            })
 -            .unwrap_or(Access::Owned)
-+        func_data.params.first().map(|&param| match &func_data.store[param] {
-+            TypeRef::Reference(ref_) => match ref_.mutability {
-+                hir_def::type_ref::Mutability::Shared => Access::Shared,
-+                hir_def::type_ref::Mutability::Mut => Access::Exclusive,
-+            },
-+            _ => Access::Owned,
-+        }).unwrap_or(
++            }).unwrap_or(
 +            Access::Owned,
 +        )
      }
@@ -1055,18 +933,6 @@ Rustfmt size:  227843 bytes
      pub fn ty_with_args<'db>(
          &self,
          db: &'db dyn HirDatabase,
-             Some(krate.into())
-         } else {
-             krate.data(db).dependencies.iter().find_map(|dep| {
--                if dep.name.symbol() == name.symbol() { Some(dep.crate_id.into()) } else { None }
-+                if dep.name.symbol() == name.symbol() {
-+                    Some(dep.crate_id.into())
-+                } else {
-+                    None
-+                }
-             })
-         }
-     }
      pub fn eval(self, db: &dyn HirDatabase) -> Result<EvaluatedConst<'_>, ConstEvalError<'_>> {
          let interner = DbInterner::new_with(db, None, None);
          let ty = db.value_ty(self.id.into()).unwrap().instantiate_identity();
@@ -1089,15 +955,6 @@ Rustfmt size:  227843 bytes
      }
  }
  
-     }
- 
-     pub fn function(self, db: &dyn HirDatabase, name: impl PartialEq<Name>) -> Option<Function> {
--        self.id.trait_items(db).items.iter().find(|(n, _)| name == *n).and_then(|&(_, it)| match it
--        {
-+        self.id.trait_items(db).items.iter().find(|(n, _)| name == *n).and_then(|&(_, it)| match it {
-             AssocItemId::FunctionId(id) => Some(Function { id }),
-             _ => None,
-         })
          db: &dyn HirDatabase,
          count_required_only: bool,
      ) -> usize {
@@ -1124,18 +981,6 @@ Rustfmt size:  227843 bytes
      }
                  let loc = id.lookup(db);
                  let source = loc.source(db);
-                 as_name_opt(source.value.name())
--            }
-+            },
-             MacroId::MacroRulesId(id) => {
-                 let loc = id.lookup(db);
-                 let source = loc.source(db);
-                 as_name_opt(source.value.name())
--            }
-+            },
-             MacroId::ProcMacroId(id) => {
-                 let loc = id.lookup(db);
-                 let source = loc.source(db);
                  match loc.kind {
 -                    ProcMacroKind::CustomDerive => db
 -                        .attrs(id.into())
@@ -1147,116 +992,7 @@ Rustfmt size:  227843 bytes
 +                    ),
                      ProcMacroKind::Bang | ProcMacroKind::Attr => as_name_opt(source.value.name()),
                  }
--            }
-+            },
-         }
-     }
- 
-                 MacroExpander::Declarative => MacroKind::Declarative,
-                 MacroExpander::BuiltIn(_) | MacroExpander::BuiltInEager(_) => {
-                     MacroKind::DeclarativeBuiltIn
--                }
-+                },
-                 MacroExpander::BuiltInAttr(_) => MacroKind::AttrBuiltIn,
-                 MacroExpander::BuiltInDerive(_) => MacroKind::DeriveBuiltIn,
-             },
-                 MacroExpander::Declarative => MacroKind::Declarative,
-                 MacroExpander::BuiltIn(_) | MacroExpander::BuiltInEager(_) => {
-                     MacroKind::DeclarativeBuiltIn
--                }
-+                },
-                 MacroExpander::BuiltInAttr(_) => MacroKind::AttrBuiltIn,
-                 MacroExpander::BuiltInDerive(_) => MacroKind::DeriveBuiltIn,
-             },
-         match self.id {
-             MacroId::Macro2Id(it) => {
-                 matches!(it.lookup(db).expander, MacroExpander::BuiltInDerive(_))
--            }
-+            },
-             MacroId::MacroRulesId(it) => {
-                 matches!(it.lookup(db).expander, MacroExpander::BuiltInDerive(_))
--            }
-+            },
-             MacroId::ProcMacroId(_) => false,
-         }
-     }
-         match self.id {
-             MacroId::Macro2Id(it) => {
-                 matches!(it.lookup(db).expander, MacroExpander::BuiltInEager(eager) if eager.is_env_or_option_env())
--            }
-+            },
-             MacroId::MacroRulesId(it) => {
-                 matches!(it.lookup(db).expander, MacroExpander::BuiltInEager(eager) if eager.is_env_or_option_env())
--            }
-+            },
-             MacroId::ProcMacroId(_) => false,
-         }
-     }
-         match self.id {
-             MacroId::Macro2Id(it) => {
-                 matches!(it.lookup(db).expander, MacroExpander::BuiltIn(m) if m.is_asm())
--            }
-+            },
-             MacroId::MacroRulesId(it) => {
-                 matches!(it.lookup(db).expander, MacroExpander::BuiltIn(m) if m.is_asm())
--            }
-+            },
-             MacroId::ProcMacroId(_) => false,
-         }
-     }
-                 let loc = id.lookup(db);
-                 let source = loc.source(db);
-                 visibility_from_ast(db, id, source.map(|src| src.visibility()))
--            }
-+            },
-             MacroId::MacroRulesId(_) => Visibility::Public,
-             MacroId::ProcMacroId(_) => Visibility::Public,
-         }
-         match module_def {
-             ModuleDef::Static(_) | ModuleDef::Const(_) | ModuleDef::Function(_) => {
-                 ItemInNs::Values(module_def)
--            }
-+            },
-             ModuleDef::Macro(it) => ItemInNs::Macros(it),
-             _ => ItemInNs::Types(module_def),
-         }
-         ItemContainerId::ExternBlockId(_) => Some(ctor(DEF::from(id))),
-         ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) | ItemContainerId::ModuleId(_) => {
-             None
--        }
-+        },
-     }
- }
- 
-             ItemContainerId::ImplId(id) => AssocItemContainer::Impl(id.into()),
-             ItemContainerId::ModuleId(_) | ItemContainerId::ExternBlockId(_) => {
-                 panic!("invalid AssocItem")
--            }
-+            },
-         }
-     }
- 
-             AssocItem::Function(func) => {
-                 GenericDef::Function(func).diagnostics(db, acc);
-                 DefWithBody::from(func).diagnostics(db, acc, style_lints);
--            }
-+            },
-             AssocItem::Const(const_) => {
-                 GenericDef::Const(const_).diagnostics(db, acc);
-                 DefWithBody::from(const_).diagnostics(db, acc, style_lints);
--            }
-+            },
-             AssocItem::TypeAlias(type_alias) => {
-                 GenericDef::TypeAlias(type_alias).diagnostics(db, acc);
-                 push_ty_diagnostics(
-                 for diag in hir_ty::diagnostics::incorrect_case(db, type_alias.id.into()) {
-                     acc.push(diag.into());
-                 }
--            }
-+            },
-         }
-     }
- }
+             }
      Const(Const),
      Static(Static),
  }
@@ -1316,12 +1052,11 @@ Rustfmt size:  227843 bytes
 -        container_params
 -            .chain(self_params)
 -            .filter_map(|(ty, name)| {
--                Some((name?.symbol().clone(), Type { ty, env: self.env.clone() }))
++        container_params.chain(self_params).filter_map(|(ty, name)| {
+                 Some((name?.symbol().clone(), Type { ty, env: self.env.clone() }))
 -            })
 -            .collect()
-+        container_params.chain(self_params).filter_map(|(ty, name)| {
-+            Some((name?.symbol().clone(), Type { ty, env: self.env.clone() }))
-+        }).collect(
++            }).collect(
 +        )
      }
  }
@@ -1343,72 +1078,44 @@ Rustfmt size:  227843 bytes
              Either::Right(_) => true,
          }
      }
-                     local: self,
                      source: source.map(|ast| Either::Right(ast.to_node(&root))),
                  }]
--            }
+             }
 -            _ => source_map
 -                .patterns_for_binding(self.binding_id)
 -                .iter()
 -                .map(|&definition| {
--                    let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
--                    let root = src.file_syntax(db);
--                    LocalSource {
--                        local: self,
--                        source: src.map(|ast| match ast.to_node(&root) {
--                            Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
--                            _ => unreachable!("local with non ident-pattern"),
--                        }),
--                    }
++            _ => source_map.patterns_for_binding(self.binding_id).iter().map(|&definition| {
+                     let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
+                     let root = src.file_syntax(db);
+                     LocalSource {
+                             _ => unreachable!("local with non ident-pattern"),
+                         }),
+                     }
 -                })
 -                .collect(),
-+            },
-+            _ => source_map.patterns_for_binding(self.binding_id).iter().map(|&definition| {
-+                let src = source_map.pat_syntax(definition).unwrap();
-+                let root = src.file_syntax(db);
-+                LocalSource {
-+                    local: self,
-+                    source: src.map(|ast| match ast.to_node(&root) {
-+                        Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
-+                        _ => unreachable!("local with non ident-pattern"),
-+                    }),
-+                }
-+            }).collect(
++                }).collect(
 +            ),
          }
      }
  
-                     local: self,
                      source: source.map(|ast| Either::Right(ast.to_node(&root))),
                  }
--            }
+             }
 -            _ => source_map
 -                .patterns_for_binding(self.binding_id)
 -                .first()
 -                .map(|&definition| {
--                    let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
--                    let root = src.file_syntax(db);
--                    LocalSource {
--                        local: self,
--                        source: src.map(|ast| match ast.to_node(&root) {
--                            Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
--                            _ => unreachable!("local with non ident-pattern"),
--                        }),
--                    }
++            _ => source_map.patterns_for_binding(self.binding_id).first().map(|&definition| {
+                     let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
+                     let root = src.file_syntax(db);
+                     LocalSource {
+                             _ => unreachable!("local with non ident-pattern"),
+                         }),
+                     }
 -                })
 -                .unwrap(),
-+            },
-+            _ => source_map.patterns_for_binding(self.binding_id).first().map(|&definition| {
-+                let src = source_map.pat_syntax(definition).unwrap();
-+                let root = src.file_syntax(db);
-+                LocalSource {
-+                    local: self,
-+                    source: src.map(|ast| match ast.to_node(&root) {
-+                        Either::Right(ast::Pat::IdentPat(it)) => Either::Left(it),
-+                        _ => unreachable!("local with non ident-pattern"),
-+                    }),
-+                }
-+            }).unwrap(
++                }).unwrap(
 +            ),
          }
      }
@@ -1472,62 +1179,16 @@ Rustfmt size:  227843 bytes
 -        db.generic_predicates_for_param(self.id.parent(), self.id.into(), None)
 -            .iter()
 -            .filter_map(|pred| match &pred.kind().skip_binder() {
--                ClauseKind::Trait(trait_ref) => Some(Trait::from(trait_ref.def_id().0)),
--                _ => None,
++        db.generic_predicates_for_param(self.id.parent(), self.id.into(), None).iter().filter_map(|pred| match &pred.kind().skip_binder() {
+                 ClauseKind::Trait(trait_ref) => Some(Trait::from(trait_ref.def_id().0)),
+                 _ => None,
 -            })
 -            .collect()
-+        db.generic_predicates_for_param(self.id.parent(), self.id.into(), None).iter().filter_map(|pred| match &pred.kind().skip_binder() {
-+            ClauseKind::Trait(trait_ref) => Some(Trait::from(trait_ref.def_id().0)),
-+            _ => None,
-+        }).collect(
++            }).collect(
 +        )
      }
  
      pub fn default(self, db: &dyn HirDatabase) -> Option<Type<'_>> {
-         match ty {
-             GenericArg::Ty(it) if !it.is_ty_error() => {
-                 Some(Type::new_with_resolver_inner(db, &resolver, it))
--            }
-+            },
-             _ => None,
-         }
-     }
-             None => {
-                 never!();
-                 Name::missing()
--            }
-+            },
-         }
-     }
- 
-         match &params[self.id.local_id] {
-             TypeOrConstParamData::TypeParamData(_) => {
-                 Either::Right(TypeParam { id: TypeParamId::from_unchecked(self.id) })
--            }
-+            },
-             TypeOrConstParamData::ConstParamData(_) => {
-                 Either::Left(ConstParam { id: ConstParamId::from_unchecked(self.id) })
--            }
-+            },
-         }
-     }
- 
-         match &params[self.id.local_id] {
-             TypeOrConstParamData::TypeParamData(_) => {
-                 Some(TypeParam { id: TypeParamId::from_unchecked(self.id) })
--            }
-+            },
-             TypeOrConstParamData::ConstParamData(_) => None,
-         }
-     }
-             TypeOrConstParamData::TypeParamData(_) => None,
-             TypeOrConstParamData::ConstParamData(_) => {
-                 Some(ConstParam { id: ConstParamId::from_unchecked(self.id) })
--            }
-+            },
-         }
-     }
- }
              .nth(derive_index as usize)
              .and_then(<ast::Attr as AstNode>::cast)
              .and_then(|it| it.path())?;
@@ -1554,12 +1215,6 @@ Rustfmt size:  227843 bytes
      }
  }
  
-             AnyClosureId::ClosureId(id) => Ty::new_closure(interner, id.into(), self.subst),
-             AnyClosureId::CoroutineClosureId(id) => {
-                 Ty::new_coroutine_closure(interner, id.into(), self.subst)
--            }
-+            },
-         }
      }
  
      pub fn display_with_id(&self, db: &dyn HirDatabase, display_target: DisplayTarget) -> String {
@@ -1606,31 +1261,18 @@ Rustfmt size:  227843 bytes
 -            .iter()
 -            .map(|capture| Type { env: env.clone(), ty: capture.ty(db, self.subst) })
 -            .collect()
-+        captures.iter().map(|capture| Type {
-+            env: env.clone(),
-+            ty: capture.ty(db, self.subst),
-+        }).collect(
++        captures.iter().map(|capture| Type { env: env.clone(), ty: capture.ty(db, self.subst) }).collect(
 +        )
      }
  
      pub fn fn_trait(&self, db: &dyn HirDatabase) -> FnTrait {
-                 let infer = db.infer(owner);
-                 let info = infer.closure_info(id);
                  info.1
--            }
-+            },
+             }
              AnyClosureId::CoroutineClosureId(_id) => {
 -                // FIXME: Infer kind for coroutine closures.
                  match self.subst.as_coroutine_closure().kind() {
                      rustc_type_ir::ClosureKind::Fn => FnTrait::AsyncFn,
                      rustc_type_ir::ClosureKind::FnMut => FnTrait::AsyncFnMut,
-                     rustc_type_ir::ClosureKind::FnOnce => FnTrait::AsyncFnOnce,
-                 }
--            }
-+            },
-         }
-     }
- }
  
  impl<'db> ClosureCapture<'db> {
      pub fn local(&self) -> Local {
@@ -1714,18 +1356,6 @@ Rustfmt size:  227843 bytes
      }
  
      pub fn is_copy(&self, db: &'db dyn HirDatabase) -> bool {
-         match self.ty.kind() {
-             TyKind::Closure(id, subst) => {
-                 Some(Closure { id: AnyClosureId::ClosureId(id.0), subst })
--            }
-+            },
-             TyKind::CoroutineClosure(id, subst) => {
-                 Some(Closure { id: AnyClosureId::CoroutineClosureId(id.0), subst })
--            }
-+            },
-             _ => None,
-         }
-     }
      }
  
      pub fn remove_raw_ptr(&self) -> Option<Type<'db>> {
@@ -1744,16 +1374,13 @@ Rustfmt size:  227843 bytes
 -        db.field_types(variant_id)
 -            .iter()
 -            .map(|(local_id, ty)| {
--                let def = Field { parent: variant_id.into(), id: local_id };
--                let ty = ty.instantiate(interner, substs);
--                (def, self.derived(ty))
++        db.field_types(variant_id).iter().map(|(local_id, ty)| {
+                 let def = Field { parent: variant_id.into(), id: local_id };
+                 let ty = ty.instantiate(interner, substs);
+                 (def, self.derived(ty))
 -            })
 -            .collect()
-+        db.field_types(variant_id).iter().map(|(local_id, ty)| {
-+            let def = Field { parent: variant_id.into(), id: local_id };
-+            let ty = ty.instantiate(interner, substs);
-+            (def, self.derived(ty))
-+        }).collect(
++            }).collect(
 +        )
      }
  
@@ -1773,14 +1400,6 @@ Rustfmt size:  227843 bytes
              for impl_def in impls.for_self_ty(ty_ns) {
                  for &(_, item) in impl_def.impl_items(db).items.iter() {
                      if callback(item) {
-             TyKind::Adt(_, substs) => Either::Left(substs.types().map(move |ty| self.derived(ty))),
-             TyKind::Tuple(substs) => {
-                 Either::Right(Either::Left(substs.iter().map(move |ty| self.derived(ty))))
--            }
-+            },
-             _ => Either::Right(Either::Right(std::iter::empty())),
-         }
-     }
          db: &'a dyn HirDatabase,
          display_target: DisplayTarget,
      ) -> impl Iterator<Item = SmolStr> + 'a {
@@ -1790,36 +1409,23 @@ Rustfmt size:  227843 bytes
 -            .into_iter()
 -            .flat_map(|(_, substs)| substs.iter())
 -            .filter_map(move |arg| match arg {
--                GenericArg::Ty(ty) => Some(format_smolstr!("{}", ty.display(db, display_target))),
--                GenericArg::Const(const_) => {
--                    Some(format_smolstr!("{}", const_.display(db, display_target)))
--                }
--                GenericArg::Lifetime(_) => None,
--            })
 +        self.ty.strip_references().as_adt().into_iter().flat_map(|(_, substs)| substs.iter()).filter_map(move |arg| match arg {
-+            GenericArg::Ty(ty) => Some(format_smolstr!("{}", ty.display(db, display_target))),
-+            GenericArg::Const(const_) => {
-+                Some(format_smolstr!("{}", const_.display(db, display_target)))
-+            },
-+            GenericArg::Lifetime(_) => None,
-+        })
-     }
- 
-     /// Combines lifetime indicators, type and constant parameters into a single `Iterator`
+                 GenericArg::Ty(ty) => Some(format_smolstr!("{}", ty.display(db, display_target))),
+                 GenericArg::Const(const_) => {
+                     Some(format_smolstr!("{}", const_.display(db, display_target)))
          display_target: DisplayTarget,
      ) -> impl Iterator<Item = SmolStr> + 'a {
          // iterate the lifetime
 -        self.as_adt()
 -            .and_then(|a| {
--                // Lifetimes do not need edition-specific handling as they cannot be escaped.
--                a.lifetime(db).map(|lt| lt.name.display_no_db(Edition::Edition2015).to_smolstr())
++        self.as_adt().and_then(|a| {
+                 // Lifetimes do not need edition-specific handling as they cannot be escaped.
+                 a.lifetime(db).map(|lt| lt.name.display_no_db(Edition::Edition2015).to_smolstr())
 -            })
 -            .into_iter()
 -            // add the type and const parameters
 -            .chain(self.type_and_const_arguments(db, display_target))
-+        self.as_adt().and_then(|a| {
-+            a.lifetime(db).map(|lt| lt.name.display_no_db(Edition::Edition2015).to_smolstr())
-+        }).into_iter(
++            }).into_iter(
 +        ).chain(
 +            self.type_and_const_arguments(db, display_target),
 +        )
@@ -1845,14 +1451,13 @@ Rustfmt size:  227843 bytes
 -        self.autoderef_(db)
 -            .filter(|ty| matches!(ty.kind(), TyKind::Param(_)))
 -            .flat_map(|ty| {
--                self.env
--                    .traits_in_scope_from_clauses(ty)
--                    .flat_map(|t| hir_ty::all_super_traits(db, t))
++        self.autoderef_(db).filter(|ty| matches!(ty.kind(), TyKind::Param(_))).flat_map(|ty| {
+                 self.env
+                     .traits_in_scope_from_clauses(ty)
+                     .flat_map(|t| hir_ty::all_super_traits(db, t))
 -            })
 -            .map(Trait::from)
-+        self.autoderef_(db).filter(|ty| matches!(ty.kind(), TyKind::Param(_))).flat_map(|ty| {
-+            self.env.traits_in_scope_from_clauses(ty).flat_map(|t| hir_ty::all_super_traits(db, t))
-+        }).map(
++            }).map(
 +            Trait::from,
 +        )
      }
@@ -1908,20 +1513,6 @@ Rustfmt size:  227843 bytes
  #[derive(Debug)]
  pub struct Callable<'db> {
      ty: Type<'db>,
-             Callee::Def(CallableDefId::StructId(it)) => CallableKind::TupleStruct(it.into()),
-             Callee::Def(CallableDefId::EnumVariantId(it)) => {
-                 CallableKind::TupleEnumVariant(it.into())
--            }
-+            },
-             Callee::Closure(id, subst) => {
-                 CallableKind::Closure(Closure { id: AnyClosureId::ClosureId(id), subst })
--            }
-+            },
-             Callee::CoroutineClosure(id, subst) => {
-                 CallableKind::Closure(Closure { id: AnyClosureId::CoroutineClosureId(id), subst })
--            }
-+            },
-             Callee::FnPtr => CallableKind::FnPtr,
              Callee::FnImpl(fn_) => CallableKind::FnImpl(fn_),
          }
      }
@@ -1973,46 +1564,6 @@ Rustfmt size:  227843 bytes
      pub fn sig(&self) -> impl Eq {
          &self.sig
      }
-             layout::FieldsShape::Array { stride, count } => {
-                 let i = u64::try_from(field.index()).ok()?;
-                 (i < count).then_some((stride * i).bytes())
--            }
-+            },
-             layout::FieldsShape::Arbitrary { ref offsets, .. } => {
-                 Some(offsets.get(RustcFieldIdx(field.id))?.bytes())
--            }
-+            },
-         }
-     }
- 
-             layout::FieldsShape::Array { stride, count } => {
-                 let i = u64::try_from(field).ok()?;
-                 (i < count).then_some((stride * i).bytes())
--            }
-+            },
-             layout::FieldsShape::Arbitrary { ref offsets, .. } => {
-                 Some(offsets.get(RustcFieldIdx::new(field))?.bytes())
--            }
-+            },
-         }
-     }
- 
-                 let tail_field_size = field_size(tail.0.into_raw().into_u32() as usize)?;
-                 let offset = offsets.get(tail)?.bytes();
-                 self.0.size.bytes().checked_sub(offset)?.checked_sub(tail_field_size)
--            }
-+            },
-         }
-     }
- 
-             layout::FieldsShape::Array { stride, .. } => {
-                 let size = field_size(0)?;
-                 stride.bytes().checked_sub(size)
--            }
-+            },
-             layout::FieldsShape::Arbitrary { ref offsets, ref memory_index } => {
-                 let mut reverse_index = vec![None; memory_index.len()];
-                 for (src, (mem, offset)) in memory_index.iter().zip(offsets.iter()).enumerate() {
                      stdx::never!();
                      return None;
                  }
@@ -2022,21 +1573,17 @@ Rustfmt size:  227843 bytes
 -                    .chain(std::iter::once((0, self.0.size.bytes())))
 -                    .tuple_windows()
 -                    .filter_map(|((i, start), (_, end))| {
--                        let size = field_size(i)?;
--                        end.checked_sub(start)?.checked_sub(size)
--                    })
--                    .max()
--            }
 +                reverse_index.into_iter().flatten().chain(std::iter::once((0, self.0.size.bytes()))).tuple_windows(
 +                ).filter_map(|((i, start), (_, end))| {
-+                    let size = field_size(i)?;
-+                    end.checked_sub(start)?.checked_sub(size)
-+                }).max(
+                         let size = field_size(i)?;
+                         end.checked_sub(start)?.checked_sub(size)
+-                    })
+-                    .max()
++                    }).max(
 +                )
-+            },
+             }
          }
      }
- 
  
  pub trait HasVisibility {
      fn visibility(&self, db: &dyn HirDatabase) -> Visibility;
@@ -2051,51 +1598,16 @@ Rustfmt size:  227843 bytes
 -        .next()
 -        .into_iter()
 -        .flat_map(move |crate_name| {
--            db.all_crates()
--                .iter()
--                .filter(|&krate| {
--                    krate
--                        .extra_data(db)
--                        .display_name
--                        .as_ref()
--                        .is_some_and(|name| *name.crate_name().symbol() == crate_name)
--                })
--                .filter_map(|&krate| {
--                    let segments = segments.clone();
--                    let mut def_map = crate_def_map(db, krate);
--                    let mut module = &def_map[DefMap::ROOT];
--                    let mut segments = segments.with_position().peekable();
--                    while let Some((_, segment)) = segments.next_if(|&(position, _)| {
 +    segments.next().into_iter().flat_map(move |crate_name| {
-+        db.all_crates().iter().filter(|&krate| {
-+            krate.extra_data(db).display_name.as_ref().is_some_and(
-+                |name| *name.crate_name().symbol() == crate_name,
-+            )
-+        }).filter_map(|&krate| {
-+            let segments = segments.clone();
-+            let mut def_map = crate_def_map(db, krate);
-+            let mut module = &def_map[DefMap::ROOT];
-+            let mut segments = segments.with_position().peekable();
-+            while let Some((_, segment)) = segments.next_if(|&(position, _)| {
-                         !matches!(position, itertools::Position::Last | itertools::Position::Only)
-                     }) {
-                         let res = module
-                         def_map = res.def_map(db);
-                         module = &def_map[res.local_id];
-                     }
--                    let (_, item_name) = segments.next()?;
--                    let res = module.scope.get(&Name::new_symbol_root(item_name));
--                    Some(res.iter_items().map(|(item, _)| item.into()))
--                })
--                .collect::<Vec<_>>()
+             db.all_crates()
+                 .iter()
+                 .filter(|&krate| {
+                     Some(res.iter_items().map(|(item, _)| item.into()))
+                 })
+                 .collect::<Vec<_>>()
 -        })
 -        .flatten()
-+            let (_, item_name) = segments.next()?;
-+            let res = module.scope.get(&Name::new_symbol_root(item_name));
-+            Some(res.iter_items().map(|(item, _)| item.into()))
-+        }).collect::<Vec<_>>(
-+        )
-+    }).flatten(
++        }).flatten(
 +    )
  }
  
@@ -2104,15 +1616,13 @@ Rustfmt size:  227843 bytes
  ) -> GenericArgs<'db> {
      let mut args = args.into_iter();
 -    GenericArgs::for_item(interner, def_id, |_, id, _| {
--        if matches!(id, GenericParamId::TypeParamId(_))
--            && let Some(arg) = args.next()
--        {
 +    GenericArgs::for_item(
 +        interner,
 +        def_id,
 +        |_, id, _| {
-+        if matches!(id, GenericParamId::TypeParamId(_)) && let Some(arg) = args.next() {
-             arg.into()
+         if matches!(id, GenericParamId::TypeParamId(_))
+             && let Some(arg) = args.next()
+         {
          } else {
              next_solver::GenericArg::error_from_id(interner, id)
          }
@@ -2129,19 +1639,16 @@ Rustfmt size:  227843 bytes
 -        .filter(|(_, param)| matches!(param, TypeOrConstParamData::TypeParamData(_)))
 -        .map(|(local_id, _)| TypeOrConstParamId { parent: generic_def, local_id })
 -        .any(|param| {
--            let Some(param) = hir_ty::param_idx(db, param) else {
 +    params.iter_type_or_consts().filter(
 +        |(_, param)| matches!(param, TypeOrConstParamData::TypeParamData(_)),
 +    ).map(
 +        |(local_id, _)| TypeOrConstParamId { parent: generic_def, local_id },
 +    ).any(|param| {
-+        let Some(param) = hir_ty::param_idx(db, param) else {
+             let Some(param) = hir_ty::param_idx(db, param) else {
                  return false;
              };
--            defaults.get(param).is_none()
--        })
-+        defaults.get(param).is_none()
-+    })
+             defaults.get(param).is_none()
+         })
  }
 -
 -pub use hir_ty::next_solver;

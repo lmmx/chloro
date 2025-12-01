@@ -334,8 +334,8 @@ impl ItemScope {
 
     pub fn all_macro_calls(&self) -> impl Iterator<Item = MacroCallId> + '_ {
         self.macro_invocations.values().copied().chain(self.attr_macros.values().copied()).chain(self.derive_macros.values().flat_map(|it| {
-            it.iter().flat_map(|it| it.derive_call_ids.iter().copied().flatten())
-        }))
+                it.iter().flat_map(|it| it.derive_call_ids.iter().copied().flatten())
+            }))
     }
 
     pub(crate) fn modules_in_scope(&self) -> impl Iterator<Item = (ModuleId, Visibility)> + '_ {
@@ -393,18 +393,30 @@ impl ItemScope {
     ) -> Option<T> {
         match item {
             ItemInNs::Macros(def) => self.macros.iter().filter_map(|(name, other_def)| {
-                (other_def.def == def).then_some((name, other_def.vis, other_def.import.is_none()))
-            }).find_map(
+                    (other_def.def == def).then_some((
+                        name,
+                        other_def.vis,
+                        other_def.import.is_none(),
+                    ))
+                }).find_map(
                 |(a, b, c)| cb(a, b, c),
             ),
             ItemInNs::Types(def) => self.types.iter().filter_map(|(name, other_def)| {
-                (other_def.def == def).then_some((name, other_def.vis, other_def.import.is_none()))
-            }).find_map(
+                    (other_def.def == def).then_some((
+                        name,
+                        other_def.vis,
+                        other_def.import.is_none(),
+                    ))
+                }).find_map(
                 |(a, b, c)| cb(a, b, c),
             ),
             ItemInNs::Values(def) => self.values.iter().filter_map(|(name, other_def)| {
-                (other_def.def == def).then_some((name, other_def.vis, other_def.import.is_none()))
-            }).find_map(
+                    (other_def.def == def).then_some((
+                        name,
+                        other_def.vis,
+                        other_def.import.is_none(),
+                    ))
+                }).find_map(
                 |(a, b, c)| cb(a, b, c),
             ),
         }
@@ -412,24 +424,24 @@ impl ItemScope {
 
     pub(crate) fn traits(&self) -> impl Iterator<Item = TraitId> + '_ {
         self.types.values().filter_map(|def| match def.def {
-            ModuleDefId::TraitId(t) => Some(t),
-            _ => None,
-        }).chain(
+                ModuleDefId::TraitId(t) => Some(t),
+                _ => None,
+            }).chain(
             self.unnamed_trait_imports.iter().map(|&(t, _)| t),
         )
     }
 
     pub(crate) fn resolutions(&self) -> impl Iterator<Item = (Option<Name>, PerNs)> + '_ {
         self.entries().map(|(name, res)| (Some(name.clone()), res)).chain(self.unnamed_trait_imports.iter().map(|(tr, trait_)| {
-            (
-                None,
-                PerNs::types(
-                ModuleDefId::TraitId(*tr),
-                trait_.vis,
-                trait_.import.map(ImportOrExternCrate::Import),
-            ),
-            )
-        }))
+                (
+                    None,
+                    PerNs::types(
+                        ModuleDefId::TraitId(*tr),
+                        trait_.vis,
+                        trait_.import.map(ImportOrExternCrate::Import),
+                    ),
+                )
+            }))
     }
 
     pub fn macro_invoc(&self, call: AstId<ast::MacroCall>) -> Option<MacroCallId> {
@@ -525,8 +537,8 @@ impl ItemScope {
             (
                 *k,
                 v.iter().map(|DeriveMacroInvocation { attr_id, attr_call_id, derive_call_ids }| {
-                (*attr_id, *attr_call_id, &**derive_call_ids)
-            }),
+                    (*attr_id, *attr_call_id, &**derive_call_ids)
+                }),
             )
         })
     }
@@ -828,7 +840,7 @@ impl PerNs {
             ModuleDefId::ModuleId(_) => PerNs::types(def, v, import),
             ModuleDefId::FunctionId(_) => {
                 PerNs::values(def, v, import.and_then(ImportOrExternCrate::import_or_glob))
-            },
+            }
             ModuleDefId::AdtId(adt) => match adt {
                 AdtId::UnionId(_) => PerNs::types(def, v, import),
                 AdtId::EnumId(_) => PerNs::types(def, v, import),
@@ -838,12 +850,12 @@ impl PerNs {
                     } else {
                         PerNs::types(def, v, import)
                     }
-                },
+                }
             },
             ModuleDefId::EnumVariantId(_) => PerNs::both(def, def, v, import),
             ModuleDefId::ConstId(_) | ModuleDefId::StaticId(_) => {
                 PerNs::values(def, v, import.and_then(ImportOrExternCrate::import_or_glob))
-            },
+            }
             ModuleDefId::TraitId(_) => PerNs::types(def, v, import),
             ModuleDefId::TypeAliasId(_) => PerNs::types(def, v, import),
             ModuleDefId::BuiltinType(_) => PerNs::types(def, v, import),

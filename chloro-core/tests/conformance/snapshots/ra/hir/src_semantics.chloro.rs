@@ -80,7 +80,7 @@ impl PathResolution {
             PathResolution::Def(ModuleDef::Adt(adt)) => Some(TypeNs::AdtId((*adt).into())),
             PathResolution::Def(ModuleDef::BuiltinType(builtin)) => {
                 Some(TypeNs::BuiltinType((*builtin).into()))
-            },
+            }
             PathResolution::Def(
                 ModuleDef::Const(_)
                 | ModuleDef::Variant(_)
@@ -92,7 +92,7 @@ impl PathResolution {
             ) => None,
             PathResolution::Def(ModuleDef::TypeAlias(alias)) => {
                 Some(TypeNs::TypeAliasId((*alias).into()))
-            },
+            }
             PathResolution::BuiltinAttr(_)
             | PathResolution::ToolModule(_)
             | PathResolution::Local(_)
@@ -423,16 +423,16 @@ impl<'db> SemanticsImpl<'db> {
                         let root = find_root(node.syntax());
                         self.cache(root, file_id);
                         Some(in_file.with_value(node.syntax().clone()))
-                    },
+                    }
                     _ => unreachable!("FileId can only belong to a file module"),
                 }
-            },
+            }
             HirFileId::MacroFile(macro_file) => {
                 let node = self.db.lookup_intern_macro_call(macro_file).to_node(self.db);
                 let root = find_root(&node.value);
                 self.cache(root, node.file_id);
                 Some(node)
-            },
+            }
         }
     }
 
@@ -531,8 +531,12 @@ impl<'db> SemanticsImpl<'db> {
     pub fn resolve_derive_macro(&self, attr: &ast::Attr) -> Option<Vec<Option<Macro>>> {
         let calls = self.derive_macro_calls(attr)?;
         self.with_ctx(|ctx| {
-            Some(calls.into_iter().map(|call| macro_call_to_macro_id(ctx, call?).map(|id| Macro { id })).collect(
-            ))
+            Some(
+                calls
+                    .into_iter()
+                    .map(|call| macro_call_to_macro_id(ctx, call?).map(|id| Macro { id }))
+                    .collect(),
+            )
         })
     }
 
@@ -735,11 +739,8 @@ impl<'db> SemanticsImpl<'db> {
                         .collect();
                     Some(res)
                 }
-            })(
-            ).map_or(
-                ControlFlow::Continue(()),
-                ControlFlow::Break,
-            )
+            })()
+            .map_or(ControlFlow::Continue(()), ControlFlow::Break)
         },
         )
     }
@@ -786,25 +787,24 @@ impl<'db> SemanticsImpl<'db> {
         self.descend_into_macros_breakable(
             original_token.as_ref().map(|it| it.syntax().clone()),
             |token, _| {
-            (|| {
-                let token = token.map(ast::String::cast).transpose()?;
-                self.resolve_offset_in_format_args(token.as_ref(), relative_offset).map(|(range, res)| {
-                    (
-                        range + original_token.value.syntax().text_range().start(),
-                        HirFileRange {
-                        file_id: token.file_id,
-                        range: range + token.value.syntax().text_range().start(),
-                    },
-                        token.value,
-                        res,
+                (|| {
+                    let token = token.map(ast::String::cast).transpose()?;
+                    self.resolve_offset_in_format_args(token.as_ref(), relative_offset).map(
+                        |(range, res)| {
+                            (
+                                range + original_token.value.syntax().text_range().start(),
+                                HirFileRange {
+                                    file_id: token.file_id,
+                                    range: range + token.value.syntax().text_range().start(),
+                                },
+                                token.value,
+                                res,
+                            )
+                        },
                     )
-                })
-            })(
-            ).map_or(
-                ControlFlow::Continue(()),
-                ControlFlow::Break,
-            )
-        },
+                })()
+                .map_or(ControlFlow::Continue(()), ControlFlow::Break)
+            },
         )
     }
 
@@ -832,8 +832,8 @@ impl<'db> SemanticsImpl<'db> {
                 self.analyze_impl(InFile::new(file_id, asm.syntax()), None, false)?;
             let line = asm.template().position(|it| *it.syntax() == literal)?;
             source_analyzer.resolve_offset_in_asm_template(InFile::new(file_id, &asm), line, offset).map(|(owner, (expr, range, index))| {
-                (range, Some(Either::Right(InlineAsmOperand { owner, expr, index })))
-            })
+                    (range, Some(Either::Right(InlineAsmOperand { owner, expr, index })))
+                })
         }
     }
 
@@ -847,21 +847,21 @@ impl<'db> SemanticsImpl<'db> {
                         *def,
                         it.file_id.edition(self.db),
                     )
-                },
+                }
                 &crate::source_analyzer::BodyOrSig::VariantFields { def, .. } => {
                     hir_def::expr_store::pretty::print_variant_body_hir(
                         self.db,
                         def,
                         it.file_id.edition(self.db),
                     )
-                },
+                }
                 &crate::source_analyzer::BodyOrSig::Sig { def, .. } => {
                     hir_def::expr_store::pretty::print_signature(
                         self.db,
                         def,
                         it.file_id.edition(self.db),
                     )
-                },
+                }
             })
         })
     }
@@ -968,6 +968,7 @@ impl<'db> SemanticsImpl<'db> {
             if ast::MacroCall::can_cast(ancestor.kind()) {
                 return true;
             }
+
             let Some(item) = ast::Item::cast(ancestor) else {
                 return false;
             };
@@ -1093,16 +1094,12 @@ impl<'db> SemanticsImpl<'db> {
         self.descend_into_macros_breakable(
             self.wrap_token_infile(token.clone()),
             |InFile { value, file_id: _ }, _ctx| {
-            let mapped_kind = value.kind();
-            let any_ident_match =
+                let mapped_kind = value.kind();
+                let any_ident_match =
                     || kind.is_any_identifier() && value.kind().is_any_identifier();
-            let matches = (kind == mapped_kind || any_ident_match()) && text == value.text();
-            if matches {
-                ControlFlow::Break(value)
-            } else {
-                ControlFlow::Continue(())
-            }
-        },
+                let matches = (kind == mapped_kind || any_ident_match()) && text == value.text();
+                if matches { ControlFlow::Break(value) } else { ControlFlow::Continue(()) }
+            },
         ).unwrap_or(
             token,
         )
@@ -1418,12 +1415,12 @@ impl<'db> SemanticsImpl<'db> {
         offset: TextSize,
     ) -> impl Iterator<Item = impl Iterator<Item = SyntaxNode> + '_> + '_ {
         node.token_at_offset(offset).map(move |token| self.descend_into_macros_exact(token)).map(|descendants| {
-            descendants.into_iter().map(move |it| self.token_ancestors_with_macros(it))
-        }).kmerge_by(|left, right| {
-            left.clone().map(|node| node.text_range().len()).lt(
-                right.clone().map(|node| node.text_range().len()),
-            )
-        })
+                descendants.into_iter().map(move |it| self.token_ancestors_with_macros(it))
+            }).kmerge_by(|left, right| {
+                left.clone()
+                    .map(|node| node.text_range().len())
+                    .lt(right.clone().map(|node| node.text_range().len()))
+            })
     }
 
     /// Attempts to map the node out of macro expanded files returning the original file range.
@@ -1444,9 +1441,9 @@ impl<'db> SemanticsImpl<'db> {
     /// This only work for attribute expansions, as other ones do not have nodes as input.
     pub fn original_ast_node<N: AstNode>(&self, node: N) -> Option<N> {
         self.wrap_node_infile(node).original_ast_node_rooted(self.db).map(|InRealFile { file_id, value }| {
-            self.cache(find_root(value.syntax()), file_id.into());
-            value
-        })
+                self.cache(find_root(value.syntax()), file_id.into());
+                value
+            })
     }
 
     /// Attempts to map the node out of macro expanded files.
@@ -1454,9 +1451,9 @@ impl<'db> SemanticsImpl<'db> {
     pub fn original_syntax_node_rooted(&self, node: &SyntaxNode) -> Option<SyntaxNode> {
         let InFile { file_id, .. } = self.find_file(node);
         InFile::new(file_id, node).original_syntax_node_rooted(self.db).map(|InRealFile { file_id, value }| {
-            self.cache(find_root(&value), file_id.into());
-            value
-        })
+                self.cache(find_root(&value), file_id.into());
+                value
+            })
     }
 
     pub fn diagnostics_display_range(
@@ -1496,11 +1493,12 @@ impl<'db> SemanticsImpl<'db> {
             Some(parent) => Some(InFile::new(file_id, parent)),
             None => {
                 let macro_file = file_id.macro_file()?;
+
                 self.with_ctx(|ctx| {
                     let expansion_info = ctx.cache.get_or_insert_expansion(ctx.db, macro_file);
                     expansion_info.arg().map(|node| node?.parent()).transpose()
                 })
-            },
+            }
         },
         )
     }
@@ -1562,10 +1560,11 @@ impl<'db> SemanticsImpl<'db> {
         let (mut source_ty, _) = analyzer.type_of_expr(self.db, expr)?;
 
         analyzer.expr_adjustments(expr).map(|it| {
-            it.iter().map(|adjust| {
-                let target =
+            it.iter()
+                .map(|adjust| {
+                    let target =
                         Type::new_with_resolver(self.db, &analyzer.resolver, adjust.target);
-                let kind = match adjust.kind {
+                    let kind = match adjust.kind {
                         hir_ty::Adjust::NeverToAny => Adjust::NeverToAny,
                         hir_ty::Adjust::Deref(Some(hir_ty::OverloadedDeref(m))) => {
                             // FIXME: Should we handle unknown mutability better?
@@ -1583,25 +1582,26 @@ impl<'db> SemanticsImpl<'db> {
                         }
                         hir_ty::Adjust::Pointer(pc) => Adjust::Pointer(pc),
                     };
-                let source = mem::replace(&mut source_ty, target.clone());
-                Adjustment { source, target, kind }
-            }).collect(
-            )
+
+                    // Update `source_ty` for the next adjustment
+                    let source = mem::replace(&mut source_ty, target.clone());
+
+                    Adjustment { source, target, kind }
+                })
+                .collect()
         })
     }
 
     pub fn type_of_expr(&self, expr: &ast::Expr) -> Option<TypeInfo<'db>> {
-        self.analyze(expr.syntax())?.type_of_expr(self.db, expr).map(|(ty, coerced)| TypeInfo {
-            original: ty,
-            adjusted: coerced,
-        })
+        self.analyze(expr.syntax())?.type_of_expr(self.db, expr).map(
+            |(ty, coerced)| TypeInfo { original: ty, adjusted: coerced },
+        )
     }
 
     pub fn type_of_pat(&self, pat: &ast::Pat) -> Option<TypeInfo<'db>> {
-        self.analyze(pat.syntax())?.type_of_pat(self.db, pat).map(|(ty, coerced)| TypeInfo {
-            original: ty,
-            adjusted: coerced,
-        })
+        self.analyze(pat.syntax())?.type_of_pat(self.db, pat).map(
+            |(ty, coerced)| TypeInfo { original: ty, adjusted: coerced },
+        )
     }
 
     /// It also includes the changes that binding mode makes in the type. For example in
@@ -2132,7 +2132,7 @@ fn macro_call_to_macro_id(
                 }
             };
             ctx.macro_to_def(InFile::new(it.file_id, &node))
-        },
+        }
         Either::Right(it) => {
             let node = match it.file_id {
                 HirFileId::FileId(file_id) => {
@@ -2144,7 +2144,7 @@ fn macro_call_to_macro_id(
                 }
             };
             ctx.proc_macro_to_def(InFile::new(it.file_id, &node))
-        },
+        }
     }
 }
 

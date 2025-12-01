@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25826 bytes
-Chloro size:   25467 bytes
+Chloro size:   25463 bytes
 Rustfmt size:  25826 bytes
 
 ✗ Outputs DIFFER
@@ -48,14 +48,6 @@ Rustfmt size:  25826 bytes
  type DefaultedParam = Either<hir::TypeParam, hir::ConstParam>;
  
  /// `PathTransform` substitutes path in SyntaxNodes in bulk.
-                     &db.expansion_span_map(file_id),
-                     self.target_scope.module().krate().into(),
-                 )
--            }
-+            },
-         }
-     }
- 
                  Either::Left(k) => self.type_substs.get(k).unwrap().syntax(),
                  Either::Right(k) => self.const_substs.get(k).unwrap(),
              };
@@ -65,16 +57,6 @@ Rustfmt size:  25826 bytes
              let new_value = self.transform_path(value);
              match param {
                  Either::Left(k) => {
-                     self.type_substs.insert(k, ast::Type::cast(new_value.clone()).unwrap());
--                }
-+                },
-                 Either::Right(k) => {
-                     self.const_substs.insert(k, new_value.clone());
--                }
-+                },
-             }
-         }
-     }
          }
          editor.finish().new_root().clone()
      }
@@ -82,13 +64,6 @@ Rustfmt size:  25826 bytes
      fn transform_path_or_ident_pat(
          &self,
          editor: &mut SyntaxEditor,
-                 let res = mod_path_to_ast(&found_path, self.target_edition).clone_for_update();
-                 editor.replace(ident_pat.syntax(), res.syntax());
-                 Some(())
--            }
-+            },
-             _ => None,
-         }
      }
  }
  

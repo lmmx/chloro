@@ -91,7 +91,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
                     self.infcx.at(&self.trace.cause, self.param_env).eq(a, b)?.into_obligations(),
                 );
                 Ok(a)
-            },
+            }
             Variance::Covariant => self.relate(a, b),
             Variance::Bivariant => Ok(a),
             Variance::Contravariant => {
@@ -99,7 +99,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
                 let res = self.relate(a, b);
                 self.kind = self.kind.invert();
                 res
-            },
+            }
         }
     }
 
@@ -119,12 +119,12 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
                 let v = infcx.next_ty_var();
                 self.relate_bound(v, b, a)?;
                 Ok(v)
-            },
+            }
             (_, TyKind::Infer(rustc_type_ir::TyVar(..))) => {
                 let v = infcx.next_ty_var();
                 self.relate_bound(v, a, b)?;
                 Ok(v)
-            },
+            }
             (
                 TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: a_def_id, .. }),
                 TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: b_def_id, .. }),

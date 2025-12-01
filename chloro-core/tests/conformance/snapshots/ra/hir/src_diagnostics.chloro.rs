@@ -662,20 +662,20 @@ impl<'db> AnyDiagnostic<'db> {
                 };
                 let private = private.map(|id| Field { id, parent: variant.into() });
                 NoSuchField { field: expr_or_pat, private, variant }.into()
-            },
+            }
             &InferenceDiagnostic::MismatchedArgCount { call_expr, expected, found } => {
                 MismatchedArgCount { call_expr: expr_syntax(call_expr)?, expected, found }.into()
-            },
+            }
             &InferenceDiagnostic::PrivateField { expr, field } => {
                 let expr = expr_syntax(expr)?;
                 let field = field.into();
                 PrivateField { expr, field }.into()
-            },
+            }
             &InferenceDiagnostic::PrivateAssocItem { id, item } => {
                 let expr_or_pat = expr_or_pat_syntax(id)?;
                 let item = item.into();
                 PrivateAssocItem { expr_or_pat, item }.into()
-            },
+            }
             InferenceDiagnostic::ExpectedFunction { call_expr, found } => {
                 let call_expr = expr_syntax(*call_expr)?;
                 ExpectedFunction {
@@ -683,7 +683,7 @@ impl<'db> AnyDiagnostic<'db> {
                     found: Type::new(db, def, *found),
                 }.into(
                 )
-            },
+            }
             InferenceDiagnostic::UnresolvedField {
                 expr,
                 receiver,
@@ -698,7 +698,7 @@ impl<'db> AnyDiagnostic<'db> {
                     method_with_same_name_exists: *method_with_same_name_exists,
                 }
                 .into()
-            },
+            }
             InferenceDiagnostic::UnresolvedMethodCall {
                 expr,
                 receiver,
@@ -715,11 +715,11 @@ impl<'db> AnyDiagnostic<'db> {
                     assoc_func_with_same_name: assoc_func_with_same_name.map(Into::into),
                 }
                 .into()
-            },
+            }
             &InferenceDiagnostic::UnresolvedAssocItem { id } => {
                 let expr_or_pat = expr_or_pat_syntax(id)?;
                 UnresolvedAssocItem { expr_or_pat }.into()
-            },
+            }
             &InferenceDiagnostic::UnresolvedIdent { id } => {
                 let node = match id {
                     ExprOrPatId::ExprId(id) => match source_map.expr_syntax(id) {
@@ -731,15 +731,15 @@ impl<'db> AnyDiagnostic<'db> {
                     ExprOrPatId::PatId(id) => pat_syntax(id)?.map(|it| (it, None)),
                 };
                 UnresolvedIdent { node }.into()
-            },
+            }
             &InferenceDiagnostic::BreakOutsideOfLoop { expr, is_break, bad_value_break } => {
                 let expr = expr_syntax(expr)?;
                 BreakOutsideOfLoop { expr, is_break, bad_value_break }.into()
-            },
+            }
             InferenceDiagnostic::TypedHole { expr, expected } => {
                 let expr = expr_syntax(*expr)?;
                 TypedHole { expr, expected: Type::new(db, def, *expected) }.into()
-            },
+            }
             &InferenceDiagnostic::MismatchedTupleStructPatArgCount { pat, expected, found } => {
                 let expr_or_pat = match pat {
                     ExprOrPatId::ExprId(expr) => expr_syntax(expr)?,
@@ -752,24 +752,24 @@ impl<'db> AnyDiagnostic<'db> {
                     }
                 };
                 MismatchedTupleStructPatArgCount { expr_or_pat, expected, found }.into()
-            },
+            }
             InferenceDiagnostic::CastToUnsized { expr, cast_ty } => {
                 let expr = expr_syntax(*expr)?;
                 CastToUnsized { expr, cast_ty: Type::new(db, def, *cast_ty) }.into()
-            },
+            }
             InferenceDiagnostic::InvalidCast { expr, error, expr_ty, cast_ty } => {
                 let expr = expr_syntax(*expr)?;
                 let expr_ty = Type::new(db, def, *expr_ty);
                 let cast_ty = Type::new(db, def, *cast_ty);
                 InvalidCast { expr, error: *error, expr_ty, cast_ty }.into()
-            },
+            }
             InferenceDiagnostic::TyDiagnostic { source, diag } => {
                 let source_map = match source {
                     InferenceTyDiagnosticSource::Body => source_map,
                     InferenceTyDiagnosticSource::Signature => sig_map,
                 };
                 Self::ty_diagnostic(diag, source_map, db)?
-            },
+            }
             InferenceDiagnostic::PathDiagnostic { node, diag } => {
                 let source = expr_or_pat_syntax(*node)?;
                 let syntax = source.value.to_node(&db.parse_or_expand(source.file_id));
@@ -784,7 +784,7 @@ impl<'db> AnyDiagnostic<'db> {
                     }
                 };
                 Self::path_diagnostic(diag, source.with_value(path))?
-            },
+            }
             &InferenceDiagnostic::MethodCallIncorrectGenericsLen {
                 expr,
                 provided_count,
@@ -809,7 +809,7 @@ impl<'db> AnyDiagnostic<'db> {
                     def: def.into(),
                 }
                 .into()
-            },
+            }
             &InferenceDiagnostic::MethodCallIncorrectGenericsOrder {
                 expr,
                 param_id,
@@ -825,7 +825,7 @@ impl<'db> AnyDiagnostic<'db> {
                 let provided_arg = InFile::new(file_id, AstPtr::new(&provided_arg));
                 let expected_kind = GenericArgKind::from_id(param_id);
                 IncorrectGenericsOrder { provided_arg, expected_kind }.into()
-            },
+            }
         })
     }
 
@@ -847,7 +847,7 @@ impl<'db> AnyDiagnostic<'db> {
                 };
                 let args = path.with_value(args);
                 GenericArgsProhibited { args, reason }.into()
-            },
+            }
             PathLoweringDiagnostic::ParenthesizedGenericArgsWithoutFnTrait { segment } => {
                 let segment = hir_segment_to_ast_segment(&path.value, segment)?;
                 if let Some(rtn) = segment.return_type_syntax() {
@@ -857,7 +857,7 @@ impl<'db> AnyDiagnostic<'db> {
                 let args = AstPtr::new(&segment.parenthesized_arg_list()?);
                 let args = path.with_value(args);
                 ParenthesizedGenericArgsWithoutFnTrait { args }.into()
-            },
+            }
             PathLoweringDiagnostic::IncorrectGenericsLen {
                 generics_source,
                 provided_count,
@@ -876,7 +876,7 @@ impl<'db> AnyDiagnostic<'db> {
                     def: def.into(),
                 }
                 .into()
-            },
+            }
             PathLoweringDiagnostic::IncorrectGenericsOrder {
                 generics_source,
                 param_id,
@@ -889,7 +889,7 @@ impl<'db> AnyDiagnostic<'db> {
                 let provided_arg = path.with_value(AstPtr::new(&provided_arg));
                 let expected_kind = GenericArgKind::from_id(param_id);
                 IncorrectGenericsOrder { provided_arg, expected_kind }.into()
-            },
+            }
             PathLoweringDiagnostic::MissingLifetime { generics_source, expected_count, def }
             | PathLoweringDiagnostic::ElisionFailure { generics_source, expected_count, def } => {
                 let generics_or_segment =
@@ -897,7 +897,7 @@ impl<'db> AnyDiagnostic<'db> {
                 let generics_or_segment = path.with_value(AstPtr::new(&generics_or_segment));
                 MissingLifetime { generics_or_segment, expected: expected_count, def: def.into() }
                     .into()
-            },
+            }
             PathLoweringDiagnostic::ElidedLifetimesInPath {
                 generics_source,
                 expected_count,
@@ -914,7 +914,7 @@ impl<'db> AnyDiagnostic<'db> {
                     hard_error,
                 }
                 .into()
-            },
+            }
         })
     }
 
@@ -932,7 +932,7 @@ impl<'db> AnyDiagnostic<'db> {
             TyLoweringDiagnosticKind::PathDiagnostic(diag) => {
                 let ast::Type::PathType(syntax) = syntax() else { return None };
                 Self::path_diagnostic(diag, source.with_value(syntax.path()?))?
-            },
+            }
         })
     }
 }
@@ -947,7 +947,7 @@ fn path_generics_source_to_ast(
             segment.generic_arg_list().map(Either::Left).or_else(
                 || segment.name_ref().map(Either::Right),
             )?
-        },
+        }
         PathGenericsSource::AssocType { segment, assoc_type } => {
             let segment = hir_segment_to_ast_segment(path, segment)?;
             let segment_args = segment.generic_arg_list()?;
@@ -955,6 +955,6 @@ fn path_generics_source_to_ast(
             assoc.generic_arg_list().map(Either::Left).or_else(
                 || assoc.name_ref().map(Either::Right),
             )?
-        },
+        }
     })
 }

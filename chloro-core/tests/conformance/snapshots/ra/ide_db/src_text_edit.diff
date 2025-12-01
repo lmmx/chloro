@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9629 bytes
-Chloro size:   9611 bytes
+Chloro size:   9643 bytes
 Rustfmt size:  9801 bytes
 
 ✗ Outputs DIFFER
@@ -120,24 +120,16 @@ Rustfmt size:  9801 bytes
 -    indels
 -        .into_iter()
 -        .coalesce(|mut a, b| {
--            if a.delete.end() == b.delete.start() {
--                a.insert.push_str(&b.insert);
--                a.delete = TextRange::new(a.delete.start(), b.delete.end());
--                Ok(a)
--            } else {
--                Err((a, b))
--            }
++    indels.into_iter().coalesce(|mut a, b| {
+             if a.delete.end() == b.delete.start() {
+                 a.insert.push_str(&b.insert);
+                 a.delete = TextRange::new(a.delete.start(), b.delete.end());
+             } else {
+                 Err((a, b))
+             }
 -        })
 -        .collect_vec()
-+    indels.into_iter().coalesce(|mut a, b| {
-+        if a.delete.end() == b.delete.start() {
-+            a.insert.push_str(&b.insert);
-+            a.delete = TextRange::new(a.delete.start(), b.delete.end());
-+            Ok(a)
-+        } else {
-+            Err((a, b))
-+        }
-+    }).collect_vec(
++        }).collect_vec(
 +    )
  }
  

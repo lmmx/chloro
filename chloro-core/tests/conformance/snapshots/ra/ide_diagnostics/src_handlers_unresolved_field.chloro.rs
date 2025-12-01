@@ -39,14 +39,16 @@ pub(crate) fn unresolved_field(
         ctx,
         d.expr,
         &|expr| {
-        Some(match expr.left()? {
-            ast::Expr::MethodCallExpr(it) => it.name_ref(),
-            ast::Expr::FieldExpr(it) => it.name_ref(),
-            _ => None,
-        }?.syntax(
-        ).text_range(
-        ))
-    },
+            Some(
+                match expr.left()? {
+                    ast::Expr::MethodCallExpr(it) => it.name_ref(),
+                    ast::Expr::FieldExpr(it) => it.name_ref(),
+                    _ => None,
+                }?
+                .syntax()
+                .text_range(),
+            )
+        },
     ),
     ).with_fixes(
         fixes(ctx, d),
@@ -96,10 +98,10 @@ fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Opti
     match adt {
         Adt::Struct(adt_struct) => {
             add_field_to_struct_fix(ctx, adt_struct, field_name, suggested_type, error_range)
-        },
+        }
         Adt::Union(adt_union) => {
             add_variant_to_union(ctx, adt_union, field_name, suggested_type, error_range)
-        },
+        }
         _ => None,
     }
 }
@@ -173,7 +175,7 @@ fn add_field_to_struct_fix(
                 source_change: Some(src_change_builder.finish()),
                 command: None,
             })
-        },
+        }
         None => {
             let mut src_change_builder =
                 SourceChangeBuilder::new(struct_range.file_id.file_id(ctx.sema.db));
@@ -208,10 +210,10 @@ fn add_field_to_struct_fix(
                 source_change: Some(src_change_builder.finish()),
                 command: None,
             })
-        },
+        }
         Some(FieldList::TupleFieldList(_tuple)) => {
             None
-        },
+        }
     }
 }
 

@@ -889,14 +889,10 @@ impl ExprCollector<'_> {
                         let syntax_ptr = AstPtr::new(&e);
                         let expr = this.collect_expr(e);
                         this.alloc_expr_desugared_with_ptr(
-                            Expr::Async {
-                            id: None,
-                            statements: Box::new([]),
-                            tail: Some(expr),
-                        },
+                            Expr::Async { id: None, statements: Box::new([]), tail: Some(expr) },
                             syntax_ptr,
                         )
-                    },
+                    }
                     None => this.missing_expr(),
                 }
             } else {
@@ -948,26 +944,26 @@ impl ExprCollector<'_> {
                     None => TraitBoundModifier::None,
                 };
                 self.lower_path_type(&path_type, impl_trait_lower_fn).map(|p| {
-                    let path = self.alloc_path(p, AstPtr::new(&path_type).upcast());
-                    if binder.is_empty() {
-                        TypeBound::Path(path, m)
-                    } else {
-                        TypeBound::ForLifetime(binder, path)
-                    }
-                }).unwrap_or(
+                        let path = self.alloc_path(p, AstPtr::new(&path_type).upcast());
+                        if binder.is_empty() {
+                            TypeBound::Path(path, m)
+                        } else {
+                            TypeBound::ForLifetime(binder, path)
+                        }
+                    }).unwrap_or(
                     TypeBound::Error,
                 )
-            },
+            }
             ast::TypeBoundKind::Use(gal) => TypeBound::Use(gal.use_bound_generic_args().map(|p| match p {
-                ast::UseBoundGenericArg::Lifetime(l) => {
-                    UseArgRef::Lifetime(self.lower_lifetime_ref(l))
-                },
-                ast::UseBoundGenericArg::NameRef(n) => UseArgRef::Name(n.as_name()),
-            }).collect(
+                        ast::UseBoundGenericArg::Lifetime(l) => {
+                            UseArgRef::Lifetime(self.lower_lifetime_ref(l))
+                        }
+                        ast::UseBoundGenericArg::NameRef(n) => UseArgRef::Name(n.as_name()),
+                    }).collect(
             )),
             ast::TypeBoundKind::Lifetime(lifetime) => {
                 TypeBound::Lifetime(self.lower_lifetime_ref(lifetime))
-            },
+            }
         }
     }
 
@@ -1003,12 +999,12 @@ impl ExprCollector<'_> {
                 });
                 let condition = self.collect_expr_opt(e.condition());
                 self.alloc_expr(Expr::If { condition, then_branch, else_branch }, syntax_ptr)
-            },
+            }
             ast::Expr::LetExpr(e) => {
                 let pat = self.collect_pat_top(e.pat());
                 let expr = self.collect_expr_opt(e.expr());
                 self.alloc_expr(Expr::Let { pat, expr }, syntax_ptr)
-            },
+            }
             ast::Expr::BlockExpr(e) => match e.modifier() {
                 Some(ast::BlockModifier::Try(_)) => self.desugar_try_block(e),
                 Some(ast::BlockModifier::Unsafe(_)) => {
@@ -1020,7 +1016,7 @@ impl ExprCollector<'_> {
                         tail,
                     },
                     )
-                },
+                }
                 Some(ast::BlockModifier::Label(label)) => {
                     let label_hygiene = self.hygiene_id_for(label.syntax().text_range());
                     let label_id = self.collect_label(label);
@@ -1028,64 +1024,52 @@ impl ExprCollector<'_> {
                         label_id,
                         label_hygiene,
                         |this| {
-                        this.collect_block_(
-                            e,
-                            |id, statements, tail| Expr::Block {
+                        this.collect_block_(e, |id, statements, tail| Expr::Block {
                             id,
                             statements,
                             tail,
                             label: Some(label_id),
-                        },
-                        )
+                        })
                     },
                     )
-                },
+                }
                 Some(ast::BlockModifier::Async(_)) => {
                     self.with_label_rib(
                         RibKind::Closure,
                         |this| {
-                        this.with_awaitable_block(
-                            Awaitable::Yes,
-                            |this| {
-                            this.collect_block_(
-                                e,
-                                |id, statements, tail| Expr::Async {
+                        this.with_awaitable_block(Awaitable::Yes, |this| {
+                            this.collect_block_(e, |id, statements, tail| Expr::Async {
                                 id,
                                 statements,
                                 tail,
-                            },
-                            )
-                        },
-                        )
+                            })
+                        })
                     },
                     )
-                },
+                }
                 Some(ast::BlockModifier::Const(_)) => {
                     self.with_label_rib(
                         RibKind::Constant,
                         |this| {
-                        this.with_awaitable_block(
-                            Awaitable::No("constant block"),
-                            |this| {
+                        this.with_awaitable_block(Awaitable::No("constant block"), |this| {
                             let (result_expr_id, prev_binding_owner) =
                                 this.initialize_binding_owner(syntax_ptr);
                             let inner_expr = this.collect_block(e);
                             this.store.exprs[result_expr_id] = Expr::Const(inner_expr);
                             this.current_binding_owner = prev_binding_owner;
                             result_expr_id
-                        },
-                        )
+                        })
                     },
                     )
-                },
+                }
                 Some(ast::BlockModifier::AsyncGen(_)) => {
                     self.with_awaitable_block(Awaitable::Yes, |this| this.collect_block(e))
-                },
+                }
                 Some(ast::BlockModifier::Gen(_)) => self.with_awaitable_block(
                     Awaitable::No("non-async gen block"),
                     |this| {
-                    this.collect_block(e)
-                },
+                        this.collect_block(e)
+                    },
                 ),
                 None => self.collect_block(e),
             },
@@ -1095,7 +1079,7 @@ impl ExprCollector<'_> {
                 });
                 let body = self.collect_labelled_block_opt(label, e.loop_body());
                 self.alloc_expr(Expr::Loop { body, label: label.map(|it| it.1) }, syntax_ptr)
-            },
+            }
             ast::Expr::WhileExpr(e) => self.collect_while_loop(syntax_ptr, e),
             ast::Expr::ForExpr(e) => self.collect_for_loop(syntax_ptr, e),
             ast::Expr::CallExpr(e) => {
@@ -1115,7 +1099,7 @@ impl ExprCollector<'_> {
                     };
                     self.alloc_expr(Expr::Call { callee, args }, syntax_ptr)
                 }
-            },
+            }
             ast::Expr::MethodCallExpr(e) => {
                 let receiver = self.collect_expr_opt(e.receiver());
                 let args = if let Some(arg_list) = e.arg_list() {
@@ -1134,7 +1118,7 @@ impl ExprCollector<'_> {
                     Expr::MethodCall { receiver, method_name, args, generic_args },
                     syntax_ptr,
                 )
-            },
+            }
             ast::Expr::MatchExpr(e) => {
                 let expr = self.collect_expr_opt(e.expr());
                 let arms = if let Some(match_arm_list) = e.match_arm_list() {
@@ -1158,7 +1142,7 @@ impl ExprCollector<'_> {
                     Box::default()
                 };
                 self.alloc_expr(Expr::Match { expr, arms }, syntax_ptr)
-            },
+            }
             ast::Expr::PathExpr(e) => {
                 let (path, hygiene) = self
                     .collect_expr_path(e)
@@ -1169,14 +1153,14 @@ impl ExprCollector<'_> {
                     self.store.ident_hygiene.insert(expr_id.into(), hygiene);
                 }
                 expr_id
-            },
+            }
             ast::Expr::ContinueExpr(e) => {
                 let label = self.resolve_label(e.lifetime()).unwrap_or_else(|e| {
                     self.store.diagnostics.push(e);
                     None
                 });
                 self.alloc_expr(Expr::Continue { label }, syntax_ptr)
-            },
+            }
             ast::Expr::BreakExpr(e) => {
                 let label = self.resolve_label(e.lifetime()).unwrap_or_else(|e| {
                     self.store.diagnostics.push(e);
@@ -1184,31 +1168,31 @@ impl ExprCollector<'_> {
                 });
                 let expr = e.expr().map(|e| self.collect_expr(e));
                 self.alloc_expr(Expr::Break { expr, label }, syntax_ptr)
-            },
+            }
             ast::Expr::ParenExpr(e) => {
                 let inner = self.collect_expr_opt(e.expr());
                 let src = self.expander.in_file(syntax_ptr);
                 self.store.expr_map.insert(src, inner.into());
                 inner
-            },
+            }
             ast::Expr::ReturnExpr(e) => {
                 let expr = e.expr().map(|e| self.collect_expr(e));
                 self.alloc_expr(Expr::Return { expr }, syntax_ptr)
-            },
+            }
             ast::Expr::BecomeExpr(e) => {
                 let expr =
                     e.expr().map(|e| self.collect_expr(e)).unwrap_or_else(|| self.missing_expr());
                 self.alloc_expr(Expr::Become { expr }, syntax_ptr)
-            },
+            }
             ast::Expr::YieldExpr(e) => {
                 self.is_lowering_coroutine = true;
                 let expr = e.expr().map(|e| self.collect_expr(e));
                 self.alloc_expr(Expr::Yield { expr }, syntax_ptr)
-            },
+            }
             ast::Expr::YeetExpr(e) => {
                 let expr = e.expr().map(|e| self.collect_expr(e));
                 self.alloc_expr(Expr::Yeet { expr }, syntax_ptr)
-            },
+            }
             ast::Expr::RecordExpr(e) => {
                 let path = e
                     .path()
@@ -1239,7 +1223,7 @@ impl ExprCollector<'_> {
                     Expr::RecordLit { path, fields: Box::default(), spread: None }
                 };
                 self.alloc_expr(record_lit, syntax_ptr)
-            },
+            }
             ast::Expr::FieldExpr(e) => {
                 let expr = self.collect_expr_opt(e.expr());
                 let name = match e.field_access() {
@@ -1247,7 +1231,7 @@ impl ExprCollector<'_> {
                     _ => Name::missing(),
                 };
                 self.alloc_expr(Expr::Field { expr, name }, syntax_ptr)
-            },
+            }
             ast::Expr::AwaitExpr(e) => {
                 let expr = self.collect_expr_opt(e.expr());
                 if let Awaitable::No(location) = self.is_lowering_awaitable_block() {
@@ -1257,13 +1241,13 @@ impl ExprCollector<'_> {
                     });
                 }
                 self.alloc_expr(Expr::Await { expr }, syntax_ptr)
-            },
+            }
             ast::Expr::TryExpr(e) => self.collect_try_operator(syntax_ptr, e),
             ast::Expr::CastExpr(e) => {
                 let expr = self.collect_expr_opt(e.expr());
                 let type_ref = self.lower_type_ref_opt_disallow_impl_trait(e.ty());
                 self.alloc_expr(Expr::Cast { expr, type_ref }, syntax_ptr)
-            },
+            }
             ast::Expr::RefExpr(e) => {
                 let expr = self.collect_expr_opt(e.expr());
                 let raw_tok = e.raw_token().is_some();
@@ -1274,14 +1258,14 @@ impl ExprCollector<'_> {
                 };
                 let rawness = Rawness::from_raw(raw_tok);
                 self.alloc_expr(Expr::Ref { expr, rawness, mutability }, syntax_ptr)
-            },
+            }
             ast::Expr::PrefixExpr(e) => {
                 let expr = self.collect_expr_opt(e.expr());
                 match e.op_kind() {
                     Some(op) => self.alloc_expr(Expr::UnaryOp { expr, op }, syntax_ptr),
                     None => self.alloc_expr(Expr::Missing, syntax_ptr),
                 }
-            },
+            }
             ast::Expr::ClosureExpr(e) => self.with_label_rib(
                 RibKind::Closure,
                 |this| {
@@ -1305,8 +1289,10 @@ impl ExprCollector<'_> {
                     .ret_type()
                     .and_then(|r| r.ty())
                     .map(|it| this.lower_type_ref_disallow_impl_trait(it));
+
                 let prev_is_lowering_coroutine = mem::take(&mut this.is_lowering_coroutine);
                 let prev_try_block_label = this.current_try_block_label.take();
+
                 let awaitable = if e.async_token().is_some() {
                     Awaitable::Yes
                 } else {
@@ -1314,6 +1300,7 @@ impl ExprCollector<'_> {
                 };
                 let body =
                     this.with_awaitable_block(awaitable, |this| this.collect_expr_opt(e.body()));
+
                 let closure_kind = if this.is_lowering_coroutine {
                     let movability = if e.static_token().is_some() {
                         Movability::Static
@@ -1353,21 +1340,21 @@ impl ExprCollector<'_> {
                     let rhs = self.collect_expr_opt(e.rhs());
                     self.alloc_expr(Expr::BinaryOp { lhs, rhs, op }, syntax_ptr)
                 }
-            },
+            }
             ast::Expr::TupleExpr(e) => {
                 let mut exprs: Vec<_> = e.fields().map(|expr| self.collect_expr(expr)).collect();
                 if comma_follows_token(e.l_paren_token()) {
                     exprs.insert(0, self.missing_expr());
                 }
                 self.alloc_expr(Expr::Tuple { exprs: exprs.into_boxed_slice() }, syntax_ptr)
-            },
+            }
             ast::Expr::ArrayExpr(e) => {
                 let kind = e.kind();
                 match kind {
                     ArrayExprKind::ElementList(e) => {
                         let elements = e.map(|expr| self.collect_expr(expr)).collect();
                         self.alloc_expr(Expr::Array(Array::ElementList { elements }), syntax_ptr)
-                    },
+                    }
                     ArrayExprKind::Repeat { initializer, repeat } => {
                         let initializer = self.collect_expr_opt(initializer);
                         let repeat = self.with_label_rib(RibKind::Constant, |this| {
@@ -1385,25 +1372,25 @@ impl ExprCollector<'_> {
                             Expr::Array(Array::Repeat { initializer, repeat }),
                             syntax_ptr,
                         )
-                    },
+                    }
                 }
-            },
+            }
             ast::Expr::Literal(e) => self.alloc_expr(Expr::Literal(e.kind().into()), syntax_ptr),
             ast::Expr::IndexExpr(e) => {
                 let base = self.collect_expr_opt(e.base());
                 let index = self.collect_expr_opt(e.index());
                 self.alloc_expr(Expr::Index { base, index }, syntax_ptr)
-            },
+            }
             ast::Expr::RangeExpr(e) => {
                 let lhs = e.start().map(|lhs| self.collect_expr(lhs));
                 let rhs = e.end().map(|rhs| self.collect_expr(rhs));
                 match e.op_kind() {
                     Some(range_type) => {
                         self.alloc_expr(Expr::Range { lhs, rhs, range_type }, syntax_ptr)
-                    },
+                    }
                     None => self.alloc_expr(Expr::Missing, syntax_ptr),
                 }
-            },
+            }
             ast::Expr::MacroExpr(e) => {
                 let e = e.macro_call()?;
                 let macro_ptr = AstPtr::new(&e);
@@ -1415,17 +1402,17 @@ impl ExprCollector<'_> {
                         let src = self.expander.in_file(syntax_ptr);
                         self.store.expr_map.insert(src, id.into());
                         id
-                    },
+                    }
                     None => self.alloc_expr(Expr::Missing, syntax_ptr),
                 }
-            },
+            }
             ast::Expr::UnderscoreExpr(_) => self.alloc_expr(Expr::Underscore, syntax_ptr),
             ast::Expr::AsmExpr(e) => self.lower_inline_asm(e, syntax_ptr),
             ast::Expr::OffsetOfExpr(e) => {
                 let container = self.lower_type_ref_opt_disallow_impl_trait(e.ty());
                 let fields = e.fields().map(|it| it.as_name()).collect();
                 self.alloc_expr(Expr::OffsetOf(OffsetOf { container, fields }), syntax_ptr)
-            },
+            }
             ast::Expr::FormatArgsExpr(f) => self.collect_format_args(f, syntax_ptr),
         })
     }
@@ -1433,6 +1420,7 @@ impl ExprCollector<'_> {
     fn collect_expr_path(&mut self, e: ast::PathExpr) -> Option<(Path, HygieneId)> {
         e.path().and_then(|path| {
             let path = self.lower_path(path, &mut Self::impl_trait_error_allocator)?;
+            // Need to enable `mod_path.len() < 1` for `self`.
             let may_be_variable = matches!(&path, Path::BarePath(mod_path) if mod_path.len() <= 1);
             let hygiene = if may_be_variable {
                 self.hygiene_id_for(e.syntax().text_range())
@@ -1454,6 +1442,7 @@ impl ExprCollector<'_> {
         self.maybe_collect_expr_as_pat(&expr).unwrap_or_else(|| {
             let src = self.expander.in_file(AstPtr::new(&expr).wrap_left());
             let expr = self.collect_expr(expr);
+            // Do not use `alloc_pat_from_expr()` here, it will override the entry in `expr_map`.
             let id = self.store.pats.alloc(Pat::Expr(expr));
             self.store.pat_map_back.insert(id, src);
             id
@@ -1988,7 +1977,7 @@ impl ExprCollector<'_> {
                 let id = collector(self, expansion.map(|it| it.tree()));
                 self.expander.exit(mark);
                 id
-            },
+            }
             None => collector(self, None),
         }
     }
@@ -2024,6 +2013,8 @@ impl ExprCollector<'_> {
             },
         );
         expansion.inspect(|&tail| {
+            // Make the macro-call point to its expanded expression so we can query
+            // semantics on syntax pointers to the macro
             let src = self.expander.in_file(syntax_ptr);
             self.store.expr_map.insert(src, tail.into());
         })
@@ -2043,7 +2034,7 @@ impl ExprCollector<'_> {
                     .and_then(|let_else| let_else.block_expr())
                     .map(|block| self.collect_block(block));
                 statements.push(Statement::Let { pat, type_ref, initializer, else_branch });
-            },
+            }
             ast::Stmt::ExprStmt(stmt) => {
                 let expr = stmt.expr();
                 match &expr {
@@ -2059,7 +2050,7 @@ impl ExprCollector<'_> {
                     let expr = self.collect_expr_opt(expr);
                     statements.push(Statement::Expr { expr, has_semi });
                 }
-            },
+            }
             ast::Stmt::Item(ast::Item::MacroDef(macro_)) => {
                 if !self.check_cfg(&macro_) {
                     return;
@@ -2071,7 +2062,7 @@ impl ExprCollector<'_> {
                 let name = name.as_name();
                 let macro_id = self.def_map.modules[DefMap::ROOT].scope.get(&name).take_macros();
                 self.collect_macro_def(statements, macro_id);
-            },
+            }
             ast::Stmt::Item(ast::Item::MacroRules(macro_)) => {
                 if !self.check_cfg(&macro_) {
                     return;
@@ -2090,7 +2081,7 @@ impl ExprCollector<'_> {
                     .copied();
                 *macro_defs_count += 1;
                 self.collect_macro_def(statements, macro_id);
-            },
+            }
             ast::Stmt::Item(_item) => statements.push(Statement::Item(Item::Other)),
         }
     }
@@ -2180,7 +2171,7 @@ impl ExprCollector<'_> {
         match label {
             Some((hygiene, label)) => {
                 self.with_labeled_rib(label, hygiene, |this| this.collect_block_opt(expr))
-            },
+            }
             None => self.collect_block_opt(expr),
         }
     }
@@ -2493,11 +2484,11 @@ impl ExprCollector<'_> {
                         self.store.pat_map.insert(src, pat.into());
                     }
                     pat
-                },
+                }
                 None => {
                     let ptr = AstPtr::new(&pat);
                     Either::Left(self.alloc_pat(Pat::Missing, ptr))
-                },
+                }
             },
             _ => Either::Left(self.collect_pat(pat, binding_list)),
         }
@@ -2518,7 +2509,7 @@ impl ExprCollector<'_> {
                     opts: self.cfg_options.clone(),
                 });
                 false
-            },
+            }
         }
     }
 
@@ -3268,7 +3259,7 @@ impl ExprCollector<'_> {
                     callee: count_is,
                     args: Box::new([args]),
                 })
-            },
+            }
             Some(FormatCount::Argument(arg)) => {
                 if let Ok(arg_index) = arg.index {
                     let (i, _) = argmap.insert_full((arg_index, ArgumentType::Usize));
@@ -3291,7 +3282,7 @@ impl ExprCollector<'_> {
                 } else {
                     self.missing_expr()
                 }
-            },
+            }
             None => match LangItem::FormatCount.ty_rel_path(
                 self.db,
                 self.module.krate(),
@@ -3476,9 +3467,9 @@ pub fn hir_assoc_type_binding_to_ast(
     binding_idx: u32,
 ) -> Option<ast::AssocTypeArg> {
     segment_args.generic_args().filter_map(|arg| match arg {
-        ast::GenericArg::AssocTypeArg(it) => Some(it),
-        _ => None,
-    }).filter(
+            ast::GenericArg::AssocTypeArg(it) => Some(it),
+            _ => None,
+        }).filter(
         |binding| binding.param_list().is_none() && binding.name_ref().is_some(),
     ).nth(
         binding_idx as usize,
@@ -3492,10 +3483,10 @@ pub fn hir_generic_arg_to_ast(
     has_self_arg: bool,
 ) -> Option<ast::GenericArg> {
     args.generic_args().filter(|arg| match arg {
-        ast::GenericArg::AssocTypeArg(_) => false,
-        ast::GenericArg::LifetimeArg(arg) => arg.lifetime().is_some(),
-        ast::GenericArg::ConstArg(_) | ast::GenericArg::TypeArg(_) => true,
-    }).nth(
+            ast::GenericArg::AssocTypeArg(_) => false,
+            ast::GenericArg::LifetimeArg(arg) => arg.lifetime().is_some(),
+            ast::GenericArg::ConstArg(_) | ast::GenericArg::TypeArg(_) => true,
+        }).nth(
         arg_idx as usize - has_self_arg as usize,
     )
 }

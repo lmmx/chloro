@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10022 bytes
-Chloro size:   9707 bytes
+Chloro size:   9794 bytes
 Rustfmt size:  10253 bytes
 
 ✗ Outputs DIFFER
@@ -21,28 +21,18 @@ Rustfmt size:  10253 bytes
              d.receiver.display(ctx.sema.db, ctx.display_target)
          ),
 -        adjusted_display_range(ctx, d.expr, &|expr| {
--            Some(
--                match expr.left()? {
--                    ast::Expr::MethodCallExpr(it) => it.name_ref(),
--                    ast::Expr::FieldExpr(it) => it.name_ref(),
--                    _ => None,
--                }?
--                .syntax()
--                .text_range(),
--            )
--        }),
 +        adjusted_display_range(
 +        ctx,
 +        d.expr,
 +        &|expr| {
-+        Some(match expr.left()? {
-+            ast::Expr::MethodCallExpr(it) => it.name_ref(),
-+            ast::Expr::FieldExpr(it) => it.name_ref(),
-+            _ => None,
-+        }?.syntax(
-+        ).text_range(
-+        ))
-+    },
+             Some(
+                 match expr.left()? {
+                     ast::Expr::MethodCallExpr(it) => it.name_ref(),
+                 .syntax()
+                 .text_range(),
+             )
+-        }),
++        },
 +    ),
 +    ).with_fixes(
 +        fixes(ctx, d),

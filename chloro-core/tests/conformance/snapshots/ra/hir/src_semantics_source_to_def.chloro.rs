@@ -156,8 +156,10 @@ impl SourceToDefCache {
     ) -> &ExpansionInfo {
         self.expansion_info_cache.entry(macro_file).or_insert_with(|| {
             let exp_info = macro_file.expansion_info(db);
+
             let InMacroFile { file_id, value } = exp_info.expanded();
             Self::cache(&mut self.root_to_file_cache, value, file_id.into());
+
             exp_info
         })
     }
@@ -173,6 +175,7 @@ impl SourceToDefCtx<'_, '_> {
         let _p = tracing::info_span!("SourceToDefCtx::file_to_def").entered();
         self.cache.file_to_def_cache.entry(file).or_insert_with(|| {
             let mut mods = SmallVec::new();
+
             for &crate_id in self.db.relevant_crates(file).iter() {
                 // Note: `mod` declarations in block modules cannot be supported here
                 let crate_def_map = crate_def_map(self.db, crate_id);
@@ -334,7 +337,7 @@ impl SourceToDefCtx<'_, '_> {
             ast::Adt::Enum(it) => self.enum_to_def(InFile::new(file_id, it)).map(AdtId::EnumId),
             ast::Adt::Struct(it) => {
                 self.struct_to_def(InFile::new(file_id, it)).map(AdtId::StructId)
-            },
+            }
             ast::Adt::Union(it) => self.union_to_def(InFile::new(file_id, it)).map(AdtId::UnionId),
         }
     }
@@ -430,9 +433,10 @@ impl SourceToDefCtx<'_, '_> {
     ) -> Option<impl Iterator<Item = (AttrId, MacroCallId, &'slf [Option<MacroCallId>])> + use<'slf>> {
         self.dyn_map(adt).as_ref().map(|&map| {
             let dyn_map = &map[keys::DERIVE_MACRO_CALL];
-            adt.value.attrs().filter_map(move |attr| dyn_map.get(&AstPtr::new(&attr))).map(
-                |&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids),
-            )
+            adt.value
+                .attrs()
+                .filter_map(move |attr| dyn_map.get(&AstPtr::new(&attr)))
+                .map(|&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids))
         })
     }
 
@@ -505,13 +509,13 @@ impl SourceToDefCtx<'_, '_> {
         match value {
             ast::GenericParam::ConstParam(it) => {
                 self.const_param_to_def(InFile::new(file_id, it)).map(GenericParamId::ConstParamId)
-            },
+            }
             ast::GenericParam::LifetimeParam(it) => self.lifetime_param_to_def(InFile::new(file_id, it)).map(
                 GenericParamId::LifetimeParamId,
             ),
             ast::GenericParam::TypeParam(it) => {
                 self.type_param_to_def(InFile::new(file_id, it)).map(GenericParamId::TypeParamId)
-            },
+            }
         }
     }
 
@@ -519,10 +523,10 @@ impl SourceToDefCtx<'_, '_> {
         self.dyn_map(src).and_then(|it| match src.value {
             ast::Macro::MacroRules(value) => {
                 it[keys::MACRO_RULES].get(&AstPtr::new(value)).copied().map(MacroId::from)
-            },
+            }
             ast::Macro::MacroDef(value) => {
                 it[keys::MACRO2].get(&AstPtr::new(value)).copied().map(MacroId::from)
-            },
+            }
         })
     }
 
@@ -557,12 +561,12 @@ impl SourceToDefCtx<'_, '_> {
                 ast::Item::Fn(it) => this.fn_to_def(InFile::new(file_id, it)).map(Into::into),
                 ast::Item::Struct(it) => {
                     this.struct_to_def(InFile::new(file_id, it)).map(Into::into)
-                },
+                }
                 ast::Item::Enum(it) => this.enum_to_def(InFile::new(file_id, it)).map(Into::into),
                 ast::Item::Trait(it) => this.trait_to_def(InFile::new(file_id, it)).map(Into::into),
                 ast::Item::TypeAlias(it) => {
                     this.type_alias_to_def(InFile::new(file_id, it)).map(Into::into)
-                },
+                }
                 ast::Item::Impl(it) => this.impl_to_def(InFile::new(file_id, it)).map(Into::into),
                 _ => None,
             }
@@ -588,7 +592,7 @@ impl SourceToDefCtx<'_, '_> {
                 ast::Item::Const(it) => this.const_to_def(InFile::new(file_id, it)).map(Into::into),
                 ast::Item::Static(it) => {
                     this.static_to_def(InFile::new(file_id, it)).map(Into::into)
-                },
+                }
                 _ => None,
             }
         },

@@ -142,8 +142,9 @@ impl TestDB {
     pub(crate) fn fetch_test_crate(&self) -> Crate {
         let all_crates = self.all_crates();
         all_crates.iter().copied().find(|&krate| {
-            krate.extra_data(self).display_name.as_ref().map(|it| it.canonical_name().as_str()) == Some("ra_test_fixture")
-        }).unwrap_or(
+                krate.extra_data(self).display_name.as_ref().map(|it| it.canonical_name().as_str())
+                    == Some("ra_test_fixture")
+            }).unwrap_or(
             *all_crates.last().unwrap(),
         )
     }
@@ -174,10 +175,10 @@ impl TestDB {
             match new_map {
                 Some(new_block) if !std::ptr::eq(&new_block, &def_map) => {
                     def_map = new_block;
-                },
+                }
                 _ => {
                     return def_map.module_id(DefMap::ROOT);
-                },
+                }
             }
         }
     }
@@ -296,13 +297,15 @@ impl TestDB {
     pub(crate) fn log_executed(&self, f: impl FnOnce()) -> Vec<String> {
         let events = self.log(f);
         events.into_iter().filter_map(|e| match e.kind {
-            salsa::EventKind::WillExecute { database_key } => {
-                let ingredient = (self as &dyn salsa::Database)
+                // This is pretty horrible, but `Debug` is the only way to inspect
+                // QueryDescriptor at the moment.
+                salsa::EventKind::WillExecute { database_key } => {
+                    let ingredient = (self as &dyn salsa::Database)
                         .ingredient_debug_name(database_key.ingredient_index());
-                Some(ingredient.to_string())
-            },
-            _ => None,
-        }).collect(
+                    Some(ingredient.to_string())
+                }
+                _ => None,
+            }).collect(
         )
     }
 }

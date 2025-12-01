@@ -85,7 +85,7 @@ impl Node {
                 Some(child) => {
                     child.flatten(acc);
                     child.hl_range.range.end()
-                },
+                }
                 None => break,
             }
         }

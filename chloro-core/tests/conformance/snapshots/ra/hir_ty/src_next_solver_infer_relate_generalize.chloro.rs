@@ -611,7 +611,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                     ConstVariableValue::Known { value: u } => {
                         drop(inner);
                         self.relate(u, u)
-                    },
+                    }
                     ConstVariableValue::Unknown { origin, universe } => {
                         if self.for_universe.can_name(universe) {
                             Ok(c)
@@ -633,9 +633,9 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                             }
                             Ok(Const::new_var(self.infcx.interner, new_var_id))
                         }
-                    },
+                    }
                 }
-            },
+            }
             ConstKind::Unevaluated(UnevaluatedConst { def, args }) => {
                 let args = self.relate_with_variance(
                     Variance::Invariant,
@@ -644,7 +644,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                     args,
                 )?;
                 Ok(Const::new_unevaluated(self.infcx.interner, UnevaluatedConst { def, args }))
-            },
+            }
             ConstKind::Placeholder(placeholder) => {
                 if self.for_universe.can_name(placeholder.universe) {
                     Ok(c)
@@ -655,7 +655,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                     );
                     Err(TypeError::Mismatch)
                 }
-            },
+            }
             _ => relate::structurally_relate_consts(self, c, c),
         }
     }

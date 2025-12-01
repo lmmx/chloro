@@ -128,10 +128,10 @@ impl Visibility {
                             parent_arc = module.def_map(db);
                             def_map = parent_arc;
                             from_module = module.local_id;
-                        },
+                        }
                         None => return false,
                     }
-                },
+                }
             }
         }
     }
@@ -149,7 +149,7 @@ impl Visibility {
                 } else {
                     None
                 }
-            },
+            }
             (Visibility::Module(mod_, _), Visibility::PubCrate(krate))
             | (Visibility::PubCrate(krate), Visibility::Module(mod_, _)) => {
                 if mod_.krate == krate {
@@ -157,7 +157,7 @@ impl Visibility {
                 } else {
                     None
                 }
-            },
+            }
             (Visibility::Module(mod_a, expl_a), Visibility::Module(mod_b, expl_b)) => {
                 if mod_a == mod_b {
                     // Most module visibilities are `pub(self)`, and assuming no errors
@@ -193,7 +193,7 @@ impl Visibility {
                     return Some(Visibility::Module(mod_a, expl_a));
                 }
                 None
-            },
+            }
         }
     }
 
@@ -210,7 +210,7 @@ impl Visibility {
                 } else {
                     None
                 }
-            },
+            }
             (Visibility::Module(mod_, exp), Visibility::PubCrate(krate))
             | (Visibility::PubCrate(krate), Visibility::Module(mod_, exp)) => {
                 if mod_.krate == krate {
@@ -218,7 +218,7 @@ impl Visibility {
                 } else {
                     None
                 }
-            },
+            }
             (Visibility::Module(mod_a, expl_a), Visibility::Module(mod_b, expl_b)) => {
                 if mod_a == mod_b {
                     // Most module visibilities are `pub(self)`, and assuming no errors
@@ -254,7 +254,7 @@ impl Visibility {
                     return Some(Visibility::Module(mod_b, expl_b));
                 }
                 None
-            },
+            }
         }
     }
 }
@@ -290,7 +290,7 @@ pub fn visibility_from_ast(
     match raw_vis {
         RawVisibility::PubSelf(explicitness) => {
             Visibility::Module(has_resolver.module(db), explicitness)
-        },
+        }
         RawVisibility::PubCrate => Visibility::PubCrate(has_resolver.krate(db)),
         RawVisibility::Public => Visibility::Public,
         RawVisibility::Module(..) => Visibility::resolve(db, &has_resolver.resolver(db), &raw_vis),
@@ -306,21 +306,21 @@ pub(crate) fn assoc_visibility_query(db: &dyn DefDatabase, def: AssocItemId) -> 
                 let source = loc.source(db);
                 visibility_from_ast(db, function_id, source.map(|src| src.visibility()))
             })
-        },
+        }
         AssocItemId::ConstId(const_id) => {
             let loc = const_id.lookup(db);
             trait_item_visibility(db, loc.container).unwrap_or_else(|| {
                 let source = loc.source(db);
                 visibility_from_ast(db, const_id, source.map(|src| src.visibility()))
             })
-        },
+        }
         AssocItemId::TypeAliasId(type_alias_id) => {
             let loc = type_alias_id.lookup(db);
             trait_item_visibility(db, loc.container).unwrap_or_else(|| {
                 let source = loc.source(db);
                 visibility_from_ast(db, type_alias_id, source.map(|src| src.visibility()))
             })
-        },
+        }
     }
 }
 

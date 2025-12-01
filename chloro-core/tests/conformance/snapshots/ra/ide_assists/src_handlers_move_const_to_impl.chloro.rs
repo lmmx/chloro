@@ -63,32 +63,38 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         "Move const to impl block",
         const_.syntax().text_range(),
         |builder| {
-        let usages = Definition::Const(def)
+            let usages = Definition::Const(def)
                 .usages(&ctx.sema)
                 .in_scope(&SearchScope::file_range(FileRange {
                     file_id: ctx.file_id(),
                     range: parent_fn.syntax().text_range(),
                 }))
                 .all();
-        let range_to_delete = match const_.syntax().next_sibling_or_token() {
+
+            let range_to_delete = match const_.syntax().next_sibling_or_token() {
                 Some(s) if matches!(s.kind(), SyntaxKind::WHITESPACE) => {
                     // Remove following whitespaces too.
                     const_.syntax().text_range().cover(s.text_range())
                 }
                 _ => const_.syntax().text_range(),
             };
-        builder.delete(range_to_delete);
-        let usages = usages.iter().flat_map(|(file_id, usages)| {
+            builder.delete(range_to_delete);
+
+            let usages = usages.iter().flat_map(|(file_id, usages)| {
                 let edition = file_id.edition(ctx.db());
                 usages.iter().map(move |usage| (edition, usage.range))
             });
-        for (edition, range) in usages {
+            for (edition, range) in usages {
                 let const_ref = format!("Self::{}", name.display(ctx.db(), edition));
                 builder.replace(range, const_ref);
             }
-        let last_const =
+
+            // Heuristically inserting the extracted const after the consecutive existing consts
+            // from the beginning of assoc items. We assume there are no inherent assoc type as
+            // above.
+            let last_const =
                 items.assoc_items().take_while(|it| matches!(it, ast::AssocItem::Const(_))).last();
-        let insert_offset = match &last_const {
+            let insert_offset = match &last_const {
                 Some(it) => it.syntax().text_range().end(),
                 None => match items.l_curly_token() {
                     Some(l_curly) => l_curly.text_range().end(),
@@ -97,12 +103,18 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
                     None => items.syntax().text_range().start(),
                 },
             };
-        let fixup = if last_const.is_none() { "\n" } else { "" };
-        let indent = IndentLevel::from_node(parent_fn.syntax());
-        let const_ = const_.clone_for_update();
-        const_.reindent_to(indent);
-        builder.insert(insert_offset, format!("\n{indent}{const_}{fixup}"));
-    },
+
+            // If the moved const will be the first item of the impl, add a new line after that.
+            //
+            // We're assuming the code is formatted according to Rust's standard style guidelines
+            // (i.e. no empty lines between impl's `{` token and its first assoc item).
+            let fixup = if last_const.is_none() { "\n" } else { "" };
+            let indent = IndentLevel::from_node(parent_fn.syntax());
+
+            let const_ = const_.clone_for_update();
+            const_.reindent_to(indent);
+            builder.insert(insert_offset, format!("\n{indent}{const_}{fixup}"));
+        },
     )
 }
 

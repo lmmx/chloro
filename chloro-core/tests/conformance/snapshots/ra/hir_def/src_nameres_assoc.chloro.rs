@@ -258,7 +258,7 @@ impl<'a> AssocItemCollector<'a> {
                 }
                 .intern(self.db);
                 self.items.push((name.as_name(), def.into()));
-            },
+            }
             ast::AssocItem::TypeAlias(type_alias) => {
                 let Some(name) = type_alias.name() else { return };
                 let ast_id = self.ast_id_map.ast_id(&type_alias);
@@ -268,7 +268,7 @@ impl<'a> AssocItemCollector<'a> {
                 }
                 .intern(self.db);
                 self.items.push((name.as_name(), def.into()));
-            },
+            }
             ast::AssocItem::Const(konst) => {
                 let Some(name) = konst.name() else { return };
                 let ast_id = self.ast_id_map.ast_id(&konst);
@@ -276,7 +276,7 @@ impl<'a> AssocItemCollector<'a> {
                     ConstLoc { container: self.container, id: InFile::new(self.file_id, ast_id) }
                         .intern(self.db);
                 self.items.push((name.as_name(), def.into()));
-            },
+            }
             ast::AssocItem::MacroCall(call) => {
                 let ast_id = self.ast_id_map.ast_id(&call);
                 let ast_id = InFile::new(self.file_id, ast_id);
@@ -312,14 +312,14 @@ impl<'a> AssocItemCollector<'a> {
                     self.module_id.krate(),
                     resolver,
                     &mut |ptr, call_id| {
-                    self.macro_calls.push((ptr.map(|(_, it)| it.upcast()), call_id))
-                },
+                        self.macro_calls.push((ptr.map(|(_, it)| it.upcast()), call_id))
+                    },
                 ) {
                     Ok(call_id) => match call_id.value {
                         Some(call_id) => {
                             self.macro_calls.push((ast_id.upcast(), call_id));
                             self.collect_macro_items(call_id);
-                        },
+                        }
                         None => (),
                     },
                     Err(_) => {
@@ -332,9 +332,9 @@ impl<'a> AssocItemCollector<'a> {
                             },
                             (*path).clone(),
                         ));
-                    },
+                    }
                 }
-            },
+            }
         }
     }
 

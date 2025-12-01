@@ -289,7 +289,7 @@ impl RequestDispatcher<'_> {
                 let panic_context =
                     format!("\nversion: {}\nrequest: {} {params:#?}", version(), R::METHOD);
                 Some((req, params, panic_context))
-            },
+            }
             Err(err) => {
                 let response = lsp_server::Response::new_err(
                     req.id,
@@ -298,7 +298,7 @@ impl RequestDispatcher<'_> {
                 );
                 self.global_state.respond(response);
                 None
-            },
+            }
         }
     }
 
@@ -357,7 +357,7 @@ where
             Ok(
                 lsp_server::Response::new_err(id, lsp_server::ErrorCode::InternalError as i32, message),
             )
-        },
+        }
     }
 }
 

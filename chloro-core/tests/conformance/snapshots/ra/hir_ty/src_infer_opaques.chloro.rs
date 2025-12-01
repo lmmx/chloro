@@ -48,7 +48,7 @@ impl<'db> UsageKind<'db> {
                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                 UsageKind::NonDefiningUse(..),
             ) => {
-            },
+            }
             (
                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                 UsageKind::UnconstrainedHiddenType(..) | UsageKind::HasDefiningUse(_),

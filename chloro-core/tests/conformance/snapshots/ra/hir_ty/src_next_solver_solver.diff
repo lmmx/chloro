@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13159 bytes
-Chloro size:   12861 bytes
+Chloro size:   12858 bytes
 Rustfmt size:  13159 bytes
 
 ✗ Outputs DIFFER
@@ -77,25 +77,3 @@ Rustfmt size:  13159 bytes
                      Some(Certainty::AMBIGUOUS)
                  } else {
                      None
-                 }
--            }
-+            },
-             PredicateKind::Clause(ClauseKind::ConstArgHasType(ct, _)) => {
-                 if self.shallow_resolve_const(ct).is_ct_infer() {
-                     Some(Certainty::AMBIGUOUS)
-                 } else {
-                     None
-                 }
--            }
-+            },
-             PredicateKind::Clause(ClauseKind::WellFormed(arg)) => {
-                 if arg.is_trivially_wf(self.interner) {
-                     Some(Certainty::Yes)
-                 } else {
-                     None
-                 }
--            }
-+            },
-             _ => None,
-         }
-     }

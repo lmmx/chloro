@@ -142,7 +142,7 @@ fn contained_owned_self_method(item_list: Option<ast::AssocItemList>) -> bool {
         match item {
             AssocItem::Fn(f) => {
                 has_owned_self(&f) && where_clause_sized(f.where_clause()).is_none()
-            },
+            }
             _ => false,
         }
     })
@@ -160,20 +160,19 @@ fn has_owned_self_param(f: &ast::Fn) -> bool {
 
 fn has_ret_owned_self(f: &ast::Fn) -> bool {
     f.ret_type().and_then(|ret| match ret.ty() {
-        Some(ast::Type::PathType(ty)) => ty.path(),
-        _ => None,
-    }).is_some_and(|path| {
-        path.segment().and_then(|seg| seg.name_ref()).is_some_and(
-            |name| path.qualifier().is_none() && name.text() == "Self",
-        )
-    })
+            Some(ast::Type::PathType(ty)) => ty.path(),
+            _ => None,
+        }).is_some_and(|path| {
+            path.segment()
+                .and_then(|seg| seg.name_ref())
+                .is_some_and(|name| path.qualifier().is_none() && name.text() == "Self")
+        })
 }
 
 fn where_clause_sized(where_clause: Option<ast::WhereClause>) -> Option<bool> {
     where_clause?.predicates().find_map(|pred| {
-        find_bound("Sized", pred.type_bound_list()).map(
-            |bound| bound.question_mark_token().is_none(),
-        )
+        find_bound("Sized", pred.type_bound_list())
+            .map(|bound| bound.question_mark_token().is_none())
     })
 }
 

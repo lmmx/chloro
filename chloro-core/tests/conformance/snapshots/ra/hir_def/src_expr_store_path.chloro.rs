@@ -142,7 +142,7 @@ impl Path {
                     segments: mod_path.segments(),
                     generic_args: None,
                 }
-            },
+            }
             Path::Normal(path) => PathSegments {
                 segments: path.mod_path.segments(),
                 generic_args: Some(&path.generic_args),
@@ -172,7 +172,7 @@ impl Path {
                     mod_path.kind,
                     mod_path.segments()[..mod_path.segments().len() - 1].iter().cloned(),
                 ))))
-            },
+            }
             Path::Normal(path) => {
                 let mod_path = &path.mod_path;
                 if mod_path.is_ident() {
@@ -194,7 +194,7 @@ impl Path {
                         generic_args: qualifier_generic_args.iter().cloned().collect(),
                     })))
                 }
-            },
+            }
             Path::LangItem(..) => None,
         }
     }
@@ -204,7 +204,7 @@ impl Path {
             Path::BarePath(mod_path) => mod_path.is_Self(),
             Path::Normal(path) => {
                 path.type_anchor.is_none() && path.mod_path.is_Self() && path.generic_args.iter().all(|args| args.is_none())
-            },
+            }
             Path::LangItem(..) => false,
         }
     }

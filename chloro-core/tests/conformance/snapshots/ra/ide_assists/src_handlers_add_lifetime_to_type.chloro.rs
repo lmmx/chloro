@@ -37,6 +37,7 @@ pub(crate) fn add_lifetime_to_type(acc: &mut Assists, ctx: &AssistContext<'_>) -
                 }
             }
         }
+
         for ref_type in ref_types {
             if let Some(amp_token) = ref_type.amp_token() {
                 builder.insert(amp_token.text_range().end(), "'a ");

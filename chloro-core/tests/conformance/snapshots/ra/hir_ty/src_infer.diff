@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   72622 bytes
+Chloro size:   72808 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -198,25 +198,7 @@ Rustfmt size:  74236 bytes
 +
      pub fn type_of_expr_with_adjust(&self, id: ExprId) -> Option<Ty<'db>> {
          match self.expr_adjustments.get(&id).and_then(|adjustments| {
--            adjustments
--                .iter()
--                .filter(|adj| {
--                    // https://github.com/rust-lang/rust/blob/67819923ac8ea353aaa775303f4c3aacbf41d010/compiler/rustc_mir_build/src/thir/cx/expr.rs#L140
--                    !matches!(
-+            adjustments.iter().filter(|adj| {
-+                !matches!(
-                         adj,
-                         Adjustment {
-                             kind: Adjust::NeverToAny,
-                             target,
-                         } if target.is_never()
-                     )
--                })
--                .next_back()
-+            }).next_back(
-+            )
-         }) {
-             Some(adjustment) => Some(adjustment.target),
+             adjustments
              None => self.type_of_expr.get(id).copied(),
          }
      }
@@ -325,36 +307,14 @@ Rustfmt size:  74236 bytes
          // that are collected from the function data
          if data.is_varargs() {
              let va_list_ty = match self.resolve_va_list() {
-                     &Expectation::has_type(self.return_ty),
-                     ExprIsRead::Yes,
-                 )
--            }
-+            },
-         }
-     }
- 
                          [Adjustment { kind: Adjust::NeverToAny, target }],
                          [.., Adjustment { target: new_target, .. }],
                      ) => {
 -                        // NeverToAny coercion can target any type, so instead of adding a new
 -                        // adjustment on top we can change the target.
                          *target = *new_target;
--                    }
-+                    },
+                     }
                      _ => {
-                         *entry.get_mut() = adjustments;
--                    }
-+                    },
-                 }
--            }
-+            },
-             std::collections::hash_map::Entry::Vacant(entry) => {
-                 entry.insert(adjustments);
--            }
-+            },
-         }
-     }
- 
          self.result.pat_adjustments.entry(pat).or_default().extend(adjustments);
      }
  
@@ -383,19 +343,7 @@ Rustfmt size:  74236 bytes
          params: &[GenericArg<'db>],
      ) -> Ty<'db> {
          match assoc_ty {
-                     ),
-                 );
-                 self.table.try_structurally_resolve_type(alias)
--            }
-+            },
-             None => self.err_ty(),
-         }
-     }
-                     }
-                 });
-                 (ty, variant)
--            }
-+            },
+             }
              Some(1) => {
                  let segment = path.segments().last().unwrap();
 -                // this could be an enum variant or associated type
@@ -407,16 +355,12 @@ Rustfmt size:  74236 bytes
                  }
 -                // FIXME potentially resolve assoc type
                  (self.err_ty(), None)
--            }
-+            },
+             }
              Some(_) => {
 -                // FIXME diagnostic
                  (self.err_ty(), None)
--            }
-+            },
+             }
          }
-     }
- 
      /// type.
      fn has_type(ty: Ty<'db>) -> Self {
          if ty.is_ty_error() {
@@ -424,44 +368,18 @@ Rustfmt size:  74236 bytes
              Expectation::None
          } else {
              Expectation::HasType(ty)
-         match ctx.struct_tail_without_normalization(ty).kind() {
-             TyKind::Slice(_) | TyKind::Str | TyKind::Dynamic(..) => {
-                 Expectation::RValueLikeUnsized(ty)
--            }
-+            },
-             _ => Expectation::has_type(ty),
-         }
-     }
-             Expectation::Castable(t) => Expectation::Castable(table.shallow_resolve(*t)),
-             Expectation::RValueLikeUnsized(t) => {
-                 Expectation::RValueLikeUnsized(table.shallow_resolve(*t))
--            }
-+            },
-         }
-     }
- 
-             Expectation::HasType(t) => Some(table.shallow_resolve(*t)),
-             Expectation::Castable(_) | Expectation::RValueLikeUnsized(_) | Expectation::None => {
-                 None
--            }
-+            },
-         }
-     }
- 
          match *self {
              Expectation::HasType(ety) => {
                  let ety = table.structurally_resolve_type(ety);
 -                if ety.is_ty_var() { Expectation::None } else { Expectation::HasType(ety) }
--            }
 +                if ety.is_ty_var() {
 +                    Expectation::None
 +                } else {
 +                    Expectation::HasType(ety)
 +                }
-+            },
+             }
              Expectation::RValueLikeUnsized(ety) => Expectation::RValueLikeUnsized(ety),
              _ => Expectation::None,
-         }
  
  impl std::ops::BitAnd for Diverges {
      type Output = Self;

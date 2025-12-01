@@ -94,9 +94,9 @@ fn eval_goal(
         db.layout_of_ty(
             goal_ty,
             db.trait_environment(match adt_or_type_alias_id {
-            Either::Left(adt) => hir_def::GenericDefId::AdtId(adt),
-            Either::Right(ty) => hir_def::GenericDefId::TypeAliasId(ty),
-        }),
+                Either::Left(adt) => hir_def::GenericDefId::AdtId(adt),
+                Either::Right(ty) => hir_def::GenericDefId::TypeAliasId(ty),
+            }),
         )
     },
     )

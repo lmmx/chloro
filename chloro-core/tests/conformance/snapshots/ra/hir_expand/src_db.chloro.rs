@@ -160,7 +160,7 @@ fn syntax_context(db: &dyn ExpandDatabase, file: HirFileId, edition: Edition) ->
         HirFileId::MacroFile(m) => {
             let kind = db.lookup_intern_macro_call(m).kind;
             db.macro_arg_considering_derives(m, &kind).2.ctx
-        },
+        }
     }
 }
 
@@ -351,7 +351,7 @@ fn parse_or_expand(db: &dyn ExpandDatabase, file_id: HirFileId) -> SyntaxNode {
         HirFileId::FileId(file_id) => db.parse(file_id).syntax_node(),
         HirFileId::MacroFile(macro_file) => {
             db.parse_macro_expansion(macro_file).value.0.syntax_node()
-        },
+        }
     }
 }
 
@@ -399,11 +399,11 @@ pub(crate) fn parse_with_map(
     match file_id {
         HirFileId::FileId(file_id) => {
             (db.parse(file_id).to_syntax(), SpanMap::RealSpanMap(db.real_span_map(file_id)))
-        },
+        }
         HirFileId::MacroFile(macro_file) => {
             let (parse, map) = db.parse_macro_expansion(macro_file).value;
             (parse, SpanMap::ExpansionSpanMap(map))
-        },
+        }
     }
 }
 
@@ -588,7 +588,7 @@ impl TokenExpander {
         match id.kind {
             MacroDefKind::Declarative(ast_id) => {
                 TokenExpander::DeclarativeMacro(db.decl_macro_expander(id.krate, ast_id))
-            },
+            }
             MacroDefKind::BuiltIn(_, expander) => TokenExpander::BuiltIn(expander),
             MacroDefKind::BuiltInAttr(_, expander) => TokenExpander::BuiltInAttr(expander),
             MacroDefKind::BuiltInDerive(_, expander) => TokenExpander::BuiltInDerive(expander),

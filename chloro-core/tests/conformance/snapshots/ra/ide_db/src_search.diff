@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57087 bytes
+Chloro size:   57408 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
@@ -80,14 +80,6 @@ Rustfmt size:  58275 bytes
      pub fn text(&self) -> syntax::TokenText<'_> {
          match self {
              FileReferenceNode::NameRef(name_ref) => name_ref.text(),
-             FileReferenceNode::Lifetime(lifetime) => lifetime.text(),
-             FileReferenceNode::FormatStringEntry(it, range) => {
-                 syntax::TokenText::borrowed(&it.text()[*range - it.syntax().text_range().start()])
--            }
-+            },
-         }
-     }
- }
  
  impl IntoIterator for SearchScope {
      type Item = (EditionedFileId, Option<TextRange>);
@@ -104,56 +96,22 @@ Rustfmt size:  58275 bytes
      pub fn with_rename(mut self, rename: Option<&'a Rename>) -> Self {
          self.rename = rename;
          self
-             let text = db.file_text(file_id.file_id(db)).text(db);
-             let search_range =
-                 search_range.unwrap_or_else(|| TextRange::up_to(TextSize::of(&**text)));
--
-             (text.clone(), file_id, search_range)
-         })
-     }
-             if !search_range.contains_inclusive(offset) {
-                 return None;
-             }
--            // If this is not a word boundary, that means this is only part of an identifier,
--            // so it can't be what we're looking for.
--            // This speeds up short identifiers significantly.
-             if text[..idx]
-                 .chars()
-                 .next_back()
          node: &syntax::SyntaxNode,
          offset: TextSize,
      ) -> impl Iterator<Item = SyntaxNode> + 'b {
 -        node.token_at_offset(offset)
 -            .find(|it| {
--                // `name` is stripped of raw ident prefix. See the comment on name retrieval below.
--                it.text().trim_start_matches('\'').trim_start_matches("r#") == name
++        node.token_at_offset(offset).find(|it| {
+                 // `name` is stripped of raw ident prefix. See the comment on name retrieval below.
+                 it.text().trim_start_matches('\'').trim_start_matches("r#") == name
 -            })
 -            .into_iter()
 -            .flat_map(move |token| {
--                if sema.is_inside_macro_call(InFile::new(file_id.into(), &token)) {
--                    sema.descend_into_macros_exact(token)
--                } else {
--                    <_>::from([token])
--                }
--                .into_iter()
--                .filter_map(|it| it.parent())
--            })
-+        node.token_at_offset(offset).find(|it| {
-+            it.text().trim_start_matches('\'').trim_start_matches("r#") == name
-+        }).into_iter(
++            }).into_iter(
 +        ).flat_map(move |token| {
-+            if sema.is_inside_macro_call(InFile::new(file_id.into(), &token)) {
-+                sema.descend_into_macros_exact(token)
-+            } else {
-+                <_>::from([token])
-+            }.into_iter(
-+            ).filter_map(
-+                |it| it.parent(),
-+            )
-+        })
-     }
- 
-     /// Performs a special fast search for associated functions. This is mainly intended
+                 if sema.is_inside_macro_call(InFile::new(file_id.into(), &token)) {
+                     sema.descend_into_macros_exact(token)
+                 } else {
      /// that).
      ///
      /// Returns true if completed the search.
@@ -199,11 +157,10 @@ Rustfmt size:  58275 bytes
                          }
                      }
                  }
--            }
+             }
 -            _ => {}
-+            },
 +            _ => {
-+            },
++            }
          }
      }
  
@@ -217,30 +174,6 @@ Rustfmt size:  58275 bytes
                  let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                  let reference = FileReference {
                      range,
-                     category: ReferenceCategory::empty(),
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             _ => false,
-         }
-     }
-                     category,
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             _ => false,
-         }
-     }
-                     category: ReferenceCategory::empty(),
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             _ => false,
-         }
-     }
          sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
      ) -> bool {
          match NameRefClass::classify(self.sema, name_ref) {
@@ -254,10 +187,9 @@ Rustfmt size:  58275 bytes
                  let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                  let reference = FileReference {
                      range,
-                     category: ReferenceCategory::new(self.sema, &def, name_ref),
                  };
                  sink(file_id, reference)
--            }
+             }
 -            // FIXME: special case type aliases, we can't filter between impl and trait defs here as we lack the substitutions
 -            // so we always resolve all assoc type aliases to both their trait def and impl defs
 -            Some(NameRefClass::Definition(def, _))
@@ -266,27 +198,10 @@ Rustfmt size:  58275 bytes
 -                    && convert_to_def_in_trait(self.sema.db, def)
 -                        == convert_to_def_in_trait(self.sema.db, self.def) =>
 -            {
-+            },
 +            Some(NameRefClass::Definition(def, _)) if self.assoc_item_container.is_some() && matches!(self.def, Definition::TypeAlias(_)) && convert_to_def_in_trait(self.sema.db, def) == convert_to_def_in_trait(self.sema.db, self.def) => {
                  let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                  let reference = FileReference {
                      range,
-                     category: ReferenceCategory::new(self.sema, &def, name_ref),
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             Some(NameRefClass::Definition(def, _)) if self.include_self_kw_refs.is_some() => {
-                 if self.include_self_kw_refs == def_to_ty(self.sema, &def) {
-                     let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
-                 } else {
-                     false
-                 }
--            }
-+            },
-             Some(NameRefClass::FieldShorthand {
-                 local_ref: local,
-                 field_ref: field,
                  adt_subst: _,
              }) => {
                  let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
@@ -294,14 +209,6 @@ Rustfmt size:  58275 bytes
                  let field = Definition::Field(field);
                  let local = Definition::Local(local);
                  let access = match self.def {
-                     category: access,
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             _ => false,
-         }
-     }
          sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
      ) -> bool {
          match NameClass::classify(self.sema, name) {
@@ -315,29 +222,6 @@ Rustfmt size:  58275 bytes
                  let FileRange { file_id, range } = self.sema.original_range(name.syntax());
                  let reference = FileReference {
                      range,
-                     category: ReferenceCategory::READ,
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             Some(NameClass::ConstReference(def)) if self.def == def => {
-                 let FileRange { file_id, range } = self.sema.original_range(name.syntax());
-                 let reference = FileReference {
-                     category: ReferenceCategory::empty(),
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             Some(NameClass::Definition(def)) if def != self.def => {
-                 match (&self.assoc_item_container, self.def) {
-                     // for type aliases we always want to reference the trait def and all the trait impl counterparts
-                     category: ReferenceCategory::empty(),
-                 };
-                 sink(file_id, reference)
--            }
-+            },
-             _ => false,
-         }
      }
  }
  

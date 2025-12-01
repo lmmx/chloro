@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14451 bytes
+Chloro size:   14446 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -64,11 +64,6 @@ Rustfmt size:  14808 bytes
  impl fmt::Display for LayoutError {
      fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
          match self {
-             LayoutError::NotImplemented => write!(f, "not implemented"),
-             LayoutError::RecursiveTypeWithoutIndirection => {
-                 write!(f, "recursive type without indirection")
--            }
-+            },
              LayoutError::TargetLayoutNotAvailable => write!(f, "target layout not available"),
              LayoutError::Unknown => write!(f, "unknown"),
              LayoutError::UserReprTooSmall => {
@@ -76,12 +71,10 @@ Rustfmt size:  14808 bytes
 -                    f,
 -                    "the `#[repr]` hint is too small to hold the discriminants of the enum"
 -                )
--            }
 +                write!(f, "the `#[repr]` hint is too small to hold the discriminants of the enum")
-+            },
+             }
          }
      }
- }
  
  impl<'a> LayoutCx<'a> {
      fn new(target: &'a TargetDataLayout) -> Self {
@@ -175,26 +168,6 @@ Rustfmt size:  14808 bytes
          }
  
          TyKind::Coroutine(_, _)
-                 Some((f, _)) => {
-                     let last_field_ty = field_ty(db, struct_id.into(), f, &args);
-                     struct_tail_erasing_lifetimes(db, last_field_ty)
--                }
-+                },
-                 None => pointee,
-             }
--        }
-+        },
-         TyKind::Tuple(tys) => {
-             if let Some(last_field_ty) = tys.iter().next_back() {
-                 struct_tail_erasing_lifetimes(db, last_field_ty)
-             } else {
-                 pointee
-             }
--        }
-+        },
-         _ => pointee,
-     }
- }
  }
  
  fn scalar_unit(dl: &TargetDataLayout, value: Primitive) -> Scalar {

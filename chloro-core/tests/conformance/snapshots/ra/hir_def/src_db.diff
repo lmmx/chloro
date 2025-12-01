@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   12715 bytes
+Chloro size:   12754 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -95,14 +95,13 @@ Rustfmt size:  13097 bytes
 -        .values()
 -        .flat_map(|m| m.scope.iter_macro_invoc())
 -        .filter_map(|invoc| {
--            db.lookup_intern_macro_call(*invoc.1)
--                .include_file_id(db, *invoc.1)
--                .map(|x| (*invoc.1, x))
++    crate_def_map(db, krate).modules.values().flat_map(|m| m.scope.iter_macro_invoc()).filter_map(|invoc| {
+             db.lookup_intern_macro_call(*invoc.1)
+                 .include_file_id(db, *invoc.1)
+                 .map(|x| (*invoc.1, x))
 -        })
 -        .collect()
-+    crate_def_map(db, krate).modules.values().flat_map(|m| m.scope.iter_macro_invoc()).filter_map(|invoc| {
-+        db.lookup_intern_macro_call(*invoc.1).include_file_id(db, *invoc.1).map(|x| (*invoc.1, x))
-+    }).collect(
++        }).collect(
 +    )
  }
  
@@ -114,11 +113,7 @@ Rustfmt size:  13097 bytes
              MacroDefId {
                  krate: loc.container.krate,
                  kind: kind(loc.expander, loc.id.file_id, loc.id.value.upcast()),
-                 allow_internal_unsafe: loc.allow_internal_unsafe,
-                 edition: loc.edition,
-             }
--        }
-+        },
+         }
          MacroId::MacroRulesId(it) => {
              let loc: MacroRulesLoc = it.lookup(db);
 -
@@ -132,18 +127,10 @@ Rustfmt size:  13097 bytes
 +                allow_internal_unsafe: loc.flags.contains(MacroRulesLocFlags::ALLOW_INTERNAL_UNSAFE),
                  edition: loc.edition,
              }
--        }
-+        },
+         }
          MacroId::ProcMacroId(it) => {
              let loc = it.lookup(db);
 -
              MacroDefId {
                  krate: loc.container.krate,
                  kind: MacroDefKind::ProcMacro(loc.id, loc.expander, loc.kind),
-                 allow_internal_unsafe: false,
-                 edition: loc.edition,
-             }
--        }
-+        },
-     }
- }

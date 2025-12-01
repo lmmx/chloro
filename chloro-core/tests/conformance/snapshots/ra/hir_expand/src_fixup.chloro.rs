@@ -399,7 +399,7 @@ fn transform_tt<'a, 'b>(
                     subtrees_stack.push(i);
                 }
                 i += 1;
-            },
+            }
             TransformTtAction::ReplaceWith(replacement) => {
                 let old_len = 1 + match &tt[i] {
                     tt::TokenTree::Leaf(_) => 0,
@@ -414,7 +414,7 @@ fn transform_tt<'a, 'b>(
                     };
                     subtree.len = (i64::from(subtree.len) + len_diff).try_into().unwrap();
                 }
-            },
+            }
         }
     }
 }
@@ -484,7 +484,7 @@ mod tests {
             (tt::TokenTree::Leaf(a), tt::TokenTree::Leaf(b)) => check_leaf_eq(a, b),
             (tt::TokenTree::Subtree(a), tt::TokenTree::Subtree(b)) => {
                 a.delimiter.kind == b.delimiter.kind
-            },
+            }
             _ => false,
         }
     }

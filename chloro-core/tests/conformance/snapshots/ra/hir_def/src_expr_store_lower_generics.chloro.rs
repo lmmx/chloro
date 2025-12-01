@@ -134,7 +134,7 @@ impl GenericParamsCollector {
                         }));
                     let type_ref = ec.alloc_type_ref_desugared(type_ref);
                     self.lower_bounds(ec, type_param.type_bound_list(), Either::Left(type_ref));
-                },
+                }
                 ast::GenericParam::ConstParam(const_param) => {
                     let name = const_param.name().map_or_else(Name::missing, |it| it.as_name());
                     let ty = ec.lower_type_ref_opt(
@@ -147,7 +147,7 @@ impl GenericParamsCollector {
                         default: const_param.default_val().map(|it| ec.lower_const_arg(it)),
                     };
                     let _idx = self.type_or_consts.alloc(param.into());
-                },
+                }
                 ast::GenericParam::LifetimeParam(lifetime_param) => {
                     let lifetime = ec.lower_lifetime_ref_opt(lifetime_param.lifetime());
                     if let LifetimeRef::Named(name) = &ec.store.lifetimes[lifetime] {
@@ -159,7 +159,7 @@ impl GenericParamsCollector {
                             Either::Right(lifetime),
                         );
                     }
-                },
+                }
             }
         }
     }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21058 bytes
-Chloro size:   21032 bytes
+Chloro size:   21028 bytes
 Rustfmt size:  21705 bytes
 
 ✗ Outputs DIFFER
@@ -38,18 +38,6 @@ Rustfmt size:  21705 bytes
                  never!(
                      value.1.is_some() && snippet_edit.is_some(),
                      "overlapping snippet edits for same file"
-                 if value.1.is_none() {
-                     value.1 = snippet_edit;
-                 }
--            }
-+            },
-             Entry::Vacant(entry) => {
-                 entry.insert((edit, snippet_edit));
--            }
-+            },
-         }
-     }
- 
  
  impl Extend<(FileId, TextEdit)> for SourceChange {
      fn extend<T: IntoIterator<Item = (FileId, TextEdit)>>(&mut self, iter: T) {
@@ -126,14 +114,6 @@ Rustfmt size:  21705 bytes
      }
  
      pub fn make_mut<N: AstNode>(&self, node: &N) -> N {
-             Entry::Occupied(mut entry) => entry.get_mut().merge(edit),
-             Entry::Vacant(entry) => {
-                 entry.insert(edit);
--            }
-+            },
-         }
-     }
- 
              diff(edit_result.old_root(), edit_result.new_root()).into_text_edit(&mut edit);
              let edit = edit.finish();
  
@@ -295,9 +275,7 @@ Rustfmt size:  21705 bytes
 -                vec![Snippet::PlaceholderGroup(
 -                    it.into_iter().map(|it| it.text_range()).collect(),
 -                )]
--            }
 +                vec![Snippet::PlaceholderGroup(it.into_iter().map(|it| it.text_range()).collect())]
-+            },
+             }
          }
      }
- }

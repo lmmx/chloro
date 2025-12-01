@@ -527,7 +527,7 @@ impl<'db> InferenceContext<'_, 'db> {
         match expected.kind() {
             TyKind::Array(_, const_) => {
                 Ty::new_array_with_const_len(self.interner(), elem_ty, const_)
-            },
+            }
             _ => Ty::new_slice(self.interner(), elem_ty),
         }
     }
@@ -562,7 +562,7 @@ impl<'db> InferenceContext<'_, 'db> {
             Pat::Path(path) => {
                 let resolved = self.resolve_value_path_inner(path, pat.into(), true);
                 resolved.is_some_and(|it| !matches!(it.0, hir_def::resolver::ValueNs::ConstId(_)))
-            },
+            }
             Pat::ConstBlock(..) => false,
             Pat::Lit(expr) => !matches!(
                 body[*expr],

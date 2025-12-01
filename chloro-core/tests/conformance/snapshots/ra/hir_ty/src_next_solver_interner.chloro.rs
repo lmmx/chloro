@@ -273,9 +273,7 @@ unsafe impl Sync for DbInterner<'_> {
 impl<'db> DbInterner<'db> {
     pub fn conjure() -> DbInterner<'db> {
         crate::with_attached_db(|db| DbInterner {
-            db: unsafe {
-                std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db)
-            },
+            db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
             krate: None,
             block: None,
         })
@@ -568,9 +566,8 @@ impl AdtDef {
     pub fn inner(&self) -> &AdtDefInner {
         crate::with_attached_db(|db| {
             let inner = self.data_(db);
-            unsafe {
-                std::mem::transmute(inner)
-            }
+            // SAFETY: ¯\_(ツ)_/¯
+            unsafe { std::mem::transmute(inner) }
         })
     }
 
@@ -677,15 +674,15 @@ impl fmt::Debug for AdtDef {
             AdtId::StructId(struct_id) => {
                 let data = db.struct_signature(struct_id);
                 f.write_str(data.name.as_str())
-            },
+            }
             AdtId::UnionId(union_id) => {
                 let data = db.union_signature(union_id);
                 f.write_str(data.name.as_str())
-            },
+            }
             AdtId::EnumId(enum_id) => {
                 let data = db.enum_signature(enum_id);
                 f.write_str(data.name.as_str())
-            },
+            }
         })
     }
 }
@@ -744,9 +741,9 @@ impl<'db> Pattern<'db> {
     pub fn inner(&self) -> &PatternKind<'db> {
         crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
-            unsafe {
-                std::mem::transmute(inner)
-            }
+            // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
+            // make sure that our returned value is valid for the lifetime `'db`.
+            unsafe { std::mem::transmute(inner) }
         })
     }
 }
@@ -756,14 +753,14 @@ impl<'db> Flags for Pattern<'db> {
         match self.inner() {
             PatternKind::Range { start, end } => {
                 FlagComputation::for_const_kind(&start.kind()).flags | FlagComputation::for_const_kind(&end.kind()).flags
-            },
+            }
             PatternKind::Or(pats) => {
                 let mut flags = pats.as_slice()[0].flags();
                 for pat in pats.as_slice()[1..].iter() {
                     flags |= pat.flags();
                 }
                 flags
-            },
+            }
         }
     }
 
@@ -771,14 +768,14 @@ impl<'db> Flags for Pattern<'db> {
         match self.inner() {
             PatternKind::Range { start, end } => {
                 start.outer_exclusive_binder().max(end.outer_exclusive_binder())
-            },
+            }
             PatternKind::Or(pats) => {
                 let mut idx = pats.as_slice()[0].outer_exclusive_binder();
                 for pat in pats.as_slice()[1..].iter() {
                     idx = idx.max(pat.outer_exclusive_binder());
                 }
                 idx
-            },
+            }
         }
     }
 }
@@ -806,7 +803,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for Pattern<'db> {
                 let start = relation.relate(start_a, start_b)?;
                 let end = relation.relate(end_a, end_b)?;
                 Ok(Pattern::new(tcx, PatternKind::Range { start, end }))
-            },
+            }
             (PatternKind::Or(a), PatternKind::Or(b)) => {
                 if a.len() != b.len() {
                     return Err(TypeError::Mismatch);
@@ -816,7 +813,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for Pattern<'db> {
                     |g| PatList::new_from_iter(tcx, g.iter().cloned()),
                 )?;
                 Ok(Pattern::new(tcx, PatternKind::Or(pats)))
-            },
+            }
             (PatternKind::Range { .. } | PatternKind::Or(_), _) => Err(TypeError::Mismatch),
         }
     }
@@ -1089,7 +1086,7 @@ impl<'db> Interner for DbInterner<'db> {
                     _ => panic!("assoc ty value should be in impl"),
                 };
                 self.db().ty(id.into())
-            },
+            }
             SolverDefId::AdtId(id) => self.db().ty(id.into()),
             SolverDefId::InternedOpaqueTyId(_) => self.type_of_opaque_hir_typeck(def_id),
             SolverDefId::FunctionId(id) => self.db.value_ty(id.into()).unwrap(),
@@ -1099,7 +1096,7 @@ impl<'db> Interner for DbInterner<'db> {
                     Ctor::Enum(id) => id.into(),
                 };
                 self.db.value_ty(id).expect("`SolverDefId::Ctor` should have a function-like ctor")
-            },
+            }
             _ => panic!("Unexpected def_id `{def_id:?}` provided for `type_of`"),
         }
     }
@@ -1114,7 +1111,7 @@ impl<'db> Interner for DbInterner<'db> {
             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
                 ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
                     AliasTyKind::Inherent
-                },
+                }
                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => AliasTyKind::Projection,
                 _ => AliasTyKind::Free,
             },
@@ -1131,10 +1128,10 @@ impl<'db> Interner for DbInterner<'db> {
             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
                 ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
                     AliasTermKind::InherentTy
-                },
+                }
                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => {
                     AliasTermKind::ProjectionTy
-                },
+                }
                 _ => AliasTermKind::FreeTy,
             },
             SolverDefId::ConstId(_) => AliasTermKind::UnevaluatedConst,
@@ -1273,11 +1270,12 @@ impl<'db> Interner for DbInterner<'db> {
         let predicates = self.predicates_of(def_id);
         elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
             ClauseKind::Trait(ref trait_pred) => {
-                trait_pred.def_id() == sized_def_id && matches!(
+                trait_pred.def_id() == sized_def_id
+                    && matches!(
                         trait_pred.self_ty().kind(),
                         TyKind::Param(ParamTy { index: 0, .. })
                     )
-            },
+            }
             ClauseKind::RegionOutlives(_)
             | ClauseKind::TypeOutlives(_)
             | ClauseKind::Projection(_)
@@ -1423,11 +1421,11 @@ impl<'db> Interner for DbInterner<'db> {
             Clauses::new_from_iter(
                 self,
                 rustc_type_ir::elaborate::elaborate(self, [clause]).filter(|clause| {
-                matches!(
+                    matches!(
                         clause.kind().skip_binder(),
                         ClauseKind::TypeOutlives(_) | ClauseKind::RegionOutlives(_)
                     )
-            }),
+                }),
             )
         })
     }
@@ -1988,12 +1986,12 @@ impl<'db> Interner for DbInterner<'db> {
                 match impl_trait_id {
                     crate::ImplTraitId::ReturnTypeImplTrait(func, idx) => {
                         crate::opaques::rpit_hidden_types(self.db, func)[idx]
-                    },
+                    }
                     crate::ImplTraitId::TypeAliasImplTrait(type_alias, idx) => {
                         crate::opaques::tait_hidden_types(self.db, type_alias)[idx]
-                    },
+                    }
                 }
-            },
+            }
             _ => panic!("Unexpected SolverDefId in type_of_opaque_hir_typeck"),
         }
     }
@@ -2078,28 +2076,22 @@ impl<'db> DbInterner<'db> {
             value,
             FnMutDelegate {
             regions: &mut |r: BoundRegion| {
-                Region::new_bound(
-                    self,
-                    DebruijnIndex::ZERO,
-                    BoundRegion {
-                    var: shift_bv(r.var),
-                    kind: r.kind,
+                    Region::new_bound(
+                        self,
+                        DebruijnIndex::ZERO,
+                        BoundRegion { var: shift_bv(r.var), kind: r.kind },
+                    )
                 },
-                )
-            },
             types: &mut |t: BoundTy| {
-                Ty::new_bound(
-                    self,
-                    DebruijnIndex::ZERO,
-                    BoundTy {
-                    var: shift_bv(t.var),
-                    kind: t.kind,
+                    Ty::new_bound(
+                        self,
+                        DebruijnIndex::ZERO,
+                        BoundTy { var: shift_bv(t.var), kind: t.kind },
+                    )
                 },
-                )
-            },
             consts: &mut |c| {
-                Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
-            },
+                    Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
+                },
         },
         )
     }
@@ -2337,13 +2329,13 @@ mod tls_cache {
                 }
                 None => handle.insert(Cache { cache: GlobalCache::default(), revision, db_nonce }),
             };
+
+            // SAFETY: No idea
             f(unsafe {
                 std::mem::transmute::<
                     &mut GlobalCache<DbInterner<'static>>,
                     &mut GlobalCache<DbInterner<'db>>,
-                >(
-                    &mut handle.cache,
-                )
+                >(&mut handle.cache)
             })
         })
     }

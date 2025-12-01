@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   49736 bytes
+Chloro size:   50444 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -37,14 +37,6 @@ Rustfmt size:  50684 bytes
  };
  
  #[derive(Debug)]
-             | FulfillmentErrorCode::ConstEquate(_, _) => true,
-             FulfillmentErrorCode::Cycle(_) | FulfillmentErrorCode::Ambiguity { overflow: _ } => {
-                 false
--            }
-+            },
-         }
-     }
- }
      Cycle(PredicateObligations<'db>),
      Select(SelectionError<'db>),
      Project(MismatchedProjectionTypes<'db>),
@@ -169,22 +161,6 @@ Rustfmt size:  50684 bytes
          // and therefore is treated as rigid.
          if let Some(PredicateKind::AliasRelate(lhs, rhs, _)) = pred.kind().no_bound_vars() {
              goal.infcx().visit_proof_tree_at_depth(
-         match self {
-             NextSolverError::TrueError(obligation) => {
-                 fulfillment_error_for_no_solution(infcx, obligation.clone())
--            }
-+            },
-             NextSolverError::Ambiguity(obligation) => {
-                 fulfillment_error_for_stalled(infcx, obligation.clone())
--            }
-+            },
-             NextSolverError::Overflow(obligation) => {
-                 fulfillment_error_for_overflow(infcx, obligation.clone())
--            }
-+            },
-         }
-     }
- }
          Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
      };
      use tracing::{debug, instrument};
@@ -229,27 +205,17 @@ Rustfmt size:  50684 bytes
 -                .predicates_of(def_id)
 -                .iter_instantiated(self.interner(), args)
 -                .map(|pred| {
--                    let cause = ObligationCause::new();
--                    Obligation::with_depth(
--                        self.interner(),
--                        cause,
--                        self.recursion_depth,
--                        self.param_env,
--                        pred,
--                    )
++            self.interner().predicates_of(def_id).iter_instantiated(self.interner(), args).map(|pred| {
+                     let cause = ObligationCause::new();
+                     Obligation::with_depth(
+                         self.interner(),
+                         self.param_env,
+                         pred,
+                     )
 -                })
 -                .filter(|pred| !pred.has_escaping_bound_vars())
 -                .collect()
-+            self.interner().predicates_of(def_id).iter_instantiated(self.interner(), args).map(|pred| {
-+                let cause = ObligationCause::new();
-+                Obligation::with_depth(
-+                    self.interner(),
-+                    cause,
-+                    self.recursion_depth,
-+                    self.param_env,
-+                    pred,
-+                )
-+            }).filter(
++                }).filter(
 +                |pred| !pred.has_escaping_bound_vars(),
 +            ).collect(
 +            )
@@ -294,46 +260,16 @@ Rustfmt size:  50684 bytes
  
 -        rustc_type_ir::elaborate::elaborate(interner, predicates)
 -            .filter_map(|pred| {
--                debug!(?pred);
--                match pred.kind().skip_binder() {
--                    ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
--                        // Search for a bound of the form `erased_self_ty
--                        // : 'a`, but be wary of something like `for<'a>
--                        // erased_self_ty : 'a` (we interpret a
--                        // higher-ranked bound like that as 'static,
--                        // though at present the code in `fulfill.rs`
--                        // considers such bounds to be unsatisfiable, so
--                        // it's kind of a moot point since you could never
--                        // construct such an object, but this seems
--                        // correct even if that code changes).
--                        if t == &erased_self_ty && !r.has_escaping_bound_vars() {
--                            Some(*r)
--                        } else {
--                            None
--                        }
 +        rustc_type_ir::elaborate::elaborate(interner, predicates).filter_map(|pred| {
-+            debug!(?pred);
-+            match pred.kind().skip_binder() {
-+                ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
-+                    if t == &erased_self_ty && !r.has_escaping_bound_vars() {
-+                        Some(*r)
-+                    } else {
-+                        None
-                     }
--                    ClauseKind::Trait(_)
-+                },
-+                ClauseKind::Trait(_)
-                     | ClauseKind::HostEffect(..)
-                     | ClauseKind::RegionOutlives(_)
-                     | ClauseKind::Projection(_)
-                     | ClauseKind::WellFormed(_)
+                 debug!(?pred);
+                 match pred.kind().skip_binder() {
+                     ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
                      | ClauseKind::UnstableFeature(_)
                      | ClauseKind::ConstEvaluatable(_) => None,
--                }
+                 }
 -            })
 -            .collect()
-+            }
-+        }).collect(
++            }).collect(
 +        )
      }
  }

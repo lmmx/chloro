@@ -47,7 +47,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assis
                     node,
                 )
             }
-        },
+        }
         _ => None,
     }
 }

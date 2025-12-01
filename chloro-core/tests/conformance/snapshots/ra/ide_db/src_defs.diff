@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43747 bytes
+Chloro size:   43882 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -50,13 +50,6 @@ Rustfmt size:  44130 bytes
          self.module(db).map(|it| it.path_to_root(db).into_iter().rev())
      }
  
-         };
- 
-         docs.or_else(|| {
--            // docs are missing, for assoc items of trait impls try to fall back to the docs of the
--            // original item of the trait
-             let assoc = self.as_assoc_item(db)?;
-             let trait_ = assoc.implemented_trait(db)?;
              let name = Some(assoc.name(db)?);
              let item = trait_.items(db).into_iter().find(|it| it.name(db) == name)?;
              item.docs_with_rangemap(db)
@@ -68,47 +61,10 @@ Rustfmt size:  44130 bytes
      }
  
      pub fn label(&self, db: &RootDatabase, display_target: DisplayTarget) -> String {
-             Definition::TypeAlias(it) => it.display(db, display_target).to_string(),
-             Definition::BuiltinType(it) => {
-                 it.name().display(db, display_target.edition).to_string()
--            }
-+            },
-             Definition::BuiltinLifetime(it) => {
-                 it.name().display(db, display_target.edition).to_string()
--            }
-+            },
-             Definition::Local(it) => {
-                 let ty = it.ty(db);
-                 let ty_display = ty.display_truncated(db, None, display_target);
-                         name.display(db, display_target.edition)
-                     )
-                 }
--            }
-+            },
-             Definition::SelfType(impl_def) => {
-                 let self_ty = &impl_def.self_ty(db);
-                 match self_ty.as_adt() {
-                     Some(it) => it.display(db, display_target).to_string(),
-                     None => self_ty.display(db, display_target).to_string(),
-                 }
--            }
-+            },
-             Definition::GenericParam(it) => it.display(db, display_target).to_string(),
-             Definition::Label(it) => it.name(db).display(db, display_target.edition).to_string(),
-             Definition::ExternCrateDecl(it) => it.display(db, display_target).to_string(),
-             Definition::BuiltinAttr(it) => {
-                 format!("#[{}]", it.name().display(db, display_target.edition))
--            }
-+            },
-             Definition::ToolModule(it) => {
-                 it.name(db).display(db, display_target.edition).to_string()
--            }
-+            },
              Definition::DeriveHelper(it) => {
                  format!("derive_helper {}", it.name(db).display(db, display_target.edition))
--            }
+             }
 -            // FIXME
-+            },
              Definition::InlineAsmRegOrRegClass(_) => "inline_asm_reg_or_reg_class".to_owned(),
              Definition::InlineAsmOperand(_) => "inline_asm_reg_operand".to_owned(),
          }

@@ -26,15 +26,15 @@ pub(crate) fn complete_vis_path(
                 acc.add_module(ctx, path_ctx, next, name, vec![]);
             }
             acc.add_super_keyword(ctx, *super_chain_len);
-        },
+        }
         Qualified::Absolute | Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
-        },
+        }
         Qualified::No => {
             if !has_in_token {
                 cov_mark::hit!(kw_completion_in);
                 acc.add_keyword_snippet(ctx, "in", "in $0");
             }
             acc.add_nameref_keywords(ctx);
-        },
+        }
     }
 }

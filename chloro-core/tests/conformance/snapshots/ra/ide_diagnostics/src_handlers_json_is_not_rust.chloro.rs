@@ -54,7 +54,7 @@ impl State {
             _ => {
                 never!();
                 "".to_owned()
-            },
+            }
         }
     }
 
@@ -96,7 +96,7 @@ impl State {
                     None => make::ty_placeholder(),
                 };
                 make::ty(&format!("Vec<{ty}>"))
-            },
+            }
             serde_json::Value::Object(x) => self.build_struct(name, x),
         }
     }

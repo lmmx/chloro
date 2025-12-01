@@ -57,7 +57,7 @@ impl<'db> UnifyValue for RegionVariableValue<'db> {
         match (value1, value2) {
             (RegionVariableValue::Known { .. }, RegionVariableValue::Known { .. }) => {
                 Err(RegionUnificationError)
-            },
+            }
             (RegionVariableValue::Known { value }, RegionVariableValue::Unknown { universe })
             | (RegionVariableValue::Unknown { universe }, RegionVariableValue::Known { value }) => {
                 let universe_of_value = match (*value).kind() {
@@ -76,13 +76,13 @@ impl<'db> UnifyValue for RegionVariableValue<'db> {
                 } else {
                     Err(RegionUnificationError)
                 }
-            },
+            }
             (
                 RegionVariableValue::Unknown { universe: a },
                 RegionVariableValue::Unknown { universe: b },
             ) => {
                 Ok(RegionVariableValue::Unknown { universe: (*a).min(*b) })
-            },
+            }
         }
     }
 }
@@ -159,20 +159,20 @@ impl<'db> UnifyValue for ConstVariableValue<'db> {
         match (value1, value2) {
             (ConstVariableValue::Known { .. }, ConstVariableValue::Known { .. }) => {
                 panic!("equating two const variables, both of which have known values")
-            },
+            }
             (ConstVariableValue::Known { .. }, ConstVariableValue::Unknown { .. }) => {
                 Ok(value1.clone())
-            },
+            }
             (ConstVariableValue::Unknown { .. }, ConstVariableValue::Known { .. }) => {
                 Ok(value2.clone())
-            },
+            }
             (
                 ConstVariableValue::Unknown { origin, universe: universe1 },
                 ConstVariableValue::Unknown { origin: _, universe: universe2 },
             ) => {
                 let universe = cmp::min(*universe1, *universe2);
                 Ok(ConstVariableValue::Unknown { origin: *origin, universe })
-            },
+            }
         }
     }
 }

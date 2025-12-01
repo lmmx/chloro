@@ -46,15 +46,15 @@ pub(crate) fn generate_is_empty_from_len(
         "Generate a is_empty impl from a len function",
         range,
         |builder| {
-        let code = r#"
+            let code = r#"
 
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }"#
             .to_owned();
-        builder.insert(range.end(), code)
-    },
+            builder.insert(range.end(), code)
+        },
     )
 }
 

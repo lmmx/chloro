@@ -93,13 +93,13 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
         match arg.kind() {
             GenericArgKind::Lifetime(_) => {
                 false
-            },
+            }
             GenericArgKind::Type(ty) => {
                 if let TyKind::Infer(infer_ty) = ty.kind() {
                     match infer_ty {
                         InferTy::TyVar(vid) => {
                             !self.probe_ty_var(vid).is_err_and(|_| self.root_var(vid) == vid)
-                        },
+                        }
                         InferTy::IntVar(vid) => {
                             let mut inner = self.inner.borrow_mut();
                             !matches!(
@@ -107,7 +107,7 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
                                 IntVarValue::Unknown
                                     if inner.int_unification_table().find(vid) == vid
                             )
-                        },
+                        }
                         InferTy::FloatVar(vid) => {
                             let mut inner = self.inner.borrow_mut();
                             !matches!(
@@ -115,15 +115,15 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
                                 FloatVarValue::Unknown
                                     if inner.float_unification_table().find(vid) == vid
                             )
-                        },
+                        }
                         InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => {
                             true
-                        },
+                        }
                     }
                 } else {
                     true
                 }
-            },
+            }
             GenericArgKind::Const(ct) => {
                 if let ConstKind::Infer(infer_ct) = ct.kind() {
                     match infer_ct {
@@ -133,7 +133,7 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
                 } else {
                     true
                 }
-            },
+            }
         }
     }
 

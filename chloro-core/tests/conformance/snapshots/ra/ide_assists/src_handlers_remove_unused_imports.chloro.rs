@@ -104,11 +104,11 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
             "Remove all unused imports",
             selected_el.text_range(),
             |builder| {
-            let unused: Vec<ast::UseTree> = unused.map(|x| builder.make_mut(x)).collect();
-            for node in unused {
-                node.remove_recursive();
-            }
-        },
+                let unused: Vec<ast::UseTree> = unused.map(|x| builder.make_mut(x)).collect();
+                for node in unused {
+                    node.remove_recursive();
+                }
+            },
         )
     } else {
         None
@@ -141,9 +141,9 @@ fn is_path_unused_in_scope(
     path: &[Option<PathResolution>],
 ) -> bool {
     !path.iter().filter_map(|path| *path).filter_map(|res| match res {
-        PathResolution::Def(d) => Some(Definition::from(d)),
-        _ => None,
-    }).any(
+            PathResolution::Def(d) => Some(Definition::from(d)),
+            _ => None,
+        }).any(
         |def| used_once_in_scope(ctx, def, u.rename(), scope),
     )
 }

@@ -85,14 +85,14 @@ where
                 let ty = self.delegate.replace_ty(bound_ty);
                 debug_assert!(!ty.has_vars_bound_above(DebruijnIndex::ZERO));
                 rustc_type_ir::shift_vars(self.interner, ty, self.current_index.as_u32())
-            },
+            }
             _ => {
                 if !t.has_vars_bound_at_or_above(self.current_index) {
                     t
                 } else {
                     t.super_fold_with(self)
                 }
-            },
+            }
         }
     }
 
@@ -106,7 +106,7 @@ where
                 } else {
                     region
                 }
-            },
+            }
             _ => r,
         }
     }
@@ -117,7 +117,7 @@ where
                 let ct = self.delegate.replace_const(bound_const);
                 debug_assert!(!ct.has_vars_bound_above(DebruijnIndex::ZERO));
                 rustc_type_ir::shift_vars(self.interner, ct, self.current_index.as_u32())
-            },
+            }
             _ => ct.super_fold_with(self),
         }
     }

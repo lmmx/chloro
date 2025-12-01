@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11085 bytes
-Chloro size:   10662 bytes
+Chloro size:   10663 bytes
 Rustfmt size:  11546 bytes
 
 ✗ Outputs DIFFER
@@ -55,7 +55,11 @@ Rustfmt size:  11546 bytes
 -            let lifetime = builder.make_mut(lifetime);
 -            let loc_needing_lifetime =
 -                loc_needing_lifetime.and_then(|it| it.make_mut(builder).to_position());
--
++        let fn_def = builder.make_mut(fn_def);
++        let lifetime = builder.make_mut(lifetime);
++        let loc_needing_lifetime =
++            loc_needing_lifetime.and_then(|it| it.make_mut(builder).to_position());
+ 
 -            fn_def.get_or_create_generic_param_list().add_generic_param(
 -                make::lifetime_param(new_lifetime_param.clone())
 -                    .clone_for_update()
@@ -69,10 +73,6 @@ Rustfmt size:  11546 bytes
 -                ted::insert(position, new_lifetime_param.clone_for_update().syntax());
 -            }
 -        },
-+        let fn_def = builder.make_mut(fn_def);
-+        let lifetime = builder.make_mut(lifetime);
-+        let loc_needing_lifetime =
-+            loc_needing_lifetime.and_then(|it| it.make_mut(builder).to_position());
 +        fn_def.get_or_create_generic_param_list().add_generic_param(
 +            make::lifetime_param(new_lifetime_param.clone()).clone_for_update().into(),
 +        );
@@ -89,7 +89,9 @@ Rustfmt size:  11546 bytes
          |builder| {
 -            let impl_def = builder.make_mut(impl_def);
 -            let lifetime = builder.make_mut(lifetime);
--
++        let impl_def = builder.make_mut(impl_def);
++        let lifetime = builder.make_mut(lifetime);
+ 
 -            impl_def
 -                .get_or_create_generic_param_list()
 -                .add_generic_param(
@@ -102,8 +104,6 @@ Rustfmt size:  11546 bytes
 -                new_lifetime_param.clone_for_update().syntax(),
 -            );
 -        },
-+        let impl_def = builder.make_mut(impl_def);
-+        let lifetime = builder.make_mut(lifetime);
 +        impl_def.get_or_create_generic_param_list().add_generic_param(
 +            make::lifetime_param(new_lifetime_param.clone()).clone_for_update().into(),
 +        );
@@ -122,11 +122,10 @@ Rustfmt size:  11546 bytes
 -            ('a'..='z')
 -                .map(|it| format!("'{it}"))
 -                .find(|it| !used_lifetime_params.contains(it))
--        }
 +            let used_lifetime_params: FxHashSet<_> =
 +                type_params.lifetime_params().map(|p| p.syntax().text().to_string()).collect();
 +            ('a'..='z').map(|it| format!("'{it}")).find(|it| !used_lifetime_params.contains(it))
-+        },
+         }
          None => Some("'a".to_owned()),
 -    }
 -    .map(|it| make::lifetime(&it))

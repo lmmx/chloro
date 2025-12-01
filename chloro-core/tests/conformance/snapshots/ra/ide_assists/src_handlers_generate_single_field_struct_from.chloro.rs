@@ -53,18 +53,21 @@ pub(crate) fn generate_single_field_struct_from(
         "Generate single field `From`",
         strukt.syntax().text_range(),
         |builder| {
-        let indent = strukt.indent_level();
-        let ty_where_clause = strukt.where_clause();
-        let type_gen_params = strukt.generic_param_list();
-        let type_gen_args = type_gen_params.as_ref().map(|params| params.to_generic_args());
-        let trait_gen_args = Some(make::generic_arg_list([ast::GenericArg::TypeArg(
+            let indent = strukt.indent_level();
+            let ty_where_clause = strukt.where_clause();
+            let type_gen_params = strukt.generic_param_list();
+            let type_gen_args = type_gen_params.as_ref().map(|params| params.to_generic_args());
+            let trait_gen_args = Some(make::generic_arg_list([ast::GenericArg::TypeArg(
                 make::type_arg(main_field_ty.clone()),
             )]));
-        let ty = make::ty(&strukt_name.text());
-        let constructor =
+
+            let ty = make::ty(&strukt_name.text());
+
+            let constructor =
                 make_adt_constructor(names.as_deref(), constructors, &main_field_name);
-        let body = make::block_expr([], Some(constructor));
-        let fn_ = make::fn_(
+            let body = make::block_expr([], Some(constructor));
+
+            let fn_ = make::fn_(
                 None,
                 None,
                 make::name("from"),
@@ -85,10 +88,12 @@ pub(crate) fn generate_single_field_struct_from(
                 false,
             )
             .indent(1.into());
-        let cfg_attrs = strukt
+
+            let cfg_attrs = strukt
                 .attrs()
                 .filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
-        let impl_ = make::impl_trait(
+
+            let impl_ = make::impl_trait(
                 cfg_attrs,
                 false,
                 None,
@@ -103,18 +108,22 @@ pub(crate) fn generate_single_field_struct_from(
                 None,
             )
             .clone_for_update();
-        impl_.get_or_create_assoc_item_list().add_item(fn_.into());
-        let impl_ = impl_.indent(indent);
-        let mut edit = builder.make_editor(strukt.syntax());
-        edit.insert_all(
+
+            impl_.get_or_create_assoc_item_list().add_item(fn_.into());
+            let impl_ = impl_.indent(indent);
+
+            let mut edit = builder.make_editor(strukt.syntax());
+
+            edit.insert_all(
                 Position::after(strukt.syntax()),
                 vec![
                     make::tokens::whitespace(&format!("\n\n{indent}")).syntax_element(),
                     impl_.syntax().syntax_element(),
                 ],
             );
-        builder.add_file_edits(ctx.vfs_file_id(), edit);
-    },
+
+            builder.add_file_edits(ctx.vfs_file_id(), edit);
+        },
     )
 }
 
@@ -146,15 +155,17 @@ fn make_constructors(
     let (db, sema) = (ctx.db(), &ctx.sema);
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
     types.iter().map(|ty| {
-        let ty = sema.resolve_type(ty)?;
-        if ty.is_unit() {
+            let ty = sema.resolve_type(ty)?;
+            if ty.is_unit() {
                 return Some(make::expr_tuple([]).into());
             }
-        let item_in_ns = ModuleDef::Adt(ty.as_adt()?).into();
-        let edition = module.krate().edition(db);
-        let ty_path = module.find_path(db, item_for_path_search(db, item_in_ns)?, cfg)?;
-        use_trivial_constructor(db, mod_path_to_ast(&ty_path, edition), &ty, edition)
-    }).collect(
+            let item_in_ns = ModuleDef::Adt(ty.as_adt()?).into();
+            let edition = module.krate().edition(db);
+
+            let ty_path = module.find_path(db, item_for_path_search(db, item_in_ns)?, cfg)?;
+
+            use_trivial_constructor(db, mod_path_to_ast(&ty_path, edition), &ty, edition)
+        }).collect(
     )
 }
 
@@ -165,10 +176,10 @@ fn get_fields(strukt: &ast::Struct) -> Option<(Option<Vec<ast::Name>>, Vec<ast::
             let names = fields.fields().map(|field| field.name()).collect::<Option<_>>()?;
             let types = fields.fields().map(|field| field.ty()).collect::<Option<_>>()?;
             (Some(names), types)
-        },
+        }
         ast::StructKind::Tuple(fields) => {
             (None, fields.fields().map(|field| field.ty()).collect::<Option<_>>()?)
-        },
+        }
     })
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32850 bytes
-Chloro size:   32749 bytes
+Chloro size:   32707 bytes
 Rustfmt size:  32850 bytes
 
 ✗ Outputs DIFFER
@@ -50,16 +50,14 @@ Rustfmt size:  32850 bytes
 -        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options)
 -            .filter_map(|attr| attr.cfg())
 -            .find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
--                true => None,
--                false => Some(cfg),
--            })
--            .map_or(Ok(()), Err)
 +        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options).filter_map(
 +            |attr| attr.cfg(),
 +        ).find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
-+            true => None,
-+            false => Some(cfg),
-+        }).map_or(
+                 true => None,
+                 false => Some(cfg),
+-            })
+-            .map_or(Ok(()), Err)
++            }).map_or(
 +            Ok(()),
 +            Err,
 +        )
@@ -77,61 +75,6 @@ Rustfmt size:  32850 bytes
      }
  
      #[inline]
-             Some(second) => {
-                 let cfgs = [first, second].into_iter().chain(cfgs);
-                 Some(CfgExpr::All(cfgs.collect()))
--            }
-+            },
-             None => Some(first),
-         }
-     }
-     #[inline]
-     pub(crate) fn is_cfg_enabled(&self, cfg_options: &CfgOptions) -> Result<(), CfgExpr> {
-         self.cfgs().try_for_each(|cfg| {
--            if cfg_options.check(&cfg) != Some(false) { Ok(()) } else { Err(cfg) }
-+            if cfg_options.check(&cfg) != Some(false) {
-+                Ok(())
-+            } else {
-+                Err(cfg)
-+            }
-         })
-     }
- 
-     #[inline]
-     pub fn has_doc_hidden(&self) -> bool {
-         self.by_key(sym::doc).tt_values().any(|tt| {
--            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis &&
--                matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::hidden)
-+            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis && matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::hidden)
-         })
-     }
- 
-     #[inline]
-     pub fn has_doc_notable_trait(&self) -> bool {
-         self.by_key(sym::doc).tt_values().any(|tt| {
--            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis &&
--                matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::notable_trait)
-+            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis && matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::notable_trait)
-         })
-     }
- 
-     #[inline]
-     pub fn is_test(&self) -> bool {
-         self.iter().any(|it| {
--            it.path()
--                .segments()
--                .iter()
--                .rev()
--                .zip([sym::core, sym::prelude, sym::v1, sym::test].iter().rev())
--                .all(|it| it.0 == it.1)
-+            it.path().segments().iter().rev().zip(
-+                [sym::core, sym::prelude, sym::v1, sym::test].iter().rev(),
-+            ).all(
-+                |it| it.0 == it.1,
-+            )
-         })
-     }
- 
  
      #[inline]
      pub fn rustc_legacy_const_generics(&self) -> Option<Box<Box<[u32]>>> {
@@ -153,19 +96,14 @@ Rustfmt size:  32850 bytes
      #[inline]
      pub fn repr(&self) -> Option<ReprOptions> {
 -        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(None, |acc, repr| {
--            acc.map_or(Some(repr), |mut acc| {
 +        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(
 +            None,
 +            |acc, repr| {
-+            acc.map_or(
-+                Some(repr),
-+                |mut acc| {
+             acc.map_or(Some(repr), |mut acc| {
                  merge_repr(&mut acc, repr);
                  Some(acc)
--            })
+             })
 -        })
-+            },
-+            )
 +        },
 +        )
      }
@@ -182,14 +120,6 @@ Rustfmt size:  32850 bytes
  }
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-         match self {
-             DocExpr::Atom(DocAtom::KeyValue { key, value }) if *key == sym::alias => {
-                 std::slice::from_ref(value)
--            }
-+            },
-             DocExpr::Alias(aliases) => aliases,
-             _ => &[],
-         }
              kind: tt::LitKind::Str, symbol, ..
          })) => Some(symbol.clone()),
          _ => None,
@@ -207,14 +137,6 @@ Rustfmt size:  32850 bytes
                  let raw_attrs = match mod_data.origin {
                      ModuleOrigin::File { definition, declaration_tree_id, declaration, .. } => {
                          let decl_attrs = declaration_tree_id
-                     }
-                 };
-                 Attrs::expand_cfg_attr(db, module.krate, raw_attrs)
--            }
-+            },
-             AttrDefId::FieldId(it) => db.fields_attrs(it.parent)[it.local_id].clone(),
-             AttrDefId::EnumVariantId(it) => attrs_from_ast_id_loc(db, it),
-             AttrDefId::AdtId(it) => match it {
              AttrDefId::GenericParamId(it) => match it {
                  GenericParamId::ConstParamId(it) => {
                      let src = it.parent().child_source(db);
@@ -222,36 +144,20 @@ Rustfmt size:  32850 bytes
                      Attrs(match src.value.get(it.local_id()) {
                          Some(val) => RawAttrs::new_expanded(
                              db,
-                         ),
-                         None => RawAttrs::EMPTY,
-                     })
--                }
-+                },
+                 }
                  GenericParamId::TypeParamId(it) => {
                      let src = it.parent().child_source(db);
 -                    // FIXME: We should be never getting `None` here.
                      Attrs(match src.value.get(it.local_id()) {
                          Some(val) => RawAttrs::new_expanded(
                              db,
-                         ),
-                         None => RawAttrs::EMPTY,
-                     })
--                }
-+                },
+                 }
                  GenericParamId::LifetimeParamId(it) => {
                      let src = it.parent.child_source(db);
 -                    // FIXME: We should be never getting `None` here.
                      Attrs(match src.value.get(it.local_id) {
                          Some(val) => RawAttrs::new_expanded(
                              db,
-                         ),
-                         None => RawAttrs::EMPTY,
-                     })
--                }
-+                },
-             },
-             AttrDefId::ExternBlockId(it) => attrs_from_ast_id_loc(db, it),
-             AttrDefId::ExternCrateId(it) => attrs_from_ast_id_loc(db, it),
              _ => self.file_id,
          };
  
@@ -265,17 +171,6 @@ Rustfmt size:  32850 bytes
      }
  }
  
-             let name = tt.iter()
-                 .skip_while(|tt| !matches!(tt, TtElement::Leaf(tt::Leaf::Ident(tt::Ident { sym, ..} )) if *sym == key))
-                 .nth(2);
--
-             match name {
-                 Some(TtElement::Leaf(tt::Leaf::Literal(tt::Literal{  symbol: text, kind: tt::LitKind::Str | tt::LitKind::StrRaw(_) , ..}))) => Some(text.as_str()),
--                _ => None
-+                _ => None,
-             }
-         })
-     }
  mod tests {
      //! This module contains tests for doc-expression parsing.
      //! Currently, it tests `#[doc(hidden)]` and `#[doc(alias)]`.

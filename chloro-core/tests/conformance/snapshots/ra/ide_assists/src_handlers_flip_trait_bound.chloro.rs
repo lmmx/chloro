@@ -22,11 +22,11 @@ pub(crate) fn flip_trait_bound(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         "Flip trait bounds",
         target,
         |builder| {
-        let mut editor = builder.make_editor(parent.syntax());
-        editor.replace(before.clone(), after.clone());
-        editor.replace(after, before);
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            let mut editor = builder.make_editor(parent.syntax());
+            editor.replace(before.clone(), after.clone());
+            editor.replace(after, before);
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

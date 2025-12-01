@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10157 bytes
-Chloro size:   9814 bytes
+Chloro size:   9812 bytes
 Rustfmt size:  10267 bytes
 
 ✗ Outputs DIFFER
@@ -73,22 +73,6 @@ Rustfmt size:  10267 bytes
      )
  }
  
-                     make.tuple_field(None, ty)
-                 });
-                 Some(make.tuple_field_list(tuple_fields).into())
--            }
-+            },
-             PathParent::RecordExpr(it) => {
-                 let fields = it.record_expr_field_list()?.fields();
-                 let record_fields = fields.map(|field| {
-                     make.record_field(None, name, ty)
-                 });
-                 Some(make.record_field_list(record_fields).into())
--            }
-+            },
-             PathParent::UseTree(_) | PathParent::PathPat(_) => None,
-         }
-     }
      scope: &hir::SemanticsScope<'_>,
  ) -> Option<ast::Type> {
      let ty = ctx.sema.type_of_expr(&arg).map(|it| it.adjusted())?;

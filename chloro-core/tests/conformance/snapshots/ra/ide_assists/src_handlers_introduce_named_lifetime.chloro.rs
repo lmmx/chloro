@@ -70,6 +70,7 @@ fn generate_fn_def_assist(
         let lifetime = builder.make_mut(lifetime);
         let loc_needing_lifetime =
             loc_needing_lifetime.and_then(|it| it.make_mut(builder).to_position());
+
         fn_def.get_or_create_generic_param_list().add_generic_param(
             make::lifetime_param(new_lifetime_param.clone()).clone_for_update().into(),
         );
@@ -96,6 +97,7 @@ fn generate_impl_def_assist(
         |builder| {
         let impl_def = builder.make_mut(impl_def);
         let lifetime = builder.make_mut(lifetime);
+
         impl_def.get_or_create_generic_param_list().add_generic_param(
             make::lifetime_param(new_lifetime_param.clone()).clone_for_update().into(),
         );
@@ -114,7 +116,7 @@ fn generate_unique_lifetime_param_name(
             let used_lifetime_params: FxHashSet<_> =
                 type_params.lifetime_params().map(|p| p.syntax().text().to_string()).collect();
             ('a'..='z').map(|it| format!("'{it}")).find(|it| !used_lifetime_params.contains(it))
-        },
+        }
         None => Some("'a".to_owned()),
     }.map(
         |it| make::lifetime(&it),

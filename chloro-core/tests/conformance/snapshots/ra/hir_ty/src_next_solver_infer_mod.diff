@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   47093 bytes
+Chloro size:   47104 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -238,12 +238,11 @@ Rustfmt size:  49754 bytes
          predicate: PolyRegionOutlivesPredicate<'db>,
      ) {
 -        self.enter_forall(predicate, |OutlivesPredicate(r_a, r_b)| {
--            self.sub_regions(r_b, r_a); // `b : a` ==> `a <= b`
--        })
 +        self.enter_forall(
 +            predicate,
 +            |OutlivesPredicate(r_a, r_b)| {
-+            self.sub_regions(r_b, r_a);
+             self.sub_regions(r_b, r_a); // `b : a` ==> `a <= b`
+-        })
 +        },
 +        )
      }
@@ -273,8 +272,7 @@ Rustfmt size:  49754 bytes
 -                // Create a region inference variable for the given
 -                // region parameter definition.
                  self.next_region_var().into()
--            }
-+            },
+             }
              GenericParamId::TypeParamId(_) => {
 -                // Create a type inference variable for the given
 -                // type parameter definition. The generic parameters are
@@ -291,19 +289,8 @@ Rustfmt size:  49754 bytes
                      .new_var(self.universe(), TypeVariableOrigin { param_def_id: None });
 -
                  Ty::new_var(self.interner, ty_var_id).into()
--            }
-+            },
+             }
              GenericParamId::ConstParamId(_) => {
-                 let origin = ConstVariableOrigin {};
-                 let const_var_id = self
-                     .new_key(ConstVariableValue::Unknown { origin, universe: self.universe() })
-                     .vid;
-                 Const::new_var(self.interner, const_var_id).into()
--            }
-+            },
-         }
-     }
- 
          def_id: SolverDefId,
          first: impl IntoIterator<Item = GenericArg<'db>>,
      ) -> GenericArgs<'db> {
@@ -320,14 +307,6 @@ Rustfmt size:  49754 bytes
      }
  
      /// Returns `true` if errors have been reported since this infcx was
-         match self.typing_mode_unchecked() {
-             TypingMode::Analysis { defining_opaque_types_and_generators } => {
-                 defining_opaque_types_and_generators.contains(&id.into())
--            }
-+            },
-             TypingMode::Coherence | TypingMode::PostAnalysis => false,
-             TypingMode::Borrowck { defining_opaque_types: _ } => unimplemented!(),
-             TypingMode::PostBorrowckAnalysis { defined_opaque_types: _ } => unimplemented!(),
          if let TyKind::Infer(v) = ty.kind() {
              match v {
                  InferTy::TyVar(v) => {
@@ -345,26 +324,22 @@ Rustfmt size:  49754 bytes
 -                    // dynamic borrow errors on `self.inner`.
                      let known = self.inner.borrow_mut().type_variables().probe(v).known();
                      known.map_or(ty, |t| self.shallow_resolve(t))
--                }
+                 }
 -
-+                },
                  InferTy::IntVar(v) => {
                      match self.inner.borrow_mut().int_unification_table().probe_value(v) {
                          IntVarValue::IntType(ty) => Ty::new_int(self.interner, ty),
-                         IntVarValue::UintType(ty) => Ty::new_uint(self.interner, ty),
                          IntVarValue::Unknown => ty,
                      }
--                }
+                 }
 -
-+                },
                  InferTy::FloatVar(v) => {
                      match self.inner.borrow_mut().float_unification_table().probe_value(v) {
                          FloatVarValue::Known(ty) => Ty::new_float(self.interner, ty),
                          FloatVarValue::Unknown => ty,
                      }
--                }
+                 }
 -
-+                },
                  InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => ty,
              }
          } else {
@@ -384,22 +359,6 @@ Rustfmt size:  49754 bytes
                  InferConst::Fresh(_) => ct,
              },
              ConstKind::Param(_)
-             IntVarValue::UintType(ty) => Ty::new_uint(self.interner, ty),
-             IntVarValue::Unknown => {
-                 Ty::new_int_var(self.interner, inner.int_unification_table().find(vid))
--            }
-+            },
-         }
-     }
- 
-             FloatVarValue::Known(ty) => Ty::new_float(self.interner, ty),
-             FloatVarValue::Unknown => {
-                 Ty::new_float_var(self.interner, inner.float_unification_table().find(vid))
--            }
-+            },
-         }
-     }
- 
          }
      }
  
@@ -413,19 +372,6 @@ Rustfmt size:  49754 bytes
      pub fn instantiate_binder_with_fresh_vars<T>(
          &self,
          _lbrct: BoundRegionConversionTime,
-         move |infer_var: TyOrConstInferVar| match (infer_var, &inner) {
-             (TyOrConstInferVar::Ty(ty_var), Ok(inner)) => {
-                 use self::type_variable::TypeVariableValue;
--
-                 matches!(
-                     inner.try_type_variables_probe_ref(ty_var),
-                     Some(TypeVariableValue::Unknown { .. })
-                 )
--            }
-+            },
-             _ => false,
-         }
-     }
          match infer_var {
              TyOrConstInferVar::Ty(v) => {
                  use self::type_variable::TypeVariableValue;
@@ -436,26 +382,23 @@ Rustfmt size:  49754 bytes
                      TypeVariableValue::Unknown { .. } => false,
                      TypeVariableValue::Known { .. } => true,
                  }
--            }
+             }
 -
-+            },
              TyOrConstInferVar::TyInt(v) => {
 -                // If `inlined_probe_value` returns a value it's always a
 -                // `Int(_)` or `UInt(_)`, which never matches a
 -                // `Infer(_)`.
                  self.inner.borrow_mut().int_unification_table().inlined_probe_value(v).is_known()
--            }
+             }
 -
-+            },
              TyOrConstInferVar::TyFloat(v) => {
 -                // If `probe_value` returns a value it's always a
 -                // `Float(_)`, which never matches a `Infer(_)`.
 -                //
 -                // Not `inlined_probe_value(v)` because this call site is colder.
                  self.inner.borrow_mut().float_unification_table().probe_value(v).is_known()
--            }
+             }
 -
-+            },
              TyOrConstInferVar::Const(v) => {
 -                // If `probe_value` returns a `Known` value, it never equals
 -                // `ConstKind::Infer(InferConst::Var(v))`.
@@ -464,12 +407,6 @@ Rustfmt size:  49754 bytes
                  match self.inner.borrow_mut().const_unification_table().probe_value(v) {
                      ConstVariableValue::Unknown { .. } => false,
                      ConstVariableValue::Known { .. } => true,
-                 }
--            }
-+            },
-         }
-     }
- 
          a: TraitRef<'db>,
          b: TraitRef<'db>,
      ) -> TypeTrace<'db> {

@@ -136,13 +136,22 @@ pub fn format_match_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 
         // Arm expression
         if let Some(expr) = arm.expr() {
+            let is_block = matches!(expr, ast::Expr::BlockExpr(_));
+
             match try_format_expr_inner(expr.syntax(), indent + 4) {
                 Some(s) => buf.push_str(&s),
                 None => buf.push_str(&expr.syntax().text().to_string()),
             }
-        }
 
-        buf.push_str(",\n");
+            // No comma after block expressions in match arms
+            if is_block {
+                buf.push('\n');
+            } else {
+                buf.push_str(",\n");
+            }
+        } else {
+            buf.push_str(",\n");
+        }
     }
 
     write_indent(&mut buf, indent);
@@ -279,7 +288,7 @@ pub fn format_closure_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let mut buf = String::new();
     buf.push_str(&attrs);
 
-    // Modifiers
+    // for<'a> binder
     if let Some(for_binder) = closure.for_binder() {
         buf.push_str(&for_binder.syntax().text().to_string());
         buf.push(' ');
@@ -317,13 +326,16 @@ pub fn format_closure_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
         buf.push_str(&ret_type.syntax().text().to_string());
     }
 
-    // Body
+    // Body - closures are tricky because they can be:
+    // 1. Simple expression: |x| x + 1
+    // 2. Block expression: |x| { ... }
+    //
+    // For now, preserve the body verbatim to avoid breaking method chains.
+    // The issue is that when we format a closure's block body, it interacts
+    // badly with the parent call expression's formatting.
     if let Some(body) = closure.body() {
         buf.push(' ');
-        match try_format_expr_inner(body.syntax(), indent) {
-            Some(s) => buf.push_str(&s),
-            None => buf.push_str(&body.syntax().text().to_string()),
-        }
+        buf.push_str(&body.syntax().text().to_string());
     }
 
     Some(buf)

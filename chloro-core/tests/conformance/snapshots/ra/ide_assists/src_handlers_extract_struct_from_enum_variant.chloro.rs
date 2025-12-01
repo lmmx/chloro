@@ -45,15 +45,17 @@ pub(crate) fn extract_struct_from_enum_variant(
         "Extract struct from enum variant",
         target,
         |builder| {
-        let edition = enum_hir.krate(ctx.db()).edition(ctx.db());
-        let variant_hir_name = variant_hir.name(ctx.db());
-        let enum_module_def = ModuleDef::from(enum_hir);
-        let usages = Definition::Variant(variant_hir).usages(&ctx.sema).all();
-        let mut visited_modules_set = FxHashSet::default();
-        let current_module = enum_hir.module(ctx.db());
-        visited_modules_set.insert(current_module);
-        let mut def_file_references = None;
-        for (file_id, references) in usages {
+            let edition = enum_hir.krate(ctx.db()).edition(ctx.db());
+            let variant_hir_name = variant_hir.name(ctx.db());
+            let enum_module_def = ModuleDef::from(enum_hir);
+            let usages = Definition::Variant(variant_hir).usages(&ctx.sema).all();
+
+            let mut visited_modules_set = FxHashSet::default();
+            let current_module = enum_hir.module(ctx.db());
+            visited_modules_set.insert(current_module);
+            // record file references of the file the def resides in, we only want to swap to the edited file in the builder once
+            let mut def_file_references = None;
+            for (file_id, references) in usages {
                 if file_id == ctx.file_id() {
                     def_file_references = Some(references);
                     continue;
@@ -71,9 +73,10 @@ pub(crate) fn extract_struct_from_enum_variant(
                     apply_references(ctx.config.insert_use, path, node, import, edition)
                 });
             }
-        builder.edit_file(ctx.vfs_file_id());
-        let variant = builder.make_mut(variant.clone());
-        if let Some(references) = def_file_references {
+            builder.edit_file(ctx.vfs_file_id());
+
+            let variant = builder.make_mut(variant.clone());
+            if let Some(references) = def_file_references {
                 let processed = process_references(
                     ctx,
                     builder,
@@ -86,11 +89,14 @@ pub(crate) fn extract_struct_from_enum_variant(
                     apply_references(ctx.config.insert_use, path, node, import, edition)
                 });
             }
-        let generic_params = enum_ast
+
+            let generic_params = enum_ast
                 .generic_param_list()
                 .and_then(|known_generics| extract_generic_params(&known_generics, &field_list));
-        let generics = generic_params.as_ref().map(|generics| generics.clone_for_update());
-        let field_list = if let Some((target_scope, source_scope)) =
+            let generics = generic_params.as_ref().map(|generics| generics.clone_for_update());
+
+            // resolve GenericArg in field_list to actual type
+            let field_list = if let Some((target_scope, source_scope)) =
                 ctx.sema.scope(enum_ast.syntax()).zip(ctx.sema.scope(field_list.syntax()))
             {
                 let field_list = field_list.reset_indent();
@@ -107,20 +113,24 @@ pub(crate) fn extract_struct_from_enum_variant(
             } else {
                 field_list.clone_for_update()
             };
-        let def =
+
+            let def =
                 create_struct_def(variant_name.clone(), &variant, &field_list, generics, &enum_ast);
-        let enum_ast = variant.parent_enum();
-        let indent = enum_ast.indent_level();
-        let def = def.indent(indent);
-        ted::insert_all(
+
+            let enum_ast = variant.parent_enum();
+            let indent = enum_ast.indent_level();
+            let def = def.indent(indent);
+
+            ted::insert_all(
                 ted::Position::before(enum_ast.syntax()),
                 vec![
                     def.syntax().clone().into(),
                     make::tokens::whitespace(&format!("\n\n{indent}")).into(),
                 ],
             );
-        update_variant(&variant, generic_params.map(|g| g.clone_for_update()));
-    },
+
+            update_variant(&variant, generic_params.map(|g| g.clone_for_update()));
+        },
     )
 }
 
@@ -130,17 +140,18 @@ fn extract_field_list_if_applicable(
     match variant.kind() {
         ast::StructKind::Record(field_list) if field_list.fields().next().is_some() => {
             Some(Either::Left(field_list))
-        },
+        }
         ast::StructKind::Tuple(field_list) if field_list.fields().count() > 1 => {
             Some(Either::Right(field_list))
-        },
+        }
         _ => None,
     }
 }
 
 fn existing_definition(db: &RootDatabase, variant_name: &ast::Name, variant: &Variant) -> bool {
     variant.parent_enum(db).module(db).scope(db, None).into_iter().filter(|(_, def)| match def {
-        hir::ScopeDef::ModuleDef(def) => matches!(
+            // only check type-namespace
+            hir::ScopeDef::ModuleDef(def) => matches!(
                 def,
                 ModuleDef::Module(_)
                     | ModuleDef::Adt(_)
@@ -149,8 +160,8 @@ fn existing_definition(db: &RootDatabase, variant_name: &ast::Name, variant: &Va
                     | ModuleDef::TypeAlias(_)
                     | ModuleDef::BuiltinType(_)
             ),
-        _ => false,
-    }).any(
+            _ => false,
+        }).any(
         |(name, _)| name.as_str() == variant_name.text().trim_start_matches("r#"),
     )
 }
@@ -315,21 +326,21 @@ fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList
 fn take_all_comments(node: &SyntaxNode) -> Vec<SyntaxElement> {
     let mut remove_next_ws = false;
     node.children_with_tokens().filter_map(move |child| match child.kind() {
-        COMMENT => {
-            remove_next_ws = true;
-            child.detach();
-            Some(child)
-        },
-        WHITESPACE if remove_next_ws => {
-            remove_next_ws = false;
-            child.detach();
-            Some(make::tokens::single_newline().into())
-        },
-        _ => {
-            remove_next_ws = false;
-            None
-        },
-    }).collect(
+            COMMENT => {
+                remove_next_ws = true;
+                child.detach();
+                Some(child)
+            }
+            WHITESPACE if remove_next_ws => {
+                remove_next_ws = false;
+                child.detach();
+                Some(make::tokens::single_newline().into())
+            }
+            _ => {
+                remove_next_ws = false;
+                None
+            }
+        }).collect(
     )
 }
 
@@ -361,10 +372,10 @@ fn process_references(
     // we have to recollect here eagerly as we are about to edit the tree we need to calculate the changes
     // and corresponding nodes up front
     refs.into_iter().flat_map(|reference| {
-        let (segment, scope_node, module) = reference_to_node(&ctx.sema, reference)?;
-        let segment = builder.make_mut(segment);
-        let scope_node = builder.make_syntax_mut(scope_node);
-        if !visited_modules.contains(&module) {
+            let (segment, scope_node, module) = reference_to_node(&ctx.sema, reference)?;
+            let segment = builder.make_mut(segment);
+            let scope_node = builder.make_syntax_mut(scope_node);
+            if !visited_modules.contains(&module) {
                 let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
                 let mod_path = module.find_use_path(
                     ctx.sema.db,
@@ -380,8 +391,8 @@ fn process_references(
                     return Some((segment, scope_node, Some((scope, mod_path))));
                 }
             }
-        Some((segment, scope_node, None))
-    }).collect(
+            Some((segment, scope_node, None))
+        }).collect(
     )
 }
 

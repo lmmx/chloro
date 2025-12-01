@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11756 bytes
-Chloro size:   11587 bytes
+Chloro size:   11690 bytes
 Rustfmt size:  11841 bytes
 
 ✗ Outputs DIFFER
@@ -17,13 +17,6 @@ Rustfmt size:  11841 bytes
 -        .filter(|it| include_keywords || it.kind != CompletionItemKind::Keyword)
 -        .filter(|it| include_keywords || it.kind != CompletionItemKind::Snippet)
 -        .sorted_by_key(|it| {
--            (
--                it.kind,
--                it.label.primary.clone(),
--                it.label.detail_left.as_ref().map(ToOwned::to_owned),
--            )
--        })
--        .collect()
 +    items.into_iter().filter(
 +        |it| it.kind != CompletionItemKind::BuiltinType || it.label.primary == "u32",
 +    ).filter(
@@ -31,8 +24,14 @@ Rustfmt size:  11841 bytes
 +    ).filter(
 +        |it| include_keywords || it.kind != CompletionItemKind::Snippet,
 +    ).sorted_by_key(|it| {
-+        (it.kind, it.label.primary.clone(), it.label.detail_left.as_ref().map(ToOwned::to_owned))
-+    }).collect(
+             (
+                 it.kind,
+                 it.label.primary.clone(),
+                 it.label.detail_left.as_ref().map(ToOwned::to_owned),
+             )
+-        })
+-        .collect()
++        }).collect(
 +    )
  }
  
@@ -89,34 +88,16 @@ Rustfmt size:  11841 bytes
 -    completions
 -        .into_iter()
 -        .map(|it| {
--            let tag = it.kind.tag();
--            let mut buf = format!("{tag} {}", it.label.primary);
--            if let Some(label_detail) = &it.label.detail_left {
 +    completions.into_iter().map(|it| {
-+        let tag = it.kind.tag();
-+        let mut buf = format!("{tag} {}", it.label.primary);
-+        if let Some(label_detail) = &it.label.detail_left {
-                 format_to!(buf, " {label_detail}");
+             let tag = it.kind.tag();
+             let mut buf = format!("{tag} {}", it.label.primary);
+             if let Some(label_detail) = &it.label.detail_left {
              }
--            if let Some(detail_right) = it.label.detail_right {
-+        if let Some(detail_right) = it.label.detail_right {
-                 let pad_with = label_width.saturating_sub(
-                     monospace_width(&it.label.primary)
-                         + monospace_width(it.label.detail_left.as_deref().unwrap_or_default())
-                 );
-                 format_to!(buf, "{:pad_with$}{detail_right}", "",);
-             }
--            if it.deprecated {
-+        if it.deprecated {
-                 format_to!(buf, " DEPRECATED");
-             }
--            format_to!(buf, "\n");
--            buf
+             format_to!(buf, "\n");
+             buf
 -        })
 -        .collect()
-+        format_to!(buf, "\n");
-+        buf
-+    }).collect(
++        }).collect(
 +    )
  }
  

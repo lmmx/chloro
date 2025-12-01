@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24849 bytes
-Chloro size:   18158 bytes
+Chloro size:   18222 bytes
 Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
@@ -323,10 +323,3 @@ Rustfmt size:  25118 bytes
          }
      }
  }
- 
-     let token = t.unwrap_or_else(|| token.into());
-     token.map(|token| match token.parent().and_then(ast::NameLike::cast) {
--        // Remap the token into the wrapping single token nodes
-         Some(parent) => match (token.kind(), parent.syntax().kind()) {
-             (T![ident] | T![self], NAME)
-             | (T![ident] | T![self] | T![super] | T![crate] | T![Self], NAME_REF)

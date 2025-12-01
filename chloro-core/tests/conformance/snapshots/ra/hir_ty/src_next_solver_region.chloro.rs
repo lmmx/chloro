@@ -38,9 +38,9 @@ impl<'db> Region<'db> {
     pub fn inner(&self) -> &RegionKind<'db> {
         crate::with_attached_db(|db| {
             let inner = self.kind_(db);
-            unsafe {
-                std::mem::transmute::<&RegionKind<'_>, &RegionKind<'db>>(inner)
-            }
+            // SAFETY: The caller already has access to a `Region<'db>`, so borrowchecking will
+            // make sure that our returned value is valid for the lifetime `'db`.
+            unsafe { std::mem::transmute::<&RegionKind<'_>, &RegionKind<'db>>(inner) }
         })
     }
 
@@ -188,7 +188,7 @@ impl std::fmt::Debug for BoundRegionKind {
             BoundRegionKind::Anon => write!(f, "BrAnon"),
             BoundRegionKind::Named(did) => {
                 write!(f, "BrNamed({did:?})")
-            },
+            }
             BoundRegionKind::ClosureEnv => write!(f, "BrEnv"),
         }
     }
@@ -230,7 +230,7 @@ impl core::fmt::Debug for BoundRegion {
             BoundRegionKind::ClosureEnv => write!(f, "{:?}.Env", self.var),
             BoundRegionKind::Named(def) => {
                 write!(f, "{:?}.Named({:?})", self.var, def)
-            },
+            }
         }
     }
 }

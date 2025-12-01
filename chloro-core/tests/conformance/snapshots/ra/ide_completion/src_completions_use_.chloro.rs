@@ -75,19 +75,19 @@ pub(crate) fn complete_use_path(
                             acc.add(builder.build(ctx.db));
                         }
                     }
-                },
+                }
                 hir::PathResolution::Def(hir::ModuleDef::Adt(hir::Adt::Enum(e))) => {
                     cov_mark::hit!(enum_plain_qualified_use_tree);
                     acc.add_enum_variants(ctx, path_ctx, *e);
-                },
+                }
                 _ => {
-                },
+                }
             }
-        },
+        }
         Qualified::Absolute => {
             cov_mark::hit!(use_tree_crate_roots_only);
             acc.add_crate_roots(ctx, path_ctx);
-        },
+        }
         Qualified::No => {
             cov_mark::hit!(unqualified_path_selected_only);
             ctx.process_all_names(&mut |name, res, doc_aliases| {
@@ -117,8 +117,8 @@ pub(crate) fn complete_use_path(
                 };
             });
             acc.add_nameref_keywords_with_colon(ctx);
-        },
+        }
         Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {
-        },
+        }
     }
 }

@@ -117,19 +117,19 @@ impl DiagnosticCode {
         match self {
             DiagnosticCode::RustcHardError(e) => {
                 format!("https://doc.rust-lang.org/stable/error_codes/{e}.html")
-            },
+            }
             DiagnosticCode::SyntaxError => {
                 String::from("https://doc.rust-lang.org/stable/reference/")
-            },
+            }
             DiagnosticCode::RustcLint(e) => {
                 format!("https://doc.rust-lang.org/rustc/?search={e}")
-            },
+            }
             DiagnosticCode::Clippy(e) => {
                 format!("https://rust-lang.github.io/rust-clippy/master/#/{e}")
-            },
+            }
             DiagnosticCode::Ra(e, _) => {
                 format!("https://rust-analyzer.github.io/book/diagnostics.html#{e}")
-            },
+            }
         }
     }
 
@@ -289,7 +289,7 @@ impl DiagnosticsContext<'_> {
                 syntax::NodeOrToken::Node(it) => Some(sema.original_range(&it)),
                 syntax::NodeOrToken::Token(it) => {
                     node.with_value(it).original_file_range_opt(sema.db)
-                },
+                }
             }
         })(
         ).map(|frange| ide_db::FileRange {
@@ -322,12 +322,12 @@ pub fn syntax_diagnostics(
 
     // [#3434] Only take first 128 errors to prevent slowing down editor/ide, the number 128 is chosen arbitrarily.
     db.parse_errors(editioned_file_id).into_iter().flatten().take(128).map(|err| {
-        Diagnostic::new(
+            Diagnostic::new(
                 DiagnosticCode::SyntaxError,
                 format!("Syntax Error: {err}"),
                 FileRange { file_id, range: err.range() },
             )
-    }).collect(
+        }).collect(
     )
 }
 
@@ -687,12 +687,11 @@ fn lint_severity_at(
     edition: Edition,
 ) -> Option<Severity> {
     node.value.ancestors().filter_map(ast::AnyHasAttrs::cast).find_map(|ancestor| {
-        lint_attrs(sema, ancestor, edition).find_map(
-            |(lint, severity)| lint_groups.contains(&lint).then_some(severity),
-        )
-    }).or_else(|| {
-        lint_severity_at(sema, &sema.find_parent_file(node.file_id)?, lint_groups, edition)
-    })
+            lint_attrs(sema, ancestor, edition)
+                .find_map(|(lint, severity)| lint_groups.contains(&lint).then_some(severity))
+        }).or_else(|| {
+            lint_severity_at(sema, &sema.find_parent_file(node.file_id)?, lint_groups, edition)
+        })
 }
 
 fn lint_attrs<'a>(
@@ -701,28 +700,29 @@ fn lint_attrs<'a>(
     edition: Edition,
 ) -> impl Iterator<Item = (SmolStr, Severity)> + 'a {
     ancestor.attrs_including_inner().filter_map(|attr| {
-        attr.as_simple_call().and_then(|(name, value)| match &*name {
-            "allow" | "expect" => Some(Either::Left(iter::once((Severity::Allow, value)))),
-            "warn" => Some(Either::Left(iter::once((Severity::Warning, value)))),
-            "forbid" | "deny" => Some(Either::Left(iter::once((Severity::Error, value)))),
-            "cfg_attr" => {
-                let mut lint_attrs = Vec::new();
-                cfg_attr_lint_attrs(sema, &value, &mut lint_attrs);
-                Some(Either::Right(lint_attrs.into_iter()))
-            },
-            _ => None,
-        })
-    }).flatten(
+            attr.as_simple_call().and_then(|(name, value)| match &*name {
+                "allow" | "expect" => Some(Either::Left(iter::once((Severity::Allow, value)))),
+                "warn" => Some(Either::Left(iter::once((Severity::Warning, value)))),
+                "forbid" | "deny" => Some(Either::Left(iter::once((Severity::Error, value)))),
+                "cfg_attr" => {
+                    let mut lint_attrs = Vec::new();
+                    cfg_attr_lint_attrs(sema, &value, &mut lint_attrs);
+                    Some(Either::Right(lint_attrs.into_iter()))
+                }
+                _ => None,
+            })
+        }).flatten(
     ).flat_map(move |(severity, lints)| {
-        parse_tt_as_comma_sep_paths(lints, edition).into_iter().flat_map(move |lints| {
-            lints.into_iter().map(move |lint| {
-                (
-                    lint.segments().filter_map(|segment| segment.name_ref()).join("::").into(),
-                    severity,
-                )
+            parse_tt_as_comma_sep_paths(lints, edition).into_iter().flat_map(move |lints| {
+                // Rejoin the idents with `::`, so we have no spaces in between.
+                lints.into_iter().map(move |lint| {
+                    (
+                        lint.segments().filter_map(|segment| segment.name_ref()).join("::").into(),
+                        severity,
+                    )
+                })
             })
         })
-    })
 }
 
 fn cfg_attr_lint_attrs(

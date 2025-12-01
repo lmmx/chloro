@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12076 bytes
-Chloro size:   12125 bytes
+Chloro size:   12115 bytes
 Rustfmt size:  12861 bytes
 
 ✗ Outputs DIFFER
@@ -29,25 +29,16 @@ Rustfmt size:  12861 bytes
          match (iter.next(), iter.next()) {
 -            (Some('\n'), Some('\n') | None) | (None, None) => {}
 +            (Some('\n'), Some('\n') | None) | (None, None) => {
-+            },
++            }
              (Some('\n'), Some(_)) => {
                  self.buf.push('\n');
--            }
-+            },
-             (Some(_), _) => {
-                 self.buf.push('\n');
-                 self.buf.push('\n');
--            }
-+            },
-             (None, Some(_)) => unreachable!(),
-         }
-     }
+             }
  
      fn whitespace(&mut self) {
          match self.buf.chars().next_back() {
 -            None | Some('\n' | ' ') => {}
 +            None | Some('\n' | ' ') => {
-+            },
++            }
              _ => self.buf.push(' '),
          }
      }
@@ -62,41 +53,12 @@ Rustfmt size:  12861 bytes
                  separated_by,
              );
          }
-             FieldsShape::Record => {
-                 self.whitespace();
-                 w!(self, "{{ ... }}");
--            }
-+            },
              FieldsShape::Tuple => {
                  w!(self, "(...)");
--            }
+             }
 -            FieldsShape::Unit => {}
-+            },
 +            FieldsShape::Unit => {
-+            },
-         }
-     }
- 
-                 if let Some(alias) = alias {
-                     w!(self, " as {}", alias.display(self.edition));
-                 }
--            }
-+            },
-             UseTreeKind::Glob { path } => {
-                 if let Some(path) = path {
-                     w!(self, "{}::", path.display(self.db, self.edition));
-                 }
-                 w!(self, "*");
--            }
-+            },
-             UseTreeKind::Prefixed { prefix, list } => {
-                 if let Some(prefix) = prefix {
-                     w!(self, "{}::", prefix.display(self.db, self.edition));
-                     self.print_use_tree(tree);
-                 }
-                 w!(self, "}}");
--            }
-+            },
++            }
          }
      }
  

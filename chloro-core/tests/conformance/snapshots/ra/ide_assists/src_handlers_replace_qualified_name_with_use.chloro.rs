@@ -60,21 +60,24 @@ pub(crate) fn replace_qualified_name_with_use(
         "Replace qualified path with use",
         target,
         |builder| {
-        let scope = builder.make_import_scope_mut(scope);
-        shorten_paths(scope.as_syntax_node(), &original_path);
-        let path = drop_generic_args(&original_path);
-        let edition = ctx
+            // Now that we've brought the name into scope, re-qualify all paths that could be
+            // affected (that is, all paths inside the node we added the `use` to).
+            let scope = builder.make_import_scope_mut(scope);
+            shorten_paths(scope.as_syntax_node(), &original_path);
+            let path = drop_generic_args(&original_path);
+            let edition = ctx
                 .sema
                 .scope(original_path.syntax())
                 .map(|semantics_scope| semantics_scope.krate().edition(ctx.db()))
                 .unwrap_or(Edition::CURRENT);
-        let path =
+            // stick the found import in front of the to be replaced path
+            let path =
                 match path_to_qualifier.and_then(|it| mod_path_to_ast(&it, edition).qualifier()) {
                     Some(qualifier) => make::path_concat(qualifier, path),
                     None => path,
                 };
-        insert_use(&scope, path, &ctx.config.insert_use);
-    },
+            insert_use(&scope, path, &ctx.config.insert_use);
+        },
     )
 }
 
@@ -141,7 +144,7 @@ fn path_eq_no_generics(lhs: ast::Path, rhs: ast::Path) -> bool {
             (Some(lhs), Some(rhs)) => {
                 lhs_curr = lhs;
                 rhs_curr = rhs;
-            },
+            }
             (None, None) => return true,
             _ => return false,
         }

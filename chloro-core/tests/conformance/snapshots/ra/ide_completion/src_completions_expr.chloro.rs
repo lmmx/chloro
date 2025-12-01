@@ -101,15 +101,15 @@ pub(crate) fn complete_expr_path(
 
     match qualified {
         Qualified::TypeAnchor { ty: None, trait_: None } => ctx.traits_in_scope().iter().copied().map(hir::Trait::from).filter(|it| {
-            !ctx.exclude_traits.contains(it) && it.complete(ctx.db) != Complete::IgnoreMethods
-        }).flat_map(
+                !ctx.exclude_traits.contains(it) && it.complete(ctx.db) != Complete::IgnoreMethods
+            }).flat_map(
             |it| it.items(ctx.sema.db),
         ).for_each(
             |item| add_assoc_item(acc, item),
         ),
         Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
-        },
+        }
         Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
             if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                 cov_mark::hit!(completes_variant_through_alias);
@@ -129,9 +129,9 @@ pub(crate) fn complete_expr_path(
                 }
                 None::<()>
             });
-        },
+        }
         Qualified::With { resolution: None, .. } => {
-        },
+        }
         Qualified::With { resolution: Some(resolution), .. } => {
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
                 acc.add_type_alias(ctx, alias);
@@ -158,7 +158,7 @@ pub(crate) fn complete_expr_path(
                             );
                         }
                     }
-                },
+                }
                 hir::PathResolution::Def(
                     def @ (hir::ModuleDef::Adt(_)
                     | hir::ModuleDef::TypeAlias(_)
@@ -191,12 +191,12 @@ pub(crate) fn complete_expr_path(
                         }
                         None::<()>
                     });
-                },
+                }
                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
                     for item in t.items(ctx.db) {
                         add_assoc_item(acc, item);
                     }
-                },
+                }
                 hir::PathResolution::TypeParam(_) | hir::PathResolution::SelfType(_) => {
                     let ty = match resolution {
                         hir::PathResolution::TypeParam(param) => param.ty(ctx.db),
@@ -215,10 +215,10 @@ pub(crate) fn complete_expr_path(
                         None,
                         PathCallback { ctx, acc, add_assoc_item, seen: FxHashSet::default() },
                     );
-                },
+                }
                 _ => (),
             }
-        },
+        }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No => {
             acc.add_nameref_keywords_with_colon(ctx);
@@ -324,7 +324,7 @@ pub(crate) fn complete_expr_path(
                             }
                         }
                     };
-                },
+                }
                 None => {
                     let mut add_keyword = |kw, snippet| {
                         acc.add_keyword_snippet_expr(ctx, incomplete_let, kw, snippet)
@@ -414,9 +414,9 @@ pub(crate) fn complete_expr_path(
                             },
                         );
                     }
-                },
+                }
             }
-        },
+        }
     }
 }
 
@@ -462,7 +462,7 @@ pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) 
                         };
                         acc.add_expr(ctx, &expanded_expr)
                     }
-                },
+                }
                 _ => acc.add_expr(ctx, &expr),
             }
         }

@@ -45,7 +45,7 @@ pub(crate) fn position(line_index: &LineIndex, offset: TextSize) -> lsp_types::P
         PositionEncoding::Wide(enc) => {
             let line_col = line_index.index.to_wide(enc, line_col).unwrap();
             lsp_types::Position::new(line_col.line, line_col.col)
-        },
+        }
     }
 }
 
@@ -72,7 +72,7 @@ pub(crate) fn symbol_kind(symbol_kind: SymbolKind) -> lsp_types::SymbolKind {
         SymbolKind::Module | SymbolKind::ToolModule => lsp_types::SymbolKind::MODULE,
         SymbolKind::TypeAlias | SymbolKind::TypeParam | SymbolKind::SelfType => {
             lsp_types::SymbolKind::TYPE_PARAMETER
-        },
+        }
         SymbolKind::Field => lsp_types::SymbolKind::FIELD,
         SymbolKind::Static => lsp_types::SymbolKind::CONSTANT,
         SymbolKind::Const => lsp_types::SymbolKind::CONSTANT,
@@ -231,14 +231,14 @@ pub(crate) fn snippet_text_edit_vec(
 ) -> Vec<lsp_ext::SnippetTextEdit> {
     let annotation = text_edit.change_annotation();
     text_edit.into_iter().map(|indel| {
-        self::snippet_text_edit(
-            line_index,
-            is_snippet,
-            indel,
-            annotation,
-            clients_support_annotations,
-        )
-    }).collect(
+            self::snippet_text_edit(
+                line_index,
+                is_snippet,
+                indel,
+                annotation,
+                clients_support_annotations,
+            )
+        }).collect(
     )
 }
 
@@ -1425,18 +1425,24 @@ impl From<lsp_ext::SnippetWorkspaceEdit> for lsp_types::WorkspaceEdit {
         lsp_types::WorkspaceEdit {
             changes: None,
             document_changes: snippet_workspace_edit.document_changes.map(|changes| {
-                lsp_types::DocumentChanges::Operations(changes.into_iter().map(|change| match change {
-                    lsp_ext::SnippetDocumentChangeOperation::Op(op) => {
-                        lsp_types::DocumentChangeOperation::Op(op)
-                    },
-                    lsp_ext::SnippetDocumentChangeOperation::Edit(edit) => {
-                        lsp_types::DocumentChangeOperation::Edit(lsp_types::TextDocumentEdit {
-                            text_document: edit.text_document,
-                            edits: edit.edits.into_iter().map(From::from).collect(),
+                lsp_types::DocumentChanges::Operations(
+                    changes
+                        .into_iter()
+                        .map(|change| match change {
+                            lsp_ext::SnippetDocumentChangeOperation::Op(op) => {
+                                lsp_types::DocumentChangeOperation::Op(op)
+                            }
+                            lsp_ext::SnippetDocumentChangeOperation::Edit(edit) => {
+                                lsp_types::DocumentChangeOperation::Edit(
+                                    lsp_types::TextDocumentEdit {
+                                        text_document: edit.text_document,
+                                        edits: edit.edits.into_iter().map(From::from).collect(),
+                                    },
+                                )
+                            }
                         })
-                    },
-                }).collect(
-                ))
+                        .collect(),
+                )
             }),
             change_annotations: snippet_workspace_edit.change_annotations,
         }
@@ -1574,7 +1580,7 @@ pub(crate) fn runnable(
                         .collect(),
                 }),
             }))
-        },
+        }
         Some(TargetSpec::ProjectJson(spec)) => {
             let label = runnable.label(Some(&spec.label));
             let location = location_link(snap, None, runnable.nav)?;
@@ -1592,10 +1598,10 @@ pub(crate) fn runnable(
                         kind: lsp_ext::RunnableKind::Shell,
                         args: lsp_ext::RunnableArgs::Shell(runnable_args),
                     }))
-                },
+                }
                 None => Ok(None),
             }
-        },
+        }
         None => {
             let Some(path) = snap.file_id_to_file_path(runnable.nav.file_id).parent() else {
                 return Ok(None);
@@ -1617,7 +1623,7 @@ pub(crate) fn runnable(
                     environment: Default::default(),
                 }),
             }))
-        },
+        }
     }
 }
 

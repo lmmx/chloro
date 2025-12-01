@@ -122,7 +122,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         match t.kind() {
             TyKind::Bound(BoundVarIndexKind::Canonical, bound_ty) => {
                 self.var_values[bound_ty.var.as_usize()].expect_ty()
-            },
+            }
             _ => {
                 if !t.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
                     t
@@ -133,7 +133,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
                     assert!(self.cache.insert(t, res).is_none());
                     res
                 }
-            },
+            }
         }
     }
 
@@ -141,7 +141,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         match r.kind() {
             RegionKind::ReBound(BoundVarIndexKind::Canonical, br) => {
                 self.var_values[br.var.as_usize()].expect_region()
-            },
+            }
             _ => r,
         }
     }
@@ -150,7 +150,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         match ct.kind() {
             ConstKind::Bound(BoundVarIndexKind::Canonical, bound_const) => {
                 self.var_values[bound_const.var.as_usize()].expect_const()
-            },
+            }
             _ => ct.super_fold_with(self),
         }
     }

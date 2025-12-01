@@ -245,10 +245,10 @@ impl<'db> InferenceTable<'db> {
         match predicate.kind().skip_binder() {
             PredicateKind::Clause(ClauseKind::Trait(data)) => {
                 self.type_matches_expected_vid(expected_vid, data.self_ty())
-            },
+            }
             PredicateKind::Clause(ClauseKind::Projection(data)) => {
                 self.type_matches_expected_vid(expected_vid, data.projection_term.self_ty())
-            },
+            }
             PredicateKind::Clause(ClauseKind::ConstArgHasType(..))
             | PredicateKind::Subtype(..)
             | PredicateKind::Coerce(..)
@@ -272,7 +272,7 @@ impl<'db> InferenceTable<'db> {
         match ty.kind() {
             TyKind::Infer(rustc_type_ir::TyVar(found_vid)) => {
                 self.infer_ctxt.root_var(expected_vid) == self.infer_ctxt.root_var(found_vid)
-            },
+            }
             _ => false,
         }
     }
@@ -590,9 +590,9 @@ impl<'db> InferenceTable<'db> {
         tracing::debug!(?result);
         match result {
             Ok((_, Certainty::Yes)) => {
-            },
+            }
             Err(rustc_type_ir::solve::NoSolution) => {
-            },
+            }
             Ok((_, Certainty::Maybe { .. })) => {
                 self.fulfillment_cx.register_predicate_obligation(
                     &self.infer_ctxt,
@@ -603,7 +603,7 @@ impl<'db> InferenceTable<'db> {
                         goal.predicate,
                     ),
                 );
-            },
+            }
         }
     }
 
@@ -643,11 +643,11 @@ impl<'db> InferenceTable<'db> {
             Some(sig) => {
                 let sig = sig.skip_binder();
                 Some((None, sig.inputs_and_output.inputs().to_vec(), sig.output()))
-            },
+            }
             None => {
                 let (f, args_ty, return_ty) = self.callable_sig_from_fn_trait(ty, num_args)?;
                 Some((Some(f), args_ty, return_ty))
-            },
+            }
         }
     }
 

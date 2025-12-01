@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12569 bytes
-Chloro size:   12214 bytes
+Chloro size:   12216 bytes
 Rustfmt size:  12721 bytes
 
 ✗ Outputs DIFFER
@@ -52,17 +52,17 @@ Rustfmt size:  12721 bytes
          target,
          |edit| {
 -            edit.edit_file(target_file);
--
++        edit.edit_file(target_file);
+ 
 -            let vis_owner = edit.make_mut(vis_owner);
 -            vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
--
++        let vis_owner = edit.make_mut(vis_owner);
++        vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
+ 
 -            if let Some((cap, vis)) = ctx.config.snippet_cap.zip(vis_owner.visibility()) {
 -                edit.add_tabstop_before(cap, vis);
 -            }
 -        },
-+        edit.edit_file(target_file);
-+        let vis_owner = edit.make_mut(vis_owner);
-+        vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
 +        if let Some((cap, vis)) = ctx.config.snippet_cap.zip(vis_owner.visibility()) {
 +            edit.add_tabstop_before(cap, vis);
 +        }

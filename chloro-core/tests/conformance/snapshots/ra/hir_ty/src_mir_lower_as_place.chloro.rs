@@ -78,7 +78,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     };
                     it.0 = it.0.project(ProjectionElem::Deref, &mut self.result.projection_store);
                     Ok(Some(it))
-                },
+                }
                 Adjust::Deref(Some(od)) => {
                     let Some((r, current)) = self.lower_expr_as_place_with_adjust(
                         current,
@@ -102,10 +102,10 @@ impl<'db> MirLowerCtx<'_, 'db> {
                         Some(Mutability::Not) => false,
                         None => {
                             not_supported!("implicit overloaded deref with unknown mutability")
-                        },
+                        }
                     },
                     )
-                },
+                }
                 Adjust::NeverToAny | Adjust::Borrow(_) | Adjust::Pointer(_) => try_rvalue(self),
             }
         } else {
@@ -150,7 +150,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                 match pr {
                     ValueNs::LocalBinding(pat_id) => {
                         Ok(Some((self.binding_local(pat_id)?.into(), current)))
-                    },
+                    }
                     ValueNs::StaticId(s) => {
                         let ty = self.expr_ty_without_adjust(expr_id);
                         let ref_ty = Ty::new_ref(
@@ -170,10 +170,10 @@ impl<'db> MirLowerCtx<'_, 'db> {
                             temp.project(ProjectionElem::Deref, &mut self.result.projection_store),
                             current,
                         )))
-                    },
+                    }
                     _ => try_rvalue(self),
                 }
-            },
+            }
             Expr::UnaryOp { expr, op: hir_def::hir::UnaryOp::Deref } => {
                 let is_builtin = match self.expr_ty_without_adjust(*expr).kind() {
                     TyKind::Ref(..) | TyKind::RawPtr(..) => true,
@@ -215,7 +215,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                 };
                 r = r.project(ProjectionElem::Deref, &mut self.result.projection_store);
                 Ok(Some((r, current)))
-            },
+            }
             Expr::UnaryOp { .. } => try_rvalue(self),
             Expr::Field { expr, .. } => {
                 let Some((mut r, current)) = self.lower_expr_as_place(current, *expr, true)? else {
@@ -223,7 +223,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                 };
                 self.push_field_projection(&mut r, expr_id)?;
                 Ok(Some((r, current)))
-            },
+            }
             Expr::Index { base, index } => {
                 let base_ty = self.expr_ty_after_adjustments(*base);
                 let index_ty = self.expr_ty_after_adjustments(*index);
@@ -279,7 +279,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                 p_base = p_base
                     .project(ProjectionElem::Index(l_index), &mut self.result.projection_store);
                 Ok(Some((p_base, current)))
-            },
+            }
             _ => try_rvalue(self),
         }
     }

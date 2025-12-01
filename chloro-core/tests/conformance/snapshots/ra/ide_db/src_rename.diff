@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29385 bytes
-Chloro size:   29393 bytes
+Chloro size:   29386 bytes
 Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
@@ -61,42 +61,3 @@ Rustfmt size:  29385 bytes
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub enum RenameDefinition {
-             Definition::Module(module) => rename_mod(sema, module, new_name),
-             Definition::ToolModule(_) => {
-                 bail!("Cannot rename a tool module")
--            }
-+            },
-             Definition::BuiltinType(_) => {
-                 bail!("Cannot rename builtin type")
--            }
-+            },
-             Definition::BuiltinAttr(_) => {
-                 bail!("Cannot rename a builtin attr.")
--            }
-+            },
-             Definition::SelfType(_) => bail!("Cannot rename `Self`"),
-             Definition::Macro(mac) => {
-                 rename_reference(sema, Definition::Macro(mac), new_name, rename_definition, edition)
--            }
-+            },
-             def => rename_reference(sema, def, new_name, rename_definition, edition),
-         }
-     }
-                 (SyntaxKind::IDENT, _) => Ok((Name::new_root(new_name), IdentifierKind::Ident)),
-                 (T![_], _) => {
-                     Ok((Name::new_symbol_root(sym::underscore), IdentifierKind::Underscore))
--                }
-+                },
-                 (SyntaxKind::LIFETIME_IDENT, _) if new_name != "'static" && new_name != "'_" => {
-                     Ok((Name::new_lifetime(new_name), IdentifierKind::Lifetime))
--                }
-+                },
-                 _ if SyntaxKind::from_keyword(new_name, edition).is_some() => match new_name {
-                     "self" => Ok((Name::new_root(new_name), IdentifierKind::LowercaseSelf)),
-                     "crate" | "super" | "Self" => {
-                         bail!("Invalid name `{}`: cannot rename to a keyword", new_name)
--                    }
-+                    },
-                     _ => Ok((Name::new_root(new_name), IdentifierKind::Ident)),
-                 },
-                 (_, Some(syntax_error)) => bail!("Invalid name `{}`: {}", new_name, syntax_error),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31093 bytes
-Chloro size:   30379 bytes
+Chloro size:   30374 bytes
 Rustfmt size:  31849 bytes
 
 ✗ Outputs DIFFER
@@ -325,14 +325,6 @@ Rustfmt size:  31849 bytes
                  let mut inner = self.infcx.inner.borrow_mut();
                  let variable_table = &mut inner.const_unification_table();
                  match variable_table.probe_value(vid) {
-                     ConstVariableValue::Known { value: u } => {
-                         drop(inner);
-                         self.relate(u, u)
--                    }
-+                    },
-                     ConstVariableValue::Unknown { origin, universe } => {
-                         if self.for_universe.can_name(universe) {
-                             Ok(c)
                                      universe: self.for_universe,
                                  })
                                  .vid;
@@ -342,19 +334,14 @@ Rustfmt size:  31849 bytes
                              if self.infcx.next_trait_solver()
                                  && !matches!(
                                      self.infcx.typing_mode_unchecked(),
-                             }
-                             Ok(Const::new_var(self.infcx.interner, new_var_id))
-                         }
--                    }
-+                    },
+                     }
                  }
--            }
+             }
 -            // FIXME: Unevaluated constants are also not rigid, so the current
 -            // approach of always relating them structurally is incomplete.
 -            //
 -            // FIXME: remove this branch once `structurally_relate_consts` is fully
 -            // structural.
-+            },
              ConstKind::Unevaluated(UnevaluatedConst { def, args }) => {
                  let args = self.relate_with_variance(
                      Variance::Invariant,
@@ -365,20 +352,10 @@ Rustfmt size:  31849 bytes
 -                    self.infcx.interner,
 -                    UnevaluatedConst { def, args },
 -                ))
--            }
 +                Ok(Const::new_unevaluated(self.infcx.interner, UnevaluatedConst { def, args }))
-+            },
+             }
              ConstKind::Placeholder(placeholder) => {
                  if self.for_universe.can_name(placeholder.universe) {
-                     Ok(c)
-                     );
-                     Err(TypeError::Mismatch)
-                 }
--            }
-+            },
-             _ => relate::structurally_relate_consts(self, c, c),
-         }
-     }
      /// otherwise very easily result in infinite
      /// recursion.
      pub value_may_be_infer: T,

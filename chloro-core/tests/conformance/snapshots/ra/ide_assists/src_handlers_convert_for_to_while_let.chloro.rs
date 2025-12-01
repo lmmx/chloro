@@ -26,9 +26,10 @@ pub(crate) fn convert_for_loop_to_while_let(
         "Replace this for loop with `while let`",
         for_loop.syntax().text_range(),
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = builder.make_editor(for_loop.syntax());
-        let (iterable, method) = if impls_core_iter(&ctx.sema, &iterable) {
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = builder.make_editor(for_loop.syntax());
+
+            let (iterable, method) = if impls_core_iter(&ctx.sema, &iterable) {
                 (iterable, None)
             } else if let Some((expr, method)) = is_ref_and_impls_iter_method(&ctx.sema, &iterable)
             {
@@ -38,38 +39,45 @@ pub(crate) fn convert_for_loop_to_while_let(
             } else {
                 (iterable, Some(make.name_ref("into_iter")))
             };
-        let iterable = if let Some(method) = method {
+
+            let iterable = if let Some(method) = method {
                 make::expr_method_call(iterable, method, make::arg_list([])).into()
             } else {
                 iterable
             };
-        let mut new_name = suggest_name::NameGenerator::new_from_scope_locals(
+
+            let mut new_name = suggest_name::NameGenerator::new_from_scope_locals(
                 ctx.sema.scope(for_loop.syntax()),
             );
-        let tmp_var = new_name.suggest_name("tmp");
-        let mut_expr = make.let_stmt(
+            let tmp_var = new_name.suggest_name("tmp");
+
+            let mut_expr = make.let_stmt(
                 make.ident_pat(false, true, make.name(&tmp_var)).into(),
                 None,
                 Some(iterable),
             );
-        let indent = IndentLevel::from_node(for_loop.syntax());
-        editor.insert(
+            let indent = IndentLevel::from_node(for_loop.syntax());
+            editor.insert(
                 Position::before(for_loop.syntax()),
                 make::tokens::whitespace(format!("\n{indent}").as_str()),
             );
-        editor.insert(Position::before(for_loop.syntax()), mut_expr.syntax());
-        let opt_pat = make.tuple_struct_pat(make::ext::ident_path("Some"), [pat]);
-        let iter_next_expr = make.expr_method_call(
+            editor.insert(Position::before(for_loop.syntax()), mut_expr.syntax());
+
+            let opt_pat = make.tuple_struct_pat(make::ext::ident_path("Some"), [pat]);
+            let iter_next_expr = make.expr_method_call(
                 make.expr_path(make::ext::ident_path(&tmp_var)),
                 make.name_ref("next"),
                 make.arg_list([]),
             );
-        let cond = make.expr_let(opt_pat.into(), iter_next_expr.into());
-        let while_loop = make.expr_while_loop(cond.into(), body);
-        editor.replace(for_loop.syntax(), while_loop.syntax());
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            let cond = make.expr_let(opt_pat.into(), iter_next_expr.into());
+
+            let while_loop = make.expr_while_loop(cond.into(), body);
+
+            editor.replace(for_loop.syntax(), while_loop.syntax());
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -114,7 +122,9 @@ fn is_ref_and_impls_iter_method(
 fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> bool {
     (|| {
         let it_typ = sema.type_of_expr(iterable)?.adjusted();
+
         let module = sema.scope(iterable.syntax())?.module();
+
         let krate = module.krate();
         let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
         cov_mark::hit!(test_already_impls_iterator);

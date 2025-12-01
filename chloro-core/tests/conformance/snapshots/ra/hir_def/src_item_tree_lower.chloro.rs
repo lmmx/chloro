@@ -155,10 +155,10 @@ impl<'a> Ctx<'a> {
             match self.tree.attrs.entry(item) {
                 Entry::Occupied(mut entry) => {
                     *entry.get_mut() = entry.get().merge(attrs);
-                },
+                }
                 Entry::Vacant(entry) => {
                     entry.insert(attrs);
-                },
+                }
             }
         }
     }
@@ -372,10 +372,10 @@ impl<'a> Ctx<'a> {
             RawVisibility::Public => RawVisibilityId::PUB,
             RawVisibility::PubSelf(VisibilityExplicitness::Explicit) => {
                 RawVisibilityId::PRIV_EXPLICIT
-            },
+            }
             RawVisibility::PubSelf(VisibilityExplicitness::Implicit) => {
                 RawVisibilityId::PRIV_IMPLICIT
-            },
+            }
             RawVisibility::PubCrate => RawVisibilityId::PUB_CRATE,
             _ => RawVisibilityId(self.visibilities.insert_full(vis).0 as u32),
         }
@@ -433,13 +433,13 @@ impl UseTreeLowering<'_> {
                     }
                     self.mapping.alloc(tree.clone());
                     Some(UseTree { kind: UseTreeKind::Glob { path: path.map(Interned::new) } })
-                },
+                }
                 (_, Some(_), true) | (None, None, false) => None,
                 (None, Some(_), false) => None,
                 (Some(path), alias, false) => {
                     self.mapping.alloc(tree.clone());
                     Some(UseTree { kind: UseTreeKind::Single { path: Interned::new(path), alias } })
-                },
+                }
             }
         }
     }

@@ -12,7 +12,7 @@ pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
             format_to!(result, "----------------------\n");
             format_to!(result, "  Finished in {}s\n", duration.as_secs_f32());
             result
-        },
+        }
         _ => "Not inside a function, const or static".to_owned(),
     }
 }

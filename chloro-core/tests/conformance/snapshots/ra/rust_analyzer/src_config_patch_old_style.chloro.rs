@@ -145,7 +145,7 @@ fn merge(dst: &mut Value, src: Value) {
             for (k, v) in src {
                 merge(dst.entry(k).or_insert(v.clone()), v)
             }
-        },
+        }
         (dst, src) => *dst = src,
     }
 }

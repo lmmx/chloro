@@ -547,7 +547,7 @@ fn res_to_kind(resolution: ScopeDef) -> CompletionItemKind {
         ScopeDef::Label(..) => CompletionItemKind::SymbolKind(SymbolKind::Label),
         ScopeDef::AdtSelfType(..) | ScopeDef::ImplSelfType(..) => {
             CompletionItemKind::SymbolKind(SymbolKind::SelfParam)
-        },
+        }
     }
 }
 

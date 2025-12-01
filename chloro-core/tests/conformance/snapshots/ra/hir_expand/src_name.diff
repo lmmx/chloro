@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8537 bytes
-Chloro size:   8299 bytes
+Chloro size:   8298 bytes
 Rustfmt size:  8636 bytes
 
 ✗ Outputs DIFFER
@@ -55,11 +55,3 @@ Rustfmt size:  8636 bytes
      }
  
      pub fn symbol(&self) -> &Symbol {
-             ast::FieldKind::Index(idx) => {
-                 let idx = idx.text().parse::<usize>().unwrap_or(0);
-                 Name::new_tuple_field(idx)
--            }
-+            },
-         }
-     }
- }

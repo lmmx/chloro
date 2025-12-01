@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   20773 bytes
+Chloro size:   20884 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
@@ -15,46 +15,31 @@ Rustfmt size:  21200 bytes
  use super::{
      generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
      SolverDefId, Ty, Tys,
-         match (a.kind(), b.kind()) {
-             (GenericArgKind::Lifetime(a_lt), GenericArgKind::Lifetime(b_lt)) => {
-                 Ok(relation.relate(a_lt, b_lt)?.into())
--            }
-+            },
-             (GenericArgKind::Type(a_ty), GenericArgKind::Type(b_ty)) => {
-                 Ok(relation.relate(a_ty, b_ty)?.into())
--            }
-+            },
-             (GenericArgKind::Const(a_ct), GenericArgKind::Const(b_ct)) => {
                  Ok(relation.relate(a_ct, b_ct)?.into())
--            }
-+            },
+             }
              (GenericArgKind::Lifetime(unpacked), x) => {
 -                unreachable!(
 -                    "impossible case reached: can't relate: {:?} with {:?}",
 -                    unpacked, x
 -                )
--            }
 +                unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-+            },
+             }
              (GenericArgKind::Type(unpacked), x) => {
 -                unreachable!(
 -                    "impossible case reached: can't relate: {:?} with {:?}",
 -                    unpacked, x
 -                )
--            }
 +                unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-+            },
+             }
              (GenericArgKind::Const(unpacked), x) => {
 -                unreachable!(
 -                    "impossible case reached: can't relate: {:?} with {:?}",
 -                    unpacked, x
 -                )
--            }
 +                unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-+            },
+             }
          }
      }
- }
  
  interned_vec_db!(GenericArgs, GenericArg);
  
@@ -113,19 +98,16 @@ Rustfmt size:  21200 bytes
      {
          let defaults = interner.db.generic_defaults(def_id);
 -        Self::fill_rest(interner, def_id.into(), first, |idx, id, prev| {
--            defaults
--                .get(idx as usize)
--                .map(|default| default.instantiate(interner, prev))
--                .unwrap_or_else(|| fallback(idx, id, prev))
--        })
 +        Self::fill_rest(
 +            interner,
 +            def_id.into(),
 +            first,
 +            |idx, id, prev| {
-+            defaults.get(idx as usize).map(|default| default.instantiate(interner, prev)).unwrap_or_else(
-+                || fallback(idx, id, prev),
-+            )
+             defaults
+                 .get(idx as usize)
+                 .map(|default| default.instantiate(interner, prev))
+                 .unwrap_or_else(|| fallback(idx, id, prev))
+-        })
 +        },
 +        )
      }
@@ -164,33 +146,6 @@ Rustfmt size:  21200 bytes
          else {
              unreachable!("not a function pointer")
          };
-                     closure_kind_ty: closure_kind_ty.expect_ty(),
-                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
-                 }
--            }
-+            },
-             _ => {
-                 unreachable!("unexpected closure sig");
--            }
-+            },
-         }
-     }
- 
-         let interner = relation.cx();
-         CollectAndApply::collect_and_apply(
-             std::iter::zip(a.iter(), b.iter()).map(|(a, b)| {
--                relation.relate_with_variance(
--                    Variance::Invariant,
--                    VarianceDiagInfo::default(),
--                    a,
--                    b,
--                )
--            }),
-+            relation.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)
-+        }),
-             |g| GenericArgs::new_from_iter(interner, g.iter().cloned()),
-         )
-     }
      fn as_closure(self) -> ClosureArgs<DbInterner<'db>> {
          ClosureArgs { args: self }
      }
@@ -272,18 +227,6 @@ Rustfmt size:  21200 bytes
                  let sig_ty = match sig_ty.expect_ty().kind() {
                      TyKind::FnPtr(sig_tys, header) => Ty::new(
                          interner,
-                     closure_kind_ty: closure_kind_ty.expect_ty(),
-                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
-                 }
--            }
-+            },
-             _ => {
-                 unreachable!("unexpected closure sig");
--            }
-+            },
-         }
-     }
- 
          self,
      ) -> rustc_type_ir::CoroutineClosureArgsParts<DbInterner<'db>> {
          match self.inner().as_slice() {
@@ -315,13 +258,6 @@ Rustfmt size:  21200 bytes
              _ => panic!("GenericArgs were likely not for a CoroutineClosure."),
          }
      }
-                     return_ty: return_ty.expect_ty(),
-                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
-                 }
--            }
-+            },
-             _ => panic!("GenericArgs were likely not for a Coroutine."),
-         }
      }
  }
  
@@ -334,13 +270,6 @@ Rustfmt size:  21200 bytes
      match id {
          GenericParamId::LifetimeParamId(id) => {
              Region::new_early_param(interner, EarlyParamRegion { index, id }).into()
--        }
-+        },
-         GenericParamId::TypeParamId(id) => Ty::new_param(interner, id, index).into(),
-         GenericParamId::ConstParamId(id) => {
-             Const::new_param(interner, ParamConst { index, id }).into()
--        }
-+        },
      }
  }
  
@@ -352,27 +281,22 @@ Rustfmt size:  21200 bytes
      match id {
          GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
          GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
-             (TermKind::Ty(a_ty), TermKind::Ty(b_ty)) => Ok(relation.relate(a_ty, b_ty)?.into()),
-             (TermKind::Const(a_ct), TermKind::Const(b_ct)) => {
                  Ok(relation.relate(a_ct, b_ct)?.into())
--            }
-+            },
+             }
              (TermKind::Ty(unpacked), x) => {
 -                unreachable!(
 -                    "impossible case reached: can't relate: {:?} with {:?}",
 -                    unpacked, x
 -                )
--            }
 +                unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-+            },
+             }
              (TermKind::Const(unpacked), x) => {
 -                unreachable!(
 -                    "impossible case reached: can't relate: {:?} with {:?}",
 -                    unpacked, x
 -                )
--            }
 +                unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-+            },
+             }
          }
      }
  }

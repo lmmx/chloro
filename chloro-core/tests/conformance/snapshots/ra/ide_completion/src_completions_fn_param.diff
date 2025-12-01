@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7434 bytes
-Chloro size:   7130 bytes
+Chloro size:   7375 bytes
 Rustfmt size:  7434 bytes
 
 ✗ Outputs DIFFER
@@ -41,19 +41,3 @@ Rustfmt size:  7434 bytes
          let module = scope.module().into();
          scope.process_all_names(&mut |name, def| {
              if let hir::ScopeDef::Local(local) = def
-     fn_params.for_each(|param| {
-         let whole_param = param.syntax().text().to_string();
-         file_params.remove(&whole_param);
--
-         match param.pat() {
--            // remove suggestions for patterns that already exist
--            // if the type is missing we are checking the current param to be completed
--            // in which case this would find itself removing the suggestions due to itself
-             Some(pattern) if param.ty().is_some() => {
-                 let binding = pattern.syntax().text().to_string();
-                 file_params.retain(|_, v| v != &binding);
--            }
-+            },
-             _ => (),
-         }
-     })

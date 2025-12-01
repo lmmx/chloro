@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 41840 bytes
-Chloro size:   41715 bytes
+Chloro size:   41716 bytes
 Rustfmt size:  41840 bytes
 
 ✗ Outputs DIFFER
@@ -81,10 +81,3 @@ Rustfmt size:  41840 bytes
  pub fn ws_to_crate_graph(
      workspaces: &[ProjectWorkspace],
      extra_env: &FxHashMap<String, Option<String>>,
-     s1.as_bytes().iter().zip(s2.as_bytes()).all(|(c1, c2)| {
-         let c1_underscore = c1 == &b'_' || c1 == &b'-';
-         let c2_underscore = c2 == &b'_' || c2 == &b'-';
--
-         c1 == c2 || (c1_underscore && c2_underscore)
-     })
- }

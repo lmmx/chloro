@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20553 bytes
-Chloro size:   20551 bytes
+Chloro size:   20542 bytes
 Rustfmt size:  21116 bytes
 
 ✗ Outputs DIFFER
@@ -51,28 +51,10 @@ Rustfmt size:  21116 bytes
          })
          .flatten()
          .unique()
-             } else {
-                 Function
-             }
--        }
-+        },
-         Definition::Adt(Adt::Struct(..)) => Struct,
-         Definition::Adt(Adt::Union(..)) => Union,
-         Definition::Adt(Adt::Enum(..)) => Enum,
-             } else {
-                 TypeAlias
-             }
--        }
-+        },
-         Definition::BuiltinType(..) => Type,
-         Definition::BuiltinLifetime(_) => TypeParameter,
-         Definition::SelfType(..) => TypeAlias,
-             } else {
                  Variable
              }
--        }
+         }
 -        Definition::Label(..) | Definition::InlineAsmOperand(_) => Variable, // For lack of a better variant
-+        },
 +        Definition::Label(..) | Definition::InlineAsmOperand(_) => Variable,
          Definition::DeriveHelper(..) => Attribute,
          Definition::BuiltinAttr(..) => Attribute,
@@ -111,12 +93,6 @@ Rustfmt size:  21116 bytes
              tracing::error!(
                  display = %fallback_result, "`display_source_code` failed; falling back to using display"
              );
-             fallback_result
--        }
-+        },
-     }
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::{fixture, MonikerResult};
@@ -158,19 +134,15 @@ Rustfmt size:  21116 bytes
                  assert_eq!(identifier, x.identifier.to_string());
                  assert_eq!(package, format!("{:?}", x.package_information));
                  assert_eq!(kind, x.kind);
--            }
+             }
 -            MonikerResult::Local {
 -                enclosing_moniker: None,
 -            } => {
-+            },
 +            MonikerResult::Local { enclosing_moniker: None } => {
                  panic!("Unexpected local with no enclosing moniker");
--            }
-+            },
+             }
              MonikerResult::Moniker(_) => {
-                 panic!("Unexpected non-local moniker");
--            }
-+            },
+             }
          }
      }
 -
@@ -189,15 +161,7 @@ Rustfmt size:  21116 bytes
          assert_eq!(x.len(), 1);
          match x.into_iter().next().unwrap() {
              MonikerResult::Local { enclosing_moniker } => {
-                 panic!("Unexpected local enclosed in {enclosing_moniker:?}");
--            }
-+            },
-             MonikerResult::Moniker(x) => {
-                 assert_eq!(identifier, x.identifier.to_string());
-                 assert_eq!(package, format!("{:?}", x.package_information));
-                 assert_eq!(kind, x.kind);
--            }
-+            },
+             }
          }
      }
 -

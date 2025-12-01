@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30480 bytes
+Chloro size:   30572 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -161,36 +161,16 @@ Rustfmt size:  31747 bytes
 -        .description
 -        .iter()
 -        .map(|desc| {
--            new_descriptor_str(
--                &desc.name,
--                match desc.desc {
--                    MonikerDescriptorKind::Namespace => Namespace,
--                    MonikerDescriptorKind::Type => Type,
--                    MonikerDescriptorKind::Term => Term,
--                    MonikerDescriptorKind::Method => Method,
--                    MonikerDescriptorKind::TypeParameter => TypeParameter,
--                    MonikerDescriptorKind::Parameter => Parameter,
--                    MonikerDescriptorKind::Macro => Macro,
--                    MonikerDescriptorKind::Meta => Meta,
--                },
--            )
++    identifier.description.iter().map(|desc| {
+             new_descriptor_str(
+                 &desc.name,
+                 match desc.desc {
+                     MonikerDescriptorKind::Meta => Meta,
+                 },
+             )
 -        })
 -        .collect()
-+    identifier.description.iter().map(|desc| {
-+        new_descriptor_str(
-+            &desc.name,
-+            match desc.desc {
-+            MonikerDescriptorKind::Namespace => Namespace,
-+            MonikerDescriptorKind::Type => Type,
-+            MonikerDescriptorKind::Term => Term,
-+            MonikerDescriptorKind::Method => Method,
-+            MonikerDescriptorKind::TypeParameter => TypeParameter,
-+            MonikerDescriptorKind::Parameter => Parameter,
-+            MonikerDescriptorKind::Macro => Macro,
-+            MonikerDescriptorKind::Meta => Meta,
-+        },
-+        )
-+    }).collect(
++        }).collect(
 +    )
  }
  

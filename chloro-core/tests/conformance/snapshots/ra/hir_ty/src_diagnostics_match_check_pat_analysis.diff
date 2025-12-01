@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   20943 bytes
+Chloro size:   20936 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -76,14 +76,6 @@ Rustfmt size:  22047 bytes
      }
  
      fn variant_id_for_adt(
-                     panic!("bad constructor {ctor:?} for adt {adt:?}")
-                 };
-                 Some(id.to_enum_variant_id(db, eid).into())
--            }
-+            },
-             Struct | UnionField => match adt {
-                 hir_def::AdtId::EnumId(_) => None,
-                 hir_def::AdtId::StructId(id) => Some(id.into()),
          }
      }
  
@@ -194,27 +186,6 @@ Rustfmt size:  22047 bytes
      type PatData = ();
  
      fn is_exhaustive_patterns_feature_on(&self) -> bool {
-                     let variant =
-                         Self::variant_id_for_adt(self.db, ctor, adt_def.def_id().0).unwrap();
-                     variant.fields(self.db).fields().len()
--                }
-+                },
-                 _ => {
-                     never!("Unexpected type for `Single` constructor: {:?}", ty);
-                     0
--                }
-+                },
-             },
-             Ref => 1,
-             Slice(..) => unimplemented!(),
-             Or => {
-                 never!("The `Or` constructor doesn't have a fixed arity");
-                 0
--            }
-+            },
-         }
-     }
- 
          let single = |ty| smallvec![(ty, PrivateUninhabitedField(false))];
          let tys: SmallVec<[_; 2]> = match ctor {
              Struct | Variant(_) | UnionField => match ty.kind() {
@@ -290,21 +261,20 @@ Rustfmt size:  22047 bytes
                              ConstructorSet::Variants {
                                  variants,
                                  non_exhaustive: is_declared_nonexhaustive,
-                             }
                          }
--                    }
-+                    },
+                     }
                      hir_def::AdtId::UnionId(_) => ConstructorSet::Union,
 -                    hir_def::AdtId::StructId(_) => ConstructorSet::Struct {
 -                        empty: cx.is_uninhabited(*ty),
+-                    },
 +                    hir_def::AdtId::StructId(_) => {
 +                        ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) }
-                     },
++                    }
                  }
--            }
+             }
 -            TyKind::Tuple(..) => ConstructorSet::Struct {
 -                empty: cx.is_uninhabited(*ty),
-             },
+-            },
 +            TyKind::Tuple(..) => ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) },
              TyKind::Ref(..) => ConstructorSet::Ref,
              TyKind::Never => ConstructorSet::NoConstructors,

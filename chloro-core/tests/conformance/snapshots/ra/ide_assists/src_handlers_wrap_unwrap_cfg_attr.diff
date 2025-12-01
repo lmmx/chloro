@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18779 bytes
-Chloro size:   18811 bytes
+Chloro size:   18810 bytes
 Rustfmt size:  18779 bytes
 
 ✗ Outputs DIFFER
@@ -91,14 +91,6 @@ Rustfmt size:  18779 bytes
  pub(crate) fn wrap_unwrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let option = if ctx.has_empty_selection() {
          let ident = ctx.find_token_syntax_at_offset(T![ident]);
-     match option {
-         WrapUnwrapOption::WrapAttr(attr) if attr.simple_name().as_deref() == Some("cfg_attr") => {
-             unwrap_cfg_attr(acc, attr)
--        }
-+        },
-         WrapUnwrapOption::WrapAttr(attr) => wrap_cfg_attr(acc, ctx, attr),
-         WrapUnwrapOption::WrapDerive { derive, attr } => wrap_derive(acc, ctx, attr, derive),
-     }
      );
      Some(())
  }

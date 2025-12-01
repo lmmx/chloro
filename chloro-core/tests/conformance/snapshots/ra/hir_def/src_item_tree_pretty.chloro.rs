@@ -67,14 +67,14 @@ impl Printer<'_> {
         let mut iter = self.buf.chars().rev().fuse();
         match (iter.next(), iter.next()) {
             (Some('\n'), Some('\n') | None) | (None, None) => {
-            },
+            }
             (Some('\n'), Some(_)) => {
                 self.buf.push('\n');
-            },
+            }
             (Some(_), _) => {
                 self.buf.push('\n');
                 self.buf.push('\n');
-            },
+            }
             (None, Some(_)) => unreachable!(),
         }
     }
@@ -82,7 +82,7 @@ impl Printer<'_> {
     fn whitespace(&mut self) {
         match self.buf.chars().next_back() {
             None | Some('\n' | ' ') => {
-            },
+            }
             _ => self.buf.push(' '),
         }
     }
@@ -123,12 +123,12 @@ impl Printer<'_> {
             FieldsShape::Record => {
                 self.whitespace();
                 w!(self, "{{ ... }}");
-            },
+            }
             FieldsShape::Tuple => {
                 w!(self, "(...)");
-            },
+            }
             FieldsShape::Unit => {
-            },
+            }
         }
     }
 
@@ -139,13 +139,13 @@ impl Printer<'_> {
                 if let Some(alias) = alias {
                     w!(self, " as {}", alias.display(self.edition));
                 }
-            },
+            }
             UseTreeKind::Glob { path } => {
                 if let Some(path) = path {
                     w!(self, "{}::", path.display(self.db, self.edition));
                 }
                 w!(self, "*");
-            },
+            }
             UseTreeKind::Prefixed { prefix, list } => {
                 if let Some(prefix) = prefix {
                     w!(self, "{}::", prefix.display(self.db, self.edition));
@@ -158,7 +158,7 @@ impl Printer<'_> {
                     self.print_use_tree(tree);
                 }
                 w!(self, "}}");
-            },
+            }
         }
     }
 

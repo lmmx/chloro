@@ -44,6 +44,7 @@ fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), 
                 db.trait_environment(func_id.into()),
             )
             .map_err(|e| MirEvalError::MirLowerError(func_id, e))?;
+
         let (result, output) = interpret_mir(db, body, false, None)?;
         result?;
         Ok((output.stdout().into_owned(), output.stderr().into_owned()))
@@ -99,11 +100,11 @@ fn check_pass_and_stdio(
                 )
                 .unwrap();
                 panic!("Error in interpreting: {err}");
-            },
+            }
             Ok((stdout, stderr)) => {
                 assert_eq!(stdout, expected_stdout);
                 assert_eq!(stderr, expected_stderr);
-            },
+            }
         }
     },
     )

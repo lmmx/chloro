@@ -21,12 +21,12 @@ pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         "Rewrite as raw string",
         target,
         |edit| {
-        let hashes = "#".repeat(required_hashes(&value).max(1));
-        let raw_prefix = token.raw_prefix();
-        let suffix = string_suffix(token.text()).unwrap_or_default();
-        let new_str = format!("{raw_prefix}{hashes}\"{value}\"{hashes}{suffix}");
-        replace_literal(&token, &new_str, edit, ctx);
-    },
+            let hashes = "#".repeat(required_hashes(&value).max(1));
+            let raw_prefix = token.raw_prefix();
+            let suffix = string_suffix(token.text()).unwrap_or_default();
+            let new_str = format!("{raw_prefix}{hashes}\"{value}\"{hashes}{suffix}");
+            replace_literal(&token, &new_str, edit, ctx);
+        },
     )
 }
 
@@ -42,12 +42,13 @@ pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         "Rewrite as regular string",
         target,
         |edit| {
-        let escaped = value.escape_default().to_string();
-        let suffix = string_suffix(token.text()).unwrap_or_default();
-        let prefix = string_prefix(token.text()).map_or("", |s| s.trim_end_matches('r'));
-        let new_str = format!("{prefix}\"{escaped}\"{suffix}");
-        replace_literal(&token, &new_str, edit, ctx);
-    },
+            // parse inside string to escape `"`
+            let escaped = value.escape_default().to_string();
+            let suffix = string_suffix(token.text()).unwrap_or_default();
+            let prefix = string_prefix(token.text()).map_or("", |s| s.trim_end_matches('r'));
+            let new_str = format!("{prefix}\"{escaped}\"{suffix}");
+            replace_literal(&token, &new_str, edit, ctx);
+        },
     )
 }
 

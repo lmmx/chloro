@@ -287,12 +287,12 @@ impl<'db> TypeVariableTable<'_, 'db> {
     /// instantiated.
     pub(crate) fn unresolved_variables(&mut self) -> Vec<TyVid> {
         (0..self.num_vars()).filter_map(|i| {
-            let vid = TyVid::from_usize(i);
-            match self.probe(vid) {
-                TypeVariableValue::Unknown { .. } => Some(vid),
-                TypeVariableValue::Known { .. } => None,
-            }
-        }).collect(
+                let vid = TyVid::from_usize(i);
+                match self.probe(vid) {
+                    TypeVariableValue::Unknown { .. } => Some(vid),
+                    TypeVariableValue::Known { .. } => None,
+                }
+            }).collect(
         )
     }
 }
@@ -378,20 +378,20 @@ impl<'db> ut::UnifyValue for TypeVariableValue<'db> {
         match (value1, value2) {
             (&TypeVariableValue::Known { .. }, &TypeVariableValue::Known { .. }) => {
                 panic!("equating two type variables, both of which have known types")
-            },
+            }
             (&TypeVariableValue::Known { .. }, &TypeVariableValue::Unknown { .. }) => {
                 Ok(value1.clone())
-            },
+            }
             (&TypeVariableValue::Unknown { .. }, &TypeVariableValue::Known { .. }) => {
                 Ok(value2.clone())
-            },
+            }
             (
                 &TypeVariableValue::Unknown { universe: universe1 },
                 &TypeVariableValue::Unknown { universe: universe2 },
             ) => {
                 let universe = cmp::min(universe1, universe2);
                 Ok(TypeVariableValue::Unknown { universe })
-            },
+            }
         }
     }
 }

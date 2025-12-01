@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5533 bytes
+Chloro size:   5531 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -27,11 +27,10 @@ Rustfmt size:  5891 bytes
              match self.opaque_types.swap_remove(&key) {
                  None => {
                      panic!("reverted opaque type inference that was never registered: {key:?}")
--                }
+                 }
 -                Some(_) => {}
-+                },
 +                Some(_) => {
-+                },
++                }
              }
          }
      }

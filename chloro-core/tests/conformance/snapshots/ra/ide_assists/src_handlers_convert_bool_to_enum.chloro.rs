@@ -32,21 +32,23 @@ pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -
         "Convert boolean to enum",
         target,
         |edit| {
-        if let Some(ty) = &ty_annotation {
+            if let Some(ty) = &ty_annotation {
                 cov_mark::hit!(replaces_ty_annotation);
                 edit.replace(ty.syntax().text_range(), "Bool");
             }
-        if let Some(initializer) = initializer {
+
+            if let Some(initializer) = initializer {
                 replace_bool_expr(edit, initializer);
             }
-        let usages = definition.usages(&ctx.sema).all();
-        add_enum_def(edit, ctx, &usages, target_node, &target_module);
-        let mut delayed_mutations = Vec::new();
-        replace_usages(edit, ctx, usages, definition, &target_module, &mut delayed_mutations);
-        for (scope, path) in delayed_mutations {
-            insert_use(&scope, path, &ctx.config.insert_use);
-        }
-    },
+
+            let usages = definition.usages(&ctx.sema).all();
+            add_enum_def(edit, ctx, &usages, target_node, &target_module);
+            let mut delayed_mutations = Vec::new();
+            replace_usages(edit, ctx, usages, definition, &target_module, &mut delayed_mutations);
+            for (scope, path) in delayed_mutations {
+                insert_use(&scope, path, &ctx.config.insert_use);
+            }
+        },
     )
 }
 
@@ -172,7 +174,8 @@ fn replace_usages(
         edit.edit_file(file_id.file_id(ctx.db()));
         let refs_with_imports = augment_references_with_imports(ctx, references, target_module);
         refs_with_imports.into_iter().rev().for_each(|FileReferenceWithImport { range, name, import_data }| {
-            if let Some(ident_pat) = name.syntax().ancestors().find_map(ast::IdentPat::cast) {
+                // replace the usages in patterns and expressions
+                if let Some(ident_pat) = name.syntax().ancestors().find_map(ast::IdentPat::cast) {
                     cov_mark::hit!(replaces_record_pat_shorthand);
 
                     let definition = ctx.sema.to_def(&ident_pat).map(Definition::Local);
@@ -266,11 +269,13 @@ fn replace_usages(
                         edit.replace(range, format!("{} == Bool::True", name.text()));
                     }
                 }
-            if let Some((scope, path)) = import_data {
-                let scope = edit.make_import_scope_mut(scope);
-                delayed_mutations.push((scope, path));
-            }
-        })
+
+                // add imports across modules where needed
+                if let Some((scope, path)) = import_data {
+                    let scope = edit.make_import_scope_mut(scope);
+                    delayed_mutations.push((scope, path));
+                }
+            })
     }
 }
 
@@ -289,10 +294,11 @@ fn augment_references_with_imports(
 
     let edition = target_module.krate().edition(ctx.db());
     references.into_iter().filter_map(|FileReference { range, name, .. }| {
-        let name = name.into_name_like()?;
-        ctx.sema.scope(name.syntax()).map(|scope| (range, name, scope.module()))
-    }).map(|(range, name, ref_module)| {
-        let import_data = if ref_module.nearest_non_block_module(ctx.db()) != *target_module
+            let name = name.into_name_like()?;
+            ctx.sema.scope(name.syntax()).map(|scope| (range, name, scope.module()))
+        }).map(|(range, name, ref_module)| {
+            // if the referenced module is not the same as the target one and has not been seen before, add an import
+            let import_data = if ref_module.nearest_non_block_module(ctx.db()) != *target_module
                 && !visited_modules.contains(&ref_module)
             {
                 visited_modules.insert(ref_module);
@@ -321,8 +327,9 @@ fn augment_references_with_imports(
             } else {
                 None
             };
-        FileReferenceWithImport { range, name, import_data }
-    }).collect(
+
+            FileReferenceWithImport { range, name, import_data }
+        }).collect(
     )
 }
 
@@ -369,7 +376,7 @@ fn find_record_expr_usage(
     match target_definition {
         Definition::Field(expected_field) if got_field == expected_field => {
             Some((record_field, initializer))
-        },
+        }
         _ => None,
     }
 }

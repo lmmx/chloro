@@ -33,17 +33,19 @@ pub(crate) fn convert_iter_for_each_to_for(
         "Replace this `Iterator::for_each` with a for loop",
         range,
         |builder| {
-        let indent =
+            let indent =
                 stmt.as_ref().map_or_else(|| method.indent_level(), ast::ExprStmt::indent_level);
-        let block = match body {
+
+            let block = match body {
                 ast::Expr::BlockExpr(block) => block,
                 _ => make::block_expr(Vec::new(), Some(body)),
             }
             .clone_for_update();
-        block.reindent_to(indent);
-        let expr_for_loop = make::expr_for_loop(param, receiver, block);
-        builder.replace(range, expr_for_loop.to_string())
-    },
+            block.reindent_to(indent);
+
+            let expr_for_loop = make::expr_for_loop(param, receiver, block);
+            builder.replace(range, expr_for_loop.to_string())
+        },
     )
 }
 
@@ -65,8 +67,9 @@ pub(crate) fn convert_for_loop_with_for_each(
         "Replace this for loop with `Iterator::for_each`",
         for_loop.syntax().text_range(),
         |builder| {
-        let mut buf = String::new();
-        if let Some((expr_behind_ref, method, krate)) =
+            let mut buf = String::new();
+
+            if let Some((expr_behind_ref, method, krate)) =
                 is_ref_and_impls_iter_method(&ctx.sema, &iterable)
             {
                 // We have either "for x in &col" and col implements a method called iter
@@ -86,9 +89,11 @@ pub(crate) fn convert_for_loop_with_for_each(
             } else {
                 format_to!(buf, "{iterable}.into_iter()");
             }
-        format_to!(buf, ".for_each(|{pat}| {body});");
-        builder.replace(for_loop.syntax().text_range(), buf)
-    },
+
+            format_to!(buf, ".for_each(|{pat}| {body});");
+
+            builder.replace(for_loop.syntax().text_range(), buf)
+        },
     )
 }
 
@@ -133,7 +138,9 @@ fn is_ref_and_impls_iter_method(
 fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> bool {
     (|| {
         let it_typ = sema.type_of_expr(iterable)?.adjusted();
+
         let module = sema.scope(iterable.syntax())?.module();
+
         let krate = module.krate();
         let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
         cov_mark::hit!(test_already_impls_iterator);

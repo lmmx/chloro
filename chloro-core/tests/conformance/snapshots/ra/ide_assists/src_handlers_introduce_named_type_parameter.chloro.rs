@@ -20,8 +20,9 @@ pub(crate) fn introduce_named_type_parameter(
         "Replace impl trait with type parameter",
         target,
         |builder| {
-        let mut editor = builder.make_editor(fn_.syntax());
-        let existing_names = match fn_.generic_param_list() {
+            let mut editor = builder.make_editor(fn_.syntax());
+
+            let existing_names = match fn_.generic_param_list() {
                 Some(generic_param_list) => generic_param_list
                     .generic_params()
                     .flat_map(|param| match param {
@@ -31,20 +32,24 @@ pub(crate) fn introduce_named_type_parameter(
                     .collect_vec(),
                 None => Vec::new(),
             };
-        let type_param_name = suggest_name::NameGenerator::new_with_names(
+            let type_param_name = suggest_name::NameGenerator::new_with_names(
                 existing_names.iter().map(|s| s.as_str()),
             )
             .for_impl_trait_as_generic(&impl_trait_type);
-        let type_param = make.type_param(make.name(&type_param_name), Some(type_bound_list));
-        let new_ty = make.ty(&type_param_name);
-        editor.replace(impl_trait_type.syntax(), new_ty.syntax());
-        editor.add_generic_param(&fn_, type_param.clone().into());
-        if let Some(cap) = ctx.config.snippet_cap {
+
+            let type_param = make.type_param(make.name(&type_param_name), Some(type_bound_list));
+            let new_ty = make.ty(&type_param_name);
+
+            editor.replace(impl_trait_type.syntax(), new_ty.syntax());
+            editor.add_generic_param(&fn_, type_param.clone().into());
+
+            if let Some(cap) = ctx.config.snippet_cap {
                 editor.add_annotation(type_param.syntax(), builder.make_tabstop_before(cap));
             }
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

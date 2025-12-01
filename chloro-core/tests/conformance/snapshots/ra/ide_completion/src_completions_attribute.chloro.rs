@@ -415,8 +415,8 @@ fn parse_comma_sep_expr(input: ast::TokenTree) -> Option<Vec<ast::Expr>> {
         .take_while(|it| it.as_token() != Some(&r_paren));
     let input_expressions = tokens.chunk_by(|tok| tok.kind() == T![,]);
     Some(input_expressions.into_iter().filter_map(|(is_sep, group)| (!is_sep).then_some(group)).filter_map(|mut tokens| {
-        syntax::hacks::parse_expr_from_str(&tokens.join(""), Edition::CURRENT)
-    }).collect::<Vec<ast::Expr>>(
+                syntax::hacks::parse_expr_from_str(&tokens.join(""), Edition::CURRENT)
+            }).collect::<Vec<ast::Expr>>(
     ))
 }
 

@@ -46,8 +46,9 @@ impl DeclarativeMacroExpander {
             None => self.mac.expand(
                 &tt,
                 |s| {
-                s.ctx = apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
-            },
+                        s.ctx =
+                            apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
+                    },
                 span,
                 loc.def.edition,
             ).map_err(

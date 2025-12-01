@@ -133,8 +133,12 @@ fn completion_list_with_config_raw(
     ).filter(
         |it| include_keywords || it.kind != CompletionItemKind::Snippet,
     ).sorted_by_key(|it| {
-        (it.kind, it.label.primary.clone(), it.label.detail_left.as_ref().map(ToOwned::to_owned))
-    }).collect(
+            (
+                it.kind,
+                it.label.primary.clone(),
+                it.label.detail_left.as_ref().map(ToOwned::to_owned),
+            )
+        }).collect(
     )
 }
 
@@ -194,12 +198,12 @@ fn render_completion_list(completions: Vec<CompletionItem>) -> String {
         .max()
         .unwrap_or_default();
     completions.into_iter().map(|it| {
-        let tag = it.kind.tag();
-        let mut buf = format!("{tag} {}", it.label.primary);
-        if let Some(label_detail) = &it.label.detail_left {
+            let tag = it.kind.tag();
+            let mut buf = format!("{tag} {}", it.label.primary);
+            if let Some(label_detail) = &it.label.detail_left {
                 format_to!(buf, " {label_detail}");
             }
-        if let Some(detail_right) = it.label.detail_right {
+            if let Some(detail_right) = it.label.detail_right {
                 let pad_with = label_width.saturating_sub(
                     monospace_width(&it.label.primary)
                         + monospace_width(it.label.detail_left.as_deref().unwrap_or_default())
@@ -208,12 +212,12 @@ fn render_completion_list(completions: Vec<CompletionItem>) -> String {
                 );
                 format_to!(buf, "{:pad_with$}{detail_right}", "",);
             }
-        if it.deprecated {
+            if it.deprecated {
                 format_to!(buf, " DEPRECATED");
             }
-        format_to!(buf, "\n");
-        buf
-    }).collect(
+            format_to!(buf, "\n");
+            buf
+        }).collect(
     )
 }
 

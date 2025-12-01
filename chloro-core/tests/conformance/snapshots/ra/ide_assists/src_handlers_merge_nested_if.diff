@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6943 bytes
-Chloro size:   6642 bytes
+Chloro size:   6644 bytes
 Rustfmt size:  7038 bytes
 
 ✗ Outputs DIFFER
@@ -39,43 +39,35 @@ Rustfmt size:  7038 bytes
 -            } else {
 -                cond.syntax().text().to_string()
 -            };
--
--            let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
--                format!("({})", nested_if_cond.syntax().text())
--            } else {
--                nested_if_cond.syntax().text().to_string()
--            };
--
--            let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
--
--            edit.replace(cond_range, replace_cond);
--            edit.replace(then_branch_range, nested_if_then_branch.syntax().text());
--        },
 +        let cond_text = if has_logic_op_or(&cond) {
 +            format!("({})", cond.syntax().text())
 +        } else {
 +            cond.syntax().text().to_string()
 +        };
+ 
+-            let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
+-                format!("({})", nested_if_cond.syntax().text())
+-            } else {
+-                nested_if_cond.syntax().text().to_string()
+-            };
 +        let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
 +            format!("({})", nested_if_cond.syntax().text())
 +        } else {
 +            nested_if_cond.syntax().text().to_string()
 +        };
+ 
+-            let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
 +        let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
+ 
+-            edit.replace(cond_range, replace_cond);
+-            edit.replace(then_branch_range, nested_if_then_branch.syntax().text());
+-        },
 +        edit.replace(cond_range, replace_cond);
 +        edit.replace(then_branch_range, nested_if_then_branch.syntax().text());
 +    },
      )
  }
  
-             } else {
-                 false
-             }
--        }
-+        },
-         _ => false,
-     }
- }
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable};

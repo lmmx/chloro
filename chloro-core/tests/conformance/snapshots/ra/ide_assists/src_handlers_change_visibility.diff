@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9744 bytes
-Chloro size:   9312 bytes
+Chloro size:   9320 bytes
 Rustfmt size:  10260 bytes
 
 ✗ Outputs DIFFER
@@ -36,14 +36,6 @@ Rustfmt size:  10260 bytes
          if field.name()? != field_name {
              cov_mark::hit!(change_visibility_field_false_positive);
              return None;
-         "Change visibility to pub(crate)",
-         target,
-         |edit| {
--            edit.insert(offset, "pub(crate) ");
--        },
-+        edit.insert(offset, "pub(crate) ");
-+    },
-     )
  }
  
  fn can_add(node: &SyntaxNode) -> bool {

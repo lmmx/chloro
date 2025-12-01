@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11436 bytes
-Chloro size:   11400 bytes
+Chloro size:   11395 bytes
 Rustfmt size:  11695 bytes
 
 ✗ Outputs DIFFER
@@ -15,14 +15,6 @@ Rustfmt size:  11695 bytes
      /// Fetches the definition's source node.
      /// Using [`crate::Semantics::source`] is preferred when working with [`crate::Semantics`],
      /// as that caches the parsed file in the semantics' cache.
-         match def_map[self.id.local_id].origin {
-             ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition, .. } => {
-                 Some(definition)
--            }
-+            },
-             _ => None,
-         }
-     }
  
  impl HasSource for Field {
      type Ast = FieldSource;
@@ -145,10 +137,10 @@ Rustfmt size:  11695 bytes
 -            ),
 +            MacroId::Macro2Id(it) => {
 +                Some(it.lookup(db).source(db).map(ast::Macro::MacroDef).map(Either::Left))
-+            },
++            }
 +            MacroId::MacroRulesId(it) => {
 +                Some(it.lookup(db).source(db).map(ast::Macro::MacroRules).map(Either::Left))
-+            },
++            }
              MacroId::ProcMacroId(it) => Some(it.lookup(db).source(db).map(Either::Right)),
          }
      }
@@ -190,14 +182,12 @@ Rustfmt size:  11695 bytes
                      params.params().nth(self.idx).map(Either::Right)
 -                }
 -                .map(|value| InFile { file_id, value })
--            }
 +                }.map(
 +                    |value| InFile { file_id, value },
 +                )
-+            },
+             }
              Callee::Closure(closure, _) => {
                  let InternedClosure(owner, expr_id) = db.lookup_intern_closure(closure);
-                 let (_, source_map) = db.body_with_source_map(owner);
                  let ast @ InFile { file_id, value } = source_map.expr_syntax(expr_id).ok()?;
                  let root = db.parse_or_expand(file_id);
                  match value.to_node(&root) {
@@ -215,11 +205,7 @@ Rustfmt size:  11695 bytes
 +                    ),
                      _ => None,
                  }
--            }
-+            },
-             _ => None,
-         }
-     }
+             }
  
      fn source(self, db: &dyn HirDatabase) -> Option<InFile<Self::Ast>> {
          let InFile { file_id, value } = Function::from(self.func).source(db)?;

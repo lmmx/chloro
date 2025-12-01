@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7506 bytes
-Chloro size:   7290 bytes
+Chloro size:   7289 bytes
 Rustfmt size:  7929 bytes
 
 ✗ Outputs DIFFER
@@ -75,14 +75,6 @@ Rustfmt size:  7929 bytes
                  if data.is_safe() {
                      Unsafety::Safe
                  } else {
-                     Unsafety::Unsafe
-                 }
-             }
--        }
-+        },
-         _ => Unsafety::Safe,
-     }
- }
          hir_def::layout::Variants::Single { index } => {
              (e.enum_variants(db).variants[index.0].0, layout)
          }

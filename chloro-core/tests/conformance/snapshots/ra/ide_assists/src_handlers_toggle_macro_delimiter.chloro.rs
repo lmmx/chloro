@@ -50,9 +50,10 @@ pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>)
     },
         token_tree.syntax().text_range(),
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = builder.make_editor(makro.syntax());
-        match token {
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = builder.make_editor(makro.syntax());
+
+            match token {
                 MacroDelims::LPar | MacroDelims::RPar => {
                     editor.replace(ltoken, make.token(T!['{']));
                     editor.replace(rtoken, make.token(T!['}']));
@@ -69,9 +70,9 @@ pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>)
                     editor.replace(rtoken, make.token(T![']']));
                 }
             }
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

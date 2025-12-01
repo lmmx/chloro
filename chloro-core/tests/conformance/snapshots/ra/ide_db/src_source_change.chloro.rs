@@ -87,10 +87,10 @@ impl SourceChange {
                 if value.1.is_none() {
                     value.1 = snippet_edit;
                 }
-            },
+            }
             Entry::Vacant(entry) => {
                 entry.insert((edit, snippet_edit));
-            },
+            }
         }
     }
 
@@ -287,7 +287,7 @@ impl SourceChangeBuilder {
             Entry::Occupied(mut entry) => entry.get_mut().merge(edit),
             Entry::Vacant(entry) => {
                 entry.insert(edit);
-            },
+            }
         }
     }
 
@@ -578,7 +578,7 @@ impl PlaceSnippet {
             PlaceSnippet::Over(it) => vec![Snippet::Placeholder(it.text_range())],
             PlaceSnippet::OverGroup(it) => {
                 vec![Snippet::PlaceholderGroup(it.into_iter().map(|it| it.text_range()).collect())]
-            },
+            }
         }
     }
 }

@@ -63,7 +63,7 @@ impl Module {
         match def_map[self.id.local_id].origin {
             ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition, .. } => {
                 Some(definition)
-            },
+            }
             _ => None,
         }
     }
@@ -205,10 +205,10 @@ impl HasSource for Macro {
         match self.id {
             MacroId::Macro2Id(it) => {
                 Some(it.lookup(db).source(db).map(ast::Macro::MacroDef).map(Either::Left))
-            },
+            }
             MacroId::MacroRulesId(it) => {
                 Some(it.lookup(db).source(db).map(ast::Macro::MacroRules).map(Either::Left))
-            },
+            }
             MacroId::ProcMacroId(it) => Some(it.lookup(db).source(db).map(Either::Right)),
         }
     }
@@ -267,7 +267,7 @@ impl HasSource for Param<'_> {
                 }.map(
                     |value| InFile { file_id, value },
                 )
-            },
+            }
             Callee::Closure(closure, _) => {
                 let InternedClosure(owner, expr_id) = db.lookup_intern_closure(closure);
                 let (_, source_map) = db.body_with_source_map(owner);
@@ -279,7 +279,7 @@ impl HasSource for Param<'_> {
                     ),
                     _ => None,
                 }
-            },
+            }
             _ => None,
         }
     }

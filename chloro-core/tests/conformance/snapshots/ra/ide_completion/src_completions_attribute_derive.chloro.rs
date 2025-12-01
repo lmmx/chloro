@@ -30,14 +30,14 @@ pub(crate) fn complete_derive_path(
                 match def {
                     ScopeDef::ModuleDef(hir::ModuleDef::Macro(mac)) if !existing_derives.contains(&mac) && mac.is_derive(ctx.db) => {
                         acc.add_macro(ctx, path_ctx, mac, name)
-                    },
+                    }
                     ScopeDef::ModuleDef(hir::ModuleDef::Module(m)) => {
                         acc.add_module(ctx, path_ctx, m, name, vec![])
-                    },
+                    }
                     _ => (),
                 }
             }
-        },
+        }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No => {
             ctx.process_all_names(&mut |name, def, doc_aliases| {
@@ -93,9 +93,9 @@ pub(crate) fn complete_derive_path(
                 }
             });
             acc.add_nameref_keywords_with_colon(ctx);
-        },
+        }
         Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
-        },
+        }
     }
 }
 

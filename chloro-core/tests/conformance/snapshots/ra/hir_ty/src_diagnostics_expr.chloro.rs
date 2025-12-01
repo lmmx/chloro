@@ -294,7 +294,7 @@ impl<'db> ExprValidator<'db> {
                     self.body.expr_path_hygiene(scrutinee_expr),
                 );
                 value_or_partial.is_none_or(|v| !matches!(v, ValueNs::StaticId(_)))
-            },
+            }
             Expr::Field { expr, .. } => match self.infer.type_of_expr[*expr].kind() {
                 TyKind::Adt(adt, ..) if matches!(adt.def_id().0, AdtId::UnionId(_)) => false,
                 _ => self.is_known_valid_scrutinee(*expr),
@@ -388,24 +388,24 @@ impl<'db> ExprValidator<'db> {
                 if let Some(last_stmt) = last_stmt {
                     self.check_for_trailing_return(last_stmt, body);
                 }
-            },
+            }
             Expr::If { then_branch, else_branch, .. } => {
                 self.check_for_trailing_return(*then_branch, body);
                 if let Some(else_branch) = else_branch {
                     self.check_for_trailing_return(*else_branch, body);
                 }
-            },
+            }
             Expr::Match { arms, .. } => {
                 for arm in arms.iter() {
                     let MatchArm { expr, .. } = arm;
                     self.check_for_trailing_return(*expr, body);
                 }
-            },
+            }
             Expr::Return { .. } => {
                 self.diagnostics.push(BodyValidationDiagnostic::RemoveTrailingReturn {
                     return_expr: body_expr,
                 });
-            },
+            }
             _ => (),
         }
     }
@@ -643,12 +643,12 @@ fn missing_match_arms<'a, 'db>(
             [head @ .., tail] if head.len() < LIMIT => {
                 let head = head.iter().map(pat_display);
                 format!("`{}` and `{}` not covered", head.format("`, `"), pat_display(tail))
-            },
+            }
             _ => {
                 let (head, tail) = witnesses.split_at(LIMIT);
                 let head = head.iter().map(pat_display);
                 format!("`{}` and {} more not covered", head.format("`, `"), tail.len())
-            },
+            }
         }
     }
 }

@@ -1947,9 +1947,7 @@ static C: u32 = 0;
 
 type F;
 fn foo() {
-    || -> A {
-        let x = 1;
-    }
+    || -> A { let x = 1; }
 }
 
 const C:  = 0;
@@ -2068,9 +2066,9 @@ fn f() {
 fn main() {
     match 42 {
         ..0 => {
-        },
+        }
         1..2 => {
-        },
+        }
     }
 }
 
@@ -2811,11 +2809,11 @@ struct A<const N: i32 = i32::MAX>;
 fn foo() {
     match () {
         _ => {
-        },
+        }
         () => {
-        },
+        }
         [] => {
-        },
+        }
     }
 }
 fn printf(format: *const i8, ..., _: u8) -> i32;
@@ -2867,7 +2865,7 @@ fn foo() {
     match () {
         _ => (),
         _ => {
-        },
+        }
         _ => (),
     }
 }
@@ -4341,7 +4339,7 @@ fn err_to_msg(error: EscapeError, mode: Mode) -> String {
         EscapeError::LoneSlash => "",
         EscapeError::InvalidEscape if mode == Mode::Byte || mode == Mode::ByteStr => {
             "unknown byte escape"
-        },
+        }
         EscapeError::InvalidEscape => "unknown character escape",
         EscapeError::BareCarriageReturn => "",
         EscapeError::BareCarriageReturnInRawString => "",
@@ -4361,10 +4359,10 @@ fn err_to_msg(error: EscapeError, mode: Mode) -> String {
         EscapeError::UnicodeEscapeInByte => "unicode escape in byte string",
         EscapeError::NonAsciiCharInByte if mode == Mode::Byte => {
             "non-ASCII character in byte literal"
-        },
+        }
         EscapeError::NonAsciiCharInByte if mode == Mode::ByteStr => {
             "non-ASCII character in byte string literal"
-        },
+        }
         EscapeError::NonAsciiCharInByte => "non-ASCII character in raw byte string literal",
         EscapeError::NulInCStr => "null character in C string literal",
         EscapeError::UnskippedWhitespaceWarning => "",
@@ -5763,16 +5761,16 @@ impl Output {
                     let n_input_tokens =
                         ((event & Self::N_INPUT_TOKEN_MASK) >> Self::N_INPUT_TOKEN_SHIFT) as u8;
                     Step::Token { kind, n_input_tokens }
-                },
+                }
                 Self::ENTER_EVENT => {
                     let kind: SyntaxKind =
                         (((event & Self::KIND_MASK) >> Self::KIND_SHIFT) as u16).into();
                     Step::Enter { kind }
-                },
+                }
                 Self::EXIT_EVENT => Step::Exit,
                 Self::SPLIT_EVENT => {
                     Step::FloatSplit { ends_in_dot: event & Self::N_INPUT_TOKEN_MASK != 0 }
-                },
+                }
                 _ => unreachable!(),
             }
         })
@@ -6405,7 +6403,7 @@ pub(super) fn item_or_macro(p: &mut Parser<'_>, stop_on_r_curly: bool, is_in_ext
             p.error("unmatched `}`");
             p.bump(T!['}']);
             e.complete(p, ERROR);
-        },
+        }
         EOF | T!['}'] => p.error("expected an item"),
         T![let] => error_let_stmt(p, "expected an item"),
         _ => p.err_and_bump("expected an item"),
@@ -6771,15 +6769,15 @@ pub(super) fn macro_call_after_excl(p: &mut Parser<'_>) -> BlockLike {
         T!['{'] => {
             token_tree(p);
             BlockLike::Block
-        },
+        }
         T!['('] | T!['['] => {
             token_tree(p);
             BlockLike::NotBlock
-        },
+        }
         _ => {
             p.error("expected `{`, `[`, `(`");
             BlockLike::NotBlock
-        },
+        }
     }
 }
 
@@ -8013,10 +8011,10 @@ pub(super) fn let_stmt(p: &mut Parser<'_>, with_semi: Semicolon) {
         Semicolon::Forbidden => (),
         Semicolon::Optional => {
             p.eat(T![;]);
-        },
+        }
         Semicolon::Required => {
             p.expect(T![;]);
-        },
+        }
     }
 }
 
@@ -8466,11 +8464,11 @@ fn path_expr(p: &mut Parser<'_>, r: Restrictions) -> (CompletedMarker, BlockLike
         T!['{'] if !r.forbid_structs => {
             record_expr_field_list(p);
             (m.complete(p, RECORD_EXPR), BlockLike::NotBlock)
-        },
+        }
         T![!] if !p.at(T![!=]) => {
             let block_like = items::macro_call_after_excl(p);
             (m.complete(p, MACRO_CALL).precede(p).complete(p, MACRO_EXPR), block_like)
-        },
+        }
         _ => (m.complete(p, PATH_EXPR), BlockLike::NotBlock),
     }
 }
@@ -8705,27 +8703,27 @@ pub(super) fn const_arg_expr(p: &mut Parser<'_>) {
     match p.current() {
         T!['{'] => {
             expressions::block_expr(p);
-        },
+        }
         k if k.is_literal() => {
             expressions::literal(p);
-        },
+        }
         T![true] | T![false] => {
             expressions::literal(p);
-        },
+        }
         T![-] => {
             let lm = p.start();
             p.bump(T![-]);
             expressions::literal(p);
             lm.complete(p, PREFIX_EXPR);
-        },
+        }
         _ if paths::is_path_start(p) => {
             let lm = p.start();
             paths::expr_path(p);
             lm.complete(p, PATH_EXPR);
-        },
+        }
         _ => {
             p.err_recover("expected a generic const argument", GENERIC_ARG_RECOVERY_SET);
-        },
+        }
     }
 }
 
@@ -9093,7 +9091,7 @@ fn type_with_bounds_cond(p: &mut Parser<'_>, allow_bounds: bool) {
         LIFETIME_IDENT if p.nth_at(1, T![+]) => bare_dyn_trait_type(p),
         _ => {
             p.err_recover("expected type", TYPE_RECOVERY_SET);
-        },
+        }
     }
 }
 
@@ -9701,21 +9699,21 @@ fn record_pat_field(p: &mut Parser<'_>) {
             name_ref_or_index(p);
             p.bump(T![:]);
             pattern(p);
-        },
+        }
         IDENT | INT_NUMBER if p.nth(1) == T![=] => {
             name_ref_or_index(p);
             p.err_and_bump("expected `:`");
             pattern(p);
-        },
+        }
         T![box] => {
             box_pat(p);
-        },
+        }
         T![ref] | T![mut] | IDENT => {
             ident_pat(p, false);
-        },
+        }
         _ => {
             p.err_and_bump("expected identifier");
-        },
+        }
     }
 }
 
@@ -10053,7 +10051,7 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
 fn opt_path_args(p: &mut Parser<'_>, mode: Mode) {
     match mode {
         Mode::Use | Mode::Attr | Mode::Vis => {
-        },
+        }
         Mode::Type => opt_path_type_args(p),
         Mode::Expr => generic_args::opt_generic_arg_list_expr(p),
     }
@@ -10372,7 +10370,7 @@ fn n_attached_trivias<'a>(
                 }
             }
             res
-        },
+        }
         _ => 0,
     }
 }

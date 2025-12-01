@@ -55,10 +55,10 @@ impl TryEnum {
         match self {
             TryEnum::Result => {
                 make::tuple_struct_pat(make::ext::ident_path("Ok"), iter::once(pat)).into()
-            },
+            }
             TryEnum::Option => {
                 make::tuple_struct_pat(make::ext::ident_path("Some"), iter::once(pat)).into()
-            },
+            }
         }
     }
 

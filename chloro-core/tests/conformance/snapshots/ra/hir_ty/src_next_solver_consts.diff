@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14111 bytes
+Chloro size:   14448 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
@@ -19,18 +19,6 @@ Rustfmt size:  14546 bytes
  pub type UnevaluatedConst<'db> = rustc_type_ir::UnevaluatedConst<DbInterner<'db>>;
  
  #[salsa::interned(constructor = new_)]
-     pub fn inner(&self) -> &WithCachedTypeInfo<ConstKind<'db>> {
-         crate::with_attached_db(|db| {
-             let inner = &self.kind_(db).0;
--            // SAFETY: The caller already has access to a `Const<'db>`, so borrowchecking will
--            // make sure that our returned value is valid for the lifetime `'db`.
--            unsafe { std::mem::transmute(inner) }
-+            unsafe {
-+                std::mem::transmute(inner)
-+            }
-         })
-     }
- 
      }
  
      pub fn new_bound(interner: DbInterner<'db>, index: DebruijnIndex, bound: BoundConst) -> Self {
@@ -57,25 +45,6 @@ Rustfmt size:  14546 bytes
          // to modify this function.
          let ty = candidates.next().unwrap_or_else(|| {
              panic!("cannot find `{self:?}` in param-env: {env:#?}");
- impl<'db> Valtree<'db> {
-     pub fn new(bytes: ConstBytes<'db>) -> Self {
-         crate::with_attached_db(|db| unsafe {
--            // SAFETY: ¯\_(ツ)_/¯
-             std::mem::transmute(Valtree::new_(db, bytes))
-         })
-     }
-     pub fn inner(&self) -> &ConstBytes<'db> {
-         crate::with_attached_db(|db| {
-             let inner = self.bytes_(db);
--            // SAFETY: The caller already has access to a `Valtree<'db>`, so borrowchecking will
--            // make sure that our returned value is valid for the lifetime `'db`.
--            unsafe { std::mem::transmute(inner) }
-+            unsafe {
-+                std::mem::transmute(inner)
-+            }
-         })
-     }
- }
              ConstKind::Value(v) => v.visit_with(visitor),
              ConstKind::Expr(e) => e.visit_with(visitor),
              ConstKind::Error(e) => e.visit_with(visitor),

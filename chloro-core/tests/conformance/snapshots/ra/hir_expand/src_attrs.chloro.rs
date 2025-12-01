@@ -87,7 +87,7 @@ impl RawAttrs {
         collect_attrs(owner).filter_map(move |(id, attr)| match attr {
             Either::Left(attr) => {
                 attr.meta().and_then(|meta| Attr::from_src(db, meta, span_map, id))
-            },
+            }
             Either::Right(comment) if DESUGAR_COMMENTS => comment.doc_comment().map(|doc| {
                 let span = span_map.span_for_range(comment.syntax().text_range());
                 let (text, kind) = desugar_doc_comment_text(doc, DocCommentDesugarMode::ProcMacro);
@@ -137,7 +137,7 @@ impl RawAttrs {
                     }))
                     .collect::<Vec<_>>();
                 Self { entries: Some(ThinArc::from_header_and_iter((), items.into_iter())) }
-            },
+            }
         }
     }
 
@@ -373,7 +373,7 @@ impl Attr {
             }) => Some(Cow::Borrowed(text.as_str())),
             AttrInput::Literal(tt::Literal { symbol: text, kind: tt::LitKind::Str, .. }) => {
                 unescape(text.as_str())
-            },
+            }
             _ => None,
         }
     }

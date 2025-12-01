@@ -40,29 +40,29 @@ pub(super) fn fn_hints(
         fd,
         config,
         param_list.params().filter_map(|it| {
-        Some((
-            it.pat().and_then(|it| match it {
-            ast::Pat::IdentPat(p) => p.name(),
-            _ => None,
+            Some((
+                it.pat().and_then(|it| match it {
+                    ast::Pat::IdentPat(p) => p.name(),
+                    _ => None,
+                }),
+                it.ty()?,
+            ))
         }),
-            it.ty()?,
-        ))
-    }),
         generic_param_list,
         ret_type,
         self_param,
         |acc, allocated_lifetimes| {
-        acc.push(InlayHint {
-            range: gpl_append_range,
-            kind: InlayKind::GenericParamList,
-            label: format!("<{}>", allocated_lifetimes.iter().format(", "),).into(),
-            text_edit: None,
-            position: InlayHintPosition::After,
-            pad_left: false,
-            pad_right: false,
-            resolve_parent: None,
-        })
-    },
+            acc.push(InlayHint {
+                range: gpl_append_range,
+                kind: InlayKind::GenericParamList,
+                label: format!("<{}>", allocated_lifetimes.iter().format(", "),).into(),
+                text_edit: None,
+                position: InlayHintPosition::After,
+                pad_left: false,
+                pad_right: false,
+                resolve_parent: None,
+            })
+        },
         true,
     )
 }
@@ -96,21 +96,21 @@ pub(super) fn fn_ptr_hints(
         fd,
         config,
         param_list.params().filter_map(|it| {
-        Some((
-            it.pat().and_then(|it| match it {
-            ast::Pat::IdentPat(p) => p.name(),
-            _ => None,
+            Some((
+                it.pat().and_then(|it| match it {
+                    ast::Pat::IdentPat(p) => p.name(),
+                    _ => None,
+                }),
+                it.ty()?,
+            ))
         }),
-            it.ty()?,
-        ))
-    }),
         generic_param_list,
         ret_type,
         None,
         |acc, allocated_lifetimes| {
-        let has_for = for_kw.is_some();
-        let for_ = if has_for { "" } else { "for" };
-        acc.push(InlayHint {
+            let has_for = for_kw.is_some();
+            let for_ = if has_for { "" } else { "for" };
+            acc.push(InlayHint {
                 range: for_kw.map_or_else(
                     || func.syntax().first_token().unwrap().text_range(),
                     |it| it.text_range(),
@@ -127,7 +127,7 @@ pub(super) fn fn_ptr_hints(
                 pad_right: true,
                 resolve_parent: None,
             });
-    },
+        },
         false,
     )
 }
@@ -165,9 +165,9 @@ pub(super) fn fn_path_hints(
         ret_type,
         None,
         |acc, allocated_lifetimes| {
-        let has_for = for_kw.is_some();
-        let for_ = if has_for { "" } else { "for" };
-        acc.push(InlayHint {
+            let has_for = for_kw.is_some();
+            let for_ = if has_for { "" } else { "for" };
+            acc.push(InlayHint {
                 range: for_kw.map_or_else(
                     || func.syntax().first_token().unwrap().text_range(),
                     |it| it.text_range(),
@@ -184,7 +184,7 @@ pub(super) fn fn_path_hints(
                 pad_right: true,
                 resolve_parent: None,
             });
-    },
+        },
         false,
     )
 }

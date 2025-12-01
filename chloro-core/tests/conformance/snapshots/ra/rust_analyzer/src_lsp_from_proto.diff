@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5855 bytes
-Chloro size:   5866 bytes
+Chloro size:   5864 bytes
 Rustfmt size:  5985 bytes
 
 ✗ Outputs DIFFER
@@ -58,12 +58,6 @@ Rustfmt size:  5985 bytes
              Ok(Annotation {
                  range: text_range(&line_index, range)?,
                  kind: AnnotationKind::HasImpls { pos, data: None },
-             })
--        }
-+        },
-         lsp_ext::CodeLensResolveDataKind::References(params) => {
-             if snap.url_file_version(&params.text_document.uri) != Some(data.version) {
-                 return Ok(None);
              }
              let pos @ FilePosition { file_id, .. } = try_default!(file_position(snap, params)?);
              let line_index = snap.file_line_index(file_id)?;
@@ -72,10 +66,9 @@ Rustfmt size:  5985 bytes
                  range: text_range(&line_index, range)?,
                  kind: AnnotationKind::HasReferences { pos, data: None },
              })
--        }
+         }
 -    }
 -    .map(Some)
-+        },
 +    }.map(
 +        Some,
 +    )

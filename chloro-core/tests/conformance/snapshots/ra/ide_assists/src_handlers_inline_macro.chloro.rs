@@ -15,11 +15,13 @@ pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         "Inline macro".to_owned(),
         text_range,
         |builder| {
-        let expanded = ctx.sema.parse_or_expand(macro_call.into());
-        let span_map = ctx.sema.db.expansion_span_map(macro_call);
-        let expanded = prettify_macro_expansion(ctx.db(), expanded, &span_map, target_crate_id);
-        builder.replace(text_range, expanded.to_string())
-    },
+            let expanded = ctx.sema.parse_or_expand(macro_call.into());
+            let span_map = ctx.sema.db.expansion_span_map(macro_call);
+            // Don't call `prettify_macro_expansion()` outside the actual assist action; it does some heavy rowan tree manipulation,
+            // which can be very costly for big macros when it is done *even without the assist being invoked*.
+            let expanded = prettify_macro_expansion(ctx.db(), expanded, &span_map, target_crate_id);
+            builder.replace(text_range, expanded.to_string())
+        },
     )
 }
 

@@ -138,7 +138,7 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
                     }
                 }
                 BREAK_VISIBLY_UNINHABITED
-            },
+            }
         }
     }
 

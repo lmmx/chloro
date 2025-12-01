@@ -52,10 +52,10 @@ impl ConstEvalError<'_> {
         match self {
             ConstEvalError::MirLowerError(e) => {
                 e.pretty_print(f, db, span_formatter, display_target)
-            },
+            }
             ConstEvalError::MirEvalError(e) => {
                 e.pretty_print(f, db, span_formatter, display_target)
-            },
+            }
         }
     }
 }
@@ -151,7 +151,7 @@ pub fn try_const_usize<'db>(db: &'db dyn HirDatabase, c: Const<'db>) -> Option<u
             let subst = unevaluated_const.args;
             let ec = db.const_eval(c, subst, None).ok()?;
             try_const_usize(db, ec)
-        },
+        }
         ConstKind::Value(val) => Some(u128::from_le_bytes(pad16(&val.value.inner().memory, false))),
         ConstKind::Error(_) => None,
         ConstKind::Expr(_) => None,
@@ -173,7 +173,7 @@ pub fn try_const_isize<'db>(db: &'db dyn HirDatabase, c: &Const<'db>) -> Option<
             let subst = unevaluated_const.args;
             let ec = db.const_eval(c, subst, None).ok()?;
             try_const_isize(db, &ec)
-        },
+        }
         ConstKind::Value(val) => Some(i128::from_le_bytes(pad16(&val.value.inner().memory, true))),
         ConstKind::Error(_) => None,
         ConstKind::Expr(_) => None,

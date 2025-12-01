@@ -94,11 +94,7 @@ pub fn test_related_attribute_syn(fn_def: &ast::Fn) -> Option<ast::Attr> {
     fn_def.attrs().find_map(|attr| {
         let path = attr.path()?;
         let text = path.syntax().text().to_string();
-        if text.starts_with("test") || text.ends_with("test") {
-            Some(attr)
-        } else {
-            None
-        }
+        if text.starts_with("test") || text.ends_with("test") { Some(attr) } else { None }
     })
 }
 
@@ -107,11 +103,11 @@ pub fn has_test_related_attribute(attrs: &hir::AttrsWithOwner) -> bool {
         let path = attr.path();
         (|| {
             Some(
-                path.segments().first()?.as_str().starts_with("test") || path.segments().last()?.as_str().ends_with("test"),
+                path.segments().first()?.as_str().starts_with("test")
+                    || path.segments().last()?.as_str().ends_with("test"),
             )
-        })(
-        ).unwrap_or_default(
-        )
+        })()
+        .unwrap_or_default()
     })
 }
 
@@ -199,7 +195,7 @@ pub fn add_trait_assoc_items_to_impl(
 ) -> Vec<ast::AssocItem> {
     let new_indent_level = IndentLevel::from_node(impl_.syntax()) + 1;
     original_items.iter().map(|InFile { file_id, value: original_item }| {
-        let mut cloned_item = {
+            let mut cloned_item = {
                 if let Some(macro_file) = file_id.macro_file() {
                     let span_map = sema.db.expansion_span_map(macro_file);
                     let item_prettified = prettify_macro_expansion(
@@ -217,19 +213,20 @@ pub fn add_trait_assoc_items_to_impl(
                 original_item
             }
             .reset_indent();
-        if let Some(source_scope) = sema.scope(original_item.syntax()) {
+
+            if let Some(source_scope) = sema.scope(original_item.syntax()) {
                 // FIXME: Paths in nested macros are not handled well. See
                 // `add_missing_impl_members::paths_in_nested_macro_should_get_transformed` test.
                 let transform =
                     PathTransform::trait_impl(target_scope, &source_scope, trait_, impl_.clone());
                 cloned_item = ast::AssocItem::cast(transform.apply(cloned_item.syntax())).unwrap();
             }
-        cloned_item.remove_attrs_and_docs();
-        cloned_item
-    }).filter_map(|item| match item {
-        ast::AssocItem::Fn(fn_) if fn_.body().is_none() => {
-            let fn_ = fn_.clone_subtree();
-            let new_body = &make::block_expr(
+            cloned_item.remove_attrs_and_docs();
+            cloned_item
+        }).filter_map(|item| match item {
+            ast::AssocItem::Fn(fn_) if fn_.body().is_none() => {
+                let fn_ = fn_.clone_subtree();
+                let new_body = &make::block_expr(
                     None,
                     Some(match config.expr_fill_default {
                         ExprFillDefaultMode::Todo => make::ext::expr_todo(),
@@ -237,25 +234,25 @@ pub fn add_trait_assoc_items_to_impl(
                         ExprFillDefaultMode::Default => make::ext::expr_todo(),
                     }),
                 );
-            let new_body = AstNodeEdit::indent(new_body, IndentLevel::single());
-            let mut fn_editor = SyntaxEditor::new(fn_.syntax().clone());
-            fn_.replace_or_insert_body(&mut fn_editor, new_body);
-            let new_fn_ = fn_editor.finish().new_root().clone();
-            ast::AssocItem::cast(new_fn_)
-        },
-        ast::AssocItem::TypeAlias(type_alias) => {
-            let type_alias = type_alias.clone_subtree();
-            if let Some(type_bound_list) = type_alias.type_bound_list() {
-                let mut type_alias_editor = SyntaxEditor::new(type_alias.syntax().clone());
-                type_bound_list.remove(&mut type_alias_editor);
-                let type_alias = type_alias_editor.finish().new_root().clone();
-                ast::AssocItem::cast(type_alias)
-            } else {
-                Some(ast::AssocItem::TypeAlias(type_alias))
+                let new_body = AstNodeEdit::indent(new_body, IndentLevel::single());
+                let mut fn_editor = SyntaxEditor::new(fn_.syntax().clone());
+                fn_.replace_or_insert_body(&mut fn_editor, new_body);
+                let new_fn_ = fn_editor.finish().new_root().clone();
+                ast::AssocItem::cast(new_fn_)
             }
-        },
-        item => Some(item),
-    }).map(
+            ast::AssocItem::TypeAlias(type_alias) => {
+                let type_alias = type_alias.clone_subtree();
+                if let Some(type_bound_list) = type_alias.type_bound_list() {
+                    let mut type_alias_editor = SyntaxEditor::new(type_alias.syntax().clone());
+                    type_bound_list.remove(&mut type_alias_editor);
+                    let type_alias = type_alias_editor.finish().new_root().clone();
+                    ast::AssocItem::cast(type_alias)
+                } else {
+                    Some(ast::AssocItem::TypeAlias(type_alias))
+                }
+            }
+            item => Some(item),
+        }).map(
         |item| AstNodeEdit::indent(&item, new_indent_level),
     ).collect(
     )
@@ -306,7 +303,7 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 }
             };
             Some(make.expr_bin(bin.lhs()?, rev_kind, bin.rhs()?).into())
-        },
+        }
         ast::Expr::MethodCallExpr(mce) => {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
@@ -319,11 +316,11 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 _ => return None,
             };
             Some(make.expr_method_call(receiver, make.name_ref(method), arg_list).into())
-        },
+        }
         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
             ast::Expr::ParenExpr(parexpr) => {
                 parexpr.expr().map(|e| e.clone_subtree().clone_for_update())
-            },
+            }
             _ => pe.expr().map(|e| e.clone_subtree().clone_for_update()),
         },
         ast::Expr::Literal(lit) => match lit.kind() {
@@ -359,7 +356,7 @@ fn invert_special_case_legacy(expr: &ast::Expr) -> Option<ast::Expr> {
             let mut bin_editor = SyntaxEditor::new(bin.syntax().clone());
             bin_editor.replace(op_token, make::token(rev_token));
             ast::Expr::cast(bin_editor.finish().new_root().clone())
-        },
+        }
         ast::Expr::MethodCallExpr(mce) => {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
@@ -372,7 +369,7 @@ fn invert_special_case_legacy(expr: &ast::Expr) -> Option<ast::Expr> {
                 _ => return None,
             };
             Some(make::expr_method_call(receiver, make::name_ref(method), arg_list).into())
-        },
+        }
         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
             ast::Expr::ParenExpr(parexpr) => parexpr.expr(),
             _ => pe.expr(),
@@ -458,7 +455,7 @@ fn check_pat_variant_nested_or_literal_with_depth(
                     })
                 })
             })
-        },
+        }
         ast::Pat::OrPat(or_pat) => or_pat.pats().any(|pat| {
             check_pat_variant_nested_or_literal_with_depth(ctx, &pat, depth_after_refutable)
         }),
@@ -468,13 +465,13 @@ fn check_pat_variant_nested_or_literal_with_depth(
             tuple_struct_pat.fields().any(|pat| {
                 check_pat_variant_nested_or_literal_with_depth(ctx, &pat, adjusted_next_depth)
             })
-        },
+        }
         ast::Pat::SlicePat(slice_pat) => {
             let mut pats = slice_pat.pats();
             pats.next().is_none_or(
                 |pat| !matches!(pat, ast::Pat::RestPat(_)) || pats.next().is_some(),
             )
-        },
+        }
     }
 }
 
@@ -879,7 +876,7 @@ impl<'db> ReferenceConversion<'db> {
                     make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([])).into(
                     )
                 }
-            },
+            }
         }
     }
 }
@@ -982,9 +979,9 @@ fn handle_result_as_ref(
 
 pub(crate) fn get_methods(items: &ast::AssocItemList) -> Vec<ast::Fn> {
     items.assoc_items().flat_map(|i| match i {
-        ast::AssocItem::Fn(f) => Some(f),
-        _ => None,
-    }).filter(
+            ast::AssocItem::Fn(f) => Some(f),
+            _ => None,
+        }).filter(
         |f| f.name().is_some(),
     ).collect(
     )

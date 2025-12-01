@@ -743,17 +743,17 @@ impl GlobalState {
             Task::Retry(_) => (),
             Task::Diagnostics(kind) => {
                 self.diagnostics.set_native_diagnostics(kind);
-            },
+            }
             Task::PrimeCaches(progress) => match progress {
                 PrimeCachesProgress::Begin => prime_caches_progress.push(progress),
                 PrimeCachesProgress::Report(_) => {
                     match prime_caches_progress.last_mut() {
                         Some(last @ PrimeCachesProgress::Report(_)) => {
                             *last = progress;
-                        },
+                        }
                         _ => prime_caches_progress.push(progress),
                     }
-                },
+                }
                 PrimeCachesProgress::End { .. } => prime_caches_progress.push(progress),
             },
             Task::FetchWorkspace(progress) => {
@@ -772,7 +772,7 @@ impl GlobalState {
                     }
                 };
                 self.report_progress("Fetching", state, msg, None, None);
-            },
+            }
             Task::DiscoverLinkedProjects(arg) => {
                 if let Some(cfg) = self.config.discover_workspace_config() && !self.discover_workspace_queue.op_in_progress() {
                     let title = &cfg.progress_label.clone();
@@ -795,7 +795,7 @@ impl GlobalState {
                         panic!("Failed to spawn project discovery command: {e}")
                     }));
                 }
-            },
+            }
             Task::FetchBuildData(progress) => {
                 let (state, msg) = match progress {
                     BuildDataProgress::Begin => (Some(Progress::Begin), None),
@@ -817,7 +817,7 @@ impl GlobalState {
                 if let Some(state) = state {
                     self.report_progress("Building compile-time-deps", state, msg, None, None);
                 }
-            },
+            }
             Task::LoadProcMacros(progress) => {
                 let (state, msg) = match progress {
                     ProcMacroProgress::Begin => (Some(Progress::Begin), None),
@@ -832,11 +832,11 @@ impl GlobalState {
                 if let Some(state) = state {
                     self.report_progress("Loading proc-macros", state, msg, None, None);
                 }
-            },
+            }
             Task::BuildDepsHaveChanged => self.build_deps_changed = true,
             Task::DiscoverTest(tests) => {
                 self.send_notification::<lsp_ext::DiscoveredTests>(tests);
-            },
+            }
         }
     }
 
@@ -860,7 +860,7 @@ impl GlobalState {
                         vfs.set_file_contents(path, contents);
                     }
                 }
-            },
+            }
             vfs::loader::Message::Progress { n_total, n_done, dir, config_version } => {
                 let _p = span!(Level::INFO, "GlobalState::handle_vfs_msg/progress").entered();
                 stdx::always!(config_version <= self.vfs_config_version);
@@ -895,7 +895,7 @@ impl GlobalState {
                     Some(Progress::fraction(n_done, n_total)),
                     None,
                 );
-            },
+            }
         }
     }
 
@@ -923,7 +923,7 @@ impl GlobalState {
                         }
                     }
                 });
-            },
+            }
             QueuedTask::CheckProcMacroSources(modified_rust_files) => {
                 let analysis = AssertUnwindSafe(self.snapshot().analysis);
                 self.task_pool.handle.spawn_with_sender(stdx::thread::ThreadIntent::Worker, {
@@ -941,7 +941,7 @@ impl GlobalState {
                         }
                     }
                 });
-            },
+            }
         }
     }
 
@@ -959,17 +959,17 @@ impl GlobalState {
                 let mut config = Config::clone(&*self.config);
                 config.add_discovered_project_from_command(project, buildfile);
                 self.update_configuration(config);
-            },
+            }
             DiscoverProjectMessage::Progress { message } => {
                 self.report_progress(&title, Progress::Report, Some(message), None, None)
-            },
+            }
             DiscoverProjectMessage::Error { error, source } => {
                 self.discover_handle = None;
                 let message = format!("Project discovery failed: {error}");
                 self.discover_workspace_queue.op_completed(());
                 self.show_and_log_error(message.clone(), source);
                 self.report_progress(&title, Progress::End, Some(message), None, None)
-            },
+            }
         }
     }
 
@@ -986,7 +986,7 @@ impl GlobalState {
                 self.send_notification::<lsp_ext::ChangeTestState>(
                     lsp_ext::ChangeTestStateParams { test_id, state },
                 );
-            },
+            }
             CargoTestOutput::Suite => (),
             CargoTestOutput::Finished => {
                 self.test_run_remaining_jobs = self.test_run_remaining_jobs.saturating_sub(1);
@@ -994,10 +994,10 @@ impl GlobalState {
                     self.send_notification::<lsp_ext::EndRunTest>(());
                     self.test_run_session = None;
                 }
-            },
+            }
             CargoTestOutput::Custom { text } => {
                 self.send_notification::<lsp_ext::AppendOutputToRunTest>(text);
-            },
+            }
         }
     }
 
@@ -1036,7 +1036,7 @@ impl GlobalState {
                         }
                     };
                 }
-            },
+            }
             FlycheckMessage::ClearDiagnostics {
                 id,
                 kind: ClearDiagnosticsKind::All(ClearScope::Workspace),
@@ -1084,7 +1084,7 @@ impl GlobalState {
                     None,
                     Some(format!("rust-analyzer/flycheck/{id}")),
                 );
-            },
+            }
         }
     }
 

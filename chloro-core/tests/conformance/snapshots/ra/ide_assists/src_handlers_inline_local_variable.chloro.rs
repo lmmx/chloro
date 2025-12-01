@@ -62,8 +62,8 @@ pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) 
         "Inline variable",
         target.text_range(),
         move |builder| {
-        let mut editor = builder.make_editor(&target);
-        if delete_let {
+            let mut editor = builder.make_editor(&target);
+            if delete_let {
                 editor.delete(let_stmt.syntax());
                 if let Some(whitespace) = let_stmt
                     .syntax()
@@ -74,8 +74,10 @@ pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) 
                     editor.delete(whitespace.syntax());
                 }
             }
-        let make = SyntaxFactory::with_mappings();
-        for (name, should_wrap) in wrap_in_parens {
+
+            let make = SyntaxFactory::with_mappings();
+
+            for (name, should_wrap) in wrap_in_parens {
                 let replacement = if should_wrap {
                     make.expr_paren(initializer_expr.clone()).into()
                 } else {
@@ -90,9 +92,10 @@ pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) 
                     editor.replace(name.syntax(), replacement.syntax());
                 }
             }
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -134,7 +137,7 @@ fn inline_let(
         None => {
             cov_mark::hit!(test_not_applicable_if_variable_unused);
             None
-        },
+        }
     }
 }
 

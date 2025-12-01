@@ -317,14 +317,14 @@ impl<'db> SolverDelegate for SolverContext<'db> {
                 } else {
                     None
                 }
-            },
+            }
             PredicateKind::Clause(ClauseKind::ConstArgHasType(ct, _)) => {
                 if self.shallow_resolve_const(ct).is_ct_infer() {
                     Some(Certainty::AMBIGUOUS)
                 } else {
                     None
                 }
-            },
+            }
             PredicateKind::Clause(ClauseKind::WellFormed(arg)) => {
                 if arg.is_trivially_wf(self.interner) {
                     Some(Certainty::Yes)
@@ -333,7 +333,7 @@ impl<'db> SolverDelegate for SolverContext<'db> {
                 } else {
                     None
                 }
-            },
+            }
             _ => None,
         }
     }

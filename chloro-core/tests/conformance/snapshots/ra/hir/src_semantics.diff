@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   99695 bytes
+Chloro size:   99948 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -68,22 +68,6 @@ Rustfmt size:  101650 bytes
  };
  
  const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());
-             PathResolution::Def(ModuleDef::Adt(adt)) => Some(TypeNs::AdtId((*adt).into())),
-             PathResolution::Def(ModuleDef::BuiltinType(builtin)) => {
-                 Some(TypeNs::BuiltinType((*builtin).into()))
--            }
-+            },
-             PathResolution::Def(
-                 ModuleDef::Const(_)
-                 | ModuleDef::Variant(_)
-             ) => None,
-             PathResolution::Def(ModuleDef::TypeAlias(alias)) => {
-                 Some(TypeNs::TypeAliasId((*alias).into()))
--            }
-+            },
-             PathResolution::BuiltinAttr(_)
-             | PathResolution::ToolModule(_)
-             | PathResolution::Local(_)
      ) -> Self {
          PathResolutionPerNs { type_ns, value_ns, macro_ns }
      }
@@ -162,39 +146,6 @@ Rustfmt size:  101650 bytes
          } else {
              file_id
          }
-                         let root = find_root(node.syntax());
-                         self.cache(root, file_id);
-                         Some(in_file.with_value(node.syntax().clone()))
--                    }
-+                    },
-                     _ => unreachable!("FileId can only belong to a file module"),
-                 }
--            }
-+            },
-             HirFileId::MacroFile(macro_file) => {
-                 let node = self.db.lookup_intern_macro_call(macro_file).to_node(self.db);
-                 let root = find_root(&node.value);
-                 self.cache(root, node.file_id);
-                 Some(node)
--            }
-+            },
-         }
-     }
- 
-     pub fn resolve_derive_macro(&self, attr: &ast::Attr) -> Option<Vec<Option<Macro>>> {
-         let calls = self.derive_macro_calls(attr)?;
-         self.with_ctx(|ctx| {
--            Some(
--                calls
--                    .into_iter()
--                    .map(|call| macro_call_to_macro_id(ctx, call?).map(|id| Macro { id }))
--                    .collect(),
--            )
-+            Some(calls.into_iter().map(|call| macro_call_to_macro_id(ctx, call?).map(|id| Macro { id })).collect(
-+            ))
-         })
-     }
- 
              resolver,
          };
          visitor.rename_conflicts(starting_expr);
@@ -220,17 +171,10 @@ Rustfmt size:  101650 bytes
              (|| {
                  let token = token.value;
                  let string = ast::String::cast(token)?;
-                         .collect();
-                     Some(res)
                  }
--            })()
--            .map_or(ControlFlow::Continue(()), ControlFlow::Break)
+             })()
+             .map_or(ControlFlow::Continue(()), ControlFlow::Break)
 -        })
-+            })(
-+            ).map_or(
-+                ControlFlow::Continue(()),
-+                ControlFlow::Break,
-+            )
 +        },
 +        )
      }
@@ -253,48 +197,6 @@ Rustfmt size:  101650 bytes
      /// Returns the range (pre-expansion) in the string literal corresponding to the resolution,
      /// absolute file range (post-expansion)
      /// of the part in the format string, the corresponding string token and the resolution if it
-         self.descend_into_macros_breakable(
-             original_token.as_ref().map(|it| it.syntax().clone()),
-             |token, _| {
--                (|| {
--                    let token = token.map(ast::String::cast).transpose()?;
--                    self.resolve_offset_in_format_args(token.as_ref(), relative_offset).map(
--                        |(range, res)| {
--                            (
--                                range + original_token.value.syntax().text_range().start(),
--                                HirFileRange {
--                                    file_id: token.file_id,
--                                    range: range + token.value.syntax().text_range().start(),
--                                },
--                                token.value,
--                                res,
--                            )
--                        },
-+            (|| {
-+                let token = token.map(ast::String::cast).transpose()?;
-+                self.resolve_offset_in_format_args(token.as_ref(), relative_offset).map(|(range, res)| {
-+                    (
-+                        range + original_token.value.syntax().text_range().start(),
-+                        HirFileRange {
-+                        file_id: token.file_id,
-+                        range: range + token.value.syntax().text_range().start(),
-+                    },
-+                        token.value,
-+                        res,
-                     )
--                })()
--                .map_or(ControlFlow::Continue(()), ControlFlow::Break)
--            },
-+                })
-+            })(
-+            ).map_or(
-+                ControlFlow::Continue(()),
-+                ControlFlow::Break,
-+            )
-+        },
-         )
-     }
- 
          if let Some(format_args) = ast::FormatArgsExpr::cast(parent.clone()) {
              let source_analyzer =
                  &self.analyze_impl(InFile::new(file_id, format_args.syntax()), None, false)?;
@@ -316,38 +218,10 @@ Rustfmt size:  101650 bytes
 -            source_analyzer
 -                .resolve_offset_in_asm_template(InFile::new(file_id, &asm), line, offset)
 -                .map(|(owner, (expr, range, index))| {
--                    (range, Some(Either::Right(InlineAsmOperand { owner, expr, index })))
--                })
 +            source_analyzer.resolve_offset_in_asm_template(InFile::new(file_id, &asm), line, offset).map(|(owner, (expr, range, index))| {
-+                (range, Some(Either::Right(InlineAsmOperand { owner, expr, index })))
-+            })
+                     (range, Some(Either::Right(InlineAsmOperand { owner, expr, index })))
+                 })
          }
-     }
- 
-                         *def,
-                         it.file_id.edition(self.db),
-                     )
--                }
-+                },
-                 &crate::source_analyzer::BodyOrSig::VariantFields { def, .. } => {
-                     hir_def::expr_store::pretty::print_variant_body_hir(
-                         self.db,
-                         def,
-                         it.file_id.edition(self.db),
-                     )
--                }
-+                },
-                 &crate::source_analyzer::BodyOrSig::Sig { def, .. } => {
-                     hir_def::expr_store::pretty::print_signature(
-                         self.db,
-                         def,
-                         it.file_id.edition(self.db),
-                     )
--                }
-+                },
-             })
-         })
-     }
      ///
      /// Note that if this token itself is within the context of a macro expansion does not matter.
      /// That is, we strictly check if it lies inside the input of a macro call.
@@ -359,29 +233,9 @@ Rustfmt size:  101650 bytes
          value.parent_ancestors().any(|ancestor| {
              if ast::MacroCall::can_cast(ancestor.kind()) {
                  return true;
-             }
--
-             let Some(item) = ast::Item::cast(ancestor) else {
-                 return false;
-             };
-         self.descend_into_macros_breakable(
-             self.wrap_token_infile(token.clone()),
-             |InFile { value, file_id: _ }, _ctx| {
--                let mapped_kind = value.kind();
--                let any_ident_match =
-+            let mapped_kind = value.kind();
-+            let any_ident_match =
-                     || kind.is_any_identifier() && value.kind().is_any_identifier();
--                let matches = (kind == mapped_kind || any_ident_match()) && text == value.text();
--                if matches { ControlFlow::Break(value) } else { ControlFlow::Continue(()) }
--            },
-+            let matches = (kind == mapped_kind || any_ident_match()) && text == value.text();
-+            if matches {
-+                ControlFlow::Break(value)
-+            } else {
-+                ControlFlow::Continue(())
-+            }
-+        },
+                 let matches = (kind == mapped_kind || any_ident_match()) && text == value.text();
+                 if matches { ControlFlow::Break(value) } else { ControlFlow::Continue(()) }
+             },
 +        ).unwrap_or(
 +            token,
          )
@@ -422,38 +276,27 @@ Rustfmt size:  101650 bytes
 -        node.token_at_offset(offset)
 -            .map(move |token| self.descend_into_macros_exact(token))
 -            .map(|descendants| {
--                descendants.into_iter().map(move |it| self.token_ancestors_with_macros(it))
++        node.token_at_offset(offset).map(move |token| self.descend_into_macros_exact(token)).map(|descendants| {
+                 descendants.into_iter().map(move |it| self.token_ancestors_with_macros(it))
 -            })
 -            // re-order the tokens from token_at_offset by returning the ancestors with the smaller first nodes first
 -            // See algo::ancestors_at_offset, which uses the same approach
 -            .kmerge_by(|left, right| {
--                left.clone()
--                    .map(|node| node.text_range().len())
--                    .lt(right.clone().map(|node| node.text_range().len()))
--            })
-+        node.token_at_offset(offset).map(move |token| self.descend_into_macros_exact(token)).map(|descendants| {
-+            descendants.into_iter().map(move |it| self.token_ancestors_with_macros(it))
-+        }).kmerge_by(|left, right| {
-+            left.clone().map(|node| node.text_range().len()).lt(
-+                right.clone().map(|node| node.text_range().len()),
-+            )
-+        })
-     }
- 
-     /// Attempts to map the node out of macro expanded files returning the original file range.
++            }).kmerge_by(|left, right| {
+                 left.clone()
+                     .map(|node| node.text_range().len())
+                     .lt(right.clone().map(|node| node.text_range().len()))
      /// Attempts to map the node out of macro expanded files.
      /// This only work for attribute expansions, as other ones do not have nodes as input.
      pub fn original_ast_node<N: AstNode>(&self, node: N) -> Option<N> {
 -        self.wrap_node_infile(node).original_ast_node_rooted(self.db).map(
 -            |InRealFile { file_id, value }| {
--                self.cache(find_root(value.syntax()), file_id.into());
--                value
++        self.wrap_node_infile(node).original_ast_node_rooted(self.db).map(|InRealFile { file_id, value }| {
+                 self.cache(find_root(value.syntax()), file_id.into());
+                 value
 -            },
 -        )
-+        self.wrap_node_infile(node).original_ast_node_rooted(self.db).map(|InRealFile { file_id, value }| {
-+            self.cache(find_root(value.syntax()), file_id.into());
-+            value
-+        })
++            })
      }
  
      /// Attempts to map the node out of macro expanded files.
@@ -462,14 +305,12 @@ Rustfmt size:  101650 bytes
          let InFile { file_id, .. } = self.find_file(node);
 -        InFile::new(file_id, node).original_syntax_node_rooted(self.db).map(
 -            |InRealFile { file_id, value }| {
--                self.cache(find_root(&value), file_id.into());
--                value
++        InFile::new(file_id, node).original_syntax_node_rooted(self.db).map(|InRealFile { file_id, value }| {
+                 self.cache(find_root(&value), file_id.into());
+                 value
 -            },
 -        )
-+        InFile::new(file_id, node).original_syntax_node_rooted(self.db).map(|InRealFile { file_id, value }| {
-+            self.cache(find_root(&value), file_id.into());
-+            value
-+        })
++            })
      }
  
      pub fn diagnostics_display_range(
@@ -490,14 +331,10 @@ Rustfmt size:  101650 bytes
              Some(parent) => Some(InFile::new(file_id, parent)),
              None => {
                  let macro_file = file_id.macro_file()?;
--
-                 self.with_ctx(|ctx| {
-                     let expansion_info = ctx.cache.get_or_insert_expansion(ctx.db, macro_file);
                      expansion_info.arg().map(|node| node?.parent()).transpose()
                  })
--            }
+             }
 -        })
-+            },
 +        },
 +        )
      }
@@ -515,55 +352,24 @@ Rustfmt size:  101650 bytes
      }
  
      pub fn resolve_lifetime_param(&self, lifetime: &ast::Lifetime) -> Option<LifetimeParam> {
-         let (mut source_ty, _) = analyzer.type_of_expr(self.db, expr)?;
- 
-         analyzer.expr_adjustments(expr).map(|it| {
--            it.iter()
--                .map(|adjust| {
--                    let target =
-+            it.iter().map(|adjust| {
-+                let target =
-                         Type::new_with_resolver(self.db, &analyzer.resolver, adjust.target);
--                    let kind = match adjust.kind {
-+                let kind = match adjust.kind {
-                         hir_ty::Adjust::NeverToAny => Adjust::NeverToAny,
-                         hir_ty::Adjust::Deref(Some(hir_ty::OverloadedDeref(m))) => {
-                             // FIXME: Should we handle unknown mutability better?
-                         }
-                         hir_ty::Adjust::Pointer(pc) => Adjust::Pointer(pc),
-                     };
--
--                    // Update `source_ty` for the next adjustment
--                    let source = mem::replace(&mut source_ty, target.clone());
--
--                    Adjustment { source, target, kind }
--                })
--                .collect()
-+                let source = mem::replace(&mut source_ty, target.clone());
-+                Adjustment { source, target, kind }
-+            }).collect(
-+            )
-         })
      }
  
      pub fn type_of_expr(&self, expr: &ast::Expr) -> Option<TypeInfo<'db>> {
 -        self.analyze(expr.syntax())?
 -            .type_of_expr(self.db, expr)
 -            .map(|(ty, coerced)| TypeInfo { original: ty, adjusted: coerced })
-+        self.analyze(expr.syntax())?.type_of_expr(self.db, expr).map(|(ty, coerced)| TypeInfo {
-+            original: ty,
-+            adjusted: coerced,
-+        })
++        self.analyze(expr.syntax())?.type_of_expr(self.db, expr).map(
++            |(ty, coerced)| TypeInfo { original: ty, adjusted: coerced },
++        )
      }
  
      pub fn type_of_pat(&self, pat: &ast::Pat) -> Option<TypeInfo<'db>> {
 -        self.analyze(pat.syntax())?
 -            .type_of_pat(self.db, pat)
 -            .map(|(ty, coerced)| TypeInfo { original: ty, adjusted: coerced })
-+        self.analyze(pat.syntax())?.type_of_pat(self.db, pat).map(|(ty, coerced)| TypeInfo {
-+            original: ty,
-+            adjusted: coerced,
-+        })
++        self.analyze(pat.syntax())?.type_of_pat(self.db, pat).map(
++            |(ty, coerced)| TypeInfo { original: ty, adjusted: coerced },
++        )
      }
  
      /// It also includes the changes that binding mode makes in the type. For example in
@@ -711,19 +517,6 @@ Rustfmt size:  101650 bytes
  fn macro_call_to_macro_id(
      ctx: &mut SourceToDefCtx<'_, '_>,
      macro_call_id: MacroCallId,
-                 }
-             };
-             ctx.macro_to_def(InFile::new(it.file_id, &node))
--        }
-+        },
-         Either::Right(it) => {
-             let node = match it.file_id {
-                 HirFileId::FileId(file_id) => {
-                 }
-             };
-             ctx.proc_macro_to_def(InFile::new(it.file_id, &node))
--        }
-+        },
      }
  }
  

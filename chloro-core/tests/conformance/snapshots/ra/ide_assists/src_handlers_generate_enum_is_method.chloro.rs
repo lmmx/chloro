@@ -34,8 +34,8 @@ pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>
         "Generate an `is_` method for this enum variant",
         target,
         |builder| {
-        let vis = parent_enum.visibility().map_or(String::new(), |v| format!("{v} "));
-        let method = format!(
+            let vis = parent_enum.visibility().map_or(String::new(), |v| format!("{v} "));
+            let method = format!(
                 "    /// Returns `true` if the {enum_lowercase_name} is [`{variant_name}`].
     ///
     /// [`{variant_name}`]: {enum_name}::{variant_name}
@@ -44,8 +44,9 @@ pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>
         matches!(self, Self::{variant_name}{pattern_suffix})
     }}",
             );
-        add_method_to_adt(builder, &parent_enum, impl_def, &method);
-    },
+
+            add_method_to_adt(builder, &parent_enum, impl_def, &method);
+        },
     )
 }
 

@@ -347,7 +347,7 @@ impl<'db> Evaluator<'db> {
                     };
                 }
                 Err(MirEvalError::Panic(format!("unknown-panic-payload: {:?}", arg.ty.kind())))
-            },
+            }
             SliceLen => {
                 let arg = args.next().ok_or(MirEvalError::InternalError(
                     "argument of <[T]>::len() is not provided".into(),
@@ -355,7 +355,7 @@ impl<'db> Evaluator<'db> {
                 let arg = arg.get(self)?;
                 let ptr_size = arg.len() / 2;
                 Ok(arg[ptr_size..].into())
-            },
+            }
             DropInPlace => {
                 let ty = generic_args.as_slice().first().and_then(|it| it.ty()).ok_or(
                     MirEvalError::InternalError(
@@ -374,7 +374,7 @@ impl<'db> Evaluator<'db> {
                     span,
                 )?;
                 Ok(vec![])
-            },
+            }
             it => not_supported!("Executing lang item {it:?}"),
         }
     }
@@ -401,10 +401,10 @@ impl<'db> Evaluator<'db> {
                     self.write_memory(addr.offset(i), &[rand_byte])?;
                 }
                 destination.write_from_interval(self, len.interval)
-            },
+            }
             _ => {
                 not_supported!("Unknown syscall id {id:?}")
-            },
+            }
         }
     }
 
@@ -433,7 +433,7 @@ impl<'db> Evaluator<'db> {
                     cmp::Ordering::Greater => 1,
                 };
                 destination.write_from_bytes(self, &r.to_le_bytes()[..destination.size])
-            },
+            }
             "write" => {
                 let [fd, ptr, len] = args else {
                     return Err(MirEvalError::InternalError(
@@ -456,7 +456,7 @@ impl<'db> Evaluator<'db> {
                 }
                 destination.write_from_interval(self, len.interval)?;
                 Ok(())
-            },
+            }
             "pthread_key_create" => {
                 let key = self.thread_local_storage.create_key();
                 let Some(arg0) = args.first() else {
@@ -479,7 +479,7 @@ impl<'db> Evaluator<'db> {
                 arg0_interval.write_from_bytes(self, &key.to_le_bytes()[0..arg0_interval.size])?;
                 destination.write_from_bytes(self, &0u64.to_le_bytes()[0..destination.size])?;
                 Ok(())
-            },
+            }
             "pthread_getspecific" => {
                 let Some(arg0) = args.first() else {
                     return Err(MirEvalError::InternalError(
@@ -490,7 +490,7 @@ impl<'db> Evaluator<'db> {
                 let value = self.thread_local_storage.get_key(key)?;
                 destination.write_from_bytes(self, &value.to_le_bytes()[0..destination.size])?;
                 Ok(())
-            },
+            }
             "pthread_setspecific" => {
                 let Some(arg0) = args.first() else {
                     return Err(MirEvalError::InternalError(
@@ -507,18 +507,18 @@ impl<'db> Evaluator<'db> {
                 self.thread_local_storage.set_key(key, value)?;
                 destination.write_from_bytes(self, &0u64.to_le_bytes()[0..destination.size])?;
                 Ok(())
-            },
+            }
             "pthread_key_delete" => {
                 destination.write_from_bytes(self, &0u64.to_le_bytes()[0..destination.size])?;
                 Ok(())
-            },
+            }
             "syscall" => {
                 let Some((id, rest)) = args.split_first() else {
                     return Err(MirEvalError::InternalError("syscall arg1 is not provided".into()));
                 };
                 let id = from_bytes!(i64, id.get(self)?);
                 self.exec_syscall(id, rest, destination, locals, span)
-            },
+            }
             "sched_getaffinity" => {
                 let [_pid, _set_size, set] = args else {
                     return Err(MirEvalError::InternalError(
@@ -529,7 +529,7 @@ impl<'db> Evaluator<'db> {
                 self.write_memory(set, &[1])?;
                 self.write_memory_using_ref(destination.addr, destination.size)?.fill(0);
                 Ok(())
-            },
+            }
             "getenv" => {
                 let [name] = args else {
                     return Err(MirEvalError::InternalError(
@@ -563,7 +563,7 @@ impl<'db> Evaluator<'db> {
                     }
                 }
                 Ok(())
-            },
+            }
             _ => not_supported!("unknown external function {as_str}"),
         }
     }
@@ -742,7 +742,7 @@ impl<'db> Evaluator<'db> {
                 };
                 let size = self.size_of_sized(ty, locals, "size_of arg")?;
                 destination.write_from_bytes(self, &size.to_le_bytes()[0..destination.size])
-            },
+            }
             "min_align_of" | "align_of" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                     return Err(MirEvalError::InternalError(
@@ -751,7 +751,7 @@ impl<'db> Evaluator<'db> {
                 };
                 let align = self.layout(ty)?.align.bytes();
                 destination.write_from_bytes(self, &align.to_le_bytes()[0..destination.size])
-            },
+            }
             "size_of_val" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                     return Err(MirEvalError::InternalError(
@@ -770,7 +770,7 @@ impl<'db> Evaluator<'db> {
                     let (size, _) = self.size_align_of_unsized(ty, metadata, locals)?;
                     destination.write_from_bytes(self, &size.to_le_bytes())
                 }
-            },
+            }
             "min_align_of_val" | "align_of_val" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                     return Err(MirEvalError::InternalError(
@@ -789,7 +789,7 @@ impl<'db> Evaluator<'db> {
                     let (_, align) = self.size_align_of_unsized(ty, metadata, locals)?;
                     destination.write_from_bytes(self, &align.to_le_bytes())
                 }
-            },
+            }
             "type_name" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                     return Err(MirEvalError::InternalError(
@@ -817,7 +817,7 @@ impl<'db> Evaluator<'db> {
                     self,
                     &len.to_le_bytes(),
                 )
-            },
+            }
             "needs_drop" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                     return Err(MirEvalError::InternalError(
@@ -833,7 +833,7 @@ impl<'db> Evaluator<'db> {
                     }
                 };
                 destination.write_from_bytes(self, &[u8::from(result)])
-            },
+            }
             "ptr_guaranteed_cmp" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -842,7 +842,7 @@ impl<'db> Evaluator<'db> {
                 };
                 let ans = lhs.get(self)? == rhs.get(self)?;
                 destination.write_from_bytes(self, &[u8::from(ans)])
-            },
+            }
             "saturating_add" | "saturating_sub" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -862,7 +862,7 @@ impl<'db> Evaluator<'db> {
                 let mn: u128 = 0;
                 let ans = cmp::min(mx, cmp::max(mn, ans));
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "wrapping_add" | "unchecked_add" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -873,7 +873,7 @@ impl<'db> Evaluator<'db> {
                 let rhs = u128::from_le_bytes(pad16(rhs.get(self)?, false));
                 let ans = lhs.wrapping_add(rhs);
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "ptr_offset_from_unsigned" | "ptr_offset_from" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -891,7 +891,7 @@ impl<'db> Evaluator<'db> {
                 let size = self.size_of_sized(ty, locals, "ptr_offset_from arg")? as i128;
                 let ans = ans / size;
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "wrapping_sub" | "unchecked_sub" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -902,7 +902,7 @@ impl<'db> Evaluator<'db> {
                 let rhs = u128::from_le_bytes(pad16(rhs.get(self)?, false));
                 let ans = lhs.wrapping_sub(rhs);
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "wrapping_mul" | "unchecked_mul" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -913,7 +913,7 @@ impl<'db> Evaluator<'db> {
                 let rhs = u128::from_le_bytes(pad16(rhs.get(self)?, false));
                 let ans = lhs.wrapping_mul(rhs);
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "wrapping_shl" | "unchecked_shl" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -924,7 +924,7 @@ impl<'db> Evaluator<'db> {
                 let rhs = u128::from_le_bytes(pad16(rhs.get(self)?, false));
                 let ans = lhs.wrapping_shl(rhs as u32);
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "wrapping_shr" | "unchecked_shr" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -935,7 +935,7 @@ impl<'db> Evaluator<'db> {
                 let rhs = u128::from_le_bytes(pad16(rhs.get(self)?, false));
                 let ans = lhs.wrapping_shr(rhs as u32);
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "unchecked_rem" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -948,7 +948,7 @@ impl<'db> Evaluator<'db> {
                     MirEvalError::UndefinedBehavior("unchecked_rem with bad inputs".to_owned())
                 })?;
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "unchecked_div" | "exact_div" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -961,7 +961,7 @@ impl<'db> Evaluator<'db> {
                     MirEvalError::UndefinedBehavior("unchecked_rem with bad inputs".to_owned())
                 })?;
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "add_with_overflow" | "sub_with_overflow" | "mul_with_overflow" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -994,7 +994,7 @@ impl<'db> Evaluator<'db> {
                         .map(IntervalOrOwned::Owned),
                 )?;
                 destination.write_from_bytes(self, &result)
-            },
+            }
             "copy" | "copy_nonoverlapping" => {
                 let [src, dst, offset] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1014,7 +1014,7 @@ impl<'db> Evaluator<'db> {
                 let src = Interval { addr: src, size };
                 let dst = Interval { addr: dst, size };
                 dst.write_from_interval(self, src)
-            },
+            }
             "offset" | "arith_offset" => {
                 let [ptr, offset] = args else {
                     return Err(MirEvalError::InternalError("offset args are not provided".into()));
@@ -1060,13 +1060,13 @@ impl<'db> Evaluator<'db> {
                 let size = self.size_of_sized(ty, locals, "offset ptr type")? as u128;
                 let ans = ptr + offset * size;
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
-            },
+            }
             "assert_inhabited" | "assert_zero_valid" | "assert_uninit_valid" | "assume" => {
                 Ok(())
-            },
+            }
             "forget" => {
                 Ok(())
-            },
+            }
             "transmute" | "transmute_unchecked" => {
                 let [arg] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1074,7 +1074,7 @@ impl<'db> Evaluator<'db> {
                     ));
                 };
                 destination.write_from_interval(self, arg.interval)
-            },
+            }
             "ctpop" => {
                 let [arg] = args else {
                     return Err(MirEvalError::InternalError("ctpop arg is not provided".into()));
@@ -1084,7 +1084,7 @@ impl<'db> Evaluator<'db> {
                     self,
                     &(result as u128).to_le_bytes()[0..destination.size],
                 )
-            },
+            }
             "ctlz" | "ctlz_nonzero" => {
                 let [arg] = args else {
                     return Err(MirEvalError::InternalError("ctlz arg is not provided".into()));
@@ -1096,7 +1096,7 @@ impl<'db> Evaluator<'db> {
                     self,
                     &(result as u128).to_le_bytes()[0..destination.size],
                 )
-            },
+            }
             "cttz" | "cttz_nonzero" => {
                 let [arg] = args else {
                     return Err(MirEvalError::InternalError("cttz arg is not provided".into()));
@@ -1106,7 +1106,7 @@ impl<'db> Evaluator<'db> {
                     self,
                     &(result as u128).to_le_bytes()[0..destination.size],
                 )
-            },
+            }
             "rotate_left" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1119,26 +1119,26 @@ impl<'db> Evaluator<'db> {
                     1 => {
                         let r = from_bytes!(u8, lhs).rotate_left(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     2 => {
                         let r = from_bytes!(u16, lhs).rotate_left(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     4 => {
                         let r = from_bytes!(u32, lhs).rotate_left(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     8 => {
                         let r = from_bytes!(u64, lhs).rotate_left(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     16 => {
                         let r = from_bytes!(u128, lhs).rotate_left(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     s => not_supported!("destination with size {s} for rotate_left"),
                 }
-            },
+            }
             "rotate_right" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1151,26 +1151,26 @@ impl<'db> Evaluator<'db> {
                     1 => {
                         let r = from_bytes!(u8, lhs).rotate_right(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     2 => {
                         let r = from_bytes!(u16, lhs).rotate_right(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     4 => {
                         let r = from_bytes!(u32, lhs).rotate_right(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     8 => {
                         let r = from_bytes!(u64, lhs).rotate_right(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     16 => {
                         let r = from_bytes!(u128, lhs).rotate_right(rhs);
                         destination.write_from_bytes(self, &r.to_le_bytes())
-                    },
+                    }
                     s => not_supported!("destination with size {s} for rotate_right"),
                 }
-            },
+            }
             "discriminant_value" => {
                 let [arg] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1187,7 +1187,7 @@ impl<'db> Evaluator<'db> {
                 let interval = Interval { addr, size };
                 let r = self.compute_discriminant(ty, interval.get(self)?)?;
                 destination.write_from_bytes(self, &r.to_le_bytes()[0..destination.size])
-            },
+            }
             "const_eval_select" => {
                 let [tuple, const_fn, _] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1224,7 +1224,7 @@ impl<'db> Evaluator<'db> {
                     return Ok(true);
                 }
                 not_supported!("FnOnce was not available for executing const_eval_select");
-            },
+            }
             "read_via_copy" | "volatile_load" => {
                 let [arg] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1233,7 +1233,7 @@ impl<'db> Evaluator<'db> {
                 };
                 let addr = Address::from_bytes(arg.interval.get(self)?)?;
                 destination.write_from_interval(self, Interval { addr, size: destination.size })
-            },
+            }
             "write_via_move" => {
                 let [ptr, val] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1249,7 +1249,7 @@ impl<'db> Evaluator<'db> {
                 let size = self.size_of_sized(ty, locals, "write_via_move ptr type")?;
                 Interval { addr: dst, size }.write_from_interval(self, val.interval)?;
                 Ok(())
-            },
+            }
             "write_bytes" => {
                 let [dst, val, count] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1268,7 +1268,7 @@ impl<'db> Evaluator<'db> {
                 let size = count * size;
                 self.write_memory_using_ref(dst, size)?.fill(val);
                 Ok(())
-            },
+            }
             "ptr_metadata" => {
                 let [ptr] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1279,7 +1279,7 @@ impl<'db> Evaluator<'db> {
                 let metadata = &arg[self.ptr_size()..];
                 destination.write_from_bytes(self, metadata)?;
                 Ok(())
-            },
+            }
             "three_way_compare" => {
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1324,7 +1324,7 @@ impl<'db> Evaluator<'db> {
                 } else {
                     Err(MirEvalError::InternalError("Ordering enum not found".into()))
                 }
-            },
+            }
             "aggregate_raw_ptr" => {
                 let [data, meta] = args else {
                     return Err(MirEvalError::InternalError(
@@ -1338,7 +1338,7 @@ impl<'db> Evaluator<'db> {
                 }
                 .write_from_interval(self, meta.interval)?;
                 Ok(())
-            },
+            }
             _ if needs_override => not_supported!("intrinsic {name} is not implemented"),
             _ => return Ok(false),
         }.map(
@@ -1358,7 +1358,7 @@ impl<'db> Evaluator<'db> {
                 let len = from_bytes!(usize, metadata.get(self)?);
                 let (size, align) = self.size_align_of_sized(inner, locals, "slice inner type")?;
                 (size * len, align)
-            },
+            }
             TyKind::Dynamic(..) => self.size_align_of_sized(
                 self.vtable_map.ty_of_bytes(metadata.get(self)?)?,
                 locals,
@@ -1383,7 +1383,7 @@ impl<'db> Evaluator<'db> {
                 let size = (sized_part_size + unsized_part_size) as isize;
                 let size = (size + (align - 1)) & (-align);
                 (size as usize, align as usize)
-            },
+            }
             _ => not_supported!("unsized type other than str, slice, struct and dyn"),
         })
     }

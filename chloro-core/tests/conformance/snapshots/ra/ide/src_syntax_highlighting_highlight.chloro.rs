@@ -121,7 +121,7 @@ fn punctuation(
         (T![..] | T![..=], _) => match token.parent().and_then(ast::Pat::cast) {
             Some(pat) if is_unsafe_node(AstPtr::new(&pat).wrap_right()) => {
                 Highlight::from(HlOperator::Other) | HlMod::Unsafe
-            },
+            }
             _ => HlOperator::Other.into(),
         },
         (T![::] | T![->] | T![=>] | T![=] | T![@] | T![.], _) => HlOperator::Other.into(),
@@ -133,7 +133,7 @@ fn punctuation(
             } else {
                 HlPunct::MacroBang.into()
             }
-        },
+        }
         (T![!], MACRO_RULES) => HlPunct::MacroBang.into(),
         (T![!], NEVER_TYPE) => HlTag::BuiltinType.into(),
         (T![!], PREFIX_EXPR) => HlOperator::Negation.into(),
@@ -148,7 +148,7 @@ fn punctuation(
             } else {
                 h
             }
-        },
+        }
         (T![-], PREFIX_EXPR) => {
             let prefix_expr =
                 operator_parent.and_then(ast::PrefixExpr::cast).and_then(|e| e.expr());
@@ -157,25 +157,25 @@ fn punctuation(
                 _ => HlTag::Operator(HlOperator::Other),
             }.into(
             )
-        },
+        }
         (T![+] | T![-] | T![*] | T![/] | T![%], BIN_EXPR) => HlOperator::Arithmetic.into(),
         (T![+=] | T![-=] | T![*=] | T![/=] | T![%=], BIN_EXPR) => {
             Highlight::from(HlOperator::Arithmetic) | HlMod::Mutable
-        },
+        }
         (T![|] | T![&] | T![^] | T![>>] | T![<<], BIN_EXPR) => HlOperator::Bitwise.into(),
         (T![|=] | T![&=] | T![^=] | T![>>=] | T![<<=], BIN_EXPR) => {
             Highlight::from(HlOperator::Bitwise) | HlMod::Mutable
-        },
+        }
         (T![&&] | T![||], BIN_EXPR) => HlOperator::Logical.into(),
         (T![>] | T![<] | T![==] | T![>=] | T![<=] | T![!=], BIN_EXPR) => {
             HlOperator::Comparison.into()
-        },
+        }
         (_, ATTR) => HlTag::AttributeBracket.into(),
         (T![>], _) if operator_parent.as_ref().and_then(SyntaxNode::parent).is_some_and(
             |it| it.kind() == MACRO_RULES,
         ) => {
             HlOperator::Other.into()
-        },
+        }
         (kind, _) => match kind {
             T!['['] | T![']'] => {
                 let is_unsafe_macro = operator_parent
@@ -193,7 +193,7 @@ fn punctuation(
                 } else {
                     HlPunct::Bracket
                 }
-            },
+            }
             T!['{'] | T!['}'] => {
                 let is_unsafe_macro = operator_parent
                     .as_ref()
@@ -210,7 +210,7 @@ fn punctuation(
                 } else {
                     HlPunct::Brace
                 }
-            },
+            }
             T!['('] | T![')'] => {
                 let is_unsafe_macro = operator_parent
                     .as_ref()
@@ -229,7 +229,7 @@ fn punctuation(
                 } else {
                     HlPunct::Parenthesis
                 }
-            },
+            }
             T![<] | T![>] => HlPunct::Angle,
             T![,] => return HlPunct::Comma.into(),
             T![:] => HlPunct::Colon,
@@ -450,7 +450,7 @@ fn highlight_name(
                 h |= HlMod::Unsafe;
             }
             h
-        },
+        }
         Some(NameClass::ConstReference(def)) => highlight_def(sema, krate, def, edition, true),
         Some(NameClass::PatFieldShorthand { .. }) => {
             let mut h = HlTag::Symbol(SymbolKind::Field).into();
@@ -462,7 +462,7 @@ fn highlight_name(
                 h |= HlMod::Unsafe;
             }
             h
-        },
+        }
         None => highlight_name_by_syntax(name) | HlMod::Definition,
     }
 }
@@ -811,7 +811,7 @@ fn highlight_name_ref_by_syntax(
             } else {
                 h.into()
             }
-        },
+        }
         RECORD_EXPR_FIELD | RECORD_PAT_FIELD => HlTag::Symbol(SymbolKind::Field).into(),
         PATH_SEGMENT => {
             let name_based_fallback = || {
@@ -849,7 +849,7 @@ fn highlight_name_ref_by_syntax(
                 }.into(
                 ),
             }
-        },
+        }
         ASSOC_TYPE_ARG => SymbolKind::TypeAlias.into(),
         USE_BOUND_GENERIC_ARGS => SymbolKind::TypeParam.into(),
         _ => default.into(),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   97824 bytes
+Chloro size:   97823 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -92,14 +92,6 @@ Rustfmt size:  98473 bytes
      // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
      if import_edit.item_to_import == import_edit.original_item {
          import_edit.import_path.segments().last().cloned()
-         ScopeDef::Label(..) => CompletionItemKind::SymbolKind(SymbolKind::Label),
-         ScopeDef::AdtSelfType(..) | ScopeDef::ImplSelfType(..) => {
-             CompletionItemKind::SymbolKind(SymbolKind::SelfParam)
--        }
-+        },
-     }
- }
- 
      }
  }
  

@@ -433,23 +433,23 @@ impl ExpressionStore {
             | Pat::Wild
             | Pat::Missing
             | Pat::Expr(_) => {
-            },
+            }
             &Pat::Bind { subpat, .. } => {
                 if let Some(subpat) = subpat {
                     f(subpat);
                 }
-            },
+            }
             Pat::Or(args) | Pat::Tuple { args, .. } | Pat::TupleStruct { args, .. } => {
                 args.iter().copied().for_each(f);
-            },
+            }
             Pat::Ref { pat, .. } => f(*pat),
             Pat::Slice { prefix, slice, suffix } => {
                 let total_iter = prefix.iter().chain(slice.iter()).chain(suffix.iter());
                 total_iter.copied().for_each(f);
-            },
+            }
             Pat::Record { args, .. } => {
                 args.iter().for_each(|RecordFieldPat { pat, .. }| f(*pat));
-            },
+            }
             Pat::Box { inner } => f(*inner),
         }
     }
@@ -464,7 +464,7 @@ impl ExpressionStore {
         match expr_only.binding_owners.get(&binding) {
             Some(it) => {
                 it.into_raw() < relative_to.into_raw()
-            },
+            }
             None => true,
         }
     }
@@ -487,7 +487,7 @@ impl ExpressionStore {
             | Expr::OffsetOf(_)
             | Expr::Literal(_)
             | Expr::Underscore => {
-            },
+            }
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
                 | AsmOperand::Out { expr: Some(expr), .. }
@@ -499,7 +499,7 @@ impl ExpressionStore {
                     if let Some(out_expr) = out_expr {
                         f(*out_expr);
                     }
-                },
+                }
                 AsmOperand::Out { expr: None, .. } | AsmOperand::Sym(_) => (),
             }),
             Expr::If { condition, then_branch, else_branch } => {
@@ -508,11 +508,11 @@ impl ExpressionStore {
                 if let &Some(else_branch) = else_branch {
                     f(else_branch);
                 }
-            },
+            }
             Expr::Let { expr, pat } => {
                 self.walk_exprs_in_pat(*pat, &mut f);
                 f(*expr);
-            },
+            }
             Expr::Block { statements, tail, .. }
             | Expr::Unsafe { statements, tail, .. }
             | Expr::Async { statements, tail, .. } => {
@@ -534,23 +534,23 @@ impl ExpressionStore {
                 if let &Some(expr) = tail {
                     f(expr);
                 }
-            },
+            }
             Expr::Loop { body, .. } => f(*body),
             Expr::Call { callee, args, .. } => {
                 f(*callee);
                 args.iter().copied().for_each(f);
-            },
+            }
             Expr::MethodCall { receiver, args, .. } => {
                 f(*receiver);
                 args.iter().copied().for_each(f);
-            },
+            }
             Expr::Match { expr, arms } => {
                 f(*expr);
                 arms.iter().for_each(|arm| {
                     f(arm.expr);
                     self.walk_exprs_in_pat(arm.pat, &mut f);
                 });
-            },
+            }
             Expr::Break { expr, .. }
             | Expr::Return { expr }
             | Expr::Yield { expr }
@@ -558,7 +558,7 @@ impl ExpressionStore {
                 if let &Some(expr) = expr {
                     f(expr);
                 }
-            },
+            }
             Expr::Become { expr } => f(*expr),
             Expr::RecordLit { fields, spread, .. } => {
                 for field in fields.iter() {
@@ -567,14 +567,14 @@ impl ExpressionStore {
                 if let &Some(expr) = spread {
                     f(expr);
                 }
-            },
+            }
             Expr::Closure { body, .. } => {
                 f(*body);
-            },
+            }
             Expr::BinaryOp { lhs, rhs, .. } => {
                 f(*lhs);
                 f(*rhs);
-            },
+            }
             Expr::Range { lhs, rhs, .. } => {
                 if let &Some(lhs) = rhs {
                     f(lhs);
@@ -582,11 +582,11 @@ impl ExpressionStore {
                 if let &Some(rhs) = lhs {
                     f(rhs);
                 }
-            },
+            }
             Expr::Index { base, index, .. } => {
                 f(*base);
                 f(*index);
-            },
+            }
             Expr::Field { expr, .. }
             | Expr::Await { expr }
             | Expr::Cast { expr, .. }
@@ -594,19 +594,19 @@ impl ExpressionStore {
             | Expr::UnaryOp { expr, .. }
             | Expr::Box { expr } => {
                 f(*expr);
-            },
+            }
             Expr::Tuple { exprs, .. } => exprs.iter().copied().for_each(f),
             Expr::Array(a) => match a {
                 Array::ElementList { elements, .. } => elements.iter().copied().for_each(f),
                 Array::Repeat { initializer, repeat } => {
                     f(*initializer);
                     f(*repeat)
-                },
+                }
             },
             &Expr::Assignment { target, value } => {
                 self.walk_exprs_in_pat(target, &mut f);
                 f(value);
-            },
+            }
         }
     }
 
@@ -624,7 +624,7 @@ impl ExpressionStore {
             | Expr::OffsetOf(_)
             | Expr::Literal(_)
             | Expr::Underscore => {
-            },
+            }
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
                 | AsmOperand::Out { expr: Some(expr), .. }
@@ -636,7 +636,7 @@ impl ExpressionStore {
                     if let Some(out_expr) = out_expr {
                         f(*out_expr);
                     }
-                },
+                }
                 AsmOperand::Out { expr: None, .. } | AsmOperand::Sym(_) => (),
             }),
             Expr::If { condition, then_branch, else_branch } => {
@@ -645,10 +645,10 @@ impl ExpressionStore {
                 if let &Some(else_branch) = else_branch {
                     f(else_branch);
                 }
-            },
+            }
             Expr::Let { expr, .. } => {
                 f(*expr);
-            },
+            }
             Expr::Block { statements, tail, .. }
             | Expr::Unsafe { statements, tail, .. }
             | Expr::Async { statements, tail, .. } => {
@@ -669,20 +669,20 @@ impl ExpressionStore {
                 if let &Some(expr) = tail {
                     f(expr);
                 }
-            },
+            }
             Expr::Loop { body, .. } => f(*body),
             Expr::Call { callee, args, .. } => {
                 f(*callee);
                 args.iter().copied().for_each(f);
-            },
+            }
             Expr::MethodCall { receiver, args, .. } => {
                 f(*receiver);
                 args.iter().copied().for_each(f);
-            },
+            }
             Expr::Match { expr, arms } => {
                 f(*expr);
                 arms.iter().map(|arm| arm.expr).for_each(f);
-            },
+            }
             Expr::Break { expr, .. }
             | Expr::Return { expr }
             | Expr::Yield { expr }
@@ -690,7 +690,7 @@ impl ExpressionStore {
                 if let &Some(expr) = expr {
                     f(expr);
                 }
-            },
+            }
             Expr::Become { expr } => f(*expr),
             Expr::RecordLit { fields, spread, .. } => {
                 for field in fields.iter() {
@@ -699,14 +699,14 @@ impl ExpressionStore {
                 if let &Some(expr) = spread {
                     f(expr);
                 }
-            },
+            }
             Expr::Closure { body, .. } => {
                 f(*body);
-            },
+            }
             Expr::BinaryOp { lhs, rhs, .. } => {
                 f(*lhs);
                 f(*rhs);
-            },
+            }
             Expr::Range { lhs, rhs, .. } => {
                 if let &Some(lhs) = rhs {
                     f(lhs);
@@ -714,11 +714,11 @@ impl ExpressionStore {
                 if let &Some(rhs) = lhs {
                     f(rhs);
                 }
-            },
+            }
             Expr::Index { base, index, .. } => {
                 f(*base);
                 f(*index);
-            },
+            }
             Expr::Field { expr, .. }
             | Expr::Await { expr }
             | Expr::Cast { expr, .. }
@@ -726,14 +726,14 @@ impl ExpressionStore {
             | Expr::UnaryOp { expr, .. }
             | Expr::Box { expr } => {
                 f(*expr);
-            },
+            }
             Expr::Tuple { exprs, .. } => exprs.iter().copied().for_each(f),
             Expr::Array(a) => match a {
                 Array::ElementList { elements, .. } => elements.iter().copied().for_each(f),
                 Array::Repeat { initializer, repeat } => {
                     f(*initializer);
                     f(*repeat)
-                },
+                }
             },
             &Expr::Assignment { target: _, value } => f(value),
         }

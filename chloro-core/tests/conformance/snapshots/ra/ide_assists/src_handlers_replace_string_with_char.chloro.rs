@@ -23,15 +23,15 @@ pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_
         "Replace string with char",
         target,
         |edit| {
-        let (left, right) = quote_offsets.quotes;
-        let suffix = TextSize::of(string_suffix(token.text()).unwrap_or_default());
-        let right = TextRange::new(right.start(), right.end() - suffix);
-        edit.replace(left, '\'');
-        edit.replace(right, '\'');
-        if token.text_without_quotes() == "'" {
-            edit.insert(left.end(), '\\');
-        }
-    },
+            let (left, right) = quote_offsets.quotes;
+            let suffix = TextSize::of(string_suffix(token.text()).unwrap_or_default());
+            let right = TextRange::new(right.start(), right.end() - suffix);
+            edit.replace(left, '\'');
+            edit.replace(right, '\'');
+            if token.text_without_quotes() == "'" {
+                edit.insert(left.end(), '\\');
+            }
+        },
     )
 }
 
@@ -44,16 +44,16 @@ pub(crate) fn replace_char_with_string(acc: &mut Assists, ctx: &AssistContext<'_
         "Replace char with string",
         target,
         |edit| {
-        let suffix = string_suffix(token.text()).unwrap_or_default();
-        if token.text().starts_with("'\"'") {
-            edit.replace(token.text_range(), format!(r#""\""{suffix}"#));
-        } else {
-            let len = TextSize::of('\'');
-            let suffix = TextSize::of(suffix);
-            edit.replace(TextRange::at(target.start(), len), '"');
-            edit.replace(TextRange::at(target.end() - suffix - len, len), '"');
-        }
-    },
+            let suffix = string_suffix(token.text()).unwrap_or_default();
+            if token.text().starts_with("'\"'") {
+                edit.replace(token.text_range(), format!(r#""\""{suffix}"#));
+            } else {
+                let len = TextSize::of('\'');
+                let suffix = TextSize::of(suffix);
+                edit.replace(TextRange::at(target.start(), len), '"');
+                edit.replace(TextRange::at(target.end() - suffix - len, len), '"');
+            }
+        },
     )
 }
 

@@ -46,21 +46,17 @@ pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_
         format!("Replace {method_name} with {method_name_lazy}"),
         call.syntax().text_range(),
         |builder| {
-        builder.replace(method_name.syntax().text_range(), method_name_lazy);
-        let closured = into_closure(&last_arg);
-        builder.replace_ast(last_arg, closured);
-    },
+            builder.replace(method_name.syntax().text_range(), method_name_lazy);
+            let closured = into_closure(&last_arg);
+            builder.replace_ast(last_arg, closured);
+        },
     )
 }
 
 fn into_closure(param: &Expr) -> Expr {
     (|| {
         if let ast::Expr::CallExpr(call) = param {
-            if call.arg_list()?.args().count() == 0 {
-                Some(call.expr()?)
-            } else {
-                None
-            }
+            if call.arg_list()?.args().count() == 0 { Some(call.expr()?) } else { None }
         } else {
             None
         }
@@ -110,21 +106,17 @@ pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'
         format!("Replace {method_name} with {method_name_eager}"),
         call.syntax().text_range(),
         |builder| {
-        builder.replace(method_name.syntax().text_range(), method_name_eager);
-        let called = into_call(&last_arg);
-        builder.replace_ast(last_arg, called);
-    },
+            builder.replace(method_name.syntax().text_range(), method_name_eager);
+            let called = into_call(&last_arg);
+            builder.replace_ast(last_arg, called);
+        },
     )
 }
 
 fn into_call(param: &Expr) -> Expr {
     (|| {
         if let ast::Expr::ClosureExpr(closure) = param {
-            if closure.param_list()?.params().count() == 0 {
-                Some(closure.body()?)
-            } else {
-                None
-            }
+            if closure.param_list()?.params().count() == 0 { Some(closure.body()?) } else { None }
         } else {
             None
         }

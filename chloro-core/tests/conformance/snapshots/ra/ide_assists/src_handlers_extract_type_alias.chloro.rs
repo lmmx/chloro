@@ -27,46 +27,54 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         "Extract type as type alias",
         target,
         |builder| {
-        let mut edit = builder.make_editor(node);
-        let mut known_generics = match item.generic_param_list() {
+            let mut edit = builder.make_editor(node);
+
+            let mut known_generics = match item.generic_param_list() {
                 Some(it) => it.generic_params().collect(),
                 None => Vec::new(),
             };
-        if let Some(it) = assoc_owner.as_ref().and_then(|it| match it {
+            if let Some(it) = assoc_owner.as_ref().and_then(|it| match it {
                 Either::Left(it) => it.generic_param_list(),
                 Either::Right(it) => it.generic_param_list(),
             }) {
                 known_generics.extend(it.generic_params());
             }
-        let generics = collect_used_generics(&ty, &known_generics);
-        let generic_params =
+            let generics = collect_used_generics(&ty, &known_generics);
+            let generic_params =
                 generics.map(|it| make::generic_param_list(it.into_iter().cloned()));
-        let ty_args = generic_params.as_ref().map(|it| it.to_generic_args().generic_args());
-        let new_ty = if let Some(ty_args) = ty_args {
+
+            // Replace original type with the alias
+            let ty_args = generic_params.as_ref().map(|it| it.to_generic_args().generic_args());
+            let new_ty = if let Some(ty_args) = ty_args {
                 make::generic_ty_path_segment(make::name_ref("Type"), ty_args)
             } else {
                 make::path_segment(make::name_ref("Type"))
             }
             .clone_for_update();
-        edit.replace(ty.syntax(), new_ty.syntax());
-        let ty_alias =
+            edit.replace(ty.syntax(), new_ty.syntax());
+
+            // Insert new alias
+            let ty_alias =
                 make::ty_alias(None, "Type", generic_params, None, None, Some((ty, None)))
                     .clone_for_update();
-        if let Some(cap) = ctx.config.snippet_cap
+
+            if let Some(cap) = ctx.config.snippet_cap
                 && let Some(name) = ty_alias.name()
             {
                 edit.add_annotation(name.syntax(), builder.make_tabstop_before(cap));
             }
-        let indent = IndentLevel::from_node(node);
-        edit.insert_all(
+
+            let indent = IndentLevel::from_node(node);
+            edit.insert_all(
                 syntax_editor::Position::before(node),
                 vec![
                     ty_alias.syntax().clone().into(),
                     make::tokens::whitespace(&format!("\n\n{indent}")).into(),
                 ],
             );
-        builder.add_file_edits(ctx.vfs_file_id(), edit);
-    },
+
+            builder.add_file_edits(ctx.vfs_file_id(), edit);
+        },
     )
 }
 

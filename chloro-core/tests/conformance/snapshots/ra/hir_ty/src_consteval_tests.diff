@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 57017 bytes
-Chloro size:   57046 bytes
+Chloro size:   57044 bytes
 Rustfmt size:  57422 bytes
 
 ✗ Outputs DIFFER
@@ -27,12 +27,6 @@ Rustfmt size:  57422 bytes
  fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
      match e {
          ConstEvalError::MirEvalError(MirEvalError::InFunction(e, _)) => {
-             simplify(ConstEvalError::MirEvalError(*e))
--        }
-+        },
-         _ => e,
-     }
- }
      error: impl FnOnce(ConstEvalError<'_>) -> bool,
  ) {
      let (db, file_id) = TestDB::with_single_file(ra_fixture);
@@ -47,10 +41,9 @@ Rustfmt size:  57422 bytes
 -                "Actual error was: {}",
 -                pretty_print_err(e, &db)
 -            )
--        }
--    })
 +            assert!(error(simplify(e.clone())), "Actual error was: {}", pretty_print_err(e, &db))
-+        },
+         }
+-    })
 +    },
 +    )
  }

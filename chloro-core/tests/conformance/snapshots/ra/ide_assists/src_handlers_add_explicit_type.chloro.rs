@@ -62,13 +62,13 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         format!("Insert explicit type `{inferred_type}`"),
         pat_range,
         |builder| match ascribed_ty {
-        Some(ascribed_ty) => {
-            builder.replace(ascribed_ty.syntax().text_range(), inferred_type);
+            Some(ascribed_ty) => {
+                builder.replace(ascribed_ty.syntax().text_range(), inferred_type);
+            }
+            None => {
+                builder.insert(pat_range.end(), format!(": {inferred_type}"));
+            }
         },
-        None => {
-            builder.insert(pat_range.end(), format!(": {inferred_type}"));
-        },
-    },
     )
 }
 

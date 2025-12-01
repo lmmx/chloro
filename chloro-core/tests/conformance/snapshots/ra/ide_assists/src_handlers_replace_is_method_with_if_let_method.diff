@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6668 bytes
-Chloro size:   6278 bytes
+Chloro size:   6320 bytes
 Rustfmt size:  6668 bytes
 
 ✗ Outputs DIFFER
@@ -56,43 +56,6 @@ Rustfmt size:  6668 bytes
              acc.add(
                  AssistId::refactor_rewrite(assist_id),
                  message,
-                 call_expr.syntax().text_range(),
-                 |edit| {
--                    let make = SyntaxFactory::with_mappings();
--                    let mut editor = edit.make_editor(call_expr.syntax());
--
--                    let var_pat = make.ident_pat(false, false, make.name(&var_name));
--                    let pat = make.tuple_struct_pat(make.ident_path(text), [var_pat.into()]);
--                    let let_expr = make.expr_let(pat.into(), receiver);
--
--                    if let Some(cap) = ctx.config.snippet_cap
-+                let make = SyntaxFactory::with_mappings();
-+                let mut editor = edit.make_editor(call_expr.syntax());
-+                let var_pat = make.ident_pat(false, false, make.name(&var_name));
-+                let pat = make.tuple_struct_pat(make.ident_path(text), [var_pat.into()]);
-+                let let_expr = make.expr_let(pat.into(), receiver);
-+                if let Some(cap) = ctx.config.snippet_cap
-                         && let Some(ast::Pat::TupleStructPat(pat)) = let_expr.pat()
-                         && let Some(first_var) = pat.fields().next()
-                     {
-                         let placeholder = edit.make_placeholder_snippet(cap);
-                         editor.add_annotation(first_var.syntax(), placeholder);
-                     }
--
--                    editor.replace(call_expr.syntax(), let_expr.syntax());
--                    editor.add_mappings(make.finish_with_mappings());
--                    edit.add_file_edits(ctx.vfs_file_id(), editor);
--                },
-+                editor.replace(call_expr.syntax(), let_expr.syntax());
-+                editor.add_mappings(make.finish_with_mappings());
-+                edit.add_file_edits(ctx.vfs_file_id(), editor);
-+            },
-             )
--        }
-+        },
-         _ => None,
-     }
- }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

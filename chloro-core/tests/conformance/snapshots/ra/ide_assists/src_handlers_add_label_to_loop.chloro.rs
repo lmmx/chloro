@@ -21,20 +21,23 @@ pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         "Add Label",
         loop_expr.syntax().text_range(),
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = builder.make_editor(loop_expr.syntax());
-        let label = make.lifetime("'l");
-        let elements = vec![
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = builder.make_editor(loop_expr.syntax());
+
+            let label = make.lifetime("'l");
+            let elements = vec![
                 label.syntax().clone().into(),
                 make::token(T![:]).into(),
                 tokens::single_space().into(),
             ];
-        editor.insert_all(Position::before(&loop_kw), elements);
-        if let Some(cap) = ctx.config.snippet_cap {
+            editor.insert_all(Position::before(&loop_kw), elements);
+
+            if let Some(cap) = ctx.config.snippet_cap {
                 editor.add_annotation(label.syntax(), builder.make_placeholder_snippet(cap));
             }
-        let loop_body = loop_expr.loop_body().and_then(|it| it.stmt_list());
-        for_each_break_and_continue_expr(loop_expr.label(), loop_body, &mut |expr| {
+
+            let loop_body = loop_expr.loop_body().and_then(|it| it.stmt_list());
+            for_each_break_and_continue_expr(loop_expr.label(), loop_body, &mut |expr| {
                 let token = match expr {
                     ast::Expr::BreakExpr(break_expr) => break_expr.break_token(),
                     ast::Expr::ContinueExpr(continue_expr) => continue_expr.continue_token(),
@@ -44,10 +47,11 @@ pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
                     insert_label_after_token(&mut editor, &make, &token, ctx, builder);
                 }
             });
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-        builder.rename();
-    },
+
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+            builder.rename();
+        },
     )
 }
 

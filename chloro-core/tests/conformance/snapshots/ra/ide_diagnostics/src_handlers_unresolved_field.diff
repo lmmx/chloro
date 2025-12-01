@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15690 bytes
-Chloro size:   14846 bytes
+Chloro size:   14928 bytes
 Rustfmt size:  15822 bytes
 
 ✗ Outputs DIFFER
@@ -21,28 +21,18 @@ Rustfmt size:  15822 bytes
              d.receiver.display(ctx.sema.db, ctx.display_target)
          ),
 -        adjusted_display_range(ctx, d.expr, &|expr| {
--            Some(
--                match expr.left()? {
--                    ast::Expr::MethodCallExpr(it) => it.name_ref(),
--                    ast::Expr::FieldExpr(it) => it.name_ref(),
--                    _ => None,
--                }?
--                .syntax()
--                .text_range(),
--            )
--        }),
 +        adjusted_display_range(
 +        ctx,
 +        d.expr,
 +        &|expr| {
-+        Some(match expr.left()? {
-+            ast::Expr::MethodCallExpr(it) => it.name_ref(),
-+            ast::Expr::FieldExpr(it) => it.name_ref(),
-+            _ => None,
-+        }?.syntax(
-+        ).text_range(
-+        ))
-+    },
+             Some(
+                 match expr.left()? {
+                     ast::Expr::MethodCallExpr(it) => it.name_ref(),
+                 .syntax()
+                 .text_range(),
+             )
+-        }),
++        },
 +    ),
 +    ).with_fixes(
 +        fixes(ctx, d),
@@ -77,18 +67,6 @@ Rustfmt size:  15822 bytes
          make::ty(display.as_deref().unwrap_or("()"))
      } else {
          make::ty("()")
-     match adt {
-         Adt::Struct(adt_struct) => {
-             add_field_to_struct_fix(ctx, adt_struct, field_name, suggested_type, error_range)
--        }
-+        },
-         Adt::Union(adt_union) => {
-             add_variant_to_union(ctx, adt_union, field_name, suggested_type, error_range)
--        }
-+        },
-         _ => None,
-     }
- }
      let range = adt_syntax.original_file_range_rooted(ctx.sema.db);
      let field_name = make::name(field_name);
  
@@ -134,11 +112,8 @@ Rustfmt size:  15822 bytes
              src_change_builder.insert(offset, record_field);
              Some(Assist {
                  id: AssistId::quick_fix("add-field-to-record-struct"),
-                 source_change: Some(src_change_builder.finish()),
-                 command: None,
              })
--        }
-+        },
+         }
          None => {
 -            // Add a field list to the Unit Struct
              let mut src_change_builder =
@@ -163,19 +138,13 @@ Rustfmt size:  15822 bytes
              Some(Assist {
                  id: AssistId::quick_fix("convert-unit-struct-to-record-struct"),
                  label: Label::new("Convert Unit Struct to Record Struct and add field".to_owned()),
-                 source_change: Some(src_change_builder.finish()),
-                 command: None,
              })
--        }
-+        },
+         }
          Some(FieldList::TupleFieldList(_tuple)) => {
 -            // FIXME: Add support for Tuple Structs. Tuple Structs are not sent to this diagnostic
              None
--        }
-+        },
+         }
      }
- }
- 
      let comma = if needs_comma { ",\n" } else { "\n" };
      let record_field = make::record_field(visibility, name, suggested_type);
  

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10586 bytes
-Chloro size:   10287 bytes
+Chloro size:   10283 bytes
 Rustfmt size:  10586 bytes
 
 ✗ Outputs DIFFER
@@ -35,18 +35,6 @@ Rustfmt size:  10586 bytes
  use super::mir::{interpret_mir, lower_to_mir, pad16};
  
  pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {
-         match self {
-             ConstEvalError::MirLowerError(e) => {
-                 e.pretty_print(f, db, span_formatter, display_target)
--            }
-+            },
-             ConstEvalError::MirEvalError(e) => {
-                 e.pretty_print(f, db, span_formatter, display_target)
--            }
-+            },
-         }
-     }
- }
  }
  
  /// Interns a possibly-unknown target usize
@@ -59,22 +47,6 @@ Rustfmt size:  10586 bytes
      intern_const_ref(
          db,
          &value.map_or(LiteralConstRef::Unknown, LiteralConstRef::UInt),
-             let subst = unevaluated_const.args;
-             let ec = db.const_eval(c, subst, None).ok()?;
-             try_const_usize(db, ec)
--        }
-+        },
-         ConstKind::Value(val) => Some(u128::from_le_bytes(pad16(&val.value.inner().memory, false))),
-         ConstKind::Error(_) => None,
-         ConstKind::Expr(_) => None,
-             let subst = unevaluated_const.args;
-             let ec = db.const_eval(c, subst, None).ok()?;
-             try_const_isize(db, &ec)
--        }
-+        },
-         ConstKind::Value(val) => Some(i128::from_le_bytes(pad16(&val.value.inner().memory, true))),
-         ConstKind::Error(_) => None,
-         ConstKind::Expr(_) => None,
      Ok(c)
  }
  

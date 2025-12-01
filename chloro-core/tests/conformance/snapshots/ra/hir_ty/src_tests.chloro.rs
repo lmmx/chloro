@@ -258,7 +258,7 @@ fn expr_node(
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
-        },
+        }
         Err(SyntheticSyntax) => return None,
     })
 }
@@ -272,7 +272,7 @@ fn pat_node(
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
-        },
+        }
         Err(SyntheticSyntax) => return None,
     })
 }
@@ -289,6 +289,7 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
         &db,
         || {
         let mut buf = String::new();
+
         let mut infer_def = |inference_result: Arc<InferenceResult<'_>>,
                              body: Arc<Body>,
                              body_source_map: Arc<BodySourceMap>,
@@ -378,8 +379,10 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
                 }
             }
         };
+
         let module = db.module_for_file(file_id.file_id(&db));
         let def_map = module.def_map(&db);
+
         let mut defs: Vec<(DefWithBodyId, Crate)> = Vec::new();
         visit_module(&db, def_map, module.local_id, &mut |it| {
             let def = match it {
@@ -414,6 +417,7 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
             let infer = db.infer(def);
             infer_def(infer, body, source_map, krate);
         }
+
         buf.truncate(buf.trim_end().len());
         buf
     },

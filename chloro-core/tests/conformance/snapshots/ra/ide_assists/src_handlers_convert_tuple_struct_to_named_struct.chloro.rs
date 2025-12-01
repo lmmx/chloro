@@ -42,13 +42,13 @@ pub(crate) fn convert_tuple_struct_to_named_struct(
         "Convert to named struct",
         target,
         |edit| {
-        let names = generate_names(tuple_fields.fields());
-        edit_field_references(ctx, edit, tuple_fields.fields(), &names);
-        let mut editor = edit.make_editor(syntax);
-        edit_struct_references(ctx, edit, strukt_def, &names);
-        edit_struct_def(&mut editor, &strukt_or_variant, tuple_fields, names);
-        edit.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            let names = generate_names(tuple_fields.fields());
+            edit_field_references(ctx, edit, tuple_fields.fields(), &names);
+            let mut editor = edit.make_editor(syntax);
+            edit_struct_references(ctx, edit, strukt_def, &names);
+            edit_struct_def(&mut editor, &strukt_or_variant, tuple_fields, names);
+            edit.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -228,9 +228,9 @@ fn edit_field_references(
 fn generate_names(fields: impl Iterator<Item = ast::TupleField>) -> Vec<ast::Name> {
     let make = SyntaxFactory::without_mappings();
     fields.enumerate().map(|(i, _)| {
-        let idx = i + 1;
-        make.name(&format!("field{idx}"))
-    }).collect(
+            let idx = i + 1;
+            make.name(&format!("field{idx}"))
+        }).collect(
     )
 }
 

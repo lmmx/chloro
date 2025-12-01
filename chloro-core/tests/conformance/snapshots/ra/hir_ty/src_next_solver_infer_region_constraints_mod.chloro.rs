@@ -401,7 +401,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
                     if self.unification_table_mut().unify_var_var(a, b).is_ok() {
                         self.storage.any_unifications = true;
                     }
-                },
+                }
                 (RegionKind::ReVar(vid), _) => {
                     debug!("make_eqregion: unifying {:?} with {:?}", vid, b);
                     if self
@@ -411,7 +411,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
                     {
                         self.storage.any_unifications = true;
                     };
-                },
+                }
                 (_, RegionKind::ReVar(vid)) => {
                     debug!("make_eqregion: unifying {:?} with {:?}", a, vid);
                     if self
@@ -421,9 +421,9 @@ impl<'db> RegionConstraintCollector<'db, '_> {
                     {
                         self.storage.any_unifications = true;
                     };
-                },
+                }
                 (_, _) => {
-                },
+                }
             }
         }
     }
@@ -434,21 +434,21 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         match (sub.kind(), sup.kind()) {
             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");
-            },
+            }
             (_, RegionKind::ReStatic) => {
-            },
+            }
             (RegionKind::ReVar(sub_id), RegionKind::ReVar(sup_id)) => {
                 self.add_constraint(Constraint::VarSubVar(sub_id, sup_id));
-            },
+            }
             (_, RegionKind::ReVar(sup_id)) => {
                 self.add_constraint(Constraint::RegSubVar(sub, sup_id));
-            },
+            }
             (RegionKind::ReVar(sub_id), _) => {
                 self.add_constraint(Constraint::VarSubReg(sub_id, sup));
-            },
+            }
             _ => {
                 self.add_constraint(Constraint::RegSubReg(sub, sup));
-            },
+            }
         }
     }
 
@@ -661,21 +661,21 @@ impl<'db> Rollback<UndoLog<'db>> for RegionConstraintStorage<'db> {
             AddVar(vid) => {
                 self.var_infos.pop().unwrap();
                 assert_eq!(self.var_infos.len(), vid.index());
-            },
+            }
             AddConstraint(index) => {
                 self.data.constraints.pop().unwrap();
                 assert_eq!(self.data.constraints.len(), index);
-            },
+            }
             AddVerify(index) => {
                 self.data.verifys.pop();
                 assert_eq!(self.data.verifys.len(), index);
-            },
+            }
             AddCombination(Glb, ref regions) => {
                 self.glbs.remove(regions);
-            },
+            }
             AddCombination(Lub, ref regions) => {
                 self.lubs.remove(regions);
-            },
+            }
         }
     }
 }

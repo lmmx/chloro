@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6139 bytes
-Chloro size:   6182 bytes
+Chloro size:   6178 bytes
 Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
@@ -51,35 +51,3 @@ Rustfmt size:  6179 bytes
      // Because we use `BoundVarIndexKind::Canonical`, we can cache
      // based only on the entire ty, not worrying about a `DebruijnIndex`
      cache: FxHashMap<Ty<'db>, Ty<'db>>,
-         match t.kind() {
-             TyKind::Bound(BoundVarIndexKind::Canonical, bound_ty) => {
-                 self.var_values[bound_ty.var.as_usize()].expect_ty()
--            }
-+            },
-             _ => {
-                 if !t.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
-                     t
-                     assert!(self.cache.insert(t, res).is_none());
-                     res
-                 }
--            }
-+            },
-         }
-     }
- 
-         match r.kind() {
-             RegionKind::ReBound(BoundVarIndexKind::Canonical, br) => {
-                 self.var_values[br.var.as_usize()].expect_region()
--            }
-+            },
-             _ => r,
-         }
-     }
-         match ct.kind() {
-             ConstKind::Bound(BoundVarIndexKind::Canonical, bound_const) => {
-                 self.var_values[bound_const.var.as_usize()].expect_const()
--            }
-+            },
-             _ => ct.super_fold_with(self),
-         }
-     }

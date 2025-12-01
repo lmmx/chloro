@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17943 bytes
-Chloro size:   16708 bytes
+Chloro size:   16705 bytes
 Rustfmt size:  17943 bytes
 
 ✗ Outputs DIFFER
@@ -69,30 +69,20 @@ Rustfmt size:  17943 bytes
                  for index in indices.iter() {
                      op = op.add(index.map.search(&automaton));
                  }
-                 self.search_maps(indices, op.union(), cb)
--            }
-+            },
+             }
              SearchMode::Fuzzy => {
                  let automaton = fst::automaton::Subsequence::new(&self.lowercased);
 -
                  for index in indices.iter() {
                      op = op.add(index.map.search(&automaton));
                  }
-                 self.search_maps(indices, op.union(), cb)
--            }
-+            },
+             }
              SearchMode::Prefix => {
                  let automaton = fst::automaton::Str::new(&self.lowercased).starts_with();
 -
                  for index in indices.iter() {
                      op = op.add(index.map.search(&automaton));
                  }
-                 self.search_maps(indices, op.union(), cb)
--            }
-+            },
-         }
-     }
- 
  
  #[cfg(test)]
  mod tests {

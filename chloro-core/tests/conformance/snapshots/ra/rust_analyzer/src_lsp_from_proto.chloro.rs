@@ -137,7 +137,7 @@ pub(crate) fn annotation(
                 range: text_range(&line_index, range)?,
                 kind: AnnotationKind::HasImpls { pos, data: None },
             })
-        },
+        }
         lsp_ext::CodeLensResolveDataKind::References(params) => {
             if snap.url_file_version(&params.text_document.uri) != Some(data.version) {
                 return Ok(None);
@@ -148,7 +148,7 @@ pub(crate) fn annotation(
                 range: text_range(&line_index, range)?,
                 kind: AnnotationKind::HasReferences { pos, data: None },
             })
-        },
+        }
     }.map(
         Some,
     )

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10531 bytes
-Chloro size:   10538 bytes
+Chloro size:   10527 bytes
 Rustfmt size:  11050 bytes
 
 ✗ Outputs DIFFER
@@ -21,8 +21,7 @@ Rustfmt size:  11050 bytes
                  }
 -
                  None
--            }
-+            },
+             }
              RunnableKind::Test { test_id, .. } => {
                  for runnable in &self.shell_runnables {
 -                    if matches!(
@@ -38,11 +37,8 @@ Rustfmt size:  11050 bytes
                  }
 -
                  None
--            }
-+            },
+             }
              RunnableKind::TestMod { .. } => None,
-             RunnableKind::Bench { .. } => None,
-             RunnableKind::DocTest { .. } => None,
              }
              RunnableKind::Bin => {
                  let subcommand = match spec {
@@ -76,56 +72,22 @@ Rustfmt size:  11050 bytes
                  );
                  feats.extend(target_required_features);
  
-             TargetKind::Bin => {
-                 buf.push("--bin".to_owned());
-                 buf.push(self.target);
--            }
-+            },
-             TargetKind::Test => {
-                 buf.push("--test".to_owned());
-                 buf.push(self.target);
--            }
-+            },
-             TargetKind::Bench => {
-                 buf.push("--bench".to_owned());
-                 buf.push(self.target);
--            }
-+            },
-             TargetKind::Example => {
-                 buf.push("--example".to_owned());
-                 buf.push(self.target);
--            }
-+            },
-             TargetKind::Lib { is_proc_macro: _ } => {
-                 buf.push("--lib".to_owned());
--            }
-+            },
-             TargetKind::Other | TargetKind::BuildScript => (),
-         }
-     }
-     match cfg_expr {
-         CfgExpr::Atom(CfgAtom::KeyValue { key, value }) if *key == sym::feature => {
              features.push(value.to_string())
--        }
-+        },
+         }
          CfgExpr::All(preds) => {
 -            preds
 -                .iter()
 -                .for_each(|cfg| required_features(cfg, features));
--        }
 +            preds.iter().for_each(|cfg| required_features(cfg, features));
-+        },
+         }
          CfgExpr::Any(preds) => {
              for cfg in preds.iter() {
-                 let len_features = features.len();
-                     break;
                  }
              }
--        }
+         }
 -        _ => {}
-+        },
 +        _ => {
-+        },
++        }
      }
  }
  

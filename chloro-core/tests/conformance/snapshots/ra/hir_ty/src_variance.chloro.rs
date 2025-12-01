@@ -198,74 +198,74 @@ impl<'db> Context<'db> {
             | TyKind::Never
             | TyKind::Str
             | TyKind::Foreign(..) => {
-            },
+            }
             TyKind::FnDef(..)
             | TyKind::Coroutine(..)
             | TyKind::CoroutineClosure(..)
             | TyKind::Closure(..) => {
                 never!("Unexpected unnameable type in variance computation: {:?}", ty);
-            },
+            }
             TyKind::Ref(lifetime, ty, mutbl) => {
                 self.add_constraints_from_region(lifetime, variance);
                 self.add_constraints_from_mt(ty, mutbl, variance);
-            },
+            }
             TyKind::Array(typ, len) => {
                 self.add_constraints_from_const(len);
                 self.add_constraints_from_ty(typ, variance);
-            },
+            }
             TyKind::Slice(typ) => {
                 self.add_constraints_from_ty(typ, variance);
-            },
+            }
             TyKind::RawPtr(ty, mutbl) => {
                 self.add_constraints_from_mt(ty, mutbl, variance);
-            },
+            }
             TyKind::Tuple(subtys) => {
                 for subty in subtys {
                     self.add_constraints_from_ty(subty, variance);
                 }
-            },
+            }
             TyKind::Adt(def, args) => {
                 self.add_constraints_from_args(def.def_id().0.into(), args, variance);
-            },
+            }
             TyKind::Alias(_, alias) => {
                 self.add_constraints_from_invariant_args(alias.args);
-            },
+            }
             TyKind::Dynamic(bounds, region) => {
                 self.add_constraints_from_region(region, variance);
                 for bound in bounds {
                     match bound.skip_binder() {
                         ExistentialPredicate::Trait(trait_ref) => {
                             self.add_constraints_from_invariant_args(trait_ref.args)
-                        },
+                        }
                         ExistentialPredicate::Projection(projection) => {
                             self.add_constraints_from_invariant_args(projection.args);
                             match projection.term {
                                 Term::Ty(ty) => {
                                     self.add_constraints_from_ty(ty, Variance::Invariant)
-                                },
+                                }
                                 Term::Const(konst) => self.add_constraints_from_const(konst),
                             }
-                        },
+                        }
                         ExistentialPredicate::AutoTrait(_) => {
-                        },
+                        }
                     }
                 }
-            },
+            }
             TyKind::Param(param) => self.constrain(param.index as usize, variance),
             TyKind::FnPtr(sig, _) => {
                 self.add_constraints_from_sig(sig.skip_binder().inputs_and_output.iter(), variance);
-            },
+            }
             TyKind::Error(_) => {
-            },
+            }
             TyKind::Bound(..) => {
-            },
+            }
             TyKind::CoroutineWitness(..)
             | TyKind::Placeholder(..)
             | TyKind::Infer(..)
             | TyKind::UnsafeBinder(..)
             | TyKind::Pat(..) => {
                 never!("unexpected type encountered in variance inference: {:?}", ty)
-            },
+            }
         }
     }
 
@@ -274,7 +274,7 @@ impl<'db> Context<'db> {
             match k {
                 GenericArg::Lifetime(lt) => {
                     self.add_constraints_from_region(lt, Variance::Invariant)
-                },
+                }
                 GenericArg::Ty(ty) => self.add_constraints_from_ty(ty, Variance::Invariant),
                 GenericArg::Const(val) => self.add_constraints_from_const(val),
             }
@@ -309,7 +309,7 @@ impl<'db> Context<'db> {
         match c.kind() {
             ConstKind::Unevaluated(c) => self.add_constraints_from_invariant_args(c.args),
             _ => {
-            },
+            }
         }
     }
 
@@ -341,11 +341,11 @@ impl<'db> Context<'db> {
         match region.kind() {
             RegionKind::ReEarlyParam(param) => self.constrain(param.index as usize, variance),
             RegionKind::ReStatic => {
-            },
+            }
             RegionKind::ReBound(..) => {
-            },
+            }
             RegionKind::ReError(_) => {
-            },
+            }
             RegionKind::ReLateParam(..)
             | RegionKind::RePlaceholder(..)
             | RegionKind::ReVar(..)
@@ -355,7 +355,7 @@ impl<'db> Context<'db> {
                       inference: {:?}",
                     region
                 );
-            },
+            }
         }
     }
 
@@ -931,6 +931,7 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
                         )))
                 );
             }
+
             expected.assert_eq(&res);
         },
         )

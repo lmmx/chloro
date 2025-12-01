@@ -30,7 +30,7 @@ fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
     match e {
         ConstEvalError::MirEvalError(MirEvalError::InFunction(e, _)) => {
             simplify(ConstEvalError::MirEvalError(*e))
-        },
+        }
         _ => e,
     }
 }
@@ -47,7 +47,7 @@ fn check_fail(
         Ok(_) => panic!("Expected fail, but it succeeded"),
         Err(e) => {
             assert!(error(simplify(e.clone())), "Actual error was: {}", pretty_print_err(e, &db))
-        },
+        }
     },
     )
 }

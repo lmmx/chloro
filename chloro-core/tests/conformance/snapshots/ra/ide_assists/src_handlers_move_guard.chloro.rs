@@ -26,21 +26,22 @@ pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>)
         "Move guard to arm body",
         target,
         |builder| {
-        let mut edit = builder.make_editor(match_arm.syntax());
-        if let Some(element) = space_before_guard
+            let mut edit = builder.make_editor(match_arm.syntax());
+            if let Some(element) = space_before_guard
                 && element.kind() == WHITESPACE
             {
                 edit.delete(element);
             }
-        if let Some(element) = space_after_arrow
+            if let Some(element) = space_after_arrow
                 && element.kind() == WHITESPACE
             {
                 edit.replace(element, make::tokens::single_space());
             }
-        edit.delete(guard.syntax());
-        edit.replace(arm_expr.syntax(), if_expr.syntax());
-        builder.add_file_edits(ctx.vfs_file_id(), edit);
-    },
+
+            edit.delete(guard.syntax());
+            edit.replace(arm_expr.syntax(), if_expr.syntax());
+            builder.add_file_edits(ctx.vfs_file_id(), edit);
+        },
     )
 }
 
@@ -75,19 +76,21 @@ pub(crate) fn move_arm_cond_to_match_guard(
         "Move condition to match guard",
         replace_node.text_range(),
         |edit| {
-        edit.delete(match_arm.syntax().text_range());
-        let dedent = if needs_dedent {
+            edit.delete(match_arm.syntax().text_range());
+            // Dedent if if_expr is in a BlockExpr
+            let dedent = if needs_dedent {
                 cov_mark::hit!(move_guard_ifelse_in_block);
                 1
             } else {
                 cov_mark::hit!(move_guard_ifelse_else_block);
                 0
             };
-        let then_arm_end = match_arm.syntax().text_range().end();
-        let indent_level = match_arm.indent_level();
-        let spaces = indent_level;
-        let mut first = true;
-        for (cond, block) in conds_blocks {
+            let then_arm_end = match_arm.syntax().text_range().end();
+            let indent_level = match_arm.indent_level();
+            let spaces = indent_level;
+
+            let mut first = true;
+            for (cond, block) in conds_blocks {
                 if !first {
                     edit.insert(then_arm_end, format!("\n{spaces}"));
                 } else {
@@ -107,32 +110,37 @@ pub(crate) fn move_arm_cond_to_match_guard(
                     }
                 }
             }
-        if let Some(e) = tail {
-            cov_mark::hit!(move_guard_ifelse_else_tail);
-            let guard = format!("\n{spaces}{match_pat} => ");
-            edit.insert(then_arm_end, guard);
-            let only_expr = e.statements().next().is_none();
-            match &e.tail_expr() {
-                Some(expr) if only_expr => {
-                    cov_mark::hit!(move_guard_ifelse_expr_only);
-                    edit.insert(then_arm_end, expr.syntax().text());
-                    edit.insert(then_arm_end, ",");
-                },
-                _ => {
-                    let to_insert = e.dedent(dedent.into()).syntax().text();
-                    edit.insert(then_arm_end, to_insert)
-                },
+            if let Some(e) = tail {
+                cov_mark::hit!(move_guard_ifelse_else_tail);
+                let guard = format!("\n{spaces}{match_pat} => ");
+                edit.insert(then_arm_end, guard);
+                let only_expr = e.statements().next().is_none();
+                match &e.tail_expr() {
+                    Some(expr) if only_expr => {
+                        cov_mark::hit!(move_guard_ifelse_expr_only);
+                        edit.insert(then_arm_end, expr.syntax().text());
+                        edit.insert(then_arm_end, ",");
+                    }
+                    _ => {
+                        let to_insert = e.dedent(dedent.into()).syntax().text();
+                        edit.insert(then_arm_end, to_insert)
+                    }
+                }
+            } else {
+                // There's no else branch. Add a pattern without guard, unless the following match
+                // arm is `_ => ...`
+                cov_mark::hit!(move_guard_ifelse_notail);
+                match match_arm.syntax().next_sibling().and_then(MatchArm::cast) {
+                    Some(next_arm)
+                        if matches!(next_arm.pat(), Some(Pat::WildcardPat(_)))
+                            && next_arm.guard().is_none() =>
+                    {
+                        cov_mark::hit!(move_guard_ifelse_has_wildcard);
+                    }
+                    _ => edit.insert(then_arm_end, format!("\n{spaces}{match_pat} => {{}}")),
+                }
             }
-        } else {
-            cov_mark::hit!(move_guard_ifelse_notail);
-            match match_arm.syntax().next_sibling().and_then(MatchArm::cast) {
-                Some(next_arm) if matches!(next_arm.pat(), Some(Pat::WildcardPat(_))) && next_arm.guard().is_none() => {
-                    cov_mark::hit!(move_guard_ifelse_has_wildcard);
-                },
-                _ => edit.insert(then_arm_end, format!("\n{spaces}{match_pat} => {{}}")),
-            }
-        }
-    },
+        },
     )
 }
 

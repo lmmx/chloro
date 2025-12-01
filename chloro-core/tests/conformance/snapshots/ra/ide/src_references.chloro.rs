@@ -215,11 +215,11 @@ pub(crate) fn find_all_refs(
                 }
             };
             Some(vec![make_searcher(true)(def)])
-        },
+        }
         None => {
             let search = make_searcher(false);
             Some(find_defs(sema, &syntax, position.offset)?.into_iter().map(search).collect())
-        },
+        }
     }
 }
 
@@ -249,7 +249,7 @@ pub(crate) fn find_defs(
     Some(sema.descend_into_macros_exact(token).into_iter().filter_map(
         |it| ast::NameLike::cast(it.parent()?),
     ).filter_map(move |name_like| {
-        let def = match name_like {
+                let def = match name_like {
                     ast::NameLike::NameRef(name_ref) => {
                         match NameRefClass::classify(sema, &name_ref)? {
                             NameRefClass::Definition(def, _) => def,
@@ -281,8 +281,8 @@ pub(crate) fn find_defs(
                             })?
                     }
                 };
-        Some(def)
-    }).collect(
+                Some(def)
+            }).collect(
     ))
 }
 
@@ -304,15 +304,15 @@ fn retain_adt_literal_usages(
                 })
             });
             usages.references.retain(|_, it| !it.is_empty());
-        },
+        }
         Definition::Adt(_) | Definition::Variant(_) => {
             refs.for_each(|it| {
                 it.retain(|reference| reference.name.as_name_ref().is_some_and(is_lit_name_ref))
             });
             usages.references.retain(|_, it| !it.is_empty());
-        },
+        }
         _ => {
-        },
+        }
     }
 }
 
@@ -389,14 +389,14 @@ fn is_enum_lit_name_ref(
         )
     };
     name_ref.syntax().ancestors().find_map(|ancestor| {
-        match_ast! {
+            match_ast! {
                 match ancestor {
                     ast::PathExpr(path_expr) => path_expr.path().map(path_is_variant_of_enum),
                     ast::RecordExpr(record_expr) => record_expr.path().map(path_is_variant_of_enum),
                     _ => None,
                 }
             }
-    }).unwrap_or(
+        }).unwrap_or(
         false,
     )
 }

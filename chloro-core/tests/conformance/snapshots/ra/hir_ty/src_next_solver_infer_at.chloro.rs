@@ -189,13 +189,13 @@ impl<'a, 'db> At<'a, 'db> {
         InferOk {
             value: (),
             obligations: goals.into_iter().map(|goal| {
-                Obligation::new(
-                    self.infcx.interner,
-                    self.cause.clone(),
-                    goal.param_env,
-                    goal.predicate,
-                )
-            }).collect(
+                    Obligation::new(
+                        self.infcx.interner,
+                        self.cause.clone(),
+                        goal.param_env,
+                        goal.predicate,
+                    )
+                }).collect(
             ),
         }
     }
@@ -235,13 +235,13 @@ impl<'db> ToTrace<'db> for GenericArg<'db> {
             values: match (a.kind(), b.kind()) {
                 (GenericArgKind::Lifetime(a), GenericArgKind::Lifetime(b)) => {
                     ValuePairs::Regions(ExpectedFound::new(a, b))
-                },
+                }
                 (GenericArgKind::Type(a), GenericArgKind::Type(b)) => {
                     ValuePairs::Terms(ExpectedFound::new(a.into(), b.into()))
-                },
+                }
                 (GenericArgKind::Const(a), GenericArgKind::Const(b)) => {
                     ValuePairs::Terms(ExpectedFound::new(a.into(), b.into()))
-                },
+                }
                 _ => panic!("relating different kinds: {a:?} {b:?}"),
             },
         }

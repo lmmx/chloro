@@ -53,7 +53,7 @@ impl<'db> CastTy<'db> {
                 } else {
                     None
                 }
-            },
+            }
             TyKind::RawPtr(ty, m) => Some(Self::Ptr(ty, m)),
             TyKind::FnPtr(..) => Some(Self::FnPtr),
             _ => None,
@@ -215,7 +215,7 @@ impl<'db> CastCheck<'db> {
             (_, CastTy::Int(Int::Char)) => Err(CastError::CastToChar),
             (CastTy::Int(Int::Bool | Int::CEnum | Int::Char), CastTy::Float) => {
                 Err(CastError::NeedViaInt)
-            },
+            }
             (CastTy::Int(Int::Bool | Int::CEnum | Int::Char) | CastTy::Float, CastTy::Ptr(..))
             | (CastTy::Ptr(..) | CastTy::FnPtr, CastTy::Float) => Err(CastError::IllegalCast),
             (CastTy::Ptr(src, _), CastTy::Ptr(dst, _)) => self.check_ptr_ptr_cast(ctx, src, dst),
@@ -301,10 +301,10 @@ impl<'db> CastCheck<'db> {
                         } else {
                             Err(CastError::DifferingKinds)
                         }
-                    },
+                    }
                     _ => Err(CastError::Unknown),
                 }
-            },
+            }
             (Some(src_kind), Some(dst_kind)) if src_kind == dst_kind => Ok(()),
             (_, _) => Err(CastError::DifferingKinds),
         }
@@ -392,7 +392,7 @@ fn pointer_kind<'db>(
             } else {
                 Ok(Some(PointerKind::Thin))
             }
-        },
+        }
         TyKind::Tuple(subst) => match subst.iter().next_back() {
             None => Ok(Some(PointerKind::Thin)),
             Some(ty) => pointer_kind(ty, ctx),
@@ -419,11 +419,11 @@ fn pointer_kind<'db>(
         | TyKind::Never => {
             never!("`{:?}` should be sized but is not?", ty);
             Err(())
-        },
+        }
         TyKind::UnsafeBinder(..) | TyKind::Pat(..) => {
             never!("we don't produce these types: {ty:?}");
             Err(())
-        },
+        }
     }
 }
 

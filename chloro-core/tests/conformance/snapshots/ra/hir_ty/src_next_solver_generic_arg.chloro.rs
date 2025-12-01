@@ -155,22 +155,22 @@ impl<'db> Relate<DbInterner<'db>> for GenericArg<'db> {
         match (a.kind(), b.kind()) {
             (GenericArgKind::Lifetime(a_lt), GenericArgKind::Lifetime(b_lt)) => {
                 Ok(relation.relate(a_lt, b_lt)?.into())
-            },
+            }
             (GenericArgKind::Type(a_ty), GenericArgKind::Type(b_ty)) => {
                 Ok(relation.relate(a_ty, b_ty)?.into())
-            },
+            }
             (GenericArgKind::Const(a_ct), GenericArgKind::Const(b_ct)) => {
                 Ok(relation.relate(a_ct, b_ct)?.into())
-            },
+            }
             (GenericArgKind::Lifetime(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            },
+            }
             (GenericArgKind::Type(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            },
+            }
             (GenericArgKind::Const(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            },
+            }
         }
     }
 }
@@ -262,9 +262,10 @@ impl<'db> GenericArgs<'db> {
             def_id.into(),
             first,
             |idx, id, prev| {
-            defaults.get(idx as usize).map(|default| default.instantiate(interner, prev)).unwrap_or_else(
-                || fallback(idx, id, prev),
-            )
+            defaults
+                .get(idx as usize)
+                .map(|default| default.instantiate(interner, prev))
+                .unwrap_or_else(|| fallback(idx, id, prev))
         },
         )
     }
@@ -321,10 +322,10 @@ impl<'db> GenericArgs<'db> {
                     closure_kind_ty: closure_kind_ty.expect_ty(),
                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
                 }
-            },
+            }
             _ => {
                 unreachable!("unexpected closure sig");
-            },
+            }
         }
     }
 
@@ -350,8 +351,13 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for GenericArgs<'db> {
         let interner = relation.cx();
         CollectAndApply::collect_and_apply(
             std::iter::zip(a.iter(), b.iter()).map(|(a, b)| {
-            relation.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)
-        }),
+                relation.relate_with_variance(
+                    Variance::Invariant,
+                    VarianceDiagInfo::default(),
+                    a,
+                    b,
+                )
+            }),
             |g| GenericArgs::new_from_iter(interner, g.iter().cloned()),
         )
     }
@@ -453,10 +459,10 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
                     closure_kind_ty: closure_kind_ty.expect_ty(),
                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
                 }
-            },
+            }
             _ => {
                 unreachable!("unexpected closure sig");
-            },
+            }
         }
     }
 
@@ -493,7 +499,7 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
                     return_ty: return_ty.expect_ty(),
                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
                 }
-            },
+            }
             _ => panic!("GenericArgs were likely not for a Coroutine."),
         }
     }
@@ -507,11 +513,11 @@ pub fn mk_param<'db>(
     match id {
         GenericParamId::LifetimeParamId(id) => {
             Region::new_early_param(interner, EarlyParamRegion { index, id }).into()
-        },
+        }
         GenericParamId::TypeParamId(id) => Ty::new_param(interner, id, index).into(),
         GenericParamId::ConstParamId(id) => {
             Const::new_param(interner, ParamConst { index, id }).into()
-        },
+        }
     }
 }
 
@@ -559,13 +565,13 @@ impl<'db> Relate<DbInterner<'db>> for Term<'db> {
             (TermKind::Ty(a_ty), TermKind::Ty(b_ty)) => Ok(relation.relate(a_ty, b_ty)?.into()),
             (TermKind::Const(a_ct), TermKind::Const(b_ct)) => {
                 Ok(relation.relate(a_ct, b_ct)?.into())
-            },
+            }
             (TermKind::Ty(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            },
+            }
             (TermKind::Const(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            },
+            }
         }
     }
 }

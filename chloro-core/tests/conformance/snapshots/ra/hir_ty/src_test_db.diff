@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6478 bytes
-Chloro size:   6429 bytes
+Chloro size:   6449 bytes
 Rustfmt size:  6513 bytes
 
 ✗ Outputs DIFFER
@@ -43,20 +43,16 @@ Rustfmt size:  6513 bytes
 -        files
 -            .into_iter()
 -            .filter_map(|file_id| {
--                let text = self.file_text(file_id.file_id(self));
--                let annotations = extract_annotations(text.text(self));
--                if annotations.is_empty() {
 +        files.into_iter().filter_map(|file_id| {
-+            let text = self.file_text(file_id.file_id(self));
-+            let annotations = extract_annotations(text.text(self));
-+            if annotations.is_empty() {
+                 let text = self.file_text(file_id.file_id(self));
+                 let annotations = extract_annotations(text.text(self));
+                 if annotations.is_empty() {
                      return None;
                  }
--                Some((file_id, annotations))
+                 Some((file_id, annotations))
 -            })
 -            .collect()
-+            Some((file_id, annotations))
-+        }).collect(
++            }).collect(
 +        )
      }
  }

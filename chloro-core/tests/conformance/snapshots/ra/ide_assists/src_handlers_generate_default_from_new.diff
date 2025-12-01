@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13010 bytes
-Chloro size:   12402 bytes
+Chloro size:   12418 bytes
 Rustfmt size:  13024 bytes
 
 ✗ Outputs DIFFER
@@ -44,19 +44,6 @@ Rustfmt size:  13024 bytes
  pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
      let fn_name = fn_node.name()?;
-         "Generate a Default impl from a new fn",
-         insert_location,
-         move |builder| {
--            let default_code = "    fn default() -> Self {
-+        let default_code = "    fn default() -> Self {
-         Self::new()
-     }";
--            let code = generate_trait_impl_text_from_impl(&impl_, self_ty, "Default", default_code);
--            builder.insert(insert_location.end(), code);
--        },
-+        let code = generate_trait_impl_text_from_impl(&impl_, self_ty, "Default", default_code);
-+        builder.insert(insert_location.end(), code);
-+    },
      )
  }
  

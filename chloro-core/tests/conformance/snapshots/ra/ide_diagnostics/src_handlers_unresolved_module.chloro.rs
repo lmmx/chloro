@@ -21,7 +21,7 @@ pub(crate) fn unresolved_module(
                     candidates.iter().format(", "),
                     last
                 )
-        },
+        }
     },
         d.decl.map(|it| it.into()),
     ).stable(
@@ -34,20 +34,20 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Option<Vec<
     let root = ctx.sema.db.parse_or_expand(d.decl.file_id);
     let unresolved_module = d.decl.value.to_node(&root);
     Some(d.candidates.iter().map(|candidate| {
-        fix(
-            "create_module",
-            &format!("Create module at `{candidate}`"),
-            FileSystemEdit::CreateFile {
-            dst: AnchoredPathBuf {
-                anchor: d.decl.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
-                path: candidate.clone(),
-            },
-            initial_contents: "".to_owned(),
-        }.into(
-        ),
-            unresolved_module.syntax().text_range(),
-        )
-    }).collect(
+                fix(
+                    "create_module",
+                    &format!("Create module at `{candidate}`"),
+                    FileSystemEdit::CreateFile {
+                        dst: AnchoredPathBuf {
+                            anchor: d.decl.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+                            path: candidate.clone(),
+                        },
+                        initial_contents: "".to_owned(),
+                    }
+                    .into(),
+                    unresolved_module.syntax().text_range(),
+                )
+            }).collect(
     ))
 }
 

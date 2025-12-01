@@ -207,10 +207,10 @@ impl CanonicalizeMode for CanonicalizeQueryResponse {
                     .probe_value(vid)
                     .unwrap_err();
                 canonicalizer.canonical_var_for_region(CanonicalVarKind::Region(universe), r)
-            },
+            }
             _ => {
                 panic!("unexpected region in query response: `{r:?}`");
-            },
+            }
         }
     }
 
@@ -240,7 +240,7 @@ impl CanonicalizeMode for CanonicalizeUserTypeAnnotation {
             RegionKind::ReVar(_) => canonicalizer.canonical_var_for_region_in_root_universe(r),
             RegionKind::RePlaceholder(..) | RegionKind::ReBound(..) => {
                 panic!("unexpected region in query response: `{r:?}`")
-            },
+            }
         }
     }
 
@@ -338,7 +338,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
             RegionKind::ReBound(BoundVarIndexKind::Bound(..), ..) => r,
             RegionKind::ReBound(BoundVarIndexKind::Canonical, ..) => {
                 panic!("canonicalized bound var found during canonicalization");
-            },
+            }
             RegionKind::ReStatic
             | RegionKind::ReEarlyParam(..)
             | RegionKind::ReError(_)
@@ -362,7 +362,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                     Ok(t) => {
                         debug!("(resolved to {:?})", t);
                         self.fold_ty(t)
-                    },
+                    }
                     Err(mut ui) => {
                         if !self.canonicalize_mode.preserve_universes() {
                             // FIXME: perf problem described in #55921.
@@ -370,9 +370,9 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                         }
                         let sub_root = self.get_or_insert_sub_root(vid);
                         self.canonicalize_ty_var(CanonicalVarKind::Ty { ui, sub_root }, t)
-                    },
+                    }
                 }
-            },
+            }
             TyKind::Infer(IntVar(vid)) => {
                 let nt = self.infcx.opportunistic_resolve_int_var(vid);
                 if nt != t {
@@ -380,7 +380,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                 } else {
                     self.canonicalize_ty_var(CanonicalVarKind::Int, t)
                 }
-            },
+            }
             TyKind::Infer(FloatVar(vid)) => {
                 let nt = self.infcx.opportunistic_resolve_float_var(vid);
                 if nt != t {
@@ -388,22 +388,22 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                 } else {
                     self.canonicalize_ty_var(CanonicalVarKind::Float, t)
                 }
-            },
+            }
             TyKind::Infer(
                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_),
             ) => {
                 panic!("encountered a fresh type during canonicalization")
-            },
+            }
             TyKind::Placeholder(mut placeholder) => {
                 if !self.canonicalize_mode.preserve_universes() {
                     placeholder.universe = UniverseIndex::ROOT;
                 }
                 self.canonicalize_ty_var(CanonicalVarKind::PlaceholderTy(placeholder), t)
-            },
+            }
             TyKind::Bound(BoundVarIndexKind::Bound(..), _) => t,
             TyKind::Bound(BoundVarIndexKind::Canonical, ..) => {
                 panic!("canonicalized bound var found during canonicalization");
-            },
+            }
             TyKind::Closure(..)
             | TyKind::CoroutineClosure(..)
             | TyKind::Coroutine(..)
@@ -435,7 +435,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                 } else {
                     t
                 }
-            },
+            }
         }
     }
 
@@ -668,31 +668,31 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
             .collect();
 
         self.variables.iter().map(|v| match *v {
-            CanonicalVarKind::Int | CanonicalVarKind::Float => *v,
-            CanonicalVarKind::Ty { ui, sub_root } => {
-                CanonicalVarKind::Ty { ui: reverse_universe_map[&ui], sub_root }
-            },
-            CanonicalVarKind::Region(u) => CanonicalVarKind::Region(reverse_universe_map[&u]),
-            CanonicalVarKind::Const(u) => CanonicalVarKind::Const(reverse_universe_map[&u]),
-            CanonicalVarKind::PlaceholderTy(placeholder) => {
-                CanonicalVarKind::PlaceholderTy(Placeholder {
+                CanonicalVarKind::Int | CanonicalVarKind::Float => *v,
+                CanonicalVarKind::Ty { ui, sub_root } => {
+                    CanonicalVarKind::Ty { ui: reverse_universe_map[&ui], sub_root }
+                }
+                CanonicalVarKind::Region(u) => CanonicalVarKind::Region(reverse_universe_map[&u]),
+                CanonicalVarKind::Const(u) => CanonicalVarKind::Const(reverse_universe_map[&u]),
+                CanonicalVarKind::PlaceholderTy(placeholder) => {
+                    CanonicalVarKind::PlaceholderTy(Placeholder {
                         universe: reverse_universe_map[&placeholder.universe],
                         ..placeholder
                     })
-            },
-            CanonicalVarKind::PlaceholderRegion(placeholder) => {
-                CanonicalVarKind::PlaceholderRegion(Placeholder {
+                }
+                CanonicalVarKind::PlaceholderRegion(placeholder) => {
+                    CanonicalVarKind::PlaceholderRegion(Placeholder {
                         universe: reverse_universe_map[&placeholder.universe],
                         ..placeholder
                     })
-            },
-            CanonicalVarKind::PlaceholderConst(placeholder) => {
-                CanonicalVarKind::PlaceholderConst(Placeholder {
+                }
+                CanonicalVarKind::PlaceholderConst(placeholder) => {
+                    CanonicalVarKind::PlaceholderConst(Placeholder {
                         universe: reverse_universe_map[&placeholder.universe],
                         ..placeholder
                     })
-            },
-        }).collect(
+                }
+            }).collect(
         )
     }
 

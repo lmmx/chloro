@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 68687 bytes
-Chloro size:   66612 bytes
+Chloro size:   66920 bytes
 Rustfmt size:  68687 bytes
 
 ✗ Outputs DIFFER
@@ -69,31 +69,6 @@ Rustfmt size:  68687 bytes
  }
  
  /// This always returns `Ok(...)`.
-         debug!("unify(a: {:?}, b: {:?}, use_lub: {})", a, b, self.use_lub);
-         self.commit_if_ok(|this| {
-             let at = this.infer_ctxt().at(&this.cause, this.table.trait_env.env);
--
-             let res = if this.use_lub {
-                 at.lub(b, a)
-             } else {
-                 at.sup(b, a)
-                     .map(|InferOk { value: (), obligations }| InferOk { value: b, obligations })
-             };
--
--            // In the new solver, lazy norm may allow us to shallowly equate
--            // more types, but we emit possibly impossible-to-satisfy obligations.
--            // Filter these cases out to make sure our coercion is more accurate.
-             match res {
-                 Ok(InferOk { value, obligations }) => {
-                     let mut ocx = ObligationCtxt::new(this.infer_ctxt());
-                     } else {
-                         Err(TypeError::Mismatch)
-                     }
--                }
-+                },
-                 res => res,
-             }
-         })
  
      /// Unify two types (using sub or lub).
      fn unify(&mut self, a: Ty<'db>, b: Ty<'db>) -> CoerceResult<'db> {
@@ -105,21 +80,6 @@ Rustfmt size:  68687 bytes
      }
  
      /// Unify two types (using sub or lub) and produce a specific coercion.
-     ) -> CoerceResult<'db> {
-         self.unify_raw(a, b).and_then(|InferOk { value: ty, obligations }| {
-             success(
--                adjustments
--                    .into_iter()
--                    .chain(std::iter::once(Adjustment { target: ty, kind: final_adjustment }))
--                    .collect(),
-+                adjustments.into_iter().chain(std::iter::once(Adjustment {
-+                target: ty,
-+                kind: final_adjustment,
-+            })).collect(
-+            ),
-                 ty,
-                 obligations,
-             )
          }
  
          // Coercing *from* an unresolved inference variable means that
@@ -160,29 +120,23 @@ Rustfmt size:  68687 bytes
 -                // Additionally, we permit coercion of function
 -                // items to drop the unsafe qualifier.
                  self.coerce_from_fn_item(a, b)
--            }
-+            },
+             }
              TyKind::FnPtr(a_sig_tys, a_hdr) => {
 -                // We permit coercion of fn pointers to drop the
 -                // unsafe qualifier.
                  self.coerce_from_fn_pointer(a_sig_tys.with(a_hdr), b)
--            }
-+            },
+             }
              TyKind::Closure(closure_def_id_a, args_a) => {
 -                // Non-capturing closures are coercible to
 -                // function pointers or unsafe function pointers.
 -                // It cannot convert closures that require unsafe.
                  self.coerce_closure_to_fn(a, closure_def_id_a.0, args_a, b)
--            }
-+            },
+             }
              _ => {
 -                // Otherwise, just use unification rules.
                  self.unify(a, b)
--            }
-+            },
+             }
          }
-     }
- 
          debug_assert!(self.table.shallow_resolve(b) == b);
  
          if b.is_infer() {
@@ -328,17 +282,6 @@ Rustfmt size:  68687 bytes
          // shift subsequent elements down when removing the front element.
          let mut queue: SmallVec<[PredicateObligation<'db>; 4]> = smallvec![Obligation::new(
              self.interner(),
-         debug_assert!(self.table.shallow_resolve(b) == b);
- 
-         self.commit_if_ok(|this| {
--            if let TyKind::FnPtr(_, hdr_b) = b.kind()
--                && fn_ty_a.safety().is_safe()
--                && !hdr_b.safety.is_safe()
--            {
-+            if let TyKind::FnPtr(_, hdr_b) = b.kind() && fn_ty_a.safety().is_safe() && !hdr_b.safety.is_safe() {
-                 let unsafe_a = Ty::safe_to_unsafe_fn_ty(this.interner(), fn_ty_a);
-                 this.unify_and(
-                     unsafe_a,
          })
      }
  
@@ -358,13 +301,6 @@ Rustfmt size:  68687 bytes
                  self.coerce_from_safe_fn(
                      a_sig,
                      b,
-                     Some(Adjust::Pointer(PointerCast::ReifyFnPointer)),
-                 )
--            }
-+            },
-             _ => self.unify(a, b),
-         }
-     }
          debug_assert!(self.table.shallow_resolve(b) == b);
  
          match b.kind() {
@@ -391,12 +327,6 @@ Rustfmt size:  68687 bytes
                  let safety = hdr.safety;
                  let closure_sig = args_a.closure_sig_untupled().map_bound(|mut sig| {
                      sig.safety = hdr.safety;
-                     [],
-                     Adjust::Pointer(PointerCast::ClosureFnPointer(safety)),
-                 )
--            }
-+            },
-             _ => self.unify(a, b),
          }
      }
  
@@ -473,33 +403,18 @@ Rustfmt size:  68687 bytes
 -                    Err(self
 -                        .table
 -                        .commit_if_ok(|table| {
--                            table
--                                .infer_ctxt
--                                .at(&ObligationCause::new(), table.trait_env.env)
--                                .lub(prev_ty, new_ty)
++                    Err(self.table.commit_if_ok(|table| {
+                             table
+                                 .infer_ctxt
+                                 .at(&ObligationCause::new(), table.trait_env.env)
+                                 .lub(prev_ty, new_ty)
 -                        })
 -                        .unwrap_err())
-+                    Err(self.table.commit_if_ok(|table| {
-+                        table.infer_ctxt.at(&ObligationCause::new(), table.trait_env.env).lub(
-+                            prev_ty,
-+                            new_ty,
-+                        )
-+                    }).unwrap_err(
++                        }).unwrap_err(
 +                    ))
                  }
--            }
-+            },
+             }
              Ok(ok) => {
-                 let (adjustments, target) = self.table.register_infer_ok(ok);
-                 for &expr in exprs {
-                     prev_ty, new_ty, target
-                 );
-                 Ok(target)
--            }
-+            },
-         }
-     }
- }
          if let Some(final_ty) = self.final_ty {
              final_ty
          } else {

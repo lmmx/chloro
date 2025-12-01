@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19183 bytes
-Chloro size:   18359 bytes
+Chloro size:   18358 bytes
 Rustfmt size:  19179 bytes
 
 ✗ Outputs DIFFER
@@ -77,8 +77,7 @@ Rustfmt size:  19179 bytes
 +        ),
          (true, Some(ty)) if refed && ty.is_slice() => {
              validate_type_recursively(ctx, ty.as_slice().as_ref(), false, fuel - 1)
--        }
-+        },
+         }
          (_, Some(ty)) => match ty.as_builtin() {
 -            // `const A: str` is not correct, but `const A: &builtin` is.
              Some(builtin) if refed || !builtin.is_str() => Some(()),

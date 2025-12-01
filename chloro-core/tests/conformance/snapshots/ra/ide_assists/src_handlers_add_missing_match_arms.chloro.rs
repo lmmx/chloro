@@ -195,8 +195,10 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
         "Fill match arms",
         ctx.sema.original_range(match_expr.syntax()).range,
         |builder| {
-        needs_catch_all_arm |= has_hidden_variants;
-        let missing_arms = missing_pats
+            // having any hidden variants means that we need a catch-all arm
+            needs_catch_all_arm |= has_hidden_variants;
+
+            let missing_arms = missing_pats
                 .filter(|(_, hidden)| {
                     // filter out hidden patterns because they're handled by the catch-all arm
                     !hidden
@@ -212,7 +214,8 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
                         },
                     )
                 });
-        let mut arms: Vec<_> = match_arm_list
+
+            let mut arms: Vec<_> = match_arm_list
                 .arms()
                 .filter(|arm| {
                     if matches!(arm.pat(), Some(ast::Pat::WildcardPat(_))) {
@@ -235,9 +238,11 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
                 })
                 .map(|arm| arm.reset_indent().indent(IndentLevel(1)))
                 .collect();
-        let first_new_arm_idx = arms.len();
-        arms.extend(missing_arms);
-        if needs_catch_all_arm && !has_catch_all_arm {
+
+            let first_new_arm_idx = arms.len();
+            arms.extend(missing_arms);
+
+            if needs_catch_all_arm && !has_catch_all_arm {
                 cov_mark::hit!(added_wildcard_pattern);
                 let arm = make.match_arm(
                     make.wildcard_pat().into(),
@@ -250,8 +255,12 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
                 );
                 arms.push(arm);
             }
-        let new_match_arm_list = make.match_arm_list(arms);
-        let old_place = {
+
+            let new_match_arm_list = make.match_arm_list(arms);
+
+            // FIXME: Hack for syntax trees not having great support for macros
+            // Just replace the element that the original range came from
+            let old_place = {
                 // Find the original element
                 let file = ctx.sema.parse(arm_list_range.file_id);
                 let old_place = file.syntax().covering_element(arm_list_range.range);
@@ -265,10 +274,12 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
                     }
                 }
             };
-        let mut editor = builder.make_editor(&old_place);
-        let new_match_arm_list = new_match_arm_list.indent(IndentLevel::from_node(&old_place));
-        editor.replace(old_place, new_match_arm_list.syntax());
-        if let Some(cap) = ctx.config.snippet_cap {
+
+            let mut editor = builder.make_editor(&old_place);
+            let new_match_arm_list = new_match_arm_list.indent(IndentLevel::from_node(&old_place));
+            editor.replace(old_place, new_match_arm_list.syntax());
+
+            if let Some(cap) = ctx.config.snippet_cap {
                 if let Some(it) = new_match_arm_list
                     .arms()
                     .nth(first_new_arm_idx)
@@ -287,9 +298,10 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
                     editor.add_annotation(arm.syntax(), builder.make_tabstop_after(cap));
                 }
             }
-        editor.add_mappings(make.take());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            editor.add_mappings(make.take());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -341,10 +353,10 @@ fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
         (Pat::WildcardPat(_), _) => true,
         (Pat::SlicePat(spat), Pat::SlicePat(svar)) => {
             spat.pats().zip(svar.pats()).all(|(p, v)| does_pat_match_variant(&p, &v))
-        },
+        }
         (Pat::TuplePat(tpat), Pat::TuplePat(tvar)) => {
             tpat.fields().zip(tvar.fields()).all(|(p, v)| does_pat_match_variant(&p, &v))
-        },
+        }
         (Pat::OrPat(opat), _) => opat.pats().any(|p| does_pat_match_variant(&p, var)),
         _ => utils::does_pat_match_variant(pat, var),
     }
@@ -374,7 +386,7 @@ impl ExtendedVariant {
         match self {
             ExtendedVariant::Variant { variant: var, .. } => {
                 var.attrs(db).has_doc_hidden() && var.module(db).krate() != krate
-            },
+            }
             _ => false,
         }
     }
@@ -397,7 +409,7 @@ impl ExtendedEnum {
         match self {
             ExtendedEnum::Enum { enum_: e, .. } => {
                 e.attrs(db).by_key(sym::non_exhaustive).exists() && e.module(db).krate() != krate
-            },
+            }
             _ => false,
         }
     }
@@ -408,7 +420,7 @@ impl ExtendedEnum {
             ),
             ExtendedEnum::Bool => {
                 Vec::<ExtendedVariant>::from([ExtendedVariant::True, ExtendedVariant::False])
-            },
+            }
         }
     }
 }
@@ -430,18 +442,19 @@ fn resolve_tuple_of_enum_def(
     self_ty: Option<&hir::Type<'_>>,
 ) -> Option<Vec<ExtendedEnum>> {
     sema.type_of_expr(expr)?.adjusted().tuple_fields(sema.db).iter().map(|ty| {
-        ty.autoderef(sema.db).find_map(|ty| {
-            match ty.as_adt() {
-                Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
-                _ => ty.is_bool().then_some(ExtendedEnum::Bool),
-            }
-        })
-    }).collect::<Option<Vec<ExtendedEnum>>>(
-    ).and_then(|list| if list.is_empty() {
-        None
-    } else {
-        Some(list)
-    })
+            ty.autoderef(sema.db).find_map(|ty| {
+                match ty.as_adt() {
+                    Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
+                    // For now we only handle expansion for a tuple of enums. Here
+                    // we map non-enum items to None and rely on `collect` to
+                    // convert Vec<Option<hir::Enum>> into Option<Vec<hir::Enum>>.
+                    _ => ty.is_bool().then_some(ExtendedEnum::Bool),
+                }
+            })
+        }).collect::<Option<Vec<ExtendedEnum>>>(
+    ).and_then(
+        |list| if list.is_empty() { None } else { Some(list) },
+    )
 }
 
 fn resolve_array_of_enum_def(
@@ -505,7 +518,7 @@ fn build_pat(
                 hir::StructKind::Unit => make.path_pat(path),
             };
             Some(pat)
-        },
+        }
         ExtendedVariant::True => Some(ast::Pat::from(make.literal_pat("true"))),
         ExtendedVariant::False => Some(ast::Pat::from(make.literal_pat("false"))),
     }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4004 bytes
-Chloro size:   3934 bytes
+Chloro size:   3942 bytes
 Rustfmt size:  4004 bytes
 
 ✗ Outputs DIFFER
@@ -79,13 +79,12 @@ Rustfmt size:  4004 bytes
 -        .iter()
 -        .copied()
 -        .filter(|&crate_id| {
--            crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
++    db.relevant_crates(file_id).iter().copied().filter(|&crate_id| {
+             crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
 -        })
 -        .sorted()
 -        .collect()
-+    db.relevant_crates(file_id).iter().copied().filter(|&crate_id| {
-+        crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
-+    }).sorted(
++        }).sorted(
 +    ).collect(
 +    )
  }

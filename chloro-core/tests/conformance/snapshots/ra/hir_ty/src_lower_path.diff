@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55099 bytes
+Chloro size:   55120 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -95,13 +95,11 @@ Rustfmt size:  55742 bytes
              1 => {
 -                // resolve unselected assoc types
                  (self.select_associated_type(res, infer_args), None)
--            }
-+            },
+             }
              _ => {
 -                // FIXME report error (ambiguous associated type)
                  (Ty::new_error(self.ctx.interner, ErrorGuaranteed), None)
--            }
-+            },
+             }
          }
      }
  
@@ -176,18 +174,3 @@ Rustfmt size:  55742 bytes
      let params = generics(interner.db(), def.into());
      GenericArgs::new_from_iter(
          interner,
-         params.iter_id().map(|id| match id {
--            GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
--            GenericParamId::ConstParamId(id) => {
--                unknown_const_as_generic(const_param_ty_query(interner.db(), id))
--            }
--            GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
--        }),
-+        GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
-+        GenericParamId::ConstParamId(id) => {
-+            unknown_const_as_generic(const_param_ty_query(interner.db(), id))
-+        },
-+        GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
-+    }),
-     )
- }

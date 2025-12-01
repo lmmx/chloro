@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20947 bytes
-Chloro size:   19955 bytes
+Chloro size:   19951 bytes
 Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
@@ -48,7 +48,8 @@ Rustfmt size:  21861 bytes
 -            .copied()
 -            .map(hir::Trait::from)
 -            .filter(|it| {
--                !ctx.exclude_traits.contains(it) && it.complete(ctx.db) != Complete::IgnoreMethods
++        Qualified::TypeAnchor { ty: None, trait_: None } => ctx.traits_in_scope().iter().copied().map(hir::Trait::from).filter(|it| {
+                 !ctx.exclude_traits.contains(it) && it.complete(ctx.db) != Complete::IgnoreMethods
 -            })
 -            .flat_map(|it| it.items(ctx.sema.db))
 -            .for_each(|item| add_assoc_item(acc, item)),
@@ -61,21 +62,18 @@ Rustfmt size:  21861 bytes
 -                .items(ctx.sema.db)
 -                .into_iter()
 -                .for_each(|item| add_assoc_item(acc, item))
--        }
--        Qualified::TypeAnchor {
--            ty: Some(ty),
--            trait_: None,
--        } => {
-+        Qualified::TypeAnchor { ty: None, trait_: None } => ctx.traits_in_scope().iter().copied().map(hir::Trait::from).filter(|it| {
-+            !ctx.exclude_traits.contains(it) && it.complete(ctx.db) != Complete::IgnoreMethods
-+        }).flat_map(
++            }).flat_map(
 +            |it| it.items(ctx.sema.db),
 +        ).for_each(
 +            |item| add_assoc_item(acc, item),
 +        ),
 +        Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
 +            trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
-+        },
+         }
+-        Qualified::TypeAnchor {
+-            ty: Some(ty),
+-            trait_: None,
+-        } => {
 +        Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
              if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                  cov_mark::hit!(completes_variant_through_alias);
@@ -101,10 +99,9 @@ Rustfmt size:  21861 bytes
              ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                  if let hir::AssocItem::TypeAlias(ty) = item {
                      acc.add_type_alias(ctx, ty)
-                 }
                  None::<()>
              });
--        }
+         }
 -        Qualified::With {
 -            resolution: None, ..
 -        } => {}
@@ -117,9 +114,8 @@ Rustfmt size:  21861 bytes
 -                .assoc_type_shorthand_candidates(resolution, |alias| {
 -                    acc.add_type_alias(ctx, alias);
 -                });
-+        },
 +        Qualified::With { resolution: None, .. } => {
-+        },
++        }
 +        Qualified::With { resolution: Some(resolution), .. } => {
 +            ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
 +                acc.add_type_alias(ctx, alias);
@@ -134,14 +130,6 @@ Rustfmt size:  21861 bytes
                      let module_scope = module.scope(ctx.db, visible_from);
                      for (name, def) in module_scope {
                          if scope_def_applicable(def) {
-                             );
-                         }
-                     }
--                }
-+                },
-                 hir::PathResolution::Def(
-                     def @ (hir::ModuleDef::Adt(_)
-                     | hir::ModuleDef::TypeAlias(_)
                          }
                          _ => return,
                      };
@@ -173,22 +161,14 @@ Rustfmt size:  21861 bytes
                      ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                          if let hir::AssocItem::TypeAlias(ty) = item {
                              acc.add_type_alias(ctx, ty)
-                         }
-                         None::<()>
                      });
--                }
-+                },
+                 }
                  hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
 -                    // Don't filter excluded traits here, user requested this specific trait.
 -                    // Handles `Trait::assoc` as well as `<Ty as Trait>::assoc`.
                      for item in t.items(ctx.db) {
                          add_assoc_item(acc, item);
                      }
--                }
-+                },
-                 hir::PathResolution::TypeParam(_) | hir::PathResolution::SelfType(_) => {
-                     let ty = match resolution {
-                         hir::PathResolution::TypeParam(param) => param.ty(ctx.db),
                          hir::PathResolution::SelfType(impl_def) => impl_def.self_ty(ctx.db),
                          _ => return,
                      };
@@ -212,12 +192,8 @@ Rustfmt size:  21861 bytes
 -                        },
 +                        PathCallback { ctx, acc, add_assoc_item, seen: FxHashSet::default() },
                      );
--                }
-+                },
+                 }
                  _ => (),
-             }
--        }
-+        },
          Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
          Qualified::No => {
              acc.add_nameref_keywords_with_colon(ctx);
@@ -244,12 +220,6 @@ Rustfmt size:  21861 bytes
                      match ty.as_ref().and_then(|t| t.original.as_adt()) {
                          Some(hir::Adt::Union(_)) => (),
                          _ => {
-                             }
-                         }
-                     };
--                }
-+                },
-                 None => {
                      let mut add_keyword = |kw, snippet| {
                          acc.add_keyword_snippet_expr(ctx, incomplete_let, kw, snippet)
                      };
@@ -296,17 +266,6 @@ Rustfmt size:  21861 bytes
                      if let Some(ret_ty) = innermost_ret_ty {
                          add_keyword(
                              "return",
-                             },
-                         );
-                     }
--                }
-+                },
-             }
--        }
-+        },
-     }
- }
- 
      }
  
      if let Some(ty) = &ctx.expected_type {
@@ -348,8 +307,4 @@ Rustfmt size:  21861 bytes
 -
                          acc.add_expr(ctx, &expanded_expr)
                      }
--                }
-+                },
-                 _ => acc.add_expr(ctx, &expr),
-             }
-         }
+                 }

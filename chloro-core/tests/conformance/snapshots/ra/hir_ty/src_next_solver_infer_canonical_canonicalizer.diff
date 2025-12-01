@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   27975 bytes
+Chloro size:   28022 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -67,12 +67,10 @@ Rustfmt size:  29841 bytes
              RegionKind::ReVar(vid) => {
                  let universe = infcx
                      .inner
-                     .probe_value(vid)
                      .unwrap_err();
                  canonicalizer.canonical_var_for_region(CanonicalVarKind::Region(universe), r)
--            }
+             }
 -
-+            },
              _ => {
 -                // Other than `'static` or `'empty`, the query
 -                // response should be executing in a fully
@@ -83,21 +81,15 @@ Rustfmt size:  29841 bytes
 -                // scopes (in manner violating typeck). Therefore, use
 -                // `delayed_bug` to allow type error over an ICE.
                  panic!("unexpected region in query response: `{r:?}`");
--            }
-+            },
+             }
          }
-     }
- 
              | RegionKind::ReError(_) => r,
              RegionKind::ReVar(_) => canonicalizer.canonical_var_for_region_in_root_universe(r),
              RegionKind::RePlaceholder(..) | RegionKind::ReBound(..) => {
 -                // We only expect region names that the user can type.
                  panic!("unexpected region in query response: `{r:?}`")
--            }
-+            },
+             }
          }
-     }
- 
      sub_root_lookup_table: FxHashMap<TyVid, usize>,
      canonicalize_mode: &'cx dyn CanonicalizeMode,
      needs_canonical_flags: TypeFlags,
@@ -105,12 +97,10 @@ Rustfmt size:  29841 bytes
      binder_index: DebruijnIndex,
  }
  
-             RegionKind::ReBound(BoundVarIndexKind::Bound(..), ..) => r,
              RegionKind::ReBound(BoundVarIndexKind::Canonical, ..) => {
                  panic!("canonicalized bound var found during canonicalization");
--            }
+             }
 -
-+            },
              RegionKind::ReStatic
              | RegionKind::ReEarlyParam(..)
              | RegionKind::ReError(_)
@@ -132,11 +122,10 @@ Rustfmt size:  29841 bytes
                      Ok(t) => {
                          debug!("(resolved to {:?})", t);
                          self.fold_ty(t)
--                    }
+                     }
 -
 -                    // `TyVar(vid)` is unresolved, track its universe index in the canonicalized
 -                    // result.
-+                    },
                      Err(mut ui) => {
                          if !self.canonicalize_mode.preserve_universes() {
                              // FIXME: perf problem described in #55921.
@@ -145,61 +134,38 @@ Rustfmt size:  29841 bytes
 -
                          let sub_root = self.get_or_insert_sub_root(vid);
                          self.canonicalize_ty_var(CanonicalVarKind::Ty { ui, sub_root }, t)
--                    }
-+                    },
+                     }
                  }
--            }
+             }
 -
-+            },
              TyKind::Infer(IntVar(vid)) => {
                  let nt = self.infcx.opportunistic_resolve_int_var(vid);
                  if nt != t {
-                 } else {
-                     self.canonicalize_ty_var(CanonicalVarKind::Int, t)
-                 }
--            }
-+            },
-             TyKind::Infer(FloatVar(vid)) => {
-                 let nt = self.infcx.opportunistic_resolve_float_var(vid);
-                 if nt != t {
-                 } else {
                      self.canonicalize_ty_var(CanonicalVarKind::Float, t)
                  }
--            }
+             }
 -
-+            },
              TyKind::Infer(
                  InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_),
              ) => {
                  panic!("encountered a fresh type during canonicalization")
--            }
+             }
 -
-+            },
              TyKind::Placeholder(mut placeholder) => {
                  if !self.canonicalize_mode.preserve_universes() {
                      placeholder.universe = UniverseIndex::ROOT;
                  }
                  self.canonicalize_ty_var(CanonicalVarKind::PlaceholderTy(placeholder), t)
--            }
+             }
 -
-+            },
              TyKind::Bound(BoundVarIndexKind::Bound(..), _) => t,
              TyKind::Bound(BoundVarIndexKind::Canonical, ..) => {
                  panic!("canonicalized bound var found during canonicalization");
--            }
+             }
 -
-+            },
              TyKind::Closure(..)
              | TyKind::CoroutineClosure(..)
              | TyKind::Coroutine(..)
-                 } else {
-                     t
-                 }
--            }
-+            },
-         }
-     }
- 
              tcx,
              canonicalize_region_mode,
              query_state,
@@ -302,50 +268,24 @@ Rustfmt size:  29841 bytes
 -        self.variables
 -            .iter()
 -            .map(|v| match *v {
--                CanonicalVarKind::Int | CanonicalVarKind::Float => *v,
++        self.variables.iter().map(|v| match *v {
+                 CanonicalVarKind::Int | CanonicalVarKind::Float => *v,
 -                CanonicalVarKind::Ty { ui, sub_root } => CanonicalVarKind::Ty {
 -                    ui: reverse_universe_map[&ui],
 -                    sub_root,
 -                },
--                CanonicalVarKind::Region(u) => CanonicalVarKind::Region(reverse_universe_map[&u]),
--                CanonicalVarKind::Const(u) => CanonicalVarKind::Const(reverse_universe_map[&u]),
--                CanonicalVarKind::PlaceholderTy(placeholder) => {
--                    CanonicalVarKind::PlaceholderTy(Placeholder {
-+        self.variables.iter().map(|v| match *v {
-+            CanonicalVarKind::Int | CanonicalVarKind::Float => *v,
-+            CanonicalVarKind::Ty { ui, sub_root } => {
-+                CanonicalVarKind::Ty { ui: reverse_universe_map[&ui], sub_root }
-+            },
-+            CanonicalVarKind::Region(u) => CanonicalVarKind::Region(reverse_universe_map[&u]),
-+            CanonicalVarKind::Const(u) => CanonicalVarKind::Const(reverse_universe_map[&u]),
-+            CanonicalVarKind::PlaceholderTy(placeholder) => {
-+                CanonicalVarKind::PlaceholderTy(Placeholder {
-                         universe: reverse_universe_map[&placeholder.universe],
++                CanonicalVarKind::Ty { ui, sub_root } => {
++                    CanonicalVarKind::Ty { ui: reverse_universe_map[&ui], sub_root }
++                }
+                 CanonicalVarKind::Region(u) => CanonicalVarKind::Region(reverse_universe_map[&u]),
+                 CanonicalVarKind::Const(u) => CanonicalVarKind::Const(reverse_universe_map[&u]),
+                 CanonicalVarKind::PlaceholderTy(placeholder) => {
                          ..placeholder
                      })
--                }
--                CanonicalVarKind::PlaceholderRegion(placeholder) => {
--                    CanonicalVarKind::PlaceholderRegion(Placeholder {
-+            },
-+            CanonicalVarKind::PlaceholderRegion(placeholder) => {
-+                CanonicalVarKind::PlaceholderRegion(Placeholder {
-                         universe: reverse_universe_map[&placeholder.universe],
-                         ..placeholder
-                     })
--                }
--                CanonicalVarKind::PlaceholderConst(placeholder) => {
--                    CanonicalVarKind::PlaceholderConst(Placeholder {
-+            },
-+            CanonicalVarKind::PlaceholderConst(placeholder) => {
-+                CanonicalVarKind::PlaceholderConst(Placeholder {
-                         universe: reverse_universe_map[&placeholder.universe],
-                         ..placeholder
-                     })
--                }
+                 }
 -            })
 -            .collect()
-+            },
-+        }).collect(
++            }).collect(
 +        )
      }
  

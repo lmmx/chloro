@@ -133,20 +133,20 @@ impl NavigationTarget {
         match module.declaration_source(db) {
             Some(InFile { value, file_id }) => {
                 orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(|(FileRange { file_id, range: full_range }, focus_range)| {
-                    let mut res = NavigationTarget::from_syntax(
+                        let mut res = NavigationTarget::from_syntax(
                             file_id,
                             name.clone(),
                             focus_range,
                             full_range,
                             SymbolKind::Module,
                         );
-                    res.docs = module.docs(db);
-                    res.description = Some(
+                        res.docs = module.docs(db);
+                        res.description = Some(
                             module.display(db, module.krate().to_display_target(db)).to_string(),
                         );
-                    res
-                })
-            },
+                        res
+                    })
+            }
             _ => module.to_nav(db),
         }
     }
@@ -179,8 +179,8 @@ impl NavigationTarget {
             value.name().map(|it| Symbol::intern(&it.text())).unwrap_or_else(|| sym::underscore);
 
         orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(|(FileRange { file_id, range: full_range }, focus_range)| {
-            NavigationTarget::from_syntax(file_id, name.clone(), focus_range, full_range, kind)
-        })
+                NavigationTarget::from_syntax(file_id, name.clone(), focus_range, full_range, kind)
+            })
     }
 
     pub(crate) fn from_syntax(
@@ -217,7 +217,7 @@ impl TryToNav for FileSymbol {
             self.loc.ptr.text_range(),
             Some(self.loc.name_ptr.text_range()),
         ).map(|(FileRange { file_id, range: full_range }, focus_range)| {
-            NavigationTarget {
+                NavigationTarget {
                     file_id,
                     name: self
                         .is_alias
@@ -259,7 +259,7 @@ impl TryToNav for FileSymbol {
                     },
                     docs: None,
                 }
-        }))
+            }))
     }
 }
 
@@ -414,13 +414,13 @@ where
         let db = sema.db;
         let src = self.source(db)?;
         Some(NavigationTarget::from_named(db, src.as_ref().map(|it| it as &dyn ast::HasName), D::KIND).map(|mut res| {
-            res.docs = self.docs(db);
-            res.description = hir::attach_db(db, || {
+                res.docs = self.docs(db);
+                res.description = hir::attach_db(db, || {
                     Some(self.display(db, self.krate(db).to_display_target(db)).to_string())
                 });
-            res.container_name = self.container_name(db);
-            res
-        }))
+                res.container_name = self.container_name(db);
+                res
+            }))
     }
 }
 
@@ -436,14 +436,14 @@ impl ToNav for hir::Module {
         };
 
         orig_range_with_focus(db, file_id, syntax, focus).map(|(FileRange { file_id, range: full_range }, focus_range)| {
-            NavigationTarget::from_syntax(
-                file_id,
-                name.clone(),
-                focus_range,
-                full_range,
-                SymbolKind::Module,
-            )
-        })
+                NavigationTarget::from_syntax(
+                    file_id,
+                    name.clone(),
+                    focus_range,
+                    full_range,
+                    SymbolKind::Module,
+                )
+            })
     }
 }
 
@@ -468,14 +468,14 @@ impl TryToNav for hir::Impl {
         };
 
         Some(orig_range_with_focus(db, file_id, syntax, focus).map(|(FileRange { file_id, range: full_range }, focus_range)| {
-            NavigationTarget::from_syntax(
-                file_id,
-                sym::kw_impl,
-                focus_range,
-                full_range,
-                SymbolKind::Impl,
-            )
-        }))
+                NavigationTarget::from_syntax(
+                    file_id,
+                    sym::kw_impl,
+                    focus_range,
+                    full_range,
+                    SymbolKind::Impl,
+                )
+            }))
     }
 }
 
@@ -493,18 +493,19 @@ impl TryToNav for hir::ExternCrateDecl {
         let krate = self.module(db).krate();
 
         Some(orig_range_with_focus(db, file_id, value.syntax(), focus).map(|(FileRange { file_id, range: full_range }, focus_range)| {
-            let mut res = NavigationTarget::from_syntax(
+                let mut res = NavigationTarget::from_syntax(
                     file_id,
                     self.alias_or_name(db).unwrap_or_else(|| self.name(db)).symbol().clone(),
                     focus_range,
                     full_range,
                     SymbolKind::Module,
                 );
-            res.docs = self.docs(db);
-            res.description = Some(self.display(db, krate.to_display_target(db)).to_string());
-            res.container_name = container_name(db, *self);
-            res
-        }))
+
+                res.docs = self.docs(db);
+                res.description = Some(self.display(db, krate.to_display_target(db)).to_string());
+                res.container_name = container_name(db, *self);
+                res
+            }))
     }
 }
 
@@ -557,9 +558,9 @@ impl TryToNav for hir::Macro {
             Either::Right(it) => it,
         };
         Some(NavigationTarget::from_named(db, src.as_ref().with_value(name_owner), self.kind(db).into()).map(|mut res| {
-            res.docs = self.docs(db);
-            res
-        }))
+                res.docs = self.docs(db);
+                res
+            }))
     }
 }
 
@@ -613,15 +614,15 @@ impl ToNav for LocalSource {
         };
 
         orig_range_with_focus(db, file_id, node, name).map(|(FileRange { file_id, range: full_range }, focus_range)| {
-            let name = local.name(db).symbol().clone();
-            let kind = if local.is_self(db) {
+                let name = local.name(db).symbol().clone();
+                let kind = if local.is_self(db) {
                     SymbolKind::SelfParam
                 } else if local.is_param(db) {
                     SymbolKind::ValueParam
                 } else {
                     SymbolKind::Local
                 };
-            NavigationTarget {
+                NavigationTarget {
                     file_id,
                     name,
                     alias: None,
@@ -632,7 +633,7 @@ impl ToNav for LocalSource {
                     description: None,
                     docs: None,
                 }
-        })
+            })
     }
 }
 
@@ -956,23 +957,26 @@ pub(crate) fn orig_range_with_focus_r(
         call_site: (
             call_site_range.into_file_id(db),
             call_site_focus.and_then(|hir::FileRange { file_id, range }| {
-            if call_site_range.file_id == file_id && call_site_range.range.contains_range(range) {
-                Some(range)
-            } else {
-                None
-            }
-        }),
-        ),
-        def_site: def_site.map(|(def_site_range, def_site_focus)| {
-            (
-                def_site_range.into_file_id(db),
-                def_site_focus.and_then(|hir::FileRange { file_id, range }| {
-                if def_site_range.file_id == file_id && def_site_range.range.contains_range(range) {
+                if call_site_range.file_id == file_id && call_site_range.range.contains_range(range)
+                {
                     Some(range)
                 } else {
                     None
                 }
             }),
+        ),
+        def_site: def_site.map(|(def_site_range, def_site_focus)| {
+            (
+                def_site_range.into_file_id(db),
+                def_site_focus.and_then(|hir::FileRange { file_id, range }| {
+                    if def_site_range.file_id == file_id
+                        && def_site_range.range.contains_range(range)
+                    {
+                        Some(range)
+                    } else {
+                        None
+                    }
+                }),
             )
         }),
     }

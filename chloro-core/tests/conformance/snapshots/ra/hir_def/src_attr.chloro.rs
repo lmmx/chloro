@@ -73,9 +73,9 @@ impl Attrs {
         RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options).filter_map(
             |attr| attr.cfg(),
         ).find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
-            true => None,
-            false => Some(cfg),
-        }).map_or(
+                true => None,
+                false => Some(cfg),
+            }).map_or(
             Ok(()),
             Err,
         )
@@ -189,7 +189,7 @@ impl Attrs {
             Some(second) => {
                 let cfgs = [first, second].into_iter().chain(cfgs);
                 Some(CfgExpr::All(cfgs.collect()))
-            },
+            }
             None => Some(first),
         }
     }
@@ -202,11 +202,7 @@ impl Attrs {
     #[inline]
     pub(crate) fn is_cfg_enabled(&self, cfg_options: &CfgOptions) -> Result<(), CfgExpr> {
         self.cfgs().try_for_each(|cfg| {
-            if cfg_options.check(&cfg) != Some(false) {
-                Ok(())
-            } else {
-                Err(cfg)
-            }
+            if cfg_options.check(&cfg) != Some(false) { Ok(()) } else { Err(cfg) }
         })
     }
 
@@ -223,14 +219,16 @@ impl Attrs {
     #[inline]
     pub fn has_doc_hidden(&self) -> bool {
         self.by_key(sym::doc).tt_values().any(|tt| {
-            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis && matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::hidden)
+            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis &&
+                matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::hidden)
         })
     }
 
     #[inline]
     pub fn has_doc_notable_trait(&self) -> bool {
         self.by_key(sym::doc).tt_values().any(|tt| {
-            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis && matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::notable_trait)
+            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis &&
+                matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::notable_trait)
         })
     }
 
@@ -267,11 +265,12 @@ impl Attrs {
     #[inline]
     pub fn is_test(&self) -> bool {
         self.iter().any(|it| {
-            it.path().segments().iter().rev().zip(
-                [sym::core, sym::prelude, sym::v1, sym::test].iter().rev(),
-            ).all(
-                |it| it.0 == it.1,
-            )
+            it.path()
+                .segments()
+                .iter()
+                .rev()
+                .zip([sym::core, sym::prelude, sym::v1, sym::test].iter().rev())
+                .all(|it| it.0 == it.1)
         })
     }
 
@@ -306,13 +305,10 @@ impl Attrs {
         self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(
             None,
             |acc, repr| {
-            acc.map_or(
-                Some(repr),
-                |mut acc| {
+            acc.map_or(Some(repr), |mut acc| {
                 merge_repr(&mut acc, repr);
                 Some(acc)
-            },
-            )
+            })
         },
         )
     }
@@ -473,7 +469,7 @@ impl DocExpr {
         match self {
             DocExpr::Atom(DocAtom::KeyValue { key, value }) if *key == sym::alias => {
                 std::slice::from_ref(value)
-            },
+            }
             DocExpr::Alias(aliases) => aliases,
             _ => &[],
         }
@@ -558,7 +554,7 @@ impl AttrsWithOwner {
                     }
                 };
                 Attrs::expand_cfg_attr(db, module.krate, raw_attrs)
-            },
+            }
             AttrDefId::FieldId(it) => db.fields_attrs(it.parent)[it.local_id].clone(),
             AttrDefId::EnumVariantId(it) => attrs_from_ast_id_loc(db, it),
             AttrDefId::AdtId(it) => match it {
@@ -589,7 +585,7 @@ impl AttrsWithOwner {
                         ),
                         None => RawAttrs::EMPTY,
                     })
-                },
+                }
                 GenericParamId::TypeParamId(it) => {
                     let src = it.parent().child_source(db);
                     Attrs(match src.value.get(it.local_id()) {
@@ -601,7 +597,7 @@ impl AttrsWithOwner {
                         ),
                         None => RawAttrs::EMPTY,
                     })
-                },
+                }
                 GenericParamId::LifetimeParamId(it) => {
                     let src = it.parent.child_source(db);
                     Attrs(match src.value.get(it.local_id) {
@@ -613,7 +609,7 @@ impl AttrsWithOwner {
                         ),
                         None => RawAttrs::EMPTY,
                     })
-                },
+                }
             },
             AttrDefId::ExternBlockId(it) => attrs_from_ast_id_loc(db, it),
             AttrDefId::ExternCrateId(it) => attrs_from_ast_id_loc(db, it),
@@ -802,9 +798,10 @@ impl<'attr> AttrQuery<'attr> {
             let name = tt.iter()
                 .skip_while(|tt| !matches!(tt, TtElement::Leaf(tt::Leaf::Ident(tt::Ident { sym, ..} )) if *sym == key))
                 .nth(2);
+
             match name {
                 Some(TtElement::Leaf(tt::Leaf::Literal(tt::Literal{  symbol: text, kind: tt::LitKind::Str | tt::LitKind::StrRaw(_) , ..}))) => Some(text.as_str()),
-                _ => None,
+                _ => None
             }
         })
     }

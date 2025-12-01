@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5655 bytes
-Chloro size:   5673 bytes
+Chloro size:   5668 bytes
 Rustfmt size:  5830 bytes
 
 ✗ Outputs DIFFER
@@ -42,24 +42,9 @@ Rustfmt size:  5830 bytes
 +            DiscoverProjectData::Finished { project, buildfile, .. } => {
                  let buildfile = buildfile.try_into().expect("Unable to make path absolute");
                  DiscoverProjectMessage::Finished { project, buildfile }
--            }
-+            },
-             DiscoverProjectData::Error { error, source } => {
-                 DiscoverProjectMessage::Error { error, source }
--            }
-+            },
-             DiscoverProjectData::Progress { message } => {
-                 DiscoverProjectMessage::Progress { message }
--            }
-+            },
-         }
-     }
- }
-             Ok(data) => {
-                 let msg = DiscoverProjectMessage::new(data);
+             }
                  Some(msg)
--            }
-+            },
+             }
              Err(err) => {
 -                let err = DiscoverProjectData::Error {
 -                    error: format!("{err:#?}\n{line}"),
@@ -68,8 +53,5 @@ Rustfmt size:  5830 bytes
 +                let err =
 +                    DiscoverProjectData::Error { error: format!("{err:#?}\n{line}"), source: None };
                  Some(DiscoverProjectMessage::new(err))
--            }
-+            },
+             }
          }
-     }
- 

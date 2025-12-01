@@ -299,7 +299,7 @@ fn valid_target_expr(node: SyntaxNode) -> Option<ast::Expr> {
         SyntaxKind::RETURN_EXPR => ast::ReturnExpr::cast(node).and_then(|e| e.expr()),
         SyntaxKind::BLOCK_EXPR => {
             ast::BlockExpr::cast(node).filter(|it| it.is_standalone()).map(ast::Expr::from)
-        },
+        }
         _ => ast::Expr::cast(node),
     }
 }
@@ -457,7 +457,7 @@ impl Anchor {
                         _ => None,
                     }
                 })
-            },
+            }
             _ => result,
         }
     }

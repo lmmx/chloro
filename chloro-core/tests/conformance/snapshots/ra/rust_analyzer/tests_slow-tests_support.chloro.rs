@@ -501,7 +501,7 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
                 assert_eq!(r.len(), 0);
                 None
             }
-        },
+        }
         (Value::Object(l), Value::Object(r)) => {
             fn sorted_values(obj: &serde_json::Map<String, Value>) -> Vec<&Value> {
                 let mut entries = obj.iter().collect::<Vec<_>>();
@@ -515,7 +515,7 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
             let l = sorted_values(l);
             let r = sorted_values(r);
             l.into_iter().zip(r).find_map(|(l, r)| find_mismatch(l, r))
-        },
+        }
         (Value::Null, Value::Null) => None,
         (Value::String(l), _) if l == "{...}" => None,
         _ => Some((expected, actual)),

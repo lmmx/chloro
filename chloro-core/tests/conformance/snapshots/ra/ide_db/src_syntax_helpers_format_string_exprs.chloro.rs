@@ -20,13 +20,13 @@ pub enum Arg {
 pub fn with_placeholders(args: Vec<Arg>) -> Vec<String> {
     let mut placeholder_id = 1;
     args.into_iter().map(move |a| match a {
-        Arg::Expr(s) | Arg::Ident(s) => s,
-        Arg::Placeholder => {
-            let s = format!("${placeholder_id}");
-            placeholder_id += 1;
-            s
-        },
-    }).collect(
+            Arg::Expr(s) | Arg::Ident(s) => s,
+            Arg::Placeholder => {
+                let s = format!("${placeholder_id}");
+                placeholder_id += 1;
+                s
+            }
+        }).collect(
     )
 }
 

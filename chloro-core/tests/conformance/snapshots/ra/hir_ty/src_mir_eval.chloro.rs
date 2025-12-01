@@ -501,36 +501,36 @@ impl std::fmt::Debug for MirEvalError<'_> {
         match self {
             Self::ConstEvalError(arg0, arg1) => {
                 f.debug_tuple("ConstEvalError").field(arg0).field(arg1).finish()
-            },
+            }
             Self::LayoutError(arg0, arg1) => {
                 f.debug_tuple("LayoutError").field(arg0).field(arg1).finish()
-            },
+            }
             Self::UndefinedBehavior(arg0) => {
                 f.debug_tuple("UndefinedBehavior").field(arg0).finish()
-            },
+            }
             Self::Panic(msg) => write!(f, "Panic with message:\n{msg:?}"),
             Self::TargetDataLayoutNotAvailable(arg0) => {
                 f.debug_tuple("TargetDataLayoutNotAvailable").field(arg0).finish()
-            },
+            }
             Self::TypeIsUnsized(ty, it) => write!(f, "{ty:?} is unsized. {it} should be sized."),
             Self::ExecutionLimitExceeded => write!(f, "execution limit exceeded"),
             Self::StackOverflow => write!(f, "stack overflow"),
             Self::MirLowerError(arg0, arg1) => {
                 f.debug_tuple("MirLowerError").field(arg0).field(arg1).finish()
-            },
+            }
             Self::MirLowerErrorForClosure(arg0, arg1) => {
                 f.debug_tuple("MirLowerError").field(arg0).field(arg1).finish()
-            },
+            }
             Self::CoerceUnsizedError(arg0) => {
                 f.debug_tuple("CoerceUnsizedError").field(arg0).finish()
-            },
+            }
             Self::InternalError(arg0) => f.debug_tuple("InternalError").field(arg0).finish(),
             Self::InvalidVTableId(arg0) => f.debug_tuple("InvalidVTableId").field(arg0).finish(),
             Self::NotSupported(arg0) => f.debug_tuple("NotSupported").field(arg0).finish(),
             Self::InvalidConst(arg0) => f.debug_tuple("InvalidConst").field(&arg0).finish(),
             Self::InFunction(e, stack) => {
                 f.debug_struct("WithStack").field("error", e).field("stack", &stack).finish()
-            },
+            }
         }
     }
 }
@@ -886,7 +886,7 @@ impl<'db> Evaluator<'db> {
                     ty,
                     Mutability::Not,
                 )
-            },
+            }
         })
     }
 
@@ -1054,11 +1054,11 @@ impl<'db> Evaluator<'db> {
                     self.code_stack = prev_code_stack;
                     self.stack_depth_limit += 1;
                     return Ok(return_interval);
-                },
+                }
                 Some(bb) => {
                     let _ = my_stack_frame.prev_stack_ptr;
                     current_block_idx = bb;
-                },
+                }
             }
         }
     }
@@ -1153,7 +1153,7 @@ impl<'db> Evaluator<'db> {
                     r.extend(metadata.get(self)?);
                 }
                 Owned(r)
-            },
+            }
             Rvalue::Len(p) => {
                 let (_, _, metadata) = self.place_addr_and_ty_and_metadata(p, locals)?;
                 match metadata {
@@ -1162,9 +1162,9 @@ impl<'db> Evaluator<'db> {
                         return Err(MirEvalError::InternalError(
                             "type without metadata is used for Rvalue::Len".into(),
                         ));
-                    },
+                    }
                 }
-            },
+            }
             Rvalue::UnaryOp(op, val) => {
                 let mut c = self.eval_operand(val, locals)?.get(self)?;
                 let mut ty = self.operand_ty(val, locals)?;
@@ -1178,19 +1178,19 @@ impl<'db> Evaluator<'db> {
                         rustc_type_ir::FloatTy::F16 => {
                             let c = -from_bytes!(f16, u16, c);
                             Owned(u16::try_from(c.to_bits()).unwrap().to_le_bytes().into())
-                        },
+                        }
                         rustc_type_ir::FloatTy::F32 => {
                             let c = -from_bytes!(f32, c);
                             Owned(c.to_le_bytes().into())
-                        },
+                        }
                         rustc_type_ir::FloatTy::F64 => {
                             let c = -from_bytes!(f64, c);
                             Owned(c.to_le_bytes().into())
-                        },
+                        }
                         rustc_type_ir::FloatTy::F128 => {
                             let c = -from_bytes!(f128, u128, c);
                             Owned(c.to_bits().to_le_bytes().into())
-                        },
+                        }
                     }
                 } else {
                     let mut c = c.to_vec();
@@ -1213,7 +1213,7 @@ impl<'db> Evaluator<'db> {
                     }
                     Owned(c)
                 }
-            },
+            }
             Rvalue::CheckedBinaryOp(op, lhs, rhs) => 'binary_op: {
                 let lc = self.eval_operand(lhs, locals)?;
                 let rc = self.eval_operand(rhs, locals)?;
@@ -1256,7 +1256,7 @@ impl<'db> Evaluator<'db> {
                                 | BinOp::Ne => {
                                     let r = op.run_compare(l, r) as u8;
                                     Owned(vec![r])
-                                },
+                                }
                                 BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div => {
                                     let r = match op {
                                         BinOp::Add => l + r,
@@ -1268,12 +1268,12 @@ impl<'db> Evaluator<'db> {
                                     Owned(
                                         u16::try_from(r.value.to_bits()).unwrap().to_le_bytes().into(),
                                     )
-                                },
+                                }
                                 it => not_supported!(
                                     "invalid binop {it:?} on floating point operators"
                                 ),
                             }
-                        },
+                        }
                         rustc_type_ir::FloatTy::F32 => {
                             let l = from_bytes!(f32, lc);
                             let r = from_bytes!(f32, rc);
@@ -1286,7 +1286,7 @@ impl<'db> Evaluator<'db> {
                                 | BinOp::Ne => {
                                     let r = op.run_compare(l, r) as u8;
                                     Owned(vec![r])
-                                },
+                                }
                                 BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div => {
                                     let r = match op {
                                         BinOp::Add => l + r,
@@ -1296,12 +1296,12 @@ impl<'db> Evaluator<'db> {
                                         _ => unreachable!(),
                                     };
                                     Owned(r.to_le_bytes().into())
-                                },
+                                }
                                 it => not_supported!(
                                     "invalid binop {it:?} on floating point operators"
                                 ),
                             }
-                        },
+                        }
                         rustc_type_ir::FloatTy::F64 => {
                             let l = from_bytes!(f64, lc);
                             let r = from_bytes!(f64, rc);
@@ -1314,7 +1314,7 @@ impl<'db> Evaluator<'db> {
                                 | BinOp::Ne => {
                                     let r = op.run_compare(l, r) as u8;
                                     Owned(vec![r])
-                                },
+                                }
                                 BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div => {
                                     let r = match op {
                                         BinOp::Add => l + r,
@@ -1324,12 +1324,12 @@ impl<'db> Evaluator<'db> {
                                         _ => unreachable!(),
                                     };
                                     Owned(r.to_le_bytes().into())
-                                },
+                                }
                                 it => not_supported!(
                                     "invalid binop {it:?} on floating point operators"
                                 ),
                             }
-                        },
+                        }
                         rustc_type_ir::FloatTy::F128 => {
                             let l = from_bytes!(f128, u128, lc);
                             let r = from_bytes!(f128, u128, rc);
@@ -1342,7 +1342,7 @@ impl<'db> Evaluator<'db> {
                                 | BinOp::Ne => {
                                     let r = op.run_compare(l, r) as u8;
                                     Owned(vec![r])
-                                },
+                                }
                                 BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div => {
                                     let r = match op {
                                         BinOp::Add => l + r,
@@ -1352,12 +1352,12 @@ impl<'db> Evaluator<'db> {
                                         _ => unreachable!(),
                                     };
                                     Owned(r.value.to_bits().to_le_bytes().into())
-                                },
+                                }
                                 it => not_supported!(
                                     "invalid binop {it:?} on floating point operators"
                                 ),
                             }
-                        },
+                        }
                     }
                 } else {
                     let is_signed = matches!(ty.kind(), TyKind::Int(_));
@@ -1367,7 +1367,7 @@ impl<'db> Evaluator<'db> {
                         BinOp::Ge | BinOp::Gt | BinOp::Le | BinOp::Lt | BinOp::Eq | BinOp::Ne => {
                             let r = op.run_compare(l128, r128) as u8;
                             Owned(vec![r])
-                        },
+                        }
                         BinOp::BitAnd
                         | BinOp::BitOr
                         | BinOp::BitXor
@@ -1398,7 +1398,7 @@ impl<'db> Evaluator<'db> {
                                 _ => unreachable!(),
                             };
                             Owned(r.to_bytes())
-                        },
+                        }
                         BinOp::Shl | BinOp::Shr => {
                             let r = 'b: {
                                 if let Some(shift_amount) = r128.as_u32() {
@@ -1419,17 +1419,17 @@ impl<'db> Evaluator<'db> {
                                 return Err(MirEvalError::Panic(format!("Overflow in {op:?}")));
                             };
                             Owned(r.to_bytes())
-                        },
+                        }
                         BinOp::Offset => not_supported!("offset binop"),
                     }
                 }
-            },
+            }
             Rvalue::Discriminant(p) => {
                 let ty = self.place_ty(p, locals)?;
                 let bytes = self.eval_place(p, locals)?.get(self)?;
                 let result = self.compute_discriminant(ty, bytes)?;
                 Owned(result.to_le_bytes().to_vec())
-            },
+            }
             Rvalue::Repeat(it, len) => {
                 let len = match try_const_usize(self.db, *len) {
                     Some(it) => it as usize,
@@ -1438,7 +1438,7 @@ impl<'db> Evaluator<'db> {
                 let val = self.eval_operand(it, locals)?.get(self)?;
                 let size = len * val.len();
                 Owned(val.iter().copied().cycle().take(size).collect())
-            },
+            }
             Rvalue::ShallowInitBox(_, _) => not_supported!("shallow init box"),
             Rvalue::ShallowInitBoxWithAlloc(ty) => {
                 let Some((size, align)) = self.size_align_of(*ty, locals)? else {
@@ -1446,7 +1446,7 @@ impl<'db> Evaluator<'db> {
                 };
                 let addr = self.heap_allocate(size, align)?;
                 Owned(addr.to_bytes().to_vec())
-            },
+            }
             Rvalue::CopyForDeref(_) => not_supported!("copy for deref"),
             Rvalue::Aggregate(kind, values) => {
                 let values = values
@@ -1461,7 +1461,7 @@ impl<'db> Evaluator<'db> {
                             r.extend(value);
                         }
                         Owned(r)
-                    },
+                    }
                     AggregateKind::Tuple(ty) => {
                         let layout = self.layout(*ty)?;
                         Owned(self.construct_with_layout(
@@ -1470,7 +1470,7 @@ impl<'db> Evaluator<'db> {
                             None,
                             values.iter().map(|&it| it.into()),
                         )?)
-                    },
+                    }
                     AggregateKind::Union(it, f) => {
                         let layout = self.layout_adt(
                             (*it).into(),
@@ -1484,7 +1484,7 @@ impl<'db> Evaluator<'db> {
                         let mut result = vec![0; layout.size.bytes_usize()];
                         result[offset..offset + op.len()].copy_from_slice(op);
                         Owned(result)
-                    },
+                    }
                     AggregateKind::Adt(it, subst) => {
                         let (size, variant_layout, tag) =
                             self.layout_of_variant(*it, *subst, locals)?;
@@ -1494,7 +1494,7 @@ impl<'db> Evaluator<'db> {
                             tag,
                             values.iter().map(|&it| it.into()),
                         )?)
-                    },
+                    }
                     AggregateKind::Closure(ty) => {
                         let layout = self.layout(*ty)?;
                         Owned(self.construct_with_layout(
@@ -1503,9 +1503,9 @@ impl<'db> Evaluator<'db> {
                             None,
                             values.iter().map(|&it| it.into()),
                         )?)
-                    },
+                    }
                 }
-            },
+            }
             Rvalue::Cast(kind, operand, target_ty) => match kind {
                 CastKind::PointerCoercion(cast) => match cast {
                     PointerCast::ReifyFnPointer | PointerCast::ClosureFnPointer(_) => {
@@ -1519,18 +1519,18 @@ impl<'db> Evaluator<'db> {
                                 "creating a fn pointer from a non FnDef or Closure type"
                             );
                         }
-                    },
+                    }
                     PointerCast::Unsize => {
                         let current_ty = self.operand_ty(operand, locals)?;
                         let addr = self.eval_operand(operand, locals)?;
                         self.coerce_unsized(addr, current_ty, *target_ty)?
-                    },
+                    }
                     PointerCast::MutToConstPointer | PointerCast::UnsafeFnPointer => {
                         Borrowed(self.eval_operand(operand, locals)?)
-                    },
+                    }
                     PointerCast::ArrayToPointer => {
                         Borrowed(self.eval_operand(operand, locals)?.slice(0..self.ptr_size()))
-                    },
+                    }
                 },
                 CastKind::DynStar => not_supported!("dyn star cast"),
                 CastKind::IntToInt
@@ -1543,7 +1543,7 @@ impl<'db> Evaluator<'db> {
                     let dest_size =
                         self.size_of_sized(*target_ty, locals, "destination of int to int cast")?;
                     Owned(current[0..dest_size].to_vec())
-                },
+                }
                 CastKind::FloatToInt => {
                     let ty = self.operand_ty(operand, locals)?;
                     let TyKind::Float(ty) = ty.kind() else {
@@ -1578,7 +1578,7 @@ impl<'db> Evaluator<'db> {
                     let value = (value as i128).min(max).max(min);
                     let result = value.to_le_bytes();
                     Owned(result[0..dest_size].to_vec())
-                },
+                }
                 CastKind::FloatToFloat => {
                     let ty = self.operand_ty(operand, locals)?;
                     let TyKind::Float(ty) = ty.kind() else {
@@ -1606,9 +1606,9 @@ impl<'db> Evaluator<'db> {
                         rustc_type_ir::FloatTy::F64 => Owned((value as f64).to_le_bytes().to_vec()),
                         rustc_type_ir::FloatTy::F16 | rustc_type_ir::FloatTy::F128 => {
                             not_supported!("unstable floating point type f16 and f128");
-                        },
+                        }
                     }
-                },
+                }
                 CastKind::IntToFloat => {
                     let current_ty = self.operand_ty(operand, locals)?;
                     let is_signed = matches!(current_ty.kind(), TyKind::Int(_));
@@ -1622,9 +1622,9 @@ impl<'db> Evaluator<'db> {
                         rustc_type_ir::FloatTy::F64 => Owned((value as f64).to_le_bytes().to_vec()),
                         rustc_type_ir::FloatTy::F16 | rustc_type_ir::FloatTy::F128 => {
                             not_supported!("unstable floating point type f16 and f128");
-                        },
+                        }
                     }
-                },
+                }
                 CastKind::FnPtrToPtr => not_supported!("fn ptr to ptr cast"),
             },
             Rvalue::ThreadLocalRef(n)
@@ -1649,7 +1649,7 @@ impl<'db> Evaluator<'db> {
                 let r =
                     self.const_eval_discriminant(e.enum_variants(self.db).variants[index.0].0)?;
                 Ok(r)
-            },
+            }
             Variants::Multiple { tag, tag_encoding, variants, .. } => {
                 let size = tag.size(&*self.target_data_layout).bytes_usize();
                 let offset = layout.fields.offset(0).bytes_usize();
@@ -1658,7 +1658,7 @@ impl<'db> Evaluator<'db> {
                     TagEncoding::Direct => {
                         let tag = &bytes[offset..offset + size];
                         Ok(i128::from_le_bytes(pad16(tag, is_signed)))
-                    },
+                    }
                     TagEncoding::Niche { untagged_variant, niche_start, .. } => {
                         let tag = &bytes[offset..offset + size];
                         let candidate_tag = i128::from_le_bytes(pad16(tag, is_signed))
@@ -1674,9 +1674,9 @@ impl<'db> Evaluator<'db> {
                         let result =
                             self.const_eval_discriminant(e.enum_variants(self.db).variants[idx].0)?;
                         Ok(result)
-                    },
+                    }
                 }
-            },
+            }
         }
     }
 
@@ -1742,10 +1742,10 @@ impl<'db> Evaluator<'db> {
                     r.extend(addr.iter().copied());
                     r.extend(len.to_le_bytes());
                     Owned(r)
-                },
+                }
                 t => {
                     not_supported!("slice unsizing from non array type {t:?}")
-                },
+                }
             },
             TyKind::Dynamic(..) => {
                 let vtable = self.vtable_map.id(current_ty);
@@ -1754,7 +1754,7 @@ impl<'db> Evaluator<'db> {
                 r.extend(addr.iter().copied());
                 r.extend(vtable.to_le_bytes());
                 Owned(r)
-            },
+            }
             TyKind::Adt(adt_def, target_subst) => match &current_ty.kind() {
                 TyKind::Adt(current_adt_def, current_subst) => {
                     let id = adt_def.def_id().0;
@@ -1780,7 +1780,7 @@ impl<'db> Evaluator<'db> {
                         current_last_field,
                         addr,
                     );
-                },
+                }
                 _ => not_supported!("unsizing struct with non adt type"),
             },
             _ => not_supported!("unknown unsized cast"),
@@ -1845,7 +1845,7 @@ impl<'db> Evaluator<'db> {
                     None
                 },
                 )
-            },
+            }
         })
     }
 
@@ -1894,11 +1894,11 @@ impl<'db> Evaluator<'db> {
             OperandKind::Copy(p) | OperandKind::Move(p) => {
                 locals.drop_flags.remove_place(p, &locals.body.projection_store);
                 self.eval_place(p, locals)?
-            },
+            }
             OperandKind::Static(st) => {
                 let addr = self.eval_static(*st, locals)?;
                 Interval::new(addr, self.ptr_size())
-            },
+            }
             OperandKind::Constant { konst, .. } => self.allocate_const_in_heap(locals, *konst)?,
         })
     }
@@ -2471,7 +2471,7 @@ impl<'db> Evaluator<'db> {
         match next_ty.kind() {
             TyKind::FnDef(def, generic_args) => {
                 self.exec_fn_def(def.0, generic_args, destination, args, locals, target_bb, span)
-            },
+            }
             TyKind::Closure(id, generic_args) => self.exec_closure(
                 id.0,
                 bytes.slice(0..0),
@@ -2552,7 +2552,7 @@ impl<'db> Evaluator<'db> {
                     target_bb,
                     span,
                 )
-            },
+            }
             CallableDefId::StructId(id) => {
                 let (size, variant_layout, tag) =
                     self.layout_of_variant(id.into(), generic_args, locals)?;
@@ -2564,7 +2564,7 @@ impl<'db> Evaluator<'db> {
                 )?;
                 destination.write_from_bytes(self, &result)?;
                 Ok(None)
-            },
+            }
             CallableDefId::EnumVariantId(id) => {
                 let (size, variant_layout, tag) =
                     self.layout_of_variant(id.into(), generic_args, locals)?;
@@ -2576,7 +2576,7 @@ impl<'db> Evaluator<'db> {
                 )?;
                 destination.write_from_bytes(self, &result)?;
                 Ok(None)
-            },
+            }
         }
     }
 
@@ -2667,7 +2667,7 @@ impl<'db> Evaluator<'db> {
                     target_bb,
                     span,
                 )
-            },
+            }
             MirOrDynIndex::Mir(body) => self.exec_looked_up_function(body, locals, def, arg_bytes, span, destination, target_bb),
         }
     }
@@ -2729,10 +2729,10 @@ impl<'db> Evaluator<'db> {
         match func_ty.kind() {
             TyKind::FnDef(def, subst) => {
                 self.exec_fn_def(def.0, subst, destination, &args[1..], locals, target_bb, span)
-            },
+            }
             TyKind::FnPtr(..) => {
                 self.exec_fn_pointer(func_data, destination, &args[1..], locals, target_bb, span)
-            },
+            }
             TyKind::Closure(closure, subst) => self.exec_closure(
                 closure.0,
                 func_data,
@@ -2769,7 +2769,7 @@ impl<'db> Evaluator<'db> {
                     target_bb,
                     span,
                 )
-            },
+            }
         }
     }
 
@@ -2815,7 +2815,7 @@ impl<'db> Evaluator<'db> {
                         .display(db, edition),
                 );
                 Err(MirEvalError::ConstEvalError(name, Box::new(e)))
-            },
+            }
         }
     }
 
@@ -3094,7 +3094,7 @@ impl IntValue {
             (len, is_signed) => {
                 never!("invalid integer size: {len}, signed: {is_signed}");
                 Self::I32(0)
-            },
+            }
         }
     }
 

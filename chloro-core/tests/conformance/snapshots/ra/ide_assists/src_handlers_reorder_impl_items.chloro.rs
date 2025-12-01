@@ -66,13 +66,15 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         "Sort items by trait definition",
         target,
         |builder| {
-        let mut editor = builder.make_editor(&parent_node);
-        assoc_items
+            let mut editor = builder.make_editor(&parent_node);
+
+            assoc_items
                 .into_iter()
                 .zip(sorted)
                 .for_each(|(old, new)| editor.replace(old.syntax(), new.syntax()));
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

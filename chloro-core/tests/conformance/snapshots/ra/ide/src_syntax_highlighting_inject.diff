@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11608 bytes
-Chloro size:   11301 bytes
+Chloro size:   11300 bytes
 Rustfmt size:  12342 bytes
 
 ✗ Outputs DIFFER
@@ -173,13 +173,11 @@ Rustfmt size:  12342 bytes
 -                .filter_map(NodeOrToken::into_token)
 -                .filter_map(ast::String::cast)
 -                .find(|string| string.text().get(1..string.text().len() - 1) == Some(text))
--        }
 +            it.syntax().descendants_with_tokens().filter_map(NodeOrToken::into_token).filter_map(
 +                ast::String::cast,
 +            ).find(
 +                |string| string.text().get(1..string.text().len() - 1) == Some(text),
 +            )
-+        },
+         }
          _ => None,
      }
- }

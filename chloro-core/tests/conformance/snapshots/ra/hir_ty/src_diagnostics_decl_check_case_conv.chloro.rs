@@ -47,15 +47,16 @@ fn is_camel_case(name: &str) -> bool {
     // start with a non-lowercase letter rather than non-uppercase
     // ones (some scripts don't have a concept of upper/lowercase)
     name.chars().next().is_none_or(|c| !c.is_lowercase()) && !name.contains("__") && !name.chars().any(|snd| {
-        let ret = match fst {
+            let ret = match fst {
                 None => false,
                 Some(fst) => {
                     stdx::char_has_case(fst) && snd == '_' || stdx::char_has_case(snd) && fst == '_'
                 }
             };
-        fst = Some(snd);
-        ret
-    })
+            fst = Some(snd);
+
+            ret
+        })
 }
 
 fn is_lower_snake_case(ident: &str) -> bool {

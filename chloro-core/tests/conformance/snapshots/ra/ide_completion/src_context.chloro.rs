@@ -209,7 +209,7 @@ impl TypeLocation {
         match self {
             TypeLocation::GenericArg { corresponding_param: Some(param), .. } => {
                 matches!(param, ast::GenericParam::TypeParam(_))
-            },
+            }
             TypeLocation::AssocConstEq => false,
             TypeLocation::AssocTypeEq => true,
             TypeLocation::ImplTrait => false,
@@ -499,7 +499,7 @@ impl CompletionContext<'_> {
             CHAR => {
                 cov_mark::hit!(completes_if_lifetime_without_idents);
                 TextRange::at(self.original_token.text_range().start(), TextSize::from(1))
-            },
+            }
             LIFETIME_IDENT | UNDERSCORE | INT_NUMBER => self.original_token.text_range(),
             _ if kind.is_any_identifier() => self.original_token.text_range(),
             _ => TextRange::empty(self.position.offset),

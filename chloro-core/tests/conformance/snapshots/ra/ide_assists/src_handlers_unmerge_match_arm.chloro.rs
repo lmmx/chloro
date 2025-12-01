@@ -25,44 +25,58 @@ pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         "Unmerge match arm",
         pipe_token.text_range(),
         |edit| {
-        let make = SyntaxFactory::with_mappings();
-        let mut editor = edit.make_editor(&new_parent);
-        let pats_after = pipe_token
+            let make = SyntaxFactory::with_mappings();
+            let mut editor = edit.make_editor(&new_parent);
+            let pats_after = pipe_token
                 .siblings_with_tokens(Direction::Next)
                 .filter_map(|it| ast::Pat::cast(it.into_node()?))
                 .collect::<Vec<_>>();
-        let new_pat = if pats_after.len() == 1 {
+            // It is guaranteed that `pats_after` has at least one element
+            let new_pat = if pats_after.len() == 1 {
                 pats_after[0].clone()
             } else {
                 make.or_pat(pats_after, or_pat.leading_pipe().is_some()).into()
             };
-        let new_match_arm = make.match_arm(new_pat, match_arm.guard(), match_arm_body);
-        let mut pipe_index = pipe_token.index();
-        if pipe_token
+            let new_match_arm = make.match_arm(new_pat, match_arm.guard(), match_arm_body);
+            let mut pipe_index = pipe_token.index();
+            if pipe_token
                 .prev_sibling_or_token()
                 .is_some_and(|it| it.kind() == SyntaxKind::WHITESPACE)
             {
                 pipe_index -= 1;
             }
-        for child in or_pat
+            for child in or_pat
                 .syntax()
                 .children_with_tokens()
                 .skip_while(|child| child.index() < pipe_index)
             {
                 editor.delete(child.syntax_element());
             }
-        let mut insert_after_old_arm = Vec::new();
-        let has_comma_after = match_arm.comma_token().is_some();
-        if !has_comma_after && !match_arm.expr().unwrap().is_block_like() {
+
+            let mut insert_after_old_arm = Vec::new();
+
+            // A comma can be:
+            //  - After the arm. In this case we always want to insert a comma after the newly
+            //    inserted arm.
+            //  - Missing after the arm, with no arms after. In this case we want to insert a
+            //    comma before the newly inserted arm. It can not be necessary if there arm
+            //    body is a block, but we don't bother to check that.
+            //  - Missing after the arm with arms after, if the arm body is a block. In this case
+            //    we don't want to insert a comma at all.
+            let has_comma_after = match_arm.comma_token().is_some();
+            if !has_comma_after && !match_arm.expr().unwrap().is_block_like() {
                 insert_after_old_arm.push(make.token(T![,]).into());
             }
-        let indent = IndentLevel::from_node(match_arm.syntax());
-        insert_after_old_arm.push(make.whitespace(&format!("\n{indent}")).into());
-        insert_after_old_arm.push(new_match_arm.syntax().clone().into());
-        editor.insert_all(Position::after(match_arm.syntax()), insert_after_old_arm);
-        editor.add_mappings(make.finish_with_mappings());
-        edit.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+
+            let indent = IndentLevel::from_node(match_arm.syntax());
+            insert_after_old_arm.push(make.whitespace(&format!("\n{indent}")).into());
+
+            insert_after_old_arm.push(new_match_arm.syntax().clone().into());
+
+            editor.insert_all(Position::after(match_arm.syntax()), insert_after_old_arm);
+            editor.add_mappings(make.finish_with_mappings());
+            edit.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 

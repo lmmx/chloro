@@ -22,8 +22,10 @@ fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expec
         || {
         let module = db.module_for_file(file_id.file_id(&db));
         let def_map = module.def_map(&db);
+
         let mut defs = Vec::new();
         visit_module(&db, def_map, module.local_id, &mut |it| defs.push(it));
+
         let mut captures_info = Vec::new();
         for def in defs {
             let def = match def {
@@ -114,6 +116,7 @@ fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expec
         captures_info.sort_unstable_by_key(|(closure_text_range, local_text_range, ..)| {
             (closure_text_range.start(), local_text_range.clone())
         });
+
         let rendered = captures_info
         .iter()
         .map(|(closure_text_range, local_text_range, spans, place, capture_ty, capture_kind)| {
@@ -122,6 +125,7 @@ fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expec
             )
         })
         .join("\n");
+
         expect.assert_eq(&rendered);
     },
     )

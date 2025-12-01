@@ -617,7 +617,7 @@ impl<'db> InferCtxt<'db> {
         self.enter_forall(
             predicate,
             |OutlivesPredicate(r_a, r_b)| {
-            self.sub_regions(r_b, r_a);
+            self.sub_regions(r_b, r_a); // `b : a` ==> `a <= b`
         },
         )
     }
@@ -760,7 +760,7 @@ impl<'db> InferCtxt<'db> {
         match id {
             GenericParamId::LifetimeParamId(_) => {
                 self.next_region_var().into()
-            },
+            }
             GenericParamId::TypeParamId(_) => {
                 let ty_var_id = self
                     .inner
@@ -768,7 +768,7 @@ impl<'db> InferCtxt<'db> {
                     .type_variables()
                     .new_var(self.universe(), TypeVariableOrigin { param_def_id: None });
                 Ty::new_var(self.interner, ty_var_id).into()
-            },
+            }
             GenericParamId::ConstParamId(_) => {
                 let origin = ConstVariableOrigin {};
                 let const_var_id = self
@@ -778,7 +778,7 @@ impl<'db> InferCtxt<'db> {
                     .new_key(ConstVariableValue::Unknown { origin, universe: self.universe() })
                     .vid;
                 Const::new_var(self.interner, const_var_id).into()
-            },
+            }
         }
     }
 
@@ -836,7 +836,7 @@ impl<'db> InferCtxt<'db> {
         match self.typing_mode_unchecked() {
             TypingMode::Analysis { defining_opaque_types_and_generators } => {
                 defining_opaque_types_and_generators.contains(&id.into())
-            },
+            }
             TypingMode::Coherence | TypingMode::PostAnalysis => false,
             TypingMode::Borrowck { defining_opaque_types: _ } => unimplemented!(),
             TypingMode::PostBorrowckAnalysis { defined_opaque_types: _ } => unimplemented!(),
@@ -860,20 +860,20 @@ impl<'db> InferCtxt<'db> {
                 InferTy::TyVar(v) => {
                     let known = self.inner.borrow_mut().type_variables().probe(v).known();
                     known.map_or(ty, |t| self.shallow_resolve(t))
-                },
+                }
                 InferTy::IntVar(v) => {
                     match self.inner.borrow_mut().int_unification_table().probe_value(v) {
                         IntVarValue::IntType(ty) => Ty::new_int(self.interner, ty),
                         IntVarValue::UintType(ty) => Ty::new_uint(self.interner, ty),
                         IntVarValue::Unknown => ty,
                     }
-                },
+                }
                 InferTy::FloatVar(v) => {
                     match self.inner.borrow_mut().float_unification_table().probe_value(v) {
                         FloatVarValue::Known(ty) => Ty::new_float(self.interner, ty),
                         FloatVarValue::Unknown => ty,
                     }
-                },
+                }
                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => ty,
             }
         } else {
@@ -917,7 +917,7 @@ impl<'db> InferCtxt<'db> {
             IntVarValue::UintType(ty) => Ty::new_uint(self.interner, ty),
             IntVarValue::Unknown => {
                 Ty::new_int_var(self.interner, inner.int_unification_table().find(vid))
-            },
+            }
         }
     }
 
@@ -940,7 +940,7 @@ impl<'db> InferCtxt<'db> {
             FloatVarValue::Known(ty) => Ty::new_float(self.interner, ty),
             FloatVarValue::Unknown => {
                 Ty::new_float_var(self.interner, inner.float_unification_table().find(vid))
-            },
+            }
         }
     }
 
@@ -1061,11 +1061,12 @@ impl<'db> InferCtxt<'db> {
         move |infer_var: TyOrConstInferVar| match (infer_var, &inner) {
             (TyOrConstInferVar::Ty(ty_var), Ok(inner)) => {
                 use self::type_variable::TypeVariableValue;
+
                 matches!(
                     inner.try_type_variables_probe_ref(ty_var),
                     Some(TypeVariableValue::Unknown { .. })
                 )
-            },
+            }
             _ => false,
         }
     }
@@ -1088,19 +1089,19 @@ impl<'db> InferCtxt<'db> {
                     TypeVariableValue::Unknown { .. } => false,
                     TypeVariableValue::Known { .. } => true,
                 }
-            },
+            }
             TyOrConstInferVar::TyInt(v) => {
                 self.inner.borrow_mut().int_unification_table().inlined_probe_value(v).is_known()
-            },
+            }
             TyOrConstInferVar::TyFloat(v) => {
                 self.inner.borrow_mut().float_unification_table().probe_value(v).is_known()
-            },
+            }
             TyOrConstInferVar::Const(v) => {
                 match self.inner.borrow_mut().const_unification_table().probe_value(v) {
                     ConstVariableValue::Unknown { .. } => false,
                     ConstVariableValue::Known { .. } => true,
                 }
-            },
+            }
         }
     }
 

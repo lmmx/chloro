@@ -146,7 +146,7 @@ impl<'a> DeclValidator<'a> {
             AdtId::StructId(struct_id) => self.validate_struct(struct_id),
             AdtId::EnumId(enum_id) => self.validate_enum(enum_id),
             AdtId::UnionId(_) => {
-            },
+            }
         }
     }
 

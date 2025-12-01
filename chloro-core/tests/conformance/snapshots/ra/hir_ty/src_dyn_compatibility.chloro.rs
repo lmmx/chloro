@@ -147,12 +147,16 @@ pub fn generics_require_sized_self(db: &dyn HirDatabase, def: GenericDefId) -> b
     elaborate::elaborate(interner, predicates.iter().copied()).any(|pred| {
         match pred.kind().skip_binder() {
             ClauseKind::Trait(trait_pred) => {
-                if sized == trait_pred.def_id().0 && let rustc_type_ir::TyKind::Param(param_ty) = trait_pred.trait_ref.self_ty().kind() && param_ty.index == 0 {
+                if sized == trait_pred.def_id().0
+                    && let rustc_type_ir::TyKind::Param(param_ty) =
+                        trait_pred.trait_ref.self_ty().kind()
+                    && param_ty.index == 0
+                {
                     true
                 } else {
                     false
                 }
-            },
+            }
             _ => false,
         }
     })
@@ -167,19 +171,19 @@ fn predicates_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
 fn bounds_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
     let trait_data = trait_.trait_items(db);
     trait_data.items.iter().filter_map(|(_, it)| match *it {
-        AssocItemId::TypeAliasId(id) => Some(associated_ty_item_bounds(db, id)),
-        _ => None,
-    }).any(|bounds| {
-        bounds.skip_binder().iter().any(|pred| match pred.skip_binder() {
-            rustc_type_ir::ExistentialPredicate::Trait(it) => it.args.iter().any(|arg| {
-                contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)
-            }),
-            rustc_type_ir::ExistentialPredicate::Projection(it) => it.args.iter().any(|arg| {
-                contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)
-            }),
-            rustc_type_ir::ExistentialPredicate::AutoTrait(_) => false,
+            AssocItemId::TypeAliasId(id) => Some(associated_ty_item_bounds(db, id)),
+            _ => None,
+        }).any(|bounds| {
+            bounds.skip_binder().iter().any(|pred| match pred.skip_binder() {
+                rustc_type_ir::ExistentialPredicate::Trait(it) => it.args.iter().any(|arg| {
+                    contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)
+                }),
+                rustc_type_ir::ExistentialPredicate::Projection(it) => it.args.iter().any(|arg| {
+                    contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)
+                }),
+                rustc_type_ir::ExistentialPredicate::AutoTrait(_) => false,
+            })
         })
-    })
 }
 
 #[derive(Clone, Copy)]
@@ -202,7 +206,7 @@ fn predicate_references_self<'db>(
             proj_pred.projection_term.args.iter().skip(1).any(|arg| {
                 contains_illegal_self_type_reference(db, trait_, &arg, allow_self_projection)
             })
-        },
+        }
         _ => false,
     }
 }
@@ -290,7 +294,7 @@ where
                 cb(DynCompatibilityViolation::Method(it, mvc))
             },
             )
-        },
+        }
         AssocItemId::TypeAliasId(it) => {
             let def_map = CrateRootModuleId::from(trait_.krate(db)).def_map(db);
             if def_map.is_unstable_feature_enabled(&intern::sym::generic_associated_type_extended) {
@@ -303,7 +307,7 @@ where
                     ControlFlow::Continue(())
                 }
             }
-        },
+        }
     }
 }
 
