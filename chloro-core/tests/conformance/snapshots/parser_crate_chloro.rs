@@ -1409,7 +1409,7 @@ fn foo() {
     match () {
         _ => (),
         _ => (),
-        #[cfg(test)]
+        #[cfg(test)]  => ,
     }
 }
 
@@ -1615,7 +1615,9 @@ fn main() {
     { unsafe 92 }
     { async 92 }
     { try 92 }
-    { 'label: 92 }
+    {
+        92
+    }
 }
 
 fn foo() {
@@ -1628,7 +1630,8 @@ fn foo() {
     let
     while true {}
     let
-    loop {}
+    loop {
+    }
 }
 
 fn foo() {
@@ -1645,8 +1648,7 @@ fn foo() {
     }
 
     match () {
-        #[cfg(test)]
-        #![doc("Nor here")]
+        #[cfg(test)] #  => [doc("Nor here")],
         _ => (),
         _ => (),
     }
@@ -1929,13 +1931,13 @@ fn main() {
 struct A<const N: i32 = , const M: i32 =>;
 fn foo() {
     match () {
-        _ => (),,
+        _ => (),
         _ => ,
         _ => (),
          => (),
-        if true => (),
+         if true => (),
         _ => (),
-        () if => (),
+        () if  => (),
     }
 }
 
@@ -1945,7 +1947,9 @@ static C: u32 = 0;
 
 type F;
 fn foo() {
-    || -> A> { let x = 1; }
+    || -> A {
+        let x = 1;
+    }
 }
 
 const C:  = 0;
@@ -2063,8 +2067,10 @@ fn f() {
 
 fn main() {
     match 42 {
-        ..0 => {}
-        1..2 => {}
+        ..0 => {
+        },
+        1..2 => {
+        },
     }
 }
 
@@ -2077,19 +2083,23 @@ where Self: Copy
 }
 
 fn f() {
-    unsafe { }
+    unsafe {
+    }
 }
 
 fn f() {
-    const { }
+    const {
+    }
 }
 
 fn f() {
-    async { }
+    async {
+    }
 }
 
 fn f() {
-    async move { }
+    async {
+    }
 }
 
 fn main() {
@@ -2191,7 +2201,8 @@ fn foo() {
     if break {}
     while break {}
     for i in break {}
-    match break {}
+    match break {
+    }
 }
 
 const A: (i64, i64) = (1, #[cfg(test)] 2);
@@ -2224,9 +2235,6 @@ fn foo() {
 
 fn foo() {
     match () {
-        #![doc("Inner attribute")]
-        #![doc("Can be")]
-        #![doc("Stacked")]
         _ => (),
     }
 }
@@ -2474,14 +2482,9 @@ type Placeholder = _;
 
 fn foo() {
     match () {
-        #[cfg(feature = "some")]
-        _ => (),
-        #[cfg(feature = "other")]
-        _ => (),
-        #[cfg(feature = "many")]
-        #[cfg(feature = "attributes")]
-        #[cfg(feature = "before")]
-        _ => (),
+        #[cfg(feature = "some")] _ => (),
+        #[cfg(feature = "other")] _ => (),
+        #[cfg(feature = "many")] #[cfg(feature = "attributes")] #[cfg(feature = "before")] _ => (),
     }
 }
 
@@ -2536,9 +2539,9 @@ impl<const N: u32> Bar<N> {
 type T = [()];
 
 fn foo() {
-    for x in 0 .. {
-       break;
-   }
+    for x in 0.. {
+        break;
+    }
 }
 
 struct S {
@@ -2599,7 +2602,8 @@ fn foo() {
 fn foo() {
     'a: loop {}
     'b: while true {}
-    'c: for x in () {}
+    'c: for x in () {
+    }
 }
 
 impl T for Foo {
@@ -2728,7 +2732,8 @@ fn foo() {
 
 fn foo() {
     if let Some(_) = None && true {}
-    while 1 == 5 && (let None = None) {}
+    while 1 == 5 && (let None = None) {
+    }
 }
 
 fn foo() {
@@ -2805,9 +2810,12 @@ struct A<const N: i32 = i32::MAX>;
 
 fn foo() {
     match () {
-        _ => {}
-        () => {}
-        [] => {}
+        _ => {
+        },
+        () => {
+        },
+        [] => {
+        },
     }
 }
 fn printf(format: *const i8, ..., _: u8) -> i32;
@@ -2858,8 +2866,9 @@ impl S {
 fn foo() {
     match () {
         _ => (),
-        _ => {}
-        _ => ()
+        _ => {
+        },
+        _ => (),
     }
 }
 
@@ -3254,7 +3263,8 @@ fn abc() {
 }
 
 fn main() {
-    if 1.0f32.floor() as i64 != 1.0f32.floor() as i64 {}
+    if 1.0f32.floor() as i64 != 1.0f32.floor() as i64 {
+    }
 }
 
 fn main() {
@@ -3323,8 +3333,6 @@ fn inner() {
         //! As are ModuleDoc style comments
     };
     {
-        #![doc("Inner attributes are allowed in blocks when they are the last statement of another block")]
-        //! As are ModuleDoc style comments
     }
 }
 
@@ -3487,7 +3495,9 @@ fn zombiejesus() {
                 return;
             }
         }
-        if (return) { break; }
+        if (return) {
+            break;
+        }
     }
 }
 
@@ -3509,8 +3519,11 @@ fn canttouchthis() -> usize {
 fn angrydome() {
     loop { if break { } }
     let mut i = 0;
-    loop { i += 1; if i == 1 { match (continue) { 1 => { }, _ => panic!("wat") } }
-      break; }
+    loop {
+        i += 1;
+        if i == 1 { match (continue) { 1 => { }, _ => panic!("wat") } }
+        break;
+    }
 }
 
 fn evil_lincoln() {
@@ -3650,7 +3663,9 @@ fn foo(x: impl std::future::Future<Output = i32>) {
 }
 
 fn main() {
-    foo(async move { 12 })
+    foo(async {
+        12
+    })
 }
 
 struct A<T>;
@@ -3716,7 +3731,9 @@ unsafe impl Foo {
 }
 fn main() {
     unsafe fn f() {}
-    unsafe { 92 }
+    unsafe {
+        92
+    }
 }
 
 fn main() {
@@ -4059,9 +4076,11 @@ fn foo() {
 }
 
 fn foo() {
-    for _x in 0 .. (0 .. {1 + 2}).sum::<u32>() {
-       break;
-   }
+    for _x in 0..(0..{
+        1 + 2
+    }).sum::<u32>() {
+        break;
+    }
 }
 
 fn foo() {
@@ -4079,10 +4098,10 @@ fn push(&mut self, kind: SyntaxKind, len: usize, errors: Vec<String>) {
     self.offset += len;
 
     for msg in errors {
-            if !msg.is_empty() {
-                self.res.error.push(LexError { msg, token: self.res.len() as u32 });
-            }
+        if !msg.is_empty() {
+            self.res.error.push(LexError { msg, token: self.res.len() as u32 });
         }
+    }
 }
 
 fn extend_token(&mut self, kind: &rustc_lexer::TokenKind, mut token_text: &str) {
@@ -4322,7 +4341,7 @@ fn err_to_msg(error: EscapeError, mode: Mode) -> String {
         EscapeError::LoneSlash => "",
         EscapeError::InvalidEscape if mode == Mode::Byte || mode == Mode::ByteStr => {
             "unknown byte escape"
-        }
+        },
         EscapeError::InvalidEscape => "unknown character escape",
         EscapeError::BareCarriageReturn => "",
         EscapeError::BareCarriageReturnInRawString => "",
@@ -4342,16 +4361,16 @@ fn err_to_msg(error: EscapeError, mode: Mode) -> String {
         EscapeError::UnicodeEscapeInByte => "unicode escape in byte string",
         EscapeError::NonAsciiCharInByte if mode == Mode::Byte => {
             "non-ASCII character in byte literal"
-        }
+        },
         EscapeError::NonAsciiCharInByte if mode == Mode::ByteStr => {
             "non-ASCII character in byte string literal"
-        }
+        },
         EscapeError::NonAsciiCharInByte => "non-ASCII character in raw byte string literal",
         EscapeError::NulInCStr => "null character in C string literal",
         EscapeError::UnskippedWhitespaceWarning => "",
         EscapeError::MultipleSkippedLinesWarning => "",
-    }
-    .into()
+    }.into(
+    )
 }
 
 #[allow(non_camel_case_types)]
@@ -5358,12 +5377,10 @@ impl<'t> Parser<'t> {
             T![>>] => self.at_composite2(n, T![>], T![>]),
             T![|=] => self.at_composite2(n, T![|], T![=]),
             T![||] => self.at_composite2(n, T![|], T![|]),
-
             T![...] => self.at_composite3(n, T![.], T![.], T![.]),
             T![..=] => self.at_composite3(n, T![.], T![.], T![=]),
             T![<<=] => self.at_composite3(n, T![<], T![<], T![=]),
             T![>>=] => self.at_composite3(n, T![>], T![>], T![=]),
-
             _ => self.inp.kind(self.pos + n) == kind,
         }
     }
@@ -5746,16 +5763,16 @@ impl Output {
                     let n_input_tokens =
                         ((event & Self::N_INPUT_TOKEN_MASK) >> Self::N_INPUT_TOKEN_SHIFT) as u8;
                     Step::Token { kind, n_input_tokens }
-                }
+                },
                 Self::ENTER_EVENT => {
                     let kind: SyntaxKind =
                         (((event & Self::KIND_MASK) >> Self::KIND_SHIFT) as u16).into();
                     Step::Enter { kind }
-                }
+                },
                 Self::EXIT_EVENT => Step::Exit,
                 Self::SPLIT_EVENT => {
                     Step::FloatSplit { ends_in_dot: event & Self::N_INPUT_TOKEN_MASK != 0 }
-                }
+                },
                 _ => unreachable!(),
             }
         })
@@ -5799,7 +5816,9 @@ impl From<u16> for SyntaxKind {
     #[inline]
     fn from(d: u16) -> SyntaxKind {
         assert!(d <= (SyntaxKind::__LAST as u16));
-        unsafe { std::mem::transmute::<u16, SyntaxKind>(d) }
+        unsafe {
+            std::mem::transmute::<u16, SyntaxKind>(d)
+        }
     }
 }
 
@@ -6300,7 +6319,6 @@ fn tuple_field_list(p: &mut Parser<'_>) {
 pub(super) fn mod_contents(p: &mut Parser<'_>, stop_on_r_curly: bool) {
     attributes::inner_attrs(p);
     while !(p.at(EOF) || (p.at(T!['}']) && stop_on_r_curly)) {
-        // We can set `is_in_extern=true`, because it only allows `safe fn`, and there is no ambiguity here.
         item_or_macro(p, stop_on_r_curly, true);
     }
 }
@@ -6387,7 +6405,7 @@ pub(super) fn item_or_macro(p: &mut Parser<'_>, stop_on_r_curly: bool, is_in_ext
             p.error("unmatched `}`");
             p.bump(T!['}']);
             e.complete(p, ERROR);
-        }
+        },
         EOF | T!['}'] => p.error("expected an item"),
         T![let] => error_let_stmt(p, "expected an item"),
         _ => p.err_and_bump("expected an item"),
@@ -6753,15 +6771,15 @@ pub(super) fn macro_call_after_excl(p: &mut Parser<'_>) -> BlockLike {
         T!['{'] => {
             token_tree(p);
             BlockLike::Block
-        }
+        },
         T!['('] | T!['['] => {
             token_tree(p);
             BlockLike::NotBlock
-        }
+        },
         _ => {
             p.error("expected `{`, `[`, `(`");
             BlockLike::NotBlock
-        }
+        },
     }
 }
 
@@ -7007,7 +7025,14 @@ fn tuple_expr(p: &mut Parser<'_>) -> CompletedMarker {
         }
     }
     p.expect(T![')']);
-    m.complete(p, if saw_expr && !saw_comma { PAREN_EXPR } else { TUPLE_EXPR })
+    m.complete(
+        p,
+        if saw_expr && !saw_comma {
+        PAREN_EXPR
+    } else {
+        TUPLE_EXPR
+    },
+    )
 }
 
 fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
@@ -7018,15 +7043,7 @@ fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
         p.expect(T!['(']);
         type_(p);
         p.expect(T![,]);
-        // Due to our incomplete handling of macro groups, especially
-        // those with empty delimiters, we wrap `expr` fragments in
-        // parentheses sometimes. Since `offset_of` is a macro, and takes
-        // `expr`, the field names could be wrapped in parentheses.
         let wrapped_in_parens = p.eat(T!['(']);
-        // test offset_of_parens
-        // fn foo() {
-        //     builtin#offset_of(Foo, (bar.baz.0));
-        // }
         while !p.at(EOF) && !p.at(T![')']) {
             name_ref_mod_path_or_index(p);
             if !p.at(T![')']) {
@@ -7061,16 +7078,7 @@ fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
         }
         p.expect(T![')']);
         Some(m.complete(p, FORMAT_ARGS_EXPR))
-    } else if p.eat_contextual_kw(T![asm])
-        || p.eat_contextual_kw(T![global_asm])
-        || p.eat_contextual_kw(T![naked_asm])
-    {
-        // test asm_kinds
-        // fn foo() {
-        //     builtin#asm("");
-        //     builtin#global_asm("");
-        //     builtin#naked_asm("");
-        // }
+    } else if p.eat_contextual_kw(T![asm]) || p.eat_contextual_kw(T![global_asm]) || p.eat_contextual_kw(T![naked_asm]) {
         parse_asm_expr(p, m)
     } else {
         m.abandon(p);
@@ -7215,8 +7223,6 @@ fn parse_options(p: &mut Parser<'_>) {
             continue;
         }
         m.complete(p, ASM_OPTION);
-
-        // Allow trailing commas
         if p.eat(T![')']) {
             break;
         }
@@ -7231,8 +7237,6 @@ fn parse_clobber_abi(p: &mut Parser<'_>) {
         if !p.expect(T![string]) {
             break;
         }
-
-        // Allow trailing commas
         if p.eat(T![')']) {
             break;
         }
@@ -7951,23 +7955,7 @@ pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
         return;
     }
 
-    if let Some((cm, blocklike)) = expr_stmt(p, Some(m))
-        && !(p.at(T!['}']) || (semicolon != Semicolon::Required && p.at(EOF)))
-    {
-        // test no_semi_after_block
-        // fn foo() {
-        //     if true {}
-        //     loop {}
-        //     match () {}
-        //     while true {}
-        //     for _ in () {}
-        //     {}
-        //     {}
-        //     macro_rules! test {
-        //          () => {}
-        //     }
-        //     test!{}
-        // }
+    if let Some((cm, blocklike)) = expr_stmt(p, Some(m)) && !(p.at(T!['}']) || (semicolon != Semicolon::Required && p.at(EOF))) {
         let m = cm.precede(p);
         match semicolon {
             Semicolon::Required => {
@@ -8025,10 +8013,10 @@ pub(super) fn let_stmt(p: &mut Parser<'_>, with_semi: Semicolon) {
         Semicolon::Forbidden => (),
         Semicolon::Optional => {
             p.eat(T![;]);
-        }
+        },
         Semicolon::Required => {
             p.expect(T![;]);
-        }
+        },
     }
 }
 
@@ -8036,20 +8024,6 @@ pub(super) fn expr_block_contents(p: &mut Parser<'_>) {
     attributes::inner_attrs(p);
 
     while !p.at(EOF) && !p.at(T!['}']) {
-        // test nocontentexpr
-        // fn foo(){
-        //     ;;;some_expr();;;;{;;;};;;;Ok(())
-        // }
-
-        // test nocontentexpr_after_item
-        // fn simple_function() {
-        //     enum LocalEnum {
-        //         One,
-        //         Two,
-        //     };
-        //     fn f() {};
-        //     struct S {};
-        // }
         stmt(p, Semicolon::Required);
     }
 }
@@ -8076,41 +8050,39 @@ fn current_op(p: &Parser<'_>) -> (u8, SyntaxKind, Associativity) {
     use Associativity::*;
     const NOT_AN_OP: (u8, SyntaxKind, Associativity) = (0, T![@], Left);
     match p.current() {
-        T![|] if p.at(T![||])  => (3,  T![||],  Left),
-        T![|] if p.at(T![|=])  => (1,  T![|=],  Right),
-        T![|]                  => (6,  T![|],   Left),
-        T![>] if p.at(T![>>=]) => (1,  T![>>=], Right),
-        T![>] if p.at(T![>>])  => (9,  T![>>],  Left),
-        T![>] if p.at(T![>=])  => (5,  T![>=],  Left),
-        T![>]                  => (5,  T![>],   Left),
-        T![=] if p.at(T![==])  => (5,  T![==],  Left),
-        T![=] if !p.at(T![=>]) => (1,  T![=],   Right),
-        T![<] if p.at(T![<=])  => (5,  T![<=],  Left),
-        T![<] if p.at(T![<<=]) => (1,  T![<<=], Right),
-        T![<] if p.at(T![<<])  => (9,  T![<<],  Left),
-        T![<]                  => (5,  T![<],   Left),
-        T![+] if p.at(T![+=])  => (1,  T![+=],  Right),
-        T![+]                  => (10, T![+],   Left),
-        T![^] if p.at(T![^=])  => (1,  T![^=],  Right),
-        T![^]                  => (7,  T![^],   Left),
-        T![%] if p.at(T![%=])  => (1,  T![%=],  Right),
-        T![%]                  => (11, T![%],   Left),
-        T![&] if p.at(T![&=])  => (1,  T![&=],  Right),
-        // If you update this, remember to update `expr_let()` too.
-        T![&] if p.at(T![&&])  => (4,  T![&&],  Left),
-        T![&]                  => (8,  T![&],   Left),
-        T![/] if p.at(T![/=])  => (1,  T![/=],  Right),
-        T![/]                  => (11, T![/],   Left),
-        T![*] if p.at(T![*=])  => (1,  T![*=],  Right),
-        T![*]                  => (11, T![*],   Left),
-        T![.] if p.at(T![..=]) => (2,  T![..=], Left),
-        T![.] if p.at(T![..])  => (2,  T![..],  Left),
-        T![!] if p.at(T![!=])  => (5,  T![!=],  Left),
-        T![-] if p.at(T![-=])  => (1,  T![-=],  Right),
-        T![-]                  => (10, T![-],   Left),
-        T![as]                 => (12, T![as],  Left),
-
-        _                      => NOT_AN_OP
+        T![|] if p.at(T![||]) => (3, T![||], Left),
+        T![|] if p.at(T![|=]) => (1, T![|=], Right),
+        T![|] => (6, T![|], Left),
+        T![>] if p.at(T![>>=]) => (1, T![>>=], Right),
+        T![>] if p.at(T![>>]) => (9, T![>>], Left),
+        T![>] if p.at(T![>=]) => (5, T![>=], Left),
+        T![>] => (5, T![>], Left),
+        T![=] if p.at(T![==]) => (5, T![==], Left),
+        T![=] if !p.at(T![=>]) => (1, T![=], Right),
+        T![<] if p.at(T![<=]) => (5, T![<=], Left),
+        T![<] if p.at(T![<<=]) => (1, T![<<=], Right),
+        T![<] if p.at(T![<<]) => (9, T![<<], Left),
+        T![<] => (5, T![<], Left),
+        T![+] if p.at(T![+=]) => (1, T![+=], Right),
+        T![+] => (10, T![+], Left),
+        T![^] if p.at(T![^=]) => (1, T![^=], Right),
+        T![^] => (7, T![^], Left),
+        T![%] if p.at(T![%=]) => (1, T![%=], Right),
+        T![%] => (11, T![%], Left),
+        T![&] if p.at(T![&=]) => (1, T![&=], Right),
+        T![&] if p.at(T![&&]) => (4, T![&&], Left),
+        T![&] => (8, T![&], Left),
+        T![/] if p.at(T![/=]) => (1, T![/=], Right),
+        T![/] => (11, T![/], Left),
+        T![*] if p.at(T![*=]) => (1, T![*=], Right),
+        T![*] => (11, T![*], Left),
+        T![.] if p.at(T![..=]) => (2, T![..=], Left),
+        T![.] if p.at(T![..]) => (2, T![..], Left),
+        T![!] if p.at(T![!=]) => (5, T![!=], Left),
+        T![-] if p.at(T![-=]) => (1, T![-=], Right),
+        T![-] => (10, T![-], Left),
+        T![as] => (12, T![as], Left),
+        _ => NOT_AN_OP,
     }
 }
 
@@ -8494,11 +8466,11 @@ fn path_expr(p: &mut Parser<'_>, r: Restrictions) -> (CompletedMarker, BlockLike
         T!['{'] if !r.forbid_structs => {
             record_expr_field_list(p);
             (m.complete(p, RECORD_EXPR), BlockLike::NotBlock)
-        }
+        },
         T![!] if !p.at(T![!=]) => {
             let block_like = items::macro_call_after_excl(p);
             (m.complete(p, MACRO_CALL).precede(p).complete(p, MACRO_EXPR), block_like)
-        }
+        },
         _ => (m.complete(p, PATH_EXPR), BlockLike::NotBlock),
     }
 }
@@ -8731,40 +8703,29 @@ pub(super) fn const_arg_expr(p: &mut Parser<'_>) {
     // The tests in here are really for `const_arg`, which wraps the content
     // CONST_ARG.
     match p.current() {
-        // test const_arg_block
-        // type T = S<{90 + 2}>;
         T!['{'] => {
             expressions::block_expr(p);
-        }
-        // test const_arg_literal
-        // type T = S<"hello", 0xdeadbeef>;
+        },
         k if k.is_literal() => {
             expressions::literal(p);
-        }
-        // test const_arg_bool_literal
-        // type T = S<true>;
+        },
         T![true] | T![false] => {
             expressions::literal(p);
-        }
-        // test const_arg_negative_number
-        // type T = S<-92>;
+        },
         T![-] => {
             let lm = p.start();
             p.bump(T![-]);
             expressions::literal(p);
             lm.complete(p, PREFIX_EXPR);
-        }
+        },
         _ if paths::is_path_start(p) => {
-            // This shouldn't be hit by `const_arg`
             let lm = p.start();
             paths::expr_path(p);
             lm.complete(p, PATH_EXPR);
-        }
+        },
         _ => {
-            // test_err recover_from_missing_const_default
-            // struct A<const N: i32 = , const M: i32 =>;
             p.err_recover("expected a generic const argument", GENERIC_ARG_RECOVERY_SET);
-        }
+        },
     }
 }
 
@@ -8990,8 +8951,6 @@ fn path_type_bound(p: &mut Parser<'_>) -> Result<(), ()> {
     // fn f<T>() where T: ?for<> Sized {}
     if paths::is_use_path_start(p) {
         types::path_type_bounds(p, false);
-        // test_err type_bounds_macro_call_recovery
-        // fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
         if p.at(T![!]) {
             let m = p.start();
             p.bump(T![!]);
@@ -9128,14 +9087,13 @@ fn type_with_bounds_cond(p: &mut Parser<'_>, allow_bounds: bool) {
         T![for] => for_type(p, allow_bounds),
         T![impl] => impl_trait_type(p),
         T![dyn] => dyn_trait_type(p),
-        // Some path types are not allowed to have bounds (no plus)
         T![<] => path_type_bounds(p, allow_bounds),
         T![ident] if !p.edition().at_least_2018() && is_dyn_weak(p) => dyn_trait_type_weak(p),
         _ if paths::is_path_start(p) => path_or_macro_type(p, allow_bounds),
         LIFETIME_IDENT if p.nth_at(1, T![+]) => bare_dyn_trait_type(p),
         _ => {
             p.err_recover("expected type", TYPE_RECOVERY_SET);
-        }
+        },
     }
 }
 
@@ -9622,24 +9580,6 @@ fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
             if p.at(range_op) {
                 let m = lhs.precede(p);
                 p.bump(range_op);
-
-                // testing if we're at one of the following positions:
-                // `0 .. =>`
-                //       ^
-                // `let 0 .. =`
-                //           ^
-                // `let 0..: _ =`
-                //         ^
-                // (1.., _)
-                //     ^
-                // `Some(0 .. )`
-                //            ^
-                // `S { t: 0.. }`
-                //             ^
-                // `[0..]`
-                //      ^
-                // `0 .. if`
-                //       ^
                 if matches!(
                     p.current(),
                     T![=] | T![,] | T![:] | T![')'] | T!['}'] | T![']'] | T![if] | EOF
@@ -9760,29 +9700,22 @@ fn record_pat_field(p: &mut Parser<'_>) {
         IDENT | INT_NUMBER if p.nth(1) == T![:] => {
             name_ref_or_index(p);
             p.bump(T![:]);
-            // test record_field_pat_leading_or
-            // fn foo() { let R { a: | 1 | 2 } = 0; }
             pattern(p);
-        }
-        // test_err record_pat_field_eq_recovery
-        // fn main() {
-        //     let S { field = foo };
-        // }
+        },
         IDENT | INT_NUMBER if p.nth(1) == T![=] => {
             name_ref_or_index(p);
             p.err_and_bump("expected `:`");
             pattern(p);
-        }
+        },
         T![box] => {
-            // FIXME: not all box patterns should be allowed
             box_pat(p);
-        }
+        },
         T![ref] | T![mut] | IDENT => {
             ident_pat(p, false);
-        }
+        },
         _ => {
             p.err_and_bump("expected identifier");
-        }
+        },
     }
 }
 
@@ -9869,7 +9802,14 @@ fn tuple_pat(p: &mut Parser<'_>) -> CompletedMarker {
     }
     p.expect(T![')']);
 
-    m.complete(p, if !has_comma && !has_rest && has_pat { PAREN_PAT } else { TUPLE_PAT })
+    m.complete(
+        p,
+        if !has_comma && !has_rest && has_pat {
+        PAREN_PAT
+    } else {
+        TUPLE_PAT
+    },
+    )
 }
 
 fn slice_pat(p: &mut Parser<'_>) -> CompletedMarker {
@@ -10076,9 +10016,6 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
     }
     let current = p.current();
     if current == T![<] {
-        // test_err generic_arg_list_recover
-        // type T = T<0, ,T>;
-        // type T = T::<0, ,T>;
         delimited(
             p,
             T![<],
@@ -10090,23 +10027,11 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
         );
         m.complete(p, GENERIC_ARG_LIST);
     } else if p.nth_at(1, T![..]) {
-        // test return_type_syntax_in_path
-        // fn foo<T>()
-        // where
-        //     T::method(..): Send,
-        //     method(..): Send,
-        //     method::(..): Send,
-        // {}
         p.bump(T!['(']);
         p.bump(T![..]);
         p.expect(T![')']);
         m.complete(p, RETURN_TYPE_SYNTAX);
     } else {
-        // test path_fn_trait_args
-        // type F = Box<Fn(i32) -> ()>;
-        // type F = Box<::Fn(i32) -> ()>;
-        // type F = Box<Fn::(i32) -> ()>;
-        // type F = Box<::Fn::(i32) -> ()>;
         delimited(
             p,
             T!['('],
@@ -10127,7 +10052,8 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
 
 fn opt_path_args(p: &mut Parser<'_>, mode: Mode) {
     match mode {
-        Mode::Use | Mode::Attr | Mode::Vis => {}
+        Mode::Use | Mode::Attr | Mode::Vis => {
+        },
         Mode::Type => opt_path_type_args(p),
         Mode::Expr => generic_args::opt_generic_arg_list_expr(p),
     }
@@ -10424,7 +10350,6 @@ fn n_attached_trivias<'a>(
         | EXTERN_CRATE => {
             let mut res = 0;
             let mut trivias = trivias.enumerate().peekable();
-
             while let Some((i, (kind, text))) = trivias.next() {
                 match kind {
                     WHITESPACE if text.contains("\n\n") => {
@@ -10447,7 +10372,7 @@ fn n_attached_trivias<'a>(
                 }
             }
             res
-        }
+        },
         _ => 0,
     }
 }

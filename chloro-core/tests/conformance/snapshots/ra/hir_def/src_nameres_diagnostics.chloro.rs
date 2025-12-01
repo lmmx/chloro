@@ -58,12 +58,9 @@ pub struct DefDiagnostics(Option<triomphe::ThinArc<(), DefDiagnostic>>);
 
 impl DefDiagnostics {
     pub fn new(diagnostics: Vec<DefDiagnostic>) -> Self {
-        Self(
-            diagnostics
-                .is_empty()
-                .not()
-                .then(|| triomphe::ThinArc::from_header_and_iter((), diagnostics.into_iter())),
-        )
+        Self(diagnostics.is_empty().not().then(
+            || triomphe::ThinArc::from_header_and_iter((), diagnostics.into_iter()),
+        ))
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &DefDiagnostic> {

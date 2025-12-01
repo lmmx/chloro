@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37056 bytes
-Chloro size:   36810 bytes
+Chloro size:   36780 bytes
 Rustfmt size:  37056 bytes
 
 ✗ Outputs DIFFER
@@ -69,6 +69,22 @@ Rustfmt size:  37056 bytes
  }
  
  pub struct AnnotationConfig<'a> {
+         }));
+     }
+ 
+-    annotations
+-        .into_iter()
+-        .sorted_by_key(|a| {
+-            (a.range.start(), a.range.end(), matches!(a.kind, AnnotationKind::Runnable(..)))
+-        })
+-        .collect()
++    annotations.into_iter().sorted_by_key(|a| {
++        (a.range.start(), a.range.end(), matches!(a.kind, AnnotationKind::Runnable(..)))
++    }).collect(
++    )
+ }
+ 
+ pub(crate) fn resolve_annotation(
  
  #[cfg(test)]
  mod tests {

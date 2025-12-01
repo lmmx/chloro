@@ -84,17 +84,14 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         "Extract into function",
         target_range,
         move |builder| {
-            let outliving_locals: Vec<_> = ret_values.collect();
-            if stdx::never!(!outliving_locals.is_empty() && !ret_ty.is_unit()) {
+        let outliving_locals: Vec<_> = ret_values.collect();
+        if stdx::never!(!outliving_locals.is_empty() && !ret_ty.is_unit()) {
                 // We should not have variables that outlive body if we have expression block
                 return;
             }
-
-            let params = body.extracted_function_params(ctx, &container_info, locals_used);
-
-            let name = make_function_name(&semantics_scope);
-
-            let fun = Function {
+        let params = body.extracted_function_params(ctx, &container_info, locals_used);
+        let name = make_function_name(&semantics_scope);
+        let fun = Function {
                 name,
                 self_param,
                 params,
@@ -105,16 +102,11 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                 contains_tail_expr,
                 mods: container_info,
             };
-
-            let new_indent = IndentLevel::from_node(&insert_after);
-            let old_indent = fun.body.indent_level();
-
-            let insert_after = builder.make_syntax_mut(insert_after);
-
-            let call_expr = make_call(ctx, &fun, old_indent);
-
-            // Map the element range to replace into the mutable version
-            let elements = match &fun.body {
+        let new_indent = IndentLevel::from_node(&insert_after);
+        let old_indent = fun.body.indent_level();
+        let insert_after = builder.make_syntax_mut(insert_after);
+        let call_expr = make_call(ctx, &fun, old_indent);
+        let elements = match &fun.body {
                 FunctionBody::Expr(expr) => {
                     // expr itself becomes the replacement target
                     let expr = &builder.make_mut(expr.clone());
@@ -141,19 +133,15 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                     start..=end
                 }
             };
-
-            let has_impl_wrapper =
+        let has_impl_wrapper =
                 insert_after.ancestors().any(|a| a.kind() == SyntaxKind::IMPL && a != insert_after);
-
-            let fn_def = format_function(ctx, module, &fun, old_indent).clone_for_update();
-
-            if let Some(cap) = ctx.config.snippet_cap
+        let fn_def = format_function(ctx, module, &fun, old_indent).clone_for_update();
+        if let Some(cap) = ctx.config.snippet_cap
                 && let Some(name) = fn_def.name()
             {
                 builder.add_tabstop_before(cap, name);
             }
-
-            let fn_def = match fun.self_param_adt(ctx) {
+        let fn_def = match fun.self_param_adt(ctx) {
                 Some(adt) if anchor == Anchor::Method && !has_impl_wrapper => {
                     fn_def.indent(1.into());
 
@@ -169,9 +157,7 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                     fn_def.syntax().clone()
                 }
             };
-
-            // There are external control flows
-            if fun
+        if fun
                 .control_flow
                 .kind
                 .is_some_and(|kind| matches!(kind, FlowKind::Break(_, _) | FlowKind::Continue(_)))
@@ -198,17 +184,13 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                     }
                 }
             }
-
-            // Replace the call site with the call to the new function
-            fixup_call_site(builder, &fun.body);
-            ted::replace_all(elements, vec![call_expr.into()]);
-
-            // Insert the newly extracted function (or impl)
-            ted::insert_all_raw(
+        fixup_call_site(builder, &fun.body);
+        ted::replace_all(elements, vec![call_expr.into()]);
+        ted::insert_all_raw(
                 ted::Position::after(insert_after),
                 vec![make::tokens::whitespace(&format!("\n\n{new_indent}")).into(), fn_def.into()],
             );
-        },
+    },
     )
 }
 
@@ -440,7 +422,7 @@ impl<'db> Function<'db> {
                 vars => {
                     let types = vars.iter().map(|v| v.local.ty(ctx.db())).collect();
                     FunType::Tuple(types)
-                }
+                },
             },
         }
     }
@@ -536,11 +518,11 @@ impl<'db> FlowKind<'db> {
             FlowKind::Try { .. } => {
                 stdx::never!("cannot have result handler with try");
                 expr.unwrap_or_else(|| make::expr_return(None))
-            }
+            },
             FlowKind::Continue(label) => {
                 stdx::always!(expr.is_none(), "continue with value is not possible");
                 make::expr_continue(label.clone())
-            }
+            },
         }
     }
 
@@ -548,11 +530,11 @@ impl<'db> FlowKind<'db> {
         match self {
             FlowKind::Return(Some(expr)) | FlowKind::Break(_, Some(expr)) => {
                 ctx.sema.type_of_expr(expr).map(TypeInfo::adjusted)
-            }
+            },
             FlowKind::Try { .. } => {
                 stdx::never!("try does not have defined expr_ty");
                 None
-            }
+            },
             _ => None,
         }
     }
@@ -655,7 +637,7 @@ impl FunctionBody {
             FunctionBody::Span { parent, text_range, .. } => {
                 let tail_expr = parent.tail_expr()?;
                 text_range.contains_range(tail_expr.syntax().text_range()).then_some(tail_expr)
-            }
+            },
         }
     }
 
@@ -672,13 +654,10 @@ impl FunctionBody {
                         ast::Stmt::LetStmt(stmt) => stmt.initializer(),
                     })
                     .for_each(|expr| walk_expr(&expr, cb));
-                if let Some(expr) = parent
-                    .tail_expr()
-                    .filter(|it| text_range.contains_range(it.syntax().text_range()))
-                {
+                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     walk_expr(&expr, cb);
                 }
-            }
+            },
         }
     }
 
@@ -695,13 +674,10 @@ impl FunctionBody {
                         ast::Stmt::LetStmt(stmt) => stmt.initializer(),
                     })
                     .for_each(|expr| preorder_expr(&expr, cb));
-                if let Some(expr) = parent
-                    .tail_expr()
-                    .filter(|it| text_range.contains_range(it.syntax().text_range()))
-                {
+                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     preorder_expr(&expr, cb);
                 }
-            }
+            },
         }
     }
 
@@ -731,13 +707,10 @@ impl FunctionBody {
                             }
                         }
                     });
-                if let Some(expr) = parent
-                    .tail_expr()
-                    .filter(|it| text_range.contains_range(it.syntax().text_range()))
-                {
+                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     walk_patterns_in_expr(&expr, cb);
                 }
-            }
+            },
         }
     }
 
@@ -977,9 +950,9 @@ impl FunctionBody {
     ) -> impl Iterator<Item = OutlivedLocal> + 'a {
         let parent = parent.clone();
         let range = self.text_range();
-        locals_defined_in_body(&ctx.sema, self)
-            .into_iter()
-            .filter_map(move |local| local_outlives_body(ctx, range, local, &parent))
+        locals_defined_in_body(&ctx.sema, self).into_iter().filter_map(
+            move |local| local_outlives_body(ctx, range, local, &parent),
+        )
     }
 
     /// Analyses the function body for external control flow.
@@ -1079,38 +1052,29 @@ impl FunctionBody {
         container_info: &ContainerInfo<'db>,
         locals: FxIndexSet<Local>,
     ) -> Vec<Param<'db>> {
-        locals
-            .into_iter()
-            .sorted()
-            .map(|local| (local, local.primary_source(ctx.db())))
-            .filter(|(_, src)| is_defined_outside_of_body(ctx, self, src))
-            .filter_map(|(local, src)| match src.into_ident_pat() {
-                Some(src) => Some((local, src)),
-                None => {
-                    stdx::never!(false, "Local::is_self returned false, but source is SelfParam");
-                    None
-                }
-            })
-            .map(|(var, src)| {
-                let usages = LocalUsages::find_local_usages(ctx, var);
-                let ty = var.ty(ctx.db());
-
-                let defined_outside_parent_loop = container_info
+        locals.into_iter().sorted().map(|local| (local, local.primary_source(ctx.db()))).filter(
+            |(_, src)| is_defined_outside_of_body(ctx, self, src),
+        ).filter_map(|(local, src)| match src.into_ident_pat() {
+            Some(src) => Some((local, src)),
+            None => {
+                stdx::never!(false, "Local::is_self returned false, but source is SelfParam");
+                None
+            },
+        }).map(|(var, src)| {
+            let usages = LocalUsages::find_local_usages(ctx, var);
+            let ty = var.ty(ctx.db());
+            let defined_outside_parent_loop = container_info
                     .parent_loop
                     .as_ref()
                     .is_none_or(|it| it.text_range().contains_range(src.syntax().text_range()));
-
-                let is_copy = ty.is_copy(ctx.db());
-                let has_usages = self.has_usages_after_body(&usages);
-                let requires_mut =
+            let is_copy = ty.is_copy(ctx.db());
+            let has_usages = self.has_usages_after_body(&usages);
+            let requires_mut =
                     !ty.is_mutable_reference() && has_exclusive_usages(ctx, &usages, self);
-                // We can move the value into the function call if it's not used after the call,
-                // if the var is not used but defined outside a loop we are extracting from we can't move it either
-                // as the function will reuse it in the next iteration.
-                let move_local = (!has_usages && defined_outside_parent_loop) || ty.is_reference();
-                Param { var, ty, move_local, requires_mut, is_copy }
-            })
-            .collect()
+            let move_local = (!has_usages && defined_outside_parent_loop) || ty.is_reference();
+            Param { var, ty, move_local, requires_mut, is_copy }
+        }).collect(
+        )
     }
 
     fn has_usages_after_body(&self, usages: &LocalUsages) -> bool {
@@ -1168,10 +1132,9 @@ fn has_exclusive_usages(
     usages: &LocalUsages,
     body: &FunctionBody,
 ) -> bool {
-    usages
-        .iter()
-        .filter(|reference| body.contains_range(reference.range))
-        .any(|reference| reference_is_exclusive(reference, body, ctx))
+    usages.iter().filter(|reference| body.contains_range(reference.range)).any(
+        |reference| reference_is_exclusive(reference, body, ctx),
+    )
 }
 
 /// checks if this reference requires `&mut` access inside node
@@ -1258,7 +1221,7 @@ impl HasTokenAtOffset for FunctionBody {
                         } else {
                             TokenAtOffset::None
                         }
-                    }
+                    },
                     TokenAtOffset::Between(a, b) => {
                         match (
                             text_range.contains_range(a.text_range()),
@@ -1269,9 +1232,9 @@ impl HasTokenAtOffset for FunctionBody {
                             (false, true) => TokenAtOffset::Single(b),
                             (false, false) => TokenAtOffset::None,
                         }
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 }
@@ -1396,9 +1359,9 @@ fn find_non_trait_impl(trait_impl: &SyntaxNode) -> Option<ast::Impl> {
     let impl_type = Some(impl_type_name(&as_impl)?);
 
     let siblings = trait_impl.parent()?.children();
-    siblings
-        .filter_map(ast::Impl::cast)
-        .find(|s| impl_type_name(s) == impl_type && !is_trait_impl(s))
+    siblings.filter_map(ast::Impl::cast).find(
+        |s| impl_type_name(s) == impl_type && !is_trait_impl(s),
+    )
 }
 
 fn last_impl_member(impl_node: &ast::Impl) -> Option<SyntaxNode> {
@@ -1418,9 +1381,7 @@ fn impl_type_name(impl_node: &ast::Impl) -> Option<String> {
 fn fixup_call_site(builder: &mut SourceChangeBuilder, body: &FunctionBody) {
     let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
 
-    if let Some(parent_match_arm) = parent_match_arm
-        && parent_match_arm.comma_token().is_none()
-    {
+    if let Some(parent_match_arm) = parent_match_arm && parent_match_arm.comma_token().is_none() {
         let parent_match_arm = builder.make_mut(parent_match_arm);
         ted::append_child_raw(parent_match_arm.syntax(), make::token(T![,]));
     }
@@ -1468,19 +1429,12 @@ fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -
     let parent_match_arm = fun.body.parent().and_then(ast::MatchArm::cast);
 
     if let Some(bindings) = outliving_bindings {
-        // with bindings that outlive it
         make::let_stmt(bindings, None, Some(expr)).syntax().clone_for_update()
     } else if parent_match_arm.as_ref().is_some() {
-        // as a tail expr for a match arm
         expr.syntax().clone()
-    } else if parent_match_arm.as_ref().is_none()
-        && fun.ret_ty.is_unit()
-        && (!fun.outliving_locals.is_empty() || !expr.is_block_like())
-    {
-        // as an expr stmt
+    } else if parent_match_arm.as_ref().is_none() && fun.ret_ty.is_unit() && (!fun.outliving_locals.is_empty() || !expr.is_block_like()) {
         make::expr_stmt(expr).syntax().clone_for_update()
     } else {
-        // as a tail expr, or a block
         expr.syntax().clone()
     }
 }
@@ -1517,7 +1471,7 @@ impl<'db> FlowHandler<'db> {
             match action {
                 FlowKind::Return(None) | FlowKind::Break(_, None) | FlowKind::Continue(_) => {
                     FlowHandler::If { action }
-                }
+                },
                 FlowKind::Return(_) | FlowKind::Break(_, _) => FlowHandler::IfOption { action },
                 FlowKind::Try { kind } => FlowHandler::Try { kind },
             }
@@ -1525,10 +1479,10 @@ impl<'db> FlowHandler<'db> {
             match action {
                 FlowKind::Return(None) | FlowKind::Break(_, None) | FlowKind::Continue(_) => {
                     FlowHandler::MatchOption { none: action }
-                }
+                },
                 FlowKind::Return(_) | FlowKind::Break(_, _) => {
                     FlowHandler::MatchResult { err: action }
-                }
+                },
                 FlowKind::Try { kind } => FlowHandler::Try { kind },
             }
         }
@@ -1552,7 +1506,7 @@ impl<'db> FlowHandler<'db> {
                     call_expr,
                 );
                 make::expr_if(condition.into(), block, None).into()
-            }
+            },
             FlowHandler::IfOption { action } => {
                 let path = make::ext::ident_path("Some");
                 let value_pat = make::ext::simple_ident_pat(make::name("value"));
@@ -1563,10 +1517,9 @@ impl<'db> FlowHandler<'db> {
                 let action_stmt = make::expr_stmt(action_expr);
                 let then = make::block_expr(iter::once(action_stmt.into()), None);
                 make::expr_if(cond.into(), then, None).into()
-            }
+            },
             FlowHandler::MatchOption { none } => {
                 let some_name = "value";
-
                 let some_arm = {
                     let path = make::ext::ident_path("Some");
                     let value_pat = make::ext::simple_ident_pat(make::name(some_name));
@@ -1581,11 +1534,10 @@ impl<'db> FlowHandler<'db> {
                 };
                 let arms = make::match_arm_list(vec![some_arm, none_arm]);
                 make::expr_match(call_expr, arms).into()
-            }
+            },
             FlowHandler::MatchResult { err } => {
                 let ok_name = "value";
                 let err_name = "value";
-
                 let ok_arm = {
                     let path = make::ext::ident_path("Ok");
                     let value_pat = make::ext::simple_ident_pat(make::name(ok_name));
@@ -1602,7 +1554,7 @@ impl<'db> FlowHandler<'db> {
                 };
                 let arms = make::match_arm_list(vec![ok_arm, err_arm]);
                 make::expr_match(call_expr, arms).into()
-            }
+            },
         }
     }
 }
@@ -1705,7 +1657,11 @@ fn make_where_clause(
         })
         .peekable();
 
-    if predicates.peek().is_some() { Some(make::where_clause(predicates)) } else { None }
+    if predicates.peek().is_some() {
+        Some(make::where_clause(predicates))
+    } else {
+        None
+    }
 }
 
 fn pred_is_required(
@@ -1805,15 +1761,15 @@ impl<'db> FunType<'db> {
                 [] => {
                     stdx::never!("tuple type with 0 elements");
                     make::ty_unit()
-                }
+                },
                 [ty] => {
                     stdx::never!("tuple type with 1 element");
                     make_ty(ty, ctx, module)
-                }
+                },
                 types => {
                     let types = types.iter().map(|ty| make_ty(ty, ctx, module));
                     make::ty_tuple(types)
-                }
+                },
             },
         }
     }
@@ -1926,7 +1882,9 @@ fn make_body(
         FlowHandler::None => block,
         FlowHandler::Try { kind } => {
             let block = with_default_tail_expr(block, make::ext::expr_unit());
-            map_tail_expr(block, |tail_expr| {
+            map_tail_expr(
+                block,
+                |tail_expr| {
                 let constructor = match kind {
                     TryKind::Option => "Some",
                     TryKind::Result { .. } => "Ok",
@@ -1934,8 +1892,9 @@ fn make_body(
                 let func = make::expr_path(make::ext::ident_path(constructor));
                 let args = make::arg_list(iter::once(tail_expr));
                 make::expr_call(func, args).into()
-            })
-        }
+            },
+            )
+        },
         FlowHandler::If { .. } => {
             let controlflow_continue = make::expr_call(
                 make::expr_path(make::path_from_text("ControlFlow::Continue")),
@@ -1943,21 +1902,27 @@ fn make_body(
             )
             .into();
             with_tail_expr(block, controlflow_continue)
-        }
+        },
         FlowHandler::IfOption { .. } => {
             let none = make::expr_path(make::ext::ident_path("None"));
             with_tail_expr(block, none)
-        }
-        FlowHandler::MatchOption { .. } => map_tail_expr(block, |tail_expr| {
+        },
+        FlowHandler::MatchOption { .. } => map_tail_expr(
+            block,
+            |tail_expr| {
             let some = make::expr_path(make::ext::ident_path("Some"));
             let args = make::arg_list(iter::once(tail_expr));
             make::expr_call(some, args).into()
-        }),
-        FlowHandler::MatchResult { .. } => map_tail_expr(block, |tail_expr| {
+        },
+        ),
+        FlowHandler::MatchResult { .. } => map_tail_expr(
+            block,
+            |tail_expr| {
             let ok = make::expr_path(make::ext::ident_path("Ok"));
             let args = make::arg_list(iter::once(tail_expr));
             make::expr_call(ok, args).into()
-        }),
+        },
+        ),
     }
 }
 

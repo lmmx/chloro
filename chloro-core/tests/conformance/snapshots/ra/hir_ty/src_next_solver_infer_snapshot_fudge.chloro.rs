@@ -38,12 +38,11 @@ fn const_vars_since_snapshot<'db>(
 
     (
         range.clone(),
-        iter_idx_range(range)
-            .map(|index| match table.probe_value(index) {
-                ConstVariableValue::Known { value: _ } => ConstVariableOrigin {},
-                ConstVariableValue::Unknown { origin, universe: _ } => origin,
-            })
-            .collect(),
+        iter_idx_range(range).map(|index| match table.probe_value(index) {
+        ConstVariableValue::Known { value: _ } => ConstVariableOrigin {},
+        ConstVariableValue::Unknown { origin, universe: _ } => origin,
+    }).collect(
+    ),
     )
 }
 
@@ -177,42 +176,35 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
             match infer_ty {
                 rustc_type_ir::TyVar(vid) => {
                     if self.snapshot_vars.type_vars.0.contains(&vid) {
-                        // This variable was created during the fudging.
-                        // Recreate it with a fresh variable here.
                         let idx = vid.as_usize() - self.snapshot_vars.type_vars.0.start.as_usize();
                         let origin = self.snapshot_vars.type_vars.1[idx];
                         self.infcx.next_ty_var_with_origin(origin)
                     } else {
-                        // This variable was created before the
-                        // "fudging". Since we refresh all type
-                        // variables to their binding anyhow, we know
-                        // that it is unbound, so we can just return
-                        // it.
                         debug_assert!(
                             self.infcx.inner.borrow_mut().type_variables().probe(vid).is_unknown()
                         );
                         ty
                     }
-                }
+                },
                 rustc_type_ir::IntVar(vid) => {
                     if self.snapshot_vars.int_vars.contains(&vid) {
                         self.infcx.next_int_var()
                     } else {
                         ty
                     }
-                }
+                },
                 rustc_type_ir::FloatVar(vid) => {
                     if self.snapshot_vars.float_vars.contains(&vid) {
                         self.infcx.next_float_var()
                     } else {
                         ty
                     }
-                }
+                },
                 rustc_type_ir::FreshTy(_)
                 | rustc_type_ir::FreshIntTy(_)
                 | rustc_type_ir::FreshFloatTy(_) => {
                     unreachable!("unexpected fresh infcx var")
-                }
+                },
             }
         } else if ty.has_infer() {
             ty.super_fold_with(self)
@@ -244,10 +236,10 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
                     } else {
                         ct
                     }
-                }
+                },
                 rustc_type_ir::InferConst::Fresh(_) => {
                     unreachable!("unexpected fresh infcx var")
-                }
+                },
             }
         } else if ct.has_infer() {
             ct.super_fold_with(self)

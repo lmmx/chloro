@@ -70,13 +70,15 @@ impl Attrs {
         span_map: SpanMapRef<'_>,
         cfg_options: &CfgOptions,
     ) -> Result<(), CfgExpr> {
-        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options)
-            .filter_map(|attr| attr.cfg())
-            .find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
-                true => None,
-                false => Some(cfg),
-            })
-            .map_or(Ok(()), Err)
+        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options).filter_map(
+            |attr| attr.cfg(),
+        ).find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
+            true => None,
+            false => Some(cfg),
+        }).map_or(
+            Ok(()),
+            Err,
+        )
     }
 }
 
@@ -174,8 +176,9 @@ impl Attrs {
 
     #[inline]
     pub fn rust_analyzer_tool(&self) -> impl Iterator<Item = &Attr> {
-        self.iter()
-            .filter(|&attr| attr.path.segments().first().is_some_and(|s| *s == sym::rust_analyzer))
+        self.iter().filter(
+            |&attr| attr.path.segments().first().is_some_and(|s| *s == sym::rust_analyzer),
+        )
     }
 
     #[inline]
@@ -186,7 +189,7 @@ impl Attrs {
             Some(second) => {
                 let cfgs = [first, second].into_iter().chain(cfgs);
                 Some(CfgExpr::All(cfgs.collect()))
-            }
+            },
             None => Some(first),
         }
     }
@@ -199,7 +202,11 @@ impl Attrs {
     #[inline]
     pub(crate) fn is_cfg_enabled(&self, cfg_options: &CfgOptions) -> Result<(), CfgExpr> {
         self.cfgs().try_for_each(|cfg| {
-            if cfg_options.check(&cfg) != Some(false) { Ok(()) } else { Err(cfg) }
+            if cfg_options.check(&cfg) != Some(false) {
+                Ok(())
+            } else {
+                Err(cfg)
+            }
         })
     }
 
@@ -216,16 +223,14 @@ impl Attrs {
     #[inline]
     pub fn has_doc_hidden(&self) -> bool {
         self.by_key(sym::doc).tt_values().any(|tt| {
-            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis &&
-                matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::hidden)
+            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis && matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::hidden)
         })
     }
 
     #[inline]
     pub fn has_doc_notable_trait(&self) -> bool {
         self.by_key(sym::doc).tt_values().any(|tt| {
-            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis &&
-                matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::notable_trait)
+            tt.top_subtree().delimiter.kind == DelimiterKind::Parenthesis && matches!(tt.token_trees().flat_tokens(), [tt::TokenTree::Leaf(tt::Leaf::Ident(ident))] if ident.sym == sym::notable_trait)
         })
     }
 
@@ -262,12 +267,11 @@ impl Attrs {
     #[inline]
     pub fn is_test(&self) -> bool {
         self.iter().any(|it| {
-            it.path()
-                .segments()
-                .iter()
-                .rev()
-                .zip([sym::core, sym::prelude, sym::v1, sym::test].iter().rev())
-                .all(|it| it.0 == it.1)
+            it.path().segments().iter().rev().zip(
+                [sym::core, sym::prelude, sym::v1, sym::test].iter().rev(),
+            ).all(
+                |it| it.0 == it.1,
+            )
         })
     }
 
@@ -288,22 +292,29 @@ impl Attrs {
 
     #[inline]
     pub fn rustc_legacy_const_generics(&self) -> Option<Box<Box<[u32]>>> {
-        self.by_key(sym::rustc_legacy_const_generics)
-            .tt_values()
-            .next()
-            .map(parse_rustc_legacy_const_generics)
-            .filter(|it| !it.is_empty())
-            .map(Box::new)
+        self.by_key(sym::rustc_legacy_const_generics).tt_values().next().map(
+            parse_rustc_legacy_const_generics,
+        ).filter(
+            |it| !it.is_empty(),
+        ).map(
+            Box::new,
+        )
     }
 
     #[inline]
     pub fn repr(&self) -> Option<ReprOptions> {
-        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(None, |acc, repr| {
-            acc.map_or(Some(repr), |mut acc| {
+        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(
+            None,
+            |acc, repr| {
+            acc.map_or(
+                Some(repr),
+                |mut acc| {
                 merge_repr(&mut acc, repr);
                 Some(acc)
-            })
-        })
+            },
+            )
+        },
+        )
     }
 }
 
@@ -462,7 +473,7 @@ impl DocExpr {
         match self {
             DocExpr::Atom(DocAtom::KeyValue { key, value }) if *key == sym::alias => {
                 std::slice::from_ref(value)
-            }
+            },
             DocExpr::Alias(aliases) => aliases,
             _ => &[],
         }
@@ -508,8 +519,8 @@ fn parse_comma_sep<S>(iter: TtIter<'_, S>) -> Vec<Symbol> {
             kind: tt::LitKind::Str, symbol, ..
         })) => Some(symbol.clone()),
         _ => None,
-    })
-    .collect()
+    }).collect(
+    )
 }
 
 impl AttrsWithOwner {
@@ -524,7 +535,6 @@ impl AttrsWithOwner {
             AttrDefId::ModuleId(module) => {
                 let def_map = module.def_map(db);
                 let mod_data = &def_map[module.local_id];
-
                 let raw_attrs = match mod_data.origin {
                     ModuleOrigin::File { definition, declaration_tree_id, declaration, .. } => {
                         let decl_attrs = declaration_tree_id
@@ -548,7 +558,7 @@ impl AttrsWithOwner {
                     }
                 };
                 Attrs::expand_cfg_attr(db, module.krate, raw_attrs)
-            }
+            },
             AttrDefId::FieldId(it) => db.fields_attrs(it.parent)[it.local_id].clone(),
             AttrDefId::EnumVariantId(it) => attrs_from_ast_id_loc(db, it),
             AttrDefId::AdtId(it) => match it {
@@ -570,7 +580,6 @@ impl AttrsWithOwner {
             AttrDefId::GenericParamId(it) => match it {
                 GenericParamId::ConstParamId(it) => {
                     let src = it.parent().child_source(db);
-                    // FIXME: We should be never getting `None` here.
                     Attrs(match src.value.get(it.local_id()) {
                         Some(val) => RawAttrs::new_expanded(
                             db,
@@ -580,10 +589,9 @@ impl AttrsWithOwner {
                         ),
                         None => RawAttrs::EMPTY,
                     })
-                }
+                },
                 GenericParamId::TypeParamId(it) => {
                     let src = it.parent().child_source(db);
-                    // FIXME: We should be never getting `None` here.
                     Attrs(match src.value.get(it.local_id()) {
                         Some(val) => RawAttrs::new_expanded(
                             db,
@@ -593,10 +601,9 @@ impl AttrsWithOwner {
                         ),
                         None => RawAttrs::EMPTY,
                     })
-                }
+                },
                 GenericParamId::LifetimeParamId(it) => {
                     let src = it.parent.child_source(db);
-                    // FIXME: We should be never getting `None` here.
                     Attrs(match src.value.get(it.local_id) {
                         Some(val) => RawAttrs::new_expanded(
                             db,
@@ -606,7 +613,7 @@ impl AttrsWithOwner {
                         ),
                         None => RawAttrs::EMPTY,
                     })
-                }
+                },
             },
             AttrDefId::ExternBlockId(it) => attrs_from_ast_id_loc(db, it),
             AttrDefId::ExternCrateId(it) => attrs_from_ast_id_loc(db, it),
@@ -739,10 +746,9 @@ impl AttrSourceMap {
             _ => self.file_id,
         };
 
-        self.source
-            .get(ast_idx)
-            .map(|it| InFile::new(file_id, it))
-            .unwrap_or_else(|| panic!("cannot find attr at index {id:?}"))
+        self.source.get(ast_idx).map(|it| InFile::new(file_id, it)).unwrap_or_else(
+            || panic!("cannot find attr at index {id:?}"),
+        )
     }
 }
 
@@ -796,10 +802,9 @@ impl<'attr> AttrQuery<'attr> {
             let name = tt.iter()
                 .skip_while(|tt| !matches!(tt, TtElement::Leaf(tt::Leaf::Ident(tt::Ident { sym, ..} )) if *sym == key))
                 .nth(2);
-
             match name {
                 Some(TtElement::Leaf(tt::Leaf::Literal(tt::Literal{  symbol: text, kind: tt::LitKind::Str | tt::LitKind::StrRaw(_) , ..}))) => Some(text.as_str()),
-                _ => None
+                _ => None,
             }
         })
     }

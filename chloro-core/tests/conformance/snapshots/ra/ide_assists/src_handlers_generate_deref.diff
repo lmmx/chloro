@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9020 bytes
-Chloro size:   8629 bytes
+Chloro size:   8541 bytes
 Rustfmt size:  9083 bytes
 
 ✗ Outputs DIFFER
@@ -50,6 +50,34 @@ Rustfmt size:  9083 bytes
      let trait_ = deref_type_to_generate.to_trait(&ctx.sema, module.krate())?;
      let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(trait_), cfg)?;
  
+         format!("Generate `{deref_type_to_generate:?}` impl using `{field_name}`"),
+         target,
+         |edit| {
+-            generate_edit(
+-                ctx.db(),
+-                edit,
+-                strukt,
+-                field_type.syntax(),
+-                field_name.syntax(),
+-                deref_type_to_generate,
+-                trait_path,
+-                module.krate().edition(ctx.db()),
+-            )
+-        },
++        generate_edit(
++            ctx.db(),
++            edit,
++            strukt,
++            field_type.syntax(),
++            field_name.syntax(),
++            deref_type_to_generate,
++            trait_path,
++            module.krate().edition(ctx.db()),
++        )
++    },
+     )
+ }
+ 
      let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
      let field = ctx.find_node_at_offset::<ast::TupleField>()?;
      let field_list = ctx.find_node_at_offset::<ast::TupleFieldList>()?;
@@ -70,6 +98,34 @@ Rustfmt size:  9083 bytes
 +    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
      let trait_ = deref_type_to_generate.to_trait(&ctx.sema, module.krate())?;
      let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(trait_), cfg)?;
+ 
+         format!("Generate `{deref_type_to_generate:?}` impl using `{field}`"),
+         target,
+         |edit| {
+-            generate_edit(
+-                ctx.db(),
+-                edit,
+-                strukt,
+-                field_type.syntax(),
+-                field_list_index,
+-                deref_type_to_generate,
+-                trait_path,
+-                module.krate().edition(ctx.db()),
+-            )
+-        },
++        generate_edit(
++            ctx.db(),
++            edit,
++            strukt,
++            field_type.syntax(),
++            field_list_index,
++            deref_type_to_generate,
++            trait_path,
++            module.krate().edition(ctx.db()),
++        )
++    },
+     )
+ }
  
  #[cfg(test)]
  mod tests {

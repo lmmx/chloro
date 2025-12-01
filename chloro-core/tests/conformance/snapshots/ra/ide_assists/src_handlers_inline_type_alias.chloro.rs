@@ -39,10 +39,9 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
         "Inline type alias into all uses",
         name.syntax().text_range(),
         |builder| {
-            let usages = usages.all();
-            let mut definition_deleted = false;
-
-            let mut inline_refs_for_file = |file_id, refs: Vec<FileReference>| {
+        let usages = usages.all();
+        let mut definition_deleted = false;
+        let mut inline_refs_for_file = |file_id, refs: Vec<FileReference>| {
                 let source = ctx.sema.parse(file_id);
                 let mut editor = builder.make_editor(source.syntax());
 
@@ -70,16 +69,15 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
                 }
                 builder.add_file_edits(file_id.file_id(ctx.db()), editor);
             };
-
-            for (file_id, refs) in usages.into_iter() {
+        for (file_id, refs) in usages.into_iter() {
                 inline_refs_for_file(file_id, refs);
             }
-            if !definition_deleted {
-                let mut editor = builder.make_editor(ast_alias.syntax());
-                editor.delete(ast_alias.syntax());
-                builder.add_file_edits(ctx.vfs_file_id(), editor)
-            }
-        },
+        if !definition_deleted {
+            let mut editor = builder.make_editor(ast_alias.syntax());
+            editor.delete(ast_alias.syntax());
+            builder.add_file_edits(ctx.vfs_file_id(), editor)
+        }
+    },
     )
 }
 
@@ -111,11 +109,11 @@ pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         "Inline type alias",
         alias_instance.syntax().text_range(),
         |builder| {
-            let mut editor = builder.make_editor(alias_instance.syntax());
-            let replace = replacement.replace_generic(&concrete_type);
-            editor.replace(alias_instance.syntax(), replace);
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        let mut editor = builder.make_editor(alias_instance.syntax());
+        let replace = replacement.replace_generic(&concrete_type);
+        editor.replace(alias_instance.syntax(), replace);
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -124,7 +122,7 @@ impl Replacement {
         match self {
             Replacement::Generic { lifetime_map, const_and_type_map } => {
                 create_replacement(lifetime_map, const_and_type_map, concrete_type)
-            }
+            },
             Replacement::Plain => concrete_type.syntax().clone_subtree().clone_for_update(),
         }
     }
@@ -349,15 +347,13 @@ impl ConstOrTypeGeneric {
     }
 
     fn replacement_value(&self) -> Option<SyntaxNode> {
-        Some(
-            match self {
-                ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
-                ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
-                ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
-                ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
-            }
-            .clone_for_update(),
-        )
+        Some(match self {
+            ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
+            ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
+            ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
+            ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
+        }.clone_for_update(
+        ))
     }
 }
 

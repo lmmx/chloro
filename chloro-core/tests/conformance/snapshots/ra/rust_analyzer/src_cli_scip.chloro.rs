@@ -479,25 +479,22 @@ fn moniker_to_symbol(moniker: &Moniker) -> scip_types::Symbol {
 
 fn moniker_descriptors(identifier: &MonikerIdentifier) -> Vec<scip_types::Descriptor> {
     use scip_types::descriptor::Suffix::*;
-    identifier
-        .description
-        .iter()
-        .map(|desc| {
-            new_descriptor_str(
-                &desc.name,
-                match desc.desc {
-                    MonikerDescriptorKind::Namespace => Namespace,
-                    MonikerDescriptorKind::Type => Type,
-                    MonikerDescriptorKind::Term => Term,
-                    MonikerDescriptorKind::Method => Method,
-                    MonikerDescriptorKind::TypeParameter => TypeParameter,
-                    MonikerDescriptorKind::Parameter => Parameter,
-                    MonikerDescriptorKind::Macro => Macro,
-                    MonikerDescriptorKind::Meta => Meta,
-                },
-            )
-        })
-        .collect()
+    identifier.description.iter().map(|desc| {
+        new_descriptor_str(
+            &desc.name,
+            match desc.desc {
+            MonikerDescriptorKind::Namespace => Namespace,
+            MonikerDescriptorKind::Type => Type,
+            MonikerDescriptorKind::Term => Term,
+            MonikerDescriptorKind::Method => Method,
+            MonikerDescriptorKind::TypeParameter => TypeParameter,
+            MonikerDescriptorKind::Parameter => Parameter,
+            MonikerDescriptorKind::Macro => Macro,
+            MonikerDescriptorKind::Meta => Meta,
+        },
+        )
+    }).collect(
+    )
 }
 
 #[cfg(test)]

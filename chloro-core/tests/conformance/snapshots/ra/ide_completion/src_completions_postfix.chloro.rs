@@ -450,10 +450,8 @@ fn add_custom_postfix_completions(
 }
 
 pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
-    it.syntax()
-        .parent()
-        .and_then(|parent| {
-            Some(match_ast! { match parent {
+    it.syntax().parent().and_then(|parent| {
+        Some(match_ast! { match parent {
                 ast::IfExpr(expr) => expr.condition()? == *it,
                 ast::WhileExpr(expr) => expr.condition()? == *it,
                 ast::MatchGuard(guard) => guard.condition()? == *it,
@@ -463,8 +461,9 @@ pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
                     .then(|| is_in_condition(&expr))?,
                 _ => return None,
             } })
-        })
-        .unwrap_or(false)
+    }).unwrap_or(
+        false,
+    )
 }
 
 #[cfg(test)]

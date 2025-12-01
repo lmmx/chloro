@@ -87,7 +87,7 @@ impl RawAttrs {
         collect_attrs(owner).filter_map(move |(id, attr)| match attr {
             Either::Left(attr) => {
                 attr.meta().and_then(|meta| Attr::from_src(db, meta, span_map, id))
-            }
+            },
             Either::Right(comment) if DESUGAR_COMMENTS => comment.doc_comment().map(|doc| {
                 let span = span_map.span_for_range(comment.syntax().text_range());
                 let (text, kind) = desugar_doc_comment_text(doc, DocCommentDesugarMode::ProcMacro);
@@ -113,8 +113,9 @@ impl RawAttrs {
         span_map: SpanMapRef<'_>,
         cfg_options: &CfgOptions,
     ) -> impl Iterator<Item = Attr> {
-        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map)
-            .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
+        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map).flat_map(
+            |attr| attr.expand_cfg_attr(db, cfg_options),
+        )
     }
 
     pub fn merge(&self, other: Self) -> Self {
@@ -136,7 +137,7 @@ impl RawAttrs {
                     }))
                     .collect::<Vec<_>>();
                 Self { entries: Some(ThinArc::from_header_and_iter((), items.into_iter())) }
-            }
+            },
         }
     }
 
@@ -334,7 +335,6 @@ impl Attr {
             smallvec![]
         } else {
             cov_mark::hit!(cfg_attr_active);
-
             attrs.collect::<SmallVec<[_; 1]>>()
         }
     }
@@ -373,7 +373,7 @@ impl Attr {
             }) => Some(Cow::Borrowed(text.as_str())),
             AttrInput::Literal(tt::Literal { symbol: text, kind: tt::LitKind::Str, .. }) => {
                 unescape(text.as_str())
-            }
+            },
             _ => None,
         }
     }
@@ -464,10 +464,9 @@ pub fn collect_attrs(
             Either::Right(comment) => comment.is_outer(),
         })
         .zip(iter::repeat(false));
-    outer_attrs
-        .chain(inner_attrs)
-        .enumerate()
-        .map(|(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr))
+    outer_attrs.chain(inner_attrs).enumerate().map(
+        |(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr),
+    )
 }
 
 fn inner_attributes(

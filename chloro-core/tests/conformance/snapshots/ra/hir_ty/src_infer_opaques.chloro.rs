@@ -44,16 +44,11 @@ impl<'db> UsageKind<'db> {
         match (&*self, &other) {
             (UsageKind::HasDefiningUse(_), _) | (_, UsageKind::None) => unreachable!(),
             (UsageKind::None, _) => *self = other,
-            // When mergining non-defining uses, prefer earlier ones. This means
-            // the error happens as early as possible.
             (
                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                 UsageKind::NonDefiningUse(..),
-            ) => {}
-            // When merging unconstrained hidden types, we prefer later ones. This is
-            // used as in most cases, the defining use is the final return statement
-            // of our function, and other uses with defining arguments are likely not
-            // intended to be defining.
+            ) => {
+            },
             (
                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                 UsageKind::UnconstrainedHiddenType(..) | UsageKind::HasDefiningUse(_),
@@ -84,10 +79,6 @@ impl<'db> InferenceContext<'_, 'db> {
                 SolverDefId::InternedOpaqueTyId(it) => it,
                 _ => continue,
             };
-
-            // We do actually need to check this the second pass (we can't just
-            // store this), because we can go from `UnconstrainedHiddenType` to
-            // `HasDefiningUse` (because of fallback)
             let mut usage_kind = UsageKind::None;
             for &(opaque_type_key, hidden_type) in &opaque_types {
                 if opaque_type_key.def_id != def_id.into() {
@@ -100,7 +91,6 @@ impl<'db> InferenceContext<'_, 'db> {
                     break;
                 }
             }
-
             if let UsageKind::HasDefiningUse(ty) = usage_kind {
                 for &(opaque_type_key, hidden_type) in &opaque_types {
                     if opaque_type_key.def_id != def_id.into() {
@@ -116,7 +106,6 @@ impl<'db> InferenceContext<'_, 'db> {
 
                 continue;
             }
-
             self.result.type_of_opaque.insert(def_id, self.types.error);
         }
     }

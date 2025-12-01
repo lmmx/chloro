@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15453 bytes
-Chloro size:   14607 bytes
+Chloro size:   14572 bytes
 Rustfmt size:  15544 bytes
 
 ✗ Outputs DIFFER
@@ -29,6 +29,21 @@ Rustfmt size:  15544 bytes
  pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let token = ctx.find_token_at_offset::<ast::AnyString>()?;
      if token.is_raw() {
+         "Rewrite as raw string",
+         target,
+         |edit| {
+-            let hashes = "#".repeat(required_hashes(&value).max(1));
+-            let raw_prefix = token.raw_prefix();
+-            let suffix = string_suffix(token.text()).unwrap_or_default();
+-            let new_str = format!("{raw_prefix}{hashes}\"{value}\"{hashes}{suffix}");
+-            replace_literal(&token, &new_str, edit, ctx);
+-        },
++        let hashes = "#".repeat(required_hashes(&value).max(1));
++        let raw_prefix = token.raw_prefix();
++        let suffix = string_suffix(token.text()).unwrap_or_default();
++        let new_str = format!("{raw_prefix}{hashes}\"{value}\"{hashes}{suffix}");
++        replace_literal(&token, &new_str, edit, ctx);
++    },
      )
  }
  
@@ -50,6 +65,22 @@ Rustfmt size:  15544 bytes
  pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let token = ctx.find_token_at_offset::<ast::AnyString>()?;
      if !token.is_raw() {
+         "Rewrite as regular string",
+         target,
+         |edit| {
+-            // parse inside string to escape `"`
+-            let escaped = value.escape_default().to_string();
+-            let suffix = string_suffix(token.text()).unwrap_or_default();
+-            let prefix = string_prefix(token.text()).map_or("", |s| s.trim_end_matches('r'));
+-            let new_str = format!("{prefix}\"{escaped}\"{suffix}");
+-            replace_literal(&token, &new_str, edit, ctx);
+-        },
++        let escaped = value.escape_default().to_string();
++        let suffix = string_suffix(token.text()).unwrap_or_default();
++        let prefix = string_prefix(token.text()).map_or("", |s| s.trim_end_matches('r'));
++        let new_str = format!("{prefix}\"{escaped}\"{suffix}");
++        replace_literal(&token, &new_str, edit, ctx);
++    },
      )
  }
  
@@ -71,7 +102,24 @@ Rustfmt size:  15544 bytes
  pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let token = ctx.find_token_at_offset::<ast::AnyString>()?;
      if !token.is_raw() {
-     })
+         return None;
+     }
+     let target = token.syntax().text_range();
+-    acc.add(AssistId::refactor("add_hash"), "Add #", target, |edit| {
++    acc.add(
++        AssistId::refactor("add_hash"),
++        "Add #",
++        target,
++        |edit| {
+         let str = token.text();
+         let suffix = string_suffix(str).unwrap_or_default();
+         let raw_prefix = token.raw_prefix();
+         let wrap_range = raw_prefix.len()..str.len() - suffix.len();
+         let new_str = [raw_prefix, "#", &str[wrap_range], "#", suffix].concat();
+         replace_literal(&token, &new_str, edit, ctx);
+-    })
++    },
++    )
  }
  
 -// Assist: remove_hash
@@ -105,31 +153,39 @@ Rustfmt size:  15544 bytes
  
      let text_range = token.syntax().text_range();
      let internal_text = &text[token.text_range_between_quotes()? - text_range.start()];
-         return None;
-     }
- 
--    acc.add(
--        AssistId::refactor_rewrite("remove_hash"),
--        "Remove #",
--        text_range,
--        |edit| {
+         "Remove #",
+         text_range,
+         |edit| {
 -            let suffix = string_suffix(text).unwrap_or_default();
 -            let prefix = token.raw_prefix();
 -            let wrap_range = prefix.len() + 1..text.len() - suffix.len() - 1;
 -            let new_str = [prefix, &text[wrap_range], suffix].concat();
 -            replace_literal(&token, &new_str, edit, ctx);
 -        },
--    )
-+    acc.add(AssistId::refactor_rewrite("remove_hash"), "Remove #", text_range, |edit| {
 +        let suffix = string_suffix(text).unwrap_or_default();
 +        let prefix = token.raw_prefix();
 +        let wrap_range = prefix.len() + 1..text.len() - suffix.len() - 1;
 +        let new_str = [prefix, &text[wrap_range], suffix].concat();
 +        replace_literal(&token, &new_str, edit, ctx);
-+    })
++    },
+     )
  }
  
- fn replace_literal(
+ 
+ fn mut_token(token: syntax::SyntaxToken) -> syntax::SyntaxToken {
+     let node = token.parent().expect("no parent token");
+-    node.clone_for_update()
+-        .children_with_tokens()
+-        .filter_map(|it| it.into_token())
+-        .find(|it| it.text_range() == token.text_range() && it.text() == token.text())
+-        .unwrap()
++    node.clone_for_update().children_with_tokens().filter_map(|it| it.into_token()).find(
++        |it| it.text_range() == token.text_range() && it.text() == token.text(),
++    ).unwrap(
++    )
+ }
+ 
+ #[cfg(test)]
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};

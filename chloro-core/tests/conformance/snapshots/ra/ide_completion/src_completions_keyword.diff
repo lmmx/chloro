@@ -2,12 +2,28 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14005 bytes
-Chloro size:   13987 bytes
+Chloro size:   13989 bytes
 Rustfmt size:  14005 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+                 add_keyword("for", "for $0");
+             }
+             add_keyword("where", "where $0");
+-        }
++        },
+         Item::Enum(_)
+         | Item::Fn(_)
+         | Item::Struct(_)
+         | Item::TypeAlias(_)
+         | Item::Union(_) => {
+             add_keyword("where", "where $0");
+-        }
++        },
+         _ => (),
+     }
+ }
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

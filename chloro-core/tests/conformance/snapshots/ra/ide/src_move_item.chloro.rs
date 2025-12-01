@@ -121,9 +121,6 @@ fn swap_sibling_in_list<A: AstNode + Clone, I: Iterator<Item = A>>(
     if let Some((l, r)) = list_lookup {
         Some(replace_nodes(range, l.syntax(), r.syntax()))
     } else {
-        // Cursor is beyond any movable list item (for example, on curly brace in enum).
-        // It's not necessary, that parent of list is movable (arg list's parent is not, for example),
-        // and we have to continue tree traversal to find suitable node.
         find_ancestors(SyntaxElement::Node(node.parent()?), direction, range)
     }
 }

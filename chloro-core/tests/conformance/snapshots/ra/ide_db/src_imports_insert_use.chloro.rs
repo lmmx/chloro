@@ -133,7 +133,7 @@ impl ImportScope {
                 ImportScopeKind::File(file) => ImportScopeKind::File(file.clone_for_update()),
                 ImportScopeKind::Module(item_list) => {
                     ImportScopeKind::Module(item_list.clone_for_update())
-                }
+                },
                 ImportScopeKind::Block(block) => ImportScopeKind::Block(block.clone_for_update()),
             },
             required_cfgs: self.required_cfgs.iter().map(|attr| attr.clone_for_update()).collect(),
@@ -277,7 +277,6 @@ impl ImportGroup {
                 "core" => ImportGroup::Std,
                 _ => ImportGroup::ExternCrate,
             },
-            // these aren't valid use paths, so fall back to something random
             PathSegmentKind::SelfTypeKw => ImportGroup::ExternCrate,
             PathSegmentKind::Type { .. } => ImportGroup::ExternCrate,
         }
@@ -338,7 +337,6 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
                 res = ImportGranularityGuess::CrateOrModule;
             }
         }
-
         let Some((curr, curr_vis, curr_attrs)) = use_stmts.next() else { break res };
         if is_tree_one_style(&curr) {
             if res != ImportGranularityGuess::One
@@ -459,20 +457,17 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
     };
     // there are no imports in this file at all
     // so put the import after all inner module attributes and possible license header comments
-    if let Some(last_inner_element) = scope_syntax
-        .children_with_tokens()
-        // skip the curly brace
-        .skip(l_curly.is_some() as usize)
-        .take_while(|child| match child {
-            NodeOrToken::Node(node) => is_inner_attribute(node.clone()),
-            NodeOrToken::Token(token) => {
-                [SyntaxKind::WHITESPACE, SyntaxKind::COMMENT, SyntaxKind::SHEBANG]
-                    .contains(&token.kind())
-            }
-        })
-        .filter(|child| child.as_token().is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE))
-        .last()
-    {
+    if let Some(last_inner_element) = scope_syntax.children_with_tokens().skip(l_curly.is_some() as usize).take_while(|child| match child {
+        NodeOrToken::Node(node) => is_inner_attribute(node.clone()),
+        NodeOrToken::Token(token) => {
+            [SyntaxKind::WHITESPACE, SyntaxKind::COMMENT, SyntaxKind::SHEBANG].contains(
+                &token.kind(),
+            )
+        },
+    }).filter(
+        |child| child.as_token().is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE),
+    ).last(
+    ) {
         cov_mark::hit!(insert_empty_inner_attr);
         ted::insert(ted::Position::after(&last_inner_element), use_item.syntax());
         ted::insert(ted::Position::after(last_inner_element), make::tokens::single_newline());
@@ -482,7 +477,7 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
                 cov_mark::hit!(insert_empty_module);
                 ted::insert(ted::Position::after(&b), make::tokens::single_newline());
                 ted::insert(ted::Position::after(&b), use_item.syntax());
-            }
+            },
             None => {
                 cov_mark::hit!(insert_empty_file);
                 ted::insert(
@@ -490,7 +485,7 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
                     make::tokens::blank_line(),
                 );
                 ted::insert(ted::Position::first_child_of(scope_syntax), use_item.syntax());
-            }
+            },
         }
     }
 }

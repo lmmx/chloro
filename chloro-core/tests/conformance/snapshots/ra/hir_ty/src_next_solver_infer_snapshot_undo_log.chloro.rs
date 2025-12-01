@@ -70,13 +70,13 @@ impl<'db> Rollback<UndoLog<'db>> for InferCtxtInner<'db> {
             UndoLog::FloatUnificationTable(undo) => self.float_unification_storage.reverse(undo),
             UndoLog::RegionConstraintCollector(undo) => {
                 self.region_constraint_storage.as_mut().unwrap().reverse(undo)
-            }
+            },
             UndoLog::RegionUnificationTable(undo) => {
                 self.region_constraint_storage.as_mut().unwrap().unification_table.reverse(undo)
-            }
+            },
             UndoLog::PushRegionObligation => {
                 self.region_obligations.pop();
-            }
+            },
         }
     }
 }

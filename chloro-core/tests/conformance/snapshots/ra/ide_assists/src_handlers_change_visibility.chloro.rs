@@ -71,8 +71,8 @@ fn add_vis(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
         "Change visibility to pub(crate)",
         target,
         |edit| {
-            edit.insert(offset, "pub(crate) ");
-        },
+        edit.insert(offset, "pub(crate) ");
+    },
     )
 }
 
@@ -84,15 +84,8 @@ fn can_add(node: &SyntaxNode) -> bool {
         let Some(p) = node.parent() else {
             return false;
         };
-
         if p.kind() == ASSOC_ITEM_LIST {
-            p.parent()
-                .and_then(ast::Impl::cast)
-                // inherent impls i.e 'non-trait impls' have a non-local
-                // effect, thus can have visibility even when nested.
-                // so filter them out
-                .filter(|imp| imp.for_token().is_none())
-                .is_some()
+            p.parent().and_then(ast::Impl::cast).filter(|imp| imp.for_token().is_none()).is_some()
         } else {
             matches!(p.kind(), SOURCE_FILE | MODULE)
         }

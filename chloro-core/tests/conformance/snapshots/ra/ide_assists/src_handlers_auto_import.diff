@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   45559 bytes
+Chloro size:   45545 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -276,22 +276,37 @@ Rustfmt size:  46663 bytes
 -            .parent()
 -            .and_then(Either::cast)
 -            .and_then(expected);
+-        ImportAssets::for_exact_path(&path_under_caret, &ctx.sema)
+-            .map(|it| (it, path_under_caret.syntax().clone(), expected))
+-    } else if let Some(method_under_caret) =
+-        ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>()
+-    {
 +        let expected =
 +            path_under_caret.top_path().syntax().parent().and_then(Either::cast).and_then(expected);
-         ImportAssets::for_exact_path(&path_under_caret, &ctx.sema)
-             .map(|it| (it, path_under_caret.syntax().clone(), expected))
-     } else if let Some(method_under_caret) =
++        ImportAssets::for_exact_path(&path_under_caret, &ctx.sema).map(
++            |it| (it, path_under_caret.syntax().clone(), expected),
++        )
++    } else if let Some(method_under_caret) = ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>() {
          let expected = expected(Either::Left(method_under_caret.clone().into()));
-         ImportAssets::for_method_call(&method_under_caret, &ctx.sema)
-             .map(|it| (it, method_under_caret.syntax().clone(), expected))
+-        ImportAssets::for_method_call(&method_under_caret, &ctx.sema)
+-            .map(|it| (it, method_under_caret.syntax().clone(), expected))
 -    } else if ctx
 -        .find_node_at_offset_with_descend::<ast::Param>()
 -        .is_some()
 -    {
++        ImportAssets::for_method_call(&method_under_caret, &ctx.sema).map(
++            |it| (it, method_under_caret.syntax().clone(), expected),
++        )
 +    } else if ctx.find_node_at_offset_with_descend::<ast::Param>().is_some() {
          None
-     } else if let Some(pat) = ctx
-         .find_node_at_offset_with_descend::<ast::IdentPat>()
+-    } else if let Some(pat) = ctx
+-        .find_node_at_offset_with_descend::<ast::IdentPat>()
+-        .filter(ast::IdentPat::is_simple_ident)
+-    {
++    } else if let Some(pat) = ctx.find_node_at_offset_with_descend::<ast::IdentPat>().filter(ast::IdentPat::is_simple_ident) {
+         let expected = expected(Either::Right(pat.clone().into()));
+         ImportAssets::for_ident_pat(&ctx.sema, &pat).map(|it| (it, pat.syntax().clone(), expected))
+     } else {
      let name = match import_candidate {
          ImportCandidate::Path(candidate) => format!("Import {}", candidate.name.text()),
          ImportCandidate::TraitAssocItem(candidate) => {

@@ -325,8 +325,11 @@ impl<'db> InferenceContext<'_, 'db> {
                         ExprOrPatId::PatId(id) => MirSpan::PatId(id),
                     };
                     self.current_capture_span_stack.push(mir_span);
-                    Some(HirPlace { local: binding, projections: Vec::new() })
-                }
+                    Some(HirPlace {
+                        local: binding,
+                        projections: Vec::new(),
+                    })
+                },
                 _ => None,
             }
         })
@@ -422,7 +425,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 place,
                 CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
             );
-            self.current_capture_span_stack.pop(); // Remove the pattern span.
+            self.current_capture_span_stack.pop();
         }
     }
 
@@ -460,16 +463,16 @@ impl<'db> InferenceContext<'_, 'db> {
             match &last.kind {
                 Adjust::NeverToAny | Adjust::Deref(None) | Adjust::Pointer(_) => {
                     self.walk_expr_with_adjust(tgt_expr, rest)
-                }
+                },
                 Adjust::Deref(Some(m)) => match m.0 {
                     Some(m) => {
                         self.ref_capture_with_adjusts(m, tgt_expr, rest);
-                    }
+                    },
                     None => unreachable!(),
                 },
                 Adjust::Borrow(b) => {
                     self.ref_capture_with_adjusts(b.mutability(), tgt_expr, rest);
-                }
+                },
             }
         } else {
             self.walk_expr_without_adjust(tgt_expr);
@@ -497,8 +500,6 @@ impl<'db> InferenceContext<'_, 'db> {
 
     fn walk_expr(&mut self, tgt_expr: ExprId) {
         if let Some(it) = self.result.expr_adjustments.get_mut(&tgt_expr) {
-            // FIXME: this take is completely unneeded, and just is here to make borrow checker
-            // happy. Remove it if you can.
             let x_taken = mem::take(it);
             self.walk_expr_with_adjust(tgt_expr, &x_taken);
             *self.result.expr_adjustments.get_mut(&tgt_expr).unwrap() = x_taken;
@@ -519,7 +520,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     if let Some(out_expr) = out_expr {
                         self.walk_expr_without_adjust(*out_expr);
                     }
-                }
+                },
                 AsmOperand::Out { expr: None, .. }
                 | AsmOperand::Const(_)
                 | AsmOperand::Label(_)
@@ -531,7 +532,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let &Some(expr) = else_branch {
                     self.consume_expr(expr);
                 }
-            }
+            },
             Expr::Async { statements, tail, .. }
             | Expr::Unsafe { statements, tail, .. }
             | Expr::Block { statements, tail, .. } => {
@@ -561,15 +562,15 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let Some(tail) = tail {
                     self.consume_expr(*tail);
                 }
-            }
+            },
             Expr::Call { callee, args } => {
                 self.consume_expr(*callee);
                 self.consume_exprs(args.iter().copied());
-            }
+            },
             Expr::MethodCall { receiver, args, .. } => {
                 self.consume_expr(*receiver);
                 self.consume_exprs(args.iter().copied());
-            }
+            },
             Expr::Match { expr, arms } => {
                 for arm in arms.iter() {
                     self.consume_expr(arm.expr);
@@ -578,9 +579,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     }
                 }
                 self.walk_expr(*expr);
-                if let Some(discr_place) = self.place_of_expr(*expr)
-                    && self.is_upvar(&discr_place)
-                {
+                if let Some(discr_place) = self.place_of_expr(*expr) && self.is_upvar(&discr_place) {
                     let mut capture_mode = None;
                     for arm in arms.iter() {
                         self.walk_pat(&mut capture_mode, arm.pat);
@@ -589,7 +588,7 @@ impl<'db> InferenceContext<'_, 'db> {
                         self.push_capture(discr_place, c);
                     }
                 }
-            }
+            },
             Expr::Break { expr, label: _ }
             | Expr::Return { expr }
             | Expr::Yield { expr }
@@ -597,16 +596,16 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let &Some(expr) = expr {
                     self.consume_expr(expr);
                 }
-            }
+            },
             &Expr::Become { expr } => {
                 self.consume_expr(expr);
-            }
+            },
             Expr::RecordLit { fields, spread, .. } => {
                 if let &Some(expr) = spread {
                     self.consume_expr(expr);
                 }
                 self.consume_exprs(fields.iter().map(|it| it.expr));
-            }
+            },
             Expr::Field { expr, name: _ } => self.select_from_expr(*expr),
             Expr::UnaryOp { expr, op: UnaryOp::Deref } => {
                 if matches!(
@@ -635,13 +634,13 @@ impl<'db> InferenceContext<'_, 'db> {
                 } else {
                     self.select_from_expr(*expr);
                 }
-            }
+            },
             Expr::Let { pat, expr } => {
                 self.walk_expr(*expr);
                 if let Some(place) = self.place_of_expr(*expr) {
                     self.consume_with_pat(place, *pat);
                 }
-            }
+            },
             Expr::UnaryOp { expr, op: _ }
             | Expr::Array(Array::Repeat { initializer: expr, repeat: _ })
             | Expr::Await { expr }
@@ -649,16 +648,15 @@ impl<'db> InferenceContext<'_, 'db> {
             | Expr::Box { expr }
             | Expr::Cast { expr, type_ref: _ } => {
                 self.consume_expr(*expr);
-            }
+            },
             Expr::Ref { expr, rawness: _, mutability } => {
-                // We need to do this before we push the span so the order will be correct.
                 let place = self.place_of_expr(*expr);
                 self.current_capture_span_stack.push(MirSpan::ExprId(tgt_expr));
                 match mutability {
                     hir_def::type_ref::Mutability::Shared => self.ref_expr(*expr, place),
                     hir_def::type_ref::Mutability::Mut => self.mutate_expr(*expr, place),
                 }
-            }
+            },
             Expr::BinaryOp { lhs, rhs, op } => {
                 let Some(op) = op else {
                     return;
@@ -671,7 +669,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 }
                 self.consume_expr(*lhs);
                 self.consume_expr(*rhs);
-            }
+            },
             Expr::Range { lhs, rhs, range_type: _ } => {
                 if let &Some(expr) = lhs {
                     self.consume_expr(expr);
@@ -679,11 +677,11 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let &Some(expr) = rhs {
                     self.consume_expr(expr);
                 }
-            }
+            },
             Expr::Index { base, index } => {
                 self.select_from_expr(*base);
                 self.consume_expr(*index);
-            }
+            },
             Expr::Closure { .. } => {
                 let ty = self.expr_ty(tgt_expr);
                 let TyKind::Closure(id, _) = ty.kind() else {
@@ -703,10 +701,10 @@ impl<'db> InferenceContext<'_, 'db> {
                     }
                 }));
                 self.current_captures = cc;
-            }
+            },
             Expr::Array(Array::ElementList { elements: exprs }) | Expr::Tuple { exprs } => {
                 self.consume_exprs(exprs.iter().copied())
-            }
+            },
             &Expr::Assignment { target, value } => {
                 self.walk_expr(value);
                 let resolver_guard =
@@ -727,8 +725,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     }),
                 }
                 self.resolver.reset_to_guard(resolver_guard);
-            }
-
+            },
             Expr::Missing
             | Expr::Continue { .. }
             | Expr::Path(_)
@@ -922,11 +919,11 @@ impl<'db> InferenceContext<'_, 'db> {
                         item.place.capture_kind_of_truncated_place(item.kind, len);
                     self.current_captures[p].kind =
                         cmp::max(kind_after_truncate, self.current_captures[p].kind);
-                }
+                },
                 None => {
                     hash_map.insert(item.place.clone(), self.current_captures.len());
                     self.current_captures.push(item);
-                }
+                },
             }
         }
     }
@@ -1150,7 +1147,6 @@ impl<'db> InferenceContext<'_, 'db> {
         for (closure, exprs) in deferred_closures.into_iter().rev() {
             self.current_captures = vec![];
             let kind = self.analyze_closure(closure);
-
             for (derefed_callee, callee_ty, params, expr) in exprs {
                 if let &Expr::Call { callee, .. } = &self.body[expr] {
                     let mut adjustments =

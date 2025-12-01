@@ -70,7 +70,7 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
         format!("Generate `{trait_new}` impl from this `{trait_name}` trait"),
         target,
         |edit| {
-            edit.insert(
+        edit.insert(
                 target.start(),
                 if ctx.config.snippet_cap.is_some() {
                     format!("$0{impl_def}\n\n{indent}")
@@ -78,7 +78,7 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
                     format!("{impl_def}\n\n{indent}")
                 },
             );
-        },
+    },
     )
 }
 

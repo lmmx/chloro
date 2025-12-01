@@ -16,6 +16,14 @@ Rustfmt size:  1224 bytes
  pub(crate) fn unresolved_extern_crate(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::UnresolvedExternCrate,
+         DiagnosticCode::RustcHardError("unresolved-extern-crate"),
+         "unresolved extern crate",
+         d.decl.map(|it| it.into()),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

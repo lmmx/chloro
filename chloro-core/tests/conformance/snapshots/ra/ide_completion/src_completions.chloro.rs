@@ -119,10 +119,7 @@ impl Completions {
         ctx: &CompletionContext<'_>,
         super_chain_len: Option<usize>,
     ) {
-        if let Some(len) = super_chain_len
-            && len > 0
-            && len < ctx.depth_from_crate_root
-        {
+        if let Some(len) = super_chain_len && len > 0 && len < ctx.depth_from_crate_root {
             self.add_keyword(ctx, "super::");
         }
     }
@@ -427,9 +424,7 @@ impl Completions {
         if !ctx.check_stability_and_hidden(variant) {
             return;
         }
-        if let Some(builder) =
-            render_variant_lit(RenderContext::new(ctx), path_ctx, None, variant, Some(path))
-        {
+        if let Some(builder) = render_variant_lit(RenderContext::new(ctx), path_ctx, None, variant, Some(path)) {
             self.add(builder.build(ctx.db));
         }
     }
@@ -450,9 +445,7 @@ impl Completions {
             return;
         }
 
-        if let Some(builder) =
-            render_variant_lit(RenderContext::new(ctx), path_ctx, local_name, variant, None)
-        {
+        if let Some(builder) = render_variant_lit(RenderContext::new(ctx), path_ctx, local_name, variant, None) {
             self.add(builder.build(ctx.db));
         }
     }
@@ -668,8 +661,6 @@ fn enum_variants_with_paths(
             hir::ModuleDef::from(variant),
             ctx.config.find_path_config(ctx.is_nightly),
         ) {
-            // Variants with trivial paths are already added by the existing completion logic,
-            // so we should avoid adding these twice
             if path.segments().len() > 1 {
                 cb(acc, ctx, variant, path);
             }
@@ -685,27 +676,27 @@ pub(super) fn complete_name(
     match kind {
         NameKind::Const => {
             item_list::trait_impl::complete_trait_impl_const(acc, ctx, name);
-        }
+        },
         NameKind::Function => {
             item_list::trait_impl::complete_trait_impl_fn(acc, ctx, name);
-        }
+        },
         NameKind::IdentPat(pattern_ctx) => {
             if ctx.token.kind() != syntax::T![_] {
                 complete_patterns(acc, ctx, pattern_ctx)
             }
-        }
+        },
         NameKind::Module(mod_under_caret) => {
             mod_::complete_mod(acc, ctx, mod_under_caret);
-        }
+        },
         NameKind::TypeAlias => {
             item_list::trait_impl::complete_trait_impl_type_alias(acc, ctx, name);
-        }
+        },
         NameKind::RecordField => {
             field::complete_field_list_record_variant(acc, ctx);
-        }
+        },
         NameKind::TypeParam => {
             acc.add_keyword_snippet(ctx, "const", "const $1: $0");
-        }
+        },
         NameKind::ConstParam
         | NameKind::Enum
         | NameKind::MacroDef
@@ -728,26 +719,23 @@ pub(super) fn complete_name_ref(
     match kind {
         NameRefKind::Path(path_ctx) => {
             flyimport::import_on_the_fly_path(acc, ctx, path_ctx);
-
             match &path_ctx.kind {
                 PathKind::Expr { expr_ctx } => {
                     expr::complete_expr_path(acc, ctx, path_ctx, expr_ctx);
                     expr::complete_expr(acc, ctx);
-
                     dot::complete_undotted_self(acc, ctx, path_ctx, expr_ctx);
                     item_list::complete_item_list_in_expr(acc, ctx, path_ctx, expr_ctx);
                     snippet::complete_expr_snippet(acc, ctx, path_ctx, expr_ctx);
-                }
+                },
                 PathKind::Type { location } => {
                     r#type::complete_type_path(acc, ctx, path_ctx, location);
-
                     match location {
                         TypeLocation::TupleField => {
                             field::complete_field_list_tuple_variant(acc, ctx, path_ctx);
-                        }
+                        },
                         TypeLocation::TypeAscription(ascription) => {
                             r#type::complete_ascribed_type(acc, ctx, path_ctx, ascription);
-                        }
+                        },
                         TypeLocation::GenericArg { .. }
                         | TypeLocation::AssocConstEq
                         | TypeLocation::AssocTypeEq
@@ -756,46 +744,45 @@ pub(super) fn complete_name_ref(
                         | TypeLocation::ImplTrait
                         | TypeLocation::Other => (),
                     }
-                }
+                },
                 PathKind::Attr { attr_ctx } => {
                     attribute::complete_attribute_path(acc, ctx, path_ctx, attr_ctx);
-                }
+                },
                 PathKind::Derive { existing_derives } => {
                     attribute::complete_derive_path(acc, ctx, path_ctx, existing_derives);
-                }
+                },
                 PathKind::Item { kind } => {
                     item_list::complete_item_list(acc, ctx, path_ctx, kind);
-
                     snippet::complete_item_snippet(acc, ctx, path_ctx, kind);
                     if let ItemListKind::TraitImpl(impl_) = kind {
                         item_list::trait_impl::complete_trait_impl_item_by_name(
                             acc, ctx, path_ctx, nameref, impl_,
                         );
                     }
-                }
+                },
                 PathKind::Pat { .. } => {
                     pattern::complete_pattern_path(acc, ctx, path_ctx);
-                }
+                },
                 PathKind::Vis { has_in_token } => {
                     vis::complete_vis_path(acc, ctx, path_ctx, has_in_token);
-                }
+                },
                 PathKind::Use => {
                     use_::complete_use_path(acc, ctx, path_ctx, nameref);
-                }
+                },
             }
-        }
+        },
         NameRefKind::ExternCrate => extern_crate::complete_extern_crate(acc, ctx),
         NameRefKind::DotAccess(dot_access) => {
             flyimport::import_on_the_fly_dot(acc, ctx, dot_access);
             dot::complete_dot(acc, ctx, dot_access);
             postfix::complete_postfix(acc, ctx, dot_access);
-        }
+        },
         NameRefKind::Keyword(item) => {
             keyword::complete_for_and_where(acc, ctx, item);
-        }
+        },
         NameRefKind::RecordExpr { dot_prefix, expr } => {
             record::complete_record_expr_fields(acc, ctx, expr, dot_prefix);
-        }
+        },
         NameRefKind::Pattern(pattern_ctx) => complete_patterns(acc, ctx, pattern_ctx),
     }
 }

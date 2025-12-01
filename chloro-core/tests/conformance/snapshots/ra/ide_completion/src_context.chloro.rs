@@ -209,7 +209,7 @@ impl TypeLocation {
         match self {
             TypeLocation::GenericArg { corresponding_param: Some(param), .. } => {
                 matches!(param, ast::GenericParam::TypeParam(_))
-            }
+            },
             TypeLocation::AssocConstEq => false,
             TypeLocation::AssocTypeEq => true,
             TypeLocation::ImplTrait => false,
@@ -497,12 +497,10 @@ impl CompletionContext<'_> {
         let kind = self.original_token.kind();
         match kind {
             CHAR => {
-                // assume we are completing a lifetime but the user has only typed the '
                 cov_mark::hit!(completes_if_lifetime_without_idents);
                 TextRange::at(self.original_token.text_range().start(), TextSize::from(1))
-            }
+            },
             LIFETIME_IDENT | UNDERSCORE | INT_NUMBER => self.original_token.text_range(),
-            // We want to consider all keywords in all editions.
             _ if kind.is_any_identifier() => self.original_token.text_range(),
             _ => TextRange::empty(self.position.offset),
         }
@@ -674,7 +672,11 @@ impl CompletionContext<'_> {
             };
         }
 
-        if self.is_doc_hidden(attrs, defining_crate) { Visible::No } else { Visible::Yes }
+        if self.is_doc_hidden(attrs, defining_crate) {
+            Visible::No
+        } else {
+            Visible::Yes
+        }
     }
 
     pub(crate) fn is_doc_hidden(&self, attrs: &hir::Attrs, defining_crate: hir::Crate) -> bool {

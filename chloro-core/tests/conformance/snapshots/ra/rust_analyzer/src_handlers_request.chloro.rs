@@ -135,12 +135,10 @@ pub(crate) fn handle_memory_usage(_state: &mut GlobalState, _: ()) -> anyhow::Re
             when building from source, or pass `--enable-profiling` to `cargo xtask`."
         ))
     }
-    #[cfg(feature = "dhat")]
-    {
+    #[cfg(feature = "dhat")] {
         if let Some(dhat_output_file) = _state.config.dhat_output_file() {
             let mut profiler = crate::DHAT_PROFILER.lock().unwrap();
             let old_profiler = profiler.take();
-            // Need to drop the old profiler before creating a new one.
             drop(old_profiler);
             *profiler = Some(dhat::Profiler::builder().file_name(&dhat_output_file).build());
             Ok(format!(
@@ -334,7 +332,10 @@ pub(crate) fn handle_expand_macro(
     let offset = from_proto::offset(&line_index, params.position)?;
 
     let res = snap.analysis.expand_macro(FilePosition { file_id, offset })?;
-    Ok(res.map(|it| lsp_ext::ExpandedMacro { name: it.name, expansion: it.expansion }))
+    Ok(res.map(|it| lsp_ext::ExpandedMacro {
+        name: it.name,
+        expansion: it.expansion,
+    }))
 }
 
 pub(crate) fn handle_selection_range(
@@ -387,20 +388,17 @@ pub(crate) fn handle_matching_brace(
     let _p = tracing::info_span!("handle_matching_brace").entered();
     let file_id = try_default!(from_proto::file_id(&snap, &params.text_document.uri)?);
     let line_index = snap.file_line_index(file_id)?;
-    params
-        .positions
-        .into_iter()
-        .map(|position| {
-            let offset = from_proto::offset(&line_index, position);
-            offset.map(|offset| {
-                let offset = match snap.analysis.matching_brace(FilePosition { file_id, offset }) {
+    params.positions.into_iter().map(|position| {
+        let offset = from_proto::offset(&line_index, position);
+        offset.map(|offset| {
+            let offset = match snap.analysis.matching_brace(FilePosition { file_id, offset }) {
                     Ok(Some(matching_brace_offset)) => matching_brace_offset,
                     Err(_) | Ok(None) => offset,
                 };
-                to_proto::position(&line_index, offset)
-            })
+            to_proto::position(&line_index, offset)
         })
-        .collect()
+    }).collect(
+    )
 }
 
 pub(crate) fn handle_join_lines(
@@ -547,10 +545,8 @@ pub(crate) fn handle_document_diagnostics(
             items: diagnostics.collect(),
         },
         related_documents: related_documents.is_empty().not().then(|| {
-                related_documents
-                    .into_iter()
-                    .map(|(id, (items, _))| {
-                        (
+            related_documents.into_iter().map(|(id, (items, _))| {
+                (
                             to_proto::url(&snap, id),
                             lsp_types::DocumentDiagnosticReportKind::Full(
                                 lsp_types::FullDocumentDiagnosticReport {
@@ -559,9 +555,9 @@ pub(crate) fn handle_document_diagnostics(
                                 },
                             ),
                         )
-                    })
-                    .collect()
-            }),
+            }).collect(
+            )
+        }),
     })))
 }
 
@@ -1618,7 +1614,7 @@ fn parse_action_id(action_id: &str) -> anyhow::Result<(usize, SingleResolve), St
                     assist_subtype,
                 },
             ))
-        }
+        },
         _ => Err("Action id contains incorrect number of segments".to_owned()),
     }
 }
@@ -1757,21 +1753,10 @@ pub(crate) fn handle_inlay_hints(
     );
 
     let inlay_hints_config = snap.config.inlay_hints(snap.minicore());
-    Ok(Some(
-        snap.analysis
-            .inlay_hints(&inlay_hints_config, file_id, Some(range))?
-            .into_iter()
-            .map(|it| {
-                to_proto::inlay_hint(
-                    &snap,
-                    &inlay_hints_config.fields_to_resolve,
-                    &line_index,
-                    file_id,
-                    it,
-                )
-            })
-            .collect::<Cancellable<Vec<_>>>()?,
-    ))
+    Ok(Some(snap.analysis.inlay_hints(&inlay_hints_config, file_id, Some(range))?.into_iter().map(|it| {
+        to_proto::inlay_hint(&snap, &inlay_hints_config.fields_to_resolve, &line_index, file_id, it)
+    }).collect::<Cancellable<Vec<_>>>(
+    )?))
 }
 
 pub(crate) fn handle_inlay_hints_resolve(
@@ -1812,20 +1797,22 @@ pub(crate) fn handle_inlay_hints_resolve(
         },
     )?;
 
-    Ok(resolve_hints
-        .and_then(|it| {
-            to_proto::inlay_hint(
-                &snap,
-                &forced_resolve_inlay_hints_config.fields_to_resolve,
-                &line_index,
-                file_id,
-                it,
-            )
-            .ok()
-        })
-        .filter(|hint| hint.position == original_hint.position)
-        .filter(|hint| hint.kind == original_hint.kind)
-        .unwrap_or(original_hint))
+    Ok(resolve_hints.and_then(|it| {
+        to_proto::inlay_hint(
+            &snap,
+            &forced_resolve_inlay_hints_config.fields_to_resolve,
+            &line_index,
+            file_id,
+            it,
+        ).ok(
+        )
+    }).filter(
+        |hint| hint.position == original_hint.position,
+    ).filter(
+        |hint| hint.kind == original_hint.kind,
+    ).unwrap_or(
+        original_hint,
+    ))
 }
 
 pub(crate) fn handle_call_hierarchy_prepare(
@@ -2107,7 +2094,7 @@ pub(crate) fn handle_move_item(
                 text_edit,
                 snap.config.change_annotation_support(),
             ))
-        }
+        },
         None => Ok(vec![]),
     }
 }
@@ -2273,13 +2260,12 @@ fn goto_type_action_links(
 
     Some(lsp_ext::CommandLinkGroup {
         title: Some("Go to ".into()),
-        commands: nav_targets
-            .iter()
-            .filter_map(|it| {
-                to_proto::command::goto_location(snap, &it.nav)
-                    .map(|cmd| to_command_link(cmd, it.mod_path.clone()))
-            })
-            .collect(),
+        commands: nav_targets.iter().filter_map(|it| {
+            to_proto::command::goto_location(snap, &it.nav).map(
+                |cmd| to_command_link(cmd, it.mod_path.clone()),
+            )
+        }).collect(
+        ),
     })
 }
 
@@ -2289,35 +2275,32 @@ fn prepare_hover_actions(
 ) -> Vec<lsp_ext::CommandLinkGroup> {
     let hover_actions = snap.config.hover_actions();
     let client_commands = snap.config.client_commands();
-    actions
-        .iter()
-        .filter_map(|it| match it {
-            HoverAction::Implementation(position) => show_impl_command_link(
-                snap,
-                position,
-                hover_actions.implementations,
-                client_commands.show_reference,
-            ),
-            HoverAction::Reference(position) => show_ref_command_link(
-                snap,
-                position,
-                hover_actions.references,
-                client_commands.show_reference,
-            ),
-            HoverAction::Runnable(r) => {
-                runnable_action_links(snap, r.clone(), &hover_actions, &client_commands)
-            }
-            HoverAction::GoToType(targets) => {
-                goto_type_action_links(snap, targets, &hover_actions, &client_commands)
-            }
-        })
-        .collect()
+    actions.iter().filter_map(|it| match it {
+        HoverAction::Implementation(position) => show_impl_command_link(
+            snap,
+            position,
+            hover_actions.implementations,
+            client_commands.show_reference,
+        ),
+        HoverAction::Reference(position) => show_ref_command_link(
+            snap,
+            position,
+            hover_actions.references,
+            client_commands.show_reference,
+        ),
+        HoverAction::Runnable(r) => {
+            runnable_action_links(snap, r.clone(), &hover_actions, &client_commands)
+        },
+        HoverAction::GoToType(targets) => {
+            goto_type_action_links(snap, targets, &hover_actions, &client_commands)
+        },
+    }).collect(
+    )
 }
 
 fn should_skip_target(runnable: &Runnable, cargo_spec: Option<&TargetSpec>) -> bool {
     match runnable.kind {
         RunnableKind::Bin => {
-            // Do not suggest binary run on other target than binary
             match &cargo_spec {
                 Some(spec) => !matches!(
                     spec.target_kind(),
@@ -2325,7 +2308,7 @@ fn should_skip_target(runnable: &Runnable, cargo_spec: Option<&TargetSpec>) -> b
                 ),
                 None => true,
             }
-        }
+        },
         _ => false,
     }
 }
@@ -2507,15 +2490,11 @@ fn run_rustfmt(
     let (new_text, new_line_endings) = LineEndings::normalize(captured_stdout);
 
     if line_index.endings != new_line_endings {
-        // If line endings are different, send the entire file.
-        // Diffing would not work here, as the line endings might be the only
-        // difference.
         Ok(Some(to_proto::text_edit_vec(
             &line_index,
             TextEdit::replace(TextRange::up_to(TextSize::of(&*file)), new_text),
         )))
     } else if *file == new_text {
-        // The document is already formatted correctly -- no edits needed.
         Ok(None)
     } else {
         Ok(Some(to_proto::text_edit_vec(&line_index, diff(&file, &new_text))))
@@ -2559,12 +2538,12 @@ pub(crate) fn internal_testing_fetch_config(
             InternalTestingFetchConfigResponse::AssistEmitMustUse(
                 state.config.assist(source_root).assist_emit_must_use,
             )
-        }
+        },
         InternalTestingFetchConfigOption::CheckWorkspace => {
             InternalTestingFetchConfigResponse::CheckWorkspace(
                 state.config.flycheck_workspace(source_root),
             )
-        }
+        },
     }))
 }
 

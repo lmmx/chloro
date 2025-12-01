@@ -17,8 +17,7 @@ pub(crate) fn complete_field_list_tuple_variant(
         parent: None,
         has_type_args: false,
         ..
-    } = path_ctx
-    {
+    } = path_ctx {
         let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
         add_keyword("pub(crate)", "pub(crate) $0");
         add_keyword("pub(super)", "pub(super) $0");

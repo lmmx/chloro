@@ -140,16 +140,12 @@ fn traverse(
     let mut preorder = root.preorder_with_tokens();
     while let Some(event) = preorder.next() {
         use WalkEvent::{Enter, Leave};
-
         let range = match &event {
             Enter(it) | Leave(it) => it.text_range(),
         };
-
-        // Element outside of the viewport, no need to highlight
         if range_to_highlight.intersect(range).is_none() {
             continue;
         }
-
         match event.clone() {
             Enter(NodeOrToken::Node(node)) if ast::TokenTree::can_cast(node.kind()) => {
                 tt_level += 1;
@@ -229,7 +225,6 @@ fn traverse(
             }
             _ => (),
         }
-
         let element = match event {
             Enter(NodeOrToken::Token(tok)) if tok.kind() == WHITESPACE => continue,
             Enter(it) => it,
@@ -243,7 +238,6 @@ fn traverse(
                 continue;
             }
         };
-
         let element = match element.clone() {
             NodeOrToken::Node(n) => match ast::NameLike::cast(n) {
                 Some(n) => NodeOrToken::Node(n),
@@ -252,16 +246,12 @@ fn traverse(
             NodeOrToken::Token(t) => NodeOrToken::Token(t),
         };
         let original_token = element.as_token().cloned();
-
-        // Descending tokens into macros is expensive even if no descending occurs, so make sure
-        // that we actually are in a position where descending is possible.
         let in_macro = tt_level > 0
             || match attr_or_derive_item {
                 Some(AttrOrDerive::Attr(_)) => true,
                 Some(AttrOrDerive::Derive(_)) => inside_attribute,
                 None => false,
             };
-
         let (descended_element, current_body) = match element {
             // Attempt to descend tokens into macro-calls.
             NodeOrToken::Token(token) if in_macro => {
@@ -278,7 +268,6 @@ fn traverse(
             }
             n => (InFile::new(file_id.into(), n), body_stack.last().copied().flatten()),
         };
-        // string highlight injections
         if let (Some(original_token), Some(descended_token)) =
             (original_token, descended_element.value.as_token())
         {
@@ -295,7 +284,6 @@ fn traverse(
                 continue;
             }
         }
-
         let edition = descended_element.file_id.edition(sema.db);
         let (unsafe_ops, bindings_shadow_count) = match current_body {
             Some(current_body) => {
@@ -339,12 +327,9 @@ fn traverse(
                 // let the editor do its highlighting for these tokens instead
                 continue;
             }
-
-            // apply config filtering
             if !filter_by_config(&mut highlight, config) {
                 continue;
             }
-
             if inside_attribute {
                 highlight |= HlMod::Attribute
             }
@@ -355,7 +340,6 @@ fn traverse(
                 }
                 highlight |= HlMod::Macro
             }
-
             hl.add(HlRange { range, highlight, binding_hash });
         }
     }
@@ -449,7 +433,6 @@ fn descend_token(
 
     let token = t.unwrap_or_else(|| token.into());
     token.map(|token| match token.parent().and_then(ast::NameLike::cast) {
-        // Remap the token into the wrapping single token nodes
         Some(parent) => match (token.kind(), parent.syntax().kind()) {
             (T![ident] | T![self], NAME)
             | (T![ident] | T![self] | T![super] | T![crate] | T![Self], NAME_REF)

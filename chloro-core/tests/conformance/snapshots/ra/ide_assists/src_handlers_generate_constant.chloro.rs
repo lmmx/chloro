@@ -107,12 +107,17 @@ pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         );
 
     let text = get_text_for_generate_constant(not_exist_name_ref, indent, outer_exists, type_name)?;
-    acc.add(AssistId::quick_fix("generate_constant"), "Generate constant", target, |builder| {
+    acc.add(
+        AssistId::quick_fix("generate_constant"),
+        "Generate constant",
+        target,
+        |builder| {
         if let Some(file_id) = file_id {
             builder.edit_file(file_id);
         }
         builder.insert(offset, format!("{text}{post_string}"));
-    })
+    },
+    )
 }
 
 fn get_text_for_generate_constant(
@@ -148,14 +153,13 @@ fn target_data_for_generate_constant(
             let indent = IndentLevel::from_node(module_node.syntax());
             let l_curly_token = module_node.item_list()?.l_curly_token()?;
             let offset = l_curly_token.text_range().end();
-
             let siblings_has_newline = l_curly_token
                 .siblings_with_tokens(Direction::Next)
                 .any(|it| it.kind() == SyntaxKind::WHITESPACE && it.to_string().contains('\n'));
             let post_string =
                 if siblings_has_newline { format!("{indent}") } else { format!("\n{indent}") };
             Some((offset, indent + 1, Some(file_id.file_id(ctx.db())), post_string))
-        }
+        },
         _ => Some((TextSize::from(0), 0.into(), Some(file_id.file_id(ctx.db())), "\n".into())),
     }
 }

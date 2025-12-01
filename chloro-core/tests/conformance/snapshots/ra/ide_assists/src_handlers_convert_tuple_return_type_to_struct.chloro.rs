@@ -40,13 +40,12 @@ pub(crate) fn convert_tuple_return_type_to_struct(
         "Convert tuple return type to tuple struct",
         target,
         move |edit| {
-            let ret_type = edit.make_mut(ret_type);
-            let fn_ = edit.make_mut(fn_);
-
-            let usages = Definition::Function(fn_def).usages(&ctx.sema).all();
-            let struct_name = format!("{}Result", stdx::to_camel_case(&fn_name.to_string()));
-            let parent = fn_.syntax().ancestors().find_map(<Either<ast::Impl, ast::Trait>>::cast);
-            add_tuple_struct_def(
+        let ret_type = edit.make_mut(ret_type);
+        let fn_ = edit.make_mut(fn_);
+        let usages = Definition::Function(fn_def).usages(&ctx.sema).all();
+        let struct_name = format!("{}Result", stdx::to_camel_case(&fn_name.to_string()));
+        let parent = fn_.syntax().ancestors().find_map(<Either<ast::Impl, ast::Trait>>::cast);
+        add_tuple_struct_def(
                 edit,
                 ctx,
                 &usages,
@@ -55,18 +54,15 @@ pub(crate) fn convert_tuple_return_type_to_struct(
                 &struct_name,
                 &target_module,
             );
-
-            ted::replace(
+        ted::replace(
                 ret_type.syntax(),
                 make::ret_type(make::ty(&struct_name)).syntax().clone_for_update(),
             );
-
-            if let Some(fn_body) = fn_.body() {
+        if let Some(fn_body) = fn_.body() {
                 replace_body_return_values(ast::Expr::BlockExpr(fn_body), &struct_name);
             }
-
-            replace_usages(edit, ctx, &usages, &struct_name, &target_module);
-        },
+        replace_usages(edit, ctx, &usages, &struct_name, &target_module);
+    },
     )
 }
 
@@ -80,10 +76,8 @@ fn replace_usages(
 ) {
     for (file_id, references) in usages.iter() {
         edit.edit_file(file_id.file_id(ctx.db()));
-
         let refs_with_imports =
             augment_references_with_imports(edit, ctx, references, struct_name, target_module);
-
         refs_with_imports.into_iter().rev().for_each(|(name, import_data)| {
             if let Some(fn_) = name.syntax().parent().and_then(ast::Fn::cast) {
                 cov_mark::hit!(replace_trait_impl_fns);
@@ -127,7 +121,6 @@ fn replace_usages(
                     );
                 }
             }
-            // add imports across modules where needed
             if let Some((import_scope, path)) = import_data {
                 insert_use(&import_scope, path, &ctx.config.insert_use);
             }
@@ -157,17 +150,12 @@ fn augment_references_with_imports(
 ) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
     let mut visited_modules = FxHashSet::default();
 
-    references
-        .iter()
-        .filter_map(|FileReference { name, .. }| {
-            let name = name.clone().into_name_like()?;
-            ctx.sema.scope(name.syntax()).map(|scope| (name, scope.module()))
-        })
-        .map(|(name, ref_module)| {
-            let new_name = edit.make_mut(name);
-
-            // if the referenced module is not the same as the target one and has not been seen before, add an import
-            let import_data = if ref_module.nearest_non_block_module(ctx.db()) != *target_module
+    references.iter().filter_map(|FileReference { name, .. }| {
+        let name = name.clone().into_name_like()?;
+        ctx.sema.scope(name.syntax()).map(|scope| (name, scope.module()))
+    }).map(|(name, ref_module)| {
+        let new_name = edit.make_mut(name);
+        let import_data = if ref_module.nearest_non_block_module(ctx.db()) != *target_module
                 && !visited_modules.contains(&ref_module)
             {
                 visited_modules.insert(ref_module);
@@ -193,10 +181,9 @@ fn augment_references_with_imports(
             } else {
                 None
             };
-
-            (new_name, import_data)
-        })
-        .collect()
+        (new_name, import_data)
+    }).collect(
+    )
 }
 
 fn add_tuple_struct_def(
@@ -262,10 +249,9 @@ fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
             if let Some(break_expr_arg) = break_expr.expr() {
                 for_each_tail_expr(&break_expr_arg, &mut |e| tail_cb_impl(acc, e))
             }
-        }
+        },
         ast::Expr::ReturnExpr(_) => {
-            // all return expressions have already been handled by the walk loop
-        }
+        },
         e => acc.push(e.clone()),
     }
 }

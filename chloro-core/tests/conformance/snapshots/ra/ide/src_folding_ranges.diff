@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18326 bytes
+Chloro size:   18163 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
@@ -49,6 +49,20 @@ Rustfmt size:  18809 bytes
  pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
      let mut res = vec![];
      let mut visited_comments = FxHashSet::default();
+     if first != last {
+         Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
+     } else {
+-        // The group consists of only one element, therefore it cannot be folded
+         None
+     }
+ }
+     if first != last {
+         Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
+     } else {
+-        // The group consists of only one element, therefore it cannot be folded
+         None
+     }
+ }
  #[cfg(test)]
  mod tests {
      use test_utils::extract_tags;
@@ -58,6 +72,13 @@ Rustfmt size:  18809 bytes
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (ranges, text) = extract_tags(ra_fixture, "fold");
+         for (fold, (range, attr)) in folds.iter().zip(ranges.into_iter()) {
+             assert_eq!(fold.range.start(), range.start(), "mismatched start of folding ranges");
+             assert_eq!(fold.range.end(), range.end(), "mismatched end of folding ranges");
+-
+             let kind = match fold.kind {
+                 FoldKind::Comment => "comment",
+                 FoldKind::Imports => "imports",
              assert_eq!(kind, &attr.unwrap());
          }
      }

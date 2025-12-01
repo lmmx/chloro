@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45289 bytes
+Chloro size:   45399 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
@@ -44,6 +44,29 @@ Rustfmt size:  45518 bytes
  use super::*;
  
  macro_rules! w {
+             AdtId::StructId(id) => {
+                 let signature = db.struct_signature(id);
+                 print_struct(db, &signature, edition)
+-            }
++            },
+             AdtId::UnionId(id) => {
+                 format!("unimplemented {id:?}")
+-            }
++            },
+             AdtId::EnumId(id) => {
+                 format!("unimplemented {id:?}")
+-            }
++            },
+         },
+         GenericDefId::ConstId(id) => format!("unimplemented {id:?}"),
+         GenericDefId::FunctionId(id) => {
+             let signature = db.function_signature(id);
+             print_function(db, &signature, edition)
+-        }
++        },
+         GenericDefId::ImplId(id) => format!("unimplemented {id:?}"),
+         GenericDefId::StaticId(id) => format!("unimplemented {id:?}"),
+         GenericDefId::TraitId(id) => format!("unimplemented {id:?}"),
      }
  }
  
@@ -56,6 +79,13 @@ Rustfmt size:  45518 bytes
      if !generic_params.is_empty() {
          w!(p, "<");
          let mut first = true;
+ 
+     fn whitespace(&mut self) {
+         match self.buf.chars().next_back() {
+-            None | Some('\n' | ' ') => {}
++            None | Some('\n' | ' ') => {
++            },
+             _ => self.buf.push(' '),
          }
      }
  
@@ -67,3 +97,480 @@ Rustfmt size:  45518 bytes
      fn newline(&mut self) {
          if matches!(self.line_format, LineFormat::Oneline) {
              match self.buf.chars().last() {
+-                Some(' ') | None => {}
++                Some(' ') | None => {
++                },
+                 Some(_) => {
+                     w!(self, " ");
+-                }
++                },
+             }
+         } else {
+             match self.buf.chars().rev().find_position(|ch| *ch != ' ') {
+-                Some((_, '\n')) | None => {}
++                Some((_, '\n')) | None => {
++                },
+                 Some((idx, _)) => {
+                     if idx != 0 {
+                         self.buf.drain(self.buf.len() - idx..);
+                     }
+                     w!(self, "\n");
+-                }
++                },
+             }
+         }
+     }
+                         .iter()
+                         .format_with(".", |field, f| f(&field.display(self.db, edition)))
+                 );
+-            }
++            },
+             Expr::Path(path) => self.print_path(path),
+             Expr::If { condition, then_branch, else_branch } => {
+                 w!(self, "if ");
+                     w!(self, " else ");
+                     self.print_expr(els);
+                 }
+-            }
++            },
+             Expr::Let { pat, expr } => {
+                 w!(self, "let ");
+                 self.print_pat(*pat);
+                 w!(self, " = ");
+                 self.print_expr(*expr);
+-            }
++            },
+             Expr::Loop { body, label } => {
+                 if let Some(lbl) = label {
+                     w!(self, "{}: ", self.store[*lbl].name.display(self.db, self.edition));
+                 }
+                 w!(self, "loop ");
+                 self.print_expr(*body);
+-            }
++            },
+             Expr::Call { callee, args } => {
+                 self.print_expr(*callee);
+                 w!(self, "(");
+                     });
+                 }
+                 w!(self, ")");
+-            }
++            },
+             Expr::MethodCall { receiver, method_name, args, generic_args } => {
+                 self.print_expr(*receiver);
+                 w!(self, ".{}", method_name.display(self.db, self.edition));
+                     });
+                 }
+                 w!(self, ")");
+-            }
++            },
+             Expr::Match { expr, arms } => {
+                 w!(self, "match ");
+                 self.print_expr(*expr);
+                     }
+                 });
+                 wln!(self, "}}");
+-            }
++            },
+             Expr::Continue { label } => {
+                 w!(self, "continue");
+                 if let Some(lbl) = label {
+                     w!(self, " {}", self.store[*lbl].name.display(self.db, self.edition));
+                 }
+-            }
++            },
+             Expr::Break { expr, label } => {
+                 w!(self, "break");
+                 if let Some(lbl) = label {
+                     self.whitespace();
+                     self.print_expr(*expr);
+                 }
+-            }
++            },
+             Expr::Return { expr } => {
+                 w!(self, "return");
+                 if let Some(expr) = expr {
+                     self.whitespace();
+                     self.print_expr(*expr);
+                 }
+-            }
++            },
+             Expr::Become { expr } => {
+                 w!(self, "become");
+                 self.whitespace();
+                 self.print_expr(*expr);
+-            }
++            },
+             Expr::Yield { expr } => {
+                 w!(self, "yield");
+                 if let Some(expr) = expr {
+                     self.whitespace();
+                     self.print_expr(*expr);
+                 }
+-            }
++            },
+             Expr::Yeet { expr } => {
+                 w!(self, "do");
+                 self.whitespace();
+                     self.whitespace();
+                     self.print_expr(*expr);
+                 }
+-            }
++            },
+             Expr::RecordLit { path, fields, spread } => {
+                 match path {
+                     Some(path) => self.print_path(path),
+                     None => w!(self, "�"),
+                 }
+-
+                 w!(self, "{{");
+                 let edition = self.edition;
+                 self.indented(|p| {
+                     }
+                 });
+                 w!(self, "}}");
+-            }
++            },
+             Expr::Field { expr, name } => {
+                 self.print_expr(*expr);
+                 w!(self, ".{}", name.display(self.db, self.edition));
+-            }
++            },
+             Expr::Await { expr } => {
+                 self.print_expr(*expr);
+                 w!(self, ".await");
+-            }
++            },
+             Expr::Cast { expr, type_ref } => {
+                 self.print_expr(*expr);
+                 w!(self, " as ");
+                 self.print_type_ref(*type_ref);
+-            }
++            },
+             Expr::Ref { expr, rawness, mutability } => {
+                 w!(self, "&");
+                 if rawness.is_raw() {
+                     w!(self, "mut ");
+                 }
+                 self.print_expr(*expr);
+-            }
++            },
+             Expr::Box { expr } => {
+                 w!(self, "box ");
+                 self.print_expr(*expr);
+-            }
++            },
+             Expr::UnaryOp { expr, op } => {
+                 let op = match op {
+                     ast::UnaryOp::Deref => "*",
+                 };
+                 w!(self, "{}", op);
+                 self.print_expr(*expr);
+-            }
++            },
+             Expr::BinaryOp { lhs, rhs, op } => {
+                 let (bra, ket) = match op {
+                     None | Some(ast::BinaryOp::Assignment { .. }) => ("", ""),
+                 w!(self, " {}", bra);
+                 self.print_expr(*rhs);
+                 w!(self, "{}", ket);
+-            }
++            },
+             Expr::Range { lhs, rhs, range_type } => {
+                 if let Some(lhs) = lhs {
+                     w!(self, "(");
+                     self.print_expr(*rhs);
+                     w!(self, ") ");
+                 }
+-            }
++            },
+             Expr::Index { base, index } => {
+                 self.print_expr(*base);
+                 w!(self, "[");
+                 self.print_expr(*index);
+                 w!(self, "]");
+-            }
++            },
+             Expr::Closure { args, arg_types, ret_type, body, closure_kind, capture_by } => {
+                 match closure_kind {
+                     ClosureKind::Coroutine(Movability::Static) => {
+                 }
+                 self.whitespace();
+                 self.print_expr(*body);
+-            }
++            },
+             Expr::Tuple { exprs } => {
+                 w!(self, "(");
+                 for expr in exprs.iter() {
+                     w!(self, ", ");
+                 }
+                 w!(self, ")");
+-            }
++            },
+             Expr::Array(arr) => {
+                 w!(self, "[");
+                 if !matches!(arr, Array::ElementList { elements, .. } if elements.is_empty()) {
+                     self.newline();
+                 }
+                 w!(self, "]");
+-            }
++            },
+             Expr::Literal(lit) => self.print_literal(lit),
+             Expr::Block { id: _, statements, tail, label } => {
+                 let label = label.map(|lbl| {
+                     format!("{}: ", self.store[lbl].name.display(self.db, self.edition))
+                 });
+                 self.print_block(label.as_deref(), statements, tail);
+-            }
++            },
+             Expr::Unsafe { id: _, statements, tail } => {
+                 self.print_block(Some("unsafe "), statements, tail);
+-            }
++            },
+             Expr::Async { id: _, statements, tail } => {
+                 self.print_block(Some("async "), statements, tail);
+-            }
++            },
+             Expr::Const(id) => {
+                 w!(self, "const {{ /* {id:?} */ }}");
+-            }
++            },
+             &Expr::Assignment { target, value } => {
+                 self.print_pat(target);
+                 w!(self, " = ");
+                 self.print_expr(value);
+-            }
++            },
+         }
+     }
+ 
+                     self.print_pat(*pat);
+                 }
+                 w!(self, ")");
+-            }
++            },
+             Pat::Or(pats) => {
+                 w!(self, "(");
+                 for (i, pat) in pats.iter().enumerate() {
+                     self.print_pat(*pat);
+                 }
+                 w!(self, ")");
+-            }
++            },
+             Pat::Record { path, args, ellipsis } => {
+                 match path {
+                     Some(path) => self.print_path(path),
+                     None => w!(self, "�"),
+                 }
+-
+                 w!(self, " {{");
+                 let edition = self.edition;
+                 let oneline = matches!(self.line_format, LineFormat::Oneline);
+                     }
+                 });
+                 w!(self, "}}");
+-            }
++            },
+             Pat::Range { start, end } => {
+                 if let Some(start) = start {
+                     self.print_expr(*start);
+                 if let Some(end) = end {
+                     self.print_expr(*end);
+                 }
+-            }
++            },
+             Pat::Slice { prefix, slice, suffix } => {
+                 w!(self, "[");
+                 for pat in prefix.iter() {
+                     w!(self, ", ");
+                 }
+                 w!(self, "]");
+-            }
++            },
+             Pat::Path(path) => self.print_path(path),
+             Pat::Lit(expr) => self.print_expr(*expr),
+             Pat::Bind { id, subpat } => {
+                     w!(self, "@ ");
+                     self.print_pat(*pat);
+                 }
+-            }
++            },
+             Pat::TupleStruct { path, args, ellipsis } => {
+                 match path {
+                     Some(path) => self.print_path(path),
+                     self.print_pat(*arg);
+                 }
+                 w!(self, ")");
+-            }
++            },
+             Pat::Ref { pat, mutability } => {
+                 w!(self, "&");
+                 if mutability.is_mut() {
+                     w!(self, "mut ");
+                 }
+                 self.print_pat(*pat);
+-            }
++            },
+             Pat::Box { inner } => {
+                 w!(self, "box ");
+                 self.print_pat(*inner);
+-            }
++            },
+             Pat::ConstBlock(c) => {
+                 w!(self, "const ");
+                 self.print_expr(*c);
+-            }
++            },
+             Pat::Expr(expr) => {
+                 self.print_expr(*expr);
+-            }
++            },
+         }
+     }
+ 
+                     self.print_expr(*els);
+                 }
+                 wln!(self, ";");
+-            }
++            },
+             Statement::Expr { expr, has_semi } => {
+                 self.print_expr(*expr);
+                 if *has_semi {
+                     w!(self, ";");
+                 }
+                 wln!(self);
+-            }
++            },
+             Statement::Item(_) => (),
+         }
+     }
+                 if let Some(suffix) = suffix {
+                     w!(self, "{}", suffix);
+                 }
+-            }
++            },
+             Literal::Uint(i, suffix) => {
+                 w!(self, "{}", i);
+                 if let Some(suffix) = suffix {
+                     w!(self, "{}", suffix);
+                 }
+-            }
++            },
+             Literal::Float(f, suffix) => {
+                 w!(self, "{}", f);
+                 if let Some(suffix) = suffix {
+                     w!(self, "{}", suffix);
+                 }
+-            }
++            },
+         }
+     }
+ 
+             if i != 0 || !matches!(path.kind(), PathKind::Plain) {
+                 w!(self, "::");
+             }
+-
+             w!(self, "{}", segment.name.display(self.db, self.edition));
+             if let Some(generics) = segment.args_and_bindings {
+                 w!(self, "::<");
+                 self.print_generic_args(generics);
+-
+                 w!(self, ">");
+             }
+         }
+             LifetimeRef::Static => w!(self, "'static"),
+             LifetimeRef::Named(lt) => {
+                 w!(self, "{}", lt.display(self.db, self.edition))
+-            }
++            },
+             LifetimeRef::Placeholder => w!(self, "'_"),
+             LifetimeRef::Error => w!(self, "'{{error}}"),
+             &LifetimeRef::Param(p) => self.print_lifetime_param(p),
+                     self.print_type_ref(*field);
+                 }
+                 w!(self, ")");
+-            }
++            },
+             TypeRef::Path(path) => self.print_path(path),
+             TypeRef::RawPtr(pointee, mtbl) => {
+                 let mtbl = match mtbl {
+                 };
+                 w!(self, "{mtbl} ");
+                 self.print_type_ref(*pointee);
+-            }
++            },
+             TypeRef::Reference(ref_) => {
+                 let mtbl = match ref_.mutability {
+                     Mutability::Shared => "",
+                 }
+                 w!(self, "{mtbl}");
+                 self.print_type_ref(ref_.ty);
+-            }
++            },
+             TypeRef::Array(array) => {
+                 w!(self, "[");
+                 self.print_type_ref(array.ty);
+                 w!(self, "; ");
+                 self.print_generic_arg(&GenericArg::Const(array.len));
+                 w!(self, "]");
+-            }
++            },
+             TypeRef::Slice(elem) => {
+                 w!(self, "[");
+                 self.print_type_ref(*elem);
+                 w!(self, "]");
+-            }
++            },
+             TypeRef::Fn(fn_) => {
+                 let ((_, return_type), args) =
+                     fn_.params.split_last().expect("TypeRef::Fn is missing return type");
+                 }
+                 w!(self, ") -> ");
+                 self.print_type_ref(*return_type);
+-            }
++            },
+             TypeRef::Error => w!(self, "{{error}}"),
+             TypeRef::ImplTrait(bounds) => {
+                 w!(self, "impl ");
+                 self.print_type_bounds(bounds);
+-            }
++            },
+             TypeRef::DynTrait(bounds) => {
+                 w!(self, "dyn ");
+                 self.print_type_bounds(bounds);
+-            }
++            },
+         }
+     }
+ 
+             if i != 0 {
+                 w!(self, " + ");
+             }
+-
+             match bound {
+                 TypeBound::Path(path, modifier) => {
+                     match modifier {
+                         TraitBoundModifier::Maybe => w!(self, "?"),
+                     }
+                     self.print_path(&self.store[*path]);
+-                }
++                },
+                 TypeBound::ForLifetime(lifetimes, path) => {
+                     w!(
+                         self,
+                             .to_string()
+                     );
+                     self.print_path(&self.store[*path]);
+-                }
++                },
+                 TypeBound::Lifetime(lt) => self.print_lifetime_ref(*lt),
+                 TypeBound::Use(args) => {
+                     w!(self, "use<");
+                         }
+                     }
+                     w!(self, ">")
+-                }
++                },
+                 TypeBound::Error => w!(self, "{{unknown}}"),
+             }
+         }

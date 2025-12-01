@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2866 bytes
-Chloro size:   2866 bytes
+Chloro size:   2689 bytes
 Rustfmt size:  2945 bytes
 
 ✗ Outputs DIFFER
@@ -35,6 +35,36 @@ Rustfmt size:  2945 bytes
  /// This returns `Vec` because a module may be included from several places.
  pub(crate) fn child_modules(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
      let sema = Semantics::new(db);
+ 
+     match module {
+         Some(module) => {
+-            // Return all child modules inside the ItemList of the parent module
+-            sema.to_def(&module)
+-                .into_iter()
+-                .flat_map(|module| module.children(db))
+-                .map(|module| NavigationTarget::from_module_to_decl(db, module).call_site())
+-                .collect()
+-        }
++            sema.to_def(&module).into_iter().flat_map(|module| module.children(db)).map(
++                |module| NavigationTarget::from_module_to_decl(db, module).call_site(),
++            ).collect(
++            )
++        },
+         None => {
+-            // Return all the child modules inside the source file
+-            sema.file_to_module_defs(position.file_id)
+-                .flat_map(|module| module.children(db))
+-                .map(|module| NavigationTarget::from_module_to_decl(db, module).call_site())
+-                .collect()
+-        }
++            sema.file_to_module_defs(position.file_id).flat_map(|module| module.children(db)).map(
++                |module| NavigationTarget::from_module_to_decl(db, module).call_site(),
++            ).collect(
++            )
++        },
+     }
+ }
+ 
  #[cfg(test)]
  mod tests {
      use ide_db::FileRange;

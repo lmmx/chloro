@@ -85,8 +85,7 @@ impl<'a> RenderContext<'a> {
     }
 
     fn is_immediately_after_macro_bang(&self) -> bool {
-        self.completion.token.kind() == SyntaxKind::BANG
-            && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
+        self.completion.token.kind() == SyntaxKind::BANG && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
     }
 
     fn is_deprecated(&self, def: impl HasAttrs) -> bool {
@@ -106,11 +105,9 @@ impl<'a> RenderContext<'a> {
             hir::AssocItem::Const(it) => self.is_deprecated(it),
             hir::AssocItem::TypeAlias(it) => self.is_deprecated(it),
         };
-        is_assoc_deprecated
-            || assoc
-                .container_or_implemented_trait(db)
-                .map(|trait_| self.is_deprecated(trait_))
-                .unwrap_or(false)
+        is_assoc_deprecated || assoc.container_or_implemented_trait(db).map(|trait_| self.is_deprecated(trait_)).unwrap_or(
+            false,
+        )
     }
 
     fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
@@ -191,8 +188,10 @@ pub(crate) fn render_field(
 }
 
 fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
-    receiver
-        .map_or_else(|| field_name.into(), |receiver| format_smolstr!("{}.{field_name}", receiver))
+    receiver.map_or_else(
+        || field_name.into(),
+        |receiver| format_smolstr!("{}.{field_name}", receiver),
+    )
 }
 
 pub(crate) fn render_tuple_field(
@@ -548,7 +547,7 @@ fn res_to_kind(resolution: ScopeDef) -> CompletionItemKind {
         ScopeDef::Label(..) => CompletionItemKind::SymbolKind(SymbolKind::Label),
         ScopeDef::AdtSelfType(..) | ScopeDef::ImplSelfType(..) => {
             CompletionItemKind::SymbolKind(SymbolKind::SelfParam)
-        }
+        },
     }
 }
 
@@ -649,16 +648,10 @@ fn path_ref_match(
     item: &mut Builder,
 ) {
     if let Some(original_path) = &path_ctx.original_path {
-        // At least one char was typed by the user already, in that case look for the original path
-        if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())
-            && let Some(ref_mode) = compute_ref_match(completion, ty)
-        {
+        if let Some(original_path) = completion.sema.original_ast_node(original_path.clone()) && let Some(ref_mode) = compute_ref_match(completion, ty) {
             item.ref_match(ref_mode, original_path.syntax().text_range().start());
         }
     } else {
-        // completion requested on an empty identifier, there is no path here yet.
-        // FIXME: This might create inconsistent completions where we show a ref match in macro inputs
-        // as long as nothing was typed yet
         if let Some(ref_mode) = compute_ref_match(completion, ty) {
             item.ref_match(ref_mode, completion.position.offset);
         }

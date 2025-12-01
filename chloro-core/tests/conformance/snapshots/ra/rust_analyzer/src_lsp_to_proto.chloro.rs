@@ -45,7 +45,7 @@ pub(crate) fn position(line_index: &LineIndex, offset: TextSize) -> lsp_types::P
         PositionEncoding::Wide(enc) => {
             let line_col = line_index.index.to_wide(enc, line_col).unwrap();
             lsp_types::Position::new(line_col.line, line_col.col)
-        }
+        },
     }
 }
 
@@ -72,7 +72,7 @@ pub(crate) fn symbol_kind(symbol_kind: SymbolKind) -> lsp_types::SymbolKind {
         SymbolKind::Module | SymbolKind::ToolModule => lsp_types::SymbolKind::MODULE,
         SymbolKind::TypeAlias | SymbolKind::TypeParam | SymbolKind::SelfType => {
             lsp_types::SymbolKind::TYPE_PARAMETER
-        }
+        },
         SymbolKind::Field => lsp_types::SymbolKind::FIELD,
         SymbolKind::Static => lsp_types::SymbolKind::CONSTANT,
         SymbolKind::Const => lsp_types::SymbolKind::CONSTANT,
@@ -113,7 +113,6 @@ pub(crate) fn diagnostic_severity(severity: Severity) -> lsp_types::DiagnosticSe
         Severity::Error => lsp_types::DiagnosticSeverity::ERROR,
         Severity::Warning => lsp_types::DiagnosticSeverity::WARNING,
         Severity::WeakWarning => lsp_types::DiagnosticSeverity::HINT,
-        // unreachable
         Severity::Allow => lsp_types::DiagnosticSeverity::INFORMATION,
     }
 }
@@ -187,10 +186,13 @@ pub(crate) fn completion_text_edit(
     match insert_replace_support {
         Some(cursor_pos) => lsp_types::InsertReplaceEdit {
             new_text: text_edit.new_text,
-            insert: lsp_types::Range { start: text_edit.range.start, end: cursor_pos },
+            insert: lsp_types::Range {
+                start: text_edit.range.start,
+                end: cursor_pos,
+            },
             replace: text_edit.range,
-        }
-        .into(),
+        }.into(
+        ),
         None => text_edit.into(),
     }
 }
@@ -228,18 +230,16 @@ pub(crate) fn snippet_text_edit_vec(
     clients_support_annotations: bool,
 ) -> Vec<lsp_ext::SnippetTextEdit> {
     let annotation = text_edit.change_annotation();
-    text_edit
-        .into_iter()
-        .map(|indel| {
-            self::snippet_text_edit(
-                line_index,
-                is_snippet,
-                indel,
-                annotation,
-                clients_support_annotations,
-            )
-        })
-        .collect()
+    text_edit.into_iter().map(|indel| {
+        self::snippet_text_edit(
+            line_index,
+            is_snippet,
+            indel,
+            annotation,
+            clients_support_annotations,
+        )
+    }).collect(
+    )
 }
 
 pub(crate) fn completion_items(
@@ -928,21 +928,15 @@ pub(crate) fn folding_range(
     let range = range(line_index, fold.range);
 
     if line_folding_only {
-        // Clients with line_folding_only == true (such as VSCode) will fold the whole end line
-        // even if it contains text not in the folding range. To prevent that we exclude
-        // range.end.line from the folding region if there is more text after range.end
-        // on the same line.
         let has_more_text_on_end_line = text[TextRange::new(fold.range.end(), TextSize::of(text))]
             .chars()
             .take_while(|it| *it != '\n')
             .any(|it| !it.is_whitespace());
-
         let end_line = if has_more_text_on_end_line {
             range.end.line.saturating_sub(1)
         } else {
             range.end.line
         };
-
         lsp_types::FoldingRange {
             start_line: range.start.line,
             start_character: None,
@@ -1431,24 +1425,18 @@ impl From<lsp_ext::SnippetWorkspaceEdit> for lsp_types::WorkspaceEdit {
         lsp_types::WorkspaceEdit {
             changes: None,
             document_changes: snippet_workspace_edit.document_changes.map(|changes| {
-                lsp_types::DocumentChanges::Operations(
-                    changes
-                        .into_iter()
-                        .map(|change| match change {
-                            lsp_ext::SnippetDocumentChangeOperation::Op(op) => {
-                                lsp_types::DocumentChangeOperation::Op(op)
-                            }
-                            lsp_ext::SnippetDocumentChangeOperation::Edit(edit) => {
-                                lsp_types::DocumentChangeOperation::Edit(
-                                    lsp_types::TextDocumentEdit {
-                                        text_document: edit.text_document,
-                                        edits: edit.edits.into_iter().map(From::from).collect(),
-                                    },
-                                )
-                            }
+                lsp_types::DocumentChanges::Operations(changes.into_iter().map(|change| match change {
+                    lsp_ext::SnippetDocumentChangeOperation::Op(op) => {
+                        lsp_types::DocumentChangeOperation::Op(op)
+                    },
+                    lsp_ext::SnippetDocumentChangeOperation::Edit(edit) => {
+                        lsp_types::DocumentChangeOperation::Edit(lsp_types::TextDocumentEdit {
+                            text_document: edit.text_document,
+                            edits: edit.edits.into_iter().map(From::from).collect(),
                         })
-                        .collect(),
-                )
+                    },
+                }).collect(
+                ))
             }),
             change_annotations: snippet_workspace_edit.change_annotations,
         }
@@ -1556,24 +1544,19 @@ pub(crate) fn runnable(
     match target_spec {
         Some(TargetSpec::Cargo(spec)) => {
             let workspace_root = spec.workspace_root.clone();
-
             let target = spec.target.clone();
-
             let (cargo_args, executable_args) = CargoTargetSpec::runnable_args(
                 snap,
                 Some(spec.clone()),
                 &runnable.kind,
                 &runnable.cfg,
             );
-
             let cwd = match runnable.kind {
                 ide::RunnableKind::Bin => workspace_root.clone(),
                 _ => spec.cargo_toml.parent().to_owned(),
             };
-
             let label = runnable.label(Some(&target));
             let location = location_link(snap, None, runnable.nav)?;
-
             Ok(Some(lsp_ext::Runnable {
                 label,
                 location: Some(location),
@@ -1591,11 +1574,10 @@ pub(crate) fn runnable(
                         .collect(),
                 }),
             }))
-        }
+        },
         Some(TargetSpec::ProjectJson(spec)) => {
             let label = runnable.label(Some(&spec.label));
             let location = location_link(snap, None, runnable.nav)?;
-
             match spec.runnable_args(&runnable.kind) {
                 Some(json_shell_runnable_args) => {
                     let runnable_args = ShellRunnableArgs {
@@ -1610,20 +1592,18 @@ pub(crate) fn runnable(
                         kind: lsp_ext::RunnableKind::Shell,
                         args: lsp_ext::RunnableArgs::Shell(runnable_args),
                     }))
-                }
+                },
                 None => Ok(None),
             }
-        }
+        },
         None => {
             let Some(path) = snap.file_id_to_file_path(runnable.nav.file_id).parent() else {
                 return Ok(None);
             };
             let (cargo_args, executable_args) =
                 CargoTargetSpec::runnable_args(snap, None, &runnable.kind, &runnable.cfg);
-
             let label = runnable.label(None);
             let location = location_link(snap, None, runnable.nav)?;
-
             Ok(Some(lsp_ext::Runnable {
                 label,
                 location: Some(location),
@@ -1637,7 +1617,7 @@ pub(crate) fn runnable(
                     environment: Default::default(),
                 }),
             }))
-        }
+        },
     }
 }
 
@@ -1821,7 +1801,6 @@ pub(crate) fn test_item(
                     | project_model::TargetKind::BuildScript
                     | project_model::TargetKind::Other => lsp_ext::TestItemKind::Package,
                     project_model::TargetKind::Test => lsp_ext::TestItemKind::Test,
-                    // benches are not tests needed to be shown in the test explorer
                     project_model::TargetKind::Bench => return None,
                 },
                 None => lsp_ext::TestItemKind::Package,
@@ -1834,9 +1813,7 @@ pub(crate) fn test_item(
             ide::TestItemKind::Crate(_) | ide::TestItemKind::Module
         ),
         parent: test_item.parent,
-        text_document: test_item
-            .file
-            .map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
+        text_document: test_item.file.map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
         range: line_index.and_then(|l| Some(range(l, test_item.text_range?))),
         runnable: test_item.runnable.and_then(|r| runnable(snap, r).ok()).flatten(),
     })
@@ -1948,11 +1925,19 @@ pub(crate) fn make_update_runnable(
 }
 
 pub(crate) fn implementation_title(count: usize) -> String {
-    if count == 1 { "1 implementation".into() } else { format!("{count} implementations") }
+    if count == 1 {
+        "1 implementation".into()
+    } else {
+        format!("{count} implementations")
+    }
 }
 
 pub(crate) fn reference_title(count: usize) -> String {
-    if count == 1 { "1 reference".into() } else { format!("{count} references") }
+    if count == 1 {
+        "1 reference".into()
+    } else {
+        format!("{count} references")
+    }
 }
 
 pub(crate) fn markup_content(

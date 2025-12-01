@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7509 bytes
-Chloro size:   7089 bytes
+Chloro size:   7013 bytes
 Rustfmt size:  7531 bytes
 
 ✗ Outputs DIFFER
@@ -34,6 +34,27 @@ Rustfmt size:  7531 bytes
      let value = token.value().ok()?;
      let target = token.syntax().text_range();
  
+         "Replace string with char",
+         target,
+         |edit| {
+-            let (left, right) = quote_offsets.quotes;
+-            let suffix = TextSize::of(string_suffix(token.text()).unwrap_or_default());
+-            let right = TextRange::new(right.start(), right.end() - suffix);
+-            edit.replace(left, '\'');
+-            edit.replace(right, '\'');
+-            if token.text_without_quotes() == "'" {
+-                edit.insert(left.end(), '\\');
+-            }
+-        },
++        let (left, right) = quote_offsets.quotes;
++        let suffix = TextSize::of(string_suffix(token.text()).unwrap_or_default());
++        let right = TextRange::new(right.start(), right.end() - suffix);
++        edit.replace(left, '\'');
++        edit.replace(right, '\'');
++        if token.text_without_quotes() == "'" {
++            edit.insert(left.end(), '\\');
++        }
++    },
      )
  }
  
@@ -55,6 +76,32 @@ Rustfmt size:  7531 bytes
  pub(crate) fn replace_char_with_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let token = ctx.find_token_syntax_at_offset(CHAR)?;
      let target = token.text_range();
+         "Replace char with string",
+         target,
+         |edit| {
+-            let suffix = string_suffix(token.text()).unwrap_or_default();
+-            if token.text().starts_with("'\"'") {
+-                edit.replace(token.text_range(), format!(r#""\""{suffix}"#));
+-            } else {
+-                let len = TextSize::of('\'');
+-                let suffix = TextSize::of(suffix);
+-                edit.replace(TextRange::at(target.start(), len), '"');
+-                edit.replace(TextRange::at(target.end() - suffix - len, len), '"');
+-            }
+-        },
++        let suffix = string_suffix(token.text()).unwrap_or_default();
++        if token.text().starts_with("'\"'") {
++            edit.replace(token.text_range(), format!(r#""\""{suffix}"#));
++        } else {
++            let len = TextSize::of('\'');
++            let suffix = TextSize::of(suffix);
++            edit.replace(TextRange::at(target.start(), len), '"');
++            edit.replace(TextRange::at(target.end() - suffix - len, len), '"');
++        }
++    },
+     )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

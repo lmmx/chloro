@@ -522,10 +522,10 @@ fn handle_calls(
                     handle_call(builder, ctx, expr, captures_as_args);
                 }
             }
-        }
+        },
         None => {
             handle_call(builder, ctx, ast::Expr::ClosureExpr(closure.clone()), captures_as_args);
-        }
+        },
     }
 }
 

@@ -80,8 +80,9 @@ fn on_char_typed_(
         '|' => on_pipe_typed(&file.tree(), offset),
         '+' => on_plus_typed(&file.tree(), offset),
         _ => None,
-    }
-    .map(conv)
+    }.map(
+        conv,
+    )
 }
 
 fn conv(edit: TextEdit) -> ExtendedTextEdit {
@@ -354,15 +355,9 @@ fn on_left_angle_typed(
         return None;
     }
 
-    if ancestors_at_offset(file.syntax(), offset)
-        .take_while(|n| !ast::Item::can_cast(n.kind()))
-        .any(|n| {
-            ast::GenericParamList::can_cast(n.kind())
-                || ast::GenericArgList::can_cast(n.kind())
-                || ast::UseBoundGenericArgs::can_cast(n.kind())
-        })
-    {
-        // Insert the closing bracket right after
+    if ancestors_at_offset(file.syntax(), offset).take_while(|n| !ast::Item::can_cast(n.kind())).any(|n| {
+        ast::GenericParamList::can_cast(n.kind()) || ast::GenericArgList::can_cast(n.kind()) || ast::UseBoundGenericArgs::can_cast(n.kind())
+    }) {
         Some(TextEdit::insert(offset + TextSize::of('<'), '>'.to_string()))
     } else {
         None
@@ -392,8 +387,7 @@ fn on_plus_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
     let kind = ancestors.next()?.kind();
 
-    if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
-    {
+    if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind) {
         let mut builder = TextEdit::builder();
         builder.insert(trait_type.syntax().text_range().start(), "(".to_owned());
         builder.insert(trait_type.syntax().text_range().end(), ")".to_owned());

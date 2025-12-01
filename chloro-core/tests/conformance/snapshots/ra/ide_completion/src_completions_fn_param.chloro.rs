@@ -123,9 +123,7 @@ fn params_from_stmt_list_scope(
         Some(it) => it,
         None => return,
     };
-    if let Some(scope) =
-        ctx.sema.scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end())
-    {
+    if let Some(scope) = ctx.sema.scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end()) {
         let module = scope.module().into();
         scope.process_all_names(&mut |name, def| {
             if let hir::ScopeDef::Local(local) = def
@@ -144,15 +142,11 @@ fn remove_duplicated(
     fn_params.for_each(|param| {
         let whole_param = param.syntax().text().to_string();
         file_params.remove(&whole_param);
-
         match param.pat() {
-            // remove suggestions for patterns that already exist
-            // if the type is missing we are checking the current param to be completed
-            // in which case this would find itself removing the suggestions due to itself
             Some(pattern) if param.ty().is_some() => {
                 let binding = pattern.syntax().text().to_string();
                 file_params.retain(|_, v| v != &binding);
-            }
+            },
             _ => (),
         }
     })

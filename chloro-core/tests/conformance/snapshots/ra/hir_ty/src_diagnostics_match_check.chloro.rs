@@ -117,7 +117,10 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
         let unadjusted_pat = self.lower_pattern_unadjusted(pat);
         self.infer.pat_adjustments.get(&pat).map(|it| &**it).unwrap_or_default().iter().rev().fold(
             unadjusted_pat,
-            |subpattern, ref_ty| Pat { ty: *ref_ty, kind: Box::new(PatKind::Deref { subpattern }) },
+            |subpattern, ref_ty| Pat {
+            ty: *ref_ty,
+            kind: Box::new(PatKind::Deref { subpattern }),
+        },
         )
     }
 
@@ -220,13 +223,11 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
             return Vec::new();
         }
 
-        pats.iter()
-            .enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize))
-            .map(|(i, &subpattern)| FieldPat {
-                field: LocalFieldId::from_raw((i as u32).into()),
-                pattern: self.lower_pattern(subpattern),
-            })
-            .collect()
+        pats.iter().enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize)).map(|(i, &subpattern)| FieldPat {
+            field: LocalFieldId::from_raw((i as u32).into()),
+            pattern: self.lower_pattern(subpattern),
+        }).collect(
+        )
     }
 
     fn lower_patterns(&mut self, pats: &[PatId]) -> Vec<Pat<'db>> {
@@ -262,11 +263,11 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
                 } else {
                     PatKind::Leaf { subpatterns }
                 }
-            }
+            },
             None => {
                 self.errors.push(PatternError::UnresolvedVariant);
                 PatKind::Wild
-            }
+            },
         }
     }
 
@@ -280,7 +281,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
             None => {
                 self.errors.push(PatternError::UnresolvedVariant);
                 pat_from_kind(PatKind::Wild)
-            }
+            },
         }
     }
 
@@ -292,7 +293,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
             _ => {
                 self.errors.push(PatternError::Unimplemented);
                 PatKind::Wild
-            }
+            },
         }
     }
 }
@@ -309,7 +310,7 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                     subpattern.hir_fmt(f)?;
                 }
                 Ok(())
-            }
+            },
             PatKind::Variant { subpatterns, .. } | PatKind::Leaf { subpatterns } => {
                 let variant = match *self.kind {
                     PatKind::Variant { enum_variant, .. } => Some(VariantId::from(enum_variant)),
@@ -319,7 +320,6 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                         AdtId::EnumId(_) => None,
                     }),
                 };
-
                 if let Some(variant) = variant {
                     match variant {
                         VariantId::EnumVariantId(v) => {
@@ -374,7 +374,6 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                         return write!(f, " }}");
                     }
                 }
-
                 let num_fields =
                     variant.map_or(subpatterns.len(), |v| v.fields(f.db).fields().len());
                 if num_fields != 0 || variant.is_none() {
@@ -400,9 +399,8 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                     }
                     write!(f, ")")?;
                 }
-
                 Ok(())
-            }
+            },
             PatKind::Deref { subpattern } => {
                 match self.ty.kind() {
                     TyKind::Ref(.., mutbl) => {
@@ -411,7 +409,7 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                     _ => never!("{:?} is a bad Deref pattern type", self.ty),
                 }
                 subpattern.hir_fmt(f)
-            }
+            },
             PatKind::LiteralBool { value } => write!(f, "{value}"),
             PatKind::Or { pats } => f.write_joined(pats.iter(), " | "),
         }

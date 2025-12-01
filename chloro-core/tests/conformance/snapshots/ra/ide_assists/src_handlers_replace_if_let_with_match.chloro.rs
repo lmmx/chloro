@@ -78,8 +78,8 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
         format!("Replace if{let_} with match"),
         available_range,
         move |builder| {
-            let make = SyntaxFactory::with_mappings();
-            let match_expr: ast::Expr = {
+        let make = SyntaxFactory::with_mappings();
+        let match_expr: ast::Expr = {
                 let else_arm = make_else_arm(ctx, &make, else_block, &cond_bodies);
                 let make_match_arm =
                     |(pat, guard, body): (_, Option<ast::Expr>, ast::BlockExpr)| {
@@ -100,10 +100,9 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
                 match_expr.indent(indent);
                 match_expr.into()
             };
-
-            let has_preceding_if_expr =
+        let has_preceding_if_expr =
                 if_expr.syntax().parent().is_some_and(|it| ast::IfExpr::can_cast(it.kind()));
-            let expr = if has_preceding_if_expr {
+        let expr = if has_preceding_if_expr {
                 // make sure we replace the `else if let ...` with a block so we don't end up with `else expr`
                 match_expr.dedent(indent);
                 match_expr.indent(IndentLevel(1));
@@ -113,12 +112,11 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
             } else {
                 match_expr
             };
-
-            let mut editor = builder.make_editor(if_expr.syntax());
-            editor.replace(if_expr.syntax(), expr.syntax());
-            editor.add_mappings(make.finish_with_mappings());
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        let mut editor = builder.make_editor(if_expr.syntax());
+        editor.replace(if_expr.syntax(), expr.syntax());
+        editor.add_mappings(make.finish_with_mappings());
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -208,8 +206,8 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
         format!("Replace match with if{let_}"),
         match_expr.syntax().text_range(),
         move |builder| {
-            let make = SyntaxFactory::with_mappings();
-            let make_block_expr = |expr: ast::Expr| {
+        let make = SyntaxFactory::with_mappings();
+        let make_block_expr = |expr: ast::Expr| {
                 // Blocks with modifiers (unsafe, async, etc.) are parsed as BlockExpr, but are
                 // formatted without enclosing braces. If we encounter such block exprs,
                 // wrap them in another BlockExpr.
@@ -221,8 +219,7 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
                     }
                 }
             };
-
-            let condition = match if_let_pat {
+        let condition = match if_let_pat {
                 ast::Pat::LiteralPat(p)
                     if p.literal().is_some_and(|it| it.token().kind() == T![true]) =>
                 {
@@ -235,29 +232,28 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
                 }
                 _ => make.expr_let(if_let_pat, scrutinee).into(),
             };
-            let condition = if let Some(guard) = guard {
+        let condition = if let Some(guard) = guard {
                 make.expr_bin(condition, ast::BinaryOp::LogicOp(ast::LogicOp::And), guard).into()
             } else {
                 condition
             };
-            let then_expr = then_expr.clone_for_update();
-            let else_expr = else_expr.clone_for_update();
-            then_expr.reindent_to(IndentLevel::single());
-            else_expr.reindent_to(IndentLevel::single());
-            let then_block = make_block_expr(then_expr);
-            let else_expr = if is_empty_expr(&else_expr) { None } else { Some(else_expr) };
-            let if_let_expr = make.expr_if(
+        let then_expr = then_expr.clone_for_update();
+        let else_expr = else_expr.clone_for_update();
+        then_expr.reindent_to(IndentLevel::single());
+        else_expr.reindent_to(IndentLevel::single());
+        let then_block = make_block_expr(then_expr);
+        let else_expr = if is_empty_expr(&else_expr) { None } else { Some(else_expr) };
+        let if_let_expr = make.expr_if(
                 condition,
                 then_block,
                 else_expr.map(make_block_expr).map(ast::ElseBranch::Block),
             );
-            if_let_expr.indent(IndentLevel::from_node(match_expr.syntax()));
-
-            let mut editor = builder.make_editor(match_expr.syntax());
-            editor.replace(match_expr.syntax(), if_let_expr.syntax());
-            editor.add_mappings(make.finish_with_mappings());
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        if_let_expr.indent(IndentLevel::from_node(match_expr.syntax()));
+        let mut editor = builder.make_editor(match_expr.syntax());
+        editor.replace(match_expr.syntax(), if_let_expr.syntax());
+        editor.add_mappings(make.finish_with_mappings());
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -320,9 +316,9 @@ fn binds_name(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
         ast::Pat::SlicePat(pat) => pat.pats().any(binds_name_v),
         ast::Pat::TuplePat(it) => it.fields().any(binds_name_v),
         ast::Pat::TupleStructPat(it) => it.fields().any(binds_name_v),
-        ast::Pat::RecordPat(it) => it
-            .record_pat_field_list()
-            .is_some_and(|rpfl| rpfl.fields().flat_map(|rpf| rpf.pat()).any(binds_name_v)),
+        ast::Pat::RecordPat(it) => it.record_pat_field_list().is_some_and(
+            |rpfl| rpfl.fields().flat_map(|rpf| rpf.pat()).any(binds_name_v),
+        ),
         ast::Pat::RefPat(pat) => pat.pat().is_some_and(binds_name_v),
         ast::Pat::BoxPat(pat) => pat.pat().is_some_and(binds_name_v),
         ast::Pat::ParenPat(pat) => pat.pat().is_some_and(binds_name_v),
@@ -331,24 +327,19 @@ fn binds_name(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
 }
 
 fn is_sad_pat(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
-    sema.type_of_pat(pat)
-        .and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted()))
-        .is_some_and(|it| does_pat_match_variant(pat, &it.sad_pattern()))
+    sema.type_of_pat(pat).and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted())).is_some_and(
+        |it| does_pat_match_variant(pat, &it.sad_pattern()),
+    )
 }
 
 fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) {
-    if let ast::Expr::ParenExpr(expr) = cond
-        && let Some(sub_expr) = expr.expr()
-    {
+    if let ast::Expr::ParenExpr(expr) = cond && let Some(sub_expr) = expr.expr() {
         let_and_guard(&sub_expr)
     } else if let ast::Expr::LetExpr(let_expr) = cond {
         (Some(let_expr.clone()), None)
-    } else if let ast::Expr::BinExpr(bin_expr) = cond
-        && let Some(ast::Expr::LetExpr(let_expr)) = and_bin_expr_left(bin_expr).lhs()
-    {
+    } else if let ast::Expr::BinExpr(bin_expr) = cond && let Some(ast::Expr::LetExpr(let_expr)) = and_bin_expr_left(bin_expr).lhs() {
         let new_expr = bin_expr.clone_subtree();
         let mut edit = SyntaxEditor::new(new_expr.syntax().clone());
-
         let left_bin = and_bin_expr_left(&new_expr);
         if let Some(rhs) = left_bin.rhs() {
             edit.replace(left_bin.syntax(), rhs.syntax());
@@ -360,7 +351,6 @@ fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) 
             }
             edit.delete(left_bin.syntax());
         }
-
         let new_expr = edit.finish().new_root().clone();
         (Some(let_expr), ast::Expr::cast(new_expr))
     } else {
@@ -369,9 +359,7 @@ fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) 
 }
 
 fn and_bin_expr_left(expr: &ast::BinExpr) -> ast::BinExpr {
-    if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And))
-        && let Some(ast::Expr::BinExpr(left)) = expr.lhs()
-    {
+    if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And)) && let Some(ast::Expr::BinExpr(left)) = expr.lhs() {
         and_bin_expr_left(&left)
     } else {
         expr.clone()

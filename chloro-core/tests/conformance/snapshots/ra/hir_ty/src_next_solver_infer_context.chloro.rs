@@ -92,15 +92,14 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
     ) -> bool {
         match arg.kind() {
             GenericArgKind::Lifetime(_) => {
-                // Lifetimes should not change affect trait selection.
                 false
-            }
+            },
             GenericArgKind::Type(ty) => {
                 if let TyKind::Infer(infer_ty) = ty.kind() {
                     match infer_ty {
                         InferTy::TyVar(vid) => {
                             !self.probe_ty_var(vid).is_err_and(|_| self.root_var(vid) == vid)
-                        }
+                        },
                         InferTy::IntVar(vid) => {
                             let mut inner = self.inner.borrow_mut();
                             !matches!(
@@ -108,7 +107,7 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
                                 IntVarValue::Unknown
                                     if inner.int_unification_table().find(vid) == vid
                             )
-                        }
+                        },
                         InferTy::FloatVar(vid) => {
                             let mut inner = self.inner.borrow_mut();
                             !matches!(
@@ -116,27 +115,25 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
                                 FloatVarValue::Unknown
                                     if inner.float_unification_table().find(vid) == vid
                             )
-                        }
+                        },
                         InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => {
                             true
-                        }
+                        },
                     }
                 } else {
                     true
                 }
-            }
+            },
             GenericArgKind::Const(ct) => {
                 if let ConstKind::Infer(infer_ct) = ct.kind() {
                     match infer_ct {
-                        InferConst::Var(vid) => !self
-                            .probe_const_var(vid)
-                            .is_err_and(|_| self.root_const_var(vid) == vid),
+                        InferConst::Var(vid) => !self.probe_const_var(vid).is_err_and(|_| self.root_const_var(vid) == vid),
                         InferConst::Fresh(_) => true,
                     }
                 } else {
                     true
                 }
-            }
+            },
         }
     }
 
@@ -276,24 +273,18 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
     }
 
     fn clone_duplicate_opaque_types(&self) -> Vec<(OpaqueTypeKey<'db>, Ty<'db>)> {
-        self.inner
-            .borrow_mut()
-            .opaque_types()
-            .iter_duplicate_entries()
-            .map(|(k, h)| (k, h.ty))
-            .collect()
+        self.inner.borrow_mut().opaque_types().iter_duplicate_entries().map(|(k, h)| (k, h.ty)).collect(
+        )
     }
 
     fn clone_opaque_types_added_since(
         &self,
         prev_entries: OpaqueTypeStorageEntries,
     ) -> Vec<(OpaqueTypeKey<'db>, Ty<'db>)> {
-        self.inner
-            .borrow_mut()
-            .opaque_types()
-            .opaque_types_added_since(prev_entries)
-            .map(|(k, h)| (k, h.ty))
-            .collect()
+        self.inner.borrow_mut().opaque_types().opaque_types_added_since(prev_entries).map(
+            |(k, h)| (k, h.ty),
+        ).collect(
+        )
     }
 
     fn register_hidden_type_in_storage(

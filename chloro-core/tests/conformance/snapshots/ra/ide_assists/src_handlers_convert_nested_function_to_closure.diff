@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5052 bytes
-Chloro size:   4557 bytes
+Chloro size:   4507 bytes
 Rustfmt size:  5151 bytes
 
 ✗ Outputs DIFFER
@@ -40,6 +40,28 @@ Rustfmt size:  5151 bytes
  pub(crate) fn convert_nested_function_to_closure(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
+         "Convert nested function to closure",
+         target,
+         |edit| {
+-            let params = &param_list.syntax().text().to_string();
+-            let params = params.strip_prefix('(').unwrap_or(params);
+-            let params = params.strip_suffix(')').unwrap_or(params);
+-
+-            let mut body = body.to_string();
+-            if !has_semicolon(&function) {
++        let params = &param_list.syntax().text().to_string();
++        let params = params.strip_prefix('(').unwrap_or(params);
++        let params = params.strip_suffix(')').unwrap_or(params);
++        let mut body = body.to_string();
++        if !has_semicolon(&function) {
+                 body.push(';');
+             }
+-            edit.replace(target, format!("let {name} = |{params}| {body}"));
+-        },
++        edit.replace(target, format!("let {name} = |{params}| {body}"));
++    },
+     )
+ }
  
  /// Returns whether the given function is nested within the body of another function.
  fn is_nested_function(function: &ast::Fn) -> bool {
@@ -70,6 +92,17 @@ Rustfmt size:  5151 bytes
  }
  
  /// Returns whether the given nested function has a trailing semicolon.
+ fn has_semicolon(function: &ast::Fn) -> bool {
+-    function
+-        .syntax()
+-        .next_sibling_or_token()
+-        .map(|t| t.kind() == SyntaxKind::SEMICOLON)
+-        .unwrap_or(false)
++    function.syntax().next_sibling_or_token().map(|t| t.kind() == SyntaxKind::SEMICOLON).unwrap_or(
++        false,
++    )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

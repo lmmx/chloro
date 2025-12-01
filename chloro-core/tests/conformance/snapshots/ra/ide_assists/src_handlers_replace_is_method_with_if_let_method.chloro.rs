@@ -21,7 +21,6 @@ pub(crate) fn replace_is_method_with_if_let_method(
     match name_ref.text().as_str() {
         "is_some" | "is_ok" => {
             let receiver = call_expr.receiver()?;
-
             let mut name_generator = suggest_name::NameGenerator::new_from_scope_locals(
                 ctx.sema.scope(has_cond.syntax()),
             );
@@ -30,39 +29,34 @@ pub(crate) fn replace_is_method_with_if_let_method(
             } else {
                 name_generator.for_variable(&receiver, &ctx.sema)
             };
-
             let (assist_id, message, text) = if name_ref.text() == "is_some" {
                 ("replace_is_some_with_if_let_some", "Replace `is_some` with `let Some`", "Some")
             } else {
                 ("replace_is_ok_with_if_let_ok", "Replace `is_ok` with `let Ok`", "Ok")
             };
-
             acc.add(
                 AssistId::refactor_rewrite(assist_id),
                 message,
                 call_expr.syntax().text_range(),
                 |edit| {
-                    let make = SyntaxFactory::with_mappings();
-                    let mut editor = edit.make_editor(call_expr.syntax());
-
-                    let var_pat = make.ident_pat(false, false, make.name(&var_name));
-                    let pat = make.tuple_struct_pat(make.ident_path(text), [var_pat.into()]);
-                    let let_expr = make.expr_let(pat.into(), receiver);
-
-                    if let Some(cap) = ctx.config.snippet_cap
+                let make = SyntaxFactory::with_mappings();
+                let mut editor = edit.make_editor(call_expr.syntax());
+                let var_pat = make.ident_pat(false, false, make.name(&var_name));
+                let pat = make.tuple_struct_pat(make.ident_path(text), [var_pat.into()]);
+                let let_expr = make.expr_let(pat.into(), receiver);
+                if let Some(cap) = ctx.config.snippet_cap
                         && let Some(ast::Pat::TupleStructPat(pat)) = let_expr.pat()
                         && let Some(first_var) = pat.fields().next()
                     {
                         let placeholder = edit.make_placeholder_snippet(cap);
                         editor.add_annotation(first_var.syntax(), placeholder);
                     }
-
-                    editor.replace(call_expr.syntax(), let_expr.syntax());
-                    editor.add_mappings(make.finish_with_mappings());
-                    edit.add_file_edits(ctx.vfs_file_id(), editor);
-                },
+                editor.replace(call_expr.syntax(), let_expr.syntax());
+                editor.add_mappings(make.finish_with_mappings());
+                edit.add_file_edits(ctx.vfs_file_id(), editor);
+            },
             )
-        }
+        },
         _ => None,
     }
 }

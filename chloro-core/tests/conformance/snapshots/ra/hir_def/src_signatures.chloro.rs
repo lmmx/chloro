@@ -645,17 +645,15 @@ impl FunctionSignature {
 
     pub fn is_intrinsic(db: &dyn DefDatabase, id: FunctionId) -> bool {
         let data = db.function_signature(id);
-        data.flags.contains(FnFlags::RUSTC_INTRINSIC)
-            // Keep this around for a bit until extern "rustc-intrinsic" abis are no longer used
-            || match &data.abi {
-                Some(abi) => *abi == sym::rust_dash_intrinsic,
-                None => match id.lookup(db).container {
-                    ItemContainerId::ExternBlockId(block) => {
-                        block.abi(db) == Some(sym::rust_dash_intrinsic)
-                    }
-                    _ => false,
+        data.flags.contains(FnFlags::RUSTC_INTRINSIC) || match &data.abi {
+            Some(abi) => *abi == sym::rust_dash_intrinsic,
+            None => match id.lookup(db).container {
+                ItemContainerId::ExternBlockId(block) => {
+                    block.abi(db) == Some(sym::rust_dash_intrinsic)
                 },
-            }
+                _ => false,
+            },
+        }
     }
 }
 
@@ -806,7 +804,7 @@ impl VariantFields {
             None => {
                 let (store, source_map) = ExpressionStore::empty_singleton();
                 (Arc::new(VariantFields { fields: Arena::default(), store, shape }), source_map)
-            }
+            },
         }
     }
 
@@ -826,7 +824,11 @@ impl VariantFields {
     }
 
     pub fn field(&self, name: &Name) -> Option<LocalFieldId> {
-        self.fields().iter().find_map(|(id, data)| if &data.name == name { Some(id) } else { None })
+        self.fields().iter().find_map(|(id, data)| if &data.name == name {
+            Some(id)
+        } else {
+            None
+        })
     }
 }
 
@@ -978,24 +980,27 @@ impl EnumVariants {
 
 impl EnumVariants {
     pub fn variant(&self, name: &Name) -> Option<EnumVariantId> {
-        self.variants.iter().find_map(|(v, n, _)| if n == name { Some(*v) } else { None })
+        self.variants.iter().find_map(|(v, n, _)| if n == name {
+            Some(*v)
+        } else {
+            None
+        })
     }
 
     pub fn variant_name_by_id(&self, variant_id: EnumVariantId) -> Option<Name> {
-        self.variants
-            .iter()
-            .find_map(|(id, name, _)| if *id == variant_id { Some(name.clone()) } else { None })
+        self.variants.iter().find_map(|(id, name, _)| if *id == variant_id {
+            Some(name.clone())
+        } else {
+            None
+        })
     }
 
     pub fn is_payload_free(&self, db: &dyn DefDatabase) -> bool {
         self.variants.iter().all(|&(v, _, _)| {
-            // The condition check order is slightly modified from rustc
-            // to improve performance by early returning with relatively fast checks
             let variant = v.fields(db);
             if !variant.fields().is_empty() {
                 return false;
             }
-            // The outer if condition is whether this variant has const ctor or not
             if !matches!(variant.shape, FieldsShape::Unit) {
                 let body = db.body(v.into());
                 // A variant with explicit discriminant
@@ -1016,7 +1021,6 @@ pub(crate) fn extern_block_abi(
     source.value.abi().map(|abi| {
         match abi.abi_string() {
             Some(tok) => Symbol::intern(tok.text_without_quotes()),
-            // `extern` default to be `extern "C"`.
             _ => sym::C,
         }
     })

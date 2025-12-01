@@ -96,13 +96,13 @@ fn generic_arg_list(expr: &Expr) -> Option<GenericArgList> {
                 cov_mark::hit!(not_applicable_if_non_path_function_call);
                 None
             }
-        }
+        },
         Expr::AwaitExpr(expr) => generic_arg_list(&expr.expr()?),
         Expr::TryExpr(expr) => generic_arg_list(&expr.expr()?),
         _ => {
             cov_mark::hit!(not_applicable_if_non_function_call_initializer);
             None
-        }
+        },
     }
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 57017 bytes
-Chloro size:   56998 bytes
+Chloro size:   57046 bytes
 Rustfmt size:  57422 bytes
 
 ✗ Outputs DIFFER
@@ -27,7 +27,19 @@ Rustfmt size:  57422 bytes
  fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
      match e {
          ConstEvalError::MirEvalError(MirEvalError::InFunction(e, _)) => {
-     crate::attach_db(&db, || match eval_goal(&db, file_id) {
+             simplify(ConstEvalError::MirEvalError(*e))
+-        }
++        },
+         _ => e,
+     }
+ }
+     error: impl FnOnce(ConstEvalError<'_>) -> bool,
+ ) {
+     let (db, file_id) = TestDB::with_single_file(ra_fixture);
+-    crate::attach_db(&db, || match eval_goal(&db, file_id) {
++    crate::attach_db(
++        &db,
++        || match eval_goal(&db, file_id) {
          Ok(_) => panic!("Expected fail, but it succeeded"),
          Err(e) => {
 -            assert!(
@@ -35,10 +47,15 @@ Rustfmt size:  57422 bytes
 -                "Actual error was: {}",
 -                pretty_print_err(e, &db)
 -            )
+-        }
+-    })
 +            assert!(error(simplify(e.clone())), "Actual error was: {}", pretty_print_err(e, &db))
-         }
-     })
++        },
++    },
++    )
  }
+ 
+ #[track_caller]
          .declarations()
          .find_map(|x| match x {
              hir_def::ModuleDefId::ConstId(x) => {
@@ -121,6 +138,21 @@ Rustfmt size:  57422 bytes
  #[should_panic]
  fn from_ne_bytes() {
      check_number(
+         const GOAL: E = E::A;
+         "#,
+     );
+-    crate::attach_db(&db, || {
++    crate::attach_db(
++        &db,
++        || {
+         let r = eval_goal(&db, file_id).unwrap();
+         assert_eq!(try_const_usize(&db, r), Some(1));
+-    })
++    },
++    )
+ }
+ 
+ #[test]
  }
  
  #[test]

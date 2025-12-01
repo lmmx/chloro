@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98211 bytes
+Chloro size:   97824 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -49,13 +49,42 @@ Rustfmt size:  98473 bytes
          }
      }
  
-                 .unwrap_or(false)
+     fn is_immediately_after_macro_bang(&self) -> bool {
+-        self.completion.token.kind() == SyntaxKind::BANG
+-            && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
++        self.completion.token.kind() == SyntaxKind::BANG && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
+     }
+ 
+     fn is_deprecated(&self, def: impl HasAttrs) -> bool {
+             hir::AssocItem::Const(it) => self.is_deprecated(it),
+             hir::AssocItem::TypeAlias(it) => self.is_deprecated(it),
+         };
+-        is_assoc_deprecated
+-            || assoc
+-                .container_or_implemented_trait(db)
+-                .map(|trait_| self.is_deprecated(trait_))
+-                .unwrap_or(false)
++        is_assoc_deprecated || assoc.container_or_implemented_trait(db).map(|trait_| self.is_deprecated(trait_)).unwrap_or(
++            false,
++        )
      }
  
 -    // FIXME: remove this
      fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
          def.docs(self.db())
      }
+ }
+ 
+ fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
+-    receiver
+-        .map_or_else(|| field_name.into(), |receiver| format_smolstr!("{}.{field_name}", receiver))
++    receiver.map_or_else(
++        || field_name.into(),
++        |receiver| format_smolstr!("{}.{field_name}", receiver),
++    )
+ }
+ 
+ pub(crate) fn render_tuple_field(
      // <https://github.com/rust-lang/rust-analyzer/issues/14079>
  
      // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
@@ -63,6 +92,14 @@ Rustfmt size:  98473 bytes
      // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
      if import_edit.item_to_import == import_edit.original_item {
          import_edit.import_path.segments().last().cloned()
+         ScopeDef::Label(..) => CompletionItemKind::SymbolKind(SymbolKind::Label),
+         ScopeDef::AdtSelfType(..) | ScopeDef::ImplSelfType(..) => {
+             CompletionItemKind::SymbolKind(SymbolKind::SelfParam)
+-        }
++        },
+     }
+ }
+ 
      }
  }
  
@@ -77,6 +114,23 @@ Rustfmt size:  98473 bytes
      // nearly always this is not meaningful to the user.
      if expected_type.is_unit() {
          return None;
+     item: &mut Builder,
+ ) {
+     if let Some(original_path) = &path_ctx.original_path {
+-        // At least one char was typed by the user already, in that case look for the original path
+-        if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())
+-            && let Some(ref_mode) = compute_ref_match(completion, ty)
+-        {
++        if let Some(original_path) = completion.sema.original_ast_node(original_path.clone()) && let Some(ref_mode) = compute_ref_match(completion, ty) {
+             item.ref_match(ref_mode, original_path.syntax().text_range().start());
+         }
+     } else {
+-        // completion requested on an empty identifier, there is no path here yet.
+-        // FIXME: This might create inconsistent completions where we show a ref match in macro inputs
+-        // as long as nothing was typed yet
+         if let Some(ref_mode) = compute_ref_match(completion, ty) {
+             item.ref_match(ref_mode, completion.position.offset);
+         }
  #[cfg(test)]
  mod tests {
      use std::cmp;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   31937 bytes
+Chloro size:   31574 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -47,6 +47,14 @@ Rustfmt size:  33429 bytes
      /// Retrieves the span to be used for a proc-macro expansions spans.
      /// This is a firewall query as it requires parsing the file, which we don't want proc-macros to
      /// directly depend on as that would cause to frequent invalidations, mainly because of the
+         HirFileId::MacroFile(m) => {
+             let kind = db.lookup_intern_macro_call(m).kind;
+             db.macro_arg_considering_derives(m, &kind).2.ctx
+-        }
++        },
+     }
+ }
+ 
              ),
              SyntaxFixupUndoInfo::NONE,
          ),
@@ -157,6 +165,11 @@ Rustfmt size:  33429 bytes
          .map(|(t, ctx)| {
              // prefer tokens of the same kind and text, as well as non opaque marked ones
              // Note the inversion of the score here, as we want to prefer the first token in case
+         HirFileId::FileId(file_id) => db.parse(file_id).syntax_node(),
+         HirFileId::MacroFile(macro_file) => {
+             db.parse_macro_expansion(macro_file).value.0.syntax_node()
+-        }
++        },
      }
  }
  
@@ -193,17 +206,11 @@ Rustfmt size:  33429 bytes
 -    let e: ExpandResult<Arc<[SyntaxError]>> = db
 -        .parse_macro_expansion(macro_call_id)
 -        .map(|it| Arc::from(it.0.errors()));
--    if e.value.is_empty() && e.err.is_none() {
--        None
--    } else {
--        Some(Arc::new(e))
--    }
 +    let e: ExpandResult<Arc<[SyntaxError]>> =
 +        db.parse_macro_expansion(macro_call_id).map(|it| Arc::from(it.0.errors()));
-+    if e.value.is_empty() && e.err.is_none() { None } else { Some(Arc::new(e)) }
- }
- 
- pub(crate) fn parse_with_map(
+     if e.value.is_empty() && e.err.is_none() {
+         None
+     } else {
      file_id: HirFileId,
  ) -> (Parse<SyntaxNode>, SpanMap) {
      match file_id {
@@ -213,10 +220,15 @@ Rustfmt size:  33429 bytes
 -        ),
 +        HirFileId::FileId(file_id) => {
 +            (db.parse(file_id).to_syntax(), SpanMap::RealSpanMap(db.real_span_map(file_id)))
-+        }
++        },
          HirFileId::MacroFile(macro_file) => {
              let (parse, map) = db.parse_macro_expansion(macro_file).value;
              (parse, SpanMap::ExpansionSpanMap(map))
+-        }
++        },
+     }
+ }
+ 
  /// Other wise return the [macro_arg] for the macro_call_id.
  ///
  /// This is not connected to the database so it does not cached the result. However, the inner [macro_arg] query is
@@ -225,16 +237,18 @@ Rustfmt size:  33429 bytes
  fn macro_arg_considering_derives(
      db: &dyn ExpandDatabase,
      id: MacroCallId,
+     kind: &MacroCallKind,
  ) -> MacroArgResult {
      match kind {
-         // Get the macro arg for the derive macro
+-        // Get the macro arg for the derive macro
 -        MacroCallKind::Derive {
 -            derive_macro_id, ..
 -        } => db.macro_arg(*derive_macro_id),
+-        // Normal macro arg
 +        MacroCallKind::Derive { derive_macro_id, .. } => db.macro_arg(*derive_macro_id),
-         // Normal macro arg
          _ => db.macro_arg(id),
      }
+ }
      let loc = db.lookup_intern_macro_call(id);
  
      if let MacroCallLoc {
@@ -324,6 +338,29 @@ Rustfmt size:  33429 bytes
  /// Derives expect all `#[derive(..)]` invocations up to (and including) the currently invoked one to be stripped
  fn censor_derive_input(derive_attr_index: AttrId, node: &ast::Adt) -> FxHashSet<SyntaxElement> {
      // FIXME: handle `cfg_attr`
+     cov_mark::hit!(derive_censoring);
+-    collect_attrs(node)
+-        .take(derive_attr_index.ast_index() + 1)
+-        .filter_map(|(_, attr)| Either::left(attr))
+-        // FIXME, this resolution should not be done syntactically
+-        // derive is a proper macro now, no longer builtin
+-        // But we do not have resolution at this stage, this means
+-        // we need to know about all macro calls for the given ast item here
+-        // so we require some kind of mapping...
+-        .filter(|attr| attr.simple_name().as_deref() == Some("derive"))
+-        .map(|it| it.syntax().clone().into())
+-        .collect()
++    collect_attrs(node).take(derive_attr_index.ast_index() + 1).filter_map(
++        |(_, attr)| Either::left(attr),
++    ).filter(
++        |attr| attr.simple_name().as_deref() == Some("derive"),
++    ).map(
++        |it| it.syntax().clone().into(),
++    ).collect(
++    )
+ }
+ 
+ /// Attributes expect the invoking attribute to be stripped
  fn attr_source(invoc_attr_index: AttrId, node: &ast::Item) -> Option<ast::Attr> {
      // FIXME: handle `cfg_attr`
      cov_mark::hit!(attribute_macro_attr_censoring);
@@ -334,6 +371,14 @@ Rustfmt size:  33429 bytes
  }
  
  impl TokenExpander {
+         match id.kind {
+             MacroDefKind::Declarative(ast_id) => {
+                 TokenExpander::DeclarativeMacro(db.decl_macro_expander(id.krate, ast_id))
+-            }
++            },
+             MacroDefKind::BuiltIn(_, expander) => TokenExpander::BuiltIn(expander),
+             MacroDefKind::BuiltInAttr(_, expander) => TokenExpander::BuiltInAttr(expander),
+             MacroDefKind::BuiltInDerive(_, expander) => TokenExpander::BuiltInDerive(expander),
  ) -> ExpandResult<(CowArc<tt::TopSubtree>, MatchedArmIndex)> {
      let _p = tracing::info_span!("macro_expand").entered();
  

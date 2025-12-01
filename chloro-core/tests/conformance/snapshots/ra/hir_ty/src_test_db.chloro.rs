@@ -163,17 +163,15 @@ impl TestDB {
                 files.extend(file_id)
             }
         }
-        files
-            .into_iter()
-            .filter_map(|file_id| {
-                let text = self.file_text(file_id.file_id(self));
-                let annotations = extract_annotations(text.text(self));
-                if annotations.is_empty() {
+        files.into_iter().filter_map(|file_id| {
+            let text = self.file_text(file_id.file_id(self));
+            let annotations = extract_annotations(text.text(self));
+            if annotations.is_empty() {
                     return None;
                 }
-                Some((file_id, annotations))
-            })
-            .collect()
+            Some((file_id, annotations))
+        }).collect(
+        )
     }
 }
 

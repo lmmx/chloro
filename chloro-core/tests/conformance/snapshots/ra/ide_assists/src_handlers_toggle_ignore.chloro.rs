@@ -22,16 +22,16 @@ pub(crate) fn toggle_ignore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
             "Re-enable this test",
             ignore_attr.syntax().text_range(),
             |builder| {
-                builder.delete(ignore_attr.syntax().text_range());
-                let whitespace = ignore_attr
+            builder.delete(ignore_attr.syntax().text_range());
+            let whitespace = ignore_attr
                     .syntax()
                     .next_sibling_or_token()
                     .and_then(|x| x.into_token())
                     .and_then(ast::Whitespace::cast);
-                if let Some(whitespace) = whitespace {
-                    builder.delete(whitespace.syntax().text_range());
-                }
-            },
+            if let Some(whitespace) = whitespace {
+                builder.delete(whitespace.syntax().text_range());
+            }
+        },
         ),
     }
 }

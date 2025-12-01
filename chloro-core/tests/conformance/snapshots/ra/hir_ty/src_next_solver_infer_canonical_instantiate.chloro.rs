@@ -94,7 +94,6 @@ where
                 c => panic!("{bound_ct:?} is a const but value is {c:?}"),
             },
         };
-
         let value = tcx.replace_escaping_bound_vars_uncached(value, delegate);
         value.fold_with(&mut CanonicalInstantiator {
             tcx,
@@ -123,7 +122,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         match t.kind() {
             TyKind::Bound(BoundVarIndexKind::Canonical, bound_ty) => {
                 self.var_values[bound_ty.var.as_usize()].expect_ty()
-            }
+            },
             _ => {
                 if !t.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
                     t
@@ -134,7 +133,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
                     assert!(self.cache.insert(t, res).is_none());
                     res
                 }
-            }
+            },
         }
     }
 
@@ -142,7 +141,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         match r.kind() {
             RegionKind::ReBound(BoundVarIndexKind::Canonical, br) => {
                 self.var_values[br.var.as_usize()].expect_region()
-            }
+            },
             _ => r,
         }
     }
@@ -151,13 +150,17 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         match ct.kind() {
             ConstKind::Bound(BoundVarIndexKind::Canonical, bound_const) => {
                 self.var_values[bound_const.var.as_usize()].expect_const()
-            }
+            },
             _ => ct.super_fold_with(self),
         }
     }
 
     fn fold_predicate(&mut self, p: Predicate<'db>) -> Predicate<'db> {
-        if p.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) { p.super_fold_with(self) } else { p }
+        if p.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
+            p.super_fold_with(self)
+        } else {
+            p
+        }
     }
 
     fn fold_clauses(&mut self, c: Clauses<'db>) -> Clauses<'db> {

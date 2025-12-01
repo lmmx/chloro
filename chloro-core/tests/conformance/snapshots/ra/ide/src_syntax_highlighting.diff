@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24849 bytes
-Chloro size:   18548 bytes
+Chloro size:   18158 bytes
 Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
@@ -214,6 +214,20 @@ Rustfmt size:  25118 bytes
      // If in macro, expand it first and highlight the expanded code.
      let mut preorder = root.preorder_with_tokens();
      while let Some(event) = preorder.next() {
+         use WalkEvent::{Enter, Leave};
+-
+         let range = match &event {
+             Enter(it) | Leave(it) => it.text_range(),
+         };
+-
+-        // Element outside of the viewport, no need to highlight
+         if range_to_highlight.intersect(range).is_none() {
+             continue;
+         }
+-
+         match event.clone() {
+             Enter(NodeOrToken::Node(node)) if ast::TokenTree::can_cast(node.kind()) => {
+                 tt_level += 1;
              {
                  match ast::Item::cast(node.clone()) {
                      Some(item) => {
@@ -225,6 +239,36 @@ Rustfmt size:  25118 bytes
                              attr_or_derive_item = None;
                          }
                          if matches!(
+             }
+             _ => (),
+         }
+-
+         let element = match event {
+             Enter(NodeOrToken::Token(tok)) if tok.kind() == WHITESPACE => continue,
+             Enter(it) => it,
+                 continue;
+             }
+         };
+-
+         let element = match element.clone() {
+             NodeOrToken::Node(n) => match ast::NameLike::cast(n) {
+                 Some(n) => NodeOrToken::Node(n),
+             NodeOrToken::Token(t) => NodeOrToken::Token(t),
+         };
+         let original_token = element.as_token().cloned();
+-
+-        // Descending tokens into macros is expensive even if no descending occurs, so make sure
+-        // that we actually are in a position where descending is possible.
+         let in_macro = tt_level > 0
+             || match attr_or_derive_item {
+                 Some(AttrOrDerive::Attr(_)) => true,
+                 Some(AttrOrDerive::Derive(_)) => inside_attribute,
+                 None => false,
+             };
+-
+         let (descended_element, current_body) = match element {
+             // Attempt to descend tokens into macro-calls.
+             NodeOrToken::Token(token) if in_macro => {
                      NodeOrToken::Node(n) => {
                          sema.body_for(InFile::new(descended.file_id, n.syntax()))
                      }
@@ -243,11 +287,33 @@ Rustfmt size:  25118 bytes
 -            ),
 +            n => (InFile::new(file_id.into(), n), body_stack.last().copied().flatten()),
          };
-         // string highlight injections
+-        // string highlight injections
          if let (Some(original_token), Some(descended_token)) =
+             (original_token, descended_element.value.as_token())
+         {
+                 continue;
+             }
+         }
+-
+         let edition = descended_element.file_id.edition(sema.db);
+         let (unsafe_ops, bindings_shadow_count) = match current_body {
+             Some(current_body) => {
+                 // let the editor do its highlighting for these tokens instead
+                 continue;
+             }
+-
+-            // apply config filtering
+             if !filter_by_config(&mut highlight, config) {
+                 continue;
+             }
+-
+             if inside_attribute {
+                 highlight |= HlMod::Attribute
+             }
+                 }
                  highlight |= HlMod::Macro
              }
- 
+-
 -            hl.add(HlRange {
 -                range,
 -                highlight,
@@ -257,3 +323,10 @@ Rustfmt size:  25118 bytes
          }
      }
  }
+ 
+     let token = t.unwrap_or_else(|| token.into());
+     token.map(|token| match token.parent().and_then(ast::NameLike::cast) {
+-        // Remap the token into the wrapping single token nodes
+         Some(parent) => match (token.kind(), parent.syntax().kind()) {
+             (T![ident] | T![self], NAME)
+             | (T![ident] | T![self] | T![super] | T![crate] | T![Self], NAME_REF)

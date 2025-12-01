@@ -61,10 +61,13 @@ pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
         SyntaxElement::Token(t) => t.parent()?,
     };
 
-    acc.add(AssistId::refactor_rewrite("merge_imports"), "Merge imports", target, |builder| {
+    acc.add(
+        AssistId::refactor_rewrite("merge_imports"),
+        "Merge imports",
+        target,
+        |builder| {
         let make = SyntaxFactory::with_mappings();
         let mut editor = builder.make_editor(&parent_node);
-
         for edit in edits {
             match edit {
                 Remove(it) => {
@@ -82,7 +85,8 @@ pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
         }
         editor.add_mappings(make.finish_with_mappings());
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 trait Merge {

@@ -54,23 +54,22 @@ pub fn get_missing_assoc_items(
         }
     }
 
-    resolve_target_trait(sema, impl_def).map_or(vec![], |target_trait| {
-        target_trait
-            .items(sema.db)
-            .into_iter()
-            .filter(|i| match i {
-                hir::AssocItem::Function(f) => !impl_fns_consts
-                    .contains(&f.name(sema.db).display(sema.db, edition).to_string()),
-                hir::AssocItem::TypeAlias(t) => {
-                    !impl_type.contains(&t.name(sema.db).display(sema.db, edition).to_string())
-                }
-                hir::AssocItem::Const(c) => c
-                    .name(sema.db)
-                    .map(|n| !impl_fns_consts.contains(&n.display(sema.db, edition).to_string()))
-                    .unwrap_or_default(),
-            })
-            .collect()
-    })
+    resolve_target_trait(sema, impl_def).map_or(
+        vec![],
+        |target_trait| {
+        target_trait.items(sema.db).into_iter().filter(|i| match i {
+            hir::AssocItem::Function(f) => !impl_fns_consts.contains(&f.name(sema.db).display(sema.db, edition).to_string()),
+            hir::AssocItem::TypeAlias(t) => {
+                !impl_type.contains(&t.name(sema.db).display(sema.db, edition).to_string())
+            },
+            hir::AssocItem::Const(c) => c.name(sema.db).map(
+                |n| !impl_fns_consts.contains(&n.display(sema.db, edition).to_string()),
+            ).unwrap_or_default(
+            ),
+        }).collect(
+        )
+    },
+    )
 }
 
 /// Converts associated trait impl items to their trait definition counterpart
@@ -79,8 +78,10 @@ pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> 
         let assoc = def.as_assoc_item(db)?;
         let trait_ = assoc.implemented_trait(db)?;
         assoc_item_of_trait(db, assoc, trait_)
-    })()
-    .unwrap_or(def)
+    })(
+    ).unwrap_or(
+        def,
+    )
 }
 
 /// If this is an trait (impl) assoc item, returns the assoc item of the corresponding trait definition.

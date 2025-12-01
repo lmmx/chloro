@@ -271,9 +271,7 @@ impl<'db> ImportAssets<'db> {
 
     /// Requires imports to by prefix instead of fuzzily.
     pub fn path_fuzzy_name_to_prefix(&mut self) {
-        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) =
-            &mut self.import_candidate
-        {
+        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) = &mut self.import_candidate {
             let (name, case_sensitive) = match to_import {
                 NameToImport::Fuzzy(name, case_sensitive) => {
                     (std::mem::take(name), *case_sensitive)
@@ -286,9 +284,7 @@ impl<'db> ImportAssets<'db> {
 
     /// Requires imports to match exactly instead of fuzzily.
     pub fn path_fuzzy_name_to_exact(&mut self) {
-        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) =
-            &mut self.import_candidate
-        {
+        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) = &mut self.import_candidate {
             let (name, case_sensitive) = match to_import {
                 NameToImport::Fuzzy(name, case_sensitive) => {
                     (std::mem::take(name), *case_sensitive)
@@ -349,12 +345,11 @@ impl<'db> ImportAssets<'db> {
                 matches!(self.import_candidate, ImportCandidate::TraitAssocItem(_)),
                 mod_path,
                 |trait_to_import| {
-                    !scope_definitions
-                        .contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
-                },
+                !scope_definitions.contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
+            },
             ),
-        }
-        .into_iter()
+        }.into_iter(
+        )
     }
 
     fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {
@@ -385,17 +380,8 @@ fn path_applicable_imports(
                 db,
                 current_crate,
                 path_candidate.name.clone(),
-                // FIXME: we could look up assoc items by the input and propose those in completion,
-                // but that requires more preparation first:
-                // * store non-trait assoc items in import_map to fully enable this lookup
-                // * ensure that does not degrade the performance (benchmark it)
-                // * write more logic to check for corresponding trait presence requirement (we're unable to flyimport multiple item right now)
-                // * improve the associated completion item matching and/or scoring to ensure no noisy completions appear
-                //
-                // see also an ignored test under FIXME comment in the qualify_path.rs module
                 AssocSearchMode::Exclude,
-            )
-            .filter_map(|(item, do_not_complete)| {
+            ).filter_map(|(item, do_not_complete)| {
                 if !scope_filter(item) {
                     return None;
                 }
@@ -406,23 +392,17 @@ fn path_applicable_imports(
                     item,
                     CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport),
                 ))
-            })
-            .take(DEFAULT_QUERY_SEARCH_LIMIT)
-            .collect()
-        }
-        // we have some unresolved qualifier that we search an import for
-        // The key here is that whatever we import must form a resolved path for the remainder of
-        // what follows
-        // FIXME: This doesn't handle visibility
+            }).take(
+                DEFAULT_QUERY_SEARCH_LIMIT,
+            ).collect(
+            )
+        },
         [first_qsegment, qualifier_rest @ ..] => items_locator::items_with_name(
             db,
             current_crate,
             NameToImport::Exact(first_qsegment.as_str().to_owned(), true),
             AssocSearchMode::Exclude,
-        )
-        .flat_map(|(item, do_not_complete)| {
-            // we found imports for `first_qsegment`, now we need to filter these imports by whether
-            // they result in resolving the rest of the path successfully
+        ).flat_map(|(item, do_not_complete)| {
             validate_resolvable(
                 db,
                 scope,
@@ -433,9 +413,10 @@ fn path_applicable_imports(
                 qualifier_rest,
                 CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport),
             )
-        })
-        .take(DEFAULT_QUERY_SEARCH_LIMIT)
-        .collect(),
+        }).take(
+            DEFAULT_QUERY_SEARCH_LIMIT,
+        ).collect(
+        ),
     }
 }
 
@@ -559,7 +540,7 @@ fn item_for_path_search_assoc(db: &RootDatabase, assoc_item: AssocItem) -> Optio
         AssocItemContainer::Trait(trait_) => ItemInNs::from(ModuleDef::from(trait_)),
         AssocItemContainer::Impl(impl_) => {
             ItemInNs::from(ModuleDef::from(impl_.self_ty(db).as_adt()?))
-        }
+        },
     })
 }
 
@@ -750,9 +731,7 @@ impl<'db> ImportCandidate<'db> {
             Some(_) => None,
             None => Some(Self::TraitMethod(TraitImportCandidate {
                 receiver_ty: sema.type_of_expr(&method_call.receiver()?)?.adjusted(),
-                assoc_item_name: NameToImport::exact_case_sensitive(
-                    method_call.name_ref()?.to_string(),
-                ),
+                assoc_item_name: NameToImport::exact_case_sensitive(method_call.name_ref()?.to_string()),
             })),
         }
     }
@@ -808,13 +787,13 @@ fn path_import_candidate<'db>(
                 } else {
                     return None;
                 }
-            }
+            },
             Some(PathResolution::Def(ModuleDef::Adt(assoc_item_path))) => {
                 ImportCandidate::TraitAssocItem(TraitImportCandidate {
                     receiver_ty: assoc_item_path.ty(sema.db),
                     assoc_item_name: name,
                 })
-            }
+            },
             Some(PathResolution::Def(ModuleDef::TypeAlias(alias))) => {
                 let ty = alias.ty(sema.db);
                 if ty.as_adt().is_some() {
@@ -825,7 +804,7 @@ fn path_import_candidate<'db>(
                 } else {
                     return None;
                 }
-            }
+            },
             Some(_) => return None,
         },
         None => ImportCandidate::Path(PathImportCandidate { qualifier: vec![], name }),

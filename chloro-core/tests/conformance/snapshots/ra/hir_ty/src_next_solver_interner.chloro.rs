@@ -273,7 +273,9 @@ unsafe impl Sync for DbInterner<'_> {
 impl<'db> DbInterner<'db> {
     pub fn conjure() -> DbInterner<'db> {
         crate::with_attached_db(|db| DbInterner {
-            db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
+            db: unsafe {
+                std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db)
+            },
             krate: None,
             block: None,
         })
@@ -566,8 +568,9 @@ impl AdtDef {
     pub fn inner(&self) -> &AdtDefInner {
         crate::with_attached_db(|db| {
             let inner = self.data_(db);
-            // SAFETY: ¯\_(ツ)_/¯
-            unsafe { std::mem::transmute(inner) }
+            unsafe {
+                std::mem::transmute(inner)
+            }
         })
     }
 
@@ -648,9 +651,7 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
     ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
         if self.is_struct() {
             let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
-
             let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
-
             Some(EarlyBinder::bind(constraint_ty))
         } else {
             None
@@ -676,15 +677,15 @@ impl fmt::Debug for AdtDef {
             AdtId::StructId(struct_id) => {
                 let data = db.struct_signature(struct_id);
                 f.write_str(data.name.as_str())
-            }
+            },
             AdtId::UnionId(union_id) => {
                 let data = db.union_signature(union_id);
                 f.write_str(data.name.as_str())
-            }
+            },
             AdtId::EnumId(enum_id) => {
                 let data = db.enum_signature(enum_id);
                 f.write_str(data.name.as_str())
-            }
+            },
         })
     }
 }
@@ -743,9 +744,9 @@ impl<'db> Pattern<'db> {
     pub fn inner(&self) -> &PatternKind<'db> {
         crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
-            // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
-            // make sure that our returned value is valid for the lifetime `'db`.
-            unsafe { std::mem::transmute(inner) }
+            unsafe {
+                std::mem::transmute(inner)
+            }
         })
     }
 }
@@ -754,16 +755,15 @@ impl<'db> Flags for Pattern<'db> {
     fn flags(&self) -> rustc_type_ir::TypeFlags {
         match self.inner() {
             PatternKind::Range { start, end } => {
-                FlagComputation::for_const_kind(&start.kind()).flags
-                    | FlagComputation::for_const_kind(&end.kind()).flags
-            }
+                FlagComputation::for_const_kind(&start.kind()).flags | FlagComputation::for_const_kind(&end.kind()).flags
+            },
             PatternKind::Or(pats) => {
                 let mut flags = pats.as_slice()[0].flags();
                 for pat in pats.as_slice()[1..].iter() {
                     flags |= pat.flags();
                 }
                 flags
-            }
+            },
         }
     }
 
@@ -771,14 +771,14 @@ impl<'db> Flags for Pattern<'db> {
         match self.inner() {
             PatternKind::Range { start, end } => {
                 start.outer_exclusive_binder().max(end.outer_exclusive_binder())
-            }
+            },
             PatternKind::Or(pats) => {
                 let mut idx = pats.as_slice()[0].outer_exclusive_binder();
                 for pat in pats.as_slice()[1..].iter() {
                     idx = idx.max(pat.outer_exclusive_binder());
                 }
                 idx
-            }
+            },
         }
     }
 }
@@ -806,7 +806,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for Pattern<'db> {
                 let start = relation.relate(start_a, start_b)?;
                 let end = relation.relate(end_a, end_b)?;
                 Ok(Pattern::new(tcx, PatternKind::Range { start, end }))
-            }
+            },
             (PatternKind::Or(a), PatternKind::Or(b)) => {
                 if a.len() != b.len() {
                     return Err(TypeError::Mismatch);
@@ -816,7 +816,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for Pattern<'db> {
                     |g| PatList::new_from_iter(tcx, g.iter().cloned()),
                 )?;
                 Ok(Pattern::new(tcx, PatternKind::Or(pats)))
-            }
+            },
             (PatternKind::Range { .. } | PatternKind::Or(_), _) => Err(TypeError::Mismatch),
         }
     }
@@ -995,9 +995,12 @@ impl<'db> Interner for DbInterner<'db> {
         I: Iterator<Item = T>,
         T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
     {
-        CollectAndApply::collect_and_apply(args, |g| {
+        CollectAndApply::collect_and_apply(
+            args,
+            |g| {
             GenericArgs::new_from_iter(self, g.iter().cloned())
-        })
+        },
+        )
     }
 
     type UnsizingParams = UnsizingParams;
@@ -1086,12 +1089,8 @@ impl<'db> Interner for DbInterner<'db> {
                     _ => panic!("assoc ty value should be in impl"),
                 };
                 self.db().ty(id.into())
-            }
+            },
             SolverDefId::AdtId(id) => self.db().ty(id.into()),
-            // FIXME(next-solver): This uses the types of `query mir_borrowck` in rustc.
-            //
-            // We currently always use the type from HIR typeck which ignores regions. This
-            // should be fine.
             SolverDefId::InternedOpaqueTyId(_) => self.type_of_opaque_hir_typeck(def_id),
             SolverDefId::FunctionId(id) => self.db.value_ty(id.into()).unwrap(),
             SolverDefId::Ctor(id) => {
@@ -1100,7 +1099,7 @@ impl<'db> Interner for DbInterner<'db> {
                     Ctor::Enum(id) => id.into(),
                 };
                 self.db.value_ty(id).expect("`SolverDefId::Ctor` should have a function-like ctor")
-            }
+            },
             _ => panic!("Unexpected def_id `{def_id:?}` provided for `type_of`"),
         }
     }
@@ -1113,11 +1112,9 @@ impl<'db> Interner for DbInterner<'db> {
         match alias.def_id {
             SolverDefId::InternedOpaqueTyId(_) => AliasTyKind::Opaque,
             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
-                ItemContainerId::ImplId(impl_)
-                    if self.db.impl_signature(impl_).target_trait.is_none() =>
-                {
+                ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
                     AliasTyKind::Inherent
-                }
+                },
                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => AliasTyKind::Projection,
                 _ => AliasTyKind::Free,
             },
@@ -1132,18 +1129,14 @@ impl<'db> Interner for DbInterner<'db> {
         match alias.def_id {
             SolverDefId::InternedOpaqueTyId(_) => AliasTermKind::OpaqueTy,
             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
-                ItemContainerId::ImplId(impl_)
-                    if self.db.impl_signature(impl_).target_trait.is_none() =>
-                {
+                ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
                     AliasTermKind::InherentTy
-                }
+                },
                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => {
                     AliasTermKind::ProjectionTy
-                }
+                },
                 _ => AliasTermKind::FreeTy,
             },
-            // rustc creates an `AnonConst` for consts, and evaluates them with CTFE (normalizing projections
-            // via selection, similar to ours `find_matching_impl()`, and not with the trait solver), so mimic it.
             SolverDefId::ConstId(_) => AliasTermKind::UnevaluatedConst,
             _ => unimplemented!("Unexpected alias: {:?}", alias.def_id),
         }
@@ -1280,12 +1273,11 @@ impl<'db> Interner for DbInterner<'db> {
         let predicates = self.predicates_of(def_id);
         elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
             ClauseKind::Trait(ref trait_pred) => {
-                trait_pred.def_id() == sized_def_id
-                    && matches!(
+                trait_pred.def_id() == sized_def_id && matches!(
                         trait_pred.self_ty().kind(),
                         TyKind::Param(ParamTy { index: 0, .. })
                     )
-            }
+            },
             ClauseKind::RegionOutlives(_)
             | ClauseKind::TypeOutlives(_)
             | ClauseKind::Projection(_)
@@ -1330,10 +1322,9 @@ impl<'db> Interner for DbInterner<'db> {
         if all_bounds.len() == own_bounds.len() {
             EarlyBinder::bind(Clauses::new_from_iter(self, []))
         } else {
-            EarlyBinder::bind(Clauses::new_from_iter(
-                self,
-                all_bounds.difference(&own_bounds).cloned(),
-            ))
+            EarlyBinder::bind(
+                Clauses::new_from_iter(self, all_bounds.difference(&own_bounds).cloned()),
+            )
         }
     }
 
@@ -1432,11 +1423,11 @@ impl<'db> Interner for DbInterner<'db> {
             Clauses::new_from_iter(
                 self,
                 rustc_type_ir::elaborate::elaborate(self, [clause]).filter(|clause| {
-                    matches!(
+                matches!(
                         clause.kind().skip_binder(),
                         ClauseKind::TypeOutlives(_) | ClauseKind::RegionOutlives(_)
                     )
-                }),
+            }),
             )
         })
     }
@@ -1520,10 +1511,10 @@ impl<'db> Interner for DbInterner<'db> {
                 unimplemented!()
             }
         };
-        lang_item
-            .resolve_trait(self.db(), self.krate.expect("Must have self.krate"))
-            .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."))
-            .into()
+        lang_item.resolve_trait(self.db(), self.krate.expect("Must have self.krate")).unwrap_or_else(
+            || panic!("Lang item {lang_item:?} required but not found."),
+        ).into(
+        )
     }
 
     fn require_adt_lang_item(self, lang_item: SolverAdtLangItem) -> AdtIdWrapper {
@@ -1531,26 +1522,32 @@ impl<'db> Interner for DbInterner<'db> {
             SolverAdtLangItem::Option => LangItem::Option,
             SolverAdtLangItem::Poll => LangItem::Poll,
         };
-        lang_item
-            .resolve_adt(self.db(), self.krate.expect("Must have self.krate"))
-            .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."))
-            .into()
+        lang_item.resolve_adt(self.db(), self.krate.expect("Must have self.krate")).unwrap_or_else(
+            || panic!("Lang item {lang_item:?} required but not found."),
+        ).into(
+        )
     }
 
     fn is_lang_item(self, def_id: Self::DefId, lang_item: SolverLangItem) -> bool {
-        self.as_lang_item(def_id)
-            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
+        self.as_lang_item(def_id).map_or(
+            false,
+            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
+        )
     }
 
     fn is_trait_lang_item(self, def_id: Self::TraitId, lang_item: SolverTraitLangItem) -> bool {
-        self.as_trait_lang_item(def_id)
-            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
+        self.as_trait_lang_item(def_id).map_or(
+            false,
+            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
+        )
     }
 
     fn is_adt_lang_item(self, def_id: Self::AdtId, lang_item: SolverAdtLangItem) -> bool {
         // FIXME: derive PartialEq on SolverTraitLangItem
-        self.as_adt_lang_item(def_id)
-            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
+        self.as_adt_lang_item(def_id).map_or(
+            false,
+            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
+        )
     }
 
     fn as_lang_item(self, def_id: Self::DefId) -> Option<SolverLangItem> {
@@ -1991,12 +1988,12 @@ impl<'db> Interner for DbInterner<'db> {
                 match impl_trait_id {
                     crate::ImplTraitId::ReturnTypeImplTrait(func, idx) => {
                         crate::opaques::rpit_hidden_types(self.db, func)[idx]
-                    }
+                    },
                     crate::ImplTraitId::TypeAliasImplTrait(type_alias, idx) => {
                         crate::opaques::tait_hidden_types(self.db, type_alias)[idx]
-                    }
+                    },
                 }
-            }
+            },
             _ => panic!("Unexpected SolverDefId in type_of_opaque_hir_typeck"),
         }
     }
@@ -2081,22 +2078,28 @@ impl<'db> DbInterner<'db> {
             value,
             FnMutDelegate {
             regions: &mut |r: BoundRegion| {
-                    Region::new_bound(
-                        self,
-                        DebruijnIndex::ZERO,
-                        BoundRegion { var: shift_bv(r.var), kind: r.kind },
-                    )
+                Region::new_bound(
+                    self,
+                    DebruijnIndex::ZERO,
+                    BoundRegion {
+                    var: shift_bv(r.var),
+                    kind: r.kind,
                 },
+                )
+            },
             types: &mut |t: BoundTy| {
-                    Ty::new_bound(
-                        self,
-                        DebruijnIndex::ZERO,
-                        BoundTy { var: shift_bv(t.var), kind: t.kind },
-                    )
+                Ty::new_bound(
+                    self,
+                    DebruijnIndex::ZERO,
+                    BoundTy {
+                    var: shift_bv(t.var),
+                    kind: t.kind,
                 },
+                )
+            },
             consts: &mut |c| {
-                    Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
-                },
+                Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
+            },
         },
         )
     }
@@ -2282,7 +2285,9 @@ mod tls_db {
             let db = self.database.get().expect("Try to use attached db, but not db is attached");
 
             // SAFETY: The db is attached, so it must be valid.
-            op(unsafe { db.as_ref() })
+            op(unsafe {
+                db.as_ref()
+            })
         }
     }
     thread_local! {
@@ -2298,10 +2303,7 @@ mod tls_db {
     }
     #[inline]
     pub fn with_attached_db<R>(op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
-        GLOBAL_DB.with(
-            #[inline]
-            |a| a.with(op),
-        )
+        GLOBAL_DB.with(#[inline] |a| a.with(op))
     }
 }
 
@@ -2335,13 +2337,13 @@ mod tls_cache {
                 }
                 None => handle.insert(Cache { cache: GlobalCache::default(), revision, db_nonce }),
             };
-
-            // SAFETY: No idea
             f(unsafe {
                 std::mem::transmute::<
                     &mut GlobalCache<DbInterner<'static>>,
                     &mut GlobalCache<DbInterner<'db>>,
-                >(&mut handle.cache)
+                >(
+                    &mut handle.cache,
+                )
             })
         })
     }

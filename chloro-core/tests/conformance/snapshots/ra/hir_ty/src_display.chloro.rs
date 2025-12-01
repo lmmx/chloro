@@ -134,7 +134,7 @@ impl<'db> BoundsFormattingCtx<'db> {
         match self {
             BoundsFormattingCtx::Entered { projection_tys_met } => {
                 projection_tys_met.contains(proj)
-            }
+            },
             BoundsFormattingCtx::Exited => false,
         }
     }
@@ -158,18 +158,15 @@ impl<'db> HirFormatter<'_, 'db> {
             BoundsFormattingCtx::Entered { ref mut projection_tys_met } => {
                 projection_tys_met.insert(target);
                 format_bounds(self)
-            }
+            },
             BoundsFormattingCtx::Exited => {
                 let mut projection_tys_met = FxHashSet::default();
                 projection_tys_met.insert(target);
                 self.bounds_formatting_ctx = BoundsFormattingCtx::Entered { projection_tys_met };
                 let res = format_bounds(self);
-                // Since we want to prevent only the infinite recursions in bounds formatting
-                // and do not want to skip formatting of other separate bounds, clear context
-                // when exiting the formatting of outermost bounds
                 self.bounds_formatting_ctx = BoundsFormattingCtx::Exited;
                 res
-            }
+            },
         }
     }
 
@@ -179,10 +176,10 @@ impl<'db> HirFormatter<'_, 'db> {
             DisplayLifetime::OnlyStatic => matches!(lifetime.kind(), RegionKind::ReStatic),
             DisplayLifetime::OnlyNamed => {
                 matches!(lifetime.kind(), RegionKind::ReEarlyParam(_))
-            }
+            },
             DisplayLifetime::OnlyNamedOrStatic => {
                 matches!(lifetime.kind(), RegionKind::ReStatic | RegionKind::ReEarlyParam(_))
-            }
+            },
             DisplayLifetime::Never => false,
         }
     }
@@ -585,11 +582,10 @@ where
             Ok(()) => Ok(()),
             Err(HirDisplayError::FmtError) => Err(fmt::Error),
             Err(HirDisplayError::DisplaySourceCodeError(_)) => {
-                // This should never happen
                 panic!(
                     "HirDisplay::hir_fmt failed with DisplaySourceCodeError when calling Display::fmt!"
                 )
-            }
+            },
         }
     }
 }
@@ -688,17 +684,17 @@ impl<'db> HirDisplay<'db> for Const<'db> {
             ConstKind::Placeholder(_) => write!(f, "<placeholder>"),
             ConstKind::Bound(BoundVarIndexKind::Bound(db), bound_const) => {
                 write!(f, "?{}.{}", db.as_u32(), bound_const.var.as_u32())
-            }
+            },
             ConstKind::Bound(BoundVarIndexKind::Canonical, bound_const) => {
                 write!(f, "?c.{}", bound_const.var.as_u32())
-            }
+            },
             ConstKind::Infer(..) => write!(f, "#c#"),
             ConstKind::Param(param) => {
                 let generics = generics(f.db, param.id.parent());
                 let param_data = &generics[param.id.local_id()];
                 write!(f, "{}", param_data.name().unwrap().display(f.db, f.edition()))?;
                 Ok(())
-            }
+            },
             ConstKind::Value(const_bytes) => render_const_scalar(
                 f,
                 &const_bytes.value.inner().memory,
@@ -714,7 +710,7 @@ impl<'db> HirDisplay<'db> for Const<'db> {
                 write!(f, "{}", c.name(f.db))?;
                 hir_fmt_generics(f, unev.args.as_slice(), c.generic_def(f.db), None)?;
                 Ok(())
-            }
+            },
             ConstKind::Error(..) => f.write_char('_'),
             ConstKind::Expr(..) => write!(f, "<const-expr>"),
         }
@@ -749,46 +745,42 @@ fn render_const_scalar_inner<'db>(
                 return f.write_str("<unicode-error>");
             };
             write!(f, "{c:?}")
-        }
+        },
         TyKind::Int(_) => {
             let it = i128::from_le_bytes(pad16(b, true));
             write!(f, "{it}")
-        }
+        },
         TyKind::Uint(_) => {
             let it = u128::from_le_bytes(pad16(b, false));
             write!(f, "{it}")
-        }
+        },
         TyKind::Float(fl) => match fl {
             FloatTy::F16 => {
-                // FIXME(#17451): Replace with builtins once they are stabilised.
                 let it = f16::from_bits(u16::from_le_bytes(b.try_into().unwrap()).into());
                 let s = it.to_string();
                 if s.strip_prefix('-').unwrap_or(&s).chars().all(|c| c.is_ascii_digit()) {
-                    // Match Rust debug formatting
                     write!(f, "{s}.0")
                 } else {
                     write!(f, "{s}")
                 }
-            }
+            },
             FloatTy::F32 => {
                 let it = f32::from_le_bytes(b.try_into().unwrap());
                 write!(f, "{it:?}")
-            }
+            },
             FloatTy::F64 => {
                 let it = f64::from_le_bytes(b.try_into().unwrap());
                 write!(f, "{it:?}")
-            }
+            },
             FloatTy::F128 => {
-                // FIXME(#17451): Replace with builtins once they are stabilised.
                 let it = f128::from_bits(u128::from_le_bytes(b.try_into().unwrap()));
                 let s = it.to_string();
                 if s.strip_prefix('-').unwrap_or(&s).chars().all(|c| c.is_ascii_digit()) {
-                    // Match Rust debug formatting
                     write!(f, "{s}.0")
                 } else {
                     write!(f, "{s}")
                 }
-            }
+            },
         },
         TyKind::Ref(_, t, _) => match t.kind() {
             TyKind::Str => {
@@ -799,7 +791,7 @@ fn render_const_scalar_inner<'db>(
                 };
                 let s = std::str::from_utf8(bytes).unwrap_or("<utf8-error>");
                 write!(f, "{s:?}")
-            }
+            },
             TyKind::Slice(ty) => {
                 let addr = usize::from_le_bytes(b[0..b.len() / 2].try_into().unwrap());
                 let count = usize::from_le_bytes(b[b.len() / 2..].try_into().unwrap());
@@ -830,7 +822,7 @@ fn render_const_scalar_inner<'db>(
                     render_const_scalar(f, &bytes[offset..offset + size_one], memory_map, ty)?;
                 }
                 f.write_str("]")
-            }
+            },
             TyKind::Dynamic(_, _) => {
                 let addr = usize::from_le_bytes(b[0..b.len() / 2].try_into().unwrap());
                 let ty_id = usize::from_le_bytes(b[b.len() / 2..].try_into().unwrap());
@@ -846,13 +838,13 @@ fn render_const_scalar_inner<'db>(
                 };
                 f.write_str("&")?;
                 render_const_scalar(f, bytes, memory_map, t)
-            }
+            },
             TyKind::Adt(adt, _) if b.len() == 2 * size_of::<usize>() => match adt.def_id().0 {
                 hir_def::AdtId::StructId(s) => {
                     let data = f.db.struct_signature(s);
                     write!(f, "&{}", data.name.display(f.db, f.edition()))?;
                     Ok(())
-                }
+                },
                 _ => f.write_str("<unsized-enum-or-union>"),
             },
             _ => {
@@ -876,7 +868,7 @@ fn render_const_scalar_inner<'db>(
                 };
                 f.write_str("&")?;
                 render_const_scalar(f, bytes, memory_map, t)
-            }
+            },
         },
         TyKind::Tuple(tys) => {
             let Ok(layout) = f.db.layout_of_ty(ty, trait_env.clone()) else {
@@ -899,7 +891,7 @@ fn render_const_scalar_inner<'db>(
                 render_const_scalar(f, &b[offset..offset + size], memory_map, ty)?;
             }
             f.write_str(")")
-        }
+        },
         TyKind::Adt(def, args) => {
             let def = def.def_id().0;
             let Ok(layout) = f.db.layout_of_adt(def, args, trait_env.clone()) else {
@@ -920,10 +912,10 @@ fn render_const_scalar_inner<'db>(
                         b,
                         memory_map,
                     )
-                }
+                },
                 hir_def::AdtId::UnionId(u) => {
                     write!(f, "{}", f.db.union_signature(u).name.display(f.db, f.edition()))
-                }
+                },
                 hir_def::AdtId::EnumId(e) => {
                     let Ok(target_data_layout) = f.db.target_data_layout(trait_env.krate) else {
                         return f.write_str("<target-layout-not-available>");
@@ -952,15 +944,15 @@ fn render_const_scalar_inner<'db>(
                         b,
                         memory_map,
                     )
-                }
+                },
             }
-        }
+        },
         TyKind::FnDef(..) => ty.hir_fmt(f),
         TyKind::FnPtr(_, _) | TyKind::RawPtr(_, _) => {
             let it = u128::from_le_bytes(pad16(b, false));
             write!(f, "{it:#X} as ")?;
             ty.hir_fmt(f)
-        }
+        },
         TyKind::Array(ty, len) => {
             let Some(len) = consteval::try_const_usize(f.db, len) else {
                 return f.write_str("<unknown-array-len>");
@@ -981,14 +973,13 @@ fn render_const_scalar_inner<'db>(
                 render_const_scalar(f, &b[offset..offset + size_one], memory_map, ty)?;
             }
             f.write_str("]")
-        }
+        },
         TyKind::Never => f.write_str("!"),
         TyKind::Closure(_, _) => f.write_str("<closure>"),
         TyKind::Coroutine(_, _) => f.write_str("<coroutine>"),
         TyKind::CoroutineWitness(_, _) => f.write_str("<coroutine-witness>"),
         TyKind::CoroutineClosure(_, _) => f.write_str("<coroutine-closure>"),
         TyKind::UnsafeBinder(_) => f.write_str("<unsafe-binder>"),
-        // The below arms are unreachable, since const eval will bail out before here.
         TyKind::Foreign(_) => f.write_str("<extern-type>"),
         TyKind::Pat(_, _) => f.write_str("<pat>"),
         TyKind::Error(..)
@@ -997,7 +988,6 @@ fn render_const_scalar_inner<'db>(
         | TyKind::Param(_)
         | TyKind::Bound(_, _)
         | TyKind::Infer(_) => f.write_str("<placeholder-or-unknown-type>"),
-        // The below arms are unreachable, since we handled them in ref case.
         TyKind::Slice(_) | TyKind::Str | TyKind::Dynamic(_, _) => f.write_str("<unsized-value>"),
     }
 }
@@ -1048,7 +1038,7 @@ fn render_variant_after_name<'db>(
                 write!(f, ")")?;
             }
             Ok(())
-        }
+        },
         FieldsShape::Unit => Ok(()),
     }
 }
@@ -1726,7 +1716,7 @@ fn generic_args_sans_defaults<'ga, 'db>(
                     }
                 }
                 &parameters[0..default_from]
-            }
+            },
         }
     } else {
         parameters
@@ -1857,7 +1847,7 @@ impl SizedByDefault {
             Self::Sized { anchor } => {
                 let sized_trait = LangItem::Sized.resolve_trait(db, anchor);
                 Some(trait_) == sized_trait
-            }
+            },
         }
     }
 }
@@ -1870,9 +1860,7 @@ pub fn write_bounds_like_dyn_trait_with_prefix<'db>(
     default_sized: SizedByDefault,
 ) -> Result<(), HirDisplayError> {
     write!(f, "{prefix}")?;
-    if !predicates.is_empty()
-        || predicates.is_empty() && matches!(default_sized, SizedByDefault::Sized { .. })
-    {
+    if !predicates.is_empty() || predicates.is_empty() && matches!(default_sized, SizedByDefault::Sized { .. }) {
         write!(f, " ")?;
         write_bounds_like_dyn_trait(f, this, predicates, default_sized)
     } else {
@@ -2047,13 +2035,13 @@ impl<'db> HirDisplay<'db> for Region<'db> {
                 let param_data = &generics[param.id.local_id];
                 write!(f, "{}", param_data.name.display(f.db, f.edition()))?;
                 Ok(())
-            }
+            },
             RegionKind::ReBound(BoundVarIndexKind::Bound(db), idx) => {
                 write!(f, "?{}.{}", db.as_u32(), idx.var.as_u32())
-            }
+            },
             RegionKind::ReBound(BoundVarIndexKind::Canonical, idx) => {
                 write!(f, "?c.{}", idx.var.as_u32())
-            }
+            },
             RegionKind::ReVar(_) => write!(f, "_"),
             RegionKind::ReStatic => write!(f, "'static"),
             RegionKind::ReError(..) => {
@@ -2062,7 +2050,7 @@ impl<'db> HirDisplay<'db> for Region<'db> {
                 } else {
                     write!(f, "'_")
                 }
-            }
+            },
             RegionKind::ReErased => write!(f, "'<erased>"),
             RegionKind::RePlaceholder(_) => write!(f, "<placeholder>"),
             RegionKind::ReLateParam(_) => write!(f, "<late-param>"),
@@ -2082,17 +2070,15 @@ pub fn write_visibility<'db>(
             let def_map = module_id.def_map(f.db);
             let root_module_id = def_map.module_id(DefMap::ROOT);
             if vis_id == module_id {
-                // pub(self) or omitted
                 Ok(())
             } else if root_module_id == vis_id && !root_module_id.is_within_block() {
                 write!(f, "pub(crate) ")
-            } else if module_id.containing_module(f.db) == Some(vis_id) && !vis_id.is_block_module()
-            {
+            } else if module_id.containing_module(f.db) == Some(vis_id) && !vis_id.is_block_module() {
                 write!(f, "pub(super) ")
             } else {
                 write!(f, "pub(in ...) ")
             }
-        }
+        },
     }
 }
 
@@ -2153,7 +2139,7 @@ impl<'db> HirDisplayWithExpressionStore<'db> for LifetimeRefId {
                     "{}",
                     generic_params[lifetime_param_id.local_id].name.display(f.db, f.edition())
                 )
-            }
+            },
         }
     }
 }
@@ -2313,7 +2299,7 @@ impl<'db> HirDisplayWithExpressionStore<'db> for TypeBound {
                     TraitBoundModifier::Maybe => write!(f, "?")?,
                 }
                 store[path].hir_fmt(f, store)
-            }
+            },
             TypeBound::Lifetime(lifetime) => lifetime.hir_fmt(f, store),
             TypeBound::ForLifetime(lifetimes, path) => {
                 let edition = f.edition();
@@ -2323,7 +2309,7 @@ impl<'db> HirDisplayWithExpressionStore<'db> for TypeBound {
                     lifetimes.iter().map(|it| it.display(f.db, edition)).format(", ")
                 )?;
                 store[*path].hir_fmt(f, store)
-            }
+            },
             TypeBound::Use(args) => {
                 write!(f, "use<")?;
                 let edition = f.edition();
@@ -2338,7 +2324,7 @@ impl<'db> HirDisplayWithExpressionStore<'db> for TypeBound {
                     }
                 }
                 write!(f, "> ")
-            }
+            },
             TypeBound::Error => write!(f, "{{error}}"),
         }
     }
@@ -2512,9 +2498,8 @@ impl<'db> HirDisplayWithExpressionStore<'db> for hir_def::expr_store::path::Gene
         match self {
             hir_def::expr_store::path::GenericArg::Type(ty) => ty.hir_fmt(f, store),
             hir_def::expr_store::path::GenericArg::Const(_c) => {
-                // write!(f, "{}", c.display(f.db, f.edition()))
                 write!(f, "<expr>")
-            }
+            },
             hir_def::expr_store::path::GenericArg::Lifetime(lifetime) => lifetime.hir_fmt(f, store),
         }
     }

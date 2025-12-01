@@ -64,8 +64,7 @@ impl Generics {
     }
 
     pub(crate) fn has_no_predicates(&self) -> bool {
-        self.params.has_no_predicates()
-            && self.parent_generics.as_ref().is_none_or(|g| g.params.has_no_predicates())
+        self.params.has_no_predicates() && self.parent_generics.as_ref().is_none_or(|g| g.params.has_no_predicates())
     }
 
     pub(crate) fn is_empty(&self) -> bool {
@@ -102,8 +101,9 @@ impl Generics {
     pub(crate) fn iter_parents_with_store(
         &self,
     ) -> impl Iterator<Item = ((GenericParamId, GenericParamDataRef<'_>), &ExpressionStore)> + '_ {
-        self.iter_parent()
-            .zip(self.parent_generics().into_iter().flat_map(|it| std::iter::repeat(&*it.store)))
+        self.iter_parent().zip(
+            self.parent_generics().into_iter().flat_map(|it| std::iter::repeat(&*it.store)),
+        )
     }
 
     /// Iterate over the params without parent params.
@@ -215,9 +215,7 @@ impl Generics {
             let idx = lifetime.local_id.into_raw().into_u32() as usize;
             debug_assert!(idx <= self.params.len_lifetimes());
             Some(
-                self.parent_generics().map_or(0, |g| g.len())
-                    + self.params.trait_self_param().is_some() as usize
-                    + idx,
+                self.parent_generics().map_or(0, |g| g.len()) + self.params.trait_self_param().is_some() as usize + idx,
             )
         } else {
             debug_assert_eq!(self.parent_generics().map(|it| it.def), Some(lifetime.parent));
@@ -235,14 +233,14 @@ pub(crate) fn trait_self_param_idx(db: &dyn DefDatabase, def: GenericDefId) -> O
         GenericDefId::TraitId(_) => {
             let params = db.generic_params(def);
             params.trait_self_param().map(|idx| idx.into_raw().into_u32() as usize)
-        }
+        },
         GenericDefId::ImplId(_) => None,
         _ => {
             let parent_def = parent_generic_def(db, def)?;
             let parent_params = db.generic_params(parent_def);
             let parent_self_idx = parent_params.trait_self_param()?.into_raw().into_u32() as usize;
             Some(parent_self_idx)
-        }
+        },
     }
 }
 

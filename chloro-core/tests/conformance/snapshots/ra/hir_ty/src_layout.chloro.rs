@@ -102,12 +102,12 @@ impl fmt::Display for LayoutError {
             LayoutError::NotImplemented => write!(f, "not implemented"),
             LayoutError::RecursiveTypeWithoutIndirection => {
                 write!(f, "recursive type without indirection")
-            }
+            },
             LayoutError::TargetLayoutNotAvailable => write!(f, "target layout not available"),
             LayoutError::Unknown => write!(f, "unknown"),
             LayoutError::UserReprTooSmall => {
                 write!(f, "the `#[repr]` hint is too small to hold the discriminants of the enum")
-            }
+            },
         }
     }
 }
@@ -383,17 +383,17 @@ fn struct_tail_erasing_lifetimes<'a>(db: &'a dyn HirDatabase, pointee: Ty<'a>) -
                 Some((f, _)) => {
                     let last_field_ty = field_ty(db, struct_id.into(), f, &args);
                     struct_tail_erasing_lifetimes(db, last_field_ty)
-                }
+                },
                 None => pointee,
             }
-        }
+        },
         TyKind::Tuple(tys) => {
             if let Some(last_field_ty) = tys.iter().next_back() {
                 struct_tail_erasing_lifetimes(db, last_field_ty)
             } else {
                 pointee
             }
-        }
+        },
         _ => pointee,
     }
 }

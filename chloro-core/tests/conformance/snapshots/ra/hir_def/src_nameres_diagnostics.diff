@@ -2,12 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4245 bytes
-Chloro size:   4513 bytes
+Chloro size:   4462 bytes
 Rustfmt size:  4722 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ impl DefDiagnostics {
+     pub fn new(diagnostics: Vec<DefDiagnostic>) -> Self {
+-        Self(
+-            diagnostics
+-                .is_empty()
+-                .not()
+-                .then(|| triomphe::ThinArc::from_header_and_iter((), diagnostics.into_iter())),
+-        )
++        Self(diagnostics.is_empty().not().then(
++            || triomphe::ThinArc::from_header_and_iter((), diagnostics.into_iter()),
++        ))
+     }
+ 
+     pub fn iter(&self) -> impl Iterator<Item = &DefDiagnostic> {
      ) -> Self {
          Self {
              in_module: container,

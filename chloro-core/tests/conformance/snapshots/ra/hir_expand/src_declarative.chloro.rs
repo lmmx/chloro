@@ -34,21 +34,25 @@ impl DeclarativeMacroExpander {
         let loc = db.lookup_intern_macro_call(call_id);
         match self.mac.err() {
             Some(_) => ExpandResult::new(
-                (tt::TopSubtree::empty(tt::DelimSpan { open: span, close: span }), None),
+                (
+                tt::TopSubtree::empty(tt::DelimSpan {
+                open: span,
+                close: span,
+            }),
+                None,
+            ),
                 ExpandError::new(span, ExpandErrorKind::MacroDefinition),
             ),
-            None => self
-                .mac
-                .expand(
-                    &tt,
-                    |s| {
-                        s.ctx =
-                            apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
-                    },
-                    span,
-                    loc.def.edition,
-                )
-                .map_err(Into::into),
+            None => self.mac.expand(
+                &tt,
+                |s| {
+                s.ctx = apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
+            },
+                span,
+                loc.def.edition,
+            ).map_err(
+                Into::into,
+            ),
         }
     }
 
@@ -60,14 +64,15 @@ impl DeclarativeMacroExpander {
     ) -> ExpandResult<tt::TopSubtree> {
         match self.mac.err() {
             Some(_) => ExpandResult::new(
-                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
+                tt::TopSubtree::empty(tt::DelimSpan {
+                open: call_site,
+                close: call_site,
+            }),
                 ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
             ),
-            None => self
-                .mac
-                .expand(&tt, |_| (), call_site, def_site_edition)
-                .map(TupleExt::head)
-                .map_err(Into::into),
+            None => self.mac.expand(&tt, |_| (), call_site, def_site_edition).map(TupleExt::head).map_err(
+                Into::into,
+            ),
         }
     }
 

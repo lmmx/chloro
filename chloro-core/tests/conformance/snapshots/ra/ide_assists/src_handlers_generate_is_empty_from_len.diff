@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5772 bytes
-Chloro size:   5221 bytes
+Chloro size:   5209 bytes
 Rustfmt size:  5772 bytes
 
 ✗ Outputs DIFFER
@@ -48,6 +48,24 @@ Rustfmt size:  5772 bytes
 +) -> Option<()> {
      let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
      let fn_name = fn_node.name()?;
+ 
+         "Generate a is_empty impl from a len function",
+         range,
+         |builder| {
+-            let code = r#"
++        let code = r#"
+ 
+     #[must_use]
+     pub fn is_empty(&self) -> bool {
+         self.len() == 0
+     }"#
+             .to_owned();
+-            builder.insert(range.end(), code)
+-        },
++        builder.insert(range.end(), code)
++    },
+     )
+ }
  
  #[cfg(test)]
  mod tests {

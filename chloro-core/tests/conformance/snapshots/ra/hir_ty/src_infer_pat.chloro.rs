@@ -412,12 +412,9 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     fn pat_ty_after_adjustment(&self, pat: PatId) -> Ty<'db> {
-        *self
-            .result
-            .pat_adjustments
-            .get(&pat)
-            .and_then(|it| it.first())
-            .unwrap_or(&self.result.type_of_pat[pat])
+        *self.result.pat_adjustments.get(&pat).and_then(|it| it.first()).unwrap_or(
+            &self.result.type_of_pat[pat],
+        )
     }
 
     fn infer_ref_pat(
@@ -530,7 +527,7 @@ impl<'db> InferenceContext<'_, 'db> {
         match expected.kind() {
             TyKind::Array(_, const_) => {
                 Ty::new_array_with_const_len(self.interner(), elem_ty, const_)
-            }
+            },
             _ => Ty::new_slice(self.interner(), elem_ty),
         }
     }
@@ -563,10 +560,9 @@ impl<'db> InferenceContext<'_, 'db> {
             | Pat::Slice { .. } => true,
             Pat::Or(pats) => pats.iter().all(|p| self.is_non_ref_pat(body, *p)),
             Pat::Path(path) => {
-                // A const is a reference pattern, but other value ns things aren't (see #16131).
                 let resolved = self.resolve_value_path_inner(path, pat.into(), true);
                 resolved.is_some_and(|it| !matches!(it.0, hir_def::resolver::ValueNs::ConstId(_)))
-            }
+            },
             Pat::ConstBlock(..) => false,
             Pat::Lit(expr) => !matches!(
                 body[*expr],

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6490 bytes
-Chloro size:   6498 bytes
+Chloro size:   6538 bytes
 Rustfmt size:  6748 bytes
 
 ✗ Outputs DIFFER
@@ -80,15 +80,3 @@ Rustfmt size:  6748 bytes
  
      let ty = thing.ty(db);
      item.set_relevance(CompletionRelevance {
-             Variant::Struct(it) => visible_fields(ctx, &fields, it)?,
-             Variant::EnumVariant(it) => visible_fields(ctx, &fields, it)?,
-         };
--        if !fields_omitted {
--            Some(visible_fields)
--        } else {
--            None
--        }
-+        if !fields_omitted { Some(visible_fields) } else { None }
-     }
- 
-     fn kind(self, db: &dyn HirDatabase) -> StructKind {

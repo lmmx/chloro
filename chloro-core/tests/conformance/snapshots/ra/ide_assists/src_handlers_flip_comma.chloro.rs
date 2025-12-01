@@ -27,10 +27,13 @@ pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     }
 
     let target = comma.text_range();
-    acc.add(AssistId::refactor_rewrite("flip_comma"), "Flip comma", target, |builder| {
+    acc.add(
+        AssistId::refactor_rewrite("flip_comma"),
+        "Flip comma",
+        target,
+        |builder| {
         let parent = comma.parent().unwrap();
         let mut editor = builder.make_editor(&parent);
-
         if let Some(parent) = ast::TokenTree::cast(parent) {
             // An attribute. It often contains a path followed by a
             // token tree (e.g. `align(2)`), so we have to be smarter.
@@ -41,9 +44,9 @@ pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
             editor.replace(prev.clone(), next.clone());
             editor.replace(next.clone(), prev.clone());
         }
-
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 fn flip_tree(tree: ast::TokenTree, comma: SyntaxToken) -> (ast::TokenTree, SyntaxMapping) {

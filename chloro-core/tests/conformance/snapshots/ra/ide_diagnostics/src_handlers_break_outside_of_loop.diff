@@ -16,6 +16,14 @@ Rustfmt size:  2954 bytes
  pub(crate) fn break_outside_of_loop(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::BreakOutsideOfLoop,
+         DiagnosticCode::RustcHardError("E0268"),
+         message,
+         d.expr.map(|it| it.into()),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

@@ -155,22 +155,22 @@ impl<'db> Relate<DbInterner<'db>> for GenericArg<'db> {
         match (a.kind(), b.kind()) {
             (GenericArgKind::Lifetime(a_lt), GenericArgKind::Lifetime(b_lt)) => {
                 Ok(relation.relate(a_lt, b_lt)?.into())
-            }
+            },
             (GenericArgKind::Type(a_ty), GenericArgKind::Type(b_ty)) => {
                 Ok(relation.relate(a_ty, b_ty)?.into())
-            }
+            },
             (GenericArgKind::Const(a_ct), GenericArgKind::Const(b_ct)) => {
                 Ok(relation.relate(a_ct, b_ct)?.into())
-            }
+            },
             (GenericArgKind::Lifetime(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            }
+            },
             (GenericArgKind::Type(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            }
+            },
             (GenericArgKind::Const(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            }
+            },
         }
     }
 }
@@ -216,10 +216,14 @@ impl<'db> GenericArgs<'db> {
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
     {
         let defaults = interner.db.generic_defaults(def_id);
-        Self::for_item(interner, def_id.into(), |idx, id, prev| match defaults.get(idx as usize) {
+        Self::for_item(
+            interner,
+            def_id.into(),
+            |idx, id, prev| match defaults.get(idx as usize) {
             Some(default) => default.instantiate(interner, prev),
             None => fallback(idx, id, prev),
-        })
+        },
+        )
     }
 
     /// Like `for_item()`, but calls first uses the args from `first`.
@@ -233,9 +237,13 @@ impl<'db> GenericArgs<'db> {
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
     {
         let mut iter = first.into_iter();
-        Self::for_item(interner, def_id, |idx, id, prev| {
+        Self::for_item(
+            interner,
+            def_id,
+            |idx, id, prev| {
             iter.next().unwrap_or_else(|| fallback(idx, id, prev))
-        })
+        },
+        )
     }
 
     /// Appends default param values to `first` if needed. Params without default will call `fallback()`.
@@ -249,12 +257,16 @@ impl<'db> GenericArgs<'db> {
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
     {
         let defaults = interner.db.generic_defaults(def_id);
-        Self::fill_rest(interner, def_id.into(), first, |idx, id, prev| {
-            defaults
-                .get(idx as usize)
-                .map(|default| default.instantiate(interner, prev))
-                .unwrap_or_else(|| fallback(idx, id, prev))
-        })
+        Self::fill_rest(
+            interner,
+            def_id.into(),
+            first,
+            |idx, id, prev| {
+            defaults.get(idx as usize).map(|default| default.instantiate(interner, prev)).unwrap_or_else(
+                || fallback(idx, id, prev),
+            )
+        },
+        )
     }
 
     fn fill_item<F>(
@@ -309,10 +321,10 @@ impl<'db> GenericArgs<'db> {
                     closure_kind_ty: closure_kind_ty.expect_ty(),
                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
                 }
-            }
+            },
             _ => {
                 unreachable!("unexpected closure sig");
-            }
+            },
         }
     }
 
@@ -338,13 +350,8 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for GenericArgs<'db> {
         let interner = relation.cx();
         CollectAndApply::collect_and_apply(
             std::iter::zip(a.iter(), b.iter()).map(|(a, b)| {
-                relation.relate_with_variance(
-                    Variance::Invariant,
-                    VarianceDiagInfo::default(),
-                    a,
-                    b,
-                )
-            }),
+            relation.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)
+        }),
             |g| GenericArgs::new_from_iter(interner, g.iter().cloned()),
         )
     }
@@ -385,34 +392,35 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId,
         original_args: &[<DbInterner<'db> as rustc_type_ir::Interner>::GenericArg],
     ) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
-        Self::for_item(interner, def_id, |index, kind, _| {
+        Self::for_item(
+            interner,
+            def_id,
+            |index, kind, _| {
             if let Some(arg) = original_args.get(index as usize) {
                 *arg
             } else {
                 error_for_param_kind(kind, interner)
             }
-        })
+        },
+        )
     }
 
     fn type_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {
-        self.inner()
-            .get(i)
-            .and_then(|g| g.as_type())
-            .unwrap_or_else(|| Ty::new_error(DbInterner::conjure(), ErrorGuaranteed))
+        self.inner().get(i).and_then(|g| g.as_type()).unwrap_or_else(
+            || Ty::new_error(DbInterner::conjure(), ErrorGuaranteed),
+        )
     }
 
     fn region_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Region {
-        self.inner()
-            .get(i)
-            .and_then(|g| g.as_region())
-            .unwrap_or_else(|| Region::error(DbInterner::conjure()))
+        self.inner().get(i).and_then(|g| g.as_region()).unwrap_or_else(
+            || Region::error(DbInterner::conjure()),
+        )
     }
 
     fn const_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Const {
-        self.inner()
-            .get(i)
-            .and_then(|g| g.as_const())
-            .unwrap_or_else(|| Const::error(DbInterner::conjure()))
+        self.inner().get(i).and_then(|g| g.as_const()).unwrap_or_else(
+            || Const::error(DbInterner::conjure()),
+        )
     }
 
     fn split_closure_args(self) -> rustc_type_ir::ClosureArgsParts<DbInterner<'db>> {
@@ -420,7 +428,6 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         match self.inner().as_slice() {
             [parent_args @ .., closure_kind_ty, sig_ty, tupled_upvars_ty] => {
                 let interner = DbInterner::conjure();
-                // This is stupid, but the next solver expects the first input to actually be a tuple
                 let sig_ty = match sig_ty.expect_ty().kind() {
                     TyKind::FnPtr(sig_tys, header) => Ty::new(
                         interner,
@@ -446,10 +453,10 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
                     closure_kind_ty: closure_kind_ty.expect_ty(),
                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
                 }
-            }
+            },
             _ => {
                 unreachable!("unexpected closure sig");
-            }
+            },
         }
     }
 
@@ -464,10 +471,7 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
                 tupled_upvars_ty,
                 coroutine_captures_by_ref_ty,
             ] => rustc_type_ir::CoroutineClosureArgsParts {
-                parent_args: GenericArgs::new_from_iter(
-                    DbInterner::conjure(),
-                    parent_args.iter().cloned(),
-                ),
+                parent_args: GenericArgs::new_from_iter(DbInterner::conjure(), parent_args.iter().cloned()),
                 closure_kind_ty: closure_kind_ty.expect_ty(),
                 signature_parts_ty: signature_parts_ty.expect_ty(),
                 tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
@@ -489,7 +493,7 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
                     return_ty: return_ty.expect_ty(),
                     tupled_upvars_ty: tupled_upvars_ty.expect_ty(),
                 }
-            }
+            },
             _ => panic!("GenericArgs were likely not for a Coroutine."),
         }
     }
@@ -503,11 +507,11 @@ pub fn mk_param<'db>(
     match id {
         GenericParamId::LifetimeParamId(id) => {
             Region::new_early_param(interner, EarlyParamRegion { index, id }).into()
-        }
+        },
         GenericParamId::TypeParamId(id) => Ty::new_param(interner, id, index).into(),
         GenericParamId::ConstParamId(id) => {
             Const::new_param(interner, ParamConst { index, id }).into()
-        }
+        },
     }
 }
 
@@ -555,13 +559,13 @@ impl<'db> Relate<DbInterner<'db>> for Term<'db> {
             (TermKind::Ty(a_ty), TermKind::Ty(b_ty)) => Ok(relation.relate(a_ty, b_ty)?.into()),
             (TermKind::Const(a_ct), TermKind::Const(b_ct)) => {
                 Ok(relation.relate(a_ct, b_ct)?.into())
-            }
+            },
             (TermKind::Ty(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            }
+            },
             (TermKind::Const(unpacked), x) => {
                 unreachable!("impossible case reached: can't relate: {:?} with {:?}", unpacked, x)
-            }
+            },
         }
     }
 }

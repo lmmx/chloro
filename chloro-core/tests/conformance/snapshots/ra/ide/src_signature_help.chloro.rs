@@ -449,11 +449,9 @@ fn signature_help_for_record_lit(
         sema,
         record.record_expr_field_list()?.syntax().children_with_tokens(),
         &record.path()?,
-        record
-            .record_expr_field_list()?
-            .fields()
-            .filter_map(|field| sema.resolve_record_field(&field))
-            .map(|(field, _, ty)| (field, ty)),
+        record.record_expr_field_list()?.fields().filter_map(|field| sema.resolve_record_field(&field)).map(
+        |(field, _, ty)| (field, ty),
+    ),
         token,
         edition,
         display_target,
@@ -471,10 +469,9 @@ fn signature_help_for_record_pat(
         sema,
         record.record_pat_field_list()?.syntax().children_with_tokens(),
         &record.path()?,
-        record
-            .record_pat_field_list()?
-            .fields()
-            .filter_map(|field| sema.resolve_record_pat_field(&field)),
+        record.record_pat_field_list()?.fields().filter_map(
+        |field| sema.resolve_record_pat_field(&field),
+    ),
         token,
         edition,
         display_target,

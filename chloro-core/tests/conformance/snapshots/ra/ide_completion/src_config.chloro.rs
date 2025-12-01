@@ -52,15 +52,15 @@ pub enum CallableSnippets {
 
 impl CompletionConfig<'_> {
     pub fn postfix_snippets(&self) -> impl Iterator<Item = (&str, &Snippet)> {
-        self.snippets
-            .iter()
-            .flat_map(|snip| snip.postfix_triggers.iter().map(move |trigger| (&**trigger, snip)))
+        self.snippets.iter().flat_map(
+            |snip| snip.postfix_triggers.iter().map(move |trigger| (&**trigger, snip)),
+        )
     }
 
     pub fn prefix_snippets(&self) -> impl Iterator<Item = (&str, &Snippet)> {
-        self.snippets
-            .iter()
-            .flat_map(|snip| snip.prefix_triggers.iter().map(move |trigger| (&**trigger, snip)))
+        self.snippets.iter().flat_map(
+            |snip| snip.prefix_triggers.iter().map(move |trigger| (&**trigger, snip)),
+        )
     }
 
     pub fn find_path_config(&self, allow_unstable: bool) -> FindPathConfig {

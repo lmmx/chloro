@@ -118,20 +118,20 @@ impl QualifyCandidate<'_> {
             QualifyCandidate::QualifierStart(segment, generics) => {
                 let generics = generics.as_ref().map_or_else(String::new, ToString::to_string);
                 replacer(format!("{import}{generics}::{segment}"));
-            }
+            },
             QualifyCandidate::UnqualifiedName(generics) => {
                 let generics = generics.as_ref().map_or_else(String::new, ToString::to_string);
                 replacer(format!("{import}{generics}"));
-            }
+            },
             QualifyCandidate::TraitAssocItem(qualifier, segment) => {
                 replacer(format!("<{qualifier} as {import}>::{segment}"));
-            }
+            },
             QualifyCandidate::TraitMethod(db, mcall_expr) => {
                 Self::qualify_trait_method(db, mcall_expr, replacer, import, item);
-            }
+            },
             QualifyCandidate::ImplMethod(db, mcall_expr, hir_fn) => {
                 Self::qualify_fn_call(db, mcall_expr, replacer, import, hir_fn);
-            }
+            },
         }
     }
 
@@ -182,13 +182,11 @@ fn find_trait_method(
     trait_: hir::Trait,
     trait_method_name: &ast::NameRef,
 ) -> Option<hir::Function> {
-    if let Some(hir::AssocItem::Function(method)) =
-        trait_.items(db).into_iter().find(|item: &hir::AssocItem| {
-            item.name(db)
-                .map(|name| name.as_str() == trait_method_name.text().trim_start_matches("r#"))
-                .unwrap_or(false)
-        })
-    {
+    if let Some(hir::AssocItem::Function(method)) = trait_.items(db).into_iter().find(|item: &hir::AssocItem| {
+        item.name(db).map(|name| name.as_str() == trait_method_name.text().trim_start_matches("r#")).unwrap_or(
+            false,
+        )
+    }) {
         Some(method)
     } else {
         None
@@ -224,7 +222,7 @@ fn label(
     match candidate {
         ImportCandidate::Path(candidate) if candidate.qualifier.is_empty() => {
             format!("Qualify as `{}`", import_path.display(db, edition))
-        }
+        },
         _ => format!("Qualify with `{}`", import_path.display(db, edition)),
     }
 }

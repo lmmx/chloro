@@ -295,10 +295,10 @@ impl ModuleOrigin {
         match self {
             &ModuleOrigin::File { declaration, declaration_tree_id, .. } => {
                 Some(AstId::new(declaration_tree_id.file_id(), declaration))
-            }
+            },
             &ModuleOrigin::Inline { definition, definition_tree_id } => {
                 Some(AstId::new(definition_tree_id.file_id(), definition))
-            }
+            },
             ModuleOrigin::CrateRoot { .. } | ModuleOrigin::BlockExpr { .. } => None,
         }
     }
@@ -307,7 +307,7 @@ impl ModuleOrigin {
         match self {
             ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition } => {
                 Some(*definition)
-            }
+            },
             _ => None,
         }
     }
@@ -327,16 +327,14 @@ impl ModuleOrigin {
             | &ModuleOrigin::CrateRoot { definition: editioned_file_id } => {
                 let sf = db.parse(editioned_file_id).tree();
                 InFile::new(editioned_file_id.into(), ModuleSource::SourceFile(sf))
-            }
+            },
             &ModuleOrigin::Inline { definition, definition_tree_id } => InFile::new(
                 definition_tree_id.file_id(),
-                ModuleSource::Module(
-                    AstId::new(definition_tree_id.file_id(), definition).to_node(db),
-                ),
+                ModuleSource::Module(AstId::new(definition_tree_id.file_id(), definition).to_node(db)),
             ),
             ModuleOrigin::BlockExpr { block, .. } => {
                 InFile::new(block.file_id, ModuleSource::BlockExpr(block.to_node(db)))
-            }
+            },
         }
     }
 }
@@ -494,12 +492,11 @@ impl DefMap {
         db: &'a dyn DefDatabase,
         file_id: FileId,
     ) -> impl Iterator<Item = LocalModuleId> + 'a {
-        self.modules
-            .iter()
-            .filter(move |(_id, data)| {
-                data.origin.file_id().map(|file_id| file_id.file_id(db)) == Some(file_id)
-            })
-            .map(|(id, _data)| id)
+        self.modules.iter().filter(move |(_id, data)| {
+            data.origin.file_id().map(|file_id| file_id.file_id(db)) == Some(file_id)
+        }).map(
+            |(id, _data)| id,
+        )
     }
 
     pub fn modules(&self) -> impl Iterator<Item = (LocalModuleId, &ModuleData)> + '_ {
@@ -569,12 +566,10 @@ impl DefMap {
         match self[local_mod].parent {
             Some(parent) => Some(self.module_id(parent)),
             None => {
-                self.block.map(
-                    |BlockInfo { parent: BlockRelativeModuleId { block, local_id }, .. }| {
-                        ModuleId { krate: self.krate, block, local_id }
-                    },
-                )
-            }
+                self.block.map(|BlockInfo { parent: BlockRelativeModuleId { block, local_id }, .. }| {
+                    ModuleId { krate: self.krate, block, local_id }
+                })
+            },
         }
     }
 
@@ -740,7 +735,7 @@ impl ModuleData {
         match self.origin {
             ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition } => {
                 definition.into()
-            }
+            },
             ModuleOrigin::Inline { definition_tree_id, .. } => definition_tree_id.file_id(),
             ModuleOrigin::BlockExpr { block, .. } => block.file_id,
         }
@@ -753,7 +748,7 @@ impl ModuleData {
                     definition.into(),
                     ErasedAstId::new(definition.into(), ROOT_ERASED_FILE_AST_ID).to_range(db),
                 )
-            }
+            },
             &ModuleOrigin::Inline { definition, definition_tree_id } => InFile::new(
                 definition_tree_id.file_id(),
                 AstId::new(definition_tree_id.file_id(), definition).to_range(db),

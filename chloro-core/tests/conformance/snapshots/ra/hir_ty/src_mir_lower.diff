@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95706 bytes
+Chloro size:   94634 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -150,6 +150,397 @@ Rustfmt size:  95826 bytes
      }
  
      fn lower_expr_to_place_with_adjust(
+                         MirSpan::Unknown,
+                     )?;
+                     self.lower_expr_to_place_with_adjust(expr_id, temp.into(), current, rest)
+-                }
++                },
+                 Adjust::Deref(_) => {
+                     let Some((p, current)) =
+                         self.lower_expr_as_place_with_adjust(current, expr_id, true, adjustments)?
+                         expr_id.into(),
+                     );
+                     Ok(Some(current))
+-                }
++                },
+                 Adjust::Borrow(AutoBorrow::Ref(_, m) | AutoBorrow::RawPtr(m)) => {
+                     let Some((p, current)) =
+                         self.lower_expr_as_place_with_adjust(current, expr_id, true, rest)?
+                     let bk = BorrowKind::from_rustc(*m);
+                     self.push_assignment(current, place, Rvalue::Ref(bk, p), expr_id.into());
+                     Ok(Some(current))
+-                }
++                },
+                 Adjust::Pointer(cast) => {
+                     let Some((p, current)) =
+                         self.lower_expr_as_place_with_adjust(current, expr_id, true, rest)?
+                         expr_id.into(),
+                     );
+                     Ok(Some(current))
+-                }
++                },
+             },
+             None => self.lower_expr_to_place_without_adjust(expr_id, place, current),
+         }
+         match &self.body[expr_id] {
+             Expr::OffsetOf(_) => {
+                 not_supported!("builtin#offset_of")
+-            }
++            },
+             Expr::InlineAsm(_) => {
+                 not_supported!("builtin#asm")
+-            }
++            },
+             Expr::Missing => {
+                 if let DefWithBodyId::FunctionId(f) = self.owner {
+                     let assoc = f.lookup(self.db);
+                     }
+                 }
+                 Err(MirLowerError::IncompleteExpr)
+-            }
++            },
+             Expr::Path(p) => {
+                 let pr =
+                     if let Some((assoc, subst)) = self.infer.assoc_resolutions_for_expr(expr_id) {
+                             expr_id.into(),
+                         );
+                         Ok(Some(current))
+-                    }
++                    },
+                     ValueNs::ConstId(const_id) => {
+                         self.lower_const(
+                             const_id.into(),
+                             expr_id.into(),
+                         )?;
+                         Ok(Some(current))
+-                    }
++                    },
+                     ValueNs::EnumVariantId(variant_id) => {
+                         let variant_fields = variant_id.fields(self.db);
+                         if variant_fields.shape == FieldsShape::Unit {
+                                 expr_id.into(),
+                             )?;
+                         }
+-                        // Otherwise its a tuple like enum, treated like a zero sized function, so no action is needed
+                         Ok(Some(current))
+-                    }
++                    },
+                     ValueNs::GenericParam(p) => {
+                         let Some(def) = self.owner.as_generic_def_id(self.db) else {
+                             not_supported!("owner without generic def id");
+                             expr_id.into(),
+                         );
+                         Ok(Some(current))
+-                    }
++                    },
+                     ValueNs::FunctionId(_) | ValueNs::StructId(_) | ValueNs::ImplSelf(_) => {
+-                        // It's probably a unit struct or a zero sized function, so no action is needed.
+                         Ok(Some(current))
+-                    }
++                    },
+                 }
+-            }
++            },
+             Expr::If { condition, then_branch, else_branch } => {
+                 let Some((discr, current)) =
+                     self.lower_expr_to_some_operand(*condition, current)?
+                     expr_id.into(),
+                 );
+                 Ok(self.merge_blocks(end_of_then, end_of_else, expr_id.into()))
+-            }
++            },
+             Expr::Let { pat, expr } => {
+                 let Some((cond_place, current)) = self.lower_expr_as_place(current, *expr, true)?
+                 else {
+                     )?;
+                 }
+                 Ok(self.merge_blocks(Some(then_target), else_target, expr_id.into()))
+-            }
++            },
+             Expr::Unsafe { id: _, statements, tail } => {
+                 self.lower_block_to_place(statements, current, *tail, place, expr_id.into())
+-            }
++            },
+             Expr::Block { id: _, statements, tail, label } => {
+                 if let Some(label) = label {
+-                    self.lower_loop(current, place, Some(*label), expr_id.into(), |this, begin| {
++                    self.lower_loop(
++                        current,
++                        place,
++                        Some(*label),
++                        expr_id.into(),
++                        |this, begin| {
+                         if let Some(current) = this.lower_block_to_place(
+                             statements,
+                             begin,
+                             this.set_goto(current, end, expr_id.into());
+                         }
+                         Ok(())
+-                    })
++                    },
++                    )
+                 } else {
+                     self.lower_block_to_place(statements, current, *tail, place, expr_id.into())
+                 }
+-            }
++            },
+             Expr::Loop { body, label } => {
+-                self.lower_loop(current, place, *label, expr_id.into(), |this, begin| {
++                self.lower_loop(
++                    current,
++                    place,
++                    *label,
++                    expr_id.into(),
++                    |this, begin| {
+                     let scope = this.push_drop_scope();
+                     if let Some((_, mut current)) = this.lower_expr_as_place(begin, *body, true)? {
+                         current = scope.pop_and_drop(this, current, body.into());
+                         scope.pop_assume_dropped(this);
+                     }
+                     Ok(())
+-                })
+-            }
++                },
++                )
++            },
+             Expr::Call { callee, args, .. } => {
+                 if let Some((func_id, generic_args)) = self.infer.method_resolution(expr_id) {
+                     let ty = Ty::new_fn_def(
+                             self.is_uninhabited(expr_id),
+                             expr_id.into(),
+                         )
+-                    }
++                    },
+                     TyKind::FnPtr(..) => {
+                         let Some((func, current)) =
+                             self.lower_expr_to_some_operand(*callee, current)?
+                             self.is_uninhabited(expr_id),
+                             expr_id.into(),
+                         )
+-                    }
++                    },
+                     TyKind::Closure(_, _) => {
+                         not_supported!(
+                             "method resolution not emitted for closure (Are Fn traits available?)"
+                         );
+-                    }
++                    },
+                     TyKind::Error(_) => {
+                         Err(MirLowerError::MissingFunctionDefinition(self.owner, expr_id))
+-                    }
++                    },
+                     _ => Err(MirLowerError::TypeError("function call on bad type")),
+                 }
+-            }
++            },
+             Expr::MethodCall { receiver, args, method_name, .. } => {
+                 let (func_id, generic_args) =
+                     self.infer.method_resolution(expr_id).ok_or_else(|| {
+                     self.is_uninhabited(expr_id),
+                     expr_id.into(),
+                 )
+-            }
++            },
+             Expr::Match { expr, arms } => {
+                 let Some((cond_place, mut current)) =
+                     self.lower_expr_as_place(current, *expr, true)?
+                     self.set_terminator(current, TerminatorKind::Unreachable, expr_id.into());
+                 }
+                 Ok(end)
+-            }
++            },
+             Expr::Continue { label } => {
+                 let loop_data = match label {
+                     Some(l) => {
+                     self.drop_until_scope(loop_data.drop_scope_index, current, expr_id.into());
+                 self.set_goto(current, begin, expr_id.into());
+                 Ok(None)
+-            }
++            },
+             &Expr::Break { expr, label } => {
+                 if let Some(expr) = expr {
+                     let loop_data = match label {
+                 current = self.drop_until_scope(drop_scope, current, expr_id.into());
+                 self.set_goto(current, end, expr_id.into());
+                 Ok(None)
+-            }
++            },
+             Expr::Return { expr } => {
+                 if let Some(expr) = expr {
+                     if let Some(c) =
+                 current = self.drop_until_scope(0, current, expr_id.into());
+                 self.set_terminator(current, TerminatorKind::Return, expr_id.into());
+                 Ok(None)
+-            }
++            },
+             Expr::Become { .. } => not_supported!("tail-calls"),
+             Expr::Yield { .. } => not_supported!("yield"),
+             Expr::RecordLit { fields, path, spread } => {
+                         );
+                         self.push_assignment(current, place, rvalue, expr_id.into());
+                         Ok(Some(current))
+-                    }
++                    },
+                     VariantId::UnionId(union_id) => {
+                         let [RecordLitField { name, expr }] = fields.as_ref() else {
+                             not_supported!("Union record literal with more than one field");
+                             &mut self.result.projection_store,
+                         );
+                         self.lower_expr_to_place(*expr, place, current)
+-                    }
++                    },
+                 }
+-            }
++            },
+             Expr::Await { .. } => not_supported!("await"),
+             Expr::Yeet { .. } => not_supported!("yeet"),
+             Expr::Async { .. } => not_supported!("async block"),
+             &Expr::Const(_) => {
+-                // let subst = self.placeholder_subst();
+-                // self.lower_const(
+-                //     id.into(),
+-                //     current,
+-                //     place,
+-                //     subst,
+-                //     expr_id.into(),
+-                //     self.expr_ty_without_adjust(expr_id),
+-                // )?;
+-                // Ok(Some(current))
+                 not_supported!("const block")
+-            }
++            },
+             Expr::Cast { expr, type_ref: _ } => {
+                 let Some((it, current)) = self.lower_expr_to_some_operand(*expr, current)? else {
+                     return Ok(None);
+                 };
+-                // Since we don't have THIR, this is the "zipped" version of [rustc's HIR lowering](https://github.com/rust-lang/rust/blob/e71f9529121ca8f687e4b725e3c9adc3f1ebab4d/compiler/rustc_mir_build/src/thir/cx/expr.rs#L165-L178)
+-                // and [THIR lowering as RValue](https://github.com/rust-lang/rust/blob/a4601859ae3875732797873612d424976d9e3dd0/compiler/rustc_mir_build/src/build/expr/as_rvalue.rs#L193-L313)
+                 let rvalue = if self.infer.coercion_casts.contains(expr) {
+                     Rvalue::Use(it)
+                 } else {
+                 };
+                 self.push_assignment(current, place, rvalue, expr_id.into());
+                 Ok(Some(current))
+-            }
++            },
+             Expr::Ref { expr, rawness: _, mutability } => {
+                 let Some((p, current)) = self.lower_expr_as_place(current, *expr, true)? else {
+                     return Ok(None);
+                 let bk = BorrowKind::from_hir(*mutability);
+                 self.push_assignment(current, place, Rvalue::Ref(bk, p), expr_id.into());
+                 Ok(Some(current))
+-            }
++            },
+             Expr::Box { expr } => {
+                 let ty = self.expr_ty_after_adjustments(*expr);
+                 self.push_assignment(
+                 let p = place.project(ProjectionElem::Deref, &mut self.result.projection_store);
+                 self.push_assignment(current, p, operand.into(), expr_id.into());
+                 Ok(Some(current))
+-            }
++            },
+             Expr::Field { .. }
+             | Expr::Index { .. }
+             | Expr::UnaryOp { op: hir_def::hir::UnaryOp::Deref, .. } => {
+                     expr_id.into(),
+                 );
+                 Ok(Some(current))
+-            }
++            },
+             Expr::UnaryOp {
+                 expr,
+                 op: op @ (hir_def::hir::UnaryOp::Not | hir_def::hir::UnaryOp::Neg),
+                     expr_id.into(),
+                 );
+                 Ok(Some(current))
+-            }
++            },
+             Expr::BinaryOp { lhs, rhs, op } => {
+                 let op: BinaryOp = op.ok_or(MirLowerError::IncompleteExpr)?;
+                 let is_builtin = 'b: {
+                     expr_id.into(),
+                 );
+                 Ok(Some(current))
+-            }
++            },
+             &Expr::Assignment { target, value } => {
+                 let Some((value, mut current)) = self.lower_expr_as_place(current, value, true)?
+                 else {
+                 current = self.pattern_match_assignment(current, value, target)?;
+                 self.resolver.reset_to_guard(resolver_guard);
+                 Ok(Some(current))
+-            }
++            },
+             &Expr::Range { lhs, rhs, range_type: _ } => {
+                 let ty = self.expr_ty_without_adjust(expr_id);
+                 let Some((adt, subst)) = ty.as_adt() else {
+                     expr_id.into(),
+                 );
+                 Ok(Some(current))
+-            }
++            },
+             Expr::Closure { .. } => {
+                 let ty = self.expr_ty_without_adjust(expr_id);
+                 let TyKind::Closure(id, _) = ty.kind() else {
+                     expr_id.into(),
+                 );
+                 Ok(Some(current))
+-            }
++            },
+             Expr::Tuple { exprs } => {
+                 let Some(values) = exprs
+                     .iter()
+                 );
+                 self.push_assignment(current, place, r, expr_id.into());
+                 Ok(Some(current))
+-            }
++            },
+             Expr::Array(l) => match l {
+                 Array::ElementList { elements, .. } => {
+                     let elem_ty = match self.expr_ty_without_adjust(expr_id).kind() {
+                     let r = Rvalue::Aggregate(AggregateKind::Array(elem_ty), values);
+                     self.push_assignment(current, place, r, expr_id.into());
+                     Ok(Some(current))
+-                }
++                },
+                 Array::Repeat { initializer, .. } => {
+                     let Some((init, current)) =
+                         self.lower_expr_to_some_operand(*initializer, current)?
+                     let r = Rvalue::Repeat(init, len);
+                     self.push_assignment(current, place, r, expr_id.into());
+                     Ok(Some(current))
+-                }
++                },
+             },
+             Expr::Literal(l) => {
+                 let ty = self.expr_ty_without_adjust(expr_id);
+                 let op = self.lower_literal_to_operand(ty, l)?;
+                 self.push_assignment(current, place, op.into(), expr_id.into());
+                 Ok(Some(current))
+-            }
++            },
+             Expr::Underscore => Ok(Some(current)),
+         }
+     }
+                         } else {
+                             not_supported!("bad path in range pattern");
+                         }
+-                    }
++                    },
+                     ResolveValueResult::Partial(_, _, _) => {
+                         not_supported!("associated constants in range pattern")
+-                    }
++                    },
+                 }
+-            }
++            },
+             _ => {
+                 not_supported!("only `char` and numeric types are allowed in range patterns");
+-            }
++            },
+         }
+     }
+ 
              })
              .unwrap()
              .instantiate(self.interner(), subst);
@@ -161,6 +552,57 @@ Rustfmt size:  95826 bytes
      }
  
      fn write_bytes_to_place(
+         match &self.discr_temp {
+             Some(it) => *it,
+             None => {
+-                // FIXME: rustc's ty is dependent on the adt type, maybe we need to do that as well
+                 let discr_ty = Ty::new_int(self.interner(), rustc_type_ir::IntTy::I128);
+                 let tmp: Place<'db> = self
+                     .temp(discr_ty, current, MirSpan::Unknown)
+                     .into();
+                 self.discr_temp = Some(tmp);
+                 tmp
+-            }
++            },
+         }
+     }
+ 
+                 self.set_goto(b1, bm, span);
+                 self.set_goto(b2, bm, span);
+                 Some(bm)
+-            }
++            },
+         }
+     }
+ 
+         match self.result.binding_locals.get(b) {
+             Some(it) => Ok(*it),
+             None => {
+-                // FIXME: It should never happens, but currently it will happen in `const_dependent_on_local` test, which
+-                // is a hir lowering problem IMO.
+-                // never!("Using inaccessible local for binding is always a bug");
+                 Err(MirLowerError::InaccessibleLocal)
+-            }
++            },
+         }
+     }
+ 
+                         .display(db, edition),
+                 );
+                 Err(MirLowerError::ConstEvalError(name.into(), Box::new(e)))
+-            }
++            },
+         }
+     }
+ 
+     Ok(match (from, cast) {
+         (Some(CastTy::Ptr(..) | CastTy::FnPtr), Some(CastTy::Int(_))) => {
+             CastKind::PointerExposeAddress
+-        }
++        },
+         (Some(CastTy::Int(_)), Some(CastTy::Ptr(..))) => CastKind::PointerFromExposedAddress,
+         (Some(CastTy::Int(_)), Some(CastTy::Int(_))) => CastKind::IntToInt,
+         (Some(CastTy::FnPtr), Some(CastTy::Ptr(..))) => CastKind::FnPtrToPtr,
      owner: DefWithBodyId,
      body: &Body,
      infer: &InferenceResult<'db>,

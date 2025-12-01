@@ -87,10 +87,10 @@ impl SourceChange {
                 if value.1.is_none() {
                     value.1 = snippet_edit;
                 }
-            }
+            },
             Entry::Vacant(entry) => {
                 entry.insert((edit, snippet_edit));
-            }
+            },
         }
     }
 
@@ -201,10 +201,8 @@ impl SnippetEdit {
         // Start from the back so that we don't have to adjust ranges
         for (index, range) in self.0.iter().rev() {
             if range.is_empty() {
-                // is a tabstop
                 text.insert_str(range.start().into(), &format!("${index}"));
             } else {
-                // is a placeholder
                 text.insert(range.end().into(), '}');
                 text.insert_str(range.start().into(), &format!("${{{index}:"));
             }
@@ -289,7 +287,7 @@ impl SourceChangeBuilder {
             Entry::Occupied(mut entry) => entry.get_mut().merge(edit),
             Entry::Vacant(entry) => {
                 entry.insert(edit);
-            }
+            },
         }
     }
 
@@ -475,9 +473,9 @@ impl SourceChangeBuilder {
     /// through a separate rename step.
     pub fn add_placeholder_snippet_group(&mut self, _cap: SnippetCap, nodes: Vec<SyntaxNode>) {
         assert!(nodes.iter().all(|node| node.parent().is_some()));
-        self.add_snippet(PlaceSnippet::OverGroup(
-            nodes.into_iter().map(|node| node.into()).collect(),
-        ))
+        self.add_snippet(
+            PlaceSnippet::OverGroup(nodes.into_iter().map(|node| node.into()).collect()),
+        )
     }
 
     fn add_snippet(&mut self, snippet: PlaceSnippet) {
@@ -580,7 +578,7 @@ impl PlaceSnippet {
             PlaceSnippet::Over(it) => vec![Snippet::Placeholder(it.text_range())],
             PlaceSnippet::OverGroup(it) => {
                 vec![Snippet::PlaceholderGroup(it.into_iter().map(|it| it.text_range()).collect())]
-            }
+            },
         }
     }
 }

@@ -437,17 +437,12 @@ impl InFile<SyntaxToken> {
                     &db.expansion_span_map(mac_file),
                     self.value.text_range().start(),
                 );
-
-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
-                // keep pre-token map rewrite behaviour.
                 if ctxt.is_root() {
                     return range;
                 }
-
-                // Fall back to whole macro call.
                 let loc = db.lookup_intern_macro_call(mac_file);
                 loc.kind.original_call_range(db)
-            }
+            },
         }
     }
 
@@ -456,18 +451,19 @@ impl InFile<SyntaxToken> {
         match self.file_id {
             HirFileId::FileId(file_id) => {
                 Some(FileRange { file_id, range: self.value.text_range() })
-            }
+            },
             HirFileId::MacroFile(mac_file) => {
                 let (range, ctxt) = span_for_offset(
                     db,
                     &db.expansion_span_map(mac_file),
                     self.value.text_range().start(),
                 );
-
-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
-                // keep pre-token map rewrite behaviour.
-                if ctxt.is_root() { Some(range) } else { None }
-            }
+                if ctxt.is_root() {
+                    Some(range)
+                } else {
+                    None
+                }
+            },
         }
     }
 }
@@ -486,16 +482,16 @@ impl InFile<TextRange> {
         match self.file_id {
             HirFileId::FileId(file_id) => {
                 (FileRange { file_id, range: self.value }, SyntaxContext::root(file_id.edition(db)))
-            }
+            },
             HirFileId::MacroFile(mac_file) => {
                 match map_node_range_up(db, &db.expansion_span_map(mac_file), self.value) {
                     Some(it) => it,
                     None => {
                         let loc = db.lookup_intern_macro_call(mac_file);
                         (loc.kind.original_call_range(db), SyntaxContext::root(loc.def.edition))
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 
@@ -508,9 +504,9 @@ impl InFile<TextRange> {
                     _ => {
                         let loc = db.lookup_intern_macro_call(mac_file);
                         loc.kind.original_call_range(db)
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 
@@ -526,9 +522,9 @@ impl InFile<TextRange> {
                     _ => {
                         let loc = db.lookup_intern_macro_call(mac_file);
                         loc.kind.original_call_range_with_input(db)
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 
@@ -543,7 +539,7 @@ impl InFile<TextRange> {
             )),
             HirFileId::MacroFile(mac_file) => {
                 map_node_range_up(db, &db.expansion_span_map(mac_file), self.value)
-            }
+            },
         }
     }
 
@@ -555,7 +551,7 @@ impl InFile<TextRange> {
             HirFileId::FileId(file_id) => Some(FileRange { file_id, range: self.value }),
             HirFileId::MacroFile(mac_file) => {
                 map_node_range_up_rooted(db, &db.expansion_span_map(mac_file), self.value)
-            }
+            },
         }
     }
 }

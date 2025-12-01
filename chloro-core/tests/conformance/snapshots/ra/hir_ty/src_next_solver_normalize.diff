@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9728 bytes
+Chloro size:   9752 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -37,16 +37,10 @@ Rustfmt size:  9886 bytes
 -    let errors = folder
 -        .fulfill_cx
 -        .evaluate_obligations_error_on_ambiguity(at.infcx);
--    if errors.is_empty() {
--        Ok((value, folder.stalled_coroutine_goals))
--    } else {
--        Err(errors)
--    }
 +    let errors = folder.fulfill_cx.evaluate_obligations_error_on_ambiguity(at.infcx);
-+    if errors.is_empty() { Ok((value, folder.stalled_coroutine_goals)) } else { Err(errors) }
- }
- 
- struct NormalizationFolder<'me, 'db> {
+     if errors.is_empty() {
+         Ok((value, folder.stalled_coroutine_goals))
+     } else {
              return Err(vec![NextSolverError::Overflow(obligation)]);
          }
  

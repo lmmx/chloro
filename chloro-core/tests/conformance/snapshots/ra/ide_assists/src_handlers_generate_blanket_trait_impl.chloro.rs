@@ -112,11 +112,9 @@ fn existing_any_impl(
 ) -> Option<hir::Impl> {
     let db = sema.db;
     let traitd = sema.to_def(traitd)?;
-    traitd
-        .module(db)
-        .impl_defs(db)
-        .into_iter()
-        .find(|impl_| impl_.trait_(db).is_some_and(|it| it == traitd))
+    traitd.module(db).impl_defs(db).into_iter().find(
+        |impl_| impl_.trait_(db).is_some_and(|it| it == traitd),
+    )
 }
 
 fn has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> bool {
@@ -125,8 +123,7 @@ fn has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> bool {
     } else if let Some(is_sized) = where_clause_sized(traitd.where_clause()) {
         is_sized
     } else {
-        contained_owned_self_method(traitd.assoc_item_list())
-            || super_traits_has_sized(traitd, sema) == Some(true)
+        contained_owned_self_method(traitd.assoc_item_list()) || super_traits_has_sized(traitd, sema) == Some(true)
     }
 }
 
@@ -145,7 +142,7 @@ fn contained_owned_self_method(item_list: Option<ast::AssocItemList>) -> bool {
         match item {
             AssocItem::Fn(f) => {
                 has_owned_self(&f) && where_clause_sized(f.where_clause()).is_none()
-            }
+            },
             _ => false,
         }
     })
@@ -156,28 +153,27 @@ fn has_owned_self(f: &ast::Fn) -> bool {
 }
 
 fn has_owned_self_param(f: &ast::Fn) -> bool {
-    f.param_list()
-        .and_then(|param_list| param_list.self_param())
-        .is_some_and(|sp| sp.amp_token().is_none() && sp.colon_token().is_none())
+    f.param_list().and_then(|param_list| param_list.self_param()).is_some_and(
+        |sp| sp.amp_token().is_none() && sp.colon_token().is_none(),
+    )
 }
 
 fn has_ret_owned_self(f: &ast::Fn) -> bool {
-    f.ret_type()
-        .and_then(|ret| match ret.ty() {
-            Some(ast::Type::PathType(ty)) => ty.path(),
-            _ => None,
-        })
-        .is_some_and(|path| {
-            path.segment()
-                .and_then(|seg| seg.name_ref())
-                .is_some_and(|name| path.qualifier().is_none() && name.text() == "Self")
-        })
+    f.ret_type().and_then(|ret| match ret.ty() {
+        Some(ast::Type::PathType(ty)) => ty.path(),
+        _ => None,
+    }).is_some_and(|path| {
+        path.segment().and_then(|seg| seg.name_ref()).is_some_and(
+            |name| path.qualifier().is_none() && name.text() == "Self",
+        )
+    })
 }
 
 fn where_clause_sized(where_clause: Option<ast::WhereClause>) -> Option<bool> {
     where_clause?.predicates().find_map(|pred| {
-        find_bound("Sized", pred.type_bound_list())
-            .map(|bound| bound.question_mark_token().is_none())
+        find_bound("Sized", pred.type_bound_list()).map(
+            |bound| bound.question_mark_token().is_none(),
+        )
     })
 }
 
@@ -214,7 +210,11 @@ fn this_name(traitd: &ast::Trait) -> ast::Name {
     let mut name_gen =
         suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
 
-    make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
+    make::name(&name_gen.suggest_name(if has_iter {
+        "I"
+    } else {
+        "T"
+    }))
 }
 
 fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {

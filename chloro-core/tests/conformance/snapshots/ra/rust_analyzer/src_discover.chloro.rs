@@ -123,13 +123,13 @@ impl DiscoverProjectMessage {
             DiscoverProjectData::Finished { project, buildfile, .. } => {
                 let buildfile = buildfile.try_into().expect("Unable to make path absolute");
                 DiscoverProjectMessage::Finished { project, buildfile }
-            }
+            },
             DiscoverProjectData::Error { error, source } => {
                 DiscoverProjectMessage::Error { error, source }
-            }
+            },
             DiscoverProjectData::Progress { message } => {
                 DiscoverProjectMessage::Progress { message }
-            }
+            },
         }
     }
 }
@@ -142,12 +142,12 @@ impl CargoParser<DiscoverProjectMessage> for DiscoverProjectParser {
             Ok(data) => {
                 let msg = DiscoverProjectMessage::new(data);
                 Some(msg)
-            }
+            },
             Err(err) => {
                 let err =
                     DiscoverProjectData::Error { error: format!("{err:#?}\n{line}"), source: None };
                 Some(DiscoverProjectMessage::new(err))
-            }
+            },
         }
     }
 

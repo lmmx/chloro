@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3077 bytes
-Chloro size:   2968 bytes
+Chloro size:   2877 bytes
 Rustfmt size:  3122 bytes
 
 ✗ Outputs DIFFER
@@ -19,17 +19,57 @@ Rustfmt size:  3122 bytes
  pub(crate) fn trait_impl_incorrect_safety(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::TraitImplIncorrectSafety,
-         },
+     Diagnostic::new(
+         DiagnosticCode::Ra("trait-impl-incorrect-safety", Severity::Error),
+         if d.should_be_safe {
+-            "unsafe impl for safe trait"
+-        } else {
+-            "impl for unsafe trait needs to be unsafe"
+-        },
++        "unsafe impl for safe trait"
++    } else {
++        "impl for unsafe trait needs to be unsafe"
++    },
          adjusted_display_range::<ast::Impl>(
-             ctx,
+-            ctx,
 -            InFile {
 -                file_id: d.file_id,
 -                value: d.impl_,
 -            },
-+            InFile { file_id: d.file_id, value: d.impl_ },
-             &|impl_| {
-                 if d.should_be_safe {
-                     Some(match (impl_.unsafe_token(), impl_.impl_token()) {
+-            &|impl_| {
+-                if d.should_be_safe {
+-                    Some(match (impl_.unsafe_token(), impl_.impl_token()) {
+-                        (None, None) => return None,
+-                        (None, Some(t)) | (Some(t), None) => t.text_range(),
+-                        (Some(t1), Some(t2)) => t1.text_range().cover(t2.text_range()),
+-                    })
+-                } else {
+-                    impl_.impl_token().map(|t| t.text_range())
+-                }
+-            },
+-        ),
++        ctx,
++        InFile {
++        file_id: d.file_id,
++        value: d.impl_,
++    },
++        &|impl_| {
++        if d.should_be_safe {
++            Some(match (impl_.unsafe_token(), impl_.impl_token()) {
++                (None, None) => return None,
++                (None, Some(t)) | (Some(t), None) => t.text_range(),
++                (Some(t1), Some(t2)) => t1.text_range().cover(t2.text_range()),
++            })
++        } else {
++            impl_.impl_token().map(|t| t.text_range())
++        }
++    },
++    ),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

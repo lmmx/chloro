@@ -29,8 +29,8 @@ pub(crate) fn generate_default_from_enum_variant(
         "Generate `Default` impl from this enum variant",
         target,
         |edit| {
-            let start_offset = variant.parent_enum().syntax().text_range().end();
-            let buf = format!(
+        let start_offset = variant.parent_enum().syntax().text_range().end();
+        let buf = format!(
                 r#"
 
 impl Default for {enum_name} {{
@@ -39,8 +39,8 @@ impl Default for {enum_name} {{
     }}
 }}"#,
             );
-            edit.insert(start_offset, buf);
-        },
+        edit.insert(start_offset, buf);
+    },
     )
 }
 
@@ -55,7 +55,11 @@ fn existing_default_impl(
     let default_trait = FamousDefs(sema, krate).core_default_Default()?;
     let enum_type = enum_.ty(sema.db);
 
-    if enum_type.impls_trait(sema.db, default_trait, &[]) { Some(()) } else { None }
+    if enum_type.impls_trait(sema.db, default_trait, &[]) {
+        Some(())
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]

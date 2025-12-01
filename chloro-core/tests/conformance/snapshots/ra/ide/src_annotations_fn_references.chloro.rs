@@ -22,10 +22,9 @@ fn method_range(item: SyntaxNode) -> Option<(TextRange, Option<TextRange>)> {
         if test_related_attribute_syn(&fn_def).is_some() {
             None
         } else {
-            Some((
-                fn_def.syntax().text_range(),
-                fn_def.name().map(|name| name.syntax().text_range()),
-            ))
+            Some(
+                (fn_def.syntax().text_range(), fn_def.name().map(|name| name.syntax().text_range())),
+            )
         }
     })
 }

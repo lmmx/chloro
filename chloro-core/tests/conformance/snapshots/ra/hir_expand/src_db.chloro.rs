@@ -160,7 +160,7 @@ fn syntax_context(db: &dyn ExpandDatabase, file: HirFileId, edition: Edition) ->
         HirFileId::MacroFile(m) => {
             let kind = db.lookup_intern_macro_call(m).kind;
             db.macro_arg_considering_derives(m, &kind).2.ctx
-        }
+        },
     }
 }
 
@@ -351,7 +351,7 @@ fn parse_or_expand(db: &dyn ExpandDatabase, file_id: HirFileId) -> SyntaxNode {
         HirFileId::FileId(file_id) => db.parse(file_id).syntax_node(),
         HirFileId::MacroFile(macro_file) => {
             db.parse_macro_expansion(macro_file).value.0.syntax_node()
-        }
+        },
     }
 }
 
@@ -385,7 +385,11 @@ fn parse_macro_expansion_error(
 ) -> Option<Arc<ExpandResult<Arc<[SyntaxError]>>>> {
     let e: ExpandResult<Arc<[SyntaxError]>> =
         db.parse_macro_expansion(macro_call_id).map(|it| Arc::from(it.0.errors()));
-    if e.value.is_empty() && e.err.is_none() { None } else { Some(Arc::new(e)) }
+    if e.value.is_empty() && e.err.is_none() {
+        None
+    } else {
+        Some(Arc::new(e))
+    }
 }
 
 pub(crate) fn parse_with_map(
@@ -395,11 +399,11 @@ pub(crate) fn parse_with_map(
     match file_id {
         HirFileId::FileId(file_id) => {
             (db.parse(file_id).to_syntax(), SpanMap::RealSpanMap(db.real_span_map(file_id)))
-        }
+        },
         HirFileId::MacroFile(macro_file) => {
             let (parse, map) = db.parse_macro_expansion(macro_file).value;
             (parse, SpanMap::ExpansionSpanMap(map))
-        }
+        },
     }
 }
 
@@ -414,9 +418,7 @@ fn macro_arg_considering_derives(
     kind: &MacroCallKind,
 ) -> MacroArgResult {
     match kind {
-        // Get the macro arg for the derive macro
         MacroCallKind::Derive { derive_macro_id, .. } => db.macro_arg(*derive_macro_id),
-        // Normal macro arg
         _ => db.macro_arg(id),
     }
 }
@@ -564,17 +566,14 @@ fn macro_arg(db: &dyn ExpandDatabase, id: MacroCallId) -> MacroArgResult {
 fn censor_derive_input(derive_attr_index: AttrId, node: &ast::Adt) -> FxHashSet<SyntaxElement> {
     // FIXME: handle `cfg_attr`
     cov_mark::hit!(derive_censoring);
-    collect_attrs(node)
-        .take(derive_attr_index.ast_index() + 1)
-        .filter_map(|(_, attr)| Either::left(attr))
-        // FIXME, this resolution should not be done syntactically
-        // derive is a proper macro now, no longer builtin
-        // But we do not have resolution at this stage, this means
-        // we need to know about all macro calls for the given ast item here
-        // so we require some kind of mapping...
-        .filter(|attr| attr.simple_name().as_deref() == Some("derive"))
-        .map(|it| it.syntax().clone().into())
-        .collect()
+    collect_attrs(node).take(derive_attr_index.ast_index() + 1).filter_map(
+        |(_, attr)| Either::left(attr),
+    ).filter(
+        |attr| attr.simple_name().as_deref() == Some("derive"),
+    ).map(
+        |it| it.syntax().clone().into(),
+    ).collect(
+    )
 }
 
 /// Attributes expect the invoking attribute to be stripped
@@ -589,7 +588,7 @@ impl TokenExpander {
         match id.kind {
             MacroDefKind::Declarative(ast_id) => {
                 TokenExpander::DeclarativeMacro(db.decl_macro_expander(id.krate, ast_id))
-            }
+            },
             MacroDefKind::BuiltIn(_, expander) => TokenExpander::BuiltIn(expander),
             MacroDefKind::BuiltInAttr(_, expander) => TokenExpander::BuiltInAttr(expander),
             MacroDefKind::BuiltInDerive(_, expander) => TokenExpander::BuiltInDerive(expander),

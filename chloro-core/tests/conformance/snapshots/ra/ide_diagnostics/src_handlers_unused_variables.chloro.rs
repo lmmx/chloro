@@ -37,25 +37,22 @@ pub(crate) fn unused_variables(
         .and_then(syntax::ast::RecordPatField::cast)
         .is_some_and(|field| field.colon_token().is_none());
     let var_name = d.local.name(ctx.sema.db);
-    Some(
-        Diagnostic::new_with_syntax_node_ptr(
-            ctx,
-            DiagnosticCode::RustcLint("unused_variables"),
-            "unused variable",
-            ast,
+    Some(Diagnostic::new_with_syntax_node_ptr(
+        ctx,
+        DiagnosticCode::RustcLint("unused_variables"),
+        "unused variable",
+        ast,
+    ).with_fixes(name_range.and_then(|it| {
+        fixes(
+            ctx.sema.db,
+            var_name,
+            it.range,
+            diagnostic_range,
+            ast.file_id.is_macro(),
+            is_shorthand_field,
+            ctx.edition,
         )
-        .with_fixes(name_range.and_then(|it| {
-            fixes(
-                ctx.sema.db,
-                var_name,
-                it.range,
-                diagnostic_range,
-                ast.file_id.is_macro(),
-                is_shorthand_field,
-                ctx.edition,
-            )
-        })),
-    )
+    })))
 }
 
 fn fixes(

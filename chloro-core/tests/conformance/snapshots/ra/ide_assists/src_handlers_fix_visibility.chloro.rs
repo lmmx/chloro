@@ -52,16 +52,19 @@ fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) 
         }
     };
 
-    acc.add(AssistId::quick_fix("fix_visibility"), assist_label, target, |edit| {
+    acc.add(
+        AssistId::quick_fix("fix_visibility"),
+        assist_label,
+        target,
+        |edit| {
         edit.edit_file(target_file);
-
         let vis_owner = edit.make_mut(vis_owner);
         vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
-
         if let Some((cap, vis)) = ctx.config.snippet_cap.zip(vis_owner.visibility()) {
             edit.add_tabstop_before(cap, vis);
         }
-    })
+    },
+    )
 }
 
 fn target_data_for_def(

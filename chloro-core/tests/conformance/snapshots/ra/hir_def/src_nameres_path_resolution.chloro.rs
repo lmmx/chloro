@@ -220,7 +220,6 @@ impl DefMap {
                     return result;
                 }
             }
-
             let new = current_map.resolve_path_fp_with_macro_single(
                 local_def_map,
                 db,
@@ -230,7 +229,6 @@ impl DefMap {
                 shadow,
                 expected_macro_subns,
             );
-
             merge(new);
         }
     }
@@ -450,7 +448,7 @@ impl DefMap {
                 extern_crate.map(ImportOrExternCrate::ExternCrate),
             ))
         } else {
-            Either::Right(ReachedFixedPoint::No) // extern crate declarations can add to the extern prelude
+            Either::Right(ReachedFixedPoint::No)
         }
     }
 
@@ -720,23 +718,29 @@ impl DefMap {
     }
 
     fn resolve_name_in_extern_prelude(&self, local_def_map: &LocalDefMap, name: &Name) -> PerNs {
-        local_def_map.extern_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
+        local_def_map.extern_prelude.get(name).map_or(
+            PerNs::none(),
+            |&(it, extern_crate)| {
             PerNs::types(
                 it.into(),
                 Visibility::Public,
                 extern_crate.map(ImportOrExternCrate::ExternCrate),
             )
-        })
+        },
+        )
     }
 
     fn resolve_in_macro_use_prelude(&self, name: &Name) -> PerNs {
-        self.macro_use_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
+        self.macro_use_prelude.get(name).map_or(
+            PerNs::none(),
+            |&(it, extern_crate)| {
             PerNs::macros(
                 it,
                 Visibility::Public,
                 extern_crate.map(ImportOrExternCrate::ExternCrate),
             )
-        })
+        },
+        )
     }
 
     fn resolve_name_in_crate_root_or_extern_prelude(
@@ -794,7 +798,6 @@ fn adjust_to_nearest_non_block_module<'db>(
     let mut def_map = def_map;
     loop {
         let BlockInfo { parent, .. } = def_map.block.expect("block module without parent module");
-
         def_map = parent.def_map(db, def_map.krate);
         local_id = parent.local_id;
         if !parent.is_block_module() {

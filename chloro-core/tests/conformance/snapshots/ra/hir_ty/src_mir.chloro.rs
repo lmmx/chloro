@@ -200,16 +200,16 @@ impl<V, T> ProjectionElem<V, T> {
                         base.display(db, DisplayTarget::from_crate(db, krate))
                     );
                     Ty::new_error(interner, ErrorGuaranteed)
-                }
+                },
             },
             ProjectionElem::Field(Either::Left(f)) => match base.kind() {
                 TyKind::Adt(_, subst) => {
                     db.field_types(f.parent)[f.local_id].instantiate(interner, subst)
-                }
+                },
                 ty => {
                     never!("Only adt has field, found {:?}", ty);
                     Ty::new_error(interner, ErrorGuaranteed)
-                }
+                },
             },
             ProjectionElem::Field(Either::Right(f)) => match base.kind() {
                 TyKind::Tuple(subst) => {
@@ -217,25 +217,25 @@ impl<V, T> ProjectionElem<V, T> {
                         never!("Out of bound tuple field");
                         Ty::new_error(interner, ErrorGuaranteed)
                     })
-                }
+                },
                 ty => {
                     never!("Only tuple has tuple field: {:?}", ty);
                     Ty::new_error(interner, ErrorGuaranteed)
-                }
+                },
             },
             ProjectionElem::ClosureField(f) => match base.kind() {
                 TyKind::Closure(id, subst) => closure_field(id.0, subst, *f),
                 _ => {
                     never!("Only closure has closure field");
                     Ty::new_error(interner, ErrorGuaranteed)
-                }
+                },
             },
             ProjectionElem::ConstantIndex { .. } | ProjectionElem::Index(_) => match base.kind() {
                 TyKind::Array(inner, _) | TyKind::Slice(inner) => inner,
                 _ => {
                     never!("Overloaded index is not a projection");
                     Ty::new_error(interner, ErrorGuaranteed)
-                }
+                },
             },
             &ProjectionElem::Subslice { from, to } => match base.kind() {
                 TyKind::Array(inner, c) => {
@@ -248,17 +248,17 @@ impl<V, T> ProjectionElem<V, T> {
                         krate,
                     );
                     Ty::new_array_with_const_len(interner, inner, next_c)
-                }
+                },
                 TyKind::Slice(_) => base,
                 _ => {
                     never!("Subslice projection should only happen on slice and array");
                     Ty::new_error(interner, ErrorGuaranteed)
-                }
+                },
             },
             ProjectionElem::OpaqueCast(_) => {
                 never!("We don't emit these yet");
                 Ty::new_error(interner, ErrorGuaranteed)
-            }
+            },
         }
     }
 }
@@ -302,7 +302,7 @@ impl<'db> ProjectionStore<'db> {
                 e.insert(new_id);
                 self.id_to_proj.insert(new_id, key_clone);
                 new_id
-            }
+            },
         }
     }
 }
@@ -347,7 +347,10 @@ impl<'db> Place<'db> {
     ) -> impl Iterator<Item = Place<'db>> + 'a {
         let projection = self.projection.lookup(store);
         (0..projection.len()).map(|x| &projection[0..x]).filter_map(move |x| {
-            Some(Place { local: self.local, projection: store.intern_if_exist(x)? })
+            Some(Place {
+                local: self.local,
+                projection: store.intern_if_exist(x)?,
+            })
         })
     }
 
@@ -1157,7 +1160,7 @@ impl<'db> MirBody<'db> {
                 Some(x) => match &mut x.kind {
                     TerminatorKind::SwitchInt { discr, .. } => {
                         for_operand(discr, &mut f, &mut self.projection_store)
-                    }
+                    },
                     TerminatorKind::FalseEdge { .. }
                     | TerminatorKind::FalseUnwind { .. }
                     | TerminatorKind::Goto { .. }
@@ -1168,24 +1171,24 @@ impl<'db> MirBody<'db> {
                     | TerminatorKind::Unreachable => (),
                     TerminatorKind::Drop { place, .. } => {
                         f(place, &mut self.projection_store);
-                    }
+                    },
                     TerminatorKind::DropAndReplace { place, value, .. } => {
                         f(place, &mut self.projection_store);
                         for_operand(value, &mut f, &mut self.projection_store);
-                    }
+                    },
                     TerminatorKind::Call { func, args, destination, .. } => {
                         for_operand(func, &mut f, &mut self.projection_store);
                         args.iter_mut()
                             .for_each(|x| for_operand(x, &mut f, &mut self.projection_store));
                         f(destination, &mut self.projection_store);
-                    }
+                    },
                     TerminatorKind::Assert { cond, .. } => {
                         for_operand(cond, &mut f, &mut self.projection_store);
-                    }
+                    },
                     TerminatorKind::Yield { value, resume_arg, .. } => {
                         for_operand(value, &mut f, &mut self.projection_store);
                         f(resume_arg, &mut self.projection_store);
-                    }
+                    },
                 },
                 None => (),
             }
@@ -1229,10 +1232,9 @@ impl MirSpan {
     pub fn is_ref_span(&self, body: &Body) -> bool {
         match *self {
             MirSpan::ExprId(expr) => matches!(body[expr], Expr::Ref { .. }),
-            // FIXME: Figure out if this is correct wrt. match ergonomics.
             MirSpan::BindingId(binding) => {
                 matches!(body[binding].mode, BindingAnnotation::Ref | BindingAnnotation::RefMut)
-            }
+            },
             MirSpan::PatId(_) | MirSpan::SelfParam | MirSpan::Unknown => false,
         }
     }

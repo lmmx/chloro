@@ -39,12 +39,12 @@ pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'
         "Generate a Default impl from a new fn",
         insert_location,
         move |builder| {
-            let default_code = "    fn default() -> Self {
+        let default_code = "    fn default() -> Self {
         Self::new()
     }";
-            let code = generate_trait_impl_text_from_impl(&impl_, self_ty, "Default", default_code);
-            builder.insert(insert_location.end(), code);
-        },
+        let code = generate_trait_impl_text_from_impl(&impl_, self_ty, "Default", default_code);
+        builder.insert(insert_location.end(), code);
+    },
     )
 }
 

@@ -381,17 +381,14 @@ fn hover_offset(
         }
     }
 
-    res.into_iter()
-        .unique()
-        .reduce(|mut acc: HoverResult, HoverResult { markup, actions }| {
-            acc.actions.extend(actions);
-            acc.markup = Markup::from(format!("{}\n\n---\n{markup}", acc.markup));
-            acc
-        })
-        .map(|mut res: HoverResult| {
-            res.actions = dedupe_or_merge_hover_actions(res.actions);
-            RangeInfo::new(original_token.text_range(), res)
-        })
+    res.into_iter().unique().reduce(|mut acc: HoverResult, HoverResult { markup, actions }| {
+        acc.actions.extend(actions);
+        acc.markup = Markup::from(format!("{}\n\n---\n{markup}", acc.markup));
+        acc
+    }).map(|mut res: HoverResult| {
+        res.actions = dedupe_or_merge_hover_actions(res.actions);
+        RangeInfo::new(original_token.text_range(), res)
+    })
 }
 
 fn hover_ranged(
@@ -515,27 +512,21 @@ fn notable_traits<'db>(
         return Vec::new();
     }
 
-    db.notable_traits_in_deps(ty.krate(db).into())
-        .iter()
-        .flat_map(|it| &**it)
-        .filter_map(move |&trait_| {
-            let trait_ = trait_.into();
-            ty.impls_trait(db, trait_, &[]).then(|| {
-                (
-                    trait_,
-                    trait_
-                        .items(db)
-                        .into_iter()
-                        .filter_map(hir::AssocItem::as_type_alias)
-                        .map(|alias| {
-                            (ty.normalize_trait_assoc_type(db, &[], alias), alias.name(db))
-                        })
-                        .collect::<Vec<_>>(),
-                )
-            })
+    db.notable_traits_in_deps(ty.krate(db).into()).iter().flat_map(|it| &**it).filter_map(move |&trait_| {
+        let trait_ = trait_.into();
+        ty.impls_trait(db, trait_, &[]).then(|| {
+            (
+                trait_,
+                trait_.items(db).into_iter().filter_map(hir::AssocItem::as_type_alias).map(|alias| {
+                (ty.normalize_trait_assoc_type(db, &[], alias), alias.name(db))
+            }).collect::<Vec<_>>(
+            ),
+            )
         })
-        .sorted_by_cached_key(|(trait_, _)| trait_.name(db))
-        .collect::<Vec<_>>()
+    }).sorted_by_cached_key(
+        |(trait_, _)| trait_.name(db),
+    ).collect::<Vec<_>>(
+    )
 }
 
 fn show_implementations_action(
@@ -572,7 +563,7 @@ fn show_fn_references_action(
                     offset: nav_target.focus_or_full_range().start(),
                 })
             })
-        }
+        },
         _ => None,
     }
 }
@@ -591,9 +582,8 @@ fn runnable_action(
                 cov_mark::hit!(hover_macro_generated_struct_fn_doc_attr);
                 return None;
             }
-
             runnable_fn(sema, func).map(HoverAction::Runnable)
-        }
+        },
         _ => None,
     }
 }

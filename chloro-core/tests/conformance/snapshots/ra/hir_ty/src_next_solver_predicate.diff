@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32290 bytes
+Chloro size:   31887 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -82,6 +82,21 @@ Rustfmt size:  32663 bytes
  pub type PolyExistentialProjection<'db> = Binder<'db, ExistentialProjection<'db>>;
  
  /// Compares via an ordering that will not change if modules are reordered or other changes are
+     match (a, b) {
+         (ExistentialPredicate::Trait(_), ExistentialPredicate::Trait(_)) => Ordering::Equal,
+         (ExistentialPredicate::Projection(_a), ExistentialPredicate::Projection(_b)) => {
+-            // Should sort by def path hash
+             Ordering::Equal
+-        }
++        },
+         (ExistentialPredicate::AutoTrait(_a), ExistentialPredicate::AutoTrait(_b)) => {
+-            // Should sort by def path hash
+             Ordering::Equal
+-        }
++        },
+         (ExistentialPredicate::Trait(_), _) => Ordering::Less,
+         (ExistentialPredicate::Projection(_), ExistentialPredicate::Trait(_)) => Ordering::Greater,
+         (ExistentialPredicate::Projection(_), _) => Ordering::Less,
          (ExistentialPredicate::AutoTrait(_), _) => Ordering::Greater,
      }
  }
@@ -99,6 +114,20 @@ Rustfmt size:  32663 bytes
      }
  
      fn principal(
+     ) -> Option<
+         rustc_type_ir::Binder<DbInterner<'db>, rustc_type_ir::ExistentialTraitRef<DbInterner<'db>>>,
+     > {
+-        self.inner()[0]
+-            .map_bound(|this| match this {
+-                ExistentialPredicate::Trait(tr) => Some(tr),
+-                _ => None,
+-            })
+-            .transpose()
++        self.inner()[0].map_bound(|this| match this {
++            ExistentialPredicate::Trait(tr) => Some(tr),
++            _ => None,
++        }).transpose(
++        )
      }
  
      fn auto_traits(self) -> impl IntoIterator<Item = TraitIdWrapper> {
@@ -114,6 +143,23 @@ Rustfmt size:  32663 bytes
      }
  
      fn projection_bounds(
+         >,
+     > {
+         self.iter().filter_map(|predicate| {
+-            predicate
+-                .map_bound(|pred| match pred {
+-                    ExistentialPredicate::Projection(projection) => Some(projection),
+-                    _ => None,
+-                })
+-                .transpose()
++            predicate.map_bound(|pred| match pred {
++                ExistentialPredicate::Projection(projection) => Some(projection),
++                _ => None,
++            }).transpose(
++            )
+         })
+     }
+ }
                  match (ep_a.skip_binder(), ep_b.skip_binder()) {
                      (ty::ExistentialPredicate::Trait(a), ty::ExistentialPredicate::Trait(b)) => {
                          Ok(ep_a.rebind(ty::ExistentialPredicate::Trait(
@@ -134,6 +180,20 @@ Rustfmt size:  32663 bytes
                      ))),
                      (
                          ty::ExistentialPredicate::AutoTrait(a),
+             },
+         );
+ 
+-        CollectAndApply::collect_and_apply(v, |g| {
++        CollectAndApply::collect_and_apply(
++            v,
++            |g| {
+             BoundExistentialPredicates::new_from_iter(interner, g.iter().cloned())
+-        })
++        },
++        )
+     }
+ }
+ 
      }
  }
  
@@ -144,6 +204,18 @@ Rustfmt size:  32663 bytes
      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
          write!(f, "Binder<")?;
          match self.0.internee.skip_binder() {
+     pub fn inner(&self) -> &WithCachedTypeInfo<Binder<'db, PredicateKind<'db>>> {
+         crate::with_attached_db(|db| {
+             let inner = &self.kind_(db).0;
+-            // SAFETY: The caller already has access to a `Predicate<'db>`, so borrowchecking will
+-            // make sure that our returned value is valid for the lifetime `'db`.
+-            unsafe { std::mem::transmute(inner) }
++            unsafe {
++                std::mem::transmute(inner)
++            }
+         })
+     }
+ 
  }
  
  // FIXME: should make a "header" in interned_vec
@@ -160,6 +232,18 @@ Rustfmt size:  32663 bytes
  
  impl<'db> std::hash::Hash for InternedClausesWrapper<'db> {
      fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+     pub fn inner(&self) -> &InternedClausesWrapper<'db> {
+         crate::with_attached_db(|db| {
+             let inner = self.inner_(db);
+-            // SAFETY: The caller already has access to a `Clauses<'db>`, so borrowchecking will
+-            // make sure that our returned value is valid for the lifetime `'db`.
+-            unsafe { std::mem::transmute(inner) }
++            unsafe {
++                std::mem::transmute(inner)
++            }
+         })
+     }
+ }
      }
  }
  
@@ -284,7 +368,14 @@ Rustfmt size:  32663 bytes
      fn upcast_from(
          from: ty::Binder<DbInterner<'db>, ty::TraitRef<DbInterner<'db>>>,
          interner: DbInterner<'db>,
-         .upcast(interner)
+         from.map_bound(|trait_ref| TraitPredicate {
+             trait_ref,
+             polarity: PredicatePolarity::Positive,
+-        })
+-        .upcast(interner)
++        }).upcast(
++            interner,
++        )
      }
  }
 -impl<'db> UpcastFrom<DbInterner<'db>, Binder<'db, ty::TraitPredicate<DbInterner<'db>>>>

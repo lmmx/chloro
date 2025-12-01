@@ -95,12 +95,11 @@ pub fn lint_eq_or_in_group(lint: &str, lint_is: &str) -> bool {
         return true;
     }
 
-    if let Some(group) = generated::lints::DEFAULT_LINT_GROUPS
-        .iter()
-        .chain(generated::lints::CLIPPY_LINT_GROUPS.iter())
-        .chain(generated::lints::RUSTDOC_LINT_GROUPS.iter())
-        .find(|&check| check.lint.label == lint_is)
-    {
+    if let Some(group) = generated::lints::DEFAULT_LINT_GROUPS.iter().chain(generated::lints::CLIPPY_LINT_GROUPS.iter()).chain(
+        generated::lints::RUSTDOC_LINT_GROUPS.iter(),
+    ).find(
+        |&check| check.lint.label == lint_is,
+    ) {
         group.children.contains(&lint)
     } else {
         false

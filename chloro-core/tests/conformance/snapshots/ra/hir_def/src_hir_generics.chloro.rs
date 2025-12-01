@@ -89,7 +89,7 @@ impl TypeOrConstParamData {
         match self {
             TypeOrConstParamData::TypeParamData(it) => {
                 it.provenance == TypeParamProvenance::TraitSelf
-            }
+            },
             TypeOrConstParamData::ConstParamData(_) => false,
         }
     }
@@ -206,20 +206,20 @@ impl GenericParams {
             GenericDefId::AdtId(AdtId::EnumId(it)) => db.enum_signature(it).generic_params.clone(),
             GenericDefId::AdtId(AdtId::StructId(it)) => {
                 db.struct_signature(it).generic_params.clone()
-            }
+            },
             GenericDefId::AdtId(AdtId::UnionId(it)) => {
                 db.union_signature(it).generic_params.clone()
-            }
+            },
             GenericDefId::ConstId(_) => EMPTY.clone(),
             GenericDefId::FunctionId(function_id) => {
                 db.function_signature(function_id).generic_params.clone()
-            }
+            },
             GenericDefId::ImplId(impl_id) => db.impl_signature(impl_id).generic_params.clone(),
             GenericDefId::StaticId(_) => EMPTY.clone(),
             GenericDefId::TraitId(trait_id) => db.trait_signature(trait_id).generic_params.clone(),
             GenericDefId::TypeAliasId(type_alias_id) => {
                 db.type_alias_signature(type_alias_id).generic_params.clone()
-            }
+            },
         }
     }
 
@@ -231,39 +231,39 @@ impl GenericParams {
             GenericDefId::AdtId(AdtId::EnumId(id)) => {
                 let sig = db.enum_signature(id);
                 (sig.generic_params.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::AdtId(AdtId::StructId(id)) => {
                 let sig = db.struct_signature(id);
                 (sig.generic_params.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::AdtId(AdtId::UnionId(id)) => {
                 let sig = db.union_signature(id);
                 (sig.generic_params.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::ConstId(id) => {
                 let sig = db.const_signature(id);
                 (EMPTY.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::FunctionId(id) => {
                 let sig = db.function_signature(id);
                 (sig.generic_params.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::ImplId(id) => {
                 let sig = db.impl_signature(id);
                 (sig.generic_params.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::StaticId(id) => {
                 let sig = db.static_signature(id);
                 (EMPTY.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::TraitId(id) => {
                 let sig = db.trait_signature(id);
                 (sig.generic_params.clone(), sig.store.clone())
-            }
+            },
             GenericDefId::TypeAliasId(id) => {
                 let sig = db.type_alias_signature(id);
                 (sig.generic_params.clone(), sig.store.clone())
-            }
+            },
         }
     }
 
@@ -275,39 +275,39 @@ impl GenericParams {
             GenericDefId::AdtId(AdtId::EnumId(id)) => {
                 let (sig, sm) = db.enum_signature_with_source_map(id);
                 (sig.generic_params.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::AdtId(AdtId::StructId(id)) => {
                 let (sig, sm) = db.struct_signature_with_source_map(id);
                 (sig.generic_params.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::AdtId(AdtId::UnionId(id)) => {
                 let (sig, sm) = db.union_signature_with_source_map(id);
                 (sig.generic_params.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::ConstId(id) => {
                 let (sig, sm) = db.const_signature_with_source_map(id);
                 (EMPTY.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::FunctionId(id) => {
                 let (sig, sm) = db.function_signature_with_source_map(id);
                 (sig.generic_params.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::ImplId(id) => {
                 let (sig, sm) = db.impl_signature_with_source_map(id);
                 (sig.generic_params.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::StaticId(id) => {
                 let (sig, sm) = db.static_signature_with_source_map(id);
                 (EMPTY.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::TraitId(id) => {
                 let (sig, sm) = db.trait_signature_with_source_map(id);
                 (sig.generic_params.clone(), sig.store.clone(), sm)
-            }
+            },
             GenericDefId::TypeAliasId(id) => {
                 let (sig, sm) = db.type_alias_signature_with_source_map(id);
                 (sig.generic_params.clone(), sig.store.clone(), sm)
-            }
+            },
         }
     }
 
@@ -389,8 +389,9 @@ impl GenericParams {
                 provenance: TypeParamProvenance::TraitSelf,
                 ..
             })
+        ).then(
+            || Self::SELF_PARAM_ID_IN_SELF,
         )
-        .then(|| Self::SELF_PARAM_ID_IN_SELF)
     }
 
     pub fn find_lifetime_by_name(
@@ -399,7 +400,11 @@ impl GenericParams {
         parent: GenericDefId,
     ) -> Option<LifetimeParamId> {
         self.lifetimes.iter().find_map(|(id, p)| {
-            if &p.name == name { Some(LifetimeParamId { local_id: id, parent }) } else { None }
+            if &p.name == name {
+                Some(LifetimeParamId { local_id: id, parent })
+            } else {
+                None
+            }
         })
     }
 }

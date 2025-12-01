@@ -125,7 +125,7 @@ impl<'db> HirDisplay<'db> for LocalName<'db> {
             LocalName::Unknown(l) => write!(f, "_{}", u32::from(l.into_raw())),
             LocalName::Binding(n, l) => {
                 write!(f, "{}_{}", n.display(f.db, f.edition()), u32::from(l.into_raw()))
-            }
+            },
         }
     }
 }
@@ -269,7 +269,7 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                     Some(terminator) => match &terminator.kind {
                         TerminatorKind::Goto { target } => {
                             wln!(this, "goto 'bb{};", u32::from(target.into_raw()))
-                        }
+                        },
                         TerminatorKind::SwitchInt { discr, targets } => {
                             w!(this, "switch ");
                             this.operand(discr);
@@ -280,7 +280,7 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                                 }
                                 wln!(this, "_ => {},", this.basic_block_id(targets.otherwise()));
                             });
-                        }
+                        },
                         TerminatorKind::Call { func, args, destination, target, .. } => {
                             w!(this, "Call ");
                             this.with_block(|this| {
@@ -300,7 +300,7 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                                 }
                                 wln!(this, ",");
                             });
-                        }
+                        },
                         _ => wln!(this, "{:?};", terminator),
                     },
                     None => wln!(this, "<no-terminator>;"),
@@ -377,10 +377,8 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
     fn operand(&mut self, r: &Operand<'db>) {
         match &r.kind {
             OperandKind::Copy(p) | OperandKind::Move(p) => {
-                // MIR at the time of writing doesn't have difference between move and copy, so we show them
-                // equally. Feel free to change it.
                 self.place(p);
-            }
+            },
             OperandKind::Constant { konst, .. } => w!(self, "Const({})", self.hir_display(konst)),
             OperandKind::Static(s) => w!(self, "Static({:?})", s),
         }
@@ -399,52 +397,52 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                     } => w!(self, "&mut "),
                 }
                 self.place(p);
-            }
+            },
             Rvalue::Aggregate(AggregateKind::Tuple(_), it) => {
                 w!(self, "(");
                 self.operand_list(it);
                 w!(self, ")");
-            }
+            },
             Rvalue::Aggregate(AggregateKind::Array(_), it) => {
                 w!(self, "[");
                 self.operand_list(it);
                 w!(self, "]");
-            }
+            },
             Rvalue::Repeat(op, len) => {
                 w!(self, "[");
                 self.operand(op);
                 w!(self, "; {}]", len.display_test(self.db, self.display_target));
-            }
+            },
             Rvalue::Aggregate(AggregateKind::Adt(_, _), it) => {
                 w!(self, "Adt(");
                 self.operand_list(it);
                 w!(self, ")");
-            }
+            },
             Rvalue::Aggregate(AggregateKind::Closure(_), it) => {
                 w!(self, "Closure(");
                 self.operand_list(it);
                 w!(self, ")");
-            }
+            },
             Rvalue::Aggregate(AggregateKind::Union(_, _), it) => {
                 w!(self, "Union(");
                 self.operand_list(it);
                 w!(self, ")");
-            }
+            },
             Rvalue::Len(p) => {
                 w!(self, "Len(");
                 self.place(p);
                 w!(self, ")");
-            }
+            },
             Rvalue::Cast(ck, op, ty) => {
                 w!(self, "Cast({ck:?}, ");
                 self.operand(op);
                 w!(self, ", {})", self.hir_display(ty));
-            }
+            },
             Rvalue::CheckedBinaryOp(b, o1, o2) => {
                 self.operand(o1);
                 w!(self, " {b} ");
                 self.operand(o2);
-            }
+            },
             Rvalue::UnaryOp(u, o) => {
                 let u = match u {
                     UnOp::Not => "!",
@@ -452,27 +450,28 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                 };
                 w!(self, "{u} ");
                 self.operand(o);
-            }
+            },
             Rvalue::Discriminant(p) => {
                 w!(self, "Discriminant(");
                 self.place(p);
                 w!(self, ")");
-            }
+            },
             Rvalue::ShallowInitBoxWithAlloc(_) => w!(self, "ShallowInitBoxWithAlloc"),
             Rvalue::ShallowInitBox(op, _) => {
                 w!(self, "ShallowInitBox(");
                 self.operand(op);
                 w!(self, ")");
-            }
+            },
             Rvalue::CopyForDeref(p) => {
                 w!(self, "CopyForDeref(");
                 self.place(p);
                 w!(self, ")");
-            }
+            },
             Rvalue::ThreadLocalRef(n)
             | Rvalue::AddressOf(n)
             | Rvalue::BinaryOp(n)
-            | Rvalue::NullaryOp(n) => match *n {},
+            | Rvalue::NullaryOp(n) => match *n {
+            },
         }
     }
 

@@ -133,7 +133,11 @@ pub enum LiteralOrConst {
 
 impl Literal {
     pub fn negate(self) -> Option<Self> {
-        if let Literal::Int(i, k) = self { Some(Literal::Int(-i, k)) } else { None }
+        if let Literal::Int(i, k) = self {
+            Some(Literal::Int(-i, k))
+        } else {
+            None
+        }
     }
 }
 
@@ -153,26 +157,26 @@ impl From<ast::LiteralKind> for Literal {
                     let builtin = lit.suffix().and_then(BuiltinInt::from_suffix);
                     Literal::Int(lit.value().unwrap_or(0) as i128, builtin)
                 }
-            }
+            },
             LiteralKind::FloatNumber(lit) => {
                 let ty = lit.suffix().and_then(BuiltinFloat::from_suffix);
                 Literal::Float(FloatTypeWrapper::new(Symbol::intern(&lit.value_string())), ty)
-            }
+            },
             LiteralKind::ByteString(bs) => {
                 let text = bs.value().map_or_else(|_| Default::default(), Box::from);
                 Literal::ByteString(text)
-            }
+            },
             LiteralKind::String(s) => {
                 let text = s.value().map_or_else(|_| Symbol::empty(), |it| Symbol::intern(&it));
                 Literal::String(text)
-            }
+            },
             LiteralKind::CString(s) => {
                 let text = s.value().map_or_else(|_| Default::default(), Box::from);
                 Literal::CString(text)
-            }
+            },
             LiteralKind::Byte(b) => {
                 Literal::Uint(b.value().unwrap_or_default() as u128, Some(BuiltinUint::U8))
-            }
+            },
             LiteralKind::Char(c) => Literal::Char(c.value().unwrap_or_default()),
             LiteralKind::Bool(val) => Literal::Bool(val),
         }
@@ -635,21 +639,22 @@ impl Pat {
             | Pat::ConstBlock(..)
             | Pat::Wild
             | Pat::Missing
-            | Pat::Expr(_) => {}
+            | Pat::Expr(_) => {
+            },
             Pat::Bind { subpat, .. } => {
                 subpat.iter().copied().for_each(f);
-            }
+            },
             Pat::Or(args) | Pat::Tuple { args, .. } | Pat::TupleStruct { args, .. } => {
                 args.iter().copied().for_each(f);
-            }
+            },
             Pat::Ref { pat, .. } => f(*pat),
             Pat::Slice { prefix, slice, suffix } => {
                 let total_iter = prefix.iter().chain(slice.iter()).chain(suffix.iter());
                 total_iter.copied().for_each(f);
-            }
+            },
             Pat::Record { args, .. } => {
                 args.iter().map(|f| f.pat).for_each(f);
-            }
+            },
             Pat::Box { inner } => f(*inner),
         }
     }

@@ -87,14 +87,12 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
     match &d.field_list_parent.to_node(&root) {
         Either::Left(field_list_parent) => {
             let missing_fields = ctx.sema.record_literal_missing_fields(field_list_parent);
-
             let mut locals = FxHashMap::default();
             ctx.sema.scope(field_list_parent.syntax())?.process_all_names(&mut |name, def| {
                 if let hir::ScopeDef::Local(local) = def {
                     locals.insert(name, local);
                 }
             });
-
             let generate_fill_expr = |ty: &Type<'_>| match ctx.config.expr_fill_default {
                 ExprFillDefaultMode::Todo => make::ext::expr_todo(),
                 ExprFillDefaultMode::Underscore => make::ext::expr_underscore(),
@@ -102,7 +100,6 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
                     get_default_constructor(ctx, d, ty).unwrap_or_else(make::ext::expr_todo)
                 }
             };
-
             let old_field_list = field_list_parent.record_expr_field_list()?;
             let new_field_list = old_field_list.clone_for_update();
             for (f, ty) in missing_fields.iter() {
@@ -146,10 +143,9 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
                 new_field_list.add_field(field.clone_for_update());
             }
             build_text_edit(new_field_list.syntax(), old_field_list.syntax())
-        }
+        },
         Either::Right(field_list_parent) => {
             let missing_fields = ctx.sema.record_pattern_missing_fields(field_list_parent);
-
             let old_field_list = field_list_parent.record_pat_field_list()?;
             let new_field_list = old_field_list.clone_for_update();
             for (f, _) in missing_fields.iter() {
@@ -164,7 +160,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
                 new_field_list.add_field(field.clone_for_update());
             }
             build_text_edit(new_field_list.syntax(), old_field_list.syntax())
-        }
+        },
     }
 }
 
@@ -232,9 +228,7 @@ fn get_default_constructor(
         Some(make::ext::expr_ty_new(&make_ty(ty, ctx.sema.db, module, ctx.edition)))
     } else if ty.as_adt() == famous_defs.core_option_Option()?.ty(ctx.sema.db).as_adt() {
         Some(make::ext::option_none())
-    } else if !ty.is_array()
-        && ty.impls_trait(ctx.sema.db, famous_defs.core_default_Default()?, &[])
-    {
+    } else if !ty.is_array() && ty.impls_trait(ctx.sema.db, famous_defs.core_default_Default()?, &[]) {
         Some(make::ext::expr_ty_default(&make_ty(ty, ctx.sema.db, module, ctx.edition)))
     } else {
         None

@@ -43,17 +43,17 @@ fn generate_record_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
         format!("Generate `{deref_type_to_generate:?}` impl using `{field_name}`"),
         target,
         |edit| {
-            generate_edit(
-                ctx.db(),
-                edit,
-                strukt,
-                field_type.syntax(),
-                field_name.syntax(),
-                deref_type_to_generate,
-                trait_path,
-                module.krate().edition(ctx.db()),
-            )
-        },
+        generate_edit(
+            ctx.db(),
+            edit,
+            strukt,
+            field_type.syntax(),
+            field_name.syntax(),
+            deref_type_to_generate,
+            trait_path,
+            module.krate().edition(ctx.db()),
+        )
+    },
     )
 }
 
@@ -84,17 +84,17 @@ fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()
         format!("Generate `{deref_type_to_generate:?}` impl using `{field}`"),
         target,
         |edit| {
-            generate_edit(
-                ctx.db(),
-                edit,
-                strukt,
-                field_type.syntax(),
-                field_list_index,
-                deref_type_to_generate,
-                trait_path,
-                module.krate().edition(ctx.db()),
-            )
-        },
+        generate_edit(
+            ctx.db(),
+            edit,
+            strukt,
+            field_type.syntax(),
+            field_list_index,
+            deref_type_to_generate,
+            trait_path,
+            module.krate().edition(ctx.db()),
+        )
+    },
     )
 }
 

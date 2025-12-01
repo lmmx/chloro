@@ -167,9 +167,8 @@ pub(crate) fn view_memory_layout(
         }
     }
 
-    ty.layout(db)
-        .map(|layout| {
-            let item_name = match def {
+    ty.layout(db).map(|layout| {
+        let item_name = match def {
                 // def is a datatype
                 Definition::Adt(_)
                 | Definition::TypeAlias(_)
@@ -179,10 +178,8 @@ pub(crate) fn view_memory_layout(
                 // def is an item
                 def => def.name(db).map(|n| n.as_str().to_owned()).unwrap_or("[ROOT]".to_owned()),
             };
-
-            let typename = ty.display(db, display_target).to_string();
-
-            let mut nodes = vec![MemoryLayoutNode {
+        let typename = ty.display(db, display_target).to_string();
+        let mut nodes = vec![MemoryLayoutNode {
                 item_name,
                 typename,
                 size: layout.size(),
@@ -192,11 +189,10 @@ pub(crate) fn view_memory_layout(
                 children_start: -1,
                 children_len: 0,
             }];
-            read_layout(&mut nodes, db, &ty, &layout, 0, display_target);
-
-            RecursiveMemoryLayout { nodes }
-        })
-        .ok()
+        read_layout(&mut nodes, db, &ty, &layout, 0, display_target);
+        RecursiveMemoryLayout { nodes }
+    }).ok(
+    )
 }
 
 #[cfg(test)]

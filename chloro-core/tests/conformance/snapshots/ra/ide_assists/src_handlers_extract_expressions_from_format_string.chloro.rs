@@ -187,10 +187,8 @@ fn format_str_index(
     fmt_string: &ast::String,
 ) -> usize {
     let fmt_string = fmt_string.syntax();
-    raw_tokens
-        .iter()
-        .position(|tt| tt.as_token().is_some_and(|tt| tt == fmt_string))
-        .unwrap_or_default()
+    raw_tokens.iter().position(|tt| tt.as_token().is_some_and(|tt| tt == fmt_string)).unwrap_or_default(
+    )
 }
 
 #[cfg(test)]

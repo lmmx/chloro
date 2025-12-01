@@ -28,9 +28,9 @@ use crate::{
 };
 
 pub(crate) fn fn_traits(db: &dyn DefDatabase, krate: Crate) -> impl Iterator<Item = TraitId> + '_ {
-    [LangItem::Fn, LangItem::FnMut, LangItem::FnOnce]
-        .into_iter()
-        .filter_map(move |lang| lang.resolve_trait(db, krate))
+    [LangItem::Fn, LangItem::FnMut, LangItem::FnOnce].into_iter().filter_map(
+        move |lang| lang.resolve_trait(db, krate),
+    )
 }
 
 /// Returns an iterator over the direct super traits (including the trait itself).
@@ -149,19 +149,19 @@ pub fn is_fn_unsafe_to_call(
         hir_def::ItemContainerId::ExternBlockId(block) => {
             let is_intrinsic_block = block.abi(db) == Some(sym::rust_dash_intrinsic);
             if is_intrinsic_block {
-                // legacy intrinsics
-                // extern "rust-intrinsic" intrinsics are unsafe unless they have the rustc_safe_intrinsic attribute
                 if db.attrs(func.into()).by_key(sym::rustc_safe_intrinsic).exists() {
                     Unsafety::Safe
                 } else {
                     Unsafety::Unsafe
                 }
             } else {
-                // Function in an `extern` block are always unsafe to call, except when
-                // it is marked as `safe`.
-                if data.is_safe() { Unsafety::Safe } else { Unsafety::Unsafe }
+                if data.is_safe() {
+                    Unsafety::Safe
+                } else {
+                    Unsafety::Unsafe
+                }
             }
-        }
+        },
         _ => Unsafety::Safe,
     }
 }

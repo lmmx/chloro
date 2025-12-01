@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 41840 bytes
-Chloro size:   41676 bytes
+Chloro size:   41715 bytes
 Rustfmt size:  41840 bytes
 
 ✗ Outputs DIFFER
@@ -62,6 +62,18 @@ Rustfmt size:  41840 bytes
          // deleted or created we trigger a reconstruction of the crate graph
          self.crate_graph_file_dependencies.clear();
          self.detached_files = self
+             }
+         }
+ 
+-        if buf.is_empty() { Ok(()) } else { Err(buf) }
++        if buf.is_empty() {
++            Ok(())
++        } else {
++            Err(buf)
++        }
+     }
+ 
+     fn reload_flycheck(&mut self) {
      }
  }
  
@@ -69,3 +81,10 @@ Rustfmt size:  41840 bytes
  pub fn ws_to_crate_graph(
      workspaces: &[ProjectWorkspace],
      extra_env: &FxHashMap<String, Option<String>>,
+     s1.as_bytes().iter().zip(s2.as_bytes()).all(|(c1, c2)| {
+         let c1_underscore = c1 == &b'_' || c1 == &b'-';
+         let c2_underscore = c2 == &b'_' || c2 == &b'-';
+-
+         c1 == c2 || (c1_underscore && c2_underscore)
+     })
+ }

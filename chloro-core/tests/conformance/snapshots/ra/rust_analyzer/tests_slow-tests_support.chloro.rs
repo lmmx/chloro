@@ -485,10 +485,8 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
             if l.len() != r.len() {
                 return Some((expected, actual));
             }
-
             let mut l = l.iter().collect::<Vec<_>>();
             let mut r = r.iter().collect::<Vec<_>>();
-
             l.retain(|l| match r.iter().position(|r| find_mismatch(l, r).is_none()) {
                 Some(i) => {
                     r.remove(i);
@@ -496,7 +494,6 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
                 }
                 None => true,
             });
-
             if !l.is_empty() {
                 assert!(!r.is_empty());
                 Some((l[0], r[0]))
@@ -504,26 +501,22 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
                 assert_eq!(r.len(), 0);
                 None
             }
-        }
+        },
         (Value::Object(l), Value::Object(r)) => {
             fn sorted_values(obj: &serde_json::Map<String, Value>) -> Vec<&Value> {
                 let mut entries = obj.iter().collect::<Vec<_>>();
                 entries.sort_by_key(|it| it.0);
                 entries.into_iter().map(|(_k, v)| v).collect::<Vec<_>>()
             }
-
             let same_keys = l.len() == r.len() && l.keys().all(|k| r.contains_key(k));
             if !same_keys {
                 return Some((expected, actual));
             }
-
             let l = sorted_values(l);
             let r = sorted_values(r);
-
             l.into_iter().zip(r).find_map(|(l, r)| find_mismatch(l, r))
-        }
+        },
         (Value::Null, Value::Null) => None,
-        // magic string literal "{...}" acts as wildcard for any sub-JSON
         (Value::String(l), _) if l == "{...}" => None,
         _ => Some((expected, actual)),
     }

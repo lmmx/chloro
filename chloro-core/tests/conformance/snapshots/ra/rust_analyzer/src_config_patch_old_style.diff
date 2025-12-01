@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7242 bytes
-Chloro size:   7244 bytes
+Chloro size:   7200 bytes
 Rustfmt size:  7242 bytes
 
 ✗ Outputs DIFFER
@@ -21,4 +21,15 @@ Rustfmt size:  7242 bytes
 +
      // checkOnSave_* -> check_*
      if let Some(Value::Object(obj)) = copy.pointer("/checkOnSave") {
-         // checkOnSave_enable -> checkOnSave
+-        // checkOnSave_enable -> checkOnSave
+         if let Some(b @ Value::Bool(_)) = obj.get("enable") {
+             merge(json, json!({ "checkOnSave": b }));
+         }
+             for (k, v) in src {
+                 merge(dst.entry(k).or_insert(v.clone()), v)
+             }
+-        }
++        },
+         (dst, src) => *dst = src,
+     }
+ }

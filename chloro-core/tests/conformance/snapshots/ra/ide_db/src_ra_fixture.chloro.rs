@@ -38,8 +38,7 @@ impl RootDatabase {
                 .map(|(file_id, range)| (file_id.file_id(&db), range))
                 .collect();
             (db, files, fixture.sysroot_files)
-        })
-        .map_err(|error| {
+        }).map_err(|error| {
             tracing::error!(
                 "cannot crate the crate graph: {}\nCrate graph:\n{}\n",
                 if let Some(&s) = error.downcast_ref::<&'static str>() {
@@ -243,17 +242,13 @@ impl RaFixtureAnalysis {
         range: TextRange,
     ) -> impl Iterator<Item = TextRange> {
         // This could be `None` if the file is empty.
-        self.virtual_file_id_to_line(virtual_file)
-            .and_then(|line| self.line_offsets.get(line))
-            .into_iter()
-            .flat_map(move |&tmp_file_offset| {
-                // Resolve the offset relative to the virtual file to an offset relative to the combined indentation-trimmed file
-                let range = range + tmp_file_offset;
-                // Then resolve that to an offset relative to the real file.
-                self.mapper.map_range_up(range)
-            })
-            // And finally resolve the offset relative to the literal to relative to the file.
-            .filter_map(|range| self.literal.map_range_up(range))
+        self.virtual_file_id_to_line(virtual_file).and_then(|line| self.line_offsets.get(line)).into_iter(
+        ).flat_map(move |&tmp_file_offset| {
+            let range = range + tmp_file_offset;
+            self.mapper.map_range_up(range)
+        }).filter_map(
+            |range| self.literal.map_range_up(range),
+        )
     }
 
     pub fn map_offset_up(&self, virtual_file: FileId, offset: TextSize) -> Option<TextSize> {
@@ -316,7 +311,6 @@ where
         .filter_map(|item| item.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id).ok())
         .collect::<Collection>();
     if result.is_empty() {
-        // The collection was emptied by the upmapping - all items errored, therefore mark it as erroring as well.
         Err(())
     } else {
         Ok(result)
@@ -391,7 +385,11 @@ impl<V: UpmapFromRaFixture, S: BuildHasher + Default> UpmapFromRaFixture for std
                 ))
             })
             .collect::<std::collections::HashMap<_, _, _>>();
-        if result.is_empty() { Err(()) } else { Ok(result) }
+        if result.is_empty() {
+            Err(())
+        } else {
+            Ok(result)
+        }
     }
 }
 

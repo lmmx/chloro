@@ -55,7 +55,7 @@ impl<'db> FulfillmentError<'db> {
             | FulfillmentErrorCode::ConstEquate(_, _) => true,
             FulfillmentErrorCode::Cycle(_) | FulfillmentErrorCode::Ambiguity { overflow: _ } => {
                 false
-            }
+            },
         }
     }
 }
@@ -351,13 +351,16 @@ impl<'db> BestObligation<'db> {
                 goal.goal().param_env,
                 pred,
             );
-            self.with_derived_obligation(obligation, |this| {
+            self.with_derived_obligation(
+                obligation,
+                |this| {
                 goal.infcx().visit_proof_tree_at_depth(
                     goal.goal().with(interner, pred),
                     goal.depth() + 1,
                     this,
                 )
-            })
+            },
+            )
         } else {
             ControlFlow::Continue(())
         }
@@ -375,9 +378,7 @@ impl<'db> BestObligation<'db> {
         goal: &inspect::InspectGoal<'_, 'db>,
     ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
-        if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
-            && !projection_clause.bound_vars().is_empty()
-        {
+        if let Some(projection_clause) = goal.goal().predicate.as_projection_clause() && !projection_clause.bound_vars().is_empty() {
             let pred = projection_clause.map_bound(|proj| proj.projection_term.trait_ref(interner));
             let obligation = Obligation::new(
                 interner,
@@ -385,13 +386,16 @@ impl<'db> BestObligation<'db> {
                 goal.goal().param_env,
                 deeply_normalize_for_diagnostics(goal.infcx(), goal.goal().param_env, pred),
             );
-            self.with_derived_obligation(obligation, |this| {
+            self.with_derived_obligation(
+                obligation,
+                |this| {
                 goal.infcx().visit_proof_tree_at_depth(
                     goal.goal().with(interner, pred),
                     goal.depth() + 1,
                     this,
                 )
-            })
+            },
+            )
         } else {
             ControlFlow::Continue(())
         }
@@ -415,13 +419,16 @@ impl<'db> BestObligation<'db> {
             goal.goal().param_env,
             alias.trait_ref(interner),
         );
-        self.with_derived_obligation(obligation, |this| {
+        self.with_derived_obligation(
+            obligation,
+            |this| {
             goal.infcx().visit_proof_tree_at_depth(
                 goal.goal().with(interner, alias.trait_ref(interner)),
                 goal.depth() + 1,
                 this,
             )
-        })
+        },
+        )
     }
 
     /// If we have no candidates, then it's likely that there is a
@@ -626,13 +633,13 @@ impl<'db> NextSolverError<'db> {
         match self {
             NextSolverError::TrueError(obligation) => {
                 fulfillment_error_for_no_solution(infcx, obligation.clone())
-            }
+            },
             NextSolverError::Ambiguity(obligation) => {
                 fulfillment_error_for_stalled(infcx, obligation.clone())
-            }
+            },
             NextSolverError::Overflow(obligation) => {
                 fulfillment_error_for_overflow(infcx, obligation.clone())
-            }
+            },
         }
     }
 }
@@ -731,21 +738,19 @@ mod wf {
                 return Default::default();
             }
 
-            self.interner()
-                .predicates_of(def_id)
-                .iter_instantiated(self.interner(), args)
-                .map(|pred| {
-                    let cause = ObligationCause::new();
-                    Obligation::with_depth(
-                        self.interner(),
-                        cause,
-                        self.recursion_depth,
-                        self.param_env,
-                        pred,
-                    )
-                })
-                .filter(|pred| !pred.has_escaping_bound_vars())
-                .collect()
+            self.interner().predicates_of(def_id).iter_instantiated(self.interner(), args).map(|pred| {
+                let cause = ObligationCause::new();
+                Obligation::with_depth(
+                    self.interner(),
+                    cause,
+                    self.recursion_depth,
+                    self.param_env,
+                    pred,
+                )
+            }).filter(
+                |pred| !pred.has_escaping_bound_vars(),
+            ).collect(
+            )
         }
 
         fn add_wf_preds_for_dyn_ty(
@@ -787,9 +792,7 @@ mod wf {
             // am looking forward to the future here.
             if !data.has_escaping_bound_vars() && !region.has_escaping_bound_vars() {
                 let implicit_bounds = object_region_bounds(self.interner(), data);
-
                 let explicit_bound = region;
-
                 self.out.reserve(implicit_bounds.len());
                 for implicit_bound in implicit_bounds {
                     let cause = ObligationCause::new();
@@ -805,13 +808,6 @@ mod wf {
                         outlives,
                     ));
                 }
-
-                // We don't add any wf predicates corresponding to the trait ref's generic arguments
-                // which allows code like this to compile:
-                // ```rust
-                // trait Trait<T: Sized> {}
-                // fn foo(_: &dyn Trait<[u32]>) {}
-                // ```
             }
         }
     }
@@ -1154,27 +1150,17 @@ mod wf {
             .iter()
             .map(|predicate| predicate.with_self_ty(interner, erased_self_ty));
 
-        rustc_type_ir::elaborate::elaborate(interner, predicates)
-            .filter_map(|pred| {
-                debug!(?pred);
-                match pred.kind().skip_binder() {
-                    ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
-                        // Search for a bound of the form `erased_self_ty
-                        // : 'a`, but be wary of something like `for<'a>
-                        // erased_self_ty : 'a` (we interpret a
-                        // higher-ranked bound like that as 'static,
-                        // though at present the code in `fulfill.rs`
-                        // considers such bounds to be unsatisfiable, so
-                        // it's kind of a moot point since you could never
-                        // construct such an object, but this seems
-                        // correct even if that code changes).
-                        if t == &erased_self_ty && !r.has_escaping_bound_vars() {
-                            Some(*r)
-                        } else {
-                            None
-                        }
+        rustc_type_ir::elaborate::elaborate(interner, predicates).filter_map(|pred| {
+            debug!(?pred);
+            match pred.kind().skip_binder() {
+                ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
+                    if t == &erased_self_ty && !r.has_escaping_bound_vars() {
+                        Some(*r)
+                    } else {
+                        None
                     }
-                    ClauseKind::Trait(_)
+                },
+                ClauseKind::Trait(_)
                     | ClauseKind::HostEffect(..)
                     | ClauseKind::RegionOutlives(_)
                     | ClauseKind::Projection(_)
@@ -1182,8 +1168,8 @@ mod wf {
                     | ClauseKind::WellFormed(_)
                     | ClauseKind::UnstableFeature(_)
                     | ClauseKind::ConstEvaluatable(_) => None,
-                }
-            })
-            .collect()
+            }
+        }).collect(
+        )
     }
 }

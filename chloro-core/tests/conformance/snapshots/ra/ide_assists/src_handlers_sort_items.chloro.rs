@@ -20,9 +20,7 @@ pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
         add_sort_fields_assist(acc, union_ast.record_field_list()?)
     } else if let Some(variant_ast) = ctx.find_node_at_offset::<ast::Variant>() {
         add_sort_field_list_assist(acc, variant_ast.field_list())
-    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>()
-    {
-        // should be above enum and below struct
+    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>() {
         add_sort_fields_assist(acc, enum_struct_variant_ast)
     } else if let Some(enum_ast) = ctx.find_node_at_offset::<ast::Enum>() {
         add_sort_variants_assist(acc, enum_ast.variant_list()?)
@@ -53,15 +51,18 @@ impl AddRewrite for Assists {
         new: Vec<T>,
         target: &SyntaxNode,
     ) -> Option<()> {
-        self.add(AssistId::refactor_rewrite("sort_items"), label, target.text_range(), |builder| {
+        self.add(
+            AssistId::refactor_rewrite("sort_items"),
+            label,
+            target.text_range(),
+            |builder| {
             let mut editor = builder.make_editor(target);
-
             old.into_iter()
                 .zip(new)
                 .for_each(|(old, new)| editor.replace(old.syntax(), new.syntax()));
-
             builder.add_file_edits(builder.file_id, editor)
-        })
+        },
+        )
     }
 }
 
@@ -74,7 +75,7 @@ fn add_sort_field_list_assist(
         _ => {
             cov_mark::hit!(not_applicable_if_sorted_or_empty_or_single);
             None
-        }
+        },
     }
 }
 
@@ -130,18 +131,13 @@ fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -
 }
 
 fn sort_by_name<T: HasName + Clone>(initial: &[T]) -> Vec<T> {
-    initial
-        .iter()
-        .cloned()
-        .sorted_by(|a, b| match (a.name(), b.name()) {
-            (Some(a), Some(b)) => Ord::cmp(&a.to_string(), &b.to_string()),
-
-            // unexpected, but just in case
-            (None, None) => Ordering::Equal,
-            (None, Some(_)) => Ordering::Less,
-            (Some(_), None) => Ordering::Greater,
-        })
-        .collect()
+    initial.iter().cloned().sorted_by(|a, b| match (a.name(), b.name()) {
+        (Some(a), Some(b)) => Ord::cmp(&a.to_string(), &b.to_string()),
+        (None, None) => Ordering::Equal,
+        (None, Some(_)) => Ordering::Less,
+        (Some(_), None) => Ordering::Greater,
+    }).collect(
+    )
 }
 
 #[cfg(test)]

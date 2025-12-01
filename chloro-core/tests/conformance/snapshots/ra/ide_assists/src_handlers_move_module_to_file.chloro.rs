@@ -36,7 +36,7 @@ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         "Extract module to file",
         target,
         |builder| {
-            let path = {
+        let path = {
                 let mut buf = String::from("./");
                 let db = ctx.db();
                 match parent_module.name(db) {
@@ -68,7 +68,7 @@ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                 }
                 buf
             };
-            let contents = {
+        let contents = {
                 let items = module_items.dedent(IndentLevel(1)).to_string();
                 let mut items =
                     items.trim_start_matches('{').trim_end_matches('}').trim().to_owned();
@@ -77,23 +77,19 @@ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                 }
                 items
             };
-
-            let buf = format!("mod {module_name};");
-
-            let replacement_start = match module_ast.mod_token() {
+        let buf = format!("mod {module_name};");
+        let replacement_start = match module_ast.mod_token() {
                 Some(mod_token) => mod_token.text_range(),
                 None => module_ast.syntax().text_range(),
             }
             .start();
-
-            builder.replace(
+        builder.replace(
                 TextRange::new(replacement_start, module_ast.syntax().text_range().end()),
                 buf,
             );
-
-            let dst = AnchoredPathBuf { anchor: ctx.vfs_file_id(), path };
-            builder.create_file(dst, contents);
-        },
+        let dst = AnchoredPathBuf { anchor: ctx.vfs_file_id(), path };
+        builder.create_file(dst, contents);
+    },
     )
 }
 

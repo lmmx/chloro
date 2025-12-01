@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166539 bytes
+Chloro size:   166047 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -327,6 +327,87 @@ Rustfmt size:  167117 bytes
              goto_type_def: enable && self.hover_actions_gotoTypeDef_enable().to_owned(),
          }
      }
+             granularity: match self.imports_granularity_group(source_root) {
+                 ImportGranularityDef::Item | ImportGranularityDef::Preserve => {
+                     ImportGranularity::Item
+-                }
++                },
+                 ImportGranularityDef::Crate => ImportGranularity::Crate,
+                 ImportGranularityDef::Module => ImportGranularity::Module,
+                 ImportGranularityDef::One => ImportGranularity::One,
+     pub fn linked_manifests(&self) -> impl Iterator<Item = &Utf8Path> + '_ {
+         self.linkedProjects().iter().filter_map(|it| match it {
+             ManifestOrProjectJson::Manifest(p) => Some(&**p),
+-            // despite having a buildfile, using this variant as a manifest
+-            // will fail.
+             ManifestOrProjectJson::DiscoveredProjectJson { .. } => None,
+             ManifestOrProjectJson::ProjectJson { .. } => None,
+         })
+     }
+ 
+     pub fn has_linked_project_jsons(&self) -> bool {
+-        self.linkedProjects()
+-            .iter()
+-            .any(|it| matches!(it, ManifestOrProjectJson::ProjectJson { .. }))
++        self.linkedProjects().iter().any(
++            |it| matches!(it, ManifestOrProjectJson::ProjectJson { .. }),
++        )
+     }
+ 
+     pub fn discover_workspace_config(&self) -> Option<&DiscoverWorkspaceConfig> {
+             linked_projects.clone()
+         };
+ 
+-        projects
+-            .iter()
+-            .filter_map(|linked_project| match linked_project {
+-                ManifestOrProjectJson::Manifest(it) => {
+-                    let path = self.root_path.join(it);
+-                    ProjectManifest::from_manifest_file(path)
+-                        .map_err(|e| tracing::error!("failed to load linked project: {}", e))
+-                        .ok()
+-                        .map(Into::into)
+-                }
+-                ManifestOrProjectJson::DiscoveredProjectJson { data, buildfile } => {
+-                    let root_path = buildfile.parent().expect("Unable to get parent of buildfile");
+-
+-                    Some(ProjectJson::new(None, root_path, data.clone()).into())
+-                }
+-                ManifestOrProjectJson::ProjectJson(it) => {
+-                    Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
+-                }
+-            })
+-            .collect()
++        projects.iter().filter_map(|linked_project| match linked_project {
++            ManifestOrProjectJson::Manifest(it) => {
++                let path = self.root_path.join(it);
++                ProjectManifest::from_manifest_file(path).map_err(
++                    |e| tracing::error!("failed to load linked project: {}", e),
++                ).ok(
++                ).map(
++                    Into::into,
++                )
++            },
++            ManifestOrProjectJson::DiscoveredProjectJson { data, buildfile } => {
++                let root_path = buildfile.parent().expect("Unable to get parent of buildfile");
++                Some(ProjectJson::new(None, root_path, data.clone()).into())
++            },
++            ManifestOrProjectJson::ProjectJson(it) => {
++                Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
++            },
++        }).collect(
++        )
+     }
+ 
+     pub fn prefill_caches(&self) -> bool {
+             watcher: match self.files_watcher() {
+                 FilesWatcherDef::Client if self.did_change_watched_files_dynamic_registration() => {
+                     FilesWatcher::Client
+-                }
++                },
+                 _ => FilesWatcher::Server,
+             },
+             exclude: self.excluded().collect(),
      }
  
      pub(crate) fn completion_snippets_default() -> FxIndexMap<String, SnippetDef> {
@@ -346,6 +427,67 @@ Rustfmt size:  167117 bytes
      }
  
      pub fn rustfmt(&self, source_root_id: Option<SourceRootId>) -> RustfmtConfig {
+                 let mut args = args.clone();
+                 let command = args.remove(0);
+                 RustfmtConfig::CustomCommand { command, args }
+-            }
++            },
+             Some(_) | None => RustfmtConfig::Rustfmt {
+                 extra_args: self.rustfmt_extraArgs(source_root_id).clone(),
+                 enable_range_formatting: *self.rustfmt_rangeFormatting_enable(source_root_id),
+                         }
+                     },
+                 }
+-            }
++            },
+             Some(_) | None => FlycheckConfig::CargoCommand {
+                 command: self.check_command(source_root).clone(),
+                 options: CargoOptions {
+-                    target_tuples: self
+-                        .check_targets(source_root)
+-                        .clone()
+-                        .and_then(|targets| match &targets.0[..] {
+-                            [] => None,
+-                            targets => Some(targets.into()),
+-                        })
+-                        .unwrap_or_else(|| {
+-                            self.cargo_target(source_root).clone().into_iter().collect()
+-                        }),
+-                    all_targets: self
+-                        .check_allTargets(source_root)
+-                        .unwrap_or(*self.cargo_allTargets(source_root)),
+-                    no_default_features: self
+-                        .check_noDefaultFeatures(source_root)
+-                        .unwrap_or(*self.cargo_noDefaultFeatures(source_root)),
++                    target_tuples: self.check_targets(source_root).clone().and_then(|targets| match &targets.0[..] {
++                        [] => None,
++                        targets => Some(targets.into()),
++                    }).unwrap_or_else(|| {
++                        self.cargo_target(source_root).clone().into_iter().collect()
++                    }),
++                    all_targets: self.check_allTargets(source_root).unwrap_or(
++                        *self.cargo_allTargets(source_root),
++                    ),
++                    no_default_features: self.check_noDefaultFeatures(source_root).unwrap_or(
++                        *self.cargo_noDefaultFeatures(source_root),
++                    ),
+                     all_features: matches!(
+                         self.check_features(source_root)
+                             .as_ref()
+                             .unwrap_or(self.cargo_features(source_root)),
+                         CargoFeaturesDef::All
+                     ),
+-                    features: match self
+-                        .check_features(source_root)
+-                        .clone()
+-                        .unwrap_or_else(|| self.cargo_features(source_root).clone())
+-                    {
++                    features: match self.check_features(source_root).clone().unwrap_or_else(
++                        || self.cargo_features(source_root).clone(),
++                    ) {
+                         CargoFeaturesDef::All => vec![],
+                         CargoFeaturesDef::Selected(it) => it,
+                     },
          LensConfig {
              run: *self.lens_enable() && *self.lens_run_enable(),
              debug: *self.lens_enable() && *self.lens_debug_enable(),
@@ -365,14 +507,38 @@ Rustfmt size:  167117 bytes
          }
      }
  
+                 WorkspaceSymbolSearchScopeDef::Workspace => WorkspaceSymbolSearchScope::Workspace,
+                 WorkspaceSymbolSearchScopeDef::WorkspaceAndDependencies => {
+                     WorkspaceSymbolSearchScope::WorkspaceAndDependencies
+-                }
++                },
+             },
+             search_kind: match self.workspace_symbol_search_kind(source_root) {
+                 WorkspaceSymbolSearchKindDef::OnlyTypes => WorkspaceSymbolSearchKind::OnlyTypes,
+         match self.numThreads() {
+             Some(NumThreads::Concrete(0)) | None | Some(NumThreads::Physical) => {
+                 num_cpus::get_physical()
+-            }
++            },
+             &Some(NumThreads::Concrete(n)) => n,
+             Some(NumThreads::Logical) => num_cpus::get(),
+         }
          self.typing_triggerChars().as_deref().unwrap_or_default()
      }
  
 -    // VSCode is our reference implementation, so we allow ourselves to work around issues by
 -    // special casing certain versions
      pub fn visual_studio_code_version(&self) -> Option<&Version> {
-         self.client_info
-             .as_ref()
+-        self.client_info
+-            .as_ref()
+-            .filter(|it| it.name.starts_with("Visual Studio Code"))
+-            .and_then(|it| it.version.as_ref())
++        self.client_info.as_ref().filter(|it| it.name.starts_with("Visual Studio Code")).and_then(
++            |it| it.version.as_ref(),
++        )
+     }
+ 
+     pub fn client_is_neovim(&self) -> bool {
          self.client_info.as_ref().map(|it| it.name == "Neovim").unwrap_or_default()
      }
  }
@@ -426,6 +592,23 @@ Rustfmt size:  167117 bytes
      pub(super) fn serialize<S>(vec: &[String], serializer: S) -> Result<S::Ok, S::Error>
      where
          S: serde::Serializer,
+     {
+         match vec {
+-            // []  case is handled by skip_serializing_if
+             [single] => serializer.serialize_str(single),
+             slice => slice.serialize(serializer),
+         }
+ {
+     let path = String::deserialize(de)?;
+ 
+-    AbsPathBuf::try_from(path.as_ref())
+-        .map_err(|err| serde::de::Error::custom(format!("invalid path name: {err:?}")))
++    AbsPathBuf::try_from(path.as_ref()).map_err(
++        |err| serde::de::Error::custom(format!("invalid path name: {err:?}")),
++    )
+ }
+ 
+ fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
  #[serde(rename_all = "snake_case")]
  pub enum AutoImportExclusion {
      Path(String),
@@ -493,6 +676,145 @@ Rustfmt size:  167117 bytes
      fn from_toml(toml: toml::Table, error_sink: &mut Vec<(String, toml::de::Error)>) -> Self {
          Self {
              workspace: WorkspaceConfigInput::from_toml(&toml, error_sink),
+ ) -> Option<T> {
+     // XXX: check alias first, to work around the VS Code where it pre-fills the
+     // defaults instead of sending an empty object.
+-    alias
+-        .into_iter()
+-        .chain(iter::once(field))
+-        .filter_map(move |field| {
+-            let mut pointer = field.replace('_', "/");
+-            pointer.insert(0, '/');
+-            json.pointer_mut(&pointer)
+-                .map(|it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)))
+-        })
+-        .flat_map(|res| match res {
+-            Ok(it) => Some(it),
+-            Err((e, pointer)) => {
+-                tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
+-                error_sink.push((pointer, e));
+-                None
+-            }
+-        })
+-        .next()
++    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
++        let mut pointer = field.replace('_', "/");
++        pointer.insert(0, '/');
++        json.pointer_mut(&pointer).map(
++            |it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)),
++        )
++    }).flat_map(|res| match res {
++        Ok(it) => Some(it),
++        Err((e, pointer)) => {
++            tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
++            error_sink.push((pointer, e));
++            None
++        },
++    }).next(
++    )
+ }
+ 
+ fn get_field_toml<T: DeserializeOwned>(
+ ) -> Option<T> {
+     // XXX: check alias first, to work around the VS Code where it pre-fills the
+     // defaults instead of sending an empty object.
+-    alias
+-        .into_iter()
+-        .chain(iter::once(field))
+-        .filter_map(move |field| {
+-            let mut pointer = field.replace('_', "/");
+-            pointer.insert(0, '/');
+-            toml_pointer(toml, &pointer)
+-                .map(|it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)))
+-        })
+-        .find(Result::is_ok)
+-        .and_then(|res| match res {
+-            Ok(it) => Some(it),
+-            Err((e, pointer)) => {
+-                tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
+-                error_sink.push((pointer, e));
+-                None
+-            }
+-        })
++    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
++        let mut pointer = field.replace('_', "/");
++        pointer.insert(0, '/');
++        toml_pointer(toml, &pointer).map(
++            |it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)),
++        )
++    }).find(
++        Result::is_ok,
++    ).and_then(|res| match res {
++        Ok(it) => Some(it),
++        Err((e, pointer)) => {
++            tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
++            error_sink.push((pointer, e));
++            None
++        },
++    })
+ }
+ 
+ fn toml_pointer<'a>(toml: &'a toml::Table, pointer: &str) -> Option<&'a toml::Value> {
+     let mut parts = pointer.split('/').skip(1);
+     let first = parts.next()?;
+     let init = toml.get(first)?;
+-    parts.map(|x| x.replace("~1", "/").replace("~0", "~")).try_fold(init, |target, token| {
++    parts.map(|x| x.replace("~1", "/").replace("~0", "~")).try_fold(
++        init,
++        |target, token| {
+         match target {
+             toml::Value::Table(table) => table.get(&token),
+             toml::Value::Array(list) => parse_index(&token).and_then(move |x| list.get(x)),
+             _ => None,
+         }
+-    })
++    },
++    )
+ }
+ 
+ type SchemaField = (&'static str, &'static str, &'static [&'static str], String);
+             ptr.push('_');
+         }
+         ptr.push_str(k);
+-
+         match v {
+             // This is a table config, any entry in it is therefore valid
+             toml::Value::Table(_) if verify(ptr) => (),
+                 .push((ptr.replace('_', "/"), toml::de::Error::custom("unexpected field"))),
+             _ => (),
+         }
+-
+         ptr.truncate(l);
+     }
+ }
+ 
+ #[cfg(test)]
+ fn manual(fields: &[SchemaField]) -> String {
+-    fields.iter().fold(String::new(), |mut acc, (field, _ty, doc, default)| {
++    fields.iter().fold(
++        String::new(),
++        |mut acc, (field, _ty, doc, default)| {
+         let id = field.replace('_', ".");
+         let name = format!("rust-analyzer.{id}");
+         let doc = doc_comment_to_string(doc);
+         } else {
+             format_to_acc!(acc, "## {name} {{#{id}}}\n\nDefault: `{default}`\n\n{doc}\n\n")
+         }
+-    })
++    },
++    )
+ }
+ 
+ fn doc_comment_to_string(doc: &[&str]) -> String {
+-    doc.iter()
+-        .map(|it| it.strip_prefix(' ').unwrap_or(it))
+-        .fold(String::new(), |mut acc, it| format_to_acc!(acc, "{it}\n"))
++    doc.iter().map(|it| it.strip_prefix(' ').unwrap_or(it)).fold(
++        String::new(),
++        |mut acc, it| format_to_acc!(acc, "{it}\n"),
++    )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use std::{borrow::Cow, fs};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10884 bytes
-Chloro size:   10879 bytes
+Chloro size:   10839 bytes
 Rustfmt size:  11524 bytes
 
 ✗ Outputs DIFFER
@@ -38,14 +38,15 @@ Rustfmt size:  11524 bytes
      fn index(&self, index: T) -> &Self::Output {
          &self.params[index]
      }
+     }
  
      pub(crate) fn has_no_predicates(&self) -> bool {
-         self.params.has_no_predicates()
+-        self.params.has_no_predicates()
 -            && self
 -                .parent_generics
 -                .as_ref()
 -                .is_none_or(|g| g.params.has_no_predicates())
-+            && self.parent_generics.as_ref().is_none_or(|g| g.params.has_no_predicates())
++        self.params.has_no_predicates() && self.parent_generics.as_ref().is_none_or(|g| g.params.has_no_predicates())
      }
  
      pub(crate) fn is_empty(&self) -> bool {
@@ -72,17 +73,15 @@ Rustfmt size:  11524 bytes
          &self,
 -    ) -> impl Iterator<Item = ((GenericParamId, GenericParamDataRef<'_>), &ExpressionStore)> + '_
 -    {
--        self.iter_parent().zip(
++    ) -> impl Iterator<Item = ((GenericParamId, GenericParamDataRef<'_>), &ExpressionStore)> + '_ {
+         self.iter_parent().zip(
 -            self.parent_generics()
 -                .into_iter()
 -                .flat_map(|it| std::iter::repeat(&*it.store)),
--        )
-+    ) -> impl Iterator<Item = ((GenericParamId, GenericParamDataRef<'_>), &ExpressionStore)> + '_ {
-+        self.iter_parent()
-+            .zip(self.parent_generics().into_iter().flat_map(|it| std::iter::repeat(&*it.store)))
++            self.parent_generics().into_iter().flat_map(|it| std::iter::repeat(&*it.store)),
+         )
      }
  
-     /// Iterate over the params without parent params.
      ) -> impl DoubleEndedIterator<Item = (GenericParamId, GenericParamDataRef<'_>)> + '_ {
          let mut toc = self.params.iter_type_or_consts().map(from_toc_id(self));
          let trait_self_param = self.has_trait_self_param.then(|| toc.next()).flatten();
@@ -153,7 +152,13 @@ Rustfmt size:  11524 bytes
          }
      }
  
-                     + idx,
+             let idx = lifetime.local_id.into_raw().into_u32() as usize;
+             debug_assert!(idx <= self.params.len_lifetimes());
+             Some(
+-                self.parent_generics().map_or(0, |g| g.len())
+-                    + self.params.trait_self_param().is_some() as usize
+-                    + idx,
++                self.parent_generics().map_or(0, |g| g.len()) + self.params.trait_self_param().is_some() as usize + idx,
              )
          } else {
 -            debug_assert_eq!(
@@ -173,10 +178,20 @@ Rustfmt size:  11524 bytes
 -            params
 -                .trait_self_param()
 -                .map(|idx| idx.into_raw().into_u32() as usize)
+-        }
 +            params.trait_self_param().map(|idx| idx.into_raw().into_u32() as usize)
-         }
++        },
          GenericDefId::ImplId(_) => None,
          _ => {
+             let parent_def = parent_generic_def(db, def)?;
+             let parent_params = db.generic_params(parent_def);
+             let parent_self_idx = parent_params.trait_self_param()?.into_raw().into_u32() as usize;
+             Some(parent_self_idx)
+-        }
++        },
+     }
+ }
+ 
      (LocalTypeOrConstParamId, &'a TypeOrConstParamData),
  ) -> (GenericParamId, GenericParamDataRef<'a>) {
      move |(local_id, p): (_, _)| {

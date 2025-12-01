@@ -393,18 +393,15 @@ impl<'db> RegionConstraintCollector<'db, '_> {
 
     pub(super) fn make_eqregion(&mut self, a: Region<'db>, b: Region<'db>) {
         if a != b {
-            // Eventually, it would be nice to add direct support for
-            // equating regions.
             self.make_subregion(a, b);
             self.make_subregion(b, a);
-
             match (a.kind(), b.kind()) {
                 (RegionKind::ReVar(a), RegionKind::ReVar(b)) => {
                     debug!("make_eqregion: unifying {:?} with {:?}", a, b);
                     if self.unification_table_mut().unify_var_var(a, b).is_ok() {
                         self.storage.any_unifications = true;
                     }
-                }
+                },
                 (RegionKind::ReVar(vid), _) => {
                     debug!("make_eqregion: unifying {:?} with {:?}", vid, b);
                     if self
@@ -414,7 +411,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
                     {
                         self.storage.any_unifications = true;
                     };
-                }
+                },
                 (_, RegionKind::ReVar(vid)) => {
                     debug!("make_eqregion: unifying {:?} with {:?}", a, vid);
                     if self
@@ -424,8 +421,9 @@ impl<'db> RegionConstraintCollector<'db, '_> {
                     {
                         self.storage.any_unifications = true;
                     };
-                }
-                (_, _) => {}
+                },
+                (_, _) => {
+                },
             }
         }
     }
@@ -436,22 +434,21 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         match (sub.kind(), sup.kind()) {
             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");
-            }
+            },
             (_, RegionKind::ReStatic) => {
-                // all regions are subregions of static, so we can ignore this
-            }
+            },
             (RegionKind::ReVar(sub_id), RegionKind::ReVar(sup_id)) => {
                 self.add_constraint(Constraint::VarSubVar(sub_id, sup_id));
-            }
+            },
             (_, RegionKind::ReVar(sup_id)) => {
                 self.add_constraint(Constraint::RegSubVar(sub, sup_id));
-            }
+            },
             (RegionKind::ReVar(sub_id), _) => {
                 self.add_constraint(Constraint::VarSubReg(sub_id, sup));
-            }
+            },
             _ => {
                 self.add_constraint(Constraint::RegSubReg(sub, sup));
-            }
+            },
         }
     }
 
@@ -463,11 +460,10 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     ) -> Region<'db> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);
-        #[expect(clippy::if_same_then_else)]
-        if a.is_static() || b.is_static() {
-            a // nothing lives longer than static
+        #[expect(clippy::if_same_then_else)] if a.is_static() || b.is_static() {
+            a
         } else if a == b {
-            a // LUB(a,a) = a
+            a
         } else {
             self.combine_vars(db, Lub, a, b)
         }
@@ -481,13 +477,12 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     ) -> Region<'db> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: glb_regions({:?}, {:?})", a, b);
-        #[expect(clippy::if_same_then_else)]
-        if a.is_static() {
-            b // static lives longer than everything else
+        #[expect(clippy::if_same_then_else)] if a.is_static() {
+            b
         } else if b.is_static() {
-            a // static lives longer than everything else
+            a
         } else if a == b {
-            a // GLB(a,a) = a
+            a
         } else {
             self.combine_vars(db, Glb, a, b)
         }
@@ -572,9 +567,9 @@ impl<'db> RegionConstraintCollector<'db, '_> {
 
     /// See `InferCtxt::region_constraints_added_in_snapshot`.
     pub fn region_constraints_added_in_snapshot(&self, mark: &Snapshot) -> bool {
-        self.undo_log
-            .region_constraints_in_snapshot(mark)
-            .any(|elt| matches!(elt, AddConstraint(_)))
+        self.undo_log.region_constraints_in_snapshot(mark).any(
+            |elt| matches!(elt, AddConstraint(_)),
+        )
     }
 
     #[inline]
@@ -666,21 +661,21 @@ impl<'db> Rollback<UndoLog<'db>> for RegionConstraintStorage<'db> {
             AddVar(vid) => {
                 self.var_infos.pop().unwrap();
                 assert_eq!(self.var_infos.len(), vid.index());
-            }
+            },
             AddConstraint(index) => {
                 self.data.constraints.pop().unwrap();
                 assert_eq!(self.data.constraints.len(), index);
-            }
+            },
             AddVerify(index) => {
                 self.data.verifys.pop();
                 assert_eq!(self.data.verifys.len(), index);
-            }
+            },
             AddCombination(Glb, ref regions) => {
                 self.glbs.remove(regions);
-            }
+            },
             AddCombination(Lub, ref regions) => {
                 self.lubs.remove(regions);
-            }
+            },
         }
     }
 }

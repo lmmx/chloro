@@ -83,7 +83,7 @@ fn all_mir_bodies<'db>(
         Ok(body) => {
             cb(body.clone());
             body.closures.iter().try_for_each(|&it| for_closure(db, it, &mut cb))
-        }
+        },
         Err(e) => Err(e),
     }
 }
@@ -397,7 +397,11 @@ fn place_case<'db>(
             body.owner.module(db).krate(),
         );
     }
-    if is_part_of { ProjectionCase::DirectPart } else { ProjectionCase::Direct }
+    if is_part_of {
+        ProjectionCase::DirectPart
+    } else {
+        ProjectionCase::Direct
+    }
 }
 
 /// Returns a map from basic blocks to the set of locals that might be ever initialized before

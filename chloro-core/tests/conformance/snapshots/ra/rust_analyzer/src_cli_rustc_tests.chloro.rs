@@ -41,7 +41,7 @@ fn string_to_diagnostic_code_leaky(code: &str) -> DiagnosticCode {
             let v = DiagnosticCode::RustcHardError(format!("E{code}").leak());
             s.insert(code.to_owned(), v);
             v
-        }
+        },
     })
 }
 

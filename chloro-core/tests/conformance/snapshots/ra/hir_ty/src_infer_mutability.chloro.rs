@@ -63,7 +63,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     | AsmOperand::Sym(_)
                     | AsmOperand::Const(_) => (),
                 });
-            }
+            },
             Expr::OffsetOf(_) => (),
             &Expr::If { condition, then_branch, else_branch } => {
                 self.infer_mut_expr(condition, Mutability::Not);
@@ -71,10 +71,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let Some(else_branch) = else_branch {
                     self.infer_mut_expr(else_branch, Mutability::Not);
                 }
-            }
+            },
             Expr::Const(id) => {
                 self.infer_mut_expr(*id, Mutability::Not);
-            }
+            },
             Expr::Let { pat, expr } => self.infer_mut_expr(*expr, self.pat_bound_mutability(*pat)),
             Expr::Block { id: _, statements, tail, label: _ }
             | Expr::Async { id: _, statements, tail }
@@ -98,11 +98,11 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let Some(tail) = tail {
                     self.infer_mut_expr(*tail, Mutability::Not);
                 }
-            }
+            },
             Expr::MethodCall { receiver: it, method_name: _, args, generic_args: _ }
             | Expr::Call { callee: it, args } => {
                 self.infer_mut_not_expr_iter(args.iter().copied().chain(Some(*it)));
-            }
+            },
             Expr::Match { expr, arms } => {
                 let m = self.pat_iter_bound_mutability(arms.iter().map(|it| it.pat));
                 self.infer_mut_expr(*expr, m);
@@ -112,7 +112,7 @@ impl<'db> InferenceContext<'_, 'db> {
                         self.infer_mut_expr(g, Mutability::Not);
                     }
                 }
-            }
+            },
             Expr::Yield { expr }
             | Expr::Yeet { expr }
             | Expr::Return { expr }
@@ -120,13 +120,13 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let &Some(expr) = expr {
                     self.infer_mut_expr(expr, Mutability::Not);
                 }
-            }
+            },
             Expr::Become { expr } => {
                 self.infer_mut_expr(*expr, Mutability::Not);
-            }
+            },
             Expr::RecordLit { path: _, fields, spread } => {
                 self.infer_mut_not_expr_iter(fields.iter().map(|it| it.expr).chain(*spread))
-            }
+            },
             &Expr::Index { base, index } => {
                 if mutability == Mutability::Mut
                     && let Some((f, _)) = self.result.method_resolutions.get_mut(&tgt_expr)
@@ -176,7 +176,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 }
                 self.infer_mut_expr(base, mutability);
                 self.infer_mut_expr(index, Mutability::Not);
-            }
+            },
             Expr::UnaryOp { expr, op: UnaryOp::Deref } => {
                 let mut mutability = mutability;
                 if let Some((f, _)) = self.result.method_resolutions.get_mut(&tgt_expr)
@@ -199,10 +199,10 @@ impl<'db> InferenceContext<'_, 'db> {
                     }
                 }
                 self.infer_mut_expr(*expr, mutability);
-            }
+            },
             Expr::Field { expr, name: _ } => {
                 self.infer_mut_expr(*expr, mutability);
-            }
+            },
             Expr::UnaryOp { expr, op: _ }
             | Expr::Range { lhs: Some(expr), rhs: None, range_type: _ }
             | Expr::Range { rhs: Some(expr), lhs: None, range_type: _ }
@@ -211,15 +211,15 @@ impl<'db> InferenceContext<'_, 'db> {
             | Expr::Loop { body: expr, label: _ }
             | Expr::Cast { expr, type_ref: _ } => {
                 self.infer_mut_expr(*expr, Mutability::Not);
-            }
+            },
             Expr::Ref { expr, rawness: _, mutability } => {
                 let mutability = lower_mutability(*mutability);
                 self.infer_mut_expr(*expr, mutability);
-            }
+            },
             Expr::BinaryOp { lhs, rhs, op: Some(BinaryOp::Assignment { .. }) } => {
                 self.infer_mut_expr(*lhs, Mutability::Mut);
                 self.infer_mut_expr(*rhs, Mutability::Not);
-            }
+            },
             &Expr::Assignment { target, value } => {
                 self.body.walk_pats(target, &mut |pat| match self.body[pat] {
                     Pat::Expr(expr) => self.infer_mut_expr(expr, Mutability::Mut),
@@ -227,20 +227,19 @@ impl<'db> InferenceContext<'_, 'db> {
                     _ => {}
                 });
                 self.infer_mut_expr(value, Mutability::Not);
-            }
+            },
             Expr::Array(Array::Repeat { initializer: lhs, repeat: rhs })
             | Expr::BinaryOp { lhs, rhs, op: _ }
             | Expr::Range { lhs: Some(lhs), rhs: Some(rhs), range_type: _ } => {
                 self.infer_mut_expr(*lhs, Mutability::Not);
                 self.infer_mut_expr(*rhs, Mutability::Not);
-            }
+            },
             Expr::Closure { body, .. } => {
                 self.infer_mut_expr(*body, Mutability::Not);
-            }
+            },
             Expr::Tuple { exprs } | Expr::Array(Array::ElementList { elements: exprs }) => {
                 self.infer_mut_not_expr_iter(exprs.iter().copied());
-            }
-            // These don't need any action, as they don't have sub expressions
+            },
             Expr::Range { lhs: None, rhs: None, range_type: _ }
             | Expr::Literal(_)
             | Expr::Path(_)

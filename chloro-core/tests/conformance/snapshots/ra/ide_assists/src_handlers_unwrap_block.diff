@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16012 bytes
-Chloro size:   15679 bytes
+Chloro size:   15797 bytes
 Rustfmt size:  16309 bytes
 
 ✗ Outputs DIFFER
@@ -51,15 +51,23 @@ Rustfmt size:  16309 bytes
  
      let kind = parent.kind();
      if matches!(kind, SyntaxKind::STMT_LIST | SyntaxKind::EXPR_STMT) {
-         acc.add(assist_id, assist_label, target, |builder| {
+-        acc.add(assist_id, assist_label, target, |builder| {
 -            builder.replace(
 -                block.syntax().text_range(),
 -                update_expr_string(block.to_string()),
 -            );
+-        })
++        acc.add(
++            assist_id,
++            assist_label,
++            target,
++            |builder| {
 +            builder.replace(block.syntax().text_range(), update_expr_string(block.to_string()));
-         })
++        },
++        )
      } else if matches!(kind, SyntaxKind::LET_STMT) {
          let parent = ast::LetStmt::cast(parent)?;
+         let pattern = ast::Pat::cast(parent.syntax().first_child()?)?;
                  let let_stmt = make::let_stmt(pattern, ty, Some(initializer));
                  if !stmts.is_empty() {
                      let block = make::block_expr(stmts, None);
@@ -72,6 +80,22 @@ Rustfmt size:  16309 bytes
                  } else {
                      let_stmt.to_string()
                  }
+                 make::let_stmt(pattern, ty, Some(empty_tuple)).to_string()
+             }
+         };
+-        acc.add(assist_id, assist_label, target, |builder| {
++        acc.add(
++            assist_id,
++            assist_label,
++            target,
++            |builder| {
+             builder.replace(parent.syntax().text_range(), replaced);
+-        })
++        },
++        )
+     } else {
+         let parent = ast::Expr::cast(parent)?;
+         match parent.clone() {
                          );
  
                          edit.delete(range_to_del);
@@ -83,17 +107,26 @@ Rustfmt size:  16309 bytes
                      });
                  }
              }
+             _ => return None,
          };
- 
-         acc.add(assist_id, assist_label, target, |builder| {
+-
+-        acc.add(assist_id, assist_label, target, |builder| {
 -            builder.replace(
 -                parent.syntax().text_range(),
 -                update_expr_string(block.to_string()),
 -            );
+-        })
++        acc.add(
++            assist_id,
++            assist_label,
++            target,
++            |builder| {
 +            builder.replace(parent.syntax().text_range(), update_expr_string(block.to_string()));
-         })
++        },
++        )
      }
  }
+ 
      let expr_str = expr_str[after_open_brace_index..].trim_start_matches(whitespace_pat);
  
      // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
@@ -101,6 +134,15 @@ Rustfmt size:  16309 bytes
      // then continue to remove trailing whitespace.
      let expr_str = expr_str.trim_end_matches(whitespace_pat);
      let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
+ 
+-    expr_str
+-        .lines()
+-        .map(|line| line.replacen("    ", "", 1)) // Delete indentation
+-        .collect::<Vec<String>>()
+-        .join("\n")
++    expr_str.lines().map(|line| line.replacen("    ", "", 1)).collect::<Vec<String>>().join("\n")
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -108,10 +108,10 @@ impl ComplexMemoryMap<'_> {
                 if e.get().len() < val.len() {
                     e.insert(val);
                 }
-            }
+            },
             Entry::Vacant(e) => {
                 e.insert(val);
-            }
+            },
         }
     }
 }
@@ -149,7 +149,7 @@ impl<'db> MemoryMap<'db> {
             }),
             MemoryMap::Complex(cm) => {
                 cm.memory.iter().map(|(addr, val)| transform((addr, val))).collect()
-            }
+            },
         }
     }
 

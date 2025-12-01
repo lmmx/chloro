@@ -33,8 +33,9 @@ fn mod_item_path_str(
     edition: Edition,
 ) -> Result<String, DisplaySourceCodeError> {
     let path = mod_item_path(sema_scope, def, cfg);
-    path.map(|it| it.display(sema_scope.db, edition).to_string())
-        .ok_or(DisplaySourceCodeError::PathNotFound)
+    path.map(|it| it.display(sema_scope.db, edition).to_string()).ok_or(
+        DisplaySourceCodeError::PathNotFound,
+    )
 }
 
 /// Type tree shows how can we get from set of types to some type.
@@ -140,7 +141,7 @@ impl<'db> Expr<'db> {
                         .map(|c| c.display(db, edition).to_string())
                         .unwrap_or(String::new());
                     Ok(format!("{container_name}::{const_name}"))
-                }
+                },
                 None => mod_item_path_str(sema_scope, &ModuleDef::Const(*it)),
             },
             Expr::Static(it) => mod_item_path_str(sema_scope, &ModuleDef::Static(*it)),
@@ -154,25 +155,23 @@ impl<'db> Expr<'db> {
                     .collect::<Result<Vec<String>, DisplaySourceCodeError>>()?
                     .into_iter()
                     .join(", ");
-
                 match func.as_assoc_item(db).map(|it| it.container(db)) {
                     Some(container) => {
                         let container_name =
                             container_name(container, sema_scope, cfg, edition, display_target)?;
                         let fn_name = func.name(db).display(db, edition).to_string();
                         Ok(format!("{container_name}::{fn_name}({args})"))
-                    }
+                    },
                     None => {
                         let fn_name = mod_item_path_str(sema_scope, &ModuleDef::Function(*func))?;
                         Ok(format!("{fn_name}({args})"))
-                    }
+                    },
                 }
-            }
+            },
             Expr::Method { func, target, params, .. } => {
                 if self.contains_many_in_illegal_pos(db) {
                     return Ok(many_formatter(&target.ty(db)));
                 }
-
                 let func_name = func.name(db).display(db, edition).to_string();
                 let self_param = func.self_param(db).unwrap();
                 let target_str =
@@ -183,7 +182,6 @@ impl<'db> Expr<'db> {
                     .collect::<Result<Vec<String>, DisplaySourceCodeError>>()?
                     .into_iter()
                     .join(", ");
-
                 match func.as_assoc_item(db).and_then(|it| it.container_or_implemented_trait(db)) {
                     Some(trait_) => {
                         let trait_name = mod_item_path_str(sema_scope, &ModuleDef::Trait(trait_))?;
@@ -200,10 +198,10 @@ impl<'db> Expr<'db> {
                             false => format!("{trait_name}::{func_name}({target}, {args})",),
                         };
                         Ok(res)
-                    }
+                    },
                     None => Ok(format!("{target_str}.{func_name}({args})")),
                 }
-            }
+            },
             Expr::Variant { variant, params, .. } => {
                 let inner = match variant.kind(db) {
                     StructKind::Tuple => {
@@ -242,10 +240,9 @@ impl<'db> Expr<'db> {
                     }
                     StructKind::Unit => String::new(),
                 };
-
                 let prefix = mod_item_path_str(sema_scope, &ModuleDef::Variant(*variant))?;
                 Ok(format!("{prefix}{inner}"))
-            }
+            },
             Expr::Struct { strukt, params, .. } => {
                 let inner = match strukt.kind(db) {
                     StructKind::Tuple => {
@@ -284,10 +281,9 @@ impl<'db> Expr<'db> {
                     }
                     StructKind::Unit => String::new(),
                 };
-
                 let prefix = mod_item_path_str(sema_scope, &ModuleDef::Adt(Adt::Struct(*strukt)))?;
                 Ok(format!("{prefix}{inner}"))
-            }
+            },
             Expr::Tuple { params, .. } => {
                 let args = params
                     .iter()
@@ -297,26 +293,24 @@ impl<'db> Expr<'db> {
                     .join(", ");
                 let res = format!("({args})");
                 Ok(res)
-            }
+            },
             Expr::Field { expr, field } => {
                 if expr.contains_many_in_illegal_pos(db) {
                     return Ok(many_formatter(&expr.ty(db)));
                 }
-
                 let strukt =
                     expr.gen_source_code(sema_scope, many_formatter, cfg, display_target)?;
                 let field = field.name(db).display(db, edition).to_string();
                 Ok(format!("{strukt}.{field}"))
-            }
+            },
             Expr::Reference(expr) => {
                 if expr.contains_many_in_illegal_pos(db) {
                     return Ok(many_formatter(&expr.ty(db)));
                 }
-
                 let inner =
                     expr.gen_source_code(sema_scope, many_formatter, cfg, display_target)?;
                 Ok(format!("&{inner}"))
-            }
+            },
             Expr::Many(ty) => Ok(many_formatter(ty)),
         }
     }
@@ -333,17 +327,17 @@ impl<'db> Expr<'db> {
             Expr::FamousType { ty, .. } => ty.clone(),
             Expr::Function { func, generics, .. } => {
                 func.ret_type_with_args(db, generics.iter().cloned())
-            }
+            },
             Expr::Method { func, generics, target, .. } => func.ret_type_with_args(
                 db,
                 target.ty(db).type_arguments().chain(generics.iter().cloned()),
             ),
             Expr::Variant { variant, generics, .. } => {
                 Adt::from(variant.parent_enum(db)).ty_with_args(db, generics.iter().cloned())
-            }
+            },
             Expr::Struct { strukt, generics, .. } => {
                 Adt::from(*strukt).ty_with_args(db, generics.iter().cloned())
-            }
+            },
             Expr::Tuple { ty, .. } => ty.clone(),
             Expr::Field { expr, field } => field.ty_with_args(db, expr.ty(db).type_arguments()),
             Expr::Reference(it) => it.ty(db),
@@ -383,7 +377,7 @@ impl<'db> Expr<'db> {
                     Some(_) => false,
                     None => target.is_many(),
                 }
-            }
+            },
             Expr::Field { expr, .. } => expr.contains_many_in_illegal_pos(db),
             Expr::Reference(target) => target.is_many(),
             Expr::Many(_) => true,

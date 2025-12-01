@@ -155,10 +155,10 @@ impl<'a> Ctx<'a> {
             match self.tree.attrs.entry(item) {
                 Entry::Occupied(mut entry) => {
                     *entry.get_mut() = entry.get().merge(attrs);
-                }
+                },
                 Entry::Vacant(entry) => {
                     entry.insert(attrs);
-                }
+                },
             }
         }
     }
@@ -372,10 +372,10 @@ impl<'a> Ctx<'a> {
             RawVisibility::Public => RawVisibilityId::PUB,
             RawVisibility::PubSelf(VisibilityExplicitness::Explicit) => {
                 RawVisibilityId::PRIV_EXPLICIT
-            }
+            },
             RawVisibility::PubSelf(VisibilityExplicitness::Implicit) => {
                 RawVisibilityId::PRIV_IMPLICIT
-            }
+            },
             RawVisibility::PubCrate => RawVisibilityId::PUB_CRATE,
             _ => RawVisibilityId(self.visibilities.insert_full(vis).0 as u32),
         }
@@ -406,13 +406,11 @@ impl UseTreeLowering<'_> {
                     }
                 }
             };
-
             self.mapping.alloc(tree.clone());
             let list = use_tree_list
                 .use_trees()
                 .filter_map(|tree| self.lower_use_tree(tree, span_for_range))
                 .collect();
-
             Some(UseTree {
                 kind: UseTreeKind::Prefixed { prefix: prefix.map(Interned::new), list },
             })
@@ -428,7 +426,6 @@ impl UseTreeLowering<'_> {
             if alias.is_some() && is_glob {
                 return None;
             }
-
             match (path, alias, is_glob) {
                 (path, None, true) => {
                     if path.is_none() {
@@ -436,15 +433,13 @@ impl UseTreeLowering<'_> {
                     }
                     self.mapping.alloc(tree.clone());
                     Some(UseTree { kind: UseTreeKind::Glob { path: path.map(Interned::new) } })
-                }
-                // Globs can't be renamed
+                },
                 (_, Some(_), true) | (None, None, false) => None,
-                // `bla::{ as Name}` is invalid
                 (None, Some(_), false) => None,
                 (Some(path), alias, false) => {
                     self.mapping.alloc(tree.clone());
                     Some(UseTree { kind: UseTreeKind::Single { path: Interned::new(path), alias } })
-                }
+                },
             }
         }
     }

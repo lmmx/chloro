@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7893 bytes
-Chloro size:   7436 bytes
+Chloro size:   7204 bytes
 Rustfmt size:  7893 bytes
 
 ✗ Outputs DIFFER
@@ -39,6 +39,58 @@ Rustfmt size:  7893 bytes
  pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let call = ctx.find_node_at_offset::<ast::CallExpr>()?;
      let ast::Expr::PathExpr(path_expr) = call.expr()? else { return None };
+         "Unqualify method call",
+         call.syntax().text_range(),
+         |edit| {
+-            edit.delete(delete_path);
+-            if let Some((open, close)) = parens {
++        edit.delete(delete_path);
++        if let Some((open, close)) = parens {
+                 edit.insert(open, "(");
+                 edit.insert(close, ")");
+             }
+-            edit.replace(replace_comma, format!(".{method_name}("));
+-
+-            if let Some(fun) = fun.as_assoc_item(ctx.db())
+-                && let Some(trait_) = fun.container_or_implemented_trait(ctx.db())
+-                && !scope.can_use_trait_methods(trait_)
+-            {
+-                // Only add an import for trait methods that are not already imported.
+-                add_import(qualifier, ctx, edit);
+-            }
+-        },
++        edit.replace(replace_comma, format!(".{method_name}("));
++        if let Some(fun) = fun.as_assoc_item(ctx.db()) && let Some(trait_) = fun.container_or_implemented_trait(ctx.db()) && !scope.can_use_trait_methods(trait_) {
++            add_import(qualifier, ctx, edit);
++        }
++    },
+     )
+ }
+ 
+     edit: &mut ide_db::source_change::SourceChangeBuilder,
+ ) {
+     if let Some(path_segment) = qualifier.segment() {
+-        // for `<i32 as std::ops::Add>`
+         let path_type = path_segment.qualifying_trait();
+         let import = match path_type {
+             Some(it) => {
+             }
+             None => qualifier,
+         };
+-
+-        // in case for `<_>`
+         if import.coloncolon_token().is_none() {
+             return;
+         }
+-
+         let scope = ide_db::imports::insert_use::ImportScope::find_insert_use_container(
+             import.syntax(),
+             &ctx.sema,
+         );
+-
+         if let Some(scope) = scope {
+             let scope = edit.make_import_scope_mut(scope);
+             ide_db::imports::insert_use::insert_use(&scope, import, &ctx.config.insert_use);
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

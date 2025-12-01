@@ -23,7 +23,11 @@ pub(crate) fn generate_derive(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         Some(tt) => Some(tt.right_delimiter_token()?),
     };
 
-    acc.add(AssistId::generate("generate_derive"), "Add `#[derive]`", target, |edit| {
+    acc.add(
+        AssistId::generate("generate_derive"),
+        "Add `#[derive]`",
+        target,
+        |edit| {
         match derive_attr {
             None => {
                 let derive = make::attr_outer(make::meta_token_tree(
@@ -66,7 +70,8 @@ pub(crate) fn generate_derive(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
                 );
             }
         };
-    })
+    },
+    )
 }
 
 #[cfg(test)]

@@ -97,7 +97,6 @@ pub(crate) fn prepare_rename(
         });
 
     match res {
-        // ensure at least one definition was found
         Some(res) => res.map(|range| RangeInfo::new(range, ())),
         None => bail!("No references found at position"),
     }
@@ -184,10 +183,9 @@ pub(crate) fn rename(
         })),
     };
 
-    ops?.into_iter()
-        .chain(alias_fallback)
-        .reduce(|acc, elem| acc.merge(elem))
-        .ok_or_else(|| format_err!("No references found at position"))
+    ops?.into_iter().chain(alias_fallback).reduce(|acc, elem| acc.merge(elem)).ok_or_else(
+        || format_err!("No references found at position"),
+    )
 }
 
 /// Called by the client when it is about to rename a file.
@@ -356,13 +354,12 @@ fn find_definitions(
     let res: RenameResult<Vec<_>> = ok_if_any(symbols.filter_map(Result::transpose));
     match res {
         Ok(v) => {
-            // remove duplicates, comparing `Definition`s
-            Ok(v.into_iter()
-                .unique_by(|&(.., def, _, _)| def)
-                .map(|(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e))
-                .collect::<Vec<_>>()
-                .into_iter())
-        }
+            Ok(v.into_iter().unique_by(|&(.., def, _, _)| def).map(
+                |(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e),
+            ).collect::<Vec<_>>(
+            ).into_iter(
+            ))
+        },
         Err(e) => Err(e),
     }
 }
@@ -380,19 +377,15 @@ fn transform_assoc_fn_into_method_call(
                 continue;
             };
             let path = path.parent_path();
-            // The `PathExpr` is the direct parent, above it is the `CallExpr`.
             let Some(call) =
                 path.syntax().parent().and_then(|it| ast::CallExpr::cast(it.parent()?))
             else {
                 continue;
             };
-
             let Some(arg_list) = call.arg_list() else { continue };
             let mut args = arg_list.args();
             let Some(mut self_arg) = args.next() else { continue };
             let second_arg = args.next();
-
-            // Strip (de)references, as they will be taken automatically by auto(de)ref.
             loop {
                 let self_ = match &self_arg {
                     ast::Expr::RefExpr(self_) => self_.expr(),
@@ -409,10 +402,8 @@ fn transform_assoc_fn_into_method_call(
                     None => break,
                 };
             }
-
             let self_needs_parens =
                 self_arg.precedence().needs_parentheses_in(ExprPrecedence::Postfix);
-
             let replace_start = path.syntax().text_range().start();
             let replace_end = match second_arg {
                 Some(second_arg) => second_arg.syntax().text_range().start(),
@@ -428,7 +419,6 @@ fn transform_assoc_fn_into_method_call(
             else {
                 continue;
             };
-
             let Some(macro_mapped_self) = sema.original_range_opt(self_arg.syntax()) else {
                 continue;
             };
@@ -443,7 +433,6 @@ fn transform_assoc_fn_into_method_call(
             replacement.push('.');
             format_to!(replacement, "{fn_name}");
             replacement.push('(');
-
             source_change.insert_source_edit(
                 replace_range.file_id.file_id(sema.db),
                 TextEdit::replace(replace_range.range, replacement),
@@ -600,25 +589,19 @@ fn transform_method_call_into_assoc_fn(
             let Some(mut self_arg) = method_call.receiver() else {
                 continue;
             };
-
             let Some(scope) = sema.scope(fn_name.syntax()) else {
                 continue;
             };
             let self_adjust = method_to_assoc_fn_call_self_adjust(sema, &self_arg);
-
-            // Strip parentheses, function arguments have higher precedence than any operator.
             while let ast::Expr::ParenExpr(it) = &self_arg {
                 self_arg = match it.expr() {
                     Some(it) => it,
                     None => break,
                 };
             }
-
             let needs_comma = method_call.arg_list().is_some_and(|it| it.args().next().is_some());
-
             let self_needs_parens = self_adjust != CallReceiverAdjust::None
                 && self_arg.precedence().needs_parentheses_in(ExprPrecedence::Prefix);
-
             let replace_start = method_call.syntax().text_range().start();
             let replace_end = method_call
                 .arg_list()
@@ -632,7 +615,6 @@ fn transform_method_call_into_assoc_fn(
             else {
                 continue;
             };
-
             let fn_container_path = match f.container(sema.db) {
                 hir::ItemContainer::Trait(trait_) => {
                     // FIXME: We always put it as `Trait::function`. Is it better to use `Type::function` (but
@@ -675,7 +657,6 @@ fn transform_method_call_into_assoc_fn(
                 }
                 _ => continue,
             };
-
             let Some(macro_mapped_self) = sema.original_range_opt(self_arg.syntax()) else {
                 continue;
             };
@@ -700,7 +681,6 @@ fn transform_method_call_into_assoc_fn(
             if needs_comma {
                 replacement.push_str(", ");
             }
-
             source_change.insert_source_edit(
                 replace_range.file_id.file_id(sema.db),
                 TextEdit::replace(replace_range.range, replacement),

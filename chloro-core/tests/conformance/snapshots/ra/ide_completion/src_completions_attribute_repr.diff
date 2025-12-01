@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3808 bytes
-Chloro size:   3808 bytes
+Chloro size:   3807 bytes
 Rustfmt size:  3910 bytes
 
 ✗ Outputs DIFFER
@@ -22,6 +22,13 @@ Rustfmt size:  3910 bytes
              let repr_already_annotated = existing_reprs
                  .iter()
                  .filter_map(|expr| match expr {
+             if repr_already_annotated {
+                 continue;
+             }
+-
+             let mut item = CompletionItem::new(
+                 SymbolKind::BuiltinAttr,
+                 ctx.source_range(),
  }
  
  const fn attr(label: &'static str, collides: &'static [&'static str]) -> ReprCompletion {

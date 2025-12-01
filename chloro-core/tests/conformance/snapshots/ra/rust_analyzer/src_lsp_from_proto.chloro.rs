@@ -133,24 +133,23 @@ pub(crate) fn annotation(
             let pos @ FilePosition { file_id, .. } =
                 try_default!(file_position(snap, params.text_document_position_params)?);
             let line_index = snap.file_line_index(file_id)?;
-
             Ok(Annotation {
                 range: text_range(&line_index, range)?,
                 kind: AnnotationKind::HasImpls { pos, data: None },
             })
-        }
+        },
         lsp_ext::CodeLensResolveDataKind::References(params) => {
             if snap.url_file_version(&params.text_document.uri) != Some(data.version) {
                 return Ok(None);
             }
             let pos @ FilePosition { file_id, .. } = try_default!(file_position(snap, params)?);
             let line_index = snap.file_line_index(file_id)?;
-
             Ok(Annotation {
                 range: text_range(&line_index, range)?,
                 kind: AnnotationKind::HasReferences { pos, data: None },
             })
-        }
-    }
-    .map(Some)
+        },
+    }.map(
+        Some,
+    )
 }

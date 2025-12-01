@@ -63,7 +63,7 @@ impl Expander {
         match self.span_map.as_ref() {
             hir_expand::span_map::SpanMapRef::ExpansionSpanMap(span_map) => {
                 HygieneId::new(span_map.span_at(range.start()).ctx.opaque_and_semitransparent(db))
-            }
+            },
             hir_expand::span_map::SpanMapRef::RealSpanMap(_) => HygieneId::ROOT,
         }
     }
@@ -132,7 +132,11 @@ impl Expander {
             }
         });
 
-        if let Some(err) = unresolved_macro_err { Err(err) } else { Ok(result) }
+        if let Some(err) = unresolved_macro_err {
+            Err(err)
+        } else {
+            Ok(result)
+        }
     }
 
     pub(super) fn enter_expand_id<T: ast::AstNode>(

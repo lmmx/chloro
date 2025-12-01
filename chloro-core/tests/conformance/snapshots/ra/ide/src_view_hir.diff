@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 693 bytes
-Chloro size:   446 bytes
+Chloro size:   461 bytes
 Rustfmt size:  767 bytes
 
 ✗ Outputs DIFFER
@@ -29,7 +29,11 @@ Rustfmt size:  767 bytes
 -                .token_at_offset(position.offset)
 -                .next()?,
 -        )
+-    })()
+-    .unwrap_or_else(|| "Not inside a lowerable item".to_owned())
 +        sema.debug_hir_at(source_file.syntax().token_at_offset(position.offset).next()?)
-     })()
-     .unwrap_or_else(|| "Not inside a lowerable item".to_owned())
++    })(
++    ).unwrap_or_else(
++        || "Not inside a lowerable item".to_owned(),
++    )
  }

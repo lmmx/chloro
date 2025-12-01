@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   38720 bytes
+Chloro size:   37782 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -73,7 +73,7 @@ Rustfmt size:  42083 bytes
 +        let name = module.name(db).map(|it| it.symbol().clone()).unwrap_or_else(|| sym::underscore);
          match module.declaration_source(db) {
              Some(InFile { value, file_id }) => {
-                 orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
+-                orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
 -                    |(
 -                        FileRange {
 -                            file_id,
@@ -81,20 +81,34 @@ Rustfmt size:  42083 bytes
 -                        },
 -                        focus_range,
 -                    )| {
-+                    |(FileRange { file_id, range: full_range }, focus_range)| {
-                         let mut res = NavigationTarget::from_syntax(
+-                        let mut res = NavigationTarget::from_syntax(
++                orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++                    let mut res = NavigationTarget::from_syntax(
                              file_id,
                              name.clone(),
+                             focus_range,
+                             full_range,
+                             SymbolKind::Module,
                          );
-                         res.docs = module.docs(db);
-                         res.description = Some(
+-                        res.docs = module.docs(db);
+-                        res.description = Some(
 -                            module
 -                                .display(db, module.krate().to_display_target(db))
 -                                .to_string(),
++                    res.docs = module.docs(db);
++                    res.description = Some(
 +                            module.display(db, module.krate().to_display_target(db)).to_string(),
                          );
-                         res
-                     },
+-                        res
+-                    },
+-                )
+-            }
++                    res
++                })
++            },
+             _ => module.to_nav(db),
+         }
+     }
          InFile { file_id, value }: InFile<&dyn ast::HasName>,
          kind: SymbolKind,
      ) -> UpmappingResult<NavigationTarget> {
@@ -105,7 +119,7 @@ Rustfmt size:  42083 bytes
 +        let name =
 +            value.name().map(|it| Symbol::intern(&it.text())).unwrap_or_else(|| sym::underscore);
  
-         orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
+-        orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
 -            |(
 -                FileRange {
 -                    file_id,
@@ -113,21 +127,38 @@ Rustfmt size:  42083 bytes
 -                },
 -                focus_range,
 -            )| {
-+            |(FileRange { file_id, range: full_range }, focus_range)| {
-                 NavigationTarget::from_syntax(file_id, name.clone(), focus_range, full_range, kind)
-             },
-         )
-                 self.loc.ptr.text_range(),
-                 Some(self.loc.name_ptr.text_range()),
-             )
+-                NavigationTarget::from_syntax(file_id, name.clone(), focus_range, full_range, kind)
+-            },
+-        )
++        orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++            NavigationTarget::from_syntax(file_id, name.clone(), focus_range, full_range, kind)
++        })
+     }
+ 
+     pub(crate) fn from_syntax(
+     ) -> Option<UpmappingResult<NavigationTarget>> {
+         let db = sema.db;
+         let display_target = self.def.krate(db).to_display_target(db);
+-        Some(
+-            orig_range_with_focus_r(
+-                db,
+-                self.loc.hir_file_id,
+-                self.loc.ptr.text_range(),
+-                Some(self.loc.name_ptr.text_range()),
+-            )
 -            .map(
 -                |(
 -                    FileRange {
 -                        file_id,
 -                        range: full_range,
 -                    },
-+            .map(|(FileRange { file_id, range: full_range }, focus_range)| {
-+                NavigationTarget {
++        Some(orig_range_with_focus_r(
++            db,
++            self.loc.hir_file_id,
++            self.loc.ptr.text_range(),
++            Some(self.loc.name_ptr.text_range()),
++        ).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++            NavigationTarget {
 +                    file_id,
 +                    name: self
 +                        .is_alias
@@ -185,6 +216,7 @@ Rustfmt size:  42083 bytes
 -                    }
 -                },
 -            ),
+-        )
 +                    container_name: self.container_name.clone(),
 +                    description: match self.def {
 +                        hir::ModuleDef::Module(it) => {
@@ -216,10 +248,17 @@ Rustfmt size:  42083 bytes
 +                    },
 +                    docs: None,
 +                }
-+            }),
-         )
++        }))
      }
  }
+ 
+             | Definition::ToolModule(_)
+             | Definition::InlineAsmRegOrRegClass(_)
+             | Definition::BuiltinAttr(_) => None,
+-            // FIXME: The focus range should be set to the helper declaration
+             Definition::DeriveHelper(it) => it.derive().try_to_nav(sema),
+         }
+     }
      }
  }
  
@@ -230,6 +269,13 @@ Rustfmt size:  42083 bytes
      fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
          _ = db;
          None
+ fn container_name(db: &RootDatabase, t: impl HasContainer) -> Option<Symbol> {
+     match t.container(db) {
+         hir::ItemContainer::Trait(it) => Some(it.name(db).symbol().clone()),
+-        // FIXME: Handle owners of blocks correctly here
+         hir::ItemContainer::Module(it) => it.name(db).map(|name| name.symbol().clone()),
+         _ => None,
+     }
  
  impl ToNavFromAst for hir::Function {
      const KIND: SymbolKind = SymbolKind::Function;
@@ -296,17 +342,37 @@ Rustfmt size:  42083 bytes
      fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
          container_name(db, self)
      }
-             .map(|mut res| {
-                 res.docs = self.docs(db);
-                 res.description = hir::attach_db(db, || {
+     ) -> Option<UpmappingResult<NavigationTarget>> {
+         let db = sema.db;
+         let src = self.source(db)?;
+-        Some(
+-            NavigationTarget::from_named(
+-                db,
+-                src.as_ref().map(|it| it as &dyn ast::HasName),
+-                D::KIND,
+-            )
+-            .map(|mut res| {
+-                res.docs = self.docs(db);
+-                res.description = hir::attach_db(db, || {
 -                    Some(
 -                        self.display(db, self.krate(db).to_display_target(db))
 -                            .to_string(),
 -                    )
++        Some(NavigationTarget::from_named(db, src.as_ref().map(|it| it as &dyn ast::HasName), D::KIND).map(|mut res| {
++            res.docs = self.docs(db);
++            res.description = hir::attach_db(db, || {
 +                    Some(self.display(db, self.krate(db).to_display_target(db)).to_string())
                  });
-                 res.container_name = self.container_name(db);
-                 res
+-                res.container_name = self.container_name(db);
+-                res
+-            }),
+-        )
++            res.container_name = self.container_name(db);
++            res
++        }))
+     }
+ }
+ 
      fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
          let InFile { file_id, value } = self.definition_source(db);
  
@@ -318,34 +384,68 @@ Rustfmt size:  42083 bytes
          let (syntax, focus) = match &value {
              ModuleSource::SourceFile(node) => (node.syntax(), None),
              ModuleSource::Module(node) => (node.syntax(), node.name()),
+             ModuleSource::BlockExpr(node) => (node.syntax(), None),
          };
  
-         orig_range_with_focus(db, file_id, syntax, focus).map(
+-        orig_range_with_focus(db, file_id, syntax, focus).map(
 -            |(
 -                FileRange {
 -                    file_id,
 -                    range: full_range,
 -                },
--                focus_range,
++        orig_range_with_focus(db, file_id, syntax, focus).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++            NavigationTarget::from_syntax(
++                file_id,
++                name.clone(),
+                 focus_range,
 -            )| {
-+            |(FileRange { file_id, range: full_range }, focus_range)| {
-                 NavigationTarget::from_syntax(
-                     file_id,
-                     name.clone(),
+-                NavigationTarget::from_syntax(
+-                    file_id,
+-                    name.clone(),
+-                    focus_range,
+-                    full_range,
+-                    SymbolKind::Module,
+-                )
+-            },
+-        )
++                full_range,
++                SymbolKind::Module,
++            )
++        })
+     }
+ }
+ 
+             None => (file_id, value.self_ty(), value.syntax()),
          };
  
-         Some(orig_range_with_focus(db, file_id, syntax, focus).map(
+-        Some(orig_range_with_focus(db, file_id, syntax, focus).map(
 -            |(
 -                FileRange {
 -                    file_id,
 -                    range: full_range,
 -                },
--                focus_range,
++        Some(orig_range_with_focus(db, file_id, syntax, focus).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++            NavigationTarget::from_syntax(
++                file_id,
++                sym::kw_impl,
+                 focus_range,
 -            )| {
-+            |(FileRange { file_id, range: full_range }, focus_range)| {
-                 NavigationTarget::from_syntax(
-                     file_id,
-                     sym::kw_impl,
+-                NavigationTarget::from_syntax(
+-                    file_id,
+-                    sym::kw_impl,
+-                    focus_range,
+-                    full_range,
+-                    SymbolKind::Impl,
+-                )
+-            },
+-        ))
++                full_range,
++                SymbolKind::Impl,
++            )
++        }))
+     }
+ }
+ 
          let db = sema.db;
          let src = self.source(db)?;
          let InFile { file_id, value } = src;
@@ -365,9 +465,8 @@ Rustfmt size:  42083 bytes
 -                        file_id,
 -                        range: full_range,
 -                    },
-+        Some(orig_range_with_focus(db, file_id, value.syntax(), focus).map(
-+            |(FileRange { file_id, range: full_range }, focus_range)| {
-+                let mut res = NavigationTarget::from_syntax(
++        Some(orig_range_with_focus(db, file_id, value.syntax(), focus).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++            let mut res = NavigationTarget::from_syntax(
 +                    file_id,
 +                    self.alias_or_name(db).unwrap_or_else(|| self.name(db)).symbol().clone(),
                      focus_range,
@@ -382,10 +481,7 @@ Rustfmt size:  42083 bytes
 -                        full_range,
 -                        SymbolKind::Module,
 -                    );
-+                    full_range,
-+                    SymbolKind::Module,
-+                );
- 
+-
 -                    res.docs = self.docs(db);
 -                    res.description =
 -                        Some(self.display(db, krate.to_display_target(db)).to_string());
@@ -394,12 +490,14 @@ Rustfmt size:  42083 bytes
 -                },
 -            ),
 -        )
-+                res.docs = self.docs(db);
-+                res.description = Some(self.display(db, krate.to_display_target(db)).to_string());
-+                res.container_name = container_name(db, *self);
-+                res
-+            },
-+        ))
++                    full_range,
++                    SymbolKind::Module,
++                );
++            res.docs = self.docs(db);
++            res.description = Some(self.display(db, krate.to_display_target(db)).to_string());
++            res.container_name = container_name(db, *self);
++            res
++        }))
      }
  }
  
@@ -417,9 +515,31 @@ Rustfmt size:  42083 bytes
                      NavigationTarget::from_syntax(
                          file_id,
                          Symbol::integer(self.index()),
+             Either::Left(it) => it,
+             Either::Right(it) => it,
+         };
+-        Some(
+-            NavigationTarget::from_named(
+-                db,
+-                src.as_ref().with_value(name_owner),
+-                self.kind(db).into(),
+-            )
+-            .map(|mut res| {
+-                res.docs = self.docs(db);
+-                res
+-            }),
+-        )
++        Some(NavigationTarget::from_named(db, src.as_ref().with_value(name_owner), self.kind(db).into()).map(|mut res| {
++            res.docs = self.docs(db);
++            res
++        }))
+     }
+ }
+ 
+             Either::Right(it) => (it.syntax(), it.name()),
          };
  
-         orig_range_with_focus(db, file_id, node, name).map(
+-        orig_range_with_focus(db, file_id, node, name).map(
 -            |(
 -                FileRange {
 -                    file_id,
@@ -427,10 +547,31 @@ Rustfmt size:  42083 bytes
 -                },
 -                focus_range,
 -            )| {
-+            |(FileRange { file_id, range: full_range }, focus_range)| {
-                 let name = local.name(db).symbol().clone();
-                 let kind = if local.is_self(db) {
+-                let name = local.name(db).symbol().clone();
+-                let kind = if local.is_self(db) {
++        orig_range_with_focus(db, file_id, node, name).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++            let name = local.name(db).symbol().clone();
++            let kind = if local.is_self(db) {
                      SymbolKind::SelfParam
+                 } else if local.is_param(db) {
+                     SymbolKind::ValueParam
+                 } else {
+                     SymbolKind::Local
+                 };
+-                NavigationTarget {
++            NavigationTarget {
+                     file_id,
+                     name,
+                     alias: None,
+                     description: None,
+                     docs: None,
+                 }
+-            },
+-        )
++        })
+     }
+ }
+ 
          let InFile { file_id, value } = self.source(db)?;
          let name = self.name(db).symbol().clone();
  
@@ -455,8 +596,7 @@ Rustfmt size:  42083 bytes
 -                },
 -            ),
 -        )
-+        Some(orig_range_with_focus(db, file_id, value.syntax(), value.lifetime()).map(
-+            |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
++        Some(orig_range_with_focus(db, file_id, value.syntax(), value.lifetime()).map(|(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
 +                file_id,
 +                name: name.clone(),
 +                alias: None,
@@ -466,14 +606,14 @@ Rustfmt size:  42083 bytes
 +                container_name: None,
 +                description: None,
 +                docs: None,
-+            },
-+        ))
++            }))
      }
  }
  
+         };
          let focus = value.as_ref().either(|it| it.name(), |it| it.name());
  
-         Some(orig_range_with_focus(db, file_id, syntax, focus).map(
+-        Some(orig_range_with_focus(db, file_id, syntax, focus).map(
 -            |(
 -                FileRange {
 -                    file_id,
@@ -481,13 +621,23 @@ Rustfmt size:  42083 bytes
 -                },
 -                focus_range,
 -            )| NavigationTarget {
-+            |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
++        Some(orig_range_with_focus(db, file_id, syntax, focus).map(|(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                  file_id,
                  name: name.clone(),
                  alias: None,
+                 container_name: None,
+                 description: None,
+                 docs: None,
+-            },
+-        ))
++            }))
+     }
+ }
+ 
+         let InFile { file_id, value } = self.source(db)?;
          let name = self.name(db).symbol().clone();
  
-         Some(orig_range(db, file_id, value.syntax()).map(
+-        Some(orig_range(db, file_id, value.syntax()).map(
 -            |(
 -                FileRange {
 -                    file_id,
@@ -495,10 +645,19 @@ Rustfmt size:  42083 bytes
 -                },
 -                focus_range,
 -            )| NavigationTarget {
-+            |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
++        Some(orig_range(db, file_id, value.syntax()).map(|(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                  file_id,
                  name: name.clone(),
                  alias: None,
+                 container_name: None,
+                 description: None,
+                 docs: None,
+-            },
+-        ))
++            }))
+     }
+ }
+ 
              }
          };
  
@@ -523,8 +682,7 @@ Rustfmt size:  42083 bytes
 -                },
 -            ),
 -        )
-+        Some(orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
-+            |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
++        Some(orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(|(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
 +                file_id,
 +                name: name.clone(),
 +                alias: None,
@@ -534,8 +692,7 @@ Rustfmt size:  42083 bytes
 +                container_name: None,
 +                description: None,
 +                docs: None,
-+            },
-+        ))
++            }))
      }
  }
  
@@ -565,8 +722,7 @@ Rustfmt size:  42083 bytes
 -                },
 -            ),
 -        )
-+        Some(orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
-+            |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
++        Some(orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(|(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
 +                file_id,
 +                name:
 +                    self.name(db).map_or_else(|| sym::underscore.clone(), |it| it.symbol().clone()),
@@ -577,8 +733,7 @@ Rustfmt size:  42083 bytes
 +                container_name: None,
 +                description: None,
 +                docs: None,
-+            },
-+        ))
++            }))
      }
  }
  
@@ -632,6 +787,44 @@ Rustfmt size:  42083 bytes
  
      // FIXME: Also make use of the syntax context to determine which site we are at?
      let value_range = InFile::new(hir_file, value).original_node_file_range_opt(db);
+         call_site: (
+             call_site_range.into_file_id(db),
+             call_site_focus.and_then(|hir::FileRange { file_id, range }| {
+-                if call_site_range.file_id == file_id && call_site_range.range.contains_range(range)
+-                {
+-                    Some(range)
+-                } else {
+-                    None
+-                }
+-            }),
++            if call_site_range.file_id == file_id && call_site_range.range.contains_range(range) {
++                Some(range)
++            } else {
++                None
++            }
++        }),
+         ),
+         def_site: def_site.map(|(def_site_range, def_site_focus)| {
+             (
+                 def_site_range.into_file_id(db),
+                 def_site_focus.and_then(|hir::FileRange { file_id, range }| {
+-                    if def_site_range.file_id == file_id
+-                        && def_site_range.range.contains_range(range)
+-                    {
+-                        Some(range)
+-                    } else {
+-                        None
+-                    }
+-                }),
++                if def_site_range.file_id == file_id && def_site_range.range.contains_range(range) {
++                    Some(range)
++                } else {
++                    None
++                }
++            }),
+             )
+         }),
+     }
      value: &SyntaxNode,
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
      UpmappingResult {

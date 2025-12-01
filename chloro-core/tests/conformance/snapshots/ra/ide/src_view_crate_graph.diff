@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3032 bytes
-Chloro size:   2649 bytes
+Chloro size:   2589 bytes
 Rustfmt size:  3074 bytes
 
 ✗ Outputs DIFFER
@@ -41,3 +41,27 @@ Rustfmt size:  3074 bytes
                  !db.source_root(root_id).source_root(db).is_library
              }
          })
+     }
+ 
+     fn edges(&'a self) -> dot::Edges<'a, Edge<'a>> {
+-        self.crates_to_render
+-            .iter()
+-            .flat_map(|(krate, (crate_data, _))| {
+-                crate_data
+-                    .dependencies
+-                    .iter()
+-                    .filter(|dep| self.crates_to_render.contains_key(&dep.crate_id))
+-                    .map(move |dep| (*krate, dep))
+-            })
+-            .collect()
++        self.crates_to_render.iter().flat_map(|(krate, (crate_data, _))| {
++            crate_data.dependencies.iter().filter(
++                |dep| self.crates_to_render.contains_key(&dep.crate_id),
++            ).map(
++                move |dep| (*krate, dep),
++            )
++        }).collect(
++        )
+     }
+ 
+     fn source(&'a self, edge: &Edge<'a>) -> Crate {

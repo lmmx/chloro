@@ -237,7 +237,6 @@ impl ImportMap {
             } else {
                 ItemInNs::Values(module_def_id)
             };
-
             let attr_id = item.into();
             let attrs = &db.attrs(attr_id);
             let item_do_not_complete = Complete::extract(false, attrs);
@@ -250,7 +249,6 @@ impl ImportMap {
                 is_unstable: attrs.is_unstable(),
                 complete: do_not_complete,
             };
-
             let (infos, _) =
                 map.entry(assoc_item).or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::Yes));
             infos.reserve_exact(1);
@@ -315,7 +313,7 @@ impl SearchMode {
                         prefix.eq_ignore_ascii_case(query)
                     }
                 }
-            }
+            },
             SearchMode::Fuzzy => {
                 let mut name = candidate;
                 query.chars().all(|query_char| {
@@ -328,11 +326,11 @@ impl SearchMode {
                         Some((index, _)) => {
                             name = name[index..].strip_prefix(|_: char| true).unwrap_or_default();
                             true
-                        }
+                        },
                         None => false,
                     }
                 })
-            }
+            },
         }
     }
 }
@@ -419,28 +417,25 @@ pub fn search_dependencies(
     match query.search_mode {
         SearchMode::Exact => {
             let automaton = fst::automaton::Str::new(&query.lowercased);
-
             for map in &import_maps {
                 op = op.add(map.fst.search(&automaton));
             }
             search_maps(db, &import_maps, op.union(), query)
-        }
+        },
         SearchMode::Fuzzy => {
             let automaton = fst::automaton::Subsequence::new(&query.lowercased);
-
             for map in &import_maps {
                 op = op.add(map.fst.search(&automaton));
             }
             search_maps(db, &import_maps, op.union(), query)
-        }
+        },
         SearchMode::Prefix => {
             let automaton = fst::automaton::Str::new(&query.lowercased).starts_with();
-
             for map in &import_maps {
                 op = op.add(map.fst.search(&automaton));
             }
             search_maps(db, &import_maps, op.union(), query)
-        }
+        },
     }
 }
 

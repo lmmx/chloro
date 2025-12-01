@@ -99,12 +99,12 @@ fn get_callable<'db>(
             let descended = sema.descend_node_into_attributes(expr.clone()).pop();
             let expr = descended.as_ref().unwrap_or(expr);
             sema.type_of_expr(&expr.expr()?)?.original.as_callable(sema.db).zip(expr.arg_list())
-        }
+        },
         ast::Expr::MethodCallExpr(expr) => {
             let descended = sema.descend_node_into_attributes(expr.clone()).pop();
             let expr = descended.as_ref().unwrap_or(expr);
             sema.resolve_method_call_as_callable(expr).zip(expr.arg_list())
-        }
+        },
         _ => None,
     }
 }
@@ -156,14 +156,11 @@ fn should_hide_param_name_hint(
 /// `fn strip_suffix(suffix)` will be hidden.
 /// `fn stripsuffix(suffix)` will not be hidden.
 fn is_param_name_suffix_of_fn_name(param_name: &str, fn_name: &str) -> bool {
-    fn_name == param_name
-        || fn_name
-            .len()
-            .checked_sub(param_name.len())
-            .and_then(|at| fn_name.is_char_boundary(at).then(|| fn_name.split_at(at)))
-            .is_some_and(|(prefix, suffix)| {
-                suffix.eq_ignore_ascii_case(param_name) && prefix.ends_with('_')
-            })
+    fn_name == param_name || fn_name.len().checked_sub(param_name.len()).and_then(
+        |at| fn_name.is_char_boundary(at).then(|| fn_name.split_at(at)),
+    ).is_some_and(|(prefix, suffix)| {
+        suffix.eq_ignore_ascii_case(param_name) && prefix.ends_with('_')
+    })
 }
 
 fn is_argument_expr_similar_to_param_name(
@@ -174,11 +171,10 @@ fn is_argument_expr_similar_to_param_name(
     match get_segment_representation(argument) {
         Some(Either::Left(argument)) => is_argument_similar_to_param_name(&argument, param_name),
         Some(Either::Right(path)) => {
-            path.segment()
-                .and_then(|it| it.name_ref())
-                .is_some_and(|name_ref| name_ref.text().eq_ignore_ascii_case(param_name))
-                || is_adt_constructor_similar_to_param_name(sema, &path, param_name)
-        }
+            path.segment().and_then(|it| it.name_ref()).is_some_and(
+                |name_ref| name_ref.text().eq_ignore_ascii_case(param_name),
+            ) || is_adt_constructor_similar_to_param_name(sema, &path, param_name)
+        },
         None => false,
     }
 }
@@ -217,10 +213,10 @@ pub(super) fn get_segment_representation(
                 Some(Either::Left(mut left)) => {
                     left.push(name_ref);
                     left
-                }
+                },
                 Some(Either::Right(_)) | None => vec![name_ref],
             }))
-        }
+        },
         ast::Expr::FieldExpr(field_expr) => {
             let expr = field_expr.expr().and_then(|expr| get_segment_representation(&expr));
             let name_ref = field_expr.name_ref()?;
@@ -232,20 +228,17 @@ pub(super) fn get_segment_representation(
                 Some(Either::Right(_)) | None => vec![name_ref],
             };
             Some(Either::Left(res))
-        }
-        // paths
+        },
         ast::Expr::MacroExpr(macro_expr) => macro_expr.macro_call()?.path().map(Either::Right),
         ast::Expr::RecordExpr(record_expr) => record_expr.path().map(Either::Right),
         ast::Expr::PathExpr(path_expr) => {
             let path = path_expr.path()?;
-            // single segment paths are likely locals
             Some(match path.as_single_name_ref() {
                 None => Either::Right(path),
                 Some(name_ref) => Either::Left(vec![name_ref]),
             })
-        }
+        },
         ast::Expr::PrefixExpr(prefix_expr) if prefix_expr.op_kind() == Some(UnaryOp::Not) => None,
-        // recurse
         ast::Expr::PrefixExpr(prefix_expr) => get_segment_representation(&prefix_expr.expr()?),
         ast::Expr::RefExpr(ref_expr) => get_segment_representation(&ref_expr.expr()?),
         ast::Expr::CastExpr(cast_expr) => get_segment_representation(&cast_expr.expr()?),
@@ -254,7 +247,6 @@ pub(super) fn get_segment_representation(
         ast::Expr::IndexExpr(index_expr) => get_segment_representation(&index_expr.base()?),
         ast::Expr::ParenExpr(paren_expr) => get_segment_representation(&paren_expr.expr()?),
         ast::Expr::TryExpr(try_expr) => get_segment_representation(&try_expr.expr()?),
-        // ast::Expr::ClosureExpr(closure_expr) => todo!(),
         _ => None,
     }
 }
@@ -273,7 +265,7 @@ fn is_adt_constructor_similar_to_param_name(
     (|| match sema.resolve_path(path)? {
         hir::PathResolution::Def(hir::ModuleDef::Adt(_)) => {
             Some(to_lower_snake_case(&path.segment()?.name_ref()?.text()) == param_name)
-        }
+        },
         hir::PathResolution::Def(hir::ModuleDef::Function(_) | hir::ModuleDef::Variant(_)) => {
             if to_lower_snake_case(&path.segment()?.name_ref()?.text()) == param_name {
                 return Some(true);
@@ -282,13 +274,15 @@ fn is_adt_constructor_similar_to_param_name(
             match sema.resolve_path(&qual)? {
                 hir::PathResolution::Def(hir::ModuleDef::Adt(_)) => {
                     Some(to_lower_snake_case(&qual.segment()?.name_ref()?.text()) == param_name)
-                }
+                },
                 _ => None,
             }
-        }
+        },
         _ => None,
-    })()
-    .unwrap_or(false)
+    })(
+    ).unwrap_or(
+        false,
+    )
 }
 
 #[cfg(test)]

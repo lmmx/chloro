@@ -75,9 +75,11 @@ impl BuiltinType {
     }
 
     pub fn by_name(name: &Name) -> Option<Self> {
-        Self::all_builtin_types()
-            .iter()
-            .find_map(|(n, ty)| if n == name { Some(*ty) } else { None })
+        Self::all_builtin_types().iter().find_map(|(n, ty)| if n == name {
+            Some(*ty)
+        } else {
+            None
+        })
     }
 }
 

@@ -407,13 +407,10 @@ fn cfg_select_expand(
             });
             builder.extend_with_tt(expand_to);
             ExpandResult::ok(builder.build())
-        }
+        },
         None => ExpandResult::new(
             tt::TopSubtree::empty(tt::DelimSpan::from_single(span)),
-            ExpandError::other(
-                span,
-                "none of the predicates in this `cfg_select` evaluated to true",
-            ),
+            ExpandError::other(span, "none of the predicates in this `cfg_select` evaluated to true"),
         ),
     }
 }
@@ -497,14 +494,6 @@ fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
             break false;
         };
         let expn = db.lookup_intern_macro_call(expn.into());
-        // FIXME: Record allow_internal_unstable in the macro def (not been done yet because it
-        // would consume quite a bit extra memory for all call locs...)
-        // if let Some(features) = expn.def.allow_internal_unstable {
-        //     if features.iter().any(|&f| f == sym::edition_panic) {
-        //         span = expn.call_site;
-        //         continue;
-        //     }
-        // }
         break expn.def.edition >= Edition::Edition2021;
     }
 }
@@ -779,16 +768,12 @@ fn relative_file(
 fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
     let mut tt = TtElement::Subtree(tt.top_subtree(), tt.iter());
     (|| {
-        // FIXME: We wrap expression fragments in parentheses which can break this expectation
-        // here
-        // Remove this once we handle none delims correctly
         while let TtElement::Subtree(sub, tt_iter) = &mut tt
             && let DelimiterKind::Parenthesis | DelimiterKind::Invisible = sub.delimiter.kind
         {
             tt =
                 tt_iter.exactly_one().map_err(|_| sub.delimiter.open.cover(sub.delimiter.close))?;
         }
-
         match tt {
             TtElement::Leaf(tt::Leaf::Literal(tt::Literal {
                 symbol: text,
@@ -805,8 +790,10 @@ fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
             TtElement::Leaf(l) => Err(*l.span()),
             TtElement::Subtree(tt, _) => Err(tt.delimiter.open.cover(tt.delimiter.close)),
         }
-    })()
-    .map_err(|span| ExpandError::other(span, "expected string literal"))
+    })(
+    ).map_err(
+        |span| ExpandError::other(span, "expected string literal"),
+    )
 }
 
 fn include_expand(

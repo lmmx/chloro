@@ -129,15 +129,15 @@ impl CrateProcMacros {
             }
         };
         proc_macros.get(idx as usize).ok_or_else(|| {
-                ExpandError::other(err_span,
-                    format!(
+            ExpandError::other(
+                err_span,
+                format!(
                         "internal error: proc-macro index out of bounds: the length is {} but the index is {}",
                         proc_macros.len(),
                         idx
-                    )
-                )
-            }
-        )
+                    ),
+            )
+        })
     }
 
     pub fn get_error(&self) -> Option<&ProcMacroLoadingError> {
@@ -150,16 +150,11 @@ impl CrateProcMacros {
         def_site_ctx: span::SyntaxContext,
     ) -> Option<Box<[(crate::name::Name, CustomProcMacroExpander, bool)]>> {
         match &self.0 {
-            Ok(proc_macros) => Some(
-                proc_macros
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, it)| {
-                        let name = crate::name::Name::new_symbol(it.name.clone(), def_site_ctx);
-                        (name, CustomProcMacroExpander::new(idx as u32), it.disabled)
-                    })
-                    .collect(),
-            ),
+            Ok(proc_macros) => Some(proc_macros.iter().enumerate().map(|(idx, it)| {
+                let name = crate::name::Name::new_symbol(it.name.clone(), def_site_ctx);
+                (name, CustomProcMacroExpander::new(idx as u32), it.disabled)
+            }).collect(
+            )),
             _ => None,
         }
     }
@@ -264,15 +259,24 @@ impl CustomProcMacroExpander {
     ) -> ExpandResult<tt::TopSubtree> {
         match self.proc_macro_id {
             Self::PROC_MACRO_ATTR_DISABLED => ExpandResult::new(
-                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
+                tt::TopSubtree::empty(tt::DelimSpan {
+                open: call_site,
+                close: call_site,
+            }),
                 ExpandError::new(call_site, ExpandErrorKind::ProcMacroAttrExpansionDisabled),
             ),
             Self::MISSING_EXPANDER => ExpandResult::new(
-                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
+                tt::TopSubtree::empty(tt::DelimSpan {
+                open: call_site,
+                close: call_site,
+            }),
                 ExpandError::new(call_site, ExpandErrorKind::MissingProcMacroExpander(def_crate)),
             ),
             Self::DISABLED_ID => ExpandResult::new(
-                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
+                tt::TopSubtree::empty(tt::DelimSpan {
+                open: call_site,
+                close: call_site,
+            }),
                 ExpandError::new(call_site, ExpandErrorKind::MacroDisabled),
             ),
             id => {
@@ -303,12 +307,8 @@ impl CustomProcMacroExpander {
                         );
                     }
                 };
-
-                // Proc macros have access to the environment variables of the invoking crate.
                 let env = calling_crate.env(db);
-                // FIXME: Can we avoid the string allocation here?
                 let current_dir = calling_crate.data(db).proc_macro_cwd.to_string();
-
                 match proc_macro.expander.expand(
                     tt,
                     attr_arg,
@@ -320,29 +320,26 @@ impl CustomProcMacroExpander {
                 ) {
                     Ok(t) => ExpandResult::ok(t),
                     Err(err) => match err {
-                        // Don't discard the item in case something unexpected happened while expanding attributes
-                        ProcMacroExpansionError::System(text)
-                            if proc_macro.kind == ProcMacroKind::Attr =>
-                        {
+                        ProcMacroExpansionError::System(text) if proc_macro.kind == ProcMacroKind::Attr => {
                             ExpandResult {
                                 value: tt.clone(),
                                 err: Some(ExpandError::other(call_site, text)),
                             }
-                        }
+                        },
                         ProcMacroExpansionError::System(text)
                         | ProcMacroExpansionError::Panic(text) => ExpandResult::new(
                             tt::TopSubtree::empty(tt::DelimSpan {
-                                open: call_site,
-                                close: call_site,
-                            }),
+                            open: call_site,
+                            close: call_site,
+                        }),
                             ExpandError::new(
-                                call_site,
-                                ExpandErrorKind::ProcMacroPanic(text.into_boxed_str()),
-                            ),
+                            call_site,
+                            ExpandErrorKind::ProcMacroPanic(text.into_boxed_str()),
+                        ),
                         ),
                     },
                 }
-            }
+            },
         }
     }
 }

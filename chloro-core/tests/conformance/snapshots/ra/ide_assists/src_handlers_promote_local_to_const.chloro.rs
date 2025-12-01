@@ -40,11 +40,11 @@ pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>)
         "Promote local to constant",
         let_stmt.syntax().text_range(),
         |edit| {
-            let make = SyntaxFactory::with_mappings();
-            let mut editor = edit.make_editor(let_stmt.syntax());
-            let name = to_upper_snake_case(&name.to_string());
-            let usages = Definition::Local(local).usages(&ctx.sema).all();
-            if let Some(usages) = usages.references.get(&ctx.file_id()) {
+        let make = SyntaxFactory::with_mappings();
+        let mut editor = edit.make_editor(let_stmt.syntax());
+        let name = to_upper_snake_case(&name.to_string());
+        let usages = Definition::Local(local).usages(&ctx.sema).all();
+        if let Some(usages) = usages.references.get(&ctx.file_id()) {
                 let name_ref = make.name_ref(&name);
 
                 for usage in usages {
@@ -59,19 +59,15 @@ pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>)
                     }
                 }
             }
-
-            let item = make.item_const(None, None, make.name(&name), make.ty(&ty), initializer);
-
-            if let Some((cap, name)) = ctx.config.snippet_cap.zip(item.name()) {
+        let item = make.item_const(None, None, make.name(&name), make.ty(&ty), initializer);
+        if let Some((cap, name)) = ctx.config.snippet_cap.zip(item.name()) {
                 let tabstop = edit.make_tabstop_before(cap);
                 editor.add_annotation(name.syntax().clone(), tabstop);
             }
-
-            editor.replace(let_stmt.syntax(), item.syntax());
-
-            editor.add_mappings(make.finish_with_mappings());
-            edit.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        editor.replace(let_stmt.syntax(), item.syntax());
+        editor.add_mappings(make.finish_with_mappings());
+        edit.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 

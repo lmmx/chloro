@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30603 bytes
+Chloro size:   30480 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -154,6 +154,47 @@ Rustfmt size:  31747 bytes
          descriptors: moniker_descriptors(&moniker.identifier),
          special_fields: Default::default(),
      }
+ 
+ fn moniker_descriptors(identifier: &MonikerIdentifier) -> Vec<scip_types::Descriptor> {
+     use scip_types::descriptor::Suffix::*;
+-    identifier
+-        .description
+-        .iter()
+-        .map(|desc| {
+-            new_descriptor_str(
+-                &desc.name,
+-                match desc.desc {
+-                    MonikerDescriptorKind::Namespace => Namespace,
+-                    MonikerDescriptorKind::Type => Type,
+-                    MonikerDescriptorKind::Term => Term,
+-                    MonikerDescriptorKind::Method => Method,
+-                    MonikerDescriptorKind::TypeParameter => TypeParameter,
+-                    MonikerDescriptorKind::Parameter => Parameter,
+-                    MonikerDescriptorKind::Macro => Macro,
+-                    MonikerDescriptorKind::Meta => Meta,
+-                },
+-            )
+-        })
+-        .collect()
++    identifier.description.iter().map(|desc| {
++        new_descriptor_str(
++            &desc.name,
++            match desc.desc {
++            MonikerDescriptorKind::Namespace => Namespace,
++            MonikerDescriptorKind::Type => Type,
++            MonikerDescriptorKind::Term => Term,
++            MonikerDescriptorKind::Method => Method,
++            MonikerDescriptorKind::TypeParameter => TypeParameter,
++            MonikerDescriptorKind::Parameter => Parameter,
++            MonikerDescriptorKind::Macro => Macro,
++            MonikerDescriptorKind::Meta => Meta,
++        },
++        )
++    }).collect(
++    )
+ }
+ 
+ #[cfg(test)]
      use ide::{FilePosition, TextSize};
      use test_fixture::ChangeFixture;
      use vfs::VfsPath;

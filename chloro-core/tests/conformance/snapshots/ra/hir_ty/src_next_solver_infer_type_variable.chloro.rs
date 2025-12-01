@@ -286,15 +286,14 @@ impl<'db> TypeVariableTable<'_, 'db> {
     /// Returns indices of all variables that are not yet
     /// instantiated.
     pub(crate) fn unresolved_variables(&mut self) -> Vec<TyVid> {
-        (0..self.num_vars())
-            .filter_map(|i| {
-                let vid = TyVid::from_usize(i);
-                match self.probe(vid) {
-                    TypeVariableValue::Unknown { .. } => Some(vid),
-                    TypeVariableValue::Known { .. } => None,
-                }
-            })
-            .collect()
+        (0..self.num_vars()).filter_map(|i| {
+            let vid = TyVid::from_usize(i);
+            match self.probe(vid) {
+                TypeVariableValue::Unknown { .. } => Some(vid),
+                TypeVariableValue::Known { .. } => None,
+            }
+        }).collect(
+        )
     }
 }
 
@@ -334,7 +333,11 @@ impl<'db> ut::UnifyKey for TyVidEqKey<'db> {
     }
 
     fn order_roots(a: Self, _: &Self::Value, b: Self, _: &Self::Value) -> Option<(Self, Self)> {
-        if a.vid.as_u32() < b.vid.as_u32() { Some((a, b)) } else { Some((b, a)) }
+        if a.vid.as_u32() < b.vid.as_u32() {
+            Some((a, b))
+        } else {
+            Some((b, a))
+        }
     }
 }
 
@@ -373,34 +376,22 @@ impl<'db> ut::UnifyValue for TypeVariableValue<'db> {
 
     fn unify_values(value1: &Self, value2: &Self) -> Result<Self, ut::NoError> {
         match (value1, value2) {
-            // We never equate two type variables, both of which
-            // have known types. Instead, we recursively equate
-            // those types.
             (&TypeVariableValue::Known { .. }, &TypeVariableValue::Known { .. }) => {
                 panic!("equating two type variables, both of which have known types")
-            }
-
-            // If one side is known, prefer that one.
+            },
             (&TypeVariableValue::Known { .. }, &TypeVariableValue::Unknown { .. }) => {
                 Ok(value1.clone())
-            }
+            },
             (&TypeVariableValue::Unknown { .. }, &TypeVariableValue::Known { .. }) => {
                 Ok(value2.clone())
-            }
-
-            // If both sides are *unknown*, it hardly matters, does it?
+            },
             (
                 &TypeVariableValue::Unknown { universe: universe1 },
                 &TypeVariableValue::Unknown { universe: universe2 },
             ) => {
-                // If we unify two unbound variables, ?T and ?U, then whatever
-                // value they wind up taking (which must be the same value) must
-                // be nameable by both universes. Therefore, the resulting
-                // universe is the minimum of the two universes, because that is
-                // the one which contains the fewest names in scope.
                 let universe = cmp::min(universe1, universe2);
                 Ok(TypeVariableValue::Unknown { universe })
-            }
+            },
         }
     }
 }

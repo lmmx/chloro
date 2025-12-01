@@ -15,7 +15,9 @@ use crate::{
 use super::{interpret_mir, MirEvalError};
 
 fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {
-    crate::attach_db(db, || {
+    crate::attach_db(
+        db,
+        || {
         let interner = DbInterner::new_with(db, None, None);
         let module_id = db.module_for_file(file_id.file_id(db));
         let def_map = module_id.def_map(db);
@@ -42,11 +44,11 @@ fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), 
                 db.trait_environment(func_id.into()),
             )
             .map_err(|e| MirEvalError::MirLowerError(func_id, e))?;
-
         let (result, output) = interpret_mir(db, body, false, None)?;
         result?;
         Ok((output.stdout().into_owned(), output.stderr().into_owned()))
-    })
+    },
+    )
 }
 
 fn check_pass(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
@@ -60,7 +62,9 @@ fn check_pass_and_stdio(
 ) {
     let _tracing = setup_tracing();
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
-    crate::attach_db(&db, || {
+    crate::attach_db(
+        &db,
+        || {
         let file_id = *file_ids.last().unwrap();
         let x = eval_main(&db, file_id);
         match x {
@@ -95,25 +99,29 @@ fn check_pass_and_stdio(
                 )
                 .unwrap();
                 panic!("Error in interpreting: {err}");
-            }
+            },
             Ok((stdout, stderr)) => {
                 assert_eq!(stdout, expected_stdout);
                 assert_eq!(stderr, expected_stderr);
-            }
+            },
         }
-    })
+    },
+    )
 }
 
 fn check_panic(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_panic: &str) {
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
-    crate::attach_db(&db, || {
+    crate::attach_db(
+        &db,
+        || {
         let file_id = *file_ids.last().unwrap();
         let e = eval_main(&db, file_id).unwrap_err();
         assert_eq!(
             e.is_panic().unwrap_or_else(|| panic!("unexpected error: {e:?}")),
             expected_panic
         );
-    })
+    },
+    )
 }
 
 fn check_error_with(
@@ -121,11 +129,14 @@ fn check_error_with(
     expect_err: impl FnOnce(MirEvalError<'_>) -> bool,
 ) {
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
-    crate::attach_db(&db, || {
+    crate::attach_db(
+        &db,
+        || {
         let file_id = *file_ids.last().unwrap();
         let e = eval_main(&db, file_id).unwrap_err();
         assert!(expect_err(e));
-    })
+    },
+    )
 }
 
 #[test]

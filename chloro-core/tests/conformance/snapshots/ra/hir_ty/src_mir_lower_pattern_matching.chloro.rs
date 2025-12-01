@@ -154,15 +154,15 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     args,
                     *ellipsis,
                     (0..subst.len()).map(|i| {
-                        PlaceElem::Field(Either::Right(TupleFieldId {
-                            tuple: TupleId(!0), // Dummy as it is unused
-                            index: i as u32,
-                        }))
-                    }),
+                    PlaceElem::Field(Either::Right(TupleFieldId {
+                        tuple: TupleId(!0),
+                        index: i as u32,
+                    }))
+                }),
                     &cond_place,
                     mode,
                 )?
-            }
+            },
             Pat::Or(pats) => {
                 let then_target = self.new_basic_block();
                 let mut finished = false;
@@ -197,7 +197,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     }
                 }
                 (then_target, current_else)
-            }
+            },
             Pat::Record { args, .. } => {
                 let Some(variant) = self.infer.variant_resolution_for_pat(pattern) else {
                     not_supported!("unresolved variant for record");
@@ -211,7 +211,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     AdtPatternShape::Record { args },
                     mode,
                 )?
-            }
+            },
             Pat::Range { start, end } => {
                 let mut add_check = |l: &ExprId, binop| -> Result<'db, ()> {
                     let lv = self.lower_literal_or_const_to_operand(self.infer[pattern], l)?;
@@ -250,7 +250,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     }
                 }
                 (current, current_else)
-            }
+            },
             Pat::Slice { prefix, slice, suffix } => {
                 if mode == MatchingMode::Check {
                     // emit runtime length check for slice
@@ -354,7 +354,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                         self.pattern_match_inner(current, current_else, next_place, pat, mode)?;
                 }
                 (current, current_else)
-            }
+            },
             Pat::Path(p) => match self.infer.variant_resolution_for_pat(pattern) {
                 Some(variant) => self.pattern_matching_variant(
                     cond_place,
@@ -374,7 +374,6 @@ impl<'db> MirLowerCtx<'_, 'db> {
                         .resolver
                         .resolve_path_in_value_ns(self.db, p, hygiene)
                         .ok_or_else(unresolved_name)?;
-
                     if let (
                         MatchingMode::Assign,
                         ResolveValueResult::ValueNs(ValueNs::LocalBinding(binding), _),
@@ -390,8 +389,6 @@ impl<'db> MirLowerCtx<'_, 'db> {
                         );
                         return Ok((current, current_else));
                     }
-
-                    // The path is not a variant or a local, so it is a const
                     if mode != MatchingMode::Check {
                         // A const don't bind anything. Only needs check.
                         return Ok((current, current_else));
@@ -434,7 +431,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                         span,
                     );
                     (next, Some(else_target))
-                }
+                },
             },
             Pat::Lit(l) => match &self.body[*l] {
                 Expr::Literal(l) => {
@@ -444,7 +441,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     } else {
                         (current, current_else)
                     }
-                }
+                },
                 _ => not_supported!("expression path literal"),
             },
             Pat::Bind { id, subpat } => {
@@ -465,7 +462,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                 } else {
                     (current, current_else)
                 }
-            }
+            },
             Pat::TupleStruct { path: _, args, ellipsis } => {
                 let Some(variant) = self.infer.variant_resolution_for_pat(pattern) else {
                     not_supported!("unresolved variant");
@@ -479,12 +476,12 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     AdtPatternShape::Tuple { args, ellipsis: *ellipsis },
                     mode,
                 )?
-            }
+            },
             Pat::Ref { pat, mutability: _ } => {
                 let cond_place =
                     cond_place.project(ProjectionElem::Deref, &mut self.result.projection_store);
                 self.pattern_match_inner(current, current_else, cond_place, *pat, mode)?
-            }
+            },
             &Pat::Expr(expr) => {
                 stdx::always!(
                     mode == MatchingMode::Assign,
@@ -501,7 +498,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     expr.into(),
                 );
                 (current, current_else)
-            }
+            },
             Pat::Box { .. } => not_supported!("box pattern"),
             Pat::ConstBlock(_) => not_supported!("const block pattern"),
         })
@@ -619,7 +616,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     &cond_place,
                     mode,
                 )?
-            }
+            },
             VariantId::StructId(s) => self.pattern_matching_variant_fields(
                 shape,
                 s.fields(self.db),
@@ -631,7 +628,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
             )?,
             VariantId::UnionId(_) => {
                 return Err(MirLowerError::TypeError("pattern matching on union"));
-            }
+            },
         })
     }
 
@@ -662,7 +659,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     })
                     .collect::<Result<'db, Vec<_>>>()?;
                 self.pattern_match_adt(current, current_else, it.into_iter(), cond_place, mode)?
-            }
+            },
             AdtPatternShape::Tuple { args, ellipsis } => {
                 let fields = variant_data.fields().iter().map(|(x, _)| {
                     PlaceElem::Field(Either::Left(FieldId { parent: v, local_id: x }))
@@ -676,7 +673,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     cond_place,
                     mode,
                 )?
-            }
+            },
             AdtPatternShape::Unit => (current, current_else),
         })
     }

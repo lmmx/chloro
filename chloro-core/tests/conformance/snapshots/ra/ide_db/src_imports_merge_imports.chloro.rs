@@ -32,10 +32,9 @@ impl MergeBehavior {
     fn is_tree_allowed(&self, tree: &ast::UseTree) -> bool {
         match self {
             MergeBehavior::Crate | MergeBehavior::One => true,
-            // only simple single segment paths are allowed
             MergeBehavior::Module => {
                 tree.use_tree_list().is_none() && tree.path().map(path_len) <= Some(1)
-            }
+            },
         }
     }
 }
@@ -517,12 +516,11 @@ pub fn common_prefix(lhs: &ast::Path, rhs: &ast::Path) -> Option<(ast::Path, ast
             _ => break res,
         }
         res = Some((lhs_curr.clone(), rhs_curr.clone()));
-
         match lhs_curr.parent_path().zip(rhs_curr.parent_path()) {
             Some((lhs, rhs)) => {
                 lhs_curr = lhs;
                 rhs_curr = rhs;
-            }
+            },
             _ => break res,
         }
     }
@@ -572,25 +570,21 @@ pub(super) fn use_tree_cmp(a: &ast::UseTree, b: &ast::UseTree) -> Ordering {
         (None, Some(_)) if !a_is_simple_path => Ordering::Greater,
         (None, Some(_)) => Ordering::Less,
         (Some(a_path), Some(b_path)) => {
-            // cmp_by would be useful for us here but that is currently unstable
-            // cmp doesn't work due the lifetimes on text's return type
-            a_path
-                .segments()
-                .zip_longest(b_path.segments())
-                .find_map(|zipped| match zipped {
-                    EitherOrBoth::Both(a_segment, b_segment) => {
-                        match path_segment_cmp(&a_segment, &b_segment) {
-                            Ordering::Equal => None,
-                            ord => Some(ord),
-                        }
+            a_path.segments().zip_longest(b_path.segments()).find_map(|zipped| match zipped {
+                EitherOrBoth::Both(a_segment, b_segment) => {
+                    match path_segment_cmp(&a_segment, &b_segment) {
+                        Ordering::Equal => None,
+                        ord => Some(ord),
                     }
-                    EitherOrBoth::Left(_) if b_is_simple_path => Some(Ordering::Greater),
-                    EitherOrBoth::Left(_) => Some(Ordering::Less),
-                    EitherOrBoth::Right(_) if a_is_simple_path => Some(Ordering::Less),
-                    EitherOrBoth::Right(_) => Some(Ordering::Greater),
-                })
-                .unwrap_or_else(|| use_tree_cmp_by_tree_list_glob_or_alias(a, b, true))
-        }
+                },
+                EitherOrBoth::Left(_) if b_is_simple_path => Some(Ordering::Greater),
+                EitherOrBoth::Left(_) => Some(Ordering::Less),
+                EitherOrBoth::Right(_) if a_is_simple_path => Some(Ordering::Less),
+                EitherOrBoth::Right(_) => Some(Ordering::Greater),
+            }).unwrap_or_else(
+                || use_tree_cmp_by_tree_list_glob_or_alias(a, b, true),
+            )
+        },
     }
 }
 
@@ -599,19 +593,15 @@ fn path_segment_cmp(a: &ast::PathSegment, b: &ast::PathSegment) -> Ordering {
         (None, None) => Ordering::Equal,
         (Some(_), None) => Ordering::Greater,
         (None, Some(_)) => Ordering::Less,
-        // self
         (Some(PathSegmentKind::SelfKw), Some(PathSegmentKind::SelfKw)) => Ordering::Equal,
         (Some(PathSegmentKind::SelfKw), _) => Ordering::Less,
         (_, Some(PathSegmentKind::SelfKw)) => Ordering::Greater,
-        // super
         (Some(PathSegmentKind::SuperKw), Some(PathSegmentKind::SuperKw)) => Ordering::Equal,
         (Some(PathSegmentKind::SuperKw), _) => Ordering::Less,
         (_, Some(PathSegmentKind::SuperKw)) => Ordering::Greater,
-        // crate
         (Some(PathSegmentKind::CrateKw), Some(PathSegmentKind::CrateKw)) => Ordering::Equal,
         (Some(PathSegmentKind::CrateKw), _) => Ordering::Less,
         (_, Some(PathSegmentKind::CrateKw)) => Ordering::Greater,
-        // identifiers (everything else is treated as an identifier).
         _ => {
             match (
                 a.name_ref().as_ref().map(ast::NameRef::text),
@@ -624,9 +614,9 @@ fn path_segment_cmp(a: &ast::PathSegment, b: &ast::PathSegment) -> Ordering {
                     let a_text = a_name.as_str().trim_start_matches("r#");
                     let b_text = b_name.as_str().trim_start_matches("r#");
                     version_sort::version_sort(a_text, b_text)
-                }
+                },
             }
-        }
+        },
     }
 }
 
@@ -669,18 +659,16 @@ fn use_tree_cmp_by_tree_list_glob_or_alias(
     match (a.use_tree_list(), b.use_tree_list()) {
         (Some(_), None) => Ordering::Greater,
         (None, Some(_)) => Ordering::Less,
-        (Some(a_list), Some(b_list)) if strict => a_list
-            .use_trees()
-            .zip_longest(b_list.use_trees())
-            .find_map(|zipped| match zipped {
-                EitherOrBoth::Both(a_tree, b_tree) => match use_tree_cmp(&a_tree, &b_tree) {
-                    Ordering::Equal => None,
-                    ord => Some(ord),
-                },
-                EitherOrBoth::Left(_) => Some(Ordering::Greater),
-                EitherOrBoth::Right(_) => Some(Ordering::Less),
-            })
-            .unwrap_or_else(cmp_by_glob_or_alias),
+        (Some(a_list), Some(b_list)) if strict => a_list.use_trees().zip_longest(b_list.use_trees()).find_map(|zipped| match zipped {
+            EitherOrBoth::Both(a_tree, b_tree) => match use_tree_cmp(&a_tree, &b_tree) {
+                Ordering::Equal => None,
+                ord => Some(ord),
+            },
+            EitherOrBoth::Left(_) => Some(Ordering::Greater),
+            EitherOrBoth::Right(_) => Some(Ordering::Less),
+        }).unwrap_or_else(
+            cmp_by_glob_or_alias,
+        ),
         _ => cmp_by_glob_or_alias(),
     }
 }
@@ -716,10 +704,9 @@ fn path_len(path: ast::Path) -> usize {
 }
 
 fn get_single_subtree(use_tree: &ast::UseTree) -> Option<ast::UseTree> {
-    use_tree
-        .use_tree_list()
-        .and_then(|tree_list| tree_list.use_trees().collect_tuple())
-        .map(|(single_subtree,)| single_subtree)
+    use_tree.use_tree_list().and_then(|tree_list| tree_list.use_trees().collect_tuple()).map(
+        |(single_subtree,)| single_subtree,
+    )
 }
 
 fn remove_subtree_if_only_self(use_tree: &ast::UseTree) {
@@ -727,7 +714,7 @@ fn remove_subtree_if_only_self(use_tree: &ast::UseTree) {
     match (use_tree.path(), single_subtree.path()) {
         (Some(_), Some(inner)) if path_is_self(&inner) => {
             ted::remove_all_iter(single_subtree.syntax().children_with_tokens());
-        }
+        },
         _ => (),
     }
 }

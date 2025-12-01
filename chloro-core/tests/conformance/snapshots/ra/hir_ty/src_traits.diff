@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8324 bytes
-Chloro size:   8251 bytes
+Chloro size:   8281 bytes
 Rustfmt size:  8412 bytes
 
 ✗ Outputs DIFFER
@@ -37,6 +37,17 @@ Rustfmt size:  8412 bytes
      pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
          Arc::make_mut(this).block = Some(block);
      }
+ 
+     pub fn traits_in_scope_from_clauses(&self, ty: Ty<'db>) -> impl Iterator<Item = TraitId> + '_ {
+-        self.traits_from_clauses
+-            .iter()
+-            .filter_map(move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id))
++        self.traits_from_clauses.iter().filter_map(
++            move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id),
++        )
+     }
+ }
+ 
      ty: Ty<'db>,
      env: Arc<TraitEnvironment<'db>>,
  ) -> Ty<'db> {
@@ -52,3 +63,37 @@ Rustfmt size:  8412 bytes
      ty.replace_infer_with_error(infcx.interner)
  }
  
+ ) -> NextTraitSolveResult {
+     infer_ctxt.probe(|_| {
+         let context = <&SolverContext<'db>>::from(infer_ctxt);
+-
+         tracing::info!(?goal);
+-
+         let (goal, var_values) = context.instantiate_canonical(&goal);
+         tracing::info!(?var_values);
+-
+         let res = context.evaluate_root_goal(goal, Span::dummy(), None);
+-
+         let res = res.map(|r| (r.has_changed, r.certainty));
+-
+         tracing::debug!("solve_nextsolver({:?}) => {:?}", goal, res);
+-
+         match res {
+             Err(_) => NextTraitSolveResult::NoSolution,
+             Ok((_, Certainty::Yes)) => NextTraitSolveResult::Certain,
+     env: Arc<TraitEnvironment<'db>>,
+     trait_: TraitId,
+ ) -> bool {
+-    implements_trait_unique_impl(db, env, trait_, &mut |infcx| {
++    implements_trait_unique_impl(
++        db,
++        env,
++        trait_,
++        &mut |infcx| {
+         infcx.fill_rest_fresh_args(trait_.into(), [ty.into()])
+-    })
++    },
++    )
+ }
+ 
+ /// This should not be used in `hir-ty`, only in `hir`.

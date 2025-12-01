@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8070 bytes
-Chloro size:   8126 bytes
+Chloro size:   8128 bytes
 Rustfmt size:  8070 bytes
 
 ✗ Outputs DIFFER
@@ -22,6 +22,14 @@ Rustfmt size:  8070 bytes
  
  impl<'db> IrPrint<ty::AliasTy<Self>> for DbInterner<'db> {
      fn print(t: &ty::AliasTy<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+             )),
+             SolverDefId::InternedOpaqueTyId(id) => {
+                 fmt.write_str(&format!("AliasTy({:?}[{:?}])", id, t.args))
+-            }
++            },
+             _ => panic!("Expected TypeAlias or OpaqueTy."),
+         })
+     }
          Self::print_debug(t, fmt)
      }
  
@@ -33,6 +41,12 @@ Rustfmt size:  8070 bytes
          crate::with_attached_db(|db| match t.def_id {
              SolverDefId::TypeAliasId(id) => fmt.write_str(&format!(
                  "AliasTerm({:?}[{:?}])",
+             )),
+             SolverDefId::InternedOpaqueTyId(id) => {
+                 fmt.write_str(&format!("AliasTerm({:?}[{:?}])", id, t.args))
+-            }
++            },
+             _ => panic!("Expected TypeAlias or OpaqueTy."),
          })
      }
  }

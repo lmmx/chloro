@@ -86,10 +86,13 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 
     let happy_type = extract_wrapped_type(type_ref)?;
 
-    acc.add(kind.assist_id(), kind.label(), type_ref.syntax().text_range(), |builder| {
+    acc.add(
+        kind.assist_id(),
+        kind.label(),
+        type_ref.syntax().text_range(),
+        |builder| {
         let mut editor = builder.make_editor(&parent);
         let make = SyntaxFactory::with_mappings();
-
         let mut exprs_to_unwrap = Vec::new();
         let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_unwrap, e);
         walk_expr(&body_expr, &mut |expr| {
@@ -100,7 +103,6 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
             }
         });
         for_each_tail_expr(&body_expr, tail_cb);
-
         let is_unit_type = is_unit_type(&happy_type);
         if is_unit_type {
             if let Some(NodeOrToken::Token(token)) = ret_type.syntax().next_sibling_or_token()
@@ -113,7 +115,6 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         } else {
             editor.replace(type_ref.syntax(), happy_type.syntax());
         }
-
         let mut final_placeholder = None;
         for tail_expr in exprs_to_unwrap {
             match &tail_expr {
@@ -182,16 +183,15 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
                 _ => (),
             }
         }
-
         if let Some(cap) = ctx.config.snippet_cap
             && let Some(final_placeholder) = final_placeholder
         {
             editor.add_annotation(final_placeholder.syntax(), builder.make_tabstop_after(cap));
         }
-
         editor.add_mappings(make.finish_with_mappings());
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 enum UnwrapperKind {
@@ -232,10 +232,9 @@ fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
             if let Some(break_expr_arg) = break_expr.expr() {
                 for_each_tail_expr(&break_expr_arg, &mut |e| tail_cb_impl(acc, e))
             }
-        }
+        },
         ast::Expr::ReturnExpr(_) => {
-            // all return expressions have already been handled by the walk loop
-        }
+        },
         e => acc.push(e.clone()),
     }
 }

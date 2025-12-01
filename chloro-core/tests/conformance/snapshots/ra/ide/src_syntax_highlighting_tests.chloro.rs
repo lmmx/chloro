@@ -1300,12 +1300,9 @@ fn syntax_highlighting_not_quadratic() {
     while al.next_round() {
         for i in 6..=10 {
             let n = 1 << i;
-
             let fixture = bench_fixture::big_struct_n(n);
             let (analysis, file_id) = fixture::file(&fixture);
-
             let time = Instant::now();
-
             let hash = analysis
                 .highlight(HL_CONFIG, file_id)
                 .unwrap()
@@ -1313,7 +1310,6 @@ fn syntax_highlighting_not_quadratic() {
                 .filter(|it| it.highlight.tag == HlTag::Symbol(SymbolKind::Struct))
                 .count();
             assert!(hash > n as usize);
-
             let elapsed = time.elapsed();
             al.sample(n as f64, elapsed.as_millis() as f64);
         }

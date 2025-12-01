@@ -103,7 +103,7 @@ impl Runnable {
             RunnableKind::DocTest { test_id, .. } => format!("doctest {test_id}"),
             RunnableKind::Bin => {
                 format!("run {}", target.unwrap_or("binary"))
-            }
+            },
         }
     }
 
@@ -208,17 +208,16 @@ fn cmp_runnables(
     Runnable { nav: nav_b, kind: kind_b, .. }: &Runnable,
 ) -> std::cmp::Ordering {
     // full_range.start < focus_range.start < name, should give us a decent unique ordering
-    nav.full_range
-        .start()
-        .cmp(&nav_b.full_range.start())
-        .then_with(|| {
-            let t_0 = || TextSize::from(0);
-            nav.focus_range
-                .map_or_else(t_0, |it| it.start())
-                .cmp(&nav_b.focus_range.map_or_else(t_0, |it| it.start()))
-        })
-        .then_with(|| kind.disc().cmp(&kind_b.disc()))
-        .then_with(|| nav.name.as_str().cmp(nav_b.name.as_str()))
+    nav.full_range.start().cmp(&nav_b.full_range.start()).then_with(|| {
+        let t_0 = || TextSize::from(0);
+        nav.focus_range.map_or_else(t_0, |it| it.start()).cmp(
+            &nav_b.focus_range.map_or_else(t_0, |it| it.start()),
+        )
+    }).then_with(
+        || kind.disc().cmp(&kind_b.disc()),
+    ).then_with(
+        || nav.name.as_str().cmp(nav_b.name.as_str()),
+    )
 }
 
 fn find_related_tests(
@@ -246,14 +245,10 @@ fn find_related_tests(
                 FileReferenceNode::NameRef(name_ref) => name_ref,
                 _ => continue,
             };
-            if let Some(fn_def) =
-                sema.ancestors_with_macros(name_ref.syntax().clone()).find_map(ast::Fn::cast)
-            {
+            if let Some(fn_def) = sema.ancestors_with_macros(name_ref.syntax().clone()).find_map(ast::Fn::cast) {
                 if let Some(runnable) = as_test_runnable(sema, &fn_def) {
-                    // direct test
                     tests.insert(runnable);
                 } else if let Some(module) = parent_test_module(sema, &fn_def) {
-                    // indirect test
                     find_related_tests_in_module(sema, syntax, &fn_def, &module, tests);
                 }
             }
@@ -299,7 +294,6 @@ fn parent_test_module(
     fn_def.syntax().ancestors().find_map(|node| {
         let module = ast::Module::cast(node)?;
         let module = sema.to_def(&module)?;
-
         if has_test_function_or_multiple_test_submodules(sema, &module, false) {
             Some(module)
         } else {
@@ -568,7 +562,6 @@ fn has_runnable_doc_test(attrs: &hir::Attrs) -> bool {
 
     docs_from_attrs(attrs).is_some_and(|doc| {
         let mut in_code_block = false;
-
         for line in doc.lines() {
             if let Some(header) =
                 RUSTDOC_FENCES.into_iter().find_map(|fence| line.strip_prefix(fence))
@@ -584,7 +577,6 @@ fn has_runnable_doc_test(attrs: &hir::Attrs) -> bool {
                 }
             }
         }
-
         false
     })
 }

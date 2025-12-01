@@ -50,29 +50,23 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         "Remove unnecessary async",
         async_range,
         |edit| {
-            // Remove async on the function definition.
-            edit.replace(async_range, "");
-
-            // Remove all `.await`s from calls to the function we remove `async` from.
-            if let Some(fn_def) = ctx.sema.to_def(&function) {
-                for await_expr in find_all_references(ctx, &Definition::Function(fn_def))
-                    // Keep only references that correspond NameRefs.
-                    .filter_map(|(_, reference)| match reference.name {
-                        FileReferenceNode::NameRef(nameref) => Some(nameref),
-                        _ => None,
-                    })
-                    // Keep only references that correspond to await expressions
-                    .filter_map(|nameref| find_await_expression(ctx, &nameref))
-                {
-                    if let Some(await_token) = &await_expr.await_token() {
+        edit.replace(async_range, "");
+        if let Some(fn_def) = ctx.sema.to_def(&function) {
+            for await_expr in find_all_references(ctx, &Definition::Function(fn_def)).filter_map(|(_, reference)| match reference.name {
+                FileReferenceNode::NameRef(nameref) => Some(nameref),
+                _ => None,
+            }).filter_map(
+                |nameref| find_await_expression(ctx, &nameref),
+            ) {
+                if let Some(await_token) = &await_expr.await_token() {
                         edit.replace(await_token.text_range(), "");
                     }
-                    if let Some(dot_token) = &await_expr.dot_token() {
-                        edit.replace(dot_token.text_range(), "");
-                    }
+                if let Some(dot_token) = &await_expr.dot_token() {
+                    edit.replace(dot_token.text_range(), "");
                 }
             }
-        },
+        }
+    },
     )
 }
 

@@ -31,7 +31,11 @@ pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
         .flat_map(|(node_or_token, _)| node_or_token.iter())
         .map(|t| t.text_range())
         .reduce(|acc, range| acc.cover(range))?;
-    acc.add(AssistId::quick_fix("remove_dbg"), "Remove dbg!()", target, |builder| {
+    acc.add(
+        AssistId::quick_fix("remove_dbg"),
+        "Remove dbg!()",
+        target,
+        |builder| {
         let mut editor = builder.make_editor(ctx.source_file().syntax());
         for (range, expr) in replacements {
             if let Some(expr) = expr {
@@ -42,7 +46,8 @@ pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
             }
         }
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 /// Returns `None` when either
@@ -75,7 +80,6 @@ fn compute_dbg_replacement(
 
     let parent = macro_expr.syntax().parent()?;
     Some(match &*input_expressions {
-        // dbg!()
         [] => {
             match_ast! {
                 match parent {
@@ -98,8 +102,7 @@ fn compute_dbg_replacement(
                     _ => (vec![macro_call.syntax().clone().into()], Some(make::ext::expr_unit())),
                 }
             }
-        }
-        // dbg!(2, 'x', &x, x, ...);
+        },
         exprs if ast::ExprStmt::can_cast(parent.kind()) && exprs.iter().all(pure_expr) => {
             let mut replace = vec![parent.clone().into()];
             if let Some(prev_sibling) = parent.prev_sibling_or_token()
@@ -108,10 +111,8 @@ fn compute_dbg_replacement(
                 replace.push(prev_sibling);
             }
             (replace, None)
-        }
-        // dbg!(expr0)
+        },
         [expr] => {
-            // dbg!(expr, &parent);
             let wrap = match ast::Expr::cast(parent) {
                 Some(parent) => match (expr, parent) {
                     (ast::Expr::CastExpr(_), ast::Expr::CastExpr(_)) => false,
@@ -150,13 +151,12 @@ fn compute_dbg_replacement(
             let expr = replace_nested_dbgs(expr.clone());
             let expr = if wrap { make::expr_paren(expr).into() } else { expr.clone_subtree() };
             (vec![macro_call.syntax().clone().into()], Some(expr))
-        }
-        // dbg!(expr0, expr1, ...)
+        },
         exprs => {
             let exprs = exprs.iter().cloned().map(replace_nested_dbgs);
             let expr = make::expr_tuple(exprs);
             (vec![macro_call.syntax().clone().into()], Some(expr.into()))
-        }
+        },
     })
 }
 

@@ -17,7 +17,7 @@ pub(crate) fn complete_for_and_where(
                 add_keyword("for", "for $0");
             }
             add_keyword("where", "where $0");
-        }
+        },
         Item::Enum(_)
         | Item::Fn(_)
         | Item::Struct(_)
@@ -25,7 +25,7 @@ pub(crate) fn complete_for_and_where(
         | Item::TypeAlias(_)
         | Item::Union(_) => {
             add_keyword("where", "where $0");
-        }
+        },
         _ => (),
     }
 }

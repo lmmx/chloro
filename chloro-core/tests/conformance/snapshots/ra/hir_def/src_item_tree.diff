@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22828 bytes
+Chloro size:   22638 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
@@ -40,20 +40,42 @@ Rustfmt size:  23685 bytes
 -        big_data,
 -        small_data,
 -    } = &item_tree;
-+    let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
-     if small_data.is_empty()
-         && big_data.is_empty()
-         && top_level.is_empty()
-                     small_data: FxHashMap::default(),
-                     big_data: FxHashMap::default(),
-                     top_attrs: RawAttrs::EMPTY,
+-    if small_data.is_empty()
+-        && big_data.is_empty()
+-        && top_level.is_empty()
+-        && attrs.is_empty()
+-        && top_attrs.is_empty()
+-        && vis.arena.is_empty()
+-    {
+-        EMPTY
+-            .get_or_init(|| {
+-                Arc::new(ItemTree {
+-                    top_level: Box::new([]),
+-                    attrs: FxHashMap::default(),
+-                    small_data: FxHashMap::default(),
+-                    big_data: FxHashMap::default(),
+-                    top_attrs: RawAttrs::EMPTY,
 -                    vis: ItemVisibilities {
 -                        arena: ThinVec::new(),
 -                    },
-+                    vis: ItemVisibilities { arena: ThinVec::new() },
-                 })
+-                })
++    let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
++    if small_data.is_empty() && big_data.is_empty() && top_level.is_empty() && attrs.is_empty() && top_attrs.is_empty() && vis.arena.is_empty() {
++        EMPTY.get_or_init(|| {
++            Arc::new(ItemTree {
++                top_level: Box::new([]),
++                attrs: FxHashMap::default(),
++                small_data: FxHashMap::default(),
++                big_data: FxHashMap::default(),
++                top_attrs: RawAttrs::EMPTY,
++                vis: ItemVisibilities { arena: ThinVec::new() },
              })
-             .clone()
+-            .clone()
++        }).clone(
++        )
+     } else {
+         item_tree.shrink_to_fit();
+         Arc::new(item_tree)
  
      let ctx = lower::Ctx::new(db, loc.ast_id.file_id);
      let mut item_tree = ctx.lower_block(&block);
@@ -65,20 +87,41 @@ Rustfmt size:  23685 bytes
 -        big_data,
 -        small_data,
 -    } = &item_tree;
-+    let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
-     if small_data.is_empty()
-         && big_data.is_empty()
-         && top_level.is_empty()
-                     small_data: FxHashMap::default(),
-                     big_data: FxHashMap::default(),
-                     top_attrs: RawAttrs::EMPTY,
+-    if small_data.is_empty()
+-        && big_data.is_empty()
+-        && top_level.is_empty()
+-        && attrs.is_empty()
+-        && top_attrs.is_empty()
+-        && vis.arena.is_empty()
+-    {
+-        EMPTY
+-            .get_or_init(|| {
+-                Arc::new(ItemTree {
+-                    top_level: Box::new([]),
+-                    attrs: FxHashMap::default(),
+-                    small_data: FxHashMap::default(),
+-                    big_data: FxHashMap::default(),
+-                    top_attrs: RawAttrs::EMPTY,
 -                    vis: ItemVisibilities {
 -                        arena: ThinVec::new(),
 -                    },
-+                    vis: ItemVisibilities { arena: ThinVec::new() },
-                 })
+-                })
++    let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
++    if small_data.is_empty() && big_data.is_empty() && top_level.is_empty() && attrs.is_empty() && top_attrs.is_empty() && vis.arena.is_empty() {
++        EMPTY.get_or_init(|| {
++            Arc::new(ItemTree {
++                top_level: Box::new([]),
++                attrs: FxHashMap::default(),
++                small_data: FxHashMap::default(),
++                big_data: FxHashMap::default(),
++                top_attrs: RawAttrs::EMPTY,
++                vis: ItemVisibilities { arena: ThinVec::new() },
              })
-             .clone()
+-            .clone()
++        }).clone(
++        )
+     } else {
+         item_tree.shrink_to_fit();
          Arc::new(item_tree)
      }
  }
@@ -207,16 +250,37 @@ Rustfmt size:  23685 bytes
 -                    );
 +                    cb(Idx::from_raw(RawIdx::from_u32(*counting_index)), path, kind, alias.clone());
                  }
-             }
+-            }
++            },
              UseTreeKind::Glob { path: Some(path) } => {
+                 if let Some((path, _)) = concat_mod_paths(prefix, path) {
+                     cb(
+                         None,
                      );
                  }
-             }
+-            }
++            },
+             UseTreeKind::Glob { path: None } => {
+                 if let Some(prefix) = prefix {
+                     cb(
+                         None,
+                     );
+                 }
+-            }
 -            UseTreeKind::Prefixed {
 -                prefix: additional_prefix,
 -                list,
 -            } => {
++            },
 +            UseTreeKind::Prefixed { prefix: additional_prefix, list } => {
                  let prefix = match additional_prefix {
                      Some(path) => match concat_mod_paths(prefix, path) {
                          Some((path, ImportKind::Plain)) => Some(path),
+                     *counting_index += 1;
+                     tree.expand_impl(prefix.clone(), counting_index, cb);
+                 }
+-            }
++            },
+         }
+     }
+ }

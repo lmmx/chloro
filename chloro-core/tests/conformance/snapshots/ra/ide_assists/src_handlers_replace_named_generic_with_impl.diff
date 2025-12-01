@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11517 bytes
-Chloro size:   11243 bytes
+Chloro size:   11153 bytes
 Rustfmt size:  11571 bytes
 
 ✗ Outputs DIFFER
@@ -25,6 +25,35 @@ Rustfmt size:  11571 bytes
  pub(crate) fn replace_named_generic_with_impl(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
+         "Replace named generic with impl trait",
+         target,
+         |edit| {
+-            let mut editor = edit.make_editor(type_param.syntax());
+-
+-            // remove trait from generic param list
+-            if let Some(generic_params) = fn_.generic_param_list() {
++        let mut editor = edit.make_editor(type_param.syntax());
++        if let Some(generic_params) = fn_.generic_param_list() {
+                 let params: Vec<ast::GenericParam> = generic_params
+                     .clone()
+                     .generic_params()
+                     );
+                 }
+             }
+-
+-            let new_bounds = make::impl_trait_type(type_bound_list);
+-            for path_type in path_types_to_replace.iter().rev() {
++        let new_bounds = make::impl_trait_type(type_bound_list);
++        for path_type in path_types_to_replace.iter().rev() {
+                 editor.replace(path_type.syntax(), new_bounds.clone_for_update().syntax());
+             }
+-            edit.add_file_edits(ctx.vfs_file_id(), editor);
+-        },
++        edit.add_file_edits(ctx.vfs_file_id(), editor);
++    },
+     )
+ }
+ 
      type_param_name: &Name,
      param: &NameLike,
  ) -> Option<PathType> {
@@ -52,6 +81,15 @@ Rustfmt size:  11571 bytes
  }
  
  fn check_valid_usages(usages: &UsageSearchResult, param_list_range: TextRange) -> bool {
+-    usages
+-        .iter()
+-        .flat_map(|(_, usage_refs)| usage_refs)
+-        .all(|usage_ref| param_list_range.contains_range(usage_ref.range))
++    usages.iter().flat_map(|(_, usage_refs)| usage_refs).all(
++        |usage_ref| param_list_range.contains_range(usage_ref.range),
++    )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use super::*;

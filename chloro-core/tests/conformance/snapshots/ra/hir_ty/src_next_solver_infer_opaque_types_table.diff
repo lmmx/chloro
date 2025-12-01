@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5601 bytes
+Chloro size:   5533 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,21 @@ Rustfmt size:  5891 bytes
  
  #[derive(Default, Debug, Clone)]
  pub(crate) struct OpaqueTypeStorage<'db> {
+         if let Some(prev) = prev {
+             *self.opaque_types.get_mut(&key).unwrap() = prev;
+         } else {
+-            // FIXME(#120456) - is `swap_remove` correct?
+             match self.opaque_types.swap_remove(&key) {
+                 None => {
+                     panic!("reverted opaque type inference that was never registered: {key:?}")
+-                }
+-                Some(_) => {}
++                },
++                Some(_) => {
++                },
+             }
+         }
+     }
      }
  
      pub(crate) fn is_empty(&self) -> bool {
@@ -46,16 +61,22 @@ Rustfmt size:  5891 bytes
      }
  
      pub(crate) fn num_entries(&self) -> OpaqueTypeStorageEntries {
-             .iter()
-             .skip(prev_entries.opaque_types)
-             .map(|(k, v)| (*k, *v))
+         &self,
+         prev_entries: OpaqueTypeStorageEntries,
+     ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
+-        self.opaque_types
+-            .iter()
+-            .skip(prev_entries.opaque_types)
+-            .map(|(k, v)| (*k, *v))
 -            .chain(
 -                self.duplicate_entries
 -                    .iter()
 -                    .skip(prev_entries.duplicate_entries)
 -                    .copied(),
 -            )
-+            .chain(self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied())
++        self.opaque_types.iter().skip(prev_entries.opaque_types).map(|(k, v)| (*k, *v)).chain(
++            self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied(),
++        )
      }
  
      /// Only returns the opaque types from the lookup table. These are used

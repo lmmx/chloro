@@ -53,14 +53,12 @@ pub(crate) fn add_format_like_completions(
     };
 
     if let Ok((mut out, mut exprs)) = parse_format_exprs(receiver_text.text()) {
-        // Escape any snippet bits in the out text and any of the exprs.
         escape_snippet_bits(&mut out);
         for arg in &mut exprs {
             if let Arg::Ident(text) | Arg::Expr(text) = arg {
                 escape_snippet_bits(text)
             }
         }
-
         let exprs = with_placeholders(exprs);
         for (label, macro_name) in KINDS {
             let snippet = if exprs.is_empty() {
@@ -68,7 +66,6 @@ pub(crate) fn add_format_like_completions(
             } else {
                 format!(r#"{}({}, {})"#, macro_name, out, exprs.join(", "))
             };
-
             postfix_snippet(label, macro_name, &snippet).add_to(acc, ctx.db);
         }
     }

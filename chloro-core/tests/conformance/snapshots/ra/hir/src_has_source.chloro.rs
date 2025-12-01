@@ -63,7 +63,7 @@ impl Module {
         match def_map[self.id.local_id].origin {
             ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition, .. } => {
                 Some(definition)
-            }
+            },
             _ => None,
         }
     }
@@ -205,10 +205,10 @@ impl HasSource for Macro {
         match self.id {
             MacroId::Macro2Id(it) => {
                 Some(it.lookup(db).source(db).map(ast::Macro::MacroDef).map(Either::Left))
-            }
+            },
             MacroId::MacroRulesId(it) => {
                 Some(it.lookup(db).source(db).map(ast::Macro::MacroRules).map(Either::Left))
-            }
+            },
             MacroId::ProcMacroId(it) => Some(it.lookup(db).source(db).map(Either::Right)),
         }
     }
@@ -264,24 +264,22 @@ impl HasSource for Param<'_> {
                     }
                 } else {
                     params.params().nth(self.idx).map(Either::Right)
-                }
-                .map(|value| InFile { file_id, value })
-            }
+                }.map(
+                    |value| InFile { file_id, value },
+                )
+            },
             Callee::Closure(closure, _) => {
                 let InternedClosure(owner, expr_id) = db.lookup_intern_closure(closure);
                 let (_, source_map) = db.body_with_source_map(owner);
                 let ast @ InFile { file_id, value } = source_map.expr_syntax(expr_id).ok()?;
                 let root = db.parse_or_expand(file_id);
                 match value.to_node(&root) {
-                    Either::Left(ast::Expr::ClosureExpr(it)) => it
-                        .param_list()?
-                        .params()
-                        .nth(self.idx)
-                        .map(Either::Right)
-                        .map(|value| InFile { file_id: ast.file_id, value }),
+                    Either::Left(ast::Expr::ClosureExpr(it)) => it.param_list()?.params().nth(self.idx).map(Either::Right).map(
+                        |value| InFile { file_id: ast.file_id, value },
+                    ),
                     _ => None,
                 }
-            }
+            },
             _ => None,
         }
     }
@@ -292,10 +290,9 @@ impl HasSource for SelfParam {
 
     fn source(self, db: &dyn HirDatabase) -> Option<InFile<Self::Ast>> {
         let InFile { file_id, value } = Function::from(self.func).source(db)?;
-        value
-            .param_list()
-            .and_then(|params| params.self_param())
-            .map(|value| InFile { file_id, value })
+        value.param_list().and_then(|params| params.self_param()).map(
+            |value| InFile { file_id, value },
+        )
     }
 }
 

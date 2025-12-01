@@ -214,8 +214,7 @@ impl<'db> HirDisplay<'db> for SelfParam {
         let param = *data.params.first().unwrap();
         match &data.store[param] {
             TypeRef::Path(p) if p.is_self_type() => f.write_str("self"),
-            TypeRef::Reference(ref_) if matches!(&data.store[ref_.ty], TypeRef::Path(p) if p.is_self_type()) =>
-            {
+            TypeRef::Reference(ref_) if matches!(&data.store[ref_.ty], TypeRef::Path(p) if p.is_self_type()) => {
                 f.write_char('&')?;
                 if let Some(lifetime) = &ref_.lifetime {
                     lifetime.hir_fmt(f, &data.store)?;
@@ -225,11 +224,11 @@ impl<'db> HirDisplay<'db> for SelfParam {
                     f.write_str("mut ")?;
                 }
                 f.write_str("self")
-            }
+            },
             _ => {
                 f.write_str("self: ")?;
                 param.hir_fmt(f, &data.store)
-            }
+            },
         }
     }
 }

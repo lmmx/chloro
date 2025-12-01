@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11413 bytes
-Chloro size:   10642 bytes
+Chloro size:   10634 bytes
 Rustfmt size:  11741 bytes
 
 ✗ Outputs DIFFER
@@ -132,6 +132,22 @@ Rustfmt size:  11741 bytes
  
      let target = impl_def.syntax().text_range();
      acc.add(
+         format!("Generate `{trait_new}` impl from this `{trait_name}` trait"),
+         target,
+         |edit| {
+-            edit.insert(
++        edit.insert(
+                 target.start(),
+                 if ctx.config.snippet_cap.is_some() {
+                     format!("$0{impl_def}\n\n{indent}")
+                     format!("{impl_def}\n\n{indent}")
+                 },
+             );
+-        },
++    },
+     )
+ }
+ 
          ast::Expr::RefExpr(ref_expr) if ref_expr.mut_token().is_none() => {
              ted::insert_all_raw(
                  ted::Position::after(ref_expr.amp_token()?),

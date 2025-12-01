@@ -71,36 +71,17 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         "Extract Module",
         module_text_range,
         |builder| {
-            //This takes place in three steps:
-            //
-            //- Firstly, we will update the references(usages) e.g. converting a
-            //  function call bar() to modname::bar(), and similarly for other items
-            //
-            //- Secondly, changing the visibility of each item inside the newly selected module
-            //  i.e. making a fn a() {} to pub(crate) fn a() {}
-            //
-            //- Thirdly, resolving all the imports this includes removing paths from imports
-            //  outside the module, shifting/cloning them inside new module, or shifting the imports, or making
-            //  new import statements
-
-            //We are getting item usages and record_fields together, record_fields
-            //for change_visibility and usages for first point mentioned above in the process
-
-            let (usages_to_be_processed, record_fields, use_stmts_to_be_inserted) =
+        let (usages_to_be_processed, record_fields, use_stmts_to_be_inserted) =
                 module.get_usages_and_record_fields(ctx, module_text_range);
-
-            builder.edit_file(ctx.vfs_file_id());
-            use_stmts_to_be_inserted.into_iter().for_each(|(_, use_stmt)| {
+        builder.edit_file(ctx.vfs_file_id());
+        use_stmts_to_be_inserted.into_iter().for_each(|(_, use_stmt)| {
                 builder.insert(ctx.selection_trimmed().end(), format!("\n{use_stmt}"));
             });
-
-            let import_items = module.resolve_imports(curr_parent_module, ctx);
-            module.change_visibility(record_fields);
-
-            let module_def = generate_module_def(&impl_parent, &module).indent(old_item_indent);
-
-            let mut usages_to_be_processed_for_cur_file = vec![];
-            for (file_id, usages) in usages_to_be_processed {
+        let import_items = module.resolve_imports(curr_parent_module, ctx);
+        module.change_visibility(record_fields);
+        let module_def = generate_module_def(&impl_parent, &module).indent(old_item_indent);
+        let mut usages_to_be_processed_for_cur_file = vec![];
+        for (file_id, usages) in usages_to_be_processed {
                 if file_id == ctx.vfs_file_id() {
                     usages_to_be_processed_for_cur_file = usages;
                     continue;
@@ -110,43 +91,37 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                     builder.replace(text_range, usage)
                 }
             }
-
-            builder.edit_file(ctx.vfs_file_id());
-            for (text_range, usage) in usages_to_be_processed_for_cur_file {
+        builder.edit_file(ctx.vfs_file_id());
+        for (text_range, usage) in usages_to_be_processed_for_cur_file {
                 builder.replace(text_range, usage);
             }
-
-            if let Some(impl_) = impl_parent {
-                // Remove complete impl block if it has only one child (as such it will be empty
-                // after deleting that child)
-                let nodes_to_be_removed = if impl_child_count == old_items.len() {
+        if let Some(impl_) = impl_parent {
+            let nodes_to_be_removed = if impl_child_count == old_items.len() {
                     vec![impl_.syntax()]
                 } else {
                     //Remove selected node
                     old_items.iter().map(|it| it.syntax()).collect()
                 };
-
-                for node_to_be_removed in nodes_to_be_removed {
+            for node_to_be_removed in nodes_to_be_removed {
                     builder.delete(node_to_be_removed.text_range());
                     // Remove preceding indentation from node
                     if let Some(range) = indent_range_before_given_node(node_to_be_removed) {
                         builder.delete(range);
                     }
                 }
-
-                builder.insert(
+            builder.insert(
                     impl_.syntax().text_range().end(),
                     format!("\n\n{old_item_indent}{module_def}"),
                 );
-            } else {
-                for import_item in import_items {
+        } else {
+            for import_item in import_items {
                     if !module_text_range.contains_range(import_item) {
                         builder.delete(import_item);
                     }
                 }
-                builder.replace(module_text_range, module_def.to_string())
-            }
-        },
+            builder.replace(module_text_range, module_def.to_string())
+        }
+    },
     )
 }
 
@@ -409,7 +384,6 @@ impl Module {
                     _ => true,
                 }
             });
-
             add_change_vis(vis, item);
         }
     }
@@ -780,18 +754,16 @@ fn get_use_tree_paths_from_path(
 }
 
 fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax::SyntaxElement>) {
-    if vis.is_none()
-        && let Some(node_or_token) = node_or_token_opt
-    {
+    if vis.is_none() && let Some(node_or_token) = node_or_token_opt {
         let pub_crate_vis = make::visibility_pub_crate().clone_for_update();
         ted::insert(ted::Position::before(node_or_token), pub_crate_vis.syntax());
     }
 }
 
 fn indent_range_before_given_node(node: &SyntaxNode) -> Option<TextRange> {
-    node.siblings_with_tokens(syntax::Direction::Prev)
-        .find(|x| x.kind() == WHITESPACE)
-        .map(|x| x.text_range())
+    node.siblings_with_tokens(syntax::Direction::Prev).find(|x| x.kind() == WHITESPACE).map(
+        |x| x.text_range(),
+    )
 }
 
 #[cfg(test)]

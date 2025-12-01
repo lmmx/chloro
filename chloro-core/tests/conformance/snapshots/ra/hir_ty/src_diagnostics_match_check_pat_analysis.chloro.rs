@@ -126,7 +126,7 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
                     panic!("bad constructor {ctor:?} for adt {adt:?}")
                 };
                 Some(id.to_enum_variant_id(db, eid).into())
-            }
+            },
             Struct | UnionField => match adt {
                 hir_def::AdtId::EnumId(_) => None,
                 hir_def::AdtId::StructId(id) => Some(id.into()),
@@ -333,11 +333,11 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
                     let variant =
                         Self::variant_id_for_adt(self.db, ctor, adt_def.def_id().0).unwrap();
                     variant.fields(self.db).fields().len()
-                }
+                },
                 _ => {
                     never!("Unexpected type for `Single` constructor: {:?}", ty);
                     0
-                }
+                },
             },
             Ref => 1,
             Slice(..) => unimplemented!(),
@@ -348,7 +348,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
             Or => {
                 never!("The `Or` constructor doesn't have a fixed arity");
                 0
-            }
+            },
         }
     }
 
@@ -446,7 +446,6 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
                     hir_def::AdtId::EnumId(enum_id) => {
                         let enum_data = enum_id.enum_variants(cx.db);
                         let is_declared_nonexhaustive = cx.is_foreign_non_exhaustive(adt);
-
                         if enum_data.variants.is_empty() && !is_declared_nonexhaustive {
                             ConstructorSet::NoConstructors
                         } else {
@@ -466,23 +465,21 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
                                 };
                                 variants.push(visibility);
                             }
-
                             ConstructorSet::Variants {
                                 variants,
                                 non_exhaustive: is_declared_nonexhaustive,
                             }
                         }
-                    }
+                    },
                     hir_def::AdtId::UnionId(_) => ConstructorSet::Union,
                     hir_def::AdtId::StructId(_) => {
                         ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) }
-                    }
+                    },
                 }
-            }
+            },
             TyKind::Tuple(..) => ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) },
             TyKind::Ref(..) => ConstructorSet::Ref,
             TyKind::Never => ConstructorSet::NoConstructors,
-            // This type is one for which we cannot list constructors, like `str` or `f64`.
             _ => ConstructorSet::Unlistable,
         })
     }

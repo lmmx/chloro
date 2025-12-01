@@ -15,8 +15,8 @@ pub(crate) fn break_outside_of_loop(
         DiagnosticCode::RustcHardError("E0268"),
         message,
         d.expr.map(|it| it.into()),
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

@@ -122,17 +122,14 @@ pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         "Add `::<>`",
         ident.text_range(),
         |builder| {
-            builder.trigger_parameter_hints();
-
-            let make = SyntaxFactory::with_mappings();
-            let mut editor = match &turbofish_target {
+        builder.trigger_parameter_hints();
+        let make = SyntaxFactory::with_mappings();
+        let mut editor = match &turbofish_target {
                 Either::Left(it) => builder.make_editor(it.syntax()),
                 Either::Right(it) => builder.make_editor(it.syntax()),
             };
-
-            let fish_head = get_fish_head(&make, number_of_arguments);
-
-            match turbofish_target {
+        let fish_head = get_fish_head(&make, number_of_arguments);
+        match turbofish_target {
                 Either::Left(path_segment) => {
                     if let Some(generic_arg_list) = path_segment.generic_arg_list() {
                         editor.replace(generic_arg_list.syntax(), fish_head.syntax());
@@ -156,16 +153,14 @@ pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                     }
                 }
             };
-
-            if let Some(cap) = ctx.config.snippet_cap {
+        if let Some(cap) = ctx.config.snippet_cap {
                 for arg in fish_head.generic_args() {
                     editor.add_annotation(arg.syntax(), builder.make_placeholder_snippet(cap));
                 }
             }
-
-            editor.add_mappings(make.finish_with_mappings());
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        editor.add_mappings(make.finish_with_mappings());
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 

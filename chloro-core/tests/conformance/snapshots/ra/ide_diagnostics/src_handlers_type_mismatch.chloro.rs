@@ -66,7 +66,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<
         str_ref_to_owned(ctx, d, expr_ptr, &mut fixes);
     }
 
-    if fixes.is_empty() { None } else { Some(fixes) }
+    if fixes.is_empty() {
+        None
+    } else {
+        Some(fixes)
+    }
 }
 
 fn add_reference(

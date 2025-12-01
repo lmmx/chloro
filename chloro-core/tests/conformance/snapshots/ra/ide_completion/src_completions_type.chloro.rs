@@ -53,34 +53,29 @@ pub(crate) fn complete_type_path(
     };
 
     match qualified {
-        Qualified::TypeAnchor { ty: None, trait_: None } => ctx
-            .traits_in_scope()
-            .iter()
-            .flat_map(|&it| hir::Trait::from(it).items(ctx.sema.db))
-            .for_each(|item| add_assoc_item(acc, item)),
+        Qualified::TypeAnchor { ty: None, trait_: None } => ctx.traits_in_scope().iter().flat_map(|&it| hir::Trait::from(it).items(ctx.sema.db)).for_each(
+            |item| add_assoc_item(acc, item),
+        ),
         Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
-        }
+        },
         Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
             ctx.iterate_path_candidates(ty, |item| {
                 add_assoc_item(acc, item);
             });
-
-            // Iterate assoc types separately
             ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                 if let hir::AssocItem::TypeAlias(ty) = item {
                     acc.add_type_alias(ctx, ty)
                 }
                 None::<()>
             });
-        }
-        Qualified::With { resolution: None, .. } => {}
+        },
+        Qualified::With { resolution: None, .. } => {
+        },
         Qualified::With { resolution: Some(resolution), .. } => {
-            // Add associated types on type parameters and `Self`.
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
                 acc.add_type_alias(ctx, alias);
             });
-
             match resolution {
                 hir::PathResolution::Def(hir::ModuleDef::Module(module)) => {
                     let module_scope = module.scope(ctx.db, Some(ctx.module));
@@ -89,7 +84,7 @@ pub(crate) fn complete_type_path(
                             acc.add_path_resolution(ctx, path_ctx, name, def, vec![]);
                         }
                     }
-                }
+                },
                 hir::PathResolution::Def(
                     def @ (hir::ModuleDef::Adt(_)
                     | hir::ModuleDef::TypeAlias(_)
@@ -101,42 +96,34 @@ pub(crate) fn complete_type_path(
                         hir::ModuleDef::BuiltinType(builtin) => builtin.ty(ctx.db),
                         _ => return,
                     };
-
-                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
-                    // (where AssocType is defined on a trait, not an inherent impl)
-
                     ctx.iterate_path_candidates(&ty, |item| {
                         add_assoc_item(acc, item);
                     });
-
-                    // Iterate assoc types separately
                     ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                         if let hir::AssocItem::TypeAlias(ty) = item {
                             acc.add_type_alias(ctx, ty)
                         }
                         None::<()>
                     });
-                }
+                },
                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
-                    // Handles `Trait::assoc` as well as `<Ty as Trait>::assoc`.
                     for item in t.items(ctx.db) {
                         add_assoc_item(acc, item);
                     }
-                }
+                },
                 hir::PathResolution::TypeParam(_) | hir::PathResolution::SelfType(_) => {
                     let ty = match resolution {
                         hir::PathResolution::TypeParam(param) => param.ty(ctx.db),
                         hir::PathResolution::SelfType(impl_def) => impl_def.self_ty(ctx.db),
                         _ => return,
                     };
-
                     ctx.iterate_path_candidates(&ty, |item| {
                         add_assoc_item(acc, item);
                     });
-                }
+                },
                 _ => (),
             }
-        }
+        },
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No => {
             match location {
@@ -203,7 +190,6 @@ pub(crate) fn complete_type_path(
                 }
                 _ => {}
             };
-
             acc.add_nameref_keywords_with_colon(ctx);
             acc.add_type_keywords(ctx);
             ctx.process_all_names(&mut |name, def, doc_aliases| {
@@ -211,7 +197,7 @@ pub(crate) fn complete_type_path(
                     acc.add_path_resolution(ctx, path_ctx, name, def, doc_aliases);
                 }
             });
-        }
+        },
     }
 }
 

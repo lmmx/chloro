@@ -39,9 +39,9 @@ pub(crate) fn generate_from_impl_for_enum(
         "Generate `From` impl for this enum variant",
         target,
         |edit| {
-            let start_offset = variant.parent_enum().syntax().text_range().end();
-            let from_trait = format!("From<{field_type}>");
-            let impl_code = if let Some(name) = field_name {
+        let start_offset = variant.parent_enum().syntax().text_range().end();
+        let from_trait = format!("From<{field_type}>");
+        let impl_code = if let Some(name) = field_name {
                 format!(
                     r#"    fn from({name}: {field_type}) -> Self {{
         Self::{variant_name} {{ {name} }}
@@ -54,9 +54,9 @@ pub(crate) fn generate_from_impl_for_enum(
     }}"#
                 )
             };
-            let from_impl = generate_trait_impl_text_intransitive(&enum_, &from_trait, &impl_code);
-            edit.insert(start_offset, from_impl);
-        },
+        let from_impl = generate_trait_impl_text_intransitive(&enum_, &from_trait, &impl_code);
+        edit.insert(start_offset, from_impl);
+    },
     )
 }
 

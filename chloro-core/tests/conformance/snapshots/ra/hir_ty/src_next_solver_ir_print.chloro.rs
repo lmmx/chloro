@@ -22,7 +22,7 @@ impl<'db> IrPrint<ty::AliasTy<Self>> for DbInterner<'db> {
             )),
             SolverDefId::InternedOpaqueTyId(id) => {
                 fmt.write_str(&format!("AliasTy({:?}[{:?}])", id, t.args))
-            }
+            },
             _ => panic!("Expected TypeAlias or OpaqueTy."),
         })
     }
@@ -45,7 +45,7 @@ impl<'db> IrPrint<ty::AliasTerm<Self>> for DbInterner<'db> {
             )),
             SolverDefId::InternedOpaqueTyId(id) => {
                 fmt.write_str(&format!("AliasTerm({:?}[{:?}])", id, t.args))
-            }
+            },
             _ => panic!("Expected TypeAlias or OpaqueTy."),
         })
     }

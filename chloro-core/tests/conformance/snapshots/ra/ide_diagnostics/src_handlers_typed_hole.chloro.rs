@@ -93,7 +93,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Ass
         })
         .collect();
 
-    if !assists.is_empty() { Some(assists) } else { None }
+    if !assists.is_empty() {
+        Some(assists)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]

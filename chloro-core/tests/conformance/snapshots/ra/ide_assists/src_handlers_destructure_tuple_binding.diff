@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   42743 bytes
+Chloro size:   42593 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -155,6 +155,14 @@ Rustfmt size:  44616 bytes
  fn edit_tuple_usage(
      ctx: &AssistContext<'_>,
      builder: &mut SourceChangeBuilder,
+         None if in_sub_pattern => {
+             cov_mark::hit!(destructure_tuple_call_with_subpattern);
+             None
+-        }
++        },
+         None => Some(EditTupleUsage::NoIndex(usage.range)),
+     }
+ }
          EditTupleUsage::ReplaceExpr(field_expr.into(), field_name)
      }
  }
@@ -162,16 +170,18 @@ Rustfmt size:  44616 bytes
  enum EditTupleUsage {
      /// no index access -> make invalid -> requires handling by user
      /// -> put usage in block comment
+             EditTupleUsage::NoIndex(range) => {
                  edit.insert(range.start(), "/*");
                  edit.insert(range.end(), "*/");
-             }
+-            }
 -            EditTupleUsage::ReplaceExpr(target_expr, replace_with) => ted::replace(
 -                target_expr.syntax(),
 -                replace_with.clone_for_update().syntax(),
 -            ),
++            },
 +            EditTupleUsage::ReplaceExpr(target_expr, replace_with) => {
 +                ted::replace(target_expr.syntax(), replace_with.clone_for_update().syntax())
-+            }
++            },
          }
      }
  }
@@ -199,7 +209,7 @@ Rustfmt size:  44616 bytes
      if let Some(field_expr) = ast::FieldExpr::cast(node) {
          let idx = field_expr.name_ref()?.as_tuple_field()?;
          if idx < data.field_names.len() {
-             // special case: in macro call -> range of `field_expr` in applied macro, NOT range in actual file!
+-            // special case: in macro call -> range of `field_expr` in applied macro, NOT range in actual file!
 -            if field_expr
 -                .syntax()
 -                .ancestors()
@@ -209,17 +219,20 @@ Rustfmt size:  44616 bytes
                  cov_mark::hit!(destructure_tuple_macro_call);
  
                  // issue: cannot differentiate between tuple index passed into macro or tuple index as result of macro:
+                 // -> only handle `t`
                  return None;
              }
- 
+-
 -            Some(TupleIndex {
 -                index: idx,
 -                field_expr,
 -            })
 +            Some(TupleIndex { index: idx, field_expr })
          } else {
-             // tuple index out of range
+-            // tuple index out of range
              None
+         }
+     } else {
  #[cfg(test)]
  mod tests {
      use super::*;

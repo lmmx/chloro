@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3134 bytes
-Chloro size:   2962 bytes
+Chloro size:   2954 bytes
 Rustfmt size:  3155 bytes
 
 ✗ Outputs DIFFER
@@ -39,6 +39,15 @@ Rustfmt size:  3155 bytes
      acc.add(
          AssistId::refactor("move_to_mod_rs"),
          format!("Convert {module_name}.rs to {module_name}/mod.rs"),
+         target,
+         |builder| {
+-            builder.move_file(ctx.vfs_file_id(), dst);
+-        },
++        builder.move_file(ctx.vfs_file_id(), dst);
++    },
+     )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

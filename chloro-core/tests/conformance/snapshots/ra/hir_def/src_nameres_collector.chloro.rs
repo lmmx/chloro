@@ -367,7 +367,6 @@ impl<'db> DefCollector<'db> {
             .is_none_or(|cfg| self.cfg_options.check(&cfg) != Some(false));
         if is_cfg_enabled {
             self.inject_prelude();
-
             ModCollector {
                 def_collector: self,
                 macro_depth: 0,
@@ -409,7 +408,6 @@ impl<'db> DefCollector<'db> {
                     break 'resolve_attr;
                 }
             }
-
             if self.reseed_with_unresolved_attribute() == ReachedFixedPoint::Yes {
                 break 'resolve_attr;
             }
@@ -429,11 +427,6 @@ impl<'db> DefCollector<'db> {
         self.unresolved_imports = unresolved_imports;
 
         if self.is_proc_macro {
-            // A crate exporting procedural macros is not allowed to export anything else.
-            //
-            // Additionally, while the proc macro entry points must be `pub`, they are not publicly
-            // exported in type/value namespace. This function reduces the visibility of all items
-            // in the crate root that aren't proc macros.
             let root = &mut self.def_map.modules[DefMap::ROOT];
             root.scope.censor_non_proc_macros(self.def_map.krate);
         }
@@ -481,7 +474,6 @@ impl<'db> DefCollector<'db> {
                 tree_id,
                 item_tree,
             )) => {
-                // FIXME: Remove this clone
                 let mod_dir = self.mod_dirs[&module_id].clone();
                 ModCollector {
                     def_collector: self,
@@ -492,11 +484,9 @@ impl<'db> DefCollector<'db> {
                     mod_dir,
                 }
                 .collect(&[mod_item], container);
-
                 self.unresolved_macros.swap_remove(pos);
-                // Continue name resolution with the new data.
                 ReachedFixedPoint::No
-            }
+            },
             None => ReachedFixedPoint::Yes,
         }
     }
@@ -546,14 +536,14 @@ impl<'db> DefCollector<'db> {
         match per_ns.types {
             Some(Item { def: ModuleDefId::ModuleId(m), import, .. }) => {
                 self.def_map.prelude = Some((m, import.and_then(ImportOrExternCrate::use_)));
-            }
+            },
             types => {
                 tracing::debug!(
                     "could not resolve prelude path `{}` to module (resolved to {:?})",
                     path.display(self.db, Edition::LATEST),
                     types
                 );
-            }
+            },
         }
     }
 
@@ -736,17 +726,16 @@ impl<'db> DefCollector<'db> {
         match names {
             Some(names) => {
                 for name in names {
-                    // FIXME: Report diagnostic on 404.
                     if let Some(def) = root_scope.get(&name).take_macros() {
                         self.def_map.macro_use_prelude.insert(name, (def, extern_crate));
                     }
                 }
-            }
+            },
             None => {
                 for (name, it) in root_scope.macros() {
                     self.def_map.macro_use_prelude.insert(name.clone(), (it.def, extern_crate));
                 }
-            }
+            },
         }
     }
 
@@ -879,20 +868,12 @@ impl<'db> DefCollector<'db> {
                         }
                     },
                 };
-
                 if kind == ImportKind::TypeOnly {
                     def.values = None;
                     def.macros = None;
                 }
                 let imp = ImportOrExternCrate::Import(ImportId { use_: id, idx: use_tree });
                 tracing::debug!("resolved import {:?} ({:?}) to {:?}", name, import, def);
-
-                // `extern crate crate_name` things can be re-exported as `pub use crate_name`.
-                // But they cannot be re-exported as `pub use self::crate_name`, `pub use crate::crate_name`
-                // or `pub use ::crate_name`.
-                //
-                // This has been historically allowed, but may be not allowed in future
-                // https://github.com/rust-lang/rust/issues/127909
                 if let Some(def) = def.types.as_mut() {
                     let is_extern_crate_reimport_without_prefix = || {
                         let Some(ImportOrExternCrate::ExternCrate(_)) = def.import else {
@@ -908,26 +889,20 @@ impl<'db> DefCollector<'db> {
                         def.vis = vis;
                     }
                 }
-
                 self.update(module_id, &[(name.cloned(), def)], vis, Some(imp));
-            }
+            },
             ImportSource { kind: ImportKind::Glob, id, is_prelude, use_tree, .. } => {
                 tracing::debug!("glob import: {:?}", import);
                 let glob = GlobId { use_: id, idx: use_tree };
                 match def.take_types() {
                     Some(ModuleDefId::ModuleId(m)) => {
                         if is_prelude {
-                            // Note: This dodgily overrides the injected prelude. The rustc
-                            // implementation seems to work the same though.
                             cov_mark::hit!(std_prelude);
                             self.def_map.prelude = Some((m, Some(id)));
                         } else if m.krate != self.def_map.krate {
                             cov_mark::hit!(glob_across_crates);
-                            // glob import from other crate => we can just import everything once
                             let item_map = m.def_map(self.db);
                             let scope = &item_map[m.local_id].scope;
-
-                            // Module scoped macros is included
                             let items = scope
                                 .resolutions()
                                 // only keep visible names...
@@ -936,7 +911,6 @@ impl<'db> DefCollector<'db> {
                                 })
                                 .filter(|(_, res)| !res.is_none())
                                 .collect::<Vec<_>>();
-
                             self.update(
                                 module_id,
                                 &items,
@@ -944,9 +918,6 @@ impl<'db> DefCollector<'db> {
                                 Some(ImportOrExternCrate::Glob(glob)),
                             );
                         } else {
-                            // glob import from same crate => we do an initial
-                            // import, and then need to propagate any further
-                            // additions
                             let def_map;
                             let scope = if m.block == self.def_map.block_id() {
                                 &self.def_map[m.local_id].scope
@@ -954,8 +925,6 @@ impl<'db> DefCollector<'db> {
                                 def_map = m.def_map(self.db);
                                 &def_map[m.local_id].scope
                             };
-
-                            // Module scoped macros is included
                             let items = scope
                                 .resolutions()
                                 // only keep visible names...
@@ -973,14 +942,12 @@ impl<'db> DefCollector<'db> {
                                 })
                                 .filter(|(_, res)| !res.is_none())
                                 .collect::<Vec<_>>();
-
                             self.update(
                                 module_id,
                                 &items,
                                 vis,
                                 Some(ImportOrExternCrate::Glob(glob)),
                             );
-                            // record the glob import in case we add further items
                             let glob_imports = self.glob_imports.entry(m.local_id).or_default();
                             match glob_imports.iter_mut().find(|(mid, _, _)| *mid == module_id) {
                                 None => glob_imports.push((module_id, vis, glob)),
@@ -988,13 +955,12 @@ impl<'db> DefCollector<'db> {
                                     if let Some(new_vis) = old_vis.max(vis, &self.def_map) {
                                         *old_vis = new_vis;
                                     }
-                                }
+                                },
                             }
                         }
-                    }
+                    },
                     Some(ModuleDefId::AdtId(AdtId::EnumId(e))) => {
                         cov_mark::hit!(glob_enum);
-                        // glob import from enum => just import all the variants
                         let resolutions = e
                             .enum_variants(self.db)
                             .variants
@@ -1010,14 +976,8 @@ impl<'db> DefCollector<'db> {
                             vis,
                             Some(ImportOrExternCrate::Glob(glob)),
                         );
-                    }
+                    },
                     Some(ModuleDefId::TraitId(it)) => {
-                        // FIXME: Implement this correctly
-                        // We can't actually call `trait_items`, the reason being that if macro calls
-                        // occur, they will call back into the def map which we might be computing right
-                        // now resulting in a cycle.
-                        // To properly implement this, trait item collection needs to be done in def map
-                        // collection...
                         let resolutions = if true {
                             vec![]
                         } else {
@@ -1046,15 +1006,15 @@ impl<'db> DefCollector<'db> {
                             vis,
                             Some(ImportOrExternCrate::Glob(glob)),
                         );
-                    }
+                    },
                     Some(d) => {
                         tracing::debug!("glob import {:?} from non-module/enum {:?}", import, d);
-                    }
+                    },
                     None => {
                         tracing::debug!("glob import {:?} didn't resolve as type", import);
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 
@@ -2026,7 +1986,6 @@ impl ModCollector<'_, '_> {
         let is_macro_use = attrs.by_key(sym::macro_use).exists();
         let module = &self.item_tree[module_ast_id];
         match &module.kind {
-            // inline module, just recurse
             ModKind::Inline { items } => {
                 let module_id = self.push_child_module(
                     module.name.clone(),
@@ -2034,7 +1993,6 @@ impl ModCollector<'_, '_> {
                     None,
                     &self.item_tree[module.visibility],
                 );
-
                 let Some(mod_dir) =
                     self.mod_dir.descend_into_definition(&module.name, path_attr.as_deref())
                 else {
@@ -2052,8 +2010,7 @@ impl ModCollector<'_, '_> {
                 if is_macro_use {
                     self.import_all_legacy_macros(module_id);
                 }
-            }
-            // out of line module, resolve, parse and recurse
+            },
             ModKind::Outline => {
                 let ast_id = AstId::new(self.file_id(), module_ast_id);
                 let db = self.def_collector.db;
@@ -2117,7 +2074,7 @@ impl ModCollector<'_, '_> {
                         );
                     }
                 };
-            }
+            },
         }
     }
 
@@ -2389,9 +2346,7 @@ impl ModCollector<'_, '_> {
             macro_id,
             &self.item_tree[mac.visibility],
         );
-        if let Some(helpers) = helpers_opt
-            && self.def_collector.def_map.block.is_none()
-        {
+        if let Some(helpers) = helpers_opt && self.def_collector.def_map.block.is_none() {
             Arc::get_mut(&mut self.def_collector.def_map.data)
                 .unwrap()
                 .exported_derives

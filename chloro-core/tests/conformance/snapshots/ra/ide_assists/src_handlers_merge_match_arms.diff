@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18737 bytes
-Chloro size:   18196 bytes
+Chloro size:   18161 bytes
 Rustfmt size:  18737 bytes
 
 ✗ Outputs DIFFER
@@ -53,6 +53,37 @@ Rustfmt size:  18737 bytes
      // compare to the previous match arm as well.
      let arms_to_merge = successors(Some(current_arm), |it| neighbor(it, Direction::Next))
          .take_while(|arm| match arm.expr() {
+         "Merge match arms",
+         current_text_range,
+         |edit| {
+-            let pats = if arms_to_merge.iter().any(contains_placeholder) {
++        let pats = if arms_to_merge.iter().any(contains_placeholder) {
+                 "_".into()
+             } else {
+                 arms_to_merge
+                     .collect::<Vec<String>>()
+                     .join(" | ")
+             };
+-
+-            let arm = format!("{pats} => {current_expr},");
+-
+-            if let [first, .., last] = &*arms_to_merge {
+-                let start = first.syntax().text_range().start();
+-                let end = last.syntax().text_range().end();
+-
+-                edit.replace(TextRange::new(start, end), arm);
+-            }
+-        },
++        let arm = format!("{pats} => {current_expr},");
++        if let [first, .., last] = &*arms_to_merge {
++            let start = first.syntax().text_range().start();
++            let end = last.syntax().text_range().end();
++            edit.replace(TextRange::new(start, end), arm);
++        }
++    },
+     )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

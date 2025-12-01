@@ -43,9 +43,9 @@ impl<'db> Const<'db> {
     pub fn inner(&self) -> &WithCachedTypeInfo<ConstKind<'db>> {
         crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
-            // SAFETY: The caller already has access to a `Const<'db>`, so borrowchecking will
-            // make sure that our returned value is valid for the lifetime `'db`.
-            unsafe { std::mem::transmute(inner) }
+            unsafe {
+                std::mem::transmute(inner)
+            }
         })
     }
 
@@ -216,7 +216,6 @@ pub struct Valtree<'db> {
 impl<'db> Valtree<'db> {
     pub fn new(bytes: ConstBytes<'db>) -> Self {
         crate::with_attached_db(|db| unsafe {
-            // SAFETY: ¯\_(ツ)_/¯
             std::mem::transmute(Valtree::new_(db, bytes))
         })
     }
@@ -224,9 +223,9 @@ impl<'db> Valtree<'db> {
     pub fn inner(&self) -> &ConstBytes<'db> {
         crate::with_attached_db(|db| {
             let inner = self.bytes_(db);
-            // SAFETY: The caller already has access to a `Valtree<'db>`, so borrowchecking will
-            // make sure that our returned value is valid for the lifetime `'db`.
-            unsafe { std::mem::transmute(inner) }
+            unsafe {
+                std::mem::transmute(inner)
+            }
         })
     }
 }
@@ -267,7 +266,6 @@ impl<'db> TypeSuperVisitable<DbInterner<'db>> for Const<'db> {
             ConstKind::Value(v) => v.visit_with(visitor),
             ConstKind::Expr(e) => e.visit_with(visitor),
             ConstKind::Error(e) => e.visit_with(visitor),
-
             ConstKind::Param(_)
             | ConstKind::Infer(_)
             | ConstKind::Bound(..)
@@ -305,7 +303,11 @@ impl<'db> TypeSuperFoldable<DbInterner<'db>> for Const<'db> {
             | ConstKind::Placeholder(_)
             | ConstKind::Error(_) => return Ok(self),
         };
-        if kind != self.kind() { Ok(Const::new(folder.cx(), kind)) } else { Ok(self) }
+        if kind != self.kind() {
+            Ok(Const::new(folder.cx(), kind))
+        } else {
+            Ok(self)
+        }
     }
 
     fn super_fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
@@ -323,7 +325,11 @@ impl<'db> TypeSuperFoldable<DbInterner<'db>> for Const<'db> {
             | ConstKind::Placeholder(_)
             | ConstKind::Error(_) => return self,
         };
-        if kind != self.kind() { Const::new(folder.cx(), kind) } else { self }
+        if kind != self.kind() {
+            Const::new(folder.cx(), kind)
+        } else {
+            self
+        }
     }
 }
 

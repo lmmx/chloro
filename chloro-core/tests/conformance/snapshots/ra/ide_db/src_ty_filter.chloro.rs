@@ -45,8 +45,8 @@ impl TryEnum {
             TryEnum::Result => make::tuple_struct_pat(
                 make::ext::ident_path("Err"),
                 iter::once(make::wildcard_pat().into()),
-            )
-            .into(),
+            ).into(
+            ),
             TryEnum::Option => make::ext::simple_ident_pat(make::name("None")).into(),
         }
     }
@@ -55,10 +55,10 @@ impl TryEnum {
         match self {
             TryEnum::Result => {
                 make::tuple_struct_pat(make::ext::ident_path("Ok"), iter::once(pat)).into()
-            }
+            },
             TryEnum::Option => {
                 make::tuple_struct_pat(make::ext::ident_path("Some"), iter::once(pat)).into()
-            }
+            },
         }
     }
 
@@ -67,13 +67,13 @@ impl TryEnum {
             TryEnum::Result => make::tuple_struct_pat(
                 make::ext::ident_path("Ok"),
                 iter::once(make::wildcard_pat().into()),
-            )
-            .into(),
+            ).into(
+            ),
             TryEnum::Option => make::tuple_struct_pat(
                 make::ext::ident_path("Some"),
                 iter::once(make::wildcard_pat().into()),
-            )
-            .into(),
+            ).into(
+            ),
         }
     }
 

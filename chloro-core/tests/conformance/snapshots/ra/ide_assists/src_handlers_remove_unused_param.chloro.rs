@@ -60,16 +60,16 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         "Remove unused parameter",
         param.syntax().text_range(),
         |builder| {
-            let mut editor = builder.make_editor(&parent);
-            let elements = elements_to_remove(param.syntax());
-            for element in elements {
+        let mut editor = builder.make_editor(&parent);
+        let elements = elements_to_remove(param.syntax());
+        for element in elements {
                 editor.delete(element);
             }
-            for (file_id, references) in fn_def.usages(&ctx.sema).all() {
+        for (file_id, references) in fn_def.usages(&ctx.sema).all() {
                 process_usages(ctx, builder, file_id, references, param_position, is_self_present);
             }
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -100,7 +100,6 @@ fn process_usages(
         for element in element_range {
             editor.delete(element);
         }
-
         builder.add_file_edits(file_id, editor);
     }
 }
@@ -182,7 +181,6 @@ pub(crate) fn elements_to_remove(node: &SyntaxNode) -> Vec<SyntaxElement> {
                 token.siblings_with_tokens(dir).skip(1).take_while(|it| it.kind() == WHITESPACE),
             );
         }
-
         result
     } else {
         vec![node.syntax_element()]

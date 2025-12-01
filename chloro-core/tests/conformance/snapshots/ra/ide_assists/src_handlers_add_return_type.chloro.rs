@@ -15,12 +15,12 @@ pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     acc.add(
         AssistId::refactor_rewrite("add_return_type"),
         match fn_type {
-            FnType::Function => "Add this function's return type",
-            FnType::Closure { .. } => "Add this closure's return type",
-        },
+        FnType::Function => "Add this function's return type",
+        FnType::Closure { .. } => "Add this closure's return type",
+    },
         tail_expr.syntax().text_range(),
         |builder| {
-            match builder_edit_pos {
+        match builder_edit_pos {
                 InsertOrReplace::Insert(insert_pos, needs_whitespace) => {
                     let preceding_whitespace = if needs_whitespace { " " } else { "" };
                     builder.insert(insert_pos, format!("{preceding_whitespace}-> {ty} "))
@@ -29,12 +29,11 @@ pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
                     builder.replace(text_range, format!("-> {ty}"))
                 }
             }
-            if let FnType::Closure { wrap_expr: true } = fn_type {
-                cov_mark::hit!(wrap_closure_non_block_expr);
-                // `|x| x` becomes `|x| -> T x` which is invalid, so wrap it in a block
-                builder.replace(tail_expr.syntax().text_range(), format!("{{{tail_expr}}}"));
-            }
-        },
+        if let FnType::Closure { wrap_expr: true } = fn_type {
+            cov_mark::hit!(wrap_closure_non_block_expr);
+            builder.replace(tail_expr.syntax().text_range(), format!("{{{tail_expr}}}"));
+        }
+    },
     )
 }
 
@@ -55,12 +54,12 @@ fn ret_ty_to_action(
                 cov_mark::hit!(existing_infer_ret_type);
                 cov_mark::hit!(existing_infer_ret_type_closure);
                 Some(InsertOrReplace::Replace(ret_ty.syntax().text_range()))
-            }
+            },
             _ => {
                 cov_mark::hit!(existing_ret_type);
                 cov_mark::hit!(existing_ret_type_closure);
                 None
-            }
+            },
         },
         None => {
             let insert_after_pos = insert_after.text_range().end();
@@ -70,9 +69,8 @@ fn ret_ty_to_action(
                 }
                 _ => (insert_after_pos, true),
             };
-
             Some(InsertOrReplace::Insert(insert_pos, needs_whitespace))
-        }
+        },
     }
 }
 

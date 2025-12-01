@@ -44,7 +44,7 @@ impl GlobalState {
         message: String,
         show_open_log_button: bool,
     ) {
-        match self.config.open_server_logs() && show_open_log_button  {
+        match self.config.open_server_logs() && show_open_log_button {
             true => self.send_request::<lsp_types::request::ShowMessageRequest>(
                 lsp_types::ShowMessageRequestParams {
                     typ,
@@ -86,13 +86,13 @@ impl GlobalState {
                     message,
                     tracing::enabled!(tracing::Level::ERROR),
                 );
-            }
+            },
             None => {
                 tracing::error!("{message}");
                 self.send_notification::<lsp_types::notification::ShowMessage>(
                     lsp_types::ShowMessageParams { typ: lsp_types::MessageType::ERROR, message },
                 );
-            }
+            },
         }
     }
 
@@ -248,10 +248,9 @@ pub(crate) fn all_edits_are_disjoint(
     };
     edit_ranges.extend(additional_edits.iter().map(|edit| edit.range));
     edit_ranges.sort_by_key(|range| (range.start, range.end));
-    edit_ranges
-        .iter()
-        .zip(edit_ranges.iter().skip(1))
-        .all(|(previous, next)| previous.end <= next.start)
+    edit_ranges.iter().zip(edit_ranges.iter().skip(1)).all(
+        |(previous, next)| previous.end <= next.start,
+    )
 }
 
 #[cfg(test)]

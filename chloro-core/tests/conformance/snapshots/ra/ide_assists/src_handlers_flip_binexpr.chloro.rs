@@ -33,16 +33,16 @@ pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         "Flip binary expression",
         op_token.text_range(),
         |builder| {
-            let mut editor = builder.make_editor(&expr.syntax().parent().unwrap());
-            let make = SyntaxFactory::with_mappings();
-            if let FlipAction::FlipAndReplaceOp(binary_op) = action {
+        let mut editor = builder.make_editor(&expr.syntax().parent().unwrap());
+        let make = SyntaxFactory::with_mappings();
+        if let FlipAction::FlipAndReplaceOp(binary_op) = action {
                 editor.replace(op_token, make.token(binary_op))
             };
-            editor.replace(lhs.syntax(), rhs.syntax());
-            editor.replace(rhs.syntax(), lhs.syntax());
-            editor.add_mappings(make.finish_with_mappings());
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        editor.replace(lhs.syntax(), rhs.syntax());
+        editor.replace(rhs.syntax(), lhs.syntax());
+        editor.add_mappings(make.finish_with_mappings());
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -67,7 +67,7 @@ impl From<ast::BinaryOp> for FlipAction {
                     (ast::Ordering::Greater, false) => T![<=],
                 };
                 FlipAction::FlipAndReplaceOp(rev_op)
-            }
+            },
             _ => FlipAction::Flip,
         }
     }
@@ -91,9 +91,8 @@ pub(crate) fn flip_range_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         "Flip range expression",
         op.text_range(),
         |builder| {
-            let mut edit = builder.make_editor(range_expr.syntax());
-
-            match (start, end) {
+        let mut edit = builder.make_editor(range_expr.syntax());
+        match (start, end) {
                 (Some(start), Some(end)) => {
                     edit.replace(start.syntax(), end.syntax());
                     edit.replace(end.syntax(), start.syntax());
@@ -108,9 +107,8 @@ pub(crate) fn flip_range_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
                 }
                 (None, None) => (),
             }
-
-            builder.add_file_edits(ctx.vfs_file_id(), edit);
-        },
+        builder.add_file_edits(ctx.vfs_file_id(), edit);
+    },
     )
 }
 

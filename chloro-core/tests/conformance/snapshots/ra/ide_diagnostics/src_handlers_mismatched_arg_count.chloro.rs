@@ -46,7 +46,10 @@ fn invalid_args_range(
     expected: usize,
     found: usize,
 ) -> FileRange {
-    adjusted_display_range(ctx, source, &|expr| {
+    adjusted_display_range(
+        ctx,
+        source,
+        &|expr| {
         let (text_range, r_paren_token, expected_arg) = match expr {
             Either::Left(ast::Expr::CallExpr(call)) => {
                 let arg_list = call.arg_list()?;
@@ -92,9 +95,9 @@ fn invalid_args_range(
                 return Some(arg.cover(r_paren.text_range()));
             }
         }
-
         None
-    })
+    },
+    )
 }
 
 #[cfg(test)]

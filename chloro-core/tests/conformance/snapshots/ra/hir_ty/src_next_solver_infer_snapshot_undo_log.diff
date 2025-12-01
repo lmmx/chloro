@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6956 bytes
-Chloro size:   6886 bytes
+Chloro size:   6889 bytes
 Rustfmt size:  7094 bytes
 
 ✗ Outputs DIFFER
@@ -43,13 +43,17 @@ Rustfmt size:  7094 bytes
 -                .reverse(undo),
 +            UndoLog::RegionConstraintCollector(undo) => {
 +                self.region_constraint_storage.as_mut().unwrap().reverse(undo)
-+            }
++            },
 +            UndoLog::RegionUnificationTable(undo) => {
 +                self.region_constraint_storage.as_mut().unwrap().unification_table.reverse(undo)
-+            }
++            },
              UndoLog::PushRegionObligation => {
                  self.region_obligations.pop();
-             }
+-            }
++            },
+         }
+     }
+ }
  impl<'db> InferCtxtUndoLogs<'db> {
      pub(crate) fn start_snapshot(&mut self) -> Snapshot {
          self.num_open_snapshots += 1;

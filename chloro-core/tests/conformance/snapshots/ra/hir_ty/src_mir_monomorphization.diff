@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9213 bytes
-Chloro size:   9204 bytes
+Chloro size:   9008 bytes
 Rustfmt size:  9281 bytes
 
 ✗ Outputs DIFFER
@@ -24,6 +24,61 @@ Rustfmt size:  9281 bytes
  use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};
  
  struct Filler<'db> {
+ 
+         match ty.kind() {
+             TyKind::Alias(..) => {
+-                // First instantiate params.
+                 let ty = ty.try_super_fold_with(self)?;
+-
+                 let mut ocx = ObligationCtxt::new(&self.infcx);
+                 let ty = ocx
+                     .structurally_normalize_ty(&ObligationCause::dummy(), self.trait_env.env, ty)
+                     .map_err(|_| MirLowerError::NotSupported("can't normalize alias".to_owned()))?;
+                 ty.try_super_fold_with(self)
+-            }
+-            TyKind::Param(param) => Ok(self
+-                .subst
+-                .as_slice()
+-                .get(param.index as usize)
+-                .and_then(|arg| arg.ty())
+-                .ok_or_else(|| {
+-                    MirLowerError::GenericArgNotProvided(param.id.into(), self.subst)
+-                })?),
++            },
++            TyKind::Param(param) => Ok(self.subst.as_slice().get(param.index as usize).and_then(|arg| arg.ty()).ok_or_else(|| {
++                MirLowerError::GenericArgNotProvided(param.id.into(), self.subst)
++            })?),
+             _ => ty.try_super_fold_with(self),
+         }
+     }
+         let ConstKind::Param(param) = ct.kind() else {
+             return ct.try_super_fold_with(self);
+         };
+-        self.subst
+-            .as_slice()
+-            .get(param.index as usize)
+-            .and_then(|arg| arg.konst())
+-            .ok_or_else(|| MirLowerError::GenericArgNotProvided(param.id.into(), self.subst))
++        self.subst.as_slice().get(param.index as usize).and_then(|arg| arg.konst()).ok_or_else(
++            || MirLowerError::GenericArgNotProvided(param.id.into(), self.subst),
++        )
+     }
+ 
+     fn try_fold_region(&mut self, region: Region<'db>) -> Result<Region<'db>, Self::Error> {
+         let RegionKind::ReEarlyParam(param) = region.kind() else {
+             return Ok(region);
+         };
+-        self.subst
+-            .as_slice()
+-            .get(param.index as usize)
+-            .and_then(|arg| arg.region())
+-            .ok_or_else(|| MirLowerError::GenericArgNotProvided(param.id.into(), self.subst))
++        self.subst.as_slice().get(param.index as usize).and_then(|arg| arg.region()).ok_or_else(
++            || MirLowerError::GenericArgNotProvided(param.id.into(), self.subst),
++        )
+     }
+ }
+ 
      ) -> Self {
          let interner = DbInterner::new_with(db, Some(env.krate), env.block);
          let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);

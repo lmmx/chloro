@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58546 bytes
-Chloro size:   58590 bytes
+Chloro size:   58456 bytes
 Rustfmt size:  58546 bytes
 
 ✗ Outputs DIFFER
@@ -109,6 +109,34 @@ Rustfmt size:  58546 bytes
          if let Some(only_name) = self.only.as_deref() {
              let name = body_id.name(db).unwrap_or_else(Name::missing);
  
+ }
+ 
+ fn full_name(db: &RootDatabase, body_id: DefWithBody, module: hir::Module) -> String {
+-    module
+-        .krate()
+-        .display_name(db)
+-        .map(|it| it.canonical_name().as_str().to_owned())
+-        .into_iter()
+-        .chain(
+-            module
+-                .path_to_root(db)
+-                .into_iter()
+-                .filter_map(|it| it.name(db))
+-                .rev()
+-                .chain(Some(body_id.name(db).unwrap_or_else(Name::missing)))
+-                .map(|it| it.display(db, Edition::LATEST).to_string()),
+-        )
+-        .join("::")
++    module.krate().display_name(db).map(|it| it.canonical_name().as_str().to_owned()).into_iter().chain(module.path_to_root(db).into_iter().filter_map(|it| it.name(db)).rev().chain(
++        Some(body_id.name(db).unwrap_or_else(Name::missing)),
++    ).map(
++        |it| it.display(db, Edition::LATEST).to_string(),
++    )).join(
++        "::",
++    )
+ }
+ 
+ fn location_csv_expr(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, expr_id: ExprId) -> String {
          None
      }
  }

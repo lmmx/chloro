@@ -190,12 +190,10 @@ pub(crate) fn annotations(
         }));
     }
 
-    annotations
-        .into_iter()
-        .sorted_by_key(|a| {
-            (a.range.start(), a.range.end(), matches!(a.kind, AnnotationKind::Runnable(..)))
-        })
-        .collect()
+    annotations.into_iter().sorted_by_key(|a| {
+        (a.range.start(), a.range.end(), matches!(a.kind, AnnotationKind::Runnable(..)))
+    }).collect(
+    )
 }
 
 pub(crate) fn resolve_annotation(

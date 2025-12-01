@@ -62,9 +62,9 @@ impl<'db> TraitEnvironment<'db> {
     }
 
     pub fn traits_in_scope_from_clauses(&self, ty: Ty<'db>) -> impl Iterator<Item = TraitId> + '_ {
-        self.traits_from_clauses
-            .iter()
-            .filter_map(move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id))
+        self.traits_from_clauses.iter().filter_map(
+            move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id),
+        )
     }
 }
 
@@ -107,18 +107,12 @@ pub fn next_trait_solve_canonical_in_ctxt<'db>(
 ) -> NextTraitSolveResult {
     infer_ctxt.probe(|_| {
         let context = <&SolverContext<'db>>::from(infer_ctxt);
-
         tracing::info!(?goal);
-
         let (goal, var_values) = context.instantiate_canonical(&goal);
         tracing::info!(?var_values);
-
         let res = context.evaluate_root_goal(goal, Span::dummy(), None);
-
         let res = res.map(|r| (r.has_changed, r.certainty));
-
         tracing::debug!("solve_nextsolver({:?}) => {:?}", goal, res);
-
         match res {
             Err(_) => NextTraitSolveResult::NoSolution,
             Ok((_, Certainty::Yes)) => NextTraitSolveResult::Certain,
@@ -229,9 +223,14 @@ pub fn implements_trait_unique<'db>(
     env: Arc<TraitEnvironment<'db>>,
     trait_: TraitId,
 ) -> bool {
-    implements_trait_unique_impl(db, env, trait_, &mut |infcx| {
+    implements_trait_unique_impl(
+        db,
+        env,
+        trait_,
+        &mut |infcx| {
         infcx.fill_rest_fresh_args(trait_.into(), [ty.into()])
-    })
+    },
+    )
 }
 
 /// This should not be used in `hir-ty`, only in `hir`.

@@ -407,13 +407,12 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
                 }
                 _ => Some(parent_name),
             };
-        }
+        },
         Definition::Variant(e) => Some(e.parent_enum(db).name(db)),
         Definition::GenericParam(generic_param) => match generic_param.parent() {
             hir::GenericDef::Adt(it) => Some(it.name(db)),
             hir::GenericDef::Trait(it) => Some(it.name(db)),
             hir::GenericDef::TypeAlias(it) => Some(it.name(db)),
-
             hir::GenericDef::Impl(i) => i.self_ty(db).as_adt().map(|adt| adt.name(db)),
             hir::GenericDef::Function(it) => {
                 let container = it.as_assoc_item(db).and_then(|assoc| match assoc.container(db) {
@@ -429,10 +428,10 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
                             name.display(db, edition),
                             it.name(db).display(db, edition)
                         ));
-                    }
+                    },
                     None => Some(it.name(db)),
                 }
-            }
+            },
             hir::GenericDef::Const(it) => {
                 let container = it.as_assoc_item(db).and_then(|assoc| match assoc.container(db) {
                     hir::AssocItemContainer::Trait(t) => Some(t.name(db)),
@@ -447,10 +446,10 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
                             name.display(db, edition),
                             it.name(db)?.display(db, edition)
                         ));
-                    }
+                    },
                     None => it.name(db),
                 }
-            }
+            },
             hir::GenericDef::Static(it) => Some(it.name(db)),
         },
         Definition::DeriveHelper(derive_helper) => Some(derive_helper.derive().name(db)),
@@ -460,14 +459,15 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
                     hir::AssocItemContainer::Trait(t) => Some(t.name(db)),
                     hir::AssocItemContainer::Impl(i) => {
                         i.self_ty(db).as_adt().map(|adt| adt.name(db))
-                    }
+                    },
                 }
             } else {
                 return d.as_extern_assoc_item(db).map(|_| "<extern>".to_owned());
             }
-        }
-    }
-    .map(|name| name.display(db, edition).to_string())
+        },
+    }.map(
+        |name| name.display(db, edition).to_string(),
+    )
 }
 
 pub(super) fn path(
@@ -1165,7 +1165,6 @@ fn markup(
         let offset = TextSize::new(buf.len() as u32);
         let buf_range_map = range_map.map(|range_map| range_map.shift_docstring_line_range(offset));
         format_to!(buf, "{}", doc);
-
         (buf.into(), buf_range_map)
     } else {
         (buf.into(), None)
@@ -1297,9 +1296,7 @@ fn keyword_hints(
     match token.kind() {
         T![await] | T![loop] | T![match] | T![unsafe] | T![as] | T![try] | T![if] | T![else] => {
             let keyword_mod = format!("{}_keyword", token.text());
-
             match ast::Expr::cast(parent).and_then(|site| sema.type_of_expr(&site)) {
-                // ignore the unit type ()
                 Some(ty) if !ty.adjusted.as_ref().unwrap_or(&ty.original).is_unit() => {
                     let mut targets: Vec<hir::ModuleDef> = Vec::new();
                     let mut push_new_def = |item: hir::ModuleDef| {
@@ -1308,11 +1305,9 @@ fn keyword_hints(
                         }
                     };
                     walk_and_push_ty(sema.db, &ty.original, &mut push_new_def);
-
                     let ty = ty.adjusted();
                     let description =
                         format!("{}: {}", token.text(), ty.display(sema.db, display_target));
-
                     KeywordHint {
                         description,
                         keyword_mod,
@@ -1320,14 +1315,14 @@ fn keyword_hints(
                             .into_iter()
                             .collect(),
                     }
-                }
+                },
                 _ => KeywordHint {
                     description: token.text().to_owned(),
                     keyword_mod,
                     actions: Vec::new(),
                 },
             }
-        }
+        },
         T![fn] => {
             let module = match ast::FnPtrType::cast(parent) {
                 // treat fn keyword inside function pointer type as primitive
@@ -1335,7 +1330,7 @@ fn keyword_hints(
                 None => format!("{}_keyword", token.text()),
             };
             KeywordHint::new(token.text().to_owned(), module)
-        }
+        },
         T![Self] => KeywordHint::new(token.text().to_owned(), "self_upper_keyword".into()),
         _ => KeywordHint::new(token.text().to_owned(), format!("{}_keyword", token.text())),
     }
@@ -1354,10 +1349,10 @@ fn render_dyn_compatibility(
     match osv {
         DynCompatibilityViolation::SizedSelf => {
             buf.push_str("having a `Self: Sized` bound");
-        }
+        },
         DynCompatibilityViolation::SelfReferential => {
             buf.push_str("having a bound that references `Self`");
-        }
+        },
         DynCompatibilityViolation::Method(func, mvc) => {
             let name = hir::Function::from(func).name(db);
             format_to!(buf, "having a method `{}` that is not dispatchable due to ", name.as_str());
@@ -1378,7 +1373,7 @@ fn render_dyn_compatibility(
                 }
             };
             buf.push_str(desc);
-        }
+        },
         DynCompatibilityViolation::AssocConst(const_) => {
             let name = hir::Const::from(const_).name(db);
             if let Some(name) = name {
@@ -1386,15 +1381,15 @@ fn render_dyn_compatibility(
             } else {
                 buf.push_str("having an associated constant");
             }
-        }
+        },
         DynCompatibilityViolation::GAT(alias) => {
             let name = hir::TypeAlias::from(alias).name(db);
             format_to!(buf, "having a generic associated type `{}`", name.as_str());
-        }
+        },
         DynCompatibilityViolation::HasNonCompatibleSuperTrait(super_trait) => {
             let name = hir::Trait::from(super_trait).name(db);
             format_to!(buf, "having a dyn-incompatible supertrait `{}`", name.as_str());
-        }
+        },
     }
 }
 
@@ -1411,12 +1406,10 @@ fn is_pwr2plus1(val: u128) -> bool {
 fn pwr2_to_exponent(num: u128) -> String {
     const DIGITS: [char; 10] = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
     assert_eq!(num.count_ones(), 1);
-    num.trailing_zeros()
-        .to_string()
-        .chars()
-        .map(|c| c.to_digit(10).unwrap() as usize)
-        .map(|idx| DIGITS[idx])
-        .collect::<String>()
+    num.trailing_zeros().to_string().chars().map(|c| c.to_digit(10).unwrap() as usize).map(
+        |idx| DIGITS[idx],
+    ).collect::<String>(
+    )
 }
 
 #[cfg(test)]

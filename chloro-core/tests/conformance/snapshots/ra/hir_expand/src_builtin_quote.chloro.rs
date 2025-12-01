@@ -177,7 +177,7 @@ impl ToTokenTree for crate::tt::TtElement<'_> {
                     std::iter::once(crate::tt::TokenTree::Subtree(subtree.clone()))
                         .chain(subtree_iter.remaining().flat_tokens().iter().cloned()),
                 );
-            }
+            },
         }
     }
 }

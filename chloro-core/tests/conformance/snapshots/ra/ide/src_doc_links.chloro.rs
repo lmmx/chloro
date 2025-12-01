@@ -180,9 +180,8 @@ pub(crate) fn extract_definitions_from_docs(
         docs.as_str(),
         MARKDOWN_OPTIONS,
         Some(&mut broken_link_clone_cb),
-    )
-    .into_offset_iter()
-    .filter_map(|(event, range)| match event {
+    ).into_offset_iter(
+    ).filter_map(|(event, range)| match event {
         Event::Start(Tag::Link(_, target, _)) => {
             let (link, ns) = parse_intra_doc_link(&target);
             Some((
@@ -190,10 +189,10 @@ pub(crate) fn extract_definitions_from_docs(
                 link.to_owned(),
                 ns,
             ))
-        }
+        },
         _ => None,
-    })
-    .collect()
+    }).collect(
+    )
 }
 
 pub(crate) fn resolve_doc_path_for_def(
@@ -228,8 +227,9 @@ pub(crate) fn resolve_doc_path_for_def(
         | Definition::DeriveHelper(_)
         | Definition::InlineAsmRegOrRegClass(_)
         | Definition::InlineAsmOperand(_) => None,
-    }
-    .map(Definition::from)
+    }.map(
+        Definition::from,
+    )
 }
 
 pub(crate) fn doc_attributes(
@@ -278,7 +278,9 @@ pub(crate) fn token_as_doc_comment(doc_token: &SyntaxToken) -> Option<DocComment
             },
             _ => None,
         }
-    }).map(|prefix_len| DocCommentToken { prefix_len, doc_token: doc_token.clone() })
+    }).map(
+        |prefix_len| DocCommentToken { prefix_len, doc_token: doc_token.clone() },
+    )
 }
 
 impl DocCommentToken {
@@ -316,9 +318,7 @@ impl DocCommentToken {
                     let (mapped, idx) = doc_mapping.map(range)?;
                     (mapped.value.contains(abs_in_expansion_offset)).then_some((mapped.value, link, ns, idx.is_inner_attr()))
                 })?;
-            // get the relative range to the doc/attribute in the expansion
             let in_expansion_relative_range = in_expansion_range - descended_prefix_len - token_start;
-            // Apply relative range to the original input comment
             let absolute_range = in_expansion_relative_range + original_start + prefix_len;
             let def = resolve_doc_path_for_def(sema.db, def, &link, ns, is_inner)?;
             cb(def, node, absolute_range)
@@ -481,7 +481,7 @@ fn map_links<'e>(
             end_link_target = Some(target.clone());
             end_link_type = Some(link_type);
             evt
-        }
+        },
         Event::End(Tag::Link(link_type, target, _)) => {
             in_link = false;
             Event::End(Tag::Link(
@@ -489,7 +489,7 @@ fn map_links<'e>(
                 end_link_target.take().unwrap_or(target),
                 CowStr::Borrowed(""),
             ))
-        }
+        },
         Event::Text(s) if in_link => {
             let (link_type, link_target_s, link_name) =
                 callback(&end_link_target.take().unwrap(), &s, range, end_link_type.unwrap());
@@ -498,7 +498,7 @@ fn map_links<'e>(
                 end_link_type = link_type;
             }
             Event::Text(CowStr::Boxed(link_name.into()))
-        }
+        },
         Event::Code(s) if in_link => {
             let (link_type, link_target_s, link_name) =
                 callback(&end_link_target.take().unwrap(), &s, range, end_link_type.unwrap());
@@ -507,7 +507,7 @@ fn map_links<'e>(
                 end_link_type = link_type;
             }
             Event::Code(CowStr::Boxed(link_name.into()))
-        }
+        },
         _ => evt,
     })
 }
@@ -730,20 +730,17 @@ fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> 
         AssocItem::Function(function) => {
             let is_trait_method =
                 function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
-            // This distinction may get more complicated when specialization is available.
-            // Rustdoc makes this decision based on whether a method 'has defaultness'.
-            // Currently this is only the case for provided trait methods.
             if is_trait_method && !function.has_body(db) {
                 format!("tymethod.{}", function.name(db).as_str())
             } else {
                 format!("method.{}", function.name(db).as_str())
             }
-        }
+        },
         AssocItem::Const(constant) => {
             format!("associatedconstant.{}", constant.name(db)?.as_str())
-        }
+        },
         AssocItem::TypeAlias(ty) => {
             format!("associatedtype.{}", ty.name(db).as_str())
-        }
+        },
     })
 }

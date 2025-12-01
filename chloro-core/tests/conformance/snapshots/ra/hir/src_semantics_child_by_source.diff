@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12477 bytes
-Chloro size:   12454 bytes
+Chloro size:   12294 bytes
 Rustfmt size:  12826 bytes
 
 ✗ Outputs DIFFER
@@ -208,8 +208,8 @@ Rustfmt size:  12826 bytes
 +        });
  
          for (block, def_map) in body.blocks(db) {
-             // All block expressions are merged into the same map, because they logically all add
-             // inner items to the containing `DefWithBodyId`.
+-            // All block expressions are merged into the same map, because they logically all add
+-            // inner items to the containing `DefWithBodyId`.
 -            def_map[DefMap::ROOT]
 -                .scope
 -                .child_by_source_to(db, res, file_id);

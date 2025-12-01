@@ -37,9 +37,9 @@ use crate::{
 };
 
 pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
-    extract_trivial_expression(&block_expr)
-        .filter(|expr| !expr.syntax().text().contains_char('\n'))
-        .unwrap_or_else(|| block_expr.into())
+    extract_trivial_expression(&block_expr).filter(|expr| !expr.syntax().text().contains_char('\n')).unwrap_or_else(
+        || block_expr.into(),
+    )
 }
 
 pub fn extract_trivial_expression(block_expr: &ast::BlockExpr) -> Option<ast::Expr> {
@@ -94,7 +94,11 @@ pub fn test_related_attribute_syn(fn_def: &ast::Fn) -> Option<ast::Attr> {
     fn_def.attrs().find_map(|attr| {
         let path = attr.path()?;
         let text = path.syntax().text().to_string();
-        if text.starts_with("test") || text.ends_with("test") { Some(attr) } else { None }
+        if text.starts_with("test") || text.ends_with("test") {
+            Some(attr)
+        } else {
+            None
+        }
     })
 }
 
@@ -103,11 +107,11 @@ pub fn has_test_related_attribute(attrs: &hir::AttrsWithOwner) -> bool {
         let path = attr.path();
         (|| {
             Some(
-                path.segments().first()?.as_str().starts_with("test")
-                    || path.segments().last()?.as_str().ends_with("test"),
+                path.segments().first()?.as_str().starts_with("test") || path.segments().last()?.as_str().ends_with("test"),
             )
-        })()
-        .unwrap_or_default()
+        })(
+        ).unwrap_or_default(
+        )
     })
 }
 
@@ -194,10 +198,8 @@ pub fn add_trait_assoc_items_to_impl(
     target_scope: &hir::SemanticsScope<'_>,
 ) -> Vec<ast::AssocItem> {
     let new_indent_level = IndentLevel::from_node(impl_.syntax()) + 1;
-    original_items
-        .iter()
-        .map(|InFile { file_id, value: original_item }| {
-            let mut cloned_item = {
+    original_items.iter().map(|InFile { file_id, value: original_item }| {
+        let mut cloned_item = {
                 if let Some(macro_file) = file_id.macro_file() {
                     let span_map = sema.db.expansion_span_map(macro_file);
                     let item_prettified = prettify_macro_expansion(
@@ -215,21 +217,19 @@ pub fn add_trait_assoc_items_to_impl(
                 original_item
             }
             .reset_indent();
-
-            if let Some(source_scope) = sema.scope(original_item.syntax()) {
+        if let Some(source_scope) = sema.scope(original_item.syntax()) {
                 // FIXME: Paths in nested macros are not handled well. See
                 // `add_missing_impl_members::paths_in_nested_macro_should_get_transformed` test.
                 let transform =
                     PathTransform::trait_impl(target_scope, &source_scope, trait_, impl_.clone());
                 cloned_item = ast::AssocItem::cast(transform.apply(cloned_item.syntax())).unwrap();
             }
-            cloned_item.remove_attrs_and_docs();
-            cloned_item
-        })
-        .filter_map(|item| match item {
-            ast::AssocItem::Fn(fn_) if fn_.body().is_none() => {
-                let fn_ = fn_.clone_subtree();
-                let new_body = &make::block_expr(
+        cloned_item.remove_attrs_and_docs();
+        cloned_item
+    }).filter_map(|item| match item {
+        ast::AssocItem::Fn(fn_) if fn_.body().is_none() => {
+            let fn_ = fn_.clone_subtree();
+            let new_body = &make::block_expr(
                     None,
                     Some(match config.expr_fill_default {
                         ExprFillDefaultMode::Todo => make::ext::expr_todo(),
@@ -237,34 +237,36 @@ pub fn add_trait_assoc_items_to_impl(
                         ExprFillDefaultMode::Default => make::ext::expr_todo(),
                     }),
                 );
-                let new_body = AstNodeEdit::indent(new_body, IndentLevel::single());
-                let mut fn_editor = SyntaxEditor::new(fn_.syntax().clone());
-                fn_.replace_or_insert_body(&mut fn_editor, new_body);
-                let new_fn_ = fn_editor.finish().new_root().clone();
-                ast::AssocItem::cast(new_fn_)
+            let new_body = AstNodeEdit::indent(new_body, IndentLevel::single());
+            let mut fn_editor = SyntaxEditor::new(fn_.syntax().clone());
+            fn_.replace_or_insert_body(&mut fn_editor, new_body);
+            let new_fn_ = fn_editor.finish().new_root().clone();
+            ast::AssocItem::cast(new_fn_)
+        },
+        ast::AssocItem::TypeAlias(type_alias) => {
+            let type_alias = type_alias.clone_subtree();
+            if let Some(type_bound_list) = type_alias.type_bound_list() {
+                let mut type_alias_editor = SyntaxEditor::new(type_alias.syntax().clone());
+                type_bound_list.remove(&mut type_alias_editor);
+                let type_alias = type_alias_editor.finish().new_root().clone();
+                ast::AssocItem::cast(type_alias)
+            } else {
+                Some(ast::AssocItem::TypeAlias(type_alias))
             }
-            ast::AssocItem::TypeAlias(type_alias) => {
-                let type_alias = type_alias.clone_subtree();
-                if let Some(type_bound_list) = type_alias.type_bound_list() {
-                    let mut type_alias_editor = SyntaxEditor::new(type_alias.syntax().clone());
-                    type_bound_list.remove(&mut type_alias_editor);
-                    let type_alias = type_alias_editor.finish().new_root().clone();
-                    ast::AssocItem::cast(type_alias)
-                } else {
-                    Some(ast::AssocItem::TypeAlias(type_alias))
-                }
-            }
-            item => Some(item),
-        })
-        .map(|item| AstNodeEdit::indent(&item, new_indent_level))
-        .collect()
+        },
+        item => Some(item),
+    }).map(
+        |item| AstNodeEdit::indent(&item, new_indent_level),
+    ).collect(
+    )
 }
 
 pub(crate) fn vis_offset(node: &SyntaxNode) -> TextSize {
-    node.children_with_tokens()
-        .find(|it| !matches!(it.kind(), WHITESPACE | COMMENT | ATTR))
-        .map(|it| it.text_range().start())
-        .unwrap_or_else(|| node.text_range().start())
+    node.children_with_tokens().find(|it| !matches!(it.kind(), WHITESPACE | COMMENT | ATTR)).map(
+        |it| it.text_range().start(),
+    ).unwrap_or_else(
+        || node.text_range().start(),
+    )
 }
 
 pub(crate) fn invert_boolean_expression(make: &SyntaxFactory, expr: ast::Expr) -> ast::Expr {
@@ -303,14 +305,12 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                     );
                 }
             };
-
             Some(make.expr_bin(bin.lhs()?, rev_kind, bin.rhs()?).into())
-        }
+        },
         ast::Expr::MethodCallExpr(mce) => {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
             let arg_list = mce.arg_list()?;
-
             let method = match method.text().as_str() {
                 "is_some" => "is_none",
                 "is_none" => "is_some",
@@ -318,13 +318,12 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 "is_err" => "is_ok",
                 _ => return None,
             };
-
             Some(make.expr_method_call(receiver, make.name_ref(method), arg_list).into())
-        }
+        },
         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
             ast::Expr::ParenExpr(parexpr) => {
                 parexpr.expr().map(|e| e.clone_subtree().clone_for_update())
-            }
+            },
             _ => pe.expr().map(|e| e.clone_subtree().clone_for_update()),
         },
         ast::Expr::Literal(lit) => match lit.kind() {
@@ -360,12 +359,11 @@ fn invert_special_case_legacy(expr: &ast::Expr) -> Option<ast::Expr> {
             let mut bin_editor = SyntaxEditor::new(bin.syntax().clone());
             bin_editor.replace(op_token, make::token(rev_token));
             ast::Expr::cast(bin_editor.finish().new_root().clone())
-        }
+        },
         ast::Expr::MethodCallExpr(mce) => {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
             let arg_list = mce.arg_list()?;
-
             let method = match method.text().as_str() {
                 "is_some" => "is_none",
                 "is_none" => "is_some",
@@ -374,7 +372,7 @@ fn invert_special_case_legacy(expr: &ast::Expr) -> Option<ast::Expr> {
                 _ => return None,
             };
             Some(make::expr_method_call(receiver, make::name_ref(method), arg_list).into())
-        }
+        },
         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
             ast::Expr::ParenExpr(parexpr) => parexpr.expr(),
             _ => pe.expr(),
@@ -431,14 +429,12 @@ fn check_pat_variant_nested_or_literal_with_depth(
 
     match pat {
         ast::Pat::RestPat(_) | ast::Pat::WildcardPat(_) | ast::Pat::RefPat(_) => false,
-
         ast::Pat::LiteralPat(_)
         | ast::Pat::RangePat(_)
         | ast::Pat::MacroPat(_)
         | ast::Pat::PathPat(_)
         | ast::Pat::BoxPat(_)
         | ast::Pat::ConstBlockPat(_) => true,
-
         ast::Pat::IdentPat(ident_pat) => ident_pat.pat().is_some_and(|pat| {
             check_pat_variant_nested_or_literal_with_depth(ctx, &pat, depth_after_refutable)
         }),
@@ -462,7 +458,7 @@ fn check_pat_variant_nested_or_literal_with_depth(
                     })
                 })
             })
-        }
+        },
         ast::Pat::OrPat(or_pat) => or_pat.pats().any(|pat| {
             check_pat_variant_nested_or_literal_with_depth(ctx, &pat, depth_after_refutable)
         }),
@@ -472,12 +468,13 @@ fn check_pat_variant_nested_or_literal_with_depth(
             tuple_struct_pat.fields().any(|pat| {
                 check_pat_variant_nested_or_literal_with_depth(ctx, &pat, adjusted_next_depth)
             })
-        }
+        },
         ast::Pat::SlicePat(slice_pat) => {
             let mut pats = slice_pat.pats();
-            pats.next()
-                .is_none_or(|pat| !matches!(pat, ast::Pat::RestPat(_)) || pats.next().is_some())
-        }
+            pats.next().is_none_or(
+                |pat| !matches!(pat, ast::Pat::RestPat(_)) || pats.next().is_some(),
+            )
+        },
     }
 }
 
@@ -765,8 +762,8 @@ fn generate_impl_inner(
             body,
         ),
         None => make::impl_(cfg_attrs, generic_params, generic_args, ty, adt.where_clause(), body),
-    }
-    .clone_for_update()
+    }.clone_for_update(
+    )
 }
 
 pub(crate) fn add_method_to_adt(
@@ -879,10 +876,10 @@ impl<'db> ReferenceConversion<'db> {
                 if self.impls_deref {
                     make::expr_ref(expr, false)
                 } else {
-                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([]))
-                        .into()
+                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([])).into(
+                    )
                 }
-            }
+            },
         }
     }
 }
@@ -892,13 +889,17 @@ pub(crate) fn convert_reference_type<'db>(
     db: &'db RootDatabase,
     famous_defs: &FamousDefs<'_, 'db>,
 ) -> Option<ReferenceConversion<'db>> {
-    handle_copy(&ty, db)
-        .or_else(|| handle_as_ref_str(&ty, db, famous_defs))
-        .or_else(|| handle_as_ref_slice(&ty, db, famous_defs))
-        .or_else(|| handle_dereferenced(&ty, db, famous_defs))
-        .or_else(|| handle_option_as_ref(&ty, db, famous_defs))
-        .or_else(|| handle_result_as_ref(&ty, db, famous_defs))
-        .map(|(conversion, impls_deref)| ReferenceConversion { ty, conversion, impls_deref })
+    handle_copy(&ty, db).or_else(|| handle_as_ref_str(&ty, db, famous_defs)).or_else(
+        || handle_as_ref_slice(&ty, db, famous_defs),
+    ).or_else(
+        || handle_dereferenced(&ty, db, famous_defs),
+    ).or_else(
+        || handle_option_as_ref(&ty, db, famous_defs),
+    ).or_else(
+        || handle_result_as_ref(&ty, db, famous_defs),
+    ).map(
+        |(conversion, impls_deref)| ReferenceConversion { ty, conversion, impls_deref },
+    )
 }
 
 fn could_deref_to_target(
@@ -980,14 +981,13 @@ fn handle_result_as_ref(
 }
 
 pub(crate) fn get_methods(items: &ast::AssocItemList) -> Vec<ast::Fn> {
-    items
-        .assoc_items()
-        .flat_map(|i| match i {
-            ast::AssocItem::Fn(f) => Some(f),
-            _ => None,
-        })
-        .filter(|f| f.name().is_some())
-        .collect()
+    items.assoc_items().flat_map(|i| match i {
+        ast::AssocItem::Fn(f) => Some(f),
+        _ => None,
+    }).filter(
+        |f| f.name().is_some(),
+    ).collect(
+    )
 }
 
 /// Trim(remove leading and trailing whitespace) `initial_range` in `source_file`, return the trimmed range.
@@ -1093,11 +1093,9 @@ pub(crate) fn replace_record_field_expr(
     initializer: ast::Expr,
 ) {
     if let Some(ast::Expr::PathExpr(path_expr)) = record_field.expr() {
-        // replace field shorthand
         let file_range = ctx.sema.original_range(path_expr.syntax());
         edit.insert(file_range.range.end(), format!(": {}", initializer.syntax().text()))
     } else if let Some(expr) = record_field.expr() {
-        // just replace expr
         let file_range = ctx.sema.original_range(expr.syntax());
         edit.replace(file_range.range, initializer.syntax().text());
     }
@@ -1158,7 +1156,6 @@ pub(crate) fn cover_let_chain(mut expr: ast::Expr, range: TextRange) -> Option<a
         } else {
             (Some(expr), None)
         };
-
         if let Some(chain_expr) = chain_expr
             && chain_expr.syntax().text_range().contains_range(range)
         {
@@ -1207,9 +1204,7 @@ pub(crate) fn is_never_block(
 ) -> bool {
     if let Some(tail_expr) = block_expr.tail_expr() {
         sema.type_of_expr(&tail_expr).is_some_and(|ty| ty.original.is_never())
-    } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last()
-        && let Some(expr) = expr_stmt.expr()
-    {
+    } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last() && let Some(expr) = expr_stmt.expr() {
         sema.type_of_expr(&expr).is_some_and(|ty| ty.original.is_never())
     } else {
         false

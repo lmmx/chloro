@@ -292,15 +292,14 @@ impl Definition {
         };
 
         docs.or_else(|| {
-            // docs are missing, for assoc items of trait impls try to fall back to the docs of the
-            // original item of the trait
             let assoc = self.as_assoc_item(db)?;
             let trait_ = assoc.implemented_trait(db)?;
             let name = Some(assoc.name(db)?);
             let item = trait_.items(db).into_iter().find(|it| it.name(db) == name)?;
             item.docs_with_rangemap(db)
-        })
-        .map(|(docs, range_map)| (docs, Some(range_map)))
+        }).map(
+            |(docs, range_map)| (docs, Some(range_map)),
+        )
     }
 
     pub fn label(&self, db: &RootDatabase, display_target: DisplayTarget) -> String {
@@ -319,10 +318,10 @@ impl Definition {
             Definition::TypeAlias(it) => it.display(db, display_target).to_string(),
             Definition::BuiltinType(it) => {
                 it.name().display(db, display_target.edition).to_string()
-            }
+            },
             Definition::BuiltinLifetime(it) => {
                 it.name().display(db, display_target.edition).to_string()
-            }
+            },
             Definition::Local(it) => {
                 let ty = it.ty(db);
                 let ty_display = ty.display_truncated(db, None, display_target);
@@ -337,27 +336,26 @@ impl Definition {
                         name.display(db, display_target.edition)
                     )
                 }
-            }
+            },
             Definition::SelfType(impl_def) => {
                 let self_ty = &impl_def.self_ty(db);
                 match self_ty.as_adt() {
                     Some(it) => it.display(db, display_target).to_string(),
                     None => self_ty.display(db, display_target).to_string(),
                 }
-            }
+            },
             Definition::GenericParam(it) => it.display(db, display_target).to_string(),
             Definition::Label(it) => it.name(db).display(db, display_target.edition).to_string(),
             Definition::ExternCrateDecl(it) => it.display(db, display_target).to_string(),
             Definition::BuiltinAttr(it) => {
                 format!("#[{}]", it.name().display(db, display_target.edition))
-            }
+            },
             Definition::ToolModule(it) => {
                 it.name(db).display(db, display_target.edition).to_string()
-            }
+            },
             Definition::DeriveHelper(it) => {
                 format!("derive_helper {}", it.name(db).display(db, display_target.edition))
-            }
-            // FIXME
+            },
             Definition::InlineAsmRegOrRegClass(_) => "inline_asm_reg_or_reg_class".to_owned(),
             Definition::InlineAsmOperand(_) => "inline_asm_reg_operand".to_owned(),
         }
@@ -422,9 +420,9 @@ impl<'db> IdentClass<'db> {
         sema: &Semantics<'db, RootDatabase>,
         lifetime: &ast::Lifetime,
     ) -> Option<IdentClass<'db>> {
-        NameRefClass::classify_lifetime(sema, lifetime)
-            .map(IdentClass::NameRefClass)
-            .or_else(|| NameClass::classify_lifetime(sema, lifetime).map(IdentClass::NameClass))
+        NameRefClass::classify_lifetime(sema, lifetime).map(IdentClass::NameRefClass).or_else(
+            || NameClass::classify_lifetime(sema, lifetime).map(IdentClass::NameClass),
+        )
     }
 
     pub fn definitions(self) -> ArrayVec<(Definition, Option<GenericSubstitution<'db>>), 2> {
@@ -643,8 +641,9 @@ impl<'db> NameClass<'db> {
             sema.to_def(&it).map(Definition::Label)
         } else {
             None
-        }
-        .map(NameClass::Definition)
+        }.map(
+            NameClass::Definition,
+        )
     }
 }
 
@@ -865,20 +864,19 @@ impl<'db> NameRefClass<'db> {
         }
         let parent = lifetime.syntax().parent()?;
         match parent.kind() {
-            SyntaxKind::BREAK_EXPR | SyntaxKind::CONTINUE_EXPR => sema
-                .resolve_label(lifetime)
-                .map(Definition::Label)
-                .map(|it| NameRefClass::Definition(it, None)),
+            SyntaxKind::BREAK_EXPR | SyntaxKind::CONTINUE_EXPR => sema.resolve_label(lifetime).map(Definition::Label).map(
+                |it| NameRefClass::Definition(it, None),
+            ),
             SyntaxKind::LIFETIME_ARG
             | SyntaxKind::USE_BOUND_GENERIC_ARGS
             | SyntaxKind::SELF_PARAM
             | SyntaxKind::TYPE_BOUND
             | SyntaxKind::WHERE_PRED
-            | SyntaxKind::REF_TYPE => sema
-                .resolve_lifetime_param(lifetime)
-                .map(GenericParam::LifetimeParam)
-                .map(Definition::GenericParam)
-                .map(|it| NameRefClass::Definition(it, None)),
+            | SyntaxKind::REF_TYPE => sema.resolve_lifetime_param(lifetime).map(GenericParam::LifetimeParam).map(
+                Definition::GenericParam,
+            ).map(
+                |it| NameRefClass::Definition(it, None),
+            ),
             _ => None,
         }
     }

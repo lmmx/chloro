@@ -220,14 +220,13 @@ pub(crate) enum BuiltinShadowMode {
 impl ItemScope {
     pub fn entries(&self) -> impl Iterator<Item = (&Name, PerNs)> + '_ {
         // FIXME: shadowing
-        self.types
-            .keys()
-            .chain(self.values.keys())
-            .chain(self.macros.keys())
-            .chain(self.unresolved.iter())
-            .sorted()
-            .dedup()
-            .map(move |name| (name, self.get(name)))
+        self.types.keys().chain(self.values.keys()).chain(self.macros.keys()).chain(
+            self.unresolved.iter(),
+        ).sorted(
+        ).dedup(
+        ).map(
+            move |name| (name, self.get(name)),
+        )
     }
 
     pub fn values(&self) -> impl Iterator<Item = (&Name, Item<ModuleDefId, ImportOrGlob>)> + '_ {
@@ -334,11 +333,9 @@ impl ItemScope {
     }
 
     pub fn all_macro_calls(&self) -> impl Iterator<Item = MacroCallId> + '_ {
-        self.macro_invocations.values().copied().chain(self.attr_macros.values().copied()).chain(
-            self.derive_macros.values().flat_map(|it| {
-                it.iter().flat_map(|it| it.derive_call_ids.iter().copied().flatten())
-            }),
-        )
+        self.macro_invocations.values().copied().chain(self.attr_macros.values().copied()).chain(self.derive_macros.values().flat_map(|it| {
+            it.iter().flat_map(|it| it.derive_call_ids.iter().copied().flatten())
+        }))
     }
 
     pub(crate) fn modules_in_scope(&self) -> impl Iterator<Item = (ModuleId, Visibility)> + '_ {
@@ -395,65 +392,44 @@ impl ItemScope {
         mut cb: impl FnMut(&Name, Visibility, /*declared*/ bool) -> Option<T>,
     ) -> Option<T> {
         match item {
-            ItemInNs::Macros(def) => self
-                .macros
-                .iter()
-                .filter_map(|(name, other_def)| {
-                    (other_def.def == def).then_some((
-                        name,
-                        other_def.vis,
-                        other_def.import.is_none(),
-                    ))
-                })
-                .find_map(|(a, b, c)| cb(a, b, c)),
-            ItemInNs::Types(def) => self
-                .types
-                .iter()
-                .filter_map(|(name, other_def)| {
-                    (other_def.def == def).then_some((
-                        name,
-                        other_def.vis,
-                        other_def.import.is_none(),
-                    ))
-                })
-                .find_map(|(a, b, c)| cb(a, b, c)),
-            ItemInNs::Values(def) => self
-                .values
-                .iter()
-                .filter_map(|(name, other_def)| {
-                    (other_def.def == def).then_some((
-                        name,
-                        other_def.vis,
-                        other_def.import.is_none(),
-                    ))
-                })
-                .find_map(|(a, b, c)| cb(a, b, c)),
+            ItemInNs::Macros(def) => self.macros.iter().filter_map(|(name, other_def)| {
+                (other_def.def == def).then_some((name, other_def.vis, other_def.import.is_none()))
+            }).find_map(
+                |(a, b, c)| cb(a, b, c),
+            ),
+            ItemInNs::Types(def) => self.types.iter().filter_map(|(name, other_def)| {
+                (other_def.def == def).then_some((name, other_def.vis, other_def.import.is_none()))
+            }).find_map(
+                |(a, b, c)| cb(a, b, c),
+            ),
+            ItemInNs::Values(def) => self.values.iter().filter_map(|(name, other_def)| {
+                (other_def.def == def).then_some((name, other_def.vis, other_def.import.is_none()))
+            }).find_map(
+                |(a, b, c)| cb(a, b, c),
+            ),
         }
     }
 
     pub(crate) fn traits(&self) -> impl Iterator<Item = TraitId> + '_ {
-        self.types
-            .values()
-            .filter_map(|def| match def.def {
-                ModuleDefId::TraitId(t) => Some(t),
-                _ => None,
-            })
-            .chain(self.unnamed_trait_imports.iter().map(|&(t, _)| t))
+        self.types.values().filter_map(|def| match def.def {
+            ModuleDefId::TraitId(t) => Some(t),
+            _ => None,
+        }).chain(
+            self.unnamed_trait_imports.iter().map(|&(t, _)| t),
+        )
     }
 
     pub(crate) fn resolutions(&self) -> impl Iterator<Item = (Option<Name>, PerNs)> + '_ {
-        self.entries().map(|(name, res)| (Some(name.clone()), res)).chain(
-            self.unnamed_trait_imports.iter().map(|(tr, trait_)| {
-                (
-                    None,
-                    PerNs::types(
-                        ModuleDefId::TraitId(*tr),
-                        trait_.vis,
-                        trait_.import.map(ImportOrExternCrate::Import),
-                    ),
-                )
-            }),
-        )
+        self.entries().map(|(name, res)| (Some(name.clone()), res)).chain(self.unnamed_trait_imports.iter().map(|(tr, trait_)| {
+            (
+                None,
+                PerNs::types(
+                ModuleDefId::TraitId(*tr),
+                trait_.vis,
+                trait_.import.map(ImportOrExternCrate::Import),
+            ),
+            )
+        }))
     }
 
     pub fn macro_invoc(&self, call: AstId<ast::MacroCall>) -> Option<MacroCallId> {
@@ -515,10 +491,7 @@ impl ItemScope {
         id: AttrId,
         idx: usize,
     ) {
-        if let Some(derives) = self.derive_macros.get_mut(&adt)
-            && let Some(DeriveMacroInvocation { derive_call_ids, .. }) =
-                derives.iter_mut().find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id)
-        {
+        if let Some(derives) = self.derive_macros.get_mut(&adt) && let Some(DeriveMacroInvocation { derive_call_ids, .. }) = derives.iter_mut().find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id) {
             derive_call_ids[idx] = Some(call);
         }
     }
@@ -552,8 +525,8 @@ impl ItemScope {
             (
                 *k,
                 v.iter().map(|DeriveMacroInvocation { attr_id, attr_call_id, derive_call_ids }| {
-                    (*attr_id, *attr_call_id, &**derive_call_ids)
-                }),
+                (*attr_id, *attr_call_id, &**derive_call_ids)
+            }),
             )
         })
     }
@@ -748,7 +721,6 @@ impl ItemScope {
                 "{}:",
                 name.map_or("_".to_owned(), |name| name.display(db, Edition::LATEST).to_string())
             );
-
             if let Some(Item { import, .. }) = def.types {
                 buf.push_str(" t");
                 match import {
@@ -778,7 +750,6 @@ impl ItemScope {
             if def.is_none() {
                 buf.push_str(" _");
             }
-
             buf.push('\n');
         }
     }
@@ -857,7 +828,7 @@ impl PerNs {
             ModuleDefId::ModuleId(_) => PerNs::types(def, v, import),
             ModuleDefId::FunctionId(_) => {
                 PerNs::values(def, v, import.and_then(ImportOrExternCrate::import_or_glob))
-            }
+            },
             ModuleDefId::AdtId(adt) => match adt {
                 AdtId::UnionId(_) => PerNs::types(def, v, import),
                 AdtId::EnumId(_) => PerNs::types(def, v, import),
@@ -867,12 +838,12 @@ impl PerNs {
                     } else {
                         PerNs::types(def, v, import)
                     }
-                }
+                },
             },
             ModuleDefId::EnumVariantId(_) => PerNs::both(def, def, v, import),
             ModuleDefId::ConstId(_) | ModuleDefId::StaticId(_) => {
                 PerNs::values(def, v, import.and_then(ImportOrExternCrate::import_or_glob))
-            }
+            },
             ModuleDefId::TraitId(_) => PerNs::types(def, v, import),
             ModuleDefId::TypeAliasId(_) => PerNs::types(def, v, import),
             ModuleDefId::BuiltinType(_) => PerNs::types(def, v, import),

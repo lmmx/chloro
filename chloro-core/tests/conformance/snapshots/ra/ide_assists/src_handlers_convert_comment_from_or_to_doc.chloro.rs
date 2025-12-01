@@ -30,9 +30,7 @@ fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
         "Replace doc comment with comment",
         target,
         |edit| {
-            // We need to either replace the first occurrence of /* with /***, or we need to replace
-            // the occurrences // at the start of each line with ///
-            let output = match comment.kind().shape {
+        let output = match comment.kind().shape {
                 ast::CommentShape::Line => {
                     let indentation = IndentLevel::from_token(comment.syntax());
                     let line_start = comment.prefix();
@@ -60,8 +58,8 @@ fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
                         .join("\n")
                 }
             };
-            edit.replace(target, output)
-        },
+        edit.replace(target, output)
+    },
     )
 }
 
@@ -81,9 +79,7 @@ fn comment_to_doc(
         "Replace comment with doc comment",
         target,
         |edit| {
-            // We need to either replace the first occurrence of /* with /***, or we need to replace
-            // the occurrences // at the start of each line with ///
-            let output = match comment.kind().shape {
+        let output = match comment.kind().shape {
                 ast::CommentShape::Line => {
                     let indentation = IndentLevel::from_token(comment.syntax());
                     let line_start = match style {
@@ -120,8 +116,8 @@ fn comment_to_doc(
                         .join("\n")
                 }
             };
-            edit.replace(target, output)
-        },
+        edit.replace(target, output)
+    },
     )
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12917 bytes
+Chloro size:   12918 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -89,6 +89,14 @@ Rustfmt size:  13256 bytes
          {
              debug_assert_eq!(ty, self.table.infer_ctxt.resolve_vars_if_possible(ty));
              // NOTE: we may still need to normalize the built-in deref in case
+                     }
+                 };
+                 Some(*self.traits.insert(traits))
+-            }
++            },
+         }
+     }
+ 
          let interner = self.table.interner();
  
          // <ty as Deref>, or whatever the equivalent trait is that we've been asked to walk.

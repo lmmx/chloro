@@ -152,13 +152,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         match remaining_segments {
             0 => (ty, res),
             1 => {
-                // resolve unselected assoc types
                 (self.select_associated_type(res, infer_args), None)
-            }
+            },
             _ => {
-                // FIXME report error (ambiguous associated type)
                 (Ty::new_error(self.ctx.interner, ErrorGuaranteed), None)
-            }
+            },
         }
     }
 
@@ -511,8 +509,9 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             res,
             Some(assoc_name.clone()),
             check_alias,
+        ).unwrap_or_else(
+            || Ty::new_error(interner, ErrorGuaranteed),
         )
-        .unwrap_or_else(|| Ty::new_error(interner, ErrorGuaranteed))
     }
 
     fn lower_path_inner(&mut self, typeable: TyDefId, infer_args: bool) -> Ty<'db> {
@@ -1312,11 +1311,11 @@ fn unknown_subst<'db>(
     GenericArgs::new_from_iter(
         interner,
         params.iter_id().map(|id| match id {
-            GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
-            GenericParamId::ConstParamId(id) => {
-                unknown_const_as_generic(const_param_ty_query(interner.db(), id))
-            }
-            GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
-        }),
+        GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
+        GenericParamId::ConstParamId(id) => {
+            unknown_const_as_generic(const_param_ty_query(interner.db(), id))
+        },
+        GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
+    }),
     )
 }

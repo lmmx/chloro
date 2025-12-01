@@ -47,28 +47,24 @@ pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<Na
     }
 
     match module {
-        Some(module) => sema
-            .to_def(&module)
-            .into_iter()
-            .flat_map(|module| NavigationTarget::from_module_to_decl(db, module))
-            .collect(),
-        None => sema
-            .file_to_module_defs(position.file_id)
-            .flat_map(|module| NavigationTarget::from_module_to_decl(db, module))
-            .collect(),
+        Some(module) => sema.to_def(&module).into_iter().flat_map(
+            |module| NavigationTarget::from_module_to_decl(db, module),
+        ).collect(
+        ),
+        None => sema.file_to_module_defs(position.file_id).flat_map(
+            |module| NavigationTarget::from_module_to_decl(db, module),
+        ).collect(
+        ),
     }
 }
 
 /// This returns `Vec` because a module may be included from several places.
 pub(crate) fn crates_for(db: &RootDatabase, file_id: FileId) -> Vec<Crate> {
-    db.relevant_crates(file_id)
-        .iter()
-        .copied()
-        .filter(|&crate_id| {
-            crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
-        })
-        .sorted()
-        .collect()
+    db.relevant_crates(file_id).iter().copied().filter(|&crate_id| {
+        crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
+    }).sorted(
+    ).collect(
+    )
 }
 
 #[cfg(test)]

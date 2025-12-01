@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23615 bytes
-Chloro size:   22879 bytes
+Chloro size:   22760 bytes
 Rustfmt size:  23945 bytes
 
 ✗ Outputs DIFFER
@@ -64,6 +64,20 @@ Rustfmt size:  23945 bytes
  
      if ctx.offset() > field_list.syntax().text_range().start() {
          // Assist could be distracting after the braces
+         "Convert to tuple struct",
+         strukt_or_variant.syntax().text_range(),
+         |edit| {
+-            edit_field_references(ctx, edit, record_fields.fields());
+-            edit_struct_references(ctx, edit, strukt_def);
+-            edit_struct_def(ctx, edit, &strukt_or_variant, record_fields);
+-        },
++        edit_field_references(ctx, edit, record_fields.fields());
++        edit_struct_references(ctx, edit, strukt_def);
++        edit_struct_def(ctx, edit, &strukt_or_variant, record_fields);
++    },
+     )
+ }
+ 
          let mut editor = SyntaxEditor::new(field.syntax().clone());
          editor.insert_all(
              Position::first_child_of(field.syntax()),
@@ -91,6 +105,20 @@ Rustfmt size:  23945 bytes
  
              if let Some(tok) = strukt
                  .generic_param_list()
+         }
+     }
+ 
+-    if let Some(tok) = record_fields
+-        .l_curly_token()
+-        .and_then(|tok| tok.prev_token())
+-        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE)
+-    {
++    if let Some(tok) = record_fields.l_curly_token().and_then(|tok| tok.prev_token()).filter(
++        |tok| tok.kind() == SyntaxKind::WHITESPACE,
++    ) {
+         edit.delete(tok.text_range())
+     }
+ }
      // First check if it's the last semgnet of a path that directly belongs to a record
      // expression/pattern.
      let name_ref = r.name.as_name_ref()?;
@@ -111,9 +139,10 @@ Rustfmt size:  23945 bytes
  
      if full_path.segment()?.name_ref()? != *name_ref {
          // `name_ref` isn't the last segment of the path, so `full_path` doesn't point to the
+             edit.edit_file(file_id.file_id(ctx.db()));
              for r in refs {
                  if let Some(name_ref) = r.name.as_name_ref() {
-                     // Only edit the field reference if it's part of a `.field` access
+-                    // Only edit the field reference if it's part of a `.field` access
 -                    if name_ref
 -                        .syntax()
 -                        .parent()

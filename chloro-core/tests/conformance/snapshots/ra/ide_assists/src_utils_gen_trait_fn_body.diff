@@ -2,12 +2,99 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33616 bytes
-Chloro size:   33618 bytes
+Chloro size:   33325 bytes
 Rustfmt size:  33768 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+         "Clone" => {
+             stdx::always!(func.name().is_some_and(|name| name.text() == "clone"));
+             gen_clone_impl(adt)
+-        }
++        },
+         "Debug" => gen_debug_impl(adt),
+         "Default" => gen_default_impl(adt),
+         "Hash" => {
+             stdx::always!(func.name().is_some_and(|name| name.text() == "hash"));
+             gen_hash_impl(adt)
+-        }
++        },
+         "PartialEq" => {
+             stdx::always!(func.name().is_some_and(|name| name.text() == "eq"));
+             gen_partial_eq(adt, trait_ref)
+-        }
++        },
+         "PartialOrd" => {
+             stdx::always!(func.name().is_some_and(|name| name.text() == "partial_cmp"));
+             gen_partial_ord(adt, trait_ref)
+-        }
++        },
+         _ => None,
+     }
+ }
+ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
+     let annotated_name = adt.name()?;
+     match adt {
+-        // `Debug` cannot be derived for unions, so no default impl can be provided.
+         ast::Adt::Union(_) => None,
+-
+-        // => match self { Self::Variant => write!(f, "Variant") }
+         ast::Adt::Enum(enum_) => {
+             let list = enum_.variant_list()?;
+             let mut arms = vec![];
+                     }
+                 }
+             }
+-
+             let match_target = make::expr_path(make::ext::ident_path("self"));
+             let list = make::match_arm_list(arms).indent(ast::edit::IndentLevel(1));
+             let match_expr = make::expr_match(match_target, list);
+-
+             let body = make::block_expr(None, Some(match_expr.into()));
+             let body = body.indent(ast::edit::IndentLevel(1));
+             Some(body)
+-        }
+-
++        },
+         ast::Adt::Struct(strukt) => {
+             let name = format!("\"{annotated_name}\"");
+             let args = make::arg_list(Some(make::expr_literal(&name).into()));
+             let target = make::expr_path(make::ext::ident_path("f"));
+-
+             let expr = match strukt.field_list() {
+                 // => f.debug_struct("Name").finish()
+                 None => make::expr_method_call(target, make::name_ref("debug_struct"), args).into(),
+                     expr
+                 }
+             };
+-
+             let method = make::name_ref("finish");
+             let expr = make::expr_method_call(expr, method, make::arg_list(None)).into();
+             let body = make::block_expr(None, Some(expr)).indent(ast::edit::IndentLevel(1));
+             Some(body)
+-        }
++        },
+     }
+ }
+ 
+         Some(make::expr_call(make::expr_path(fn_name), make::arg_list(None)).into())
+     }
+     match adt {
+-        // `Debug` cannot be derived for unions, so no default impl can be provided.
+         ast::Adt::Union(_) => None,
+-        // Deriving `Debug` for enums is not stable yet.
+         ast::Adt::Enum(_) => None,
+         ast::Adt::Struct(strukt) => {
+             let expr = match strukt.field_list() {
+             };
+             let body = make::block_expr(None, Some(expr)).indent(ast::edit::IndentLevel(1));
+             Some(body)
+-        }
++        },
+     }
+ }
+ 
  fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
      fn gen_eq_chain(expr: Option<ast::Expr>, cmp: ast::Expr) -> Option<ast::Expr> {
          match expr {

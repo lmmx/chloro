@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27673 bytes
-Chloro size:   27496 bytes
+Chloro size:   27520 bytes
 Rustfmt size:  28292 bytes
 
 ✗ Outputs DIFFER
@@ -61,18 +61,6 @@ Rustfmt size:  28292 bytes
          add_reference(ctx, d, expr_ptr, &mut fixes);
          add_missing_ok_or_some(ctx, d, expr_ptr, &mut fixes);
          remove_unnecessary_wrapper(ctx, d, expr_ptr, &mut fixes);
-         str_ref_to_owned(ctx, d, expr_ptr, &mut fixes);
-     }
- 
--    if fixes.is_empty() {
--        None
--    } else {
--        Some(fixes)
--    }
-+    if fixes.is_empty() { None } else { Some(fixes) }
- }
- 
- fn add_reference(
      expr_ptr: &InFile<AstPtr<ast::Expr>>,
      acc: &mut Vec<Assist>,
  ) -> Option<()> {

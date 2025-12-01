@@ -164,7 +164,11 @@ impl Variant {
             Variant::Struct(it) => visible_fields(ctx, &fields, it)?,
             Variant::EnumVariant(it) => visible_fields(ctx, &fields, it)?,
         };
-        if !fields_omitted { Some(visible_fields) } else { None }
+        if !fields_omitted {
+            Some(visible_fields)
+        } else {
+            None
+        }
     }
 
     fn kind(self, db: &dyn HirDatabase) -> StructKind {

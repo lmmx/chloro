@@ -120,25 +120,18 @@ pub(crate) fn file_item_tree_query(db: &dyn DefDatabase, file_id: HirFileId) -> 
         }
     };
     let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
-    if small_data.is_empty()
-        && big_data.is_empty()
-        && top_level.is_empty()
-        && attrs.is_empty()
-        && top_attrs.is_empty()
-        && vis.arena.is_empty()
-    {
-        EMPTY
-            .get_or_init(|| {
-                Arc::new(ItemTree {
-                    top_level: Box::new([]),
-                    attrs: FxHashMap::default(),
-                    small_data: FxHashMap::default(),
-                    big_data: FxHashMap::default(),
-                    top_attrs: RawAttrs::EMPTY,
-                    vis: ItemVisibilities { arena: ThinVec::new() },
-                })
+    if small_data.is_empty() && big_data.is_empty() && top_level.is_empty() && attrs.is_empty() && top_attrs.is_empty() && vis.arena.is_empty() {
+        EMPTY.get_or_init(|| {
+            Arc::new(ItemTree {
+                top_level: Box::new([]),
+                attrs: FxHashMap::default(),
+                small_data: FxHashMap::default(),
+                big_data: FxHashMap::default(),
+                top_attrs: RawAttrs::EMPTY,
+                vis: ItemVisibilities { arena: ThinVec::new() },
             })
-            .clone()
+        }).clone(
+        )
     } else {
         item_tree.shrink_to_fit();
         Arc::new(item_tree)
@@ -156,25 +149,18 @@ pub(crate) fn block_item_tree_query(db: &dyn DefDatabase, block: BlockId) -> Arc
     let ctx = lower::Ctx::new(db, loc.ast_id.file_id);
     let mut item_tree = ctx.lower_block(&block);
     let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
-    if small_data.is_empty()
-        && big_data.is_empty()
-        && top_level.is_empty()
-        && attrs.is_empty()
-        && top_attrs.is_empty()
-        && vis.arena.is_empty()
-    {
-        EMPTY
-            .get_or_init(|| {
-                Arc::new(ItemTree {
-                    top_level: Box::new([]),
-                    attrs: FxHashMap::default(),
-                    small_data: FxHashMap::default(),
-                    big_data: FxHashMap::default(),
-                    top_attrs: RawAttrs::EMPTY,
-                    vis: ItemVisibilities { arena: ThinVec::new() },
-                })
+    if small_data.is_empty() && big_data.is_empty() && top_level.is_empty() && attrs.is_empty() && top_attrs.is_empty() && vis.arena.is_empty() {
+        EMPTY.get_or_init(|| {
+            Arc::new(ItemTree {
+                top_level: Box::new([]),
+                attrs: FxHashMap::default(),
+                small_data: FxHashMap::default(),
+                big_data: FxHashMap::default(),
+                top_attrs: RawAttrs::EMPTY,
+                vis: ItemVisibilities { arena: ThinVec::new() },
             })
-            .clone()
+        }).clone(
+        )
     } else {
         item_tree.shrink_to_fit();
         Arc::new(item_tree)
@@ -704,7 +690,7 @@ impl UseTree {
                 if let Some((path, kind)) = concat_mod_paths(prefix, path) {
                     cb(Idx::from_raw(RawIdx::from_u32(*counting_index)), path, kind, alias.clone());
                 }
-            }
+            },
             UseTreeKind::Glob { path: Some(path) } => {
                 if let Some((path, _)) = concat_mod_paths(prefix, path) {
                     cb(
@@ -714,7 +700,7 @@ impl UseTree {
                         None,
                     );
                 }
-            }
+            },
             UseTreeKind::Glob { path: None } => {
                 if let Some(prefix) = prefix {
                     cb(
@@ -724,7 +710,7 @@ impl UseTree {
                         None,
                     );
                 }
-            }
+            },
             UseTreeKind::Prefixed { prefix: additional_prefix, list } => {
                 let prefix = match additional_prefix {
                     Some(path) => match concat_mod_paths(prefix, path) {
@@ -737,7 +723,7 @@ impl UseTree {
                     *counting_index += 1;
                     tree.expand_impl(prefix.clone(), counting_index, cb);
                 }
-            }
+            },
         }
     }
 }

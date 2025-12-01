@@ -84,12 +84,6 @@ impl<'db> ObligationStorage<'db> {
 
     fn on_fulfillment_overflow(&mut self, infcx: &InferCtxt<'db>) {
         infcx.probe(|_| {
-            // IMPORTANT: we must not use solve any inference variables in the obligations
-            // as this is all happening inside of a probe. We use a probe to make sure
-            // we get all obligations involved in the overflow. We pretty much check: if
-            // we were to do another step of `try_evaluate_obligations`, which goals would
-            // change.
-            // FIXME: <https://github.com/Gankra/thin-vec/pull/66> is merged, this can be removed.
             self.overflowed.extend(
                 self.pending
                     .extract_if(.., |(o, stalled_on)| {
@@ -142,12 +136,12 @@ impl<'db> FulfillmentCtxt<'db> {
         &mut self,
         _infcx: &InferCtxt<'db>,
     ) -> Vec<NextSolverError<'db>> {
-        self.obligations
-            .pending
-            .drain(..)
-            .map(|(obligation, _)| NextSolverError::Ambiguity(obligation))
-            .chain(self.obligations.overflowed.drain(..).map(NextSolverError::Overflow))
-            .collect()
+        self.obligations.pending.drain(..).map(
+            |(obligation, _)| NextSolverError::Ambiguity(obligation),
+        ).chain(
+            self.obligations.overflowed.drain(..).map(NextSolverError::Overflow),
+        ).collect(
+        )
     }
 
     pub(crate) fn try_evaluate_obligations(
@@ -250,10 +244,9 @@ impl<'db> FulfillmentCtxt<'db> {
             return Default::default();
         }
 
-        self.obligations
-            .drain_pending(|obl| {
-                infcx.probe(|_| {
-                    infcx
+        self.obligations.drain_pending(|obl| {
+            infcx.probe(|_| {
+                infcx
                         .visit_proof_tree(
                             obl.as_goal(),
                             &mut StalledOnCoroutines {
@@ -262,11 +255,12 @@ impl<'db> FulfillmentCtxt<'db> {
                             },
                         )
                         .is_break()
-                })
             })
-            .into_iter()
-            .map(|(o, _)| o)
-            .collect()
+        }).into_iter(
+        ).map(
+            |(o, _)| o,
+        ).collect(
+        )
     }
 }
 
@@ -305,9 +299,7 @@ impl<'db> TypeVisitor<DbInterner<'db>> for StalledOnCoroutines<'_, 'db> {
             return ControlFlow::Continue(());
         }
 
-        if let TyKind::Coroutine(def_id, _) = ty.kind()
-            && self.stalled_coroutines.contains(&def_id.into())
-        {
+        if let TyKind::Coroutine(def_id, _) = ty.kind() && self.stalled_coroutines.contains(&def_id.into()) {
             ControlFlow::Break(())
         } else if ty.has_coroutines() {
             ty.super_visit_with(self)

@@ -159,10 +159,8 @@ impl AssistResolveStrategy {
             AssistResolveStrategy::None => false,
             AssistResolveStrategy::All => true,
             AssistResolveStrategy::Single(single_resolve) => {
-                single_resolve.assist_id == id.0
-                    && single_resolve.assist_kind == id.1
-                    && single_resolve.assist_subtype == id.2
-            }
+                single_resolve.assist_id == id.0 && single_resolve.assist_kind == id.1 && single_resolve.assist_subtype == id.2
+            },
         }
     }
 }

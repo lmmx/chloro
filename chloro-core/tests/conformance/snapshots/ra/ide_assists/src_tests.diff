@@ -2,12 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39798 bytes
-Chloro size:   39548 bytes
+Chloro size:   39566 bytes
 Rustfmt size:  40546 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     resolve: AssistResolveStrategy,
+     range: ide_db::FileRange,
+ ) -> Vec<Assist> {
+-    hir::attach_db(db, || {
++    hir::attach_db(
++        db,
++        || {
+         HirDatabase::zalsa_register_downcaster(db);
+         crate::assists(db, config, resolve, range)
+-    })
++    },
++    )
+ }
+ 
+ pub(crate) fn with_single_file(text: &str) -> (RootDatabase, EditionedFileId) {
      #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
  ) {
      let ra_fixture_after = trim_indent(ra_fixture_after);
@@ -200,7 +215,10 @@ Rustfmt size:  40546 bytes
 +            FileRange { file_id: frange.file_id.file_id(&db), range: frange.range },
          );
          let expected = labels(&assists);
- 
+-
+         expect![[r#""#]].assert_eq(&expected);
+     }
+ }
              &db,
              &cfg,
              AssistResolveStrategy::None,
@@ -245,3 +263,28 @@ Rustfmt size:  40546 bytes
          );
          assert_eq!(4, assists.len());
          let mut assists = assists.into_iter();
+-
+         let extract_into_variable_assist = assists.next().unwrap();
+         expect![[r#"
+             Assist {
+             }
+         "#]]
+         .assert_debug_eq(&extract_into_variable_assist);
+-
+         let extract_into_constant_assist = assists.next().unwrap();
+         expect![[r#"
+             Assist {
+             }
+         "#]]
+         .assert_debug_eq(&extract_into_constant_assist);
+-
+         let extract_into_static_assist = assists.next().unwrap();
+         expect![[r#"
+             Assist {
+             }
+         "#]]
+         .assert_debug_eq(&extract_into_static_assist);
+-
+         let extract_into_function_assist = assists.next().unwrap();
+         expect![[r#"
+             Assist {

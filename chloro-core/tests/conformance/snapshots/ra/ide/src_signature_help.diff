@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62523 bytes
-Chloro size:   62440 bytes
+Chloro size:   62379 bytes
 Rustfmt size:  62523 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,33 @@ Rustfmt size:  62523 bytes
  };
  
  use crate::RootDatabase;
+         sema,
+         record.record_expr_field_list()?.syntax().children_with_tokens(),
+         &record.path()?,
+-        record
+-            .record_expr_field_list()?
+-            .fields()
+-            .filter_map(|field| sema.resolve_record_field(&field))
+-            .map(|(field, _, ty)| (field, ty)),
++        record.record_expr_field_list()?.fields().filter_map(|field| sema.resolve_record_field(&field)).map(
++        |(field, _, ty)| (field, ty),
++    ),
+         token,
+         edition,
+         display_target,
+         sema,
+         record.record_pat_field_list()?.syntax().children_with_tokens(),
+         &record.path()?,
+-        record
+-            .record_pat_field_list()?
+-            .fields()
+-            .filter_map(|field| sema.resolve_record_pat_field(&field)),
++        record.record_pat_field_list()?.fields().filter_map(
++        |field| sema.resolve_record_pat_field(&field),
++    ),
+         token,
+         edition,
+         display_target,
      Some(signature_help_for_tuple_pat_ish(
          db,
          SignatureHelp {

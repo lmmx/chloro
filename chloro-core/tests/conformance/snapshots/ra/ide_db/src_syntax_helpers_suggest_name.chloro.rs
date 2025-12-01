@@ -126,16 +126,15 @@ impl NameGenerator {
             Entry::Vacant(entry) => {
                 entry.insert(suffix);
                 SmolStr::from_str(name).unwrap()
-            }
+            },
             Entry::Occupied(mut entry) => {
                 let count = entry.get_mut();
                 *count = (*count + 1).max(suffix);
-
                 let mut new_name = SmolStrBuilder::new();
                 new_name.push_str(&prefix);
                 new_name.push_str(count.to_string().as_str());
                 new_name.finish()
-            }
+            },
         }
     }
 
@@ -239,11 +238,11 @@ impl NameGenerator {
         match self.pool.entry(prefix) {
             Entry::Vacant(entry) => {
                 entry.insert(suffix);
-            }
+            },
             Entry::Occupied(mut entry) => {
                 let count = entry.get_mut();
                 *count = (*count).max(suffix);
-            }
+            },
         }
     }
 
@@ -423,8 +422,6 @@ fn sequence_name<'db>(
     };
 
     if name.ends_with(['s', 'x', 'y']) {
-        // Given a type called e.g. "Boss", "Fox" or "Story", don't try to
-        // create a plural.
         items_str
     } else {
         SmolStr::new(format!("{name}s"))

@@ -118,11 +118,11 @@ fn documentation_for_definition(
     def.docs(
         sema.db,
         famous_defs.as_ref(),
-        def.krate(sema.db)
-            .unwrap_or_else(|| {
-                (*sema.db.all_crates().last().expect("no crate graph present")).into()
-            })
-            .to_display_target(sema.db),
+        def.krate(sema.db).unwrap_or_else(|| {
+        (*sema.db.all_crates().last().expect("no crate graph present")).into()
+    }).to_display_target(
+        sema.db,
+    ),
     )
 }
 
@@ -296,7 +296,9 @@ impl StaticIndex<'_> {
         vendored_libs_config: VendoredLibrariesConfig<'_>,
     ) -> StaticIndex<'a> {
         let db = &analysis.db;
-        hir::attach_db(db, || {
+        hir::attach_db(
+            db,
+            || {
             let work = all_modules(db).into_iter().filter(|module| {
                 let file_id = module.definition_source_file_id(db).original_file(db);
                 let source_root =
@@ -329,7 +331,8 @@ impl StaticIndex<'_> {
                 visited_files.insert(file_id);
             }
             this
-        })
+        },
+        )
     }
 }
 

@@ -188,7 +188,7 @@ impl<'db> SourceAnalyzer<'db> {
         self.body_or_sig.as_ref().and_then(|it| match it {
             BodyOrSig::Body { def, body, source_map, infer } => {
                 Some((*def, &**body, &**source_map, infer.as_deref()))
-            }
+            },
             _ => None,
         })
     }
@@ -249,7 +249,11 @@ impl<'db> SourceAnalyzer<'db> {
 
     fn binding_id_of_pat(&self, pat: &ast::IdentPat) -> Option<BindingId> {
         let pat_id = self.pat_id(&pat.clone().into())?;
-        if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] { Some(id) } else { None }
+        if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] {
+            Some(id)
+        } else {
+            None
+        }
     }
 
     pub(crate) fn expr_adjustments(&self, expr: &ast::Expr) -> Option<&[Adjustment<'db>]> {
@@ -351,10 +355,10 @@ impl<'db> SourceAnalyzer<'db> {
             hir_ty::BindingMode::Move => BindingMode::Move,
             hir_ty::BindingMode::Ref(hir_ty::next_solver::Mutability::Mut) => {
                 BindingMode::Ref(Mutability::Mut)
-            }
+            },
             hir_ty::BindingMode::Ref(hir_ty::next_solver::Mutability::Not) => {
                 BindingMode::Ref(Mutability::Shared)
-            }
+            },
         })
     }
 
@@ -365,13 +369,10 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<SmallVec<[Type<'db>; 1]>> {
         let pat_id = self.pat_id(pat)?;
         let infer = self.infer()?;
-        Some(
-            infer
-                .pat_adjustment(pat_id.as_pat()?)?
-                .iter()
-                .map(|ty| Type::new_with_resolver(db, &self.resolver, *ty))
-                .collect(),
-        )
+        Some(infer.pat_adjustment(pat_id.as_pat()?)?.iter().map(
+            |ty| Type::new_with_resolver(db, &self.resolver, *ty),
+        ).collect(
+        ))
     }
 
     pub(crate) fn resolve_method_call_as_callable(
@@ -415,12 +416,12 @@ impl<'db> SourceAnalyzer<'db> {
                     Either::Left(fn_.into()),
                     Some(GenericSubstitution::new(fn_.into(), subst, self.trait_environment(db))),
                 ))
-            }
+            },
             None => {
                 inference_result.field_resolution(expr_id).and_then(Either::left).map(|field| {
                     (Either::Right(field.into()), self.field_subst(expr_id, inference_result, db))
                 })
-            }
+            },
         }
     }
 
@@ -440,7 +441,14 @@ impl<'db> SourceAnalyzer<'db> {
         let (def, ..) = self.body_()?;
         let expr_id = self.expr_id(field.clone().into())?.as_expr()?;
         self.infer()?.field_resolution(expr_id).map(|it| {
-            it.map_either(Into::into, |f| TupleField { owner: def, tuple: f.tuple, index: f.index })
+            it.map_either(
+                Into::into,
+                |f| TupleField {
+                owner: def,
+                tuple: f.tuple,
+                index: f.index,
+            },
+            )
         })
     }
 
@@ -474,10 +482,10 @@ impl<'db> SourceAnalyzer<'db> {
                 )),
                 Either::Right(field) => Some((
                     Either::Left(Either::Right(TupleField {
-                        owner: def,
-                        tuple: field.tuple,
-                        index: field.index,
-                    })),
+                    owner: def,
+                    tuple: field.tuple,
+                    index: field.index,
+                })),
                     None,
                 )),
             },
@@ -769,10 +777,11 @@ impl<'db> SourceAnalyzer<'db> {
 
     pub(crate) fn resolve_use_type_arg(&self, name: &ast::NameRef) -> Option<crate::TypeParam> {
         let name = name.as_name();
-        self.resolver
-            .all_generic_params()
-            .find_map(|(params, parent)| params.find_type_by_name(&name, *parent))
-            .map(crate::TypeParam::from)
+        self.resolver.all_generic_params().find_map(
+            |(params, parent)| params.find_type_by_name(&name, *parent),
+        ).map(
+            crate::TypeParam::from,
+        )
     }
 
     pub(crate) fn resolve_offset_of_field(
@@ -1121,10 +1130,8 @@ impl<'db> SourceAnalyzer<'db> {
             };
         }
         if parent().is_some_and(|it| ast::Visibility::can_cast(it.kind())) {
-            // No substitution because only modules can be inside visibilities, and those have no generics.
             resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store).map(|it| (it, None))
         } else {
-            // Probably a type, no need to show substitutions for those.
             let res = resolve_hir_path_(
                 db,
                 &self.resolver,
@@ -1255,14 +1262,12 @@ impl<'db> SourceAnalyzer<'db> {
         let interner = DbInterner::new_with(db, None, None);
         let field_types = db.field_types(variant);
 
-        missing_fields
-            .into_iter()
-            .map(|local_id| {
-                let field = FieldId { parent: variant, local_id };
-                let ty = field_types[local_id].instantiate(interner, substs);
-                (field.into(), Type::new_with_resolver_inner(db, &self.resolver, ty))
-            })
-            .collect()
+        missing_fields.into_iter().map(|local_id| {
+            let field = FieldId { parent: variant, local_id };
+            let ty = field_types[local_id].instantiate(interner, substs);
+            (field.into(), Type::new_with_resolver_inner(db, &self.resolver, ty))
+        }).collect(
+        )
     }
 
     pub(crate) fn resolve_variant(&self, record_lit: ast::RecordExpr) -> Option<VariantId> {
@@ -1308,15 +1313,14 @@ impl<'db> SourceAnalyzer<'db> {
             (
                 *range,
                 resolve_hir_value_path(
-                    db,
-                    &self.resolver,
-                    self.resolver.body_owner(),
-                    &Path::from_known_path_with_no_generic(ModPath::from_segments(
-                        PathKind::Plain,
-                        Some(name.clone()),
-                    )),
-                    hygiene,
-                ),
+                db,
+                &self.resolver,
+                self.resolver.body_owner(),
+                &Path::from_known_path_with_no_generic(
+                ModPath::from_segments(PathKind::Plain, Some(name.clone())),
+            ),
+                hygiene,
+            ),
             )
         })
     }
@@ -1329,12 +1333,9 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<(DefWithBodyId, (ExprId, TextRange, usize))> {
         let (def, _, body_source_map, _) = self.body_()?;
         let (expr, args) = body_source_map.asm_template_args(asm)?;
-        Some(def).zip(
-            args.get(line)?
-                .iter()
-                .find(|(range, _)| range.contains_inclusive(offset))
-                .map(|(range, idx)| (expr, *range, *idx)),
-        )
+        Some(def).zip(args.get(line)?.iter().find(|(range, _)| range.contains_inclusive(offset)).map(
+            |(range, idx)| (expr, *range, *idx),
+        ))
     }
 
     pub(crate) fn as_format_args_parts<'a>(
@@ -1347,15 +1348,14 @@ impl<'db> SourceAnalyzer<'db> {
             (
                 *range,
                 resolve_hir_value_path(
-                    db,
-                    &self.resolver,
-                    self.resolver.body_owner(),
-                    &Path::from_known_path_with_no_generic(ModPath::from_segments(
-                        PathKind::Plain,
-                        Some(name.clone()),
-                    )),
-                    hygiene,
-                ),
+                db,
+                &self.resolver,
+                self.resolver.body_owner(),
+                &Path::from_known_path_with_no_generic(
+                ModPath::from_segments(PathKind::Plain, Some(name.clone())),
+            ),
+                hygiene,
+            ),
             )
         }))
     }
@@ -1429,17 +1429,16 @@ fn scope_for(
     source_map: &BodySourceMap,
     node: InFile<&SyntaxNode>,
 ) -> Option<ScopeId> {
-    node.ancestors_with_macros(db)
-        .take_while(|it| {
-            let kind = it.kind();
-            !ast::Item::can_cast(kind)
-                || ast::MacroCall::can_cast(kind)
-                || ast::Use::can_cast(kind)
-                || ast::AsmExpr::can_cast(kind)
-        })
-        .filter_map(|it| it.map(ast::Expr::cast).transpose())
-        .filter_map(|it| source_map.node_expr(it.as_ref())?.as_expr())
-        .find_map(|it| scopes.scope_for(it))
+    node.ancestors_with_macros(db).take_while(|it| {
+        let kind = it.kind();
+        !ast::Item::can_cast(kind) || ast::MacroCall::can_cast(kind) || ast::Use::can_cast(kind) || ast::AsmExpr::can_cast(kind)
+    }).filter_map(
+        |it| it.map(ast::Expr::cast).transpose(),
+    ).filter_map(
+        |it| source_map.node_expr(it.as_ref())?.as_expr(),
+    ).find_map(
+        |it| scopes.scope_for(it),
+    )
 }
 
 fn scope_for_offset(
@@ -1449,29 +1448,24 @@ fn scope_for_offset(
     from_file: HirFileId,
     offset: TextSize,
 ) -> Option<ScopeId> {
-    scopes
-        .scope_by_expr()
-        .iter()
-        .filter_map(|(id, scope)| {
-            let InFile { file_id, value } = source_map.expr_syntax(id).ok()?;
-            if from_file == file_id {
+    scopes.scope_by_expr().iter().filter_map(|(id, scope)| {
+        let InFile { file_id, value } = source_map.expr_syntax(id).ok()?;
+        if from_file == file_id {
                 return Some((value.text_range(), scope));
             }
-
-            // FIXME handle attribute expansion
-            let source = iter::successors(file_id.macro_file().map(|it| it.call_node(db)), |it| {
+        let source = iter::successors(file_id.macro_file().map(|it| it.call_node(db)), |it| {
                 Some(it.file_id.macro_file()?.call_node(db))
             })
             .find(|it| it.file_id == from_file)
             .filter(|it| it.kind() == SyntaxKind::MACRO_CALL)?;
-            Some((source.text_range(), scope))
-        })
-        .filter(|(expr_range, _scope)| expr_range.start() <= offset && offset <= expr_range.end())
-        // find containing scope
-        .min_by_key(|(expr_range, _scope)| expr_range.len())
-        .map(|(expr_range, scope)| {
-            adjust(db, scopes, source_map, expr_range, from_file, offset).unwrap_or(*scope)
-        })
+        Some((source.text_range(), scope))
+    }).filter(
+        |(expr_range, _scope)| expr_range.start() <= offset && offset <= expr_range.end(),
+    ).min_by_key(
+        |(expr_range, _scope)| expr_range.len(),
+    ).map(|(expr_range, scope)| {
+        adjust(db, scopes, source_map, expr_range, from_file, offset).unwrap_or(*scope)
+    })
 }
 
 fn adjust(
@@ -1499,17 +1493,17 @@ fn adjust(
             range.start() <= offset && expr_range.contains_range(range) && range != expr_range
         });
 
-    child_scopes
-        .max_by(|&(r1, _), &(r2, _)| {
-            if r1.contains_range(r2) {
-                std::cmp::Ordering::Greater
-            } else if r2.contains_range(r1) {
-                std::cmp::Ordering::Less
-            } else {
-                r1.start().cmp(&r2.start())
-            }
-        })
-        .map(|(_ptr, scope)| *scope)
+    child_scopes.max_by(|&(r1, _), &(r2, _)| {
+        if r1.contains_range(r2) {
+            std::cmp::Ordering::Greater
+        } else if r2.contains_range(r1) {
+            std::cmp::Ordering::Less
+        } else {
+            r1.start().cmp(&r2.start())
+        }
+    }).map(
+        |(_ptr, scope)| *scope,
+    )
 }
 
 #[inline]
@@ -1529,10 +1523,9 @@ pub(crate) fn resolve_hir_path_as_attr_macro(
     resolver: &Resolver<'_>,
     path: &Path,
 ) -> Option<Macro> {
-    resolver
-        .resolve_path_as_macro(db, path.mod_path()?, Some(MacroSubNs::Attr))
-        .map(|(it, _)| it)
-        .map(Into::into)
+    resolver.resolve_path_as_macro(db, path.mod_path()?, Some(MacroSubNs::Attr)).map(|(it, _)| it).map(
+        Into::into,
+    )
 }
 
 fn resolve_hir_path_(
@@ -1638,7 +1631,6 @@ fn resolve_hir_path_(
                 .map(|type_ns| PathResolutionPerNs::new(Some(type_ns), None, None))
                 .unwrap_or_else(|| PathResolutionPerNs::new(None, values(), None))
         };
-
         if res.any().is_some() {
             res
         } else if let Some(type_ns) = items() {
@@ -1715,16 +1707,12 @@ fn resolve_hir_path_qualifier(
                 }
             }
         }?;
-
-        // If we are in a TypeNs for a Trait, and we have an unresolved name, try to resolve it as a type
-        // within the trait's associated types.
         if let (Some(unresolved), &TypeNs::TraitId(trait_id)) = (&unresolved, &ty)
             && let Some(type_alias_id) =
                 trait_id.trait_items(db).associated_type_by_name(unresolved.name)
         {
             return Some(PathResolution::Def(ModuleDefId::from(type_alias_id).into()));
         }
-
         let res = match ty {
             TypeNs::SelfType(it) => PathResolution::SelfType(it.into()),
             TypeNs::GenericParam(id) => PathResolution::TypeParam(id.into()),
@@ -1738,27 +1726,27 @@ fn resolve_hir_path_qualifier(
             TypeNs::ModuleId(it) => PathResolution::Def(ModuleDef::Module(it.into())),
         };
         match unresolved {
-            Some(unresolved) => resolver
-                .generic_def()
-                .and_then(|def| {
-                    hir_ty::associated_type_shorthand_candidates(
-                        db,
-                        def,
-                        res.in_type_ns()?,
-                        |name, _| name == unresolved.name,
-                    )
-                })
-                .map(TypeAlias::from)
-                .map(Into::into)
-                .map(PathResolution::Def),
+            Some(unresolved) => resolver.generic_def().and_then(|def| {
+                hir_ty::associated_type_shorthand_candidates(
+                    db,
+                    def,
+                    res.in_type_ns()?,
+                    |name, _| name == unresolved.name,
+                )
+            }).map(
+                TypeAlias::from,
+            ).map(
+                Into::into,
+            ).map(
+                PathResolution::Def,
+            ),
             None => Some(res),
         }
-    })()
-    .or_else(|| {
-        resolver
-            .resolve_module_path_in_items(db, path.mod_path()?)
-            .take_types()
-            .map(|it| PathResolution::Def(it.into()))
+    })(
+    ).or_else(|| {
+        resolver.resolve_module_path_in_items(db, path.mod_path()?).take_types().map(
+            |it| PathResolution::Def(it.into()),
+        )
     })
 }
 

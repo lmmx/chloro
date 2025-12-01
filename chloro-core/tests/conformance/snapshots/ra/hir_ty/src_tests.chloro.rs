@@ -258,7 +258,7 @@ fn expr_node(
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
-        }
+        },
         Err(SyntheticSyntax) => return None,
     })
 }
@@ -272,7 +272,7 @@ fn pat_node(
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
-        }
+        },
         Err(SyntheticSyntax) => return None,
     })
 }
@@ -285,9 +285,10 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
     let _tracing = setup_tracing();
     let (db, file_id) = TestDB::with_single_file(content);
 
-    crate::attach_db(&db, || {
+    crate::attach_db(
+        &db,
+        || {
         let mut buf = String::new();
-
         let mut infer_def = |inference_result: Arc<InferenceResult<'_>>,
                              body: Arc<Body>,
                              body_source_map: Arc<BodySourceMap>,
@@ -377,10 +378,8 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
                 }
             }
         };
-
         let module = db.module_for_file(file_id.file_id(&db));
         let def_map = module.def_map(&db);
-
         let mut defs: Vec<(DefWithBodyId, Crate)> = Vec::new();
         visit_module(&db, def_map, module.local_id, &mut |it| {
             let def = match it {
@@ -415,10 +414,10 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
             let infer = db.infer(def);
             infer_def(infer, body, source_map, krate);
         }
-
         buf.truncate(buf.trim_end().len());
         buf
-    })
+    },
+    )
 }
 
 pub(crate) fn visit_module(
@@ -601,7 +600,9 @@ fn salsa_bug() {
 
     db.set_file_text(pos.file_id.file_id(&db), new_text);
 
-    crate::attach_db(&db, || {
+    crate::attach_db(
+        &db,
+        || {
         let module = db.module_for_file(pos.file_id.file_id(&db));
         let crate_def_map = module.def_map(&db);
         visit_module(&db, crate_def_map, module.local_id, &mut |def| {
@@ -613,5 +614,6 @@ fn salsa_bug() {
                 _ => return,
             });
         });
-    })
+    },
+    )
 }

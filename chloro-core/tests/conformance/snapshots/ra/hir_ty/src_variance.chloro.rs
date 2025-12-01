@@ -105,14 +105,10 @@ fn glb(v1: Variance, v2: Variance) -> Variance {
     //       o
     match (v1, v2) {
         (Variance::Invariant, _) | (_, Variance::Invariant) => Variance::Invariant,
-
         (Variance::Covariant, Variance::Contravariant) => Variance::Invariant,
         (Variance::Contravariant, Variance::Covariant) => Variance::Invariant,
-
         (Variance::Covariant, Variance::Covariant) => Variance::Covariant,
-
         (Variance::Contravariant, Variance::Contravariant) => Variance::Contravariant,
-
         (x, Variance::Bivariant) | (Variance::Bivariant, x) => x,
     }
 }
@@ -202,80 +198,74 @@ impl<'db> Context<'db> {
             | TyKind::Never
             | TyKind::Str
             | TyKind::Foreign(..) => {
-                // leaf type -- noop
-            }
+            },
             TyKind::FnDef(..)
             | TyKind::Coroutine(..)
             | TyKind::CoroutineClosure(..)
             | TyKind::Closure(..) => {
                 never!("Unexpected unnameable type in variance computation: {:?}", ty);
-            }
+            },
             TyKind::Ref(lifetime, ty, mutbl) => {
                 self.add_constraints_from_region(lifetime, variance);
                 self.add_constraints_from_mt(ty, mutbl, variance);
-            }
+            },
             TyKind::Array(typ, len) => {
                 self.add_constraints_from_const(len);
                 self.add_constraints_from_ty(typ, variance);
-            }
+            },
             TyKind::Slice(typ) => {
                 self.add_constraints_from_ty(typ, variance);
-            }
+            },
             TyKind::RawPtr(ty, mutbl) => {
                 self.add_constraints_from_mt(ty, mutbl, variance);
-            }
+            },
             TyKind::Tuple(subtys) => {
                 for subty in subtys {
                     self.add_constraints_from_ty(subty, variance);
                 }
-            }
+            },
             TyKind::Adt(def, args) => {
                 self.add_constraints_from_args(def.def_id().0.into(), args, variance);
-            }
+            },
             TyKind::Alias(_, alias) => {
-                // FIXME: Probably not correct wrt. opaques.
                 self.add_constraints_from_invariant_args(alias.args);
-            }
+            },
             TyKind::Dynamic(bounds, region) => {
-                // The type `dyn Trait<T> +'a` is covariant w/r/t `'a`:
                 self.add_constraints_from_region(region, variance);
-
                 for bound in bounds {
                     match bound.skip_binder() {
                         ExistentialPredicate::Trait(trait_ref) => {
                             self.add_constraints_from_invariant_args(trait_ref.args)
-                        }
+                        },
                         ExistentialPredicate::Projection(projection) => {
                             self.add_constraints_from_invariant_args(projection.args);
                             match projection.term {
                                 Term::Ty(ty) => {
                                     self.add_constraints_from_ty(ty, Variance::Invariant)
-                                }
+                                },
                                 Term::Const(konst) => self.add_constraints_from_const(konst),
                             }
-                        }
-                        ExistentialPredicate::AutoTrait(_) => {}
+                        },
+                        ExistentialPredicate::AutoTrait(_) => {
+                        },
                     }
                 }
-            }
-
-            // Chalk has no params, so use placeholders for now?
+            },
             TyKind::Param(param) => self.constrain(param.index as usize, variance),
             TyKind::FnPtr(sig, _) => {
                 self.add_constraints_from_sig(sig.skip_binder().inputs_and_output.iter(), variance);
-            }
+            },
             TyKind::Error(_) => {
-                // we encounter this when walking the trait references for object
-                // types, where we use Error as the Self type
-            }
-            TyKind::Bound(..) => {}
+            },
+            TyKind::Bound(..) => {
+            },
             TyKind::CoroutineWitness(..)
             | TyKind::Placeholder(..)
             | TyKind::Infer(..)
             | TyKind::UnsafeBinder(..)
             | TyKind::Pat(..) => {
                 never!("unexpected type encountered in variance inference: {:?}", ty)
-            }
+            },
         }
     }
 
@@ -284,7 +274,7 @@ impl<'db> Context<'db> {
             match k {
                 GenericArg::Lifetime(lt) => {
                     self.add_constraints_from_region(lt, Variance::Invariant)
-                }
+                },
                 GenericArg::Ty(ty) => self.add_constraints_from_ty(ty, Variance::Invariant),
                 GenericArg::Const(val) => self.add_constraints_from_const(val),
             }
@@ -318,7 +308,8 @@ impl<'db> Context<'db> {
     fn add_constraints_from_const(&mut self, c: Const<'db>) {
         match c.kind() {
             ConstKind::Unevaluated(c) => self.add_constraints_from_invariant_args(c.args),
-            _ => {}
+            _ => {
+            },
         }
     }
 
@@ -349,26 +340,22 @@ impl<'db> Context<'db> {
         );
         match region.kind() {
             RegionKind::ReEarlyParam(param) => self.constrain(param.index as usize, variance),
-            RegionKind::ReStatic => {}
+            RegionKind::ReStatic => {
+            },
             RegionKind::ReBound(..) => {
-                // Either a higher-ranked region inside of a type or a
-                // late-bound function parameter.
-                //
-                // We do not compute constraints for either of these.
-            }
-            RegionKind::ReError(_) => {}
+            },
+            RegionKind::ReError(_) => {
+            },
             RegionKind::ReLateParam(..)
             | RegionKind::RePlaceholder(..)
             | RegionKind::ReVar(..)
             | RegionKind::ReErased => {
-                // We don't expect to see anything but 'static or bound
-                // regions when visiting member types or method types.
                 never!(
                     "unexpected region encountered in variance \
                       inference: {:?}",
                     region
                 );
-            }
+            },
         }
     }
 
@@ -863,7 +850,9 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
         // ));
         let (db, file_id) = TestDB::with_single_file(ra_fixture);
 
-        crate::attach_db(&db, || {
+        crate::attach_db(
+            &db,
+            || {
             let mut defs: Vec<GenericDefId> = Vec::new();
             let module = db.module_for_file_opt(file_id.file_id(&db)).unwrap();
             let def_map = module.def_map(&db);
@@ -942,8 +931,8 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
                         )))
                 );
             }
-
             expected.assert_eq(&res);
-        })
+        },
+        )
     }
 }

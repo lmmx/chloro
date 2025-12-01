@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11544 bytes
-Chloro size:   11425 bytes
+Chloro size:   11430 bytes
 Rustfmt size:  11544 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,17 @@ Rustfmt size:  11544 bytes
  pub fn is_format_string(string: &ast::String) -> bool {
      // Check if `string` is a format string argument of a macro invocation.
      // `string` is a string literal, mapped down into the innermost macro expansion.
+         let lit = string.syntax().parent().and_then(ast::Literal::cast)?;
+         let fa = lit.syntax().parent().and_then(ast::FormatArgsExpr::cast)?;
+         (fa.template()? == ast::Expr::Literal(lit)).then_some(|| ())
+-    })()
+-    .is_some()
++    })(
++    ).is_some(
++    )
+ }
+ 
+ #[derive(Debug)]
      Escape,
  }
  

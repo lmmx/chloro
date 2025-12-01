@@ -22,19 +22,19 @@ pub(crate) fn remove_else_branches(acc: &mut Assists, ctx: &AssistContext<'_>) -
         "Remove `else` branches",
         target,
         |builder| {
-            let mut editor = builder.make_editor(&else_token.parent().unwrap());
-            match else_token.prev_token() {
+        let mut editor = builder.make_editor(&else_token.parent().unwrap());
+        match else_token.prev_token() {
                 Some(it) if it.kind() == SyntaxKind::WHITESPACE => editor.delete(it),
                 _ => (),
             }
-            match else_token.next_token() {
+        match else_token.next_token() {
                 Some(it) if it.kind() == SyntaxKind::WHITESPACE => editor.delete(it),
                 _ => (),
             }
-            editor.delete(else_token);
-            editor.delete(else_branches);
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        editor.delete(else_token);
+        editor.delete(else_branches);
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 

@@ -18,9 +18,14 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
 
     let kind = parent.kind();
     if matches!(kind, SyntaxKind::STMT_LIST | SyntaxKind::EXPR_STMT) {
-        acc.add(assist_id, assist_label, target, |builder| {
+        acc.add(
+            assist_id,
+            assist_label,
+            target,
+            |builder| {
             builder.replace(block.syntax().text_range(), update_expr_string(block.to_string()));
-        })
+        },
+        )
     } else if matches!(kind, SyntaxKind::LET_STMT) {
         let parent = ast::LetStmt::cast(parent)?;
         let pattern = ast::Pat::cast(parent.syntax().first_child()?)?;
@@ -43,9 +48,14 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
                 make::let_stmt(pattern, ty, Some(empty_tuple)).to_string()
             }
         };
-        acc.add(assist_id, assist_label, target, |builder| {
+        acc.add(
+            assist_id,
+            assist_label,
+            target,
+            |builder| {
             builder.replace(parent.syntax().text_range(), replaced);
-        })
+        },
+        )
     } else {
         let parent = ast::Expr::cast(parent)?;
         match parent.clone() {
@@ -90,10 +100,14 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
             }
             _ => return None,
         };
-
-        acc.add(assist_id, assist_label, target, |builder| {
+        acc.add(
+            assist_id,
+            assist_label,
+            target,
+            |builder| {
             builder.replace(parent.syntax().text_range(), update_expr_string(block.to_string()));
-        })
+        },
+        )
     }
 }
 
@@ -119,11 +133,7 @@ fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> Str
     let expr_str = expr_str.trim_end_matches(whitespace_pat);
     let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
 
-    expr_str
-        .lines()
-        .map(|line| line.replacen("    ", "", 1)) // Delete indentation
-        .collect::<Vec<String>>()
-        .join("\n")
+    expr_str.lines().map(|line| line.replacen("    ", "", 1)).collect::<Vec<String>>().join("\n")
 }
 
 #[cfg(test)]

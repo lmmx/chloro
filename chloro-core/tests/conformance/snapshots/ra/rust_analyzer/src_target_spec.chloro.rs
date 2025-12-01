@@ -79,9 +79,8 @@ impl ProjectJsonTargetSpec {
                         return Some(runnable.clone());
                     }
                 }
-
                 None
-            }
+            },
             RunnableKind::Test { test_id, .. } => {
                 for runnable in &self.shell_runnables {
                     if matches!(runnable.kind, project_model::project_json::RunnableKind::TestOne) {
@@ -98,9 +97,8 @@ impl ProjectJsonTargetSpec {
                         return Some(runnable);
                     }
                 }
-
                 None
-            }
+            },
             RunnableKind::TestMod { .. } => None,
             RunnableKind::Bench { .. } => None,
             RunnableKind::DocTest { .. } => None,
@@ -218,22 +216,22 @@ impl CargoTargetSpec {
             TargetKind::Bin => {
                 buf.push("--bin".to_owned());
                 buf.push(self.target);
-            }
+            },
             TargetKind::Test => {
                 buf.push("--test".to_owned());
                 buf.push(self.target);
-            }
+            },
             TargetKind::Bench => {
                 buf.push("--bench".to_owned());
                 buf.push(self.target);
-            }
+            },
             TargetKind::Example => {
                 buf.push("--example".to_owned());
                 buf.push(self.target);
-            }
+            },
             TargetKind::Lib { is_proc_macro: _ } => {
                 buf.push("--lib".to_owned());
-            }
+            },
             TargetKind::Other | TargetKind::BuildScript => (),
         }
     }
@@ -244,10 +242,10 @@ fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
     match cfg_expr {
         CfgExpr::Atom(CfgAtom::KeyValue { key, value }) if *key == sym::feature => {
             features.push(value.to_string())
-        }
+        },
         CfgExpr::All(preds) => {
             preds.iter().for_each(|cfg| required_features(cfg, features));
-        }
+        },
         CfgExpr::Any(preds) => {
             for cfg in preds.iter() {
                 let len_features = features.len();
@@ -256,8 +254,9 @@ fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
                     break;
                 }
             }
-        }
-        _ => {}
+        },
+        _ => {
+        },
     }
 }
 

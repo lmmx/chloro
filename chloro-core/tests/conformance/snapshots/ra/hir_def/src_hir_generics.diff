@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13646 bytes
-Chloro size:   13713 bytes
+Chloro size:   13806 bytes
 Rustfmt size:  13995 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,14 @@ Rustfmt size:  13995 bytes
  pub type LocalLifetimeParamId = Idx<LifetimeParamData>;
  
  /// Data about a generic type parameter (to a function, struct, impl, ...).
+         match self {
+             TypeOrConstParamData::TypeParamData(it) => {
+                 it.provenance == TypeParamProvenance::TraitSelf
+-            }
++            },
+             TypeOrConstParamData::ConstParamData(_) => false,
+         }
+     }
  
  impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
      type Output = TypeOrConstParamData;
@@ -43,6 +51,20 @@ Rustfmt size:  13995 bytes
  
      pub fn new(db: &dyn DefDatabase, def: GenericDefId) -> Arc<GenericParams> {
          match def {
+             GenericDefId::AdtId(AdtId::EnumId(it)) => db.enum_signature(it).generic_params.clone(),
+             GenericDefId::AdtId(AdtId::StructId(it)) => {
+                 db.struct_signature(it).generic_params.clone()
+-            }
++            },
+             GenericDefId::AdtId(AdtId::UnionId(it)) => {
+                 db.union_signature(it).generic_params.clone()
+-            }
++            },
+             GenericDefId::ConstId(_) => EMPTY.clone(),
+             GenericDefId::FunctionId(function_id) => {
+                 db.function_signature(function_id).generic_params.clone()
+-            }
++            },
              GenericDefId::ImplId(impl_id) => db.impl_signature(impl_id).generic_params.clone(),
              GenericDefId::StaticId(_) => EMPTY.clone(),
              GenericDefId::TraitId(trait_id) => db.trait_signature(trait_id).generic_params.clone(),
@@ -52,7 +74,55 @@ Rustfmt size:  13995 bytes
 -                .clone(),
 +            GenericDefId::TypeAliasId(type_alias_id) => {
 +                db.type_alias_signature(type_alias_id).generic_params.clone()
-+            }
++            },
+         }
+     }
+ 
+             GenericDefId::AdtId(AdtId::EnumId(id)) => {
+                 let sig = db.enum_signature(id);
+                 (sig.generic_params.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::AdtId(AdtId::StructId(id)) => {
+                 let sig = db.struct_signature(id);
+                 (sig.generic_params.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::AdtId(AdtId::UnionId(id)) => {
+                 let sig = db.union_signature(id);
+                 (sig.generic_params.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::ConstId(id) => {
+                 let sig = db.const_signature(id);
+                 (EMPTY.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::FunctionId(id) => {
+                 let sig = db.function_signature(id);
+                 (sig.generic_params.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::ImplId(id) => {
+                 let sig = db.impl_signature(id);
+                 (sig.generic_params.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::StaticId(id) => {
+                 let sig = db.static_signature(id);
+                 (EMPTY.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::TraitId(id) => {
+                 let sig = db.trait_signature(id);
+                 (sig.generic_params.clone(), sig.store.clone())
+-            }
++            },
+             GenericDefId::TypeAliasId(id) => {
+                 let sig = db.type_alias_signature(id);
+                 (sig.generic_params.clone(), sig.store.clone())
+-            }
++            },
          }
      }
  
@@ -68,6 +138,52 @@ Rustfmt size:  13995 bytes
          match def {
              GenericDefId::AdtId(AdtId::EnumId(id)) => {
                  let (sig, sm) = db.enum_signature_with_source_map(id);
+                 (sig.generic_params.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::AdtId(AdtId::StructId(id)) => {
+                 let (sig, sm) = db.struct_signature_with_source_map(id);
+                 (sig.generic_params.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::AdtId(AdtId::UnionId(id)) => {
+                 let (sig, sm) = db.union_signature_with_source_map(id);
+                 (sig.generic_params.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::ConstId(id) => {
+                 let (sig, sm) = db.const_signature_with_source_map(id);
+                 (EMPTY.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::FunctionId(id) => {
+                 let (sig, sm) = db.function_signature_with_source_map(id);
+                 (sig.generic_params.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::ImplId(id) => {
+                 let (sig, sm) = db.impl_signature_with_source_map(id);
+                 (sig.generic_params.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::StaticId(id) => {
+                 let (sig, sm) = db.static_signature_with_source_map(id);
+                 (EMPTY.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::TraitId(id) => {
+                 let (sig, sm) = db.trait_signature_with_source_map(id);
+                 (sig.generic_params.clone(), sig.store.clone(), sm)
+-            }
++            },
+             GenericDefId::TypeAliasId(id) => {
+                 let (sig, sm) = db.type_alias_signature_with_source_map(id);
+                 (sig.generic_params.clone(), sig.store.clone(), sm)
+-            }
++            },
+         }
+     }
+ 
      pub fn find_type_by_name(&self, name: &Name, parent: GenericDefId) -> Option<TypeParamId> {
          self.type_or_consts.iter().find_map(|(id, p)| {
              if p.name().as_ref() == Some(&name) && p.type_param().is_some() {
@@ -90,18 +206,24 @@ Rustfmt size:  13995 bytes
              } else {
                  None
              }
-         parent: GenericDefId,
+                 provenance: TypeParamProvenance::TraitSelf,
+                 ..
+             })
++        ).then(
++            || Self::SELF_PARAM_ID_IN_SELF,
+         )
+-        .then(|| Self::SELF_PARAM_ID_IN_SELF)
+     }
+ 
+     pub fn find_lifetime_by_name(
      ) -> Option<LifetimeParamId> {
          self.lifetimes.iter().find_map(|(id, p)| {
--            if &p.name == name {
+             if &p.name == name {
 -                Some(LifetimeParamId {
 -                    local_id: id,
 -                    parent,
 -                })
--            } else {
--                None
--            }
-+            if &p.name == name { Some(LifetimeParamId { local_id: id, parent }) } else { None }
-         })
-     }
- }
++                Some(LifetimeParamId { local_id: id, parent })
+             } else {
+                 None
+             }

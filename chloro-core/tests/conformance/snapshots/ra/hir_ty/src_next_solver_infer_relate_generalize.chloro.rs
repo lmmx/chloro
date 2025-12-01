@@ -397,9 +397,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
         b_arg: GenericArgs<'db>,
     ) -> RelateResult<'db, GenericArgs<'db>> {
         if self.ambient_variance == Variance::Invariant {
-            // Avoid fetching the variance if we are in an invariant
-            // context; no need, and it can induce dependency cycles
-            // (e.g., #41849).
             relate::relate_args_invariantly(self, a_arg, b_arg)
         } else {
             let tcx = self.cx();
@@ -602,23 +599,19 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match c.kind() {
             ConstKind::Infer(InferConst::Var(vid)) => {
-                // If root const vids are equal, then `root_vid` and
-                // `vid` are related and we'd be inferring an infinitely
-                // deep const.
                 if TermVid::Const(
                     self.infcx.inner.borrow_mut().const_unification_table().find(vid).vid,
                 ) == self.root_vid
                 {
                     return Err(self.cyclic_term_error());
                 }
-
                 let mut inner = self.infcx.inner.borrow_mut();
                 let variable_table = &mut inner.const_unification_table();
                 match variable_table.probe_value(vid) {
                     ConstVariableValue::Known { value: u } => {
                         drop(inner);
                         self.relate(u, u)
-                    }
+                    },
                     ConstVariableValue::Unknown { origin, universe } => {
                         if self.for_universe.can_name(universe) {
                             Ok(c)
@@ -629,9 +622,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                                     universe: self.for_universe,
                                 })
                                 .vid;
-
-                            // See the comment for type inference variables
-                            // for more details.
                             if self.infcx.next_trait_solver()
                                 && !matches!(
                                     self.infcx.typing_mode_unchecked(),
@@ -643,14 +633,9 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                             }
                             Ok(Const::new_var(self.infcx.interner, new_var_id))
                         }
-                    }
+                    },
                 }
-            }
-            // FIXME: Unevaluated constants are also not rigid, so the current
-            // approach of always relating them structurally is incomplete.
-            //
-            // FIXME: remove this branch once `structurally_relate_consts` is fully
-            // structural.
+            },
             ConstKind::Unevaluated(UnevaluatedConst { def, args }) => {
                 let args = self.relate_with_variance(
                     Variance::Invariant,
@@ -659,7 +644,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                     args,
                 )?;
                 Ok(Const::new_unevaluated(self.infcx.interner, UnevaluatedConst { def, args }))
-            }
+            },
             ConstKind::Placeholder(placeholder) => {
                 if self.for_universe.can_name(placeholder.universe) {
                     Ok(c)
@@ -670,7 +655,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                     );
                     Err(TypeError::Mismatch)
                 }
-            }
+            },
             _ => relate::structurally_relate_consts(self, c, c),
         }
     }

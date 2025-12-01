@@ -249,14 +249,13 @@ impl<'db> InferenceContext<'_, 'db> {
         closure_kind: ClosureKind,
     ) -> (Option<PolyFnSig<'db>>, Option<rustc_type_ir::ClosureKind>) {
         match expected_ty.kind() {
-            TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id, args, .. }) => self
-                .deduce_closure_signature_from_predicates(
-                    expected_ty,
-                    closure_kind,
-                    explicit_item_bounds(self.interner(), def_id)
-                        .iter_instantiated(self.interner(), args)
-                        .map(|clause| clause.as_predicate()),
-                ),
+            TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id, args, .. }) => self.deduce_closure_signature_from_predicates(
+                expected_ty,
+                closure_kind,
+                explicit_item_bounds(self.interner(), def_id).iter_instantiated(self.interner(), args).map(
+                |clause| clause.as_predicate(),
+            ),
+            ),
             TyKind::Dynamic(object_type, ..) => {
                 let sig = object_type.projection_bounds().into_iter().find_map(|pb| {
                     let pb = pb.with_self_ty(self.interner(), Ty::new_unit(self.interner()));
@@ -266,18 +265,17 @@ impl<'db> InferenceContext<'_, 'db> {
                     .principal_def_id()
                     .and_then(|did| self.fn_trait_kind_from_def_id(did.0));
                 (sig, kind)
-            }
-            TyKind::Infer(rustc_type_ir::TyVar(vid)) => self
-                .deduce_closure_signature_from_predicates(
-                    Ty::new_var(self.interner(), self.table.infer_ctxt.root_var(vid)),
-                    closure_kind,
-                    self.table.obligations_for_self_ty(vid).into_iter().map(|obl| obl.predicate),
-                ),
+            },
+            TyKind::Infer(rustc_type_ir::TyVar(vid)) => self.deduce_closure_signature_from_predicates(
+                Ty::new_var(self.interner(), self.table.infer_ctxt.root_var(vid)),
+                closure_kind,
+                self.table.obligations_for_self_ty(vid).into_iter().map(|obl| obl.predicate),
+            ),
             TyKind::FnPtr(sig_tys, hdr) => match closure_kind {
                 ClosureKind::Closure => {
                     let expected_sig = sig_tys.with(hdr);
                     (Some(expected_sig), Some(rustc_type_ir::ClosureKind::Fn))
-                }
+                },
                 ClosureKind::Coroutine(_) | ClosureKind::Async => (None, None),
             },
             _ => (None, None),
@@ -438,16 +436,13 @@ impl<'db> InferenceContext<'_, 'db> {
         match closure_kind {
             ClosureKind::Closure if lang_item == Some(LangItem::FnOnceOutput) => {
                 self.extract_sig_from_projection(projection)
-            }
+            },
             ClosureKind::Async if lang_item == Some(LangItem::AsyncFnOnceOutput) => {
                 self.extract_sig_from_projection(projection)
-            }
-            // It's possible we've passed the closure to a (somewhat out-of-fashion)
-            // `F: FnOnce() -> Fut, Fut: Future<Output = T>` style bound. Let's still
-            // guide inference here, since it's beneficial for the user.
+            },
             ClosureKind::Async if lang_item == Some(LangItem::FnOnceOutput) => {
                 self.extract_sig_from_projection_and_future_bound(projection)
-            }
+            },
             _ => None,
         }
     }
@@ -775,9 +770,6 @@ impl<'db> InferenceContext<'_, 'db> {
                 BoundRegionConversionTime::FnCall,
                 supplied_sig,
             );
-
-            // The liberated version of this signature should be a subtype
-            // of the liberated form of the expectation.
             for (supplied_ty, expected_ty) in
                 iter::zip(supplied_sig.inputs(), expected_sigs.liberated_sig.inputs())
             {
@@ -789,7 +781,6 @@ impl<'db> InferenceContext<'_, 'db> {
                     .eq(expected_ty, supplied_ty)?;
                 all_obligations.extend(obligations);
             }
-
             let supplied_output_ty = supplied_sig.output();
             let cause = ObligationCause::new();
             let InferOk { value: (), obligations } = table
@@ -797,12 +788,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 .at(&cause, table.trait_env.env)
                 .eq(expected_sigs.liberated_sig.output(), supplied_output_ty)?;
             all_obligations.extend(obligations);
-
             let inputs = supplied_sig
                 .inputs()
                 .into_iter()
                 .map(|ty| table.infer_ctxt.resolve_vars_if_possible(ty));
-
             expected_sigs.liberated_sig = table.interner().mk_fn_sig(
                 inputs,
                 supplied_output_ty,
@@ -810,8 +799,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 Safety::Safe,
                 FnAbi::RustCall,
             );
-
-            Ok(InferOk { value: expected_sigs, obligations: all_obligations })
+            Ok(InferOk {
+                value: expected_sigs,
+                obligations: all_obligations,
+            })
         })
     }
 

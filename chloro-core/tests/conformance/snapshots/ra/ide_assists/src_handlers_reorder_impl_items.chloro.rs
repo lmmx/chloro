@@ -66,15 +66,13 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         "Sort items by trait definition",
         target,
         |builder| {
-            let mut editor = builder.make_editor(&parent_node);
-
-            assoc_items
+        let mut editor = builder.make_editor(&parent_node);
+        assoc_items
                 .into_iter()
                 .zip(sorted)
                 .for_each(|(old, new)| editor.replace(old.syntax(), new.syntax()));
-
-            builder.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        builder.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -84,14 +82,10 @@ fn compute_item_ranks(
 ) -> Option<FxHashMap<String, usize>> {
     let td = trait_definition(path, &ctx.sema)?;
 
-    Some(
-        td.items(ctx.db())
-            .iter()
-            .flat_map(|i| i.name(ctx.db()))
-            .enumerate()
-            .map(|(idx, name)| (name.as_str().to_owned(), idx))
-            .collect(),
-    )
+    Some(td.items(ctx.db()).iter().flat_map(|i| i.name(ctx.db())).enumerate().map(
+        |(idx, name)| (name.as_str().to_owned(), idx),
+    ).collect(
+    ))
 }
 
 fn trait_definition(path: &ast::Path, sema: &Semantics<'_, RootDatabase>) -> Option<hir::Trait> {

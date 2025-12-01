@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3783 bytes
-Chloro size:   3568 bytes
+Chloro size:   3528 bytes
 Rustfmt size:  3796 bytes
 
 ✗ Outputs DIFFER
@@ -40,6 +40,37 @@ Rustfmt size:  3796 bytes
      let name = ident_pat.name().filter(|n| !n.text().starts_with('_'))?;
  
      let param_def = {
+         format!("Bind as `let _ = {name};`"),
+         param.syntax().text_range(),
+         |builder| {
+-            let line_index = ctx.db().line_index(ctx.vfs_file_id());
+-
+-            let indent = func.indent_level();
+-            let text_indent = indent + 1;
+-            let mut text = format!("\n{text_indent}let _ = {name};");
+-
+-            let left_line = line_index.line_col(l_curly_range.end()).line;
+-            let right_line = line_index.line_col(r_curly_range.start()).line;
+-
+-            if left_line == right_line {
++        let line_index = ctx.db().line_index(ctx.vfs_file_id());
++        let indent = func.indent_level();
++        let text_indent = indent + 1;
++        let mut text = format!("\n{text_indent}let _ = {name};");
++        let left_line = line_index.line_col(l_curly_range.end()).line;
++        let right_line = line_index.line_col(r_curly_range.start()).line;
++        if left_line == right_line {
+                 cov_mark::hit!(single_line);
+                 text.push_str(&format!("\n{indent}"));
+             }
+-
+-            builder.insert(l_curly_range.end(), text);
+-        },
++        builder.insert(l_curly_range.end(), text);
++    },
+     )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

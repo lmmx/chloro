@@ -29,8 +29,9 @@ impl<'db> ExternalConstraints<'db> {
     pub fn inner(&self) -> &ExternalConstraintsData<'db> {
         crate::with_attached_db(|db| {
             let inner = self.kind_(db);
-            // SAFETY: ¯\_(ツ)_/¯
-            unsafe { std::mem::transmute(inner) }
+            unsafe {
+                std::mem::transmute(inner)
+            }
         })
     }
 }
@@ -63,12 +64,8 @@ impl<'db> rustc_type_ir::TypeFoldable<DbInterner<'db>> for ExternalConstraints<'
             folder.cx(),
             ExternalConstraintsData {
             region_constraints: self.region_constraints.clone().try_fold_with(folder)?,
-            opaque_types: self
-                    .opaque_types
-                    .iter()
-                    .cloned()
-                    .map(|opaque| opaque.try_fold_with(folder))
-                    .collect::<Result<_, F::Error>>()?,
+            opaque_types: self.opaque_types.iter().cloned().map(|opaque| opaque.try_fold_with(folder)).collect::<Result<_, F::Error>>(
+            )?,
             normalization_nested_goals: self.normalization_nested_goals.clone().try_fold_with(folder)?,
         },
         ))
@@ -79,12 +76,7 @@ impl<'db> rustc_type_ir::TypeFoldable<DbInterner<'db>> for ExternalConstraints<'
             folder.cx(),
             ExternalConstraintsData {
             region_constraints: self.region_constraints.clone().fold_with(folder),
-            opaque_types: self
-                    .opaque_types
-                    .iter()
-                    .cloned()
-                    .map(|opaque| opaque.fold_with(folder))
-                    .collect(),
+            opaque_types: self.opaque_types.iter().cloned().map(|opaque| opaque.fold_with(folder)).collect(),
             normalization_nested_goals: self.normalization_nested_goals.clone().fold_with(folder),
         },
         )

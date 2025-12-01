@@ -39,12 +39,12 @@ impl<'db> OpaqueTypeStorage<'db> {
         if let Some(prev) = prev {
             *self.opaque_types.get_mut(&key).unwrap() = prev;
         } else {
-            // FIXME(#120456) - is `swap_remove` correct?
             match self.opaque_types.swap_remove(&key) {
                 None => {
                     panic!("reverted opaque type inference that was never registered: {key:?}")
-                }
-                Some(_) => {}
+                },
+                Some(_) => {
+                },
             }
         }
     }
@@ -77,11 +77,9 @@ impl<'db> OpaqueTypeStorage<'db> {
         &self,
         prev_entries: OpaqueTypeStorageEntries,
     ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-        self.opaque_types
-            .iter()
-            .skip(prev_entries.opaque_types)
-            .map(|(k, v)| (*k, *v))
-            .chain(self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied())
+        self.opaque_types.iter().skip(prev_entries.opaque_types).map(|(k, v)| (*k, *v)).chain(
+            self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied(),
+        )
     }
 
     /// Only returns the opaque types from the lookup table. These are used

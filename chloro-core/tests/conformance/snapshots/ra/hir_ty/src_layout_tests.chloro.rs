@@ -79,7 +79,9 @@ fn eval_goal(
             Some(adt_or_type_alias_id)
         })
         .unwrap();
-    crate::attach_db(&db, || {
+    crate::attach_db(
+        &db,
+        || {
         let interner = DbInterner::new_with(&db, None, None);
         let goal_ty = match adt_or_type_alias_id {
             Either::Left(adt_id) => crate::next_solver::Ty::new_adt(
@@ -92,11 +94,12 @@ fn eval_goal(
         db.layout_of_ty(
             goal_ty,
             db.trait_environment(match adt_or_type_alias_id {
-                Either::Left(adt) => hir_def::GenericDefId::AdtId(adt),
-                Either::Right(ty) => hir_def::GenericDefId::TypeAliasId(ty),
-            }),
+            Either::Left(adt) => hir_def::GenericDefId::AdtId(adt),
+            Either::Right(ty) => hir_def::GenericDefId::TypeAliasId(ty),
+        }),
         )
-    })
+    },
+    )
 }
 
 /// A version of `eval_goal` for types that can not be expressed in ADTs, like closures and `impl Trait`
@@ -112,7 +115,9 @@ fn eval_expr(
     );
 
     let (db, file_id) = TestDB::with_single_file(&ra_fixture);
-    crate::attach_db(&db, || {
+    crate::attach_db(
+        &db,
+        || {
         let module_id = db.module_for_file(file_id.file_id(&db));
         let def_map = module_id.def_map(&db);
         let scope = &def_map[module_id.local_id].scope;
@@ -139,7 +144,8 @@ fn eval_expr(
         let infer = db.infer(function_id.into());
         let goal_ty = infer.type_of_binding[b];
         db.layout_of_ty(goal_ty, db.trait_environment(function_id.into()))
-    })
+    },
+    )
 }
 
 #[track_caller]

@@ -34,12 +34,15 @@ pub fn block_as_lone_tail(block: &ast::BlockExpr) -> Option<ast::Expr> {
 
 /// Preorder walk all the expression's child expressions.
 pub fn walk_expr(expr: &ast::Expr, cb: &mut dyn FnMut(ast::Expr)) {
-    preorder_expr(expr, &mut |ev| {
+    preorder_expr(
+        expr,
+        &mut |ev| {
         if let WalkEvent::Enter(expr) = ev {
             cb(expr);
         }
         false
-    })
+    },
+    )
 }
 
 pub fn is_closure_or_blk_with_modif(expr: &ast::Expr) -> bool {
@@ -53,7 +56,7 @@ pub fn is_closure_or_blk_with_modif(expr: &ast::Expr) -> bool {
                         | ast::BlockModifier::Const(_)
                 )
             )
-        }
+        },
         ast::Expr::ClosureExpr(_) => true,
         _ => false,
     }
@@ -90,14 +93,10 @@ pub fn preorder_expr_with_ctx_checker(
             preorder.skip_subtree();
             continue;
         }
-
         match ast::Stmt::cast(node.clone()) {
-            // Don't skip subtree since we want to process the expression child next
             Some(ast::Stmt::ExprStmt(_)) | Some(ast::Stmt::LetStmt(_)) => (),
-            // skip inner items which might have their own expressions
             Some(ast::Stmt::Item(_)) => preorder.skip_subtree(),
             None => {
-                // skip const args, those expressions are a different context
                 if ast::GenericArg::can_cast(node.kind()) {
                     preorder.skip_subtree();
                 } else if let Some(expr) = ast::Expr::cast(node) {
@@ -107,7 +106,7 @@ pub fn preorder_expr_with_ctx_checker(
                         preorder.skip_subtree();
                     }
                 }
-            }
+            },
         }
     }
 }
@@ -132,13 +131,10 @@ pub fn walk_patterns_in_expr(start: &ast::Expr, cb: &mut dyn FnMut(ast::Pat)) {
                     walk_patterns_in_expr(&expr, cb);
                 }
                 preorder.skip_subtree();
-            }
-            // Don't skip subtree since we want to process the expression child next
+            },
             Some(ast::Stmt::ExprStmt(_)) => (),
-            // skip inner items which might have their own patterns
             Some(ast::Stmt::Item(_)) => preorder.skip_subtree(),
             None => {
-                // skip const args, those are a different context
                 if ast::GenericArg::can_cast(node.kind()) {
                     preorder.skip_subtree();
                 } else if let Some(expr) = ast::Expr::cast(node.clone()) {
@@ -166,7 +162,7 @@ pub fn walk_patterns_in_expr(start: &ast::Expr, cb: &mut dyn FnMut(ast::Pat)) {
                         ControlFlow::<(), ()>::Continue(())
                     });
                 }
-            }
+            },
         }
     }
 }
@@ -214,16 +210,15 @@ pub fn walk_ty(ty: &ast::Type, cb: &mut dyn FnMut(ast::Type) -> bool) {
             Some(ty @ ast::Type::MacroType(_)) => {
                 preorder.skip_subtree();
                 cb(ty);
-            }
+            },
             Some(ty) => {
                 if cb(ty) {
                     preorder.skip_subtree();
                 }
-            }
-            // skip const args
+            },
             None if ast::ConstArg::can_cast(kind) => {
                 preorder.skip_subtree();
-            }
+            },
             None => (),
         }
     }
@@ -232,18 +227,22 @@ pub fn walk_ty(ty: &ast::Type, cb: &mut dyn FnMut(ast::Type) -> bool) {
 pub fn vis_eq(this: &ast::Visibility, other: &ast::Visibility) -> bool {
     match (this.kind(), other.kind()) {
         (VisibilityKind::In(this), VisibilityKind::In(other)) => {
-            stdx::iter_eq_by(this.segments(), other.segments(), |lhs, rhs| {
+            stdx::iter_eq_by(
+                this.segments(),
+                other.segments(),
+                |lhs, rhs| {
                 lhs.kind().zip(rhs.kind()).is_some_and(|it| match it {
                     (PathSegmentKind::CrateKw, PathSegmentKind::CrateKw)
                     | (PathSegmentKind::SelfKw, PathSegmentKind::SelfKw)
                     | (PathSegmentKind::SuperKw, PathSegmentKind::SuperKw) => true,
                     (PathSegmentKind::Name(lhs), PathSegmentKind::Name(rhs)) => {
                         lhs.text() == rhs.text()
-                    }
+                    },
                     _ => false,
                 })
-            })
-        }
+            },
+            )
+        },
         (VisibilityKind::PubSelf, VisibilityKind::PubSelf)
         | (VisibilityKind::PubSuper, VisibilityKind::PubSuper)
         | (VisibilityKind::PubCrate, VisibilityKind::PubCrate)
@@ -264,11 +263,9 @@ pub fn single_let(expr: ast::Expr) -> Option<ast::LetExpr> {
 
 pub fn is_pattern_cond(expr: ast::Expr) -> bool {
     match expr {
-        ast::Expr::BinExpr(expr)
-            if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And)) =>
-        {
+        ast::Expr::BinExpr(expr) if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And)) => {
             expr.lhs().map_or(false, is_pattern_cond) || expr.rhs().map_or(false, is_pattern_cond)
-        }
+        },
         ast::Expr::ParenExpr(expr) => expr.expr().is_some_and(is_pattern_cond),
         ast::Expr::LetExpr(_) => true,
         _ => false,
@@ -304,12 +301,10 @@ pub fn for_each_tail_expr(expr: &ast::Expr, cb: &mut dyn FnMut(&ast::Expr)) {
                 Some(ast::BlockModifier::AsyncGen(_)) => (),
                 None => (),
             }
-            if let Some(stmt_list) = b.stmt_list()
-                && let Some(e) = stmt_list.tail_expr()
-            {
+            if let Some(stmt_list) = b.stmt_list() && let Some(e) = stmt_list.tail_expr() {
                 for_each_tail_expr(&e, cb);
             }
-        }
+        },
         ast::Expr::IfExpr(if_) => {
             let mut if_ = if_.clone();
             loop {
@@ -321,11 +316,11 @@ pub fn for_each_tail_expr(expr: &ast::Expr, cb: &mut dyn FnMut(&ast::Expr)) {
                     Some(ast::ElseBranch::Block(block)) => {
                         for_each_tail_expr(&ast::Expr::BlockExpr(block), cb);
                         break;
-                    }
+                    },
                     None => break,
                 }
             }
-        }
+        },
         ast::Expr::LoopExpr(l) => walk_loop(cb, l.label(), l.loop_body()),
         ast::Expr::WhileExpr(w) => walk_loop(cb, w.label(), w.loop_body()),
         ast::Expr::ForExpr(f) => walk_loop(cb, f.label(), f.loop_body()),
@@ -333,7 +328,7 @@ pub fn for_each_tail_expr(expr: &ast::Expr, cb: &mut dyn FnMut(&ast::Expr)) {
             if let Some(arms) = m.match_arm_list() {
                 arms.arms().filter_map(|arm| arm.expr()).for_each(|e| for_each_tail_expr(&e, cb));
             }
-        }
+        },
         ast::Expr::ArrayExpr(_)
         | ast::Expr::AwaitExpr(_)
         | ast::Expr::BinExpr(_)
@@ -377,18 +372,12 @@ pub fn for_each_break_and_continue_expr(
         let tree_depth_iterator = TreeWithDepthIterator::new(b);
         for (expr, depth) in tree_depth_iterator {
             match expr {
-                ast::Expr::BreakExpr(b)
-                    if (depth == 0 && b.lifetime().is_none())
-                        || eq_label_lt(&label, &b.lifetime()) =>
-                {
+                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none()) || eq_label_lt(&label, &b.lifetime()) => {
                     cb(ast::Expr::BreakExpr(b));
-                }
-                ast::Expr::ContinueExpr(c)
-                    if (depth == 0 && c.lifetime().is_none())
-                        || eq_label_lt(&label, &c.lifetime()) =>
-                {
+                },
+                ast::Expr::ContinueExpr(c) if (depth == 0 && c.lifetime().is_none()) || eq_label_lt(&label, &c.lifetime()) => {
                     cb(ast::Expr::ContinueExpr(c));
-                }
+                },
                 _ => (),
             }
         }
@@ -405,12 +394,9 @@ fn for_each_break_expr(
         let tree_depth_iterator = TreeWithDepthIterator::new(b);
         for (expr, depth) in tree_depth_iterator {
             match expr {
-                ast::Expr::BreakExpr(b)
-                    if (depth == 0 && b.lifetime().is_none())
-                        || eq_label_lt(&label, &b.lifetime()) =>
-                {
+                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none()) || eq_label_lt(&label, &b.lifetime()) => {
                     cb(b);
-                }
+                },
                 _ => (),
             }
         }

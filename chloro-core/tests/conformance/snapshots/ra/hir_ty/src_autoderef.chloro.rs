@@ -246,7 +246,7 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
                     }
                 };
                 Some(*self.traits.insert(traits))
-            }
+            },
         }
     }
 

@@ -90,8 +90,8 @@ fn if_expr_to_guarded_return(
         "Convert to guarded return",
         target,
         |edit| {
-            let if_indent_level = IndentLevel::from_node(if_expr.syntax());
-            let replacement = let_chains.into_iter().map(|expr| {
+        let if_indent_level = IndentLevel::from_node(if_expr.syntax());
+        let replacement = let_chains.into_iter().map(|expr| {
                 if let ast::Expr::LetExpr(let_expr) = &expr
                     && let (Some(pat), Some(expr)) = (let_expr.pat(), let_expr.expr())
                 {
@@ -110,9 +110,8 @@ fn if_expr_to_guarded_return(
                     new_expr.syntax().clone()
                 }
             });
-
-            let newline = &format!("\n{if_indent_level}");
-            let then_statements = replacement
+        let newline = &format!("\n{if_indent_level}");
+        let then_statements = replacement
                 .enumerate()
                 .flat_map(|(i, node)| {
                     (i != 0)
@@ -128,10 +127,10 @@ fn if_expr_to_guarded_return(
                         .take_while(|i| *i != end_of_then),
                 )
                 .collect();
-            let mut editor = edit.make_editor(if_expr.syntax());
-            editor.replace_with_many(if_expr.syntax(), then_statements);
-            edit.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        let mut editor = edit.make_editor(if_expr.syntax());
+        editor.replace_with_many(if_expr.syntax(), then_statements);
+        edit.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -171,9 +170,8 @@ fn let_stmt_to_guarded_return(
         "Convert to guarded return",
         target,
         |edit| {
-            let let_indent_level = IndentLevel::from_node(let_stmt.syntax());
-
-            let replacement = {
+        let let_indent_level = IndentLevel::from_node(let_stmt.syntax());
+        let replacement = {
                 let let_else_stmt = make::let_else_stmt(
                     happy_pattern,
                     let_stmt.ty(),
@@ -183,10 +181,10 @@ fn let_stmt_to_guarded_return(
                 let let_else_stmt = let_else_stmt.indent(let_indent_level);
                 let_else_stmt.syntax().clone()
             };
-            let mut editor = edit.make_editor(let_stmt.syntax());
-            editor.replace(let_stmt.syntax(), replacement);
-            edit.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        let mut editor = edit.make_editor(let_stmt.syntax());
+        editor.replace(let_stmt.syntax(), replacement);
+        edit.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -244,10 +242,7 @@ fn flat_let_chain(mut expr: ast::Expr) -> Vec<ast::Expr> {
 }
 
 fn clean_stmt_block(block: &ast::BlockExpr) -> ast::BlockExpr {
-    if block.statements().next().is_none()
-        && let Some(tail_expr) = block.tail_expr()
-        && block.modifier().is_none()
-    {
+    if block.statements().next().is_none() && let Some(tail_expr) = block.tail_expr() && block.modifier().is_none() {
         make::block_expr(once(make::expr_stmt(tail_expr).into()), None)
     } else {
         block.clone()

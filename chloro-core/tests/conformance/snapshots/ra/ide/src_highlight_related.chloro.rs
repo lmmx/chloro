@@ -64,30 +64,30 @@ pub(crate) fn highlight_related(
     match token.kind() {
         T![?] if config.exit_points && token.parent().and_then(ast::TryExpr::cast).is_some() => {
             highlight_exit_points(sema, token).remove(&file_id)
-        }
+        },
         T![fn] | T![return] | T![->] if config.exit_points => {
             highlight_exit_points(sema, token).remove(&file_id)
-        }
+        },
         T![match] | T![=>] | T![if] if config.branch_exit_points => {
             highlight_branch_exit_points(sema, token).remove(&file_id)
-        }
+        },
         T![await] | T![async] if config.yield_points => {
             highlight_yield_points(sema, token).remove(&file_id)
-        }
+        },
         T![for] if config.break_points && token.parent().and_then(ast::ForExpr::cast).is_some() => {
             highlight_break_points(sema, token).remove(&file_id)
-        }
+        },
         T![break] | T![loop] | T![while] | T![continue] if config.break_points => {
             highlight_break_points(sema, token).remove(&file_id)
-        }
+        },
         T![unsafe] if token.parent().and_then(ast::BlockExpr::cast).is_some() => {
             highlight_unsafe_points(sema, token).remove(&file_id)
-        }
+        },
         T![|] if config.closure_captures => highlight_closure_captures(sema, token, file_id),
         T![move] if config.closure_captures => highlight_closure_captures(sema, token, file_id),
         _ if config.references => {
             highlight_references(sema, token, FilePosition { file_id, offset })
-        }
+        },
         _ => None,
     }
 }
@@ -101,12 +101,8 @@ fn highlight_closure_captures(
     let search_range = closure.body()?.syntax().text_range();
     let ty = &sema.type_of_expr(&closure.into())?.original;
     let c = ty.as_closure()?;
-    Some(
-        c.captured_items(sema.db)
-            .into_iter()
-            .map(|capture| capture.local())
-            .flat_map(|local| {
-                let usages = Definition::Local(local)
+    Some(c.captured_items(sema.db).into_iter().map(|capture| capture.local()).flat_map(|local| {
+        let usages = Definition::Local(local)
                     .usages(sema)
                     .in_scope(&SearchScope::file_range(FileRange { file_id, range: search_range }))
                     .include_self_refs()
@@ -119,22 +115,22 @@ fn highlight_closure_captures(
                         range,
                         category,
                     });
-                let category = if local.is_mut(sema.db) {
+        let category = if local.is_mut(sema.db) {
                     ReferenceCategory::WRITE
                 } else {
                     ReferenceCategory::empty()
                 };
-                local
-                    .sources(sema.db)
-                    .into_iter()
-                    .flat_map(|x| x.to_nav(sema.db))
-                    .filter(|decl| decl.file_id == file_id.file_id(sema.db))
-                    .filter_map(|decl| decl.focus_range)
-                    .map(move |range| HighlightedRange { range, category })
-                    .chain(usages)
-            })
-            .collect(),
-    )
+        local.sources(sema.db).into_iter().flat_map(|x| x.to_nav(sema.db)).filter(
+            |decl| decl.file_id == file_id.file_id(sema.db),
+        ).filter_map(
+            |decl| decl.focus_range,
+        ).map(
+            move |range| HighlightedRange { range, category },
+        ).chain(
+            usages,
+        )
+    }).collect(
+    ))
 }
 
 fn highlight_references(
@@ -290,7 +286,11 @@ fn highlight_references(
     }
 
     res.extend(usages);
-    if res.is_empty() { None } else { Some(res.into_iter().collect()) }
+    if res.is_empty() {
+        None
+    } else {
+        Some(res.into_iter().collect())
+    }
 }
 
 pub(crate) fn highlight_branch_exit_points(
@@ -369,10 +369,8 @@ pub(crate) fn highlight_branch_exit_points(
         _ => {}
     }
 
-    highlights
-        .into_iter()
-        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
-        .collect()
+    highlights.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect(
+    )
 }
 
 fn hl_exit_points(
@@ -657,11 +655,12 @@ fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange
 }
 
 fn find_defs(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashSet<Definition> {
-    sema.descend_into_macros_exact(token)
-        .into_iter()
-        .filter_map(|token| IdentClass::classify_token(sema, &token))
-        .flat_map(IdentClass::definitions_no_ops)
-        .collect()
+    sema.descend_into_macros_exact(token).into_iter().filter_map(
+        |token| IdentClass::classify_token(sema, &token),
+    ).flat_map(
+        IdentClass::definitions_no_ops,
+    ).collect(
+    )
 }
 
 fn original_frange(
@@ -700,7 +699,10 @@ impl<'a> WalkExpandedExprCtx<'a> {
     }
 
     fn walk(&mut self, expr: &ast::Expr, cb: &mut dyn FnMut(usize, ast::Expr)) {
-        preorder_expr_with_ctx_checker(expr, self.check_ctx, &mut |ev: WalkEvent<ast::Expr>| {
+        preorder_expr_with_ctx_checker(
+            expr,
+            self.check_ctx,
+            &mut |ev: WalkEvent<ast::Expr>| {
             match ev {
                 syntax::WalkEvent::Enter(expr) => {
                     cb(self.depth, expr.clone());
@@ -732,7 +734,8 @@ impl<'a> WalkExpandedExprCtx<'a> {
                 _ => {}
             }
             false
-        })
+        },
+        )
     }
 
     fn handle_expanded(
@@ -745,9 +748,7 @@ impl<'a> WalkExpandedExprCtx<'a> {
         }
 
         for stmt in expanded.statements() {
-            if let ast::Stmt::ExprStmt(stmt) = stmt
-                && let Some(expr) = stmt.expr()
-            {
+            if let ast::Stmt::ExprStmt(stmt) = stmt && let Some(expr) = stmt.expr() {
                 self.walk(&expr, cb);
             }
         }

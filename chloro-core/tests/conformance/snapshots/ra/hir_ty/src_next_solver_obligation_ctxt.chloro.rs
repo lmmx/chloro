@@ -68,10 +68,9 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         expected: T,
         actual: T,
     ) -> Result<(), TypeError<'db>> {
-        self.infcx
-            .at(cause, param_env)
-            .eq(expected, actual)
-            .map(|infer_ok| self.register_infer_ok_obligations(infer_ok))
+        self.infcx.at(cause, param_env).eq(expected, actual).map(
+            |infer_ok| self.register_infer_ok_obligations(infer_ok),
+        )
     }
 
     /// Checks whether `expected` is a subtype of `actual`: `expected <: actual`.
@@ -82,10 +81,9 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         expected: T,
         actual: T,
     ) -> Result<(), TypeError<'db>> {
-        self.infcx
-            .at(cause, param_env)
-            .sub(expected, actual)
-            .map(|infer_ok| self.register_infer_ok_obligations(infer_ok))
+        self.infcx.at(cause, param_env).sub(expected, actual).map(
+            |infer_ok| self.register_infer_ok_obligations(infer_ok),
+        )
     }
 
     pub fn relate<T: ToTrace<'db>>(
@@ -96,10 +94,9 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         expected: T,
         actual: T,
     ) -> Result<(), TypeError<'db>> {
-        self.infcx
-            .at(cause, param_env)
-            .relate(expected, variance, actual)
-            .map(|infer_ok| self.register_infer_ok_obligations(infer_ok))
+        self.infcx.at(cause, param_env).relate(expected, variance, actual).map(
+            |infer_ok| self.register_infer_ok_obligations(infer_ok),
+        )
     }
 
     /// Checks whether `expected` is a supertype of `actual`: `expected :> actual`.
@@ -110,10 +107,9 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         expected: T,
         actual: T,
     ) -> Result<(), TypeError<'db>> {
-        self.infcx
-            .at(cause, param_env)
-            .sup(expected, actual)
-            .map(|infer_ok| self.register_infer_ok_obligations(infer_ok))
+        self.infcx.at(cause, param_env).sup(expected, actual).map(
+            |infer_ok| self.register_infer_ok_obligations(infer_ok),
+        )
     }
 
     /// Computes the least-upper-bound, or mutual supertype, of two values.
@@ -124,10 +120,9 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         expected: T,
         actual: T,
     ) -> Result<T, TypeError<'db>> {
-        self.infcx
-            .at(cause, param_env)
-            .lub(expected, actual)
-            .map(|infer_ok| self.register_infer_ok_obligations(infer_ok))
+        self.infcx.at(cause, param_env).lub(expected, actual).map(
+            |infer_ok| self.register_infer_ok_obligations(infer_ok),
+        )
     }
 
     #[must_use]

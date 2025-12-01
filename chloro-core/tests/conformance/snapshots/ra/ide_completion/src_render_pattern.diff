@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7132 bytes
-Chloro size:   7052 bytes
+Chloro size:   7056 bytes
 Rustfmt size:  7454 bytes
 
 ✗ Outputs DIFFER
@@ -99,6 +99,9 @@ Rustfmt size:  7454 bytes
                  }),
                  if fields_omitted { ", .." } else { "" },
                  name = name
+             )
+-        }
++        },
          None => {
              format!(
                  "{name} {{ {}{} }}",
@@ -109,3 +112,23 @@ Rustfmt size:  7454 bytes
                  if fields_omitted { ", .." } else { "" },
                  name = name
              )
+-        }
++        },
+     }
+ }
+ 
+                 if fields_omitted { ", .." } else { "" },
+                 name = name
+             )
+-        }
++        },
+         None => {
+             format!(
+                 "{name}({}{})",
+                 if fields_omitted { ", .." } else { "" },
+                 name = name
+             )
+-        }
++        },
+     }
+ }

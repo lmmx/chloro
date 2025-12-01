@@ -25,14 +25,13 @@ pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) 
         "Convert while to loop",
         target,
         |edit| {
-            let while_indent_level = IndentLevel::from_node(while_expr.syntax());
-
-            let break_block = make::block_expr(
+        let while_indent_level = IndentLevel::from_node(while_expr.syntax());
+        let break_block = make::block_expr(
                 iter::once(make::expr_stmt(make::expr_break(None, None)).into()),
                 None,
             )
             .indent(while_indent_level);
-            let block_expr = if is_pattern_cond(while_cond.clone()) {
+        let block_expr = if is_pattern_cond(while_cond.clone()) {
                 let if_expr = make::expr_if(while_cond, while_body, Some(break_block.into()));
                 let stmts = iter::once(make::expr_stmt(if_expr.into()).into());
                 make::block_expr(stmts, None)
@@ -52,10 +51,9 @@ pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) 
                 );
                 make::hacky_block_expr(iter::once(if_expr).chain(elements), while_body.tail_expr())
             };
-
-            let replacement = make::expr_loop(block_expr.indent(while_indent_level));
-            edit.replace(target, replacement.syntax().text())
-        },
+        let replacement = make::expr_loop(block_expr.indent(while_indent_level));
+        edit.replace(target, replacement.syntax().text())
+    },
     )
 }
 

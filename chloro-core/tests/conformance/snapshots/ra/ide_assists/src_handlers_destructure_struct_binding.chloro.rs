@@ -215,24 +215,17 @@ fn generate_field_names(
     data: &StructEditData,
 ) -> Vec<(SmolStr, SmolStr)> {
     match data.kind {
-        hir::StructKind::Tuple => data
-            .visible_fields
-            .iter()
-            .enumerate()
-            .map(|(index, _)| {
-                let new_name = new_field_name((format!("_{index}")).into(), &data.names_in_scope);
-                (index.to_string().into(), new_name)
-            })
-            .collect(),
-        hir::StructKind::Record => data
-            .visible_fields
-            .iter()
-            .map(|field| {
-                let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
-                let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
-                (field_name, new_name)
-            })
-            .collect(),
+        hir::StructKind::Tuple => data.visible_fields.iter().enumerate().map(|(index, _)| {
+            let new_name = new_field_name((format!("_{index}")).into(), &data.names_in_scope);
+            (index.to_string().into(), new_name)
+        }).collect(
+        ),
+        hir::StructKind::Record => data.visible_fields.iter().map(|field| {
+            let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
+            let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
+            (field_name, new_name)
+        }).collect(
+        ),
         hir::StructKind::Unit => Vec::new(),
     }
 }
@@ -277,8 +270,6 @@ fn build_usage_edit(
             let field_name: SmolStr = field_expr.name_ref()?.to_string().into();
             let new_field_name = field_names.get(&field_name)?;
             let new_expr = ast::make::expr_path(ast::make::ext::ident_path(new_field_name));
-
-            // If struct binding is a reference, we might need to deref field usages
             if data.is_ref {
                 let (replace_expr, ref_data) = determine_ref_and_parens(ctx, &field_expr);
                 (
@@ -292,11 +283,11 @@ fn build_usage_edit(
         None => Some((
             usage.name.syntax().as_node().unwrap().clone(),
             make.expr_macro(
-                ast::make::ext::ident_path("todo"),
-                make.token_tree(syntax::SyntaxKind::L_PAREN, []),
-            )
-            .syntax()
-            .clone(),
+            ast::make::ext::ident_path("todo"),
+            make.token_tree(syntax::SyntaxKind::L_PAREN, []),
+        ).syntax(
+        ).clone(
+        ),
         )),
     }
 }

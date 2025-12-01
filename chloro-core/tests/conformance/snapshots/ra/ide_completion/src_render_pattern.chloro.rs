@@ -193,7 +193,7 @@ fn render_record_as_pat(
                 if fields_omitted { ", .." } else { "" },
                 name = name
             )
-        }
+        },
         None => {
             format!(
                 "{name} {{ {}{} }}",
@@ -201,7 +201,7 @@ fn render_record_as_pat(
                 if fields_omitted { ", .." } else { "" },
                 name = name
             )
-        }
+        },
     }
 }
 
@@ -222,7 +222,7 @@ fn render_tuple_as_pat(
                 if fields_omitted { ", .." } else { "" },
                 name = name
             )
-        }
+        },
         None => {
             format!(
                 "{name}({}{})",
@@ -230,6 +230,6 @@ fn render_tuple_as_pat(
                 if fields_omitted { ", .." } else { "" },
                 name = name
             )
-        }
+        },
     }
 }

@@ -164,18 +164,19 @@ impl PerNs {
     }
 
     pub fn or_else(self, f: impl FnOnce() -> PerNs) -> PerNs {
-        if self.is_full() { self } else { self.or(f()) }
+        if self.is_full() {
+            self
+        } else {
+            self.or(f())
+        }
     }
 
     pub fn iter_items(self) -> impl Iterator<Item = (ItemInNs, Option<ImportOrExternCrate>)> {
         let _p = tracing::info_span!("PerNs::iter_items").entered();
-        self.types
-            .map(|it| (ItemInNs::Types(it.def), it.import))
-            .into_iter()
-            .chain(
-                self.values
-                    .map(|it| (ItemInNs::Values(it.def), it.import.map(ImportOrExternCrate::from))),
-            )
-            .chain(self.macros.map(|it| (ItemInNs::Macros(it.def), it.import)))
+        self.types.map(|it| (ItemInNs::Types(it.def), it.import)).into_iter().chain(
+            self.values.map(|it| (ItemInNs::Values(it.def), it.import.map(ImportOrExternCrate::from))),
+        ).chain(
+            self.macros.map(|it| (ItemInNs::Macros(it.def), it.import)),
+        )
     }
 }

@@ -59,10 +59,8 @@ pub(crate) fn replace_named_generic_with_impl(
         "Replace named generic with impl trait",
         target,
         |edit| {
-            let mut editor = edit.make_editor(type_param.syntax());
-
-            // remove trait from generic param list
-            if let Some(generic_params) = fn_.generic_param_list() {
+        let mut editor = edit.make_editor(type_param.syntax());
+        if let Some(generic_params) = fn_.generic_param_list() {
                 let params: Vec<ast::GenericParam> = generic_params
                     .clone()
                     .generic_params()
@@ -78,13 +76,12 @@ pub(crate) fn replace_named_generic_with_impl(
                     );
                 }
             }
-
-            let new_bounds = make::impl_trait_type(type_bound_list);
-            for path_type in path_types_to_replace.iter().rev() {
+        let new_bounds = make::impl_trait_type(type_bound_list);
+        for path_type in path_types_to_replace.iter().rev() {
                 editor.replace(path_type.syntax(), new_bounds.clone_for_update().syntax());
             }
-            edit.add_file_edits(ctx.vfs_file_id(), editor);
-        },
+        edit.add_file_edits(ctx.vfs_file_id(), editor);
+    },
     )
 }
 
@@ -154,10 +151,9 @@ fn find_usages(
 }
 
 fn check_valid_usages(usages: &UsageSearchResult, param_list_range: TextRange) -> bool {
-    usages
-        .iter()
-        .flat_map(|(_, usage_refs)| usage_refs)
-        .all(|usage_ref| param_list_range.contains_range(usage_ref.range))
+    usages.iter().flat_map(|(_, usage_refs)| usage_refs).all(
+        |usage_ref| param_list_range.contains_range(usage_ref.range),
+    )
 }
 
 #[cfg(test)]

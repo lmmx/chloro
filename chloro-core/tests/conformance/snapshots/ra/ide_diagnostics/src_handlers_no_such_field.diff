@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11158 bytes
-Chloro size:   10977 bytes
+Chloro size:   10978 bytes
 Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,14 @@ Rustfmt size:  11215 bytes
  }
  
  fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assist>> {
+                     node,
+                 )
+             }
+-        }
++        },
+         _ => None,
+     }
+ }
      let new_field = make::record_field(
          None,
          make::name(record_expr_field.field_name()?.ident_token()?.text()),

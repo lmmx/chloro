@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8011 bytes
-Chloro size:   7050 bytes
+Chloro size:   7022 bytes
 Rustfmt size:  8033 bytes
 
 ✗ Outputs DIFFER
@@ -122,6 +122,38 @@ Rustfmt size:  8033 bytes
  
      // Return early if we've found an existing new fn
      let impl_def = find_struct_impl(ctx, &parent_enum, slice::from_ref(&fn_name))?;
+         assist_description,
+         target,
+         |builder| {
+-            let vis = parent_enum.visibility().map_or(String::new(), |v| format!("{v} "));
+-
+-            let field_type_syntax = field_type.syntax();
+-
+-            let must_use = if ctx.config.assist_emit_must_use {
++        let vis = parent_enum.visibility().map_or(String::new(), |v| format!("{v} "));
++        let field_type_syntax = field_type.syntax();
++        let must_use = if ctx.config.assist_emit_must_use {
+                 "#[must_use]\n    "
+             } else {
+                 ""
+             };
+-
+-            let method = format!(
++        let method = format!(
+                 "    {must_use}{vis}fn {fn_name}({self_param}) -> {return_prefix}{field_type_syntax}{return_suffix} {{
+         if let Self::{variant_name}{pattern_suffix} = self {{
+             {happy_case}({bound_name})
+         }}
+     }}"
+             );
+-
+-            add_method_to_adt(builder, &parent_enum, impl_def, &method);
+-        },
++        add_method_to_adt(builder, &parent_enum, impl_def, &method);
++    },
+     )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

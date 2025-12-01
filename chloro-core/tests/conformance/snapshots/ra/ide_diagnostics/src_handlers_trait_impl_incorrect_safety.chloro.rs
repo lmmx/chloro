@@ -10,27 +10,30 @@ pub(crate) fn trait_impl_incorrect_safety(
     Diagnostic::new(
         DiagnosticCode::Ra("trait-impl-incorrect-safety", Severity::Error),
         if d.should_be_safe {
-            "unsafe impl for safe trait"
-        } else {
-            "impl for unsafe trait needs to be unsafe"
-        },
+        "unsafe impl for safe trait"
+    } else {
+        "impl for unsafe trait needs to be unsafe"
+    },
         adjusted_display_range::<ast::Impl>(
-            ctx,
-            InFile { file_id: d.file_id, value: d.impl_ },
-            &|impl_| {
-                if d.should_be_safe {
-                    Some(match (impl_.unsafe_token(), impl_.impl_token()) {
-                        (None, None) => return None,
-                        (None, Some(t)) | (Some(t), None) => t.text_range(),
-                        (Some(t1), Some(t2)) => t1.text_range().cover(t2.text_range()),
-                    })
-                } else {
-                    impl_.impl_token().map(|t| t.text_range())
-                }
-            },
-        ),
+        ctx,
+        InFile {
+        file_id: d.file_id,
+        value: d.impl_,
+    },
+        &|impl_| {
+        if d.should_be_safe {
+            Some(match (impl_.unsafe_token(), impl_.impl_token()) {
+                (None, None) => return None,
+                (None, Some(t)) | (Some(t), None) => t.text_range(),
+                (Some(t1), Some(t2)) => t1.text_range().cover(t2.text_range()),
+            })
+        } else {
+            impl_.impl_token().map(|t| t.text_range())
+        }
+    },
+    ),
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

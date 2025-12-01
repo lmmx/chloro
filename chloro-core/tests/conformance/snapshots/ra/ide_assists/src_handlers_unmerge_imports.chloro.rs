@@ -28,18 +28,19 @@ pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     };
 
     let target = tree.syntax().text_range();
-    acc.add(AssistId::refactor_rewrite("unmerge_imports"), label, target, |builder| {
+    acc.add(
+        AssistId::refactor_rewrite("unmerge_imports"),
+        label,
+        target,
+        |builder| {
         let make = SyntaxFactory::with_mappings();
         let new_use = make.use_(
             use_.attrs(),
             use_.visibility(),
             make.use_tree(path, tree.use_tree_list(), tree.rename(), tree.star_token().is_some()),
         );
-
         let mut editor = builder.make_editor(use_.syntax());
-        // Remove the use tree from the current use item
         tree.remove(&mut editor);
-        // Insert a newline and indentation, followed by the new use item
         editor.insert_all(
             Position::after(use_.syntax()),
             vec![
@@ -50,7 +51,8 @@ pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         );
         editor.add_mappings(make.finish_with_mappings());
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 fn resolve_full_path(tree: &ast::UseTree) -> Option<ast::Path> {

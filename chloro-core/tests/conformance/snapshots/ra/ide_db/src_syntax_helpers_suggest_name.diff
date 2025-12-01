@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26484 bytes
+Chloro size:   26384 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,37 @@ Rustfmt size:  26702 bytes
 +const USELESS_NAMES: &[&str] = &["new", "default", "option", "some", "none", "ok", "err", "str", "string", "from", "into"];
  
  const USELESS_NAME_PREFIXES: &[&str] = &["from_", "with_", "into_"];
+ 
+             Entry::Vacant(entry) => {
+                 entry.insert(suffix);
+                 SmolStr::from_str(name).unwrap()
+-            }
++            },
+             Entry::Occupied(mut entry) => {
+                 let count = entry.get_mut();
+                 *count = (*count + 1).max(suffix);
+-
+                 let mut new_name = SmolStrBuilder::new();
+                 new_name.push_str(&prefix);
+                 new_name.push_str(count.to_string().as_str());
+                 new_name.finish()
+-            }
++            },
+         }
+     }
+ 
+         match self.pool.entry(prefix) {
+             Entry::Vacant(entry) => {
+                 entry.insert(suffix);
+-            }
++            },
+             Entry::Occupied(mut entry) => {
+                 let count = entry.get_mut();
+                 *count = (*count).max(suffix);
+-            }
++            },
+         }
+     }
  
      /// # Examples
      /// `a1b2c3` -> `a1b2c`
@@ -40,6 +71,14 @@ Rustfmt size:  26702 bytes
          return None;
      }
  
+     };
+ 
+     if name.ends_with(['s', 'x', 'y']) {
+-        // Given a type called e.g. "Boss", "Fox" or "Story", don't try to
+-        // create a plural.
+         items_str
+     } else {
+         SmolStr::new(format!("{name}s"))
  mod tests {
      use hir::FileRange;
      use test_fixture::WithFixture;

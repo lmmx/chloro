@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7167 bytes
-Chloro size:   6513 bytes
+Chloro size:   6623 bytes
 Rustfmt size:  7319 bytes
 
 ✗ Outputs DIFFER
@@ -44,19 +44,29 @@ Rustfmt size:  7319 bytes
      );
  
      receiver_ty.iterate_method_candidates_with_traits(
- fn into_closure(param: &Expr) -> Expr {
-     (|| {
-         if let ast::Expr::CallExpr(call) = param {
--            if call.arg_list()?.args().count() == 0 {
--                Some(call.expr()?)
--            } else {
--                None
--            }
-+            if call.arg_list()?.args().count() == 0 { Some(call.expr()?) } else { None }
+         format!("Replace {method_name} with {method_name_lazy}"),
+         call.syntax().text_range(),
+         |builder| {
+-            builder.replace(method_name.syntax().text_range(), method_name_lazy);
+-            let closured = into_closure(&last_arg);
+-            builder.replace_ast(last_arg, closured);
+-        },
++        builder.replace(method_name.syntax().text_range(), method_name_lazy);
++        let closured = into_closure(&last_arg);
++        builder.replace_ast(last_arg, closured);
++    },
+     )
+ }
+ 
          } else {
              None
          }
-     .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
+-    })()
+-    .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
++    })(
++    ).unwrap_or_else(
++        || make::expr_closure(None, param.clone()).into(),
++    )
  }
  
 -// Assist: replace_with_eager_method
@@ -80,18 +90,31 @@ Rustfmt size:  7319 bytes
  pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
      let scope = ctx.sema.scope(call.syntax())?;
- fn into_call(param: &Expr) -> Expr {
-     (|| {
-         if let ast::Expr::ClosureExpr(closure) = param {
--            if closure.param_list()?.params().count() == 0 {
--                Some(closure.body()?)
--            } else {
--                None
--            }
-+            if closure.param_list()?.params().count() == 0 { Some(closure.body()?) } else { None }
+         format!("Replace {method_name} with {method_name_eager}"),
+         call.syntax().text_range(),
+         |builder| {
+-            builder.replace(method_name.syntax().text_range(), method_name_eager);
+-            let called = into_call(&last_arg);
+-            builder.replace_ast(last_arg, called);
+-        },
++        builder.replace(method_name.syntax().text_range(), method_name_eager);
++        let called = into_call(&last_arg);
++        builder.replace_ast(last_arg, called);
++    },
+     )
+ }
+ 
          } else {
              None
          }
+-    })()
+-    .unwrap_or_else(|| make::expr_call(param.clone(), make::arg_list(Vec::new())).into())
++    })(
++    ).unwrap_or_else(
++        || make::expr_call(param.clone(), make::arg_list(Vec::new())).into(),
++    )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_assist;

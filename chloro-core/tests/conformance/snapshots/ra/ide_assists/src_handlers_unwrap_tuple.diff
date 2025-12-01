@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3645 bytes
-Chloro size:   3378 bytes
+Chloro size:   3207 bytes
 Rustfmt size:  3645 bytes
 
 ✗ Outputs DIFFER
@@ -36,6 +36,43 @@ Rustfmt size:  3645 bytes
  pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let let_kw = ctx.find_token_syntax_at_offset(T![let])?;
      let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;
+         "Unwrap tuple",
+         let_kw.text_range(),
+         |edit| {
+-            let indents = "    ".repeat(indent_level);
+-
+-            // If there is an ascribed type, insert that type for each declaration,
+-            // otherwise, omit that type.
+-            if let Some(tys) = tuple_ty {
+-                let mut zipped_decls = String::new();
+-                for (pat, ty, expr) in
++        let indents = "    ".repeat(indent_level);
++        if let Some(tys) = tuple_ty {
++            let mut zipped_decls = String::new();
++            for (pat, ty, expr) in
+                     itertools::izip!(tuple_pat.fields(), tys.fields(), tuple_init.fields())
+                 {
+                     zipped_decls.push_str(&format!("{indents}let {pat}: {ty} = {expr};\n"))
+                 }
+-                edit.replace(parent.text_range(), zipped_decls.trim());
+-            } else {
+-                let mut zipped_decls = String::new();
+-                for (pat, expr) in itertools::izip!(tuple_pat.fields(), tuple_init.fields()) {
++            edit.replace(parent.text_range(), zipped_decls.trim());
++        } else {
++            let mut zipped_decls = String::new();
++            for (pat, expr) in itertools::izip!(tuple_pat.fields(), tuple_init.fields()) {
+                     zipped_decls.push_str(&format!("{indents}let {pat} = {expr};\n"));
+                 }
+-                edit.replace(parent.text_range(), zipped_decls.trim());
+-            }
+-        },
++            edit.replace(parent.text_range(), zipped_decls.trim());
++        }
++    },
+     )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_assist;

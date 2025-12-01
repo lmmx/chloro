@@ -157,7 +157,7 @@ impl<'a> PathTransform<'a> {
                     &db.expansion_span_map(file_id),
                     self.target_scope.module().krate().into(),
                 )
-            }
+            },
         }
     }
 
@@ -302,17 +302,14 @@ impl Ctx<'_> {
                 Either::Left(k) => self.type_substs.get(k).unwrap().syntax(),
                 Either::Right(k) => self.const_substs.get(k).unwrap(),
             };
-            // `transform_path` may update a node's parent and that would break the
-            // tree traversal. Thus all paths in the tree are collected into a vec
-            // so that such operation is safe.
             let new_value = self.transform_path(value);
             match param {
                 Either::Left(k) => {
                     self.type_substs.insert(k, ast::Type::cast(new_value.clone()).unwrap());
-                }
+                },
                 Either::Right(k) => {
                     self.const_substs.insert(k, new_value.clone());
-                }
+                },
             }
         }
     }
@@ -560,7 +557,7 @@ impl Ctx<'_> {
                 let res = mod_path_to_ast(&found_path, self.target_edition).clone_for_update();
                 editor.replace(ident_pat.syntax(), res.syntax());
                 Some(())
-            }
+            },
             _ => None,
         }
     }

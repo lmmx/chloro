@@ -207,16 +207,17 @@ impl<'db> UnsafeVisitor<'db> {
             self.target_feature_is_safe,
         );
         match unsafety {
-            crate::utils::Unsafety::Safe => {}
+            crate::utils::Unsafety::Safe => {
+            },
             crate::utils::Unsafety::Unsafe => {
                 self.on_unsafe_op(node.into(), UnsafetyReason::UnsafeFnCall)
-            }
+            },
             crate::utils::Unsafety::DeprecatedSafe2024 => {
                 (self.callback)(UnsafeDiagnostic::DeprecatedSafe2024 {
                     node,
                     inside_unsafe_block: self.inside_unsafe_block,
                 })
-            }
+            },
         }
     }
 
@@ -437,9 +438,7 @@ impl<'db> UnsafeVisitor<'db> {
             let static_data = self.db.static_signature(id);
             if static_data.flags.contains(StaticFlags::MUTABLE) {
                 self.on_unsafe_op(node, UnsafetyReason::MutableStatic);
-            } else if static_data.flags.contains(StaticFlags::EXTERN)
-                && !static_data.flags.contains(StaticFlags::EXPLICIT_SAFE)
-            {
+            } else if static_data.flags.contains(StaticFlags::EXTERN) && !static_data.flags.contains(StaticFlags::EXPLICIT_SAFE) {
                 self.on_unsafe_op(node, UnsafetyReason::ExternStatic);
             }
         }

@@ -230,11 +230,7 @@ impl AppState {
 
         // Try to maintain current position by finding same section
         if let Some(current_section_idx) = self.get_current_section_index() {
-            if let Some(node_idx) = self
-                .tree_nodes
-                .iter()
-                .position(|n| n.section_index == Some(current_section_idx))
-            {
+            if let Some(node_idx) = self.tree_nodes.iter().position(|n| n.section_index == Some(current_section_idx)) {
                 self.current_node_index = node_idx;
             }
         }
@@ -253,8 +249,7 @@ impl AppState {
     /// Get the current section (if on a section node)
     #[must_use]
     pub fn get_current_section(&self) -> Option<&Section> {
-        self.get_current_section_index()
-            .and_then(|idx| self.sections.get(idx))
+        self.get_current_section_index().and_then(|idx| self.sections.get(idx))
     }
 
     fn rebuild_file_offsets(&mut self) {
@@ -263,12 +258,10 @@ impl AppState {
         if let Some(section_idx) = self.get_current_section_index() {
             if let Some(section) = self.sections.get(section_idx) {
                 let lines_added = self.editor_state.as_ref().map_or(0, |es| es.lines.len());
-
                 let file_map = self
                     .file_offsets
                     .entry(section.file_path.clone())
                     .or_default();
-
                 file_map.insert(section.line_start, lines_added);
             }
         }
@@ -282,11 +275,7 @@ impl AppState {
         let target_line = section.line_start;
 
         if let Some(file_map) = self.file_offsets.get(target_file) {
-            file_map
-                .iter()
-                .filter(|(line, _)| **line < target_line)
-                .map(|(_, offset)| offset)
-                .sum()
+            file_map.iter().filter(|(line, _)| **line < target_line).map(|(_, offset)| offset).sum()
         } else {
             0
         }
@@ -318,7 +307,6 @@ impl AppState {
                 if let Ok(content) = fs::read_to_string(&section.file_path) {
                     let bytes = content.as_bytes();
                     if section.byte_start < bytes.len() && section.byte_end <= bytes.len() {
-                        // Section exists and can be loaded
                     }
                 }
             }
@@ -508,16 +496,15 @@ impl AppState {
     /// Navigate to next navigable node
     #[must_use]
     pub fn find_next_node(&self) -> Option<usize> {
-        ((self.current_node_index + 1)..self.tree_nodes.len())
-            .find(|&i| self.tree_nodes[i].navigable)
+        ((self.current_node_index + 1)..self.tree_nodes.len()).find(
+            |&i| self.tree_nodes[i].navigable,
+        )
     }
 
     /// Navigate to previous navigable node
     #[must_use]
     pub fn find_prev_node(&self) -> Option<usize> {
-        (0..self.current_node_index)
-            .rev()
-            .find(|&i| self.tree_nodes[i].navigable)
+        (0..self.current_node_index).rev().find(|&i| self.tree_nodes[i].navigable)
     }
 
     /// Moves to the containing section in the document hierarchy.
@@ -527,9 +514,7 @@ impl AppState {
         let parent_section_idx = self.sections[section_idx].parent_index?;
 
         // Find tree node with this section index
-        self.tree_nodes
-            .iter()
-            .position(|n| n.section_index == Some(parent_section_idx))
+        self.tree_nodes.iter().position(|n| n.section_index == Some(parent_section_idx))
     }
 
     /// Descends to the first child section in the document hierarchy.
@@ -538,9 +523,7 @@ impl AppState {
         let section_idx = self.get_current_section_index()?;
         let first_child_idx = self.sections[section_idx].children_indices.first()?;
 
-        self.tree_nodes
-            .iter()
-            .position(|n| n.section_index == Some(*first_child_idx))
+        self.tree_nodes.iter().position(|n| n.section_index == Some(*first_child_idx))
     }
 
     /// Finds the next descendant section at any depth in the hierarchy.

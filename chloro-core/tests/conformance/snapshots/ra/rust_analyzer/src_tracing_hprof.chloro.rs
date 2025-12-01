@@ -150,13 +150,13 @@ where
         match span.parent() {
             Some(parent_span) => {
                 parent_span.extensions_mut().get_mut::<Data>().unwrap().children.push(node);
-            }
+            },
             None => {
                 if self.aggregate {
                     node.aggregate()
                 }
                 node.print(&self.write_filter)
-            }
+            },
         }
     }
 }
@@ -180,20 +180,15 @@ impl Node {
         if self.duration > filter.longer_than && level < filter.depth {
             let duration = ms(self.duration);
             let current_indent = level * 2;
-
             let mut out = String::new();
             let _ = write!(out, "{:current_indent$}   {duration} {:<6}", "", self.name);
-
             if !self.fields.is_empty() {
                 let _ = write!(out, " @ {}", self.fields);
             }
-
             if self.count > 1 {
                 let _ = write!(out, " ({} calls)", self.count);
             }
-
             eprintln!("{out}");
-
             for child in &self.children {
                 child.go(level + 1, filter)
             }

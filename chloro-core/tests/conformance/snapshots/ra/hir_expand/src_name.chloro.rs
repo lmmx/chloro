@@ -267,7 +267,7 @@ impl AsName for ast::FieldKind {
             ast::FieldKind::Index(idx) => {
                 let idx = idx.text().parse::<usize>().unwrap_or(0);
                 Name::new_tuple_field(idx)
-            }
+            },
         }
     }
 }

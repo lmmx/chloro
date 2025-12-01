@@ -2,37 +2,76 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6595 bytes
-Chloro size:   6591 bytes
+Chloro size:   6607 bytes
 Rustfmt size:  6864 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         let loc = db.lookup_intern_macro_call(call_id);
          match self.mac.err() {
              Some(_) => ExpandResult::new(
--                (
+                 (
 -                    tt::TopSubtree::empty(tt::DelimSpan {
 -                        open: span,
 -                        close: span,
 -                    }),
 -                    None,
 -                ),
-+                (tt::TopSubtree::empty(tt::DelimSpan { open: span, close: span }), None),
++                tt::TopSubtree::empty(tt::DelimSpan {
++                open: span,
++                close: span,
++            }),
++                None,
++            ),
                  ExpandError::new(span, ExpandErrorKind::MacroDefinition),
              ),
-             None => self
-     ) -> ExpandResult<tt::TopSubtree> {
+-            None => self
+-                .mac
+-                .expand(
+-                    &tt,
+-                    |s| {
+-                        s.ctx =
+-                            apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
+-                    },
+-                    span,
+-                    loc.def.edition,
+-                )
+-                .map_err(Into::into),
++            None => self.mac.expand(
++                &tt,
++                |s| {
++                s.ctx = apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
++            },
++                span,
++                loc.def.edition,
++            ).map_err(
++                Into::into,
++            ),
+         }
+     }
+ 
          match self.mac.err() {
              Some(_) => ExpandResult::new(
--                tt::TopSubtree::empty(tt::DelimSpan {
+                 tt::TopSubtree::empty(tt::DelimSpan {
 -                    open: call_site,
 -                    close: call_site,
 -                }),
-+                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
++                open: call_site,
++                close: call_site,
++            }),
                  ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
              ),
-             None => self
+-            None => self
+-                .mac
+-                .expand(&tt, |_| (), call_site, def_site_edition)
+-                .map(TupleExt::head)
+-                .map_err(Into::into),
++            None => self.mac.expand(&tt, |_| (), call_site, def_site_edition).map(TupleExt::head).map_err(
++                Into::into,
++            ),
+         }
+     }
+ 
                  def_crate.data(db).edition
              } else {
                  // UNWRAP-SAFETY: Only the root context has no outer expansion

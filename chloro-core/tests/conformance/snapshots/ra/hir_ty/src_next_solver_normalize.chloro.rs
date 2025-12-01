@@ -76,7 +76,11 @@ where
     };
     let value = value.try_fold_with(&mut folder)?;
     let errors = folder.fulfill_cx.evaluate_obligations_error_on_ambiguity(at.infcx);
-    if errors.is_empty() { Ok((value, folder.stalled_coroutine_goals)) } else { Err(errors) }
+    if errors.is_empty() {
+        Ok((value, folder.stalled_coroutine_goals))
+    } else {
+        Err(errors)
+    }
 }
 
 struct NormalizationFolder<'me, 'db> {

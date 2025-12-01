@@ -48,7 +48,11 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let current_module = ctx.sema.scope(strukt.syntax())?.module();
 
     let target = strukt.syntax().text_range();
-    acc.add(AssistId::generate("generate_new"), "Generate `new`", target, |builder| {
+    acc.add(
+        AssistId::generate("generate_new"),
+        "Generate `new`",
+        target,
+        |builder| {
         let trivial_constructors = field_list
             .iter()
             .map(|(name, ty)| {
@@ -75,7 +79,6 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
                 Some((make::name_ref(&name.text()), Some(expr)))
             })
             .collect::<Vec<_>>();
-
         let params = field_list.iter().enumerate().filter_map(|(i, (name, ty))| {
             if trivial_constructors[i].is_none() {
                 Some(make::param(make::ident_pat(false, false, name.clone()).into(), ty.clone()))
@@ -84,7 +87,6 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
             }
         });
         let params = make::param_list(None, params);
-
         let fields = field_list.iter().enumerate().map(|(i, (name, _))| {
             if let Some(constructor) = trivial_constructors[i].clone() {
                 constructor
@@ -92,7 +94,6 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
                 (make::name_ref(&name.text()), None)
             }
         });
-
         let tail_expr: ast::Expr = match strukt.kind() {
             StructKind::Record(_) => {
                 let fields = fields.map(|(name, expr)| make::record_expr_field(name, expr));
@@ -110,9 +111,7 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
             StructKind::Unit => unreachable!(),
         };
         let body = make::block_expr(None, tail_expr.into());
-
         let ret_type = make::ret_type(make::ty_path(make::ext::ident_path("Self")));
-
         let fn_ = make::fn_(
             None,
             strukt.visibility(),
@@ -129,10 +128,7 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         )
         .clone_for_update();
         fn_.indent(1.into());
-
         let mut editor = builder.make_editor(strukt.syntax());
-
-        // Get the node for set annotation
         let contain_fn = if let Some(impl_def) = impl_def {
             fn_.indent(impl_def.indent_level());
 
@@ -173,7 +169,6 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
             );
             impl_def.syntax().clone()
         };
-
         if let Some(fn_) = contain_fn.descendants().find_map(ast::Fn::cast)
             && let Some(cap) = ctx.config.snippet_cap
         {
@@ -210,9 +205,9 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
                 editor.add_annotation(name.syntax(), tabstop_before);
             }
         }
-
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 #[cfg(test)]

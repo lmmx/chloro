@@ -43,26 +43,23 @@ pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         "Unwrap tuple",
         let_kw.text_range(),
         |edit| {
-            let indents = "    ".repeat(indent_level);
-
-            // If there is an ascribed type, insert that type for each declaration,
-            // otherwise, omit that type.
-            if let Some(tys) = tuple_ty {
-                let mut zipped_decls = String::new();
-                for (pat, ty, expr) in
+        let indents = "    ".repeat(indent_level);
+        if let Some(tys) = tuple_ty {
+            let mut zipped_decls = String::new();
+            for (pat, ty, expr) in
                     itertools::izip!(tuple_pat.fields(), tys.fields(), tuple_init.fields())
                 {
                     zipped_decls.push_str(&format!("{indents}let {pat}: {ty} = {expr};\n"))
                 }
-                edit.replace(parent.text_range(), zipped_decls.trim());
-            } else {
-                let mut zipped_decls = String::new();
-                for (pat, expr) in itertools::izip!(tuple_pat.fields(), tuple_init.fields()) {
+            edit.replace(parent.text_range(), zipped_decls.trim());
+        } else {
+            let mut zipped_decls = String::new();
+            for (pat, expr) in itertools::izip!(tuple_pat.fields(), tuple_init.fields()) {
                     zipped_decls.push_str(&format!("{indents}let {pat} = {expr};\n"));
                 }
-                edit.replace(parent.text_range(), zipped_decls.trim());
-            }
-        },
+            edit.replace(parent.text_range(), zipped_decls.trim());
+        }
+    },
     )
 }
 
