@@ -1,4 +1,3 @@
-// chloro-core/src/formatter/node/implblock.rs
 use ra_ap_syntax::{
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasAttrs, HasDocComments, HasGenericParams},

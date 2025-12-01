@@ -1,4 +1,3 @@
-// chloro-core/src/formatter/node/traitdef.rs
 use ra_ap_syntax::{
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasGenericParams},
