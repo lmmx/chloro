@@ -2901,12 +2901,6 @@ expression: cleaned_diff
      }
  }
  
- fn f() {
--    (#[a] lhs? + #[b] rhs.await)
-+    (lhs? + rhs.await)
- }
- 
- /// Some docs
      for<'a> F: Fn(&'a str),
  {
  }
@@ -3548,18 +3542,10 @@ expression: cleaned_diff
         break;
     }
  }
- 
- fn foo() {
      #[A] { #[B] bar!()? }
--    #[C] &()
-+    &()
-+}
-+//") || content.contains(";\n")) {
-+fn finalize_with_eof(mut self) -> LexedStr<'a> {
-+    self.res.push(EOF, self.offset);
-+    self.res
+     #[C] &()
  }
- 
+-
 -br##"
 -
 -b"\💩"
@@ -3669,8 +3655,12 @@ expression: cleaned_diff
 -    hello("world);
 -    // a bunch of code was here
 -    env("FLAGS", "-help")
--}
--
++//") || content.contains(";\n")) {
++fn finalize_with_eof(mut self) -> LexedStr<'a> {
++    self.res.push(EOF, self.offset);
++    self.res
+ }
+ 
 -b'\n
 -
 -'

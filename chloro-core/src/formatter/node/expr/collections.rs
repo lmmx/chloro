@@ -1,5 +1,5 @@
-use ra_ap_syntax::ast::{self, AstNode, HasArgList, HasGenericArgs};
 use ra_ap_syntax::SyntaxNode;
+use ra_ap_syntax::ast::{self, AstNode, HasArgList, HasGenericArgs};
 
 use super::try_format_expr_inner;
 use crate::formatter::config::MAX_WIDTH;

@@ -3340,7 +3340,7 @@ impl Whatever {
 }
 
 fn f() {
-    (lhs? + rhs.await)
+    (#[a] lhs? + #[b] rhs.await)
 }
 
 /// Some docs
@@ -4066,7 +4066,7 @@ fn foo() {
 
 fn foo() {
     #[A] { #[B] bar!()? }
-    &()
+    #[C] &()
 }
 //") || content.contains(";\n")) {
 fn finalize_with_eof(mut self) -> LexedStr<'a> {
