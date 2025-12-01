@@ -494,17 +494,13 @@ pub(crate) fn handle_on_type_formatting(
 }
 
 pub(crate) fn empty_diagnostic_report() -> lsp_types::DocumentDiagnosticReportResult {
-    lsp_types::DocumentDiagnosticReportResult::Report(
-        lsp_types::DocumentDiagnosticReport::Full(
-            lsp_types::RelatedFullDocumentDiagnosticReport {
-                related_documents: None,
-                full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
-                    result_id: Some("rust-analyzer".to_owned()),
-                    items: vec![],
-                },
-            },
-        ),
-    )
+    lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
+        related_documents: None,
+        full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
+            result_id: Some("rust-analyzer".to_owned()),
+            items: vec![],
+        },
+    }))
 }
 
 pub(crate) fn handle_document_diagnostics(
@@ -547,15 +543,12 @@ pub(crate) fn handle_document_diagnostics(
             }
             None
         });
-    Ok(
-        lsp_types::DocumentDiagnosticReportResult::Report(
-            lsp_types::DocumentDiagnosticReport::Full(
-                lsp_types::RelatedFullDocumentDiagnosticReport {
-                    full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
-                        result_id: Some("rust-analyzer".to_owned()),
-                        items: diagnostics.collect(),
-                    },
-                    related_documents: related_documents.is_empty().not().then(|| {
+    Ok(lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
+        full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
+            result_id: Some("rust-analyzer".to_owned()),
+            items: diagnostics.collect(),
+        },
+        related_documents: related_documents.is_empty().not().then(|| {
                 related_documents
                     .into_iter()
                     .map(|(id, (items, _))| {
@@ -571,10 +564,7 @@ pub(crate) fn handle_document_diagnostics(
                     })
                     .collect()
             }),
-                },
-            ),
-        ),
-    )
+    })))
 }
 
 pub(crate) fn handle_document_symbol(
@@ -1769,9 +1759,8 @@ pub(crate) fn handle_inlay_hints(
     );
 
     let inlay_hints_config = snap.config.inlay_hints(snap.minicore());
-    Ok(
-        Some(
-            snap.analysis
+    Ok(Some(
+        snap.analysis
             .inlay_hints(&inlay_hints_config, file_id, Some(range))?
             .into_iter()
             .map(|it| {
@@ -1784,8 +1773,7 @@ pub(crate) fn handle_inlay_hints(
                 )
             })
             .collect::<Cancellable<Vec<_>>>()?,
-        ),
-    )
+    ))
 }
 
 pub(crate) fn handle_inlay_hints_resolve(
@@ -2289,18 +2277,16 @@ fn goto_type_action_links(
         return None;
     }
 
-    Some(
-        lsp_ext::CommandLinkGroup {
-            title: Some("Go to ".into()),
-            commands: nav_targets
+    Some(lsp_ext::CommandLinkGroup {
+        title: Some("Go to ".into()),
+        commands: nav_targets
             .iter()
             .filter_map(|it| {
                 to_proto::command::goto_location(snap, &it.nav)
                     .map(|cmd| to_command_link(cmd, it.mod_path.clone()))
             })
             .collect(),
-        },
-    )
+    })
 }
 
 fn prepare_hover_actions(
@@ -2574,9 +2560,8 @@ pub(crate) fn internal_testing_fetch_config(
         ),
         None => None,
     };
-    Ok(
-        Some(
-            match params.config {
+    Ok(Some(
+        match params.config {
         InternalTestingFetchConfigOption::AssistEmitMustUse => {
             InternalTestingFetchConfigResponse::AssistEmitMustUse(
                 state.config.assist(source_root).assist_emit_must_use,
@@ -2588,8 +2573,7 @@ pub(crate) fn internal_testing_fetch_config(
             )
         }
     },
-        ),
-    )
+    ))
 }
 
 /// Searches for the directory of a Rust crate given this crate's root file path.

@@ -67,12 +67,10 @@ impl DiscoverCommand {
         let mut cmd = toolchain::command(command, current_dir, &FxHashMap::default());
         cmd.args(args);
 
-        Ok(
-            DiscoverHandle {
-                _handle: CommandHandle::spawn(cmd, DiscoverProjectParser, self.sender.clone(), None)?,
-                span: info_span!("discover_command").entered(),
-            },
-        )
+        Ok(DiscoverHandle {
+            _handle: CommandHandle::spawn(cmd, DiscoverProjectParser, self.sender.clone(), None)?,
+            span: info_span!("discover_command").entered(),
+        })
     }
 }
 

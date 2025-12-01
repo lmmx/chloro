@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   87046 bytes
+Chloro size:   86946 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -125,24 +125,6 @@ Rustfmt size:  87058 bytes
  impl_from!(FunctionId, StructId, UnionId, EnumVariantId, ConstId, StaticId for ValueTyDefId);
  
  impl ValueTyDefId {
- /// function body.
- fn type_for_fn<'db>(db: &'db dyn HirDatabase, def: FunctionId) -> EarlyBinder<'db, Ty<'db>> {
-     let interner = DbInterner::new_with(db, None, None);
--    EarlyBinder::bind(Ty::new_fn_def(
--        interner,
--        CallableDefId::FunctionId(def).into(),
--        GenericArgs::identity_for_item(interner, def.into()),
--    ))
-+    EarlyBinder::bind(
-+        Ty::new_fn_def(
-+            interner,
-+            CallableDefId::FunctionId(def).into(),
-+            GenericArgs::identity_for_item(interner, def.into()),
-+        ),
-+    )
- }
- 
- /// Build the declared type of a const.
      db.const_param_ty_with_diagnostics(def).0
  }
  
@@ -172,17 +154,15 @@ Rustfmt size:  87058 bytes
      let inputs_and_output = Tys::new_from_iter(interner, params.chain(Some(ret)));
      // If/when we track late bound vars, we need to switch this to not be `dummy`
 -    EarlyBinder::bind(rustc_type_ir::Binder::dummy(FnSig {
-+    EarlyBinder::bind(
-+        rustc_type_ir::Binder::dummy(
-+            FnSig {
++    EarlyBinder::bind(rustc_type_ir::Binder::dummy(
++        FnSig {
          abi: data.abi.as_ref().map_or(FnAbi::Rust, FnAbi::from_symbol),
          c_variadic: data.is_varargs(),
          safety: if data.is_unsafe() { Safety::Unsafe } else { Safety::Safe },
          inputs_and_output,
 -    }))
 +    },
-+        ),
-+    )
++    ))
  }
  
  fn type_for_adt<'db>(db: &'db dyn HirDatabase, adt: AdtId) -> EarlyBinder<'db, Ty<'db>> {
@@ -190,17 +170,15 @@ Rustfmt size:  87058 bytes
      let inputs_and_output =
          Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
 -    EarlyBinder::bind(Binder::dummy(FnSig {
-+    EarlyBinder::bind(
-+        Binder::dummy(
-+            FnSig {
++    EarlyBinder::bind(Binder::dummy(
++        FnSig {
          abi: FnAbi::RustCall,
          c_variadic: false,
          safety: Safety::Safe,
          inputs_and_output,
 -    }))
 +    },
-+        ),
-+    )
++    ))
  }
  
  fn fn_sig_for_enum_variant_constructor<'db>(
@@ -208,17 +186,15 @@ Rustfmt size:  87058 bytes
      let inputs_and_output =
          Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
 -    EarlyBinder::bind(Binder::dummy(FnSig {
-+    EarlyBinder::bind(
-+        Binder::dummy(
-+            FnSig {
++    EarlyBinder::bind(Binder::dummy(
++        FnSig {
          abi: FnAbi::RustCall,
          c_variadic: false,
          safety: Safety::Safe,
          inputs_and_output,
 -    }))
 +    },
-+        ),
-+    )
++    ))
  }
  
 -// FIXME(next-solver): should merge this with `explicit_item_bounds` in some way

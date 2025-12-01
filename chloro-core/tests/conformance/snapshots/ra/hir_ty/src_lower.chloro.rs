@@ -1091,13 +1091,11 @@ pub(crate) fn ty_query<'db>(db: &'db dyn HirDatabase, def: TyDefId) -> EarlyBind
 /// function body.
 fn type_for_fn<'db>(db: &'db dyn HirDatabase, def: FunctionId) -> EarlyBinder<'db, Ty<'db>> {
     let interner = DbInterner::new_with(db, None, None);
-    EarlyBinder::bind(
-        Ty::new_fn_def(
-            interner,
-            CallableDefId::FunctionId(def).into(),
-            GenericArgs::identity_for_item(interner, def.into()),
-        ),
-    )
+    EarlyBinder::bind(Ty::new_fn_def(
+        interner,
+        CallableDefId::FunctionId(def).into(),
+        GenericArgs::identity_for_item(interner, def.into()),
+    ))
 }
 
 /// Build the declared type of a const.
@@ -1917,16 +1915,14 @@ fn fn_sig_for_fn<'db>(
 
     let inputs_and_output = Tys::new_from_iter(interner, params.chain(Some(ret)));
     // If/when we track late bound vars, we need to switch this to not be `dummy`
-    EarlyBinder::bind(
-        rustc_type_ir::Binder::dummy(
-            FnSig {
+    EarlyBinder::bind(rustc_type_ir::Binder::dummy(
+        FnSig {
         abi: data.abi.as_ref().map_or(FnAbi::Rust, FnAbi::from_symbol),
         c_variadic: data.is_varargs(),
         safety: if data.is_unsafe() { Safety::Unsafe } else { Safety::Safe },
         inputs_and_output,
     },
-        ),
-    )
+    ))
 }
 
 fn type_for_adt<'db>(db: &'db dyn HirDatabase, adt: AdtId) -> EarlyBinder<'db, Ty<'db>> {
@@ -1946,16 +1942,14 @@ fn fn_sig_for_struct_constructor<'db>(
 
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
-    EarlyBinder::bind(
-        Binder::dummy(
-            FnSig {
+    EarlyBinder::bind(Binder::dummy(
+        FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,
         safety: Safety::Safe,
         inputs_and_output,
     },
-        ),
-    )
+    ))
 }
 
 fn fn_sig_for_enum_variant_constructor<'db>(
@@ -1969,16 +1963,14 @@ fn fn_sig_for_enum_variant_constructor<'db>(
 
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
-    EarlyBinder::bind(
-        Binder::dummy(
-            FnSig {
+    EarlyBinder::bind(Binder::dummy(
+        FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,
         safety: Safety::Safe,
         inputs_and_output,
     },
-        ),
-    )
+    ))
 }
 
 pub(crate) fn associated_ty_item_bounds<'db>(

@@ -49,6 +49,15 @@ pub fn try_format_expr(node: &SyntaxNode, indent: usize) -> FormatResult {
     }
 }
 
+/// Check if an expression, when formatted, would produce multi-line output
+/// that should be "snugly" wrapped by an outer call.
+fn is_snug_wrappable(expr: &ast::Expr, indent: usize) -> Option<String> {
+    match try_format_expr(expr.syntax(), indent) {
+        FormatResult::Formatted(s) if s.contains('\n') => Some(s),
+        _ => None,
+    }
+}
+
 /// Format a record expression, returning None if it can't be formatted nicely.
 fn format_record_expr(expr: &ast::RecordExpr, indent: usize) -> Option<String> {
     let path = expr.path()?;
@@ -98,21 +107,30 @@ fn format_call_expr(expr: &ast::CallExpr, indent: usize) -> Option<String> {
     let callee_text = callee.syntax().text().to_string();
 
     // Try single-line first
-    let args_single: Vec<_> = args.iter().map(|a| a.syntax().text().to_string()).collect();
+    let args_single: Vec<_> = args.iter()
+        .map(|a| a.syntax().text().to_string())
+        .collect();
     let single_line = format!("{}({})", callee_text, args_single.join(", "));
 
     if indent + single_line.len() <= MAX_WIDTH {
         return Some(single_line);
     }
 
-    // Multi-line: each arg on its own line
+    // Single argument that's a call expression: format as "outer(inner(\n...))"
+    // The inner call wraps, but outer doesn't add its own indentation layer
+    if args.len() == 1 {
+        if let Some(formatted) = is_snug_wrappable(&args[0], indent) {
+            return Some(format!("{}({})", callee_text, formatted));
+        }
+    }
+
+    // General multi-line: each arg on its own line
     let mut buf = String::new();
     buf.push_str(&callee_text);
     buf.push_str("(\n");
 
     for arg in args {
         write_indent(&mut buf, indent + 4);
-        // Recursively format the argument expression
         match try_format_expr(arg.syntax(), indent + 4) {
             FormatResult::Formatted(s) => buf.push_str(&s),
             FormatResult::Unsupported => buf.push_str(&arg.syntax().text().to_string()),

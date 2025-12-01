@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74198 bytes
+Chloro size:   74171 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -113,25 +113,6 @@ Rustfmt size:  75023 bytes
      }
  
      fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
-         make::param(make::ext::simple_ident_pat(make::name(&name)).into(), make::ty(&ty))
-     });
- 
--    Some(make::param_list(
--        match call {
-+    Some(
-+        make::param_list(
-+            match call {
-             ast::CallableExpr::Call(_) => None,
-             ast::CallableExpr::MethodCall(_) => Some(make::self_param()),
-         },
--        params,
--    ))
-+            params,
-+        ),
-+    )
- }
- 
- /// Gets parameter bounds and where predicates in scope and filters out irrelevant ones. Returns
      let mut where_clauses = Vec::new();
  
      // There are two items where generic parameters currently in scope may be declared: the item

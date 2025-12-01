@@ -676,15 +676,13 @@ fn fn_args(
         make::param(make::ext::simple_ident_pat(make::name(&name)).into(), make::ty(&ty))
     });
 
-    Some(
-        make::param_list(
-            match call {
+    Some(make::param_list(
+        match call {
             ast::CallableExpr::Call(_) => None,
             ast::CallableExpr::MethodCall(_) => Some(make::self_param()),
         },
-            params,
-        ),
-    )
+        params,
+    ))
 }
 
 /// Gets parameter bounds and where predicates in scope and filters out irrelevant ones. Returns

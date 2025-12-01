@@ -790,14 +790,10 @@ impl<'db> ImportCandidate<'db> {
         {
             return None;
         }
-        Some(
-            ImportCandidate::Path(
-                PathImportCandidate {
-                    qualifier: vec![],
-                    name: NameToImport::exact_case_sensitive(name.to_string()),
-                },
-            ),
-        )
+        Some(ImportCandidate::Path(PathImportCandidate {
+            qualifier: vec![],
+            name: NameToImport::exact_case_sensitive(name.to_string()),
+        }))
     }
 
     fn for_fuzzy_path(

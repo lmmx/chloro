@@ -90,23 +90,19 @@ fn field_fix(
         }
         _ => return None,
     };
-    Some(
-        Assist {
-            id: AssistId::quick_fix("expected-method-found-field-fix"),
-            label: Label::new("Use parentheses to call the value of the field".to_owned()),
-            group: None,
-            target: range,
-            source_change: Some(
-                SourceChange::from_iter(
-                    [
+    Some(Assist {
+        id: AssistId::quick_fix("expected-method-found-field-fix"),
+        label: Label::new("Use parentheses to call the value of the field".to_owned()),
+        group: None,
+        target: range,
+        source_change: Some(SourceChange::from_iter(
+            [
             (file_id.file_id(ctx.sema.db), TextEdit::insert(range.start(), "(".to_owned())),
             (file_id.file_id(ctx.sema.db), TextEdit::insert(range.end(), ")".to_owned())),
         ],
-                ),
-            ),
-            command: None,
-        },
-    )
+        )),
+        command: None,
+    })
 }
 
 fn assoc_func_fix(

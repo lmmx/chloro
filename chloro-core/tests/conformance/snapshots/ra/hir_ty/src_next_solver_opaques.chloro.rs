@@ -61,24 +61,22 @@ impl<'db> rustc_type_ir::TypeFoldable<DbInterner<'db>> for ExternalConstraints<'
         self,
         folder: &mut F,
     ) -> Result<Self, F::Error> {
-        Ok(
-            ExternalConstraints::new(
-                folder.cx(),
-                ExternalConstraintsData {
-                    region_constraints: self.region_constraints.clone().try_fold_with(folder)?,
-                    opaque_types: self
+        Ok(ExternalConstraints::new(
+            folder.cx(),
+            ExternalConstraintsData {
+                region_constraints: self.region_constraints.clone().try_fold_with(folder)?,
+                opaque_types: self
                     .opaque_types
                     .iter()
                     .cloned()
                     .map(|opaque| opaque.try_fold_with(folder))
                     .collect::<Result<_, F::Error>>()?,
-                    normalization_nested_goals: self
+                normalization_nested_goals: self
                     .normalization_nested_goals
                     .clone()
                     .try_fold_with(folder)?,
-                },
-            ),
-        )
+            },
+        ))
     }
 
     fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {

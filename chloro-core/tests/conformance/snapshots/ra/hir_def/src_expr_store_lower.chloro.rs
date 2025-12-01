@@ -872,14 +872,12 @@ impl ExprCollector<'_> {
         if args.is_empty() && bindings.is_empty() {
             return None;
         }
-        Some(
-            GenericArgs {
-                args: args.into_boxed_slice(),
-                has_self_type: false,
-                bindings: bindings.into_boxed_slice(),
-                parenthesized: GenericArgsParentheses::No,
-            },
-        )
+        Some(GenericArgs {
+            args: args.into_boxed_slice(),
+            has_self_type: false,
+            bindings: bindings.into_boxed_slice(),
+            parenthesized: GenericArgsParentheses::No,
+        })
     }
 
     fn collect(&mut self, expr: Option<ast::Expr>, awaitable: Awaitable) -> ExprId {

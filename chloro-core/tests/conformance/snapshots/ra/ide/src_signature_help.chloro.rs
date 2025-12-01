@@ -525,17 +525,15 @@ fn signature_help_for_tuple_struct_pat(
             _ => return None,
         }
     };
-    Some(
-        signature_help_for_tuple_pat_ish(
-            db,
-            res,
-            pat.syntax(),
-            token,
-            pat.fields(),
-            fields.into_iter().map(|it| it.ty(db).to_type(db)),
-            display_target,
-        ),
-    )
+    Some(signature_help_for_tuple_pat_ish(
+        db,
+        res,
+        pat.syntax(),
+        token,
+        pat.fields(),
+        fields.into_iter().map(|it| it.ty(db).to_type(db)),
+        display_target,
+    ))
 }
 
 fn signature_help_for_tuple_pat(
@@ -550,22 +548,20 @@ fn signature_help_for_tuple_pat(
     let ty = sema.type_of_pat(&pat)?;
     let fields = ty.original.tuple_fields(db);
 
-    Some(
-        signature_help_for_tuple_pat_ish(
-            db,
-            SignatureHelp {
-                doc: None,
-                signature: String::from('('),
-                parameters: vec![],
-                active_parameter: None,
-            },
-            pat.syntax(),
-            token,
-            field_pats,
-            fields.into_iter(),
-            display_target,
-        ),
-    )
+    Some(signature_help_for_tuple_pat_ish(
+        db,
+        SignatureHelp {
+            doc: None,
+            signature: String::from('('),
+            parameters: vec![],
+            active_parameter: None,
+        },
+        pat.syntax(),
+        token,
+        field_pats,
+        fields.into_iter(),
+        display_target,
+    ))
 }
 
 fn signature_help_for_tuple_expr(

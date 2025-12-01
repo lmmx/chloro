@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20553 bytes
-Chloro size:   20537 bytes
+Chloro size:   20506 bytes
 Rustfmt size:  21116 bytes
 
 ✗ Outputs DIFFER
@@ -73,14 +73,6 @@ Rustfmt size:  21116 bytes
  }
  
  fn enclosing_def_to_moniker(
-     reverse_description.reverse();
-     let description = reverse_description;
- 
--    Some(Moniker {
--        identifier: MonikerIdentifier {
-+    Some(
-+        Moniker {
-+            identifier: MonikerIdentifier {
              crate_name: krate.display_name(db)?.crate_name().to_string(),
              description,
          },
@@ -89,12 +81,10 @@ Rustfmt size:  21116 bytes
 -        } else {
 -            MonikerKind::Import
 -        },
--        package_information: {
-+            kind: if krate == from_crate { MonikerKind::Export } else { MonikerKind::Import },
-+            package_information: {
++        kind: if krate == from_crate { MonikerKind::Export } else { MonikerKind::Import },
+         package_information: {
              let (name, repo, version) = match krate.origin(db) {
                  CrateOrigin::Library { repo, name } => (name, repo, krate.version(db)),
-                 CrateOrigin::Local { repo, name } => (
                      }),
                  ),
              };
@@ -105,12 +95,8 @@ Rustfmt size:  21116 bytes
 -            }
 +            PackageInformation { name: name.as_str().to_owned(), repo, version }
          },
--    })
-+        },
-+    )
+     })
  }
- 
- fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, it: T) -> String {
          Ok(result) => result,
          // Fallback on display variant that always succeeds
          Err(_) => {

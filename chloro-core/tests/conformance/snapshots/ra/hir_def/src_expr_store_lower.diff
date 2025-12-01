@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   143898 bytes
+Chloro size:   143855 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -124,26 +124,6 @@ Rustfmt size:  144317 bytes
      }
  
      pub(super) fn lower_generic_args(
-         if args.is_empty() && bindings.is_empty() {
-             return None;
-         }
--        Some(GenericArgs {
--            args: args.into_boxed_slice(),
--            has_self_type: false,
--            bindings: bindings.into_boxed_slice(),
--            parenthesized: GenericArgsParentheses::No,
--        })
-+        Some(
-+            GenericArgs {
-+                args: args.into_boxed_slice(),
-+                has_self_type: false,
-+                bindings: bindings.into_boxed_slice(),
-+                parenthesized: GenericArgsParentheses::No,
-+            },
-+        )
-     }
- 
-     fn collect(&mut self, expr: Option<ast::Expr>, awaitable: Awaitable) -> ExprId {
          }
  
          // FIXME: Move some of these arms out into separate methods for clarity

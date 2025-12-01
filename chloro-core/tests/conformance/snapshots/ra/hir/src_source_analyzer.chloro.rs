@@ -1198,17 +1198,15 @@ impl<'db> SourceAnalyzer<'db> {
         let hir_path =
             collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
         let (store, _) = collector.store.finish();
-        Some(
-            resolve_hir_path_(
-                db,
-                &self.resolver,
-                &hir_path,
-                false,
-                name_hygiene(db, InFile::new(self.file_id, path.syntax())),
-                Some(&store),
-                true,
-            ),
-        )
+        Some(resolve_hir_path_(
+            db,
+            &self.resolver,
+            &hir_path,
+            false,
+            name_hygiene(db, InFile::new(self.file_id, path.syntax())),
+            Some(&store),
+            true,
+        ))
     }
 
     pub(crate) fn record_literal_missing_fields(
