@@ -22,7 +22,7 @@ pub fn format_break_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 
     if let Some(lifetime) = brk.lifetime() {
         result.push(' ');
-        result.push_str(&lifetime.text().to_string());
+        result.push_str(lifetime.text().as_ref());
     }
 
     if let Some(expr) = brk.expr() {
