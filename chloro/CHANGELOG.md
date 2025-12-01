@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1](https://github.com/lmmx/chloro/compare/chloro-v0.7.0...chloro-v0.7.1) - 2025-12-01
+
+### <!-- 2 -->Bug Fixes
+
+- retain comments and attributes for macro calls ([#50](https://github.com/lmmx/chloro/pull/50))
+
+### <!-- 9 -->Other
+
+- extend exprs ([#56](https://github.com/lmmx/chloro/pull/56))
+- self sort ([#52](https://github.com/lmmx/chloro/pull/52))
+- imports testing ([#51](https://github.com/lmmx/chloro/pull/51))
+
 ## [0.7.0](https://github.com/lmmx/chloro/compare/chloro-v0.6.7...chloro-v0.7.0) - 2025-11-26
 
 ### <!-- 2 -->Bug Fixes
