@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6359 bytes
-Chloro size:   6061 bytes
+Chloro size:   6076 bytes
 Rustfmt size:  6555 bytes
 
 ✗ Outputs DIFFER
@@ -72,6 +72,12 @@ Rustfmt size:  6555 bytes
                      make.expr_bin(var_expr, op, step).syntax().syntax_element(),
                      make.token(T![;]).syntax_element(),
                  ],
+ }
+ 
+ fn extract_range(iterable: &ast::Expr) -> Option<(ast::Expr, Option<ast::Expr>, ast::Expr, bool)> {
+-    Some(match iterable {
++    Some(
++        match iterable {
          ast::Expr::ParenExpr(expr) => extract_range(&expr.expr()?)?,
          ast::Expr::RangeExpr(range) => {
              let inclusive = range.op_kind()? == ast::RangeOp::Inclusive;
@@ -85,6 +91,14 @@ Rustfmt size:  6555 bytes
          }
          ast::Expr::MethodCallExpr(call) if call.name_ref()?.text() == "step_by" => {
              let [step] = call.arg_list()?.args().collect_array()?;
+             (start, end, step, inclusive)
+         }
+         _ => return None,
+-    })
++    },
++    )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

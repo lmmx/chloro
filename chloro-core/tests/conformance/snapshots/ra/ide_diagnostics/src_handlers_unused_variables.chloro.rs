@@ -74,7 +74,8 @@ fn fixes(
     let name = name.strip_prefix("r#").unwrap_or(&name);
     let new_name = if is_shorthand_field { format!("{name}: _{name}") } else { format!("_{name}") };
 
-    Some(vec![Assist {
+    Some(
+        vec![Assist {
         id: AssistId::quick_fix("unscore_unused_variable_name"),
         label: Label::new(format!("Rename unused {name} to {new_name}")),
         group: None,
@@ -84,7 +85,8 @@ fn fixes(
             TextEdit::replace(name_range, new_name),
         )),
         command: None,
-    }])
+    }],
+    )
 }
 
 #[cfg(test)]

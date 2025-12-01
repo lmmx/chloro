@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10179 bytes
-Chloro size:   9931 bytes
+Chloro size:   9946 bytes
 Rustfmt size:  10254 bytes
 
 ✗ Outputs DIFFER
@@ -53,6 +53,18 @@ Rustfmt size:  10254 bytes
 +        d.if_expr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
          edit,
      );
+ 
+-    Some(vec![fix(
++    Some(
++        vec![fix(
+         "remove_unnecessary_else",
+         "Remove unnecessary else block",
+         source_change,
+         range,
+-    )])
++    )],
++    )
+ }
  
  #[cfg(test)]
  mod tests {

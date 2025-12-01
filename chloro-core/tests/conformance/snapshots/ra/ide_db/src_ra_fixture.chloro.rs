@@ -183,7 +183,8 @@ impl RaFixtureAnalysis {
             virtual_file_id_to_line[file_id.index() as usize] = line;
         }
 
-        Some(RaFixtureAnalysis {
+        Some(
+            RaFixtureAnalysis {
             db: analysis,
             tmp_file_ids,
             line_offsets,
@@ -192,7 +193,8 @@ impl RaFixtureAnalysis {
             literal,
             sysroot_files,
             combined_len,
-        })
+        },
+        )
     }
 
     pub fn files(&self) -> impl Iterator<Item = FileId> {
@@ -330,10 +332,12 @@ impl<T: UpmapFromRaFixture> UpmapFromRaFixture for Option<T> {
         virtual_file_id: FileId,
         real_file_id: FileId,
     ) -> Result<Self, ()> {
-        Ok(match self {
+        Ok(
+            match self {
             Some(it) => Some(it.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?),
             None => None,
-        })
+        },
+        )
     }
 }
 

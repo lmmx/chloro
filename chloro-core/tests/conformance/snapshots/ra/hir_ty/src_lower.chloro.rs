@@ -1915,12 +1915,14 @@ fn fn_sig_for_fn<'db>(
 
     let inputs_and_output = Tys::new_from_iter(interner, params.chain(Some(ret)));
     // If/when we track late bound vars, we need to switch this to not be `dummy`
-    EarlyBinder::bind(rustc_type_ir::Binder::dummy(FnSig {
+    EarlyBinder::bind(rustc_type_ir::Binder::dummy(
+        FnSig {
         abi: data.abi.as_ref().map_or(FnAbi::Rust, FnAbi::from_symbol),
         c_variadic: data.is_varargs(),
         safety: if data.is_unsafe() { Safety::Unsafe } else { Safety::Safe },
         inputs_and_output,
-    }))
+    },
+    ))
 }
 
 fn type_for_adt<'db>(db: &'db dyn HirDatabase, adt: AdtId) -> EarlyBinder<'db, Ty<'db>> {
@@ -1940,12 +1942,14 @@ fn fn_sig_for_struct_constructor<'db>(
 
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
-    EarlyBinder::bind(Binder::dummy(FnSig {
+    EarlyBinder::bind(Binder::dummy(
+        FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,
         safety: Safety::Safe,
         inputs_and_output,
-    }))
+    },
+    ))
 }
 
 fn fn_sig_for_enum_variant_constructor<'db>(
@@ -1959,12 +1963,14 @@ fn fn_sig_for_enum_variant_constructor<'db>(
 
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
-    EarlyBinder::bind(Binder::dummy(FnSig {
+    EarlyBinder::bind(Binder::dummy(
+        FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,
         safety: Safety::Safe,
         inputs_and_output,
-    }))
+    },
+    ))
 }
 
 pub(crate) fn associated_ty_item_bounds<'db>(
@@ -2067,9 +2073,15 @@ pub fn associated_type_shorthand_candidates(
     mut cb: impl FnMut(&Name, TypeAliasId) -> bool,
 ) -> Option<TypeAliasId> {
     let interner = DbInterner::new_with(db, None, None);
-    named_associated_type_shorthand_candidates(interner, def, res, None, |name, _, id| {
+    named_associated_type_shorthand_candidates(
+        interner,
+        def,
+        res,
+        None,
+        |name, _, id| {
         cb(name, id).then_some(id)
-    })
+    },
+    )
 }
 
 #[tracing::instrument(skip(interner, check_alias))]

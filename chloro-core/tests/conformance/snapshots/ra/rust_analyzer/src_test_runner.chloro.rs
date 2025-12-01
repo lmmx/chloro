@@ -137,13 +137,15 @@ impl CargoTestHandle {
             cmd.arg(extra_arg);
         }
 
-        Ok(Self {
+        Ok(
+            Self {
             _handle: CommandHandle::spawn(
                 cmd,
                 CargoTestOutputParser::new(&test_target),
                 sender,
                 None,
             )?,
-        })
+        },
+        )
     }
 }

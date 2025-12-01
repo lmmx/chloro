@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11158 bytes
-Chloro size:   11021 bytes
+Chloro size:   10998 bytes
 Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
@@ -84,9 +84,18 @@ Rustfmt size:  11215 bytes
 -
      #[test]
      fn test_tuple_field_on_record_struct() {
-         check_no_fix(
- "#,
-         )
+-        check_no_fix(
+-            r#"
++        check_no_fix(r#"
+ struct Struct {}
+ fn main() {
+     Struct {
+         0$0: 0
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]

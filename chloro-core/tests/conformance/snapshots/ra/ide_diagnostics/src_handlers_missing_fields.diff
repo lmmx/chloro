@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19114 bytes
-Chloro size:   18858 bytes
+Chloro size:   18835 bytes
 Rustfmt size:  19114 bytes
 
 ✗ Outputs DIFFER
@@ -69,9 +69,16 @@ Rustfmt size:  19114 bytes
 -
      #[test]
      fn missing_record_pat_field_box() {
-         check_diagnostics(
- ",
-         )
+-        check_diagnostics(
+-            r"
++        check_diagnostics(r"
+ struct S { s: Box<u32> }
+ fn x(a: S) {
+     let S { box s } = a;
+ }
+-",
+-        )
++")
      }
 -
      #[test]

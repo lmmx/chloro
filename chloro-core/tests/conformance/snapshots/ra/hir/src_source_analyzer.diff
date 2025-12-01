@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 72179 bytes
-Chloro size:   71974 bytes
+Chloro size:   72043 bytes
 Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
@@ -117,6 +117,37 @@ Rustfmt size:  72179 bytes
          let (def, ..) = self.body_()?;
          let expr_id = self.expr_id(field.clone().into())?.as_expr()?;
          let inference_result = self.infer()?;
+         let variant_data = variant.fields(db);
+         let field = FieldId { parent: variant, local_id: variant_data.field(&local_name)? };
+         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
+-        Some((
++        Some(
++            (
+             field.into(),
+             local,
+             Type::new_with_resolver(db, &self.resolver, field_ty),
+             GenericSubstitution::new(adt.into(), subst, self.trait_environment(db)),
+-        ))
++        ),
++        )
+     }
+ 
+     pub(crate) fn resolve_record_pat_field(
+         let field = FieldId { parent: variant, local_id: variant_data.field(&field_name)? };
+         let (adt, subst) = self.infer()?[pat_id.as_pat()?].as_adt()?;
+         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
+-        Some((
++        Some(
++            (
+             field.into(),
+             Type::new_with_resolver(db, &self.resolver, field_ty),
+             GenericSubstitution::new(adt.into(), subst, self.trait_environment(db)),
+-        ))
++        ),
++        )
+     }
+ 
+     pub(crate) fn resolve_bind_pat_to_const(
          let (store, _) = collector.store.finish();
  
          // Case where path is a qualifier of a use tree, e.g. foo::bar::{Baz, Qux} where we are
@@ -131,6 +162,24 @@ Rustfmt size:  72179 bytes
          // trying to resolve foo::bar.
          if let Some(parent_hir_path) = parent_hir_path {
              return match resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store) {
+         format_args: InFile<&ast::FormatArgsExpr>,
+     ) -> Option<impl Iterator<Item = (TextRange, Option<PathResolution>)> + 'a> {
+         let (hygiene, names) = self.store_sm()?.implicit_format_args(format_args)?;
+-        Some(names.iter().map(move |(range, name)| {
++        Some(
++            names.iter().map(move |(range, name)| {
+             (
+                 *range,
+                 resolve_hir_value_path(
+                     hygiene,
+                 ),
+             )
+-        }))
++        }),
++        )
+     }
+ 
+     pub(crate) fn as_asm_parts(
          })
  }
  

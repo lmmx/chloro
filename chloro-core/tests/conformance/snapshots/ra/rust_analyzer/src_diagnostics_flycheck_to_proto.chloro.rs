@@ -252,13 +252,15 @@ fn map_rust_child_diagnostic(
             },
         }))
     };
-    MappedRustChildDiagnostic::SubDiagnostic(SubDiagnostic {
+    MappedRustChildDiagnostic::SubDiagnostic(
+        SubDiagnostic {
         related: lsp_types::DiagnosticRelatedInformation {
             location: location(config, workspace_root, spans[0], snap),
             message,
         },
         suggested_fix,
-    })
+    },
+    )
 }
 
 #[derive(Debug)]

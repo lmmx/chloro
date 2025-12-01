@@ -89,11 +89,13 @@ impl PerNs {
     ) -> PerNs {
         PerNs {
             types: Some(Item { def: types, vis, import }),
-            values: Some(Item {
+            values: Some(
+                Item {
                 def: values,
                 vis,
                 import: import.and_then(ImportOrExternCrate::import_or_glob),
-            }),
+            },
+            ),
             macros: None,
         }
     }

@@ -424,13 +424,9 @@ use self::fmt;",
 
 #[test]
 fn insert_no_imports() {
-    check_crate(
-        "foo::bar",
-        "fn main() {}",
-        r"use foo::bar;
+    check_crate("foo::bar", "fn main() {}", r"use foo::bar;
 
-fn main() {}",
-    )
+fn main() {}")
 }
 
 #[test]

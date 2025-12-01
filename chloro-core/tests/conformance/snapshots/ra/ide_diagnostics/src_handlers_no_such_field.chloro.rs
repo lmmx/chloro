@@ -348,16 +348,14 @@ pub struct Foo {
     }
     #[test]
     fn test_tuple_field_on_record_struct() {
-        check_no_fix(
-            r#"
+        check_no_fix(r#"
 struct Struct {}
 fn main() {
     Struct {
         0$0: 0
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn test_struct_field_private() {

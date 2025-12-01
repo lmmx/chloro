@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   43554 bytes
+Chloro size:   42743 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -236,8 +236,30 @@ Rustfmt size:  44616 bytes
      #[test]
      fn dont_trigger_on_unit() {
          cov_mark::check!(destructure_tuple_no_tuple);
-             "#,
-         )
+-        check_assist_not_applicable(
+-            assist,
+-            r#"
++        check_assist_not_applicable(assist, r#"
+ fn main() {
+ let $0v = ();
+ }
+-            "#,
+-        )
++            "#)
+     }
+     #[test]
+     fn dont_trigger_on_number() {
+         cov_mark::check!(destructure_tuple_no_tuple);
+-        check_assist_not_applicable(
+-            assist,
+-            r#"
++        check_assist_not_applicable(assist, r#"
+ fn main() {
+ let $0v = 32;
+ }
+-            "#,
+-        )
++            "#)
      }
 -
      #[test]
@@ -347,9 +369,16 @@ Rustfmt size:  44616 bytes
 -
      #[test]
      fn dont_trigger_on_wildcard() {
-         check_assist_not_applicable(
-             "#,
-         )
+-        check_assist_not_applicable(
+-            assist,
+-            r#"
++        check_assist_not_applicable(assist, r#"
+ fn main() {
+     let $0_ = (1,2);
+ }
+-            "#,
+-        )
++            "#)
      }
 -
      #[test]
@@ -574,6 +603,10 @@ Rustfmt size:  44616 bytes
          #[test]
          fn tuple_usage() {
              check_both_assists(
+-                // leading `"foo"` to ensure `$e` doesn't start at position `0`
+                 r#"
+ macro_rules! m {
+     ($e:expr) => { "foo"; $e };
                  "#,
              )
          }
@@ -588,6 +621,20 @@ Rustfmt size:  44616 bytes
          #[test]
          fn tuple_index_usage() {
              check_both_assists(
+     m!(t.0);
+ }
+                 "#,
+-                // FIXME: replace `t.0` with `_0` (cannot detect range of tuple index in macro call)
+                 r#"
+ macro_rules! m {
+     ($e:expr) => { "foo"; $e };
+     m!(/*t*/.0);
+ }
+                 "#,
+-                // FIXME: replace `t.0` with `_0`
+                 r#"
+ macro_rules! m {
+     ($e:expr) => { "foo"; $e };
                  "#,
              )
          }
@@ -595,6 +642,20 @@ Rustfmt size:  44616 bytes
          #[test]
          fn tuple_in_parentheses_index_usage() {
              check_both_assists(
+     m!((t).0);
+ }
+                 "#,
+-                // FIXME: replace `(t).0` with `_0`
+                 r#"
+ macro_rules! m {
+     ($e:expr) => { "foo"; $e };
+     m!((/*t*/).0);
+ }
+                 "#,
+-                // FIXME: replace `(t).0` with `_0`
+                 r#"
+ macro_rules! m {
+     ($e:expr) => { "foo"; $e };
                  "#,
              )
          }
@@ -602,6 +663,13 @@ Rustfmt size:  44616 bytes
          #[test]
          fn empty_macro() {
              check_in_place_assist(
+     m!(t);
+ }
+                 "#,
+-                // FIXME: macro allows no arg -> is valid. But assist should result in invalid code
+                 r#"
+ macro_rules! m {
+     () => { "foo" };
                  "#,
              )
          }
@@ -609,6 +677,20 @@ Rustfmt size:  44616 bytes
          #[test]
          fn tuple_index_in_macro() {
              check_both_assists(
+     m!(t, t.0);
+ }
+                 "#,
+-                // FIXME: replace `t.0` in macro call (not IN macro) with `_0`
+                 r#"
+ macro_rules! m {
+     ($t:expr, $i:expr) => { $t.0 + $i };
+     m!(/*t*/, /*t*/.0);
+ }
+                 "#,
+-                // FIXME: replace `t.0` in macro call with `_0`
+                 r#"
+ macro_rules! m {
+     ($t:expr, $i:expr) => { $t.0 + $i };
              )
          }
      }
@@ -650,6 +732,13 @@ Rustfmt size:  44616 bytes
          #[test]
          fn self_auto_ref_in_trait_call_doesnt_require_deref() {
              check_in_place_assist(
+     let s = t.0.f();
+ }
+                 "#,
+-                // FIXME: doesn't need deref * parens. But `ctx.sema.resolve_method_call` doesn't resolve trait implementations
+                 r#"
+ trait T {
+     fn f(self);
                  "#,
              )
          }

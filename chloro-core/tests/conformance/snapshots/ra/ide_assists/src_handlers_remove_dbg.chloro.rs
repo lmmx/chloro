@@ -74,7 +74,8 @@ fn compute_dbg_replacement(
         .collect::<Option<Vec<ast::Expr>>>()?;
 
     let parent = macro_expr.syntax().parent()?;
-    Some(match &*input_expressions {
+    Some(
+        match &*input_expressions {
         // dbg!()
         [] => {
             match_ast! {
@@ -157,7 +158,8 @@ fn compute_dbg_replacement(
             let expr = make::expr_tuple(exprs);
             (vec![macro_call.syntax().clone().into()], Some(expr.into()))
         }
-    })
+    },
+    )
 }
 
 fn pure_expr(expr: &ast::Expr) -> bool {

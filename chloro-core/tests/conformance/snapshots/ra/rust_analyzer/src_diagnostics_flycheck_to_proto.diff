@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 77855 bytes
-Chloro size:   77870 bytes
+Chloro size:   77885 bytes
 Rustfmt size:  77855 bytes
 
 ✗ Outputs DIFFER
@@ -34,6 +34,23 @@ Rustfmt size:  77855 bytes
      // here, otherwise the diagnostic text is missing useful information.
      let mut message = rd.message.clone();
      if !suggested_replacements.is_empty() {
+             },
+         }))
+     };
+-    MappedRustChildDiagnostic::SubDiagnostic(SubDiagnostic {
++    MappedRustChildDiagnostic::SubDiagnostic(
++        SubDiagnostic {
+         related: lsp_types::DiagnosticRelatedInformation {
+             location: location(config, workspace_root, spans[0], snap),
+             message,
+         },
+         suggested_fix,
+-    })
++    },
++    )
+ }
+ 
+ #[derive(Debug)]
  #[cfg(not(windows))]
  mod tests {
      use crate::{config::Config, global_state::GlobalState};

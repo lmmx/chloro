@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4490 bytes
+Chloro size:   4442 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -33,7 +33,19 @@ Rustfmt size:  4581 bytes
 +            None => return Err(UnresolvedMacro { path: ast_id.path.as_ref().clone() }),
          };
  
-         Ok(ResolvedAttr::Macro(attr_macro_as_call_id(
+-        Ok(ResolvedAttr::Macro(attr_macro_as_call_id(
+-            db,
+-            &ast_id,
+-            attr,
+-            self.krate,
+-            db.macro_def(def),
+-        )))
++        Ok(ResolvedAttr::Macro(
++            attr_macro_as_call_id(db, &ast_id, attr, self.krate, db.macro_def(def)),
++        ))
+     }
+ 
+     pub(crate) fn is_builtin_or_registered_attr(&self, path: &ModPath) -> bool {
  ) -> Result<(MacroId, MacroDefId, MacroCallId), UnresolvedMacro> {
      let (macro_id, def_id) = resolver(&item_attr.path)
          .filter(|(_, def_id)| def_id.is_derive())

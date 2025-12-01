@@ -452,7 +452,8 @@ impl ModuleDef {
     }
 
     pub fn attrs(&self, db: &dyn HirDatabase) -> Option<AttrsWithOwner> {
-        Some(match self {
+        Some(
+            match self {
             ModuleDef::Module(it) => it.attrs(db),
             ModuleDef::Function(it) => it.attrs(db),
             ModuleDef::Adt(it) => it.attrs(db),
@@ -463,7 +464,8 @@ impl ModuleDef {
             ModuleDef::TypeAlias(it) => it.attrs(db),
             ModuleDef::Macro(it) => it.attrs(db),
             ModuleDef::BuiltinType(_) => return None,
-        })
+        },
+        )
     }
 }
 
@@ -1684,7 +1686,8 @@ impl Variant {
     pub fn layout(&self, db: &dyn HirDatabase) -> Result<Layout, LayoutError> {
         let parent_enum = self.parent_enum(db);
         let parent_layout = parent_enum.layout(db)?;
-        Ok(match &parent_layout.0.variants {
+        Ok(
+            match &parent_layout.0.variants {
             layout::Variants::Multiple { variants, .. } => Layout(
                 {
                     let lookup = self.id.lookup(db);
@@ -1694,7 +1697,8 @@ impl Variant {
                 db.target_data_layout(parent_enum.krate(db).into()).unwrap(),
             ),
             _ => parent_layout,
-        })
+        },
+        )
     }
 
     pub fn is_unstable(self, db: &dyn HirDatabase) -> bool {
@@ -3974,9 +3978,9 @@ impl BuiltinAttr {
     }
 
     pub fn name(&self) -> Name {
-        Name::new_symbol_root(Symbol::intern(
-            hir_expand::inert_attr_macro::INERT_ATTRIBUTES[self.idx as usize].name,
-        ))
+        Name::new_symbol_root(
+            Symbol::intern(hir_expand::inert_attr_macro::INERT_ATTRIBUTES[self.idx as usize].name),
+        )
     }
 
     pub fn template(&self) -> Option<AttributeTemplate> {
@@ -5865,10 +5869,12 @@ impl<'db> Callable<'db> {
             _ => return None,
         };
         let func = Function { id: func };
-        Some((
+        Some(
+            (
             func.self_param(db)?,
             self.ty.derived(self.sig.skip_binder().inputs_and_output.inputs()[0]),
-        ))
+        ),
+        )
     }
 
     pub fn n_params(&self) -> usize {
@@ -6452,7 +6458,10 @@ fn generic_args_from_tys<'db>(
     args: impl IntoIterator<Item = Ty<'db>>,
 ) -> GenericArgs<'db> {
     let mut args = args.into_iter();
-    GenericArgs::for_item(interner, def_id, |_, id, _| {
+    GenericArgs::for_item(
+        interner,
+        def_id,
+        |_, id, _| {
         if matches!(id, GenericParamId::TypeParamId(_))
             && let Some(arg) = args.next()
         {
@@ -6460,7 +6469,8 @@ fn generic_args_from_tys<'db>(
         } else {
             next_solver::GenericArg::error_from_id(interner, id)
         }
-    })
+    },
+    )
 }
 
 fn has_non_default_type_params(db: &dyn HirDatabase, generic_def: GenericDefId) -> bool {

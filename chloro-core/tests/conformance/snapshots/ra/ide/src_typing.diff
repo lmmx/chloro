@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34740 bytes
+Chloro size:   34670 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -340,15 +340,39 @@ Rustfmt size:  36650 bytes
      #[test]
      fn indents_new_chain_call() {
          type_char(
+ }
              "#,
-         )
+         );
+-        type_char_noop(
+-            '.',
+-            r#"
++        type_char_noop('.', r#"
+ fn main() {
+     xs.foo()
+         $0
+ }
+-            "#,
+-        )
++            "#)
      }
 -
      #[test]
      fn indents_new_chain_call_with_semi() {
          type_char(
+ }
              "#,
-         )
+         );
+-        type_char_noop(
+-            '.',
+-            r#"
++        type_char_noop('.', r#"
+ fn main() {
+     xs.foo()
+         $0;
+ }
+-            "#,
+-        )
++            "#)
      }
 -
      #[test]

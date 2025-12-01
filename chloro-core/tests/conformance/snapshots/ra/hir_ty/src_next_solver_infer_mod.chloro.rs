@@ -806,9 +806,14 @@ impl<'db> InferCtxt<'db> {
         def_id: SolverDefId,
         first: impl IntoIterator<Item = GenericArg<'db>>,
     ) -> GenericArgs<'db> {
-        GenericArgs::fill_rest(self.interner, def_id, first, |_index, kind, _| {
+        GenericArgs::fill_rest(
+            self.interner,
+            def_id,
+            first,
+            |_index, kind, _| {
             self.var_for_def(kind)
-        })
+        },
+        )
     }
 
     /// Returns `true` if errors have been reported since this infcx was

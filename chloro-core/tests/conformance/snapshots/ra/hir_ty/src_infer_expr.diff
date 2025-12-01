@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111676 bytes
-Chloro size:   111446 bytes
+Chloro size:   111469 bytes
 Rustfmt size:  111676 bytes
 
 ✗ Outputs DIFFER
@@ -115,6 +115,24 @@ Rustfmt size:  111676 bytes
          // have its own generic parameters.
          let args = GenericArgs::new_from_iter(self.interner(), [lhs_ty.into(), rhs_ty.into()]);
  
+             Some((Either::Left(field_id), ty))
+         });
+ 
+-        Some(match res {
++        Some(
++            match res {
+             Some((field_id, ty)) => {
+                 let adjustments = autoderef.adjust_steps();
+                 let ty = self.process_remote_user_written_ty(ty);
+ 
+                 (ty, Either::Left(field_id), adjustments, false)
+             }
+-        })
++        },
++        )
+     }
+ 
+     fn infer_field_access(
      pub(in super::super) fn check_call_arguments(
          &mut self,
          call_expr: ExprId,

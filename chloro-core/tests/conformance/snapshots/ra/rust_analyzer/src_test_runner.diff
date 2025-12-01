@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4245 bytes
+Chloro size:   4268 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -61,3 +61,20 @@ Rustfmt size:  4381 bytes
          }
  
          // --no-fail-fast is needed to ensure that all requested tests will run
+             cmd.arg(extra_arg);
+         }
+ 
+-        Ok(Self {
++        Ok(
++            Self {
+             _handle: CommandHandle::spawn(
+                 cmd,
+                 CargoTestOutputParser::new(&test_target),
+                 sender,
+                 None,
+             )?,
+-        })
++        },
++        )
+     }
+ }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   27660 bytes
+Chloro size:   26995 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
@@ -135,16 +135,36 @@ Rustfmt size:  28368 bytes
 -
      #[test]
      fn just_for_token() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     for
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {for _ in __ra_fixup {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn for_no_iter_pattern() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     for {}
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {for _ in __ra_fixup {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
@@ -157,23 +177,57 @@ Rustfmt size:  28368 bytes
 -    // FIXME: https://github.com/rust-lang/rust-analyzer/pull/12937#discussion_r937633695
      #[test]
      fn for_no_pat() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     for in qux {
+ 
+     }
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {__ra_fixup}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn match_no_expr_no_arms() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     match
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {match __ra_fixup {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn match_expr_no_arms() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     match it {
+ 
+     }
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {match it {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
@@ -185,16 +239,36 @@ Rustfmt size:  28368 bytes
 -
      #[test]
      fn incomplete_field_expr_1() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     a.
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {a . __ra_fixup}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn incomplete_field_expr_2() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     a.;
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {a . __ra_fixup ;}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
@@ -206,9 +280,19 @@ Rustfmt size:  28368 bytes
 -
      #[test]
      fn incomplete_let() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     let it = a
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {let it = a ;}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
@@ -227,72 +311,188 @@ Rustfmt size:  28368 bytes
 -
      #[test]
      fn extraneous_comma() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     bar(,);
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {__ra_fixup ;}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_if_1() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     if a
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {if a {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_if_2() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     if
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {if __ra_fixup {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_if_3() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     if {}
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {if __ra_fixup {} {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_while_1() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     while
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {while __ra_fixup {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_while_2() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     while foo
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {while foo {}}
+-"#]],
+-        )
++"#]])
+     }
+     #[test]
+     fn fixup_while_3() {
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     while {}
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {while __ra_fixup {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_loop() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     loop
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {loop {}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_path() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     path::
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {path :: __ra_fixup}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn fixup_record_ctor_field() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     R { f: }
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {R {f : __ra_fixup}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]
      fn no_fixup_record_ctor_field() {
-         check(
- "#]],
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo() {
+     R { f: a }
+ }
+-"#,
+-            expect![[r#"
++"#, expect![[r#"
+ fn foo () {R {f : a}}
+-"#]],
+-        )
++"#]])
      }
 -
      #[test]

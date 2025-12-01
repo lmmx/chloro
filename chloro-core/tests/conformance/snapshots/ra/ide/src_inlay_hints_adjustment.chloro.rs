@@ -555,7 +555,6 @@ impl core::ops::IndexMut for Struct {}
             InlayHintsConfig {
                 adjustment_hints: AdjustmentHints::Always,
                 adjustment_hints_mode: AdjustmentHintsMode::PreferPrefix,
-                ..DISABLED_CONFIG
             },
             r#"
 fn main() {
@@ -580,7 +579,6 @@ fn main() {
             InlayHintsConfig {
                 adjustment_hints: AdjustmentHints::Always,
                 adjustment_hints_mode: AdjustmentHintsMode::PreferPostfix,
-                ..DISABLED_CONFIG
             },
             r#"
 fn main() {
@@ -621,7 +619,6 @@ fn or_else() {
             InlayHintsConfig {
                 adjustment_hints: AdjustmentHints::Always,
                 adjustment_hints_hide_outside_unsafe: true,
-                ..DISABLED_CONFIG
             },
             r#"
 unsafe fn enabled() {

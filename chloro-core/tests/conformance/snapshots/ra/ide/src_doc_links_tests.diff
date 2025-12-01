@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19519 bytes
-Chloro size:   19515 bytes
+Chloro size:   19530 bytes
 Rustfmt size:  20051 bytes
 
 ✗ Outputs DIFFER
@@ -56,6 +56,24 @@ Rustfmt size:  20051 bytes
              (range, link)
          })
          .sorted_by_key(key_fn)
+     sema: &Semantics<'_, RootDatabase>,
+     node: &SyntaxNode,
+ ) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
+-    Some(match_ast! {
++    Some(
++        match_ast! {
+         match node {
+             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
+             ast::Module(it)      => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
+             // ast::Use(it) => sema.to_def(&it).map(|def| (Box::new(it) as _, def.attrs(sema.db))),
+             _ => return None,
+         }
+-    })
++    },
++    )
+ }
+ 
+ #[test]
  let x: u3$02 = 0;
  "#,
          Some("/home/user/project"),

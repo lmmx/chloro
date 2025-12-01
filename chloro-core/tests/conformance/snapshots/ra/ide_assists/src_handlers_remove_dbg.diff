@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14570 bytes
-Chloro size:   14347 bytes
+Chloro size:   14362 bytes
 Rustfmt size:  14570 bytes
 
 ✗ Outputs DIFFER
@@ -38,6 +38,24 @@ Rustfmt size:  14570 bytes
  pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let macro_calls = if ctx.has_empty_selection() {
          vec![ctx.find_node_at_offset::<ast::MacroExpr>()?]
+         .collect::<Option<Vec<ast::Expr>>>()?;
+ 
+     let parent = macro_expr.syntax().parent()?;
+-    Some(match &*input_expressions {
++    Some(
++        match &*input_expressions {
+         // dbg!()
+         [] => {
+             match_ast! {
+             let expr = make::expr_tuple(exprs);
+             (vec![macro_call.syntax().clone().into()], Some(expr.into()))
+         }
+-    })
++    },
++    )
+ }
+ 
+ fn pure_expr(expr: &ast::Expr) -> bool {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

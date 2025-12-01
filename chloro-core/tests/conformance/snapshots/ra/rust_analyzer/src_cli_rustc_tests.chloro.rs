@@ -110,14 +110,16 @@ impl Tester {
         let krates = Crate::all(db);
         let root_crate = krates.iter().cloned().find(|krate| krate.origin(db).is_local()).unwrap();
         let root_file = root_crate.root_file(db);
-        Ok(Self {
+        Ok(
+            Self {
             host,
             root_file,
             pass_count: 0,
             ignore_count: 0,
             fail_count: 0,
             stopwatch: StopWatch::start(),
-        })
+        },
+        )
     }
 
     fn test(&mut self, p: PathBuf) {

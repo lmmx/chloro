@@ -456,13 +456,10 @@ pub enum Foo {
     }
     #[test]
     fn not_applicable_for_path_type() {
-        check_assist_not_applicable(
-            generate_enum_variant,
-            r"
+        check_assist_not_applicable(generate_enum_variant, r"
 enum Foo {}
 impl Foo::Bar$0 {}
-",
-        )
+")
     }
     #[test]
     fn path_pat() {

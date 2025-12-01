@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65780 bytes
+Chloro size:   65720 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -116,6 +116,13 @@ Rustfmt size:  65944 bytes
      //   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
      let is_not_orphan = trait_ref.args.types().any(|ty| match unwrap_fundamental(ty).kind() {
          TyKind::Adt(adt_def, _) => is_local(adt_def.def_id().0.module(db).krate()),
+         visible_from_module,
+         name,
+         LookupMode::Path,
+-        // the adjustments are not relevant for path lookup
+         callback,
+     )
+ }
      let env = table.trait_env.clone();
  
      // For trait object types and placeholder types with trait bounds, the methods of the trait and

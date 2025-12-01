@@ -2073,7 +2073,8 @@ fn cast_kind<'db>(
 ) -> Result<'db, CastKind> {
     let from = CastTy::from_ty(db, source_ty);
     let cast = CastTy::from_ty(db, target_ty);
-    Ok(match (from, cast) {
+    Ok(
+        match (from, cast) {
         (Some(CastTy::Ptr(..) | CastTy::FnPtr), Some(CastTy::Int(_))) => {
             CastKind::PointerExposeAddress
         }
@@ -2085,7 +2086,8 @@ fn cast_kind<'db>(
         (Some(CastTy::Float), Some(CastTy::Float)) => CastKind::FloatToFloat,
         (Some(CastTy::Ptr(..)), Some(CastTy::Ptr(..))) => CastKind::PtrToPtr,
         _ => not_supported!("Unknown cast between {source_ty:?} and {target_ty:?}"),
-    })
+    },
+    )
 }
 
 pub fn mir_body_for_closure_query<'db>(

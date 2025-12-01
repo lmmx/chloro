@@ -263,7 +263,8 @@ impl FunctionBuilder {
         let (generic_param_list, where_clause) =
             fn_generic_params(ctx, necessary_generic_params, &target)?;
 
-        Some(Self {
+        Some(
+            Self {
             target,
             fn_name,
             generic_param_list,
@@ -275,7 +276,8 @@ impl FunctionBuilder {
             visibility,
             is_async,
             target_edition,
-        })
+        },
+        )
     }
 
     fn from_method_call(
@@ -318,7 +320,8 @@ impl FunctionBuilder {
         };
         let fn_body = make::block_expr(vec![], Some(placeholder_expr));
 
-        Some(Self {
+        Some(
+            Self {
             target,
             fn_name,
             generic_param_list,
@@ -330,7 +333,8 @@ impl FunctionBuilder {
             visibility,
             is_async,
             target_edition,
-        })
+        },
+        )
     }
 
     fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
@@ -2305,23 +2309,17 @@ fn foo() -> u32 {
     }
     #[test]
     fn add_function_not_applicable_if_function_already_exists() {
-        check_assist_not_applicable(
-            generate_function,
-            r"
+        check_assist_not_applicable(generate_function, r"
 fn foo() {
     bar$0();
 }
 
 fn bar() {}
-",
-        )
+")
     }
     #[test]
     fn add_function_not_applicable_if_unresolved_variable_in_call_is_selected() {
         check_assist_not_applicable(
-            // bar is resolved, but baz isn't.
-            // The assist is only active if the cursor is on an unresolved path,
-            // but the assist should only be offered if the path is a function call.
             generate_function,
             r#"
 fn foo() {

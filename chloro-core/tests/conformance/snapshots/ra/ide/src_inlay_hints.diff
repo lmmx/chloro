@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34297 bytes
+Chloro size:   34312 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
@@ -113,6 +113,24 @@ Rustfmt size:  36233 bytes
  fn hints(
      hints: &mut Vec<InlayHint>,
      ctx: &mut InlayHintCtx,
+     let rendered = sema
+         .scope(node_for_hint)
+         .and_then(|scope| ty.display_source_code(scope.db, scope.module().into(), false).ok())?;
+-    Some(config.lazy_text_edit(|| {
++    Some(
++        config.lazy_text_edit(|| {
+         let mut builder = TextEdit::builder();
+         builder.insert(offset_to_insert_ty, prefix.into());
+         builder.insert(offset_to_insert_ty, rendered);
+         additional_edits(&mut builder);
+ 
+         builder.finish()
+-    }))
++    }),
++    )
+ }
+ 
+ fn closure_has_block_body(closure: &ast::ClosureExpr) -> bool {
  
  #[cfg(test)]
  mod tests {

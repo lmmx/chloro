@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30792 bytes
+Chloro size:   30807 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -117,3 +117,19 @@ Rustfmt size:  31554 bytes
      // https://github.com/rust-lang/rust-analyzer/issues/12250
      if let Definition::BuiltinType(..) = def {
          let web_link = Url::parse(&format!("https://doc.rust-lang.org/{channel}/core/")).ok();
+ ///                                                       ^^^^^^^^^^^^^^
+ /// ```
+ fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
+-    Some(match assoc_item {
++    Some(
++        match assoc_item {
+         AssocItem::Function(function) => {
+             let is_trait_method =
+                 function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
+         AssocItem::TypeAlias(ty) => {
+             format!("associatedtype.{}", ty.name(db).as_str())
+         }
+-    })
++    },
++    )
+ }

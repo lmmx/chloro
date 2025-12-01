@@ -47,12 +47,14 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             } else {
                 Some(config.caps().completions_resolve_provider())
             },
-            trigger_characters: Some(vec![
+            trigger_characters: Some(
+                vec![
                 ":".to_owned(),
                 ".".to_owned(),
                 "'".to_owned(),
                 "(".to_owned(),
-            ]),
+            ],
+            ),
             all_commit_characters: None,
             completion_item: config.caps().completion_item(),
             work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
@@ -77,13 +79,15 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             RustfmtConfig::Rustfmt { enable_range_formatting: true, .. } => Some(OneOf::Left(true)),
             _ => Some(OneOf::Left(false)),
         },
-        document_on_type_formatting_provider: Some({
+        document_on_type_formatting_provider: Some(
+            {
             let mut chars = ide::Analysis::SUPPORTED_TRIGGER_CHARS.iter();
             DocumentOnTypeFormattingOptions {
                 first_trigger_character: chars.next().unwrap().to_string(),
                 more_trigger_character: Some(chars.map(|c| c.to_string()).collect()),
             }
-        }),
+        },
+        ),
         selection_range_provider: Some(SelectionRangeProviderCapability::Simple(true)),
         folding_range_provider: Some(FoldingRangeProviderCapability::Simple(true)),
         rename_provider: Some(OneOf::Right(RenameOptions {
@@ -103,7 +107,8 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 did_create: None,
                 will_create: None,
                 did_rename: None,
-                will_rename: Some(FileOperationRegistrationOptions {
+                will_rename: Some(
+                    FileOperationRegistrationOptions {
                     filters: vec![
                         FileOperationFilter {
                             scheme: Some(String::from("file")),
@@ -122,7 +127,8 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                             },
                         },
                     ],
-                }),
+                },
+                ),
                 did_delete: None,
                 will_delete: None,
             }),
@@ -142,14 +148,13 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             .into(),
         ),
         moniker_provider: None,
-        inlay_hint_provider: Some(OneOf::Right(InlayHintServerCapabilities::Options(
-            InlayHintOptions {
-                work_done_progress_options: Default::default(),
-                resolve_provider: Some(config.caps().inlay_hints_resolve_provider()),
-            },
-        ))),
+        inlay_hint_provider: Some(OneOf::Right(InlayHintServerCapabilities::Options(InlayHintOptions {
+            work_done_progress_options: Default::default(),
+            resolve_provider: Some(config.caps().inlay_hints_resolve_provider()),
+        }))),
         inline_value_provider: None,
-        experimental: Some(json!({
+        experimental: Some(
+            json!({
             "externalDocs": true,
             "hoverRange": true,
             "joinLines": true,
@@ -164,16 +169,14 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             },
             "ssr": true,
             "workspaceSymbolScopeKindFiltering": true,
+        }),
+        ),
+        diagnostic_provider: Some(lsp_types::DiagnosticServerCapabilities::Options(lsp_types::DiagnosticOptions {
+            identifier: Some("rust-analyzer".to_owned()),
+            inter_file_dependencies: true,
+            workspace_diagnostics: false,
+            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
         })),
-        diagnostic_provider: Some(lsp_types::DiagnosticServerCapabilities::Options(
-            lsp_types::DiagnosticOptions {
-                identifier: Some("rust-analyzer".to_owned()),
-                inter_file_dependencies: true,
-                // FIXME
-                workspace_diagnostics: false,
-                work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-            },
-        )),
         inline_completion_provider: None,
     }
 }
@@ -242,9 +245,11 @@ impl ClientCapabilities {
     }
 
     fn completion_item(&self) -> Option<CompletionOptionsCompletionItem> {
-        Some(CompletionOptionsCompletionItem {
+        Some(
+            CompletionOptionsCompletionItem {
             label_details_support: Some(self.completion_label_details_support()),
-        })
+        },
+        )
     }
 
     fn code_action_capabilities(&self) -> CodeActionProviderCapability {

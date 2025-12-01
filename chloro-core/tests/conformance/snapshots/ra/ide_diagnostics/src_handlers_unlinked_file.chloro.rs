@@ -282,7 +282,8 @@ fn make_fixes(
         }
     }
 
-    Some(vec![
+    Some(
+        vec![
         fix(
             "add_mod_declaration",
             &format!("Insert `{mod_decl}`"),
@@ -301,7 +302,8 @@ fn make_fixes(
             SourceChange::from_text_edit(parent_file_id, pub_crate_mod_decl_builder.finish()),
             trigger_range,
         ),
-    ])
+    ],
+    )
 }
 
 #[cfg(test)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49348 bytes
+Chloro size:   49407 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -189,6 +189,22 @@ Rustfmt size:  49754 bytes
          // cases.
          traits::type_known_to_meet_bound_modulo_regions(self, param_env, ty, copy_def_id)
      }
+         def_id: SolverDefId,
+         first: impl IntoIterator<Item = GenericArg<'db>>,
+     ) -> GenericArgs<'db> {
+-        GenericArgs::fill_rest(self.interner, def_id, first, |_index, kind, _| {
++        GenericArgs::fill_rest(
++            self.interner,
++            def_id,
++            first,
++            |_index, kind, _| {
+             self.var_for_def(kind)
+-        })
++        },
++        )
+     }
+ 
+     /// Returns `true` if errors have been reported since this infcx was
          }
      }
  

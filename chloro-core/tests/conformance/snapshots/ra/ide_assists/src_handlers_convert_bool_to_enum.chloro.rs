@@ -853,14 +853,11 @@ fn main() {
     #[test]
     fn local_variable_non_bool() {
         cov_mark::check!(not_applicable_non_bool_local);
-        check_assist_not_applicable(
-            convert_bool_to_enum,
-            r#"
+        check_assist_not_applicable(convert_bool_to_enum, r#"
 fn main() {
     let $0foo = 1;
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn local_variable_cursor_not_on_ident() {

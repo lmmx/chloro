@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9212 bytes
+Chloro size:   9235 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -74,6 +74,23 @@ Rustfmt size:  10026 bytes
              ) if a_def_id == b_def_id => super_combine_tys(infcx, self, a, b),
  
              _ => super_combine_tys(infcx, self, a, b),
+     fn regions(&mut self, a: Region<'db>, b: Region<'db>) -> RelateResult<'db, Region<'db>> {
+         let mut inner = self.infcx.inner.borrow_mut();
+         let mut constraints = inner.unwrap_region_constraints();
+-        Ok(match self.kind {
++        Ok(
++            match self.kind {
+             // GLB(&'static u8, &'a u8) == &RegionLUB('static, 'a) u8 == &'static u8
+             LatticeOpKind::Glb => constraints.lub_regions(self.cx(), a, b),
+ 
+             // LUB(&'static u8, &'a u8) == &RegionGLB('static, 'a) u8 == &'a u8
+             LatticeOpKind::Lub => constraints.glb_regions(self.cx(), a, b),
+-        })
++        },
++        )
+     }
+ 
+     fn consts(&mut self, a: Const<'db>, b: Const<'db>) -> RelateResult<'db, Const<'db>> {
              self.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)?;
              Ok(a)
          } else {

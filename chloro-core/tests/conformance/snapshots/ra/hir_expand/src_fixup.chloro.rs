@@ -564,29 +564,23 @@ mod tests {
     }
     #[test]
     fn just_for_token() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     for
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {for _ in __ra_fixup {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn for_no_iter_pattern() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     for {}
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {for _ in __ra_fixup {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn for_no_body() {
@@ -603,46 +597,37 @@ fn foo () {for bar in qux {}}
     }
     #[test]
     fn for_no_pat() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     for in qux {
 
     }
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {__ra_fixup}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn match_no_expr_no_arms() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     match
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {match __ra_fixup {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn match_expr_no_arms() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     match it {
 
     }
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {match it {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn match_no_expr() {
@@ -661,29 +646,23 @@ fn foo () {match __ra_fixup {}}
     }
     #[test]
     fn incomplete_field_expr_1() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     a.
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {a . __ra_fixup}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn incomplete_field_expr_2() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     a.;
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {a . __ra_fixup ;}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn incomplete_field_expr_3() {
@@ -701,16 +680,13 @@ fn foo () {a . __ra_fixup ; bar () ;}
     }
     #[test]
     fn incomplete_let() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     let it = a
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {let it = a ;}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn incomplete_field_expr_in_let() {
@@ -742,146 +718,113 @@ fn foo () {a . b ; bar () ;}
     }
     #[test]
     fn extraneous_comma() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     bar(,);
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {__ra_fixup ;}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_if_1() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     if a
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {if a {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_if_2() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     if
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {if __ra_fixup {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_if_3() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     if {}
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {if __ra_fixup {} {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_while_1() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     while
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {while __ra_fixup {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_while_2() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     while foo
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {while foo {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_while_3() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     while {}
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {while __ra_fixup {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_loop() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     loop
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {loop {}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_path() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     path::
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {path :: __ra_fixup}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_record_ctor_field() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     R { f: }
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {R {f : __ra_fixup}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn no_fixup_record_ctor_field() {
-        check(
-            r#"
+        check(r#"
 fn foo() {
     R { f: a }
 }
-"#,
-            expect![[r#"
+"#, expect![[r#"
 fn foo () {R {f : a}}
-"#]],
-        )
+"#]])
     }
     #[test]
     fn fixup_arg_list() {

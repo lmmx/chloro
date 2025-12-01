@@ -88,7 +88,8 @@ pub(crate) fn convert_range_for_to_while(
 }
 
 fn extract_range(iterable: &ast::Expr) -> Option<(ast::Expr, Option<ast::Expr>, ast::Expr, bool)> {
-    Some(match iterable {
+    Some(
+        match iterable {
         ast::Expr::ParenExpr(expr) => extract_range(&expr.expr()?)?,
         ast::Expr::RangeExpr(range) => {
             let inclusive = range.op_kind()? == ast::RangeOp::Inclusive;
@@ -100,7 +101,8 @@ fn extract_range(iterable: &ast::Expr) -> Option<(ast::Expr, Option<ast::Expr>, 
             (start, end, step, inclusive)
         }
         _ => return None,
-    })
+    },
+    )
 }
 
 #[cfg(test)]

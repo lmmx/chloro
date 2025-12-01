@@ -359,12 +359,14 @@ fn scope_def_to_name(
     ctx: &RenderContext<'_>,
     import_edit: &LocatedImport,
 ) -> Option<hir::Name> {
-    Some(match resolution {
+    Some(
+        match resolution {
         ScopeDef::ModuleDef(hir::ModuleDef::Function(f)) => f.name(ctx.completion.db),
         ScopeDef::ModuleDef(hir::ModuleDef::Const(c)) => c.name(ctx.completion.db)?,
         ScopeDef::ModuleDef(hir::ModuleDef::TypeAlias(t)) => t.name(ctx.completion.db),
         _ => item_name(ctx.db(), import_edit.original_item)?,
-    })
+    },
+    )
 }
 
 fn render_resolution_pat(

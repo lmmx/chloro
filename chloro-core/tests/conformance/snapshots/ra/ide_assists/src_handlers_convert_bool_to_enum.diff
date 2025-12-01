@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40489 bytes
-Chloro size:   39817 bytes
+Chloro size:   39782 bytes
 Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
@@ -329,8 +329,16 @@ Rustfmt size:  41249 bytes
      #[test]
      fn local_variable_non_bool() {
          cov_mark::check!(not_applicable_non_bool_local);
- "#,
-         )
+-        check_assist_not_applicable(
+-            convert_bool_to_enum,
+-            r#"
++        check_assist_not_applicable(convert_bool_to_enum, r#"
+ fn main() {
+     let $0foo = 1;
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]

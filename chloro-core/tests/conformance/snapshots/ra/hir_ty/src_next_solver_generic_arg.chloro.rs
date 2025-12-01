@@ -216,10 +216,14 @@ impl<'db> GenericArgs<'db> {
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
     {
         let defaults = interner.db.generic_defaults(def_id);
-        Self::for_item(interner, def_id.into(), |idx, id, prev| match defaults.get(idx as usize) {
+        Self::for_item(
+            interner,
+            def_id.into(),
+            |idx, id, prev| match defaults.get(idx as usize) {
             Some(default) => default.instantiate(interner, prev),
             None => fallback(idx, id, prev),
-        })
+        },
+        )
     }
 
     /// Like `for_item()`, but calls first uses the args from `first`.
@@ -233,9 +237,13 @@ impl<'db> GenericArgs<'db> {
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
     {
         let mut iter = first.into_iter();
-        Self::for_item(interner, def_id, |idx, id, prev| {
+        Self::for_item(
+            interner,
+            def_id,
+            |idx, id, prev| {
             iter.next().unwrap_or_else(|| fallback(idx, id, prev))
-        })
+        },
+        )
     }
 
     /// Appends default param values to `first` if needed. Params without default will call `fallback()`.
@@ -249,12 +257,17 @@ impl<'db> GenericArgs<'db> {
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
     {
         let defaults = interner.db.generic_defaults(def_id);
-        Self::fill_rest(interner, def_id.into(), first, |idx, id, prev| {
+        Self::fill_rest(
+            interner,
+            def_id.into(),
+            first,
+            |idx, id, prev| {
             defaults
                 .get(idx as usize)
                 .map(|default| default.instantiate(interner, prev))
                 .unwrap_or_else(|| fallback(idx, id, prev))
-        })
+        },
+        )
     }
 
     fn fill_item<F>(
@@ -385,13 +398,17 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId,
         original_args: &[<DbInterner<'db> as rustc_type_ir::Interner>::GenericArg],
     ) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
-        Self::for_item(interner, def_id, |index, kind, _| {
+        Self::for_item(
+            interner,
+            def_id,
+            |index, kind, _| {
             if let Some(arg) = original_args.get(index as usize) {
                 *arg
             } else {
                 error_for_param_kind(kind, interner)
             }
-        })
+        },
+        )
     }
 
     fn type_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {

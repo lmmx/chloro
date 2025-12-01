@@ -700,7 +700,10 @@ impl<'a> WalkExpandedExprCtx<'a> {
     }
 
     fn walk(&mut self, expr: &ast::Expr, cb: &mut dyn FnMut(usize, ast::Expr)) {
-        preorder_expr_with_ctx_checker(expr, self.check_ctx, &mut |ev: WalkEvent<ast::Expr>| {
+        preorder_expr_with_ctx_checker(
+            expr,
+            self.check_ctx,
+            &mut |ev: WalkEvent<ast::Expr>| {
             match ev {
                 syntax::WalkEvent::Enter(expr) => {
                     cb(self.depth, expr.clone());
@@ -732,7 +735,8 @@ impl<'a> WalkExpandedExprCtx<'a> {
                 _ => {}
             }
             false
-        })
+        },
+        )
     }
 
     fn handle_expanded(

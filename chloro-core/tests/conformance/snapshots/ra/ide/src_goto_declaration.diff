@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6351 bytes
-Chloro size:   5897 bytes
+Chloro size:   5851 bytes
 Rustfmt size:  6484 bytes
 
 ✗ Outputs DIFFER
@@ -79,16 +79,31 @@ Rustfmt size:  6484 bytes
 -
      #[test]
      fn goto_decl_module_outline() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ //- /main.rs
+ mod foo;
+  // ^^^
+ //- /foo.rs
+ use self$0;
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_decl_module_inline() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ mod foo {
+  // ^^^
+     use self$0;
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]

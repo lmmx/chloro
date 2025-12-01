@@ -87,12 +87,14 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<
         edit,
     );
 
-    Some(vec![fix(
+    Some(
+        vec![fix(
         "remove_unnecessary_else",
         "Remove unnecessary else block",
         source_change,
         range,
-    )])
+    )],
+    )
 }
 
 #[cfg(test)]

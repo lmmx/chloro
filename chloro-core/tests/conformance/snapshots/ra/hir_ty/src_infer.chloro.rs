@@ -153,10 +153,12 @@ pub(crate) fn infer_cycle_result(
     db: &dyn HirDatabase,
     _: DefWithBodyId,
 ) -> Arc<InferenceResult<'_>> {
-    Arc::new(InferenceResult {
+    Arc::new(
+        InferenceResult {
         has_errors: true,
         ..InferenceResult::new(Ty::new_error(DbInterner::new_with(db, None, None), ErrorGuaranteed))
-    })
+    },
+    )
 }
 
 /// Binding modes inferred for patterns.

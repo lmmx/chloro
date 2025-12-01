@@ -547,13 +547,11 @@ fn main() <fold block>{
     }
     #[test]
     fn fold_record_literals() {
-        check(
-            r#"
+        check(r#"
 const _: S = S <fold block>{
 
 }</fold>;
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_multiline_params() {
@@ -568,16 +566,14 @@ const _: S = S <fold block>{
     }
     #[test]
     fn fold_multiline_array() {
-        check(
-            r#"
+        check(r#"
 const FOO: [usize; 4] = <fold array>[
     1,
     2,
     3,
     4,
 ]</fold>;
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_region() {
@@ -644,14 +640,12 @@ fn bar() -> (bool, bool) { (true, true) }
     }
     #[test]
     fn fold_generics() {
-        check(
-            r#"
+        check(r#"
 type Foo<T, U> = foo<fold arglist><
     T,
     U,
 ></fold>;
-"#,
-        )
+"#)
     }
     #[test]
     fn test_fold_doc_comments_with_multiline_paramlist_function() {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11678 bytes
-Chloro size:   11690 bytes
+Chloro size:   11713 bytes
 Rustfmt size:  12164 bytes
 
 ✗ Outputs DIFFER
@@ -108,6 +108,24 @@ Rustfmt size:  12164 bytes
                      ))
                      .finish()
              }
+     type Error = ();
+ 
+     fn try_from(value: SolverDefId) -> Result<Self, Self::Error> {
+-        Ok(match value {
++        Ok(
++            match value {
+             SolverDefId::AdtId(adt_id) => GenericDefId::AdtId(adt_id),
+             SolverDefId::ConstId(const_id) => GenericDefId::ConstId(const_id),
+             SolverDefId::FunctionId(function_id) => GenericDefId::FunctionId(function_id),
+             | SolverDefId::InternedOpaqueTyId(_)
+             | SolverDefId::EnumVariantId(_)
+             | SolverDefId::Ctor(_) => return Err(()),
+-        })
++        },
++        )
+     }
+ }
+ 
      fn as_local(self) -> Option<SolverDefId> {
          Some(self)
      }

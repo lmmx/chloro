@@ -953,7 +953,8 @@ impl FunctionBody {
         let generic_param_lists = parents.iter().filter_map(|it| it.generic_param_list()).collect();
         let where_clauses = parents.iter().filter_map(|it| it.where_clause()).collect();
 
-        Some((
+        Some(
+            (
             ContainerInfo {
                 is_const,
                 parent_loop,
@@ -963,7 +964,8 @@ impl FunctionBody {
                 edition,
             },
             contains_tail_expr,
-        ))
+        ),
+        )
     }
 
     fn return_ty<'db>(&self, ctx: &AssistContext<'db>) -> Option<RetType<'db>> {

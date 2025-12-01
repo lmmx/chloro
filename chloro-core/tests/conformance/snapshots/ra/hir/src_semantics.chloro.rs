@@ -1487,7 +1487,9 @@ impl<'db> SemanticsImpl<'db> {
         &self,
         node: InFile<SyntaxNode>,
     ) -> impl Iterator<Item = InFile<SyntaxNode>> + Clone + '_ {
-        iter::successors(Some(node), move |&InFile { file_id, ref value }| match value.parent() {
+        iter::successors(
+            Some(node),
+            move |&InFile { file_id, ref value }| match value.parent() {
             Some(parent) => Some(InFile::new(file_id, parent)),
             None => {
                 let macro_file = file_id.macro_file()?;
@@ -1497,7 +1499,8 @@ impl<'db> SemanticsImpl<'db> {
                     expansion_info.arg().map(|node| node?.parent()).transpose()
                 })
             }
-        })
+        },
+        )
     }
 
     pub fn ancestors_at_offset_with_macros(

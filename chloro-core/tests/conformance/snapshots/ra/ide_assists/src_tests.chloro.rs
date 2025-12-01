@@ -109,10 +109,13 @@ fn assists(
     resolve: AssistResolveStrategy,
     range: ide_db::FileRange,
 ) -> Vec<Assist> {
-    hir::attach_db(db, || {
+    hir::attach_db(
+        db,
+        || {
         HirDatabase::zalsa_register_downcaster(db);
         crate::assists(db, config, resolve, range)
-    })
+    },
+    )
 }
 
 pub(crate) fn with_single_file(text: &str) -> (RootDatabase, EditionedFileId) {

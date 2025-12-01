@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2269 bytes
-Chloro size:   2270 bytes
+Chloro size:   2285 bytes
 Rustfmt size:  2269 bytes
 
 ✗ Outputs DIFFER
@@ -13,3 +13,19 @@ Rustfmt size:  2269 bytes
  use ide_db::{
      defs::Definition,
      syntax_helpers::format_string::{is_format_string, lex_format_specifiers, FormatSpecifier},
+ }
+ 
+ fn highlight_format_specifier(kind: FormatSpecifier) -> Option<HlTag> {
+-    Some(match kind {
++    Some(
++        match kind {
+         FormatSpecifier::Open
+         | FormatSpecifier::Close
+         | FormatSpecifier::Colon
+ 
+         FormatSpecifier::Identifier => HlTag::Symbol(SymbolKind::Local),
+         FormatSpecifier::Escape => HlTag::EscapeSequence,
+-    })
++    },
++    )
+ }

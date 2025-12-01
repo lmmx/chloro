@@ -34,12 +34,15 @@ pub fn block_as_lone_tail(block: &ast::BlockExpr) -> Option<ast::Expr> {
 
 /// Preorder walk all the expression's child expressions.
 pub fn walk_expr(expr: &ast::Expr, cb: &mut dyn FnMut(ast::Expr)) {
-    preorder_expr(expr, &mut |ev| {
+    preorder_expr(
+        expr,
+        &mut |ev| {
         if let WalkEvent::Enter(expr) = ev {
             cb(expr);
         }
         false
-    })
+    },
+    )
 }
 
 pub fn is_closure_or_blk_with_modif(expr: &ast::Expr) -> bool {

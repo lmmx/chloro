@@ -500,7 +500,8 @@ impl Analysis {
     pub fn symbol_search(&self, query: Query, limit: usize) -> Cancellable<Vec<NavigationTarget>> {
         // `world_symbols` currently clones the database to run stuff in parallel, which will make any query panic
         // if we were to attach it here.
-        Cancelled::catch(|| {
+        Cancelled::catch(
+            || {
             let symbols = symbol_index::world_symbols(&self.db, query);
             hir::attach_db(&self.db, || {
                 symbols
@@ -510,7 +511,8 @@ impl Analysis {
                     .map(UpmappingResult::call_site)
                     .collect::<Vec<_>>()
             })
-        })
+        },
+        )
     }
 
     /// Returns the definitions from the symbol at `position`.
@@ -754,9 +756,11 @@ impl Analysis {
         position: FilePosition,
         imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe,
     ) -> Cancellable<Vec<TextEdit>> {
-        Ok(self
+        Ok(
+            self
             .with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?
-            .unwrap_or_default())
+            .unwrap_or_default(),
+        )
     }
 
     /// Computes the set of parser level diagnostics for the given file.

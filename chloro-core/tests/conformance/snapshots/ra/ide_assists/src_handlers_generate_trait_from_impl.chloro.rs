@@ -297,12 +297,9 @@ impl NewTrait for Foo {
     }
     #[test]
     fn test_empty_inherent_impl() {
-        check_assist_not_applicable(
-            generate_trait_from_impl,
-            r#"
+        check_assist_not_applicable(generate_trait_from_impl, r#"
 impl Emp$0tyImpl{}
-"#,
-        )
+"#)
     }
     #[test]
     fn test_not_top_level_impl() {

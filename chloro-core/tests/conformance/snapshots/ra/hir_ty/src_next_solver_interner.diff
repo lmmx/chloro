@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81815 bytes
+Chloro size:   81977 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -130,8 +130,18 @@ Rustfmt size:  84055 bytes
  impl<'db> DbInterner<'db> {
 -    // FIXME(next-solver): remove this method
      pub fn conjure() -> DbInterner<'db> {
-         crate::with_attached_db(|db| DbInterner {
+-        crate::with_attached_db(|db| DbInterner {
++        crate::with_attached_db(
++            |db| DbInterner {
              db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
+             krate: None,
+             block: None,
+-        })
++        },
++        )
+     }
+ 
+     pub fn new_with(
      }
  }
  
@@ -190,6 +200,18 @@ Rustfmt size:  84055 bytes
      }
  
      pub fn inner(&self) -> &AdtDefInner {
+-        crate::with_attached_db(|db| {
++        crate::with_attached_db(
++            |db| {
+             let inner = self.data_(db);
+             // SAFETY: ¯\_(ツ)_/¯
+             unsafe { std::mem::transmute(inner) }
+-        })
++        },
++        )
+     }
+ 
+     pub fn is_enum(&self) -> bool {
          let db = interner.db();
          // FIXME: this is disabled just to match the behavior with chalk right now
          let _field_tys = |id: VariantId| {
@@ -212,6 +234,40 @@ Rustfmt size:  84055 bytes
 +            let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
  
              let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
+ 
+ 
+ impl fmt::Debug for AdtDef {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+-        crate::with_attached_db(|db| match self.inner().id {
++        crate::with_attached_db(
++            |db| match self.inner().id {
+             AdtId::StructId(struct_id) => {
+                 let data = db.struct_signature(struct_id);
+                 f.write_str(data.name.as_str())
+                 let data = db.enum_signature(enum_id);
+                 f.write_str(data.name.as_str())
+             }
+-        })
++        },
++        )
+     }
+ }
+ 
+     }
+ 
+     pub fn inner(&self) -> &PatternKind<'db> {
+-        crate::with_attached_db(|db| {
++        crate::with_attached_db(
++            |db| {
+             let inner = &self.kind_(db).0;
+             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
+             // make sure that our returned value is valid for the lifetime `'db`.
+             unsafe { std::mem::transmute(inner) }
+-        })
++        },
++        )
+     }
+ }
  
  
      fn outer_exclusive_binder(&self) -> rustc_type_ir::DebruijnIndex {
@@ -352,6 +408,20 @@ Rustfmt size:  84055 bytes
      type Clauses = Clauses<'db>;
  
      type GenericsOf = Generics;
+         I: Iterator<Item = T>,
+         T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
+     {
+-        CollectAndApply::collect_and_apply(args, |g| {
++        CollectAndApply::collect_and_apply(
++            args,
++            |g| {
+             GenericArgs::new_from_iter(self, g.iter().cloned())
+-        })
++        },
++        )
+     }
+ 
+     type UnsizingParams = UnsizingParams;
                      Ctor::Struct(id) => id.into(),
                      Ctor::Enum(id) => id.into(),
                  };
@@ -589,6 +659,17 @@ Rustfmt size:  84055 bytes
      fn evaluate_root_goal_for_proof_tree_raw(
          self,
          canonical_goal: rustc_type_ir::solve::CanonicalInput<Self>,
+         rustc_next_trait_solver::solve::evaluate_root_goal_for_proof_tree_raw_provider::<
+             SolverContext<'db>,
+             Self,
+-        >(self, canonical_goal)
++        >(
++            self,
++            canonical_goal,
++        )
+     }
+ 
+     fn is_sizedness_trait(self, def_id: Self::TraitId) -> bool {
                      Region::new_bound(
                          self,
                          DebruijnIndex::ZERO,

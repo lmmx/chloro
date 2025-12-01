@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8960 bytes
-Chloro size:   8626 bytes
+Chloro size:   8580 bytes
 Rustfmt size:  9057 bytes
 
 ✗ Outputs DIFFER
@@ -115,16 +115,30 @@ Rustfmt size:  9057 bytes
 -
      #[test]
      fn goto_def_for_self_param() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ struct Foo;
+      //^^^
+ impl Foo {
+     fn f(&self$0) {}
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_for_type_fallback() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ struct Foo;
+      //^^^
+ impl Foo$0 {}
+-"#,
+-        )
++"#)
      }
 -
      #[test]

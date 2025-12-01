@@ -624,7 +624,8 @@ pub(crate) fn inlay_hint(
         _ => None,
     };
 
-    Ok(lsp_types::InlayHint {
+    Ok(
+        lsp_types::InlayHint {
         position: match inlay_hint.position {
             ide::InlayHintPosition::Before => position(line_index, inlay_hint.range.start()),
             ide::InlayHintPosition::After => position(line_index, inlay_hint.range.end()),
@@ -642,7 +643,8 @@ pub(crate) fn inlay_hint(
         data,
         tooltip,
         label,
-    })
+    },
+    )
 }
 
 fn inlay_hint_label(
@@ -1477,7 +1479,8 @@ pub(crate) fn call_hierarchy_item(
     let detail = target.description.clone();
     let kind = target.kind.map(symbol_kind).unwrap_or(lsp_types::SymbolKind::FUNCTION);
     let (uri, range, selection_range) = location_info(snap, target)?;
-    Ok(lsp_types::CallHierarchyItem {
+    Ok(
+        lsp_types::CallHierarchyItem {
         name,
         kind,
         tags: None,
@@ -1486,7 +1489,8 @@ pub(crate) fn call_hierarchy_item(
         range,
         selection_range,
         data: None,
-    })
+    },
+    )
 }
 
 pub(crate) fn code_action_kind(kind: AssistKind) -> lsp_types::CodeActionKind {

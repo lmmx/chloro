@@ -271,14 +271,12 @@ fn baz(s: S) -> i32 {
     }
     #[test]
     fn missing_record_pat_field_box() {
-        check_diagnostics(
-            r"
+        check_diagnostics(r"
 struct S { s: Box<u32> }
 fn x(a: S) {
     let S { box s } = a;
 }
-",
-        )
+")
     }
     #[test]
     fn missing_record_pat_field_ref() {

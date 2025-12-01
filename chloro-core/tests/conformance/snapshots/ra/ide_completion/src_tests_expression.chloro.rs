@@ -41,7 +41,6 @@ fn baz() {
     let foo = create_foo(&$0);
 }
             "#,
-        // This should not contain `FooDesc {…}`.
         expect![[r#"
             ct CONST                   Unit
             en Enum                    Enum
