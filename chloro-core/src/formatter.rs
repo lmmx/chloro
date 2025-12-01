@@ -1,5 +1,6 @@
 pub mod config;
 mod node;
+pub mod printer;
 
 use ra_ap_syntax::{AstNode, Edition, SourceFile};
 

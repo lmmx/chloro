@@ -1,67 +1,33 @@
-// chloro-core/src/formatter/node/common/fields.rs
-use ra_ap_syntax::ast::{HasAttrs, HasDocComments, HasName, HasVisibility};
-use ra_ap_syntax::{AstNode, AstToken, NodeOrToken, SyntaxKind, ast};
+use ra_ap_syntax::ast::{self, HasName};
+use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind};
 
-use crate::formatter::write_indent;
+use crate::formatter::printer::Printer;
 
 /// Collect non-doc comments from inside a node (before the name)
 fn collect_inner_comments(node: &ra_ap_syntax::SyntaxNode) -> Vec<String> {
-    let mut comments = Vec::new();
-
-    for child in node.children_with_tokens() {
-        match child {
-            NodeOrToken::Token(t) => {
-                if t.kind() == SyntaxKind::COMMENT {
-                    let text = t.text().to_string();
-                    // Skip doc comments (handled by HasDocComments)
-                    if !text.starts_with("///") && !text.starts_with("//!") {
-                        comments.push(text);
-                    }
-                }
+    node.children_with_tokens()
+        .take_while(|child| !matches!(child, NodeOrToken::Node(n) if n.kind() == SyntaxKind::NAME))
+        .filter_map(|child| match child {
+            NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT => {
+                let text = t.text().to_string();
+                (!text.starts_with("///") && !text.starts_with("//!")).then_some(text)
             }
-            NodeOrToken::Node(n) => {
-                // Stop when we hit the NAME node
-                if n.kind() == SyntaxKind::NAME {
-                    break;
-                }
-            }
-        }
-    }
-
-    comments
+            _ => None,
+        })
+        .collect()
 }
 
-/// Format record fields with their comments (used by struct and enum variants).
+/// Format record fields with their comments.
 pub fn format_record_fields(fields: &ast::RecordFieldList, buf: &mut String, indent: usize) {
     for field in fields.fields() {
-        // Collect comments from inside the field node (before the name)
-        let comments_before = collect_inner_comments(field.syntax());
-        for comment in &comments_before {
-            write_indent(buf, indent);
-            buf.push_str(comment);
-            buf.push('\n');
+        for comment in collect_inner_comments(field.syntax()) {
+            buf.line(indent, &comment);
         }
+        buf.doc_comments(&field, indent);
+        buf.attrs(&field, indent);
 
-        // Format field doc comments
-        for comment in field.doc_comments() {
-            let text = comment.text();
-            write_indent(buf, indent);
-            buf.push_str(text.trim());
-            buf.push('\n');
-        }
-
-        // Format field attributes
-        for attr in field.attrs() {
-            write_indent(buf, indent);
-            buf.push_str(&attr.syntax().text().to_string());
-            buf.push('\n');
-        }
-
-        write_indent(buf, indent);
-        if let Some(vis) = field.visibility() {
-            buf.push_str(&vis.syntax().text().to_string());
-            buf.push(' ');
-        }
+        buf.indent(indent);
+        buf.visibility(&field);
         if let Some(name) = field.name() {
             buf.push_str(&name.text());
         }

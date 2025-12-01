@@ -1,4 +1,3 @@
-// chloro-core/src/formatter/node/structdef.rs
 use ra_ap_syntax::{
     AstNode, SyntaxNode,
     ast::{self, HasVisibility},
