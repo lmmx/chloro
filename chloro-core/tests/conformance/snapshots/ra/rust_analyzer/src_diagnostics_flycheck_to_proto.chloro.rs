@@ -161,8 +161,7 @@ fn resolve_path(
     match config
         .remap_prefix
         .iter()
-        .find_map(|(from, to)| file_name.strip_prefix(from).map(|file_name| (to, file_name)))
-    {
+        .find_map(|(from, to)| file_name.strip_prefix(from).map(|file_name| (to, file_name))) {
         Some((to, file_name)) => workspace_root.join(format!("{to}{file_name}")),
         None => workspace_root.join(file_name),
     }
@@ -252,15 +251,13 @@ fn map_rust_child_diagnostic(
             },
         }))
     };
-    MappedRustChildDiagnostic::SubDiagnostic(
-        SubDiagnostic {
+    MappedRustChildDiagnostic::SubDiagnostic(SubDiagnostic {
         related: lsp_types::DiagnosticRelatedInformation {
             location: location(config, workspace_root, spans[0], snap),
             message,
         },
         suggested_fix,
-    },
-    )
+    })
 }
 
 #[derive(Debug)]

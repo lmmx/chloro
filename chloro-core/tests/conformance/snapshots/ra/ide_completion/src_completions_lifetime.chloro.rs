@@ -33,11 +33,9 @@ pub(crate) fn complete_lifetime(
         }
     });
     acc.add_lifetime(ctx, Name::new_symbol_root(sym::tick_static));
-    if !in_lifetime_param_bound
-        && def.is_some_and(|def| {
+    if !in_lifetime_param_bound && def.is_some_and(|def| {
             !matches!(def, hir::GenericDef::Function(_) | hir::GenericDef::Impl(_))
-        })
-    {
+        }) {
         acc.add_lifetime(ctx, Name::new_symbol_root(sym::tick_underscore));
     }
 }

@@ -290,9 +290,14 @@ where
     match item {
         AssocItemId::ConstId(it) => cb(DynCompatibilityViolation::AssocConst(it)),
         AssocItemId::FunctionId(it) => {
-            virtual_call_violations_for_method(db, trait_, it, &mut |mvc| {
+            virtual_call_violations_for_method(
+                db,
+                trait_,
+                it,
+                &mut |mvc| {
                 cb(DynCompatibilityViolation::Method(it, mvc))
-            })
+            },
+            )
         }
         AssocItemId::TypeAliasId(it) => {
             let def_map = CrateRootModuleId::from(trait_.krate(db)).def_map(db);

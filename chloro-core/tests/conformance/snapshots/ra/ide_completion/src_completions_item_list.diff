@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6052 bytes
-Chloro size:   6052 bytes
+Chloro size:   6058 bytes
 Rustfmt size:  6074 bytes
 
 ✗ Outputs DIFFER
@@ -22,6 +22,22 @@ Rustfmt size:  6074 bytes
  pub(crate) fn complete_item_list_in_expr(
      acc: &mut Completions,
      ctx: &CompletionContext<'_>,
+                     _ => (),
+                 }
+             }
+-
+             acc.add_super_keyword(ctx, *super_chain_len);
+         }
+         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
+             });
+             acc.add_nameref_keywords_with_colon(ctx);
+         }
+-        Qualified::TypeAnchor { .. } | Qualified::No | Qualified::With { .. } => {}
++        Qualified::TypeAnchor { .. } | Qualified::No | Qualified::With { .. } => {
++        }
+     }
+ }
+ 
  fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
  
@@ -33,3 +49,17 @@ Rustfmt size:  6074 bytes
      let in_assoc_non_trait_impl = matches!(kind, Some(ItemListKind::Impl | ItemListKind::Trait));
  
      let in_extern_block = matches!(kind, Some(ItemListKind::ExternBlock { .. }));
+         if in_unsafe_extern_block {
+             add_keyword("safe", "safe $0");
+         }
+-
+         add_keyword("fn", "fn $1($2);");
+         add_keyword("static", "static $1: $2;");
+     } else {
+             }
+             add_keyword("type", "type $0");
+         }
+-
+         add_keyword("fn", "fn $1($2) {\n    $0\n}");
+         add_keyword("unsafe", "unsafe $0");
+         add_keyword("const", "const $0");

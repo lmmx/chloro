@@ -2150,8 +2150,7 @@ async fn main() {
 
 #[test]
 fn async_fn_and_try_operator() {
-    check_no_mismatches(
-        r#"
+    check_no_mismatches(r#"
 //- minicore: future, result, fn, try, from
 async fn foo() -> Result<(), ()> {
     Ok(())
@@ -2161,8 +2160,7 @@ async fn bar() -> Result<(), ()> {
     let x = foo().await?;
     Ok(x)
 }
-        "#,
-    )
+        "#)
 }
 
 #[test]
@@ -2750,8 +2748,7 @@ impl B for Astruct {}
 
 #[test]
 fn capture_kinds_simple() {
-    check_types(
-        r#"
+    check_types(r#"
 struct S;
 
 impl S {
@@ -2783,8 +2780,7 @@ fn f() {
     let c3 = || { let t = x; t };
       //^^ impl FnOnce() -> S
 }
-    "#,
-    )
+    "#)
 }
 
 #[test]
@@ -2850,8 +2846,7 @@ fn test() {
 
 #[test]
 fn capture_kinds_with_copy_types() {
-    check_types(
-        r#"
+    check_types(r#"
 //- minicore: copy, clone, derive
 #[derive(Clone, Copy)]
 struct Copy;
@@ -2887,14 +2882,12 @@ fn f() {
     let c3 = || e;
       //^^ impl FnOnce() -> AssocGeneric<Copy>
 }
-    "#,
-    )
+    "#)
 }
 
 #[test]
 fn closure_kind_with_predicates() {
-    check_types(
-        r#"
+    check_types(r#"
 //- minicore: fn
 #![feature(unboxed_closures)]
 
@@ -2924,14 +2917,12 @@ fn test {
     f2(|| { 0 });
     // ^^^^^^^^ impl FnOnce() -> i32
 }
-    "#,
-    )
+    "#)
 }
 
 #[test]
 fn derive_macro_should_work_for_associated_type() {
-    check_types(
-        r#"
+    check_types(r#"
 //- minicore: copy, clone, derive
 #[derive(Clone)]
 struct X;
@@ -2954,14 +2945,12 @@ fn f() {
     let e_clone = e.clone();
       //^^^^^^^ AssocGeneric<X>
 }
-    "#,
-    )
+    "#)
 }
 
 #[test]
 fn cfgd_out_assoc_items() {
-    check_types(
-        r#"
+    check_types(r#"
 struct S;
 
 impl S {
@@ -2973,8 +2962,7 @@ fn f() {
     S::C;
   //^^^^ {unknown}
 }
-    "#,
-    )
+    "#)
 }
 
 #[test]

@@ -701,7 +701,9 @@ impl<'db> SemanticsImpl<'db> {
     ) -> Option<Vec<(TextRange, Option<Either<PathResolution, InlineAsmOperand>>)>> {
         let string_start = string.syntax().text_range().start();
         let token = self.wrap_token_infile(string.syntax().clone());
-        self.descend_into_macros_breakable(token, |token, _| {
+        self.descend_into_macros_breakable(
+            token,
+            |token, _| {
             (|| {
                 let token = token.value;
                 let string = ast::String::cast(token)?;
@@ -736,7 +738,8 @@ impl<'db> SemanticsImpl<'db> {
                 }
             })()
             .map_or(ControlFlow::Continue(()), ControlFlow::Break)
-        })
+        },
+        )
     }
 
     /// Retrieves the formatting part of the format_args! template string at the given offset.
@@ -2081,7 +2084,6 @@ impl<'db> SemanticsImpl<'db> {
             if &parent == enclosing_node {
                 break false;
             }
-
             if let Some(parent) = ast::Expr::cast(parent.clone())
                 && let Some(ExprOrPatId::ExprId(expr_id)) =
                     source_map.node_expr(InFile { file_id, value: &parent })
@@ -2089,7 +2091,6 @@ impl<'db> SemanticsImpl<'db> {
             {
                 break true;
             }
-
             let Some(parent_) = parent.parent() else { break false };
             parent = parent_;
         }
@@ -2387,9 +2388,7 @@ struct RenameConflictsVisitor<'a> {
 
 impl RenameConflictsVisitor<'_> {
     fn resolve_path(&mut self, node: ExprOrPatId, path: &Path) {
-        if let Path::BarePath(path) = path
-            && let Some(name) = path.as_ident()
-        {
+        if let Path::BarePath(path) = path && let Some(name) = path.as_ident() {
             if *name.symbol() == self.new_name {
                 if let Some(conflicting) = self.resolver.rename_will_conflict_with_renamed(
                     self.db,
@@ -2408,8 +2407,7 @@ impl RenameConflictsVisitor<'_> {
                     self.body.expr_or_pat_path_hygiene(node),
                     &self.new_name,
                     self.to_be_renamed,
-                )
-            {
+                ) {
                 self.conflicts.insert(conflicting);
             }
         }

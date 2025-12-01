@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   32008 bytes
+Chloro size:   32078 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -320,6 +320,16 @@ Rustfmt size:  33070 bytes
          })
      }
  
+     }
+ 
+     fn find_generic_param_container(&mut self, src: InFile<&SyntaxNode>) -> Option<GenericDefId> {
+-        self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
++        self.parent_ancestors_with_macros(
++            src,
++            |this, InFile { file_id, value }, _| {
+             let item = ast::Item::cast(value)?;
+             match &item {
+                 ast::Item::Fn(it) => this.fn_to_def(InFile::new(file_id, it)).map(Into::into),
                  }
                  ast::Item::Enum(it) => this.enum_to_def(InFile::new(file_id, it)).map(Into::into),
                  ast::Item::Trait(it) => this.trait_to_def(InFile::new(file_id, it)).map(Into::into),
@@ -332,13 +342,29 @@ Rustfmt size:  33070 bytes
                  ast::Item::Impl(it) => this.impl_to_def(InFile::new(file_id, it)).map(Into::into),
                  _ => None,
              }
-         })
+-        })
++        },
++        )
      }
  
 -    // FIXME: Remove this when we do inference in signatures
      fn find_pat_or_label_container(&mut self, src: InFile<&SyntaxNode>) -> Option<DefWithBodyId> {
-         self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
+-        self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
++        self.parent_ancestors_with_macros(
++            src,
++            |this, InFile { file_id, value }, _| {
              let item = match ast::Item::cast(value.clone()) {
+                 Some(it) => it,
+                 None => {
+                 }
+                 _ => None,
+             }
+-        })
++        },
++        )
+     }
+ 
+     /// Skips the attributed item that caused the macro invocation we are climbing up
                  ast::Item::Struct(it) => {
                      let def = self.struct_to_def(container.with_value(it))?;
                      let is_in_body = it.field_list().is_some_and(|it| {

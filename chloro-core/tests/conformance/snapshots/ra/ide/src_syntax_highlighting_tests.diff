@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31331 bytes
-Chloro size:   31173 bytes
+Chloro size:   31169 bytes
 Rustfmt size:  31474 bytes
 
 ✗ Outputs DIFFER
@@ -45,6 +45,25 @@ Rustfmt size:  31474 bytes
      expect.assert_eq(actual_html)
  }
  
+     while al.next_round() {
+         for i in 6..=10 {
+             let n = 1 << i;
+-
+             let fixture = bench_fixture::big_struct_n(n);
+             let (analysis, file_id) = fixture::file(&fixture);
+-
+             let time = Instant::now();
+-
+             let hash = analysis
+                 .highlight(HL_CONFIG, file_id)
+                 .unwrap()
+                 .filter(|it| it.highlight.tag == HlTag::Symbol(SymbolKind::Struct))
+                 .count();
+             assert!(hash > n as usize);
+-
+             let elapsed = time.elapsed();
+             al.sample(n as f64, elapsed.as_millis() as f64);
+         }
              .unwrap()
              .iter()
              .filter(|it| {

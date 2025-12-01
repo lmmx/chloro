@@ -66,7 +66,8 @@ impl Printer<'_> {
     fn blank(&mut self) {
         let mut iter = self.buf.chars().rev().fuse();
         match (iter.next(), iter.next()) {
-            (Some('\n'), Some('\n') | None) | (None, None) => {}
+            (Some('\n'), Some('\n') | None) | (None, None) => {
+            }
             (Some('\n'), Some(_)) => {
                 self.buf.push('\n');
             }
@@ -80,7 +81,8 @@ impl Printer<'_> {
 
     fn whitespace(&mut self) {
         match self.buf.chars().next_back() {
-            None | Some('\n' | ' ') => {}
+            None | Some('\n' | ' ') => {
+            }
             _ => self.buf.push(' '),
         }
     }
@@ -125,7 +127,8 @@ impl Printer<'_> {
             FieldsShape::Tuple => {
                 w!(self, "(...)");
             }
-            FieldsShape::Unit => {}
+            FieldsShape::Unit => {
+            }
         }
     }
 

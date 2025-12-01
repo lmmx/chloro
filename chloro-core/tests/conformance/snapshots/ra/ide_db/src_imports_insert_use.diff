@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20506 bytes
+Chloro size:   20423 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -46,3 +46,26 @@ Rustfmt size:  20506 bytes
  /// How imports should be grouped into use statements.
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub enum ImportGranularity {
+                 "core" => ImportGroup::Std,
+                 _ => ImportGroup::ExternCrate,
+             },
+-            // these aren't valid use paths, so fall back to something random
+             PathSegmentKind::SelfTypeKw => ImportGroup::ExternCrate,
+             PathSegmentKind::Type { .. } => ImportGroup::ExternCrate,
+         }
+                 res = ImportGranularityGuess::CrateOrModule;
+             }
+         }
+-
+         let Some((curr, curr_vis, curr_attrs)) = use_stmts.next() else { break res };
+         if is_tree_one_style(&curr) {
+             if res != ImportGranularityGuess::One
+             }
+         })
+         .filter(|child| child.as_token().is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE))
+-        .last()
+-    {
++        .last() {
+         cov_mark::hit!(insert_empty_inner_attr);
+         ted::insert(ted::Position::after(&last_inner_element), use_item.syntax());
+         ted::insert(ted::Position::after(last_inner_element), make::tokens::single_newline());

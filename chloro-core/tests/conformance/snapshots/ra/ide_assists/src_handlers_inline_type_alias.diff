@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25096 bytes
-Chloro size:   24214 bytes
+Chloro size:   24158 bytes
 Rustfmt size:  25274 bytes
 
 ✗ Outputs DIFFER
@@ -134,6 +134,27 @@ Rustfmt size:  25274 bytes
      // definition.
      if let PathResolution::Def(hir::ModuleDef::TypeAlias(ta)) = resolved_path {
          Some(ctx.sema.source(ta)?.value)
+     }
+ 
+     fn replacement_value(&self) -> Option<SyntaxNode> {
+-        Some(
+-            match self {
+-                ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
+-                ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
+-                ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
+-                ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
+-            }
+-            .clone_for_update(),
+-        )
++        Some(match self {
++            ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
++            ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
++            ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
++            ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
++        }.clone_for_update())
+     }
+ }
+ 
      let mut others = Vec::new();
  
      // It's fine for there to be no instance generics because the declaration

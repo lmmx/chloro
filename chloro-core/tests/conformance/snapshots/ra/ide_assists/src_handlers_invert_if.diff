@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4699 bytes
-Chloro size:   4346 bytes
+Chloro size:   4385 bytes
 Rustfmt size:  4770 bytes
 
 ✗ Outputs DIFFER
@@ -30,17 +30,11 @@ Rustfmt size:  4770 bytes
  pub(crate) fn invert_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let if_keyword = ctx
          .find_token_syntax_at_offset(T![if])
-         ast::ElseBranch::IfExpr(_) => return None,
-     };
- 
--    acc.add(
--        AssistId::refactor_rewrite("invert_if"),
--        "Invert if",
--        if_range,
--        |edit| {
+         "Invert if",
+         if_range,
+         |edit| {
 -            let flip_cond = invert_boolean_expression_legacy(cond.clone());
 -            edit.replace_ast(cond, flip_cond);
-+    acc.add(AssistId::refactor_rewrite("invert_if"), "Invert if", if_range, |edit| {
 +        let flip_cond = invert_boolean_expression_legacy(cond.clone());
 +        edit.replace_ast(cond, flip_cond);
  
@@ -54,10 +48,10 @@ Rustfmt size:  4770 bytes
 -            edit.replace(else_range, then_node.text());
 -            edit.replace(then_range, else_node.text());
 -        },
--    )
 +        edit.replace(else_range, then_node.text());
 +        edit.replace(then_range, else_node.text());
-+    })
++    },
+     )
  }
  
  #[cfg(test)]

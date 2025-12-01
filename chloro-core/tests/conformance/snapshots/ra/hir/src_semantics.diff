@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   100369 bytes
+Chloro size:   100370 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -113,6 +113,23 @@ Rustfmt size:  101650 bytes
      pub fn find_namelike_at_offset_with_descend<'slf>(
          &'slf self,
          node: &SyntaxNode,
+     ) -> Option<Vec<(TextRange, Option<Either<PathResolution, InlineAsmOperand>>)>> {
+         let string_start = string.syntax().text_range().start();
+         let token = self.wrap_token_infile(string.syntax().clone());
+-        self.descend_into_macros_breakable(token, |token, _| {
++        self.descend_into_macros_breakable(
++            token,
++            |token, _| {
+             (|| {
+                 let token = token.value;
+                 let string = ast::String::cast(token)?;
+                 }
+             })()
+             .map_or(ControlFlow::Continue(()), ControlFlow::Break)
+-        })
++        },
++        )
+     }
  
      /// Retrieves the formatting part of the format_args! template string at the given offset.
      ///
@@ -235,6 +252,20 @@ Rustfmt size:  101650 bytes
          infer_body: bool,
      ) -> Option<SourceAnalyzer<'db>> {
          let _p = tracing::info_span!("SemanticsImpl::analyze_impl").entered();
+             if &parent == enclosing_node {
+                 break false;
+             }
+-
+             if let Some(parent) = ast::Expr::cast(parent.clone())
+                 && let Some(ExprOrPatId::ExprId(expr_id)) =
+                     source_map.node_expr(InFile { file_id, value: &parent })
+             {
+                 break true;
+             }
+-
+             let Some(parent_) = parent.parent() else { break false };
+             parent = parent_;
+         }
      }
  }
  
@@ -252,3 +283,22 @@ Rustfmt size:  101650 bytes
      fn to_def(sema: &SemanticsImpl<'_>, src: InFile<&Self>) -> Option<Self::Def>;
  }
  
+ 
+ impl RenameConflictsVisitor<'_> {
+     fn resolve_path(&mut self, node: ExprOrPatId, path: &Path) {
+-        if let Path::BarePath(path) = path
+-            && let Some(name) = path.as_ident()
+-        {
++        if let Path::BarePath(path) = path && let Some(name) = path.as_ident() {
+             if *name.symbol() == self.new_name {
+                 if let Some(conflicting) = self.resolver.rename_will_conflict_with_renamed(
+                     self.db,
+                     self.body.expr_or_pat_path_hygiene(node),
+                     &self.new_name,
+                     self.to_be_renamed,
+-                )
+-            {
++                ) {
+                 self.conflicts.insert(conflicting);
+             }
+         }

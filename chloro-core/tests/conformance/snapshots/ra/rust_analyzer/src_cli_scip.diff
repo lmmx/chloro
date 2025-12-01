@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30603 bytes
+Chloro size:   30594 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -147,8 +147,12 @@ Rustfmt size:  31747 bytes
 -                .unwrap_or_else(|| ".".to_owned()),
 +            version: moniker.package_information.version.clone().unwrap_or_else(|| ".".to_owned()),
              special_fields: Default::default(),
-         })
-         .into(),
+-        })
+-        .into(),
++        }).into(),
+         descriptors: moniker_descriptors(&moniker.identifier),
+         special_fields: Default::default(),
+     }
      use ide::{FilePosition, TextSize};
      use test_fixture::ChangeFixture;
      use vfs::VfsPath;

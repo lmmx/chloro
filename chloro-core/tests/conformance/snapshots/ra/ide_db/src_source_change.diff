@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21058 bytes
-Chloro size:   21096 bytes
+Chloro size:   21028 bytes
 Rustfmt size:  21705 bytes
 
 ✗ Outputs DIFFER
@@ -81,6 +81,16 @@ Rustfmt size:  21705 bytes
          SourceChange {
              source_file_edits,
              file_system_edits: Vec::new(),
+         // Start from the back so that we don't have to adjust ranges
+         for (index, range) in self.0.iter().rev() {
+             if range.is_empty() {
+-                // is a tabstop
+                 text.insert_str(range.start().into(), &format!("${index}"));
+             } else {
+-                // is a placeholder
+                 text.insert(range.end().into(), '}');
+                 text.insert_str(range.start().into(), &format!("${{{index}:"));
+             }
      pub file_id: FileId,
      pub source_change: SourceChange,
      pub command: Option<Command>,

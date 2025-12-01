@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32624 bytes
-Chloro size:   32674 bytes
+Chloro size:   32722 bytes
 Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,18 @@ Rustfmt size:  32624 bytes
  };
  
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+         }
+     }
+ 
+-    if lang_items.items.is_empty() { None } else { Some(Box::new(lang_items)) }
++    if lang_items.items.is_empty() {
++        None
++    } else {
++        Some(Box::new(lang_items))
++    }
+ }
+ 
+ /// Salsa query. Look for a lang item, starting from the specified crate and recursively
      }
  
      // Our `CrateGraph` eagerly inserts sysroot dependencies like `core` or `std` into dependencies
@@ -56,6 +68,18 @@ Rustfmt size:  32624 bytes
          T: Into<AttrDefId> + Copy,
      {
          let _p = tracing::info_span!("collect_lang_item").entered();
+         }
+     }
+ 
+-    if traits.is_empty() { None } else { Some(traits.into_iter().collect()) }
++    if traits.is_empty() {
++        None
++    } else {
++        Some(traits.into_iter().collect())
++    }
+ }
+ 
+ pub enum GenericRequirement {
          Some(Path::LangItem(t, None))
      }
  

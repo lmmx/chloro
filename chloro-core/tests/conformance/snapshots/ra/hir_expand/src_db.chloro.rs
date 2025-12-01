@@ -385,7 +385,11 @@ fn parse_macro_expansion_error(
 ) -> Option<Arc<ExpandResult<Arc<[SyntaxError]>>>> {
     let e: ExpandResult<Arc<[SyntaxError]>> =
         db.parse_macro_expansion(macro_call_id).map(|it| Arc::from(it.0.errors()));
-    if e.value.is_empty() && e.err.is_none() { None } else { Some(Arc::new(e)) }
+    if e.value.is_empty() && e.err.is_none() {
+        None
+    } else {
+        Some(Arc::new(e))
+    }
 }
 
 pub(crate) fn parse_with_map(
@@ -414,9 +418,7 @@ fn macro_arg_considering_derives(
     kind: &MacroCallKind,
 ) -> MacroArgResult {
     match kind {
-        // Get the macro arg for the derive macro
         MacroCallKind::Derive { derive_macro_id, .. } => db.macro_arg(*derive_macro_id),
-        // Normal macro arg
         _ => db.macro_arg(id),
     }
 }

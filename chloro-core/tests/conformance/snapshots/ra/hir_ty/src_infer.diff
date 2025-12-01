@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   73155 bytes
+Chloro size:   72808 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -90,20 +90,6 @@ Rustfmt size:  74236 bytes
      // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
      let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
      for mut cast in cast_checks.into_iter() {
-     db: &dyn HirDatabase,
-     _: DefWithBodyId,
- ) -> Arc<InferenceResult<'_>> {
--    Arc::new(InferenceResult {
-+    Arc::new(
-+        InferenceResult {
-         has_errors: true,
-         ..InferenceResult::new(Ty::new_error(DbInterner::new_with(db, None, None), ErrorGuaranteed))
--    })
-+    },
-+    )
- }
- 
- /// Binding modes inferred for patterns.
  impl<'db> Adjustment<'db> {
      pub fn borrow(interner: DbInterner<'db>, m: Mutability, ty: Ty<'db>, lt: Region<'db>) -> Self {
          let ty = Ty::new_ref(interner, lt, ty, m);
@@ -321,6 +307,14 @@ Rustfmt size:  74236 bytes
          // that are collected from the function data
          if data.is_varargs() {
              let va_list_ty = match self.resolve_va_list() {
+                         [Adjustment { kind: Adjust::NeverToAny, target }],
+                         [.., Adjustment { target: new_target, .. }],
+                     ) => {
+-                        // NeverToAny coercion can target any type, so instead of adding a new
+-                        // adjustment on top we can change the target.
+                         *target = *new_target;
+                     }
+                     _ => {
          self.result.pat_adjustments.entry(pat).or_default().extend(adjustments);
      }
  
@@ -334,6 +328,13 @@ Rustfmt size:  74236 bytes
          self.result.method_resolutions.insert(expr, (func, subst));
      }
  
+             .eq(expected, actual)
+             .map(|infer_ok| self.table.register_infer_ok(infer_ok));
+         if let Err(_err) = result {
+-            // FIXME: Emit diagnostic.
+         }
+     }
+ 
          &mut self,
          inner_ty: Ty<'db>,
          assoc_ty: Option<TypeAliasId>,
@@ -342,6 +343,43 @@ Rustfmt size:  74236 bytes
          params: &[GenericArg<'db>],
      ) -> Ty<'db> {
          match assoc_ty {
+             }
+             Some(1) => {
+                 let segment = path.segments().last().unwrap();
+-                // this could be an enum variant or associated type
+                 if let Some((AdtId::EnumId(enum_id), _)) = ty.as_adt() {
+                     let enum_data = enum_id.enum_variants(self.db);
+                     if let Some(variant) = enum_data.variant(segment) {
+                         return (ty, Some(variant.into()));
+                     }
+                 }
+-                // FIXME potentially resolve assoc type
+                 (self.err_ty(), None)
+             }
+             Some(_) => {
+-                // FIXME diagnostic
+                 (self.err_ty(), None)
+             }
+         }
+     /// type.
+     fn has_type(ty: Ty<'db>) -> Self {
+         if ty.is_ty_error() {
+-            // FIXME: get rid of this?
+             Expectation::None
+         } else {
+             Expectation::HasType(ty)
+         match *self {
+             Expectation::HasType(ety) => {
+                 let ety = table.structurally_resolve_type(ety);
+-                if ety.is_ty_var() { Expectation::None } else { Expectation::HasType(ety) }
++                if ety.is_ty_var() {
++                    Expectation::None
++                } else {
++                    Expectation::HasType(ety)
++                }
+             }
+             Expectation::RValueLikeUnsized(ety) => Expectation::RValueLikeUnsized(ety),
+             _ => Expectation::None,
  
  impl std::ops::BitAnd for Diverges {
      type Output = Self;

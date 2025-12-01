@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27018 bytes
-Chloro size:   26739 bytes
+Chloro size:   26670 bytes
 Rustfmt size:  27018 bytes
 
 ✗ Outputs DIFFER
@@ -173,18 +173,30 @@ Rustfmt size:  27018 bytes
 -
      #[test]
      fn infinite_loop_inner_items() {
-         check_diagnostics(
-             "#,
-         )
+-        check_diagnostics(
+-            r#"
++        check_diagnostics(r#"
+ fn qualify() {
+     mod foo {
+         use super::*;
+     }
+ }
+-            "#,
+-        )
++            "#)
      }
 -
 -    #[test] // Issue #8809.
 +    #[test]
      fn parenthesized_parameter() {
-         check_diagnostics(
-             r#"
- "#,
-         )
+-        check_diagnostics(
+-            r#"
++        check_diagnostics(r#"
+ fn f((_O): u8) {}
+    // ^^ 💡 warn: Variable `_O` should have snake_case name, e.g. `_o`
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -303,9 +315,17 @@ Rustfmt size:  27018 bytes
 -
      #[test]
      fn module_name_decl() {
-         check_diagnostics(
- "#,
-         )
+-        check_diagnostics(
+-            r#"
++        check_diagnostics(r#"
+ //- /Foo.rs
+ 
+ //- /main.rs
+ mod Foo;
+   //^^^ 💡 warn: Module `Foo` should have snake_case name, e.g. `foo`
+-"#,
+-        )
++"#)
      }
 -
      #[test]

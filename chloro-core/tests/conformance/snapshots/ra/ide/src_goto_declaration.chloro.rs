@@ -200,26 +200,22 @@ fn main() {
     }
     #[test]
     fn goto_decl_for_extern_crate() {
-        check(
-            r#"
+        check(r#"
 //- /main.rs crate:main deps:std
 extern crate std$0;
          /// ^^^
 //- /std/lib.rs crate:std
 // empty
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_decl_for_renamed_extern_crate() {
-        check(
-            r#"
+        check(r#"
 //- /main.rs crate:main deps:std
 extern crate std as abc$0;
                 /// ^^^
 //- /std/lib.rs crate:std
 // empty
-"#,
-        )
+"#)
     }
 }

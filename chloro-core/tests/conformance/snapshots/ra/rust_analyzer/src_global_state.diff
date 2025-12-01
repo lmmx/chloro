@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37899 bytes
-Chloro size:   37855 bytes
+Chloro size:   37854 bytes
 Rustfmt size:  37899 bytes
 
 ✗ Outputs DIFFER
@@ -151,6 +151,13 @@ Rustfmt size:  37899 bytes
          // didn't find anything (to make up for the lack of precision).
          {
              if !matches!(&workspace_structure_change, Some((.., true))) {
+             {
+                 self.poke_rust_analyzer_developer(format!("{}, check the log", err.message));
+             }
+-
+             let duration = start.elapsed();
+             tracing::debug!(name: "message response", method, %response.id, duration = format_args!("{:0.2?}", duration));
+             self.send(response.into());
      }
  
      /// Returns `None` if the file was excluded.

@@ -54,7 +54,11 @@ pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     let nested_if_then_branch = nested_if_to_merge.then_branch()?;
     let then_branch_range = then_branch.syntax().text_range();
 
-    acc.add(AssistId::refactor_rewrite("merge_nested_if"), "Merge nested if", if_range, |edit| {
+    acc.add(
+        AssistId::refactor_rewrite("merge_nested_if"),
+        "Merge nested if",
+        if_range,
+        |edit| {
         let cond_text = if has_logic_op_or(&cond) {
             format!("({})", cond.syntax().text())
         } else {
@@ -71,7 +75,8 @@ pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
 
         edit.replace(cond_range, replace_cond);
         edit.replace(then_branch_range, nested_if_then_branch.syntax().text());
-    })
+    },
+    )
 }
 
 /// Returns whether the given if condition has logical operators.

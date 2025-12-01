@@ -307,8 +307,9 @@ impl GlobalState {
             recv(self.fetch_ws_receiver.as_ref().map_or(&never(), |(chan, _)| chan)) -> _instant => {
                 Ok(Event::FetchWorkspaces(self.fetch_ws_receiver.take().unwrap().1))
             },
-        }
-        .map(Some)
+        }.map(
+            Some,
+        )
     }
 
     fn handle_event(&mut self, event: Event) {
@@ -609,8 +610,6 @@ impl GlobalState {
             if slice.is_empty() {
                 break;
             }
-            // Diagnostics are triggered by the user typing
-            // so we run them on a latency sensitive thread.
             let snapshot = self.snapshot();
             self.task_pool.handle.spawn_with_sender(ThreadIntent::LatencySensitive, {
                 let subscriptions = subscriptions.clone();
@@ -715,14 +714,12 @@ impl GlobalState {
         let status = self.current_status();
         if self.last_reported_status != status {
             self.last_reported_status = status.clone();
-
             if self.config.server_status_notification() {
                 self.send_notification::<lsp_ext::ServerStatusNotification>(status);
             } else if let (
                 health @ (lsp_ext::Health::Warning | lsp_ext::Health::Error),
                 Some(message),
-            ) = (status.health, &status.message)
-            {
+            ) = (status.health, &status.message) {
                 let open_log_button = tracing::enabled!(tracing::Level::ERROR)
                     && (self.fetch_build_data_error().is_err()
                         || self.fetch_workspace_error().is_err());
@@ -742,7 +739,6 @@ impl GlobalState {
     fn handle_task(&mut self, prime_caches_progress: &mut Vec<PrimeCachesProgress>, task: Task) {
         match task {
             Task::Response(response) => self.respond(response),
-            // Only retry requests that haven't been cancelled. Otherwise we do unnecessary work.
             Task::Retry(req) if !self.is_completed(&req) => self.on_request(req),
             Task::Retry(_) => (),
             Task::Diagnostics(kind) => {
@@ -753,7 +749,6 @@ impl GlobalState {
                 PrimeCachesProgress::Report(_) => {
                     match prime_caches_progress.last_mut() {
                         Some(last @ PrimeCachesProgress::Report(_)) => {
-                            // Coalesce subsequent update events.
                             *last = progress;
                         }
                         _ => prime_caches_progress.push(progress),
@@ -776,29 +771,22 @@ impl GlobalState {
                         (Progress::End, None)
                     }
                 };
-
                 self.report_progress("Fetching", state, msg, None, None);
             }
             Task::DiscoverLinkedProjects(arg) => {
                 if let Some(cfg) = self.config.discover_workspace_config()
-                    && !self.discover_workspace_queue.op_in_progress()
-                {
-                    // the clone is unfortunately necessary to avoid a borrowck error when
-                    // `self.report_progress` is called later
+                    && !self.discover_workspace_queue.op_in_progress() {
                     let title = &cfg.progress_label.clone();
                     let command = cfg.command.clone();
                     let discover = DiscoverCommand::new(self.discover_sender.clone(), command);
-
                     self.report_progress(title, Progress::Begin, None, None, None);
                     self.discover_workspace_queue
                         .request_op("Discovering workspace".to_owned(), ());
                     let _ = self.discover_workspace_queue.should_start_op();
-
                     let arg = match arg {
                         DiscoverProjectParam::Buildfile(it) => DiscoverArgument::Buildfile(it),
                         DiscoverProjectParam::Path(it) => DiscoverArgument::Path(it),
                     };
-
                     let handle = discover.spawn(
                         arg,
                         &std::env::current_dir()
@@ -827,7 +815,6 @@ impl GlobalState {
                         (Some(Progress::End), None)
                     }
                 };
-
                 if let Some(state) = state {
                     self.report_progress("Building compile-time-deps", state, msg, None, None);
                 }
@@ -843,7 +830,6 @@ impl GlobalState {
                         (Some(Progress::End), None)
                     }
                 };
-
                 if let Some(state) = state {
                     self.report_progress("Loading proc-macros", state, msg, None, None);
                 }
@@ -870,13 +856,9 @@ impl GlobalState {
                             .as_ref()
                             .and_then(|contents| String::from_utf8(contents.clone()).ok());
                     }
-
                     let path = VfsPath::from(path);
-                    // if the file is in mem docs, it's managed by the client via notifications
-                    // so only set it if its not in there
                     if !self.mem_docs.contains(&path)
-                        && (is_changed || vfs.file_id(&path).is_none())
-                    {
+                        && (is_changed || vfs.file_id(&path).is_none()) {
                         vfs.set_file_contents(path, contents);
                     }
                 }
@@ -884,7 +866,6 @@ impl GlobalState {
             vfs::loader::Message::Progress { n_total, n_done, dir, config_version } => {
                 let _p = span!(Level::INFO, "GlobalState::handle_vfs_msg/progress").entered();
                 stdx::always!(config_version <= self.vfs_config_version);
-
                 let (n_done, state) = match n_done {
                     LoadingProgress::Started => {
                         self.vfs_span =
@@ -897,10 +878,8 @@ impl GlobalState {
                         (n_total, Progress::End)
                     }
                 };
-
                 self.vfs_progress_config_version = config_version;
                 self.vfs_done = state == Progress::End;
-
                 let mut message = format!("{n_done}/{n_total}");
                 if let Some(dir) = dir {
                     message += &format!(
@@ -911,7 +890,6 @@ impl GlobalState {
                         }
                     );
                 }
-
                 self.report_progress(
                     "Roots Scanned",
                     state,
@@ -927,7 +905,6 @@ impl GlobalState {
         match task {
             QueuedTask::CheckIfIndexed(uri) => {
                 let snap = self.snapshot();
-
                 self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, move |sender| {
                     let _p = tracing::info_span!("GlobalState::check_if_indexed").entered();
                     tracing::debug!(?uri, "handling uri");
@@ -981,7 +958,6 @@ impl GlobalState {
                 self.discover_handle = None;
                 self.report_progress(&title, Progress::End, None, None, None);
                 self.discover_workspace_queue.op_completed(());
-
                 let mut config = Config::clone(&*self.config);
                 config.add_discovered_project_from_command(project, buildfile);
                 self.update_configuration(config);
@@ -1008,10 +984,7 @@ impl GlobalState {
                     TestState::Ok => lsp_ext::TestState::Passed,
                     TestState::Failed { stdout } => lsp_ext::TestState::Failed { message: stdout },
                 };
-
-                // The notification requires the namespace form (with underscores) of the target
                 let test_id = format!("{}::{name}", message.target.target.replace('-', "_"));
-
                 self.send_notification::<lsp_ext::ChangeTestState>(
                     lsp_ext::ChangeTestStateParams { test_id, state },
                 );
@@ -1101,9 +1074,6 @@ impl GlobalState {
                         (Progress::End, None)
                     }
                 };
-
-                // When we're running multiple flychecks, we have to include a disambiguator in
-                // the title, or the editor complains. Note that this is a user-facing string.
                 let title = if self.flycheck.len() == 1 {
                     format!("{}", self.config.flycheck(None))
                 } else {

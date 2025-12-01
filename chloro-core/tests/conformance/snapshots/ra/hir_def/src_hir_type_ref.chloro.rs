@@ -23,7 +23,11 @@ pub enum Mutability {
 
 impl Mutability {
     pub fn from_mutable(mutable: bool) -> Mutability {
-        if mutable { Mutability::Mut } else { Mutability::Shared }
+        if mutable {
+            Mutability::Mut
+        } else {
+            Mutability::Shared
+        }
     }
 
     pub fn as_keyword_for_ref(self) -> &'static str {
@@ -65,7 +69,11 @@ pub enum Rawness {
 
 impl Rawness {
     pub fn from_raw(is_raw: bool) -> Rawness {
-        if is_raw { Rawness::RawPtr } else { Rawness::Ref }
+        if is_raw {
+            Rawness::RawPtr
+        } else {
+            Rawness::Ref
+        }
     }
 
     pub fn is_raw(&self) -> bool {

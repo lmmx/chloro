@@ -297,7 +297,6 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
     if let Some(field_expr) = ast::FieldExpr::cast(node) {
         let idx = field_expr.name_ref()?.as_tuple_field()?;
         if idx < data.field_names.len() {
-            // special case: in macro call -> range of `field_expr` in applied macro, NOT range in actual file!
             if field_expr.syntax().ancestors().any(|a| ast::MacroStmts::can_cast(a.kind())) {
                 cov_mark::hit!(destructure_tuple_macro_call);
 
@@ -314,10 +313,8 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
                 // -> only handle `t`
                 return None;
             }
-
             Some(TupleIndex { index: idx, field_expr })
         } else {
-            // tuple index out of range
             None
         }
     } else {

@@ -60,8 +60,9 @@ fn into_closure(param: &Expr) -> Expr {
         } else {
             None
         }
-    })()
-    .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
+    })().unwrap_or_else(
+        || make::expr_closure(None, param.clone()).into(),
+    )
 }
 
 pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
@@ -118,8 +119,9 @@ fn into_call(param: &Expr) -> Expr {
         } else {
             None
         }
-    })()
-    .unwrap_or_else(|| make::expr_call(param.clone(), make::arg_list(Vec::new())).into())
+    })().unwrap_or_else(
+        || make::expr_call(param.clone(), make::arg_list(Vec::new())).into(),
+    )
 }
 
 #[cfg(test)]

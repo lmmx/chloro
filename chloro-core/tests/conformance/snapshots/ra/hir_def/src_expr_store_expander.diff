@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8495 bytes
-Chloro size:   8495 bytes
+Chloro size:   8535 bytes
 Rustfmt size:  8873 bytes
 
 ✗ Outputs DIFFER
@@ -63,16 +63,6 @@ Rustfmt size:  8873 bytes
                  }
              }
          });
- 
--        if let Some(err) = unresolved_macro_err {
--            Err(err)
--        } else {
--            Ok(result)
--        }
-+        if let Some(err) = unresolved_macro_err { Err(err) } else { Ok(result) }
-     }
- 
-     pub(super) fn enter_expand_id<T: ast::AstNode>(
          self.within_limit(db, |_this| ExpandResult::ok(Some(call_id)))
      }
  

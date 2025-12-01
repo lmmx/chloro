@@ -124,13 +124,11 @@ impl<'db> ImportAssets<'db> {
         sema: &Semantics<'db, RootDatabase>,
     ) -> Option<Self> {
         let candidate_node = method_call.syntax().clone();
-        Some(
-            Self {
+        Some(Self {
             import_candidate: ImportCandidate::for_method_call(sema, method_call)?,
             module_with_candidate: sema.scope(&candidate_node)?.module(),
             candidate_node,
-        },
-        )
+        })
     }
 
     pub fn for_exact_path(
@@ -146,13 +144,11 @@ impl<'db> ImportAssets<'db> {
                 return None;
             }
         }
-        Some(
-            Self {
+        Some(Self {
             import_candidate: ImportCandidate::for_regular_path(sema, fully_qualified_path)?,
             module_with_candidate: sema.scope(&candidate_node)?.module(),
             candidate_node,
-        },
-        )
+        })
     }
 
     pub fn for_ident_pat(
@@ -164,13 +160,11 @@ impl<'db> ImportAssets<'db> {
         }
         let name = pat.name()?;
         let candidate_node = pat.syntax().clone();
-        Some(
-            Self {
+        Some(Self {
             import_candidate: ImportCandidate::for_name(sema, &name)?,
             module_with_candidate: sema.scope(&candidate_node)?.module(),
             candidate_node,
-        },
-        )
+        })
     }
 
     pub fn for_fuzzy_path(
@@ -180,13 +174,11 @@ impl<'db> ImportAssets<'db> {
         sema: &Semantics<'db, RootDatabase>,
         candidate_node: SyntaxNode,
     ) -> Option<Self> {
-        Some(
-            Self {
+        Some(Self {
             import_candidate: ImportCandidate::for_fuzzy_path(qualifier, fuzzy_name, sema)?,
             module_with_candidate,
             candidate_node,
-        },
-        )
+        })
     }
 
     pub fn for_fuzzy_method_call(
@@ -195,16 +187,14 @@ impl<'db> ImportAssets<'db> {
         fuzzy_method_name: String,
         candidate_node: SyntaxNode,
     ) -> Option<Self> {
-        Some(
-            Self {
+        Some(Self {
             import_candidate: ImportCandidate::TraitMethod(TraitImportCandidate {
                 receiver_ty,
                 assoc_item_name: NameToImport::fuzzy(fuzzy_method_name),
             }),
             module_with_candidate: module_with_method_call,
             candidate_node,
-        },
-        )
+        })
     }
 }
 
@@ -281,9 +271,7 @@ impl<'db> ImportAssets<'db> {
 
     /// Requires imports to by prefix instead of fuzzily.
     pub fn path_fuzzy_name_to_prefix(&mut self) {
-        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) =
-            &mut self.import_candidate
-        {
+        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) = &mut self.import_candidate {
             let (name, case_sensitive) = match to_import {
                 NameToImport::Fuzzy(name, case_sensitive) => {
                     (std::mem::take(name), *case_sensitive)
@@ -296,9 +284,7 @@ impl<'db> ImportAssets<'db> {
 
     /// Requires imports to match exactly instead of fuzzily.
     pub fn path_fuzzy_name_to_exact(&mut self) {
-        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) =
-            &mut self.import_candidate
-        {
+        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) = &mut self.import_candidate {
             let (name, case_sensitive) = match to_import {
                 NameToImport::Fuzzy(name, case_sensitive) => {
                     (std::mem::take(name), *case_sensitive)
@@ -363,8 +349,7 @@ impl<'db> ImportAssets<'db> {
                         .contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
                 },
             ),
-        }
-        .into_iter()
+        }.into_iter()
     }
 
     fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {
@@ -420,10 +405,6 @@ fn path_applicable_imports(
             .take(DEFAULT_QUERY_SEARCH_LIMIT)
             .collect()
         }
-        // we have some unresolved qualifier that we search an import for
-        // The key here is that whatever we import must form a resolved path for the remainder of
-        // what follows
-        // FIXME: This doesn't handle visibility
         [first_qsegment, qualifier_rest @ ..] => items_locator::items_with_name(
             db,
             current_crate,
@@ -555,26 +536,22 @@ fn validate_resolvable(
 }
 
 pub fn item_for_path_search(db: &RootDatabase, item: ItemInNs) -> Option<ItemInNs> {
-    Some(
-        match item {
+    Some(match item {
         ItemInNs::Types(_) | ItemInNs::Values(_) => match item_as_assoc(db, item) {
             Some(assoc_item) => item_for_path_search_assoc(db, assoc_item)?,
             None => item,
         },
         ItemInNs::Macros(_) => item,
-    },
-    )
+    })
 }
 
 fn item_for_path_search_assoc(db: &RootDatabase, assoc_item: AssocItem) -> Option<ItemInNs> {
-    Some(
-        match assoc_item.container(db) {
+    Some(match assoc_item.container(db) {
         AssocItemContainer::Trait(trait_) => ItemInNs::from(ModuleDef::from(trait_)),
         AssocItemContainer::Impl(impl_) => {
             ItemInNs::from(ModuleDef::from(impl_.self_ty(db).as_adt()?))
         }
-    },
-    )
+    })
 }
 
 fn trait_applicable_items<'db>(
@@ -764,9 +741,7 @@ impl<'db> ImportCandidate<'db> {
             Some(_) => None,
             None => Some(Self::TraitMethod(TraitImportCandidate {
                 receiver_ty: sema.type_of_expr(&method_call.receiver()?)?.adjusted(),
-                assoc_item_name: NameToImport::exact_case_sensitive(
-                    method_call.name_ref()?.to_string(),
-                ),
+                assoc_item_name: NameToImport::exact_case_sensitive(method_call.name_ref()?.to_string()),
             })),
         }
     }
@@ -810,8 +785,7 @@ fn path_import_candidate<'db>(
     qualifier: Option<ast::Path>,
     name: NameToImport,
 ) -> Option<ImportCandidate<'db>> {
-    Some(
-        match qualifier {
+    Some(match qualifier {
         Some(qualifier) => match sema.resolve_path(&qualifier) {
             Some(PathResolution::Def(ModuleDef::BuiltinType(_))) | None => {
                 if qualifier.first_qualifier().is_none_or(|it| sema.resolve_path(&it).is_none()) {
@@ -844,8 +818,7 @@ fn path_import_candidate<'db>(
             Some(_) => return None,
         },
         None => ImportCandidate::Path(PathImportCandidate { qualifier: vec![], name }),
-    },
-    )
+    })
 }
 
 fn item_as_assoc(db: &RootDatabase, item: ItemInNs) -> Option<AssocItem> {

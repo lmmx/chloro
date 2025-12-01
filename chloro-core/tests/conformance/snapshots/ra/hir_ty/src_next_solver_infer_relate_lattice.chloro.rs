@@ -93,7 +93,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
                 Ok(a)
             }
             Variance::Covariant => self.relate(a, b),
-            // FIXME(#41044) -- not correct, need test
             Variance::Bivariant => Ok(a),
             Variance::Contravariant => {
                 self.kind = self.kind.invert();
@@ -116,24 +115,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         let b = infcx.shallow_resolve(b);
 
         match (a.kind(), b.kind()) {
-            // If one side is known to be a variable and one is not,
-            // create a variable (`v`) to represent the LUB. Make sure to
-            // relate `v` to the non-type-variable first (by passing it
-            // first to `relate_bound`). Otherwise, we would produce a
-            // subtype obligation that must then be processed.
-            //
-            // Example: if the LHS is a type variable, and RHS is
-            // `Box<i32>`, then we current compare `v` to the RHS first,
-            // which will instantiate `v` with `Box<i32>`. Then when `v`
-            // is compared to the LHS, we instantiate LHS with `Box<i32>`.
-            // But if we did in reverse order, we would create a `v <:
-            // LHS` (or vice versa) constraint and then instantiate
-            // `v`. This would require further processing to achieve same
-            // end-result; in particular, this screws up some of the logic
-            // in coercion, which expects LUB to figure out that the LHS
-            // is (e.g.) `Box<i32>`. A more obvious solution might be to
-            // iterate on the subtype obligations that are returned, but I
-            // think this suffices. -nmatsakis
             (TyKind::Infer(rustc_type_ir::TyVar(..)), _) => {
                 let v = infcx.next_ty_var();
                 self.relate_bound(v, b, a)?;
@@ -144,12 +125,10 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
                 self.relate_bound(v, a, b)?;
                 Ok(v)
             }
-
             (
                 TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: a_def_id, .. }),
                 TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: b_def_id, .. }),
             ) if a_def_id == b_def_id => super_combine_tys(infcx, self, a, b),
-
             _ => super_combine_tys(infcx, self, a, b),
         }
     }
@@ -157,15 +136,10 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
     fn regions(&mut self, a: Region<'db>, b: Region<'db>) -> RelateResult<'db, Region<'db>> {
         let mut inner = self.infcx.inner.borrow_mut();
         let mut constraints = inner.unwrap_region_constraints();
-        Ok(
-            match self.kind {
-            // GLB(&'static u8, &'a u8) == &RegionLUB('static, 'a) u8 == &'static u8
+        Ok(match self.kind {
             LatticeOpKind::Glb => constraints.lub_regions(self.cx(), a, b),
-
-            // LUB(&'static u8, &'a u8) == &RegionGLB('static, 'a) u8 == &'a u8
             LatticeOpKind::Lub => constraints.glb_regions(self.cx(), a, b),
-        },
-        )
+        })
     }
 
     fn consts(&mut self, a: Const<'db>, b: Const<'db>) -> RelateResult<'db, Const<'db>> {
@@ -186,9 +160,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         }
 
         if a.skip_binder().has_escaping_bound_vars() || b.skip_binder().has_escaping_bound_vars() {
-            // When higher-ranked types are involved, computing the GLB/LUB is
-            // very challenging, switch to invariance. This is obviously
-            // overly conservative but works ok in practice.
             self.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)?;
             Ok(a)
         } else {

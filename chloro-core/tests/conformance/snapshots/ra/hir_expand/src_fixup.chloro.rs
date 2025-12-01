@@ -392,16 +392,12 @@ fn transform_tt<'a, 'b>(
                 break 'pop_finished_subtrees;
             }
         }
-
         let action = callback(&mut tt[i]);
         match action {
             TransformTtAction::Keep => {
-                // This cannot be shared with the replaced case, because then we may push the same subtree
-                // twice, and will update it twice which will lead to errors.
                 if let tt::TokenTree::Subtree(_) = &tt[i] {
                     subtrees_stack.push(i);
                 }
-
                 i += 1;
             }
             TransformTtAction::ReplaceWith(replacement) => {
@@ -411,9 +407,7 @@ fn transform_tt<'a, 'b>(
                 };
                 let len_diff = replacement.len() as i64 - old_len as i64;
                 tt.splice(i..i + old_len, replacement.flat_tokens().iter().cloned());
-                // Skip the newly inserted replacement, we don't want to visit it.
                 i += replacement.len();
-
                 for &subtree_idx in &subtrees_stack {
                     let tt::TokenTree::Subtree(subtree) = &mut tt[subtree_idx] else {
                         unreachable!("non-subtree on subtrees stack");

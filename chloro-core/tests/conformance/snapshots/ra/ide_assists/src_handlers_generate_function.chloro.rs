@@ -93,7 +93,6 @@ fn fn_target_info(
                         return None;
                     }
                 }
-
                 assoc_fn_target_info(ctx, call, adt, fn_name)
             }
             Some(hir::PathResolution::SelfType(impl_)) => {
@@ -147,7 +146,11 @@ fn add_func_to_accumulator(
     adt_info: Option<AdtInfo>,
     label: String,
 ) -> Option<()> {
-    acc.add(AssistId::generate("generate_function"), label, text_range, |edit| {
+    acc.add(
+        AssistId::generate("generate_function"),
+        label,
+        text_range,
+        |edit| {
         edit.edit_file(file);
 
         let target = function_builder.target.clone();
@@ -171,7 +174,8 @@ fn add_func_to_accumulator(
         } else {
             target.insert_fn_at(edit, func);
         }
-    })
+    },
+    )
 }
 
 fn get_adt_source(
@@ -184,8 +188,9 @@ fn get_adt_source(
     let file = ctx.sema.parse(range.file_id);
     let adt_source =
         ctx.sema.find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
-    find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()])
-        .map(|impl_| (impl_, range.file_id.file_id(ctx.db())))
+    find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()]).map(
+        |impl_| (impl_, range.file_id.file_id(ctx.db())),
+    )
 }
 
 struct FunctionBuilder {
@@ -263,8 +268,7 @@ impl FunctionBuilder {
         let (generic_param_list, where_clause) =
             fn_generic_params(ctx, necessary_generic_params, &target)?;
 
-        Some(
-            Self {
+        Some(Self {
             target,
             fn_name,
             generic_param_list,
@@ -276,8 +280,7 @@ impl FunctionBuilder {
             visibility,
             is_async,
             target_edition,
-        },
-        )
+        })
     }
 
     fn from_method_call(
@@ -320,8 +323,7 @@ impl FunctionBuilder {
         };
         let fn_body = make::block_expr(vec![], Some(placeholder_expr));
 
-        Some(
-            Self {
+        Some(Self {
             target,
             fn_name,
             generic_param_list,
@@ -333,8 +335,7 @@ impl FunctionBuilder {
             visibility,
             is_async,
             target_edition,
-        },
-        )
+        })
     }
 
     fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
@@ -567,11 +568,9 @@ impl GeneratedFunctionTarget {
                 } else {
                     ted::Position::first_child_of(&item)
                 };
-
                 let indent = IndentLevel::from_node(&item);
                 let leading_ws = make::tokens::whitespace(&format!("\n{indent}"));
                 impl_.indent(indent);
-
                 ted::insert_all(position, vec![leading_ws.into(), impl_.syntax().clone().into()]);
             }
             GeneratedFunctionTarget::InEmptyItemList(item_list) => {
@@ -582,12 +581,10 @@ impl GeneratedFunctionTarget {
                     Some(child) => ted::Position::after(child),
                     None => ted::Position::first_child_of(&item_list),
                 };
-
                 let indent = IndentLevel::from_node(&item_list);
                 let leading_indent = indent + 1;
                 let leading_ws = make::tokens::whitespace(&format!("\n{leading_indent}"));
                 impl_.indent(indent);
-
                 ted::insert_all(position, vec![leading_ws.into(), impl_.syntax().clone().into()]);
             }
             GeneratedFunctionTarget::InImpl(_) => {
@@ -605,11 +602,9 @@ impl GeneratedFunctionTarget {
                 } else {
                     ted::Position::first_child_of(&item)
                 };
-
                 let indent = IndentLevel::from_node(&item);
                 let leading_ws = make::tokens::whitespace(&format!("\n\n{indent}"));
                 func.indent(indent);
-
                 ted::insert_all_raw(
                     position,
                     vec![leading_ws.into(), func.syntax().clone().into()],
@@ -623,13 +618,11 @@ impl GeneratedFunctionTarget {
                     Some(child) => ted::Position::after(child),
                     None => ted::Position::first_child_of(&item_list),
                 };
-
                 let indent = IndentLevel::from_node(&item_list);
                 let leading_indent = indent + 1;
                 let leading_ws = make::tokens::whitespace(&format!("\n{leading_indent}"));
                 let trailing_ws = make::tokens::whitespace(&format!("\n{indent}"));
                 func.indent(leading_indent);
-
                 ted::insert_all(
                     position,
                     vec![leading_ws.into(), func.syntax().clone().into(), trailing_ws.into()],
@@ -637,10 +630,8 @@ impl GeneratedFunctionTarget {
             }
             GeneratedFunctionTarget::InImpl(impl_) => {
                 let impl_ = edit.make_mut(impl_.clone());
-
                 let leading_indent = impl_.indent_level() + 1;
                 func.indent(leading_indent);
-
                 impl_.get_or_create_assoc_item_list().add_item(func.into());
             }
         }
@@ -678,9 +669,9 @@ fn fn_args(
 
     Some(make::param_list(
         match call {
-            ast::CallableExpr::Call(_) => None,
-            ast::CallableExpr::MethodCall(_) => Some(make::self_param()),
-        },
+        ast::CallableExpr::Call(_) => None,
+        ast::CallableExpr::MethodCall(_) => Some(make::self_param()),
+    },
         params,
     ))
 }
@@ -888,7 +879,6 @@ fn compute_contained_params_in_generic_param(
     match &node {
         ast::GenericParam::TypeParam(ty) => {
             let self_ty_param = ctx.sema.to_def(ty)?.into();
-
             let other_params = ty
                 .type_bound_list()
                 .into_iter()
@@ -896,7 +886,6 @@ fn compute_contained_params_in_generic_param(
                 .flat_map(|bound| bound.syntax().descendants())
                 .filter_map(|node| filter_generic_params(ctx, node))
                 .collect();
-
             Some(ParamBoundWithParams { node, self_ty_param, other_params })
         }
         ast::GenericParam::ConstParam(ct) => {
@@ -904,7 +893,6 @@ fn compute_contained_params_in_generic_param(
             Some(ParamBoundWithParams { node, self_ty_param, other_params: FxHashSet::default() })
         }
         ast::GenericParam::LifetimeParam(_) => {
-            // FIXME: It might be a good idea to handle lifetime parameters too.
             None
         }
     }
@@ -1147,8 +1135,9 @@ fn fn_arg_type(
         }
     }
 
-    maybe_displayed_type(ctx, target_module, fn_arg, generic_params)
-        .unwrap_or_else(|| String::from("_"))
+    maybe_displayed_type(ctx, target_module, fn_arg, generic_params).unwrap_or_else(
+        || String::from("_"),
+    )
 }
 
 /// Returns the position inside the current mod or file

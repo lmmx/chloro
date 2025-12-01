@@ -612,7 +612,6 @@ impl GlobalState {
             {
                 self.poke_rust_analyzer_developer(format!("{}, check the log", err.message));
             }
-
             let duration = start.elapsed();
             tracing::debug!(name: "message response", method, %response.id, duration = format_args!("{:0.2?}", duration));
             self.send(response.into());

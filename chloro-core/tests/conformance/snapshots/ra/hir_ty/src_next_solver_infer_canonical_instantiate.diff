@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6139 bytes
-Chloro size:   6139 bytes
+Chloro size:   6178 bytes
 Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
@@ -34,6 +34,13 @@ Rustfmt size:  6179 bytes
      fn instantiate_projected<T>(
          &self,
          tcx: DbInterner<'db>,
+                 c => panic!("{bound_ct:?} is a const but value is {c:?}"),
+             },
+         };
+-
+         let value = tcx.replace_escaping_bound_vars_uncached(value, delegate);
+         value.fold_with(&mut CanonicalInstantiator {
+             tcx,
  /// Replaces the bound vars in a canonical binder with var values.
  struct CanonicalInstantiator<'db, 'a> {
      tcx: DbInterner<'db>,
@@ -44,15 +51,3 @@ Rustfmt size:  6179 bytes
      // Because we use `BoundVarIndexKind::Canonical`, we can cache
      // based only on the entire ty, not worrying about a `DebruijnIndex`
      cache: FxHashMap<Ty<'db>, Ty<'db>>,
-     }
- 
-     fn fold_predicate(&mut self, p: Predicate<'db>) -> Predicate<'db> {
--        if p.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
--            p.super_fold_with(self)
--        } else {
--            p
--        }
-+        if p.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) { p.super_fold_with(self) } else { p }
-     }
- 
-     fn fold_clauses(&mut self, c: Clauses<'db>) -> Clauses<'db> {

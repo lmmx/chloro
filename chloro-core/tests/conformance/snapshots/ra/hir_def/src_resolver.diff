@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54439 bytes
+Chloro size:   54234 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -96,6 +96,35 @@ Rustfmt size:  54481 bytes
          // `use core::u16;`.
          if path.kind == PathKind::Plain
              && n_segments > 1
+     hygiene_info: &mut Option<(SyntaxContext, MacroDefId)>,
+     macro_id: &MacroDefId,
+ ) {
+-    if let Some((parent_ctx, label_macro_id)) = hygiene_info
+-        && label_macro_id == macro_id
+-    {
+-        // A macro is allowed to refer to variables from before its declaration.
+-        // Therefore, if we got to the rib of its declaration, give up its hygiene
+-        // and use its parent expansion.
++    if let Some((parent_ctx, label_macro_id)) = hygiene_info && label_macro_id == macro_id {
+         *hygiene_id = HygieneId::new(parent_ctx.opaque_and_semitransparent(db));
+         *hygiene_info = parent_ctx.outer_expn(db).map(|expansion| {
+             let expansion = db.lookup_intern_macro_call(expansion.into());
+                 } else if let GenericDefId::AdtId(adt) = parent {
+                     acc.add(&Name::new_symbol_root(sym::Self_), ScopeDef::AdtSelfType(adt));
+                 }
+-
+                 for (local_id, param) in params.iter_type_or_consts() {
+                     if let Some(name) = &param.name() {
+                         let id = TypeOrConstParamId { parent, local_id };
+                     acc.add_local(e.name(), e.binding());
+                 });
+             }
+-            Scope::MacroDefScope(_) => {}
++            Scope::MacroDefScope(_) => {
++            }
+         }
+     }
+ }
          &self,
          db: &dyn DefDatabase,
          path: &ModPath,

@@ -195,7 +195,11 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
         Definition::Function(it) => {
             if it.as_assoc_item(db).is_some() {
                 if it.has_self_param(db) {
-                    if it.has_body(db) { Method } else { TraitMethod }
+                    if it.has_body(db) {
+                        Method
+                    } else {
+                        TraitMethod
+                    }
                 } else {
                     StaticMethod
                 }
@@ -230,7 +234,7 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
                 Variable
             }
         }
-        Definition::Label(..) | Definition::InlineAsmOperand(_) => Variable, // For lack of a better variant
+        Definition::Label(..) | Definition::InlineAsmOperand(_) => Variable,
         Definition::DeriveHelper(..) => Attribute,
         Definition::BuiltinAttr(..) => Attribute,
         Definition::ToolModule(..) => Module,
@@ -355,7 +359,11 @@ fn def_to_non_local_moniker(
             crate_name: krate.display_name(db)?.crate_name().to_string(),
             description,
         },
-        kind: if krate == from_crate { MonikerKind::Export } else { MonikerKind::Import },
+        kind: if krate == from_crate {
+            MonikerKind::Export
+        } else {
+            MonikerKind::Import
+        },
         package_information: {
             let (name, repo, version) = match krate.origin(db) {
                 CrateOrigin::Library { repo, name } => (name, repo, krate.version(db)),
@@ -388,7 +396,6 @@ fn def_to_non_local_moniker(
 fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, it: T) -> String {
     match it.display_source_code(db, module.into(), true) {
         Ok(result) => result,
-        // Fallback on display variant that always succeeds
         Err(_) => {
             let fallback_result = it.display(db, module.krate().to_display_target(db)).to_string();
             tracing::error!(

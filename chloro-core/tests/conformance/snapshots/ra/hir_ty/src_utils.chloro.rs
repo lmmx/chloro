@@ -149,17 +149,17 @@ pub fn is_fn_unsafe_to_call(
         hir_def::ItemContainerId::ExternBlockId(block) => {
             let is_intrinsic_block = block.abi(db) == Some(sym::rust_dash_intrinsic);
             if is_intrinsic_block {
-                // legacy intrinsics
-                // extern "rust-intrinsic" intrinsics are unsafe unless they have the rustc_safe_intrinsic attribute
                 if db.attrs(func.into()).by_key(sym::rustc_safe_intrinsic).exists() {
                     Unsafety::Safe
                 } else {
                     Unsafety::Unsafe
                 }
             } else {
-                // Function in an `extern` block are always unsafe to call, except when
-                // it is marked as `safe`.
-                if data.is_safe() { Unsafety::Safe } else { Unsafety::Unsafe }
+                if data.is_safe() {
+                    Unsafety::Safe
+                } else {
+                    Unsafety::Unsafe
+                }
             }
         }
         _ => Unsafety::Safe,

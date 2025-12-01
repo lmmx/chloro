@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2116 bytes
-Chloro size:   1933 bytes
+Chloro size:   1972 bytes
 Rustfmt size:  2254 bytes
 
 ✗ Outputs DIFFER
@@ -36,24 +36,18 @@ Rustfmt size:  2254 bytes
  
      let has_errors = use_tree
          .syntax()
-     }
- 
-     let target = colon_colon.text_range();
--    acc.add(
--        AssistId::refactor_rewrite("split_import"),
--        "Split import",
--        target,
--        |edit| {
+         "Split import",
+         target,
+         |edit| {
 -            let use_tree = edit.make_mut(use_tree.clone());
 -            let path = edit.make_mut(path);
 -            use_tree.split_prefix(&path);
 -        },
--    )
-+    acc.add(AssistId::refactor_rewrite("split_import"), "Split import", target, |edit| {
 +        let use_tree = edit.make_mut(use_tree.clone());
 +        let path = edit.make_mut(path);
 +        use_tree.split_prefix(&path);
-+    })
++    },
+     )
  }
  
  #[cfg(test)]

@@ -301,9 +301,7 @@ impl InlayHintsConfig<'_> {
     }
 
     fn lazy_tooltip(&self, finish: impl FnOnce() -> InlayTooltip) -> LazyProperty<InlayTooltip> {
-        if self.fields_to_resolve.resolve_hint_tooltip
-            && self.fields_to_resolve.resolve_label_tooltip
-        {
+        if self.fields_to_resolve.resolve_hint_tooltip && self.fields_to_resolve.resolve_label_tooltip {
             LazyProperty::Lazy
         } else {
             let tooltip = finish();
@@ -808,8 +806,7 @@ fn ty_to_text_edit(
     let rendered = sema
         .scope(node_for_hint)
         .and_then(|scope| ty.display_source_code(scope.db, scope.module().into(), false).ok())?;
-    Some(
-        config.lazy_text_edit(|| {
+    Some(config.lazy_text_edit(|| {
         let mut builder = TextEdit::builder();
         builder.insert(offset_to_insert_ty, prefix.into());
         builder.insert(offset_to_insert_ty, rendered);
@@ -817,8 +814,7 @@ fn ty_to_text_edit(
         additional_edits(&mut builder);
 
         builder.finish()
-    }),
-    )
+    }))
 }
 
 fn closure_has_block_body(closure: &ast::ClosureExpr) -> bool {

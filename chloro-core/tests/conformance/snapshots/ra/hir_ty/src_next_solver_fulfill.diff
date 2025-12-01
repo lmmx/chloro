@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12390 bytes
+Chloro size:   12382 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -41,3 +41,12 @@ Rustfmt size:  12418 bytes
      /// The snapshot in which this context was created. Using the context
      /// outside of this snapshot leads to subtle bugs if the snapshot
      /// gets rolled back. Because of this we explicitly check that we only
+         }
+ 
+         if let TyKind::Coroutine(def_id, _) = ty.kind()
+-            && self.stalled_coroutines.contains(&def_id.into())
+-        {
++            && self.stalled_coroutines.contains(&def_id.into()) {
+             ControlFlow::Break(())
+         } else if ty.has_coroutines() {
+             ty.super_visit_with(self)

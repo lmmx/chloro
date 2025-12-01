@@ -163,7 +163,11 @@ pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangIt
         }
     }
 
-    if lang_items.items.is_empty() { None } else { Some(Box::new(lang_items)) }
+    if lang_items.items.is_empty() {
+        None
+    } else {
+        Some(Box::new(lang_items))
+    }
 }
 
 /// Salsa query. Look for a lang item, starting from the specified crate and recursively
@@ -255,7 +259,11 @@ pub(crate) fn crate_notable_traits(db: &dyn DefDatabase, krate: Crate) -> Option
         }
     }
 
-    if traits.is_empty() { None } else { Some(traits.into_iter().collect()) }
+    if traits.is_empty() {
+        None
+    } else {
+        Some(traits.into_iter().collect())
+    }
 }
 
 pub enum GenericRequirement {

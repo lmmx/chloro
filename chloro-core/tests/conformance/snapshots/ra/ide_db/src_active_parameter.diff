@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6837 bytes
-Chloro size:   6833 bytes
+Chloro size:   6866 bytes
 Rustfmt size:  6998 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-             return None;
-         }
-         let param = params.swap_remove(idx);
--        Some(ActiveParameter {
--            ty: param.ty().clone(),
--            src: sema.source(param),
--        })
-+        Some(ActiveParameter { ty: param.ty().clone(), src: sema.source(param) })
      }
  
      pub fn ident(&self) -> Option<ast::Name> {

@@ -38,8 +38,7 @@ impl RootDatabase {
                 .map(|(file_id, range)| (file_id.file_id(&db), range))
                 .collect();
             (db, files, fixture.sysroot_files)
-        })
-        .map_err(|error| {
+        }).map_err(|error| {
             tracing::error!(
                 "cannot crate the crate graph: {}\nCrate graph:\n{}\n",
                 if let Some(&s) = error.downcast_ref::<&'static str>() {
@@ -183,8 +182,7 @@ impl RaFixtureAnalysis {
             virtual_file_id_to_line[file_id.index() as usize] = line;
         }
 
-        Some(
-            RaFixtureAnalysis {
+        Some(RaFixtureAnalysis {
             db: analysis,
             tmp_file_ids,
             line_offsets,
@@ -193,8 +191,7 @@ impl RaFixtureAnalysis {
             literal,
             sysroot_files,
             combined_len,
-        },
-        )
+        })
     }
 
     pub fn files(&self) -> impl Iterator<Item = FileId> {
@@ -318,7 +315,6 @@ where
         .filter_map(|item| item.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id).ok())
         .collect::<Collection>();
     if result.is_empty() {
-        // The collection was emptied by the upmapping - all items errored, therefore mark it as erroring as well.
         Err(())
     } else {
         Ok(result)
@@ -332,12 +328,10 @@ impl<T: UpmapFromRaFixture> UpmapFromRaFixture for Option<T> {
         virtual_file_id: FileId,
         real_file_id: FileId,
     ) -> Result<Self, ()> {
-        Ok(
-            match self {
+        Ok(match self {
             Some(it) => Some(it.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?),
             None => None,
-        },
-        )
+        })
     }
 }
 
@@ -395,7 +389,11 @@ impl<V: UpmapFromRaFixture, S: BuildHasher + Default> UpmapFromRaFixture for std
                 ))
             })
             .collect::<std::collections::HashMap<_, _, _>>();
-        if result.is_empty() { Err(()) } else { Ok(result) }
+        if result.is_empty() {
+            Err(())
+        } else {
+            Ok(result)
+        }
     }
 }
 

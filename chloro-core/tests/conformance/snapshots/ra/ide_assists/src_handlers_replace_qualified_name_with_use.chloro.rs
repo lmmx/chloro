@@ -140,7 +140,6 @@ fn path_eq_no_generics(lhs: ast::Path, rhs: ast::Path) -> bool {
                         .is_some_and(|(lhs, rhs)| lhs.text() == rhs.text()) => {}
             _ => return false,
         }
-
         match (lhs_curr.qualifier(), rhs_curr.qualifier()) {
             (Some(lhs), Some(rhs)) => {
                 lhs_curr = lhs;

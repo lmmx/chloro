@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22425 bytes
+Chloro size:   22395 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
@@ -83,40 +83,6 @@ Rustfmt size:  23079 bytes
          }
          if !mismatches.is_empty() {
              format_to!(buf, "Unchecked mismatch annotations:\n");
-     expr: ExprId,
-     db: &TestDB,
- ) -> Option<InFile<SyntaxNode>> {
--    Some(match body_source_map.expr_syntax(expr) {
-+    Some(
-+        match body_source_map.expr_syntax(expr) {
-         Ok(sp) => {
-             let root = db.parse_or_expand(sp.file_id);
-             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
-         }
-         Err(SyntheticSyntax) => return None,
--    })
-+    },
-+    )
- }
- 
- fn pat_node(
-     pat: PatId,
-     db: &TestDB,
- ) -> Option<InFile<SyntaxNode>> {
--    Some(match body_source_map.pat_syntax(pat) {
-+    Some(
-+        match body_source_map.pat_syntax(pat) {
-         Ok(sp) => {
-             let root = db.parse_or_expand(sp.file_id);
-             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
-         }
-         Err(SyntheticSyntax) => return None,
--    })
-+    },
-+    )
- }
- 
- fn infer(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
      let _tracing = setup_tracing();
      let (db, file_id) = TestDB::with_single_file(content);
  

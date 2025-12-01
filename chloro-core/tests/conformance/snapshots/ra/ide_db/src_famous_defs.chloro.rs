@@ -163,14 +163,9 @@ impl FamousDefs<'_, '_> {
     }
 
     pub fn builtin_crates(&self) -> impl Iterator<Item = Crate> {
-        IntoIterator::into_iter([
-            self.std(),
-            self.core(),
-            self.alloc(),
-            self.test(),
-            self.proc_macro(),
-        ])
-        .flatten()
+        IntoIterator::into_iter(
+            [self.std(), self.core(), self.alloc(), self.test(), self.proc_macro()],
+        ).flatten()
     }
 
     fn find_trait(&self, path: &str) -> Option<Trait> {

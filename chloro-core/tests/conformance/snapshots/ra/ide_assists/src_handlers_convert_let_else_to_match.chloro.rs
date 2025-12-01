@@ -107,8 +107,7 @@ fn remove_mut_and_collect_idents(
     pat: &ast::Pat,
     acc: &mut Vec<ast::IdentPat>,
 ) -> Option<ast::Pat> {
-    Some(
-        match pat {
+    Some(match pat {
         ast::Pat::IdentPat(p) => {
             acc.push(p.clone());
             let non_mut_pat = make.ident_pat(
@@ -205,10 +204,8 @@ fn remove_mut_and_collect_idents(
         | ast::Pat::PathPat(_)
         | ast::Pat::WildcardPat(_)
         | ast::Pat::ConstBlockPat(_) => pat.clone(),
-        // don't support macro pat yet
         ast::Pat::MacroPat(_) => return None,
-    },
-    )
+    })
 }
 
 #[cfg(test)]

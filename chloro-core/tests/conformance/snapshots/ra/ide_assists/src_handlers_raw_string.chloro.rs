@@ -58,14 +58,19 @@ pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()>
         return None;
     }
     let target = token.syntax().text_range();
-    acc.add(AssistId::refactor("add_hash"), "Add #", target, |edit| {
+    acc.add(
+        AssistId::refactor("add_hash"),
+        "Add #",
+        target,
+        |edit| {
         let str = token.text();
         let suffix = string_suffix(str).unwrap_or_default();
         let raw_prefix = token.raw_prefix();
         let wrap_range = raw_prefix.len()..str.len() - suffix.len();
         let new_str = [raw_prefix, "#", &str[wrap_range], "#", suffix].concat();
         replace_literal(&token, &new_str, edit, ctx);
-    })
+    },
+    )
 }
 
 pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
@@ -87,13 +92,18 @@ pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
         return None;
     }
 
-    acc.add(AssistId::refactor_rewrite("remove_hash"), "Remove #", text_range, |edit| {
+    acc.add(
+        AssistId::refactor_rewrite("remove_hash"),
+        "Remove #",
+        text_range,
+        |edit| {
         let suffix = string_suffix(text).unwrap_or_default();
         let prefix = token.raw_prefix();
         let wrap_range = prefix.len() + 1..text.len() - suffix.len() - 1;
         let new_str = [prefix, &text[wrap_range], suffix].concat();
         replace_literal(&token, &new_str, edit, ctx);
-    })
+    },
+    )
 }
 
 fn replace_literal(

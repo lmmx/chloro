@@ -51,8 +51,7 @@ pub(super) fn highlight_format_string(
 }
 
 fn highlight_format_specifier(kind: FormatSpecifier) -> Option<HlTag> {
-    Some(
-        match kind {
+    Some(match kind {
         FormatSpecifier::Open
         | FormatSpecifier::Close
         | FormatSpecifier::Colon
@@ -64,11 +63,8 @@ fn highlight_format_specifier(kind: FormatSpecifier) -> Option<HlTag> {
         | FormatSpecifier::Dot
         | FormatSpecifier::Asterisk
         | FormatSpecifier::QuestionMark => HlTag::FormatSpecifier,
-
         FormatSpecifier::Integer | FormatSpecifier::Zero => HlTag::NumericLiteral,
-
         FormatSpecifier::Identifier => HlTag::Symbol(SymbolKind::Local),
         FormatSpecifier::Escape => HlTag::EscapeSequence,
-    },
-    )
+    })
 }

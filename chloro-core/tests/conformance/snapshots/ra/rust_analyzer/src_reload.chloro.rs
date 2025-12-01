@@ -857,7 +857,11 @@ impl GlobalState {
             }
         }
 
-        if buf.is_empty() { Ok(()) } else { Err(buf) }
+        if buf.is_empty() {
+            Ok(())
+        } else {
+            Err(buf)
+        }
     }
 
     fn reload_flycheck(&mut self) {

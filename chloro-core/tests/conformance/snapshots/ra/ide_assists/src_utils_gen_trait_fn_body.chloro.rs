@@ -155,10 +155,7 @@ fn gen_clone_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
 fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
     let annotated_name = adt.name()?;
     match adt {
-        // `Debug` cannot be derived for unions, so no default impl can be provided.
         ast::Adt::Union(_) => None,
-
-        // => match self { Self::Variant => write!(f, "Variant") }
         ast::Adt::Enum(enum_) => {
             let list = enum_.variant_list()?;
             let mut arms = vec![];
@@ -249,21 +246,17 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
                     }
                 }
             }
-
             let match_target = make::expr_path(make::ext::ident_path("self"));
             let list = make::match_arm_list(arms).indent(ast::edit::IndentLevel(1));
             let match_expr = make::expr_match(match_target, list);
-
             let body = make::block_expr(None, Some(match_expr.into()));
             let body = body.indent(ast::edit::IndentLevel(1));
             Some(body)
         }
-
         ast::Adt::Struct(strukt) => {
             let name = format!("\"{annotated_name}\"");
             let args = make::arg_list(Some(make::expr_literal(&name).into()));
             let target = make::expr_path(make::ext::ident_path("f"));
-
             let expr = match strukt.field_list() {
                 // => f.debug_struct("Name").finish()
                 None => make::expr_method_call(target, make::name_ref("debug_struct"), args).into(),
@@ -299,7 +292,6 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
                     expr
                 }
             };
-
             let method = make::name_ref("finish");
             let expr = make::expr_method_call(expr, method, make::arg_list(None)).into();
             let body = make::block_expr(None, Some(expr)).indent(ast::edit::IndentLevel(1));
@@ -315,9 +307,7 @@ fn gen_default_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
         Some(make::expr_call(make::expr_path(fn_name), make::arg_list(None)).into())
     }
     match adt {
-        // `Debug` cannot be derived for unions, so no default impl can be provided.
         ast::Adt::Union(_) => None,
-        // Deriving `Debug` for enums is not stable yet.
         ast::Adt::Enum(_) => None,
         ast::Adt::Struct(strukt) => {
             let expr = match strukt.field_list() {

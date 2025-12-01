@@ -93,8 +93,6 @@ impl<'db> InferCtxt<'db> {
         match cv_info {
             CanonicalVarKind::Ty { ui, sub_root } => {
                 let vid = self.next_ty_var_id_in_universe(universe_map(ui));
-                // If this inference variable is related to an earlier variable
-                // via subtyping, we need to add that info to the inference context.
                 if let Some(prev) = previous_var_values.get(sub_root.as_usize()) {
                     if let TyKind::Infer(InferTy::TyVar(sub_root)) = prev.expect_ty().kind() {
                         self.sub_unify_ty_vids_raw(vid, sub_root);
@@ -104,21 +102,16 @@ impl<'db> InferCtxt<'db> {
                 }
                 Ty::new_var(self.interner, vid).into()
             }
-
             CanonicalVarKind::Int => self.next_int_var().into(),
-
             CanonicalVarKind::Float => self.next_float_var().into(),
-
             CanonicalVarKind::PlaceholderTy(PlaceholderTy { universe, bound }) => {
                 let universe_mapped = universe_map(universe);
                 let placeholder_mapped = PlaceholderTy { universe: universe_mapped, bound };
                 Ty::new_placeholder(self.interner, placeholder_mapped).into()
             }
-
             CanonicalVarKind::Region(ui) => {
                 self.next_region_var_in_universe(universe_map(ui)).into()
             }
-
             CanonicalVarKind::PlaceholderRegion(PlaceholderRegion { universe, bound }) => {
                 let universe_mapped = universe_map(universe);
                 let placeholder_mapped: crate::next_solver::Placeholder<
@@ -126,7 +119,6 @@ impl<'db> InferCtxt<'db> {
                 > = PlaceholderRegion { universe: universe_mapped, bound };
                 Region::new_placeholder(self.interner, placeholder_mapped).into()
             }
-
             CanonicalVarKind::Const(ui) => self.next_const_var_in_universe(universe_map(ui)).into(),
             CanonicalVarKind::PlaceholderConst(PlaceholderConst { universe, bound }) => {
                 let universe_mapped = universe_map(universe);

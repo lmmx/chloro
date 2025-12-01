@@ -198,19 +198,16 @@ fn foo(mut slice: &[u32]) -> usize {
     }
     #[test]
     fn regression_16564() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 //- minicore: copy
 fn test() {
     let _x = (&(&mut (),)).0 as *const ();
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn regression_18201() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 //- minicore: copy
 struct NotCopy;
 struct S(NotCopy);
@@ -222,13 +219,11 @@ impl S {
         };
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn regression_20155() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 //- minicore: copy, option
 struct Box(i32);
 fn test() {
@@ -239,7 +234,6 @@ fn test() {
         }
     };
 }
-"#,
-        )
+"#)
     }
 }

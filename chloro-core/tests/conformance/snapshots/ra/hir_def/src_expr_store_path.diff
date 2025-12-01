@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11045 bytes
-Chloro size:   10962 bytes
+Chloro size:   11064 bytes
 Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
@@ -48,20 +48,14 @@ Rustfmt size:  11497 bytes
 -                generic_args: None,
 -            },
 +            Path::BarePath(mod_path) => {
-+                PathSegments { segments: mod_path.segments(), generic_args: None }
++                PathSegments {
++                    segments: mod_path.segments(),
++                    generic_args: None,
++                }
 +            }
              Path::Normal(path) => PathSegments {
                  segments: path.mod_path.segments(),
                  generic_args: Some(&path.generic_args),
-             },
--            Path::LangItem(_, seg) => PathSegments {
--                segments: seg.as_slice(),
--                generic_args: None,
--            },
-+            Path::LangItem(_, seg) => PathSegments { segments: seg.as_slice(), generic_args: None },
-         }
-     }
- 
                  }
                  Some(Path::BarePath(Interned::new(ModPath::from_segments(
                      mod_path.kind,

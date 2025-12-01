@@ -277,11 +277,9 @@ fn extract_and_parse_record_fields(
                     None
                 })
                 .collect::<Vec<RecordFieldInfo>>();
-
             if info_of_record_fields_in_selection.is_empty() {
                 return None;
             }
-
             Some((info_of_record_fields_in_selection, field_names))
         }
         ast::FieldList::TupleFieldList(_) => None,
@@ -334,22 +332,18 @@ fn build_source_change(
     let assoc_item_list = impl_def.get_or_create_assoc_item_list();
 
     for (i, record_field_info) in info_of_record_fields.iter().enumerate() {
-        // Make the new getter or setter fn
         let new_fn = match assist_info.assist_type {
             AssistType::Set => generate_setter_from_info(&assist_info, record_field_info),
             _ => generate_getter_from_info(ctx, &assist_info, record_field_info),
         }
         .clone_for_update();
         new_fn.indent(1.into());
-
-        // Insert a tabstop only for last method we generate
         if i == record_fields_count - 1
             && let Some(cap) = ctx.config.snippet_cap
             && let Some(name) = new_fn.name()
         {
             builder.add_tabstop_before(cap, name);
         }
-
         assoc_item_list.add_item(new_fn.clone().into());
     }
 }

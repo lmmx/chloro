@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34670 bytes
+Chloro size:   34622 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -66,6 +66,14 @@ Rustfmt size:  36650 bytes
  pub(crate) fn on_char_typed(
      db: &RootDatabase,
      position: FilePosition,
+         '|' => on_pipe_typed(&file.tree(), offset),
+         '+' => on_plus_typed(&file.tree(), offset),
+         _ => None,
+-    }
+-    .map(conv)
++    }.map(
++        conv,
++    )
  }
  
  fn conv(edit: TextEdit) -> ExtendedTextEdit {
@@ -250,13 +258,17 @@ Rustfmt size:  36650 bytes
  }
  
  /// Add closing `>` for generic arguments/parameters.
-         })
-     {
-         // Insert the closing bracket right after
+             ast::GenericParamList::can_cast(n.kind())
+                 || ast::GenericArgList::can_cast(n.kind())
+                 || ast::UseBoundGenericArgs::can_cast(n.kind())
+-        })
+-    {
+-        // Insert the closing bracket right after
 -        Some(TextEdit::insert(
 -            offset + TextSize::of('<'),
 -            '>'.to_string(),
 -        ))
++        }) {
 +        Some(TextEdit::insert(offset + TextSize::of('<'), '>'.to_string()))
      } else {
          None
@@ -284,7 +296,12 @@ Rustfmt size:  36650 bytes
 +        ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
      let kind = ancestors.next()?.kind();
  
-     if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
+-    if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
+-    {
++    if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind) {
+         let mut builder = TextEdit::builder();
+         builder.insert(trait_type.syntax().text_range().start(), "(".to_owned());
+         builder.insert(trait_type.syntax().text_range().end(), ")".to_owned());
  #[cfg(test)]
  mod tests {
      use test_utils::{assert_eq_text, extract_offset};

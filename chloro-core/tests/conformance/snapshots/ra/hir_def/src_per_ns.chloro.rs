@@ -89,13 +89,11 @@ impl PerNs {
     ) -> PerNs {
         PerNs {
             types: Some(Item { def: types, vis, import }),
-            values: Some(
-                Item {
+            values: Some(Item {
                 def: values,
                 vis,
                 import: import.and_then(ImportOrExternCrate::import_or_glob),
-            },
-            ),
+            }),
             macros: None,
         }
     }
@@ -166,7 +164,11 @@ impl PerNs {
     }
 
     pub fn or_else(self, f: impl FnOnce() -> PerNs) -> PerNs {
-        if self.is_full() { self } else { self.or(f()) }
+        if self.is_full() {
+            self
+        } else {
+            self.or(f())
+        }
     }
 
     pub fn iter_items(self) -> impl Iterator<Item = (ItemInNs, Option<ImportOrExternCrate>)> {

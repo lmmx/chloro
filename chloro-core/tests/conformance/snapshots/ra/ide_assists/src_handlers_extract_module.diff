@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53264 bytes
+Chloro size:   53251 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
@@ -99,6 +99,13 @@ Rustfmt size:  53759 bytes
          for item in &self.body_items {
              match_ast! {
                  match (item.syntax()) {
+                     _ => true,
+                 }
+             });
+-
+             add_change_vis(vis, item);
+         }
+     }
          //- Def is outside: Import it inside with super
  
          //Exists inside selection but not outside -> Check for the import of it in original module,
@@ -108,6 +115,16 @@ Rustfmt size:  53759 bytes
          let mut import_path_to_be_removed: Option<TextRange> = None;
          if uses_exist_in_sel && uses_exist_out_sel {
              //Changes to be made only inside new module
+ }
+ 
+ fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax::SyntaxElement>) {
+-    if vis.is_none()
+-        && let Some(node_or_token) = node_or_token_opt
+-    {
++    if vis.is_none() && let Some(node_or_token) = node_or_token_opt {
+         let pub_crate_vis = make::visibility_pub_crate().clone_for_update();
+         ted::insert(ted::Position::before(node_or_token), pub_crate_vis.syntax());
+     }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -79,7 +79,6 @@ fn add_import(
     edit: &mut ide_db::source_change::SourceChangeBuilder,
 ) {
     if let Some(path_segment) = qualifier.segment() {
-        // for `<i32 as std::ops::Add>`
         let path_type = path_segment.qualifying_trait();
         let import = match path_type {
             Some(it) => {
@@ -91,17 +90,13 @@ fn add_import(
             }
             None => qualifier,
         };
-
-        // in case for `<_>`
         if import.coloncolon_token().is_none() {
             return;
         }
-
         let scope = ide_db::imports::insert_use::ImportScope::find_insert_use_container(
             import.syntax(),
             &ctx.sema,
         );
-
         if let Some(scope) = scope {
             let scope = edit.make_import_scope_mut(scope);
             ide_db::imports::insert_use::insert_use(&scope, import, &ctx.config.insert_use);

@@ -23,14 +23,13 @@ pub(crate) fn remove_unnecessary_else(
     let display_range = adjusted_display_range(ctx, d.if_expr, &|if_expr| {
         if_expr.else_token().as_ref().map(SyntaxToken::text_range)
     });
-    Some(
-        Diagnostic::new(
-            DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
-            "remove unnecessary else block",
-            display_range,
-        )
-        .with_fixes(fixes(ctx, d)),
-    )
+    Some(Diagnostic::new(
+        DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
+        "remove unnecessary else block",
+        display_range,
+    ).with_fixes(
+        fixes(ctx, d),
+    ))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<Assist>> {
@@ -87,14 +86,12 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<
         edit,
     );
 
-    Some(
-        vec![fix(
+    Some(vec![fix(
         "remove_unnecessary_else",
         "Remove unnecessary else block",
         source_change,
         range,
-    )],
-    )
+    )])
 }
 
 #[cfg(test)]

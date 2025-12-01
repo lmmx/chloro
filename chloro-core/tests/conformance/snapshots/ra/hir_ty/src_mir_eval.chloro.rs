@@ -283,12 +283,10 @@ impl From<Interval> for IntervalOrOwned {
 
 impl IntervalOrOwned {
     fn get<'a, 'db>(&'a self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
-        Ok(
-            match self {
+        Ok(match self {
             IntervalOrOwned::Owned(o) => o,
             IntervalOrOwned::Borrowed(b) => b.get(memory)?,
-        },
-        )
+        })
     }
 }
 
@@ -618,7 +616,10 @@ pub fn interpret_mir<'db>(
         };
         Ok(Const::new_valtree(evaluator.interner(), ty, bytes, memory_map))
     })();
-    Ok((it, MirOutput { stdout: evaluator.stdout, stderr: evaluator.stderr }))
+    Ok((it, MirOutput {
+        stdout: evaluator.stdout,
+        stderr: evaluator.stderr,
+    }))
 }
 
 #[cfg(test)]
@@ -643,8 +644,7 @@ impl<'db> Evaluator<'db> {
         let cached_ptr_size = target_data_layout.pointer_size().bytes_usize();
         let interner = DbInterner::new_with(db, Some(crate_id), module.containing_block());
         let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);
-        Ok(
-            Evaluator {
+        Ok(Evaluator {
             target_data_layout,
             stack: vec![0],
             heap: vec![0],
@@ -678,8 +678,7 @@ impl<'db> Evaluator<'db> {
                 x.trait_items(db).method_by_name(&Name::new_symbol_root(sym::call_once))
             }),
             infcx,
-        },
-        )
+        })
     }
 
     #[inline]
@@ -876,8 +875,7 @@ impl<'db> Evaluator<'db> {
     }
 
     fn operand_ty(&self, o: &Operand<'db>, locals: &Locals<'db>) -> Result<'db, Ty<'db>> {
-        Ok(
-            match &o.kind {
+        Ok(match &o.kind {
             OperandKind::Copy(p) | OperandKind::Move(p) => self.place_ty(p, locals)?,
             OperandKind::Constant { konst: _, ty } => *ty,
             &OperandKind::Static(s) => {
@@ -889,8 +887,7 @@ impl<'db> Evaluator<'db> {
                     Mutability::Not,
                 )
             }
-        },
-        )
+        })
     }
 
     fn operand_ty_and_eval(
@@ -1059,9 +1056,7 @@ impl<'db> Evaluator<'db> {
                     return Ok(return_interval);
                 }
                 Some(bb) => {
-                    // We don't support const promotion, so we can't truncate the stack yet.
                     let _ = my_stack_frame.prev_stack_ptr;
-                    // self.stack.truncate(my_stack_frame.prev_stack_ptr);
                     current_block_idx = bb;
                 }
             }
@@ -1149,8 +1144,7 @@ impl<'db> Evaluator<'db> {
         locals: &mut Locals<'db>,
     ) -> Result<'db, IntervalOrOwned> {
         use IntervalOrOwned::*;
-        Ok(
-            match r {
+        Ok(match r {
             Rvalue::Use(it) => Borrowed(self.eval_operand(it, locals)?),
             Rvalue::Ref(_, p) => {
                 let (addr, _, metadata) = self.place_addr_and_ty_and_metadata(p, locals)?;
@@ -1535,11 +1529,9 @@ impl<'db> Evaluator<'db> {
                         self.coerce_unsized(addr, current_ty, *target_ty)?
                     }
                     PointerCast::MutToConstPointer | PointerCast::UnsafeFnPointer => {
-                        // This is no-op
                         Borrowed(self.eval_operand(operand, locals)?)
                     }
                     PointerCast::ArrayToPointer => {
-                        // We should remove the metadata part if the current type is slice
                         Borrowed(self.eval_operand(operand, locals)?.slice(0..self.ptr_size()))
                     }
                 },
@@ -1641,9 +1633,9 @@ impl<'db> Evaluator<'db> {
             Rvalue::ThreadLocalRef(n)
             | Rvalue::AddressOf(n)
             | Rvalue::BinaryOp(n)
-            | Rvalue::NullaryOp(n) => match *n {},
-        },
-        )
+            | Rvalue::NullaryOp(n) => match *n {
+            },
+        })
     }
 
     fn compute_discriminant(&self, ty: Ty<'db>, bytes: &[u8]) -> Result<'db, i128> {
@@ -1663,7 +1655,7 @@ impl<'db> Evaluator<'db> {
             }
             Variants::Multiple { tag, tag_encoding, variants, .. } => {
                 let size = tag.size(&*self.target_data_layout).bytes_usize();
-                let offset = layout.fields.offset(0).bytes_usize(); // The only field on enum variants is the tag field
+                let offset = layout.fields.offset(0).bytes_usize();
                 let is_signed = tag.is_signed();
                 match tag_encoding {
                     TagEncoding::Direct => {
@@ -1739,8 +1731,7 @@ impl<'db> Evaluator<'db> {
         addr: Interval,
     ) -> Result<'db, IntervalOrOwned> {
         use IntervalOrOwned::*;
-        Ok(
-            match &target_ty.kind() {
+        Ok(match &target_ty.kind() {
             TyKind::Slice(_) => match &current_ty.kind() {
                 TyKind::Array(_, size) => {
                     let len = match try_const_usize(self.db, *size) {
@@ -1796,8 +1787,7 @@ impl<'db> Evaluator<'db> {
                 _ => not_supported!("unsizing struct with non adt type"),
             },
             _ => not_supported!("unknown unsized cast"),
-        },
-        )
+        })
     }
 
     fn layout_of_variant(
@@ -1818,8 +1808,7 @@ impl<'db> Evaluator<'db> {
             return Ok((16, self.layout(Ty::new_empty_tuple(self.interner()))?, Some((0, 16, i))));
         }
         let layout = self.layout_adt(adt, subst)?;
-        Ok(
-            match &layout.variants {
+        Ok(match &layout.variants {
             Variants::Single { .. } | Variants::Empty => (layout.size.bytes_usize(), layout, None),
             Variants::Multiple { variants, tag, tag_encoding, .. } => {
                 let enum_variant_id = match it {
@@ -1860,8 +1849,7 @@ impl<'db> Evaluator<'db> {
                     },
                 )
             }
-        },
-        )
+        })
     }
 
     fn construct_with_layout(
@@ -1905,8 +1893,7 @@ impl<'db> Evaluator<'db> {
         it: &Operand<'db>,
         locals: &mut Locals<'db>,
     ) -> Result<'db, Interval> {
-        Ok(
-            match &it.kind {
+        Ok(match &it.kind {
             OperandKind::Copy(p) | OperandKind::Move(p) => {
                 locals.drop_flags.remove_place(p, &locals.body.projection_store);
                 self.eval_place(p, locals)?
@@ -1916,8 +1903,7 @@ impl<'db> Evaluator<'db> {
                 Interval::new(addr, self.ptr_size())
             }
             OperandKind::Constant { konst, .. } => self.allocate_const_in_heap(locals, *konst)?,
-        },
-        )
+        })
     }
 
     #[allow(clippy::double_parens)]
@@ -2656,10 +2642,6 @@ impl<'db> Evaluator<'db> {
         let arg_bytes = args.iter().map(|it| IntervalOrOwned::Borrowed(it.interval));
         match self.get_mir_or_dyn_index(def, generic_args, locals, span)? {
             MirOrDynIndex::Dyn(self_ty_idx) => {
-                // In the layout of current possible receiver, which at the moment of writing this code is one of
-                // `&T`, `&mut T`, `Box<T>`, `Rc<T>`, `Arc<T>`, and `Pin<P>` where `P` is one of possible receivers,
-                // the vtable is exactly in the `[ptr_size..2*ptr_size]` bytes. So we can use it without branching on
-                // the type.
                 let first_arg = arg_bytes.clone().next().unwrap();
                 let first_arg = first_arg.get(self)?;
                 let ty = self
@@ -2687,15 +2669,7 @@ impl<'db> Evaluator<'db> {
                     span,
                 )
             }
-            MirOrDynIndex::Mir(body) => self.exec_looked_up_function(
-                body,
-                locals,
-                def,
-                arg_bytes,
-                span,
-                destination,
-                target_bb,
-            ),
+            MirOrDynIndex::Mir(body) => self.exec_looked_up_function(body, locals, def, arg_bytes, span, destination, target_bb),
         }
     }
 
@@ -2709,8 +2683,7 @@ impl<'db> Evaluator<'db> {
         destination: Interval,
         target_bb: Option<BasicBlockId<'db>>,
     ) -> Result<'db, Option<StackFrame<'db>>> {
-        Ok(
-            if let Some(target_bb) = target_bb {
+        Ok(if let Some(target_bb) = target_bb {
             let (mut locals, prev_stack_ptr) =
                 self.create_locals_for_body(&mir_body, Some(destination))?;
             self.fill_locals_for_body(&mir_body, &mut locals, arg_bytes.into_iter())?;
@@ -2725,8 +2698,7 @@ impl<'db> Evaluator<'db> {
             })?;
             destination.write_from_interval(self, result)?;
             None
-        },
-        )
+        })
     }
 
     fn exec_fn_trait(
@@ -2772,7 +2744,6 @@ impl<'db> Evaluator<'db> {
                 span,
             ),
             _ => {
-                // try to execute the manual impl of `FnTrait` for structs (nightly feature used in std)
                 let arg0 = func;
                 let args = &args[1..];
                 let arg1 = {

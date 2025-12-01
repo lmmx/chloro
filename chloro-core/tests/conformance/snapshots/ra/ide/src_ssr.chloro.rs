@@ -75,9 +75,9 @@ mod tests {
             &db,
             &resolve,
             FileRange {
-                file_id: file_id.file_id(&db),
-                range: range_or_offset.into(),
-            },
+            file_id: file_id.file_id(&db),
+            range: range_or_offset.into(),
+        },
         )
     }
     #[test]

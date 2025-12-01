@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11633 bytes
+Chloro size:   11639 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
@@ -93,16 +93,20 @@ Rustfmt size:  13263 bytes
  pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if ctx.has_empty_selection() {
          cov_mark::hit!(not_applicable_if_no_selection);
-         new: Vec<T>,
-         target: &SyntaxNode,
-     ) -> Option<()> {
--        self.add(
--            AssistId::refactor_rewrite("sort_items"),
--            label,
--            target.text_range(),
--            |builder| {
+         add_sort_fields_assist(acc, union_ast.record_field_list()?)
+     } else if let Some(variant_ast) = ctx.find_node_at_offset::<ast::Variant>() {
+         add_sort_field_list_assist(acc, variant_ast.field_list())
+-    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>()
+-    {
+-        // should be above enum and below struct
++    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>() {
+         add_sort_fields_assist(acc, enum_struct_variant_ast)
+     } else if let Some(enum_ast) = ctx.find_node_at_offset::<ast::Enum>() {
+         add_sort_variants_assist(acc, enum_ast.variant_list()?)
+             label,
+             target.text_range(),
+             |builder| {
 -                let mut editor = builder.make_editor(target);
-+        self.add(AssistId::refactor_rewrite("sort_items"), label, target.text_range(), |builder| {
 +            let mut editor = builder.make_editor(target);
  
 -                old.into_iter()
@@ -114,9 +118,9 @@ Rustfmt size:  13263 bytes
  
 -                builder.add_file_edits(builder.file_id, editor)
 -            },
--        )
 +            builder.add_file_edits(builder.file_id, editor)
-+        })
++        },
+         )
      }
  }
  

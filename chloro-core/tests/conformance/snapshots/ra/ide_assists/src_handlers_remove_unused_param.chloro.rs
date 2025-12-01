@@ -100,7 +100,6 @@ fn process_usages(
         for element in element_range {
             editor.delete(element);
         }
-
         builder.add_file_edits(file_id, editor);
     }
 }
@@ -182,7 +181,6 @@ pub(crate) fn elements_to_remove(node: &SyntaxNode) -> Vec<SyntaxElement> {
                 token.siblings_with_tokens(dir).skip(1).take_while(|it| it.kind() == WHITESPACE),
             );
         }
-
         result
     } else {
         vec![node.syntax_element()]

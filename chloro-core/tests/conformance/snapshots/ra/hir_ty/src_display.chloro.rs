@@ -164,9 +164,6 @@ impl<'db> HirFormatter<'_, 'db> {
                 projection_tys_met.insert(target);
                 self.bounds_formatting_ctx = BoundsFormattingCtx::Entered { projection_tys_met };
                 let res = format_bounds(self);
-                // Since we want to prevent only the infinite recursions in bounds formatting
-                // and do not want to skip formatting of other separate bounds, clear context
-                // when exiting the formatting of outermost bounds
                 self.bounds_formatting_ctx = BoundsFormattingCtx::Exited;
                 res
             }
@@ -585,7 +582,6 @@ where
             Ok(()) => Ok(()),
             Err(HirDisplayError::FmtError) => Err(fmt::Error),
             Err(HirDisplayError::DisplaySourceCodeError(_)) => {
-                // This should never happen
                 panic!(
                     "HirDisplay::hir_fmt failed with DisplaySourceCodeError when calling Display::fmt!"
                 )
@@ -760,11 +756,9 @@ fn render_const_scalar_inner<'db>(
         }
         TyKind::Float(fl) => match fl {
             FloatTy::F16 => {
-                // FIXME(#17451): Replace with builtins once they are stabilised.
                 let it = f16::from_bits(u16::from_le_bytes(b.try_into().unwrap()).into());
                 let s = it.to_string();
                 if s.strip_prefix('-').unwrap_or(&s).chars().all(|c| c.is_ascii_digit()) {
-                    // Match Rust debug formatting
                     write!(f, "{s}.0")
                 } else {
                     write!(f, "{s}")
@@ -779,11 +773,9 @@ fn render_const_scalar_inner<'db>(
                 write!(f, "{it:?}")
             }
             FloatTy::F128 => {
-                // FIXME(#17451): Replace with builtins once they are stabilised.
                 let it = f128::from_bits(u128::from_le_bytes(b.try_into().unwrap()));
                 let s = it.to_string();
                 if s.strip_prefix('-').unwrap_or(&s).chars().all(|c| c.is_ascii_digit()) {
-                    // Match Rust debug formatting
                     write!(f, "{s}.0")
                 } else {
                     write!(f, "{s}")
@@ -988,7 +980,6 @@ fn render_const_scalar_inner<'db>(
         TyKind::CoroutineWitness(_, _) => f.write_str("<coroutine-witness>"),
         TyKind::CoroutineClosure(_, _) => f.write_str("<coroutine-closure>"),
         TyKind::UnsafeBinder(_) => f.write_str("<unsafe-binder>"),
-        // The below arms are unreachable, since const eval will bail out before here.
         TyKind::Foreign(_) => f.write_str("<extern-type>"),
         TyKind::Pat(_, _) => f.write_str("<pat>"),
         TyKind::Error(..)
@@ -997,7 +988,6 @@ fn render_const_scalar_inner<'db>(
         | TyKind::Param(_)
         | TyKind::Bound(_, _)
         | TyKind::Infer(_) => f.write_str("<placeholder-or-unknown-type>"),
-        // The below arms are unreachable, since we handled them in ref case.
         TyKind::Slice(_) | TyKind::Str | TyKind::Dynamic(_, _) => f.write_str("<unsized-value>"),
     }
 }
@@ -1870,9 +1860,7 @@ pub fn write_bounds_like_dyn_trait_with_prefix<'db>(
     default_sized: SizedByDefault,
 ) -> Result<(), HirDisplayError> {
     write!(f, "{prefix}")?;
-    if !predicates.is_empty()
-        || predicates.is_empty() && matches!(default_sized, SizedByDefault::Sized { .. })
-    {
+    if !predicates.is_empty() || predicates.is_empty() && matches!(default_sized, SizedByDefault::Sized { .. }) {
         write!(f, " ")?;
         write_bounds_like_dyn_trait(f, this, predicates, default_sized)
     } else {
@@ -2082,12 +2070,10 @@ pub fn write_visibility<'db>(
             let def_map = module_id.def_map(f.db);
             let root_module_id = def_map.module_id(DefMap::ROOT);
             if vis_id == module_id {
-                // pub(self) or omitted
                 Ok(())
             } else if root_module_id == vis_id && !root_module_id.is_within_block() {
                 write!(f, "pub(crate) ")
-            } else if module_id.containing_module(f.db) == Some(vis_id) && !vis_id.is_block_module()
-            {
+            } else if module_id.containing_module(f.db) == Some(vis_id) && !vis_id.is_block_module() {
                 write!(f, "pub(super) ")
             } else {
                 write!(f, "pub(in ...) ")
@@ -2512,7 +2498,6 @@ impl<'db> HirDisplayWithExpressionStore<'db> for hir_def::expr_store::path::Gene
         match self {
             hir_def::expr_store::path::GenericArg::Type(ty) => ty.hir_fmt(f, store),
             hir_def::expr_store::path::GenericArg::Const(_c) => {
-                // write!(f, "{}", c.display(f.db, f.edition()))
                 write!(f, "<expr>")
             }
             hir_def::expr_store::path::GenericArg::Lifetime(lifetime) => lifetime.hir_fmt(f, store),

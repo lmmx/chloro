@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16648 bytes
+Chloro size:   16657 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -32,6 +32,17 @@ Rustfmt size:  17571 bytes
              Either::Right(comment) if DESUGAR_COMMENTS => comment.doc_comment().map(|doc| {
                  let span = span_map.span_for_range(comment.syntax().text_range());
                  let (text, kind) = desugar_doc_comment_text(doc, DocCommentDesugarMode::ProcMacro);
+         span_map: SpanMapRef<'_>,
+         cfg_options: &CfgOptions,
+     ) -> impl Iterator<Item = Attr> {
+-        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map)
+-            .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
++        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map).flat_map(
++            |attr| attr.expand_cfg_attr(db, cfg_options),
++        )
+     }
+ 
+     pub fn merge(&self, other: Self) -> Self {
          match (&self.entries, other.entries) {
              (None, None) => Self::EMPTY,
              (None, entries @ Some(_)) => Self { entries },
@@ -158,6 +169,13 @@ Rustfmt size:  17571 bytes
          if !is_cfg_attr {
              return smallvec![self];
          }
+             smallvec![]
+         } else {
+             cov_mark::hit!(cfg_attr_active);
+-
+             attrs.collect::<SmallVec<[_; 1]>>()
+         }
+     }
      pub fn string_value_unescape(&self) -> Option<Cow<'_, str>> {
          match self.input.as_deref()? {
              AttrInput::Literal(tt::Literal {

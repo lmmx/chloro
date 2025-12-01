@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   30739 bytes
+Chloro size:   30727 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,15 @@ Rustfmt size:  31432 bytes
          // Better way?
          let ret_type = if !data.is_async() {
              data.ret_type
+         let param = *data.params.first().unwrap();
+         match &data.store[param] {
+             TypeRef::Path(p) if p.is_self_type() => f.write_str("self"),
+-            TypeRef::Reference(ref_) if matches!(&data.store[ref_.ty], TypeRef::Path(p) if p.is_self_type()) =>
+-            {
++            TypeRef::Reference(ref_) if matches!(&data.store[ref_.ty], TypeRef::Path(p) if p.is_self_type()) => {
+                 f.write_char('&')?;
+                 if let Some(lifetime) = &ref_.lifetime {
+                     lifetime.hir_fmt(f, &data.store)?;
                  let mut it = variant_data.fields().iter().peekable();
  
                  while let Some((id, _)) = it.next() {

@@ -29,7 +29,6 @@ pub(super) fn complete_repr(
             if repr_already_annotated {
                 continue;
             }
-
             let mut item = CompletionItem::new(
                 SymbolKind::BuiltinAttr,
                 ctx.source_range(),

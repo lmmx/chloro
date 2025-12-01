@@ -272,13 +272,11 @@ unsafe impl Sync for DbInterner<'_> {
 
 impl<'db> DbInterner<'db> {
     pub fn conjure() -> DbInterner<'db> {
-        crate::with_attached_db(
-            |db| DbInterner {
+        crate::with_attached_db(|db| DbInterner {
             db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
             krate: None,
             block: None,
-        },
-        )
+        })
     }
 
     pub fn new_with(
@@ -566,13 +564,11 @@ impl AdtDef {
     }
 
     pub fn inner(&self) -> &AdtDefInner {
-        crate::with_attached_db(
-            |db| {
+        crate::with_attached_db(|db| {
             let inner = self.data_(db);
             // SAFETY: ¯\_(ツ)_/¯
             unsafe { std::mem::transmute(inner) }
-        },
-        )
+        })
     }
 
     pub fn is_enum(&self) -> bool {
@@ -652,9 +648,7 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
     ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
         if self.is_struct() {
             let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
-
             let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
-
             Some(EarlyBinder::bind(constraint_ty))
         } else {
             None
@@ -676,8 +670,7 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
 
 impl fmt::Debug for AdtDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        crate::with_attached_db(
-            |db| match self.inner().id {
+        crate::with_attached_db(|db| match self.inner().id {
             AdtId::StructId(struct_id) => {
                 let data = db.struct_signature(struct_id);
                 f.write_str(data.name.as_str())
@@ -690,8 +683,7 @@ impl fmt::Debug for AdtDef {
                 let data = db.enum_signature(enum_id);
                 f.write_str(data.name.as_str())
             }
-        },
-        )
+        })
     }
 }
 
@@ -747,14 +739,12 @@ impl<'db> Pattern<'db> {
     }
 
     pub fn inner(&self) -> &PatternKind<'db> {
-        crate::with_attached_db(
-            |db| {
+        crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
             // make sure that our returned value is valid for the lifetime `'db`.
             unsafe { std::mem::transmute(inner) }
-        },
-        )
+        })
     }
 }
 
@@ -762,8 +752,7 @@ impl<'db> Flags for Pattern<'db> {
     fn flags(&self) -> rustc_type_ir::TypeFlags {
         match self.inner() {
             PatternKind::Range { start, end } => {
-                FlagComputation::for_const_kind(&start.kind()).flags
-                    | FlagComputation::for_const_kind(&end.kind()).flags
+                FlagComputation::for_const_kind(&start.kind()).flags | FlagComputation::for_const_kind(&end.kind()).flags
             }
             PatternKind::Or(pats) => {
                 let mut flags = pats.as_slice()[0].flags();
@@ -1099,10 +1088,6 @@ impl<'db> Interner for DbInterner<'db> {
                 self.db().ty(id.into())
             }
             SolverDefId::AdtId(id) => self.db().ty(id.into()),
-            // FIXME(next-solver): This uses the types of `query mir_borrowck` in rustc.
-            //
-            // We currently always use the type from HIR typeck which ignores regions. This
-            // should be fine.
             SolverDefId::InternedOpaqueTyId(_) => self.type_of_opaque_hir_typeck(def_id),
             SolverDefId::FunctionId(id) => self.db.value_ty(id.into()).unwrap(),
             SolverDefId::Ctor(id) => {
@@ -1124,9 +1109,7 @@ impl<'db> Interner for DbInterner<'db> {
         match alias.def_id {
             SolverDefId::InternedOpaqueTyId(_) => AliasTyKind::Opaque,
             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
-                ItemContainerId::ImplId(impl_)
-                    if self.db.impl_signature(impl_).target_trait.is_none() =>
-                {
+                ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
                     AliasTyKind::Inherent
                 }
                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => AliasTyKind::Projection,
@@ -1143,9 +1126,7 @@ impl<'db> Interner for DbInterner<'db> {
         match alias.def_id {
             SolverDefId::InternedOpaqueTyId(_) => AliasTermKind::OpaqueTy,
             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
-                ItemContainerId::ImplId(impl_)
-                    if self.db.impl_signature(impl_).target_trait.is_none() =>
-                {
+                ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
                     AliasTermKind::InherentTy
                 }
                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => {
@@ -1153,8 +1134,6 @@ impl<'db> Interner for DbInterner<'db> {
                 }
                 _ => AliasTermKind::FreeTy,
             },
-            // rustc creates an `AnonConst` for consts, and evaluates them with CTFE (normalizing projections
-            // via selection, similar to ours `find_matching_impl()`, and not with the trait solver), so mimic it.
             SolverDefId::ConstId(_) => AliasTermKind::UnevaluatedConst,
             _ => unimplemented!("Unexpected alias: {:?}", alias.def_id),
         }
@@ -2093,24 +2072,24 @@ impl<'db> DbInterner<'db> {
         self.replace_escaping_bound_vars_uncached(
             value,
             FnMutDelegate {
-                regions: &mut |r: BoundRegion| {
+            regions: &mut |r: BoundRegion| {
                     Region::new_bound(
                         self,
                         DebruijnIndex::ZERO,
                         BoundRegion { var: shift_bv(r.var), kind: r.kind },
                     )
                 },
-                types: &mut |t: BoundTy| {
+            types: &mut |t: BoundTy| {
                     Ty::new_bound(
                         self,
                         DebruijnIndex::ZERO,
                         BoundTy { var: shift_bv(t.var), kind: t.kind },
                     )
                 },
-                consts: &mut |c| {
+            consts: &mut |c| {
                     Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
                 },
-            },
+        },
         )
     }
 
@@ -2295,7 +2274,9 @@ mod tls_db {
             let db = self.database.get().expect("Try to use attached db, but not db is attached");
 
             // SAFETY: The db is attached, so it must be valid.
-            op(unsafe { db.as_ref() })
+            op(unsafe {
+                db.as_ref()
+            })
         }
     }
     thread_local! {
@@ -2311,10 +2292,7 @@ mod tls_db {
     }
     #[inline]
     pub fn with_attached_db<R>(op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
-        GLOBAL_DB.with(
-            #[inline]
-            |a| a.with(op),
-        )
+        GLOBAL_DB.with(#[inline] |a| a.with(op))
     }
 }
 

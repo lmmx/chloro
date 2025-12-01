@@ -88,15 +88,13 @@ pub(super) fn expand_and_analyze<'db>(
     let original_offset = expansion.original_offset + relative_offset;
     let token = expansion.original_file.token_at_offset(original_offset).left_biased()?;
 
-    hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(
-        |(analysis, expected, qualifier_ctx)| AnalysisResult {
+    hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(|(analysis, expected, qualifier_ctx)| AnalysisResult {
             analysis,
             expected,
             qualifier_ctx,
             token,
             original_offset,
-        },
-    )
+        })
 }
 
 fn token_at_offset_ignore_whitespace(file: &SyntaxNode, offset: TextSize) -> Option<SyntaxToken> {
@@ -155,12 +153,9 @@ fn expand_maybe_stop(
     // We can't check whether the fake expansion is inside macro call, because that requires semantic info.
 
     // But hopefully checking just the real one should be enough.
-    if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset)
-        .is_some_and(|original_token| {
+    if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset).is_some_and(|original_token| {
             !sema.is_inside_macro_call(original_file.with_value(&original_token))
-        })
-    {
-        // Recursion base case.
+        }) {
         Some(ExpansionResult {
             original_file: original_file.value,
             speculative_file,
@@ -397,7 +392,6 @@ fn expand(
         sema.expand_macro_call(&actual_macro_call),
         sema.speculative_expand_macro_call(&actual_macro_call, &speculative_args, fake_ident_token),
     ) {
-        // successful expansions
         (Some(actual_expansion), Some((fake_expansion, fake_mapped_tokens))) => {
             let mut accumulated_offset_from_fake_tokens = 0;
             let actual_range = actual_expansion.text_range().end();
@@ -433,8 +427,6 @@ fn expand(
                 .min_by_key(|(_, rank)| *rank)
                 .map(|(result, _)| result)
         }
-        // at least one expansion failed, we won't have anything to expand from this point
-        // onwards so break out
         _ => None,
     }
 }
@@ -1901,8 +1893,9 @@ fn is_in_token_of_for_loop(path: &ast::Path) -> bool {
                 t.text_range().start() == path.syntax().text_range().start()
             }
         })
-    })()
-    .unwrap_or(false)
+    })().unwrap_or(
+        false,
+    )
 }
 
 fn is_in_breakable(node: &SyntaxNode) -> Option<(BreakableKind, SyntaxNode)> {
@@ -1947,8 +1940,7 @@ fn has_in_newline_expr_first(node: &SyntaxNode) -> bool {
             .ancestors()
             .take_while(|it| it.text_range().start() == node.text_range().start())
             .filter_map(Either::<ast::ExprStmt, ast::Expr>::cast)
-            .last()
-    {
+            .last() {
         stmt_like.syntax().parent().and_then(ast::StmtList::cast).is_some()
     } else {
         false

@@ -194,8 +194,7 @@ mod tests {
     }
     #[test]
     fn type_only() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 struct A<X, Y> {
     x: X,
     y: Y,
@@ -203,26 +202,22 @@ struct A<X, Y> {
 
 fn foo(a: A<usize,  u32>) {}
           //^^^^^ X ^^^ Y
-"#,
-        )
+"#)
     }
     #[test]
     fn lifetime_and_type() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 struct A<'a, X> {
     x: &'a X
 }
 
 fn foo<'b>(a: A<'b,  u32>) {}
               //^^ 'a^^^ X
-"#,
-        )
+"#)
     }
     #[test]
     fn omit_lifetime() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 struct A<'a, X> {
     x: &'a X
 }
@@ -232,24 +227,20 @@ fn foo() {
     let a: A<i32> = A { x: &x };
           // ^^^ X
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn const_only() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 struct A<const X: usize, const Y: usize> {};
 
 fn foo(a: A<12, 2>) {}
           //^^ X^ Y
-"#,
-        )
+"#)
     }
     #[test]
     fn lifetime_and_type_and_const() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 struct A<'a, X, const LEN: usize> {
     x: &'a [X; LEN],
 }
@@ -262,13 +253,11 @@ fn foo<'b>(a: A<
     3
  // ^ LEN
     >) {}
-"#,
-        )
+"#)
     }
     #[test]
     fn const_only_config() {
-        generic_param_name_hints_const_only(
-            r#"
+        generic_param_name_hints_const_only(r#"
 struct A<'a, X, const LEN: usize> {
     x: &'a [X; LEN],
 }
@@ -279,13 +268,11 @@ fn foo<'b>(a: A<
     3
  // ^ LEN
     >) {}
-"#,
-        )
+"#)
     }
     #[test]
     fn assoc_type() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 trait Trait<T> {
     type Assoc1;
     type Assoc2;
@@ -293,13 +280,11 @@ trait Trait<T> {
 
 fn foo() -> impl Trait<i32, Assoc1 = u32, Assoc2 = u32> {}
                     // ^^^ T
-"#,
-        )
+"#)
     }
     #[test]
     fn hide_similar() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 struct A<'a, X, const N: usize> {
     x: &'a [X; N],
 }
@@ -311,19 +296,16 @@ mod m {
 }
 
 fn foo<'a>(a: A<'a, m::X, N>) {}
-"#,
-        )
+"#)
     }
     #[test]
     fn mismatching_args() {
-        generic_param_name_hints_always(
-            r#"
+        generic_param_name_hints_always(r#"
 struct A<X, const N: usize> {
     x: [X; N]
 }
 
 type InvalidType = A<3, i32>;
-"#,
-        )
+"#)
     }
 }

@@ -21,7 +21,6 @@ pub(crate) fn replace_is_method_with_if_let_method(
     match name_ref.text().as_str() {
         "is_some" | "is_ok" => {
             let receiver = call_expr.receiver()?;
-
             let mut name_generator = suggest_name::NameGenerator::new_from_scope_locals(
                 ctx.sema.scope(has_cond.syntax()),
             );
@@ -30,13 +29,11 @@ pub(crate) fn replace_is_method_with_if_let_method(
             } else {
                 name_generator.for_variable(&receiver, &ctx.sema)
             };
-
             let (assist_id, message, text) = if name_ref.text() == "is_some" {
                 ("replace_is_some_with_if_let_some", "Replace `is_some` with `let Some`", "Some")
             } else {
                 ("replace_is_ok_with_if_let_ok", "Replace `is_ok` with `let Ok`", "Ok")
             };
-
             acc.add(
                 AssistId::refactor_rewrite(assist_id),
                 message,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9045 bytes
-Chloro size:   8357 bytes
+Chloro size:   8381 bytes
 Rustfmt size:  9185 bytes
 
 ✗ Outputs DIFFER
@@ -90,14 +90,7 @@ Rustfmt size:  9185 bytes
 +    let contents = contents_without_prefix.strip_prefix(' ').unwrap_or(contents_without_prefix);
  
      // Don't add the indentation if the line is empty
--    if contents.is_empty() {
--        contents.to_owned()
--    } else {
--        indentation.to_string() + contents
--    }
-+    if contents.is_empty() { contents.to_owned() } else { indentation.to_string() + contents }
- }
- 
+     if contents.is_empty() {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

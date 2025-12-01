@@ -303,14 +303,12 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                     );
                 }
             };
-
             Some(make.expr_bin(bin.lhs()?, rev_kind, bin.rhs()?).into())
         }
         ast::Expr::MethodCallExpr(mce) => {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
             let arg_list = mce.arg_list()?;
-
             let method = match method.text().as_str() {
                 "is_some" => "is_none",
                 "is_none" => "is_some",
@@ -318,7 +316,6 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 "is_err" => "is_ok",
                 _ => return None,
             };
-
             Some(make.expr_method_call(receiver, make.name_ref(method), arg_list).into())
         }
         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
@@ -365,7 +362,6 @@ fn invert_special_case_legacy(expr: &ast::Expr) -> Option<ast::Expr> {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
             let arg_list = mce.arg_list()?;
-
             let method = match method.text().as_str() {
                 "is_some" => "is_none",
                 "is_none" => "is_some",
@@ -431,14 +427,12 @@ fn check_pat_variant_nested_or_literal_with_depth(
 
     match pat {
         ast::Pat::RestPat(_) | ast::Pat::WildcardPat(_) | ast::Pat::RefPat(_) => false,
-
         ast::Pat::LiteralPat(_)
         | ast::Pat::RangePat(_)
         | ast::Pat::MacroPat(_)
         | ast::Pat::PathPat(_)
         | ast::Pat::BoxPat(_)
         | ast::Pat::ConstBlockPat(_) => true,
-
         ast::Pat::IdentPat(ident_pat) => ident_pat.pat().is_some_and(|pat| {
             check_pat_variant_nested_or_literal_with_depth(ctx, &pat, depth_after_refutable)
         }),
@@ -765,8 +759,7 @@ fn generate_impl_inner(
             body,
         ),
         None => make::impl_(cfg_attrs, generic_params, generic_args, ty, adt.where_clause(), body),
-    }
-    .clone_for_update()
+    }.clone_for_update()
 }
 
 pub(crate) fn add_method_to_adt(
@@ -879,8 +872,7 @@ impl<'db> ReferenceConversion<'db> {
                 if self.impls_deref {
                     make::expr_ref(expr, false)
                 } else {
-                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([]))
-                        .into()
+                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([])).into()
                 }
             }
         }
@@ -1095,11 +1087,9 @@ pub(crate) fn replace_record_field_expr(
     initializer: ast::Expr,
 ) {
     if let Some(ast::Expr::PathExpr(path_expr)) = record_field.expr() {
-        // replace field shorthand
         let file_range = ctx.sema.original_range(path_expr.syntax());
         edit.insert(file_range.range.end(), format!(": {}", initializer.syntax().text()))
     } else if let Some(expr) = record_field.expr() {
-        // just replace expr
         let file_range = ctx.sema.original_range(expr.syntax());
         edit.replace(file_range.range, initializer.syntax().text());
     }
@@ -1160,7 +1150,6 @@ pub(crate) fn cover_let_chain(mut expr: ast::Expr, range: TextRange) -> Option<a
         } else {
             (Some(expr), None)
         };
-
         if let Some(chain_expr) = chain_expr
             && chain_expr.syntax().text_range().contains_range(range)
         {
@@ -1210,8 +1199,7 @@ pub(crate) fn is_never_block(
     if let Some(tail_expr) = block_expr.tail_expr() {
         sema.type_of_expr(&tail_expr).is_some_and(|ty| ty.original.is_never())
     } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last()
-        && let Some(expr) = expr_stmt.expr()
-    {
+        && let Some(expr) = expr_stmt.expr() {
         sema.type_of_expr(&expr).is_some_and(|ty| ty.original.is_never())
     } else {
         false

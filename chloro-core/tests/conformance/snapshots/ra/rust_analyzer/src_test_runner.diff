@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4268 bytes
+Chloro size:   4278 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -28,16 +28,6 @@ Rustfmt size:  4381 bytes
              },
          })
      }
- 
-     fn from_eof(&self) -> Option<CargoTestMessage> {
--        Some(CargoTestMessage {
--            target: self.target.clone(),
--            output: CargoTestOutput::Finished,
--        })
-+        Some(CargoTestMessage { target: self.target.clone(), output: CargoTestOutput::Finished })
-     }
- }
- 
  }
  
  // Example of a cargo test command:
@@ -61,20 +51,3 @@ Rustfmt size:  4381 bytes
          }
  
          // --no-fail-fast is needed to ensure that all requested tests will run
-             cmd.arg(extra_arg);
-         }
- 
--        Ok(Self {
-+        Ok(
-+            Self {
-             _handle: CommandHandle::spawn(
-                 cmd,
-                 CargoTestOutputParser::new(&test_target),
-                 sender,
-                 None,
-             )?,
--        })
-+        },
-+        )
-     }
- }

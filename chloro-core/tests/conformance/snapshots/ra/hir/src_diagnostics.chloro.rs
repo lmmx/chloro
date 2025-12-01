@@ -652,8 +652,7 @@ impl<'db> AnyDiagnostic<'db> {
             ExprOrPatId::ExprId(expr) => expr_syntax(expr),
             ExprOrPatId::PatId(pat) => pat_syntax(pat),
         };
-        Some(
-            match d {
+        Some(match d {
             &InferenceDiagnostic::NoSuchField { field: expr, private, variant } => {
                 let expr_or_pat = match expr {
                     ExprOrPatId::ExprId(expr) => {
@@ -679,7 +678,10 @@ impl<'db> AnyDiagnostic<'db> {
             }
             InferenceDiagnostic::ExpectedFunction { call_expr, found } => {
                 let call_expr = expr_syntax(*call_expr)?;
-                ExpectedFunction { call: call_expr, found: Type::new(db, def, *found) }.into()
+                ExpectedFunction {
+                    call: call_expr,
+                    found: Type::new(db, def, *found),
+                }.into()
             }
             InferenceDiagnostic::UnresolvedField {
                 expr,
@@ -823,24 +825,20 @@ impl<'db> AnyDiagnostic<'db> {
                 let expected_kind = GenericArgKind::from_id(param_id);
                 IncorrectGenericsOrder { provided_arg, expected_kind }.into()
             }
-        },
-        )
+        })
     }
 
     fn path_diagnostic(
         diag: &PathLoweringDiagnostic,
         path: InFile<ast::Path>,
     ) -> Option<AnyDiagnostic<'db>> {
-        Some(
-            match *diag {
+        Some(match *diag {
             PathLoweringDiagnostic::GenericArgsProhibited { segment, reason } => {
                 let segment = hir_segment_to_ast_segment(&path.value, segment)?;
-
                 if let Some(rtn) = segment.return_type_syntax() {
                     // RTN errors are emitted as `GenericArgsProhibited` or `ParenthesizedGenericArgsWithoutFnTrait`.
                     return Some(BadRtn { rtn: path.with_value(AstPtr::new(&rtn)) }.into());
                 }
-
                 let args = if let Some(generics) = segment.generic_arg_list() {
                     AstPtr::new(&generics).wrap_left()
                 } else {
@@ -851,12 +849,10 @@ impl<'db> AnyDiagnostic<'db> {
             }
             PathLoweringDiagnostic::ParenthesizedGenericArgsWithoutFnTrait { segment } => {
                 let segment = hir_segment_to_ast_segment(&path.value, segment)?;
-
                 if let Some(rtn) = segment.return_type_syntax() {
                     // RTN errors are emitted as `GenericArgsProhibited` or `ParenthesizedGenericArgsWithoutFnTrait`.
                     return Some(BadRtn { rtn: path.with_value(AstPtr::new(&rtn)) }.into());
                 }
-
                 let args = AstPtr::new(&segment.parenthesized_arg_list()?);
                 let args = path.with_value(args);
                 ParenthesizedGenericArgsWithoutFnTrait { args }.into()
@@ -918,8 +914,7 @@ impl<'db> AnyDiagnostic<'db> {
                 }
                 .into()
             }
-        },
-        )
+        })
     }
 
     pub(crate) fn ty_diagnostic(
@@ -932,14 +927,12 @@ impl<'db> AnyDiagnostic<'db> {
             return None;
         };
         let syntax = || source.value.to_node(&db.parse_or_expand(source.file_id));
-        Some(
-            match &diag.kind {
+        Some(match &diag.kind {
             TyLoweringDiagnosticKind::PathDiagnostic(diag) => {
                 let ast::Type::PathType(syntax) = syntax() else { return None };
                 Self::path_diagnostic(diag, source.with_value(syntax.path()?))?
             }
-        },
-        )
+        })
     }
 }
 
@@ -947,8 +940,7 @@ fn path_generics_source_to_ast(
     path: &ast::Path,
     generics_source: PathGenericsSource,
 ) -> Option<Either<ast::GenericArgList, ast::NameRef>> {
-    Some(
-        match generics_source {
+    Some(match generics_source {
         PathGenericsSource::Segment(segment) => {
             let segment = hir_segment_to_ast_segment(path, segment)?;
             segment
@@ -965,6 +957,5 @@ fn path_generics_source_to_ast(
                 .map(Either::Left)
                 .or_else(|| assoc.name_ref().map(Either::Right))?
         }
-    },
-    )
+    })
 }

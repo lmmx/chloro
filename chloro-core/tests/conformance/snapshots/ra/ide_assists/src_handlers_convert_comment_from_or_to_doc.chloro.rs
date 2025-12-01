@@ -185,8 +185,9 @@ fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
     // `use` or `const`.
     let parent = comment.syntax().parent();
     let par_kind = parent.as_ref().map(|parent| parent.kind());
-    matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST))
-        .then_some(CommentPlacement::Outer)
+    matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST)).then_some(
+        CommentPlacement::Outer,
+    )
 }
 
 /// The line -> block assist can  be invoked from anywhere within a sequence of line comments.

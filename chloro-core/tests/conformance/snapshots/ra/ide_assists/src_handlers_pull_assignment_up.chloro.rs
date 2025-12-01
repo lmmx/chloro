@@ -170,10 +170,7 @@ fn is_equivalent(
                 false
             }
         }
-        (ast::Expr::PrefixExpr(prefix0), ast::Expr::PrefixExpr(prefix1))
-            if prefix0.op_kind() == Some(ast::UnaryOp::Deref)
-                && prefix1.op_kind() == Some(ast::UnaryOp::Deref) =>
-        {
+        (ast::Expr::PrefixExpr(prefix0), ast::Expr::PrefixExpr(prefix1)) if prefix0.op_kind() == Some(ast::UnaryOp::Deref) && prefix1.op_kind() == Some(ast::UnaryOp::Deref) => {
             cov_mark::hit!(test_pull_assignment_up_deref);
             if let (Some(prefix0), Some(prefix1)) = (prefix0.expr(), prefix1.expr()) {
                 is_equivalent(sema, &prefix0, &prefix1)

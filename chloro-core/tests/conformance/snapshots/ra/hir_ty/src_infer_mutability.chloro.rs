@@ -240,7 +240,6 @@ impl<'db> InferenceContext<'_, 'db> {
             Expr::Tuple { exprs } | Expr::Array(Array::ElementList { elements: exprs }) => {
                 self.infer_mut_not_expr_iter(exprs.iter().copied());
             }
-            // These don't need any action, as they don't have sub expressions
             Expr::Range { lhs: None, rhs: None, range_type: _ }
             | Expr::Literal(_)
             | Expr::Path(_)

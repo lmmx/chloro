@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5385 bytes
-Chloro size:   5219 bytes
+Chloro size:   5204 bytes
 Rustfmt size:  5400 bytes
 
 ✗ Outputs DIFFER
@@ -29,22 +29,6 @@ Rustfmt size:  5400 bytes
      let replacement = format!("find_map{}", filter_map_args.syntax().text());
      let trigger_range = next_expr.syntax().text_range();
  
-     let source_change =
-         SourceChange::from_text_edit(d.file.original_file(ctx.sema.db).file_id(ctx.sema.db), edit);
- 
--    Some(vec![fix(
-+    Some(
-+        vec![fix(
-         "replace_with_find_map",
-         "Replace filter_map(..).next() with find_map()",
-         source_change,
-         trigger_range,
--    )])
-+    )],
-+    )
- }
- 
- #[cfg(test)]
          tests::{check_diagnostics_with_config, check_fix},
          DiagnosticsConfig,
      };

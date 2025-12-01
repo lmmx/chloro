@@ -437,7 +437,6 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         match self.inner().as_slice() {
             [parent_args @ .., closure_kind_ty, sig_ty, tupled_upvars_ty] => {
                 let interner = DbInterner::conjure();
-                // This is stupid, but the next solver expects the first input to actually be a tuple
                 let sig_ty = match sig_ty.expect_ty().kind() {
                     TyKind::FnPtr(sig_tys, header) => Ty::new(
                         interner,

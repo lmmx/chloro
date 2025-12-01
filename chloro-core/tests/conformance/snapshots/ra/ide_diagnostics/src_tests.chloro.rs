@@ -244,17 +244,11 @@ pub(crate) fn check_diagnostics_with_config(
     for file_id in files {
         let file_id = file_id.file_id(&db);
         let line_index = db.line_index(file_id);
-
         let mut actual = annotations.remove(&file_id).unwrap_or_default();
         let mut expected = extract_annotations(db.file_text(file_id).text(&db));
         expected.sort_by_key(|(range, s)| (range.start(), s.clone()));
         actual.sort_by_key(|(range, s)| (range.start(), s.clone()));
-        // FIXME: We should panic on duplicates instead, but includes currently cause us to report
-        // diagnostics twice for the calling module when both files are queried.
         actual.dedup();
-        // actual.iter().duplicates().for_each(|(range, msg)| {
-        //     panic!("duplicate diagnostic at {:?}: {msg:?}", line_index.line_col(range.start()))
-        // });
         if expected.is_empty() {
             // makes minicore smoke test debuggable
             for (e, _) in &actual {
@@ -275,7 +269,6 @@ pub(crate) fn check_diagnostics_with_config(
                 .filter(|x| !expected.contains(x))
                 .map(|(range, s)| (line_index.line_col(range.start()), range, s))
                 .collect::<Vec<_>>();
-
             panic!("Diagnostic test failed.\nFalse negatives: {fneg:?}\nFalse positives: {fpos:?}");
         }
     }

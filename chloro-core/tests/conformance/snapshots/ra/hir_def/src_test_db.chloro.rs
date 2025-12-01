@@ -179,7 +179,6 @@ impl TestDB {
                     def_map = new_block;
                 }
                 _ => {
-                    // FIXME: handle `mod` inside block expression
                     return def_map.module_id(DefMap::ROOT);
                 }
             }

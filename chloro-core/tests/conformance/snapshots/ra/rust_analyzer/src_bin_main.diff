@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12893 bytes
-Chloro size:   12862 bytes
+Chloro size:   12382 bytes
 Rustfmt size:  12893 bytes
 
 ✗ Outputs DIFFER
@@ -15,6 +15,15 @@ Rustfmt size:  12893 bytes
  
  mod rustc_wrapper;
  
+             std::thread::sleep(std::time::Duration::from_millis(100));
+         }
+     }
+-    #[cfg(not(target_os = "windows"))]
+-    {
++    #[cfg(not(target_os = "windows"))] {
+         #[allow(unused_mut)]
+         let mut d = 4;
+         while d == 4 {
      }
  
      // If the io_threads have an error, there's usually an error on the main
@@ -22,3 +31,14 @@ Rustfmt size:  12893 bytes
      // loop too because the channels are closed. Ensure we report both errors.
      match (rust_analyzer::main_loop(config, connection), io_threads.join()) {
          (Err(loop_e), Err(join_e)) => anyhow::bail!("{loop_e}\n{join_e}"),
+ fn patch_path_prefix(path: PathBuf) -> PathBuf {
+     use std::path::{Component, Prefix};
+     if cfg!(windows) {
+-        // VSCode might report paths with the file drive in lowercase, but this can mess
+-        // with env vars set by tools and build scripts executed by r-a such that it invalidates
+-        // cargo's compilations unnecessarily. https://github.com/rust-lang/rust-analyzer/issues/14683
+-        // So we just uppercase the drive letter here unconditionally.
+-        // (doing it conditionally is a pain because std::path::Prefix always reports uppercase letters on windows)
+         let mut comps = path.components();
+         match comps.next() {
+             Some(Component::Prefix(prefix)) => {

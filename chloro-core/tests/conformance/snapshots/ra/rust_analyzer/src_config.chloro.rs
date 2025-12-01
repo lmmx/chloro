@@ -1435,14 +1435,7 @@ impl From<AnnotationLocation> for ide::AnnotationLocation {
 
 impl LensConfig {
     pub fn any(&self) -> bool {
-        self.run
-            || self.debug
-            || self.update_test
-            || self.implementations
-            || self.method_refs
-            || self.refs_adt
-            || self.refs_trait
-            || self.enum_variant_refs
+        self.run || self.debug || self.update_test || self.implementations || self.method_refs || self.refs_adt || self.refs_trait || self.enum_variant_refs
     }
 
     pub fn none(&self) -> bool {
@@ -2319,8 +2312,7 @@ impl Config {
     }
 
     pub(crate) fn completion_snippets_default() -> FxIndexMap<String, SnippetDef> {
-        serde_json::from_str(
-            r#"{
+        serde_json::from_str(r#"{
             "Ok": {
                 "postfix": "ok",
                 "body": "Ok(${receiver})",
@@ -2360,9 +2352,7 @@ impl Config {
                 "description": "Put the expression into an `Rc`",
                 "scope": "expr"
             }
-        }"#,
-        )
-        .unwrap()
+        }"#).unwrap()
     }
 
     pub fn rustfmt(&self, source_root_id: Option<SourceRootId>) -> RustfmtConfig {
@@ -2446,8 +2436,7 @@ impl Config {
                     features: match self
                         .check_features(source_root)
                         .clone()
-                        .unwrap_or_else(|| self.cargo_features(source_root).clone())
-                    {
+                        .unwrap_or_else(|| self.cargo_features(source_root).clone()) {
                         CargoFeaturesDef::All => vec![],
                         CargoFeaturesDef::Selected(it) => it,
                     },
@@ -2511,9 +2500,7 @@ impl Config {
         LensConfig {
             run: *self.lens_enable() && *self.lens_run_enable(),
             debug: *self.lens_enable() && *self.lens_debug_enable(),
-            update_test: *self.lens_enable()
-                && *self.lens_updateTest_enable()
-                && *self.lens_run_enable(),
+            update_test: *self.lens_enable() && *self.lens_updateTest_enable() && *self.lens_run_enable(),
             interpret: *self.lens_enable() && *self.lens_run_enable() && *self.interpret_tests(),
             implementations: *self.lens_enable() && *self.lens_implementations_enable(),
             method_refs: *self.lens_enable() && *self.lens_references_method_enable(),
@@ -2521,8 +2508,7 @@ impl Config {
             refs_trait: *self.lens_enable() && *self.lens_references_trait_enable(),
             enum_variant_refs: *self.lens_enable() && *self.lens_references_enumVariant_enable(),
             location: *self.lens_location(),
-            filter_adjacent_derive_implementations: *self
-                .gotoImplementations_filterAdjacentDerives(),
+            filter_adjacent_derive_implementations: *self.gotoImplementations_filterAdjacentDerives(),
         }
     }
 
@@ -2755,7 +2741,6 @@ mod single_or_array {
         S: serde::Serializer,
     {
         match vec {
-            // []  case is handled by skip_serializing_if
             [single] => serializer.serialize_str(single),
             slice => slice.serialize(serializer),
         }
@@ -2781,8 +2766,9 @@ where
 {
     let path = String::deserialize(de)?;
 
-    AbsPathBuf::try_from(path.as_ref())
-        .map_err(|err| serde::de::Error::custom(format!("invalid path name: {err:?}")))
+    AbsPathBuf::try_from(path.as_ref()).map_err(
+        |err| serde::de::Error::custom(format!("invalid path name: {err:?}")),
+    )
 }
 
 fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
@@ -3946,7 +3932,6 @@ fn validate_toml_table(
             ptr.push('_');
         }
         ptr.push_str(k);
-
         match v {
             // This is a table config, any entry in it is therefore valid
             toml::Value::Table(_) if verify(ptr) => (),
@@ -3955,7 +3940,6 @@ fn validate_toml_table(
                 .push((ptr.replace('_', "/"), toml::de::Error::custom("unexpected field"))),
             _ => (),
         }
-
         ptr.truncate(l);
     }
 }

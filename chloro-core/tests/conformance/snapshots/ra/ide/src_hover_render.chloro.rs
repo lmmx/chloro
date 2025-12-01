@@ -372,12 +372,10 @@ pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<Hove
 
     let lint =
         lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
-    Some(
-        HoverResult {
+    Some(HoverResult {
         markup: Markup::from(format!("```\n{}\n```\n---\n\n{}", lint.label, lint.description)),
         ..Default::default()
-    },
-    )
+    })
 }
 
 pub(super) fn process_markup(
@@ -415,7 +413,6 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
             hir::GenericDef::Adt(it) => Some(it.name(db)),
             hir::GenericDef::Trait(it) => Some(it.name(db)),
             hir::GenericDef::TypeAlias(it) => Some(it.name(db)),
-
             hir::GenericDef::Impl(i) => i.self_ty(db).as_adt().map(|adt| adt.name(db)),
             hir::GenericDef::Function(it) => {
                 let container = it.as_assoc_item(db).and_then(|assoc| match assoc.container(db) {
@@ -468,8 +465,9 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
                 return d.as_extern_assoc_item(db).map(|_| "<extern>".to_owned());
             }
         }
-    }
-    .map(|name| name.display(db, edition).to_string())
+    }.map(
+        |name| name.display(db, edition).to_string(),
+    )
 }
 
 pub(super) fn path(
@@ -1167,7 +1165,6 @@ fn markup(
         let offset = TextSize::new(buf.len() as u32);
         let buf_range_map = range_map.map(|range_map| range_map.shift_docstring_line_range(offset));
         format_to!(buf, "{}", doc);
-
         (buf.into(), buf_range_map)
     } else {
         (buf.into(), None)
@@ -1299,9 +1296,7 @@ fn keyword_hints(
     match token.kind() {
         T![await] | T![loop] | T![match] | T![unsafe] | T![as] | T![try] | T![if] | T![else] => {
             let keyword_mod = format!("{}_keyword", token.text());
-
             match ast::Expr::cast(parent).and_then(|site| sema.type_of_expr(&site)) {
-                // ignore the unit type ()
                 Some(ty) if !ty.adjusted.as_ref().unwrap_or(&ty.original).is_unit() => {
                     let mut targets: Vec<hir::ModuleDef> = Vec::new();
                     let mut push_new_def = |item: hir::ModuleDef| {
@@ -1310,11 +1305,9 @@ fn keyword_hints(
                         }
                     };
                     walk_and_push_ty(sema.db, &ty.original, &mut push_new_def);
-
                     let ty = ty.adjusted();
                     let description =
                         format!("{}: {}", token.text(), ty.display(sema.db, display_target));
-
                     KeywordHint {
                         description,
                         keyword_mod,

@@ -187,8 +187,7 @@ fn find_trait_method(
             item.name(db)
                 .map(|name| name.as_str() == trait_method_name.text().trim_start_matches("r#"))
                 .unwrap_or(false)
-        })
-    {
+        }) {
         Some(method)
     } else {
         None

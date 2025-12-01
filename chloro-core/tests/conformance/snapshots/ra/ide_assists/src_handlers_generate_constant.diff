@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7755 bytes
-Chloro size:   7770 bytes
+Chloro size:   7808 bytes
 Rustfmt size:  8317 bytes
 
 ✗ Outputs DIFFER
@@ -134,27 +134,22 @@ Rustfmt size:  8317 bytes
              },
          );
  
-     let text = get_text_for_generate_constant(not_exist_name_ref, indent, outer_exists, type_name)?;
--    acc.add(
--        AssistId::quick_fix("generate_constant"),
--        "Generate constant",
--        target,
--        |builder| {
+         "Generate constant",
+         target,
+         |builder| {
 -            if let Some(file_id) = file_id {
 -                builder.edit_file(file_id);
 -            }
 -            builder.insert(offset, format!("{text}{post_string}"));
 -        },
--    )
-+    acc.add(AssistId::quick_fix("generate_constant"), "Generate constant", target, |builder| {
 +        if let Some(file_id) = file_id {
 +            builder.edit_file(file_id);
 +        }
 +        builder.insert(offset, format!("{text}{post_string}"));
-+    })
++    },
+     )
  }
  
- fn get_text_for_generate_constant(
      type_name: String,
  ) -> Option<String> {
      let constant_token = not_exist_name_ref.pop()?;
@@ -175,6 +170,10 @@ Rustfmt size:  8317 bytes
          text = text.replace('\n', "\n    ");
          text = format!("{vis}mod {name_ref} {{{text}\n}}");
      }
+             let indent = IndentLevel::from_node(module_node.syntax());
+             let l_curly_token = module_node.item_list()?.l_curly_token()?;
+             let offset = l_curly_token.text_range().end();
+-
              let siblings_has_newline = l_curly_token
                  .siblings_with_tokens(Direction::Next)
                  .any(|it| it.kind() == SyntaxKind::WHITESPACE && it.to_string().contains('\n'));

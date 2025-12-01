@@ -345,7 +345,6 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
     match id {
         MacroId::Macro2Id(it) => {
             let loc: Macro2Loc = it.lookup(db);
-
             MacroDefId {
                 krate: loc.container.krate,
                 kind: kind(loc.expander, loc.id.file_id, loc.id.value.upcast()),
@@ -356,7 +355,6 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
         }
         MacroId::MacroRulesId(it) => {
             let loc: MacroRulesLoc = it.lookup(db);
-
             MacroDefId {
                 krate: loc.container.krate,
                 kind: kind(loc.expander, loc.id.file_id, loc.id.value.upcast()),
@@ -369,7 +367,6 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
         }
         MacroId::ProcMacroId(it) => {
             let loc = it.lookup(db);
-
             MacroDefId {
                 krate: loc.container.krate,
                 kind: MacroDefKind::ProcMacro(loc.id, loc.expander, loc.kind),

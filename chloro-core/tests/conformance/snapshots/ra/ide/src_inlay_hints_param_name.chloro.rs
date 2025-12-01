@@ -233,19 +233,16 @@ pub(super) fn get_segment_representation(
             };
             Some(Either::Left(res))
         }
-        // paths
         ast::Expr::MacroExpr(macro_expr) => macro_expr.macro_call()?.path().map(Either::Right),
         ast::Expr::RecordExpr(record_expr) => record_expr.path().map(Either::Right),
         ast::Expr::PathExpr(path_expr) => {
             let path = path_expr.path()?;
-            // single segment paths are likely locals
             Some(match path.as_single_name_ref() {
                 None => Either::Right(path),
                 Some(name_ref) => Either::Left(vec![name_ref]),
             })
         }
         ast::Expr::PrefixExpr(prefix_expr) if prefix_expr.op_kind() == Some(UnaryOp::Not) => None,
-        // recurse
         ast::Expr::PrefixExpr(prefix_expr) => get_segment_representation(&prefix_expr.expr()?),
         ast::Expr::RefExpr(ref_expr) => get_segment_representation(&ref_expr.expr()?),
         ast::Expr::CastExpr(cast_expr) => get_segment_representation(&cast_expr.expr()?),
@@ -254,7 +251,6 @@ pub(super) fn get_segment_representation(
         ast::Expr::IndexExpr(index_expr) => get_segment_representation(&index_expr.base()?),
         ast::Expr::ParenExpr(paren_expr) => get_segment_representation(&paren_expr.expr()?),
         ast::Expr::TryExpr(try_expr) => get_segment_representation(&try_expr.expr()?),
-        // ast::Expr::ClosureExpr(closure_expr) => todo!(),
         _ => None,
     }
 }
@@ -287,8 +283,9 @@ fn is_adt_constructor_similar_to_param_name(
             }
         }
         _ => None,
-    })()
-    .unwrap_or(false)
+    })().unwrap_or(
+        false,
+    )
 }
 
 #[cfg(test)]
@@ -418,8 +415,7 @@ fn main() {
     }
     #[test]
     fn self_param_hints() {
-        check_params(
-            r#"
+        check_params(r#"
 struct Foo;
 
 impl Foo {
@@ -433,13 +429,11 @@ fn main() {
     Foo::bar(&Foo);
            //^^^^ self
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn param_name_hints_show_for_literals() {
-        check_params(
-            r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
+        check_params(r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
 fn main() {
     test(
         0xa_b,
@@ -447,8 +441,7 @@ fn main() {
         0xa_b,
       //^^^^^ b
     );
-}"#,
-        )
+}"#)
     }
     #[test]
     fn function_call_parameter_hint() {

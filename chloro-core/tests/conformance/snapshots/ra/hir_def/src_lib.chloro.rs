@@ -1324,8 +1324,9 @@ impl HasModule for AttrDefId {
                 GenericParamId::TypeParamId(it) => it.parent(),
                 GenericParamId::ConstParamId(it) => it.parent(),
                 GenericParamId::LifetimeParamId(it) => it.parent,
-            }
-            .module(db),
+            }.module(
+                db,
+            ),
             AttrDefId::MacroId(it) => it.module(db),
             AttrDefId::ExternCrateId(it) => it.module(db),
             AttrDefId::UseId(it) => it.module(db),
@@ -1338,8 +1339,7 @@ impl ModuleDefId {
     ///
     /// Returns `None` if `self` refers to a primitive type.
     pub fn module(&self, db: &dyn DefDatabase) -> Option<ModuleId> {
-        Some(
-            match self {
+        Some(match self {
             ModuleDefId::ModuleId(id) => *id,
             ModuleDefId::FunctionId(id) => id.module(db),
             ModuleDefId::AdtId(id) => id.module(db),
@@ -1350,8 +1350,7 @@ impl ModuleDefId {
             ModuleDefId::TypeAliasId(id) => id.module(db),
             ModuleDefId::MacroId(id) => id.module(db),
             ModuleDefId::BuiltinType(_) => return None,
-        },
-        )
+        })
     }
 }
 

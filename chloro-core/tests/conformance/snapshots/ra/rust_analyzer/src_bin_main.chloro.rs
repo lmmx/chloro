@@ -103,8 +103,7 @@ fn wait_for_debugger() {
             std::thread::sleep(std::time::Duration::from_millis(100));
         }
     }
-    #[cfg(not(target_os = "windows"))]
-    {
+    #[cfg(not(target_os = "windows"))] {
         #[allow(unused_mut)]
         let mut d = 4;
         while d == 4 {
@@ -323,11 +322,6 @@ fn run_server() -> anyhow::Result<()> {
 fn patch_path_prefix(path: PathBuf) -> PathBuf {
     use std::path::{Component, Prefix};
     if cfg!(windows) {
-        // VSCode might report paths with the file drive in lowercase, but this can mess
-        // with env vars set by tools and build scripts executed by r-a such that it invalidates
-        // cargo's compilations unnecessarily. https://github.com/rust-lang/rust-analyzer/issues/14683
-        // So we just uppercase the drive letter here unconditionally.
-        // (doing it conditionally is a pain because std::path::Prefix always reports uppercase letters on windows)
         let mut comps = path.components();
         match comps.next() {
             Some(Component::Prefix(prefix)) => {

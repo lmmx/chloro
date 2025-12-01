@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6088 bytes
-Chloro size:   6156 bytes
+Chloro size:   5303 bytes
 Rustfmt size:  6436 bytes
 
 ✗ Outputs DIFFER
@@ -56,9 +56,33 @@ Rustfmt size:  6436 bytes
  impl<'db> UnifyValue for RegionVariableValue<'db> {
      type Error = RegionUnificationError;
  
-                 // be nameable by both universes. Therefore, the resulting
-                 // universe is the minimum of the two universes, because that is
-                 // the one which contains the fewest names in scope.
+             (RegionVariableValue::Known { .. }, RegionVariableValue::Known { .. }) => {
+                 Err(RegionUnificationError)
+             }
+-
+             (RegionVariableValue::Known { value }, RegionVariableValue::Unknown { universe })
+             | (RegionVariableValue::Unknown { universe }, RegionVariableValue::Known { value }) => {
+                 let universe_of_value = match (*value).kind() {
+                         panic!("not a universal region")
+                     }
+                 };
+-
+                 if universe.can_name(universe_of_value) {
+                     Ok(RegionVariableValue::Known { value: *value })
+                 } else {
+                     Err(RegionUnificationError)
+                 }
+             }
+-
+             (
+                 RegionVariableValue::Unknown { universe: a },
+                 RegionVariableValue::Unknown { universe: b },
+             ) => {
+-                // If we unify two unconstrained regions then whatever
+-                // value they wind up taking (which must be the same value) must
+-                // be nameable by both universes. Therefore, the resulting
+-                // universe is the minimum of the two universes, because that is
+-                // the one which contains the fewest names in scope.
 -                Ok(RegionVariableValue::Unknown {
 -                    universe: (*a).min(*b),
 -                })
@@ -106,17 +130,21 @@ Rustfmt size:  6436 bytes
      }
 +
      fn order_roots(a: Self, _: &Self::Value, b: Self, _: &Self::Value) -> Option<(Self, Self)> {
--        if a.vid.as_u32() < b.vid.as_u32() {
--            Some((a, b))
--        } else {
--            Some((b, a))
--        }
-+        if a.vid.as_u32() < b.vid.as_u32() { Some((a, b)) } else { Some((b, a)) }
-     }
- }
- 
- 
-             // If both sides are *unknown*, it hardly matters, does it?
+         if a.vid.as_u32() < b.vid.as_u32() {
+             Some((a, b))
+             (ConstVariableValue::Known { .. }, ConstVariableValue::Known { .. }) => {
+                 panic!("equating two const variables, both of which have known values")
+             }
+-
+-            // If one side is known, prefer that one.
+             (ConstVariableValue::Known { .. }, ConstVariableValue::Unknown { .. }) => {
+                 Ok(value1.clone())
+             }
+             (ConstVariableValue::Unknown { .. }, ConstVariableValue::Known { .. }) => {
+                 Ok(value2.clone())
+             }
+-
+-            // If both sides are *unknown*, it hardly matters, does it?
              (
 -                ConstVariableValue::Unknown {
 -                    origin,
@@ -129,10 +157,11 @@ Rustfmt size:  6436 bytes
 +                ConstVariableValue::Unknown { origin, universe: universe1 },
 +                ConstVariableValue::Unknown { origin: _, universe: universe2 },
              ) => {
-                 // If we unify two unbound variables, ?T and ?U, then whatever
-                 // value they wind up taking (which must be the same value) must
-                 // universe is the minimum of the two universes, because that is
-                 // the one which contains the fewest names in scope.
+-                // If we unify two unbound variables, ?T and ?U, then whatever
+-                // value they wind up taking (which must be the same value) must
+-                // be nameable by both universes. Therefore, the resulting
+-                // universe is the minimum of the two universes, because that is
+-                // the one which contains the fewest names in scope.
                  let universe = cmp::min(*universe1, *universe2);
 -                Ok(ConstVariableValue::Unknown {
 -                    origin: *origin,

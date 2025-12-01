@@ -551,11 +551,11 @@ fn signature_help_for_tuple_pat(
     Some(signature_help_for_tuple_pat_ish(
         db,
         SignatureHelp {
-            doc: None,
-            signature: String::from('('),
-            parameters: vec![],
-            active_parameter: None,
-        },
+        doc: None,
+        signature: String::from('('),
+        parameters: vec![],
+        active_parameter: None,
+    },
         pat.syntax(),
         token,
         field_pats,

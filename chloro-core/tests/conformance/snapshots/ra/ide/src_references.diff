@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   66213 bytes
+Chloro size:   66222 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
@@ -99,6 +99,15 @@ Rustfmt size:  66636 bytes
  #[derive(Debug)]
  pub struct FindAllRefsConfig<'a> {
      pub search_scope: Option<SearchScope>,
+             });
+             usages.references.retain(|_, it| !it.is_empty());
+         }
+-        _ => {}
++        _ => {
++        }
+     }
+ }
+ 
  
  #[cfg(test)]
  mod tests {

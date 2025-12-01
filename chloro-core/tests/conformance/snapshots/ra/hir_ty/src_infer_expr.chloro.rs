@@ -174,23 +174,10 @@ impl<'db> InferenceContext<'_, 'db> {
     /// perform `NeverToAny` coercions.
     fn pat_guaranteed_to_constitute_read_for_never(&self, pat: PatId) -> bool {
         match &self.body[pat] {
-            // Does not constitute a read.
             Pat::Wild => false,
-
-            // This is unnecessarily restrictive when the pattern that doesn't
-            // constitute a read is unreachable.
-            //
-            // For example `match *never_ptr { value => {}, _ => {} }` or
-            // `match *never_ptr { _ if false => {}, value => {} }`.
-            //
-            // It is however fine to be restrictive here; only returning `true`
-            // can lead to unsoundness.
             Pat::Or(subpats) => {
                 subpats.iter().all(|pat| self.pat_guaranteed_to_constitute_read_for_never(*pat))
             }
-
-            // All of these constitute a read, or match on something that isn't `!`,
-            // which would require a `NeverToAny` coercion.
             Pat::Bind { .. }
             | Pat::TupleStruct { .. }
             | Pat::Path(_)
@@ -211,7 +198,6 @@ impl<'db> InferenceContext<'_, 'db> {
 
     fn is_syntactic_place_expr(&self, expr: ExprId) -> bool {
         match &self.body[expr] {
-            // Lang item paths cannot currently be local variables or statics.
             Expr::Path(Path::LangItem(_, _)) => false,
             Expr::Path(Path::Normal(path)) => path.type_anchor.is_none(),
             Expr::Path(path) => self
@@ -273,7 +259,6 @@ impl<'db> InferenceContext<'_, 'db> {
                     self.err_ty()
                 };
             }
-
             if let Some(target) = expected.only_has_type(&mut self.table) {
                 self.coerce(expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes)
                     .expect("never-to-any coercion should always succeed")
@@ -1339,17 +1324,16 @@ impl<'db> InferenceContext<'_, 'db> {
                     Expectation::rvalue_hint(self, g)
                 })
                 .unwrap_or_else(Expectation::none);
-
             let inner_ty = self.infer_expr_inner(inner_expr, &inner_exp, ExprIsRead::Yes);
             Ty::new_adt(
                 self.interner(),
                 box_id,
                 GenericArgs::fill_with_defaults(
-                    self.interner(),
-                    box_id.into(),
-                    [inner_ty.into()],
-                    |_, id, _| self.table.next_var_for_param(id),
-                ),
+                self.interner(),
+                box_id.into(),
+                [inner_ty.into()],
+                |_, id, _| self.table.next_var_for_param(id),
+            ),
             )
         } else {
             self.err_ty()
@@ -1445,7 +1429,6 @@ impl<'db> InferenceContext<'_, 'db> {
         let ret_ty = self.process_remote_user_written_ty(ret_ty);
 
         if self.is_builtin_binop(lhs_ty, rhs_ty, op) {
-            // use knowledge of built-in binary ops, which can sometimes help inference
             let builtin_ret = self.enforce_builtin_binop_types(lhs_ty, rhs_ty, op);
             self.unify(builtin_ret, ret_ty);
             builtin_ret
@@ -1645,12 +1628,10 @@ impl<'db> InferenceContext<'_, 'db> {
             Some((Either::Left(field_id), ty))
         });
 
-        Some(
-            match res {
+        Some(match res {
             Some((field_id, ty)) => {
                 let adjustments = autoderef.adjust_steps();
                 let ty = self.process_remote_user_written_ty(ty);
-
                 (ty, field_id, adjustments, true)
             }
             None => {
@@ -1659,11 +1640,9 @@ impl<'db> InferenceContext<'_, 'db> {
                 let ty = self.db.field_types(field_id.parent)[field_id.local_id]
                     .instantiate(self.interner(), subst);
                 let ty = self.process_remote_user_written_ty(ty);
-
                 (ty, Either::Left(field_id), adjustments, false)
             }
-        },
-        )
+        })
     }
 
     fn infer_field_access(
@@ -1696,8 +1675,6 @@ impl<'db> InferenceContext<'_, 'db> {
                 ty
             }
             None => {
-                // no field found, lets attempt to resolve it like a function so that IDE things
-                // work out while people are typing
                 let canonicalized_receiver = self.canonicalize(receiver_ty);
                 let resolved = method_resolution::lookup_method(
                     &canonicalized_receiver,
@@ -1720,7 +1697,6 @@ impl<'db> InferenceContext<'_, 'db> {
                         let args = self.substs_for_method_call(tgt_expr, func.into(), None);
                         self.write_expr_adj(receiver, adjustments.into_boxed_slice());
                         self.write_method_resolution(tgt_expr, func, args);
-
                         self.check_method_call(
                             tgt_expr,
                             &[],
@@ -1872,10 +1848,8 @@ impl<'db> InferenceContext<'_, 'db> {
                         item: func.into(),
                     })
                 }
-
                 let (ty, adjustments) = adjust.apply(&mut self.table, receiver_ty);
                 self.write_expr_adj(receiver, adjustments.into_boxed_slice());
-
                 let gen_args = self.substs_for_method_call(tgt_expr, func.into(), generic_args);
                 self.write_method_resolution(tgt_expr, func, gen_args);
                 let interner = DbInterner::new_with(self.db, None, None);
@@ -1890,8 +1864,6 @@ impl<'db> InferenceContext<'_, 'db> {
                     expected,
                 )
             }
-            // Failed to resolve, report diagnostic and try to resolve as call to field access or
-            // assoc function
             None => {
                 let field_with_same_name_exists = match self.lookup_field(receiver_ty, method_name)
                 {
@@ -1902,7 +1874,6 @@ impl<'db> InferenceContext<'_, 'db> {
                     }
                     None => None,
                 };
-
                 let assoc_func_with_same_name = method_resolution::iterate_method_candidates(
                     &canonicalized_receiver,
                     &mut self.table,
@@ -1919,7 +1890,6 @@ impl<'db> InferenceContext<'_, 'db> {
                         _ => None,
                     },
                 );
-
                 self.push_diagnostic(InferenceDiagnostic::UnresolvedMethodCall {
                     expr: tgt_expr,
                     receiver: receiver_ty,
@@ -1927,7 +1897,6 @@ impl<'db> InferenceContext<'_, 'db> {
                     field_with_same_name: field_with_same_name_exists,
                     assoc_func_with_same_name,
                 });
-
                 let recovered = match assoc_func_with_same_name {
                     Some(f) => {
                         let args = self.substs_for_method_call(tgt_expr, f.into(), generic_args);
@@ -2215,7 +2184,8 @@ impl<'db> InferenceContext<'_, 'db> {
             }
         }
 
-        if !args_count_matches {}
+        if !args_count_matches {
+        }
     }
 
     fn substs_for_method_call(
@@ -2356,11 +2326,9 @@ impl<'db> InferenceContext<'_, 'db> {
                     Obligation::new(interner, ObligationCause::new(), param_env, predicate)
                 }));
             }
-            // add obligation for trait implementation, if this is a trait method
             match fn_def.0 {
                 CallableDefId::FunctionId(f) => {
                     if let ItemContainerId::TraitId(trait_) = f.lookup(self.db).container {
-                        // construct a TraitRef
                         let trait_params_len = generics(self.db, trait_.into()).len();
                         let substs = GenericArgs::new_from_iter(
                             self.interner(),
@@ -2374,7 +2342,8 @@ impl<'db> InferenceContext<'_, 'db> {
                         ));
                     }
                 }
-                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {}
+                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {
+                }
             }
         }
     }
@@ -2485,7 +2454,11 @@ impl<'db> InferenceContext<'_, 'db> {
             BinaryOp::Assignment { .. } => unreachable!("handled above"),
         };
 
-        if is_assign { self.types.unit } else { output_ty }
+        if is_assign {
+            self.types.unit
+        } else {
+            output_ty
+        }
     }
 
     fn is_builtin_binop(&mut self, lhs: Ty<'db>, rhs: Ty<'db>, op: BinaryOp) -> bool {
@@ -2500,24 +2473,17 @@ impl<'db> InferenceContext<'_, 'db> {
 
         match op {
             BinaryOp::LogicOp(_) => true,
-
             BinaryOp::ArithOp(ArithOp::Shl | ArithOp::Shr) => {
                 lhs.is_integral() && rhs.is_integral()
             }
-
             BinaryOp::ArithOp(
                 ArithOp::Add | ArithOp::Sub | ArithOp::Mul | ArithOp::Div | ArithOp::Rem,
             ) => {
-                lhs.is_integral() && rhs.is_integral()
-                    || lhs.is_floating_point() && rhs.is_floating_point()
+                lhs.is_integral() && rhs.is_integral() || lhs.is_floating_point() && rhs.is_floating_point()
             }
-
             BinaryOp::ArithOp(ArithOp::BitAnd | ArithOp::BitOr | ArithOp::BitXor) => {
-                lhs.is_integral() && rhs.is_integral()
-                    || lhs.is_floating_point() && rhs.is_floating_point()
-                    || matches!((lhs.kind(), rhs.kind()), (TyKind::Bool, TyKind::Bool))
+                lhs.is_integral() && rhs.is_integral() || lhs.is_floating_point() && rhs.is_floating_point() || matches!((lhs.kind(), rhs.kind()), (TyKind::Bool, TyKind::Bool))
             }
-
             BinaryOp::CmpOp(_) => {
                 let is_scalar = |kind| {
                     matches!(
@@ -2535,12 +2501,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 };
                 is_scalar(lhs.kind()) && is_scalar(rhs.kind())
             }
-
             BinaryOp::Assignment { op: None } => {
                 stdx::never!("Simple assignment operator is not binary op.");
                 false
             }
-
             BinaryOp::Assignment { .. } => unreachable!("handled above"),
         }
     }
@@ -2557,6 +2521,13 @@ impl<'db> InferenceContext<'_, 'db> {
         });
         let res = cb(self);
         let ctx = self.breakables.pop().expect("breakable stack broken");
-        (if ctx.may_break { ctx.coerce.map(|ctx| ctx.complete(self)) } else { None }, res)
+        (
+            if ctx.may_break {
+            ctx.coerce.map(|ctx| ctx.complete(self))
+        } else {
+            None
+        },
+            res,
+        )
     }
 }

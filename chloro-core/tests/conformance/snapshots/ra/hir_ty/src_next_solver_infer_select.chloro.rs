@@ -114,7 +114,6 @@ impl EvaluationResult {
             | EvaluatedToOkModuloRegions
             | EvaluatedToAmbig
             | EvaluatedToAmbigStackDependent => true,
-
             EvaluatedToErr => false,
         }
     }
@@ -122,7 +121,6 @@ impl EvaluationResult {
     pub(crate) fn is_stack_dependent(self) -> bool {
         match self {
             EvaluatedToAmbigStackDependent => true,
-
             EvaluatedToOkModuloOpaqueTypes
             | EvaluatedToOk
             | EvaluatedToOkModuloRegions
@@ -345,9 +343,6 @@ fn candidate_should_be_dropped_in_favor_of<'db>(
         (_, CandidateSource::CoherenceUnknowable) | (CandidateSource::CoherenceUnknowable, _) => {
             panic!("should not have assembled a CoherenceUnknowable candidate")
         }
-
-        // In the old trait solver, we arbitrarily choose lower vtable candidates
-        // over higher ones.
         (
             CandidateSource::BuiltinImpl(BuiltinImplSource::Object(a)),
             CandidateSource::BuiltinImpl(BuiltinImplSource::Object(b)),
@@ -356,20 +351,15 @@ fn candidate_should_be_dropped_in_favor_of<'db>(
             CandidateSource::BuiltinImpl(BuiltinImplSource::TraitUpcasting(a)),
             CandidateSource::BuiltinImpl(BuiltinImplSource::TraitUpcasting(b)),
         ) => a >= b,
-        // Prefer dyn candidates over non-dyn candidates. This is necessary to
-        // handle the unsoundness between `impl<T: ?Sized> Any for T` and `dyn Any: Any`.
         (
             CandidateSource::Impl(_)
             | CandidateSource::ParamEnv(_)
             | CandidateSource::AliasBound(_),
             CandidateSource::BuiltinImpl(BuiltinImplSource::Object { .. }),
         ) => true,
-
-        // Prefer specializing candidates over specialized candidates.
         (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => {
             victim.goal().infcx().interner.impl_specializes(other_def_id, victim_def_id)
         }
-
         _ => false,
     }
 }
@@ -395,12 +385,9 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
             .collect(),
     };
 
-    Some(
-        match cand.kind() {
+    Some(match cand.kind() {
         ProbeKind::TraitCandidate { source, result: _ } => match source {
             CandidateSource::Impl(impl_def_id) => {
-                // FIXME: Remove this in favor of storing this in the tree
-                // For impl candidates, we do the rematch manually to compute the args.
                 ImplSource::UserDefined(ImplSourceUserDefinedData {
                     impl_def_id: impl_def_id.0,
                     args: cand.instantiate_impl_args(),
@@ -424,6 +411,5 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
         | ProbeKind::RigidAlias { result: _ } => {
             panic!("didn't expect to assemble trait candidate from {:#?}", cand.kind())
         }
-    },
-    )
+    })
 }

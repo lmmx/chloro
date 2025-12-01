@@ -556,7 +556,9 @@ impl SourceToDefCtx<'_, '_> {
     }
 
     fn find_generic_param_container(&mut self, src: InFile<&SyntaxNode>) -> Option<GenericDefId> {
-        self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
+        self.parent_ancestors_with_macros(
+            src,
+            |this, InFile { file_id, value }, _| {
             let item = ast::Item::cast(value)?;
             match &item {
                 ast::Item::Fn(it) => this.fn_to_def(InFile::new(file_id, it)).map(Into::into),
@@ -571,11 +573,14 @@ impl SourceToDefCtx<'_, '_> {
                 ast::Item::Impl(it) => this.impl_to_def(InFile::new(file_id, it)).map(Into::into),
                 _ => None,
             }
-        })
+        },
+        )
     }
 
     fn find_pat_or_label_container(&mut self, src: InFile<&SyntaxNode>) -> Option<DefWithBodyId> {
-        self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
+        self.parent_ancestors_with_macros(
+            src,
+            |this, InFile { file_id, value }, _| {
             let item = match ast::Item::cast(value.clone()) {
                 Some(it) => it,
                 None => {
@@ -593,7 +598,8 @@ impl SourceToDefCtx<'_, '_> {
                 }
                 _ => None,
             }
-        })
+        },
+        )
     }
 
     /// Skips the attributed item that caused the macro invocation we are climbing up

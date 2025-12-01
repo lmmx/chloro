@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19382 bytes
+Chloro size:   19132 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -35,17 +35,6 @@ Rustfmt size:  20465 bytes
  pub type FilePosition = FilePositionWrapper<EditionedFileId>;
  
  impl FilePosition {
- 
- impl HirFileRange {
-     pub fn file_range(self) -> Option<FileRange> {
--        Some(FileRange {
--            file_id: self.file_id.file_id()?,
--            range: self.range,
--        })
-+        Some(FileRange { file_id: self.file_id.file_id()?, range: self.range })
-     }
- }
- 
      pub file_id: FileKind,
      pub range: TextRange,
  }
@@ -232,6 +221,20 @@ Rustfmt size:  20465 bytes
              HirFileId::MacroFile(mac_file) => {
                  let (range, ctxt) = span_for_offset(
                      db,
+                     &db.expansion_span_map(mac_file),
+                     self.value.text_range().start(),
+                 );
+-
+-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
+-                // keep pre-token map rewrite behaviour.
+                 if ctxt.is_root() {
+                     return range;
+                 }
+-
+-                // Fall back to whole macro call.
+                 let loc = db.lookup_intern_macro_call(mac_file);
+                 loc.kind.original_call_range(db)
+             }
      /// Attempts to map the syntax node back up its macro calls.
      pub fn original_file_range_opt(self, db: &dyn db::ExpandDatabase) -> Option<FileRange> {
          match self.file_id {
@@ -245,18 +248,15 @@ Rustfmt size:  20465 bytes
              HirFileId::MacroFile(mac_file) => {
                  let (range, ctxt) = span_for_offset(
                      db,
- 
-                 // FIXME: Figure out an API that makes proper use of ctx, this only exists to
-                 // keep pre-token map rewrite behaviour.
--                if ctxt.is_root() {
--                    Some(range)
--                } else {
--                    None
--                }
-+                if ctxt.is_root() { Some(range) } else { None }
-             }
-         }
-     }
+                     &db.expansion_span_map(mac_file),
+                     self.value.text_range().start(),
+                 );
+-
+-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
+-                // keep pre-token map rewrite behaviour.
+                 if ctxt.is_root() {
+                     Some(range)
+                 } else {
          db: &dyn db::ExpandDatabase,
      ) -> (FileRange, SyntaxContext) {
          match self.file_id {

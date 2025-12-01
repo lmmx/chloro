@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9501 bytes
-Chloro size:   9352 bytes
+Chloro size:   9376 bytes
 Rustfmt size:  9638 bytes
 
 ✗ Outputs DIFFER
@@ -63,17 +63,6 @@ Rustfmt size:  9638 bytes
      let scope = ctx.sema.scope(d.expr.value.to_node(&root).syntax())?;
  
      let term_search_ctx = TermSearchCtx {
-         })
-         .collect();
- 
--    if !assists.is_empty() {
--        Some(assists)
--    } else {
--        None
--    }
-+    if !assists.is_empty() { Some(assists) } else { None }
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_diagnostics, check_fixes_unordered, check_has_fix};

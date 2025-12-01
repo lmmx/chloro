@@ -253,9 +253,6 @@ pub(crate) fn diff_tokens(
     if old.is_empty() && new.is_empty() {
         vec![]
     } else {
-        // The lsp data field is actually a byte-diff but we
-        // travel in tokens so `start` and `delete_count` are in multiples of the
-        // serialized size of `SemanticToken`.
         vec![SemanticTokensEdit {
             start: 5 * offset as u32,
             delete_count: 5 * old.len() as u32,

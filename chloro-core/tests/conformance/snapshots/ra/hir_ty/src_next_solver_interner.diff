@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81977 bytes
+Chloro size:   81316 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -130,18 +130,8 @@ Rustfmt size:  84055 bytes
  impl<'db> DbInterner<'db> {
 -    // FIXME(next-solver): remove this method
      pub fn conjure() -> DbInterner<'db> {
--        crate::with_attached_db(|db| DbInterner {
-+        crate::with_attached_db(
-+            |db| DbInterner {
+         crate::with_attached_db(|db| DbInterner {
              db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
-             krate: None,
-             block: None,
--        })
-+        },
-+        )
-     }
- 
-     pub fn new_with(
      }
  }
  
@@ -200,18 +190,6 @@ Rustfmt size:  84055 bytes
      }
  
      pub fn inner(&self) -> &AdtDefInner {
--        crate::with_attached_db(|db| {
-+        crate::with_attached_db(
-+            |db| {
-             let inner = self.data_(db);
-             // SAFETY: ¯\_(ツ)_/¯
-             unsafe { std::mem::transmute(inner) }
--        })
-+        },
-+        )
-     }
- 
-     pub fn is_enum(&self) -> bool {
          let db = interner.db();
          // FIXME: this is disabled just to match the behavior with chalk right now
          let _field_tys = |id: VariantId| {
@@ -231,44 +209,22 @@ Rustfmt size:  84055 bytes
 -                .skip_binder()
 -                .into_iter()
 -                .last()?;
+-
 +            let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
- 
              let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
- 
- 
- impl fmt::Debug for AdtDef {
-     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
--        crate::with_attached_db(|db| match self.inner().id {
-+        crate::with_attached_db(
-+            |db| match self.inner().id {
-             AdtId::StructId(struct_id) => {
-                 let data = db.struct_signature(struct_id);
-                 f.write_str(data.name.as_str())
-                 let data = db.enum_signature(enum_id);
-                 f.write_str(data.name.as_str())
+-
+             Some(EarlyBinder::bind(constraint_ty))
+         } else {
+             None
+     fn flags(&self) -> rustc_type_ir::TypeFlags {
+         match self.inner() {
+             PatternKind::Range { start, end } => {
+-                FlagComputation::for_const_kind(&start.kind()).flags
+-                    | FlagComputation::for_const_kind(&end.kind()).flags
++                FlagComputation::for_const_kind(&start.kind()).flags | FlagComputation::for_const_kind(&end.kind()).flags
              }
--        })
-+        },
-+        )
-     }
- }
- 
-     }
- 
-     pub fn inner(&self) -> &PatternKind<'db> {
--        crate::with_attached_db(|db| {
-+        crate::with_attached_db(
-+            |db| {
-             let inner = &self.kind_(db).0;
-             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
-             // make sure that our returned value is valid for the lifetime `'db`.
-             unsafe { std::mem::transmute(inner) }
--        })
-+        },
-+        )
-     }
- }
- 
+             PatternKind::Or(pats) => {
+                 let mut flags = pats.as_slice()[0].flags();
  
      fn outer_exclusive_binder(&self) -> rustc_type_ir::DebruijnIndex {
          match self.inner() {
@@ -422,6 +378,16 @@ Rustfmt size:  84055 bytes
      }
  
      type UnsizingParams = UnsizingParams;
+                 self.db().ty(id.into())
+             }
+             SolverDefId::AdtId(id) => self.db().ty(id.into()),
+-            // FIXME(next-solver): This uses the types of `query mir_borrowck` in rustc.
+-            //
+-            // We currently always use the type from HIR typeck which ignores regions. This
+-            // should be fine.
+             SolverDefId::InternedOpaqueTyId(_) => self.type_of_opaque_hir_typeck(def_id),
+             SolverDefId::FunctionId(id) => self.db.value_ty(id.into()).unwrap(),
+             SolverDefId::Ctor(id) => {
                      Ctor::Struct(id) => id.into(),
                      Ctor::Enum(id) => id.into(),
                  };
@@ -431,6 +397,34 @@ Rustfmt size:  84055 bytes
 +                self.db.value_ty(id).expect("`SolverDefId::Ctor` should have a function-like ctor")
              }
              _ => panic!("Unexpected def_id `{def_id:?}` provided for `type_of`"),
+         }
+         match alias.def_id {
+             SolverDefId::InternedOpaqueTyId(_) => AliasTyKind::Opaque,
+             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
+-                ItemContainerId::ImplId(impl_)
+-                    if self.db.impl_signature(impl_).target_trait.is_none() =>
+-                {
++                ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
+                     AliasTyKind::Inherent
+                 }
+                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => AliasTyKind::Projection,
+         match alias.def_id {
+             SolverDefId::InternedOpaqueTyId(_) => AliasTermKind::OpaqueTy,
+             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
+-                ItemContainerId::ImplId(impl_)
+-                    if self.db.impl_signature(impl_).target_trait.is_none() =>
+-                {
++                ItemContainerId::ImplId(impl_) if self.db.impl_signature(impl_).target_trait.is_none() => {
+                     AliasTermKind::InherentTy
+                 }
+                 ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => {
+                 }
+                 _ => AliasTermKind::FreeTy,
+             },
+-            // rustc creates an `AnonConst` for consts, and evaluates them with CTFE (normalizing projections
+-            // via selection, similar to ours `find_matching_impl()`, and not with the trait solver), so mimic it.
+             SolverDefId::ConstId(_) => AliasTermKind::UnevaluatedConst,
+             _ => unimplemented!("Unexpected alias: {:?}", alias.def_id),
          }
          let trait_generics = self.generics_of(trait_def_id);
          let trait_args = GenericArgs::new_from_iter(
@@ -670,6 +664,11 @@ Rustfmt size:  84055 bytes
      }
  
      fn is_sizedness_trait(self, def_id: Self::TraitId) -> bool {
+         self.replace_escaping_bound_vars_uncached(
+             value,
+             FnMutDelegate {
+-                regions: &mut |r: BoundRegion| {
++            regions: &mut |r: BoundRegion| {
                      Region::new_bound(
                          self,
                          DebruijnIndex::ZERO,
@@ -680,7 +679,8 @@ Rustfmt size:  84055 bytes
 +                        BoundRegion { var: shift_bv(r.var), kind: r.kind },
                      )
                  },
-                 types: &mut |t: BoundTy| {
+-                types: &mut |t: BoundTy| {
++            types: &mut |t: BoundTy| {
                      Ty::new_bound(
                          self,
                          DebruijnIndex::ZERO,
@@ -691,7 +691,7 @@ Rustfmt size:  84055 bytes
 +                        BoundTy { var: shift_bv(t.var), kind: t.kind },
                      )
                  },
-                 consts: &mut |c| {
+-                consts: &mut |c| {
 -                    Const::new_bound(
 -                        self,
 -                        DebruijnIndex::ZERO,
@@ -699,10 +699,14 @@ Rustfmt size:  84055 bytes
 -                            var: shift_bv(c.var),
 -                        },
 -                    )
++            consts: &mut |c| {
 +                    Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
                  },
-             },
+-            },
++        },
          )
+     }
+ 
  
  mod tls_db {
      use std::{cell::Cell, ptr::NonNull};
@@ -747,7 +751,10 @@ Rustfmt size:  84055 bytes
 +            let db = self.database.get().expect("Try to use attached db, but not db is attached");
  
              // SAFETY: The db is attached, so it must be valid.
-             op(unsafe { db.as_ref() })
+-            op(unsafe { db.as_ref() })
++            op(unsafe {
++                db.as_ref()
++            })
          }
      }
 -
@@ -767,7 +774,13 @@ Rustfmt size:  84055 bytes
 -
      #[inline]
      pub fn with_attached_db<R>(op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
-         GLOBAL_DB.with(
+-        GLOBAL_DB.with(
+-            #[inline]
+-            |a| a.with(op),
+-        )
++        GLOBAL_DB.with(#[inline] |a| a.with(op))
+     }
+ }
  
  mod tls_cache {
      use crate::db::HirDatabase;

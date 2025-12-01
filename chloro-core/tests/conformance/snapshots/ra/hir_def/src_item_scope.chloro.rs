@@ -517,8 +517,7 @@ impl ItemScope {
     ) {
         if let Some(derives) = self.derive_macros.get_mut(&adt)
             && let Some(DeriveMacroInvocation { derive_call_ids, .. }) =
-                derives.iter_mut().find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id)
-        {
+                derives.iter_mut().find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id) {
             derive_call_ids[idx] = Some(call);
         }
     }
@@ -748,7 +747,6 @@ impl ItemScope {
                 "{}:",
                 name.map_or("_".to_owned(), |name| name.display(db, Edition::LATEST).to_string())
             );
-
             if let Some(Item { import, .. }) = def.types {
                 buf.push_str(" t");
                 match import {
@@ -778,7 +776,6 @@ impl ItemScope {
             if def.is_none() {
                 buf.push_str(" _");
             }
-
             buf.push('\n');
         }
     }

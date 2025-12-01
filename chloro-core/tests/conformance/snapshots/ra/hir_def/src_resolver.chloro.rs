@@ -915,12 +915,7 @@ fn handle_macro_def_scope(
     hygiene_info: &mut Option<(SyntaxContext, MacroDefId)>,
     macro_id: &MacroDefId,
 ) {
-    if let Some((parent_ctx, label_macro_id)) = hygiene_info
-        && label_macro_id == macro_id
-    {
-        // A macro is allowed to refer to variables from before its declaration.
-        // Therefore, if we got to the rib of its declaration, give up its hygiene
-        // and use its parent expansion.
+    if let Some((parent_ctx, label_macro_id)) = hygiene_info && label_macro_id == macro_id {
         *hygiene_id = HygieneId::new(parent_ctx.opaque_and_semitransparent(db));
         *hygiene_info = parent_ctx.outer_expn(db).map(|expansion| {
             let expansion = db.lookup_intern_macro_call(expansion.into());
@@ -1013,7 +1008,6 @@ impl<'db> Scope<'db> {
                 } else if let GenericDefId::AdtId(adt) = parent {
                     acc.add(&Name::new_symbol_root(sym::Self_), ScopeDef::AdtSelfType(adt));
                 }
-
                 for (local_id, param) in params.iter_type_or_consts() {
                     if let Some(name) = &param.name() {
                         let id = TypeOrConstParamId { parent, local_id };
@@ -1044,7 +1038,8 @@ impl<'db> Scope<'db> {
                     acc.add_local(e.name(), e.binding());
                 });
             }
-            Scope::MacroDefScope(_) => {}
+            Scope::MacroDefScope(_) => {
+            }
         }
     }
 }

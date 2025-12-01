@@ -40,14 +40,12 @@ pub struct TraitEnvironment<'db> {
 
 impl<'db> TraitEnvironment<'db> {
     pub fn empty(krate: Crate) -> Arc<Self> {
-        Arc::new(
-            TraitEnvironment {
+        Arc::new(TraitEnvironment {
             krate,
             block: None,
             traits_from_clauses: Box::default(),
             env: ParamEnv::empty(),
-        },
-        )
+        })
     }
 
     pub fn new(

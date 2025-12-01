@@ -410,10 +410,7 @@ fn cfg_select_expand(
         }
         None => ExpandResult::new(
             tt::TopSubtree::empty(tt::DelimSpan::from_single(span)),
-            ExpandError::other(
-                span,
-                "none of the predicates in this `cfg_select` evaluated to true",
-            ),
+            ExpandError::other(span, "none of the predicates in this `cfg_select` evaluated to true"),
         ),
     }
 }
@@ -497,14 +494,6 @@ fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
             break false;
         };
         let expn = db.lookup_intern_macro_call(expn.into());
-        // FIXME: Record allow_internal_unstable in the macro def (not been done yet because it
-        // would consume quite a bit extra memory for all call locs...)
-        // if let Some(features) = expn.def.allow_internal_unstable {
-        //     if features.iter().any(|&f| f == sym::edition_panic) {
-        //         span = expn.call_site;
-        //         continue;
-        //     }
-        // }
         break expn.def.edition >= Edition::Edition2021;
     }
 }
@@ -805,8 +794,9 @@ fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
             TtElement::Leaf(l) => Err(*l.span()),
             TtElement::Subtree(tt, _) => Err(tt.delimiter.open.cover(tt.delimiter.close)),
         }
-    })()
-    .map_err(|span| ExpandError::other(span, "expected string literal"))
+    })().map_err(
+        |span| ExpandError::other(span, "expected string literal"),
+    )
 }
 
 fn include_expand(
@@ -975,7 +965,10 @@ fn quote_expand(
     span: Span,
 ) -> ExpandResult<tt::TopSubtree> {
     ExpandResult::new(
-        tt::TopSubtree::empty(tt::DelimSpan { open: span, close: span }),
+        tt::TopSubtree::empty(tt::DelimSpan {
+        open: span,
+        close: span,
+    }),
         ExpandError::other(span, "quote! is not implemented"),
     )
 }

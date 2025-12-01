@@ -153,12 +153,10 @@ pub(crate) fn infer_cycle_result(
     db: &dyn HirDatabase,
     _: DefWithBodyId,
 ) -> Arc<InferenceResult<'_>> {
-    Arc::new(
-        InferenceResult {
+    Arc::new(InferenceResult {
         has_errors: true,
         ..InferenceResult::new(Ty::new_error(DbInterner::new_with(db, None, None), ErrorGuaranteed))
-    },
-    )
+    })
 }
 
 /// Binding modes inferred for patterns.
@@ -1194,8 +1192,6 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                         [Adjustment { kind: Adjust::NeverToAny, target }],
                         [.., Adjustment { target: new_target, .. }],
                     ) => {
-                        // NeverToAny coercion can target any type, so instead of adding a new
-                        // adjustment on top we can change the target.
                         *target = *new_target;
                     }
                     _ => {
@@ -1444,7 +1440,6 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             .eq(expected, actual)
             .map(|infer_ok| self.table.register_infer_ok(infer_ok));
         if let Err(_err) = result {
-            // FIXME: Emit diagnostic.
         }
     }
 
@@ -1690,18 +1685,15 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             }
             Some(1) => {
                 let segment = path.segments().last().unwrap();
-                // this could be an enum variant or associated type
                 if let Some((AdtId::EnumId(enum_id), _)) = ty.as_adt() {
                     let enum_data = enum_id.enum_variants(self.db);
                     if let Some(variant) = enum_data.variant(segment) {
                         return (ty, Some(variant.into()));
                     }
                 }
-                // FIXME potentially resolve assoc type
                 (self.err_ty(), None)
             }
             Some(_) => {
-                // FIXME diagnostic
                 (self.err_ty(), None)
             }
         }
@@ -1812,7 +1804,6 @@ impl<'db> Expectation<'db> {
     /// type.
     fn has_type(ty: Ty<'db>) -> Self {
         if ty.is_ty_error() {
-            // FIXME: get rid of this?
             Expectation::None
         } else {
             Expectation::HasType(ty)
@@ -1907,7 +1898,11 @@ impl<'db> Expectation<'db> {
         match *self {
             Expectation::HasType(ety) => {
                 let ety = table.structurally_resolve_type(ety);
-                if ety.is_ty_var() { Expectation::None } else { Expectation::HasType(ety) }
+                if ety.is_ty_var() {
+                    Expectation::None
+                } else {
+                    Expectation::HasType(ety)
+                }
             }
             Expectation::RValueLikeUnsized(ety) => Expectation::RValueLikeUnsized(ety),
             _ => Expectation::None,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52289 bytes
-Chloro size:   52289 bytes
+Chloro size:   51991 bytes
 Rustfmt size:  52289 bytes
 
 ✗ Outputs DIFFER
@@ -49,3 +49,50 @@ Rustfmt size:  52289 bytes
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
  pub(crate) struct HirPlace<'db> {
      pub(crate) local: BindingId,
+                 place,
+                 CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
+             );
+-            self.current_capture_span_stack.pop(); // Remove the pattern span.
++            self.current_capture_span_stack.pop();
+         }
+     }
+ 
+ 
+     fn walk_expr(&mut self, tgt_expr: ExprId) {
+         if let Some(it) = self.result.expr_adjustments.get_mut(&tgt_expr) {
+-            // FIXME: this take is completely unneeded, and just is here to make borrow checker
+-            // happy. Remove it if you can.
+             let x_taken = mem::take(it);
+             self.walk_expr_with_adjust(tgt_expr, &x_taken);
+             *self.result.expr_adjustments.get_mut(&tgt_expr).unwrap() = x_taken;
+                     }
+                 }
+                 self.walk_expr(*expr);
+-                if let Some(discr_place) = self.place_of_expr(*expr)
+-                    && self.is_upvar(&discr_place)
+-                {
++                if let Some(discr_place) = self.place_of_expr(*expr) && self.is_upvar(&discr_place) {
+                     let mut capture_mode = None;
+                     for arm in arms.iter() {
+                         self.walk_pat(&mut capture_mode, arm.pat);
+                 self.consume_expr(*expr);
+             }
+             Expr::Ref { expr, rawness: _, mutability } => {
+-                // We need to do this before we push the span so the order will be correct.
+                 let place = self.place_of_expr(*expr);
+                 self.current_capture_span_stack.push(MirSpan::ExprId(tgt_expr));
+                 match mutability {
+                 }
+                 self.resolver.reset_to_guard(resolver_guard);
+             }
+-
+             Expr::Missing
+             | Expr::Continue { .. }
+             | Expr::Path(_)
+         for (closure, exprs) in deferred_closures.into_iter().rev() {
+             self.current_captures = vec![];
+             let kind = self.analyze_closure(closure);
+-
+             for (derefed_callee, callee_ty, params, expr) in exprs {
+                 if let &Expr::Call { callee, .. } = &self.body[expr] {
+                     let mut adjustments =

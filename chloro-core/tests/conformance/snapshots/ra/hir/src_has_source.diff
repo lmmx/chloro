@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11436 bytes
-Chloro size:   11467 bytes
+Chloro size:   11489 bytes
 Rustfmt size:  11695 bytes
 
 ✗ Outputs DIFFER
@@ -177,6 +177,17 @@ Rustfmt size:  11695 bytes
      }
  }
  
+                     }
+                 } else {
+                     params.params().nth(self.idx).map(Either::Right)
+-                }
+-                .map(|value| InFile { file_id, value })
++                }.map(
++                    |value| InFile { file_id, value },
++                )
+             }
+             Callee::Closure(closure, _) => {
+                 let InternedClosure(owner, expr_id) = db.lookup_intern_closure(closure);
                          .params()
                          .nth(self.idx)
                          .map(Either::Right)

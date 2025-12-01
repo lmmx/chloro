@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27703 bytes
-Chloro size:   27472 bytes
+Chloro size:   27467 bytes
 Rustfmt size:  27895 bytes
 
 ✗ Outputs DIFFER
@@ -65,6 +65,12 @@ Rustfmt size:  27895 bytes
      Diagnostic::new(
          DiagnosticCode::RustcHardError("E0620"),
          format_ty!(ctx, "cast to unsized type: `{}`", d.cast_ty),
+         display_range,
+-    )
+-    .stable()
++    ).stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_diagnostics, check_diagnostics_with_disabled};

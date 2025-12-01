@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20688 bytes
+Chloro size:   20573 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -140,6 +140,22 @@ Rustfmt size:  21158 bytes
      fn send_notification(&self, not: Notification) {
          self.client.sender.send(Message::Notification(not)).unwrap();
      }
+ 
+     pub(crate) fn write_file_and_save(&self, path: &str, text: String) {
+         fs::write(self.dir.path().join(path), &text).unwrap();
+-        self.notification::<lsp_types::notification::DidSaveTextDocument>(
+-            lsp_types::DidSaveTextDocumentParams {
+-                text_document: self.doc_id(path),
+-                text: Some(text),
+-            },
+-        )
++        self.notification::<lsp_types::notification::DidSaveTextDocument>(lsp_types::DidSaveTextDocumentParams {
++            text_document: self.doc_id(path),
++            text: Some(text),
++        })
+     }
+ }
+ 
  struct Timeout;
  
  fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout> {
@@ -160,9 +176,13 @@ Rustfmt size:  21158 bytes
  /// Compares JSON object for approximate equality.
  /// You can use `[..]` wildcard in strings (useful for OS dependent things such
  /// as paths). You can use a `"{...}"` string literal as a wildcard for
+             if l.len() != r.len() {
+                 return Some((expected, actual));
+             }
+-
              let mut l = l.iter().collect::<Vec<_>>();
              let mut r = r.iter().collect::<Vec<_>>();
- 
+-
 -            l.retain(
 -                |l| match r.iter().position(|r| find_mismatch(l, r).is_none()) {
 -                    Some(i) => {
@@ -172,6 +192,7 @@ Rustfmt size:  21158 bytes
 -                    None => true,
 -                },
 -            );
+-
 +            l.retain(|l| match r.iter().position(|r| find_mismatch(l, r).is_none()) {
 +                Some(i) => {
 +                    r.remove(i);
@@ -179,6 +200,25 @@ Rustfmt size:  21158 bytes
 +                }
 +                None => true,
 +            });
- 
              if !l.is_empty() {
                  assert!(!r.is_empty());
+                 Some((l[0], r[0]))
+                 entries.sort_by_key(|it| it.0);
+                 entries.into_iter().map(|(_k, v)| v).collect::<Vec<_>>()
+             }
+-
+             let same_keys = l.len() == r.len() && l.keys().all(|k| r.contains_key(k));
+             if !same_keys {
+                 return Some((expected, actual));
+             }
+-
+             let l = sorted_values(l);
+             let r = sorted_values(r);
+-
+             l.into_iter().zip(r).find_map(|(l, r)| find_mismatch(l, r))
+         }
+         (Value::Null, Value::Null) => None,
+-        // magic string literal "{...}" acts as wildcard for any sub-JSON
+         (Value::String(l), _) if l == "{...}" => None,
+         _ => Some((expected, actual)),
+     }

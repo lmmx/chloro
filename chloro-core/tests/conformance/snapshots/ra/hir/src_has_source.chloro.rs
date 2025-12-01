@@ -264,8 +264,9 @@ impl HasSource for Param<'_> {
                     }
                 } else {
                     params.params().nth(self.idx).map(Either::Right)
-                }
-                .map(|value| InFile { file_id, value })
+                }.map(
+                    |value| InFile { file_id, value },
+                )
             }
             Callee::Closure(closure, _) => {
                 let InternedClosure(owner, expr_id) = db.lookup_intern_closure(closure);

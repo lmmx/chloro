@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4526 bytes
-Chloro size:   4159 bytes
+Chloro size:   4183 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -52,17 +52,6 @@ Rustfmt size:  4581 bytes
 +    if !variant.syntax().text_range().contains_range(ctx.selection_trimmed()) {
          return None;
      }
- 
-     let default_trait = FamousDefs(sema, krate).core_default_Default()?;
-     let enum_type = enum_.ty(sema.db);
- 
--    if enum_type.impls_trait(sema.db, default_trait, &[]) {
--        Some(())
--    } else {
--        None
--    }
-+    if enum_type.impls_trait(sema.db, default_trait, &[]) { Some(()) } else { None }
- }
  
  #[cfg(test)]
  mod tests {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13221 bytes
-Chloro size:   13226 bytes
+Chloro size:   13178 bytes
 Rustfmt size:  13526 bytes
 
 ✗ Outputs DIFFER
@@ -85,6 +85,13 @@ Rustfmt size:  13526 bytes
          // Getting message from old generation. Might happen in restarting checks.
          if package.generation > generation {
              return;
+ 
+         for (file_id, mut diagnostics) in diagnostics {
+             diagnostics.sort_by_key(|it| (it.range.start, it.range.end));
+-
+             if let Some((old_gen, existing_diagnostics)) = target.get_mut(&file_id) {
+                 if existing_diagnostics.len() == diagnostics.len()
+                     && iter_eq_by(&diagnostics, &*existing_diagnostics, |new, existing| {
          &self,
          file_id: FileId,
      ) -> impl Iterator<Item = &lsp_types::Diagnostic> {
@@ -103,6 +110,17 @@ Rustfmt size:  13526 bytes
          let check = self
              .check
              .iter()
+ }
+ 
+ fn are_diagnostics_equal(left: &lsp_types::Diagnostic, right: &lsp_types::Diagnostic) -> bool {
+-    left.source == right.source
+-        && left.severity == right.severity
+-        && left.range == right.range
+-        && left.message == right.message
++    left.source == right.source && left.severity == right.severity && left.range == right.range && left.message == right.message
+ }
+ 
+ pub(crate) enum NativeDiagnosticsFetchKind {
      let _ctx = DbPanicContext::enter("fetch_native_diagnostics".to_owned());
  
      // the diagnostics produced may point to different files not requested by the concrete request,
@@ -116,14 +134,10 @@ Rustfmt size:  13526 bytes
 -        code: Some(lsp_types::NumberOrString::String(
 -            d.code.as_str().to_owned(),
 -        )),
--        code_description: Some(lsp_types::CodeDescription {
 +        code: Some(lsp_types::NumberOrString::String(d.code.as_str().to_owned())),
-+        code_description: Some(
-+            lsp_types::CodeDescription {
+         code_description: Some(lsp_types::CodeDescription {
              href: lsp_types::Url::parse(&d.code.url()).unwrap(),
--        }),
-+        },
-+        ),
+         }),
          source: Some("rust-analyzer".to_owned()),
          message: d.message,
          related_information: None,

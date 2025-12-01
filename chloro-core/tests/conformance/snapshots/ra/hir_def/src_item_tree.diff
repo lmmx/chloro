@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22828 bytes
+Chloro size:   22820 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
@@ -44,6 +44,14 @@ Rustfmt size:  23685 bytes
      if small_data.is_empty()
          && big_data.is_empty()
          && top_level.is_empty()
+         && attrs.is_empty()
+         && top_attrs.is_empty()
+-        && vis.arena.is_empty()
+-    {
++        && vis.arena.is_empty() {
+         EMPTY
+             .get_or_init(|| {
+                 Arc::new(ItemTree {
                      small_data: FxHashMap::default(),
                      big_data: FxHashMap::default(),
                      top_attrs: RawAttrs::EMPTY,
@@ -69,6 +77,14 @@ Rustfmt size:  23685 bytes
      if small_data.is_empty()
          && big_data.is_empty()
          && top_level.is_empty()
+         && attrs.is_empty()
+         && top_attrs.is_empty()
+-        && vis.arena.is_empty()
+-    {
++        && vis.arena.is_empty() {
+         EMPTY
+             .get_or_init(|| {
+                 Arc::new(ItemTree {
                      small_data: FxHashMap::default(),
                      big_data: FxHashMap::default(),
                      top_attrs: RawAttrs::EMPTY,

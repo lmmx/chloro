@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32339 bytes
+Chloro size:   32277 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -50,6 +50,20 @@ Rustfmt size:  32996 bytes
          expected_macro_subns: Option<MacroSubNs>,
      ) -> ResolvePathResult {
          let mut result = self.resolve_path_fp_with_macro_single(
+                     return result;
+                 }
+             }
+-
+             let new = current_map.resolve_path_fp_with_macro_single(
+                 local_def_map,
+                 db,
+                 shadow,
+                 expected_macro_subns,
+             );
+-
+             merge(new);
+         }
+     }
                  // FIXME: If the next segment doesn't resolve in the module and
                  // BuiltinShadowMode wasn't Module, then we need to try
                  // resolving it as a builtin.
@@ -63,6 +77,14 @@ Rustfmt size:  32996 bytes
  
                  tracing::debug!("resolving {:?} in module", segment);
                  self.resolve_name_in_module(
+                 extern_crate.map(ImportOrExternCrate::ExternCrate),
+             ))
+         } else {
+-            Either::Right(ReachedFixedPoint::No) // extern crate declarations can add to the extern prelude
++            Either::Right(ReachedFixedPoint::No)
+         }
+     }
+ 
                  sub_namespace_match(Some(MacroSubNs::from_id(db, id)), expected_macro_subns)
              })
              .map_or_else(PerNs::none, |m| PerNs::macros(m, Visibility::Public, None));
@@ -116,3 +138,10 @@ Rustfmt size:  32996 bytes
      }
  
      fn resolve_name_in_crate_root_or_extern_prelude(
+     let mut def_map = def_map;
+     loop {
+         let BlockInfo { parent, .. } = def_map.block.expect("block module without parent module");
+-
+         def_map = parent.def_map(db, def_map.krate);
+         local_id = parent.local_id;
+         if !parent.is_block_module() {

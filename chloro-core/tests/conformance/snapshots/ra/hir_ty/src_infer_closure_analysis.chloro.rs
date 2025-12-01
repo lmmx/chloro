@@ -422,7 +422,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 place,
                 CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
             );
-            self.current_capture_span_stack.pop(); // Remove the pattern span.
+            self.current_capture_span_stack.pop();
         }
     }
 
@@ -497,8 +497,6 @@ impl<'db> InferenceContext<'_, 'db> {
 
     fn walk_expr(&mut self, tgt_expr: ExprId) {
         if let Some(it) = self.result.expr_adjustments.get_mut(&tgt_expr) {
-            // FIXME: this take is completely unneeded, and just is here to make borrow checker
-            // happy. Remove it if you can.
             let x_taken = mem::take(it);
             self.walk_expr_with_adjust(tgt_expr, &x_taken);
             *self.result.expr_adjustments.get_mut(&tgt_expr).unwrap() = x_taken;
@@ -578,9 +576,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     }
                 }
                 self.walk_expr(*expr);
-                if let Some(discr_place) = self.place_of_expr(*expr)
-                    && self.is_upvar(&discr_place)
-                {
+                if let Some(discr_place) = self.place_of_expr(*expr) && self.is_upvar(&discr_place) {
                     let mut capture_mode = None;
                     for arm in arms.iter() {
                         self.walk_pat(&mut capture_mode, arm.pat);
@@ -651,7 +647,6 @@ impl<'db> InferenceContext<'_, 'db> {
                 self.consume_expr(*expr);
             }
             Expr::Ref { expr, rawness: _, mutability } => {
-                // We need to do this before we push the span so the order will be correct.
                 let place = self.place_of_expr(*expr);
                 self.current_capture_span_stack.push(MirSpan::ExprId(tgt_expr));
                 match mutability {
@@ -728,7 +723,6 @@ impl<'db> InferenceContext<'_, 'db> {
                 }
                 self.resolver.reset_to_guard(resolver_guard);
             }
-
             Expr::Missing
             | Expr::Continue { .. }
             | Expr::Path(_)
@@ -1150,7 +1144,6 @@ impl<'db> InferenceContext<'_, 'db> {
         for (closure, exprs) in deferred_closures.into_iter().rev() {
             self.current_captures = vec![];
             let kind = self.analyze_closure(closure);
-
             for (derefed_callee, callee_ty, params, expr) in exprs {
                 if let &Expr::Call { callee, .. } = &self.body[expr] {
                     let mut adjustments =

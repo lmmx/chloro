@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58223 bytes
-Chloro size:   57291 bytes
+Chloro size:   56942 bytes
 Rustfmt size:  58223 bytes
 
 ✗ Outputs DIFFER
@@ -56,6 +56,18 @@ Rustfmt size:  58223 bytes
  pub(crate) fn highlight_related(
      sema: &Semantics<'_, RootDatabase>,
      config: HighlightRelatedConfig,
+     }
+ 
+     res.extend(usages);
+-    if res.is_empty() { None } else { Some(res.into_iter().collect()) }
++    if res.is_empty() {
++        None
++    } else {
++        Some(res.into_iter().collect())
++    }
+ }
+ 
+ pub(crate) fn highlight_branch_exit_points(
      });
  
      // We should handle `return` separately, because when it is used in a `try` block,
@@ -97,6 +109,15 @@ Rustfmt size:  58223 bytes
 +    ) {
          if let Some(expr) = expanded.expr() {
              self.walk(&expr, cb);
+         }
+ 
+         for stmt in expanded.statements() {
+-            if let ast::Stmt::ExprStmt(stmt) = stmt
+-                && let Some(expr) = stmt.expr()
+-            {
++            if let ast::Stmt::ExprStmt(stmt) = stmt && let Some(expr) = stmt.expr() {
+                 self.walk(&expr, cb);
+             }
          }
  #[cfg(test)]
  mod tests {
@@ -470,51 +491,114 @@ Rustfmt size:  58223 bytes
 -
      #[test]
      fn return_in_macros() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ macro_rules! N {
+     ($i:ident, $x:expr, $blk:expr) => {
+         for $i in 0..$x {
+         })();
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn return_in_closure() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ macro_rules! N {
+     ($i:ident, $x:expr, $blk:expr) => {
+         for $i in 0..$x {
+         })();
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn return_in_try() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     fn f() {
+  // ^^
+      // ^^^^^^
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn break_in_try() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     for i in 1..100 {
+  // ^^^
+         };
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn no_highlight_on_return_in_macro_call() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ //- minicore:include
+ //- /lib.rs
+ macro_rules! M {
+ {
+     return;
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn nested_match() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     match$0 0 {
+  // ^^^^^
+           // ^
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn single_arm_highlight() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     match 0 {
+         0 =>$0 {
+         _ => 2,
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -526,23 +610,50 @@ Rustfmt size:  58223 bytes
 -
      #[test]
      fn asm() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ //- minicore: asm
+ #[inline]
+ pub unsafe fn bootstrap() -> ! {
+         options(noreturn, nomem, nostack),
+     );
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn complex_arms_highlight() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn calculate(n: i32) -> i32 { n * 2 }
+ 
+ fn main() {
+         },
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn match_in_macro_highlight() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ macro_rules! M {
+     ($e:expr) => { $e };
+ }
+         }
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -554,37 +665,83 @@ Rustfmt size:  58223 bytes
 -
      #[test]
      fn nested_if_else() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     if$0 true {
+  // ^^
+      // ^
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn if_else_if_highlight() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     if$0 true {
+  // ^^
+      // ^
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn complex_if_branches() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn calculate(n: i32) -> i32 { n * 2 }
+ 
+ fn main() {
+         }
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn if_in_macro_highlight() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ macro_rules! M {
+     ($e:expr) => { $e };
+ }
+         }
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn match_in_macro() {
          // We should not highlight the outer `match` expression.
-             "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ macro_rules! M {
+     (match) => { 1 };
+ }
+         }
+     }
+ }
+-            "#,
+-        )
++            "#)
      }
 -
      #[test]

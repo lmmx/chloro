@@ -138,13 +138,19 @@ impl Path {
     pub fn segments(&self) -> PathSegments<'_> {
         match self {
             Path::BarePath(mod_path) => {
-                PathSegments { segments: mod_path.segments(), generic_args: None }
+                PathSegments {
+                    segments: mod_path.segments(),
+                    generic_args: None,
+                }
             }
             Path::Normal(path) => PathSegments {
                 segments: path.mod_path.segments(),
                 generic_args: Some(&path.generic_args),
             },
-            Path::LangItem(_, seg) => PathSegments { segments: seg.as_slice(), generic_args: None },
+            Path::LangItem(_, seg) => PathSegments {
+                segments: seg.as_slice(),
+                generic_args: None,
+            },
         }
     }
 

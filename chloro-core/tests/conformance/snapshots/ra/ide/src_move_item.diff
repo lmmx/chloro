@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18777 bytes
-Chloro size:   18411 bytes
+Chloro size:   18146 bytes
 Rustfmt size:  18816 bytes
 
 ✗ Outputs DIFFER
@@ -36,6 +36,15 @@ Rustfmt size:  18816 bytes
      let root = match item {
          SyntaxElement::Node(node) => node,
          SyntaxElement::Token(token) => token.parent()?,
+     if let Some((l, r)) = list_lookup {
+         Some(replace_nodes(range, l.syntax(), r.syntax()))
+     } else {
+-        // Cursor is beyond any movable list item (for example, on curly brace in enum).
+-        // It's not necessary, that parent of list is movable (arg list's parent is not, for example),
+-        // and we have to continue tree traversal to find suitable node.
+         find_ancestors(SyntaxElement::Node(node.parent()?), direction, range)
+     }
+ }
  mod tests {
      use crate::fixture;
      use expect_test::{expect, Expect};

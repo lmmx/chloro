@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45986 bytes
-Chloro size:   44914 bytes
+Chloro size:   44953 bytes
 Rustfmt size:  45986 bytes
 
 ✗ Outputs DIFFER
@@ -100,6 +100,27 @@ Rustfmt size:  45986 bytes
  pub(crate) fn add_missing_default_members(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
+     }
+ 
+     let target = impl_def.syntax().text_range();
+-    acc.add(AssistId::quick_fix(assist_id), label, target, |edit| {
++    acc.add(
++        AssistId::quick_fix(assist_id),
++        label,
++        target,
++        |edit| {
+         let new_item = add_trait_assoc_items_to_impl(
+             &ctx.sema,
+             ctx.config,
+             };
+         };
+         edit.add_file_edits(ctx.vfs_file_id(), editor);
+-    })
++    },
++    )
+ }
+ 
+ fn try_gen_trait_body(
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -330,9 +330,7 @@ impl ModuleOrigin {
             }
             &ModuleOrigin::Inline { definition, definition_tree_id } => InFile::new(
                 definition_tree_id.file_id(),
-                ModuleSource::Module(
-                    AstId::new(definition_tree_id.file_id(), definition).to_node(db),
-                ),
+                ModuleSource::Module(AstId::new(definition_tree_id.file_id(), definition).to_node(db)),
             ),
             ModuleOrigin::BlockExpr { block, .. } => {
                 InFile::new(block.file_id, ModuleSource::BlockExpr(block.to_node(db)))
@@ -774,7 +772,10 @@ impl ModuleData {
     /// `None` for the crate root or block.
     pub fn declaration_source_range(&self, db: &dyn DefDatabase) -> Option<InFile<TextRange>> {
         let decl = self.origin.declaration()?;
-        Some(InFile { file_id: decl.file_id, value: decl.to_range(db) })
+        Some(InFile {
+            file_id: decl.file_id,
+            value: decl.to_range(db),
+        })
     }
 }
 

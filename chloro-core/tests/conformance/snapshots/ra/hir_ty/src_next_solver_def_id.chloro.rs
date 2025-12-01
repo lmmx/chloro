@@ -180,8 +180,7 @@ impl TryFrom<SolverDefId> for GenericDefId {
     type Error = ();
 
     fn try_from(value: SolverDefId) -> Result<Self, Self::Error> {
-        Ok(
-            match value {
+        Ok(match value {
             SolverDefId::AdtId(adt_id) => GenericDefId::AdtId(adt_id),
             SolverDefId::ConstId(const_id) => GenericDefId::ConstId(const_id),
             SolverDefId::FunctionId(function_id) => GenericDefId::FunctionId(function_id),
@@ -194,8 +193,7 @@ impl TryFrom<SolverDefId> for GenericDefId {
             | SolverDefId::InternedOpaqueTyId(_)
             | SolverDefId::EnumVariantId(_)
             | SolverDefId::Ctor(_) => return Err(()),
-        },
-        )
+        })
     }
 }
 

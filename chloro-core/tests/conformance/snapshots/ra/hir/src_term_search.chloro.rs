@@ -64,7 +64,6 @@ impl<'db> AlternativeExprs<'db> {
                         *self = AlternativeExprs::Many;
                         break;
                     }
-
                     tts.insert(it);
                 }
             }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34201 bytes
-Chloro size:   34212 bytes
+Chloro size:   34082 bytes
 Rustfmt size:  34201 bytes
 
 ✗ Outputs DIFFER
@@ -33,6 +33,108 @@ Rustfmt size:  34201 bytes
  };
  
  pub(super) fn token(
+         (T![!], MACRO_CALL) => {
+             if operator_parent
+                 .and_then(ast::MacroCall::cast)
+-                .is_some_and(|macro_call| sema.is_unsafe_macro_call(&macro_call))
+-            {
++                .is_some_and(|macro_call| sema.is_unsafe_macro_call(&macro_call)) {
+                 Highlight::from(HlPunct::MacroBang) | HlMod::Unsafe
+             } else {
+                 HlPunct::MacroBang.into()
+             let ptr = operator_parent
+                 .as_ref()
+                 .and_then(|it| AstPtr::try_from_raw(SyntaxNodePtr::new(it)));
+-            if ptr.is_some_and(is_unsafe_node) { h | HlMod::Unsafe } else { h }
++            if ptr.is_some_and(is_unsafe_node) {
++                h | HlMod::Unsafe
++            } else {
++                h
++            }
+         }
+         (T![-], PREFIX_EXPR) => {
+             let prefix_expr =
+             match prefix_expr {
+                 Some(ast::Expr::Literal(_)) => HlTag::NumericLiteral,
+                 _ => HlTag::Operator(HlOperator::Other),
+-            }
+-            .into()
++            }.into()
+         }
+         (T![+] | T![-] | T![*] | T![/] | T![%], BIN_EXPR) => HlOperator::Arithmetic.into(),
+         (T![+=] | T![-=] | T![*=] | T![/=] | T![%=], BIN_EXPR) => {
+             HlOperator::Comparison.into()
+         }
+         (_, ATTR) => HlTag::AttributeBracket.into(),
+-        (T![>], _)
+-            if operator_parent
++        (T![>], _) if operator_parent
+                 .as_ref()
+                 .and_then(SyntaxNode::parent)
+-                .is_some_and(|it| it.kind() == MACRO_RULES) =>
+-        {
++                .is_some_and(|it| it.kind() == MACRO_RULES) => {
+             HlOperator::Other.into()
+         }
+         (kind, _) => match kind {
+                         })
+                         .and_then(|it| AstPtr::try_from_raw(SyntaxNodePtr::new(&it)))
+                         .is_some_and(is_unsafe_node);
+-
+                 if is_unsafe {
+                     return Highlight::from(HlPunct::Parenthesis) | HlMod::Unsafe;
+                 } else {
+                 }
+             }
+             T![<] | T![>] => HlPunct::Angle,
+-            // Early return as otherwise we'd highlight these in
+-            // asm expressions
+             T![,] => return HlPunct::Comma.into(),
+             T![:] => HlPunct::Colon,
+             T![;] => HlPunct::Semi,
+             T![.] => HlPunct::Dot,
+             _ => HlPunct::Other,
+-        }
+-        .into(),
++        }.into(),
+     }
+ }
+ 
+         T![unsafe] => h | HlMod::Unsafe,
+         T![const] => h | HlMod::Const,
+         T![true] | T![false] => HlTag::BoolLiteral.into(),
+-        // crate is handled just as a token if it's in an `extern crate`
+         T![crate] if parent_matches::<ast::ExternCrate>(&token) => h,
+         _ => h,
+     }
+             let h = HlTag::Symbol(SymbolKind::Field);
+             let is_unsafe = ast::Expr::cast(parent)
+                 .is_some_and(|it| is_unsafe_node(AstPtr::new(&it).wrap_left()));
+-            if is_unsafe { h | HlMod::Unsafe } else { h.into() }
++            if is_unsafe {
++                h | HlMod::Unsafe
++            } else {
++                h.into()
++            }
+         }
+         RECORD_EXPR_FIELD | RECORD_PAT_FIELD => HlTag::Symbol(SymbolKind::Field).into(),
+         PATH_SEGMENT => {
+                 Some(it) => it,
+                 None => return default.into(),
+             };
+-
+             match parent.kind() {
+                 CALL_EXPR => SymbolKind::Function.into(),
+                 _ => if name.text().chars().next().unwrap_or_default().is_uppercase() {
+                     SymbolKind::Struct
+                 } else {
+                     SymbolKind::Const
+-                }
+-                .into(),
++                }.into(),
+             }
+         }
+         ASSOC_TYPE_ARG => SymbolKind::TypeAlias.into(),
  }
  
  /// Returns true if the parent nodes of `node` all match the `SyntaxKind`s in `kinds` exactly.

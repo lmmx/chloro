@@ -435,8 +435,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         // Invariant: this is empty if and only if the type is uninhabited (as determined by
 
         // `cx.is_uninhabited()`).
-        Ok(
-            match ty.kind() {
+        Ok(match ty.kind() {
             TyKind::Bool => ConstructorSet::Bool,
             TyKind::Char => unhandled(),
             TyKind::Int(..) | TyKind::Uint(..) => unhandled(),
@@ -447,7 +446,6 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
                     hir_def::AdtId::EnumId(enum_id) => {
                         let enum_data = enum_id.enum_variants(cx.db);
                         let is_declared_nonexhaustive = cx.is_foreign_non_exhaustive(adt);
-
                         if enum_data.variants.is_empty() && !is_declared_nonexhaustive {
                             ConstructorSet::NoConstructors
                         } else {
@@ -467,7 +465,6 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
                                 };
                                 variants.push(visibility);
                             }
-
                             ConstructorSet::Variants {
                                 variants,
                                 non_exhaustive: is_declared_nonexhaustive,
@@ -483,10 +480,8 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
             TyKind::Tuple(..) => ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) },
             TyKind::Ref(..) => ConstructorSet::Ref,
             TyKind::Never => ConstructorSet::NoConstructors,
-            // This type is one for which we cannot list constructors, like `str` or `f64`.
             _ => ConstructorSet::Unlistable,
-        },
-        )
+        })
     }
 
     fn write_variant_name(

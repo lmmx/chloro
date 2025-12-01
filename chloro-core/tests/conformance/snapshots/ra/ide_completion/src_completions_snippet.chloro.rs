@@ -88,7 +88,6 @@ mod tests {
         );
         item.lookup_by("tmod");
         item.add_to(acc, ctx.db);
-
         let mut item = snippet(
             ctx,
             cap,
@@ -101,7 +100,6 @@ fn ${1:feature}() {
         );
         item.lookup_by("tfn");
         item.add_to(acc, ctx.db);
-
         let item = snippet(
             ctx,
             cap,

@@ -397,7 +397,11 @@ fn place_case<'db>(
             body.owner.module(db).krate(),
         );
     }
-    if is_part_of { ProjectionCase::DirectPart } else { ProjectionCase::Direct }
+    if is_part_of {
+        ProjectionCase::DirectPart
+    } else {
+        ProjectionCase::Direct
+    }
 }
 
 /// Returns a map from basic blocks to the set of locals that might be ever initialized before

@@ -37,14 +37,12 @@ pub(crate) fn unused_variables(
         .and_then(syntax::ast::RecordPatField::cast)
         .is_some_and(|field| field.colon_token().is_none());
     let var_name = d.local.name(ctx.sema.db);
-    Some(
-        Diagnostic::new_with_syntax_node_ptr(
-            ctx,
-            DiagnosticCode::RustcLint("unused_variables"),
-            "unused variable",
-            ast,
-        )
-        .with_fixes(name_range.and_then(|it| {
+    Some(Diagnostic::new_with_syntax_node_ptr(
+        ctx,
+        DiagnosticCode::RustcLint("unused_variables"),
+        "unused variable",
+        ast,
+    ).with_fixes(name_range.and_then(|it| {
             fixes(
                 ctx.sema.db,
                 var_name,
@@ -54,8 +52,7 @@ pub(crate) fn unused_variables(
                 is_shorthand_field,
                 ctx.edition,
             )
-        })),
-    )
+        })))
 }
 
 fn fixes(
@@ -74,8 +71,7 @@ fn fixes(
     let name = name.strip_prefix("r#").unwrap_or(&name);
     let new_name = if is_shorthand_field { format!("{name}: _{name}") } else { format!("_{name}") };
 
-    Some(
-        vec![Assist {
+    Some(vec![Assist {
         id: AssistId::quick_fix("unscore_unused_variable_name"),
         label: Label::new(format!("Rename unused {name} to {new_name}")),
         group: None,
@@ -85,8 +81,7 @@ fn fixes(
             TextEdit::replace(name_range, new_name),
         )),
         command: None,
-    }],
-    )
+    }])
 }
 
 #[cfg(test)]

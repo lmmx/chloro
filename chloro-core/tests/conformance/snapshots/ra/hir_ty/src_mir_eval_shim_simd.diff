@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7864 bytes
-Chloro size:   7863 bytes
+Chloro size:   7862 bytes
 Rustfmt size:  7864 bytes
 
 ✗ Outputs DIFFER
@@ -17,3 +17,22 @@ Rustfmt size:  7864 bytes
  use super::*;
  
  macro_rules! from_bytes {
+                         };
+                         Ok((len as usize, ty))
+                     }
+-                    None => Err(MirEvalError::InternalError(
+-                        "simd type with unevaluatable len param".into(),
+-                    )),
++                    None => Err(
++                        MirEvalError::InternalError("simd type with unevaluatable len param".into()),
++                    ),
+                 }
+             }
+             _ => Err(MirEvalError::InternalError("simd type which is not a struct".into())),
+                     let result = if result { 255 } else { 0 };
+                     destination_bytes.extend(std::iter::repeat_n(result, dest_size));
+                 }
+-
+                 destination.write_from_bytes(self, &destination_bytes)
+             }
+             "bitmask" => {

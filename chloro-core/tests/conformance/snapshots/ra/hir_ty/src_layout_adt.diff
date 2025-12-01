@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6298 bytes
-Chloro size:   6313 bytes
+Chloro size:   6298 bytes
 Rustfmt size:  6451 bytes
 
 ✗ Outputs DIFFER
@@ -61,16 +61,3 @@ Rustfmt size:  6451 bytes
          if discr < fit {
              return Err(LayoutError::UserReprTooSmall);
          }
-     };
- 
-     // If there are no negative values, we can use the unsigned fit.
--    Ok(if min >= 0 {
-+    Ok(
-+        if min >= 0 {
-         (cmp::max(unsigned_fit, at_least), false)
-     } else {
-         (cmp::max(signed_fit, at_least), true)
--    })
-+    },
-+    )
- }

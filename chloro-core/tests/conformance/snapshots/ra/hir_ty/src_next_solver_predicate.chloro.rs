@@ -76,11 +76,9 @@ fn stable_cmp_existential_predicate<'db>(
     match (a, b) {
         (ExistentialPredicate::Trait(_), ExistentialPredicate::Trait(_)) => Ordering::Equal,
         (ExistentialPredicate::Projection(_a), ExistentialPredicate::Projection(_b)) => {
-            // Should sort by def path hash
             Ordering::Equal
         }
         (ExistentialPredicate::AutoTrait(_a), ExistentialPredicate::AutoTrait(_b)) => {
-            // Should sort by def path hash
             Ordering::Equal
         }
         (ExistentialPredicate::Trait(_), _) => Ordering::Less,
@@ -249,14 +247,12 @@ impl<'db> Predicate<'db> {
     }
 
     pub fn inner(&self) -> &WithCachedTypeInfo<Binder<'db, PredicateKind<'db>>> {
-        crate::with_attached_db(
-            |db| {
+        crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
             // SAFETY: The caller already has access to a `Predicate<'db>`, so borrowchecking will
             // make sure that our returned value is valid for the lifetime `'db`.
             unsafe { std::mem::transmute(inner) }
-        },
-        )
+        })
     }
 
     /// Flips the polarity of a Predicate.
@@ -319,14 +315,12 @@ impl<'db> Clauses<'db> {
     }
 
     pub fn inner(&self) -> &InternedClausesWrapper<'db> {
-        crate::with_attached_db(
-            |db| {
+        crate::with_attached_db(|db| {
             let inner = self.inner_(db);
             // SAFETY: The caller already has access to a `Clauses<'db>`, so borrowchecking will
             // make sure that our returned value is valid for the lifetime `'db`.
             unsafe { std::mem::transmute(inner) }
-        },
-        )
+        })
     }
 }
 

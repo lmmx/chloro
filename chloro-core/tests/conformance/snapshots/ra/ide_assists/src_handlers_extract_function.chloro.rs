@@ -678,8 +678,7 @@ impl FunctionBody {
                     .for_each(|expr| walk_expr(&expr, cb));
                 if let Some(expr) = parent
                     .tail_expr()
-                    .filter(|it| text_range.contains_range(it.syntax().text_range()))
-                {
+                    .filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     walk_expr(&expr, cb);
                 }
             }
@@ -701,8 +700,7 @@ impl FunctionBody {
                     .for_each(|expr| preorder_expr(&expr, cb));
                 if let Some(expr) = parent
                     .tail_expr()
-                    .filter(|it| text_range.contains_range(it.syntax().text_range()))
-                {
+                    .filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     preorder_expr(&expr, cb);
                 }
             }
@@ -737,8 +735,7 @@ impl FunctionBody {
                     });
                 if let Some(expr) = parent
                     .tail_expr()
-                    .filter(|it| text_range.contains_range(it.syntax().text_range()))
-                {
+                    .filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     walk_patterns_in_expr(&expr, cb);
                 }
             }
@@ -953,8 +950,7 @@ impl FunctionBody {
         let generic_param_lists = parents.iter().filter_map(|it| it.generic_param_list()).collect();
         let where_clauses = parents.iter().filter_map(|it| it.where_clause()).collect();
 
-        Some(
-            (
+        Some((
             ContainerInfo {
                 is_const,
                 parent_loop,
@@ -964,8 +960,7 @@ impl FunctionBody {
                 edition,
             },
             contains_tail_expr,
-        ),
-        )
+        ))
     }
 
     fn return_ty<'db>(&self, ctx: &AssistContext<'db>) -> Option<RetType<'db>> {
@@ -1425,8 +1420,7 @@ fn fixup_call_site(builder: &mut SourceChangeBuilder, body: &FunctionBody) {
     let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
 
     if let Some(parent_match_arm) = parent_match_arm
-        && parent_match_arm.comma_token().is_none()
-    {
+        && parent_match_arm.comma_token().is_none() {
         let parent_match_arm = builder.make_mut(parent_match_arm);
         ted::append_child_raw(parent_match_arm.syntax(), make::token(T![,]));
     }
@@ -1474,19 +1468,14 @@ fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -
     let parent_match_arm = fun.body.parent().and_then(ast::MatchArm::cast);
 
     if let Some(bindings) = outliving_bindings {
-        // with bindings that outlive it
         make::let_stmt(bindings, None, Some(expr)).syntax().clone_for_update()
     } else if parent_match_arm.as_ref().is_some() {
-        // as a tail expr for a match arm
         expr.syntax().clone()
     } else if parent_match_arm.as_ref().is_none()
         && fun.ret_ty.is_unit()
-        && (!fun.outliving_locals.is_empty() || !expr.is_block_like())
-    {
-        // as an expr stmt
+        && (!fun.outliving_locals.is_empty() || !expr.is_block_like()) {
         make::expr_stmt(expr).syntax().clone_for_update()
     } else {
-        // as a tail expr, or a block
         expr.syntax().clone()
     }
 }
@@ -1572,7 +1561,6 @@ impl<'db> FlowHandler<'db> {
             }
             FlowHandler::MatchOption { none } => {
                 let some_name = "value";
-
                 let some_arm = {
                     let path = make::ext::ident_path("Some");
                     let value_pat = make::ext::simple_ident_pat(make::name(some_name));
@@ -1591,7 +1579,6 @@ impl<'db> FlowHandler<'db> {
             FlowHandler::MatchResult { err } => {
                 let ok_name = "value";
                 let err_name = "value";
-
                 let ok_arm = {
                     let path = make::ext::ident_path("Ok");
                     let value_pat = make::ext::simple_ident_pat(make::name(ok_name));
@@ -1711,7 +1698,11 @@ fn make_where_clause(
         })
         .peekable();
 
-    if predicates.peek().is_some() { Some(make::where_clause(predicates)) } else { None }
+    if predicates.peek().is_some() {
+        Some(make::where_clause(predicates))
+    } else {
+        None
+    }
 }
 
 fn pred_is_required(
@@ -1932,7 +1923,9 @@ fn make_body(
         FlowHandler::None => block,
         FlowHandler::Try { kind } => {
             let block = with_default_tail_expr(block, make::ext::expr_unit());
-            map_tail_expr(block, |tail_expr| {
+            map_tail_expr(
+                block,
+                |tail_expr| {
                 let constructor = match kind {
                     TryKind::Option => "Some",
                     TryKind::Result { .. } => "Ok",
@@ -1940,7 +1933,8 @@ fn make_body(
                 let func = make::expr_path(make::ext::ident_path(constructor));
                 let args = make::arg_list(iter::once(tail_expr));
                 make::expr_call(func, args).into()
-            })
+            },
+            )
         }
         FlowHandler::If { .. } => {
             let controlflow_continue = make::expr_call(
@@ -1954,16 +1948,22 @@ fn make_body(
             let none = make::expr_path(make::ext::ident_path("None"));
             with_tail_expr(block, none)
         }
-        FlowHandler::MatchOption { .. } => map_tail_expr(block, |tail_expr| {
+        FlowHandler::MatchOption { .. } => map_tail_expr(
+            block,
+            |tail_expr| {
             let some = make::expr_path(make::ext::ident_path("Some"));
             let args = make::arg_list(iter::once(tail_expr));
             make::expr_call(some, args).into()
-        }),
-        FlowHandler::MatchResult { .. } => map_tail_expr(block, |tail_expr| {
+        },
+        ),
+        FlowHandler::MatchResult { .. } => map_tail_expr(
+            block,
+            |tail_expr| {
             let ok = make::expr_path(make::ext::ident_path("Ok"));
             let args = make::arg_list(iter::once(tail_expr));
             make::expr_call(ok, args).into()
-        }),
+        },
+        ),
     }
 }
 

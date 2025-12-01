@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3398 bytes
-Chloro size:   3413 bytes
+Chloro size:   3398 bytes
 Rustfmt size:  3608 bytes
 
 ✗ Outputs DIFFER
@@ -18,14 +18,6 @@ Rustfmt size:  3608 bytes
      db.struct_signature(id).flags.contains(StructFlags::IS_BOX)
  }
  
- pub fn lang_items_for_bin_op(op: syntax::ast::BinaryOp) -> Option<(Name, LangItem)> {
-     use syntax::ast::{ArithOp, BinaryOp, CmpOp, Ordering};
--    Some(match op {
-+    Some(
-+        match op {
-         BinaryOp::LogicOp(_) => return None,
-         BinaryOp::ArithOp(aop) => match aop {
-             ArithOp::Add => (Name::new_symbol_root(sym::add), LangItem::Add),
              ArithOp::Rem => (Name::new_symbol_root(sym::rem_assign), LangItem::RemAssign),
              ArithOp::Shl => (Name::new_symbol_root(sym::shl_assign), LangItem::ShlAssign),
              ArithOp::Shr => (Name::new_symbol_root(sym::shr_assign), LangItem::ShrAssign),
@@ -78,7 +70,4 @@ Rustfmt size:  3608 bytes
 +            }
          },
          BinaryOp::Assignment { op: None } => return None,
--    })
-+    },
-+    )
- }
+     })

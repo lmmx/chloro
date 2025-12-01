@@ -349,15 +349,12 @@ impl ConstOrTypeGeneric {
     }
 
     fn replacement_value(&self) -> Option<SyntaxNode> {
-        Some(
-            match self {
-                ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
-                ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
-                ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
-                ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
-            }
-            .clone_for_update(),
-        )
+        Some(match self {
+            ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
+            ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
+            ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
+            ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
+        }.clone_for_update())
     }
 }
 

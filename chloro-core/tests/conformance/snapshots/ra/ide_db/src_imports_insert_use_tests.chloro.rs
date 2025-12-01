@@ -946,12 +946,12 @@ fn merge_mod_into_glob() {
         r"use token::TokenKind::*;",
         r"use token::TokenKind::{self, *};",
         &InsertUseConfig {
-            granularity: ImportGranularity::Crate,
-            enforce_granularity: true,
-            prefix_kind: PrefixKind::Plain,
-            group: false,
-            skip_glob_imports: false,
-        },
+        granularity: ImportGranularity::Crate,
+        enforce_granularity: true,
+        prefix_kind: PrefixKind::Plain,
+        group: false,
+        skip_glob_imports: false,
+    },
     )
 }
 
@@ -962,12 +962,12 @@ fn merge_self_glob() {
         r"use self::*;",
         r"use self::{self, *};",
         &InsertUseConfig {
-            granularity: ImportGranularity::Crate,
-            enforce_granularity: true,
-            prefix_kind: PrefixKind::Plain,
-            group: false,
-            skip_glob_imports: false,
-        },
+        granularity: ImportGranularity::Crate,
+        enforce_granularity: true,
+        prefix_kind: PrefixKind::Plain,
+        group: false,
+        skip_glob_imports: false,
+    },
     )
 }
 

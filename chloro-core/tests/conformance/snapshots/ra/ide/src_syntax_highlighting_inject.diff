@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11608 bytes
-Chloro size:   11608 bytes
+Chloro size:   11306 bytes
 Rustfmt size:  12342 bytes
 
 ✗ Outputs DIFFER
@@ -154,3 +154,20 @@ Rustfmt size:  12342 bytes
              }
          }
      }
+ 
+ fn find_doc_string_in_attr(attr: &hir::Attr, it: &ast::Attr) -> Option<ast::String> {
+     match it.expr() {
+-        // #[doc = lit]
+         Some(ast::Expr::Literal(lit)) => match lit.kind() {
+             ast::LiteralKind::String(it) => Some(it),
+             _ => None,
+         },
+-        // #[cfg_attr(..., doc = "", ...)]
+         None => {
+-            // We gotta hunt the string token manually here
+             let text = attr.string_value()?.as_str();
+-            // FIXME: We just pick the first string literal that has the same text as the doc attribute
+-            // This means technically we might highlight the wrong one
+             it.syntax()
+                 .descendants_with_tokens()
+                 .filter_map(NodeOrToken::into_token)

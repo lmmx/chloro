@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   15902 bytes
+Chloro size:   15899 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
@@ -38,6 +38,27 @@ Rustfmt size:  15979 bytes
  use self::pat_util::EnumerateAndAdjustIterator;
  
  #[derive(Clone, Debug)]
+                         AdtId::EnumId(_) => None,
+                     }),
+                 };
+-
+                 if let Some(variant) = variant {
+                     match variant {
+                         VariantId::EnumVariantId(v) => {
+                         return write!(f, " }}");
+                     }
+                 }
+-
+                 let num_fields =
+                     variant.map_or(subpatterns.len(), |v| v.fields(f.db).fields().len());
+                 if num_fields != 0 || variant.is_none() {
+                     }
+                     write!(f, ")")?;
+                 }
+-
+                 Ok(())
+             }
+             PatKind::Deref { subpattern } => {
      }
  }
  

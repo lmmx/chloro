@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14469 bytes
+Chloro size:   14448 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
@@ -21,22 +21,6 @@ Rustfmt size:  14546 bytes
  #[salsa::interned(constructor = new_)]
      }
  
-     pub fn inner(&self) -> &WithCachedTypeInfo<ConstKind<'db>> {
--        crate::with_attached_db(|db| {
-+        crate::with_attached_db(
-+            |db| {
-             let inner = &self.kind_(db).0;
-             // SAFETY: The caller already has access to a `Const<'db>`, so borrowchecking will
-             // make sure that our returned value is valid for the lifetime `'db`.
-             unsafe { std::mem::transmute(inner) }
--        })
-+        },
-+        )
-     }
- 
-     pub fn error(interner: DbInterner<'db>) -> Self {
-     }
- 
      pub fn new_bound(interner: DbInterner<'db>, index: DebruijnIndex, bound: BoundConst) -> Self {
 -        Const::new(
 -            interner,
@@ -46,20 +30,6 @@ Rustfmt size:  14546 bytes
      }
  
      pub fn new_valtree(
-     ) -> Self {
-         Const::new(
-             interner,
--            ConstKind::Value(ValueConst {
-+            ConstKind::Value(
-+                ValueConst {
-                 ty,
-                 value: Valtree::new(ConstBytes { memory, memory_map }),
--            }),
-+            },
-+            ),
-         )
-     }
- 
          });
  
          // N.B. it may be tempting to fix ICEs by making this function return
@@ -75,33 +45,13 @@ Rustfmt size:  14546 bytes
          // to modify this function.
          let ty = candidates.next().unwrap_or_else(|| {
              panic!("cannot find `{self:?}` in param-env: {env:#?}");
- 
- impl<'db> Valtree<'db> {
-     pub fn new(bytes: ConstBytes<'db>) -> Self {
--        crate::with_attached_db(|db| unsafe {
-+        crate::with_attached_db(
-+            |db| unsafe {
-             // SAFETY: ¯\_(ツ)_/¯
-             std::mem::transmute(Valtree::new_(db, bytes))
--        })
-+        },
-+        )
-     }
- 
-     pub fn inner(&self) -> &ConstBytes<'db> {
--        crate::with_attached_db(|db| {
-+        crate::with_attached_db(
-+            |db| {
-             let inner = self.bytes_(db);
-             // SAFETY: The caller already has access to a `Valtree<'db>`, so borrowchecking will
-             // make sure that our returned value is valid for the lifetime `'db`.
-             unsafe { std::mem::transmute(inner) }
--        })
-+        },
-+        )
-     }
- }
- 
+             ConstKind::Value(v) => v.visit_with(visitor),
+             ConstKind::Expr(e) => e.visit_with(visitor),
+             ConstKind::Error(e) => e.visit_with(visitor),
+-
+             ConstKind::Param(_)
+             | ConstKind::Infer(_)
+             | ConstKind::Bound(..)
      ) -> Result<Self, F::Error> {
          folder.try_fold_const(self)
      }
@@ -109,32 +59,13 @@ Rustfmt size:  14546 bytes
      fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
          folder.fold_const(self)
      }
-             | ConstKind::Placeholder(_)
-             | ConstKind::Error(_) => return Ok(self),
-         };
--        if kind != self.kind() {
--            Ok(Const::new(folder.cx(), kind))
--        } else {
--            Ok(self)
--        }
-+        if kind != self.kind() { Ok(Const::new(folder.cx(), kind)) } else { Ok(self) }
+             Ok(self)
+         }
      }
 +
      fn super_fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
          self,
          folder: &mut F,
-             | ConstKind::Placeholder(_)
-             | ConstKind::Error(_) => return self,
-         };
--        if kind != self.kind() {
--            Const::new(folder.cx(), kind)
--        } else {
--            self
--        }
-+        if kind != self.kind() { Const::new(folder.cx(), kind) } else { self }
-     }
- }
- 
      }
  
      fn new_bound(interner: DbInterner<'db>, debruijn: DebruijnIndex, var: BoundConst) -> Self {

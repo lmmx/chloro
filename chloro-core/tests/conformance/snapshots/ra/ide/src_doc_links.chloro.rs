@@ -228,8 +228,9 @@ pub(crate) fn resolve_doc_path_for_def(
         | Definition::DeriveHelper(_)
         | Definition::InlineAsmRegOrRegClass(_)
         | Definition::InlineAsmOperand(_) => None,
-    }
-    .map(Definition::from)
+    }.map(
+        Definition::from,
+    )
 }
 
 pub(crate) fn doc_attributes(
@@ -278,7 +279,9 @@ pub(crate) fn token_as_doc_comment(doc_token: &SyntaxToken) -> Option<DocComment
             },
             _ => None,
         }
-    }).map(|prefix_len| DocCommentToken { prefix_len, doc_token: doc_token.clone() })
+    }).map(
+        |prefix_len| DocCommentToken { prefix_len, doc_token: doc_token.clone() },
+    )
 }
 
 impl DocCommentToken {
@@ -726,14 +729,10 @@ fn filename_and_frag_for_def(
 ///                                                       ^^^^^^^^^^^^^^
 /// ```
 fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
-    Some(
-        match assoc_item {
+    Some(match assoc_item {
         AssocItem::Function(function) => {
             let is_trait_method =
                 function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
-            // This distinction may get more complicated when specialization is available.
-            // Rustdoc makes this decision based on whether a method 'has defaultness'.
-            // Currently this is only the case for provided trait methods.
             if is_trait_method && !function.has_body(db) {
                 format!("tymethod.{}", function.name(db).as_str())
             } else {
@@ -746,6 +745,5 @@ fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> 
         AssocItem::TypeAlias(ty) => {
             format!("associatedtype.{}", ty.name(db).as_str())
         }
-    },
-    )
+    })
 }

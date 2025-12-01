@@ -191,8 +191,10 @@ pub(crate) fn render_field(
 }
 
 fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
-    receiver
-        .map_or_else(|| field_name.into(), |receiver| format_smolstr!("{}.{field_name}", receiver))
+    receiver.map_or_else(
+        || field_name.into(),
+        |receiver| format_smolstr!("{}.{field_name}", receiver),
+    )
 }
 
 pub(crate) fn render_tuple_field(
@@ -359,14 +361,12 @@ fn scope_def_to_name(
     ctx: &RenderContext<'_>,
     import_edit: &LocatedImport,
 ) -> Option<hir::Name> {
-    Some(
-        match resolution {
+    Some(match resolution {
         ScopeDef::ModuleDef(hir::ModuleDef::Function(f)) => f.name(ctx.completion.db),
         ScopeDef::ModuleDef(hir::ModuleDef::Const(c)) => c.name(ctx.completion.db)?,
         ScopeDef::ModuleDef(hir::ModuleDef::TypeAlias(t)) => t.name(ctx.completion.db),
         _ => item_name(ctx.db(), import_edit.original_item)?,
-    },
-    )
+    })
 }
 
 fn render_resolution_pat(
@@ -651,16 +651,11 @@ fn path_ref_match(
     item: &mut Builder,
 ) {
     if let Some(original_path) = &path_ctx.original_path {
-        // At least one char was typed by the user already, in that case look for the original path
         if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())
-            && let Some(ref_mode) = compute_ref_match(completion, ty)
-        {
+            && let Some(ref_mode) = compute_ref_match(completion, ty) {
             item.ref_match(ref_mode, original_path.syntax().text_range().start());
         }
     } else {
-        // completion requested on an empty identifier, there is no path here yet.
-        // FIXME: This might create inconsistent completions where we show a ref match in macro inputs
-        // as long as nothing was typed yet
         if let Some(ref_mode) = compute_ref_match(completion, ty) {
             item.ref_match(ref_mode, completion.position.offset);
         }
@@ -1346,10 +1341,10 @@ mod m {
 fn main() { let _: m::Spam = S$0 }
 "#,
             &[
-                CompletionItemKind::SymbolKind(SymbolKind::Function),
-                CompletionItemKind::SymbolKind(SymbolKind::Module),
-                CompletionItemKind::SymbolKind(SymbolKind::Variant),
-            ],
+            CompletionItemKind::SymbolKind(SymbolKind::Function),
+            CompletionItemKind::SymbolKind(SymbolKind::Module),
+            CompletionItemKind::SymbolKind(SymbolKind::Variant),
+        ],
             expect![[r#"
                 [
                     CompletionItem {
@@ -1632,10 +1627,10 @@ enum E {
 use self::E::*;
 "#,
             &[
-                CompletionItemKind::SymbolKind(SymbolKind::Module),
-                CompletionItemKind::SymbolKind(SymbolKind::Variant),
-                CompletionItemKind::SymbolKind(SymbolKind::Enum),
-            ],
+            CompletionItemKind::SymbolKind(SymbolKind::Module),
+            CompletionItemKind::SymbolKind(SymbolKind::Variant),
+            CompletionItemKind::SymbolKind(SymbolKind::Enum),
+        ],
             expect![[r#"
                 [
                     CompletionItem {

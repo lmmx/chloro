@@ -359,8 +359,7 @@ fn main() {
     }
     #[test]
     fn test_struct_field_private() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 mod m {
     pub struct Struct {
         field: u32,
@@ -387,8 +386,7 @@ fn f(s@m::Struct {
       //^^^^^^ 💡 error: field is private
     };
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn test_struct_field_private_same_crate_fix() {

@@ -119,17 +119,10 @@ impl fmt::Display for FlycheckConfig {
         match self {
             FlycheckConfig::CargoCommand { command, .. } => write!(f, "cargo {command}"),
             FlycheckConfig::CustomCommand { command, args, .. } => {
-                // Don't show `my_custom_check --foo $saved_file` literally to the user, as it
-                // looks like we've forgotten to substitute $saved_file.
-                //
-                // Instead, show `my_custom_check --foo ...`. The
-                // actual path is often too long to be worth showing
-                // in the IDE (e.g. in the VS Code status bar).
                 let display_args = args
                     .iter()
                     .map(|arg| if arg == SAVED_FILE_PLACEHOLDER { "..." } else { arg })
                     .collect::<Vec<_>>();
-
                 write!(f, "{command} {}", display_args.join(" "))
             }
         }
@@ -667,12 +660,10 @@ impl FlycheckActor {
                 }
                 cmd.env("CARGO_LOG", "cargo::core::compiler::fingerprint=info");
                 cmd.arg(command);
-
                 match scope {
                     FlycheckScope::Workspace => cmd.arg("--workspace"),
                     FlycheckScope::Package { package, .. } => cmd.arg("-p").arg(&package.repr),
                 };
-
                 if let Some(tgt) = target {
                     match tgt {
                         Target::Bin(tgt) => cmd.arg("--bin").arg(tgt),
@@ -681,13 +672,11 @@ impl FlycheckActor {
                         Target::Benchmark(tgt) => cmd.arg("--bench").arg(tgt),
                     };
                 }
-
                 cmd.arg(if *ansi_color_output {
                     "--message-format=json-diagnostic-rendered-ansi"
                 } else {
                     "--message-format=json"
                 });
-
                 if let Some(manifest_path) = &self.manifest_path {
                     cmd.arg("--manifest-path");
                     cmd.arg(manifest_path);
@@ -696,9 +685,7 @@ impl FlycheckActor {
                         cmd.arg("-Zscript");
                     }
                 }
-
                 cmd.arg("--keep-going");
-
                 options.apply_on_command(
                     &mut cmd,
                     self.ws_target_dir.as_ref().map(Utf8PathBuf::as_path),
@@ -715,9 +702,6 @@ impl FlycheckActor {
                     }
                 };
                 let mut cmd = toolchain::command(command, root, extra_env);
-
-                // If the custom command has a $saved_file placeholder, and
-                // we're saving a file, replace the placeholder in the arguments.
                 if let Some(saved_file) = saved_file {
                     for arg in args {
                         if arg == SAVED_FILE_PLACEHOLDER {
@@ -737,7 +721,6 @@ impl FlycheckActor {
                         cmd.arg(arg);
                     }
                 }
-
                 Some(cmd)
             }
         }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11226 bytes
+Chloro size:   10958 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -42,6 +42,48 @@ Rustfmt size:  11331 bytes
      fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db>;
  }
  
+             Variance::Contravariant,
+             actual,
+             Span::dummy(),
++        ).map(
++            |goals| self.goals_to_obligations(goals),
+         )
+-        .map(|goals| self.goals_to_obligations(goals))
+     }
+ 
+     /// Makes `expected <: actual`.
+             Variance::Covariant,
+             actual,
+             Span::dummy(),
++        ).map(
++            |goals| self.goals_to_obligations(goals),
+         )
+-        .map(|goals| self.goals_to_obligations(goals))
+     }
+ 
+     /// Makes `expected == actual`.
+             Variance::Invariant,
+             actual,
+             Span::dummy(),
++        ).map(
++            |goals| self.goals_to_obligations(goals),
+         )
+-        .map(|goals| self.goals_to_obligations(goals))
+     }
+ 
+     pub fn relate<T>(self, expected: T, variance: Variance, actual: T) -> InferResult<'db, ()>
+             Variance::Covariant => self.sub(expected, actual),
+             Variance::Invariant => self.eq(expected, actual),
+             Variance::Contravariant => self.sup(expected, actual),
+-
+-            // We could make this make sense but it's not readily
+-            // exposed and I don't feel like dealing with it. Note
+-            // that bivariance in general does a bit more than just
+-            // *nothing*, it checks that the types are the same
+-            // "modulo variance" basically.
+             Variance::Bivariant => panic!("Bivariant given to `relate()`"),
+         }
+     }
              LatticeOpKind::Lub,
          );
          let value = op.relate(expected, actual)?;

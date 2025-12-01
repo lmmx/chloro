@@ -169,7 +169,11 @@ pub fn docs_from_attrs(attrs: &hir::Attrs) -> Option<String> {
         buf.push('\n');
     }
     buf.pop();
-    if buf.is_empty() { None } else { Some(buf) }
+    if buf.is_empty() {
+        None
+    } else {
+        Some(buf)
+    }
 }
 
 macro_rules! impl_has_docs {
@@ -275,8 +279,9 @@ impl HasDocs for hir::ExternCrateDecl {
                 decl_docs += &crate_docs;
                 Some(decl_docs)
             }
-        }
-        .map(Documentation::new)
+        }.map(
+            Documentation::new,
+        )
     }
 
     fn docs_with_rangemap(self, db: &dyn HirDatabase) -> Option<(Documentation, DocsRangeMap)> {
@@ -314,14 +319,11 @@ impl HasDocs for hir::ExternCrateDecl {
 
 fn get_doc_string_in_attr(it: &ast::Attr) -> Option<ast::String> {
     match it.expr() {
-        // #[doc = lit]
         Some(ast::Expr::Literal(lit)) => match lit.kind() {
             ast::LiteralKind::String(it) => Some(it),
             _ => None,
         },
-        // #[cfg_attr(..., doc = "", ...)]
         None => {
-            // FIXME: See highlight injection for what to do here
             None
         }
         _ => None,

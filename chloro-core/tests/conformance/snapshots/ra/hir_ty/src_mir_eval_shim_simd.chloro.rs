@@ -51,9 +51,9 @@ impl<'db> Evaluator<'db> {
                         };
                         Ok((len as usize, ty))
                     }
-                    None => Err(MirEvalError::InternalError(
-                        "simd type with unevaluatable len param".into(),
-                    )),
+                    None => Err(
+                        MirEvalError::InternalError("simd type with unevaluatable len param".into()),
+                    ),
                 }
             }
             _ => Err(MirEvalError::InternalError("simd type which is not a struct".into())),
@@ -122,7 +122,6 @@ impl<'db> Evaluator<'db> {
                     let result = if result { 255 } else { 0 };
                     destination_bytes.extend(std::iter::repeat_n(result, dest_size));
                 }
-
                 destination.write_from_bytes(self, &destination_bytes)
             }
             "bitmask" => {

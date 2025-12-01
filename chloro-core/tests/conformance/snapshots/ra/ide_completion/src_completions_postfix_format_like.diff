@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3554 bytes
-Chloro size:   3551 bytes
+Chloro size:   3476 bytes
 Rustfmt size:  3554 bytes
 
 ✗ Outputs DIFFER
@@ -15,6 +15,27 @@ Rustfmt size:  3554 bytes
  use ide_db::{
      syntax_helpers::format_string_exprs::{parse_format_exprs, with_placeholders, Arg},
      SnippetCap,
+     };
+ 
+     if let Ok((mut out, mut exprs)) = parse_format_exprs(receiver_text.text()) {
+-        // Escape any snippet bits in the out text and any of the exprs.
+         escape_snippet_bits(&mut out);
+         for arg in &mut exprs {
+             if let Arg::Ident(text) | Arg::Expr(text) = arg {
+                 escape_snippet_bits(text)
+             }
+         }
+-
+         let exprs = with_placeholders(exprs);
+         for (label, macro_name) in KINDS {
+             let snippet = if exprs.is_empty() {
+             } else {
+                 format!(r#"{}({}, {})"#, macro_name, out, exprs.join(", "))
+             };
+-
+             postfix_snippet(label, macro_name, &snippet).add_to(acc, ctx.db);
+         }
+     }
  #[cfg(test)]
  mod tests {
      use super::*;

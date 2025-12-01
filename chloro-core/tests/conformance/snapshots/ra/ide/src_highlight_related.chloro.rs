@@ -290,7 +290,11 @@ fn highlight_references(
     }
 
     res.extend(usages);
-    if res.is_empty() { None } else { Some(res.into_iter().collect()) }
+    if res.is_empty() {
+        None
+    } else {
+        Some(res.into_iter().collect())
+    }
 }
 
 pub(crate) fn highlight_branch_exit_points(
@@ -749,9 +753,7 @@ impl<'a> WalkExpandedExprCtx<'a> {
         }
 
         for stmt in expanded.statements() {
-            if let ast::Stmt::ExprStmt(stmt) = stmt
-                && let Some(expr) = stmt.expr()
-            {
+            if let ast::Stmt::ExprStmt(stmt) = stmt && let Some(expr) = stmt.expr() {
                 self.walk(&expr, cb);
             }
         }
@@ -2023,8 +2025,7 @@ fn test() {
     }
     #[test]
     fn return_in_macros() {
-        check(
-            r#"
+        check(r#"
 macro_rules! N {
     ($i:ident, $x:expr, $blk:expr) => {
         for $i in 0..$x {
@@ -2051,13 +2052,11 @@ fn main() {
         })();
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn return_in_closure() {
-        check(
-            r#"
+        check(r#"
 macro_rules! N {
     ($i:ident, $x:expr, $blk:expr) => {
         for $i in 0..$x {
@@ -2083,13 +2082,11 @@ fn main() {
         })();
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn return_in_try() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     fn f() {
  // ^^
@@ -2102,13 +2099,11 @@ fn main() {
      // ^^^^^^
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn break_in_try() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     for i in 1..100 {
  // ^^^
@@ -2118,13 +2113,11 @@ fn main() {
         };
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn no_highlight_on_return_in_macro_call() {
-        check(
-            r#"
+        check(r#"
 //- minicore:include
 //- /lib.rs
 macro_rules! M {
@@ -2149,13 +2142,11 @@ fn main() {
 {
     return;
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn nested_match() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     match$0 0 {
  // ^^^^^
@@ -2169,13 +2160,11 @@ fn main() {
           // ^
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn single_arm_highlight() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     match 0 {
         0 =>$0 {
@@ -2187,8 +2176,7 @@ fn main() {
         _ => 2,
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn no_branches_when_disabled() {
@@ -2207,8 +2195,7 @@ fn main() {
     }
     #[test]
     fn asm() {
-        check(
-            r#"
+        check(r#"
 //- minicore: asm
 #[inline]
 pub unsafe fn bootstrap() -> ! {
@@ -2231,13 +2218,11 @@ pub unsafe fn bootstrap() -> ! {
         options(noreturn, nomem, nostack),
     );
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn complex_arms_highlight() {
-        check(
-            r#"
+        check(r#"
 fn calculate(n: i32) -> i32 { n * 2 }
 
 fn main() {
@@ -2257,13 +2242,11 @@ fn main() {
         },
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn match_in_macro_highlight() {
-        check(
-            r#"
+        check(r#"
 macro_rules! M {
     ($e:expr) => { $e };
 }
@@ -2279,8 +2262,7 @@ fn main() {
         }
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn match_in_macro_highlight_2() {
@@ -2310,8 +2292,7 @@ fn main() {
     }
     #[test]
     fn nested_if_else() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     if$0 true {
  // ^^
@@ -2327,13 +2308,11 @@ fn main() {
      // ^
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn if_else_if_highlight() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     if$0 true {
  // ^^
@@ -2348,13 +2327,11 @@ fn main() {
      // ^
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn complex_if_branches() {
-        check(
-            r#"
+        check(r#"
 fn calculate(n: i32) -> i32 { n * 2 }
 
 fn main() {
@@ -2374,13 +2351,11 @@ fn main() {
         }
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn if_in_macro_highlight() {
-        check(
-            r#"
+        check(r#"
 macro_rules! M {
     ($e:expr) => { $e };
 }
@@ -2397,14 +2372,12 @@ fn main() {
         }
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn match_in_macro() {
         // We should not highlight the outer `match` expression.
-        check(
-            r#"
+        check(r#"
 macro_rules! M {
     (match) => { 1 };
 }
@@ -2417,8 +2390,7 @@ fn main() {
         }
     }
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn labeled_block_tail_expr() {

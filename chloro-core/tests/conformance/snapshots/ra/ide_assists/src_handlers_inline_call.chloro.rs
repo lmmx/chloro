@@ -173,7 +173,11 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     }
 
     let syntax = call_info.node.syntax().clone();
-    acc.add(AssistId::refactor_inline("inline_call"), label, syntax.text_range(), |builder| {
+    acc.add(
+        AssistId::refactor_inline("inline_call"),
+        label,
+        syntax.text_range(),
+        |builder| {
         let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
         builder.replace_ast(
             match call_info.node {
@@ -182,7 +186,8 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             },
             replacement,
         );
-    })
+    },
+    )
 }
 
 struct CallInfo {
@@ -209,7 +214,6 @@ impl CallInfo {
             let path = segment.syntax().parent().and_then(ast::Path::cast)?;
             let path = path.syntax().parent().and_then(ast::PathExpr::cast)?;
             let call = path.syntax().parent().and_then(ast::CallExpr::cast)?;
-
             Some(CallInfo {
                 arguments: call.arg_list()?.args().collect(),
                 node: ast::CallableExpr::Call(call),
@@ -519,8 +523,7 @@ fn inline(
             .syntax()
             .parent()
             .and_then(ast::BinExpr::cast)
-            .and_then(|bin_expr| bin_expr.lhs())
-        {
+            .and_then(|bin_expr| bin_expr.lhs()) {
             Some(lhs) if lhs.syntax() == node.syntax() => {
                 make::expr_paren(ast::Expr::BlockExpr(body)).clone_for_update().into()
             }

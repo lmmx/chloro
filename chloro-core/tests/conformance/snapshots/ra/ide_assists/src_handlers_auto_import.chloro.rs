@@ -242,20 +242,19 @@ pub(super) fn find_importable_node<'a: 'db, 'db>(
     if let Some(path_under_caret) = ctx.find_node_at_offset_with_descend::<ast::Path>() {
         let expected =
             path_under_caret.top_path().syntax().parent().and_then(Either::cast).and_then(expected);
-        ImportAssets::for_exact_path(&path_under_caret, &ctx.sema)
-            .map(|it| (it, path_under_caret.syntax().clone(), expected))
-    } else if let Some(method_under_caret) =
-        ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>()
-    {
+        ImportAssets::for_exact_path(&path_under_caret, &ctx.sema).map(
+            |it| (it, path_under_caret.syntax().clone(), expected),
+        )
+    } else if let Some(method_under_caret) = ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>() {
         let expected = expected(Either::Left(method_under_caret.clone().into()));
-        ImportAssets::for_method_call(&method_under_caret, &ctx.sema)
-            .map(|it| (it, method_under_caret.syntax().clone(), expected))
+        ImportAssets::for_method_call(&method_under_caret, &ctx.sema).map(
+            |it| (it, method_under_caret.syntax().clone(), expected),
+        )
     } else if ctx.find_node_at_offset_with_descend::<ast::Param>().is_some() {
         None
     } else if let Some(pat) = ctx
         .find_node_at_offset_with_descend::<ast::IdentPat>()
-        .filter(ast::IdentPat::is_simple_ident)
-    {
+        .filter(ast::IdentPat::is_simple_ident) {
         let expected = expected(Either::Right(pat.clone().into()));
         ImportAssets::for_ident_pat(&ctx.sema, &pat).map(|it| (it, pat.syntax().clone(), expected))
     } else {

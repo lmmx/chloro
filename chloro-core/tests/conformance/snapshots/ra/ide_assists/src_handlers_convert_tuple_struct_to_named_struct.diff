@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26763 bytes
-Chloro size:   25992 bytes
+Chloro size:   25991 bytes
 Rustfmt size:  26763 bytes
 
 ✗ Outputs DIFFER
@@ -70,6 +70,13 @@ Rustfmt size:  26763 bytes
  pub(crate) fn convert_tuple_struct_to_named_struct(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
+     for (file_id, refs) in usages {
+         let source = ctx.sema.parse(file_id);
+         let source = source.syntax();
+-
+         let mut editor = edit.make_editor(source);
+         for r in refs.iter().rev() {
+             if let Some((old_node, new_node)) = r
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

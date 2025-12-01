@@ -1049,7 +1049,6 @@ impl<'a> FindUsages<'a> {
                     ModuleSource::BlockExpr(b) => (file_id, Some(b.syntax().text_range())),
                     ModuleSource::SourceFile(_) => (file_id, None),
                 };
-
                 let search_range = if let Some(&range) = search_scope.entries.get(&file_id) {
                     match (range, search_range) {
                         (None, range) | (range, None) => range,
@@ -1061,26 +1060,24 @@ impl<'a> FindUsages<'a> {
                 } else {
                     return;
                 };
-
                 let file_text = sema.db.file_text(file_id.file_id(self.sema.db));
                 let text = file_text.text(sema.db);
                 let search_range =
                     search_range.unwrap_or_else(|| TextRange::up_to(TextSize::of(&**text)));
-
                 let tree = LazyCell::new(|| sema.parse(file_id).syntax().clone());
                 let finder = &Finder::new("self");
-
                 for offset in Self::match_indices(text, finder, search_range) {
-                    for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset)
-                        .filter_map(ast::NameRef::cast)
-                    {
+                    for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset).filter_map(
+                        ast::NameRef::cast,
+                    ) {
                         if self.found_self_module_name_ref(&name_ref, sink) {
                             return;
                         }
                     }
                 }
             }
-            _ => {}
+            _ => {
+            }
         }
     }
 
@@ -1098,9 +1095,7 @@ impl<'a> FindUsages<'a> {
         };
 
         match NameRefClass::classify(self.sema, name_ref) {
-            Some(NameRefClass::Definition(Definition::SelfType(impl_), _))
-                if ty_eq(impl_.self_ty(self.sema.db)) =>
-            {
+            Some(NameRefClass::Definition(Definition::SelfType(impl_), _)) if ty_eq(impl_.self_ty(self.sema.db)) => {
                 let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                 let reference = FileReference {
                     range,
@@ -1183,12 +1178,7 @@ impl<'a> FindUsages<'a> {
         sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
     ) -> bool {
         match NameRefClass::classify(self.sema, name_ref) {
-            Some(NameRefClass::Definition(def, _))
-                if self.def == def
-                    // is our def a trait assoc item? then we want to find all assoc items from trait impls of our trait
-                    || matches!(self.assoc_item_container, Some(hir::AssocItemContainer::Trait(_)))
-                        && convert_to_def_in_trait(self.sema.db, def) == self.def =>
-            {
+            Some(NameRefClass::Definition(def, _)) if self.def == def || matches!(self.assoc_item_container, Some(hir::AssocItemContainer::Trait(_))) && convert_to_def_in_trait(self.sema.db, def) == self.def => {
                 let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                 let reference = FileReference {
                     range,
@@ -1197,14 +1187,10 @@ impl<'a> FindUsages<'a> {
                 };
                 sink(file_id, reference)
             }
-            // FIXME: special case type aliases, we can't filter between impl and trait defs here as we lack the substitutions
-            // so we always resolve all assoc type aliases to both their trait def and impl defs
-            Some(NameRefClass::Definition(def, _))
-                if self.assoc_item_container.is_some()
+            Some(NameRefClass::Definition(def, _)) if self.assoc_item_container.is_some()
                     && matches!(self.def, Definition::TypeAlias(_))
                     && convert_to_def_in_trait(self.sema.db, def)
-                        == convert_to_def_in_trait(self.sema.db, self.def) =>
-            {
+                        == convert_to_def_in_trait(self.sema.db, self.def) => {
                 let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                 let reference = FileReference {
                     range,
@@ -1232,7 +1218,6 @@ impl<'a> FindUsages<'a> {
                 adt_subst: _,
             }) => {
                 let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
-
                 let field = Definition::Field(field);
                 let local = Definition::Local(local);
                 let access = match self.def {
@@ -1261,11 +1246,9 @@ impl<'a> FindUsages<'a> {
         sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
     ) -> bool {
         match NameClass::classify(self.sema, name) {
-            Some(NameClass::PatFieldShorthand { local_def: _, field_ref, adt_subst: _ })
-                if matches!(
+            Some(NameClass::PatFieldShorthand { local_def: _, field_ref, adt_subst: _ }) if matches!(
                     self.def, Definition::Field(_) if Definition::Field(field_ref) == self.def
-                ) =>
-            {
+                ) => {
                 let FileRange { file_id, range } = self.sema.original_range(name.syntax());
                 let reference = FileReference {
                     range,

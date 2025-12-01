@@ -389,8 +389,9 @@ impl GenericParams {
                 provenance: TypeParamProvenance::TraitSelf,
                 ..
             })
+        ).then(
+            || Self::SELF_PARAM_ID_IN_SELF,
         )
-        .then(|| Self::SELF_PARAM_ID_IN_SELF)
     }
 
     pub fn find_lifetime_by_name(

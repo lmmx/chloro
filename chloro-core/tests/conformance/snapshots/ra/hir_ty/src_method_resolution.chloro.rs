@@ -198,7 +198,11 @@ impl TraitImpls {
 
         Self::collect_def_map(db, &mut impls, block_def_map(db, block));
 
-        if impls.is_empty() { None } else { Some(Arc::new(Self::finish(impls))) }
+        if impls.is_empty() {
+            None
+        } else {
+            Some(Arc::new(Self::finish(impls)))
+        }
     }
 
     pub(crate) fn trait_impls_in_deps_query(
@@ -240,9 +244,6 @@ impl TraitImpls {
                 let self_ty_fp = TyFingerprint::for_trait_impl(self_ty.instantiate_identity());
                 map.entry(target_trait).or_default().entry(self_ty_fp).or_default().push(impl_id);
             }
-
-            // To better support custom derives, collect impls in all unnamed const items.
-            // const _: () = { ... };
             for konst in module_data.scope.unnamed_consts() {
                 let body = db.body(konst.into());
                 for (_, block_def_map) in body.blocks(db) {
@@ -367,9 +368,6 @@ impl InherentImpls {
                     false => self.invalid_impls.push(impl_id),
                 }
             }
-
-            // To better support custom derives, collect impls in all unnamed const items.
-            // const _: () = { ... };
             for konst in module_data.scope.unnamed_consts() {
                 let body = db.body(konst.into());
                 for (_, block_def_map) in body.blocks(db) {
@@ -444,35 +442,26 @@ pub fn def_crates<'db>(
         }
         TyKind::Foreign(alias) => {
             let alias = alias.0;
-            Some(
-                if db
+            Some(if db
                     .type_alias_signature(alias)
                     .flags
-                    .contains(TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL)
-                {
-                    db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::ForeignType(alias))
-                } else {
-                    smallvec![alias.module(db).krate()]
-                },
-            )
+                    .contains(TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL) {
+                db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::ForeignType(alias))
+            } else {
+                smallvec![alias.module(db).krate()]
+            })
         }
         TyKind::Dynamic(bounds, _) => {
             let trait_id = bounds.principal_def_id()?.0;
-            Some(
-                if db
+            Some(if db
                     .trait_signature(trait_id)
                     .flags
-                    .contains(TraitFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS)
-                {
-                    db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::Dyn(trait_id))
-                } else {
-                    smallvec![trait_id.module(db).krate()]
-                },
-            )
+                    .contains(TraitFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS) {
+                db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::Dyn(trait_id))
+            } else {
+                smallvec![trait_id.module(db).krate()]
+            })
         }
-        // for primitives, there may be impls in various places (core and alloc
-        // mostly). We just check the whole crate graph for crates with impls
-        // (cached behind a query).
         TyKind::Bool
         | TyKind::Char
         | TyKind::Int(_)
@@ -1046,25 +1035,6 @@ fn iterate_method_candidates_dyn_impl<'db>(
 
     match mode {
         LookupMode::MethodCall => {
-            // For method calls, rust first does any number of autoderef, and
-            // then one autoref (i.e. when the method takes &self or &mut self).
-            // Note that when we've got a receiver like &S, even if the method
-            // we find in the end takes &self, we still do the autoderef step
-            // (just as rustc does an autoderef and then autoref again).
-
-            // We have to be careful about the order we're looking at candidates
-            // in here. Consider the case where we're resolving `it.clone()`
-            // where `it: &Vec<_>`. This resolves to the clone method with self
-            // type `Vec<_>`, *not* `&_`. I.e. we need to consider methods where
-            // the receiver type exactly matches before cases where we have to
-            // do autoref. But in the autoderef steps, the `&_` self type comes
-            // up *before* the `Vec<_>` self type.
-            //
-            // On the other hand, we don't want to just pick any by-value method
-            // before any by-autoref method; it's just that we need to consider
-            // the methods by autoderef order of *receiver types*, not *self
-            // types*.
-
             table.run_in_snapshot(|table| {
                 let ty = table.instantiate_canonical(*ty);
                 let deref_chain = autoderef_method_receiver(table, ty);
@@ -1083,7 +1053,6 @@ fn iterate_method_candidates_dyn_impl<'db>(
             })
         }
         LookupMode::Path => {
-            // No autoderef for path lookups
             iterate_method_candidates_for_self_ty(
                 ty,
                 table,
@@ -1610,7 +1579,6 @@ fn is_valid_impl_method_candidate<'db>(
             let db = table.db;
             check_that!(receiver_ty.is_none());
             check_that!(name.is_none_or(|n| n == item_name));
-
             if let Some(from_module) = visible_from_module
                 && !db.assoc_visibility(c.into()).is_visible_from(db, from_module)
             {
@@ -1648,9 +1616,7 @@ fn is_valid_trait_method_candidate<'db>(
     match item {
         AssocItemId::FunctionId(fn_id) => {
             let data = db.function_signature(fn_id);
-
             check_that!(name.is_none_or(|n| n == &data.name));
-
             table.run_in_snapshot(|table| {
                 let impl_subst = table.fresh_args_for_item(trait_id.into());
                 let expect_self_ty = impl_subst.type_at(0);
@@ -1696,7 +1662,6 @@ fn is_valid_trait_method_candidate<'db>(
         AssocItemId::ConstId(c) => {
             check_that!(receiver_ty.is_none());
             check_that!(name.is_none_or(|n| db.const_signature(c).name.as_ref() == Some(n)));
-
             IsValidCandidate::Yes
         }
         _ => IsValidCandidate::No,

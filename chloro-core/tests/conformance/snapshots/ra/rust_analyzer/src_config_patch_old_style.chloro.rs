@@ -132,7 +132,6 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
 
     // checkOnSave_* -> check_*
     if let Some(Value::Object(obj)) = copy.pointer("/checkOnSave") {
-        // checkOnSave_enable -> checkOnSave
         if let Some(b @ Value::Bool(_)) = obj.get("enable") {
             merge(json, json!({ "checkOnSave": b }));
         }

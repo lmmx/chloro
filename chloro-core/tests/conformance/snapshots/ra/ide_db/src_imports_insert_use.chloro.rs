@@ -277,7 +277,6 @@ impl ImportGroup {
                 "core" => ImportGroup::Std,
                 _ => ImportGroup::ExternCrate,
             },
-            // these aren't valid use paths, so fall back to something random
             PathSegmentKind::SelfTypeKw => ImportGroup::ExternCrate,
             PathSegmentKind::Type { .. } => ImportGroup::ExternCrate,
         }
@@ -338,7 +337,6 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
                 res = ImportGranularityGuess::CrateOrModule;
             }
         }
-
         let Some((curr, curr_vis, curr_attrs)) = use_stmts.next() else { break res };
         if is_tree_one_style(&curr) {
             if res != ImportGranularityGuess::One
@@ -471,8 +469,7 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
             }
         })
         .filter(|child| child.as_token().is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE))
-        .last()
-    {
+        .last() {
         cov_mark::hit!(insert_empty_inner_attr);
         ted::insert(ted::Position::after(&last_inner_element), use_item.syntax());
         ted::insert(ted::Position::after(last_inner_element), make::tokens::single_newline());

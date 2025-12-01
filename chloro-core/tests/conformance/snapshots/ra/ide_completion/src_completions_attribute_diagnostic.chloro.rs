@@ -34,7 +34,6 @@ pub(super) fn complete_on_unimplemented(
             if already_annotated {
                 continue;
             }
-
             let mut item = CompletionItem::new(
                 SymbolKind::BuiltinAttr,
                 ctx.source_range(),

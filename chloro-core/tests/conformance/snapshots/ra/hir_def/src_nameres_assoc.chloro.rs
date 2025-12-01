@@ -289,7 +289,6 @@ impl<'a> AssocItemCollector<'a> {
                 };
                 let path = Interned::new(path);
                 let ctxt = self.span_map.span_for_range(range).ctx;
-
                 let resolver = |path: &_| {
                     self.def_map
                         .resolve_path(
@@ -316,7 +315,6 @@ impl<'a> AssocItemCollector<'a> {
                         self.macro_calls.push((ptr.map(|(_, it)| it.upcast()), call_id))
                     },
                 ) {
-                    // FIXME: Expansion error?
                     Ok(call_id) => match call_id.value {
                         Some(call_id) => {
                             self.macro_calls.push((ast_id.upcast(), call_id));

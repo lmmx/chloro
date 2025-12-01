@@ -30,7 +30,6 @@ pub(crate) fn child_modules(db: &RootDatabase, position: FilePosition) -> Vec<Na
 
     match module {
         Some(module) => {
-            // Return all child modules inside the ItemList of the parent module
             sema.to_def(&module)
                 .into_iter()
                 .flat_map(|module| module.children(db))
@@ -38,7 +37,6 @@ pub(crate) fn child_modules(db: &RootDatabase, position: FilePosition) -> Vec<Na
                 .collect()
         }
         None => {
-            // Return all the child modules inside the source file
             sema.file_to_module_defs(position.file_id)
                 .flat_map(|module| module.children(db))
                 .map(|module| NavigationTarget::from_module_to_decl(db, module).call_site())

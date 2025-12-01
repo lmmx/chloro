@@ -100,7 +100,10 @@ impl<T> InFileWrapper<span::FileId, T> {
 
 impl HirFileRange {
     pub fn file_range(self) -> Option<FileRange> {
-        Some(FileRange { file_id: self.file_id.file_id()?, range: self.range })
+        Some(FileRange {
+            file_id: self.file_id.file_id()?,
+            range: self.range,
+        })
     }
 }
 
@@ -434,14 +437,9 @@ impl InFile<SyntaxToken> {
                     &db.expansion_span_map(mac_file),
                     self.value.text_range().start(),
                 );
-
-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
-                // keep pre-token map rewrite behaviour.
                 if ctxt.is_root() {
                     return range;
                 }
-
-                // Fall back to whole macro call.
                 let loc = db.lookup_intern_macro_call(mac_file);
                 loc.kind.original_call_range(db)
             }
@@ -460,10 +458,11 @@ impl InFile<SyntaxToken> {
                     &db.expansion_span_map(mac_file),
                     self.value.text_range().start(),
                 );
-
-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
-                // keep pre-token map rewrite behaviour.
-                if ctxt.is_root() { Some(range) } else { None }
+                if ctxt.is_root() {
+                    Some(range)
+                } else {
+                    None
+                }
             }
         }
     }

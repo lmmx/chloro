@@ -103,8 +103,7 @@ fn edit_struct_def(
     if let Some(tok) = record_fields
         .l_curly_token()
         .and_then(|tok| tok.prev_token())
-        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE)
-    {
+        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE) {
         edit.delete(tok.text_range())
     }
 }
@@ -206,7 +205,6 @@ fn edit_field_references(
             edit.edit_file(file_id.file_id(ctx.db()));
             for r in refs {
                 if let Some(name_ref) = r.name.as_name_ref() {
-                    // Only edit the field reference if it's part of a `.field` access
                     if name_ref.syntax().parent().and_then(ast::FieldExpr::cast).is_some() {
                         edit.replace(r.range, index.to_string());
                     }

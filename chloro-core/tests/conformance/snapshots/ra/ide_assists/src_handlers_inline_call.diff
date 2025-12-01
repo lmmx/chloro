@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 41039 bytes
-Chloro size:   39413 bytes
+Chloro size:   39443 bytes
 Rustfmt size:  41039 bytes
 
 ✗ Outputs DIFFER
@@ -116,6 +116,34 @@ Rustfmt size:  41039 bytes
      let call_info = CallInfo::from_name_ref(
      }
  
+     let syntax = call_info.node.syntax().clone();
+-    acc.add(AssistId::refactor_inline("inline_call"), label, syntax.text_range(), |builder| {
++    acc.add(
++        AssistId::refactor_inline("inline_call"),
++        label,
++        syntax.text_range(),
++        |builder| {
+         let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
+         builder.replace_ast(
+             match call_info.node {
+             },
+             replacement,
+         );
+-    })
++    },
++    )
+ }
+ 
+ struct CallInfo {
+             let path = segment.syntax().parent().and_then(ast::Path::cast)?;
+             let path = path.syntax().parent().and_then(ast::PathExpr::cast)?;
+             let call = path.syntax().parent().and_then(ast::CallExpr::cast)?;
+-
+             Some(CallInfo {
+                 arguments: call.arg_list()?.args().collect(),
+                 node: ast::CallableExpr::Call(call),
+     }
+ 
      // We should place the following code after last usage of `usages_for_locals`
 +
      // because `ted::replace` will change the offset in syntax tree, which makes
@@ -123,6 +151,15 @@ Rustfmt size:  41039 bytes
      // `FileReference` incorrect
      if let Some(imp) =
          sema.ancestors_with_macros(fn_body.syntax().clone()).find_map(ast::Impl::cast)
+             .syntax()
+             .parent()
+             .and_then(ast::BinExpr::cast)
+-            .and_then(|bin_expr| bin_expr.lhs())
+-        {
++            .and_then(|bin_expr| bin_expr.lhs()) {
+             Some(lhs) if lhs.syntax() == node.syntax() => {
+                 make::expr_paren(ast::Expr::BlockExpr(body)).clone_for_update().into()
+             }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

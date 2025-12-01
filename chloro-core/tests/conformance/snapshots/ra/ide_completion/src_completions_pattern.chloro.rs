@@ -134,7 +134,6 @@ pub(crate) fn complete_pattern_path(
     match qualified {
         Qualified::With { resolution: Some(resolution), super_chain_len, .. } => {
             acc.add_super_keyword(ctx, *super_chain_len);
-
             match resolution {
                 hir::PathResolution::Def(hir::ModuleDef::Module(module)) => {
                     let module_scope = module.scope(ctx.db, Some(ctx.module));
@@ -146,7 +145,6 @@ pub(crate) fn complete_pattern_path(
                             ScopeDef::ModuleDef(_) => true,
                             _ => false,
                         };
-
                         if add_resolution {
                             acc.add_path_resolution(ctx, path_ctx, name, def, vec![]);
                         }
@@ -169,11 +167,9 @@ pub(crate) fn complete_pattern_path(
                         hir::PathResolution::Def(hir::ModuleDef::TypeAlias(ty)) => ty.ty(ctx.db),
                         _ => return,
                     };
-
                     if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                         acc.add_enum_variants(ctx, path_ctx, e);
                     }
-
                     ctx.iterate_path_candidates(&ty, |item| match item {
                         AssocItem::TypeAlias(ta) => acc.add_type_alias(ctx, ta),
                         AssocItem::Const(c) => acc.add_const(ctx, c),
@@ -184,7 +180,6 @@ pub(crate) fn complete_pattern_path(
         }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No => {
-            // this will only be hit if there are brackets or braces, otherwise this will be parsed as an ident pattern
             ctx.process_all_names(&mut |name, res, doc_aliases| {
                 // FIXME: we should check what kind of pattern we are in and filter accordingly
                 let add_completion = match res {
@@ -199,9 +194,9 @@ pub(crate) fn complete_pattern_path(
                     acc.add_path_resolution(ctx, path_ctx, name, res, doc_aliases);
                 }
             });
-
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
+        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
+        }
     }
 }

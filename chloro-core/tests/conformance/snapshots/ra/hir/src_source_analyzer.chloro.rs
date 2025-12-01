@@ -249,7 +249,11 @@ impl<'db> SourceAnalyzer<'db> {
 
     fn binding_id_of_pat(&self, pat: &ast::IdentPat) -> Option<BindingId> {
         let pat_id = self.pat_id(&pat.clone().into())?;
-        if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] { Some(id) } else { None }
+        if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] {
+            Some(id)
+        } else {
+            None
+        }
     }
 
     pub(crate) fn expr_adjustments(&self, expr: &ast::Expr) -> Option<&[Adjustment<'db>]> {
@@ -474,10 +478,10 @@ impl<'db> SourceAnalyzer<'db> {
                 )),
                 Either::Right(field) => Some((
                     Either::Left(Either::Right(TupleField {
-                        owner: def,
-                        tuple: field.tuple,
-                        index: field.index,
-                    })),
+                    owner: def,
+                    tuple: field.tuple,
+                    index: field.index,
+                })),
                     None,
                 )),
             },
@@ -711,14 +715,12 @@ impl<'db> SourceAnalyzer<'db> {
         let variant_data = variant.fields(db);
         let field = FieldId { parent: variant, local_id: variant_data.field(&local_name)? };
         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
-        Some(
-            (
+        Some((
             field.into(),
             local,
             Type::new_with_resolver(db, &self.resolver, field_ty),
             GenericSubstitution::new(adt.into(), subst, self.trait_environment(db)),
-        ),
-        )
+        ))
     }
 
     pub(crate) fn resolve_record_pat_field(
@@ -735,13 +737,11 @@ impl<'db> SourceAnalyzer<'db> {
         let field = FieldId { parent: variant, local_id: variant_data.field(&field_name)? };
         let (adt, subst) = self.infer()?[pat_id.as_pat()?].as_adt()?;
         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
-        Some(
-            (
+        Some((
             field.into(),
             Type::new_with_resolver(db, &self.resolver, field_ty),
             GenericSubstitution::new(adt.into(), subst, self.trait_environment(db)),
-        ),
-        )
+        ))
     }
 
     pub(crate) fn resolve_bind_pat_to_const(
@@ -1125,10 +1125,8 @@ impl<'db> SourceAnalyzer<'db> {
             };
         }
         if parent().is_some_and(|it| ast::Visibility::can_cast(it.kind())) {
-            // No substitution because only modules can be inside visibilities, and those have no generics.
             resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store).map(|it| (it, None))
         } else {
-            // Probably a type, no need to show substitutions for those.
             let res = resolve_hir_path_(
                 db,
                 &self.resolver,
@@ -1347,8 +1345,7 @@ impl<'db> SourceAnalyzer<'db> {
         format_args: InFile<&ast::FormatArgsExpr>,
     ) -> Option<impl Iterator<Item = (TextRange, Option<PathResolution>)> + 'a> {
         let (hygiene, names) = self.store_sm()?.implicit_format_args(format_args)?;
-        Some(
-            names.iter().map(move |(range, name)| {
+        Some(names.iter().map(move |(range, name)| {
             (
                 *range,
                 resolve_hir_value_path(
@@ -1362,8 +1359,7 @@ impl<'db> SourceAnalyzer<'db> {
                     hygiene,
                 ),
             )
-        }),
-        )
+        }))
     }
 
     pub(crate) fn as_asm_parts(
@@ -1644,7 +1640,6 @@ fn resolve_hir_path_(
                 .map(|type_ns| PathResolutionPerNs::new(Some(type_ns), None, None))
                 .unwrap_or_else(|| PathResolutionPerNs::new(None, values(), None))
         };
-
         if res.any().is_some() {
             res
         } else if let Some(type_ns) = items() {
@@ -1759,8 +1754,7 @@ fn resolve_hir_path_qualifier(
                 .map(PathResolution::Def),
             None => Some(res),
         }
-    })()
-    .or_else(|| {
+    })().or_else(|| {
         resolver
             .resolve_module_path_in_items(db, path.mod_path()?)
             .take_types()

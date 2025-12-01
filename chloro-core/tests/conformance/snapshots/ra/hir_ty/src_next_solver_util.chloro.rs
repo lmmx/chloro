@@ -110,7 +110,11 @@ impl IntegerTypeExt for IntegerType {
         if let Some(val) = val {
             assert_eq!(self.to_ty(interner), val.ty);
             let (new, oflo) = val.checked_add(interner, 1);
-            if oflo { None } else { Some(new) }
+            if oflo {
+                None
+            } else {
+                Some(new)
+            }
         } else {
             Some(self.initial_discriminant(interner))
         }
@@ -267,9 +271,9 @@ impl PrimitiveExt for Primitive {
             Primitive::Pointer(_) => Ty::new(
                 interner,
                 TyKind::RawPtr(
-                    Ty::new(interner, TyKind::Tuple(Default::default())),
-                    rustc_ast_ir::Mutability::Mut,
-                ),
+                Ty::new(interner, TyKind::Tuple(Default::default())),
+                rustc_ast_ir::Mutability::Mut,
+            ),
             ),
         }
     }
@@ -450,47 +454,29 @@ pub fn sizedness_constraint_for_ty<'db>(
     use rustc_type_ir::TyKind::*;
 
     match ty.kind() {
-        // these are always sized
         Bool | Char | Int(..) | Uint(..) | Float(..) | RawPtr(..) | Ref(..) | FnDef(..)
         | FnPtr(..) | Array(..) | Closure(..) | CoroutineClosure(..) | Coroutine(..)
         | CoroutineWitness(..) | Never => None,
-
-        // these are never sized
         Str | Slice(..) | Dynamic(_, _) => match sizedness {
-            // Never `Sized`
             SizedTraitKind::Sized => Some(ty),
-            // Always `MetaSized`
             SizedTraitKind::MetaSized => None,
         },
-
-        // Maybe `Sized` or `MetaSized`
         Param(..) | Alias(..) | Error(_) => Some(ty),
-
-        // We cannot instantiate the binder, so just return the *original* type back,
-        // but only if the inner type has a sized constraint. Thus we skip the binder,
-        // but don't actually use the result from `sized_constraint_for_ty`.
         UnsafeBinder(inner_ty) => {
             sizedness_constraint_for_ty(interner, sizedness, inner_ty.skip_binder()).map(|_| ty)
         }
-
-        // Never `MetaSized` or `Sized`
         Foreign(..) => Some(ty),
-
-        // Recursive cases
         Pat(ty, _) => sizedness_constraint_for_ty(interner, sizedness, ty),
-
         Tuple(tys) => tys
             .into_iter()
             .next_back()
             .and_then(|ty| sizedness_constraint_for_ty(interner, sizedness, ty)),
-
         Adt(adt, args) => {
             let tail_ty =
                 EarlyBinder::bind(adt.all_field_tys(interner).skip_binder().into_iter().last()?)
                     .instantiate(interner, args);
             sizedness_constraint_for_ty(interner, sizedness, tail_ty)
         }
-
         Placeholder(..) | Bound(..) | Infer(..) => {
             panic!("unexpected type `{ty:?}` in sizedness_constraint_for_ty")
         }
@@ -516,7 +502,6 @@ pub fn explicit_item_bounds<'db>(
     let db = interner.db();
     match def_id {
         SolverDefId::TypeAliasId(type_alias) => {
-            // Lower bounds -- we could/should maybe move this to a separate query in `lower`
             let type_alias_data = db.type_alias_signature(type_alias);
             let resolver = hir_def::resolver::HasResolver::resolver(type_alias, db);
             let mut ctx = TyLoweringContext::new(
@@ -526,17 +511,14 @@ pub fn explicit_item_bounds<'db>(
                 type_alias.into(),
                 LifetimeElisionKind::AnonymousReportError,
             );
-
             let item_args = GenericArgs::identity_for_item(interner, def_id);
             let interner_ty = Ty::new_projection_from_args(interner, def_id, item_args);
-
             let mut bounds = Vec::new();
             for bound in &type_alias_data.bounds {
                 ctx.lower_type_bound(bound, interner_ty, false).for_each(|pred| {
                     bounds.push(pred);
                 });
             }
-
             if !ctx.unsized_types.contains(&interner_ty) {
                 let sized_trait = LangItem::Sized
                     .resolve_trait(ctx.db, interner.krate.expect("Must have interner.krate"));
@@ -559,7 +541,6 @@ pub fn explicit_item_bounds<'db>(
                 bounds.extend(sized_bound);
                 bounds.shrink_to_fit();
             }
-
             rustc_type_ir::EarlyBinder::bind(Clauses::new_from_iter(interner, bounds))
         }
         SolverDefId::InternedOpaqueTyId(id) => {
@@ -712,7 +693,6 @@ impl<'db> TypeFolder<DbInterner<'db>> for PlaceholderReplacer<'_, 'db> {
                     }
                 }
             }
-
             _ if ty.has_placeholders() || ty.has_infer() => ty.super_fold_with(self),
             _ => ty,
         }

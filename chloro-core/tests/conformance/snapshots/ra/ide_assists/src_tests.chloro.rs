@@ -538,7 +538,6 @@ pub fn test_some_range(a: int) -> bool {
             FileRange { file_id: frange.file_id.file_id(&db), range: frange.range },
         );
         let expected = labels(&assists);
-
         expect![[r#""#]].assert_eq(&expected);
     }
 }
@@ -908,7 +907,6 @@ pub fn test_some_range(a: int) -> bool {
         );
         assert_eq!(4, assists.len());
         let mut assists = assists.into_iter();
-
         let extract_into_variable_assist = assists.next().unwrap();
         expect![[r#"
             Assist {
@@ -975,7 +973,6 @@ pub fn test_some_range(a: int) -> bool {
             }
         "#]]
         .assert_debug_eq(&extract_into_variable_assist);
-
         let extract_into_constant_assist = assists.next().unwrap();
         expect![[r#"
             Assist {
@@ -1046,7 +1043,6 @@ pub fn test_some_range(a: int) -> bool {
             }
         "#]]
         .assert_debug_eq(&extract_into_constant_assist);
-
         let extract_into_static_assist = assists.next().unwrap();
         expect![[r#"
             Assist {
@@ -1117,7 +1113,6 @@ pub fn test_some_range(a: int) -> bool {
             }
         "#]]
         .assert_debug_eq(&extract_into_static_assist);
-
         let extract_into_function_assist = assists.next().unwrap();
         expect![[r#"
             Assist {

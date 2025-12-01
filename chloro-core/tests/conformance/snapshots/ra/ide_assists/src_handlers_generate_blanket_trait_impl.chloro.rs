@@ -125,8 +125,7 @@ fn has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> bool {
     } else if let Some(is_sized) = where_clause_sized(traitd.where_clause()) {
         is_sized
     } else {
-        contained_owned_self_method(traitd.assoc_item_list())
-            || super_traits_has_sized(traitd, sema) == Some(true)
+        contained_owned_self_method(traitd.assoc_item_list()) || super_traits_has_sized(traitd, sema) == Some(true)
     }
 }
 
@@ -214,7 +213,11 @@ fn this_name(traitd: &ast::Trait) -> ast::Name {
     let mut name_gen =
         suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
 
-    make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
+    make::name(&name_gen.suggest_name(if has_iter {
+        "I"
+    } else {
+        "T"
+    }))
 }
 
 fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {

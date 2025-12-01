@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11085 bytes
-Chloro size:   10575 bytes
+Chloro size:   10663 bytes
 Rustfmt size:  11546 bytes
 
 ✗ Outputs DIFFER
@@ -48,19 +48,13 @@ Rustfmt size:  11546 bytes
      let lifetime_loc = lifetime.lifetime_ident_token()?.text_range();
  
      if let Some(fn_def) = lifetime.syntax().ancestors().find_map(ast::Fn::cast) {
-             _ => return None,
-         }
-     };
--    acc.add(
--        AssistId::refactor(ASSIST_NAME),
--        ASSIST_LABEL,
--        lifetime_loc,
--        |builder| {
+         ASSIST_LABEL,
+         lifetime_loc,
+         |builder| {
 -            let fn_def = builder.make_mut(fn_def);
 -            let lifetime = builder.make_mut(lifetime);
 -            let loc_needing_lifetime =
 -                loc_needing_lifetime.and_then(|it| it.make_mut(builder).to_position());
-+    acc.add(AssistId::refactor(ASSIST_NAME), ASSIST_LABEL, lifetime_loc, |builder| {
 +        let fn_def = builder.make_mut(fn_def);
 +        let lifetime = builder.make_mut(lifetime);
 +        let loc_needing_lifetime =
@@ -79,7 +73,6 @@ Rustfmt size:  11546 bytes
 -                ted::insert(position, new_lifetime_param.clone_for_update().syntax());
 -            }
 -        },
--    )
 +        fn_def.get_or_create_generic_param_list().add_generic_param(
 +            make::lifetime_param(new_lifetime_param.clone()).clone_for_update().into(),
 +        );
@@ -87,21 +80,15 @@ Rustfmt size:  11546 bytes
 +        if let Some(position) = loc_needing_lifetime {
 +            ted::insert(position, new_lifetime_param.clone_for_update().syntax());
 +        }
-+    })
++    },
+     )
  }
  
- /// Generate the assist for the impl def case
-     lifetime: ast::Lifetime,
- ) -> Option<()> {
-     let new_lifetime_param = generate_unique_lifetime_param_name(impl_def.generic_param_list())?;
--    acc.add(
--        AssistId::refactor(ASSIST_NAME),
--        ASSIST_LABEL,
--        lifetime_loc,
--        |builder| {
+         ASSIST_LABEL,
+         lifetime_loc,
+         |builder| {
 -            let impl_def = builder.make_mut(impl_def);
 -            let lifetime = builder.make_mut(lifetime);
-+    acc.add(AssistId::refactor(ASSIST_NAME), ASSIST_LABEL, lifetime_loc, |builder| {
 +        let impl_def = builder.make_mut(impl_def);
 +        let lifetime = builder.make_mut(lifetime);
  
@@ -117,15 +104,14 @@ Rustfmt size:  11546 bytes
 -                new_lifetime_param.clone_for_update().syntax(),
 -            );
 -        },
--    )
 +        impl_def.get_or_create_generic_param_list().add_generic_param(
 +            make::lifetime_param(new_lifetime_param.clone()).clone_for_update().into(),
 +        );
 +        ted::replace(lifetime.syntax(), new_lifetime_param.clone_for_update().syntax());
-+    })
++    },
+     )
  }
  
- /// Given a type parameter list, generate a unique lifetime parameter name
  ) -> Option<ast::Lifetime> {
      match existing_type_param_list {
          Some(type_params) => {
@@ -141,7 +127,14 @@ Rustfmt size:  11546 bytes
 +            ('a'..='z').map(|it| format!("'{it}")).find(|it| !used_lifetime_params.contains(it))
          }
          None => Some("'a".to_owned()),
-     }
+-    }
+-    .map(|it| make::lifetime(&it))
++    }.map(
++        |it| make::lifetime(&it),
++    )
+ }
+ 
+ enum NeedsLifetime {
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable};

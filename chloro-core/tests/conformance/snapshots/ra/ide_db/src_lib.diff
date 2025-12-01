@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   12261 bytes
+Chloro size:   12265 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
@@ -157,18 +157,6 @@ Rustfmt size:  12539 bytes
      fn line_index(&self, file_id: FileId) -> Arc<LineIndex>;
  }
  
- impl SnippetCap {
-     pub const fn new(allow_snippets: bool) -> Option<SnippetCap> {
--        if allow_snippets {
--            Some(SnippetCap { _private: () })
--        } else {
--            None
--        }
-+        if allow_snippets { Some(SnippetCap { _private: () }) } else { None }
-     }
- }
- 
- 
      pub fn from_token(token: &'a syntax::SyntaxToken) -> Self {
          let kind = token.kind();
 -        Ranker {
@@ -186,8 +174,13 @@ Rustfmt size:  12539 bytes
 -        let no_tt_parent = tok
 -            .parent()
 -            .is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
+-        (both_idents as usize)
+-            | ((exact_same_kind as usize) << 1)
+-            | ((same_text as usize) << 2)
+-            | ((no_tt_parent as usize) << 3)
 +        let no_tt_parent =
 +            tok.parent().is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
-         (both_idents as usize)
-             | ((exact_same_kind as usize) << 1)
-             | ((same_text as usize) << 2)
++        (both_idents as usize) | ((exact_same_kind as usize) << 1) | ((same_text as usize) << 2) | ((no_tt_parent as usize) << 3)
+     }
+ }
+ 

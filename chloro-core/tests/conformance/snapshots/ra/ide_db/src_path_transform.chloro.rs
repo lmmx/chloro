@@ -302,9 +302,6 @@ impl Ctx<'_> {
                 Either::Left(k) => self.type_substs.get(k).unwrap().syntax(),
                 Either::Right(k) => self.const_substs.get(k).unwrap(),
             };
-            // `transform_path` may update a node's parent and that would break the
-            // tree traversal. Thus all paths in the tree are collected into a vec
-            // so that such operation is safe.
             let new_value = self.transform_path(value);
             match param {
                 Either::Left(k) => {

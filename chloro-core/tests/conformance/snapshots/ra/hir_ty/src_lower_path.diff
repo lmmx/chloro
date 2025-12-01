@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55222 bytes
+Chloro size:   55120 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -90,6 +90,16 @@ Rustfmt size:  55742 bytes
          res: Option<TypeNs>,
          infer_args: bool,
      ) -> (Ty<'db>, Option<TypeNs>) {
+         match remaining_segments {
+             0 => (ty, res),
+             1 => {
+-                // resolve unselected assoc types
+                 (self.select_associated_type(res, infer_args), None)
+             }
+             _ => {
+-                // FIXME report error (ambiguous associated type)
+                 (Ty::new_error(self.ctx.interner, ErrorGuaranteed), None)
+             }
          }
      }
  
@@ -97,6 +107,16 @@ Rustfmt size:  55742 bytes
      pub(crate) fn lower_partly_resolved_path(
          &mut self,
          resolution: TypeNs,
+             res,
+             Some(assoc_name.clone()),
+             check_alias,
++        ).unwrap_or_else(
++            || Ty::new_error(interner, ErrorGuaranteed),
+         )
+-        .unwrap_or_else(|| Ty::new_error(interner, ErrorGuaranteed))
+     }
+ 
+     fn lower_path_inner(&mut self, typeable: TyDefId, infer_args: bool) -> Ty<'db> {
      /// `create_substs_for_ast_path` and `def_to_ty` in rustc.
      pub(crate) fn substs_from_path(
          &mut self,

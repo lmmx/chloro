@@ -191,13 +191,17 @@ impl<P: Policy> Index<Key<P::K, P::V, P>> for DynMap {
 
     fn index(&self, _key: Key<P::K, P::V, P>) -> &Self::Output {
         // Safe due to `#[repr(transparent)]`.
-        unsafe { std::mem::transmute::<&DynMap, &KeyMap<Key<P::K, P::V, P>>>(self) }
+        unsafe {
+            std::mem::transmute::<&DynMap, &KeyMap<Key<P::K, P::V, P>>>(self)
+        }
     }
 }
 
 impl<P: Policy> IndexMut<Key<P::K, P::V, P>> for DynMap {
     fn index_mut(&mut self, _key: Key<P::K, P::V, P>) -> &mut Self::Output {
         // Safe due to `#[repr(transparent)]`.
-        unsafe { std::mem::transmute::<&mut DynMap, &mut KeyMap<Key<P::K, P::V, P>>>(self) }
+        unsafe {
+            std::mem::transmute::<&mut DynMap, &mut KeyMap<Key<P::K, P::V, P>>>(self)
+        }
     }
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62523 bytes
-Chloro size:   62460 bytes
+Chloro size:   62440 bytes
 Rustfmt size:  62523 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,22 @@ Rustfmt size:  62523 bytes
  };
  
  use crate::RootDatabase;
+     Some(signature_help_for_tuple_pat_ish(
+         db,
+         SignatureHelp {
+-            doc: None,
+-            signature: String::from('('),
+-            parameters: vec![],
+-            active_parameter: None,
+-        },
++        doc: None,
++        signature: String::from('('),
++        parameters: vec![],
++        active_parameter: None,
++    },
+         pat.syntax(),
+         token,
+         field_pats,
      res.signature.push(')');
      res
  }

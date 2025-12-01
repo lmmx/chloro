@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21059 bytes
-Chloro size:   20571 bytes
+Chloro size:   20619 bytes
 Rustfmt size:  21059 bytes
 
 ✗ Outputs DIFFER
@@ -38,6 +38,30 @@ Rustfmt size:  21059 bytes
  pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
      let sema = Semantics::new(db);
      let src = sema.parse_guess_edition(frange.file_id);
+     .last()?;
+ 
+     let range = first.text_range().cover(last.text_range());
+-    if range.contains_range(original_range) && original_range != range { Some(range) } else { None }
++    if range.contains_range(original_range) && original_range != range {
++        Some(range)
++    } else {
++        None
++    }
+ }
+ 
+ /// Find the shallowest node with same range, which allows us to traverse siblings.
+     let to: TextSize = (cursor_position + end_idx).into();
+ 
+     let range = TextRange::new(from, to);
+-    if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
++    if range.is_empty() {
++        None
++    } else {
++        Some(range + leaf.text_range().start())
++    }
+ }
+ 
+ fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange {
  #[cfg(test)]
  mod tests {
      use crate::fixture;

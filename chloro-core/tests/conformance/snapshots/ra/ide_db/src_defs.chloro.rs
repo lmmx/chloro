@@ -62,13 +62,11 @@ impl Definition {
     }
 
     pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
-        Some(
-            match self {
+        Some(match self {
             Definition::Module(m) => m.krate(),
             &Definition::Crate(it) => it,
             _ => self.module(db)?.krate(),
-        },
-        )
+        })
     }
 
     /// Returns the module this definition resides in.
@@ -359,7 +357,6 @@ impl Definition {
             Definition::DeriveHelper(it) => {
                 format!("derive_helper {}", it.name(db).display(db, display_target.edition))
             }
-            // FIXME
             Definition::InlineAsmRegOrRegClass(_) => "inline_asm_reg_or_reg_class".to_owned(),
             Definition::InlineAsmOperand(_) => "inline_asm_reg_operand".to_owned(),
         }
@@ -645,8 +642,9 @@ impl<'db> NameClass<'db> {
             sema.to_def(&it).map(Definition::Label)
         } else {
             None
-        }
-        .map(NameClass::Definition)
+        }.map(
+            NameClass::Definition,
+        )
     }
 }
 

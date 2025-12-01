@@ -254,15 +254,13 @@ fn expr_node(
     expr: ExprId,
     db: &TestDB,
 ) -> Option<InFile<SyntaxNode>> {
-    Some(
-        match body_source_map.expr_syntax(expr) {
+    Some(match body_source_map.expr_syntax(expr) {
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
         }
         Err(SyntheticSyntax) => return None,
-    },
-    )
+    })
 }
 
 fn pat_node(
@@ -270,15 +268,13 @@ fn pat_node(
     pat: PatId,
     db: &TestDB,
 ) -> Option<InFile<SyntaxNode>> {
-    Some(
-        match body_source_map.pat_syntax(pat) {
+    Some(match body_source_map.pat_syntax(pat) {
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
         }
         Err(SyntheticSyntax) => return None,
-    },
-    )
+    })
 }
 
 fn infer(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {

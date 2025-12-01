@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43927 bytes
+Chloro size:   43897 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -50,19 +50,13 @@ Rustfmt size:  44130 bytes
          self.module(db).map(|it| it.path_to_root(db).into_iter().rev())
      }
  
-     pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
--        Some(match self {
-+        Some(
-+            match self {
-             Definition::Module(m) => m.krate(),
-             &Definition::Crate(it) => it,
-             _ => self.module(db)?.krate(),
--        })
-+        },
-+        )
-     }
- 
-     /// Returns the module this definition resides in.
+             Definition::DeriveHelper(it) => {
+                 format!("derive_helper {}", it.name(db).display(db, display_target.edition))
+             }
+-            // FIXME
+             Definition::InlineAsmRegOrRegClass(_) => "inline_asm_reg_or_reg_class".to_owned(),
+             Definition::InlineAsmOperand(_) => "inline_asm_reg_operand".to_owned(),
+         }
      })
  }
  
@@ -70,6 +64,17 @@ Rustfmt size:  44130 bytes
  #[derive(Debug)]
  pub enum IdentClass<'db> {
      NameClass(NameClass<'db>),
+             sema.to_def(&it).map(Definition::Label)
+         } else {
+             None
+-        }
+-        .map(NameClass::Definition)
++        }.map(
++            NameClass::Definition,
++        )
+     }
+ }
+ 
  }
  
  impl<'db> NameRefClass<'db> {

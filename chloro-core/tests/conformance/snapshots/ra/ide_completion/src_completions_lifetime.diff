@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6625 bytes
-Chloro size:   6611 bytes
+Chloro size:   6599 bytes
 Rustfmt size:  6782 bytes
 
 ✗ Outputs DIFFER
@@ -41,6 +41,17 @@ Rustfmt size:  6782 bytes
              acc.add_lifetime(ctx, name);
          }
      });
+     acc.add_lifetime(ctx, Name::new_symbol_root(sym::tick_static));
+-    if !in_lifetime_param_bound
+-        && def.is_some_and(|def| {
++    if !in_lifetime_param_bound && def.is_some_and(|def| {
+             !matches!(def, hir::GenericDef::Function(_) | hir::GenericDef::Impl(_))
+-        })
+-    {
++        }) {
+         acc.add_lifetime(ctx, Name::new_symbol_root(sym::tick_underscore));
+     }
+ }
      ctx: &CompletionContext<'_>,
      lifetime_ctx: &LifetimeContext,
  ) {

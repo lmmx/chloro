@@ -149,9 +149,7 @@ impl<'db> ExprValidator<'db> {
         }
 
         for (id, pat) in body.pats() {
-            if let Some((variant, missed_fields, true)) =
-                record_pattern_missing_fields(db, &self.infer, id, pat)
-            {
+            if let Some((variant, missed_fields, true)) = record_pattern_missing_fields(db, &self.infer, id, pat) {
                 self.diagnostics.push(BodyValidationDiagnostic::RecordMissingFields {
                     record: Either::Right(id),
                     variant,
@@ -172,24 +170,19 @@ impl<'db> ExprValidator<'db> {
         }
         // Check that the number of arguments matches the number of parameters.
         if self.infer.expr_type_mismatches().next().is_some() {
-            // FIXME: Due to shortcomings in the current type system implementation, only emit
-            // this diagnostic if there are no type mismatches in the containing function.
         } else if let Expr::MethodCall { receiver, .. } = expr {
             let (callee, _) = match self.infer.method_resolution(call_id) {
                 Some(it) => it,
                 None => return,
             };
-
             let checker = filter_map_next_checker.get_or_insert_with(|| {
                 FilterMapNextChecker::new(&self.owner.resolver(self.db()), self.db())
             });
-
             if checker.check(call_id, receiver, &callee).is_some() {
                 self.diagnostics.push(BodyValidationDiagnostic::ReplaceFilterMapNextWithFindMap {
                     method_call_expr: call_id,
                 });
             }
-
             if let Some(receiver_ty) = self.infer.type_of_expr_with_adjust(*receiver) {
                 checker.prev_receiver_ty = Some(receiver_ty);
             }
@@ -334,15 +327,11 @@ impl<'db> ExprValidator<'db> {
             if ty.references_non_lt_error() {
                 continue;
             }
-
             let mut have_errors = false;
             let deconstructed_pat = self.lower_pattern(&cx, pat, &mut have_errors);
-
-            // optimization, wildcard trivially hold
             if have_errors || matches!(deconstructed_pat.ctor(), Constructor::Wildcard) {
                 continue;
             }
-
             let match_arm = rustc_pattern_analysis::MatchArm {
                 pat: pattern_arena.alloc(deconstructed_pat),
                 has_guard: false,
@@ -437,9 +426,7 @@ impl<'db> ExprValidator<'db> {
                 if let Some(last_then_expr) = last_then_expr
                     && let Some(last_then_expr_ty) =
                         self.infer.type_of_expr_with_adjust(last_then_expr)
-                    && last_then_expr_ty.is_never()
-                {
-                    // Only look at sources if the then branch diverges and we have an else branch.
+                    && last_then_expr_ty.is_never() {
                     let source_map = self.db().body_with_source_map(self.owner).1;
                     let Ok(source_ptr) = source_map.expr_syntax(id) else {
                         return;
@@ -469,7 +456,6 @@ impl<'db> ExprValidator<'db> {
                         // Check parent if expr.
                         top_if_expr = parent_if_expr;
                     }
-
                     self.diagnostics
                         .push(BodyValidationDiagnostic::RemoveUnnecessaryElse { if_expr: id })
                 }

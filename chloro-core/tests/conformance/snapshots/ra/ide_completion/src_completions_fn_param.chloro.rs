@@ -124,8 +124,7 @@ fn params_from_stmt_list_scope(
         None => return,
     };
     if let Some(scope) =
-        ctx.sema.scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end())
-    {
+        ctx.sema.scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end()) {
         let module = scope.module().into();
         scope.process_all_names(&mut |name, def| {
             if let hir::ScopeDef::Local(local) = def

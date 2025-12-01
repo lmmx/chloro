@@ -22,8 +22,7 @@ pub(crate) fn mismatched_tuple_struct_pat_arg_count(
         DiagnosticCode::RustcHardError("E0023"),
         message,
         invalid_args_range(ctx, d.expr_or_pat, d.expected, d.found),
-    )
-    .stable()
+    ).stable()
 }
 
 pub(crate) fn mismatched_arg_count(
@@ -36,8 +35,7 @@ pub(crate) fn mismatched_arg_count(
         DiagnosticCode::RustcHardError("E0107"),
         message,
         invalid_args_range(ctx, d.call_expr, d.expected, d.found),
-    )
-    .stable()
+    ).stable()
 }
 
 fn invalid_args_range(
@@ -205,25 +203,21 @@ fn f() {
     }
     #[test]
     fn tuple_struct() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 struct Tup(u8, u16);
 fn f() {
     Tup(0);
 }      //^ error: expected 2 arguments, found 1
-"#,
-        )
+"#)
     }
     #[test]
     fn enum_variant() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 enum En { Variant(u8, u16), }
 fn f() {
     En::Variant(0);
 }              //^ error: expected 2 arguments, found 1
-"#,
-        )
+"#)
     }
     #[test]
     fn enum_variant_type_macro() {
@@ -317,8 +311,7 @@ fn test() {
     }
     #[test]
     fn varargs() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 extern "C" {
     fn fixed(fixed: u8);
     fn varargs(fixed: u8, ...);
@@ -337,13 +330,11 @@ fn f() {
         varargs2(0, 1);
     }
 }
-        "#,
-        )
+        "#)
     }
     #[test]
     fn arg_count_lambda() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 fn main() {
     let f = |()| ();
     f();
@@ -352,8 +343,7 @@ fn main() {
     f((), ());
         //^^^ error: expected 1 argument, found 2
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn cfgd_out_call_arguments() {
@@ -379,8 +369,7 @@ fn main() {
     }
     #[test]
     fn cfgd_out_fn_params() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 fn foo(#[cfg(NEVER)] x: ()) {}
 
 struct S;
@@ -407,13 +396,11 @@ fn main() {
         varargs(1, 2, 3);
     }
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn legacy_const_generics() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 #[rustc_legacy_const_generics(1, 3)]
 fn mixed<const N1: &'static str, const N2: bool>(
     _a: u8,
@@ -438,13 +425,11 @@ fn g() {
     b(0, 1, 2);
            //^ error: expected 4 arguments, found 3
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn tuple_struct_pat() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 struct S(u32, u32);
 fn f(
     S(a, b, c): S,
@@ -454,8 +439,7 @@ fn f(
     S(e, f, .., g, d): S
   //        ^^^^^^^^^ error: this pattern has 4 fields, but the corresponding tuple struct has 2 fields
 ) { _ = (a, b, c, d, e, f, g); }
-"#,
-        )
+"#)
     }
     #[test]
     fn no_type_mismatches_when_arg_count_mismatch() {

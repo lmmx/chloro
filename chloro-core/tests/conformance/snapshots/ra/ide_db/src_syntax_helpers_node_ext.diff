@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18749 bytes
-Chloro size:   18737 bytes
+Chloro size:   18159 bytes
 Rustfmt size:  18749 bytes
 
 ✗ Outputs DIFFER
@@ -51,6 +51,32 @@ Rustfmt size:  18749 bytes
  }
  
  pub fn is_closure_or_blk_with_modif(expr: &ast::Expr) -> bool {
+             preorder.skip_subtree();
+             continue;
+         }
+-
+         match ast::Stmt::cast(node.clone()) {
+-            // Don't skip subtree since we want to process the expression child next
+             Some(ast::Stmt::ExprStmt(_)) | Some(ast::Stmt::LetStmt(_)) => (),
+-            // skip inner items which might have their own expressions
+             Some(ast::Stmt::Item(_)) => preorder.skip_subtree(),
+             None => {
+-                // skip const args, those expressions are a different context
+                 if ast::GenericArg::can_cast(node.kind()) {
+                     preorder.skip_subtree();
+                 } else if let Some(expr) = ast::Expr::cast(node) {
+                 }
+                 preorder.skip_subtree();
+             }
+-            // Don't skip subtree since we want to process the expression child next
+             Some(ast::Stmt::ExprStmt(_)) => (),
+-            // skip inner items which might have their own patterns
+             Some(ast::Stmt::Item(_)) => preorder.skip_subtree(),
+             None => {
+-                // skip const args, those are a different context
+                 if ast::GenericArg::can_cast(node.kind()) {
+                     preorder.skip_subtree();
+                 } else if let Some(expr) = ast::Expr::cast(node.clone()) {
  }
  
  /// Preorder walk all the type's sub types.
@@ -58,3 +84,82 @@ Rustfmt size:  18749 bytes
  pub fn walk_ty(ty: &ast::Type, cb: &mut dyn FnMut(ast::Type) -> bool) {
      let mut preorder = ty.syntax().preorder();
      while let Some(event) = preorder.next() {
+                     preorder.skip_subtree();
+                 }
+             }
+-            // skip const args
+             None if ast::ConstArg::can_cast(kind) => {
+                 preorder.skip_subtree();
+             }
+ pub fn vis_eq(this: &ast::Visibility, other: &ast::Visibility) -> bool {
+     match (this.kind(), other.kind()) {
+         (VisibilityKind::In(this), VisibilityKind::In(other)) => {
+-            stdx::iter_eq_by(this.segments(), other.segments(), |lhs, rhs| {
++            stdx::iter_eq_by(
++                this.segments(),
++                other.segments(),
++                |lhs, rhs| {
+                 lhs.kind().zip(rhs.kind()).is_some_and(|it| match it {
+                     (PathSegmentKind::CrateKw, PathSegmentKind::CrateKw)
+                     | (PathSegmentKind::SelfKw, PathSegmentKind::SelfKw)
+                     }
+                     _ => false,
+                 })
+-            })
++            },
++            )
+         }
+         (VisibilityKind::PubSelf, VisibilityKind::PubSelf)
+         | (VisibilityKind::PubSuper, VisibilityKind::PubSuper)
+ 
+ pub fn is_pattern_cond(expr: ast::Expr) -> bool {
+     match expr {
+-        ast::Expr::BinExpr(expr)
+-            if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And)) =>
+-        {
++        ast::Expr::BinExpr(expr) if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And)) => {
+             expr.lhs().map_or(false, is_pattern_cond) || expr.rhs().map_or(false, is_pattern_cond)
+         }
+         ast::Expr::ParenExpr(expr) => expr.expr().is_some_and(is_pattern_cond),
+                 Some(ast::BlockModifier::AsyncGen(_)) => (),
+                 None => (),
+             }
+-            if let Some(stmt_list) = b.stmt_list()
+-                && let Some(e) = stmt_list.tail_expr()
+-            {
++            if let Some(stmt_list) = b.stmt_list() && let Some(e) = stmt_list.tail_expr() {
+                 for_each_tail_expr(&e, cb);
+             }
+         }
+         let tree_depth_iterator = TreeWithDepthIterator::new(b);
+         for (expr, depth) in tree_depth_iterator {
+             match expr {
+-                ast::Expr::BreakExpr(b)
+-                    if (depth == 0 && b.lifetime().is_none())
+-                        || eq_label_lt(&label, &b.lifetime()) =>
+-                {
++                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none())
++                        || eq_label_lt(&label, &b.lifetime()) => {
+                     cb(ast::Expr::BreakExpr(b));
+                 }
+-                ast::Expr::ContinueExpr(c)
+-                    if (depth == 0 && c.lifetime().is_none())
+-                        || eq_label_lt(&label, &c.lifetime()) =>
+-                {
++                ast::Expr::ContinueExpr(c) if (depth == 0 && c.lifetime().is_none())
++                        || eq_label_lt(&label, &c.lifetime()) => {
+                     cb(ast::Expr::ContinueExpr(c));
+                 }
+                 _ => (),
+         let tree_depth_iterator = TreeWithDepthIterator::new(b);
+         for (expr, depth) in tree_depth_iterator {
+             match expr {
+-                ast::Expr::BreakExpr(b)
+-                    if (depth == 0 && b.lifetime().is_none())
+-                        || eq_label_lt(&label, &b.lifetime()) =>
+-                {
++                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none())
++                        || eq_label_lt(&label, &b.lifetime()) => {
+                     cb(b);
+                 }
+                 _ => (),

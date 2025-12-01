@@ -54,7 +54,9 @@ pub fn get_missing_assoc_items(
         }
     }
 
-    resolve_target_trait(sema, impl_def).map_or(vec![], |target_trait| {
+    resolve_target_trait(sema, impl_def).map_or(
+        vec![],
+        |target_trait| {
         target_trait
             .items(sema.db)
             .into_iter()
@@ -70,7 +72,8 @@ pub fn get_missing_assoc_items(
                     .unwrap_or_default(),
             })
             .collect()
-    })
+    },
+    )
 }
 
 /// Converts associated trait impl items to their trait definition counterpart
@@ -79,8 +82,9 @@ pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> 
         let assoc = def.as_assoc_item(db)?;
         let trait_ = assoc.implemented_trait(db)?;
         assoc_item_of_trait(db, assoc, trait_)
-    })()
-    .unwrap_or(def)
+    })().unwrap_or(
+        def,
+    )
 }
 
 /// If this is an trait (impl) assoc item, returns the assoc item of the corresponding trait definition.

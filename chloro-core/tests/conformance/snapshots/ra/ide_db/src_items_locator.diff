@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5844 bytes
-Chloro size:   5792 bytes
+Chloro size:   5815 bytes
 Rustfmt size:  5887 bytes
 
 ✗ Outputs DIFFER
@@ -30,27 +30,22 @@ Rustfmt size:  5887 bytes
  /// Searches for importable items with the given name in the crate and its dependencies.
  pub fn items_with_name(
      db: &RootDatabase,
-             local_query
-         }
-     };
--    local_query.search(
--        &[SymbolIndex::module_symbols(db, module)],
--        |local_candidate| {
+     local_query.search(
+         &[SymbolIndex::module_symbols(db, module)],
+         |local_candidate| {
 -            cb(match local_candidate.def {
 -                hir::ModuleDef::Macro(macro_def) => ItemInNs::Macros(macro_def),
 -                def => ItemInNs::from(def),
 -            })
 -        },
--    )
-+    local_query.search(&[SymbolIndex::module_symbols(db, module)], |local_candidate| {
 +        cb(match local_candidate.def {
 +            hir::ModuleDef::Macro(macro_def) => ItemInNs::Macros(macro_def),
 +            def => ItemInNs::from(def),
 +        })
-+    })
++    },
+     )
  }
  
- fn find_items(
      let _p = tracing::info_span!("find_items").entered();
  
      // NOTE: `external_query` includes `assoc_item_search`, so we don't need to

@@ -79,7 +79,6 @@ impl ProjectJsonTargetSpec {
                         return Some(runnable.clone());
                     }
                 }
-
                 None
             }
             RunnableKind::Test { test_id, .. } => {
@@ -98,7 +97,6 @@ impl ProjectJsonTargetSpec {
                         return Some(runnable);
                     }
                 }
-
                 None
             }
             RunnableKind::TestMod { .. } => None,
@@ -257,7 +255,8 @@ fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
                 }
             }
         }
-        _ => {}
+        _ => {
+        }
     }
 }
 

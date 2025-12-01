@@ -48,7 +48,11 @@ impl<'db> CastTy<'db> {
                     return None;
                 };
                 let enum_data = id.enum_variants(db);
-                if enum_data.is_payload_free(db) { Some(Self::Int(Int::CEnum)) } else { None }
+                if enum_data.is_payload_free(db) {
+                    Some(Self::Int(Int::CEnum))
+                } else {
+                    None
+                }
             }
             TyKind::RawPtr(ty, m) => Some(Self::Ptr(ty, m)),
             TyKind::FnPtr(..) => Some(Self::FnPtr),
@@ -281,8 +285,6 @@ impl<'db> CastCheck<'db> {
 
         match (src_kind, dst_kind) {
             (Some(PointerKind::Error), _) | (_, Some(PointerKind::Error)) => Ok(()),
-            // (_, None) => Err(CastError::UnknownCastPtrKind),
-            // (None, _) => Err(CastError::UnknownExprPtrKind),
             (_, None) | (None, _) => Ok(()),
             (_, Some(PointerKind::Thin)) => Ok(()),
             (Some(PointerKind::Thin), _) => Err(CastError::SizedUnsizedCast),
@@ -295,8 +297,7 @@ impl<'db> CastCheck<'db> {
                         let src_principal = ctx.db.trait_signature(src_principal.0);
                         let dst_principal = ctx.db.trait_signature(dst_principal.0);
                         if src_principal.flags.contains(TraitFlags::AUTO)
-                            && dst_principal.flags.contains(TraitFlags::AUTO)
-                        {
+                            && dst_principal.flags.contains(TraitFlags::AUTO) {
                             Ok(())
                         } else {
                             Err(CastError::DifferingKinds)
@@ -316,7 +317,6 @@ impl<'db> CastCheck<'db> {
         expr_ty: Ty<'db>,
     ) -> Result<(), CastError> {
         match pointer_kind(expr_ty, ctx).map_err(|_| CastError::Unknown)? {
-            // None => Err(CastError::UnknownExprPtrKind),
             None => Ok(()),
             Some(PointerKind::Error) => Ok(()),
             Some(PointerKind::Thin) => Ok(()),
@@ -330,7 +330,6 @@ impl<'db> CastCheck<'db> {
         cast_ty: Ty<'db>,
     ) -> Result<(), CastError> {
         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
-            // None => Err(CastError::UnknownCastPtrKind),
             None => Ok(()),
             Some(PointerKind::Error) => Ok(()),
             Some(PointerKind::Thin) => Ok(()),
@@ -346,7 +345,6 @@ impl<'db> CastCheck<'db> {
         cast_ty: Ty<'db>,
     ) -> Result<(), CastError> {
         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
-            // None => Err(CastError::UnknownCastPtrKind),
             None => Ok(()),
             Some(PointerKind::Error) => Ok(()),
             Some(PointerKind::Thin) => Ok(()),
@@ -387,7 +385,6 @@ fn pointer_kind<'db>(
                 never!("`{:?}` should be sized but is not?", ty);
                 return Err(());
             };
-
             let struct_data = id.fields(ctx.db);
             if let Some((last_field, _)) = struct_data.fields().iter().last() {
                 let last_field_ty =

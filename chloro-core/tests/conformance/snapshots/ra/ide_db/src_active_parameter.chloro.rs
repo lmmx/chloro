@@ -46,7 +46,10 @@ impl<'db> ActiveParameter<'db> {
             return None;
         }
         let param = params.swap_remove(idx);
-        Some(ActiveParameter { ty: param.ty().clone(), src: sema.source(param) })
+        Some(ActiveParameter {
+            ty: param.ty().clone(),
+            src: sema.source(param),
+        })
     }
 
     pub fn ident(&self) -> Option<ast::Name> {

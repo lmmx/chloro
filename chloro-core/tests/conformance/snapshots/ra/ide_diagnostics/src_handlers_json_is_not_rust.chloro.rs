@@ -84,7 +84,11 @@ impl State {
         match value {
             serde_json::Value::Null => make::ty_unit(),
             serde_json::Value::Bool(_) => make::ty("bool"),
-            serde_json::Value::Number(it) => make::ty(if it.is_i64() { "i64" } else { "f64" }),
+            serde_json::Value::Number(it) => make::ty(if it.is_i64() {
+                "i64"
+            } else {
+                "f64"
+            }),
             serde_json::Value::String(_) => make::ty("String"),
             serde_json::Value::Array(it) => {
                 let ty = match it.iter().next() {

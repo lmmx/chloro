@@ -55,7 +55,11 @@ fn existing_default_impl(
     let default_trait = FamousDefs(sema, krate).core_default_Default()?;
     let enum_type = enum_.ty(sema.db);
 
-    if enum_type.impls_trait(sema.db, default_trait, &[]) { Some(()) } else { None }
+    if enum_type.impls_trait(sema.db, default_trait, &[]) {
+        Some(())
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]

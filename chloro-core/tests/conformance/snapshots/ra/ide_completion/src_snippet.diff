@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7279 bytes
-Chloro size:   7300 bytes
+Chloro size:   7277 bytes
 Rustfmt size:  7507 bytes
 
 ✗ Outputs DIFFER
@@ -22,10 +22,9 @@ Rustfmt size:  7507 bytes
  use hir::{ModPath, Name, Symbol};
  use ide_db::imports::import_assets::LocatedImport;
  use itertools::Itertools;
-             return None;
          }
          let (requires, snippet, description) = validate_snippet(snippet, description, requires)?;
--        Some(Snippet {
+         Some(Snippet {
 -            postfix_triggers: postfix_triggers
 -                .iter()
 -                .map(String::as_str)
@@ -36,20 +35,11 @@ Rustfmt size:  7507 bytes
 -                .map(String::as_str)
 -                .map(Into::into)
 -                .collect(),
-+        Some(
-+            Snippet {
 +            postfix_triggers: postfix_triggers.iter().map(String::as_str).map(Into::into).collect(),
 +            prefix_triggers: prefix_triggers.iter().map(String::as_str).map(Into::into).collect(),
              scope,
              snippet,
              description,
-             requires,
--        })
-+        },
-+        )
-     }
- 
-     /// Returns [`None`] if the required items do not resolve.
      for path in requires.iter() {
          let use_path = ModPath::from_segments(
              hir::PathKind::Plain,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24418 bytes
-Chloro size:   24417 bytes
+Chloro size:   24079 bytes
 Rustfmt size:  24577 bytes
 
 ✗ Outputs DIFFER
@@ -142,6 +142,26 @@ Rustfmt size:  24577 bytes
  
          let index = self.storage.data.constraints.len();
          self.storage.data.constraints.push(constraint);
+ 
+     pub(super) fn make_eqregion(&mut self, a: Region<'db>, b: Region<'db>) {
+         if a != b {
+-            // Eventually, it would be nice to add direct support for
+-            // equating regions.
+             self.make_subregion(a, b);
+             self.make_subregion(b, a);
+-
+             match (a.kind(), b.kind()) {
+                 (RegionKind::ReVar(a), RegionKind::ReVar(b)) => {
+                     debug!("make_eqregion: unifying {:?} with {:?}", a, b);
+                         self.storage.any_unifications = true;
+                     };
+                 }
+-                (_, _) => {}
++                (_, _) => {
++                }
+             }
+         }
+     }
      #[instrument(skip(self), level = "debug")]
      pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
          // cannot add constraints once regions are resolved
@@ -149,6 +169,43 @@ Rustfmt size:  24577 bytes
          match (sub.kind(), sup.kind()) {
              (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
                  panic!("cannot relate bound region: {sub:?} <= {sup:?}");
+             }
+             (_, RegionKind::ReStatic) => {
+-                // all regions are subregions of static, so we can ignore this
+             }
+             (RegionKind::ReVar(sub_id), RegionKind::ReVar(sup_id)) => {
+                 self.add_constraint(Constraint::VarSubVar(sub_id, sup_id));
+     ) -> Region<'db> {
+         // cannot add constraints once regions are resolved
+         debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);
+-        #[expect(clippy::if_same_then_else)]
+-        if a.is_static() || b.is_static() {
+-            a // nothing lives longer than static
++        #[expect(clippy::if_same_then_else)] if a.is_static() || b.is_static() {
++            a
+         } else if a == b {
+-            a // LUB(a,a) = a
++            a
+         } else {
+             self.combine_vars(db, Lub, a, b)
+         }
+     ) -> Region<'db> {
+         // cannot add constraints once regions are resolved
+         debug!("RegionConstraintCollector: glb_regions({:?}, {:?})", a, b);
+-        #[expect(clippy::if_same_then_else)]
+-        if a.is_static() {
+-            b // static lives longer than everything else
++        #[expect(clippy::if_same_then_else)] if a.is_static() {
++            b
+         } else if b.is_static() {
+-            a // static lives longer than everything else
++            a
+         } else if a == b {
+-            a // GLB(a,a) = a
++            a
+         } else {
+             self.combine_vars(db, Glb, a, b)
+         }
      /// Returns `true` if this region constraint data contains no constraints, and `false`
      /// otherwise.
      pub fn is_empty(&self) -> bool {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16831 bytes
-Chloro size:   16659 bytes
+Chloro size:   16644 bytes
 Rustfmt size:  16831 bytes
 
 ✗ Outputs DIFFER
@@ -18,22 +18,6 @@ Rustfmt size:  16831 bytes
  pub(crate) fn generic_args_prohibited(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::GenericArgsProhibited,
-             TextRange::new(start, end)
-         }
-     };
--    Some(vec![fix(
-+    Some(
-+        vec![fix(
-         "remove_generic_args",
-         "Remove these generics",
-         SourceChange::from_text_edit(file_id.file_id(ctx.sema.db), TextEdit::delete(range)),
-         syntax.syntax().text_range(),
--    )])
-+    )],
-+    )
- }
- 
- #[cfg(test)]
  mod tests {
      // This diagnostic was the first to be emitted in ty lowering, so the tests here also test
      // diagnostics in ty lowering in general (which is why there are so many of them).

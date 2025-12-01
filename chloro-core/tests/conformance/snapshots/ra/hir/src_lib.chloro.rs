@@ -425,7 +425,6 @@ impl ModuleDef {
             ModuleDef::Const(it) => Some(it.into()),
             ModuleDef::Static(it) => Some(it.into()),
             ModuleDef::Variant(it) => Some(it.into()),
-
             ModuleDef::Module(_)
             | ModuleDef::Adt(_)
             | ModuleDef::Trait(_)
@@ -452,8 +451,7 @@ impl ModuleDef {
     }
 
     pub fn attrs(&self, db: &dyn HirDatabase) -> Option<AttrsWithOwner> {
-        Some(
-            match self {
+        Some(match self {
             ModuleDef::Module(it) => it.attrs(db),
             ModuleDef::Function(it) => it.attrs(db),
             ModuleDef::Adt(it) => it.attrs(db),
@@ -464,8 +462,7 @@ impl ModuleDef {
             ModuleDef::TypeAlias(it) => it.attrs(db),
             ModuleDef::Macro(it) => it.attrs(db),
             ModuleDef::BuiltinType(_) => return None,
-        },
-        )
+        })
     }
 }
 
@@ -724,11 +721,9 @@ impl Module {
         let mut impl_assoc_items_scratch = vec![];
         for impl_def in self.impl_defs(db) {
             GenericDef::Impl(impl_def).diagnostics(db, acc);
-
             let loc = impl_def.id.lookup(db);
             let (impl_signature, source_map) = db.impl_signature_with_source_map(impl_def.id);
             expr_store_diagnostics(db, acc, &source_map);
-
             let file_id = loc.id.file_id;
             if file_id.macro_file().is_some_and(|it| it.kind(db) == MacroKind::DeriveBuiltIn) {
                 // these expansion come from us, diagnosing them is a waste of resources
@@ -739,33 +734,26 @@ impl Module {
                 .all_macro_calls(db)
                 .iter()
                 .for_each(|&(_ast, call_id)| macro_call_diagnostics(db, call_id, acc));
-
             let ast_id_map = db.ast_id_map(file_id);
-
             for diag in impl_def.id.impl_items_with_diagnostics(db).1.iter() {
                 emit_def_diagnostic(db, acc, diag, edition);
             }
-
             if inherent_impls.invalid_impls().contains(&impl_def.id) {
                 acc.push(IncoherentImpl { impl_: ast_id_map.get(loc.id.value), file_id }.into())
             }
-
             if !impl_def.check_orphan_rules(db) {
                 acc.push(TraitImplOrphan { impl_: ast_id_map.get(loc.id.value), file_id }.into())
             }
-
             let trait_ = impl_def.trait_(db);
             let mut trait_is_unsafe = trait_.is_some_and(|t| t.is_unsafe(db));
             let impl_is_negative = impl_def.is_negative(db);
             let impl_is_unsafe = impl_def.is_unsafe(db);
-
             let trait_is_unresolved = trait_.is_none() && impl_signature.target_trait.is_some();
             if trait_is_unresolved {
                 // Ignore trait safety errors when the trait is unresolved, as otherwise we'll treat it as safe,
                 // which may not be correct.
                 trait_is_unsafe = impl_is_unsafe;
             }
-
             let drop_maybe_dangle = (|| {
                 // FIXME: This can be simplified a lot by exposing hir-ty's utils.rs::Generics helper
                 let trait_ = trait_?;
@@ -792,7 +780,6 @@ impl Module {
                 Some(res)
             })()
             .unwrap_or(false);
-
             match (impl_is_unsafe, trait_is_unsafe, impl_is_negative, drop_maybe_dangle) {
                 // unsafe negative impl
                 (true, _, true, _) |
@@ -804,8 +791,6 @@ impl Module {
                 (false, false, _, true) => acc.push(TraitImplIncorrectSafety { impl_: ast_id_map.get(loc.id.value), file_id, should_be_safe: false }.into()),
                 _ => (),
             };
-
-            // Negative impls can't have items, don't emit missing items diagnostic for them
             if let (false, Some(trait_)) = (impl_is_negative, trait_) {
                 let items = &trait_.id.trait_items(db).items;
                 let required_items = items.iter().filter(|&(_, assoc)| match *assoc {
@@ -879,7 +864,6 @@ impl Module {
                 }
                 impl_assoc_items_scratch.clear();
             }
-
             push_ty_diagnostics(
                 db,
                 acc,
@@ -892,7 +876,6 @@ impl Module {
                 db.impl_trait_with_diagnostics(impl_def.id).and_then(|it| it.1),
                 &source_map,
             );
-
             for &(_, item) in impl_def.id.impl_items(db).items.iter() {
                 AssocItem::from(item).diagnostics(db, acc, style_lints);
             }
@@ -998,8 +981,7 @@ fn emit_macro_def_diagnostics<'db>(
 ) {
     let id = db.macro_def(m.id);
     if let hir_expand::db::TokenExpander::DeclarativeMacro(expander) = db.macro_expander(id)
-        && let Some(e) = expander.mac.err()
-    {
+        && let Some(e) = expander.mac.err() {
         let Some(ast) = id.ast_id().left() else {
             never!("declarative expander for non decl-macro: {:?}", e);
             return;
@@ -1033,19 +1015,15 @@ fn emit_def_diagnostic_<'db>(
     match diag {
         DefDiagnosticKind::UnresolvedModule { ast: declaration, candidates } => {
             let decl = declaration.to_ptr(db);
-            acc.push(
-                UnresolvedModule {
-                    decl: InFile::new(declaration.file_id, decl),
-                    candidates: candidates.clone(),
-                }
-                .into(),
-            )
+            acc.push(UnresolvedModule {
+                decl: InFile::new(declaration.file_id, decl),
+                candidates: candidates.clone(),
+            }.into())
         }
         DefDiagnosticKind::UnresolvedExternCrate { ast } => {
             let item = ast.to_ptr(db);
             acc.push(UnresolvedExternCrate { decl: InFile::new(ast.file_id, item) }.into());
         }
-
         DefDiagnosticKind::MacroError { ast, path, err } => {
             let item = ast.to_ptr(db);
             let RenderedExpandError { message, error, kind } = err.render_to_string(db);
@@ -1062,13 +1040,11 @@ fn emit_def_diagnostic_<'db>(
         }
         DefDiagnosticKind::UnresolvedImport { id, index } => {
             let file_id = id.file_id;
-
             let use_tree = hir_def::src::use_tree_to_ast(db, *id, *index);
             acc.push(
                 UnresolvedImport { decl: InFile::new(file_id, AstPtr::new(&use_tree)) }.into(),
             );
         }
-
         DefDiagnosticKind::UnconfiguredCode { ast_id, cfg, opts } => {
             let ast_id_map = db.ast_id_map(ast_id.file_id);
             let ptr = ast_id_map.get_erased(ast_id.value);
@@ -1095,7 +1071,6 @@ fn emit_def_diagnostic_<'db>(
         }
         DefDiagnosticKind::UnimplementedBuiltinMacro { ast } => {
             let node = ast.to_node(db);
-            // Must have a name, otherwise we wouldn't emit it.
             let name = node.name().expect("unimplemented builtin macro with no name");
             acc.push(
                 UnimplementedBuiltinMacro {
@@ -1167,8 +1142,6 @@ fn precise_macro_call_location(
         }
         MacroCallKind::Derive { ast_id, derive_attr_index, derive_index, .. } => {
             let node = ast_id.to_node(db);
-            // Compute the precise location of the macro name's token in the derive
-            // list.
             let token = (|| {
                 let derive_attr = collect_attrs(&node)
                     .nth(derive_attr_index.ast_index())
@@ -1201,7 +1174,6 @@ fn precise_macro_call_location(
                 .unwrap_or_else(|| {
                     panic!("cannot find attribute #{}", invoc_attr_index.ast_index())
                 });
-
             (
                 ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&attr))),
                 Some(attr.syntax().text_range()),
@@ -1686,8 +1658,7 @@ impl Variant {
     pub fn layout(&self, db: &dyn HirDatabase) -> Result<Layout, LayoutError> {
         let parent_enum = self.parent_enum(db);
         let parent_layout = parent_enum.layout(db)?;
-        Ok(
-            match &parent_layout.0.variants {
+        Ok(match &parent_layout.0.variants {
             layout::Variants::Multiple { variants, .. } => Layout(
                 {
                     let lookup = self.id.lookup(db);
@@ -1697,8 +1668,7 @@ impl Variant {
                 db.target_data_layout(parent_enum.krate(db).into()).unwrap(),
             ),
             _ => parent_layout,
-        },
-        )
+        })
     }
 
     pub fn is_unstable(self, db: &dyn HirDatabase) -> bool {
@@ -1840,11 +1810,19 @@ impl Adt {
     }
 
     pub fn as_struct(&self) -> Option<Struct> {
-        if let Self::Struct(v) = self { Some(*v) } else { None }
+        if let Self::Struct(v) = self {
+            Some(*v)
+        } else {
+            None
+        }
     }
 
     pub fn as_enum(&self) -> Option<Enum> {
-        if let Self::Enum(v) = self { Some(*v) } else { None }
+        if let Self::Enum(v) = self {
+            Some(*v)
+        } else {
+            None
+        }
     }
 }
 
@@ -2595,8 +2573,7 @@ impl<'db> Param<'db> {
                 if let Some(self_param) = body.self_param.filter(|_| self.idx == 0) {
                     Some(Local { parent, binding_id: self_param })
                 } else if let Pat::Bind { id, .. } =
-                    &body[body.params[self.idx - body.self_param.is_some() as usize]]
-                {
+                    &body[body.params[self.idx - body.self_param.is_some() as usize]] {
                     Some(Local { parent, binding_id: *id })
                 } else {
                     None
@@ -3961,8 +3938,9 @@ impl DeriveHelper {
                 .attrs(makro.into())
                 .parse_proc_macro_derive()
                 .and_then(|(_, helpers)| helpers.get(self.idx as usize).cloned()),
-        }
-        .unwrap_or_else(Name::missing)
+        }.unwrap_or_else(
+            Name::missing,
+        )
     }
 }
 
@@ -3973,8 +3951,9 @@ pub struct BuiltinAttr {
 
 impl BuiltinAttr {
     fn builtin(name: &str) -> Option<Self> {
-        hir_expand::inert_attr_macro::find_builtin_attr_idx(&Symbol::intern(name))
-            .map(|idx| BuiltinAttr { idx: idx as u32 })
+        hir_expand::inert_attr_macro::find_builtin_attr_idx(&Symbol::intern(name)).map(
+            |idx| BuiltinAttr { idx: idx as u32 },
+        )
     }
 
     pub fn name(&self) -> Name {
@@ -4477,7 +4456,10 @@ impl Impl {
             .nth(derive_index as usize)
             .and_then(<ast::Attr as AstNode>::cast)
             .and_then(|it| it.path())?;
-        Some(InMacroFile { file_id: derive_attr, value: path })
+        Some(InMacroFile {
+            file_id: derive_attr,
+            value: path,
+        })
     }
 
     pub fn check_orphan_rules(self, db: &dyn HirDatabase) -> bool {
@@ -4608,7 +4590,6 @@ impl<'db> Closure<'db> {
                 info.1
             }
             AnyClosureId::CoroutineClosureId(_id) => {
-                // FIXME: Infer kind for coroutine closures.
                 match self.subst.as_coroutine_closure().kind() {
                     rustc_type_ir::ClosureKind::Fn => FnTrait::AsyncFn,
                     rustc_type_ir::ClosureKind::FnMut => FnTrait::AsyncFnMut,
@@ -5126,7 +5107,11 @@ impl<'db> Type<'db> {
 
         let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);
         let ty = structurally_normalize_ty(&infcx, projection, self.env.clone());
-        if ty.is_ty_error() { None } else { Some(self.derived(ty)) }
+        if ty.is_ty_error() {
+            None
+        } else {
+            Some(self.derived(ty))
+        }
     }
 
     pub fn is_copy(&self, db: &'db dyn HirDatabase) -> bool {
@@ -5203,7 +5188,11 @@ impl<'db> Type<'db> {
     }
 
     pub fn remove_raw_ptr(&self) -> Option<Type<'db>> {
-        if let TyKind::RawPtr(ty, _) = self.ty.kind() { Some(self.derived(ty)) } else { None }
+        if let TyKind::RawPtr(ty, _) = self.ty.kind() {
+            Some(self.derived(ty))
+        } else {
+            None
+        }
     }
 
     pub fn contains_unknown(&self) -> bool {
@@ -5302,7 +5291,6 @@ impl<'db> Type<'db> {
         };
         for krate in def_crates {
             let impls = db.inherent_impls_in_crate(krate);
-
             for impl_def in impls.for_self_ty(ty_ns) {
                 for &(_, item) in impl_def.impl_items(db).items.iter() {
                     if callback(item) {
@@ -5869,12 +5857,10 @@ impl<'db> Callable<'db> {
             _ => return None,
         };
         let func = Function { id: func };
-        Some(
-            (
+        Some((
             func.self_param(db)?,
             self.ty.derived(self.sig.skip_binder().inputs_and_output.inputs()[0]),
-        ),
-        )
+        ))
     }
 
     pub fn n_params(&self) -> usize {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10531 bytes
-Chloro size:   10520 bytes
+Chloro size:   10527 bytes
 Rustfmt size:  11050 bytes
 
 ✗ Outputs DIFFER
@@ -19,6 +19,8 @@ Rustfmt size:  11050 bytes
                          return Some(runnable.clone());
                      }
                  }
+-
+                 None
              }
              RunnableKind::Test { test_id, .. } => {
                  for runnable in &self.shell_runnables {
@@ -30,6 +32,13 @@ Rustfmt size:  11050 bytes
                          let mut runnable = runnable.clone();
  
                          let replaced_args: Vec<_> = runnable
+                         return Some(runnable);
+                     }
+                 }
+-
+                 None
+             }
+             RunnableKind::TestMod { .. } => None,
              }
              RunnableKind::Bin => {
                  let subcommand = match spec {
@@ -73,6 +82,15 @@ Rustfmt size:  11050 bytes
          }
          CfgExpr::Any(preds) => {
              for cfg in preds.iter() {
+                 }
+             }
+         }
+-        _ => {}
++        _ => {
++        }
+     }
+ }
+ 
  #[cfg(test)]
  mod tests {
      use super::*;

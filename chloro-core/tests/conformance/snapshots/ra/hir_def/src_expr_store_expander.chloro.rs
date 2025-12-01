@@ -132,7 +132,11 @@ impl Expander {
             }
         });
 
-        if let Some(err) = unresolved_macro_err { Err(err) } else { Ok(result) }
+        if let Some(err) = unresolved_macro_err {
+            Err(err)
+        } else {
+            Ok(result)
+        }
     }
 
     pub(super) fn enter_expand_id<T: ast::AstNode>(

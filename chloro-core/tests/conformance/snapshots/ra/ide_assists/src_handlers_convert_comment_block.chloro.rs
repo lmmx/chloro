@@ -138,7 +138,11 @@ pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) ->
     let contents = contents_without_prefix.strip_prefix(' ').unwrap_or(contents_without_prefix);
 
     // Don't add the indentation if the line is empty
-    if contents.is_empty() { contents.to_owned() } else { indentation.to_string() + contents }
+    if contents.is_empty() {
+        contents.to_owned()
+    } else {
+        indentation.to_string() + contents
+    }
 }
 
 #[cfg(test)]

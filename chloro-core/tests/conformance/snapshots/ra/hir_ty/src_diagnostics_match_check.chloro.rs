@@ -319,7 +319,6 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                         AdtId::EnumId(_) => None,
                     }),
                 };
-
                 if let Some(variant) = variant {
                     match variant {
                         VariantId::EnumVariantId(v) => {
@@ -374,7 +373,6 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                         return write!(f, " }}");
                     }
                 }
-
                 let num_fields =
                     variant.map_or(subpatterns.len(), |v| v.fields(f.db).fields().len());
                 if num_fields != 0 || variant.is_none() {
@@ -400,7 +398,6 @@ impl<'db> HirDisplay<'db> for Pat<'db> {
                     }
                     write!(f, ")")?;
                 }
-
                 Ok(())
             }
             PatKind::Deref { subpattern } => {

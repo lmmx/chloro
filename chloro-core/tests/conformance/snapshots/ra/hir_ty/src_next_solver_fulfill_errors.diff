@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50701 bytes
+Chloro size:   50514 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -46,6 +46,69 @@ Rustfmt size:  50684 bytes
      ConstEquate(ExpectedFound<Const<'db>>, TypeError<'db>),
      Ambiguity {
          /// Overflow is only `Some(suggest_recursion_limit)` when using the next generation
+                 goal.goal().param_env,
+                 pred,
+             );
+-            self.with_derived_obligation(obligation, |this| {
++            self.with_derived_obligation(
++                obligation,
++                |this| {
+                 goal.infcx().visit_proof_tree_at_depth(
+                     goal.goal().with(interner, pred),
+                     goal.depth() + 1,
+                     this,
+                 )
+-            })
++            },
++            )
+         } else {
+             ControlFlow::Continue(())
+         }
+     ) -> ControlFlow<PredicateObligation<'db>> {
+         let interner = goal.infcx().interner;
+         if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
+-            && !projection_clause.bound_vars().is_empty()
+-        {
++            && !projection_clause.bound_vars().is_empty() {
+             let pred = projection_clause.map_bound(|proj| proj.projection_term.trait_ref(interner));
+             let obligation = Obligation::new(
+                 interner,
+                 goal.goal().param_env,
+                 deeply_normalize_for_diagnostics(goal.infcx(), goal.goal().param_env, pred),
+             );
+-            self.with_derived_obligation(obligation, |this| {
++            self.with_derived_obligation(
++                obligation,
++                |this| {
+                 goal.infcx().visit_proof_tree_at_depth(
+                     goal.goal().with(interner, pred),
+                     goal.depth() + 1,
+                     this,
+                 )
+-            })
++            },
++            )
+         } else {
+             ControlFlow::Continue(())
+         }
+             goal.goal().param_env,
+             alias.trait_ref(interner),
+         );
+-        self.with_derived_obligation(obligation, |this| {
++        self.with_derived_obligation(
++            obligation,
++            |this| {
+             goal.infcx().visit_proof_tree_at_depth(
+                 goal.goal().with(interner, alias.trait_ref(interner)),
+                 goal.depth() + 1,
+                 this,
+             )
+-        })
++        },
++        )
+     }
+ 
+     /// If we have no candidates, then it's likely that there is a
          };
  
          // // Don't walk into impls that have `do_not_recommend`.
@@ -134,6 +197,25 @@ Rustfmt size:  50684 bytes
      impl<'a, 'db> WfPredicates<'a, 'db> {
          fn interner(&self) -> DbInterner<'db> {
              self.infcx.interner
+             // am looking forward to the future here.
+             if !data.has_escaping_bound_vars() && !region.has_escaping_bound_vars() {
+                 let implicit_bounds = object_region_bounds(self.interner(), data);
+-
+                 let explicit_bound = region;
+-
+                 self.out.reserve(implicit_bounds.len());
+                 for implicit_bound in implicit_bounds {
+                     let cause = ObligationCause::new();
+                         outlives,
+                     ));
+                 }
+-
+-                // We don't add any wf predicates corresponding to the trait ref's generic arguments
+-                // which allows code like this to compile:
+-                // ```rust
+-                // trait Trait<T: Sized> {}
+-                // fn foo(_: &dyn Trait<[u32]>) {}
+-                // ```
              }
          }
      }

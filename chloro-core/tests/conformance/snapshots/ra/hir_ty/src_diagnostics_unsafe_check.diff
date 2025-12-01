@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17194 bytes
-Chloro size:   17215 bytes
+Chloro size:   17216 bytes
 Rustfmt size:  17194 bytes
 
 ✗ Outputs DIFFER
@@ -45,3 +45,21 @@ Rustfmt size:  17194 bytes
  }
  
  pub fn unsafe_operations_for_body<'db>(
+             self.target_feature_is_safe,
+         );
+         match unsafety {
+-            crate::utils::Unsafety::Safe => {}
++            crate::utils::Unsafety::Safe => {
++            }
+             crate::utils::Unsafety::Unsafe => {
+                 self.on_unsafe_op(node.into(), UnsafetyReason::UnsafeFnCall)
+             }
+             if static_data.flags.contains(StaticFlags::MUTABLE) {
+                 self.on_unsafe_op(node, UnsafetyReason::MutableStatic);
+             } else if static_data.flags.contains(StaticFlags::EXTERN)
+-                && !static_data.flags.contains(StaticFlags::EXPLICIT_SAFE)
+-            {
++                && !static_data.flags.contains(StaticFlags::EXPLICIT_SAFE) {
+                 self.on_unsafe_op(node, UnsafetyReason::ExternStatic);
+             }
+         }

@@ -66,14 +66,12 @@ impl<'db> Ty<'db> {
     }
 
     pub fn inner(&self) -> &WithCachedTypeInfo<TyKind<'db>> {
-        crate::with_attached_db(
-            |db| {
+        crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
             // make sure that our returned value is valid for the lifetime `'db`.
             unsafe { std::mem::transmute(inner) }
-        },
-        )
+        })
     }
 
     pub fn new_adt(interner: DbInterner<'db>, adt_id: AdtId, args: GenericArgs<'db>) -> Self {
@@ -183,30 +181,23 @@ impl<'db> Ty<'db> {
             | TyKind::CoroutineClosure(..)
             | TyKind::Never
             | TyKind::Error(_) => true,
-
             TyKind::Str | TyKind::Slice(_) | TyKind::Dynamic(_, _) => match sizedness {
                 SizedTraitKind::Sized => false,
                 SizedTraitKind::MetaSized => true,
             },
-
             TyKind::Foreign(..) => match sizedness {
                 SizedTraitKind::Sized | SizedTraitKind::MetaSized => false,
             },
-
             TyKind::Tuple(tys) => {
                 tys.last().is_none_or(|ty| ty.has_trivial_sizedness(tcx, sizedness))
             }
-
             TyKind::Adt(def, args) => def
                 .sizedness_constraint(tcx, sizedness)
                 .is_none_or(|ty| ty.instantiate(tcx, args).has_trivial_sizedness(tcx, sizedness)),
-
             TyKind::Alias(..) | TyKind::Param(_) | TyKind::Placeholder(..) | TyKind::Bound(..) => {
                 false
             }
-
             TyKind::Infer(InferTy::TyVar(_)) => false,
-
             TyKind::Infer(
                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_),
             ) => {
@@ -226,48 +217,24 @@ impl<'db> Ty<'db> {
     pub fn is_trivially_pure_clone_copy(self) -> bool {
         match self.kind() {
             TyKind::Bool | TyKind::Char | TyKind::Never => true,
-
-            // These aren't even `Clone`
             TyKind::Str | TyKind::Slice(..) | TyKind::Foreign(..) | TyKind::Dynamic(..) => false,
-
             TyKind::Infer(InferTy::FloatVar(_) | InferTy::IntVar(_))
             | TyKind::Int(..)
             | TyKind::Uint(..)
             | TyKind::Float(..) => true,
-
-            // ZST which can't be named are fine.
             TyKind::FnDef(..) => true,
-
             TyKind::Array(element_ty, _len) => element_ty.is_trivially_pure_clone_copy(),
-
-            // A 100-tuple isn't "trivial", so doing this only for reasonable sizes.
             TyKind::Tuple(field_tys) => {
                 field_tys.len() <= 3 && field_tys.iter().all(Self::is_trivially_pure_clone_copy)
             }
-
             TyKind::Pat(ty, _) => ty.is_trivially_pure_clone_copy(),
-
-            // Sometimes traits aren't implemented for every ABI or arity,
-            // because we can't be generic over everything yet.
             TyKind::FnPtr(..) => false,
-
-            // Definitely absolutely not copy.
             TyKind::Ref(_, _, Mutability::Mut) => false,
-
-            // The standard library has a blanket Copy impl for shared references and raw pointers,
-            // for all unsized types.
             TyKind::Ref(_, _, Mutability::Not) | TyKind::RawPtr(..) => true,
-
             TyKind::Coroutine(..) | TyKind::CoroutineWitness(..) => false,
-
-            // Might be, but not "trivial" so just giving the safe answer.
             TyKind::Adt(..) | TyKind::Closure(..) | TyKind::CoroutineClosure(..) => false,
-
             TyKind::UnsafeBinder(_) => false,
-
-            // Needs normalization or revealing to determine, so no is the safe answer.
             TyKind::Alias(..) => false,
-
             TyKind::Param(..)
             | TyKind::Placeholder(..)
             | TyKind::Bound(..)
@@ -288,23 +255,19 @@ impl<'db> Ty<'db> {
             | TyKind::Param(_)
             | TyKind::Placeholder(_)
             | TyKind::Bound(..) => true,
-
             TyKind::Slice(ty) => {
                 ty.is_trivially_wf(tcx) && ty.has_trivial_sizedness(tcx, SizedTraitKind::Sized)
             }
             TyKind::RawPtr(ty, _) => ty.is_trivially_wf(tcx),
-
             TyKind::FnPtr(sig_tys, _) => {
                 sig_tys.skip_binder().inputs_and_output.iter().all(|ty| ty.is_trivially_wf(tcx))
             }
             TyKind::Ref(_, ty, _) => ty.is_global() && ty.is_trivially_wf(tcx),
-
             TyKind::Infer(infer) => match infer {
                 InferTy::TyVar(_) => false,
                 InferTy::IntVar(_) | InferTy::FloatVar(_) => true,
                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => true,
             },
-
             TyKind::Adt(_, _)
             | TyKind::Tuple(_)
             | TyKind::Array(..)
@@ -487,9 +450,9 @@ impl<'db> Ty<'db> {
     /// This needs to be called for every type that may contain infer vars and is yielded to outside inference,
     /// as things other than inference do not expect to see infer vars.
     pub fn replace_infer_with_error(self, interner: DbInterner<'db>) -> Ty<'db> {
-        self.fold_with(&mut crate::next_solver::infer::resolve::ReplaceInferWithError::new(
-            interner,
-        ))
+        self.fold_with(
+            &mut crate::next_solver::infer::resolve::ReplaceInferWithError::new(interner),
+        )
     }
 
     pub fn from_builtin_type(
@@ -583,7 +546,6 @@ impl<'db> Ty<'db> {
                 }
             }
             TyKind::Param(param) => {
-                // FIXME: We shouldn't use `param.id` here.
                 let generic_params = db.generic_params(param.id.parent());
                 let param_data = &generic_params[param.id.local_id()];
                 match param_data {
@@ -601,7 +563,6 @@ impl<'db> Ty<'db> {
                                     _ => false,
                                 })
                                 .collect::<Vec<_>>();
-
                             Some(predicates)
                         }
                         _ => None,
@@ -613,9 +574,6 @@ impl<'db> Ty<'db> {
                 let InternedCoroutine(owner, _) = coroutine_id.0.loc(db);
                 let krate = owner.module(db).krate();
                 if let Some(future_trait) = LangItem::Future.resolve_trait(db, krate) {
-                    // This is only used by type walking.
-                    // Parameters will be walked outside, and projection predicate is not used.
-                    // So just provide the Future trait.
                     let impl_bound = TraitRef::new(
                         interner,
                         future_trait.into(),
@@ -671,11 +629,19 @@ impl<'db> TypeVisitor<DbInterner<'db>> for ReferencesNonLifetimeError {
     type Result = ControlFlow<()>;
 
     fn visit_ty(&mut self, ty: Ty<'db>) -> Self::Result {
-        if ty.is_ty_error() { ControlFlow::Break(()) } else { ty.super_visit_with(self) }
+        if ty.is_ty_error() {
+            ControlFlow::Break(())
+        } else {
+            ty.super_visit_with(self)
+        }
     }
 
     fn visit_const(&mut self, c: Const<'db>) -> Self::Result {
-        if c.is_ct_error() { ControlFlow::Break(()) } else { c.super_visit_with(self) }
+        if c.is_ct_error() {
+            ControlFlow::Break(())
+        } else {
+            c.super_visit_with(self)
+        }
     }
 }
 
@@ -738,14 +704,11 @@ impl<'db> TypeSuperVisitable<DbInterner<'db>> for Ty<'db> {
             TyKind::Closure(_did, ref args) => args.visit_with(visitor),
             TyKind::CoroutineClosure(_did, ref args) => args.visit_with(visitor),
             TyKind::Alias(_, ref data) => data.visit_with(visitor),
-
             TyKind::Pat(ty, pat) => {
                 try_visit!(ty.visit_with(visitor));
                 pat.visit_with(visitor)
             }
-
             TyKind::Error(guar) => guar.visit_with(visitor),
-
             TyKind::Bool
             | TyKind::Char
             | TyKind::Str
@@ -825,7 +788,11 @@ impl<'db> TypeSuperFoldable<DbInterner<'db>> for Ty<'db> {
             | TyKind::Foreign(..) => return Ok(self),
         };
 
-        Ok(if self.kind() == kind { self } else { Ty::new(folder.cx(), kind) })
+        Ok(if self.kind() == kind {
+            self
+        } else {
+            Ty::new(folder.cx(), kind)
+        })
     }
 
     fn super_fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
@@ -873,7 +840,11 @@ impl<'db> TypeSuperFoldable<DbInterner<'db>> for Ty<'db> {
             | TyKind::Foreign(..) => return self,
         };
 
-        if self.kind() == kind { self } else { Ty::new(folder.cx(), kind) }
+        if self.kind() == kind {
+            self
+        } else {
+            Ty::new(folder.cx(), kind)
+        }
     }
 }
 
@@ -1119,16 +1090,10 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
                 IntTy::I32 => Some(ClosureKind::FnOnce),
                 _ => unreachable!("cannot convert type `{:?}` to a closure kind", self),
             },
-
-            // "Bound" types appear in canonical queries when the
-            // closure type is not yet known, and `Placeholder` and `Param`
-            // may be encountered in generic `AsyncFnKindHelper` goals.
             TyKind::Bound(..) | TyKind::Placeholder(_) | TyKind::Param(_) | TyKind::Infer(_) => {
                 None
             }
-
             TyKind::Error(_) => Some(ClosureKind::Fn),
-
             _ => unreachable!("cannot convert type `{:?}` to a closure kind", self),
         }
     }
@@ -1159,19 +1124,10 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
         match self.kind() {
             TyKind::Adt(adt, _) if adt.is_enum() => adt.repr().discr_type().to_ty(interner),
             TyKind::Coroutine(_, args) => args.as_coroutine().discr_ty(interner),
-
             TyKind::Param(_) | TyKind::Alias(..) | TyKind::Infer(InferTy::TyVar(_)) => {
-                /*
-                let assoc_items = tcx.associated_item_def_ids(
-                    tcx.require_lang_item(hir::LangItem::DiscriminantKind, None),
-                );
-                TyKind::new_projection_from_args(tcx, assoc_items[0], tcx.mk_args(&[self.into()]))
-                */
                 unimplemented!()
             }
-
             TyKind::Pat(ty, _) => ty.discriminant_ty(interner),
-
             TyKind::Bool
             | TyKind::Char
             | TyKind::Int(_)
@@ -1196,7 +1152,6 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
             | TyKind::Infer(InferTy::IntVar(_) | InferTy::FloatVar(_)) => {
                 Ty::new(interner, TyKind::Uint(UintTy::U8))
             }
-
             TyKind::Bound(..)
             | TyKind::Placeholder(_)
             | TyKind::Infer(

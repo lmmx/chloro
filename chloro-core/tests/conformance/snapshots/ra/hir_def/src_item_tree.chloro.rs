@@ -125,8 +125,7 @@ pub(crate) fn file_item_tree_query(db: &dyn DefDatabase, file_id: HirFileId) -> 
         && top_level.is_empty()
         && attrs.is_empty()
         && top_attrs.is_empty()
-        && vis.arena.is_empty()
-    {
+        && vis.arena.is_empty() {
         EMPTY
             .get_or_init(|| {
                 Arc::new(ItemTree {
@@ -161,8 +160,7 @@ pub(crate) fn block_item_tree_query(db: &dyn DefDatabase, block: BlockId) -> Arc
         && top_level.is_empty()
         && attrs.is_empty()
         && top_attrs.is_empty()
-        && vis.arena.is_empty()
-    {
+        && vis.arena.is_empty() {
         EMPTY
             .get_or_init(|| {
                 Arc::new(ItemTree {

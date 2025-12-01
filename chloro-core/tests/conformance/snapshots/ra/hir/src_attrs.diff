@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11937 bytes
-Chloro size:   11944 bytes
+Chloro size:   11975 bytes
 Rustfmt size:  12307 bytes
 
 ✗ Outputs DIFFER
@@ -123,6 +123,24 @@ Rustfmt size:  12307 bytes
  
      // Resolve inherent items first, then trait items, then fields.
      if let Some(assoc_item_def) = resolve_assoc_item(db, &ty, &name, ns) {
+     name: &Name,
+     ns: Option<Namespace>,
+ ) -> Option<DocLinkDef> {
+-    ty.iterate_assoc_items(db, ty.krate(db), move |assoc_item| {
++    ty.iterate_assoc_items(
++        db,
++        ty.krate(db),
++        move |assoc_item| {
+         if assoc_item.name(db)? != *name {
+             return None;
+         }
+         as_module_def_if_namespace_matches(assoc_item, ns)
+-    })
++    },
++    )
+ }
+ 
+ fn resolve_impl_trait_item<'db>(
  ) -> Option<DocLinkDef> {
      let canonical = ty.canonical(db);
      let krate = ty.krate(db);

@@ -135,12 +135,10 @@ pub(crate) fn handle_memory_usage(_state: &mut GlobalState, _: ()) -> anyhow::Re
             when building from source, or pass `--enable-profiling` to `cargo xtask`."
         ))
     }
-    #[cfg(feature = "dhat")]
-    {
+    #[cfg(feature = "dhat")] {
         if let Some(dhat_output_file) = _state.config.dhat_output_file() {
             let mut profiler = crate::DHAT_PROFILER.lock().unwrap();
             let old_profiler = profiler.take();
-            // Need to drop the old profiler before creating a new one.
             drop(old_profiler);
             *profiler = Some(dhat::Profiler::builder().file_name(&dhat_output_file).build());
             Ok(format!(
@@ -302,8 +300,7 @@ pub(crate) fn handle_discover_test(
         None => (snap.analysis.discover_test_roots()?, None),
     };
 
-    Ok(
-        lsp_ext::DiscoverTestResults {
+    Ok(lsp_ext::DiscoverTestResults {
         tests: tests
             .into_iter()
             .filter_map(|t| {
@@ -313,8 +310,7 @@ pub(crate) fn handle_discover_test(
             .collect(),
         scope,
         scope_file: None,
-    },
-    )
+    })
 }
 
 pub(crate) fn handle_view_crate_graph(
@@ -1814,8 +1810,7 @@ pub(crate) fn handle_inlay_hints_resolve(
         },
     )?;
 
-    Ok(
-        resolve_hints
+    Ok(resolve_hints
         .and_then(|it| {
             to_proto::inlay_hint(
                 &snap,
@@ -1828,8 +1823,7 @@ pub(crate) fn handle_inlay_hints_resolve(
         })
         .filter(|hint| hint.position == original_hint.position)
         .filter(|hint| hint.kind == original_hint.kind)
-        .unwrap_or(original_hint),
-    )
+        .unwrap_or(original_hint))
 }
 
 pub(crate) fn handle_call_hierarchy_prepare(
@@ -2126,8 +2120,7 @@ pub(crate) fn handle_view_recursive_memory_layout(
     let offset = from_proto::offset(&line_index, params.position)?;
 
     let res = snap.analysis.get_recursive_memory_layout(FilePosition { file_id, offset })?;
-    Ok(
-        res.map(|it| lsp_ext::RecursiveMemoryLayout {
+    Ok(res.map(|it| lsp_ext::RecursiveMemoryLayout {
         nodes: it
             .nodes
             .iter()
@@ -2142,8 +2135,7 @@ pub(crate) fn handle_view_recursive_memory_layout(
                 children_len: n.children_len,
             })
             .collect(),
-    }),
-    )
+    }))
 }
 
 fn to_command_link(command: lsp_types::Command, tooltip: String) -> lsp_ext::CommandLink {
@@ -2323,7 +2315,6 @@ fn prepare_hover_actions(
 fn should_skip_target(runnable: &Runnable, cargo_spec: Option<&TargetSpec>) -> bool {
     match runnable.kind {
         RunnableKind::Bin => {
-            // Do not suggest binary run on other target than binary
             match &cargo_spec {
                 Some(spec) => !matches!(
                     spec.target_kind(),
@@ -2513,15 +2504,11 @@ fn run_rustfmt(
     let (new_text, new_line_endings) = LineEndings::normalize(captured_stdout);
 
     if line_index.endings != new_line_endings {
-        // If line endings are different, send the entire file.
-        // Diffing would not work here, as the line endings might be the only
-        // difference.
         Ok(Some(to_proto::text_edit_vec(
             &line_index,
             TextEdit::replace(TextRange::up_to(TextSize::of(&*file)), new_text),
         )))
     } else if *file == new_text {
-        // The document is already formatted correctly -- no edits needed.
         Ok(None)
     } else {
         Ok(Some(to_proto::text_edit_vec(&line_index, diff(&file, &new_text))))
@@ -2560,8 +2547,7 @@ pub(crate) fn internal_testing_fetch_config(
         ),
         None => None,
     };
-    Ok(Some(
-        match params.config {
+    Ok(Some(match params.config {
         InternalTestingFetchConfigOption::AssistEmitMustUse => {
             InternalTestingFetchConfigResponse::AssistEmitMustUse(
                 state.config.assist(source_root).assist_emit_must_use,
@@ -2572,8 +2558,7 @@ pub(crate) fn internal_testing_fetch_config(
                 state.config.flycheck_workspace(source_root),
             )
         }
-    },
-    ))
+    }))
 }
 
 /// Searches for the directory of a Rust crate given this crate's root file path.

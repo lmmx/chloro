@@ -133,7 +133,11 @@ pub enum LiteralOrConst {
 
 impl Literal {
     pub fn negate(self) -> Option<Self> {
-        if let Literal::Int(i, k) = self { Some(Literal::Int(-i, k)) } else { None }
+        if let Literal::Int(i, k) = self {
+            Some(Literal::Int(-i, k))
+        } else {
+            None
+        }
     }
 }
 
@@ -635,7 +639,8 @@ impl Pat {
             | Pat::ConstBlock(..)
             | Pat::Wild
             | Pat::Missing
-            | Pat::Expr(_) => {}
+            | Pat::Expr(_) => {
+            }
             Pat::Bind { subpat, .. } => {
                 subpat.iter().copied().for_each(f);
             }

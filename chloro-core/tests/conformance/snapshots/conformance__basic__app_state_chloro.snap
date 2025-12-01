@@ -237,8 +237,7 @@ impl AppState {
             if let Some(node_idx) = self
                 .tree_nodes
                 .iter()
-                .position(|n| n.section_index == Some(current_section_idx))
-            {
+                .position(|n| n.section_index == Some(current_section_idx)) {
                 self.current_node_index = node_idx;
             }
         }
@@ -267,12 +266,10 @@ impl AppState {
         if let Some(section_idx) = self.get_current_section_index() {
             if let Some(section) = self.sections.get(section_idx) {
                 let lines_added = self.editor_state.as_ref().map_or(0, |es| es.lines.len());
-
                 let file_map = self
                     .file_offsets
                     .entry(section.file_path.clone())
                     .or_default();
-
                 file_map.insert(section.line_start, lines_added);
             }
         }
@@ -322,7 +319,6 @@ impl AppState {
                 if let Ok(content) = fs::read_to_string(&section.file_path) {
                     let bytes = content.as_bytes();
                     if section.byte_start < bytes.len() && section.byte_end <= bytes.len() {
-                        // Section exists and can be loaded
                     }
                 }
             }

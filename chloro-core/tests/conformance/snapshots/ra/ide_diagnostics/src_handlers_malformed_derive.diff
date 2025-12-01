@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 948 bytes
-Chloro size:   839 bytes
+Chloro size:   834 bytes
 Rustfmt size:  948 bytes
 
 ✗ Outputs DIFFER
@@ -16,6 +16,14 @@ Rustfmt size:  948 bytes
  pub(crate) fn malformed_derive(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::MalformedDerive,
+         DiagnosticCode::RustcHardError("E0777"),
+         "malformed derive input, derive attributes are of the form `#[derive(Derive1, Derive2, ...)]`",
+         display_range,
+-    )
+-    .stable()
++    ).stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

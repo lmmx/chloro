@@ -73,7 +73,10 @@ impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
     }
 
     fn from_eof(&self) -> Option<CargoTestMessage> {
-        Some(CargoTestMessage { target: self.target.clone(), output: CargoTestOutput::Finished })
+        Some(CargoTestMessage {
+            target: self.target.clone(),
+            output: CargoTestOutput::Finished,
+        })
     }
 }
 
@@ -137,15 +140,13 @@ impl CargoTestHandle {
             cmd.arg(extra_arg);
         }
 
-        Ok(
-            Self {
+        Ok(Self {
             _handle: CommandHandle::spawn(
                 cmd,
                 CargoTestOutputParser::new(&test_target),
                 sender,
                 None,
             )?,
-        },
-        )
+        })
     }
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14069 bytes
-Chloro size:   14056 bytes
+Chloro size:   14008 bytes
 Rustfmt size:  14657 bytes
 
 ✗ Outputs DIFFER
@@ -174,6 +174,13 @@ Rustfmt size:  14657 bytes
                  self.items.push((name.as_name(), def.into()));
              }
              ast::AssocItem::MacroCall(call) => {
+                 };
+                 let path = Interned::new(path);
+                 let ctxt = self.span_map.span_for_range(range).ctx;
+-
+                 let resolver = |path: &_| {
+                     self.def_map
+                         .resolve_path(
                      self.module_id.krate(),
                      resolver,
                      &mut |ptr, call_id| {
@@ -182,4 +189,7 @@ Rustfmt size:  14657 bytes
 +                        self.macro_calls.push((ptr.map(|(_, it)| it.upcast()), call_id))
                      },
                  ) {
-                     // FIXME: Expansion error?
+-                    // FIXME: Expansion error?
+                     Ok(call_id) => match call_id.value {
+                         Some(call_id) => {
+                             self.macro_calls.push((ast_id.upcast(), call_id));

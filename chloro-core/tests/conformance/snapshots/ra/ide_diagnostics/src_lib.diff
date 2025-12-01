@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33895 bytes
-Chloro size:   33723 bytes
+Chloro size:   33645 bytes
 Rustfmt size:  33895 bytes
 
 ✗ Outputs DIFFER
@@ -113,3 +113,30 @@ Rustfmt size:  33895 bytes
  
  fn build_lints_map(
      lints: &'static [Lint],
+         if !(default_severity == Severity::Allow && diag.severity == Severity::WeakWarning) {
+             diag.severity = default_severity;
+         }
+-
+         let mut diag_severity =
+             lint_severity_at(sema, node, &lint_groups(&diag.code, edition), edition);
+-
+         if let outline_diag_severity @ Some(_) =
+             find_outline_mod_lint_severity(sema, node, diag, edition)
+         {
+             diag_severity = outline_diag_severity;
+         }
+-
+         if let Some(diag_severity) = diag_severity {
+             diag.severity = diag_severity;
+         }
+         }
+     }
+ 
+-    if prev_len != lint_attrs.len()
+-        && let Some(false) | None = sema.check_cfg_attr(value)
+-    {
+-        // Discard the attributes when the condition is false.
++    if prev_len != lint_attrs.len() && let Some(false) | None = sema.check_cfg_attr(value) {
+         lint_attrs.truncate(prev_len);
+     }
+ }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   32301 bytes
+Chloro size:   31876 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -39,6 +39,31 @@ Rustfmt size:  32290 bytes
  };
  
  macro_rules! register_builtin {
+         }
+         None => ExpandResult::new(
+             tt::TopSubtree::empty(tt::DelimSpan::from_single(span)),
+-            ExpandError::other(
+-                span,
+-                "none of the predicates in this `cfg_select` evaluated to true",
+-            ),
++            ExpandError::other(span, "none of the predicates in this `cfg_select` evaluated to true"),
+         ),
+     }
+ }
+             break false;
+         };
+         let expn = db.lookup_intern_macro_call(expn.into());
+-        // FIXME: Record allow_internal_unstable in the macro def (not been done yet because it
+-        // would consume quite a bit extra memory for all call locs...)
+-        // if let Some(features) = expn.def.allow_internal_unstable {
+-        //     if features.iter().any(|&f| f == sym::edition_panic) {
+-        //         span = expn.call_site;
+-        //         continue;
+-        //     }
+-        // }
+         break expn.def.edition >= Edition::Edition2021;
+     }
+ }
          _ => ExpandError::other(span, "`compile_error!` argument must be a string"),
      };
  
@@ -50,6 +75,17 @@ Rustfmt size:  32290 bytes
  }
  
  fn concat_expand(
+             TtElement::Leaf(l) => Err(*l.span()),
+             TtElement::Subtree(tt, _) => Err(tt.delimiter.open.cover(tt.delimiter.close)),
+         }
+-    })()
+-    .map_err(|span| ExpandError::other(span, "expected string literal"))
++    })().map_err(
++        |span| ExpandError::other(span, "expected string literal"),
++    )
+ }
+ 
+ fn include_expand(
      };
  
      // FIXME: we're not able to read excluded files (which is most of them because
@@ -61,3 +97,14 @@ Rustfmt size:  32290 bytes
      // expansion.
      let file_id = match relative_file(db, arg_id, path.as_str(), true, input_span) {
          Ok(file_id) => file_id,
+     span: Span,
+ ) -> ExpandResult<tt::TopSubtree> {
+     ExpandResult::new(
+-        tt::TopSubtree::empty(tt::DelimSpan { open: span, close: span }),
++        tt::TopSubtree::empty(tt::DelimSpan {
++        open: span,
++        close: span,
++    }),
+         ExpandError::other(span, "quote! is not implemented"),
+     )
+ }

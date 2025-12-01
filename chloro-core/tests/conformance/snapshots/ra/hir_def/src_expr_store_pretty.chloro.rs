@@ -482,7 +482,8 @@ impl Printer<'_> {
 
     fn whitespace(&mut self) {
         match self.buf.chars().next_back() {
-            None | Some('\n' | ' ') => {}
+            None | Some('\n' | ' ') => {
+            }
             _ => self.buf.push(' '),
         }
     }
@@ -490,14 +491,16 @@ impl Printer<'_> {
     fn newline(&mut self) {
         if matches!(self.line_format, LineFormat::Oneline) {
             match self.buf.chars().last() {
-                Some(' ') | None => {}
+                Some(' ') | None => {
+                }
                 Some(_) => {
                     w!(self, " ");
                 }
             }
         } else {
             match self.buf.chars().rev().find_position(|ch| *ch != ' ') {
-                Some((_, '\n')) | None => {}
+                Some((_, '\n')) | None => {
+                }
                 Some((idx, _)) => {
                     if idx != 0 {
                         self.buf.drain(self.buf.len() - idx..);
@@ -651,7 +654,6 @@ impl Printer<'_> {
                     Some(path) => self.print_path(path),
                     None => w!(self, "�"),
                 }
-
                 w!(self, "{{");
                 let edition = self.edition;
                 self.indented(|p| {
@@ -889,7 +891,6 @@ impl Printer<'_> {
                     Some(path) => self.print_path(path),
                     None => w!(self, "�"),
                 }
-
                 w!(self, " {{");
                 let edition = self.edition;
                 let oneline = matches!(self.line_format, LineFormat::Oneline);
@@ -1131,12 +1132,10 @@ impl Printer<'_> {
             if i != 0 || !matches!(path.kind(), PathKind::Plain) {
                 w!(self, "::");
             }
-
             w!(self, "{}", segment.name.display(self.db, self.edition));
             if let Some(generics) = segment.args_and_bindings {
                 w!(self, "::<");
                 self.print_generic_args(generics);
-
                 w!(self, ">");
             }
         }
@@ -1305,7 +1304,6 @@ impl Printer<'_> {
             if i != 0 {
                 w!(self, " + ");
             }
-
             match bound {
                 TypeBound::Path(path, modifier) => {
                     match modifier {

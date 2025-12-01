@@ -100,8 +100,6 @@ pub(crate) fn complete_expr_path(
     };
 
     match qualified {
-        // We exclude associated types/consts of excluded traits here together with methods,
-        // even though we don't exclude them when completing in type position, because it's easier.
         Qualified::TypeAnchor { ty: None, trait_: None } => ctx
             .traits_in_scope()
             .iter()
@@ -113,7 +111,6 @@ pub(crate) fn complete_expr_path(
             .flat_map(|it| it.items(ctx.sema.db))
             .for_each(|item| add_assoc_item(acc, item)),
         Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
-            // Don't filter excluded traits here, user requested this specific trait.
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
         }
         Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
@@ -121,7 +118,6 @@ pub(crate) fn complete_expr_path(
                 cov_mark::hit!(completes_variant_through_alias);
                 acc.add_enum_variants(ctx, path_ctx, e);
             }
-
             ty.iterate_path_candidates_split_inherent(
                 ctx.db,
                 &ctx.scope,
@@ -130,8 +126,6 @@ pub(crate) fn complete_expr_path(
                 None,
                 PathCallback { ctx, acc, add_assoc_item, seen: FxHashSet::default() },
             );
-
-            // Iterate assoc types separately
             ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                 if let hir::AssocItem::TypeAlias(ty) = item {
                     acc.add_type_alias(ctx, ty)
@@ -139,9 +133,9 @@ pub(crate) fn complete_expr_path(
                 None::<()>
             });
         }
-        Qualified::With { resolution: None, .. } => {}
+        Qualified::With { resolution: None, .. } => {
+        }
         Qualified::With { resolution: Some(resolution), .. } => {
-            // Add associated types on type parameters and `Self`.
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
                 acc.add_type_alias(ctx, alias);
             });
@@ -155,7 +149,6 @@ pub(crate) fn complete_expr_path(
                     } else {
                         Some(ctx.module)
                     };
-
                     let module_scope = module.scope(ctx.db, visible_from);
                     for (name, def) in module_scope {
                         if scope_def_applicable(def) {
@@ -183,15 +176,10 @@ pub(crate) fn complete_expr_path(
                         }
                         _ => return,
                     };
-
                     if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                         cov_mark::hit!(completes_variant_through_alias);
                         acc.add_enum_variants(ctx, path_ctx, e);
                     }
-
-                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
-                    // (where AssocType is defined on a trait, not an inherent impl)
-
                     ty.iterate_path_candidates_split_inherent(
                         ctx.db,
                         &ctx.scope,
@@ -200,8 +188,6 @@ pub(crate) fn complete_expr_path(
                         None,
                         PathCallback { ctx, acc, add_assoc_item, seen: FxHashSet::default() },
                     );
-
-                    // Iterate assoc types separately
                     ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                         if let hir::AssocItem::TypeAlias(ty) = item {
                             acc.add_type_alias(ctx, ty)
@@ -210,8 +196,6 @@ pub(crate) fn complete_expr_path(
                     });
                 }
                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
-                    // Don't filter excluded traits here, user requested this specific trait.
-                    // Handles `Trait::assoc` as well as `<Ty as Trait>::assoc`.
                     for item in t.items(ctx.db) {
                         add_assoc_item(acc, item);
                     }
@@ -222,12 +206,10 @@ pub(crate) fn complete_expr_path(
                         hir::PathResolution::SelfType(impl_def) => impl_def.self_ty(ctx.db),
                         _ => return,
                     };
-
                     if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                         cov_mark::hit!(completes_variant_through_self);
                         acc.add_enum_variants(ctx, path_ctx, e);
                     }
-
                     ty.iterate_path_candidates_split_inherent(
                         ctx.db,
                         &ctx.scope,
@@ -331,11 +313,9 @@ pub(crate) fn complete_expr_path(
 
                 _ => (),
             });
-
             match is_func_update {
                 Some(record_expr) => {
                     let ty = ctx.sema.type_of_expr(&ast::Expr::RecordExpr(record_expr.clone()));
-
                     match ty.as_ref().and_then(|t| t.original.as_adt()) {
                         Some(hir::Adt::Union(_)) => (),
                         _ => {
@@ -352,7 +332,6 @@ pub(crate) fn complete_expr_path(
                     let mut add_keyword = |kw, snippet| {
                         acc.add_keyword_snippet_expr(ctx, incomplete_let, kw, snippet)
                     };
-
                     if !in_block_expr {
                         add_keyword("unsafe", "unsafe {\n    $0\n}");
                         add_keyword("const", "const {\n    $0\n}");
@@ -376,25 +355,20 @@ pub(crate) fn complete_expr_path(
                     add_keyword("for", "for $1 in $2 {\n    $0\n}");
                     add_keyword("true", "true");
                     add_keyword("false", "false");
-
                     if in_condition {
                         add_keyword("letm", "let mut $1 = $0");
                         add_keyword("let", "let $1 = $0");
                     }
-
                     if in_block_expr {
                         add_keyword("letm", "let mut $1 = $0;");
                         add_keyword("let", "let $1 = $0;");
                     }
-
                     if !before_else_kw && (after_if_expr || after_incomplete_let) {
                         add_keyword("else", "else {\n    $0\n}");
                     }
-
                     if after_if_expr {
                         add_keyword("else if", "else if $1 {\n    $0\n}");
                     }
-
                     if wants_raw_token {
                         add_keyword("raw", "raw ");
                     }
@@ -404,7 +378,6 @@ pub(crate) fn complete_expr_path(
                     if wants_mut_token {
                         add_keyword("mut", "mut ");
                     }
-
                     if let Some(loop_ty) = innermost_breakable_ty {
                         if in_block_expr {
                             add_keyword("continue", "continue;");
@@ -421,7 +394,6 @@ pub(crate) fn complete_expr_path(
                             },
                         );
                     }
-
                     if let Some(ret_ty) = innermost_ret_ty {
                         add_keyword(
                             "return",
@@ -463,11 +435,9 @@ pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) 
     }
 
     if let Some(ty) = &ctx.expected_type {
-        // Ignore unit types as they are not very interesting
         if ty.is_unit() || ty.is_unknown() {
             return;
         }
-
         let term_search_ctx = hir::term_search::TermSearchCtx {
             sema: &ctx.sema,
             scope: &ctx.scope,
@@ -480,16 +450,12 @@ pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) 
         };
         let exprs = hir::term_search::term_search(&term_search_ctx);
         for expr in exprs {
-            // Expand method calls
             match expr {
-                hir::term_search::Expr::Method { func, generics, target, params }
-                    if target.is_many() =>
-                {
+                hir::term_search::Expr::Method { func, generics, target, params } if target.is_many() => {
                     let target_ty = target.ty(ctx.db);
                     let term_search_ctx =
                         hir::term_search::TermSearchCtx { goal: target_ty, ..term_search_ctx };
                     let target_exprs = hir::term_search::term_search(&term_search_ctx);
-
                     for expr in target_exprs {
                         let expanded_expr = hir::term_search::Expr::Method {
                             func,
@@ -497,7 +463,6 @@ pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) 
                             target: Box::new(expr),
                             params: params.clone(),
                         };
-
                         acc.add_expr(ctx, &expanded_expr)
                     }
                 }

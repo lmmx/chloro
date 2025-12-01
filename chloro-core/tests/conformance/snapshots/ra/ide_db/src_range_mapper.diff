@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2223 bytes
-Chloro size:   2223 bytes
+Chloro size:   2249 bytes
 Rustfmt size:  2294 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,25 @@ Rustfmt size:  2294 bytes
          self.buf.push_str(text);
      }
  
+     }
+ 
+     pub fn map_range_up(&self, range: TextRange) -> impl Iterator<Item = TextRange> + '_ {
+-        equal_range_by(&self.ranges, |&(r, _)| {
++        equal_range_by(
++            &self.ranges,
++            |&(r, _)| {
+             if range.is_empty() && r.contains(range.start()) {
+                 Ordering::Equal
+             } else {
+                 TextRange::ordering(r, range)
+             }
+-        })
+-        .filter_map(move |i| {
++        },
++        ).filter_map(move |i| {
+             let (target_range, source_range) = self.ranges[i];
+             let intersection = target_range.intersect(range).unwrap();
+             let source_range = source_range?;
          // Using a binary search here is a bit complicated because of the `None` entries.
          // But the number of lines in fixtures is usually low.
          let (target_range, source_range) =

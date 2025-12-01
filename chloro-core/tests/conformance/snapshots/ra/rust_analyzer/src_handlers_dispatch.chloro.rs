@@ -346,7 +346,6 @@ where
                 .downcast_ref::<String>()
                 .map(String::as_str)
                 .or_else(|| panic.downcast_ref::<&str>().copied());
-
             let mut message = "request handler panicked".to_owned();
             if let Some(panic_message) = panic_message {
                 message.push_str(": ");
@@ -355,12 +354,9 @@ where
                 tracing::error!("Cancellation propagated out of salsa! This is a bug");
                 return Err(HandlerCancelledError::Inner(*cancelled));
             };
-
-            Ok(lsp_server::Response::new_err(
-                id,
-                lsp_server::ErrorCode::InternalError as i32,
-                message,
-            ))
+            Ok(
+                lsp_server::Response::new_err(id, lsp_server::ErrorCode::InternalError as i32, message),
+            )
         }
     }
 }
@@ -435,8 +431,7 @@ impl NotificationDispatcher<'_> {
 
     pub(crate) fn finish(&mut self) {
         if let Some(not) = &self.not
-            && !not.method.starts_with("$/")
-        {
+            && !not.method.starts_with("$/") {
             tracing::error!("unhandled notification: {:?}", not);
         }
     }

@@ -173,12 +173,7 @@ impl PartialEq for ExpressionOnlySourceMap {
             expansions,
             diagnostics,
         } = self;
-        *expr_map_back == other.expr_map_back
-            && *pat_map_back == other.pat_map_back
-            && *label_map_back == other.label_map_back
-            && *template_map == other.template_map
-            && *expansions == other.expansions
-            && *diagnostics == other.diagnostics
+        *expr_map_back == other.expr_map_back && *pat_map_back == other.pat_map_back && *label_map_back == other.label_map_back && *template_map == other.template_map && *expansions == other.expansions && *diagnostics == other.diagnostics
     }
 }
 
@@ -202,9 +197,7 @@ impl PartialEq for ExpressionStoreSourceMap {
         // the same as normal mapping
         let Self { expr_only, types_map_back, types_map: _, lifetime_map_back, lifetime_map: _ } =
             self;
-        *expr_only == other.expr_only
-            && *types_map_back == other.types_map_back
-            && *lifetime_map_back == other.lifetime_map_back
+        *expr_only == other.expr_only && *types_map_back == other.types_map_back && *lifetime_map_back == other.lifetime_map_back
     }
 }
 
@@ -442,7 +435,8 @@ impl ExpressionStore {
             | Pat::ConstBlock(..)
             | Pat::Wild
             | Pat::Missing
-            | Pat::Expr(_) => {}
+            | Pat::Expr(_) => {
+            }
             &Pat::Bind { subpat, .. } => {
                 if let Some(subpat) = subpat {
                     f(subpat);
@@ -472,8 +466,6 @@ impl ExpressionStore {
         let Some(expr_only) = &self.expr_only else { return false };
         match expr_only.binding_owners.get(&binding) {
             Some(it) => {
-                // We assign expression ids in a way that outer closures will receive
-                // a lower id
                 it.into_raw() < relative_to.into_raw()
             }
             None => true,
@@ -497,7 +489,8 @@ impl ExpressionStore {
             | Expr::Path(_)
             | Expr::OffsetOf(_)
             | Expr::Literal(_)
-            | Expr::Underscore => {}
+            | Expr::Underscore => {
+            }
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
                 | AsmOperand::Out { expr: Some(expr), .. }
@@ -633,7 +626,8 @@ impl ExpressionStore {
             | Expr::Path(_)
             | Expr::OffsetOf(_)
             | Expr::Literal(_)
-            | Expr::Underscore => {}
+            | Expr::Underscore => {
+            }
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
                 | AsmOperand::Out { expr: Some(expr), .. }
@@ -785,7 +779,9 @@ impl ExpressionStore {
     pub fn exprs(&self) -> impl Iterator<Item = (ExprId, &Expr)> {
         match &self.expr_only {
             Some(it) => it.exprs.iter(),
-            None => const { &Arena::new() }.iter(),
+            None => const {
+                &Arena::new()
+            }.iter(),
         }
     }
 
@@ -793,7 +789,9 @@ impl ExpressionStore {
     pub fn pats(&self) -> impl Iterator<Item = (PatId, &Pat)> {
         match &self.expr_only {
             Some(it) => it.pats.iter(),
-            None => const { &Arena::new() }.iter(),
+            None => const {
+                &Arena::new()
+            }.iter(),
         }
     }
 
@@ -801,7 +799,9 @@ impl ExpressionStore {
     pub fn bindings(&self) -> impl Iterator<Item = (BindingId, &Binding)> {
         match &self.expr_only {
             Some(it) => it.bindings.iter(),
-            None => const { &Arena::new() }.iter(),
+            None => const {
+                &Arena::new()
+            }.iter(),
         }
     }
 }

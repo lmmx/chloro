@@ -226,7 +226,6 @@ fn tail_cb_impl(editor: &mut SyntaxEditor, make: &SyntaxFactory, e: &ast::Expr) 
             }
         }
         ast::Expr::ReturnExpr(_) => {
-            // all return expressions have already been handled by the walk loop
         }
         e => {
             let inverted_body = invert_boolean_expression(make, e.clone());

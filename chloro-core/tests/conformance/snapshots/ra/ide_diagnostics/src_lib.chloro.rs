@@ -630,16 +630,13 @@ fn handle_lints(
         if !(default_severity == Severity::Allow && diag.severity == Severity::WeakWarning) {
             diag.severity = default_severity;
         }
-
         let mut diag_severity =
             lint_severity_at(sema, node, &lint_groups(&diag.code, edition), edition);
-
         if let outline_diag_severity @ Some(_) =
             find_outline_mod_lint_severity(sema, node, diag, edition)
         {
             diag_severity = outline_diag_severity;
         }
-
         if let Some(diag_severity) = diag_severity {
             diag.severity = diag_severity;
         }
@@ -781,10 +778,7 @@ fn cfg_attr_lint_attrs(
         }
     }
 
-    if prev_len != lint_attrs.len()
-        && let Some(false) | None = sema.check_cfg_attr(value)
-    {
-        // Discard the attributes when the condition is false.
+    if prev_len != lint_attrs.len() && let Some(false) | None = sema.check_cfg_attr(value) {
         lint_attrs.truncate(prev_len);
     }
 }

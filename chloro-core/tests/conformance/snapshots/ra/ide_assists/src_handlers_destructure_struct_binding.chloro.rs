@@ -113,8 +113,7 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
 
     let names_in_scope = get_names_in_scope(ctx, &ident_pat, &usages).unwrap_or_default();
 
-    Some(
-        StructEditData {
+    Some(StructEditData {
         name: ident_pat.name()?,
         ident_pat,
         kind,
@@ -126,8 +125,7 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
         need_record_field_name,
         is_ref,
         edition: module.krate().edition(ctx.db()),
-    },
-    )
+    })
 }
 
 fn get_names_in_scope(
@@ -279,8 +277,6 @@ fn build_usage_edit(
             let field_name: SmolStr = field_expr.name_ref()?.to_string().into();
             let new_field_name = field_names.get(&field_name)?;
             let new_expr = ast::make::expr_path(ast::make::ext::ident_path(new_field_name));
-
-            // If struct binding is a reference, we might need to deref field usages
             if data.is_ref {
                 let (replace_expr, ref_data) = determine_ref_and_parens(ctx, &field_expr);
                 (

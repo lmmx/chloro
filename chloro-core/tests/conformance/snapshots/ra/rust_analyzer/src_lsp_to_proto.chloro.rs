@@ -113,7 +113,6 @@ pub(crate) fn diagnostic_severity(severity: Severity) -> lsp_types::DiagnosticSe
         Severity::Error => lsp_types::DiagnosticSeverity::ERROR,
         Severity::Warning => lsp_types::DiagnosticSeverity::WARNING,
         Severity::WeakWarning => lsp_types::DiagnosticSeverity::HINT,
-        // unreachable
         Severity::Allow => lsp_types::DiagnosticSeverity::INFORMATION,
     }
 }
@@ -187,10 +186,12 @@ pub(crate) fn completion_text_edit(
     match insert_replace_support {
         Some(cursor_pos) => lsp_types::InsertReplaceEdit {
             new_text: text_edit.new_text,
-            insert: lsp_types::Range { start: text_edit.range.start, end: cursor_pos },
+            insert: lsp_types::Range {
+                start: text_edit.range.start,
+                end: cursor_pos,
+            },
             replace: text_edit.range,
-        }
-        .into(),
+        }.into(),
         None => text_edit.into(),
     }
 }
@@ -624,8 +625,7 @@ pub(crate) fn inlay_hint(
         _ => None,
     };
 
-    Ok(
-        lsp_types::InlayHint {
+    Ok(lsp_types::InlayHint {
         position: match inlay_hint.position {
             ide::InlayHintPosition::Before => position(line_index, inlay_hint.range.start()),
             ide::InlayHintPosition::After => position(line_index, inlay_hint.range.end()),
@@ -643,8 +643,7 @@ pub(crate) fn inlay_hint(
         data,
         tooltip,
         label,
-    },
-    )
+    })
 }
 
 fn inlay_hint_label(
@@ -930,21 +929,15 @@ pub(crate) fn folding_range(
     let range = range(line_index, fold.range);
 
     if line_folding_only {
-        // Clients with line_folding_only == true (such as VSCode) will fold the whole end line
-        // even if it contains text not in the folding range. To prevent that we exclude
-        // range.end.line from the folding region if there is more text after range.end
-        // on the same line.
         let has_more_text_on_end_line = text[TextRange::new(fold.range.end(), TextSize::of(text))]
             .chars()
             .take_while(|it| *it != '\n')
             .any(|it| !it.is_whitespace());
-
         let end_line = if has_more_text_on_end_line {
             range.end.line.saturating_sub(1)
         } else {
             range.end.line
         };
-
         lsp_types::FoldingRange {
             start_line: range.start.line,
             start_character: None,
@@ -1479,8 +1472,7 @@ pub(crate) fn call_hierarchy_item(
     let detail = target.description.clone();
     let kind = target.kind.map(symbol_kind).unwrap_or(lsp_types::SymbolKind::FUNCTION);
     let (uri, range, selection_range) = location_info(snap, target)?;
-    Ok(
-        lsp_types::CallHierarchyItem {
+    Ok(lsp_types::CallHierarchyItem {
         name,
         kind,
         tags: None,
@@ -1489,8 +1481,7 @@ pub(crate) fn call_hierarchy_item(
         range,
         selection_range,
         data: None,
-    },
-    )
+    })
 }
 
 pub(crate) fn code_action_kind(kind: AssistKind) -> lsp_types::CodeActionKind {
@@ -1560,24 +1551,19 @@ pub(crate) fn runnable(
     match target_spec {
         Some(TargetSpec::Cargo(spec)) => {
             let workspace_root = spec.workspace_root.clone();
-
             let target = spec.target.clone();
-
             let (cargo_args, executable_args) = CargoTargetSpec::runnable_args(
                 snap,
                 Some(spec.clone()),
                 &runnable.kind,
                 &runnable.cfg,
             );
-
             let cwd = match runnable.kind {
                 ide::RunnableKind::Bin => workspace_root.clone(),
                 _ => spec.cargo_toml.parent().to_owned(),
             };
-
             let label = runnable.label(Some(&target));
             let location = location_link(snap, None, runnable.nav)?;
-
             Ok(Some(lsp_ext::Runnable {
                 label,
                 location: Some(location),
@@ -1599,7 +1585,6 @@ pub(crate) fn runnable(
         Some(TargetSpec::ProjectJson(spec)) => {
             let label = runnable.label(Some(&spec.label));
             let location = location_link(snap, None, runnable.nav)?;
-
             match spec.runnable_args(&runnable.kind) {
                 Some(json_shell_runnable_args) => {
                     let runnable_args = ShellRunnableArgs {
@@ -1624,10 +1609,8 @@ pub(crate) fn runnable(
             };
             let (cargo_args, executable_args) =
                 CargoTargetSpec::runnable_args(snap, None, &runnable.kind, &runnable.cfg);
-
             let label = runnable.label(None);
             let location = location_link(snap, None, runnable.nav)?;
-
             Ok(Some(lsp_ext::Runnable {
                 label,
                 location: Some(location),
@@ -1825,7 +1808,6 @@ pub(crate) fn test_item(
                     | project_model::TargetKind::BuildScript
                     | project_model::TargetKind::Other => lsp_ext::TestItemKind::Package,
                     project_model::TargetKind::Test => lsp_ext::TestItemKind::Test,
-                    // benches are not tests needed to be shown in the test explorer
                     project_model::TargetKind::Bench => return None,
                 },
                 None => lsp_ext::TestItemKind::Package,
@@ -1952,11 +1934,19 @@ pub(crate) fn make_update_runnable(
 }
 
 pub(crate) fn implementation_title(count: usize) -> String {
-    if count == 1 { "1 implementation".into() } else { format!("{count} implementations") }
+    if count == 1 {
+        "1 implementation".into()
+    } else {
+        format!("{count} implementations")
+    }
 }
 
 pub(crate) fn reference_title(count: usize) -> String {
-    if count == 1 { "1 reference".into() } else { format!("{count} references") }
+    if count == 1 {
+        "1 reference".into()
+    } else {
+        format!("{count} references")
+    }
 }
 
 pub(crate) fn markup_content(

@@ -48,7 +48,11 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let current_module = ctx.sema.scope(strukt.syntax())?.module();
 
     let target = strukt.syntax().text_range();
-    acc.add(AssistId::generate("generate_new"), "Generate `new`", target, |builder| {
+    acc.add(
+        AssistId::generate("generate_new"),
+        "Generate `new`",
+        target,
+        |builder| {
         let trivial_constructors = field_list
             .iter()
             .map(|(name, ty)| {
@@ -212,7 +216,8 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         }
 
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 #[cfg(test)]

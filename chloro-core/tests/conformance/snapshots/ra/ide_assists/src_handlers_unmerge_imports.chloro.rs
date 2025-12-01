@@ -28,7 +28,11 @@ pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     };
 
     let target = tree.syntax().text_range();
-    acc.add(AssistId::refactor_rewrite("unmerge_imports"), label, target, |builder| {
+    acc.add(
+        AssistId::refactor_rewrite("unmerge_imports"),
+        label,
+        target,
+        |builder| {
         let make = SyntaxFactory::with_mappings();
         let new_use = make.use_(
             use_.attrs(),
@@ -50,7 +54,8 @@ pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         );
         editor.add_mappings(make.finish_with_mappings());
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 fn resolve_full_path(tree: &ast::UseTree) -> Option<ast::Path> {

@@ -205,7 +205,6 @@ impl DiagnosticCollection {
 
         for (file_id, mut diagnostics) in diagnostics {
             diagnostics.sort_by_key(|it| (it.range.start, it.range.end));
-
             if let Some((old_gen, existing_diagnostics)) = target.get_mut(&file_id) {
                 if existing_diagnostics.len() == diagnostics.len()
                     && iter_eq_by(&diagnostics, &*existing_diagnostics, |new, existing| {
@@ -259,10 +258,7 @@ impl DiagnosticCollection {
 }
 
 fn are_diagnostics_equal(left: &lsp_types::Diagnostic, right: &lsp_types::Diagnostic) -> bool {
-    left.source == right.source
-        && left.severity == right.severity
-        && left.range == right.range
-        && left.message == right.message
+    left.source == right.source && left.severity == right.severity && left.range == right.range && left.message == right.message
 }
 
 pub(crate) enum NativeDiagnosticsFetchKind {
@@ -349,11 +345,9 @@ pub(crate) fn convert_diagnostic(
         range: lsp::to_proto::range(line_index, d.range.range),
         severity: Some(lsp::to_proto::diagnostic_severity(d.severity)),
         code: Some(lsp_types::NumberOrString::String(d.code.as_str().to_owned())),
-        code_description: Some(
-            lsp_types::CodeDescription {
+        code_description: Some(lsp_types::CodeDescription {
             href: lsp_types::Url::parse(&d.code.url()).unwrap(),
-        },
-        ),
+        }),
         source: Some("rust-analyzer".to_owned()),
         message: d.message,
         related_information: None,

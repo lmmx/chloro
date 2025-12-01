@@ -35,7 +35,10 @@ pub(crate) fn unresolved_field(
             d.name.display(ctx.sema.db, ctx.edition),
             d.receiver.display(ctx.sema.db, ctx.display_target)
         ),
-        adjusted_display_range(ctx, d.expr, &|expr| {
+        adjusted_display_range(
+        ctx,
+        d.expr,
+        &|expr| {
             Some(
                 match expr.left()? {
                     ast::Expr::MethodCallExpr(it) => it.name_ref(),
@@ -45,9 +48,11 @@ pub(crate) fn unresolved_field(
                 .syntax()
                 .text_range(),
             )
-        }),
+        },
+    ),
+    ).with_fixes(
+        fixes(ctx, d),
     )
-    .with_fixes(fixes(ctx, d))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Vec<Assist>> {
@@ -56,7 +61,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<V
         fixes.extend(method_fix(ctx, &d.expr));
     }
     fixes.extend(field_fix(ctx, d));
-    if fixes.is_empty() { None } else { Some(fixes) }
+    if fixes.is_empty() {
+        None
+    } else {
+        Some(fixes)
+    }
 }
 
 fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Assist> {
@@ -138,19 +147,16 @@ fn add_field_to_struct_fix(
     let field_list = struct_source.value.field_list();
     match field_list {
         Some(FieldList::RecordFieldList(field_list)) => {
-            // Get range of final field in the struct
             let visibility = if error_range.file_id == struct_range.file_id {
                 None
             } else {
                 Some(make::visibility_pub_crate())
             };
-
             let field_name = match field_name.chars().next() {
                 Some(ch) if ch.is_numeric() => return None,
                 Some(_) => make::name(field_name),
                 None => return None,
             };
-
             let (offset, record_field) = record_field_layout(
                 visibility,
                 field_name,
@@ -158,11 +164,8 @@ fn add_field_to_struct_fix(
                 field_list,
                 struct_syntax.value,
             )?;
-
             let mut src_change_builder =
                 SourceChangeBuilder::new(struct_range.file_id.file_id(ctx.sema.db));
-
-            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
             src_change_builder.insert(offset, record_field);
             Some(Assist {
                 id: AssistId::quick_fix("add-field-to-record-struct"),
@@ -174,7 +177,6 @@ fn add_field_to_struct_fix(
             })
         }
         None => {
-            // Add a field list to the Unit Struct
             let mut src_change_builder =
                 SourceChangeBuilder::new(struct_range.file_id.file_id(ctx.sema.db));
             let field_name = match field_name.chars().next() {
@@ -188,12 +190,9 @@ fn add_field_to_struct_fix(
             } else {
                 Some(make::visibility_pub_crate())
             };
-            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
             let indent = IndentLevel::from_node(struct_syntax.value);
-
             let field =
                 make::record_field(visibility, field_name, suggested_type).indent(indent + 1);
-            // A Unit Struct with no `;` is invalid syntax. We should not suggest this fix.
             let semi_colon =
                 algo::skip_trivia_token(struct_syntax.value.last_token()?, Direction::Prev)?;
             if semi_colon.kind() != SyntaxKind::SEMICOLON {
@@ -203,7 +202,6 @@ fn add_field_to_struct_fix(
                 semi_colon.text_range(),
                 format!(" {{\n{}{field},\n{indent}}}", indent + 1),
             );
-
             Some(Assist {
                 id: AssistId::quick_fix("convert-unit-struct-to-record-struct"),
                 label: Label::new("Convert Unit Struct to Record Struct and add field".to_owned()),
@@ -214,7 +212,6 @@ fn add_field_to_struct_fix(
             })
         }
         Some(FieldList::TupleFieldList(_tuple)) => {
-            // FIXME: Add support for Tuple Structs. Tuple Structs are not sent to this diagnostic
             None
         }
     }
@@ -498,8 +495,7 @@ fn foo() {
     }
     #[test]
     fn no_fix_when_indexed() {
-        check_no_fix(
-            r#"
+        check_no_fix(r#"
             struct Kek {}
 impl Kek {
     pub fn foo(self) {
@@ -508,13 +504,11 @@ impl Kek {
 }
 
 fn main() {}
-            "#,
-        )
+            "#)
     }
     #[test]
     fn no_fix_when_without_field() {
-        check_no_fix(
-            r#"
+        check_no_fix(r#"
             struct Kek {}
 impl Kek {
     pub fn foo(self) {
@@ -523,8 +517,7 @@ impl Kek {
 }
 
 fn main() {}
-            "#,
-        )
+            "#)
     }
     #[test]
     fn regression_18683() {

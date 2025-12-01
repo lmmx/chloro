@@ -44,7 +44,7 @@ impl GlobalState {
         message: String,
         show_open_log_button: bool,
     ) {
-        match self.config.open_server_logs() && show_open_log_button  {
+        match self.config.open_server_logs() && show_open_log_button {
             true => self.send_request::<lsp_types::request::ShowMessageRequest>(
                 lsp_types::ShowMessageRequestParams {
                     typ,

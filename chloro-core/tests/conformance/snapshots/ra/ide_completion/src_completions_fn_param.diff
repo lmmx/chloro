@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7434 bytes
-Chloro size:   7387 bytes
+Chloro size:   7383 bytes
 Rustfmt size:  7434 bytes
 
 ✗ Outputs DIFFER
@@ -31,3 +31,12 @@ Rustfmt size:  7434 bytes
  /// Complete repeated parameters, both name and type. For example, if all
  /// functions in a file have a `spam: &mut Spam` parameter, a completion with
  /// `spam: &mut Spam` insert text/label will be suggested.
+         None => return,
+     };
+     if let Some(scope) =
+-        ctx.sema.scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end())
+-    {
++        ctx.sema.scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end()) {
+         let module = scope.module().into();
+         scope.process_all_names(&mut |name, def| {
+             if let hir::ScopeDef::Local(local) = def

@@ -351,13 +351,16 @@ impl<'db> BestObligation<'db> {
                 goal.goal().param_env,
                 pred,
             );
-            self.with_derived_obligation(obligation, |this| {
+            self.with_derived_obligation(
+                obligation,
+                |this| {
                 goal.infcx().visit_proof_tree_at_depth(
                     goal.goal().with(interner, pred),
                     goal.depth() + 1,
                     this,
                 )
-            })
+            },
+            )
         } else {
             ControlFlow::Continue(())
         }
@@ -376,8 +379,7 @@ impl<'db> BestObligation<'db> {
     ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
         if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
-            && !projection_clause.bound_vars().is_empty()
-        {
+            && !projection_clause.bound_vars().is_empty() {
             let pred = projection_clause.map_bound(|proj| proj.projection_term.trait_ref(interner));
             let obligation = Obligation::new(
                 interner,
@@ -385,13 +387,16 @@ impl<'db> BestObligation<'db> {
                 goal.goal().param_env,
                 deeply_normalize_for_diagnostics(goal.infcx(), goal.goal().param_env, pred),
             );
-            self.with_derived_obligation(obligation, |this| {
+            self.with_derived_obligation(
+                obligation,
+                |this| {
                 goal.infcx().visit_proof_tree_at_depth(
                     goal.goal().with(interner, pred),
                     goal.depth() + 1,
                     this,
                 )
-            })
+            },
+            )
         } else {
             ControlFlow::Continue(())
         }
@@ -415,13 +420,16 @@ impl<'db> BestObligation<'db> {
             goal.goal().param_env,
             alias.trait_ref(interner),
         );
-        self.with_derived_obligation(obligation, |this| {
+        self.with_derived_obligation(
+            obligation,
+            |this| {
             goal.infcx().visit_proof_tree_at_depth(
                 goal.goal().with(interner, alias.trait_ref(interner)),
                 goal.depth() + 1,
                 this,
             )
-        })
+        },
+        )
     }
 
     /// If we have no candidates, then it's likely that there is a
@@ -787,9 +795,7 @@ mod wf {
             // am looking forward to the future here.
             if !data.has_escaping_bound_vars() && !region.has_escaping_bound_vars() {
                 let implicit_bounds = object_region_bounds(self.interner(), data);
-
                 let explicit_bound = region;
-
                 self.out.reserve(implicit_bounds.len());
                 for implicit_bound in implicit_bounds {
                     let cause = ObligationCause::new();
@@ -805,13 +811,6 @@ mod wf {
                         outlives,
                     ));
                 }
-
-                // We don't add any wf predicates corresponding to the trait ref's generic arguments
-                // which allows code like this to compile:
-                // ```rust
-                // trait Trait<T: Sized> {}
-                // fn foo(_: &dyn Trait<[u32]>) {}
-                // ```
             }
         }
     }

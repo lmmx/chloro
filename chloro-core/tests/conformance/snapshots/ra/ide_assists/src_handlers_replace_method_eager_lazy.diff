@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7167 bytes
-Chloro size:   6513 bytes
+Chloro size:   6533 bytes
 Rustfmt size:  7319 bytes
 
 ✗ Outputs DIFFER
@@ -56,7 +56,11 @@ Rustfmt size:  7319 bytes
          } else {
              None
          }
-     .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
+-    })()
+-    .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
++    })().unwrap_or_else(
++        || make::expr_closure(None, param.clone()).into(),
++    )
  }
  
 -// Assist: replace_with_eager_method
@@ -92,6 +96,13 @@ Rustfmt size:  7319 bytes
          } else {
              None
          }
+-    })()
+-    .unwrap_or_else(|| make::expr_call(param.clone(), make::arg_list(Vec::new())).into())
++    })().unwrap_or_else(
++        || make::expr_call(param.clone(), make::arg_list(Vec::new())).into(),
++    )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_assist;

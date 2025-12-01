@@ -104,7 +104,11 @@ fn add_assist(
     let annotated_name = adt.name()?;
     let label = format!("Convert to manual `impl {replace_trait_path} for {annotated_name}`");
 
-    acc.add(AssistId::refactor("replace_derive_with_manual_impl"), label, target, |builder| {
+    acc.add(
+        AssistId::refactor("replace_derive_with_manual_impl"),
+        label,
+        target,
+        |builder| {
         let insert_after = Position::after(adt.syntax());
         let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
         let impl_def = impl_def_from_trait(
@@ -155,7 +159,8 @@ fn add_assist(
             vec![make::tokens::blank_line().into(), impl_def.syntax().clone().into()],
         );
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+    },
+    )
 }
 
 fn impl_def_from_trait(
@@ -228,30 +233,22 @@ fn update_attribute(
     let has_more_derives = !new_derives.is_empty();
 
     if has_more_derives {
-        // Make the paths into flat lists of tokens in a vec
         let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
             node.descendants_with_tokens()
                 .filter_map(|element| element.into_token())
                 .collect::<Vec<_>>()
         });
-        // ...which are interspersed with ", "
         let tt = Itertools::intersperse(tt, vec![make::token(T![,]), make::tokens::single_space()]);
-        // ...wrap them into the appropriate `NodeOrToken` variant
         let tt = tt.flatten().map(syntax::NodeOrToken::Token);
-        // ...and make them into a flat list of tokens
         let tt = tt.collect::<Vec<_>>();
-
         let new_tree = make::token_tree(T!['('], tt).clone_for_update();
         editor.replace(old_tree.syntax(), new_tree.syntax());
     } else {
-        // Remove the attr and any trailing whitespace
-
         if let Some(line_break) =
             attr.syntax().next_sibling_or_token().filter(|t| t.kind() == WHITESPACE)
         {
             editor.delete(line_break)
         }
-
         editor.delete(attr.syntax())
     }
 }

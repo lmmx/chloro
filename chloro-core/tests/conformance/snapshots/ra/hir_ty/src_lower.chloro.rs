@@ -294,7 +294,6 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             ),
             hir_def::hir::Expr::UnaryOp { expr: inner_expr, op: hir_def::hir::UnaryOp::Neg } => {
                 if let hir_def::hir::Expr::Literal(literal) = &self.store[*inner_expr] {
-                    // Only handle negation for signed integers and floats
                     match literal {
                         hir_def::hir::Literal::Int(_, _) | hir_def::hir::Literal::Float(_, _) => {
                             if let Some(negated_literal) = literal.clone().negate() {
@@ -308,7 +307,6 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                                 unknown_const(const_type)
                             }
                         }
-                        // For unsigned integers, chars, bools, etc., negation is not meaningful
                         _ => unknown_const(const_type),
                     }
                 } else {
@@ -340,10 +338,9 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                 let args = GenericArgs::new_from_iter(self.interner, []);
                 Some(Const::new(
                     self.interner,
-                    rustc_type_ir::ConstKind::Unevaluated(UnevaluatedConst::new(
-                        SolverDefId::ConstId(c),
-                        args,
-                    )),
+                    rustc_type_ir::ConstKind::Unevaluated(
+                    UnevaluatedConst::new(SolverDefId::ConstId(c), args),
+                ),
                 ))
             }
             _ => None,
@@ -365,7 +362,6 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
 
     fn type_param(&mut self, id: TypeParamId, index: u32) -> Ty<'db> {
         if self.param_index_is_disallowed(index) {
-            // FIXME: Report an error.
             Ty::new_error(self.interner, ErrorGuaranteed)
         } else {
             Ty::new_param(self.interner, id, index)
@@ -374,7 +370,6 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
 
     fn const_param(&mut self, id: ConstParamId, index: u32) -> Const<'db> {
         if self.param_index_is_disallowed(index) {
-            // FIXME: Report an error.
             Const::error(self.interner)
         } else {
             Const::new_param(self.interner, ParamConst { id, index })
@@ -383,7 +378,6 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
 
     fn region_param(&mut self, id: LifetimeParamId, index: u32) -> Region<'db> {
         if self.param_index_is_disallowed(index) {
-            // FIXME: Report an error.
             Region::error(self.interner)
         } else {
             Region::new_early_param(self.interner, EarlyParamRegion { id, index })
@@ -649,16 +643,12 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             &WherePredicate::Lifetime { bound, target } => {
                 Either::Right(iter::once(Clause(Predicate::new(
                     self.interner,
-                    Binder::dummy(rustc_type_ir::PredicateKind::Clause(
-                        rustc_type_ir::ClauseKind::RegionOutlives(OutlivesPredicate(
-                            self.lower_lifetime(bound),
-                            self.lower_lifetime(target),
-                        )),
-                    )),
+                    Binder::dummy(rustc_type_ir::PredicateKind::Clause(rustc_type_ir::ClauseKind::RegionOutlives(
+                    OutlivesPredicate(self.lower_lifetime(bound), self.lower_lifetime(target)),
+                ))),
                 ))))
             }
-        }
-        .into_iter()
+        }.into_iter()
     }
 
     pub(crate) fn lower_type_bound<'b>(
@@ -877,8 +867,6 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             };
             Ty::new_dynamic(self.interner, bounds, region)
         } else {
-            // FIXME: report error
-            // (additional non-auto traits, associated type rebound, or no resolved trait)
             Ty::new_error(self.interner, ErrorGuaranteed)
         }
     }
@@ -1078,11 +1066,9 @@ pub(crate) fn ty_query<'db>(db: &'db dyn HirDatabase, def: TyDefId) -> EarlyBind
     let interner = DbInterner::new_with(db, None, None);
     match def {
         TyDefId::BuiltinType(it) => EarlyBinder::bind(Ty::from_builtin_type(interner, it)),
-        TyDefId::AdtId(it) => EarlyBinder::bind(Ty::new_adt(
-            interner,
-            it,
-            GenericArgs::identity_for_item(interner, it.into()),
-        )),
+        TyDefId::AdtId(it) => EarlyBinder::bind(
+            Ty::new_adt(interner, it, GenericArgs::identity_for_item(interner, it.into())),
+        ),
         TyDefId::TypeAliasId(it) => db.type_for_type_alias_with_diagnostics(it).0,
     }
 }
@@ -1915,14 +1901,12 @@ fn fn_sig_for_fn<'db>(
 
     let inputs_and_output = Tys::new_from_iter(interner, params.chain(Some(ret)));
     // If/when we track late bound vars, we need to switch this to not be `dummy`
-    EarlyBinder::bind(rustc_type_ir::Binder::dummy(
-        FnSig {
+    EarlyBinder::bind(rustc_type_ir::Binder::dummy(FnSig {
         abi: data.abi.as_ref().map_or(FnAbi::Rust, FnAbi::from_symbol),
         c_variadic: data.is_varargs(),
         safety: if data.is_unsafe() { Safety::Unsafe } else { Safety::Safe },
         inputs_and_output,
-    },
-    ))
+    }))
 }
 
 fn type_for_adt<'db>(db: &'db dyn HirDatabase, adt: AdtId) -> EarlyBinder<'db, Ty<'db>> {
@@ -1942,14 +1926,12 @@ fn fn_sig_for_struct_constructor<'db>(
 
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
-    EarlyBinder::bind(Binder::dummy(
-        FnSig {
+    EarlyBinder::bind(Binder::dummy(FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,
         safety: Safety::Safe,
         inputs_and_output,
-    },
-    ))
+    }))
 }
 
 fn fn_sig_for_enum_variant_constructor<'db>(
@@ -1963,14 +1945,12 @@ fn fn_sig_for_enum_variant_constructor<'db>(
 
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
-    EarlyBinder::bind(Binder::dummy(
-        FnSig {
+    EarlyBinder::bind(Binder::dummy(FnSig {
         abi: FnAbi::RustCall,
         c_variadic: false,
         safety: Safety::Safe,
         inputs_and_output,
-    },
-    ))
+    }))
 }
 
 pub(crate) fn associated_ty_item_bounds<'db>(
@@ -2150,18 +2130,9 @@ fn named_associated_type_shorthand_candidates<'db, R>(
     match res {
         TypeNs::SelfType(impl_id) => {
             let trait_ref = db.impl_trait(impl_id)?;
-
-            // FIXME(next-solver): same method in `lower` checks for impl or not
-            // Is that needed here?
-
-            // we're _in_ the impl -- the binders get added back later. Correct,
-            // but it would be nice to make this more explicit
             search(trait_ref.skip_binder())
         }
         TypeNs::GenericParam(param_id) => {
-            // Handle `Self::Type` referring to own associated type in trait definitions
-            // This *must* be done first to avoid cycles with
-            // `generic_predicates_for_param`, but not sure that it's sufficient,
             if let GenericDefId::TraitId(trait_id) = param_id.parent() {
                 let trait_name = &db.trait_signature(trait_id).name;
                 tracing::debug!(?trait_name);
@@ -2174,7 +2145,6 @@ fn named_associated_type_shorthand_candidates<'db, R>(
                     return search(trait_ref);
                 }
             }
-
             let predicates =
                 db.generic_predicates_for_param(def, param_id.into(), assoc_name.clone());
             predicates

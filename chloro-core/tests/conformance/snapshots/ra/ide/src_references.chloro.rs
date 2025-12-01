@@ -314,7 +314,8 @@ fn retain_adt_literal_usages(
             });
             usages.references.retain(|_, it| !it.is_empty());
         }
-        _ => {}
+        _ => {
+        }
     }
 }
 

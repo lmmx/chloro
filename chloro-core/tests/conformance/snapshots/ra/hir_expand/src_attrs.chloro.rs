@@ -113,8 +113,9 @@ impl RawAttrs {
         span_map: SpanMapRef<'_>,
         cfg_options: &CfgOptions,
     ) -> impl Iterator<Item = Attr> {
-        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map)
-            .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
+        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map).flat_map(
+            |attr| attr.expand_cfg_attr(db, cfg_options),
+        )
     }
 
     pub fn merge(&self, other: Self) -> Self {
@@ -334,7 +335,6 @@ impl Attr {
             smallvec![]
         } else {
             cov_mark::hit!(cfg_attr_active);
-
             attrs.collect::<SmallVec<[_; 1]>>()
         }
     }

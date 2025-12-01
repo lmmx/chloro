@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   31937 bytes
+Chloro size:   31883 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -193,17 +193,11 @@ Rustfmt size:  33429 bytes
 -    let e: ExpandResult<Arc<[SyntaxError]>> = db
 -        .parse_macro_expansion(macro_call_id)
 -        .map(|it| Arc::from(it.0.errors()));
--    if e.value.is_empty() && e.err.is_none() {
--        None
--    } else {
--        Some(Arc::new(e))
--    }
 +    let e: ExpandResult<Arc<[SyntaxError]>> =
 +        db.parse_macro_expansion(macro_call_id).map(|it| Arc::from(it.0.errors()));
-+    if e.value.is_empty() && e.err.is_none() { None } else { Some(Arc::new(e)) }
- }
- 
- pub(crate) fn parse_with_map(
+     if e.value.is_empty() && e.err.is_none() {
+         None
+     } else {
      file_id: HirFileId,
  ) -> (Parse<SyntaxNode>, SpanMap) {
      match file_id {
@@ -225,16 +219,18 @@ Rustfmt size:  33429 bytes
  fn macro_arg_considering_derives(
      db: &dyn ExpandDatabase,
      id: MacroCallId,
+     kind: &MacroCallKind,
  ) -> MacroArgResult {
      match kind {
-         // Get the macro arg for the derive macro
+-        // Get the macro arg for the derive macro
 -        MacroCallKind::Derive {
 -            derive_macro_id, ..
 -        } => db.macro_arg(*derive_macro_id),
+-        // Normal macro arg
 +        MacroCallKind::Derive { derive_macro_id, .. } => db.macro_arg(*derive_macro_id),
-         // Normal macro arg
          _ => db.macro_arg(id),
      }
+ }
      let loc = db.lookup_intern_macro_call(id);
  
      if let MacroCallLoc {

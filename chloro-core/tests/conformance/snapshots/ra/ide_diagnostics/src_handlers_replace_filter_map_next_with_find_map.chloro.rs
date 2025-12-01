@@ -44,14 +44,12 @@ fn fixes(
     let source_change =
         SourceChange::from_text_edit(d.file.original_file(ctx.sema.db).file_id(ctx.sema.db), edit);
 
-    Some(
-        vec![fix(
+    Some(vec![fix(
         "replace_with_find_map",
         "Replace filter_map(..).next() with find_map()",
         source_change,
         trigger_range,
-    )],
-    )
+    )])
 }
 
 #[cfg(test)]

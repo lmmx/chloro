@@ -2,7 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5963 bytes
-Chloro size:   5963 bytes
+Chloro size:   5923 bytes
 Rustfmt size:  5963 bytes
 
-✓ Outputs are IDENTICAL
+✗ Outputs DIFFER
+
+=== DIFF (- rustfmt, + chloro) ===
+             AssistResolveStrategy::None => false,
+             AssistResolveStrategy::All => true,
+             AssistResolveStrategy::Single(single_resolve) => {
+-                single_resolve.assist_id == id.0
+-                    && single_resolve.assist_kind == id.1
+-                    && single_resolve.assist_subtype == id.2
++                single_resolve.assist_id == id.0 && single_resolve.assist_kind == id.1 && single_resolve.assist_subtype == id.2
+             }
+         }
+     }

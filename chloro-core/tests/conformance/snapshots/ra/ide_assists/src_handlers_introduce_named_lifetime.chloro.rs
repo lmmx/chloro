@@ -61,7 +61,11 @@ fn generate_fn_def_assist(
             _ => return None,
         }
     };
-    acc.add(AssistId::refactor(ASSIST_NAME), ASSIST_LABEL, lifetime_loc, |builder| {
+    acc.add(
+        AssistId::refactor(ASSIST_NAME),
+        ASSIST_LABEL,
+        lifetime_loc,
+        |builder| {
         let fn_def = builder.make_mut(fn_def);
         let lifetime = builder.make_mut(lifetime);
         let loc_needing_lifetime =
@@ -74,7 +78,8 @@ fn generate_fn_def_assist(
         if let Some(position) = loc_needing_lifetime {
             ted::insert(position, new_lifetime_param.clone_for_update().syntax());
         }
-    })
+    },
+    )
 }
 
 /// Generate the assist for the impl def case
@@ -85,7 +90,11 @@ fn generate_impl_def_assist(
     lifetime: ast::Lifetime,
 ) -> Option<()> {
     let new_lifetime_param = generate_unique_lifetime_param_name(impl_def.generic_param_list())?;
-    acc.add(AssistId::refactor(ASSIST_NAME), ASSIST_LABEL, lifetime_loc, |builder| {
+    acc.add(
+        AssistId::refactor(ASSIST_NAME),
+        ASSIST_LABEL,
+        lifetime_loc,
+        |builder| {
         let impl_def = builder.make_mut(impl_def);
         let lifetime = builder.make_mut(lifetime);
 
@@ -93,7 +102,8 @@ fn generate_impl_def_assist(
             make::lifetime_param(new_lifetime_param.clone()).clone_for_update().into(),
         );
         ted::replace(lifetime.syntax(), new_lifetime_param.clone_for_update().syntax());
-    })
+    },
+    )
 }
 
 /// Given a type parameter list, generate a unique lifetime parameter name
@@ -108,8 +118,9 @@ fn generate_unique_lifetime_param_name(
             ('a'..='z').map(|it| format!("'{it}")).find(|it| !used_lifetime_params.contains(it))
         }
         None => Some("'a".to_owned()),
-    }
-    .map(|it| make::lifetime(&it))
+    }.map(
+        |it| make::lifetime(&it),
+    )
 }
 
 enum NeedsLifetime {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8324 bytes
-Chloro size:   8313 bytes
+Chloro size:   8290 bytes
 Rustfmt size:  8412 bytes
 
 ✗ Outputs DIFFER
@@ -21,22 +21,6 @@ Rustfmt size:  8412 bytes
      },
  };
  
- 
- impl<'db> TraitEnvironment<'db> {
-     pub fn empty(krate: Crate) -> Arc<Self> {
--        Arc::new(TraitEnvironment {
-+        Arc::new(
-+            TraitEnvironment {
-             krate,
-             block: None,
-             traits_from_clauses: Box::default(),
-             env: ParamEnv::empty(),
--        })
-+        },
-+        )
-     }
- 
-     pub fn new(
          traits_from_clauses: Box<[(Ty<'db>, TraitId)]>,
          env: ParamEnv<'db>,
      ) -> Arc<Self> {

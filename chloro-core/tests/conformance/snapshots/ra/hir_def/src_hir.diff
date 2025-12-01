@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17460 bytes
-Chloro size:   17070 bytes
+Chloro size:   17123 bytes
 Rustfmt size:  17756 bytes
 
 ✗ Outputs DIFFER
@@ -70,18 +70,6 @@ Rustfmt size:  17756 bytes
  pub enum LiteralOrConst {
      Literal(Literal),
      Const(PatId),
- 
- impl Literal {
-     pub fn negate(self) -> Option<Self> {
--        if let Literal::Int(i, k) = self {
--            Some(Literal::Int(-i, k))
--        } else {
--            None
--        }
-+        if let Literal::Int(i, k) = self { Some(Literal::Int(-i, k)) } else { None }
-     }
- }
- 
              }
              LiteralKind::FloatNumber(lit) => {
                  let ty = lit.suffix().and_then(BuiltinFloat::from_suffix);
@@ -147,6 +135,15 @@ Rustfmt size:  17756 bytes
  }
  
  #[derive(Debug, Clone, Eq, PartialEq)]
+             | Pat::ConstBlock(..)
+             | Pat::Wild
+             | Pat::Missing
+-            | Pat::Expr(_) => {}
++            | Pat::Expr(_) => {
++            }
+             Pat::Bind { subpat, .. } => {
+                 subpat.iter().copied().for_each(f);
+             }
                  args.iter().copied().for_each(f);
              }
              Pat::Ref { pat, .. } => f(*pat),

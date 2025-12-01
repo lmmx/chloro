@@ -229,8 +229,7 @@ fn add_function_impl_(
 
     if let Some(source) = ctx.sema.source(func)
         && let Some(transformed_fn) =
-            get_transformed_fn(ctx, source.value, impl_def, async_sugaring)
-    {
+            get_transformed_fn(ctx, source.value, impl_def, async_sugaring) {
         let function_decl = function_declaration(ctx, &transformed_fn, source.file_id.macro_file());
         match ctx.config.snippet_cap {
             Some(cap) => {
@@ -378,9 +377,7 @@ fn add_type_alias_impl(
                 ast::AssocItem::TypeAlias(ty) => ty,
                 _ => unreachable!(),
             };
-
             let start = transformed_ty.syntax().text_range().start();
-
             let end = if let Some(end) =
                 transformed_ty.colon_token().map(|tok| tok.text_range().start())
             {
@@ -401,12 +398,10 @@ fn add_type_alias_impl(
             } else {
                 return;
             };
-
             let len = end - start;
             let mut decl = transformed_ty.syntax().text().slice(..len).to_string();
             decl.truncate(decl.trim_end().len());
             decl.push_str(" = ");
-
             let wc = transformed_ty
                 .where_clause()
                 .map(|wc| {
@@ -419,7 +414,6 @@ fn add_type_alias_impl(
                     format!("{ws}{wc}")
                 })
                 .unwrap_or_default();
-
             match ctx.config.snippet_cap {
                 Some(cap) => {
                     let snippet = format!("{decl}$0{wc};");
@@ -445,19 +439,16 @@ fn add_const_impl(
     let const_name = const_.name(ctx.db).map(|n| n.display_no_db(ctx.edition).to_smolstr());
 
     if let Some(const_name) = const_name
-        && let Some(source) = ctx.sema.source(const_)
-    {
+        && let Some(source) = ctx.sema.source(const_) {
         let assoc_item = ast::AssocItem::Const(source.value);
         if let Some(transformed_item) = get_transformed_assoc_item(ctx, assoc_item, impl_def) {
             let transformed_const = match transformed_item {
                 ast::AssocItem::Const(const_) => const_,
                 _ => unreachable!(),
             };
-
             let label =
                 make_const_compl_syntax(ctx, &transformed_const, source.file_id.macro_file());
             let replacement = format!("{label} ");
-
             let mut item =
                 CompletionItem::new(SymbolKind::Const, replacement_range, label, ctx.edition);
             item.lookup_by(format_smolstr!("const {const_name}"))
@@ -1027,7 +1018,7 @@ impl Test for T {{
         // Enumerate some possible next siblings.
         for next_sibling in [
             "",
-            "fn other_fn() {}", // `const $0 fn` -> `const fn`
+            "fn other_fn() {}",
             "type OtherType = i32;",
             "const OTHER_CONST: i32 = 0;",
             "async fn other_fn() {}",

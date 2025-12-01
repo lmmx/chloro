@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10666 bytes
-Chloro size:   10211 bytes
+Chloro size:   10210 bytes
 Rustfmt size:  10666 bytes
 
 ✗ Outputs DIFFER
@@ -42,6 +42,13 @@ Rustfmt size:  10666 bytes
  pub(crate) fn replace_qualified_name_with_use(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
+                         .is_some_and(|(lhs, rhs)| lhs.text() == rhs.text()) => {}
+             _ => return false,
+         }
+-
+         match (lhs_curr.qualifier(), rhs_curr.qualifier()) {
+             (Some(lhs), Some(rhs)) => {
+                 lhs_curr = lhs;
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

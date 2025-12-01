@@ -59,14 +59,12 @@ pub(crate) fn field_is_private_fixes(
         TextEdit::replace(range.range, visibility_text.into()),
     );
 
-    Some(
-        vec![fix(
+    Some(vec![fix(
         "increase_field_visibility",
         "Increase field visibility",
         source_change,
         fix_range,
-    )],
-    )
+    )])
 }
 
 #[cfg(test)]

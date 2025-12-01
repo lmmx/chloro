@@ -106,8 +106,9 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Contravariant,
             actual,
             Span::dummy(),
+        ).map(
+            |goals| self.goals_to_obligations(goals),
         )
-        .map(|goals| self.goals_to_obligations(goals))
     }
 
     /// Makes `expected <: actual`.
@@ -122,8 +123,9 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Covariant,
             actual,
             Span::dummy(),
+        ).map(
+            |goals| self.goals_to_obligations(goals),
         )
-        .map(|goals| self.goals_to_obligations(goals))
     }
 
     /// Makes `expected == actual`.
@@ -138,8 +140,9 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Invariant,
             actual,
             Span::dummy(),
+        ).map(
+            |goals| self.goals_to_obligations(goals),
         )
-        .map(|goals| self.goals_to_obligations(goals))
     }
 
     pub fn relate<T>(self, expected: T, variance: Variance, actual: T) -> InferResult<'db, ()>
@@ -150,12 +153,6 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Covariant => self.sub(expected, actual),
             Variance::Invariant => self.eq(expected, actual),
             Variance::Contravariant => self.sup(expected, actual),
-
-            // We could make this make sense but it's not readily
-            // exposed and I don't feel like dealing with it. Note
-            // that bivariance in general does a bit more than just
-            // *nothing*, it checks that the types are the same
-            // "modulo variance" basically.
             Variance::Bivariant => panic!("Bivariant given to `relate()`"),
         }
     }

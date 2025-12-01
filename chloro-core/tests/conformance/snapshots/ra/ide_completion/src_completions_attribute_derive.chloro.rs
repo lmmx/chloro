@@ -26,12 +26,9 @@ pub(crate) fn complete_derive_path(
             ..
         } => {
             acc.add_super_keyword(ctx, *super_chain_len);
-
             for (name, def) in module.scope(ctx.db, Some(ctx.module)) {
                 match def {
-                    ScopeDef::ModuleDef(hir::ModuleDef::Macro(mac))
-                        if !existing_derives.contains(&mac) && mac.is_derive(ctx.db) =>
-                    {
+                    ScopeDef::ModuleDef(hir::ModuleDef::Macro(mac)) if !existing_derives.contains(&mac) && mac.is_derive(ctx.db) => {
                         acc.add_macro(ctx, path_ctx, mac, name)
                     }
                     ScopeDef::ModuleDef(hir::ModuleDef::Module(m)) => {
@@ -42,7 +39,6 @@ pub(crate) fn complete_derive_path(
             }
         }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
-        // only show modules in a fresh UseTree
         Qualified::No => {
             ctx.process_all_names(&mut |name, def, doc_aliases| {
                 let mac = match def {
@@ -98,7 +94,8 @@ pub(crate) fn complete_derive_path(
             });
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
+        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
+        }
     }
 }
 

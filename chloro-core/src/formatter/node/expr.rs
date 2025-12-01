@@ -1,149 +1,96 @@
-// chloro-core/src/formatter/node/expr.rs
-use crate::formatter::config::MAX_WIDTH;
-use crate::formatter::write_indent;
-use ra_ap_syntax::ast::HasArgList;
-use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
+//!
+//! Expression formatting dispatcher.
+//!
+//! Internal helpers return `Option<String>` where `None` means "unsupported, use verbatim".
+//! The public interface uses `FormatResult` for clarity at call sites.
+
+pub mod collections;
+pub mod controlflow;
+pub mod jumps;
+pub mod operators;
+pub mod simple;
+
+use ra_ap_syntax::{SyntaxKind, SyntaxNode};
 
 /// Result of attempting to format an expression.
 pub enum FormatResult {
-    /// Successfully formatted the expression
+    /// Successfully formatted the expression.
     Formatted(String),
-    /// Expression type not yet supported; caller should preserve verbatim
+    /// Expression type not yet supported; caller should preserve verbatim.
     Unsupported,
 }
 
+impl From<Option<String>> for FormatResult {
+    fn from(opt: Option<String>) -> Self {
+        match opt {
+            Some(s) => FormatResult::Formatted(s),
+            None => FormatResult::Unsupported,
+        }
+    }
+}
+
 /// Attempt to format an expression node.
+///
 /// Returns `Unsupported` for expression types we don't yet handle,
 /// allowing the caller to fall back to verbatim preservation.
 pub fn try_format_expr(node: &SyntaxNode, indent: usize) -> FormatResult {
-    match node.kind() {
-        SyntaxKind::RECORD_EXPR => {
-            if let Some(record_expr) = ast::RecordExpr::cast(node.clone()) {
-                if let Some(formatted) = format_record_expr(&record_expr, indent) {
-                    return FormatResult::Formatted(formatted);
-                }
-            }
-            FormatResult::Unsupported
-        }
-
-        SyntaxKind::CALL_EXPR => {
-            if let Some(call_expr) = ast::CallExpr::cast(node.clone()) {
-                if let Some(formatted) = format_call_expr(&call_expr, indent) {
-                    return FormatResult::Formatted(formatted);
-                }
-            }
-            FormatResult::Unsupported
-        }
-
-        SyntaxKind::METHOD_CALL_EXPR => {
-            if let Some(method_call) = ast::MethodCallExpr::cast(node.clone()) {
-                if let Some(formatted) = format_method_call_expr(&method_call, indent) {
-                    return FormatResult::Formatted(formatted);
-                }
-            }
-            FormatResult::Unsupported
-        }
-
-        // Add more expression types as you implement them
-        _ => FormatResult::Unsupported,
-    }
+    try_format_expr_inner(node, indent).into()
 }
 
-/// Check if an expression, when formatted, would produce multi-line output
-/// that should be "snugly" wrapped by an outer call.
-fn is_snug_wrappable(expr: &ast::Expr, indent: usize) -> Option<String> {
-    match try_format_expr(expr.syntax(), indent) {
-        FormatResult::Formatted(s) if s.contains('\n') => Some(s),
+/// Inner implementation returning Option for easier chaining.
+pub fn try_format_expr_inner(node: &SyntaxNode, indent: usize) -> Option<String> {
+    match node.kind() {
+        // === Simple / Pass-through ===
+        SyntaxKind::PATH_EXPR | SyntaxKind::LITERAL | SyntaxKind::UNDERSCORE_EXPR => {
+            Some(node.text().to_string())
+        }
+
+        // === Wrapping expressions ===
+        SyntaxKind::PAREN_EXPR => simple::format_paren_expr(node, indent),
+        SyntaxKind::TRY_EXPR => simple::format_try_expr(node, indent),
+        SyntaxKind::AWAIT_EXPR => simple::format_await_expr(node, indent),
+        SyntaxKind::REF_EXPR => simple::format_ref_expr(node, indent),
+        SyntaxKind::PREFIX_EXPR => simple::format_prefix_expr(node, indent),
+
+        // === Collections / Call-like ===
+        SyntaxKind::ARRAY_EXPR => collections::format_array_expr(node, indent),
+        SyntaxKind::TUPLE_EXPR => collections::format_tuple_expr(node, indent),
+        SyntaxKind::CALL_EXPR => collections::format_call_expr(node, indent),
+        SyntaxKind::METHOD_CALL_EXPR => collections::format_method_call_expr(node, indent),
+        SyntaxKind::INDEX_EXPR => collections::format_index_expr(node, indent),
+        SyntaxKind::RECORD_EXPR => collections::format_record_expr(node, indent),
+
+        // === Operators ===
+        SyntaxKind::BIN_EXPR => operators::format_bin_expr(node, indent),
+        SyntaxKind::RANGE_EXPR => operators::format_range_expr(node, indent),
+        SyntaxKind::CAST_EXPR => operators::format_cast_expr(node, indent),
+        SyntaxKind::FIELD_EXPR => operators::format_field_expr(node, indent),
+
+        // === Control flow ===
+        SyntaxKind::IF_EXPR => controlflow::format_if_expr(node, indent),
+        SyntaxKind::MATCH_EXPR => controlflow::format_match_expr(node, indent),
+        SyntaxKind::LOOP_EXPR => controlflow::format_loop_expr(node, indent),
+        SyntaxKind::WHILE_EXPR => controlflow::format_while_expr(node, indent),
+        SyntaxKind::FOR_EXPR => controlflow::format_for_expr(node, indent),
+        SyntaxKind::BLOCK_EXPR => controlflow::format_block_expr(node, indent),
+        SyntaxKind::CLOSURE_EXPR => controlflow::format_closure_expr(node, indent),
+
+        // === Jumps ===
+        SyntaxKind::RETURN_EXPR => jumps::format_return_expr(node, indent),
+        SyntaxKind::BREAK_EXPR => jumps::format_break_expr(node, indent),
+        SyntaxKind::CONTINUE_EXPR => jumps::format_continue_expr(node, indent),
+        SyntaxKind::YIELD_EXPR => jumps::format_yield_expr(node, indent),
+        SyntaxKind::YEET_EXPR => jumps::format_yeet_expr(node, indent),
+        SyntaxKind::BECOME_EXPR => jumps::format_become_expr(node, indent),
+        SyntaxKind::LET_EXPR => jumps::format_let_expr(node, indent),
+
+        // === Preserve verbatim (macros, asm, builtins) ===
+        SyntaxKind::MACRO_EXPR
+        | SyntaxKind::FORMAT_ARGS_EXPR
+        | SyntaxKind::ASM_EXPR
+        | SyntaxKind::ASM_OPERAND_EXPR
+        | SyntaxKind::OFFSET_OF_EXPR => Some(node.text().to_string()),
+
         _ => None,
     }
-}
-
-/// Format a record expression, returning None if it can't be formatted nicely.
-fn format_record_expr(expr: &ast::RecordExpr, indent: usize) -> Option<String> {
-    let path = expr.path()?;
-    let field_list = expr.record_expr_field_list()?;
-    let fields: Vec<_> = field_list.fields().collect();
-
-    // Only format if 2+ fields and all well-formed
-    if fields.len() < 2 {
-        return None;
-    }
-
-    for field in &fields {
-        if field.name_ref().is_none() || field.expr().is_none() {
-            return None;
-        }
-    }
-
-    let mut buf = String::new();
-    buf.push_str(&path.syntax().text().to_string());
-    buf.push_str(" {\n");
-
-    for field in fields {
-        crate::formatter::write_indent(&mut buf, indent + 4);
-        buf.push_str(&field.name_ref().unwrap().text());
-        buf.push_str(": ");
-
-        // Recursively try to format the field's expression
-        let field_expr = field.expr().unwrap();
-        match try_format_expr(field_expr.syntax(), indent + 4) {
-            FormatResult::Formatted(s) => buf.push_str(&s),
-            FormatResult::Unsupported => buf.push_str(&field_expr.syntax().text().to_string()),
-        }
-
-        buf.push_str(",\n");
-    }
-
-    crate::formatter::write_indent(&mut buf, indent);
-    buf.push('}');
-    Some(buf)
-}
-
-fn format_call_expr(expr: &ast::CallExpr, indent: usize) -> Option<String> {
-    let callee = expr.expr()?;
-    let arg_list = expr.arg_list()?;
-    let args: Vec<_> = arg_list.args().collect();
-
-    let callee_text = callee.syntax().text().to_string();
-
-    // Try single-line first
-    let args_single: Vec<_> = args.iter()
-        .map(|a| a.syntax().text().to_string())
-        .collect();
-    let single_line = format!("{}({})", callee_text, args_single.join(", "));
-
-    if indent + single_line.len() <= MAX_WIDTH {
-        return Some(single_line);
-    }
-
-    // Single argument that's a call expression: format as "outer(inner(\n...))"
-    // The inner call wraps, but outer doesn't add its own indentation layer
-    if args.len() == 1 {
-        if let Some(formatted) = is_snug_wrappable(&args[0], indent) {
-            return Some(format!("{}({})", callee_text, formatted));
-        }
-    }
-
-    // General multi-line: each arg on its own line
-    let mut buf = String::new();
-    buf.push_str(&callee_text);
-    buf.push_str("(\n");
-
-    for arg in args {
-        write_indent(&mut buf, indent + 4);
-        match try_format_expr(arg.syntax(), indent + 4) {
-            FormatResult::Formatted(s) => buf.push_str(&s),
-            FormatResult::Unsupported => buf.push_str(&arg.syntax().text().to_string()),
-        }
-        buf.push_str(",\n");
-    }
-
-    write_indent(&mut buf, indent);
-    buf.push(')');
-    Some(buf)
-}
-
-fn format_method_call_expr(_expr: &ast::MethodCallExpr, _indent: usize) -> Option<String> {
-    // TODO: Implement when ready
-    None
 }

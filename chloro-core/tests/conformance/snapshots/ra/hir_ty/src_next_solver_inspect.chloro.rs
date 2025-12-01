@@ -251,12 +251,6 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
                 let unconstrained_term = infcx.next_term_var_of_kind(term);
                 let goal =
                     goal.with(infcx.interner, NormalizesTo { alias, term: unconstrained_term });
-                // We have to use a `probe` here as evaluating a `NormalizesTo` can constrain the
-                // expected term. This means that candidates which only fail due to nested goals
-                // and which normalize to a different term then the final result could ICE: when
-                // building their proof tree, the expected term was unconstrained, but when
-                // instantiating the candidate it is already constrained to the result of another
-                // candidate.
                 let normalizes_to_term_hack = NormalizesToTermHack { term, unconstrained_term };
                 let (proof_tree, nested_goals_result) = infcx.probe(|_| {
                     // Here, if we have any nested goals, then we make sure to apply them
@@ -292,11 +286,6 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
                 )
             }
             _ => {
-                // We're using a probe here as evaluating a goal could constrain
-                // inference variables by choosing one candidate. If we then recurse
-                // into another candidate who ends up with different inference
-                // constraints, we get an ICE if we already applied the constraints
-                // from the chosen candidate.
                 let proof_tree =
                     infcx.probe(|_| infcx.evaluate_root_goal_for_proof_tree(goal, Span::dummy()).1);
                 InspectGoal::new(infcx, self.goal.depth + 1, proof_tree, None, source)
@@ -383,17 +372,12 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
             | inspect::ProbeKind::ShadowedEnvProbing => {
                 panic!()
             }
-
-            inspect::ProbeKind::NormalizedSelfTyAssembly | inspect::ProbeKind::UnsizeAssembly => {}
-
-            // We add a candidate even for the root evaluation if there
-            // is only one way to prove a given goal, e.g. for `WellFormed`.
+            inspect::ProbeKind::NormalizedSelfTyAssembly | inspect::ProbeKind::UnsizeAssembly => {
+            }
             inspect::ProbeKind::Root { result }
             | inspect::ProbeKind::TraitCandidate { source: _, result }
             | inspect::ProbeKind::OpaqueTypeStorageLookup { result }
             | inspect::ProbeKind::RigidAlias { result } => {
-                // We only add a candidate if `shallow_certainty` was set, which means
-                // that we ended up calling `evaluate_added_goals_and_make_canonical_response`.
                 if let Some(shallow_certainty) = shallow_certainty {
                     candidates.push(InspectCandidate {
                         goal: self,
