@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166562 bytes
+Chloro size:   166539 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -327,10 +327,20 @@ Rustfmt size:  167117 bytes
              goto_type_def: enable && self.hover_actions_gotoTypeDef_enable().to_owned(),
          }
      }
+     }
+ 
+     pub(crate) fn completion_snippets_default() -> FxIndexMap<String, SnippetDef> {
+-        serde_json::from_str(
+-            r#"{
++        serde_json::from_str(r#"{
+             "Ok": {
+                 "postfix": "ok",
+                 "body": "Ok(${receiver})",
+                 "description": "Put the expression into an `Rc`",
                  "scope": "expr"
              }
-         }"#,
-+        ).unwrap(
+-        }"#,
++        }"#).unwrap(
          )
 -        .unwrap()
      }

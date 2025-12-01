@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6275 bytes
-Chloro size:   6288 bytes
+Chloro size:   6273 bytes
 Rustfmt size:  6621 bytes
 
 ✗ Outputs DIFFER
@@ -72,17 +72,3 @@ Rustfmt size:  6621 bytes
              }
          }
          _ => (),
-     });
- 
--    Arc::new(RealSpanMap::from_file(
-+    Arc::new(
-+        RealSpanMap::from_file(
-         editioned_file_id.editioned_file_id(db),
-         pairs.into_boxed_slice(),
-         tree.syntax().text_range().end(),
--    ))
-+    ),
-+    )
- }
- 
- pub(crate) fn expansion_span_map(

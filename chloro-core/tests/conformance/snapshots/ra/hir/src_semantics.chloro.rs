@@ -379,13 +379,11 @@ impl<'db> SemanticsImpl<'db> {
     }
 
     pub fn attach_first_edition(&self, file: FileId) -> Option<EditionedFileId> {
-        Some(
-            EditionedFileId::new(
+        Some(EditionedFileId::new(
             self.db,
             file,
             self.file_to_module_defs(file).next()?.krate().edition(self.db),
-        ),
-        )
+        ))
     }
 
     pub fn parse_guess_edition(&self, file_id: FileId) -> ast::SourceFile {

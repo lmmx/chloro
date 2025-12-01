@@ -1344,8 +1344,7 @@ fn foo<T: Trait>(a: &T) {
 
 #[test]
 fn autoderef_visibility_field() {
-    check(
-        r#"
+    check(r#"
 //- minicore: receiver
 mod a {
     pub struct Foo(pub char);
@@ -1369,15 +1368,13 @@ mod b {
              // ^^^^^^^^^^^^^^^^^^^^^^ type: char
     }
 }
-"#,
-    )
+"#)
 }
 
 #[test]
 fn autoderef_visibility_method() {
     cov_mark::check!(autoderef_candidate_not_visible);
-    check(
-        r#"
+    check(r#"
 //- minicore: receiver
 mod a {
     pub struct Foo(pub char);
@@ -1408,15 +1405,13 @@ mod b {
              // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ type: char
     }
 }
-"#,
-    )
+"#)
 }
 
 #[test]
 fn trait_vs_private_inherent_const() {
     cov_mark::check!(const_candidate_not_visible);
-    check(
-        r#"
+    check(r#"
 mod a {
     pub struct Foo;
     impl Foo {
@@ -1439,8 +1434,7 @@ fn foo() {
     let x = a::Foo::VALUE;
          // ^^^^^^^^^^^^^ type: usize
 }
-"#,
-    )
+"#)
 }
 
 #[test]
@@ -1967,8 +1961,7 @@ fn foo() {
 
 #[test]
 fn primitive_assoc_fn_shadowed_by_use() {
-    check_types(
-        r#"
+    check_types(r#"
 //- /lib.rs crate:lib deps:core
 use core::u16;
 
@@ -1984,8 +1977,7 @@ pub mod u16 {}
 impl u16 {
     pub fn from_le_bytes() -> Self { 0 }
 }
-        "#,
-    )
+        "#)
 }
 
 #[test]

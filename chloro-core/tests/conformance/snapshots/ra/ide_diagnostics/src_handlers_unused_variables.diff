@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7192 bytes
-Chloro size:   7036 bytes
+Chloro size:   7021 bytes
 Rustfmt size:  7216 bytes
 
 ✗ Outputs DIFFER
@@ -27,20 +27,8 @@ Rustfmt size:  7216 bytes
 -    };
 +    let new_name = if is_shorthand_field { format!("{name}: _{name}") } else { format!("_{name}") };
  
--    Some(vec![Assist {
-+    Some(
-+        vec![Assist {
+     Some(vec![Assist {
          id: AssistId::quick_fix("unscore_unused_variable_name"),
-         label: Label::new(format!("Rename unused {name} to {new_name}")),
-         group: None,
-             TextEdit::replace(name_range, new_name),
-         )),
-         command: None,
--    }])
-+    }],
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_diagnostics, check_fix};

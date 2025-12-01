@@ -492,17 +492,13 @@ pub(crate) fn handle_on_type_formatting(
 }
 
 pub(crate) fn empty_diagnostic_report() -> lsp_types::DocumentDiagnosticReportResult {
-    lsp_types::DocumentDiagnosticReportResult::Report(
-        lsp_types::DocumentDiagnosticReport::Full(
-        lsp_types::RelatedFullDocumentDiagnosticReport {
+    lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
         related_documents: None,
         full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
             result_id: Some("rust-analyzer".to_owned()),
             items: vec![],
         },
-    },
-    ),
-    )
+    }))
 }
 
 pub(crate) fn handle_document_diagnostics(
@@ -545,10 +541,7 @@ pub(crate) fn handle_document_diagnostics(
             }
             None
         });
-    Ok(
-        lsp_types::DocumentDiagnosticReportResult::Report(
-        lsp_types::DocumentDiagnosticReport::Full(
-        lsp_types::RelatedFullDocumentDiagnosticReport {
+    Ok(lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
         full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
             result_id: Some("rust-analyzer".to_owned()),
             items: diagnostics.collect(),
@@ -569,10 +562,7 @@ pub(crate) fn handle_document_diagnostics(
                     })
                     .collect()
             }),
-    },
-    ),
-    ),
-    )
+    })))
 }
 
 pub(crate) fn handle_document_symbol(
@@ -2281,8 +2271,7 @@ fn goto_type_action_links(
         return None;
     }
 
-    Some(
-        lsp_ext::CommandLinkGroup {
+    Some(lsp_ext::CommandLinkGroup {
         title: Some("Go to ".into()),
         commands: nav_targets
             .iter()
@@ -2291,8 +2280,7 @@ fn goto_type_action_links(
                     .map(|cmd| to_command_link(cmd, it.mod_path.clone()))
             })
             .collect(),
-    },
-    )
+    })
 }
 
 fn prepare_hover_actions(

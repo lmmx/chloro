@@ -344,8 +344,7 @@ fn f<'a>() {
     }
     #[test]
     fn fn_hints() {
-        check_types(
-            r#"
+        check_types(r#"
 //- minicore: fn, sized
 fn foo() -> impl Fn() { loop {} }
 fn foo1() -> impl Fn(f64) { loop {} }
@@ -374,8 +373,7 @@ fn main() {
     let foo = foo7();
      // ^^^ *const impl Fn(f64, f64) -> u32
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn check_hint_range_limit() {
@@ -419,8 +417,7 @@ fn main() {
     }
     #[test]
     fn fn_hints_ptr_rpit_fn_parentheses() {
-        check_types(
-            r#"
+        check_types(r#"
 //- minicore: fn, sized
 trait Trait {}
 
@@ -457,8 +454,7 @@ fn main() {
     let foo = foo10();
     //  ^^^ *const impl Fn()
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn unit_structs_have_no_type_hints() {

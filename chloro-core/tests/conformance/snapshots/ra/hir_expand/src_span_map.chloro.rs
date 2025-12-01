@@ -135,13 +135,11 @@ pub(crate) fn real_span_map(
         _ => (),
     });
 
-    Arc::new(
-        RealSpanMap::from_file(
+    Arc::new(RealSpanMap::from_file(
         editioned_file_id.editioned_file_id(db),
         pairs.into_boxed_slice(),
         tree.syntax().text_range().end(),
-    ),
-    )
+    ))
 }
 
 pub(crate) fn expansion_span_map(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28332 bytes
-Chloro size:   28291 bytes
+Chloro size:   28245 bytes
 Rustfmt size:  28759 bytes
 
 ✗ Outputs DIFFER
@@ -141,9 +141,18 @@ Rustfmt size:  28759 bytes
 -
      #[test]
      fn fn_hints() {
-         check_types(
- "#,
-         )
+-        check_types(
+-            r#"
++        check_types(r#"
+ //- minicore: fn, sized
+ fn foo() -> impl Fn() { loop {} }
+ fn foo1() -> impl Fn(f64) { loop {} }
+     let foo = foo7();
+      // ^^^ *const impl Fn(f64, f64) -> u32
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -176,9 +185,18 @@ Rustfmt size:  28759 bytes
 -
      #[test]
      fn fn_hints_ptr_rpit_fn_parentheses() {
-         check_types(
- "#,
-         )
+-        check_types(
+-            r#"
++        check_types(r#"
+ //- minicore: fn, sized
+ trait Trait {}
+ 
+     let foo = foo10();
+     //  ^^^ *const impl Fn()
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]

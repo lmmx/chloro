@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17010 bytes
-Chloro size:   16993 bytes
+Chloro size:   16947 bytes
 Rustfmt size:  17010 bytes
 
 ✗ Outputs DIFFER
@@ -100,16 +100,34 @@ Rustfmt size:  17010 bytes
 -
      #[test]
      fn self_param_hints() {
-         check_params(
- "#,
-         )
+-        check_params(
+-            r#"
++        check_params(r#"
+ struct Foo;
+ 
+ impl Foo {
+     Foo::bar(&Foo);
+            //^^^^ self
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn param_name_hints_show_for_literals() {
-         check_params(
- }"#,
-         )
+-        check_params(
+-            r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
++        check_params(r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
+ fn main() {
+     test(
+         0xa_b,
+         0xa_b,
+       //^^^^^ b
+     );
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]

@@ -771,8 +771,7 @@ fn bar() -> u32 {0}
 
 #[test]
 fn infer_builtin_macros_include_expression() {
-    check_types(
-        r#"
+    check_types(r#"
 //- /main.rs
 #[rustc_builtin_macro]
 macro_rules! include {() => {}}
@@ -783,8 +782,7 @@ fn main() {
 }
 //- /bla.rs
 0
-        "#,
-    )
+        "#)
 }
 
 #[test]

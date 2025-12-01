@@ -2006,14 +2006,10 @@ impl<'db> Interner for DbInterner<'db> {
         _def_id: Self::CoroutineId,
     ) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
         // FIXME: Actually implement this.
-        EarlyBinder::bind(
-            Binder::dummy(
-            CoroutineWitnessTypes {
+        EarlyBinder::bind(Binder::dummy(CoroutineWitnessTypes {
             types: Tys::default(),
             assumptions: RegionAssumptions::default(),
-        },
-        ),
-        )
+        }))
     }
 
     fn is_default_trait(self, def_id: Self::TraitId) -> bool {

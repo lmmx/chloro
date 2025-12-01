@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111356 bytes
+Chloro size:   111318 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -530,15 +530,6 @@ Rustfmt size:  113494 bytes
  
                  command::show_references(reference_title(locations.len()), &url, pos, locations)
              });
-     test_item: ide::TestItem,
-     line_index: Option<&LineIndex>,
- ) -> Option<lsp_ext::TestItem> {
--    Some(lsp_ext::TestItem {
-+    Some(
-+        lsp_ext::TestItem {
-         id: test_item.id,
-         label: test_item.label,
-         kind: match test_item.kind {
              .file
              .map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
          range: line_index.and_then(|l| Some(range(l, test_item.text_range?))),
@@ -546,10 +537,8 @@ Rustfmt size:  113494 bytes
 -            .runnable
 -            .and_then(|r| runnable(snap, r).ok())
 -            .flatten(),
--    })
 +        runnable: test_item.runnable.and_then(|r| runnable(snap, r).ok()).flatten(),
-+    },
-+    )
+     })
  }
  
  pub(crate) mod command {
@@ -613,16 +602,8 @@ Rustfmt size:  113494 bytes
              let location = location(snap, range).ok()?;
              to_value(location).ok()?
          };
- 
--        Some(lsp_types::Command {
-+        Some(
-+            lsp_types::Command {
-             title: nav.name.to_string(),
-             command: "rust-analyzer.gotoLocation".into(),
              arguments: Some(vec![value]),
--        })
-+        },
-+        )
+         })
      }
 -
      pub(crate) fn trigger_parameter_hints() -> lsp_types::Command {

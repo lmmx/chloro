@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95775 bytes
+Chloro size:   95706 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -140,17 +140,13 @@ Rustfmt size:  95826 bytes
              return Ok(None);
          };
 -        Ok(Some((Operand { kind: OperandKind::Copy(p), span: Some(expr_id.into()) }, current)))
-+        Ok(
-+            Some(
-+            (
++        Ok(Some((
 +            Operand {
 +            kind: OperandKind::Copy(p),
 +            span: Some(expr_id.into()),
 +        },
 +            current,
-+        ),
-+        ),
-+        )
++        )))
      }
  
      fn lower_expr_to_place_with_adjust(
@@ -158,12 +154,10 @@ Rustfmt size:  95826 bytes
              .unwrap()
              .instantiate(self.interner(), subst);
 -        Ok(Operand { kind: OperandKind::Constant { konst, ty }, span: None })
-+        Ok(
-+            Operand {
++        Ok(Operand {
 +            kind: OperandKind::Constant { konst, ty },
 +            span: None,
-+        },
-+        )
++        })
      }
  
      fn write_bytes_to_place(

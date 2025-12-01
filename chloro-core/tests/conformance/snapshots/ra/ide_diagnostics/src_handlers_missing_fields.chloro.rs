@@ -259,16 +259,14 @@ fn baz(s: S) {
     }
     #[test]
     fn missing_record_pat_field_no_diagnostic_if_not_exhaustive() {
-        check_diagnostics(
-            r"
+        check_diagnostics(r"
 struct S { foo: i32, bar: () }
 fn baz(s: S) -> i32 {
     match s {
         S { foo, .. } => foo,
     }
 }
-",
-        )
+")
     }
     #[test]
     fn missing_record_pat_field_box() {
@@ -281,15 +279,13 @@ fn x(a: S) {
     }
     #[test]
     fn missing_record_pat_field_ref() {
-        check_diagnostics(
-            r"
+        check_diagnostics(r"
 struct S { s: u32 }
 fn x(a: S) {
     let S { ref s } = a;
     _ = s;
 }
-",
-        )
+")
     }
     #[test]
     fn missing_record_expr_in_assignee_expr() {

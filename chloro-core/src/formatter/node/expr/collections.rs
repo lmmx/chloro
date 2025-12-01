@@ -1,5 +1,5 @@
+use ra_ap_syntax::ast::{self, AstNode, HasArgList, HasGenericArgs};
 use ra_ap_syntax::SyntaxNode;
-use ra_ap_syntax::ast::{self, AstNode, HasArgList};
 
 use super::try_format_expr_inner;
 use crate::formatter::config::MAX_WIDTH;
@@ -52,29 +52,36 @@ pub fn format_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
         .map(|a| try_format_expr_inner(a.syntax(), indent))
         .collect();
 
-    if let Some(args_vec) = args_formatted {
-        let single_line = format!("{}({})", callee_text, args_vec.join(", "));
-        if indent + single_line.len() <= MAX_WIDTH {
-            return Some(single_line);
-        }
+    let args_vec = args_formatted?;
 
-        // Multi-line
-        let mut buf = String::new();
-        buf.push_str(&callee_text);
-        buf.push_str("(\n");
-
-        for arg_str in args_vec {
-            write_indent(&mut buf, indent + 4);
-            buf.push_str(&arg_str);
-            buf.push_str(",\n");
-        }
-
-        write_indent(&mut buf, indent);
-        buf.push(')');
-        return Some(buf);
+    let single_line = format!("{}({})", callee_text, args_vec.join(", "));
+    if indent + single_line.len() <= MAX_WIDTH {
+        return Some(single_line);
     }
 
-    None
+    // Single argument that formats to multi-line: snug wrap it
+    if args.len() == 1 {
+        let arg_str = &args_vec[0];
+        if arg_str.contains('\n') {
+            // Snug: no trailing comma, closing paren right after
+            return Some(format!("{}({})", callee_text, arg_str));
+        }
+    }
+
+    // Multi-line with multiple args
+    let mut buf = String::new();
+    buf.push_str(&callee_text);
+    buf.push_str("(\n");
+
+    for arg_str in &args_vec {
+        write_indent(&mut buf, indent + 4);
+        buf.push_str(arg_str);
+        buf.push_str(",\n");
+    }
+
+    write_indent(&mut buf, indent);
+    buf.push(')');
+    Some(buf)
 }
 
 pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
@@ -86,6 +93,12 @@ pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<Strin
 
     let receiver_str = try_format_expr_inner(receiver.syntax(), indent)?;
 
+    // Preserve generic args (turbofish)
+    let generic_args = method
+        .generic_arg_list()
+        .map(|g| g.syntax().text().to_string())
+        .unwrap_or_default();
+
     // Format args
     let args_formatted: Option<Vec<_>> = args
         .iter()
@@ -95,9 +108,29 @@ pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<Strin
     let args_vec = args_formatted?;
 
     // Try single-line
-    let single_line = format!("{}.{}({})", receiver_str, name.text(), args_vec.join(", "));
+    let single_line = format!(
+        "{}.{}{}({})",
+        receiver_str,
+        name.text(),
+        generic_args,
+        args_vec.join(", ")
+    );
     if indent + single_line.len() <= MAX_WIDTH {
         return Some(single_line);
+    }
+
+    // Single argument that formats to multi-line: snug wrap it
+    if args.len() == 1 {
+        let arg_str = &args_vec[0];
+        if arg_str.contains('\n') {
+            return Some(format!(
+                "{}.{}{}({})",
+                receiver_str,
+                name.text(),
+                generic_args,
+                arg_str
+            ));
+        }
     }
 
     // Multi-line args
@@ -105,11 +138,12 @@ pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<Strin
     buf.push_str(&receiver_str);
     buf.push('.');
     buf.push_str(&name.text());
+    buf.push_str(&generic_args);
     buf.push_str("(\n");
 
-    for arg_str in args_vec {
+    for arg_str in &args_vec {
         write_indent(&mut buf, indent + 4);
-        buf.push_str(&arg_str);
+        buf.push_str(arg_str);
         buf.push_str(",\n");
     }
 

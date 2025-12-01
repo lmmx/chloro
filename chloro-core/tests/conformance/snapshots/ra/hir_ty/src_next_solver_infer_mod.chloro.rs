@@ -652,12 +652,10 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_const_vid(&self) -> ConstVid {
-        self.inner.borrow_mut().const_unification_table().new_key(
-            ConstVariableValue::Unknown {
+        self.inner.borrow_mut().const_unification_table().new_key(ConstVariableValue::Unknown {
             origin: ConstVariableOrigin {},
             universe: self.universe(),
-        },
-        ).vid
+        }).vid
     }
 
     pub fn next_const_var_with_origin(&self, origin: ConstVariableOrigin) -> Const<'db> {

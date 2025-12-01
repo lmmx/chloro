@@ -870,14 +870,12 @@ impl ExprCollector<'_> {
         if args.is_empty() && bindings.is_empty() {
             return None;
         }
-        Some(
-            GenericArgs {
+        Some(GenericArgs {
             args: args.into_boxed_slice(),
             has_self_type: false,
             bindings: bindings.into_boxed_slice(),
             parenthesized: GenericArgsParentheses::No,
-        },
-        )
+        })
     }
 
     fn collect(&mut self, expr: Option<ast::Expr>, awaitable: Awaitable) -> ExprId {
@@ -1828,15 +1826,13 @@ impl ExprCollector<'_> {
         self.alloc_expr(
             Expr::Match {
             expr: iterator,
-            arms: Box::new(
-                [
+            arms: Box::new([
                 MatchArm {
                 pat: iter_pat,
                 guard: None,
                 expr: loop_outer,
             },
-            ],
-            ),
+            ]),
         },
             syntax_ptr,
         )
@@ -3336,12 +3332,10 @@ impl ExprCollector<'_> {
             Some(new_fn) => self.alloc_expr_desugared(Expr::Path(new_fn)),
             None => self.missing_expr(),
         };
-        self.alloc_expr_desugared(
-            Expr::Call {
+        self.alloc_expr_desugared(Expr::Call {
             callee: new_fn,
             args: Box::new([arg]),
-        },
-        )
+        })
     }
 
     // endregion: format

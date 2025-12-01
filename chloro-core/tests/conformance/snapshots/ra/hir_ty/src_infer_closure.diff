@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   37006 bytes
+Chloro size:   36983 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -165,20 +165,3 @@ Rustfmt size:  36953 bytes
          // [c2]: https://github.com/rust-lang/rust/pull/45072#issuecomment-341096796
          self.table.commit_if_ok(|table| {
              let mut all_obligations = PredicateObligations::new();
-             None => self.table.next_ty_var(),
-         });
- 
--        Binder::dummy(interner.mk_fn_sig(
-+        Binder::dummy(
-+            interner.mk_fn_sig(
-             supplied_arguments,
-             supplied_return,
-             false,
-             Safety::Safe,
-             FnAbi::RustCall,
--        ))
-+        ),
-+        )
-     }
- 
-     /// Converts the types that the user supplied, in case that doing

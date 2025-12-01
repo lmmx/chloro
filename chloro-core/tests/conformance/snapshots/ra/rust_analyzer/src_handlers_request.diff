@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101181 bytes
-Chloro size:   100608 bytes
+Chloro size:   100518 bytes
 Rustfmt size:  101181 bytes
 
 ✗ Outputs DIFFER
@@ -62,23 +62,20 @@ Rustfmt size:  101181 bytes
  
  pub(crate) fn empty_diagnostic_report() -> lsp_types::DocumentDiagnosticReportResult {
 -    lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(
-+    lsp_types::DocumentDiagnosticReportResult::Report(
-+        lsp_types::DocumentDiagnosticReport::Full(
-         lsp_types::RelatedFullDocumentDiagnosticReport {
+-        lsp_types::RelatedFullDocumentDiagnosticReport {
 -            related_documents: None,
 -            full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
 -                result_id: Some("rust-analyzer".to_owned()),
 -                items: vec![],
 -            },
++    lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
 +        related_documents: None,
 +        full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
 +            result_id: Some("rust-analyzer".to_owned()),
 +            items: vec![],
          },
 -    ))
-+    },
-+    ),
-+    )
++    }))
  }
  
  pub(crate) fn handle_document_diagnostics(
@@ -92,10 +89,7 @@ Rustfmt size:  101181 bytes
 -                items: diagnostics.collect(),
 -            },
 -            related_documents: related_documents.is_empty().not().then(|| {
-+    Ok(
-+        lsp_types::DocumentDiagnosticReportResult::Report(
-+        lsp_types::DocumentDiagnosticReport::Full(
-+        lsp_types::RelatedFullDocumentDiagnosticReport {
++    Ok(lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
 +        full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
 +            result_id: Some("rust-analyzer".to_owned()),
 +            items: diagnostics.collect(),
@@ -109,10 +103,7 @@ Rustfmt size:  101181 bytes
              }),
 -        }),
 -    ))
-+    },
-+    ),
-+    ),
-+    )
++    })))
  }
  
  pub(crate) fn handle_document_symbol(
@@ -131,24 +122,6 @@ Rustfmt size:  101181 bytes
      // See https://github.com/microsoft/vscode-languageserver-node/issues/752 for more info
      if !change.file_system_edits.is_empty() && snap.config.will_rename() {
          change.source_file_edits.clear();
-         return None;
-     }
- 
--    Some(lsp_ext::CommandLinkGroup {
-+    Some(
-+        lsp_ext::CommandLinkGroup {
-         title: Some("Go to ".into()),
-         commands: nav_targets
-             .iter()
-                     .map(|cmd| to_command_link(cmd, it.mod_path.clone()))
-             })
-             .collect(),
--    })
-+    },
-+    )
- }
- 
- fn prepare_hover_actions(
      let file = snap.analysis.file_text(file_id)?;
  
      // Determine the edition of the crate the file belongs to (if there's multiple, we pick the

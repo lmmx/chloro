@@ -83,8 +83,7 @@ impl UpmapFromRaFixture for NavigationTarget {
         real_file_id: FileId,
     ) -> Result<Self, ()> {
         let virtual_file_id = self.file_id;
-        Ok(
-            NavigationTarget {
+        Ok(NavigationTarget {
             file_id: real_file_id,
             full_range: self.full_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             focus_range: self.focus_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
@@ -94,8 +93,7 @@ impl UpmapFromRaFixture for NavigationTarget {
             description: self.description.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             docs: self.docs.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             alias: self.alias.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-        },
-        )
+        })
     }
 }
 
@@ -879,7 +877,8 @@ impl<T> IntoIterator for UpmappingResult<T> {
     type IntoIter = <ArrayVec<T, 2> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.def_site.into_iter().chain(Some(self.call_site)).collect().into_iter()
+        self.def_site.into_iter().chain(Some(self.call_site)).collect::<ArrayVec<_, 2>>().into_iter(
+        )
     }
 }
 

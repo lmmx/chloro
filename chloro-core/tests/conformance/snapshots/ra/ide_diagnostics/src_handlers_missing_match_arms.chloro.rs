@@ -253,16 +253,14 @@ fn main() {
     }
     #[test]
     fn or_pattern_no_diagnostic() {
-        check_diagnostics_no_bails(
-            r#"
+        check_diagnostics_no_bails(r#"
 enum Either {A, B}
 
 fn main() {
     match (Either::A, Either::B) {
         (Either::A | Either::B, _) => (),
     }
-}"#,
-        )
+}"#)
     }
     #[test]
     fn mismatched_types() {

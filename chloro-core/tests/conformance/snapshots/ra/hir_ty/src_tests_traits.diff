@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 107313 bytes
-Chloro size:   107127 bytes
+Chloro size:   107022 bytes
 Rustfmt size:  107313 bytes
 
 ✗ Outputs DIFFER
@@ -14,6 +14,132 @@ Rustfmt size:  107313 bytes
  use crate::tests::infer_with_mismatches;
 -
  use super::{check, check_infer, check_infer_with_mismatches, check_no_mismatches, check_types};
+ 
+ #[test]
+ 
+ #[test]
+ fn deref_trait_with_implicit_sized_requirement_on_inference_var() {
+-    check_types(
+-        r#"
++    check_types(r#"
+ //- minicore: deref, phantom_data
+ use core::marker::PhantomData;
+ 
+   //^^^^ ()
+     let _: Foo<u8> = foo;
+ }
+-"#,
+-    )
++"#)
+ }
+ 
+ #[test]
+ #[test]
+ fn return_pos_impl_trait_in_projection() {
+     // Note that the unused type param `X` is significant; see #13307.
+-    check_no_mismatches(
+-        r#"
++    check_no_mismatches(r#"
+ //- minicore: sized
+ trait Future { type Output; }
+ impl Future for () { type Output = i32; }
+ fn foo<X>() -> Foo<impl Future<Output = i32>> {
+     (0, ())
+ }
+-"#,
+-    )
++"#)
+ }
+ 
+ #[test]
+ 
+ #[test]
+ fn associated_type_in_type_bound() {
+-    check_types(
+-        r#"
++    check_types(r#"
+ //- minicore: deref
+ fn fb(f: Foo<&u8>) {
+     f.foobar();
+         self.foo.deref().bar()
+     }
+ }
+-"#,
+-    )
++"#)
+ }
+ 
+ #[test]
+ 
+ #[test]
+ fn no_builtin_binop_expectation_for_non_builtin_types() {
+-    check_no_mismatches(
+-        r#"
++    check_no_mismatches(r#"
+ //- minicore: default, eq
+ struct S;
+ impl Default for S { fn default() -> Self { S } }
+     let _eq = 0 == s;
+     take_s(s);
+ }
+-"#,
+-    )
++"#)
+ }
+ 
+ #[test]
+ 
+ #[test]
+ fn regression_14443_trait_solve() {
+-    check_no_mismatches(
+-        r#"
++    check_no_mismatches(r#"
+ trait T {
+     fn f(&self) {}
+ }
+     a.f();
+     b.f();
+ }
+-"#,
+-    )
++"#)
+ }
+ 
+ #[test]
+ 
+ #[test]
+ fn dyn_map() {
+-    check_types(
+-        r#"
++    check_types(r#"
+ pub struct Key<K, V, P = (K, V)> {}
+ 
+ pub trait Policy {
+     let result = key_map.get(key);
+       //^^^^^^ FunctionId
+ }
+-"#,
+-    )
++"#)
+ }
+ 
+ #[test]
+ 
+ #[test]
+ fn dyn_trait_with_lifetime_in_rpit() {
+-    check_types(
+-        r#"
++    check_types(r#"
+ //- minicore: future
+ pub struct Box<T> {}
+ 
+     foo_async();
+   //^^^^^^^^^^^impl Future<Output = Box<dyn Trait + '?>> + ?Sized
+ }
+-"#,
+-    )
++"#)
+ }
  
  #[test]
      );

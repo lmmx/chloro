@@ -692,16 +692,14 @@ impl<'db> Evaluator<'db> {
 
     fn place_interval(&self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
         let place_addr_and_ty = self.place_addr_and_ty_and_metadata(p, locals)?;
-        Ok(
-            Interval {
+        Ok(Interval {
             addr: place_addr_and_ty.0,
             size: self.size_of_sized(
                 place_addr_and_ty.1,
                 locals,
                 "Type of place that we need its interval",
             )?,
-        },
-        )
+        })
     }
 
     fn ptr_size(&self) -> usize {
@@ -897,12 +895,10 @@ impl<'db> Evaluator<'db> {
         o: &Operand<'db>,
         locals: &mut Locals<'db>,
     ) -> Result<'db, IntervalAndTy<'db>> {
-        Ok(
-            IntervalAndTy {
+        Ok(IntervalAndTy {
             interval: self.eval_operand(o, locals)?,
             ty: self.operand_ty(o, locals)?,
-        },
-        )
+        })
     }
 
     fn interpret_mir(
@@ -1987,12 +1983,10 @@ impl<'db> Evaluator<'db> {
 
     fn eval_place(&mut self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
         let addr = self.place_addr(p, locals)?;
-        Ok(
-            Interval::new(
+        Ok(Interval::new(
             addr,
             self.size_of_sized(self.place_ty(p, locals)?, locals, "type of this place")?,
-        ),
-        )
+        ))
     }
 
     fn read_memory(&self, addr: Address, size: usize) -> Result<'db, &[u8]> {

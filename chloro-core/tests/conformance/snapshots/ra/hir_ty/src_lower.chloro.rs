@@ -1091,13 +1091,11 @@ pub(crate) fn ty_query<'db>(db: &'db dyn HirDatabase, def: TyDefId) -> EarlyBind
 /// function body.
 fn type_for_fn<'db>(db: &'db dyn HirDatabase, def: FunctionId) -> EarlyBinder<'db, Ty<'db>> {
     let interner = DbInterner::new_with(db, None, None);
-    EarlyBinder::bind(
-        Ty::new_fn_def(
+    EarlyBinder::bind(Ty::new_fn_def(
         interner,
         CallableDefId::FunctionId(def).into(),
         GenericArgs::identity_for_item(interner, def.into()),
-    ),
-    )
+    ))
 }
 
 /// Build the declared type of a const.

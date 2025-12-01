@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81763 bytes
+Chloro size:   81717 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -563,19 +563,6 @@ Rustfmt size:  84055 bytes
      }
  
      fn impl_is_const(self, _def_id: Self::ImplId) -> bool {
-         _def_id: Self::CoroutineId,
-     ) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
-         // FIXME: Actually implement this.
--        EarlyBinder::bind(Binder::dummy(CoroutineWitnessTypes {
-+        EarlyBinder::bind(
-+            Binder::dummy(
-+            CoroutineWitnessTypes {
-             types: Tys::default(),
-             assumptions: RegionAssumptions::default(),
--        }))
-+        },
-+        ),
-+        )
      }
  
      fn is_default_trait(self, def_id: Self::TraitId) -> bool {

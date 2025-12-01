@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39798 bytes
-Chloro size:   39538 bytes
+Chloro size:   39548 bytes
 Rustfmt size:  40546 bytes
 
 ✗ Outputs DIFFER
@@ -112,14 +112,6 @@ Rustfmt size:  40546 bytes
                      FileSystemEdit::MoveFile { src, dst } => {
                          (dst, db.file_text(src).text(&db).as_ref().to_owned())
                      }
-         })
-         .collect::<Vec<_>>();
-     labels.dedup();
--    labels.into_iter().collect::<String>()
-+    labels.into_iter().collect()
- }
- 
- #[test]
      let before = "struct Foo { $0bar: u32 }";
      let (before_cursor_pos, before) = extract_offset(before);
      let (db, file_id) = with_single_file(&before);

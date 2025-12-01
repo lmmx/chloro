@@ -389,24 +389,20 @@ impl T for U {
     }
     #[test]
     fn infinite_loop_inner_items() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 fn qualify() {
     mod foo {
         use super::*;
     }
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn parenthesized_parameter() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 fn f((_O): u8) {}
    // ^^ 💡 warn: Variable `_O` should have snake_case name, e.g. `_o`
-"#,
-        )
+"#)
     }
     #[test]
     fn ignores_no_mangle_items() {
@@ -777,15 +773,13 @@ mod M {
     }
     #[test]
     fn module_name_decl() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 //- /Foo.rs
 
 //- /main.rs
 mod Foo;
   //^^^ 💡 warn: Module `Foo` should have snake_case name, e.g. `foo`
-"#,
-        )
+"#)
     }
     #[test]
     fn test_field_shorthand() {

@@ -418,8 +418,7 @@ fn main() {
     }
     #[test]
     fn self_param_hints() {
-        check_params(
-            r#"
+        check_params(r#"
 struct Foo;
 
 impl Foo {
@@ -433,13 +432,11 @@ fn main() {
     Foo::bar(&Foo);
            //^^^^ self
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn param_name_hints_show_for_literals() {
-        check_params(
-            r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
+        check_params(r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
 fn main() {
     test(
         0xa_b,
@@ -447,8 +444,7 @@ fn main() {
         0xa_b,
       //^^^^^ b
     );
-}"#,
-        )
+}"#)
     }
     #[test]
     fn function_call_parameter_hint() {

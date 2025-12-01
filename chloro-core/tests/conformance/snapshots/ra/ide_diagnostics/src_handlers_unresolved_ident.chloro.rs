@@ -17,15 +17,13 @@ mod tests {
     use crate::tests::check_diagnostics;
     #[test]
     fn feature() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 //- minicore: fmt
 fn main() {
     format_args!("{unresolved}");
                 // ^^^^^^^^^^ error: no such value in this scope
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn missing() {

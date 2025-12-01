@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7346 bytes
-Chloro size:   7182 bytes
+Chloro size:   7152 bytes
 Rustfmt size:  7366 bytes
 
 ✗ Outputs DIFFER
@@ -18,25 +18,29 @@ Rustfmt size:  7366 bytes
  pub(crate) fn remove_trailing_return(
      ctx: &DiagnosticsContext<'_>,
      d: &RemoveTrailingReturn,
+             .and_then(ast::ExprStmt::cast)
+             .map(|stmt| stmt.syntax().text_range())
      });
-     Some(
-         Diagnostic::new(
+-    Some(
+-        Diagnostic::new(
 -            DiagnosticCode::Clippy("needless_return"),
 -            "replace return <expr>; with <expr>",
 -            display_range,
 -        )
 -        .stable()
 -        .with_fixes(fixes(ctx, d)),
+-    )
++    Some(Diagnostic::new(
 +        DiagnosticCode::Clippy("needless_return"),
 +        "replace return <expr>; with <expr>",
 +        display_range,
 +    ).stable(
 +    ).with_fixes(
 +        fixes(ctx, d),
-+    ),
-     )
++    ))
  }
  
+ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<Assist>> {
      let return_expr = d.return_expr.value.to_node(&root);
      let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);
  
@@ -57,19 +61,6 @@ Rustfmt size:  7366 bytes
      let edit = TextEdit::replace(range, replacement);
      let source_change = SourceChange::from_text_edit(file_id.file_id(ctx.sema.db), edit);
  
--    Some(vec![fix(
-+    Some(
-+        vec![fix(
-         "remove_trailing_return",
-         "Replace return <expr>; with <expr>",
-         source_change,
-         range,
--    )])
-+    )],
-+    )
- }
- 
- #[cfg(test)]
      use crate::tests::{
          check_diagnostics, check_diagnostics_with_disabled, check_fix, check_fix_with_disabled,
      };

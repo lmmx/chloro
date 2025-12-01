@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53967 bytes
-Chloro size:   53895 bytes
+Chloro size:   53880 bytes
 Rustfmt size:  56860 bytes
 
 ✗ Outputs DIFFER
@@ -175,24 +175,6 @@ Rustfmt size:  56860 bytes
                  e,
              );
          }
-             ExpandError::other(invoc_span, "this trait cannot be derived for unions"),
-         );
-     }
--    ExpandResult::ok(expand_simple_derive_with_parsed(
-+    ExpandResult::ok(
-+        expand_simple_derive_with_parsed(
-         invoc_span,
-         info,
-         trait_path,
-         make_trait_body,
-         true,
-         tt::TopSubtree::empty(tt::DelimSpan::from_single(invoc_span)),
--    ))
-+    ),
-+    )
- }
- 
- fn expand_simple_derive_with_parsed(
      extra_impl_params: tt::TopSubtree,
  ) -> tt::TopSubtree {
      let trait_body = make_trait_body(&info);

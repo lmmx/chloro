@@ -21,16 +21,14 @@ pub(crate) fn remove_trailing_return(
             .and_then(ast::ExprStmt::cast)
             .map(|stmt| stmt.syntax().text_range())
     });
-    Some(
-        Diagnostic::new(
+    Some(Diagnostic::new(
         DiagnosticCode::Clippy("needless_return"),
         "replace return <expr>; with <expr>",
         display_range,
     ).stable(
     ).with_fixes(
         fixes(ctx, d),
-    ),
-    )
+    ))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<Assist>> {
@@ -49,14 +47,12 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<A
     let edit = TextEdit::replace(range, replacement);
     let source_change = SourceChange::from_text_edit(file_id.file_id(ctx.sema.db), edit);
 
-    Some(
-        vec![fix(
+    Some(vec![fix(
         "remove_trailing_return",
         "Replace return <expr>; with <expr>",
         source_change,
         range,
-    )],
-    )
+    )])
 }
 
 #[cfg(test)]

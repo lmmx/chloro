@@ -101,8 +101,7 @@ fn node_to_def(
     sema: &Semantics<'_, RootDatabase>,
     node: &SyntaxNode,
 ) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
-    Some(
-        match_ast! {
+    Some(match_ast! {
         match node {
             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
             ast::Module(it)      => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
@@ -122,8 +121,7 @@ fn node_to_def(
             // ast::Use(it) => sema.to_def(&it).map(|def| (Box::new(it) as _, def.attrs(sema.db))),
             _ => return None,
         }
-    },
-    )
+    })
 }
 
 #[test]
@@ -444,8 +442,7 @@ fn main() {
 
 #[test]
 fn doc_links_items_simple() {
-    check_doc_links(
-        r#"
+    check_doc_links(r#"
 //- /main.rs crate:main deps:krate
 /// [`krate`]
 //! [`Trait`]
@@ -481,14 +478,12 @@ mod module {}
 //- /krate.rs crate:krate
 // empty
 //^file krate
-"#,
-    )
+"#)
 }
 
 #[test]
 fn doc_links_inherent_impl_items() {
-    check_doc_links(
-        r#"
+    check_doc_links(r#"
 /// [`Struct::CONST`]
 /// [`Struct::function`]
 struct Struct$0;
@@ -499,14 +494,12 @@ impl Struct {
     fn function() {}
     // ^^^^^^^^ Struct::function
 }
-"#,
-    )
+"#)
 }
 
 #[test]
 fn doc_links_trait_impl_items() {
-    check_doc_links(
-        r#"
+    check_doc_links(r#"
 trait Trait {
     type Type;
     const CONST: usize;
@@ -524,14 +517,12 @@ impl Trait for Struct {
     const CONST: () = ();
     fn function() {}
 }
-"#,
-    )
+"#)
 }
 
 #[test]
 fn doc_links_trait_items() {
-    check_doc_links(
-        r#"
+    check_doc_links(r#"
 /// [`Trait`]
 /// [`Trait::Type`]
 /// [`Trait::CONST`]
@@ -545,8 +536,7 @@ const CONST: usize;
 fn function();
 // ^^^^^^^^ Trait::function
 }
-    "#,
-    )
+    "#)
 }
 
 #[test]

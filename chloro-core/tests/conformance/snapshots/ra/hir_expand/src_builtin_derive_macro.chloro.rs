@@ -485,16 +485,14 @@ fn expand_simple_derive(
             ExpandError::other(invoc_span, "this trait cannot be derived for unions"),
         );
     }
-    ExpandResult::ok(
-        expand_simple_derive_with_parsed(
+    ExpandResult::ok(expand_simple_derive_with_parsed(
         invoc_span,
         info,
         trait_path,
         make_trait_body,
         true,
         tt::TopSubtree::empty(tt::DelimSpan::from_single(invoc_span)),
-    ),
-    )
+    ))
 }
 
 fn expand_simple_derive_with_parsed(

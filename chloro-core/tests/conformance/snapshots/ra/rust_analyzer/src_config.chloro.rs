@@ -2338,8 +2338,7 @@ impl Config {
     }
 
     pub(crate) fn completion_snippets_default() -> FxIndexMap<String, SnippetDef> {
-        serde_json::from_str(
-            r#"{
+        serde_json::from_str(r#"{
             "Ok": {
                 "postfix": "ok",
                 "body": "Ok(${receiver})",
@@ -2379,8 +2378,7 @@ impl Config {
                 "description": "Put the expression into an `Rc`",
                 "scope": "expr"
             }
-        }"#,
-        ).unwrap(
+        }"#).unwrap(
         )
     }
 

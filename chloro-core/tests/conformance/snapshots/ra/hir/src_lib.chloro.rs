@@ -5860,12 +5860,10 @@ impl<'db> Callable<'db> {
             _ => return None,
         };
         let func = Function { id: func };
-        Some(
-            (
+        Some((
             func.self_param(db)?,
             self.ty.derived(self.sig.skip_binder().inputs_and_output.inputs()[0]),
-        ),
-        )
+        ))
     }
 
     pub fn n_params(&self) -> usize {

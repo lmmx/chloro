@@ -420,10 +420,8 @@ struct LocalUsages(ide_db::search::UsageSearchResult);
 
 impl LocalUsages {
     fn find_local_usages(ctx: &AssistContext<'_>, var: Local) -> Self {
-        Self(
-            Definition::Local(var).usages(&ctx.sema).in_scope(&SearchScope::single_file(ctx.file_id())).all(
-        ),
-        )
+        Self(Definition::Local(var).usages(&ctx.sema).in_scope(&SearchScope::single_file(ctx.file_id())).all(
+        ))
     }
 
     fn iter(&self) -> impl Iterator<Item = &FileReference> + '_ {

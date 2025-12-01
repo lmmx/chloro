@@ -34,15 +34,13 @@ mod tests {
     use crate::tests::check_diagnostics;
     #[test]
     fn trait_with_default_value() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 trait Marker {
     const FLAG: bool = false;
 }
 struct Foo;
 impl Marker for Foo {}
-            "#,
-        )
+            "#)
     }
     #[test]
     fn simple() {
@@ -109,21 +107,18 @@ impl Trait for () {
     }
     #[test]
     fn negative_impl() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 trait Trait {
     fn item();
 }
 
 // Negative impls don't require any items (in fact, the forbid providing any)
 impl !Trait for () {}
-"#,
-        )
+"#)
     }
     #[test]
     fn impl_sized_for_unsized() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 //- minicore: sized
 trait Trait {
     type Item
@@ -145,7 +140,6 @@ impl Trait for () {
 // Items with Self: Sized bound not required to be implemented for unsized types.
 impl Trait for str {}
 impl Trait for dyn OtherTrait {}
- "#,
-        )
+ "#)
     }
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   226360 bytes
+Chloro size:   226337 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -551,17 +551,8 @@ Rustfmt size:  227843 bytes
      pub fn receiver_param(&self, db: &'db dyn HirDatabase) -> Option<(SelfParam, Type<'db>)> {
          let func = match self.callee {
              Callee::Def(CallableDefId::FunctionId(it)) if self.is_bound_method => it,
-             _ => return None,
-         };
-         let func = Function { id: func };
--        Some((
-+        Some(
-+            (
-             func.self_param(db)?,
              self.ty.derived(self.sig.skip_binder().inputs_and_output.inputs()[0]),
--        ))
-+        ),
-+        )
+         ))
      }
 +
      pub fn n_params(&self) -> usize {

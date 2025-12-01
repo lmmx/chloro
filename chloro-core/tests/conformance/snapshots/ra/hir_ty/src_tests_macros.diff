@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30351 bytes
-Chloro size:   30350 bytes
+Chloro size:   30335 bytes
 Rustfmt size:  30351 bytes
 
 ✗ Outputs DIFFER
@@ -14,5 +14,23 @@ Rustfmt size:  30351 bytes
  use crate::tests::{check_infer_with_mismatches, check_no_mismatches};
 -
  use super::{check_infer, check_types};
+ 
+ #[test]
+ 
+ #[test]
+ fn infer_builtin_macros_include_expression() {
+-    check_types(
+-        r#"
++    check_types(r#"
+ //- /main.rs
+ #[rustc_builtin_macro]
+ macro_rules! include {() => {}}
+ }
+ //- /bla.rs
+ 0
+-        "#,
+-    )
++        "#)
+ }
  
  #[test]

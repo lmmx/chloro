@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31662 bytes
-Chloro size:   31733 bytes
+Chloro size:   31687 bytes
 Rustfmt size:  32318 bytes
 
 ✗ Outputs DIFFER
@@ -210,22 +210,6 @@ Rustfmt size:  32318 bytes
      };
  
      located_imports
-         {
-             return None;
-         }
--        Some(ImportCandidate::Path(PathImportCandidate {
-+        Some(
-+            ImportCandidate::Path(
-+            PathImportCandidate {
-             qualifier: vec![],
-             name: NameToImport::exact_case_sensitive(name.to_string()),
--        }))
-+        },
-+        ),
-+        )
-     }
- 
-     fn for_fuzzy_path(
      Some(match qualifier {
          Some(qualifier) => match sema.resolve_path(&qualifier) {
              Some(PathResolution::Def(ModuleDef::BuiltinType(_))) | None => {

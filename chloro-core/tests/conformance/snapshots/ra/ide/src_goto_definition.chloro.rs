@@ -897,8 +897,7 @@ impl Trait for T {
     }
     #[test]
     fn goto_def_in_mac_call_in_attr_invoc() {
-        check(
-            r#"
+        check(r#"
 //- proc_macros: identity
 pub struct Struct {
         // ^^^^^^
@@ -914,32 +913,27 @@ fn function() {
     identity!(Struct$0 { field: 0 });
 }
 
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_for_extern_crate() {
-        check(
-            r#"
+        check(r#"
 //- /main.rs crate:main deps:std
 extern crate std$0;
 //- /std/lib.rs crate:std
 // empty
 //^file
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_for_renamed_extern_crate() {
-        check(
-            r#"
+        check(r#"
 //- /main.rs crate:main deps:std
 extern crate std as abc$0;
 //- /std/lib.rs crate:std
 // empty
 //^file
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_in_items() {
@@ -1617,8 +1611,7 @@ fn bar() {
     }
     #[test]
     fn goto_def_for_field_init_shorthand() {
-        check(
-            r#"
+        check(r#"
 struct Foo { x: i32 }
            //^
 fn main() {
@@ -1626,8 +1619,7 @@ fn main() {
       //^
     Foo { x$0 };
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_for_enum_variant_field() {
@@ -1752,8 +1744,7 @@ fn f() -> impl Sub<Item$0 = u8> {}
     }
     #[test]
     fn goto_def_for_module_declaration_in_path_if_types_and_values_same_name() {
-        check(
-            r#"
+        check(r#"
 mod bar {
     pub struct Foo {}
              //^^^
@@ -1763,17 +1754,14 @@ mod bar {
 fn baz() {
     let _foo_enum: bar::Foo$0 = bar::Foo {};
 }
-        "#,
-        )
+        "#)
     }
     #[test]
     fn unknown_assoc_ty() {
-        check_unresolved(
-            r#"
+        check_unresolved(r#"
 trait Iterator { type Item; }
 fn f() -> impl Iterator<Invalid$0 = u8> {}
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_for_assoc_ty_in_path_multiple() {
@@ -1840,8 +1828,7 @@ fn g() -> <() as Iterator<A = (), B$0 = u8>>::A {}
     }
     #[test]
     fn goto_self_param_ty_specified() {
-        check(
-            r#"
+        check(r#"
 struct Foo {}
 
 impl Foo {
@@ -1849,8 +1836,7 @@ impl Foo {
          //^^^^
         let foo = sel$0f;
     }
-}"#,
-        )
+}"#)
     }
     #[test]
     fn goto_self_param_on_decl() {
@@ -1879,13 +1865,11 @@ fn foo<'foobar>(_: &'foobar$0 ()) {
     }
     #[test]
     fn goto_lifetime_param_decl_nested() {
-        check(
-            r#"
+        check(r#"
 fn foo<'foobar>(_: &'foobar ()) {
     fn foo<'foobar>(_: &'foobar$0 ()) {}
          //^^^^^^^
-}"#,
-        )
+}"#)
     }
     #[test]
     fn goto_lifetime_hrtb() {
@@ -1917,8 +1901,7 @@ fn foo<T>() where T: for<'a> Foo<&'a$0 (u8, u16)>, {}
     }
     #[test]
     fn goto_label() {
-        check(
-            r#"
+        check(r#"
 fn foo<'foo>(_: &'foo ()) {
     'foo: {
   //^^^^
@@ -1926,13 +1909,11 @@ fn foo<'foo>(_: &'foo ()) {
             break 'foo$0;
         }
     }
-}"#,
-        )
+}"#)
     }
     #[test]
     fn goto_def_for_intra_doc_link_same_file() {
-        check(
-            r#"
+        check(r#"
 /// Blah, [`bar`](bar) .. [`foo`](foo$0) has [`bar`](bar)
 pub fn bar() { }
 
@@ -1940,8 +1921,7 @@ pub fn bar() { }
 pub fn foo() { }
      //^^^
 
-}"#,
-        )
+}"#)
     }
     #[test]
     fn goto_def_for_intra_doc_link_outer_same_file() {
@@ -2031,8 +2011,7 @@ fn foo() { A { a$0: }; }
     }
     #[test]
     fn goto_proc_macro() {
-        check(
-            r#"
+        check(r#"
 //- /main.rs crate:main deps:mac
 use mac::fn_macro;
 
@@ -2043,8 +2022,7 @@ fn_macro$0!();
 #[proc_macro]
 fn fn_macro() {}
  //^^^^^^^^
-            "#,
-        )
+            "#)
     }
     #[test]
     fn goto_intra_doc_links() {
@@ -2715,8 +2693,7 @@ fn main() {
 "#,
         );
 
-        check(
-            r#"
+        check(r#"
 trait Trait<T> {
     fn f(_: T);
 }
@@ -2730,8 +2707,7 @@ impl Trait<i64> for usize {
 fn main() {
     usize::f$0(0i64);
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn query_impls_in_nearest_block() {
@@ -2876,8 +2852,7 @@ pub mod prelude {
     }
     #[test]
     fn goto_def_on_return_kw() {
-        check(
-            r#"
+        check(r#"
 macro_rules! N {
     ($i:ident, $x:expr, $blk:expr) => {
         for $i in 0..$x {
@@ -2902,13 +2877,11 @@ fn main() {
         })();
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_return_kw_in_closure() {
-        check(
-            r#"
+        check(r#"
 macro_rules! N {
     ($i:ident, $x:expr, $blk:expr) => {
         for $i in 0..$x {
@@ -2933,8 +2906,7 @@ fn main() {
         })();
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_break_kw() {
@@ -3005,8 +2977,7 @@ fn foo() {
     }
     #[test]
     fn goto_def_on_return_in_try() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     fn f() {
  // ^^
@@ -3017,13 +2988,11 @@ fn main() {
         return;
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_break_in_try() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     for i in 1..100 {
  // ^^^
@@ -3032,8 +3001,7 @@ fn main() {
         };
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_return_in_async_block() {
@@ -3825,8 +3793,7 @@ fn bar() {
     }
     #[test]
     fn regression_20038() {
-        check(
-            r#"
+        check(r#"
 //- minicore: clone, fn
 struct Map<Fut, F>(Fut, F);
 
@@ -3883,7 +3850,6 @@ where
 {
     let _x = inner.is_terminated$0();
 }
-"#,
-        )
+"#)
     }
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7132 bytes
-Chloro size:   7067 bytes
+Chloro size:   7052 bytes
 Rustfmt size:  7454 bytes
 
 ✗ Outputs DIFFER
@@ -69,24 +69,6 @@ Rustfmt size:  7454 bytes
          _ => {
              let kind = variant.kind(ctx.db());
              let label = format_literal_label(name.as_str(), kind, ctx.snippet_cap());
-         }
-     };
- 
--    Some(build_completion(
-+    Some(
-+        build_completion(
-         ctx,
-         label,
-         lookup,
-         variant,
-         enum_ty,
-         pattern_ctx.missing_variants.contains(&variant),
--    ))
-+    ),
-+    )
- }
- 
- fn build_completion(
      pat: String,
      def: impl HasDocs + Copy,
      adt_ty: hir::Type<'_>,

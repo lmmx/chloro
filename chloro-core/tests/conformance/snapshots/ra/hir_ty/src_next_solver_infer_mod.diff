@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49267 bytes
+Chloro size:   49244 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -227,12 +227,10 @@ Rustfmt size:  49754 bytes
 -                universe: self.universe(),
 -            })
 -            .vid
-+        self.inner.borrow_mut().const_unification_table().new_key(
-+            ConstVariableValue::Unknown {
++        self.inner.borrow_mut().const_unification_table().new_key(ConstVariableValue::Unknown {
 +            origin: ConstVariableOrigin {},
 +            universe: self.universe(),
-+        },
-+        ).vid
++        }).vid
      }
  
      pub fn next_const_var_with_origin(&self, origin: ConstVariableOrigin) -> Const<'db> {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   144032 bytes
+Chloro size:   143955 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -108,22 +108,6 @@ Rustfmt size:  144317 bytes
      awaitable_context: Option<Awaitable>,
  }
  
-         if args.is_empty() && bindings.is_empty() {
-             return None;
-         }
--        Some(GenericArgs {
-+        Some(
-+            GenericArgs {
-             args: args.into_boxed_slice(),
-             has_self_type: false,
-             bindings: bindings.into_boxed_slice(),
-             parenthesized: GenericArgsParentheses::No,
--        })
-+        },
-+        )
-     }
- 
-     fn collect(&mut self, expr: Option<ast::Expr>, awaitable: Awaitable) -> ExprId {
          let body = self.collect_labelled_block_opt(label, e.loop_body());
  
          // Labels can also be used in the condition expression, like this:
@@ -173,15 +157,13 @@ Rustfmt size:  144317 bytes
 -                expr: iterator,
 -                arms: Box::new([MatchArm { pat: iter_pat, guard: None, expr: loop_outer }]),
 +            expr: iterator,
-+            arms: Box::new(
-+                [
++            arms: Box::new([
 +                MatchArm {
 +                pat: iter_pat,
 +                guard: None,
 +                expr: loop_outer,
              },
-+            ],
-+            ),
++            ]),
 +        },
              syntax_ptr,
          )
@@ -269,12 +251,10 @@ Rustfmt size:  144317 bytes
              None => self.missing_expr(),
          };
 -        self.alloc_expr_desugared(Expr::Call { callee: new_fn, args: Box::new([arg]) })
-+        self.alloc_expr_desugared(
-+            Expr::Call {
++        self.alloc_expr_desugared(Expr::Call {
 +            callee: new_fn,
 +            args: Box::new([arg]),
-+        },
-+        )
++        })
      }
  
      // endregion: format

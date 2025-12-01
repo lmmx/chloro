@@ -475,12 +475,10 @@ impl UpmapFromRaFixture for FilePositionWrapper<FileId> {
         _virtual_file_id: FileId,
         real_file_id: FileId,
     ) -> Result<Self, ()> {
-        Ok(
-            FilePositionWrapper {
+        Ok(FilePositionWrapper {
             file_id: real_file_id,
             offset: self.offset.upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
-        },
-        )
+        })
     }
 }
 
@@ -491,12 +489,10 @@ impl UpmapFromRaFixture for FileRangeWrapper<FileId> {
         _virtual_file_id: FileId,
         real_file_id: FileId,
     ) -> Result<Self, ()> {
-        Ok(
-            FileRangeWrapper {
+        Ok(FileRangeWrapper {
             file_id: real_file_id,
             range: self.range.upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
-        },
-        )
+        })
     }
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11158 bytes
-Chloro size:   11000 bytes
+Chloro size:   10977 bytes
 Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
@@ -113,9 +113,18 @@ Rustfmt size:  11215 bytes
 -
      #[test]
      fn test_struct_field_private() {
-         check_diagnostics(
- "#,
-         )
+-        check_diagnostics(
+-            r#"
++        check_diagnostics(r#"
+ mod m {
+     pub struct Struct {
+         field: u32,
+       //^^^^^^ 💡 error: field is private
+     };
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]

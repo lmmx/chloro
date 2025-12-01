@@ -798,8 +798,7 @@ fn main() {
 
 #[test]
 fn syscalls() {
-    check_pass(
-        r#"
+    check_pass(r#"
 //- minicore: option
 
 extern "C" {
@@ -820,8 +819,7 @@ fn main() {
     }
 }
 
-"#,
-    )
+"#)
 }
 
 #[test]

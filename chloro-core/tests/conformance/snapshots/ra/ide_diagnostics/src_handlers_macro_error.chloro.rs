@@ -212,8 +212,7 @@ fn f() {
     }
     #[test]
     fn dollar_crate_in_builtin_macro() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 #[macro_export]
 #[rustc_builtin_macro]
 macro_rules! format_args {}
@@ -232,13 +231,11 @@ fn f() {
     outer!();
 } //^^^^^^ error: leftover tokens
   //^^^^^^ error: Syntax Error in Expansion: expected expression
-"#,
-        )
+"#)
     }
     #[test]
     fn def_diagnostic() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 macro_rules! foo {
            //^^^ error: expected subtree
     f => {};
@@ -249,13 +246,11 @@ fn f() {
   //^^^ error: macro definition has parse errors
 
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn expansion_syntax_diagnostic() {
-        check_diagnostics(
-            r#"
+        check_diagnostics(r#"
 macro_rules! foo {
     () => { struct; };
 }
@@ -264,8 +259,7 @@ fn f() {
     foo!();
   //^^^ error: Syntax Error in Expansion: expected a name
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn include_does_not_break_diagnostics() {

@@ -362,17 +362,13 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         let Some((p, current)) = self.lower_expr_as_place(current, expr_id, true)? else {
             return Ok(None);
         };
-        Ok(
-            Some(
-            (
+        Ok(Some((
             Operand {
             kind: OperandKind::Copy(p),
             span: Some(expr_id.into()),
         },
             current,
-        ),
-        ),
-        )
+        )))
     }
 
     fn lower_expr_to_place_with_adjust(
@@ -1548,12 +1544,10 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
             })
             .unwrap()
             .instantiate(self.interner(), subst);
-        Ok(
-            Operand {
+        Ok(Operand {
             kind: OperandKind::Constant { konst, ty },
             span: None,
-        },
-        )
+        })
     }
 
     fn write_bytes_to_place(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86869 bytes
+Chloro size:   86854 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -125,21 +125,6 @@ Rustfmt size:  87058 bytes
  impl_from!(FunctionId, StructId, UnionId, EnumVariantId, ConstId, StaticId for ValueTyDefId);
  
  impl ValueTyDefId {
- /// function body.
- fn type_for_fn<'db>(db: &'db dyn HirDatabase, def: FunctionId) -> EarlyBinder<'db, Ty<'db>> {
-     let interner = DbInterner::new_with(db, None, None);
--    EarlyBinder::bind(Ty::new_fn_def(
-+    EarlyBinder::bind(
-+        Ty::new_fn_def(
-         interner,
-         CallableDefId::FunctionId(def).into(),
-         GenericArgs::identity_for_item(interner, def.into()),
--    ))
-+    ),
-+    )
- }
- 
- /// Build the declared type of a const.
      db.const_param_ty_with_diagnostics(def).0
  }
  

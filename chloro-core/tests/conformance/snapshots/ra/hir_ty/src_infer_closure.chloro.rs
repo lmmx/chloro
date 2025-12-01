@@ -842,15 +842,13 @@ impl<'db> InferenceContext<'_, 'db> {
             None => self.table.next_ty_var(),
         });
 
-        Binder::dummy(
-            interner.mk_fn_sig(
+        Binder::dummy(interner.mk_fn_sig(
             supplied_arguments,
             supplied_return,
             false,
             Safety::Safe,
             FnAbi::RustCall,
-        ),
-        )
+        ))
     }
 
     /// Converts the types that the user supplied, in case that doing

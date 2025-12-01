@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70263 bytes
+Chloro size:   69872 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -229,22 +229,51 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_def_if_items_same_name() {
          check(
- "#,
-         )
+     }
+     #[test]
+     fn goto_def_in_mac_call_in_attr_invoc() {
+-        check(
+-            r#"
++        check(r#"
+ //- proc_macros: identity
+ pub struct Struct {
+         // ^^^^^^
+     identity!(Struct$0 { field: 0 });
+ }
+ 
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_for_extern_crate() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ //- /main.rs crate:main deps:std
+ extern crate std$0;
+ //- /std/lib.rs crate:std
+ // empty
+ //^file
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_for_renamed_extern_crate() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ //- /main.rs crate:main deps:std
+ extern crate std as abc$0;
+ //- /std/lib.rs crate:std
+ // empty
+ //^file
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -487,9 +516,18 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_for_field_init_shorthand() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ struct Foo { x: i32 }
+            //^
+ fn main() {
+       //^
+     Foo { x$0 };
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -562,16 +600,30 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_for_module_declaration_in_path_if_types_and_values_same_name() {
-         check(
-         "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ mod bar {
+     pub struct Foo {}
+              //^^^
+ fn baz() {
+     let _foo_enum: bar::Foo$0 = bar::Foo {};
+ }
+-        "#,
+-        )
++        "#)
      }
 -
      #[test]
      fn unknown_assoc_ty() {
-         check_unresolved(
- "#,
-         )
+-        check_unresolved(
+-            r#"
++        check_unresolved(r#"
+ trait Iterator { type Item; }
+ fn f() -> impl Iterator<Invalid$0 = u8> {}
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -597,9 +649,18 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_self_param_ty_specified() {
-         check(
- }"#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ struct Foo {}
+ 
+ impl Foo {
+          //^^^^
+         let foo = sel$0f;
+     }
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]
@@ -644,9 +705,15 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_lifetime_param_decl_nested() {
-         check(
- }"#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo<'foobar>(_: &'foobar ()) {
+     fn foo<'foobar>(_: &'foobar$0 ()) {}
+          //^^^^^^^
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]
@@ -665,16 +732,34 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_label() {
-         check(
- }"#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo<'foo>(_: &'foo ()) {
+     'foo: {
+   //^^^^
+             break 'foo$0;
+         }
+     }
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]
      fn goto_def_for_intra_doc_link_same_file() {
-         check(
- }"#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ /// Blah, [`bar`](bar) .. [`foo`](foo$0) has [`bar`](bar)
+ pub fn bar() { }
+ 
+ pub fn foo() { }
+      //^^^
+ 
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]
@@ -722,9 +807,18 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_proc_macro() {
-         check(
-             "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ //- /main.rs crate:main deps:mac
+ use mac::fn_macro;
+ 
+ #[proc_macro]
+ fn fn_macro() {}
+  //^^^^^^^^
+-            "#,
+-        )
++            "#)
      }
 -
      #[test]
@@ -888,7 +982,20 @@ Rustfmt size:  71259 bytes
      fn path_call_multiple_trait_impl() {
          check(
  "#,
-         )
+         );
+ 
+-        check(
+-            r#"
++        check(r#"
+ trait Trait<T> {
+     fn f(_: T);
+ }
+ fn main() {
+     usize::f$0(0i64);
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -921,16 +1028,34 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_on_return_kw() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ macro_rules! N {
+     ($i:ident, $x:expr, $blk:expr) => {
+         for $i in 0..$x {
+         })();
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_on_return_kw_in_closure() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ macro_rules! N {
+     ($i:ident, $x:expr, $blk:expr) => {
+         for $i in 0..$x {
+         })();
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -997,16 +1122,34 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_on_return_in_try() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     fn f() {
+  // ^^
+         return;
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_on_break_in_try() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     for i in 1..100 {
+  // ^^^
+         };
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -1286,4 +1429,17 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn regression_20038() {
-         check(
+-        check(
+-            r#"
++        check(r#"
+ //- minicore: clone, fn
+ struct Map<Fut, F>(Fut, F);
+ 
+ {
+     let _x = inner.is_terminated$0();
+ }
+-"#,
+-        )
++"#)
+     }
+ }

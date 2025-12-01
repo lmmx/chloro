@@ -1809,8 +1809,7 @@ pub(crate) fn test_item(
     test_item: ide::TestItem,
     line_index: Option<&LineIndex>,
 ) -> Option<lsp_ext::TestItem> {
-    Some(
-        lsp_ext::TestItem {
+    Some(lsp_ext::TestItem {
         id: test_item.id,
         label: test_item.label,
         kind: match test_item.kind {
@@ -1840,8 +1839,7 @@ pub(crate) fn test_item(
             .map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
         range: line_index.and_then(|l| Some(range(l, test_item.text_range?))),
         runnable: test_item.runnable.and_then(|r| runnable(snap, r).ok()).flatten(),
-    },
-    )
+    })
 }
 
 pub(crate) mod command {
@@ -1905,13 +1903,11 @@ pub(crate) mod command {
             to_value(location).ok()?
         };
 
-        Some(
-            lsp_types::Command {
+        Some(lsp_types::Command {
             title: nav.name.to_string(),
             command: "rust-analyzer.gotoLocation".into(),
             arguments: Some(vec![value]),
-        },
-        )
+        })
     }
     pub(crate) fn trigger_parameter_hints() -> lsp_types::Command {
         lsp_types::Command {

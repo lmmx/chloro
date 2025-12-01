@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18130 bytes
-Chloro size:   18084 bytes
+Chloro size:   18038 bytes
 Rustfmt size:  18477 bytes
 
 ✗ Outputs DIFFER
@@ -185,37 +185,23 @@ Rustfmt size:  18477 bytes
  impl UpmapFromRaFixture for FilePositionWrapper<FileId> {
      fn upmap_from_ra_fixture(
          self,
-         _virtual_file_id: FileId,
-         real_file_id: FileId,
      ) -> Result<Self, ()> {
--        Ok(FilePositionWrapper {
-+        Ok(
-+            FilePositionWrapper {
+         Ok(FilePositionWrapper {
              file_id: real_file_id,
 -            offset: self
 -                .offset
 -                .upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
--        })
 +            offset: self.offset.upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
-+        },
-+        )
+         })
      }
  }
- 
-         _virtual_file_id: FileId,
-         real_file_id: FileId,
      ) -> Result<Self, ()> {
--        Ok(FileRangeWrapper {
-+        Ok(
-+            FileRangeWrapper {
+         Ok(FileRangeWrapper {
              file_id: real_file_id,
 -            range: self
 -                .range
 -                .upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
--        })
 +            range: self.range.upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
-+        },
-+        )
+         })
      }
  }
- 

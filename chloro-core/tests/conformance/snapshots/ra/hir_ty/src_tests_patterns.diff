@@ -2,7 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32216 bytes
-Chloro size:   32216 bytes
+Chloro size:   32201 bytes
 Rustfmt size:  32216 bytes
 
-✓ Outputs are IDENTICAL
+✗ Outputs DIFFER
+
+=== DIFF (- rustfmt, + chloro) ===
+ 
+ #[test]
+ fn macro_pat() {
+-    check_types(
+-        r#"
++    check_types(r#"
+ macro_rules! pat {
+     ($name:ident) => { Enum::Variant1($name) }
+ }
+         Enum::Variant2 => {}
+     }
+ }
+-    "#,
+-    )
++    "#)
+ }
+ 
+ #[test]

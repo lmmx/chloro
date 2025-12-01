@@ -425,7 +425,7 @@ fn labels(assists: &[Assist]) -> String {
         })
         .collect::<Vec<_>>();
     labels.dedup();
-    labels.into_iter().collect()
+    labels.into_iter().collect::<String>()
 }
 
 #[test]

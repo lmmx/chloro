@@ -504,8 +504,7 @@ fn main() <fold block>{
     }
     #[test]
     fn test_fold_multiline_non_block_match_arm() {
-        check(
-            r#"
+        check(r#"
             fn main() <fold block>{
                 match foo <fold block>{
                     block => <fold block>{
@@ -528,13 +527,11 @@ fn main() <fold block>{
                     }</fold></fold>,
                 }</fold>
             }</fold>
-            "#,
-        )
+            "#)
     }
     #[test]
     fn fold_big_calls() {
-        check(
-            r#"
+        check(r#"
 fn main() <fold block>{
     frobnicate<fold arglist>(
         1,
@@ -542,8 +539,7 @@ fn main() <fold block>{
         3,
     )</fold>
 }</fold>
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_record_literals() {
@@ -555,14 +551,12 @@ const _: S = S <fold block>{
     }
     #[test]
     fn fold_multiline_params() {
-        check(
-            r#"
+        check(r#"
 <fold function>fn foo<fold arglist>(
     x: i32,
     y: String,
 )</fold> {}</fold>
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_multiline_array() {
@@ -577,8 +571,7 @@ const FOO: [usize; 4] = <fold array>[
     }
     #[test]
     fn fold_region() {
-        check(
-            r#"
+        check(r#"
 // 1. some normal comment
 <fold region>// region: test
 // 2. some normal comment
@@ -587,31 +580,25 @@ fn f() {}
 // endregion</fold>
 fn f2() {}
 // endregion: test</fold>
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_consecutive_const() {
-        check(
-            r#"
+        check(r#"
 <fold consts>const FIRST_CONST: &str = "first";
 const SECOND_CONST: &str = "second";</fold>
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_consecutive_static() {
-        check(
-            r#"
+        check(r#"
 <fold statics>static FIRST_STATIC: &str = "first";
 static SECOND_STATIC: &str = "second";</fold>
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_where_clause() {
-        check(
-            r#"
+        check(r#"
 fn foo()
 <fold whereclause>where
     A: Foo,
@@ -622,21 +609,18 @@ fn foo()
 fn bar()
 <fold whereclause>where
     A: Bar,</fold> {}
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_return_type() {
-        check(
-            r#"
+        check(r#"
 fn foo()<fold returntype>-> (
     bool,
     bool,
 )</fold> { (true, true) }
 
 fn bar() -> (bool, bool) { (true, true) }
-"#,
-        )
+"#)
     }
     #[test]
     fn fold_generics() {

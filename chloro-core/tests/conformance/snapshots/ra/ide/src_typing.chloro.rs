@@ -185,12 +185,10 @@ fn on_delimited_node_typed(
     }
 
     // Insert the closing bracket right after the node.
-    Some(
-        TextEdit::insert(
+    Some(TextEdit::insert(
         node.text_range().end() + TextSize::of(opening_bracket),
         closing_bracket.to_string(),
-    ),
-    )
+    ))
 }
 
 /// Returns an edit which should be applied after `=` was typed. Primarily,

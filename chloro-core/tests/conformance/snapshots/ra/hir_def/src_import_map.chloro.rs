@@ -583,13 +583,11 @@ mod tests {
             .iter()
             .find(|(_, assoc_item_id)| &dependency_assoc_item_id == assoc_item_id)?;
         // FIXME: This should check all import infos, not just the first
-        Some(
-            format!(
+        Some(format!(
             "{}::{}",
             render_path(db, &trait_info[0]),
             assoc_item_name.display(db, Edition::CURRENT)
-        ),
-        )
+        ))
     }
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let db = TestDB::with_files(ra_fixture);
