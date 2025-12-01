@@ -533,11 +533,13 @@ impl<'a> FindUsages<'a> {
         node: &syntax::SyntaxNode,
         offset: TextSize,
     ) -> impl Iterator<Item = SyntaxNode> + 'b {
-        node.token_at_offset(offset).find(|it| {
+        node.token_at_offset(offset)
+            .find(|it| {
                 // `name` is stripped of raw ident prefix. See the comment on name retrieval below.
                 it.text().trim_start_matches('\'').trim_start_matches("r#") == name
-            }).into_iter(
-        ).flat_map(move |token| {
+            })
+            .into_iter()
+            .flat_map(move |token| {
                 if sema.is_inside_macro_call(InFile::new(file_id.into(), &token)) {
                     sema.descend_into_macros_exact(token)
                 } else {
@@ -1185,7 +1187,10 @@ impl<'a> FindUsages<'a> {
                 };
                 sink(file_id, reference)
             }
-            Some(NameRefClass::Definition(def, _)) if self.assoc_item_container.is_some() && matches!(self.def, Definition::TypeAlias(_)) && convert_to_def_in_trait(self.sema.db, def) == convert_to_def_in_trait(self.sema.db, self.def) => {
+            Some(NameRefClass::Definition(def, _)) if self.assoc_item_container.is_some()
+                    && matches!(self.def, Definition::TypeAlias(_))
+                    && convert_to_def_in_trait(self.sema.db, def)
+                        == convert_to_def_in_trait(self.sema.db, self.def) => {
                 let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                 let reference = FileReference {
                     range,
@@ -1348,11 +1353,12 @@ impl ReferenceCategory {
 }
 
 fn is_name_ref_in_import(name_ref: &ast::NameRef) -> bool {
-    name_ref.syntax().parent().and_then(ast::PathSegment::cast).and_then(
-        |it| it.parent_path().top_path().syntax().parent(),
-    ).is_some_and(
-        |it| it.kind() == SyntaxKind::USE_TREE,
-    )
+    name_ref
+        .syntax()
+        .parent()
+        .and_then(ast::PathSegment::cast)
+        .and_then(|it| it.parent_path().top_path().syntax().parent())
+        .is_some_and(|it| it.kind() == SyntaxKind::USE_TREE)
 }
 
 fn is_name_ref_in_test(sema: &Semantics<'_, RootDatabase>, name_ref: &ast::NameRef) -> bool {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22391 bytes
-Chloro size:   21993 bytes
+Chloro size:   22017 bytes
 Rustfmt size:  22391 bytes
 
 ✗ Outputs DIFFER
@@ -58,25 +58,15 @@ Rustfmt size:  22391 bytes
  pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      match ctx.find_node_at_offset::<Either<ast::LetStmt, ast::IfExpr>>()? {
          Either::Left(let_stmt) => let_stmt_to_guarded_return(let_stmt, acc, ctx),
- }
- 
  fn clean_stmt_block(block: &ast::BlockExpr) -> ast::BlockExpr {
--    if block.statements().next().is_none()
--        && let Some(tail_expr) = block.tail_expr()
+     if block.statements().next().is_none()
+         && let Some(tail_expr) = block.tail_expr()
 -        && block.modifier().is_none()
 -    {
-+    if block.statements().next().is_none() && let Some(tail_expr) = block.tail_expr() && block.modifier().is_none() {
++        && block.modifier().is_none() {
          make::block_expr(once(make::expr_stmt(tail_expr).into()), None)
      } else {
          block.clone()
-         ast::Stmt::ExprStmt(expr_stmt) => expr_stmt.expr(),
-         _ => None,
-     };
--    then_block.tail_expr().is_some_and(is_early_expr)
--        || then_block.statements().filter_map(into_expr).any(is_early_expr)
-+    then_block.tail_expr().is_some_and(is_early_expr) || then_block.statements().filter_map(into_expr).any(is_early_expr)
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

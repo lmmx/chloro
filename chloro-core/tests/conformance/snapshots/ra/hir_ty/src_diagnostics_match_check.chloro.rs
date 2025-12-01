@@ -220,11 +220,13 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
             return Vec::new();
         }
 
-        pats.iter().enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize)).map(|(i, &subpattern)| FieldPat {
+        pats.iter()
+            .enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize))
+            .map(|(i, &subpattern)| FieldPat {
                 field: LocalFieldId::from_raw((i as u32).into()),
                 pattern: self.lower_pattern(subpattern),
-            }).collect(
-        )
+            })
+            .collect()
     }
 
     fn lower_patterns(&mut self, pats: &[PatId]) -> Vec<Pat<'db>> {

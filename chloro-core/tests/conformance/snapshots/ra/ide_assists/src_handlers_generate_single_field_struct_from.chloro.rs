@@ -154,7 +154,9 @@ fn make_constructors(
 ) -> Vec<Option<ast::Expr>> {
     let (db, sema) = (ctx.db(), &ctx.sema);
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
-    types.iter().map(|ty| {
+    types
+        .iter()
+        .map(|ty| {
             let ty = sema.resolve_type(ty)?;
             if ty.is_unit() {
                 return Some(make::expr_tuple([]).into());
@@ -165,8 +167,8 @@ fn make_constructors(
             let ty_path = module.find_path(db, item_for_path_search(db, item_in_ns)?, cfg)?;
 
             use_trivial_constructor(db, mod_path_to_ast(&ty_path, edition), &ty, edition)
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn get_fields(strukt: &ast::Struct) -> Option<(Option<Vec<ast::Name>>, Vec<ast::Type>)> {

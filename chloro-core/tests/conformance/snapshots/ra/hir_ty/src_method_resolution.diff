@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   63786 bytes
+Chloro size:   63935 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -93,43 +93,6 @@ Rustfmt size:  65944 bytes
              for konst in module_data.scope.unnamed_consts() {
                  let body = db.body(konst.into());
                  for (_, block_def_map) in body.blocks(db) {
-         &self,
-         fp: TyFingerprint,
-     ) -> impl Iterator<Item = ImplId> + '_ {
--        self.map
--            .values()
--            .flat_map(move |impls| impls.get(&Some(fp)).into_iter())
--            .flat_map(|it| it.iter().copied())
-+        self.map.values().flat_map(move |impls| impls.get(&Some(fp)).into_iter()).flat_map(
-+            |it| it.iter().copied(),
-+        )
-     }
- 
-     /// Queries all impls of the given trait.
-     pub fn for_trait(&self, trait_: TraitId) -> impl Iterator<Item = ImplId> + '_ {
--        self.map
--            .get(&trait_)
--            .into_iter()
--            .flat_map(|map| map.values().flat_map(|v| v.iter().copied()))
-+        self.map.get(&trait_).into_iter().flat_map(
-+            |map| map.values().flat_map(|v| v.iter().copied()),
-+        )
-     }
- 
-     /// Queries all impls of `trait_` that may apply to `self_ty`.
-         trait_: TraitId,
-         self_ty: TyFingerprint,
-     ) -> impl Iterator<Item = ImplId> + '_ {
--        self.map
--            .get(&trait_)
--            .into_iter()
--            .flat_map(move |map| map.get(&Some(self_ty)).into_iter().chain(map.get(&None)))
--            .flat_map(|v| v.iter().copied())
-+        self.map.get(&trait_).into_iter().flat_map(
-+            move |map| map.get(&Some(self_ty)).into_iter().chain(map.get(&None)),
-+        ).flat_map(
-+            |v| v.iter().copied(),
-+        )
      }
  
      /// Queries whether `self_ty` has potentially applicable implementations of `trait_`.
@@ -163,8 +126,9 @@ Rustfmt size:  65944 bytes
              let alias = alias.0;
 -            Some(
 -                if db
--                    .type_alias_signature(alias)
--                    .flags
++            Some(if db
+                     .type_alias_signature(alias)
+                     .flags
 -                    .contains(TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL)
 -                {
 -                    db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::ForeignType(alias))
@@ -172,9 +136,7 @@ Rustfmt size:  65944 bytes
 -                    smallvec![alias.module(db).krate()]
 -                },
 -            )
-+            Some(if db.type_alias_signature(alias).flags.contains(
-+                TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL,
-+            ) {
++                    .contains(TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL) {
 +                db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::ForeignType(alias))
 +            } else {
 +                smallvec![alias.module(db).krate()]
@@ -184,8 +146,9 @@ Rustfmt size:  65944 bytes
              let trait_id = bounds.principal_def_id()?.0;
 -            Some(
 -                if db
--                    .trait_signature(trait_id)
--                    .flags
++            Some(if db
+                     .trait_signature(trait_id)
+                     .flags
 -                    .contains(TraitFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS)
 -                {
 -                    db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::Dyn(trait_id))
@@ -193,9 +156,7 @@ Rustfmt size:  65944 bytes
 -                    smallvec![trait_id.module(db).krate()]
 -                },
 -            )
-+            Some(if db.trait_signature(trait_id).flags.contains(
-+                TraitFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS,
-+            ) {
++                    .contains(TraitFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS) {
 +                db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::Dyn(trait_id))
 +            } else {
 +                smallvec![trait_id.module(db).krate()]
@@ -216,34 +177,6 @@ Rustfmt size:  65944 bytes
  pub(crate) fn iterate_method_candidates<'db, T>(
      ty: &Canonical<'db, Ty<'db>>,
      table: &mut InferenceTable<'db>,
-         None => return (const_id, subs),
-     };
- 
--    lookup_impl_assoc_item_for_trait_ref(infcx, trait_ref, env, name)
--        .and_then(
--            |assoc| if let (AssocItemId::ConstId(id), s) = assoc { Some((id, s)) } else { None },
--        )
--        .unwrap_or((const_id, subs))
-+    lookup_impl_assoc_item_for_trait_ref(infcx, trait_ref, env, name).and_then(
-+        |assoc| if let (AssocItemId::ConstId(id), s) = assoc { Some((id, s)) } else { None },
-+    ).unwrap_or(
-+        (const_id, subs),
-+    )
- }
- 
- /// Checks if the self parameter of `Trait` method is the `dyn Trait` and we should
-     (
-         impl_fn,
-         GenericArgs::new_from_iter(
--            interner,
--            impl_subst.iter().chain(fn_subst.iter().skip(trait_params)),
--        ),
-+        interner,
-+        impl_subst.iter().chain(fn_subst.iter().skip(trait_params)),
-+    ),
-     )
- }
- 
      let selection = infcx.select(&obligation).ok()??;
  
      // Currently, we use a fulfillment context to completely resolve
@@ -253,16 +186,6 @@ Rustfmt size:  65944 bytes
      // inference of the impl's type parameters.
      let mut ocx = ObligationCtxt::new(infcx);
      let impl_source = selection.map(|obligation| ocx.register_obligation(obligation));
-             _ => false,
-         };
-         let items = impl_id.impl_items(db);
--        rustc_has_incoherent_inherent_impls
--            && !items.items.is_empty()
--            && items.items.iter().all(|&(_, assoc)| match assoc {
-+        rustc_has_incoherent_inherent_impls && !items.items.is_empty() && items.items.iter().all(|&(_, assoc)| match assoc {
-                 AssocItemId::FunctionId(it) => {
-                     db.function_signature(it).flags.contains(FnFlags::RUSTC_ALLOW_INCOHERENT_IMPL)
-                 }
      //   - At least one of the types `T0..=Tn`` must be a local type. Let `Ti`` be the first such type.
  
      // FIXME: param coverage

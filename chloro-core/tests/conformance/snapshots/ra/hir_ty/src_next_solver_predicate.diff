@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32234 bytes
+Chloro size:   32237 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -110,18 +110,6 @@ Rustfmt size:  32663 bytes
      }
  
      fn principal(
-     ) -> Option<
-         rustc_type_ir::Binder<DbInterner<'db>, rustc_type_ir::ExistentialTraitRef<DbInterner<'db>>>,
-     > {
--        self.inner()[0]
--            .map_bound(|this| match this {
-+        self.inner()[0].map_bound(|this| match this {
-                 ExistentialPredicate::Trait(tr) => Some(tr),
-                 _ => None,
--            })
--            .transpose()
-+            }).transpose(
-+        )
      }
  
      fn auto_traits(self) -> impl IntoIterator<Item = TraitIdWrapper> {
@@ -321,14 +309,7 @@ Rustfmt size:  32663 bytes
      fn upcast_from(
          from: ty::Binder<DbInterner<'db>, ty::TraitRef<DbInterner<'db>>>,
          interner: DbInterner<'db>,
-         from.map_bound(|trait_ref| TraitPredicate {
-             trait_ref,
-             polarity: PredicatePolarity::Positive,
--        })
--        .upcast(interner)
-+        }).upcast(
-+            interner,
-+        )
+         .upcast(interner)
      }
  }
 -impl<'db> UpcastFrom<DbInterner<'db>, Binder<'db, ty::TraitPredicate<DbInterner<'db>>>>

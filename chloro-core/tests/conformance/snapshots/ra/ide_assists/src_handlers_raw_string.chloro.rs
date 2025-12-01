@@ -124,10 +124,11 @@ fn replace_literal(
 
 fn mut_token(token: syntax::SyntaxToken) -> syntax::SyntaxToken {
     let node = token.parent().expect("no parent token");
-    node.clone_for_update().children_with_tokens().filter_map(|it| it.into_token()).find(
-        |it| it.text_range() == token.text_range() && it.text() == token.text(),
-    ).unwrap(
-    )
+    node.clone_for_update()
+        .children_with_tokens()
+        .filter_map(|it| it.into_token())
+        .find(|it| it.text_range() == token.text_range() && it.text() == token.text())
+        .unwrap()
 }
 
 #[cfg(test)]

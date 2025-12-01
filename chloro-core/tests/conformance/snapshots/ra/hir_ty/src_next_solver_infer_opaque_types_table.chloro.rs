@@ -77,9 +77,11 @@ impl<'db> OpaqueTypeStorage<'db> {
         &self,
         prev_entries: OpaqueTypeStorageEntries,
     ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-        self.opaque_types.iter().skip(prev_entries.opaque_types).map(|(k, v)| (*k, *v)).chain(
-            self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied(),
-        )
+        self.opaque_types
+            .iter()
+            .skip(prev_entries.opaque_types)
+            .map(|(k, v)| (*k, *v))
+            .chain(self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied())
     }
 
     /// Only returns the opaque types from the lookup table. These are used

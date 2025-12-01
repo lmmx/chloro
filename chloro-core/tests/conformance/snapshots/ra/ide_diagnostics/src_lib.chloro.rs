@@ -190,9 +190,8 @@ impl Diagnostic {
         message: impl Into<String>,
         node: InFile<SyntaxNodePtr>,
     ) -> Diagnostic {
-        Diagnostic::new(code, message, ctx.sema.diagnostics_display_range(node)).with_main_node(
-            node,
-        )
+        Diagnostic::new(code, message, ctx.sema.diagnostics_display_range(node))
+            .with_main_node(node)
     }
 
     fn stable(mut self) -> Diagnostic {
@@ -291,13 +290,12 @@ impl DiagnosticsContext<'_> {
                     node.with_value(it).original_file_range_opt(sema.db)
                 }
             }
-        })(
-        ).map(|frange| ide_db::FileRange {
+        })()
+        .map(|frange| ide_db::FileRange {
             file_id: frange.file_id.file_id(self.sema.db),
             range: frange.range,
-        }).unwrap_or_else(
-            || sema.diagnostics_display_range(*node),
-        )
+        })
+        .unwrap_or_else(|| sema.diagnostics_display_range(*node))
     }
 }
 
@@ -321,14 +319,18 @@ pub fn syntax_diagnostics(
     let (file_id, _) = editioned_file_id.unpack(db);
 
     // [#3434] Only take first 128 errors to prevent slowing down editor/ide, the number 128 is chosen arbitrarily.
-    db.parse_errors(editioned_file_id).into_iter().flatten().take(128).map(|err| {
+    db.parse_errors(editioned_file_id)
+        .into_iter()
+        .flatten()
+        .take(128)
+        .map(|err| {
             Diagnostic::new(
                 DiagnosticCode::SyntaxError,
                 format!("Syntax Error: {err}"),
                 FileRange { file_id, range: err.range() },
             )
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 /// Request semantic diagnostics for the given [`FileId`]. The produced diagnostics may point to other files
@@ -686,10 +688,14 @@ fn lint_severity_at(
     lint_groups: &LintGroups,
     edition: Edition,
 ) -> Option<Severity> {
-    node.value.ancestors().filter_map(ast::AnyHasAttrs::cast).find_map(|ancestor| {
+    node.value
+        .ancestors()
+        .filter_map(ast::AnyHasAttrs::cast)
+        .find_map(|ancestor| {
             lint_attrs(sema, ancestor, edition)
                 .find_map(|(lint, severity)| lint_groups.contains(&lint).then_some(severity))
-        }).or_else(|| {
+        })
+        .or_else(|| {
             lint_severity_at(sema, &sema.find_parent_file(node.file_id)?, lint_groups, edition)
         })
 }
@@ -699,7 +705,9 @@ fn lint_attrs<'a>(
     ancestor: ast::AnyHasAttrs,
     edition: Edition,
 ) -> impl Iterator<Item = (SmolStr, Severity)> + 'a {
-    ancestor.attrs_including_inner().filter_map(|attr| {
+    ancestor
+        .attrs_including_inner()
+        .filter_map(|attr| {
             attr.as_simple_call().and_then(|(name, value)| match &*name {
                 "allow" | "expect" => Some(Either::Left(iter::once((Severity::Allow, value)))),
                 "warn" => Some(Either::Left(iter::once((Severity::Warning, value)))),
@@ -711,8 +719,9 @@ fn lint_attrs<'a>(
                 }
                 _ => None,
             })
-        }).flatten(
-    ).flat_map(move |(severity, lints)| {
+        })
+        .flatten()
+        .flat_map(move |(severity, lints)| {
             parse_tt_as_comma_sep_paths(lints, edition).into_iter().flat_map(move |lints| {
                 // Rejoin the idents with `::`, so we have no spaces in between.
                 lints.into_iter().map(move |lint| {

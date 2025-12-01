@@ -154,9 +154,10 @@ fn find_usages(
 }
 
 fn check_valid_usages(usages: &UsageSearchResult, param_list_range: TextRange) -> bool {
-    usages.iter().flat_map(|(_, usage_refs)| usage_refs).all(
-        |usage_ref| param_list_range.contains_range(usage_ref.range),
-    )
+    usages
+        .iter()
+        .flat_map(|(_, usage_refs)| usage_refs)
+        .all(|usage_ref| param_list_range.contains_range(usage_ref.range))
 }
 
 #[cfg(test)]

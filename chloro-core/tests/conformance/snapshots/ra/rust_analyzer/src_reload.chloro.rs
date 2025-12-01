@@ -69,7 +69,13 @@ impl GlobalState {
     /// This indicates that we've fully loaded the projects and
     /// are ready to do semantic work.
     pub(crate) fn is_quiescent(&self) -> bool {
-        self.vfs_done && self.fetch_ws_receiver.is_none() && !self.fetch_workspaces_queue.op_in_progress() && !self.fetch_build_data_queue.op_in_progress() && !self.fetch_proc_macros_queue.op_in_progress() && !self.discover_workspace_queue.op_in_progress() && self.vfs_progress_config_version >= self.vfs_config_version
+        self.vfs_done
+            && self.fetch_ws_receiver.is_none()
+            && !self.fetch_workspaces_queue.op_in_progress()
+            && !self.fetch_build_data_queue.op_in_progress()
+            && !self.fetch_proc_macros_queue.op_in_progress()
+            && !self.discover_workspace_queue.op_in_progress()
+            && self.vfs_progress_config_version >= self.vfs_config_version
     }
 
     /// Is the server ready to respond to analysis dependent LSP requests?

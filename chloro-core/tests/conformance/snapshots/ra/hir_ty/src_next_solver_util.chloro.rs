@@ -467,9 +467,10 @@ pub fn sizedness_constraint_for_ty<'db>(
         }
         Foreign(..) => Some(ty),
         Pat(ty, _) => sizedness_constraint_for_ty(interner, sizedness, ty),
-        Tuple(tys) => tys.into_iter().next_back().and_then(
-            |ty| sizedness_constraint_for_ty(interner, sizedness, ty),
-        ),
+        Tuple(tys) => tys
+            .into_iter()
+            .next_back()
+            .and_then(|ty| sizedness_constraint_for_ty(interner, sizedness, ty)),
         Adt(adt, args) => {
             let tail_ty =
                 EarlyBinder::bind(adt.all_field_tys(interner).skip_binder().into_iter().last()?)

@@ -141,12 +141,14 @@ impl SourceDatabase for TestDB {
 impl TestDB {
     pub(crate) fn fetch_test_crate(&self) -> Crate {
         let all_crates = self.all_crates();
-        all_crates.iter().copied().find(|&krate| {
+        all_crates
+            .iter()
+            .copied()
+            .find(|&krate| {
                 krate.extra_data(self).display_name.as_ref().map(|it| it.canonical_name().as_str())
                     == Some("ra_test_fixture")
-            }).unwrap_or(
-            *all_crates.last().unwrap(),
-        )
+            })
+            .unwrap_or(*all_crates.last().unwrap())
     }
 
     pub(crate) fn module_for_file(&self, file_id: FileId) -> ModuleId {
@@ -296,7 +298,9 @@ impl TestDB {
 
     pub(crate) fn log_executed(&self, f: impl FnOnce()) -> Vec<String> {
         let events = self.log(f);
-        events.into_iter().filter_map(|e| match e.kind {
+        events
+            .into_iter()
+            .filter_map(|e| match e.kind {
                 // This is pretty horrible, but `Debug` is the only way to inspect
                 // QueryDescriptor at the moment.
                 salsa::EventKind::WillExecute { database_key } => {
@@ -305,7 +309,7 @@ impl TestDB {
                     Some(ingredient.to_string())
                 }
                 _ => None,
-            }).collect(
-        )
+            })
+            .collect()
     }
 }

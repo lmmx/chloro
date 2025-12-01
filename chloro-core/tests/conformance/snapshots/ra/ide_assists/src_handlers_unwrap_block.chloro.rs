@@ -133,7 +133,11 @@ fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> Str
     let expr_str = expr_str.trim_end_matches(whitespace_pat);
     let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
 
-    expr_str.lines().map(|line| line.replacen("    ", "", 1)).collect::<Vec<String>>().join("\n")
+    expr_str
+        .lines()
+        .map(|line| line.replacen("    ", "", 1)) // Delete indentation
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 #[cfg(test)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2489 bytes
-Chloro size:   2481 bytes
+Chloro size:   2480 bytes
 Rustfmt size:  2723 bytes
 
 ✗ Outputs DIFFER
@@ -37,14 +37,7 @@ Rustfmt size:  2723 bytes
  const MACROS: (&[&str], &[&str]) = (&["macro", "derive"], &["!"]);
  
  /// Extract the specified namespace from an intra-doc-link if one exists.
-         (hir::Namespace::Types, TYPES),
-         (hir::Namespace::Values, VALUES),
-         (hir::Namespace::Macros, MACROS),
--    ]
--    .into_iter()
--    .find_map(|(ns, (prefixes, suffixes))| {
-+    ].into_iter(
-+    ).find_map(|(ns, (prefixes, suffixes))| {
+     .find_map(|(ns, (prefixes, suffixes))| {
          if let Some(prefix) = prefixes.iter().find(|&&prefix| {
              s.starts_with(prefix)
 -                && s.chars()
@@ -59,19 +52,9 @@ Rustfmt size:  2723 bytes
 -                .find_map(|&suffix| s.strip_suffix(suffix).zip(Some(ns)))
 +            suffixes.iter().find_map(|&suffix| s.strip_suffix(suffix).zip(Some(ns)))
          }
--    })
--    .map_or((s, None), |(s, ns)| (s, Some(ns)))
-+    }).map_or(
-+        (s, None),
-+        |(s, ns)| (s, Some(ns)),
-+    )
- }
- 
- pub(super) fn strip_prefixes_suffixes(s: &str) -> &str {
--    [TYPES, VALUES, MACROS]
--        .into_iter()
--        .find_map(|(prefixes, suffixes)| {
-+    [TYPES, VALUES, MACROS].into_iter().find_map(|(prefixes, suffixes)| {
+     })
+     .map_or((s, None), |(s, ns)| (s, Some(ns)))
+         .find_map(|(prefixes, suffixes)| {
              if let Some(prefix) = prefixes.iter().find(|&&prefix| {
                  s.starts_with(prefix)
 -                    && s.chars()
@@ -81,15 +64,6 @@ Rustfmt size:  2723 bytes
              }) {
                  Some(&s[prefix.len() + 1..])
              } else {
-                 suffixes.iter().find_map(|&suffix| s.strip_suffix(suffix))
-             }
--        })
--        .unwrap_or(s)
-+        }).unwrap_or(
-+        s,
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use expect_test::{expect, Expect};

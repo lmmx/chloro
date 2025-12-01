@@ -418,9 +418,9 @@ impl SourceToDefCtx<'_, '_> {
         src: InFile<ast::Attr>,
     ) -> Option<(AttrId, MacroCallId, &[Option<MacroCallId>])> {
         let map = self.dyn_map(item)?;
-        map[keys::DERIVE_MACRO_CALL].get(&AstPtr::new(&src.value)).map(
-            |&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids),
-        )
+        map[keys::DERIVE_MACRO_CALL]
+            .get(&AstPtr::new(&src.value))
+            .map(|&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids))
     }
 
     pub(super) fn file_of_adt_has_derives(&mut self, adt: InFile<&ast::Adt>) -> bool {
@@ -455,9 +455,10 @@ impl SourceToDefCtx<'_, '_> {
 
     fn cache_for(&mut self, container: ChildContainer, file_id: HirFileId) -> &DynMap {
         let db = self.db;
-        self.cache.dynmap_cache.entry((container, file_id)).or_insert_with(
-            || container.child_by_source(db, file_id),
-        )
+        self.cache
+            .dynmap_cache
+            .entry((container, file_id))
+            .or_insert_with(|| container.child_by_source(db, file_id))
     }
 
     pub(super) fn item_to_macro_call(&mut self, src: InFile<&ast::Item>) -> Option<MacroCallId> {
@@ -477,9 +478,10 @@ impl SourceToDefCtx<'_, '_> {
     ) -> Option<TypeParamId> {
         let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
         let dyn_map = self.cache_for(container, src.file_id);
-        dyn_map[keys::TYPE_PARAM].get(&AstPtr::new(src.value)).copied().map(
-            TypeParamId::from_unchecked,
-        )
+        dyn_map[keys::TYPE_PARAM]
+            .get(&AstPtr::new(src.value))
+            .copied()
+            .map(TypeParamId::from_unchecked)
     }
 
     pub(super) fn lifetime_param_to_def(
@@ -497,9 +499,10 @@ impl SourceToDefCtx<'_, '_> {
     ) -> Option<ConstParamId> {
         let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
         let dyn_map = self.cache_for(container, src.file_id);
-        dyn_map[keys::CONST_PARAM].get(&AstPtr::new(src.value)).copied().map(
-            ConstParamId::from_unchecked,
-        )
+        dyn_map[keys::CONST_PARAM]
+            .get(&AstPtr::new(src.value))
+            .copied()
+            .map(ConstParamId::from_unchecked)
     }
 
     pub(super) fn generic_param_to_def(
@@ -510,9 +513,9 @@ impl SourceToDefCtx<'_, '_> {
             ast::GenericParam::ConstParam(it) => {
                 self.const_param_to_def(InFile::new(file_id, it)).map(GenericParamId::ConstParamId)
             }
-            ast::GenericParam::LifetimeParam(it) => self.lifetime_param_to_def(InFile::new(file_id, it)).map(
-                GenericParamId::LifetimeParamId,
-            ),
+            ast::GenericParam::LifetimeParam(it) => self
+                .lifetime_param_to_def(InFile::new(file_id, it))
+                .map(GenericParamId::LifetimeParamId),
             ast::GenericParam::TypeParam(it) => {
                 self.type_param_to_def(InFile::new(file_id, it)).map(GenericParamId::TypeParamId)
             }

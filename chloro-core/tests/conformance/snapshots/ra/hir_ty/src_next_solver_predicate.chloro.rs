@@ -100,11 +100,12 @@ impl<'db> rustc_type_ir::inherent::BoundExistentialPredicates<DbInterner<'db>> f
     ) -> Option<
         rustc_type_ir::Binder<DbInterner<'db>, rustc_type_ir::ExistentialTraitRef<DbInterner<'db>>>,
     > {
-        self.inner()[0].map_bound(|this| match this {
+        self.inner()[0]
+            .map_bound(|this| match this {
                 ExistentialPredicate::Trait(tr) => Some(tr),
                 _ => None,
-            }).transpose(
-        )
+            })
+            .transpose()
     }
 
     fn auto_traits(self) -> impl IntoIterator<Item = TraitIdWrapper> {
@@ -613,9 +614,8 @@ impl<'db> UpcastFrom<DbInterner<'db>, ty::Binder<DbInterner<'db>, ty::TraitRef<D
         from.map_bound(|trait_ref| TraitPredicate {
             trait_ref,
             polarity: PredicatePolarity::Positive,
-        }).upcast(
-            interner,
-        )
+        })
+        .upcast(interner)
     }
 }
 

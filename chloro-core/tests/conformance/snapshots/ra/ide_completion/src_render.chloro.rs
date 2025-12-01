@@ -85,7 +85,8 @@ impl<'a> RenderContext<'a> {
     }
 
     fn is_immediately_after_macro_bang(&self) -> bool {
-        self.completion.token.kind() == SyntaxKind::BANG && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
+        self.completion.token.kind() == SyntaxKind::BANG
+            && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
     }
 
     fn is_deprecated(&self, def: impl HasAttrs) -> bool {
@@ -105,9 +106,11 @@ impl<'a> RenderContext<'a> {
             hir::AssocItem::Const(it) => self.is_deprecated(it),
             hir::AssocItem::TypeAlias(it) => self.is_deprecated(it),
         };
-        is_assoc_deprecated || assoc.container_or_implemented_trait(db).map(|trait_| self.is_deprecated(trait_)).unwrap_or(
-            false,
-        )
+        is_assoc_deprecated
+            || assoc
+                .container_or_implemented_trait(db)
+                .map(|trait_| self.is_deprecated(trait_))
+                .unwrap_or(false)
     }
 
     fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
@@ -648,7 +651,8 @@ fn path_ref_match(
     item: &mut Builder,
 ) {
     if let Some(original_path) = &path_ctx.original_path {
-        if let Some(original_path) = completion.sema.original_ast_node(original_path.clone()) && let Some(ref_mode) = compute_ref_match(completion, ty) {
+        if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())
+            && let Some(ref_mode) = compute_ref_match(completion, ty) {
             item.ref_match(ref_mode, original_path.syntax().text_range().start());
         }
     } else {

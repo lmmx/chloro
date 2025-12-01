@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6478 bytes
-Chloro size:   6449 bytes
+Chloro size:   6479 bytes
 Rustfmt size:  6513 bytes
 
 ✗ Outputs DIFFER
@@ -37,23 +37,3 @@ Rustfmt size:  6513 bytes
  
  impl TestDB {
      pub(crate) fn module_for_file_opt(&self, file_id: impl Into<FileId>) -> Option<ModuleId> {
-                 files.extend(file_id)
-             }
-         }
--        files
--            .into_iter()
--            .filter_map(|file_id| {
-+        files.into_iter().filter_map(|file_id| {
-                 let text = self.file_text(file_id.file_id(self));
-                 let annotations = extract_annotations(text.text(self));
-                 if annotations.is_empty() {
-                     return None;
-                 }
-                 Some((file_id, annotations))
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- }
- 

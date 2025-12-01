@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   224421 bytes
+Chloro size:   226245 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -227,75 +227,6 @@ Rustfmt size:  227843 bytes
      },
  };
  
-     }
- 
-     pub fn dependencies(self, db: &dyn HirDatabase) -> Vec<CrateDependency> {
--        self.id
--            .data(db)
--            .dependencies
--            .iter()
--            .map(|dep| {
-+        self.id.data(db).dependencies.iter().map(|dep| {
-                 let krate = Crate { id: dep.crate_id };
-                 let name = dep.as_name();
-                 CrateDependency { krate, name }
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn reverse_dependencies(self, db: &dyn HirDatabase) -> Vec<Crate> {
-         let all_crates = db.all_crates();
--        all_crates
--            .iter()
--            .copied()
--            .filter(|&krate| krate.data(db).dependencies.iter().any(|it| it.crate_id == self.id))
--            .map(|id| Crate { id })
--            .collect()
-+        all_crates.iter().copied().filter(
-+            |&krate| krate.data(db).dependencies.iter().any(|it| it.crate_id == self.id),
-+        ).map(
-+            |id| Crate { id },
-+        ).collect(
-+        )
-     }
- 
-     pub fn transitive_reverse_dependencies(
-         query: import_map::Query,
-     ) -> impl Iterator<Item = (Either<ModuleDef, Macro>, Complete)> {
-         let _p = tracing::info_span!("query_external_importables").entered();
--        import_map::search_dependencies(db, self.into(), &query).into_iter().map(
--            |(item, do_not_complete)| {
-+        import_map::search_dependencies(db, self.into(), &query).into_iter().map(|(item, do_not_complete)| {
-                 let item = match ItemInNs::from(item) {
-                     ItemInNs::Types(mod_id) | ItemInNs::Values(mod_id) => Either::Left(mod_id),
-                     ItemInNs::Macros(mac_id) => Either::Right(mac_id),
-                 };
-                 (item, do_not_complete)
--            },
--        )
-+            })
-     }
- 
-     pub fn all(db: &dyn HirDatabase) -> Vec<Crate> {
-     }
- 
-     fn core(db: &dyn HirDatabase) -> Option<Crate> {
--        db.all_crates()
--            .iter()
--            .copied()
--            .find(|&krate| {
-+        db.all_crates().iter().copied().find(|&krate| {
-                 matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Core))
--            })
--            .map(Crate::from)
-+            }).map(
-+            Crate::from,
-+        )
-     }
- }
- 
      BuiltinType(BuiltinType),
      Macro(Macro),
  }
@@ -310,31 +241,6 @@ Rustfmt size:  227843 bytes
              ModuleDef::Module(_)
              | ModuleDef::Adt(_)
              | ModuleDef::Trait(_)
-         db: &dyn HirDatabase,
-         visible_from: Option<Module>,
-     ) -> Vec<(Name, ScopeDef)> {
--        self.id.def_map(db)[self.id.local_id]
--            .scope
--            .entries()
--            .filter_map(|(name, def)| {
-+        self.id.def_map(db)[self.id.local_id].scope.entries().filter_map(|(name, def)| {
-                 if let Some(m) = visible_from {
-                     let filtered = def.filter_visibility(|vis| vis.is_visible_from(db, m.id));
-                     if filtered.is_none() && !def.is_none() { None } else { Some((name, filtered)) }
-                 } else {
-                     Some((name, def))
-                 }
--            })
--            .flat_map(|(name, def)| {
-+            }).flat_map(|(name, def)| {
-                 ScopeDef::all_items(def).into_iter().map(move |item| (name.clone(), item))
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn resolve_mod_path(
          let mut impl_assoc_items_scratch = vec![];
          for impl_def in self.impl_defs(db) {
              GenericDef::Impl(impl_def).diagnostics(db, acc);
@@ -408,28 +314,12 @@ Rustfmt size:  227843 bytes
              for &(_, item) in impl_def.id.impl_items(db).items.iter() {
                  AssocItem::from(item).diagnostics(db, acc, style_lints);
              }
-     pub fn declarations(self, db: &dyn HirDatabase) -> Vec<ModuleDef> {
-         let def_map = self.id.def_map(db);
-         let scope = &def_map[self.id.local_id].scope;
--        scope
--            .declarations()
--            .map(ModuleDef::from)
--            .chain(scope.unnamed_consts().map(|id| ModuleDef::Const(Const::from(id))))
--            .collect()
-+        scope.declarations().map(ModuleDef::from).chain(
-+            scope.unnamed_consts().map(|id| ModuleDef::Const(Const::from(id))),
-+        ).collect(
-+        )
-     }
- 
-     pub fn legacy_macros(self, db: &dyn HirDatabase) -> Vec<Macro> {
-     m: Macro,
  ) {
      let id = db.macro_def(m.id);
--    if let hir_expand::db::TokenExpander::DeclarativeMacro(expander) = db.macro_expander(id)
+     if let hir_expand::db::TokenExpander::DeclarativeMacro(expander) = db.macro_expander(id)
 -        && let Some(e) = expander.mac.err()
 -    {
-+    if let hir_expand::db::TokenExpander::DeclarativeMacro(expander) = db.macro_expander(id) && let Some(e) = expander.mac.err() {
++        && let Some(e) = expander.mac.err() {
          let Some(ast) = id.ast_id().left() else {
              never!("declarative expander for non decl-macro: {:?}", e);
              return;
@@ -446,8 +336,7 @@ Rustfmt size:  227843 bytes
 +            acc.push(UnresolvedModule {
 +                decl: InFile::new(declaration.file_id, decl),
 +                candidates: candidates.clone(),
-+            }.into(
-+            ))
++            }.into())
          }
          DefDiagnosticKind::UnresolvedExternCrate { ast } => {
              let item = ast.to_ptr(db);
@@ -477,17 +366,6 @@ Rustfmt size:  227843 bytes
              let name = node.name().expect("unimplemented builtin macro with no name");
              acc.push(
                  UnimplementedBuiltinMacro {
-             let node = ast_id.to_node(db);
-             (
-                 ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&node))),
--                node.path()
--                    .and_then(|it| it.segment())
--                    .and_then(|it| it.name_ref())
--                    .map(|it| it.syntax().text_range()),
-+                node.path().and_then(|it| it.segment()).and_then(|it| it.name_ref()).map(
-+                |it| it.syntax().text_range(),
-+            ),
-             )
          }
          MacroCallKind::Derive { ast_id, derive_attr_index, derive_index, .. } => {
              let node = ast_id.to_node(db);
@@ -510,136 +388,13 @@ Rustfmt size:  227843 bytes
      pub fn ty_with_args<'db>(
          &self,
          db: &'db dyn HirDatabase,
-         db.layout_of_ty(
-             self.ty(db).ty,
-             db.trait_environment(match hir_def::VariantId::from(self.parent) {
--                hir_def::VariantId::EnumVariantId(id) => {
--                    GenericDefId::AdtId(id.lookup(db).parent.into())
--                }
--                hir_def::VariantId::StructId(id) => GenericDefId::AdtId(id.into()),
--                hir_def::VariantId::UnionId(id) => GenericDefId::AdtId(id.into()),
--            }),
-+            hir_def::VariantId::EnumVariantId(id) => {
-+                GenericDefId::AdtId(id.lookup(db).parent.into())
-+            }
-+            hir_def::VariantId::StructId(id) => GenericDefId::AdtId(id.into()),
-+            hir_def::VariantId::UnionId(id) => GenericDefId::AdtId(id.into()),
-+        }),
-+        ).map(
-+            |layout| Layout(layout, db.target_data_layout(self.krate(db).into()).unwrap()),
-         )
--        .map(|layout| Layout(layout, db.target_data_layout(self.krate(db).into()).unwrap()))
-     }
- 
-     pub fn parent_def(&self, _db: &dyn HirDatabase) -> VariantDef {
-     }
- 
-     pub fn fields(self, db: &dyn HirDatabase) -> Vec<Field> {
--        self.id
--            .fields(db)
--            .fields()
--            .iter()
--            .map(|(id, _)| Field { parent: self.into(), id })
--            .collect()
-+        self.id.fields(db).fields().iter().map(|(id, _)| Field { parent: self.into(), id }).collect(
-+        )
-     }
- 
-     pub fn ty(self, db: &dyn HirDatabase) -> Type<'_> {
- 
- impl<'db> InstantiatedStruct<'db> {
-     pub fn fields(self, db: &dyn HirDatabase) -> Vec<InstantiatedField<'db>> {
--        self.inner
--            .id
--            .fields(db)
--            .fields()
--            .iter()
--            .map(|(id, _)| InstantiatedField {
-+        self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
-                 inner: Field { parent: self.inner.into(), id },
-                 args: self.args,
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn ty(self, db: &'db dyn HirDatabase) -> TypeNs<'db> {
-     }
- 
-     pub fn fields(self, db: &dyn HirDatabase) -> Vec<Field> {
--        self.id
--            .fields(db)
--            .fields()
--            .iter()
--            .map(|(id, _)| Field { parent: self.into(), id })
--            .collect()
-+        self.id.fields(db).fields().iter().map(|(id, _)| Field { parent: self.into(), id }).collect(
-+        )
+             .map(|(id, _)| Field { parent: self.into(), id })
+             .collect()
      }
 +
      pub fn is_unstable(self, db: &dyn HirDatabase) -> bool {
          db.attrs(self.id.into()).is_unstable()
      }
-         Type::new_for_crate(
-             self.id.lookup(db).container.krate(),
-             match db.enum_signature(self.id).variant_body_type() {
--                layout::IntegerType::Pointer(sign) => match sign {
--                    true => Ty::new_int(interner, rustc_type_ir::IntTy::Isize),
--                    false => Ty::new_uint(interner, rustc_type_ir::UintTy::Usize),
--                },
--                layout::IntegerType::Fixed(i, sign) => match sign {
--                    true => Ty::new_int(
--                        interner,
--                        match i {
--                            layout::Integer::I8 => rustc_type_ir::IntTy::I8,
--                            layout::Integer::I16 => rustc_type_ir::IntTy::I16,
--                            layout::Integer::I32 => rustc_type_ir::IntTy::I32,
--                            layout::Integer::I64 => rustc_type_ir::IntTy::I64,
--                            layout::Integer::I128 => rustc_type_ir::IntTy::I128,
--                        },
--                    ),
--                    false => Ty::new_uint(
--                        interner,
--                        match i {
--                            layout::Integer::I8 => rustc_type_ir::UintTy::U8,
--                            layout::Integer::I16 => rustc_type_ir::UintTy::U16,
--                            layout::Integer::I32 => rustc_type_ir::UintTy::U32,
--                            layout::Integer::I64 => rustc_type_ir::UintTy::U64,
--                            layout::Integer::I128 => rustc_type_ir::UintTy::U128,
--                        },
--                    ),
--                },
-+            layout::IntegerType::Pointer(sign) => match sign {
-+                true => Ty::new_int(interner, rustc_type_ir::IntTy::Isize),
-+                false => Ty::new_uint(interner, rustc_type_ir::UintTy::Usize),
-             },
-+            layout::IntegerType::Fixed(i, sign) => match sign {
-+                true => Ty::new_int(
-+                    interner,
-+                    match i {
-+                    layout::Integer::I8 => rustc_type_ir::IntTy::I8,
-+                    layout::Integer::I16 => rustc_type_ir::IntTy::I16,
-+                    layout::Integer::I32 => rustc_type_ir::IntTy::I32,
-+                    layout::Integer::I64 => rustc_type_ir::IntTy::I64,
-+                    layout::Integer::I128 => rustc_type_ir::IntTy::I128,
-+                },
-+                ),
-+                false => Ty::new_uint(
-+                    interner,
-+                    match i {
-+                    layout::Integer::I8 => rustc_type_ir::UintTy::U8,
-+                    layout::Integer::I16 => rustc_type_ir::UintTy::U16,
-+                    layout::Integer::I32 => rustc_type_ir::UintTy::U32,
-+                    layout::Integer::I64 => rustc_type_ir::UintTy::U64,
-+                    layout::Integer::I128 => rustc_type_ir::UintTy::U128,
-+                },
-+                ),
-+            },
-+        },
-         )
-     }
- 
      }
  }
  
@@ -647,34 +402,6 @@ Rustfmt size:  227843 bytes
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
  pub struct Variant {
      pub(crate) id: EnumVariantId,
-     }
- 
-     pub fn fields(self, db: &dyn HirDatabase) -> Vec<Field> {
--        self.id
--            .fields(db)
--            .fields()
--            .iter()
--            .map(|(id, _)| Field { parent: self.into(), id })
--            .collect()
-+        self.id.fields(db).fields().iter().map(|(id, _)| Field { parent: self.into(), id }).collect(
-+        )
-     }
- 
-     pub fn kind(self, db: &dyn HirDatabase) -> StructKind {
-         Ok(match &parent_layout.0.variants {
-             layout::Variants::Multiple { variants, .. } => Layout(
-                 {
--                    let lookup = self.id.lookup(db);
--                    let rustc_enum_variant_idx = RustcEnumVariantIdx(lookup.index as usize);
--                    Arc::new(variants[rustc_enum_variant_idx].clone())
--                },
-+                let lookup = self.id.lookup(db);
-+                let rustc_enum_variant_idx = RustcEnumVariantIdx(lookup.index as usize);
-+                Arc::new(variants[rustc_enum_variant_idx].clone())
-+            },
-                 db.target_data_layout(parent_enum.krate(db).into()).unwrap(),
-             ),
-             _ => parent_layout,
      }
  }
  
@@ -693,22 +420,6 @@ Rustfmt size:  227843 bytes
      }
  
      pub fn fields(self, db: &dyn HirDatabase) -> Vec<InstantiatedField<'db>> {
--        self.inner
--            .id
--            .fields(db)
--            .fields()
--            .iter()
--            .map(|(id, _)| InstantiatedField {
-+        self.inner.id.fields(db).fields().iter().map(|(id, _)| InstantiatedField {
-                 inner: Field { parent: self.inner.into(), id },
-                 args: self.args,
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- }
- 
      Union(Union),
      Enum(Enum),
  }
@@ -716,33 +427,6 @@ Rustfmt size:  227843 bytes
  impl_from!(Struct, Union, Enum for Adt);
  
  impl Adt {
-         let args = GenericArgs::for_item_with_defaults(interner, adt_id.into(), |_, id, _| {
-             GenericArg::error_from_id(interner, id)
-         });
--        db.layout_of_adt(adt_id, args, env)
--            .map(|layout| Layout(layout, db.target_data_layout(self.krate(db).id).unwrap()))
-+        db.layout_of_adt(adt_id, args, env).map(
-+            |layout| Layout(layout, db.target_data_layout(self.krate(db).id).unwrap()),
-+        )
-     }
- 
-     /// Turns this ADT into a type. Any type parameters of the ADT will be
-             Adt::Union(u) => u.id.resolver(db),
-             Adt::Enum(e) => e.id.resolver(db),
-         };
--        resolver
--            .generic_params()
--            .and_then(|gp| {
-+        resolver.generic_params().and_then(|gp| {
-                 gp.iter_lt()
-                     // there should only be a single lifetime
-                     // but `Arena` requires to use an iterator
-                     .nth(0)
--            })
--            .map(|arena| arena.1.clone())
-+            }).map(
-+            |arena| arena.1.clone(),
-+        )
      }
  
      pub fn as_struct(&self) -> Option<Struct> {
@@ -792,93 +476,13 @@ Rustfmt size:  227843 bytes
      pub fn ret_type_with_args<'db>(
          self,
          db: &'db dyn HirDatabase,
-         // FIXME: This shouldn't be `instantiate_identity()`, we shouldn't leak `TyKind::Param`s.
-         let callable_sig =
-             db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
--        callable_sig
--            .inputs()
--            .iter()
--            .enumerate()
--            .map(|(idx, ty)| {
-+        callable_sig.inputs().iter().enumerate().map(|(idx, ty)| {
-                 let ty = Type { env: environment.clone(), ty };
-                 Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn num_params(self, db: &dyn HirDatabase) -> usize {
-         let callable_sig =
-             db.callable_item_signature(self.id.into()).instantiate_identity().skip_binder();
-         let skip = if db.function_signature(self.id).has_self_param() { 1 } else { 0 };
--        callable_sig
--            .inputs()
--            .iter()
--            .enumerate()
--            .skip(skip)
--            .map(|(idx, ty)| {
-+        callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
-                 let ty = Type { env: environment.clone(), ty };
-                 Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
--            })
--            .collect()
-+            }).collect(
-+        )
+             .collect()
      }
  
 -    // FIXME: Find better API to also handle const generics
      pub fn params_without_self_with_args<'db>(
          self,
          db: &'db dyn HirDatabase,
-         let callable_sig =
-             db.callable_item_signature(self.id.into()).instantiate(interner, args).skip_binder();
-         let skip = if db.function_signature(self.id).has_self_param() { 1 } else { 0 };
--        callable_sig
--            .inputs()
--            .iter()
--            .enumerate()
--            .skip(skip)
--            .map(|(idx, ty)| {
-+        callable_sig.inputs().iter().enumerate().skip(skip).map(|(idx, ty)| {
-                 let ty = Type { env: environment.clone(), ty };
-                 Param { func: Callee::Def(CallableDefId::FunctionId(self.id)), ty, idx }
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn is_const(self, db: &dyn HirDatabase) -> bool {
-         };
- 
-         let mut has_impl_future = false;
--        impl_traits
--            .filter(|t| {
-+        impl_traits.filter(|t| {
-                 let fut = t.id == future_trait_id;
-                 has_impl_future |= fut;
-                 !fut && t.id != sized_trait_id
--            })
--            // all traits but the future trait must be auto traits
--            .all(|t| t.is_auto(db))
--            && has_impl_future
-+            }).all(
-+            |t| t.is_auto(db),
-+        ) && has_impl_future
-     }
- 
-     /// Does this function have `#[test]` attribute?
- 
-     /// is this a `fn main` or a function with an `export_name` of `main`?
-     pub fn is_main(self, db: &dyn HirDatabase) -> bool {
--        db.attrs(self.id.into()).export_name() == Some(&sym::main)
--            || self.module(db).is_crate_root() && db.function_signature(self.id).name == sym::main
-+        db.attrs(self.id.into()).export_name() == Some(&sym::main) || self.module(db).is_crate_root() && db.function_signature(self.id).name == sym::main
-     }
- 
-     /// Is this a function with an `export_name` of `main`?
      }
  }
  
@@ -895,37 +499,15 @@ Rustfmt size:  227843 bytes
      // }
  
      pub fn index(&self) -> usize {
-                 let body = db.body(parent);
                  if let Some(self_param) = body.self_param.filter(|_| self.idx == 0) {
                      Some(Local { parent, binding_id: self_param })
--                } else if let Pat::Bind { id, .. } =
+                 } else if let Pat::Bind { id, .. } =
 -                    &body[body.params[self.idx - body.self_param.is_some() as usize]]
 -                {
-+                } else if let Pat::Bind { id, .. } = &body[body.params[self.idx - body.self_param.is_some() as usize]] {
++                    &body[body.params[self.idx - body.self_param.is_some() as usize]] {
                      Some(Local { parent, binding_id: *id })
                  } else {
                      None
- impl SelfParam {
-     pub fn access(self, db: &dyn HirDatabase) -> Access {
-         let func_data = db.function_signature(self.func);
--        func_data
--            .params
--            .first()
--            .map(|&param| match &func_data.store[param] {
-+        func_data.params.first().map(|&param| match &func_data.store[param] {
-                 TypeRef::Reference(ref_) => match ref_.mutability {
-                     hir_def::type_ref::Mutability::Shared => Access::Shared,
-                     hir_def::type_ref::Mutability::Mut => Access::Exclusive,
-                 },
-                 _ => Access::Owned,
--            })
--            .unwrap_or(Access::Owned)
-+            }).unwrap_or(
-+            Access::Owned,
-+        )
-     }
- 
-     pub fn parent_fn(&self) -> Function {
          Type { env: environment, ty }
      }
  
@@ -933,45 +515,6 @@ Rustfmt size:  227843 bytes
      pub fn ty_with_args<'db>(
          &self,
          db: &'db dyn HirDatabase,
-     pub fn eval(self, db: &dyn HirDatabase) -> Result<EvaluatedConst<'_>, ConstEvalError<'_>> {
-         let interner = DbInterner::new_with(db, None, None);
-         let ty = db.value_ty(self.id.into()).unwrap().instantiate_identity();
--        db.const_eval(self.id.into(), GenericArgs::new_from_iter(interner, []), None)
--            .map(|it| EvaluatedConst { const_: it, def: self.id.into(), ty })
-+        db.const_eval(self.id.into(), GenericArgs::new_from_iter(interner, []), None).map(
-+            |it| EvaluatedConst { const_: it, def: self.id.into(), ty },
-+        )
-     }
- }
- 
-     pub fn eval(self, db: &dyn HirDatabase) -> Result<EvaluatedConst<'_>, ConstEvalError<'_>> {
-         let interner = DbInterner::new_with(db, None, None);
-         let ty = db.value_ty(self.id.into()).unwrap().instantiate_identity();
--        db.const_eval(self.id.into(), GenericArgs::new_from_iter(interner, []), None)
--            .map(|it| EvaluatedConst { const_: it, def: self.id.into(), ty })
-+        db.const_eval(self.id.into(), GenericArgs::new_from_iter(interner, []), None).map(
-+            |it| EvaluatedConst { const_: it, def: self.id.into(), ty },
-+        )
-     }
- }
- 
-         db: &dyn HirDatabase,
-         count_required_only: bool,
-     ) -> usize {
--        db.generic_params(self.id.into())
--            .iter_type_or_consts()
--            .filter(|(_, ty)| !matches!(ty, TypeOrConstParamData::TypeParamData(ty) if ty.provenance != TypeParamProvenance::TypeParamList))
--            .filter(|(_, ty)| !count_required_only || !ty.has_default())
--            .count()
-+        db.generic_params(self.id.into()).iter_type_or_consts().filter(
-+            |(_, ty)| !matches!(ty, TypeOrConstParamData::TypeParamData(ty) if ty.provenance != TypeParamProvenance::TypeParamList),
-+        ).filter(
-+            |(_, ty)| !count_required_only || !ty.has_default(),
-+        ).count(
-+        )
-     }
- 
-     pub fn dyn_compatibility(&self, db: &dyn HirDatabase) -> Option<DynCompatibilityViolation> {
  }
  
  impl BuiltinType {
@@ -979,20 +522,6 @@ Rustfmt size:  227843 bytes
      pub fn str() -> BuiltinType {
          BuiltinType { inner: hir_def::builtin_type::BuiltinType::Str }
      }
-                 let loc = id.lookup(db);
-                 let source = loc.source(db);
-                 match loc.kind {
--                    ProcMacroKind::CustomDerive => db
--                        .attrs(id.into())
--                        .parse_proc_macro_derive()
--                        .map_or_else(|| as_name_opt(source.value.name()), |(it, _)| it),
-+                    ProcMacroKind::CustomDerive => db.attrs(id.into()).parse_proc_macro_derive().map_or_else(
-+                        || as_name_opt(source.value.name()),
-+                        |(it, _)| it,
-+                    ),
-                     ProcMacroKind::Bang | ProcMacroKind::Attr => as_name_opt(source.value.name()),
-                 }
-             }
      Const(Const),
      Static(Static),
  }
@@ -1000,45 +529,6 @@ Rustfmt size:  227843 bytes
  impl_from!(
      Function,
      Adt(Struct, Enum, Union),
-                 Either::Right(it) => GenericParam::TypeParam(it),
-             }
-         });
--        self.lifetime_params(db)
--            .into_iter()
--            .map(GenericParam::LifetimeParam)
--            .chain(ty_params)
--            .collect()
-+        self.lifetime_params(db).into_iter().map(GenericParam::LifetimeParam).chain(ty_params).collect(
-+        )
-     }
- 
-     pub fn lifetime_params(self, db: &dyn HirDatabase) -> Vec<LifetimeParam> {
-         let generics = db.generic_params(self.into());
--        generics
--            .iter_lt()
--            .map(|(local_id, _)| LifetimeParam {
-+        generics.iter_lt().map(|(local_id, _)| LifetimeParam {
-                 id: LifetimeParamId { parent: self.into(), local_id },
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn type_or_const_params(self, db: &dyn HirDatabase) -> Vec<TypeOrConstParam> {
-         let generics = db.generic_params(self.into());
--        generics
--            .iter_type_or_consts()
--            .map(|(local_id, _)| TypeOrConstParam {
-+        generics.iter_type_or_consts().map(|(local_id, _)| TypeOrConstParam {
-                 id: TypeOrConstParamId { parent: self.into(), local_id },
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     fn id(self) -> GenericDefId {
      }
  }
  
@@ -1046,100 +536,11 @@ Rustfmt size:  227843 bytes
  #[derive(Debug)]
  pub struct GenericSubstitution<'db> {
      def: GenericDefId,
-             .iter()
-             .filter_map(|param| param.ty())
-             .zip(type_params);
--        container_params
--            .chain(self_params)
--            .filter_map(|(ty, name)| {
-+        container_params.chain(self_params).filter_map(|(ty, name)| {
-                 Some((name?.symbol().clone(), Type { ty, env: self.env.clone() }))
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- }
- 
-         // FIXME: This parses!
-         let src = self.primary_source(db);
-         match src.source.value {
--            Either::Left(pat) => pat
--                .syntax()
--                .ancestors()
--                .map(|it| it.kind())
--                .take_while(|&kind| ast::Pat::can_cast(kind) || ast::Param::can_cast(kind))
--                .any(ast::Param::can_cast),
-+            Either::Left(pat) => pat.syntax().ancestors().map(|it| it.kind()).take_while(
-+                |&kind| ast::Pat::can_cast(kind) || ast::Param::can_cast(kind),
-+            ).any(
-+                ast::Param::can_cast,
-+            ),
-             Either::Right(_) => true,
-         }
-     }
-                     source: source.map(|ast| Either::Right(ast.to_node(&root))),
-                 }]
-             }
--            _ => source_map
--                .patterns_for_binding(self.binding_id)
--                .iter()
--                .map(|&definition| {
-+            _ => source_map.patterns_for_binding(self.binding_id).iter().map(|&definition| {
-                     let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
-                     let root = src.file_syntax(db);
-                     LocalSource {
-                             _ => unreachable!("local with non ident-pattern"),
-                         }),
-                     }
--                })
--                .collect(),
-+                }).collect(
-+            ),
-         }
-     }
- 
-                     source: source.map(|ast| Either::Right(ast.to_node(&root))),
-                 }
-             }
--            _ => source_map
--                .patterns_for_binding(self.binding_id)
--                .first()
--                .map(|&definition| {
-+            _ => source_map.patterns_for_binding(self.binding_id).first().map(|&definition| {
-                     let src = source_map.pat_syntax(definition).unwrap(); // Hmm...
-                     let root = src.file_syntax(db);
-                     LocalSource {
-                             _ => unreachable!("local with non ident-pattern"),
-                         }),
-                     }
--                })
--                .unwrap(),
-+                }).unwrap(
-+            ),
-         }
-     }
- }
- 
-     pub fn name(&self, db: &dyn HirDatabase) -> Name {
-         match self.derive {
--            makro @ MacroId::Macro2Id(_) => db
--                .attrs(makro.into())
--                .parse_rustc_builtin_macro()
--                .and_then(|(_, helpers)| helpers.get(self.idx as usize).cloned()),
-+            makro @ MacroId::Macro2Id(_) => db.attrs(makro.into()).parse_rustc_builtin_macro().and_then(
-+                |(_, helpers)| helpers.get(self.idx as usize).cloned(),
-+            ),
-             MacroId::MacroRulesId(_) => None,
--            makro @ MacroId::ProcMacroId(_) => db
--                .attrs(makro.into())
--                .parse_proc_macro_derive()
--                .and_then(|(_, helpers)| helpers.get(self.idx as usize).cloned()),
+                 .attrs(makro.into())
+                 .parse_proc_macro_derive()
+                 .and_then(|(_, helpers)| helpers.get(self.idx as usize).cloned()),
 -        }
 -        .unwrap_or_else(Name::missing)
-+            makro @ MacroId::ProcMacroId(_) => db.attrs(makro.into()).parse_proc_macro_derive().and_then(
-+                |(_, helpers)| helpers.get(self.idx as usize).cloned(),
-+            ),
 +        }.unwrap_or_else(
 +            Name::missing,
 +        )
@@ -1173,22 +574,6 @@ Rustfmt size:  227843 bytes
  impl_from!(TypeParam, ConstParam, LifetimeParam for GenericParam);
  
  impl GenericParam {
-     /// parameter, not additional bounds that might be added e.g. by a method if
-     /// the parameter comes from an impl!
-     pub fn trait_bounds(self, db: &dyn HirDatabase) -> Vec<Trait> {
--        db.generic_predicates_for_param(self.id.parent(), self.id.into(), None)
--            .iter()
--            .filter_map(|pred| match &pred.kind().skip_binder() {
-+        db.generic_predicates_for_param(self.id.parent(), self.id.into(), None).iter().filter_map(|pred| match &pred.kind().skip_binder() {
-                 ClauseKind::Trait(trait_ref) => Some(Trait::from(trait_ref.def_id().0)),
-                 _ => None,
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn default(self, db: &dyn HirDatabase) -> Option<Type<'_>> {
              .nth(derive_index as usize)
              .and_then(<ast::Attr as AstNode>::cast)
              .and_then(|it| it.path())?;
@@ -1200,72 +585,18 @@ Rustfmt size:  227843 bytes
      }
  
      pub fn check_orphan_rules(self, db: &dyn HirDatabase) -> bool {
-     /// Returns `idx`-th argument of this trait reference if it is a type argument. Note that the
-     /// first argument is the `Self` type.
-     pub fn get_type_argument(&self, idx: usize) -> Option<TypeNs<'db>> {
--        self.trait_ref
--            .args
--            .as_slice()
--            .get(idx)
--            .and_then(|arg| arg.ty())
--            .map(|ty| TypeNs { env: self.env.clone(), ty })
-+        self.trait_ref.args.as_slice().get(idx).and_then(|arg| arg.ty()).map(
-+            |ty| TypeNs { env: self.env.clone(), ty },
-+        )
-     }
- }
- 
-     }
- 
-     pub fn display_with_id(&self, db: &dyn HirDatabase, display_target: DisplayTarget) -> String {
--        self.as_ty(db)
--            .display(db, display_target)
--            .with_closure_style(ClosureStyle::ClosureWithId)
--            .to_string()
-+        self.as_ty(db).display(db, display_target).with_closure_style(ClosureStyle::ClosureWithId).to_string(
-+        )
+             .to_string()
      }
  
 -    pub fn display_with_impl(&self, db: &dyn HirDatabase, display_target: DisplayTarget) -> String {
--        self.as_ty(db)
--            .display(db, display_target)
--            .with_closure_style(ClosureStyle::ImplFn)
--            .to_string()
 +    pub fn display_with_impl(
 +        &self,
 +        db: &dyn HirDatabase,
 +        display_target: DisplayTarget,
 +    ) -> String {
-+        self.as_ty(db).display(db, display_target).with_closure_style(ClosureStyle::ImplFn).to_string(
-+        )
-     }
- 
-     pub fn captured_items(&self, db: &'db dyn HirDatabase) -> Vec<ClosureCapture<'db>> {
-         let owner = db.lookup_intern_closure(id).0;
-         let infer = db.infer(owner);
-         let info = infer.closure_info(id);
--        info.0
--            .iter()
--            .cloned()
--            .map(|capture| ClosureCapture { owner, closure: id, capture })
--            .collect()
-+        info.0.iter().cloned().map(|capture| ClosureCapture { owner, closure: id, capture }).collect(
-+        )
-     }
- 
-     pub fn capture_types(&self, db: &'db dyn HirDatabase) -> Vec<Type<'db>> {
-         let infer = db.infer(owner);
-         let (captures, _) = infer.closure_info(id);
-         let env = db.trait_environment_for_body(owner);
--        captures
--            .iter()
--            .map(|capture| Type { env: env.clone(), ty: capture.ty(db, self.subst) })
--            .collect()
-+        captures.iter().map(|capture| Type { env: env.clone(), ty: capture.ty(db, self.subst) }).collect(
-+        )
-     }
- 
-     pub fn fn_trait(&self, db: &dyn HirDatabase) -> FnTrait {
+         self.as_ty(db)
+             .display(db, display_target)
+             .with_closure_style(ClosureStyle::ImplFn)
                  info.1
              }
              AnyClosureId::CoroutineClosureId(_id) => {
@@ -1368,23 +699,6 @@ Rustfmt size:  227843 bytes
      }
  
      pub fn contains_unknown(&self) -> bool {
-             _ => return Vec::new(),
-         };
- 
--        db.field_types(variant_id)
--            .iter()
--            .map(|(local_id, ty)| {
-+        db.field_types(variant_id).iter().map(|(local_id, ty)| {
-                 let def = Field { parent: variant_id.into(), id: local_id };
-                 let ty = ty.instantiate(interner, substs);
-                 (def, self.derived(ty))
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     pub fn tuple_fields(&self, _db: &'db dyn HirDatabase) -> Vec<Self> {
          autoderef(db, self.env.clone(), canonical)
      }
  
@@ -1400,69 +714,6 @@ Rustfmt size:  227843 bytes
              for impl_def in impls.for_self_ty(ty_ns) {
                  for &(_, item) in impl_def.impl_items(db).items.iter() {
                      if callback(item) {
-         db: &'a dyn HirDatabase,
-         display_target: DisplayTarget,
-     ) -> impl Iterator<Item = SmolStr> + 'a {
--        self.ty
--            .strip_references()
--            .as_adt()
--            .into_iter()
--            .flat_map(|(_, substs)| substs.iter())
--            .filter_map(move |arg| match arg {
-+        self.ty.strip_references().as_adt().into_iter().flat_map(|(_, substs)| substs.iter()).filter_map(move |arg| match arg {
-                 GenericArg::Ty(ty) => Some(format_smolstr!("{}", ty.display(db, display_target))),
-                 GenericArg::Const(const_) => {
-                     Some(format_smolstr!("{}", const_.display(db, display_target)))
-         display_target: DisplayTarget,
-     ) -> impl Iterator<Item = SmolStr> + 'a {
-         // iterate the lifetime
--        self.as_adt()
--            .and_then(|a| {
-+        self.as_adt().and_then(|a| {
-                 // Lifetimes do not need edition-specific handling as they cannot be escaped.
-                 a.lifetime(db).map(|lt| lt.name.display_no_db(Edition::Edition2015).to_smolstr())
--            })
--            .into_iter()
--            // add the type and const parameters
--            .chain(self.type_and_const_arguments(db, display_target))
-+            }).into_iter(
-+        ).chain(
-+            self.type_and_const_arguments(db, display_target),
-+        )
-     }
- 
-     pub fn iterate_method_candidates_with_traits<T>(
-         db: &'db dyn HirDatabase,
-     ) -> impl Iterator<Item = Trait> {
-         let _p = tracing::info_span!("applicable_inherent_traits").entered();
--        self.autoderef_(db)
--            .filter_map(|ty| ty.dyn_trait())
--            .flat_map(move |dyn_trait_id| hir_ty::all_super_traits(db, dyn_trait_id))
--            .map(Trait::from)
-+        self.autoderef_(db).filter_map(|ty| ty.dyn_trait()).flat_map(
-+            move |dyn_trait_id| hir_ty::all_super_traits(db, dyn_trait_id),
-+        ).map(
-+            Trait::from,
-+        )
-     }
- 
-     pub fn env_traits(&self, db: &'db dyn HirDatabase) -> impl Iterator<Item = Trait> {
-         let _p = tracing::info_span!("env_traits").entered();
--        self.autoderef_(db)
--            .filter(|ty| matches!(ty.kind(), TyKind::Param(_)))
--            .flat_map(|ty| {
-+        self.autoderef_(db).filter(|ty| matches!(ty.kind(), TyKind::Param(_))).flat_map(|ty| {
-                 self.env
-                     .traits_in_scope_from_clauses(ty)
-                     .flat_map(|t| hir_ty::all_super_traits(db, t))
--            })
--            .map(Trait::from)
-+            }).map(
-+            Trait::from,
-+        )
-     }
- 
-     pub fn as_impl_traits(&self, db: &'db dyn HirDatabase) -> Option<impl Iterator<Item = Trait>> {
              Visitor { db, env: self.env.clone(), callback, visited: FxHashSet::default() };
          self.ty.visit_with(&mut visitor);
      }
@@ -1470,28 +721,6 @@ Rustfmt size:  227843 bytes
      /// Check if type unifies with another type.
      ///
      /// Note that we consider placeholder types to unify with everything.
- 
-     /// Returns unique `GenericParam`s contained in this type.
-     pub fn generic_params(&self, db: &'db dyn HirDatabase) -> FxHashSet<GenericParam> {
--        hir_ty::collect_params(&self.ty)
--            .into_iter()
--            .map(|id| TypeOrConstParam { id }.split(db).either_into())
--            .collect()
-+        hir_ty::collect_params(&self.ty).into_iter().map(
-+            |id| TypeOrConstParam { id }.split(db).either_into(),
-+        ).collect(
-+        )
-     }
- 
-     pub fn layout(&self, db: &'db dyn HirDatabase) -> Result<Layout, LayoutError> {
--        db.layout_of_ty(self.ty, self.env.clone())
--            .map(|layout| Layout(layout, db.target_data_layout(self.env.krate).unwrap()))
-+        db.layout_of_ty(self.ty, self.env.clone()).map(
-+            |layout| Layout(layout, db.target_data_layout(self.env.krate).unwrap()),
-+        )
-     }
- 
-     pub fn drop_glue(&self, db: &'db dyn HirDatabase) -> DropGlue {
      }
  
      pub fn to_type(&self, _db: &'db dyn HirDatabase) -> Type<'db> {
@@ -1525,36 +754,15 @@ Rustfmt size:  227843 bytes
      }
 +
      pub fn n_params(&self) -> usize {
--        self.sig.skip_binder().inputs_and_output.inputs().len()
--            - if self.is_bound_method { 1 } else { 0 }
-+        self.sig.skip_binder().inputs_and_output.inputs().len() - if self.is_bound_method {
-+            1
-+        } else {
-+            0
-+        }
+         self.sig.skip_binder().inputs_and_output.inputs().len()
+             - if self.is_bound_method { 1 } else { 0 }
      }
 +
      pub fn params(&self) -> Vec<Param<'db>> {
--        self.sig
--            .skip_binder()
--            .inputs_and_output
--            .inputs()
--            .iter()
--            .enumerate()
--            .skip(if self.is_bound_method { 1 } else { 0 })
--            .map(|(idx, ty)| (idx, self.ty.derived(*ty)))
--            .map(|(idx, ty)| Param { func: self.callee.clone(), idx, ty })
--            .collect()
-+        self.sig.skip_binder().inputs_and_output.inputs().iter().enumerate().skip(if self.is_bound_method {
-+            1
-+        } else {
-+            0
-+        }).map(
-+            |(idx, ty)| (idx, self.ty.derived(*ty)),
-+        ).map(
-+            |(idx, ty)| Param { func: self.callee.clone(), idx, ty },
-+        ).collect(
-+        )
+         self.sig
+             .skip_binder()
+             .map(|(idx, ty)| Param { func: self.callee.clone(), idx, ty })
+             .collect()
      }
 +
      pub fn return_type(&self) -> Type<'db> {
@@ -1564,26 +772,6 @@ Rustfmt size:  227843 bytes
      pub fn sig(&self) -> impl Eq {
          &self.sig
      }
-                     stdx::never!();
-                     return None;
-                 }
--                reverse_index
--                    .into_iter()
--                    .flatten()
--                    .chain(std::iter::once((0, self.0.size.bytes())))
--                    .tuple_windows()
--                    .filter_map(|((i, start), (_, end))| {
-+                reverse_index.into_iter().flatten().chain(std::iter::once((0, self.0.size.bytes()))).tuple_windows(
-+                ).filter_map(|((i, start), (_, end))| {
-                         let size = field_size(i)?;
-                         end.checked_sub(start)?.checked_sub(size)
--                    })
--                    .max()
-+                    }).max(
-+                )
-             }
-         }
-     }
  
  pub trait HasVisibility {
      fn visibility(&self, db: &dyn HirDatabase) -> Visibility;
@@ -1591,27 +779,6 @@ Rustfmt size:  227843 bytes
      fn is_visible_from(&self, db: &dyn HirDatabase, module: Module) -> bool {
          let vis = self.visibility(db);
          vis.is_visible_from(db, module.id)
-     db: &'a dyn HirDatabase,
-     mut segments: I,
- ) -> impl Iterator<Item = ItemInNs> + use<'a, I> {
--    segments
--        .next()
--        .into_iter()
--        .flat_map(move |crate_name| {
-+    segments.next().into_iter().flat_map(move |crate_name| {
-             db.all_crates()
-                 .iter()
-                 .filter(|&krate| {
-                     Some(res.iter_items().map(|(item, _)| item.into()))
-                 })
-                 .collect::<Vec<_>>()
--        })
--        .flatten()
-+        }).flatten(
-+    )
- }
- 
- fn as_name_opt(name: Option<impl AsName>) -> Name {
      args: impl IntoIterator<Item = Ty<'db>>,
  ) -> GenericArgs<'db> {
      let mut args = args.into_iter();
@@ -1632,21 +799,6 @@ Rustfmt size:  227843 bytes
  }
  
  fn has_non_default_type_params(db: &dyn HirDatabase, generic_def: GenericDefId) -> bool {
-     let params = db.generic_params(generic_def);
-     let defaults = db.generic_defaults(generic_def);
--    params
--        .iter_type_or_consts()
--        .filter(|(_, param)| matches!(param, TypeOrConstParamData::TypeParamData(_)))
--        .map(|(local_id, _)| TypeOrConstParamId { parent: generic_def, local_id })
--        .any(|param| {
-+    params.iter_type_or_consts().filter(
-+        |(_, param)| matches!(param, TypeOrConstParamData::TypeParamData(_)),
-+    ).map(
-+        |(local_id, _)| TypeOrConstParamId { parent: generic_def, local_id },
-+    ).any(|param| {
-             let Some(param) = hir_ty::param_idx(db, param) else {
-                 return false;
-             };
              defaults.get(param).is_none()
          })
  }

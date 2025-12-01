@@ -23,11 +23,8 @@ Rustfmt size:  2749 bytes
 -        ),
 +        format!("use of undeclared label `{}`", name.display(ctx.sema.db, ctx.edition)),
          d.node.map(|it| it.into()),
-+    ).stable(
      )
--    .stable()
- }
- 
+     .stable()
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

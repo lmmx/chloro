@@ -53,9 +53,11 @@ pub(crate) fn complete_type_path(
     };
 
     match qualified {
-        Qualified::TypeAnchor { ty: None, trait_: None } => ctx.traits_in_scope().iter().flat_map(|&it| hir::Trait::from(it).items(ctx.sema.db)).for_each(
-            |item| add_assoc_item(acc, item),
-        ),
+        Qualified::TypeAnchor { ty: None, trait_: None } => ctx
+            .traits_in_scope()
+            .iter()
+            .flat_map(|&it| hir::Trait::from(it).items(ctx.sema.db))
+            .for_each(|item| add_assoc_item(acc, item)),
         Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
         }

@@ -9,8 +9,8 @@ pub(crate) fn unresolved_extern_crate(
         DiagnosticCode::RustcHardError("unresolved-extern-crate"),
         "unresolved extern crate",
         d.decl.map(|it| it.into()),
-    ).stable(
     )
+    .stable()
 }
 
 #[cfg(test)]

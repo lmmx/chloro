@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   32024 bytes
+Chloro size:   32078 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -230,15 +230,7 @@ Rustfmt size:  33070 bytes
          let (Expr::Break { label, .. } | Expr::Continue { label }) = body[break_or_continue] else {
              return None;
          };
-         src: InFile<ast::Attr>,
-     ) -> Option<(AttrId, MacroCallId, &[Option<MacroCallId>])> {
-         let map = self.dyn_map(item)?;
--        map[keys::DERIVE_MACRO_CALL]
--            .get(&AstPtr::new(&src.value))
--            .map(|&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids))
-+        map[keys::DERIVE_MACRO_CALL].get(&AstPtr::new(&src.value)).map(
-+            |&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids),
-+        )
+             .map(|&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids))
      }
  
 -    // FIXME: Make this more fine grained! This should be a `adt_has_derives`!
@@ -268,32 +260,6 @@ Rustfmt size:  33070 bytes
      }
  
      fn dyn_map<Ast: AstNode + 'static>(&mut self, src: InFile<&Ast>) -> Option<&DynMap> {
- 
-     fn cache_for(&mut self, container: ChildContainer, file_id: HirFileId) -> &DynMap {
-         let db = self.db;
--        self.cache
--            .dynmap_cache
--            .entry((container, file_id))
--            .or_insert_with(|| container.child_by_source(db, file_id))
-+        self.cache.dynmap_cache.entry((container, file_id)).or_insert_with(
-+            || container.child_by_source(db, file_id),
-+        )
-     }
- 
-     pub(super) fn item_to_macro_call(&mut self, src: InFile<&ast::Item>) -> Option<MacroCallId> {
-     ) -> Option<TypeParamId> {
-         let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
-         let dyn_map = self.cache_for(container, src.file_id);
--        dyn_map[keys::TYPE_PARAM]
--            .get(&AstPtr::new(src.value))
--            .copied()
--            .map(TypeParamId::from_unchecked)
-+        dyn_map[keys::TYPE_PARAM].get(&AstPtr::new(src.value)).copied().map(
-+            TypeParamId::from_unchecked,
-+        )
-     }
- 
-     pub(super) fn lifetime_param_to_def(
      ) -> Option<LifetimeParamId> {
          let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
          let dyn_map = self.cache_for(container, src.file_id);
@@ -304,37 +270,21 @@ Rustfmt size:  33070 bytes
      }
  
      pub(super) fn const_param_to_def(
-     ) -> Option<ConstParamId> {
-         let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
-         let dyn_map = self.cache_for(container, src.file_id);
--        dyn_map[keys::CONST_PARAM]
--            .get(&AstPtr::new(src.value))
--            .copied()
--            .map(ConstParamId::from_unchecked)
-+        dyn_map[keys::CONST_PARAM].get(&AstPtr::new(src.value)).copied().map(
-+            ConstParamId::from_unchecked,
-+        )
-     }
- 
-     pub(super) fn generic_param_to_def(
          InFile { file_id, value }: InFile<&ast::GenericParam>,
      ) -> Option<GenericParamId> {
          match value {
 -            ast::GenericParam::ConstParam(it) => self
 -                .const_param_to_def(InFile::new(file_id, it))
 -                .map(GenericParamId::ConstParamId),
--            ast::GenericParam::LifetimeParam(it) => self
--                .lifetime_param_to_def(InFile::new(file_id, it))
--                .map(GenericParamId::LifetimeParamId),
--            ast::GenericParam::TypeParam(it) => self
--                .type_param_to_def(InFile::new(file_id, it))
--                .map(GenericParamId::TypeParamId),
 +            ast::GenericParam::ConstParam(it) => {
 +                self.const_param_to_def(InFile::new(file_id, it)).map(GenericParamId::ConstParamId)
 +            }
-+            ast::GenericParam::LifetimeParam(it) => self.lifetime_param_to_def(InFile::new(file_id, it)).map(
-+                GenericParamId::LifetimeParamId,
-+            ),
+             ast::GenericParam::LifetimeParam(it) => self
+                 .lifetime_param_to_def(InFile::new(file_id, it))
+                 .map(GenericParamId::LifetimeParamId),
+-            ast::GenericParam::TypeParam(it) => self
+-                .type_param_to_def(InFile::new(file_id, it))
+-                .map(GenericParamId::TypeParamId),
 +            ast::GenericParam::TypeParam(it) => {
 +                self.type_param_to_def(InFile::new(file_id, it)).map(GenericParamId::TypeParamId)
 +            }

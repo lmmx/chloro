@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27018 bytes
-Chloro size:   26680 bytes
+Chloro size:   26670 bytes
 Rustfmt size:  27018 bytes
 
 ✗ Outputs DIFFER
@@ -27,18 +27,6 @@ Rustfmt size:  27018 bytes
  pub(crate) fn incorrect_case(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Diagnostic {
      let code = match d.expected_case {
          CaseType::LowerSnakeCase => DiagnosticCode::RustcLint("non_snake_case"),
-             d.ident_type, d.ident_text, d.expected_case, d.suggested_text
-         ),
-         InFile::new(d.file, d.ident.into()),
-+    ).stable(
-+    ).with_fixes(
-+        fixes(ctx, d),
-     )
--    .stable()
--    .with_fixes(fixes(ctx, d))
- }
- 
- fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Option<Vec<Assist>> {
  #[cfg(test)]
  mod change_case {
      use crate::tests::{check_diagnostics, check_diagnostics_with_disabled, check_fix};

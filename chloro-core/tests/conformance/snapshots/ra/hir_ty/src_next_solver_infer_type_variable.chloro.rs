@@ -286,14 +286,15 @@ impl<'db> TypeVariableTable<'_, 'db> {
     /// Returns indices of all variables that are not yet
     /// instantiated.
     pub(crate) fn unresolved_variables(&mut self) -> Vec<TyVid> {
-        (0..self.num_vars()).filter_map(|i| {
+        (0..self.num_vars())
+            .filter_map(|i| {
                 let vid = TyVid::from_usize(i);
                 match self.probe(vid) {
                     TypeVariableValue::Unknown { .. } => Some(vid),
                     TypeVariableValue::Known { .. } => None,
                 }
-            }).collect(
-        )
+            })
+            .collect()
     }
 }
 

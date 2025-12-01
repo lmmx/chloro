@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3099 bytes
-Chloro size:   2932 bytes
+Chloro size:   2927 bytes
 Rustfmt size:  3144 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,8 @@ Rustfmt size:  3144 bytes
 -            },
 -            &|impl_| impl_.trait_().map(|t| t.syntax().text_range()),
 -        ),
+-    )
+-    .stable()
 +        ctx,
 +        InFile {
 +        file_id: d.file_id,
@@ -37,9 +39,7 @@ Rustfmt size:  3144 bytes
 +    },
 +        &|impl_| impl_.trait_().map(|t| t.syntax().text_range()),
 +    ),
-+    ).stable(
-     )
--    .stable()
++    ).stable()
  }
  
  #[cfg(test)]

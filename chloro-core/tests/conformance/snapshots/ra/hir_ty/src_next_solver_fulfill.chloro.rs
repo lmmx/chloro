@@ -142,12 +142,12 @@ impl<'db> FulfillmentCtxt<'db> {
         &mut self,
         _infcx: &InferCtxt<'db>,
     ) -> Vec<NextSolverError<'db>> {
-        self.obligations.pending.drain(..).map(
-            |(obligation, _)| NextSolverError::Ambiguity(obligation),
-        ).chain(
-            self.obligations.overflowed.drain(..).map(NextSolverError::Overflow),
-        ).collect(
-        )
+        self.obligations
+            .pending
+            .drain(..)
+            .map(|(obligation, _)| NextSolverError::Ambiguity(obligation))
+            .chain(self.obligations.overflowed.drain(..).map(NextSolverError::Overflow))
+            .collect()
     }
 
     pub(crate) fn try_evaluate_obligations(
@@ -250,7 +250,8 @@ impl<'db> FulfillmentCtxt<'db> {
             return Default::default();
         }
 
-        self.obligations.drain_pending(|obl| {
+        self.obligations
+            .drain_pending(|obl| {
                 infcx.probe(|_| {
                     infcx
                         .visit_proof_tree(
@@ -262,11 +263,10 @@ impl<'db> FulfillmentCtxt<'db> {
                         )
                         .is_break()
                 })
-            }).into_iter(
-        ).map(
-            |(o, _)| o,
-        ).collect(
-        )
+            })
+            .into_iter()
+            .map(|(o, _)| o)
+            .collect()
     }
 }
 
@@ -305,7 +305,8 @@ impl<'db> TypeVisitor<DbInterner<'db>> for StalledOnCoroutines<'_, 'db> {
             return ControlFlow::Continue(());
         }
 
-        if let TyKind::Coroutine(def_id, _) = ty.kind() && self.stalled_coroutines.contains(&def_id.into()) {
+        if let TyKind::Coroutine(def_id, _) = ty.kind()
+            && self.stalled_coroutines.contains(&def_id.into()) {
             ControlFlow::Break(())
         } else if ty.has_coroutines() {
             ty.super_visit_with(self)

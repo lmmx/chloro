@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12112 bytes
-Chloro size:   11207 bytes
+Chloro size:   11237 bytes
 Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
@@ -165,16 +165,3 @@ Rustfmt size:  12243 bytes
                  std::panic::resume_unwind(Box::new(cancelled));
              }
          }
- }
- 
- fn crate_name(db: &RootDatabase, krate: Crate) -> Symbol {
--    krate
--        .extra_data(db)
--        .display_name
--        .as_deref()
--        .cloned()
--        .unwrap_or_else(|| Symbol::integer(salsa::plumbing::AsId::as_id(&krate).index() as usize))
-+    krate.extra_data(db).display_name.as_deref().cloned().unwrap_or_else(
-+        || Symbol::integer(salsa::plumbing::AsId::as_id(&krate).index() as usize),
-+    )
- }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111676 bytes
-Chloro size:   110153 bytes
+Chloro size:   110306 bytes
 Rustfmt size:  111676 bytes
 
 ✗ Outputs DIFFER
@@ -137,33 +137,14 @@ Rustfmt size:  111676 bytes
 -            // Lang item paths cannot currently be local variables or statics.
              Expr::Path(Path::LangItem(_, _)) => false,
              Expr::Path(Path::Normal(path)) => path.type_anchor.is_none(),
--            Expr::Path(path) => self
--                .resolver
--                .resolve_path_in_value_ns_fully(self.db, path, self.body.expr_path_hygiene(expr))
--                .is_none_or(|res| matches!(res, ValueNs::LocalBinding(_) | ValueNs::StaticId(_))),
-+            Expr::Path(path) => self.resolver.resolve_path_in_value_ns_fully(
-+                self.db,
-+                path,
-+                self.body.expr_path_hygiene(expr),
-+            ).is_none_or(
-+                |res| matches!(res, ValueNs::LocalBinding(_) | ValueNs::StaticId(_)),
-+            ),
-             Expr::Underscore => true,
-             Expr::UnaryOp { op: UnaryOp::Deref, .. } => true,
-             Expr::Field { .. } | Expr::Index { .. } => true,
+             Expr::Path(path) => self
                      self.err_ty()
                  };
              }
 -
              if let Some(target) = expected.only_has_type(&mut self.table) {
--                self.coerce(expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes)
--                    .expect("never-to-any coercion should always succeed")
-+                self.coerce(expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes).expect(
-+                    "never-to-any coercion should always succeed",
-+                )
-             } else {
-                 ty
-             }
+                 self.coerce(expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes)
+                     .expect("never-to-any coercion should always succeed")
                      Expectation::rvalue_hint(self, g)
                  })
                  .unwrap_or_else(Expectation::none);
@@ -229,14 +210,6 @@ Rustfmt size:  111676 bytes
                          self.check_method_call(
                              tgt_expr,
                              &[],
--                            self.db
--                                .value_ty(func.into())
--                                .unwrap()
--                                .instantiate(self.interner(), args),
-+                            self.db.value_ty(func.into()).unwrap().instantiate(self.interner(), args),
-                             ty,
-                             expected,
-                         )
                          item: func.into(),
                      })
                  }
@@ -247,18 +220,6 @@ Rustfmt size:  111676 bytes
                  let gen_args = self.substs_for_method_call(tgt_expr, func.into(), generic_args);
                  self.write_method_resolution(tgt_expr, func, gen_args);
                  let interner = DbInterner::new_with(self.db, None, None);
-                 self.check_method_call(
-                     tgt_expr,
-                     args,
--                    self.db
--                        .value_ty(func.into())
--                        .expect("we have a function def")
--                        .instantiate(interner, gen_args),
-+                    self.db.value_ty(func.into()).expect("we have a function def").instantiate(
-+                    interner,
-+                    gen_args,
-+                ),
-                     ty,
                      expected,
                  )
              }
@@ -288,17 +249,6 @@ Rustfmt size:  111676 bytes
                  let recovered = match assoc_func_with_same_name {
                      Some(f) => {
                          let args = self.substs_for_method_call(tgt_expr, f.into(), generic_args);
-                             tgt_expr,
-                             args,
-                             callee_ty,
--                            sig.inputs_and_output
--                                .inputs()
--                                .get(strip_first as usize..)
--                                .unwrap_or(&[]),
-+                            sig.inputs_and_output.inputs().get(strip_first as usize..).unwrap_or(&[]),
-                             sig.output(),
-                             &[],
-                             true,
      pub(in super::super) fn check_call_arguments(
          &mut self,
          call_expr: ExprId,

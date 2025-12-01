@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3900 bytes
-Chloro size:   3824 bytes
+Chloro size:   3892 bytes
 Rustfmt size:  3900 bytes
 
 ✗ Outputs DIFFER
@@ -20,23 +20,6 @@ Rustfmt size:  3900 bytes
  
  pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
      let add_completion = |item: &str| {
-                 acc.add(item.build(ctx.db));
-             }),
-         },
--        None => ctx
--            .krate
--            .potential_cfg(ctx.db)
--            .get_cfg_keys()
--            .unique()
--            .map(|s| (s.as_str(), ""))
--            .chain(CFG_CONDITION.iter().copied())
--            .for_each(|(s, snippet)| {
-+        None => ctx.krate.potential_cfg(ctx.db).get_cfg_keys().unique().map(|s| (s.as_str(), "")).chain(
-+            CFG_CONDITION.iter().copied(),
-+        ).for_each(|(s, snippet)| {
-                 let mut item = CompletionItem::new(
-                     SymbolKind::BuiltinAttr,
-                     ctx.source_range(),
      }
  }
  

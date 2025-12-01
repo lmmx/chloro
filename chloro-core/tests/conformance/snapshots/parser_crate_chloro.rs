@@ -1471,10 +1471,7 @@ fn f() {
 impl FnScopes {
     fn new_scope(&) -> ScopeId {
         let res = self.scopes.len();
-        self.scopes.push(ScopeData {
-            parent: None,
-            entries: vec![],
-        })
+        self.scopes.push(ScopeData { parent: None, entries: vec![] })
     }
 
     fn set_parent();
@@ -4367,8 +4364,7 @@ fn err_to_msg(error: EscapeError, mode: Mode) -> String {
         EscapeError::NulInCStr => "null character in C string literal",
         EscapeError::UnskippedWhitespaceWarning => "",
         EscapeError::MultipleSkippedLinesWarning => "",
-    }.into(
-    )
+    }.into()
 }
 
 #[allow(non_camel_case_types)]
@@ -5426,11 +5422,17 @@ impl<'t> Parser<'t> {
     }
 
     fn at_composite2(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind) -> bool {
-        self.inp.kind(self.pos + n) == k1 && self.inp.kind(self.pos + n + 1) == k2 && self.inp.is_joint(self.pos + n)
+        self.inp.kind(self.pos + n) == k1
+            && self.inp.kind(self.pos + n + 1) == k2
+            && self.inp.is_joint(self.pos + n)
     }
 
     fn at_composite3(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind, k3: SyntaxKind) -> bool {
-        self.inp.kind(self.pos + n) == k1 && self.inp.kind(self.pos + n + 1) == k2 && self.inp.kind(self.pos + n + 2) == k3 && self.inp.is_joint(self.pos + n) && self.inp.is_joint(self.pos + n + 1)
+        self.inp.kind(self.pos + n) == k1
+            && self.inp.kind(self.pos + n + 1) == k2
+            && self.inp.kind(self.pos + n + 2) == k3
+            && self.inp.is_joint(self.pos + n)
+            && self.inp.is_joint(self.pos + n + 1)
     }
 
     /// Checks if the current token is in `kinds`.

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 108302 bytes
-Chloro size:   105666 bytes
+Chloro size:   105678 bytes
 Rustfmt size:  108302 bytes
 
 ✗ Outputs DIFFER
@@ -330,13 +330,12 @@ Rustfmt size:  108302 bytes
              ModKind::Outline => {
                  let ast_id = AstId::new(self.file_id(), module_ast_id);
                  let db = self.def_collector.db;
-             macro_id,
              &self.item_tree[mac.visibility],
          );
--        if let Some(helpers) = helpers_opt
+         if let Some(helpers) = helpers_opt
 -            && self.def_collector.def_map.block.is_none()
 -        {
-+        if let Some(helpers) = helpers_opt && self.def_collector.def_map.block.is_none() {
++            && self.def_collector.def_map.block.is_none() {
              Arc::get_mut(&mut self.def_collector.def_map.data)
                  .unwrap()
                  .exported_derives

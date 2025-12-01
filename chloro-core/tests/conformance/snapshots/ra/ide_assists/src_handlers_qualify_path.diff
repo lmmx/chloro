@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27122 bytes
-Chloro size:   26672 bytes
+Chloro size:   26680 bytes
 Rustfmt size:  27284 bytes
 
 ✗ Outputs DIFFER
@@ -106,12 +106,6 @@ Rustfmt size:  27284 bytes
          let arg_list = mcall_expr.arg_list().map(|arg_list| arg_list.args());
  
          if let Some(self_access) = hir_fn.self_param(db).map(|sp| sp.access(db)) {
-     trait_: hir::Trait,
-     trait_method_name: &ast::NameRef,
- ) -> Option<hir::Function> {
--    if let Some(hir::AssocItem::Function(method)) =
--        trait_.items(db).into_iter().find(|item: &hir::AssocItem| {
-+    if let Some(hir::AssocItem::Function(method)) = trait_.items(db).into_iter().find(|item: &hir::AssocItem| {
              item.name(db)
                  .map(|name| name.as_str() == trait_method_name.text().trim_start_matches("r#"))
                  .unwrap_or(false)

@@ -85,12 +85,28 @@ impl UpmapFromRaFixture for NavigationTarget {
         let virtual_file_id = self.file_id;
         Ok(NavigationTarget {
             file_id: real_file_id,
-            full_range: self.full_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-            focus_range: self.focus_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
+            full_range: self.full_range.upmap_from_ra_fixture(
+                analysis,
+                virtual_file_id,
+                real_file_id,
+            )?,
+            focus_range: self.focus_range.upmap_from_ra_fixture(
+                analysis,
+                virtual_file_id,
+                real_file_id,
+            )?,
             name: self.name.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             kind: self.kind.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-            container_name: self.container_name.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-            description: self.description.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
+            container_name: self.container_name.upmap_from_ra_fixture(
+                analysis,
+                virtual_file_id,
+                real_file_id,
+            )?,
+            description: self.description.upmap_from_ra_fixture(
+                analysis,
+                virtual_file_id,
+                real_file_id,
+            )?,
             docs: self.docs.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             alias: self.alias.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
         })
@@ -211,12 +227,14 @@ impl TryToNav for FileSymbol {
     ) -> Option<UpmappingResult<NavigationTarget>> {
         let db = sema.db;
         let display_target = self.def.krate(db).to_display_target(db);
-        Some(orig_range_with_focus_r(
-            db,
-            self.loc.hir_file_id,
-            self.loc.ptr.text_range(),
-            Some(self.loc.name_ptr.text_range()),
-        ).map(|(FileRange { file_id, range: full_range }, focus_range)| {
+        Some(
+            orig_range_with_focus_r(
+                db,
+                self.loc.hir_file_id,
+                self.loc.ptr.text_range(),
+                Some(self.loc.name_ptr.text_range()),
+            )
+            .map(|(FileRange { file_id, range: full_range }, focus_range)| {
                 NavigationTarget {
                     file_id,
                     name: self
@@ -259,7 +277,8 @@ impl TryToNav for FileSymbol {
                     },
                     docs: None,
                 }
-            }))
+            }),
+        )
     }
 }
 
@@ -413,14 +432,21 @@ where
     ) -> Option<UpmappingResult<NavigationTarget>> {
         let db = sema.db;
         let src = self.source(db)?;
-        Some(NavigationTarget::from_named(db, src.as_ref().map(|it| it as &dyn ast::HasName), D::KIND).map(|mut res| {
+        Some(
+            NavigationTarget::from_named(
+                db,
+                src.as_ref().map(|it| it as &dyn ast::HasName),
+                D::KIND,
+            )
+            .map(|mut res| {
                 res.docs = self.docs(db);
                 res.description = hir::attach_db(db, || {
                     Some(self.display(db, self.krate(db).to_display_target(db)).to_string())
                 });
                 res.container_name = self.container_name(db);
                 res
-            }))
+            }),
+        )
     }
 }
 
@@ -557,10 +583,17 @@ impl TryToNav for hir::Macro {
             Either::Left(it) => it,
             Either::Right(it) => it,
         };
-        Some(NavigationTarget::from_named(db, src.as_ref().with_value(name_owner), self.kind(db).into()).map(|mut res| {
+        Some(
+            NavigationTarget::from_named(
+                db,
+                src.as_ref().with_value(name_owner),
+                self.kind(db).into(),
+            )
+            .map(|mut res| {
                 res.docs = self.docs(db);
                 res
-            }))
+            }),
+        )
     }
 }
 
@@ -836,8 +869,11 @@ impl<T> IntoIterator for UpmappingResult<T> {
     type IntoIter = <ArrayVec<T, 2> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.def_site.into_iter().chain(Some(self.call_site)).collect::<ArrayVec<_, 2>>().into_iter(
-        )
+        self.def_site
+            .into_iter()
+            .chain(Some(self.call_site))
+            .collect::<ArrayVec<_, 2>>()
+            .into_iter()
     }
 }
 
@@ -988,7 +1024,10 @@ fn orig_range(
     value: &SyntaxNode,
 ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
     UpmappingResult {
-        call_site: (InFile::new(hir_file, value).original_file_range_rooted(db).into_file_id(db), None),
+        call_site: (
+            InFile::new(hir_file, value).original_file_range_rooted(db).into_file_id(db),
+            None,
+        ),
         def_site: None,
     }
 }
@@ -999,7 +1038,10 @@ fn orig_range_r(
     value: TextRange,
 ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
     UpmappingResult {
-        call_site: (InFile::new(hir_file, value).original_node_file_range(db).0.into_file_id(db), None),
+        call_site: (
+            InFile::new(hir_file, value).original_node_file_range(db).0.into_file_id(db),
+            None,
+        ),
         def_site: None,
     }
 }

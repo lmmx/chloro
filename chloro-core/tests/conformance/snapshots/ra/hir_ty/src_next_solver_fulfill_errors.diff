@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50444 bytes
+Chloro size:   50514 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -64,13 +64,12 @@ Rustfmt size:  50684 bytes
          } else {
              ControlFlow::Continue(())
          }
-         goal: &inspect::InspectGoal<'_, 'db>,
      ) -> ControlFlow<PredicateObligation<'db>> {
          let interner = goal.infcx().interner;
--        if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
+         if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
 -            && !projection_clause.bound_vars().is_empty()
 -        {
-+        if let Some(projection_clause) = goal.goal().predicate.as_projection_clause() && !projection_clause.bound_vars().is_empty() {
++            && !projection_clause.bound_vars().is_empty() {
              let pred = projection_clause.map_bound(|proj| proj.projection_term.trait_ref(interner));
              let obligation = Obligation::new(
                  interner,
@@ -198,30 +197,6 @@ Rustfmt size:  50684 bytes
      impl<'a, 'db> WfPredicates<'a, 'db> {
          fn interner(&self) -> DbInterner<'db> {
              self.infcx.interner
-                 return Default::default();
-             }
- 
--            self.interner()
--                .predicates_of(def_id)
--                .iter_instantiated(self.interner(), args)
--                .map(|pred| {
-+            self.interner().predicates_of(def_id).iter_instantiated(self.interner(), args).map(|pred| {
-                     let cause = ObligationCause::new();
-                     Obligation::with_depth(
-                         self.interner(),
-                         self.param_env,
-                         pred,
-                     )
--                })
--                .filter(|pred| !pred.has_escaping_bound_vars())
--                .collect()
-+                }).filter(
-+                |pred| !pred.has_escaping_bound_vars(),
-+            ).collect(
-+            )
-         }
- 
-         fn add_wf_preds_for_dyn_ty(
              // am looking forward to the future here.
              if !data.has_escaping_bound_vars() && !region.has_escaping_bound_vars() {
                  let implicit_bounds = object_region_bounds(self.interner(), data);
@@ -255,21 +230,3 @@ Rustfmt size:  50684 bytes
      /// Given an object type like `SomeTrait + Send`, computes the lifetime
      /// bounds that must hold on the elided self type. These are derived
      /// from the declarations of `SomeTrait`, `Send`, and friends -- if
-             .iter()
-             .map(|predicate| predicate.with_self_ty(interner, erased_self_ty));
- 
--        rustc_type_ir::elaborate::elaborate(interner, predicates)
--            .filter_map(|pred| {
-+        rustc_type_ir::elaborate::elaborate(interner, predicates).filter_map(|pred| {
-                 debug!(?pred);
-                 match pred.kind().skip_binder() {
-                     ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
-                     | ClauseKind::UnstableFeature(_)
-                     | ClauseKind::ConstEvaluatable(_) => None,
-                 }
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- }

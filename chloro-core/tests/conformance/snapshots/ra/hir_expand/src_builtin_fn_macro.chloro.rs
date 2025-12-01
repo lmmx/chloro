@@ -794,8 +794,7 @@ fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
             TtElement::Leaf(l) => Err(*l.span()),
             TtElement::Subtree(tt, _) => Err(tt.delimiter.open.cover(tt.delimiter.close)),
         }
-    })(
-    ).map_err(
+    })().map_err(
         |span| ExpandError::other(span, "expected string literal"),
     )
 }

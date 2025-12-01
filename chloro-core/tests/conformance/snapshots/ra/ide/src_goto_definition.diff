@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   69676 bytes
+Chloro size:   69730 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -82,23 +82,6 @@ Rustfmt size:  71259 bytes
      // that is we are the string input of it
      if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
          .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
-             let trait_ = assoc.implemented_trait(db)?;
-             let name = def.name(db)?;
-             let discriminant_value = discriminant(&assoc);
--            trait_
--                .items(db)
--                .iter()
--                .filter(|itm| discriminant(*itm) == discriminant_value)
--                .find_map(|itm| (itm.name(db)? == name).then(|| itm.try_to_nav(sema)).flatten())
--                .map(|it| it.collect())
-+            trait_.items(db).iter().filter(|itm| discriminant(*itm) == discriminant_value).find_map(
-+                |itm| (itm.name(db)? == name).then(|| itm.try_to_nav(sema)).flatten(),
-+            ).map(
-+                |it| it.collect(),
-+            )
-         }
-     }
- }
      token: &SyntaxToken,
  ) -> Option<Vec<NavigationTarget>> {
      match token.kind() {
@@ -107,19 +90,6 @@ Rustfmt size:  71259 bytes
          T![fn] | T![async] | T![try] | T![return] => nav_for_exit_points(sema, token),
          T![loop] | T![while] | T![break] | T![continue] => nav_for_break_points(sema, token),
          T![for] if token.parent().and_then(ast::ForExpr::cast).is_some() => {
-         None
-     };
- 
--    sema.descend_into_macros(token.clone())
--        .into_iter()
--        .filter_map(find_ancestors)
--        .collect_vec()
--        .into()
-+    sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec().into(
-+    )
- }
- 
- fn nav_for_break_points(
  
  #[cfg(test)]
  mod tests {

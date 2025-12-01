@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   10920 bytes
+Chloro size:   10958 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -95,22 +95,3 @@ Rustfmt size:  11331 bytes
      }
  
      fn goals_to_obligations(&self, goals: Vec<Goal<'db, Predicate<'db>>>) -> InferOk<'db, ()> {
-         InferOk {
-             value: (),
--            obligations: goals
--                .into_iter()
--                .map(|goal| {
-+            obligations: goals.into_iter().map(|goal| {
-                     Obligation::new(
-                         self.infcx.interner,
-                         self.cause.clone(),
-                         goal.param_env,
-                         goal.predicate,
-                     )
--                })
--                .collect(),
-+                }).collect(
-+            ),
-         }
-     }
- }

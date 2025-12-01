@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7219 bytes
-Chloro size:   6942 bytes
+Chloro size:   6895 bytes
 Rustfmt size:  7310 bytes
 
 ✗ Outputs DIFFER
@@ -30,7 +30,7 @@ Rustfmt size:  7310 bytes
      // Use more accurate position if available.
      let display_range = ctx.resolve_precise_location(&d.node, d.precise_location);
      Diagnostic::new(
-         DiagnosticCode::Ra(
+-        DiagnosticCode::Ra(
 -            d.kind,
 -            if d.error {
 -                Severity::Error
@@ -38,18 +38,11 @@ Rustfmt size:  7310 bytes
 -                Severity::WeakWarning
 -            },
 -        ),
-+        d.kind,
-+        if d.error {
-+        Severity::Error
-+    } else {
-+        Severity::WeakWarning
-+    },
-+    ),
++        DiagnosticCode::Ra(d.kind, if d.error { Severity::Error } else { Severity::WeakWarning }),
          d.message.clone(),
          display_range,
-+    ).stable(
      )
--    .stable()
+     .stable()
  }
  
 -// Diagnostic: macro-def-error
@@ -58,15 +51,6 @@ Rustfmt size:  7310 bytes
  pub(crate) fn macro_def_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroDefError) -> Diagnostic {
      // Use more accurate position if available.
      let display_range =
-         DiagnosticCode::Ra("macro-def-error", Severity::Error),
-         d.message.clone(),
-         display_range,
-+    ).stable(
-     )
--    .stable()
- }
- 
- #[cfg(test)]
          tests::{check_diagnostics, check_diagnostics_with_config},
          DiagnosticsConfig,
      };

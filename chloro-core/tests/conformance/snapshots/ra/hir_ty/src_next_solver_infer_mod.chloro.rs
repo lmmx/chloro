@@ -198,9 +198,10 @@ impl<'db> InferCtxtInner<'db> {
 
     #[inline]
     pub fn unwrap_region_constraints(&mut self) -> RegionConstraintCollector<'db, '_> {
-        self.region_constraint_storage.as_mut().expect("region constraints already solved").with_log(
-            &mut self.undo_log,
-        )
+        self.region_constraint_storage
+            .as_mut()
+            .expect("region constraints already solved")
+            .with_log(&mut self.undo_log)
     }
 }
 
@@ -658,10 +659,14 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_const_vid(&self) -> ConstVid {
-        self.inner.borrow_mut().const_unification_table().new_key(ConstVariableValue::Unknown {
-            origin: ConstVariableOrigin {},
-            universe: self.universe(),
-        }).vid
+        self.inner
+            .borrow_mut()
+            .const_unification_table()
+            .new_key(ConstVariableValue::Unknown {
+                origin: ConstVariableOrigin {},
+                universe: self.universe(),
+            })
+            .vid
     }
 
     pub fn next_const_var_with_origin(&self, origin: ConstVariableOrigin) -> Const<'db> {
@@ -884,9 +889,13 @@ impl<'db> InferCtxt<'db> {
     pub fn shallow_resolve_const(&self, ct: Const<'db>) -> Const<'db> {
         match ct.kind() {
             ConstKind::Infer(infer_ct) => match infer_ct {
-                InferConst::Var(vid) => self.inner.borrow_mut().const_unification_table().probe_value(vid).known().unwrap_or(
-                    ct,
-                ),
+                InferConst::Var(vid) => self
+                    .inner
+                    .borrow_mut()
+                    .const_unification_table()
+                    .probe_value(vid)
+                    .known()
+                    .unwrap_or(ct),
                 InferConst::Fresh(_) => ct,
             },
             ConstKind::Param(_)

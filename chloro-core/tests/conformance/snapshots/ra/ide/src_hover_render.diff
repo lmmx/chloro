@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53826 bytes
+Chloro size:   53851 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -151,21 +151,6 @@ Rustfmt size:  53876 bytes
                      KeywordHint {
                          description,
                          keyword_mod,
- fn pwr2_to_exponent(num: u128) -> String {
-     const DIGITS: [char; 10] = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
-     assert_eq!(num.count_ones(), 1);
--    num.trailing_zeros()
--        .to_string()
--        .chars()
--        .map(|c| c.to_digit(10).unwrap() as usize)
--        .map(|idx| DIGITS[idx])
--        .collect::<String>()
-+    num.trailing_zeros().to_string().chars().map(|c| c.to_digit(10).unwrap() as usize).map(
-+        |idx| DIGITS[idx],
-+    ).collect::<String>(
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use super::*;

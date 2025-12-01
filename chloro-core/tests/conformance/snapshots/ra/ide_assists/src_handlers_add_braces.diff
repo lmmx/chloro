@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5189 bytes
-Chloro size:   4617 bytes
+Chloro size:   4633 bytes
 Rustfmt size:  5232 bytes
 
 ✗ Outputs DIFFER
@@ -51,20 +51,6 @@ Rustfmt size:  5232 bytes
  pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let (expr_type, expr) = get_replacement_node(ctx)?;
  
-     acc.add(
-         AssistId::refactor_rewrite("add_braces"),
-         match expr_type {
--            ParentType::ClosureExpr => "Add braces to this closure body",
--            ParentType::MatchArmExpr => "Add braces to this match arm expression",
--            ParentType::Assignment => "Add braces to this assignment expression",
--        },
-+        ParentType::ClosureExpr => "Add braces to this closure body",
-+        ParentType::MatchArmExpr => "Add braces to this match arm expression",
-+        ParentType::Assignment => "Add braces to this assignment expression",
-+    },
-         expr.syntax().text_range(),
-         |builder| {
-             let make = SyntaxFactory::with_mappings();
              let new_expr = expr.reset_indent().indent(1.into());
              let block_expr = make.block_expr(None, Some(new_expr));
  

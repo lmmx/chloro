@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4004 bytes
-Chloro size:   3942 bytes
+Chloro size:   4004 bytes
 Rustfmt size:  4004 bytes
 
 ✗ Outputs DIFFER
@@ -50,45 +50,6 @@ Rustfmt size:  4004 bytes
  /// This returns `Vec` because a module may be included from several places.
  pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
      let sema = Semantics::new(db);
-     }
- 
-     match module {
--        Some(module) => sema
--            .to_def(&module)
--            .into_iter()
--            .flat_map(|module| NavigationTarget::from_module_to_decl(db, module))
--            .collect(),
--        None => sema
--            .file_to_module_defs(position.file_id)
--            .flat_map(|module| NavigationTarget::from_module_to_decl(db, module))
--            .collect(),
-+        Some(module) => sema.to_def(&module).into_iter().flat_map(
-+            |module| NavigationTarget::from_module_to_decl(db, module),
-+        ).collect(
-+        ),
-+        None => sema.file_to_module_defs(position.file_id).flat_map(
-+            |module| NavigationTarget::from_module_to_decl(db, module),
-+        ).collect(
-+        ),
-     }
- }
- 
- /// This returns `Vec` because a module may be included from several places.
- pub(crate) fn crates_for(db: &RootDatabase, file_id: FileId) -> Vec<Crate> {
--    db.relevant_crates(file_id)
--        .iter()
--        .copied()
--        .filter(|&crate_id| {
-+    db.relevant_crates(file_id).iter().copied().filter(|&crate_id| {
-             crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
--        })
--        .sorted()
--        .collect()
-+        }).sorted(
-+    ).collect(
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use ide_db::FileRange;

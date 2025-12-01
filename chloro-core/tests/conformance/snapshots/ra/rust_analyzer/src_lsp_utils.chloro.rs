@@ -248,9 +248,10 @@ pub(crate) fn all_edits_are_disjoint(
     };
     edit_ranges.extend(additional_edits.iter().map(|edit| edit.range));
     edit_ranges.sort_by_key(|range| (range.start, range.end));
-    edit_ranges.iter().zip(edit_ranges.iter().skip(1)).all(
-        |(previous, next)| previous.end <= next.start,
-    )
+    edit_ranges
+        .iter()
+        .zip(edit_ranges.iter().skip(1))
+        .all(|(previous, next)| previous.end <= next.start)
 }
 
 #[cfg(test)]

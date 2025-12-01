@@ -320,9 +320,9 @@ fn binds_name(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
         ast::Pat::SlicePat(pat) => pat.pats().any(binds_name_v),
         ast::Pat::TuplePat(it) => it.fields().any(binds_name_v),
         ast::Pat::TupleStructPat(it) => it.fields().any(binds_name_v),
-        ast::Pat::RecordPat(it) => it.record_pat_field_list().is_some_and(
-            |rpfl| rpfl.fields().flat_map(|rpf| rpf.pat()).any(binds_name_v),
-        ),
+        ast::Pat::RecordPat(it) => it
+            .record_pat_field_list()
+            .is_some_and(|rpfl| rpfl.fields().flat_map(|rpf| rpf.pat()).any(binds_name_v)),
         ast::Pat::RefPat(pat) => pat.pat().is_some_and(binds_name_v),
         ast::Pat::BoxPat(pat) => pat.pat().is_some_and(binds_name_v),
         ast::Pat::ParenPat(pat) => pat.pat().is_some_and(binds_name_v),
@@ -331,9 +331,9 @@ fn binds_name(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
 }
 
 fn is_sad_pat(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
-    sema.type_of_pat(pat).and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted())).is_some_and(
-        |it| does_pat_match_variant(pat, &it.sad_pattern()),
-    )
+    sema.type_of_pat(pat)
+        .and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted()))
+        .is_some_and(|it| does_pat_match_variant(pat, &it.sad_pattern()))
 }
 
 fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) {

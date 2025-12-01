@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23615 bytes
-Chloro size:   22776 bytes
+Chloro size:   22788 bytes
 Rustfmt size:  23945 bytes
 
 ✗ Outputs DIFFER
@@ -91,17 +91,12 @@ Rustfmt size:  23945 bytes
  
              if let Some(tok) = strukt
                  .generic_param_list()
-         }
-     }
- 
--    if let Some(tok) = record_fields
--        .l_curly_token()
--        .and_then(|tok| tok.prev_token())
+     if let Some(tok) = record_fields
+         .l_curly_token()
+         .and_then(|tok| tok.prev_token())
 -        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE)
 -    {
-+    if let Some(tok) = record_fields.l_curly_token().and_then(|tok| tok.prev_token()).filter(
-+        |tok| tok.kind() == SyntaxKind::WHITESPACE,
-+    ) {
++        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE) {
          edit.delete(tok.text_range())
      }
  }

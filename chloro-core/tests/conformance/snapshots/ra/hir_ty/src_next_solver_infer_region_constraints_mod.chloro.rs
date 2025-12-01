@@ -567,9 +567,9 @@ impl<'db> RegionConstraintCollector<'db, '_> {
 
     /// See `InferCtxt::region_constraints_added_in_snapshot`.
     pub fn region_constraints_added_in_snapshot(&self, mark: &Snapshot) -> bool {
-        self.undo_log.region_constraints_in_snapshot(mark).any(
-            |elt| matches!(elt, AddConstraint(_)),
-        )
+        self.undo_log
+            .region_constraints_in_snapshot(mark)
+            .any(|elt| matches!(elt, AddConstraint(_)))
     }
 
     #[inline]

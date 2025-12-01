@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18922 bytes
-Chloro size:   18958 bytes
+Chloro size:   18923 bytes
 Rustfmt size:  19198 bytes
 
 ✗ Outputs DIFFER
@@ -54,22 +54,6 @@ Rustfmt size:  19198 bytes
                  )
                  .to_smolstr(),
          );
--        self.with_container_name(impl_name.as_deref().map(Symbol::intern), |s| {
-+        self.with_container_name(
-+            impl_name.as_deref().map(Symbol::intern),
-+            |s| {
-             for &(ref name, assoc_item_id) in &impl_id.impl_items(self.db).items {
-                 if s.collect_pub_only && s.db.assoc_visibility(assoc_item_id) != Visibility::Public
-                 {
- 
-                 s.push_assoc_item(assoc_item_id, name, None)
-             }
--        })
-+        },
-+        )
-     }
- 
-     fn collect_from_trait(&mut self, trait_id: TraitId, trait_do_not_complete: Complete) {
      {
          let loc = id.lookup(self.db);
          let source = loc.source(self.db);

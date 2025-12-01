@@ -163,17 +163,21 @@ pub fn generics_require_sized_self(db: &dyn HirDatabase, def: GenericDefId) -> b
 }
 
 fn predicates_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
-    db.generic_predicates(trait_.into()).iter().any(
-        |pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No),
-    )
+    db.generic_predicates(trait_.into())
+        .iter()
+        .any(|pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No))
 }
 
 fn bounds_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
     let trait_data = trait_.trait_items(db);
-    trait_data.items.iter().filter_map(|(_, it)| match *it {
+    trait_data
+        .items
+        .iter()
+        .filter_map(|(_, it)| match *it {
             AssocItemId::TypeAliasId(id) => Some(associated_ty_item_bounds(db, id)),
             _ => None,
-        }).any(|bounds| {
+        })
+        .any(|bounds| {
             bounds.skip_binder().iter().any(|pred| match pred.skip_binder() {
                 rustc_type_ir::ExistentialPredicate::Trait(it) => it.args.iter().any(|arg| {
                     contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)

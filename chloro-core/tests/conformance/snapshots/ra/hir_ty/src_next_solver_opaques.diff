@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3353 bytes
-Chloro size:   2996 bytes
+Chloro size:   3319 bytes
 Rustfmt size:  3353 bytes
 
 ✗ Outputs DIFFER
@@ -25,20 +25,19 @@ Rustfmt size:  3353 bytes
              ExternalConstraintsData {
 -                region_constraints: self.region_constraints.clone().try_fold_with(folder)?,
 -                opaque_types: self
--                    .opaque_types
--                    .iter()
--                    .cloned()
--                    .map(|opaque| opaque.try_fold_with(folder))
--                    .collect::<Result<_, F::Error>>()?,
--                normalization_nested_goals: self
--                    .normalization_nested_goals
--                    .clone()
--                    .try_fold_with(folder)?,
--            },
 +            region_constraints: self.region_constraints.clone().try_fold_with(folder)?,
-+            opaque_types: self.opaque_types.iter().cloned().map(|opaque| opaque.try_fold_with(folder)).collect::<Result<_, F::Error>>(
-+            )?,
-+            normalization_nested_goals: self.normalization_nested_goals.clone().try_fold_with(folder)?,
++            opaque_types: self
+                     .opaque_types
+                     .iter()
+                     .cloned()
+                     .map(|opaque| opaque.try_fold_with(folder))
+                     .collect::<Result<_, F::Error>>()?,
+-                normalization_nested_goals: self
++            normalization_nested_goals: self
+                     .normalization_nested_goals
+                     .clone()
+                     .try_fold_with(folder)?,
+-            },
 +        },
          ))
      }
@@ -49,19 +48,19 @@ Rustfmt size:  3353 bytes
              ExternalConstraintsData {
 -                region_constraints: self.region_constraints.clone().fold_with(folder),
 -                opaque_types: self
--                    .opaque_types
--                    .iter()
--                    .cloned()
--                    .map(|opaque| opaque.fold_with(folder))
--                    .collect(),
--                normalization_nested_goals: self
--                    .normalization_nested_goals
--                    .clone()
--                    .fold_with(folder),
--            },
 +            region_constraints: self.region_constraints.clone().fold_with(folder),
-+            opaque_types: self.opaque_types.iter().cloned().map(|opaque| opaque.fold_with(folder)).collect(),
-+            normalization_nested_goals: self.normalization_nested_goals.clone().fold_with(folder),
++            opaque_types: self
+                     .opaque_types
+                     .iter()
+                     .cloned()
+                     .map(|opaque| opaque.fold_with(folder))
+                     .collect(),
+-                normalization_nested_goals: self
++            normalization_nested_goals: self
+                     .normalization_nested_goals
+                     .clone()
+                     .fold_with(folder),
+-            },
 +        },
          )
      }

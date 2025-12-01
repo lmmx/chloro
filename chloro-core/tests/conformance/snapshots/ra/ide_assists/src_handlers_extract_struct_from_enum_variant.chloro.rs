@@ -149,7 +149,12 @@ fn extract_field_list_if_applicable(
 }
 
 fn existing_definition(db: &RootDatabase, variant_name: &ast::Name, variant: &Variant) -> bool {
-    variant.parent_enum(db).module(db).scope(db, None).into_iter().filter(|(_, def)| match def {
+    variant
+        .parent_enum(db)
+        .module(db)
+        .scope(db, None)
+        .into_iter()
+        .filter(|(_, def)| match def {
             // only check type-namespace
             hir::ScopeDef::ModuleDef(def) => matches!(
                 def,
@@ -161,9 +166,8 @@ fn existing_definition(db: &RootDatabase, variant_name: &ast::Name, variant: &Va
                     | ModuleDef::BuiltinType(_)
             ),
             _ => false,
-        }).any(
-        |(name, _)| name.as_str() == variant_name.text().trim_start_matches("r#"),
-    )
+        })
+        .any(|(name, _)| name.as_str() == variant_name.text().trim_start_matches("r#"))
 }
 
 fn extract_generic_params(
@@ -325,7 +329,8 @@ fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList
 
 fn take_all_comments(node: &SyntaxNode) -> Vec<SyntaxElement> {
     let mut remove_next_ws = false;
-    node.children_with_tokens().filter_map(move |child| match child.kind() {
+    node.children_with_tokens()
+        .filter_map(move |child| match child.kind() {
             COMMENT => {
                 remove_next_ws = true;
                 child.detach();
@@ -340,8 +345,8 @@ fn take_all_comments(node: &SyntaxNode) -> Vec<SyntaxElement> {
                 remove_next_ws = false;
                 None
             }
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn apply_references(
@@ -371,7 +376,8 @@ fn process_references(
 ) -> Vec<(ast::PathSegment, SyntaxNode, Option<(ImportScope, hir::ModPath)>)> {
     // we have to recollect here eagerly as we are about to edit the tree we need to calculate the changes
     // and corresponding nodes up front
-    refs.into_iter().flat_map(|reference| {
+    refs.into_iter()
+        .flat_map(|reference| {
             let (segment, scope_node, module) = reference_to_node(&ctx.sema, reference)?;
             let segment = builder.make_mut(segment);
             let scope_node = builder.make_syntax_mut(scope_node);
@@ -392,8 +398,8 @@ fn process_references(
                 }
             }
             Some((segment, scope_node, None))
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn reference_to_node(

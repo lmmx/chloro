@@ -17,14 +17,6 @@ Rustfmt size:  1596 bytes
  pub(crate) fn parenthesized_generic_args_without_fn_trait(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::ParenthesizedGenericArgsWithoutFnTrait,
-         DiagnosticCode::RustcHardError("E0214"),
-         "parenthesized type parameters may only be used with a `Fn` trait",
-         d.args.map(Into::into),
-+    ).stable(
-     )
--    .stable()
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

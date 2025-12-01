@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26763 bytes
-Chloro size:   25969 bytes
+Chloro size:   25991 bytes
 Rustfmt size:  26763 bytes
 
 ✗ Outputs DIFFER
@@ -77,22 +77,6 @@ Rustfmt size:  26763 bytes
          let mut editor = edit.make_editor(source);
          for r in refs.iter().rev() {
              if let Some((old_node, new_node)) = r
- 
- fn generate_names(fields: impl Iterator<Item = ast::TupleField>) -> Vec<ast::Name> {
-     let make = SyntaxFactory::without_mappings();
--    fields
--        .enumerate()
--        .map(|(i, _)| {
-+    fields.enumerate().map(|(i, _)| {
-             let idx = i + 1;
-             make.name(&format!("field{idx}"))
--        })
--        .collect()
-+        }).collect(
-+    )
- }
- 
- fn generate_record_pat_list(
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

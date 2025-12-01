@@ -191,11 +191,14 @@ fn compute_return_type_match(
 ) -> CompletionRelevanceReturnType {
     if match_types(ctx.completion, &self_type, ret_type).is_some() {
         CompletionRelevanceReturnType::DirectConstructor
-    } else if ret_type.type_arguments().any(
-        |ret_type_arg| match_types(ctx.completion, &self_type, &ret_type_arg).is_some(),
-    ) {
+    } else if ret_type
+        .type_arguments()
+        .any(|ret_type_arg| match_types(ctx.completion, &self_type, &ret_type_arg).is_some()) {
         CompletionRelevanceReturnType::Constructor
-    } else if ret_type.as_adt().map(|adt| adt.name(db).as_str().ends_with("Builder")).unwrap_or(false) {
+    } else if ret_type
+        .as_adt()
+        .map(|adt| adt.name(db).as_str().ends_with("Builder"))
+        .unwrap_or(false) {
         CompletionRelevanceReturnType::Builder
     } else {
         CompletionRelevanceReturnType::Other

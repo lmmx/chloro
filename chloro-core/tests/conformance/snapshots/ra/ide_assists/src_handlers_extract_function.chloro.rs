@@ -420,8 +420,12 @@ struct LocalUsages(ide_db::search::UsageSearchResult);
 
 impl LocalUsages {
     fn find_local_usages(ctx: &AssistContext<'_>, var: Local) -> Self {
-        Self(Definition::Local(var).usages(&ctx.sema).in_scope(&SearchScope::single_file(ctx.file_id())).all(
-        ))
+        Self(
+            Definition::Local(var)
+                .usages(&ctx.sema)
+                .in_scope(&SearchScope::single_file(ctx.file_id()))
+                .all(),
+        )
     }
 
     fn iter(&self) -> impl Iterator<Item = &FileReference> + '_ {
@@ -672,7 +676,9 @@ impl FunctionBody {
                         ast::Stmt::LetStmt(stmt) => stmt.initializer(),
                     })
                     .for_each(|expr| walk_expr(&expr, cb));
-                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
+                if let Some(expr) = parent
+                    .tail_expr()
+                    .filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     walk_expr(&expr, cb);
                 }
             }
@@ -692,7 +698,9 @@ impl FunctionBody {
                         ast::Stmt::LetStmt(stmt) => stmt.initializer(),
                     })
                     .for_each(|expr| preorder_expr(&expr, cb));
-                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
+                if let Some(expr) = parent
+                    .tail_expr()
+                    .filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     preorder_expr(&expr, cb);
                 }
             }
@@ -725,7 +733,9 @@ impl FunctionBody {
                             }
                         }
                     });
-                if let Some(expr) = parent.tail_expr().filter(|it| text_range.contains_range(it.syntax().text_range())) {
+                if let Some(expr) = parent
+                    .tail_expr()
+                    .filter(|it| text_range.contains_range(it.syntax().text_range())) {
                     walk_patterns_in_expr(&expr, cb);
                 }
             }
@@ -968,9 +978,9 @@ impl FunctionBody {
     ) -> impl Iterator<Item = OutlivedLocal> + 'a {
         let parent = parent.clone();
         let range = self.text_range();
-        locals_defined_in_body(&ctx.sema, self).into_iter().filter_map(
-            move |local| local_outlives_body(ctx, range, local, &parent),
-        )
+        locals_defined_in_body(&ctx.sema, self)
+            .into_iter()
+            .filter_map(move |local| local_outlives_body(ctx, range, local, &parent))
     }
 
     /// Analyses the function body for external control flow.
@@ -1070,15 +1080,19 @@ impl FunctionBody {
         container_info: &ContainerInfo<'db>,
         locals: FxIndexSet<Local>,
     ) -> Vec<Param<'db>> {
-        locals.into_iter().sorted().map(|local| (local, local.primary_source(ctx.db()))).filter(
-            |(_, src)| is_defined_outside_of_body(ctx, self, src),
-        ).filter_map(|(local, src)| match src.into_ident_pat() {
+        locals
+            .into_iter()
+            .sorted()
+            .map(|local| (local, local.primary_source(ctx.db())))
+            .filter(|(_, src)| is_defined_outside_of_body(ctx, self, src))
+            .filter_map(|(local, src)| match src.into_ident_pat() {
                 Some(src) => Some((local, src)),
                 None => {
                     stdx::never!(false, "Local::is_self returned false, but source is SelfParam");
                     None
                 }
-            }).map(|(var, src)| {
+            })
+            .map(|(var, src)| {
                 let usages = LocalUsages::find_local_usages(ctx, var);
                 let ty = var.ty(ctx.db());
 
@@ -1096,8 +1110,8 @@ impl FunctionBody {
                 // as the function will reuse it in the next iteration.
                 let move_local = (!has_usages && defined_outside_parent_loop) || ty.is_reference();
                 Param { var, ty, move_local, requires_mut, is_copy }
-            }).collect(
-        )
+            })
+            .collect()
     }
 
     fn has_usages_after_body(&self, usages: &LocalUsages) -> bool {
@@ -1155,9 +1169,10 @@ fn has_exclusive_usages(
     usages: &LocalUsages,
     body: &FunctionBody,
 ) -> bool {
-    usages.iter().filter(|reference| body.contains_range(reference.range)).any(
-        |reference| reference_is_exclusive(reference, body, ctx),
-    )
+    usages
+        .iter()
+        .filter(|reference| body.contains_range(reference.range))
+        .any(|reference| reference_is_exclusive(reference, body, ctx))
 }
 
 /// checks if this reference requires `&mut` access inside node
@@ -1382,9 +1397,9 @@ fn find_non_trait_impl(trait_impl: &SyntaxNode) -> Option<ast::Impl> {
     let impl_type = Some(impl_type_name(&as_impl)?);
 
     let siblings = trait_impl.parent()?.children();
-    siblings.filter_map(ast::Impl::cast).find(
-        |s| impl_type_name(s) == impl_type && !is_trait_impl(s),
-    )
+    siblings
+        .filter_map(ast::Impl::cast)
+        .find(|s| impl_type_name(s) == impl_type && !is_trait_impl(s))
 }
 
 fn last_impl_member(impl_node: &ast::Impl) -> Option<SyntaxNode> {
@@ -1404,7 +1419,8 @@ fn impl_type_name(impl_node: &ast::Impl) -> Option<String> {
 fn fixup_call_site(builder: &mut SourceChangeBuilder, body: &FunctionBody) {
     let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
 
-    if let Some(parent_match_arm) = parent_match_arm && parent_match_arm.comma_token().is_none() {
+    if let Some(parent_match_arm) = parent_match_arm
+        && parent_match_arm.comma_token().is_none() {
         let parent_match_arm = builder.make_mut(parent_match_arm);
         ted::append_child_raw(parent_match_arm.syntax(), make::token(T![,]));
     }
@@ -1455,7 +1471,9 @@ fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -
         make::let_stmt(bindings, None, Some(expr)).syntax().clone_for_update()
     } else if parent_match_arm.as_ref().is_some() {
         expr.syntax().clone()
-    } else if parent_match_arm.as_ref().is_none() && fun.ret_ty.is_unit() && (!fun.outliving_locals.is_empty() || !expr.is_block_like()) {
+    } else if parent_match_arm.as_ref().is_none()
+        && fun.ret_ty.is_unit()
+        && (!fun.outliving_locals.is_empty() || !expr.is_block_like()) {
         make::expr_stmt(expr).syntax().clone_for_update()
     } else {
         expr.syntax().clone()

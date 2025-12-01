@@ -36,42 +36,27 @@ pub(crate) struct InspectGoal<'a, 'db> {
 
 impl<'a, 'db> std::fmt::Debug for InspectGoal<'a, 'db> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("InspectGoal").field("depth", &self.depth).field(
-            "orig_values",
-            &self.orig_values,
-        ).field(
-            "goal",
-            &self.goal,
-        ).field(
-            "result",
-            &self.result,
-        ).field(
-            "final_revision",
-            &self.final_revision,
-        ).field(
-            "normalizes_to_term_hack",
-            &self.normalizes_to_term_hack,
-        ).field(
-            "source",
-            &self.source,
-        ).finish(
-        )
+        f.debug_struct("InspectGoal")
+            .field("depth", &self.depth)
+            .field("orig_values", &self.orig_values)
+            .field("goal", &self.goal)
+            .field("result", &self.result)
+            .field("final_revision", &self.final_revision)
+            .field("normalizes_to_term_hack", &self.normalizes_to_term_hack)
+            .field("source", &self.source)
+            .finish()
     }
 }
 
 impl<'a, 'db> std::fmt::Debug for InspectCandidate<'a, 'db> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("InspectCandidate").field("kind", &self.kind).field("steps", &self.steps).field(
-            "final_state",
-            &self.final_state,
-        ).field(
-            "result",
-            &self.result,
-        ).field(
-            "shallow_certainty",
-            &self.shallow_certainty,
-        ).finish(
-        )
+        f.debug_struct("InspectCandidate")
+            .field("kind", &self.kind)
+            .field("steps", &self.steps)
+            .field("final_state", &self.final_state)
+            .field("result", &self.result)
+            .field("shallow_certainty", &self.shallow_certainty)
+            .finish()
     }
 }
 
@@ -205,10 +190,10 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
             let _ = term_hack.constrain_and(infcx, param_env, |_| {});
         }
 
-        instantiated_goals.into_iter().map(
-            |(source, goal)| self.instantiate_proof_tree_for_nested_goal(source, goal),
-        ).collect(
-        )
+        instantiated_goals
+            .into_iter()
+            .map(|(source, goal)| self.instantiate_proof_tree_for_nested_goal(source, goal))
+            .collect()
     }
 
     /// Instantiate the args of an impl if this candidate came from a

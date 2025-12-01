@@ -258,16 +258,18 @@ impl TraitImpls {
         &self,
         fp: TyFingerprint,
     ) -> impl Iterator<Item = ImplId> + '_ {
-        self.map.values().flat_map(move |impls| impls.get(&Some(fp)).into_iter()).flat_map(
-            |it| it.iter().copied(),
-        )
+        self.map
+            .values()
+            .flat_map(move |impls| impls.get(&Some(fp)).into_iter())
+            .flat_map(|it| it.iter().copied())
     }
 
     /// Queries all impls of the given trait.
     pub fn for_trait(&self, trait_: TraitId) -> impl Iterator<Item = ImplId> + '_ {
-        self.map.get(&trait_).into_iter().flat_map(
-            |map| map.values().flat_map(|v| v.iter().copied()),
-        )
+        self.map
+            .get(&trait_)
+            .into_iter()
+            .flat_map(|map| map.values().flat_map(|v| v.iter().copied()))
     }
 
     /// Queries all impls of `trait_` that may apply to `self_ty`.
@@ -276,11 +278,11 @@ impl TraitImpls {
         trait_: TraitId,
         self_ty: TyFingerprint,
     ) -> impl Iterator<Item = ImplId> + '_ {
-        self.map.get(&trait_).into_iter().flat_map(
-            move |map| map.get(&Some(self_ty)).into_iter().chain(map.get(&None)),
-        ).flat_map(
-            |v| v.iter().copied(),
-        )
+        self.map
+            .get(&trait_)
+            .into_iter()
+            .flat_map(move |map| map.get(&Some(self_ty)).into_iter().chain(map.get(&None)))
+            .flat_map(|v| v.iter().copied())
     }
 
     /// Queries whether `self_ty` has potentially applicable implementations of `trait_`.
@@ -440,9 +442,10 @@ pub fn def_crates<'db>(
         }
         TyKind::Foreign(alias) => {
             let alias = alias.0;
-            Some(if db.type_alias_signature(alias).flags.contains(
-                TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL,
-            ) {
+            Some(if db
+                    .type_alias_signature(alias)
+                    .flags
+                    .contains(TypeAliasFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPL) {
                 db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::ForeignType(alias))
             } else {
                 smallvec![alias.module(db).krate()]
@@ -450,9 +453,10 @@ pub fn def_crates<'db>(
         }
         TyKind::Dynamic(bounds, _) => {
             let trait_id = bounds.principal_def_id()?.0;
-            Some(if db.trait_signature(trait_id).flags.contains(
-                TraitFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS,
-            ) {
+            Some(if db
+                    .trait_signature(trait_id)
+                    .flags
+                    .contains(TraitFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS) {
                 db.incoherent_inherent_impl_crates(cur_crate, TyFingerprint::Dyn(trait_id))
             } else {
                 smallvec![trait_id.module(db).krate()]
@@ -686,11 +690,11 @@ pub fn lookup_impl_const<'db>(
         None => return (const_id, subs),
     };
 
-    lookup_impl_assoc_item_for_trait_ref(infcx, trait_ref, env, name).and_then(
-        |assoc| if let (AssocItemId::ConstId(id), s) = assoc { Some((id, s)) } else { None },
-    ).unwrap_or(
-        (const_id, subs),
-    )
+    lookup_impl_assoc_item_for_trait_ref(infcx, trait_ref, env, name)
+        .and_then(
+            |assoc| if let (AssocItemId::ConstId(id), s) = assoc { Some((id, s)) } else { None },
+        )
+        .unwrap_or((const_id, subs))
 }
 
 /// Checks if the self parameter of `Trait` method is the `dyn Trait` and we should
@@ -761,9 +765,9 @@ pub(crate) fn lookup_impl_method_query<'db>(
     (
         impl_fn,
         GenericArgs::new_from_iter(
-        interner,
-        impl_subst.iter().chain(fn_subst.iter().skip(trait_params)),
-    ),
+            interner,
+            impl_subst.iter().chain(fn_subst.iter().skip(trait_params)),
+        ),
     )
 }
 
@@ -887,7 +891,9 @@ fn is_inherent_impl_coherent<'db>(
             _ => false,
         };
         let items = impl_id.impl_items(db);
-        rustc_has_incoherent_inherent_impls && !items.items.is_empty() && items.items.iter().all(|&(_, assoc)| match assoc {
+        rustc_has_incoherent_inherent_impls
+            && !items.items.is_empty()
+            && items.items.iter().all(|&(_, assoc)| match assoc {
                 AssocItemId::FunctionId(it) => {
                     db.function_signature(it).flags.contains(FnFlags::RUSTC_ALLOW_INCOHERENT_IMPL)
                 }

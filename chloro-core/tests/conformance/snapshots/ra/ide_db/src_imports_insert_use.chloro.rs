@@ -457,16 +457,19 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
     };
     // there are no imports in this file at all
     // so put the import after all inner module attributes and possible license header comments
-    if let Some(last_inner_element) = scope_syntax.children_with_tokens().skip(l_curly.is_some() as usize).take_while(|child| match child {
+    if let Some(last_inner_element) = scope_syntax
+        .children_with_tokens()
+        // skip the curly brace
+        .skip(l_curly.is_some() as usize)
+        .take_while(|child| match child {
             NodeOrToken::Node(node) => is_inner_attribute(node.clone()),
             NodeOrToken::Token(token) => {
                 [SyntaxKind::WHITESPACE, SyntaxKind::COMMENT, SyntaxKind::SHEBANG]
                     .contains(&token.kind())
             }
-        }).filter(
-        |child| child.as_token().is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE),
-    ).last(
-    ) {
+        })
+        .filter(|child| child.as_token().is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE))
+        .last() {
         cov_mark::hit!(insert_empty_inner_attr);
         ted::insert(ted::Position::after(&last_inner_element), use_item.syntax());
         ted::insert(ted::Position::after(last_inner_element), make::tokens::single_newline());

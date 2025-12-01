@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19114 bytes
-Chloro size:   18775 bytes
+Chloro size:   18773 bytes
 Rustfmt size:  19114 bytes
 
 ✗ Outputs DIFFER
@@ -49,19 +49,6 @@ Rustfmt size:  19114 bytes
  pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Diagnostic {
      let mut message = String::from("missing structure fields:\n");
      for field in &d.missed_fields {
-             .unwrap_or_else(|| d.field_list_parent.into()),
-     );
- 
--    Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError("E0063"), message, ptr)
--        .stable()
--        .with_fixes(fixes(ctx, d))
-+    Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError("E0063"), message, ptr).stable(
-+    ).with_fixes(
-+        fixes(ctx, d),
-+    )
- }
- 
- fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Assist>> {
      match &d.field_list_parent.to_node(&root) {
          Either::Left(field_list_parent) => {
              let missing_fields = ctx.sema.record_literal_missing_fields(field_list_parent);

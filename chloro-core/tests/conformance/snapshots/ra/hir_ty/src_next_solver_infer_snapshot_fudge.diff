@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10383 bytes
-Chloro size:   9871 bytes
+Chloro size:   9940 bytes
 Rustfmt size:  10823 bytes
 
 ✗ Outputs DIFFER
@@ -22,25 +22,17 @@ Rustfmt size:  10823 bytes
      },
      Const, ConstKind, DbInterner, Region, Ty, TyKind,
  };
- 
-     (
-         range.clone(),
--        iter_idx_range(range)
--            .map(|index| match table.probe_value(index) {
-+        iter_idx_range(range).map(|index| match table.probe_value(index) {
+         iter_idx_range(range)
+             .map(|index| match table.probe_value(index) {
                  ConstVariableValue::Known { value: _ } => ConstVariableOrigin {},
 -                ConstVariableValue::Unknown {
 -                    origin,
 -                    universe: _,
 -                } => origin,
--            })
--            .collect(),
 +                ConstVariableValue::Unknown { origin, universe: _ } => origin,
-+            }).collect(
-+    ),
+             })
+             .collect(),
      )
- }
- 
          })?;
  
          // At this point, we need to replace any of the now-popped
@@ -105,16 +97,10 @@ Rustfmt size:  10823 bytes
 -            float_vars,
 -            const_vars,
 -        } = self;
--        region_vars.is_empty()
--            && type_vars.0.is_empty()
--            && int_vars.is_empty()
--            && float_vars.is_empty()
--            && const_vars.0.is_empty()
 +        let SnapshotVarData { region_vars, type_vars, int_vars, float_vars, const_vars } = self;
-+        region_vars.is_empty() && type_vars.0.is_empty() && int_vars.is_empty() && float_vars.is_empty() && const_vars.0.is_empty()
-     }
- }
- 
+         region_vars.is_empty()
+             && type_vars.0.is_empty()
+             && int_vars.is_empty()
              match infer_ty {
                  rustc_type_ir::TyVar(vid) => {
                      if self.snapshot_vars.type_vars.0.contains(&vid) {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25127 bytes
-Chloro size:   24081 bytes
+Chloro size:   24075 bytes
 Rustfmt size:  25127 bytes
 
 ✗ Outputs DIFFER
@@ -26,18 +26,6 @@ Rustfmt size:  25127 bytes
  pub(crate) fn missing_unsafe(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Diagnostic {
      let code = match d.lint {
          UnsafeLint::HardError => DiagnosticCode::RustcHardError("E0133"),
-         code,
-         format!("{operation} is unsafe and requires an unsafe function or block"),
-         d.node.map(|it| it.into()),
-+    ).stable(
-+    ).with_fixes(
-+        fixes(ctx, d),
-     )
--    .stable()
--    .with_fixes(fixes(ctx, d))
- }
- 
- fn display_unsafety_reason(reason: UnsafetyReason) -> &'static str {
      Some(vec![fix("add_unsafe", "Add unsafe block", source_change, expr.syntax().text_range())])
  }
  
@@ -55,26 +43,6 @@ Rustfmt size:  25127 bytes
  fn pick_best_node_to_add_unsafe_block(unsafe_expr: &ast::Expr) -> Option<SyntaxNode> {
      // The `unsafe_expr` might be:
      // - `ast::CallExpr`: call an unsafe function
- 
- fn needs_parentheses(expr: &ast::Expr) -> bool {
-     let node = expr.syntax();
--    node.ancestors()
--        .skip(1)
--        .take_while(|it| it.text_range().start() == node.text_range().start())
--        .map_while(ast::Expr::cast)
--        .last()
--        .and_then(|it| Some(it.syntax().parent()?.kind()))
--        .is_some_and(|kind| ast::ExprStmt::can_cast(kind) || ast::StmtList::can_cast(kind))
-+    node.ancestors().skip(1).take_while(|it| it.text_range().start() == node.text_range().start()).map_while(
-+        ast::Expr::cast,
-+    ).last(
-+    ).and_then(
-+        |it| Some(it.syntax().parent()?.kind()),
-+    ).is_some_and(
-+        |kind| ast::ExprStmt::can_cast(kind) || ast::StmtList::can_cast(kind),
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_diagnostics, check_fix, check_no_fix};

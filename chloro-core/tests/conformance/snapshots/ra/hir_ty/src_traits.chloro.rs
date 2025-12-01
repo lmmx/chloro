@@ -62,9 +62,9 @@ impl<'db> TraitEnvironment<'db> {
     }
 
     pub fn traits_in_scope_from_clauses(&self, ty: Ty<'db>) -> impl Iterator<Item = TraitId> + '_ {
-        self.traits_from_clauses.iter().filter_map(
-            move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id),
-        )
+        self.traits_from_clauses
+            .iter()
+            .filter_map(move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id))
     }
 }
 

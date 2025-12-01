@@ -182,7 +182,8 @@ fn find_trait_method(
     trait_: hir::Trait,
     trait_method_name: &ast::NameRef,
 ) -> Option<hir::Function> {
-    if let Some(hir::AssocItem::Function(method)) = trait_.items(db).into_iter().find(|item: &hir::AssocItem| {
+    if let Some(hir::AssocItem::Function(method)) =
+        trait_.items(db).into_iter().find(|item: &hir::AssocItem| {
             item.name(db)
                 .map(|name| name.as_str() == trait_method_name.text().trim_start_matches("r#"))
                 .unwrap_or(false)

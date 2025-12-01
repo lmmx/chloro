@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33220 bytes
-Chloro size:   33197 bytes
+Chloro size:   33220 bytes
 Rustfmt size:  33220 bytes
 
 ✗ Outputs DIFFER
@@ -130,8 +130,7 @@ Rustfmt size:  33220 bytes
 +                ExpectedFunction {
 +                    call: call_expr,
 +                    found: Type::new(db, def, *found),
-+                }.into(
-+                )
++                }.into()
              }
              InferenceDiagnostic::UnresolvedField {
                  expr,
@@ -159,28 +158,3 @@ Rustfmt size:  33220 bytes
                  let args = AstPtr::new(&segment.parenthesized_arg_list()?);
                  let args = path.with_value(args);
                  ParenthesizedGenericArgsWithoutFnTrait { args }.into()
-     Some(match generics_source {
-         PathGenericsSource::Segment(segment) => {
-             let segment = hir_segment_to_ast_segment(path, segment)?;
--            segment
--                .generic_arg_list()
--                .map(Either::Left)
--                .or_else(|| segment.name_ref().map(Either::Right))?
-+            segment.generic_arg_list().map(Either::Left).or_else(
-+                || segment.name_ref().map(Either::Right),
-+            )?
-         }
-         PathGenericsSource::AssocType { segment, assoc_type } => {
-             let segment = hir_segment_to_ast_segment(path, segment)?;
-             let segment_args = segment.generic_arg_list()?;
-             let assoc = hir_assoc_type_binding_to_ast(&segment_args, assoc_type)?;
--            assoc
--                .generic_arg_list()
--                .map(Either::Left)
--                .or_else(|| assoc.name_ref().map(Either::Right))?
-+            assoc.generic_arg_list().map(Either::Left).or_else(
-+                || assoc.name_ref().map(Either::Right),
-+            )?
-         }
-     })
- }

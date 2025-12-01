@@ -191,9 +191,9 @@ impl<'db> Ty<'db> {
             TyKind::Tuple(tys) => {
                 tys.last().is_none_or(|ty| ty.has_trivial_sizedness(tcx, sizedness))
             }
-            TyKind::Adt(def, args) => def.sizedness_constraint(tcx, sizedness).is_none_or(
-                |ty| ty.instantiate(tcx, args).has_trivial_sizedness(tcx, sizedness),
-            ),
+            TyKind::Adt(def, args) => def
+                .sizedness_constraint(tcx, sizedness)
+                .is_none_or(|ty| ty.instantiate(tcx, args).has_trivial_sizedness(tcx, sizedness)),
             TyKind::Alias(..) | TyKind::Param(_) | TyKind::Placeholder(..) | TyKind::Bound(..) => {
                 false
             }
@@ -364,9 +364,10 @@ impl<'db> Ty<'db> {
                 Some(interner.fn_sig(callable).instantiate(interner, args))
             }
             TyKind::FnPtr(sig, hdr) => Some(sig.with(hdr)),
-            TyKind::Closure(_, closure_args) => closure_args.split_closure_args_untupled().closure_sig_as_fn_ptr_ty.callable_sig(
-                interner,
-            ),
+            TyKind::Closure(_, closure_args) => closure_args
+                .split_closure_args_untupled()
+                .closure_sig_as_fn_ptr_ty
+                .callable_sig(interner),
             TyKind::CoroutineClosure(coroutine_id, args) => {
                 Some(args.as_coroutine_closure().coroutine_closure_sig().map_bound(|sig| {
                     let unit_ty = Ty::new_unit(interner);

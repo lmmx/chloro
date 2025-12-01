@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24418 bytes
-Chloro size:   24076 bytes
+Chloro size:   24079 bytes
 Rustfmt size:  24577 bytes
 
 ✗ Outputs DIFFER
@@ -206,18 +206,6 @@ Rustfmt size:  24577 bytes
          } else {
              self.combine_vars(db, Glb, a, b)
          }
- 
-     /// See `InferCtxt::region_constraints_added_in_snapshot`.
-     pub fn region_constraints_added_in_snapshot(&self, mark: &Snapshot) -> bool {
--        self.undo_log
--            .region_constraints_in_snapshot(mark)
--            .any(|elt| matches!(elt, AddConstraint(_)))
-+        self.undo_log.region_constraints_in_snapshot(mark).any(
-+            |elt| matches!(elt, AddConstraint(_)),
-+        )
-     }
- 
-     #[inline]
      /// Returns `true` if this region constraint data contains no constraints, and `false`
      /// otherwise.
      pub fn is_empty(&self) -> bool {

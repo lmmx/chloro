@@ -85,9 +85,8 @@ impl ExprScopes {
     }
 
     pub fn resolve_name_in_scope(&self, scope: ScopeId, name: &Name) -> Option<&ScopeEntry> {
-        self.scope_chain(Some(scope)).find_map(
-            |scope| self.entries(scope).iter().find(|it| it.name == *name),
-        )
+        self.scope_chain(Some(scope))
+            .find_map(|scope| self.entries(scope).iter().find(|it| it.name == *name))
     }
 
     pub fn scope_for(&self, expr: ExprId) -> Option<ScopeId> {

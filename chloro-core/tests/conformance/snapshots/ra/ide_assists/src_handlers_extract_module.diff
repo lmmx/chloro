@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53248 bytes
+Chloro size:   53251 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
@@ -125,17 +125,6 @@ Rustfmt size:  53759 bytes
          let pub_crate_vis = make::visibility_pub_crate().clone_for_update();
          ted::insert(ted::Position::before(node_or_token), pub_crate_vis.syntax());
      }
- }
- 
- fn indent_range_before_given_node(node: &SyntaxNode) -> Option<TextRange> {
--    node.siblings_with_tokens(syntax::Direction::Prev)
--        .find(|x| x.kind() == WHITESPACE)
--        .map(|x| x.text_range())
-+    node.siblings_with_tokens(syntax::Direction::Prev).find(|x| x.kind() == WHITESPACE).map(
-+        |x| x.text_range(),
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

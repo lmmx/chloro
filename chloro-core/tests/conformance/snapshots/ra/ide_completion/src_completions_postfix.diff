@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32377 bytes
-Chloro size:   32351 bytes
+Chloro size:   32363 bytes
 Rustfmt size:  32377 bytes
 
 ✗ Outputs DIFFER
@@ -62,26 +62,6 @@ Rustfmt size:  32377 bytes
      // normal Rust expressions.
      escape_snippet_bits(&mut text);
      text
- }
- 
- pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
--    it.syntax()
--        .parent()
--        .and_then(|parent| {
-+    it.syntax().parent().and_then(|parent| {
-             Some(match_ast! { match parent {
-                 ast::IfExpr(expr) => expr.condition()? == *it,
-                 ast::WhileExpr(expr) => expr.condition()? == *it,
-                     .then(|| is_in_condition(&expr))?,
-                 _ => return None,
-             } })
--        })
--        .unwrap_or(false)
-+        }).unwrap_or(
-+        false,
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

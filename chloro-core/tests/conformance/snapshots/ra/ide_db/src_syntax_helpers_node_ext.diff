@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18749 bytes
-Chloro size:   18087 bytes
+Chloro size:   18159 bytes
 Rustfmt size:  18749 bytes
 
 ✗ Outputs DIFFER
@@ -138,14 +138,16 @@ Rustfmt size:  18749 bytes
 -                    if (depth == 0 && b.lifetime().is_none())
 -                        || eq_label_lt(&label, &b.lifetime()) =>
 -                {
-+                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none()) || eq_label_lt(&label, &b.lifetime()) => {
++                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none())
++                        || eq_label_lt(&label, &b.lifetime()) => {
                      cb(ast::Expr::BreakExpr(b));
                  }
 -                ast::Expr::ContinueExpr(c)
 -                    if (depth == 0 && c.lifetime().is_none())
 -                        || eq_label_lt(&label, &c.lifetime()) =>
 -                {
-+                ast::Expr::ContinueExpr(c) if (depth == 0 && c.lifetime().is_none()) || eq_label_lt(&label, &c.lifetime()) => {
++                ast::Expr::ContinueExpr(c) if (depth == 0 && c.lifetime().is_none())
++                        || eq_label_lt(&label, &c.lifetime()) => {
                      cb(ast::Expr::ContinueExpr(c));
                  }
                  _ => (),
@@ -156,7 +158,8 @@ Rustfmt size:  18749 bytes
 -                    if (depth == 0 && b.lifetime().is_none())
 -                        || eq_label_lt(&label, &b.lifetime()) =>
 -                {
-+                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none()) || eq_label_lt(&label, &b.lifetime()) => {
++                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none())
++                        || eq_label_lt(&label, &b.lifetime()) => {
                      cb(b);
                  }
                  _ => (),

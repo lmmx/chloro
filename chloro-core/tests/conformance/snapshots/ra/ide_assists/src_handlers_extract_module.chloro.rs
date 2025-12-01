@@ -786,9 +786,9 @@ fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax
 }
 
 fn indent_range_before_given_node(node: &SyntaxNode) -> Option<TextRange> {
-    node.siblings_with_tokens(syntax::Direction::Prev).find(|x| x.kind() == WHITESPACE).map(
-        |x| x.text_range(),
-    )
+    node.siblings_with_tokens(syntax::Direction::Prev)
+        .find(|x| x.kind() == WHITESPACE)
+        .map(|x| x.text_range())
 }
 
 #[cfg(test)]

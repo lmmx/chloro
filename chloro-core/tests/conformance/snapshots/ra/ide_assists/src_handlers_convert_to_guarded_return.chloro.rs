@@ -244,7 +244,9 @@ fn flat_let_chain(mut expr: ast::Expr) -> Vec<ast::Expr> {
 }
 
 fn clean_stmt_block(block: &ast::BlockExpr) -> ast::BlockExpr {
-    if block.statements().next().is_none() && let Some(tail_expr) = block.tail_expr() && block.modifier().is_none() {
+    if block.statements().next().is_none()
+        && let Some(tail_expr) = block.tail_expr()
+        && block.modifier().is_none() {
         make::block_expr(once(make::expr_stmt(tail_expr).into()), None)
     } else {
         block.clone()
@@ -258,7 +260,8 @@ fn is_early_block(then_block: &ast::StmtList) -> bool {
         ast::Stmt::ExprStmt(expr_stmt) => expr_stmt.expr(),
         _ => None,
     };
-    then_block.tail_expr().is_some_and(is_early_expr) || then_block.statements().filter_map(into_expr).any(is_early_expr)
+    then_block.tail_expr().is_some_and(is_early_expr)
+        || then_block.statements().filter_map(into_expr).any(is_early_expr)
 }
 
 #[cfg(test)]

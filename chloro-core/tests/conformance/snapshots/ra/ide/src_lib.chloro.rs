@@ -754,8 +754,9 @@ impl Analysis {
         position: FilePosition,
         imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe,
     ) -> Cancellable<Vec<TextEdit>> {
-        Ok(self.with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?.unwrap_or_default(
-        ))
+        Ok(
+            self.with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?.unwrap_or_default(),
+        )
     }
 
     /// Computes the set of parser level diagnostics for the given file.

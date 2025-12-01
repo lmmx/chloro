@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5531 bytes
+Chloro size:   5560 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -60,22 +60,16 @@ Rustfmt size:  5891 bytes
      }
  
      pub(crate) fn num_entries(&self) -> OpaqueTypeStorageEntries {
-         &self,
-         prev_entries: OpaqueTypeStorageEntries,
-     ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
--        self.opaque_types
--            .iter()
--            .skip(prev_entries.opaque_types)
--            .map(|(k, v)| (*k, *v))
+             .iter()
+             .skip(prev_entries.opaque_types)
+             .map(|(k, v)| (*k, *v))
 -            .chain(
 -                self.duplicate_entries
 -                    .iter()
 -                    .skip(prev_entries.duplicate_entries)
 -                    .copied(),
 -            )
-+        self.opaque_types.iter().skip(prev_entries.opaque_types).map(|(k, v)| (*k, *v)).chain(
-+            self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied(),
-+        )
++            .chain(self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied())
      }
  
      /// Only returns the opaque types from the lookup table. These are used

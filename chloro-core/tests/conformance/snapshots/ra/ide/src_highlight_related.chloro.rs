@@ -101,7 +101,11 @@ fn highlight_closure_captures(
     let search_range = closure.body()?.syntax().text_range();
     let ty = &sema.type_of_expr(&closure.into())?.original;
     let c = ty.as_closure()?;
-    Some(c.captured_items(sema.db).into_iter().map(|capture| capture.local()).flat_map(|local| {
+    Some(
+        c.captured_items(sema.db)
+            .into_iter()
+            .map(|capture| capture.local())
+            .flat_map(|local| {
                 let usages = Definition::Local(local)
                     .usages(sema)
                     .in_scope(&SearchScope::file_range(FileRange { file_id, range: search_range }))
@@ -128,8 +132,9 @@ fn highlight_closure_captures(
                     .filter_map(|decl| decl.focus_range)
                     .map(move |range| HighlightedRange { range, category })
                     .chain(usages)
-            }).collect(
-    ))
+            })
+            .collect(),
+    )
 }
 
 fn highlight_references(
@@ -368,8 +373,10 @@ pub(crate) fn highlight_branch_exit_points(
         _ => {}
     }
 
-    highlights.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect(
-    )
+    highlights
+        .into_iter()
+        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+        .collect()
 }
 
 fn hl_exit_points(
@@ -654,12 +661,11 @@ fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange
 }
 
 fn find_defs(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashSet<Definition> {
-    sema.descend_into_macros_exact(token).into_iter().filter_map(
-        |token| IdentClass::classify_token(sema, &token),
-    ).flat_map(
-        IdentClass::definitions_no_ops,
-    ).collect(
-    )
+    sema.descend_into_macros_exact(token)
+        .into_iter()
+        .filter_map(|token| IdentClass::classify_token(sema, &token))
+        .flat_map(IdentClass::definitions_no_ops)
+        .collect()
 }
 
 fn original_frange(

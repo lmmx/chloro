@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10574 bytes
-Chloro size:   10140 bytes
+Chloro size:   10130 bytes
 Rustfmt size:  10774 bytes
 
 ✗ Outputs DIFFER
@@ -20,9 +20,9 @@ Rustfmt size:  10774 bytes
          DiagnosticCode::RustcHardError("E0023"),
          message,
          invalid_args_range(ctx, d.expr_or_pat, d.expected, d.found),
-+    ).stable(
-     )
+-    )
 -    .stable()
++    ).stable()
  }
  
 -// Diagnostic: mismatched-arg-count
@@ -34,9 +34,9 @@ Rustfmt size:  10774 bytes
          DiagnosticCode::RustcHardError("E0107"),
          message,
          invalid_args_range(ctx, d.call_expr, d.expected, d.found),
-+    ).stable(
-     )
+-    )
 -    .stable()
++    ).stable()
  }
  
  fn invalid_args_range(

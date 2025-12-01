@@ -191,8 +191,7 @@ pub(crate) fn completion_text_edit(
                 end: cursor_pos,
             },
             replace: text_edit.range,
-        }.into(
-        ),
+        }.into(),
         None => text_edit.into(),
     }
 }
@@ -230,7 +229,9 @@ pub(crate) fn snippet_text_edit_vec(
     clients_support_annotations: bool,
 ) -> Vec<lsp_ext::SnippetTextEdit> {
     let annotation = text_edit.change_annotation();
-    text_edit.into_iter().map(|indel| {
+    text_edit
+        .into_iter()
+        .map(|indel| {
             self::snippet_text_edit(
                 line_index,
                 is_snippet,
@@ -238,8 +239,8 @@ pub(crate) fn snippet_text_edit_vec(
                 annotation,
                 clients_support_annotations,
             )
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 pub(crate) fn completion_items(
@@ -1819,7 +1820,9 @@ pub(crate) fn test_item(
             ide::TestItemKind::Crate(_) | ide::TestItemKind::Module
         ),
         parent: test_item.parent,
-        text_document: test_item.file.map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
+        text_document: test_item
+            .file
+            .map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
         range: line_index.and_then(|l| Some(range(l, test_item.text_range?))),
         runnable: test_item.runnable.and_then(|r| runnable(snap, r).ok()).flatten(),
     })

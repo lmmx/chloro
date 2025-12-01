@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11061 bytes
-Chloro size:   10690 bytes
+Chloro size:   10703 bytes
 Rustfmt size:  11278 bytes
 
 ✗ Outputs DIFFER
@@ -59,13 +59,6 @@ Rustfmt size:  11278 bytes
              }
          }
      }
- 
--    ty.layout(db)
--        .map(|layout| {
-+    ty.layout(db).map(|layout| {
-             let item_name = match def {
-                 // def is a datatype
-                 Definition::Adt(_)
                  | Definition::SelfType(_) => "[ROOT]".to_owned(),
  
                  // def is an item
@@ -77,15 +70,6 @@ Rustfmt size:  11278 bytes
              };
  
              let typename = ty.display(db, display_target).to_string();
-             read_layout(&mut nodes, db, &ty, &layout, 0, display_target);
- 
-             RecursiveMemoryLayout { nodes }
--        })
--        .ok()
-+        }).ok(
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use super::*;

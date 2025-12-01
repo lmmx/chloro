@@ -80,10 +80,10 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
     }
 
     fn opportunistic_resolve_lt_var(&self, vid: RegionVid) -> Region<'db> {
-        self.inner.borrow_mut().unwrap_region_constraints().opportunistic_resolve_var(
-            self.interner,
-            vid,
-        )
+        self.inner
+            .borrow_mut()
+            .unwrap_region_constraints()
+            .opportunistic_resolve_var(self.interner, vid)
     }
 
     fn is_changed_arg(
@@ -127,7 +127,9 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
             GenericArgKind::Const(ct) => {
                 if let ConstKind::Infer(infer_ct) = ct.kind() {
                     match infer_ct {
-                        InferConst::Var(vid) => !self.probe_const_var(vid).is_err_and(|_| self.root_const_var(vid) == vid),
+                        InferConst::Var(vid) => !self
+                            .probe_const_var(vid)
+                            .is_err_and(|_| self.root_const_var(vid) == vid),
                         InferConst::Fresh(_) => true,
                     }
                 } else {
@@ -273,18 +275,24 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
     }
 
     fn clone_duplicate_opaque_types(&self) -> Vec<(OpaqueTypeKey<'db>, Ty<'db>)> {
-        self.inner.borrow_mut().opaque_types().iter_duplicate_entries().map(|(k, h)| (k, h.ty)).collect(
-        )
+        self.inner
+            .borrow_mut()
+            .opaque_types()
+            .iter_duplicate_entries()
+            .map(|(k, h)| (k, h.ty))
+            .collect()
     }
 
     fn clone_opaque_types_added_since(
         &self,
         prev_entries: OpaqueTypeStorageEntries,
     ) -> Vec<(OpaqueTypeKey<'db>, Ty<'db>)> {
-        self.inner.borrow_mut().opaque_types().opaque_types_added_since(prev_entries).map(
-            |(k, h)| (k, h.ty),
-        ).collect(
-        )
+        self.inner
+            .borrow_mut()
+            .opaque_types()
+            .opaque_types_added_since(prev_entries)
+            .map(|(k, h)| (k, h.ty))
+            .collect()
     }
 
     fn register_hidden_type_in_storage(

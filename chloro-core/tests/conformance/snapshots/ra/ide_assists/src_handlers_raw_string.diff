@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15453 bytes
-Chloro size:   14669 bytes
+Chloro size:   14685 bytes
 Rustfmt size:  15544 bytes
 
 ✗ Outputs DIFFER
@@ -140,21 +140,6 @@ Rustfmt size:  15544 bytes
      )
  }
  
- 
- fn mut_token(token: syntax::SyntaxToken) -> syntax::SyntaxToken {
-     let node = token.parent().expect("no parent token");
--    node.clone_for_update()
--        .children_with_tokens()
--        .filter_map(|it| it.into_token())
--        .find(|it| it.text_range() == token.text_range() && it.text() == token.text())
--        .unwrap()
-+    node.clone_for_update().children_with_tokens().filter_map(|it| it.into_token()).find(
-+        |it| it.text_range() == token.text_range() && it.text() == token.text(),
-+    ).unwrap(
-+    )
- }
- 
- #[cfg(test)]
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};

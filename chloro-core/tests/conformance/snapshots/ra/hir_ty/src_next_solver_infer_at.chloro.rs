@@ -188,15 +188,17 @@ impl<'a, 'db> At<'a, 'db> {
     fn goals_to_obligations(&self, goals: Vec<Goal<'db, Predicate<'db>>>) -> InferOk<'db, ()> {
         InferOk {
             value: (),
-            obligations: goals.into_iter().map(|goal| {
+            obligations: goals
+                .into_iter()
+                .map(|goal| {
                     Obligation::new(
                         self.infcx.interner,
                         self.cause.clone(),
                         goal.param_env,
                         goal.predicate,
                     )
-                }).collect(
-            ),
+                })
+                .collect(),
         }
     }
 }

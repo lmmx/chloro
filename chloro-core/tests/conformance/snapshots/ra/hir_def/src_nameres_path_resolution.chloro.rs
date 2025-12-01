@@ -694,11 +694,11 @@ impl DefMap {
             self.resolve_in_prelude(db, name)
         };
 
-        from_legacy_macro.or(from_scope_or_builtin).or_else(extern_prelude).or_else(
-            macro_use_prelude,
-        ).or_else(
-            prelude,
-        )
+        from_legacy_macro
+            .or(from_scope_or_builtin)
+            .or_else(extern_prelude)
+            .or_else(macro_use_prelude)
+            .or_else(prelude)
     }
 
     fn resolve_name_in_all_preludes(
@@ -718,29 +718,23 @@ impl DefMap {
     }
 
     fn resolve_name_in_extern_prelude(&self, local_def_map: &LocalDefMap, name: &Name) -> PerNs {
-        local_def_map.extern_prelude.get(name).map_or(
-            PerNs::none(),
-            |&(it, extern_crate)| {
+        local_def_map.extern_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
             PerNs::types(
                 it.into(),
                 Visibility::Public,
                 extern_crate.map(ImportOrExternCrate::ExternCrate),
             )
-        },
-        )
+        })
     }
 
     fn resolve_in_macro_use_prelude(&self, name: &Name) -> PerNs {
-        self.macro_use_prelude.get(name).map_or(
-            PerNs::none(),
-            |&(it, extern_crate)| {
+        self.macro_use_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
             PerNs::macros(
                 it,
                 Visibility::Public,
                 extern_crate.map(ImportOrExternCrate::ExternCrate),
             )
-        },
-        )
+        })
     }
 
     fn resolve_name_in_crate_root_or_extern_prelude(

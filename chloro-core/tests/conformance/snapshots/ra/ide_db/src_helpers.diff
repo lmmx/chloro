@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4302 bytes
-Chloro size:   4254 bytes
+Chloro size:   4260 bytes
 Rustfmt size:  4302 bytes
 
 ✗ Outputs DIFFER
@@ -31,20 +31,12 @@ Rustfmt size:  4302 bytes
  pub fn pick_token<T: AstToken>(mut tokens: TokenAtOffset<SyntaxToken>) -> Option<T> {
      tokens.find_map(T::cast)
  }
-         return true;
-     }
- 
--    if let Some(group) = generated::lints::DEFAULT_LINT_GROUPS
--        .iter()
--        .chain(generated::lints::CLIPPY_LINT_GROUPS.iter())
--        .chain(generated::lints::RUSTDOC_LINT_GROUPS.iter())
+         .iter()
+         .chain(generated::lints::CLIPPY_LINT_GROUPS.iter())
+         .chain(generated::lints::RUSTDOC_LINT_GROUPS.iter())
 -        .find(|&check| check.lint.label == lint_is)
 -    {
-+    if let Some(group) = generated::lints::DEFAULT_LINT_GROUPS.iter().chain(generated::lints::CLIPPY_LINT_GROUPS.iter()).chain(
-+        generated::lints::RUSTDOC_LINT_GROUPS.iter(),
-+    ).find(
-+        |&check| check.lint.label == lint_is,
-+    ) {
++        .find(|&check| check.lint.label == lint_is) {
          group.children.contains(&lint)
      } else {
          false

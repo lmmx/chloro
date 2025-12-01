@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2916 bytes
-Chloro size:   2898 bytes
+Chloro size:   2911 bytes
 Rustfmt size:  3239 bytes
 
 ✗ Outputs DIFFER
@@ -17,28 +17,21 @@ Rustfmt size:  3239 bytes
  use ide_db::famous_defs::FamousDefs;
  use syntax::{ast, SyntaxToken, T};
  
-     config: &InlayHintsConfig<'_>,
-     range: impl ast::RangeItem,
  ) -> Option<()> {
--    (config.range_exclusive_hints && range.end().is_some())
--        .then(|| {
+     (config.range_exclusive_hints && range.end().is_some())
+         .then(|| {
 -            range
 -                .op_token()
 -                .filter(|token| token.kind() == T![..])
 -                .map(|token| {
 -                    acc.push(inlay_hint(token));
 -                })
--        })
--        .flatten()
-+    (config.range_exclusive_hints && range.end().is_some()).then(|| {
 +            range.op_token().filter(|token| token.kind() == T![..]).map(|token| {
 +                acc.push(inlay_hint(token));
 +            })
-+        }).flatten(
-+    )
+         })
+         .flatten()
  }
- 
- fn inlay_hint(token: SyntaxToken) -> InlayHint {
          inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
          InlayHintsConfig,
      };

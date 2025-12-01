@@ -187,13 +187,11 @@ pub(crate) fn complete_attribute_path(
     };
 
     match attributes {
-        Some(applicable) => applicable.iter().flat_map(
-            |name| ATTRIBUTES.binary_search_by(|attr| attr.key().cmp(name)).ok(),
-        ).flat_map(
-            |idx| ATTRIBUTES.get(idx),
-        ).for_each(
-            add_completion,
-        ),
+        Some(applicable) => applicable
+            .iter()
+            .flat_map(|name| ATTRIBUTES.binary_search_by(|attr| attr.key().cmp(name)).ok())
+            .flat_map(|idx| ATTRIBUTES.get(idx))
+            .for_each(add_completion),
         None if is_inner => ATTRIBUTES.iter().for_each(add_completion),
         None => ATTRIBUTES.iter().filter(|compl| !compl.prefer_inner).for_each(add_completion),
     }
@@ -414,10 +412,15 @@ fn parse_comma_sep_expr(input: ast::TokenTree) -> Option<Vec<ast::Expr>> {
         .skip(1)
         .take_while(|it| it.as_token() != Some(&r_paren));
     let input_expressions = tokens.chunk_by(|tok| tok.kind() == T![,]);
-    Some(input_expressions.into_iter().filter_map(|(is_sep, group)| (!is_sep).then_some(group)).filter_map(|mut tokens| {
+    Some(
+        input_expressions
+            .into_iter()
+            .filter_map(|(is_sep, group)| (!is_sep).then_some(group))
+            .filter_map(|mut tokens| {
                 syntax::hacks::parse_expr_from_str(&tokens.join(""), Edition::CURRENT)
-            }).collect::<Vec<ast::Expr>>(
-    ))
+            })
+            .collect::<Vec<ast::Expr>>(),
+    )
 }
 
 #[test]

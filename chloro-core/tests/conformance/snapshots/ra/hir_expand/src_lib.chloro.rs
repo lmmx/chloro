@@ -887,12 +887,11 @@ impl ExpansionInfo {
                 let arg_range = arg_node.text_range();
                 InFile::new(
                     self.arg.file_id,
-                    arg_map.ranges_with_span_exact(span).filter(
-                    |(range, _)| range.intersect(arg_range).is_some(),
-                ).map(
-                    TupleExt::head,
-                ).collect(
-                ),
+                    arg_map
+                        .ranges_with_span_exact(span)
+                        .filter(|(range, _)| range.intersect(arg_range).is_some())
+                        .map(TupleExt::head)
+                        .collect(),
                 )
             }
         }

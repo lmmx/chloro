@@ -285,12 +285,16 @@ fn include_macro_invoc(
     db: &dyn DefDatabase,
     krate: Crate,
 ) -> Arc<[(MacroCallId, EditionedFileId)]> {
-    crate_def_map(db, krate).modules.values().flat_map(|m| m.scope.iter_macro_invoc()).filter_map(|invoc| {
+    crate_def_map(db, krate)
+        .modules
+        .values()
+        .flat_map(|m| m.scope.iter_macro_invoc())
+        .filter_map(|invoc| {
             db.lookup_intern_macro_call(*invoc.1)
                 .include_file_id(db, *invoc.1)
                 .map(|x| (*invoc.1, x))
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn crate_supports_no_std(db: &dyn DefDatabase, crate_id: Crate) -> bool {
@@ -355,7 +359,9 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
                 krate: loc.container.krate,
                 kind: kind(loc.expander, loc.id.file_id, loc.id.value.upcast()),
                 local_inner: loc.flags.contains(MacroRulesLocFlags::LOCAL_INNER),
-                allow_internal_unsafe: loc.flags.contains(MacroRulesLocFlags::ALLOW_INTERNAL_UNSAFE),
+                allow_internal_unsafe: loc
+                    .flags
+                    .contains(MacroRulesLocFlags::ALLOW_INTERNAL_UNSAFE),
                 edition: loc.edition,
             }
         }

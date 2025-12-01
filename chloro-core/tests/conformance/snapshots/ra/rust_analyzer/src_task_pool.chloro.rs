@@ -23,13 +23,10 @@ impl<T> TaskPool<T> {
         F: FnOnce() -> T + Send + UnwindSafe + 'static,
         T: Send + 'static,
     {
-        self.pool.spawn(
-            intent,
-            {
+        self.pool.spawn(intent, {
             let sender = self.sender.clone();
             move || sender.send(task()).unwrap()
-        },
-        )
+        })
     }
 
     pub(crate) fn spawn_with_sender<F>(&mut self, intent: ThreadIntent, task: F)
@@ -37,13 +34,10 @@ impl<T> TaskPool<T> {
         F: FnOnce(Sender<T>) + Send + UnwindSafe + 'static,
         T: Send + 'static,
     {
-        self.pool.spawn(
-            intent,
-            {
+        self.pool.spawn(intent, {
             let sender = self.sender.clone();
             move || task(sender)
-        },
-        )
+        })
     }
 
     pub(crate) fn len(&self) -> usize {

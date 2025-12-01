@@ -1020,47 +1020,21 @@ pub struct Config {
 
 impl fmt::Debug for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Config").field(
-            "discovered_projects_from_filesystem",
-            &self.discovered_projects_from_filesystem,
-        ).field(
-            "discovered_projects_from_command",
-            &self.discovered_projects_from_command,
-        ).field(
-            "workspace_roots",
-            &self.workspace_roots,
-        ).field(
-            "caps",
-            &self.caps,
-        ).field(
-            "root_path",
-            &self.root_path,
-        ).field(
-            "snippets",
-            &self.snippets,
-        ).field(
-            "client_info",
-            &self.client_info,
-        ).field(
-            "client_config",
-            &self.client_config,
-        ).field(
-            "user_config",
-            &self.user_config,
-        ).field(
-            "ratoml_file",
-            &self.ratoml_file,
-        ).field(
-            "source_root_parent_map",
-            &self.source_root_parent_map,
-        ).field(
-            "validation_errors",
-            &self.validation_errors,
-        ).field(
-            "detached_files",
-            &self.detached_files,
-        ).finish(
-        )
+        f.debug_struct("Config")
+            .field("discovered_projects_from_filesystem", &self.discovered_projects_from_filesystem)
+            .field("discovered_projects_from_command", &self.discovered_projects_from_command)
+            .field("workspace_roots", &self.workspace_roots)
+            .field("caps", &self.caps)
+            .field("root_path", &self.root_path)
+            .field("snippets", &self.snippets)
+            .field("client_info", &self.client_info)
+            .field("client_config", &self.client_config)
+            .field("user_config", &self.user_config)
+            .field("ratoml_file", &self.ratoml_file)
+            .field("source_root_parent_map", &self.source_root_parent_map)
+            .field("validation_errors", &self.validation_errors)
+            .field("detached_files", &self.detached_files)
+            .finish()
     }
 }
 
@@ -1356,10 +1330,9 @@ impl ConfigChange {
         vfs_path: VfsPath,
         content: Option<Arc<str>>,
     ) -> Option<(RatomlFileKind, VfsPath, Option<Arc<str>>)> {
-        self.ratoml_file_change.get_or_insert_with(Default::default).insert(
-            source_root,
-            (RatomlFileKind::Crate, vfs_path, content),
-        )
+        self.ratoml_file_change
+            .get_or_insert_with(Default::default)
+            .insert(source_root, (RatomlFileKind::Crate, vfs_path, content))
     }
 
     pub fn change_user_config(&mut self, content: Option<Arc<str>>) {
@@ -1374,10 +1347,9 @@ impl ConfigChange {
         vfs_path: VfsPath,
         content: Option<Arc<str>>,
     ) -> Option<(RatomlFileKind, VfsPath, Option<Arc<str>>)> {
-        self.ratoml_file_change.get_or_insert_with(Default::default).insert(
-            source_root,
-            (RatomlFileKind::Workspace, vfs_path, content),
-        )
+        self.ratoml_file_change
+            .get_or_insert_with(Default::default)
+            .insert(source_root, (RatomlFileKind::Workspace, vfs_path, content))
     }
 
     pub fn change_client_config(&mut self, change: serde_json::Value) {
@@ -1882,7 +1854,9 @@ impl Config {
             references: enable && self.hover_actions_references_enable().to_owned(),
             run: enable && self.hover_actions_run_enable().to_owned(),
             debug: enable && self.hover_actions_debug_enable().to_owned(),
-            update_test: enable && self.hover_actions_run_enable().to_owned() && self.hover_actions_updateTest_enable().to_owned(),
+            update_test: enable
+                && self.hover_actions_run_enable().to_owned()
+                && self.hover_actions_updateTest_enable().to_owned(),
             goto_type_def: enable && self.hover_actions_gotoTypeDef_enable().to_owned(),
         }
     }
@@ -2082,9 +2056,9 @@ impl Config {
     }
 
     pub fn has_linked_project_jsons(&self) -> bool {
-        self.linkedProjects().iter().any(
-            |it| matches!(it, ManifestOrProjectJson::ProjectJson { .. }),
-        )
+        self.linkedProjects()
+            .iter()
+            .any(|it| matches!(it, ManifestOrProjectJson::ProjectJson { .. }))
     }
 
     pub fn discover_workspace_config(&self) -> Option<&DiscoverWorkspaceConfig> {
@@ -2124,7 +2098,9 @@ impl Config {
             linked_projects.clone()
         };
 
-        projects.iter().filter_map(|linked_project| match linked_project {
+        projects
+            .iter()
+            .filter_map(|linked_project| match linked_project {
                 ManifestOrProjectJson::Manifest(it) => {
                     let path = self.root_path.join(it);
                     ProjectManifest::from_manifest_file(path)
@@ -2140,8 +2116,8 @@ impl Config {
                 ManifestOrProjectJson::ProjectJson(it) => {
                     Some(ProjectJson::new(None, &self.root_path, it.clone()).into())
                 }
-            }).collect(
-        )
+            })
+            .collect()
     }
 
     pub fn prefill_caches(&self) -> bool {
@@ -2376,8 +2352,7 @@ impl Config {
                 "description": "Put the expression into an `Rc`",
                 "scope": "expr"
             }
-        }"#).unwrap(
-        )
+        }"#).unwrap()
     }
 
     pub fn rustfmt(&self, source_root_id: Option<SourceRootId>) -> RustfmtConfig {
@@ -2436,27 +2411,32 @@ impl Config {
             Some(_) | None => FlycheckConfig::CargoCommand {
                 command: self.check_command(source_root).clone(),
                 options: CargoOptions {
-                    target_tuples: self.check_targets(source_root).clone().and_then(|targets| match &targets.0[..] {
+                    target_tuples: self
+                        .check_targets(source_root)
+                        .clone()
+                        .and_then(|targets| match &targets.0[..] {
                             [] => None,
                             targets => Some(targets.into()),
-                        }).unwrap_or_else(|| {
+                        })
+                        .unwrap_or_else(|| {
                             self.cargo_target(source_root).clone().into_iter().collect()
                         }),
-                    all_targets: self.check_allTargets(source_root).unwrap_or(
-                        *self.cargo_allTargets(source_root),
-                    ),
-                    no_default_features: self.check_noDefaultFeatures(source_root).unwrap_or(
-                        *self.cargo_noDefaultFeatures(source_root),
-                    ),
+                    all_targets: self
+                        .check_allTargets(source_root)
+                        .unwrap_or(*self.cargo_allTargets(source_root)),
+                    no_default_features: self
+                        .check_noDefaultFeatures(source_root)
+                        .unwrap_or(*self.cargo_noDefaultFeatures(source_root)),
                     all_features: matches!(
                         self.check_features(source_root)
                             .as_ref()
                             .unwrap_or(self.cargo_features(source_root)),
                         CargoFeaturesDef::All
                     ),
-                    features: match self.check_features(source_root).clone().unwrap_or_else(
-                        || self.cargo_features(source_root).clone(),
-                    ) {
+                    features: match self
+                        .check_features(source_root)
+                        .clone()
+                        .unwrap_or_else(|| self.cargo_features(source_root).clone()) {
                         CargoFeaturesDef::All => vec![],
                         CargoFeaturesDef::Selected(it) => it,
                     },
@@ -2600,9 +2580,10 @@ impl Config {
     }
 
     pub fn visual_studio_code_version(&self) -> Option<&Version> {
-        self.client_info.as_ref().filter(|it| it.name.starts_with("Visual Studio Code")).and_then(
-            |it| it.version.as_ref(),
-        )
+        self.client_info
+            .as_ref()
+            .filter(|it| it.name.starts_with("Visual Studio Code"))
+            .and_then(|it| it.version.as_ref())
     }
 
     pub fn client_is_neovim(&self) -> bool {
@@ -3363,20 +3344,24 @@ fn get_field_json<T: DeserializeOwned>(
 ) -> Option<T> {
     // XXX: check alias first, to work around the VS Code where it pre-fills the
     // defaults instead of sending an empty object.
-    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
+    alias
+        .into_iter()
+        .chain(iter::once(field))
+        .filter_map(move |field| {
             let mut pointer = field.replace('_', "/");
             pointer.insert(0, '/');
             json.pointer_mut(&pointer)
                 .map(|it| serde_json::from_value(it.take()).map_err(|e| (e, pointer)))
-        }).flat_map(|res| match res {
+        })
+        .flat_map(|res| match res {
             Ok(it) => Some(it),
             Err((e, pointer)) => {
                 tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
                 error_sink.push((pointer, e));
                 None
             }
-        }).next(
-    )
+        })
+        .next()
 }
 
 fn get_field_toml<T: DeserializeOwned>(
@@ -3387,14 +3372,17 @@ fn get_field_toml<T: DeserializeOwned>(
 ) -> Option<T> {
     // XXX: check alias first, to work around the VS Code where it pre-fills the
     // defaults instead of sending an empty object.
-    alias.into_iter().chain(iter::once(field)).filter_map(move |field| {
+    alias
+        .into_iter()
+        .chain(iter::once(field))
+        .filter_map(move |field| {
             let mut pointer = field.replace('_', "/");
             pointer.insert(0, '/');
             toml_pointer(toml, &pointer)
                 .map(|it| <_>::deserialize(it.clone()).map_err(|e| (e, pointer)))
-        }).find(
-        Result::is_ok,
-    ).and_then(|res| match res {
+        })
+        .find(Result::is_ok)
+        .and_then(|res| match res {
             Ok(it) => Some(it),
             Err((e, pointer)) => {
                 tracing::warn!("Failed to deserialize config field at {}: {:?}", pointer, e);
@@ -3421,16 +3409,13 @@ fn toml_pointer<'a>(toml: &'a toml::Table, pointer: &str) -> Option<&'a toml::Va
     let mut parts = pointer.split('/').skip(1);
     let first = parts.next()?;
     let init = toml.get(first)?;
-    parts.map(|x| x.replace("~1", "/").replace("~0", "~")).try_fold(
-        init,
-        |target, token| {
+    parts.map(|x| x.replace("~1", "/").replace("~0", "~")).try_fold(init, |target, token| {
         match target {
             toml::Value::Table(table) => table.get(&token),
             toml::Value::Array(list) => parse_index(&token).and_then(move |x| list.get(x)),
             _ => None,
         }
-    },
-    )
+    })
 }
 
 type SchemaField = (&'static str, &'static str, &'static [&'static str], String);
@@ -3961,9 +3946,7 @@ fn validate_toml_table(
 
 #[cfg(test)]
 fn manual(fields: &[SchemaField]) -> String {
-    fields.iter().fold(
-        String::new(),
-        |mut acc, (field, _ty, doc, default)| {
+    fields.iter().fold(String::new(), |mut acc, (field, _ty, doc, default)| {
         let id = field.replace('_', ".");
         let name = format!("rust-analyzer.{id}");
         let doc = doc_comment_to_string(doc);
@@ -3975,15 +3958,13 @@ fn manual(fields: &[SchemaField]) -> String {
         } else {
             format_to_acc!(acc, "## {name} {{#{id}}}\n\nDefault: `{default}`\n\n{doc}\n\n")
         }
-    },
-    )
+    })
 }
 
 fn doc_comment_to_string(doc: &[&str]) -> String {
-    doc.iter().map(|it| it.strip_prefix(' ').unwrap_or(it)).fold(
-        String::new(),
-        |mut acc, it| format_to_acc!(acc, "{it}\n"),
-    )
+    doc.iter()
+        .map(|it| it.strip_prefix(' ').unwrap_or(it))
+        .fold(String::new(), |mut acc, it| format_to_acc!(acc, "{it}\n"))
 }
 
 #[cfg(test)]

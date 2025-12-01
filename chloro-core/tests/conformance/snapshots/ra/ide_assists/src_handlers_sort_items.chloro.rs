@@ -133,15 +133,18 @@ fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -
 }
 
 fn sort_by_name<T: HasName + Clone>(initial: &[T]) -> Vec<T> {
-    initial.iter().cloned().sorted_by(|a, b| match (a.name(), b.name()) {
+    initial
+        .iter()
+        .cloned()
+        .sorted_by(|a, b| match (a.name(), b.name()) {
             (Some(a), Some(b)) => Ord::cmp(&a.to_string(), &b.to_string()),
 
             // unexpected, but just in case
             (None, None) => Ordering::Equal,
             (None, Some(_)) => Ordering::Less,
             (Some(_), None) => Ordering::Greater,
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 #[cfg(test)]

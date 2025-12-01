@@ -100,9 +100,10 @@ fn edit_struct_def(
         }
     }
 
-    if let Some(tok) = record_fields.l_curly_token().and_then(|tok| tok.prev_token()).filter(
-        |tok| tok.kind() == SyntaxKind::WHITESPACE,
-    ) {
+    if let Some(tok) = record_fields
+        .l_curly_token()
+        .and_then(|tok| tok.prev_token())
+        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE) {
         edit.delete(tok.text_range())
     }
 }

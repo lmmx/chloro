@@ -104,9 +104,9 @@ impl<'db> VTableMap<'db> {
     }
 
     pub(crate) fn ty(&self, id: usize) -> Result<'db, Ty<'db>> {
-        id.checked_sub(VTableMap::OFFSET).and_then(|id| self.id_to_ty.get(id).copied()).ok_or(
-            MirEvalError::InvalidVTableId(id),
-        )
+        id.checked_sub(VTableMap::OFFSET)
+            .and_then(|id| self.id_to_ty.get(id).copied())
+            .ok_or(MirEvalError::InvalidVTableId(id))
     }
 
     fn ty_of_bytes(&self, bytes: &[u8]) -> Result<'db, Ty<'db>> {
@@ -1266,7 +1266,10 @@ impl<'db> Evaluator<'db> {
                                         _ => unreachable!(),
                                     };
                                     Owned(
-                                        u16::try_from(r.value.to_bits()).unwrap().to_le_bytes().into(),
+                                        u16::try_from(r.value.to_bits())
+                                            .unwrap()
+                                            .to_le_bytes()
+                                            .into(),
                                     )
                                 }
                                 it => not_supported!(
@@ -1836,14 +1839,14 @@ impl<'db> Evaluator<'db> {
                     layout.size.bytes_usize(),
                     Arc::new(variant_layout),
                     if have_tag {
-                    Some((
-                        layout.fields.offset(0).bytes_usize(),
-                        tag.size(&*self.target_data_layout).bytes_usize(),
-                        discriminant,
-                    ))
-                } else {
-                    None
-                },
+                        Some((
+                            layout.fields.offset(0).bytes_usize(),
+                            tag.size(&*self.target_data_layout).bytes_usize(),
+                            discriminant,
+                        ))
+                    } else {
+                        None
+                    },
                 )
             }
         })
@@ -1996,9 +1999,8 @@ impl<'db> Evaluator<'db> {
                 )));
             }
         };
-        mem.get(pos..pos + size).ok_or_else(
-            || MirEvalError::UndefinedBehavior("out of bound memory read".to_owned()),
-        )
+        mem.get(pos..pos + size)
+            .ok_or_else(|| MirEvalError::UndefinedBehavior("out of bound memory read".to_owned()))
     }
 
     fn write_memory_using_ref(&mut self, addr: Address, size: usize) -> Result<'db, &mut [u8]> {
@@ -2011,9 +2013,8 @@ impl<'db> Evaluator<'db> {
                 )));
             }
         };
-        mem.get_mut(pos..pos + size).ok_or_else(
-            || MirEvalError::UndefinedBehavior("out of bound memory write".to_owned()),
-        )
+        mem.get_mut(pos..pos + size)
+            .ok_or_else(|| MirEvalError::UndefinedBehavior("out of bound memory write".to_owned()))
     }
 
     fn write_memory(&mut self, addr: Address, r: &[u8]) -> Result<'db, ()> {

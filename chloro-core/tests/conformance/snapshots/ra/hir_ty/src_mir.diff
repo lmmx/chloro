@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   49272 bytes
+Chloro size:   49284 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -153,15 +153,14 @@ Rustfmt size:  50490 bytes
          // Ensure that [] will get the id 0 which is used in `ProjectionId::Empty`
          this.intern(Box::new([]));
          this
- 
  impl<'db> Place<'db> {
      fn is_parent(&self, child: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
--        self.local == child.local
+         self.local == child.local
 -            && child
 -                .projection
 -                .lookup(store)
 -                .starts_with(self.projection.lookup(store))
-+        self.local == child.local && child.projection.lookup(store).starts_with(self.projection.lookup(store))
++            && child.projection.lookup(store).starts_with(self.projection.lookup(store))
      }
  
      /// The place itself is not included

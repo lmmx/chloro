@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   85693 bytes
+Chloro size:   85833 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -99,26 +99,6 @@ Rustfmt size:  87058 bytes
  
      /// Signal we cannot find which should be the anonymous lifetime.
      ElisionFailure,
-             hir_def::hir::Expr::Literal(literal) => intern_const_ref(
-                 self.db,
-                 &match *literal {
--                    hir_def::hir::Literal::Float(_, _)
-+                hir_def::hir::Literal::Float(_, _)
-                     | hir_def::hir::Literal::String(_)
-                     | hir_def::hir::Literal::ByteString(_)
-                     | hir_def::hir::Literal::CString(_) => LiteralConstRef::Unknown,
--                    hir_def::hir::Literal::Char(c) => LiteralConstRef::Char(c),
--                    hir_def::hir::Literal::Bool(b) => LiteralConstRef::Bool(b),
--                    hir_def::hir::Literal::Int(val, _) => LiteralConstRef::Int(val),
--                    hir_def::hir::Literal::Uint(val, _) => LiteralConstRef::UInt(val),
--                },
-+                hir_def::hir::Literal::Char(c) => LiteralConstRef::Char(c),
-+                hir_def::hir::Literal::Bool(b) => LiteralConstRef::Bool(b),
-+                hir_def::hir::Literal::Int(val, _) => LiteralConstRef::Int(val),
-+                hir_def::hir::Literal::Uint(val, _) => LiteralConstRef::UInt(val),
-+            },
-                 const_type,
-                 self.resolver.krate(),
              ),
              hir_def::hir::Expr::UnaryOp { expr: inner_expr, op: hir_def::hir::UnaryOp::Neg } => {
                  if let hir_def::hir::Expr::Literal(literal) = &self.store[*inner_expr] {
@@ -146,15 +126,6 @@ Rustfmt size:  87058 bytes
                  ))
              }
              _ => None,
-     }
- 
-     fn param_index_is_disallowed(&self, index: u32) -> bool {
--        self.lowering_param_default
--            .is_some_and(|disallow_params_after| index >= disallow_params_after)
-+        self.lowering_param_default.is_some_and(
-+            |disallow_params_after| index >= disallow_params_after,
-+        )
-     }
  
      fn type_param(&mut self, id: TypeParamId, index: u32) -> Ty<'db> {
          if self.param_index_is_disallowed(index) {
@@ -204,8 +175,7 @@ Rustfmt size:  87058 bytes
              }
 -        }
 -        .into_iter()
-+        }.into_iter(
-+        )
++        }.into_iter()
      }
  
      pub(crate) fn lower_type_bound<'b>(
@@ -252,18 +222,6 @@ Rustfmt size:  87058 bytes
  pub(crate) fn const_param_ty_with_diagnostics_query<'db>(
      db: &'db dyn HirDatabase,
      def: ConstParamId,
-         interner: DbInterner<'db>,
-         args: GenericArgs<'db>,
-     ) -> Option<impl Iterator<Item = Clause<'db>>> {
--        self.0
--            .as_ref()
--            .map(|it| EarlyBinder::bind(it.iter().copied()).iter_instantiated(interner, args))
-+        self.0.as_ref().map(
-+            |it| EarlyBinder::bind(it.iter().copied()).iter_instantiated(interner, args),
-+        )
-     }
- 
-     #[inline]
      }
  
      // FIXME: rustc gathers more predicates by recursing through resulting trait predicates.
@@ -273,38 +231,6 @@ Rustfmt size:  87058 bytes
      (
          GenericPredicates(predicates.is_empty().not().then(|| predicates.into())),
          create_diagnostics(ctx.diagnostics),
- 
-     let trait_self_idx = trait_self_param_idx(db, def);
- 
--    Some(
--        args.iter()
--            .enumerate()
--            .filter_map(
--                move |(idx, generic_arg)| {
-+    Some(args.iter().enumerate().filter_map(move |(idx, generic_arg)| {
-                     if Some(idx) == trait_self_idx { None } else { Some(generic_arg) }
--                },
--            )
--            .filter_map(|generic_arg| generic_arg.as_type())
--            .filter(move |self_ty| !explicitly_unsized_tys.contains(self_ty))
--            .map(move |self_ty| {
-+                }).filter_map(
-+        |generic_arg| generic_arg.as_type(),
-+    ).filter(
-+        move |self_ty| !explicitly_unsized_tys.contains(self_ty),
-+    ).map(move |self_ty| {
-                 let trait_ref = TraitRef::new_from_args(
-                     interner,
-                     sized_trait.into(),
-                         }),
-                     )),
-                 ))
--            }),
--    )
-+            }))
- }
- 
- #[derive(Debug, Clone, PartialEq, Eq, Hash)]
              result
          })
          .collect::<Vec<_>>();
@@ -369,15 +295,4 @@ Rustfmt size:  87058 bytes
 -
              let predicates =
                  db.generic_predicates_for_param(def, param_id.into(), assoc_name.clone());
--            predicates
--                .iter()
--                .find_map(|pred| match (*pred).kind().skip_binder() {
-+            predicates.iter().find_map(|pred| match (*pred).kind().skip_binder() {
-                     rustc_type_ir::ClauseKind::Trait(trait_predicate) => Some(trait_predicate),
-                     _ => None,
--                })
--                .and_then(|trait_predicate| {
-+                }).and_then(|trait_predicate| {
-                     let trait_ref = trait_predicate.trait_ref;
-                     assert!(
-                         !trait_ref.has_escaping_bound_vars(),
+             predicates

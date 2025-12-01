@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6390 bytes
-Chloro size:   5772 bytes
+Chloro size:   5832 bytes
 Rustfmt size:  6460 bytes
 
 ✗ Outputs DIFFER
@@ -69,24 +69,6 @@ Rustfmt size:  6460 bytes
          })
          .collect();
  
- ) -> Option<FxHashMap<String, usize>> {
-     let td = trait_definition(path, &ctx.sema)?;
- 
--    Some(
--        td.items(ctx.db())
--            .iter()
--            .flat_map(|i| i.name(ctx.db()))
--            .enumerate()
--            .map(|(idx, name)| (name.as_str().to_owned(), idx))
--            .collect(),
--    )
-+    Some(td.items(ctx.db()).iter().flat_map(|i| i.name(ctx.db())).enumerate().map(
-+        |(idx, name)| (name.as_str().to_owned(), idx),
-+    ).collect(
-+    ))
- }
- 
- fn trait_definition(path: &ast::Path, sema: &Semantics<'_, RootDatabase>) -> Option<hir::Trait> {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -203,7 +203,9 @@ impl Path {
         match self {
             Path::BarePath(mod_path) => mod_path.is_Self(),
             Path::Normal(path) => {
-                path.type_anchor.is_none() && path.mod_path.is_Self() && path.generic_args.iter().all(|args| args.is_none())
+                path.type_anchor.is_none()
+                    && path.mod_path.is_Self()
+                    && path.generic_args.iter().all(|args| args.is_none())
             }
             Path::LangItem(..) => false,
         }
@@ -277,14 +279,17 @@ impl<'a> PathSegments<'a> {
     pub fn strip_last_two(&self) -> PathSegments<'a> {
         PathSegments {
             segments: self.segments.get(..self.segments.len().saturating_sub(2)).unwrap_or(&[]),
-            generic_args: self.generic_args.map(|it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[])),
+            generic_args: self
+                .generic_args
+                .map(|it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[])),
         }
     }
 
     pub fn iter(&self) -> impl Iterator<Item = PathSegment<'a>> {
-        self.segments.iter().zip(self.generic_args.into_iter().flatten().chain(iter::repeat(&None))).map(
-            |(name, args)| PathSegment { name, args_and_bindings: args.as_ref() },
-        )
+        self.segments
+            .iter()
+            .zip(self.generic_args.into_iter().flatten().chain(iter::repeat(&None)))
+            .map(|(name, args)| PathSegment { name, args_and_bindings: args.as_ref() })
     }
 }
 

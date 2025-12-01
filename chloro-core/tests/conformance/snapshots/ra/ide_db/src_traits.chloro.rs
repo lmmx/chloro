@@ -82,8 +82,7 @@ pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> 
         let assoc = def.as_assoc_item(db)?;
         let trait_ = assoc.implemented_trait(db)?;
         assoc_item_of_trait(db, assoc, trait_)
-    })(
-    ).unwrap_or(
+    })().unwrap_or(
         def,
     )
 }

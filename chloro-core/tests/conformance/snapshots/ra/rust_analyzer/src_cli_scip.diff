@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30572 bytes
+Chloro size:   30594 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -149,32 +149,10 @@ Rustfmt size:  31747 bytes
              special_fields: Default::default(),
 -        })
 -        .into(),
-+        }).into(
-+        ),
++        }).into(),
          descriptors: moniker_descriptors(&moniker.identifier),
          special_fields: Default::default(),
      }
- 
- fn moniker_descriptors(identifier: &MonikerIdentifier) -> Vec<scip_types::Descriptor> {
-     use scip_types::descriptor::Suffix::*;
--    identifier
--        .description
--        .iter()
--        .map(|desc| {
-+    identifier.description.iter().map(|desc| {
-             new_descriptor_str(
-                 &desc.name,
-                 match desc.desc {
-                     MonikerDescriptorKind::Meta => Meta,
-                 },
-             )
--        })
--        .collect()
-+        }).collect(
-+    )
- }
- 
- #[cfg(test)]
      use ide::{FilePosition, TextSize};
      use test_fixture::ChangeFixture;
      use vfs::VfsPath;

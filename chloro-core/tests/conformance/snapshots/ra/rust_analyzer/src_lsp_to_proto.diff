@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   110943 bytes
+Chloro size:   110982 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -49,8 +49,7 @@ Rustfmt size:  113494 bytes
              replace: text_edit.range,
 -        }
 -        .into(),
-+        }.into(
-+        ),
++        }.into(),
          None => text_edit.into(),
      }
  }
@@ -83,26 +82,6 @@ Rustfmt size:  113494 bytes
  }
  
  pub(crate) fn snippet_text_edit_vec(
-     clients_support_annotations: bool,
- ) -> Vec<lsp_ext::SnippetTextEdit> {
-     let annotation = text_edit.change_annotation();
--    text_edit
--        .into_iter()
--        .map(|indel| {
-+    text_edit.into_iter().map(|indel| {
-             self::snippet_text_edit(
-                 line_index,
-                 is_snippet,
-                 annotation,
-                 clients_support_annotations,
-             )
--        })
--        .collect()
-+        }).collect(
-+    )
- }
- 
- pub(crate) fn completion_items(
          items.retain(|item| !item.deprecated);
      }
  
@@ -625,13 +604,8 @@ Rustfmt size:  113494 bytes
                      project_model::TargetKind::Bench => return None,
                  },
                  None => lsp_ext::TestItemKind::Package,
-             ide::TestItemKind::Crate(_) | ide::TestItemKind::Module
-         ),
-         parent: test_item.parent,
--        text_document: test_item
--            .file
--            .map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
-+        text_document: test_item.file.map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
+             .file
+             .map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
          range: line_index.and_then(|l| Some(range(l, test_item.text_range?))),
 -        runnable: test_item
 -            .runnable

@@ -22,10 +22,9 @@ pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) 
     };
 
     let node = d.field.map(Into::into);
-    Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError(code), message, node).stable(
-    ).with_fixes(
-        fixes(ctx, d),
-    )
+    Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError(code), message, node)
+        .stable()
+        .with_fixes(fixes(ctx, d))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assist>> {

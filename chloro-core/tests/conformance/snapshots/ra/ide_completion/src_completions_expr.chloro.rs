@@ -100,13 +100,16 @@ pub(crate) fn complete_expr_path(
     };
 
     match qualified {
-        Qualified::TypeAnchor { ty: None, trait_: None } => ctx.traits_in_scope().iter().copied().map(hir::Trait::from).filter(|it| {
+        Qualified::TypeAnchor { ty: None, trait_: None } => ctx
+            .traits_in_scope()
+            .iter()
+            .copied()
+            .map(hir::Trait::from)
+            .filter(|it| {
                 !ctx.exclude_traits.contains(it) && it.complete(ctx.db) != Complete::IgnoreMethods
-            }).flat_map(
-            |it| it.items(ctx.sema.db),
-        ).for_each(
-            |item| add_assoc_item(acc, item),
-        ),
+            })
+            .flat_map(|it| it.items(ctx.sema.db))
+            .for_each(|item| add_assoc_item(acc, item)),
         Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
         }

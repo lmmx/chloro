@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16645 bytes
+Chloro size:   16657 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -220,19 +220,6 @@ Rustfmt size:  17571 bytes
      let outer_attrs = ast::AttrDocCommentIter::from_syntax_node(owner.syntax())
          .filter(|el| match el {
              Either::Left(attr) => attr.kind().is_outer(),
-             Either::Right(comment) => comment.is_outer(),
-         })
-         .zip(iter::repeat(false));
--    outer_attrs
--        .chain(inner_attrs)
--        .enumerate()
--        .map(|(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr))
-+    outer_attrs.chain(inner_attrs).enumerate().map(
-+        |(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr),
-+    )
- }
- 
- fn inner_attributes(
      Some(attrs)
  }
  

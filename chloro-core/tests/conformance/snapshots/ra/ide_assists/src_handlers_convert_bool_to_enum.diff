@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40489 bytes
-Chloro size:   39751 bytes
+Chloro size:   39786 bytes
 Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
@@ -115,10 +115,10 @@ Rustfmt size:  41249 bytes
 -            Some(ast::ElseBranch::Block(make::tail_only_block_expr(
 -                false_expr,
 -            ))),
-+            Some(ast::ElseBranch::Block(make::tail_only_block_expr(false_expr))),
-+        ).into(
-         )
+-        )
 -        .into()
++            Some(ast::ElseBranch::Block(make::tail_only_block_expr(false_expr))),
++        ).into()
      }
  }
  
@@ -128,13 +128,13 @@ Rustfmt size:  41249 bytes
 -
          let refs_with_imports = augment_references_with_imports(ctx, references, target_module);
 -
--        refs_with_imports.into_iter().rev().for_each(
+         refs_with_imports.into_iter().rev().for_each(
 -            |FileReferenceWithImport {
 -                 range,
 -                 name,
 -                 import_data,
 -             }| {
-+        refs_with_imports.into_iter().rev().for_each(|FileReferenceWithImport { range, name, import_data }| {
++            |FileReferenceWithImport { range, name, import_data }| {
                  // replace the usages in patterns and expressions
                  if let Some(ident_pat) = name.syntax().ancestors().find_map(ast::IdentPat::cast) {
                      cov_mark::hit!(replaces_record_pat_shorthand);
@@ -162,33 +162,16 @@ Rustfmt size:  41249 bytes
                      {
                          utils::replace_record_field_expr(
                              ctx,
-                     let scope = edit.make_import_scope_mut(scope);
-                     delayed_mutations.push((scope, path));
-                 }
--            },
--        )
-+            })
-     }
- }
- 
-     let mut visited_modules = FxHashSet::default();
- 
-     let edition = target_module.krate().edition(ctx.db());
--    references
--        .into_iter()
--        .filter_map(|FileReference { range, name, .. }| {
-+    references.into_iter().filter_map(|FileReference { range, name, .. }| {
+         .into_iter()
+         .filter_map(|FileReference { range, name, .. }| {
              let name = name.into_name_like()?;
 -            ctx.sema
 -                .scope(name.syntax())
 -                .map(|scope| (range, name, scope.module()))
--        })
--        .map(|(range, name, ref_module)| {
 +            ctx.sema.scope(name.syntax()).map(|scope| (range, name, scope.module()))
-+        }).map(|(range, name, ref_module)| {
+         })
+         .map(|(range, name, ref_module)| {
              // if the referenced module is not the same as the target one and has not been seen before, add an import
-             let import_data = if ref_module.nearest_non_block_module(ctx.db()) != *target_module
-                 && !visited_modules.contains(&ref_module)
  
                  ImportScope::find_insert_use_container(name.syntax(), &ctx.sema).and_then(
                      |import_scope| {
@@ -208,13 +191,10 @@ Rustfmt size:  41249 bytes
 -                name,
 -                import_data,
 -            }
--        })
--        .collect()
 +            FileReferenceWithImport { range, name, import_data }
-+        }).collect(
-+    )
+         })
+         .collect()
  }
- 
  fn find_assignment_usage(name: &ast::NameLike) -> Option<ast::Expr> {
      let bin_expr = name.syntax().ancestors().find_map(ast::BinExpr::cast)?;
  
@@ -260,26 +240,6 @@ Rustfmt size:  41249 bytes
      let receiver = method_call.receiver()?;
  
      if !receiver.syntax().descendants().contains(name.syntax()) {
- /// Tries to find the ast node at the nearest module or at top-level, otherwise just
- /// returns the input node.
- fn node_to_insert_before(target_node: SyntaxNode) -> SyntaxNode {
--    target_node
--        .ancestors()
--        .take_while(|it| !matches!(it.kind(), SyntaxKind::MODULE | SyntaxKind::SOURCE_FILE))
--        .filter(|it| ast::Item::can_cast(it.kind()))
--        .last()
--        .unwrap_or(target_node)
-+    target_node.ancestors().take_while(
-+        |it| !matches!(it.kind(), SyntaxKind::MODULE | SyntaxKind::SOURCE_FILE),
-+    ).filter(
-+        |it| ast::Item::can_cast(it.kind()),
-+    ).last(
-+    ).unwrap_or(
-+        target_node,
-+    )
- }
- 
- fn make_bool_enum(make_pub: bool) -> ast::Enum {
      make::enum_(
          [derive_eq],
          if make_pub {
@@ -297,9 +257,9 @@ Rustfmt size:  41249 bytes
              make::variant(None, make::name("True"), None, None),
              make::variant(None, make::name("False"), None, None),
          ]),
-+    ).clone_for_update(
-     )
+-    )
 -    .clone_for_update()
++    ).clone_for_update()
  }
  
  #[cfg(test)]

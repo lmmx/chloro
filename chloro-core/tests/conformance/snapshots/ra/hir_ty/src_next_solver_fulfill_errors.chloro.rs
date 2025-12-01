@@ -378,7 +378,8 @@ impl<'db> BestObligation<'db> {
         goal: &inspect::InspectGoal<'_, 'db>,
     ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
-        if let Some(projection_clause) = goal.goal().predicate.as_projection_clause() && !projection_clause.bound_vars().is_empty() {
+        if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
+            && !projection_clause.bound_vars().is_empty() {
             let pred = projection_clause.map_bound(|proj| proj.projection_term.trait_ref(interner));
             let obligation = Obligation::new(
                 interner,
@@ -738,7 +739,10 @@ mod wf {
                 return Default::default();
             }
 
-            self.interner().predicates_of(def_id).iter_instantiated(self.interner(), args).map(|pred| {
+            self.interner()
+                .predicates_of(def_id)
+                .iter_instantiated(self.interner(), args)
+                .map(|pred| {
                     let cause = ObligationCause::new();
                     Obligation::with_depth(
                         self.interner(),
@@ -747,10 +751,9 @@ mod wf {
                         self.param_env,
                         pred,
                     )
-                }).filter(
-                |pred| !pred.has_escaping_bound_vars(),
-            ).collect(
-            )
+                })
+                .filter(|pred| !pred.has_escaping_bound_vars())
+                .collect()
         }
 
         fn add_wf_preds_for_dyn_ty(
@@ -1150,7 +1153,8 @@ mod wf {
             .iter()
             .map(|predicate| predicate.with_self_ty(interner, erased_self_ty));
 
-        rustc_type_ir::elaborate::elaborate(interner, predicates).filter_map(|pred| {
+        rustc_type_ir::elaborate::elaborate(interner, predicates)
+            .filter_map(|pred| {
                 debug!(?pred);
                 match pred.kind().skip_binder() {
                     ClauseKind::TypeOutlives(rustc_type_ir::OutlivesPredicate(ref t, ref r)) => {
@@ -1178,7 +1182,7 @@ mod wf {
                     | ClauseKind::UnstableFeature(_)
                     | ClauseKind::ConstEvaluatable(_) => None,
                 }
-            }).collect(
-        )
+            })
+            .collect()
     }
 }

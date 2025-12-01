@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53967 bytes
-Chloro size:   54172 bytes
+Chloro size:   54210 bytes
 Rustfmt size:  56860 bytes
 
 ✗ Outputs DIFFER
@@ -47,21 +47,6 @@ Rustfmt size:  56860 bytes
              AdtShape::Union => {
                  never!("using fields of union in derive is always wrong");
                  vec![]
-             AdtShape::Struct(s) => {
-                 vec![s.as_pattern_map(quote! {span => #name }, span, field_map)]
-             }
--            AdtShape::Enum { variants, .. } => variants
--                .iter()
--                .map(|(v, fields)| {
-+            AdtShape::Enum { variants, .. } => variants.iter().map(|(v, fields)| {
-                     fields.as_pattern_map(quote! {span => #name :: #v }, span, &field_map)
--                })
--                .collect(),
-+                }).collect(
-+            ),
-             AdtShape::Union => {
-                 never!("pattern matching on union is always wrong");
-                 vec![quote! {span => un }]
      bounds: Option<tt::TopSubtree>,
  }
  

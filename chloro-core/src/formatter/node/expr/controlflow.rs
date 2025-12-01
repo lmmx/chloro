@@ -281,7 +281,7 @@ pub fn format_block_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     Some(buf)
 }
 
-pub fn format_closure_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
+pub fn format_closure_expr(node: &SyntaxNode, _indent: usize) -> Option<String> {
     let closure = ast::ClosureExpr::cast(node.clone())?;
     let attrs = format_expr_attrs(&closure);
 

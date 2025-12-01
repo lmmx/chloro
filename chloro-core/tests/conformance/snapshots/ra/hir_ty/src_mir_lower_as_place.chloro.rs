@@ -92,18 +92,18 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     self.lower_overloaded_deref(
                         current,
                         r,
-                        rest.last().map(|it| it.target).unwrap_or_else(
-                        || self.expr_ty_without_adjust(expr_id),
-                    ),
+                        rest.last()
+                            .map(|it| it.target)
+                            .unwrap_or_else(|| self.expr_ty_without_adjust(expr_id)),
                         last.target,
                         expr_id.into(),
                         match od.0 {
-                        Some(Mutability::Mut) => true,
-                        Some(Mutability::Not) => false,
-                        None => {
-                            not_supported!("implicit overloaded deref with unknown mutability")
-                        }
-                    },
+                            Some(Mutability::Mut) => true,
+                            Some(Mutability::Not) => false,
+                            None => {
+                                not_supported!("implicit overloaded deref with unknown mutability")
+                            }
+                        },
                     )
                 }
                 Adjust::NeverToAny | Adjust::Borrow(_) | Adjust::Pointer(_) => try_rvalue(self),

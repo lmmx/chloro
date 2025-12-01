@@ -180,8 +180,9 @@ pub(crate) fn extract_definitions_from_docs(
         docs.as_str(),
         MARKDOWN_OPTIONS,
         Some(&mut broken_link_clone_cb),
-    ).into_offset_iter(
-    ).filter_map(|(event, range)| match event {
+    )
+    .into_offset_iter()
+    .filter_map(|(event, range)| match event {
         Event::Start(Tag::Link(_, target, _)) => {
             let (link, ns) = parse_intra_doc_link(&target);
             Some((
@@ -191,8 +192,8 @@ pub(crate) fn extract_definitions_from_docs(
             ))
         }
         _ => None,
-    }).collect(
-    )
+    })
+    .collect()
 }
 
 pub(crate) fn resolve_doc_path_for_def(
@@ -351,7 +352,7 @@ impl DocCommentToken {
 }
 
 fn broken_link_clone_cb(link: BrokenLink<'_>) -> Option<(CowStr<'_>, CowStr<'_>)> {
-    Some((link.reference.clone(), link.reference))
+    Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
 }
 
 fn get_doc_links(

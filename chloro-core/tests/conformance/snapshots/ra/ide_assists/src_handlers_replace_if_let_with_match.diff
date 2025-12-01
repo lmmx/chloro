@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49350 bytes
-Chloro size:   48158 bytes
+Chloro size:   48164 bytes
 Rustfmt size:  49350 bytes
 
 ✗ Outputs DIFFER
@@ -87,27 +87,6 @@ Rustfmt size:  49350 bytes
  pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let match_expr: ast::MatchExpr = ctx.find_node_at_offset()?;
      let match_arm_list = match_expr.match_arm_list()?;
-         ast::Pat::SlicePat(pat) => pat.pats().any(binds_name_v),
-         ast::Pat::TuplePat(it) => it.fields().any(binds_name_v),
-         ast::Pat::TupleStructPat(it) => it.fields().any(binds_name_v),
--        ast::Pat::RecordPat(it) => it
--            .record_pat_field_list()
--            .is_some_and(|rpfl| rpfl.fields().flat_map(|rpf| rpf.pat()).any(binds_name_v)),
-+        ast::Pat::RecordPat(it) => it.record_pat_field_list().is_some_and(
-+            |rpfl| rpfl.fields().flat_map(|rpf| rpf.pat()).any(binds_name_v),
-+        ),
-         ast::Pat::RefPat(pat) => pat.pat().is_some_and(binds_name_v),
-         ast::Pat::BoxPat(pat) => pat.pat().is_some_and(binds_name_v),
-         ast::Pat::ParenPat(pat) => pat.pat().is_some_and(binds_name_v),
- }
- 
- fn is_sad_pat(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
--    sema.type_of_pat(pat)
--        .and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted()))
--        .is_some_and(|it| does_pat_match_variant(pat, &it.sad_pattern()))
-+    sema.type_of_pat(pat).and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted())).is_some_and(
-+        |it| does_pat_match_variant(pat, &it.sad_pattern()),
-+    )
  }
  
  fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) {

@@ -252,7 +252,9 @@ pub(super) fn find_importable_node<'a: 'db, 'db>(
         )
     } else if ctx.find_node_at_offset_with_descend::<ast::Param>().is_some() {
         None
-    } else if let Some(pat) = ctx.find_node_at_offset_with_descend::<ast::IdentPat>().filter(ast::IdentPat::is_simple_ident) {
+    } else if let Some(pat) = ctx
+        .find_node_at_offset_with_descend::<ast::IdentPat>()
+        .filter(ast::IdentPat::is_simple_ident) {
         let expected = expected(Either::Right(pat.clone().into()));
         ImportAssets::for_ident_pat(&ctx.sema, &pat).map(|it| (it, pat.syntax().clone(), expected))
     } else {

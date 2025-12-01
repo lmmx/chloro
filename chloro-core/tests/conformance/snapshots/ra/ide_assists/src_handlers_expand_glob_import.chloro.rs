@@ -219,7 +219,11 @@ struct Refs(Vec<Ref>);
 
 impl Refs {
     fn used_refs(&self, ctx: &AssistContext<'_>) -> Refs {
-        Refs(self.0.clone().into_iter().filter(|r| {
+        Refs(
+            self.0
+                .clone()
+                .into_iter()
+                .filter(|r| {
                     if let Definition::Trait(tr) = r.def
                         && tr.items(ctx.db()).into_iter().any(|ai| {
                             if let AssocItem::Function(f) = ai {
@@ -233,8 +237,9 @@ impl Refs {
                     }
 
                     def_is_referenced_in(r.def, ctx)
-                }).collect(
-        ))
+                })
+                .collect(),
+        )
     }
 
     fn filter_out_by_defs(&self, defs: Vec<Definition>) -> Refs {
@@ -258,12 +263,16 @@ fn find_refs_in_mod(
                 .collect();
             Refs(refs)
         }
-        Expandable::Enum(enm) => Refs(enm.variants(ctx.db()).into_iter().map(|v| Ref {
+        Expandable::Enum(enm) => Refs(
+            enm.variants(ctx.db())
+                .into_iter()
+                .map(|v| Ref {
                     visible_name: v.name(ctx.db()),
                     def: Definition::Variant(v),
                     is_pub: true,
-                }).collect(
-        )),
+                })
+                .collect(),
+        ),
     }
 }
 
@@ -281,23 +290,27 @@ fn is_visible_from(ctx: &AssistContext<'_>, expandable: &Expandable, from: Modul
     match expandable {
         Expandable::Module(module) => match module.parent(ctx.db()) {
             Some(parent) => {
-                module.visibility(ctx.db()).is_visible_from(ctx.db(), from.into()) && is_mod_visible_from(ctx, parent, from)
+                module.visibility(ctx.db()).is_visible_from(ctx.db(), from.into())
+                    && is_mod_visible_from(ctx, parent, from)
             }
             None => true,
         },
         Expandable::Enum(enm) => {
             let module = enm.module(ctx.db());
-            enm.visibility(ctx.db()).is_visible_from(ctx.db(), from.into()) && is_mod_visible_from(ctx, module, from)
+            enm.visibility(ctx.db()).is_visible_from(ctx.db(), from.into())
+                && is_mod_visible_from(ctx, module, from)
         }
     }
 }
 
 fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition> {
-    [Direction::Prev, Direction::Next].into_iter().flat_map(|dir| {
+    [Direction::Prev, Direction::Next]
+        .into_iter()
+        .flat_map(|dir| {
             use_item.syntax().siblings(dir.to_owned()).filter(|n| ast::Use::can_cast(n.kind()))
-        }).flat_map(
-        |n| n.descendants().filter_map(ast::NameRef::cast),
-    ).filter_map(|r| match NameRefClass::classify(&ctx.sema, &r)? {
+        })
+        .flat_map(|n| n.descendants().filter_map(ast::NameRef::cast))
+        .filter_map(|r| match NameRefClass::classify(&ctx.sema, &r)? {
             NameRefClass::Definition(
                 def @ (Definition::Macro(_)
                 | Definition::Module(_)
@@ -311,8 +324,8 @@ fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition>
                 _,
             ) => Some(def),
             _ => None,
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn find_names_to_import(refs_in_target: Refs, imported_defs: Vec<Definition>) -> Vec<Name> {

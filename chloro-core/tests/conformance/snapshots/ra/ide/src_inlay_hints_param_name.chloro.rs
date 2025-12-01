@@ -156,9 +156,12 @@ fn should_hide_param_name_hint(
 /// `fn strip_suffix(suffix)` will be hidden.
 /// `fn stripsuffix(suffix)` will not be hidden.
 fn is_param_name_suffix_of_fn_name(param_name: &str, fn_name: &str) -> bool {
-    fn_name == param_name || fn_name.len().checked_sub(param_name.len()).and_then(
-        |at| fn_name.is_char_boundary(at).then(|| fn_name.split_at(at)),
-    ).is_some_and(|(prefix, suffix)| {
+    fn_name == param_name
+        || fn_name
+            .len()
+            .checked_sub(param_name.len())
+            .and_then(|at| fn_name.is_char_boundary(at).then(|| fn_name.split_at(at)))
+            .is_some_and(|(prefix, suffix)| {
                 suffix.eq_ignore_ascii_case(param_name) && prefix.ends_with('_')
             })
 }
@@ -171,9 +174,10 @@ fn is_argument_expr_similar_to_param_name(
     match get_segment_representation(argument) {
         Some(Either::Left(argument)) => is_argument_similar_to_param_name(&argument, param_name),
         Some(Either::Right(path)) => {
-            path.segment().and_then(|it| it.name_ref()).is_some_and(
-                |name_ref| name_ref.text().eq_ignore_ascii_case(param_name),
-            ) || is_adt_constructor_similar_to_param_name(sema, &path, param_name)
+            path.segment()
+                .and_then(|it| it.name_ref())
+                .is_some_and(|name_ref| name_ref.text().eq_ignore_ascii_case(param_name))
+                || is_adt_constructor_similar_to_param_name(sema, &path, param_name)
         }
         None => false,
     }
@@ -279,8 +283,7 @@ fn is_adt_constructor_similar_to_param_name(
             }
         }
         _ => None,
-    })(
-    ).unwrap_or(
+    })().unwrap_or(
         false,
     )
 }

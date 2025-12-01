@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33467 bytes
-Chloro size:   33218 bytes
+Chloro size:   33362 bytes
 Rustfmt size:  34530 bytes
 
 ✗ Outputs DIFFER
@@ -169,32 +169,6 @@ Rustfmt size:  34530 bytes
          let (store, source_map, generic_params, params, ret_type, self_param, variadic) =
              lower_function(db, module, source, id);
  
-     pub fn is_intrinsic(db: &dyn DefDatabase, id: FunctionId) -> bool {
-         let data = db.function_signature(id);
--        data.flags.contains(FnFlags::RUSTC_INTRINSIC)
--            // Keep this around for a bit until extern "rustc-intrinsic" abis are no longer used
--            || match &data.abi {
--                Some(abi) => *abi == sym::rust_dash_intrinsic,
--                None => match id.lookup(db).container {
--                    ItemContainerId::ExternBlockId(block) => {
--                        block.abi(db) == Some(sym::rust_dash_intrinsic)
--                    }
--                    _ => false,
--                },
--            }
-+        data.flags.contains(FnFlags::RUSTC_INTRINSIC) || match &data.abi {
-+            Some(abi) => *abi == sym::rust_dash_intrinsic,
-+            None => match id.lookup(db).container {
-+                ItemContainerId::ExternBlockId(block) => {
-+                    block.abi(db) == Some(sym::rust_dash_intrinsic)
-+                }
-+                _ => false,
-+            },
-+        }
-     }
- }
- 
- 
          let mut flags = TypeAliasFlags::empty();
          let attrs = db.attrs(id.into());
 -        if attrs
@@ -319,9 +293,9 @@ Rustfmt size:  34530 bytes
 -                None
 -            }
 -        })
-+        self.variants.iter().find_map(
-+            |(id, name, _)| if *id == variant_id { Some(name.clone()) } else { None },
-+        )
++        self.variants
++            .iter()
++            .find_map(|(id, name, _)| if *id == variant_id { Some(name.clone()) } else { None })
      }
  
 -    // [Adopted from rustc](https://github.com/rust-lang/rust/blob/bd53aa3bf7a24a70d763182303bd75e5fc51a9af/compiler/rustc_middle/src/ty/adt.rs#L446-L448)

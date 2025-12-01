@@ -645,15 +645,17 @@ impl FunctionSignature {
 
     pub fn is_intrinsic(db: &dyn DefDatabase, id: FunctionId) -> bool {
         let data = db.function_signature(id);
-        data.flags.contains(FnFlags::RUSTC_INTRINSIC) || match &data.abi {
-            Some(abi) => *abi == sym::rust_dash_intrinsic,
-            None => match id.lookup(db).container {
-                ItemContainerId::ExternBlockId(block) => {
-                    block.abi(db) == Some(sym::rust_dash_intrinsic)
-                }
-                _ => false,
-            },
-        }
+        data.flags.contains(FnFlags::RUSTC_INTRINSIC)
+            // Keep this around for a bit until extern "rustc-intrinsic" abis are no longer used
+            || match &data.abi {
+                Some(abi) => *abi == sym::rust_dash_intrinsic,
+                None => match id.lookup(db).container {
+                    ItemContainerId::ExternBlockId(block) => {
+                        block.abi(db) == Some(sym::rust_dash_intrinsic)
+                    }
+                    _ => false,
+                },
+            }
     }
 }
 
@@ -980,9 +982,9 @@ impl EnumVariants {
     }
 
     pub fn variant_name_by_id(&self, variant_id: EnumVariantId) -> Option<Name> {
-        self.variants.iter().find_map(
-            |(id, name, _)| if *id == variant_id { Some(name.clone()) } else { None },
-        )
+        self.variants
+            .iter()
+            .find_map(|(id, name, _)| if *id == variant_id { Some(name.clone()) } else { None })
     }
 
     pub fn is_payload_free(&self, db: &dyn DefDatabase) -> bool {

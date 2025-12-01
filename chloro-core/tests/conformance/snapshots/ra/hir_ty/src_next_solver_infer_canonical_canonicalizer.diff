@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   28022 bytes
+Chloro size:   28052 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -262,13 +262,8 @@ Rustfmt size:  29841 bytes
          BoundVar::from(idx)
      }
  
-             .map(|(idx, universe)| (*universe, UniverseIndex::from_usize(idx)))
-             .collect();
- 
--        self.variables
--            .iter()
--            .map(|v| match *v {
-+        self.variables.iter().map(|v| match *v {
+             .iter()
+             .map(|v| match *v {
                  CanonicalVarKind::Int | CanonicalVarKind::Float => *v,
 -                CanonicalVarKind::Ty { ui, sub_root } => CanonicalVarKind::Ty {
 -                    ui: reverse_universe_map[&ui],
@@ -280,13 +275,3 @@ Rustfmt size:  29841 bytes
                  CanonicalVarKind::Region(u) => CanonicalVarKind::Region(reverse_universe_map[&u]),
                  CanonicalVarKind::Const(u) => CanonicalVarKind::Const(reverse_universe_map[&u]),
                  CanonicalVarKind::PlaceholderTy(placeholder) => {
-                         ..placeholder
-                     })
-                 }
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     /// Shorthand helper that creates a canonical region variable for

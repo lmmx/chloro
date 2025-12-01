@@ -176,9 +176,8 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
 
     /// Unify two types (using sub or lub).
     fn unify(&mut self, a: Ty<'db>, b: Ty<'db>) -> CoerceResult<'db> {
-        self.unify_raw(a, b).and_then(
-            |InferOk { value: ty, obligations }| success(vec![], ty, obligations),
-        )
+        self.unify_raw(a, b)
+            .and_then(|InferOk { value: ty, obligations }| success(vec![], ty, obligations))
     }
 
     /// Unify two types (using sub or lub) and produce a specific coercion.
@@ -1233,13 +1232,15 @@ impl<'db> InferenceContext<'_, 'db> {
                 if let Some(e) = first_error {
                     Err(e)
                 } else {
-                    Err(self.table.commit_if_ok(|table| {
+                    Err(self
+                        .table
+                        .commit_if_ok(|table| {
                             table
                                 .infer_ctxt
                                 .at(&ObligationCause::new(), table.trait_env.env)
                                 .lub(prev_ty, new_ty)
-                        }).unwrap_err(
-                    ))
+                        })
+                        .unwrap_err())
                 }
             }
             Ok(ok) => {

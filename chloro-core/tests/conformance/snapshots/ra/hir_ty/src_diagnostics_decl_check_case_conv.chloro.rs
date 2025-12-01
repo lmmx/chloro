@@ -46,7 +46,9 @@ fn is_camel_case(name: &str) -> bool {
     let mut fst = None;
     // start with a non-lowercase letter rather than non-uppercase
     // ones (some scripts don't have a concept of upper/lowercase)
-    name.chars().next().is_none_or(|c| !c.is_lowercase()) && !name.contains("__") && !name.chars().any(|snd| {
+    name.chars().next().is_none_or(|c| !c.is_lowercase())
+        && !name.contains("__")
+        && !name.chars().any(|snd| {
             let ret = match fst {
                 None => false,
                 Some(fst) => {

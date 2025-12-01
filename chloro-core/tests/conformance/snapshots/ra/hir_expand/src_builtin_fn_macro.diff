@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   31881 bytes
+Chloro size:   31876 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -80,8 +80,7 @@ Rustfmt size:  32290 bytes
          }
 -    })()
 -    .map_err(|span| ExpandError::other(span, "expected string literal"))
-+    })(
-+    ).map_err(
++    })().map_err(
 +        |span| ExpandError::other(span, "expected string literal"),
 +    )
  }

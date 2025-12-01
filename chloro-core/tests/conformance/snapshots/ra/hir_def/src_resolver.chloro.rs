@@ -67,8 +67,10 @@ struct ExprScope {
 
 impl fmt::Debug for ExprScope {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ExprScope").field("owner", &self.owner).field("scope_id", &self.scope_id).finish(
-        )
+        f.debug_struct("ExprScope")
+            .field("owner", &self.owner)
+            .field("scope_id", &self.scope_id)
+            .finish()
     }
 }
 
@@ -496,15 +498,17 @@ impl<'db> Resolver<'db> {
         expected_macro_kind: Option<MacroSubNs>,
     ) -> Option<(MacroId, Option<ImportOrExternCrate>)> {
         let (item_map, item_local_map, module) = self.item_scope_();
-        item_map.resolve_path(
-            item_local_map,
-            db,
-            module,
-            path,
-            BuiltinShadowMode::Other,
-            expected_macro_kind,
-        ).0.take_macros_import(
-        )
+        item_map
+            .resolve_path(
+                item_local_map,
+                db,
+                module,
+                path,
+                BuiltinShadowMode::Other,
+                expected_macro_kind,
+            )
+            .0
+            .take_macros_import()
     }
 
     pub fn resolve_path_as_macro_def(
@@ -621,7 +625,10 @@ impl<'db> Resolver<'db> {
         &'a self,
         db: &'a dyn DefDatabase,
     ) -> impl Iterator<Item = Name> + 'a {
-        self.module_scope.def_map[self.module_scope.module_id].scope.extern_crate_decls().filter_map(|id| {
+        self.module_scope.def_map[self.module_scope.module_id]
+            .scope
+            .extern_crate_decls()
+            .filter_map(|id| {
                 let loc = id.lookup(db);
                 let extern_crate = loc.source(db);
                 // If there is a rename (`as x`), extract the renamed name, or remove the `extern crate`
@@ -635,9 +642,10 @@ impl<'db> Resolver<'db> {
     }
 
     pub fn extern_crates_in_scope(&self) -> impl Iterator<Item = (Name, ModuleId)> + '_ {
-        self.module_scope.local_def_map.extern_prelude().map(
-            |(name, module_id)| (name.clone(), module_id.0.into()),
-        )
+        self.module_scope
+            .local_def_map
+            .extern_prelude()
+            .map(|(name, module_id)| (name.clone(), module_id.0.into()))
     }
 
     pub fn traits_in_scope(&self, db: &dyn DefDatabase) -> FxHashSet<TraitId> {
@@ -672,11 +680,12 @@ impl<'db> Resolver<'db> {
     }
 
     pub fn traits_in_scope_from_block_scopes(&self) -> impl Iterator<Item = TraitId> + '_ {
-        self.scopes().filter_map(|scope| match scope {
+        self.scopes()
+            .filter_map(|scope| match scope {
                 Scope::BlockScope(m) => Some(m.def_map[m.module_id].scope.traits()),
                 _ => None,
-            }).flatten(
-        )
+            })
+            .flatten()
     }
 
     pub fn module(&self) -> ModuleId {
@@ -956,12 +965,16 @@ impl<'db> Resolver<'db> {
 
     /// The innermost block scope that contains items or the module scope that contains this resolver.
     fn item_scope_(&self) -> (&DefMap, &LocalDefMap, LocalModuleId) {
-        self.scopes().find_map(|scope| match scope {
+        self.scopes()
+            .find_map(|scope| match scope {
                 Scope::BlockScope(m) => Some((m.def_map, m.local_def_map, m.module_id)),
                 _ => None,
-            }).unwrap_or(
-            (self.module_scope.def_map, self.module_scope.local_def_map, self.module_scope.module_id),
-        )
+            })
+            .unwrap_or((
+                self.module_scope.def_map,
+                self.module_scope.local_def_map,
+                self.module_scope.module_id,
+            ))
     }
 }
 

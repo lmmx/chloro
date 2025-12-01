@@ -385,7 +385,10 @@ pub(crate) fn handle_matching_brace(
     let _p = tracing::info_span!("handle_matching_brace").entered();
     let file_id = try_default!(from_proto::file_id(&snap, &params.text_document.uri)?);
     let line_index = snap.file_line_index(file_id)?;
-    params.positions.into_iter().map(|position| {
+    params
+        .positions
+        .into_iter()
+        .map(|position| {
             let offset = from_proto::offset(&line_index, position);
             offset.map(|offset| {
                 let offset = match snap.analysis.matching_brace(FilePosition { file_id, offset }) {
@@ -394,8 +397,8 @@ pub(crate) fn handle_matching_brace(
                 };
                 to_proto::position(&line_index, offset)
             })
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 pub(crate) fn handle_join_lines(
@@ -1752,7 +1755,11 @@ pub(crate) fn handle_inlay_hints(
     );
 
     let inlay_hints_config = snap.config.inlay_hints(snap.minicore());
-    Ok(Some(snap.analysis.inlay_hints(&inlay_hints_config, file_id, Some(range))?.into_iter().map(|it| {
+    Ok(Some(
+        snap.analysis
+            .inlay_hints(&inlay_hints_config, file_id, Some(range))?
+            .into_iter()
+            .map(|it| {
                 to_proto::inlay_hint(
                     &snap,
                     &inlay_hints_config.fields_to_resolve,
@@ -1760,8 +1767,9 @@ pub(crate) fn handle_inlay_hints(
                     file_id,
                     it,
                 )
-            }).collect::<Cancellable<Vec<_>>>(
-    )?))
+            })
+            .collect::<Cancellable<Vec<_>>>()?,
+    ))
 }
 
 pub(crate) fn handle_inlay_hints_resolve(
@@ -1802,7 +1810,8 @@ pub(crate) fn handle_inlay_hints_resolve(
         },
     )?;
 
-    Ok(resolve_hints.and_then(|it| {
+    Ok(resolve_hints
+        .and_then(|it| {
             to_proto::inlay_hint(
                 &snap,
                 &forced_resolve_inlay_hints_config.fields_to_resolve,
@@ -1811,13 +1820,10 @@ pub(crate) fn handle_inlay_hints_resolve(
                 it,
             )
             .ok()
-        }).filter(
-        |hint| hint.position == original_hint.position,
-    ).filter(
-        |hint| hint.kind == original_hint.kind,
-    ).unwrap_or(
-        original_hint,
-    ))
+        })
+        .filter(|hint| hint.position == original_hint.position)
+        .filter(|hint| hint.kind == original_hint.kind)
+        .unwrap_or(original_hint))
 }
 
 pub(crate) fn handle_call_hierarchy_prepare(
@@ -2265,11 +2271,13 @@ fn goto_type_action_links(
 
     Some(lsp_ext::CommandLinkGroup {
         title: Some("Go to ".into()),
-        commands: nav_targets.iter().filter_map(|it| {
+        commands: nav_targets
+            .iter()
+            .filter_map(|it| {
                 to_proto::command::goto_location(snap, &it.nav)
                     .map(|cmd| to_command_link(cmd, it.mod_path.clone()))
-            }).collect(
-        ),
+            })
+            .collect(),
     })
 }
 
@@ -2279,7 +2287,9 @@ fn prepare_hover_actions(
 ) -> Vec<lsp_ext::CommandLinkGroup> {
     let hover_actions = snap.config.hover_actions();
     let client_commands = snap.config.client_commands();
-    actions.iter().filter_map(|it| match it {
+    actions
+        .iter()
+        .filter_map(|it| match it {
             HoverAction::Implementation(position) => show_impl_command_link(
                 snap,
                 position,
@@ -2298,8 +2308,8 @@ fn prepare_hover_actions(
             HoverAction::GoToType(targets) => {
                 goto_type_action_links(snap, targets, &hover_actions, &client_commands)
             }
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn should_skip_target(runnable: &Runnable, cargo_spec: Option<&TargetSpec>) -> bool {

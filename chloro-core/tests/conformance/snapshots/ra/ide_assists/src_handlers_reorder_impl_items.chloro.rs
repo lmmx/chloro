@@ -84,10 +84,14 @@ fn compute_item_ranks(
 ) -> Option<FxHashMap<String, usize>> {
     let td = trait_definition(path, &ctx.sema)?;
 
-    Some(td.items(ctx.db()).iter().flat_map(|i| i.name(ctx.db())).enumerate().map(
-        |(idx, name)| (name.as_str().to_owned(), idx),
-    ).collect(
-    ))
+    Some(
+        td.items(ctx.db())
+            .iter()
+            .flat_map(|i| i.name(ctx.db()))
+            .enumerate()
+            .map(|(idx, name)| (name.as_str().to_owned(), idx))
+            .collect(),
+    )
 }
 
 fn trait_definition(path: &ast::Path, sema: &Semantics<'_, RootDatabase>) -> Option<hir::Trait> {

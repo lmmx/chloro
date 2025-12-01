@@ -73,9 +73,11 @@ impl DiagnosticCollection {
 
     pub(crate) fn clear_check_all(&mut self) {
         Arc::make_mut(&mut self.check_fixes).clear();
-        self.changes.extend(self.check.iter_mut().flat_map(
-            |it| it.per_package.drain().flat_map(|(_, v)| v.per_file.into_keys()),
-        ))
+        self.changes.extend(
+            self.check
+                .iter_mut()
+                .flat_map(|it| it.per_package.drain().flat_map(|(_, v)| v.per_file.into_keys())),
+        )
     }
 
     pub(crate) fn clear_check_for_package(

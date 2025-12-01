@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   15869 bytes
+Chloro size:   15899 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
@@ -38,22 +38,6 @@ Rustfmt size:  15979 bytes
  use self::pat_util::EnumerateAndAdjustIterator;
  
  #[derive(Clone, Debug)]
-             return Vec::new();
-         }
- 
--        pats.iter()
--            .enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize))
--            .map(|(i, &subpattern)| FieldPat {
-+        pats.iter().enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize)).map(|(i, &subpattern)| FieldPat {
-                 field: LocalFieldId::from_raw((i as u32).into()),
-                 pattern: self.lower_pattern(subpattern),
--            })
--            .collect()
-+            }).collect(
-+        )
-     }
- 
-     fn lower_patterns(&mut self, pats: &[PatId]) -> Vec<Pat<'db>> {
                          AdtId::EnumId(_) => None,
                      }),
                  };

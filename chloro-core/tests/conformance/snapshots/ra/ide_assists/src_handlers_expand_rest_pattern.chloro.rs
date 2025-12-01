@@ -242,11 +242,11 @@ fn gen_unnamed_pat(
         false,
         false,
         match name_gen.for_type(ty, ctx.sema.db, ctx.edition()) {
-        Some(name) => make.name(&name),
-        None => make.name(&format!("_{index}")),
-    },
-    ).into(
+            Some(name) => make.name(&name),
+            None => make.name(&format!("_{index}")),
+        },
     )
+    .into()
 }
 
 fn calculate_counts(

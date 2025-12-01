@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9425 bytes
-Chloro size:   9425 bytes
+Chloro size:   9414 bytes
 Rustfmt size:  9425 bytes
 
 ✗ Outputs DIFFER
@@ -26,22 +26,6 @@ Rustfmt size:  9425 bytes
  
  /// Complete mod declaration, i.e. `mod $0;`
  pub(crate) fn complete_mod(
-         }
-     }?;
- 
--    module_chain_to_containing_module_file(module, db)
--        .into_iter()
--        .filter_map(|module| module.name(db))
--        .try_fold(base_directory, |path, name| path.join(name.as_str()))
-+    module_chain_to_containing_module_file(module, db).into_iter().filter_map(
-+        |module| module.name(db),
-+    ).try_fold(
-+        base_directory,
-+        |path, name| path.join(name.as_str()),
-+    )
- }
- 
- fn module_chain_to_containing_module_file(
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

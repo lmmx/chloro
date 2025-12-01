@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34348 bytes
+Chloro size:   34277 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
@@ -123,50 +123,6 @@ Rustfmt size:  36233 bytes
              LazyProperty::Lazy
          } else {
              let tooltip = finish();
-             }
-             _ => self.parts.insert(
-                 0,
--                InlayHintLabelPart { text: s.into(), linked_location: None, tooltip: None },
-+                InlayHintLabelPart {
-+                text: s.into(),
-+                linked_location: None,
-+                tooltip: None,
-+            },
-             ),
-         }
-     }
-             Self { text, linked_location: None, tooltip: None | Some(LazyProperty::Lazy) } => {
-                 text.fmt(f)
-             }
--            Self { text, linked_location, tooltip } => f
--                .debug_struct("InlayHintLabelPart")
--                .field("text", text)
--                .field("linked_location", linked_location)
--                .field(
--                    "tooltip",
--                    &tooltip.as_ref().map_or("", |it| match it {
-+            Self { text, linked_location, tooltip } => f.debug_struct("InlayHintLabelPart").field("text", text).field(
-+                "linked_location",
-+                linked_location,
-+            ).field(
-+                "tooltip",
-+                &tooltip.as_ref().map_or(
-+                "",
-+                |it| match it {
-                         LazyProperty::Computed(
-                             InlayTooltip::String(it) | InlayTooltip::Markdown(it),
-                         ) => it,
-                         LazyProperty::Lazy => "",
--                    }),
--                )
--                .finish(),
-+                    },
-+            ),
-+            ).finish(
-+            ),
-         }
-     }
- }
  
  #[cfg(test)]
  mod tests {

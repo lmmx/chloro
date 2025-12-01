@@ -355,7 +355,9 @@ fn on_left_angle_typed(
         return None;
     }
 
-    if ancestors_at_offset(file.syntax(), offset).take_while(|n| !ast::Item::can_cast(n.kind())).any(|n| {
+    if ancestors_at_offset(file.syntax(), offset)
+        .take_while(|n| !ast::Item::can_cast(n.kind()))
+        .any(|n| {
             ast::GenericParamList::can_cast(n.kind())
                 || ast::GenericArgList::can_cast(n.kind())
                 || ast::UseBoundGenericArgs::can_cast(n.kind())

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15972 bytes
-Chloro size:   16009 bytes
+Chloro size:   16004 bytes
 Rustfmt size:  15995 bytes
 
 ✗ Outputs DIFFER
@@ -23,9 +23,9 @@ Rustfmt size:  15995 bytes
          QueryConfig::Rustc(&Sysroot::empty(), &std::env::current_dir().unwrap()),
          None,
          &FxHashMap::default(),
-+    ).unwrap(
-     )
+-    )
 -    .unwrap()
++    ).unwrap()
  }
  
  fn eval_goal(

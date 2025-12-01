@@ -246,9 +246,11 @@ pub(crate) fn find_defs(
         return resolution.map(Definition::from).map(|it| vec![it]);
     }
 
-    Some(sema.descend_into_macros_exact(token).into_iter().filter_map(
-        |it| ast::NameLike::cast(it.parent()?),
-    ).filter_map(move |name_like| {
+    Some(
+        sema.descend_into_macros_exact(token)
+            .into_iter()
+            .filter_map(|it| ast::NameLike::cast(it.parent()?))
+            .filter_map(move |name_like| {
                 let def = match name_like {
                     ast::NameLike::NameRef(name_ref) => {
                         match NameRefClass::classify(sema, &name_ref)? {
@@ -282,8 +284,9 @@ pub(crate) fn find_defs(
                     }
                 };
                 Some(def)
-            }).collect(
-    ))
+            })
+            .collect(),
+    )
 }
 
 /// Filter out all non-literal usages for adt-defs
@@ -334,9 +337,9 @@ fn name_for_constructor_search(syntax: &SyntaxNode, position: FilePosition) -> O
     let token_parent = token.parent()?;
     let kind = token.kind();
     if kind == T![;] {
-        ast::Struct::cast(token_parent).filter(|struct_| struct_.field_list().is_none()).and_then(
-            |struct_| struct_.name(),
-        )
+        ast::Struct::cast(token_parent)
+            .filter(|struct_| struct_.field_list().is_none())
+            .and_then(|struct_| struct_.name())
     } else if kind == T!['{'] {
         match_ast! {
             match token_parent {
@@ -388,7 +391,10 @@ fn is_enum_lit_name_ref(
                 if variant.parent_enum(sema.db) == enum_
         )
     };
-    name_ref.syntax().ancestors().find_map(|ancestor| {
+    name_ref
+        .syntax()
+        .ancestors()
+        .find_map(|ancestor| {
             match_ast! {
                 match ancestor {
                     ast::PathExpr(path_expr) => path_expr.path().map(path_is_variant_of_enum),
@@ -396,18 +402,16 @@ fn is_enum_lit_name_ref(
                     _ => None,
                 }
             }
-        }).unwrap_or(
-        false,
-    )
+        })
+        .unwrap_or(false)
 }
 
 /// Checks if a path ends with the given name reference.
 /// Helper function for checking constructor usage patterns.
 fn path_ends_with(path: Option<ast::Path>, name_ref: &ast::NameRef) -> bool {
-    path.and_then(|path| path.segment()).and_then(|segment| segment.name_ref()).map_or(
-        false,
-        |segment| segment == *name_ref,
-    )
+    path.and_then(|path| path.segment())
+        .and_then(|segment| segment.name_ref())
+        .map_or(false, |segment| segment == *name_ref)
 }
 
 /// Checks if a name reference is used in a literal (constructor) context.
@@ -424,9 +428,7 @@ fn is_lit_name_ref(name_ref: &ast::NameRef) -> bool {
                 _ => None,
             }
         }
-    }).unwrap_or(
-        false,
-    )
+    }).unwrap_or(false)
 }
 
 fn handle_control_flow_keywords(

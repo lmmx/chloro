@@ -1320,9 +1320,10 @@ impl<'db> Interner for DbInterner<'db> {
         if all_bounds.len() == own_bounds.len() {
             EarlyBinder::bind(Clauses::new_from_iter(self, []))
         } else {
-            EarlyBinder::bind(
-                Clauses::new_from_iter(self, all_bounds.difference(&own_bounds).cloned()),
-            )
+            EarlyBinder::bind(Clauses::new_from_iter(
+                self,
+                all_bounds.difference(&own_bounds).cloned(),
+            ))
         }
     }
 
@@ -1509,10 +1510,10 @@ impl<'db> Interner for DbInterner<'db> {
                 unimplemented!()
             }
         };
-        lang_item.resolve_trait(self.db(), self.krate.expect("Must have self.krate")).unwrap_or_else(
-            || panic!("Lang item {lang_item:?} required but not found."),
-        ).into(
-        )
+        lang_item
+            .resolve_trait(self.db(), self.krate.expect("Must have self.krate"))
+            .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."))
+            .into()
     }
 
     fn require_adt_lang_item(self, lang_item: SolverAdtLangItem) -> AdtIdWrapper {
@@ -1520,32 +1521,26 @@ impl<'db> Interner for DbInterner<'db> {
             SolverAdtLangItem::Option => LangItem::Option,
             SolverAdtLangItem::Poll => LangItem::Poll,
         };
-        lang_item.resolve_adt(self.db(), self.krate.expect("Must have self.krate")).unwrap_or_else(
-            || panic!("Lang item {lang_item:?} required but not found."),
-        ).into(
-        )
+        lang_item
+            .resolve_adt(self.db(), self.krate.expect("Must have self.krate"))
+            .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."))
+            .into()
     }
 
     fn is_lang_item(self, def_id: Self::DefId, lang_item: SolverLangItem) -> bool {
-        self.as_lang_item(def_id).map_or(
-            false,
-            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
-        )
+        self.as_lang_item(def_id)
+            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
     }
 
     fn is_trait_lang_item(self, def_id: Self::TraitId, lang_item: SolverTraitLangItem) -> bool {
-        self.as_trait_lang_item(def_id).map_or(
-            false,
-            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
-        )
+        self.as_trait_lang_item(def_id)
+            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
     }
 
     fn is_adt_lang_item(self, def_id: Self::AdtId, lang_item: SolverAdtLangItem) -> bool {
         // FIXME: derive PartialEq on SolverTraitLangItem
-        self.as_adt_lang_item(def_id).map_or(
-            false,
-            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
-        )
+        self.as_adt_lang_item(def_id)
+            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
     }
 
     fn as_lang_item(self, def_id: Self::DefId) -> Option<SolverLangItem> {
@@ -1730,7 +1725,9 @@ impl<'db> Interner for DbInterner<'db> {
         impl_id: Self::ImplId,
     ) -> EarlyBinder<Self, rustc_type_ir::TraitRef<Self>> {
         let db = self.db();
-        db.impl_trait(impl_id.0).expect("invalid impl passed to trait solver")
+        db.impl_trait(impl_id.0)
+            // ImplIds for impls where the trait ref can't be resolved should never reach trait solving
+            .expect("invalid impl passed to trait solver")
     }
 
     fn impl_polarity(self, impl_id: Self::ImplId) -> rustc_type_ir::ImplPolarity {

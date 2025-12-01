@@ -119,15 +119,16 @@ pub(super) fn split_refs_and_uses<T: ast::AstNode>(
     iter: impl IntoIterator<Item = FileReference>,
     mut map_ref: impl FnMut(ast::NameRef) -> Option<T>,
 ) -> (Vec<T>, Vec<ast::Path>) {
-    iter.into_iter().filter_map(|file_ref| match file_ref.name {
+    iter.into_iter()
+        .filter_map(|file_ref| match file_ref.name {
             FileReferenceNode::NameRef(name_ref) => Some(name_ref),
             _ => None,
-        }).filter_map(|name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
+        })
+        .filter_map(|name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
             Some(use_tree) => builder.make_mut(use_tree).path().map(Either::Right),
             None => map_ref(name_ref).map(Either::Left),
-        }).partition_map(
-        |either| either,
-    )
+        })
+        .partition_map(|either| either)
 }
 
 pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
@@ -518,7 +519,11 @@ fn inline(
             make::expr_paren(expr).clone_for_update().into()
         }
         Some(expr) if !is_async_fn && no_stmts => expr,
-        _ => match node.syntax().parent().and_then(ast::BinExpr::cast).and_then(|bin_expr| bin_expr.lhs()) {
+        _ => match node
+            .syntax()
+            .parent()
+            .and_then(ast::BinExpr::cast)
+            .and_then(|bin_expr| bin_expr.lhs()) {
             Some(lhs) if lhs.syntax() == node.syntax() => {
                 make::expr_paren(ast::Expr::BlockExpr(body)).clone_for_update().into()
             }

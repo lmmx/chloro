@@ -566,14 +566,17 @@ fn macro_arg(db: &dyn ExpandDatabase, id: MacroCallId) -> MacroArgResult {
 fn censor_derive_input(derive_attr_index: AttrId, node: &ast::Adt) -> FxHashSet<SyntaxElement> {
     // FIXME: handle `cfg_attr`
     cov_mark::hit!(derive_censoring);
-    collect_attrs(node).take(derive_attr_index.ast_index() + 1).filter_map(
-        |(_, attr)| Either::left(attr),
-    ).filter(
-        |attr| attr.simple_name().as_deref() == Some("derive"),
-    ).map(
-        |it| it.syntax().clone().into(),
-    ).collect(
-    )
+    collect_attrs(node)
+        .take(derive_attr_index.ast_index() + 1)
+        .filter_map(|(_, attr)| Either::left(attr))
+        // FIXME, this resolution should not be done syntactically
+        // derive is a proper macro now, no longer builtin
+        // But we do not have resolution at this stage, this means
+        // we need to know about all macro calls for the given ast item here
+        // so we require some kind of mapping...
+        .filter(|attr| attr.simple_name().as_deref() == Some("derive"))
+        .map(|it| it.syntax().clone().into())
+        .collect()
 }
 
 /// Attributes expect the invoking attribute to be stripped

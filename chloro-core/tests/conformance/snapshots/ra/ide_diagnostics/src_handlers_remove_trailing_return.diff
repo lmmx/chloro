@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7346 bytes
-Chloro size:   7152 bytes
+Chloro size:   7181 bytes
 Rustfmt size:  7366 bytes
 
 ✗ Outputs DIFFER
@@ -18,29 +18,6 @@ Rustfmt size:  7366 bytes
  pub(crate) fn remove_trailing_return(
      ctx: &DiagnosticsContext<'_>,
      d: &RemoveTrailingReturn,
-             .and_then(ast::ExprStmt::cast)
-             .map(|stmt| stmt.syntax().text_range())
-     });
--    Some(
--        Diagnostic::new(
--            DiagnosticCode::Clippy("needless_return"),
--            "replace return <expr>; with <expr>",
--            display_range,
--        )
--        .stable()
--        .with_fixes(fixes(ctx, d)),
--    )
-+    Some(Diagnostic::new(
-+        DiagnosticCode::Clippy("needless_return"),
-+        "replace return <expr>; with <expr>",
-+        display_range,
-+    ).stable(
-+    ).with_fixes(
-+        fixes(ctx, d),
-+    ))
- }
- 
- fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<Assist>> {
      let return_expr = d.return_expr.value.to_node(&root);
      let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);
  

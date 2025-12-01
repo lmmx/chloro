@@ -141,12 +141,10 @@ fn directory_to_look_for_submodules(
         }
     }?;
 
-    module_chain_to_containing_module_file(module, db).into_iter().filter_map(
-        |module| module.name(db),
-    ).try_fold(
-        base_directory,
-        |path, name| path.join(name.as_str()),
-    )
+    module_chain_to_containing_module_file(module, db)
+        .into_iter()
+        .filter_map(|module| module.name(db))
+        .try_fold(base_directory, |path, name| path.join(name.as_str()))
 }
 
 fn module_chain_to_containing_module_file(

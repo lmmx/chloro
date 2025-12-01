@@ -412,9 +412,12 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     fn pat_ty_after_adjustment(&self, pat: PatId) -> Ty<'db> {
-        *self.result.pat_adjustments.get(&pat).and_then(|it| it.first()).unwrap_or(
-            &self.result.type_of_pat[pat],
-        )
+        *self
+            .result
+            .pat_adjustments
+            .get(&pat)
+            .and_then(|it| it.first())
+            .unwrap_or(&self.result.type_of_pat[pat])
     }
 
     fn infer_ref_pat(

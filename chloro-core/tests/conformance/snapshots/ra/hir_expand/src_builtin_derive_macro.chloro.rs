@@ -195,10 +195,12 @@ impl AdtShape {
             AdtShape::Struct(s) => {
                 vec![s.as_pattern_map(quote! {span => #name }, span, field_map)]
             }
-            AdtShape::Enum { variants, .. } => variants.iter().map(|(v, fields)| {
+            AdtShape::Enum { variants, .. } => variants
+                .iter()
+                .map(|(v, fields)| {
                     fields.as_pattern_map(quote! {span => #name :: #v }, span, &field_map)
-                }).collect(
-            ),
+                })
+                .collect(),
             AdtShape::Union => {
                 never!("pattern matching on union is always wrong");
                 vec![quote! {span => un }]

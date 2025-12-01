@@ -280,15 +280,15 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             hir_def::hir::Expr::Literal(literal) => intern_const_ref(
                 self.db,
                 &match *literal {
-                hir_def::hir::Literal::Float(_, _)
+                    hir_def::hir::Literal::Float(_, _)
                     | hir_def::hir::Literal::String(_)
                     | hir_def::hir::Literal::ByteString(_)
                     | hir_def::hir::Literal::CString(_) => LiteralConstRef::Unknown,
-                hir_def::hir::Literal::Char(c) => LiteralConstRef::Char(c),
-                hir_def::hir::Literal::Bool(b) => LiteralConstRef::Bool(b),
-                hir_def::hir::Literal::Int(val, _) => LiteralConstRef::Int(val),
-                hir_def::hir::Literal::Uint(val, _) => LiteralConstRef::UInt(val),
-            },
+                    hir_def::hir::Literal::Char(c) => LiteralConstRef::Char(c),
+                    hir_def::hir::Literal::Bool(b) => LiteralConstRef::Bool(b),
+                    hir_def::hir::Literal::Int(val, _) => LiteralConstRef::Int(val),
+                    hir_def::hir::Literal::Uint(val, _) => LiteralConstRef::UInt(val),
+                },
                 const_type,
                 self.resolver.krate(),
             ),
@@ -356,9 +356,8 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
     }
 
     fn param_index_is_disallowed(&self, index: u32) -> bool {
-        self.lowering_param_default.is_some_and(
-            |disallow_params_after| index >= disallow_params_after,
-        )
+        self.lowering_param_default
+            .is_some_and(|disallow_params_after| index >= disallow_params_after)
     }
 
     fn type_param(&mut self, id: TypeParamId, index: u32) -> Ty<'db> {
@@ -649,8 +648,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                 ))),
                 ))))
             }
-        }.into_iter(
-        )
+        }.into_iter()
     }
 
     pub(crate) fn lower_type_bound<'b>(
@@ -1454,9 +1452,9 @@ impl<'db> GenericPredicates<'db> {
         interner: DbInterner<'db>,
         args: GenericArgs<'db>,
     ) -> Option<impl Iterator<Item = Clause<'db>>> {
-        self.0.as_ref().map(
-            |it| EarlyBinder::bind(it.iter().copied()).iter_instantiated(interner, args),
-        )
+        self.0
+            .as_ref()
+            .map(|it| EarlyBinder::bind(it.iter().copied()).iter_instantiated(interner, args))
     }
 
     #[inline]
@@ -1732,13 +1730,17 @@ fn implicitly_sized_clauses<'a, 'subst, 'db>(
 
     let trait_self_idx = trait_self_param_idx(db, def);
 
-    Some(args.iter().enumerate().filter_map(move |(idx, generic_arg)| {
+    Some(
+        args.iter()
+            .enumerate()
+            .filter_map(
+                move |(idx, generic_arg)| {
                     if Some(idx) == trait_self_idx { None } else { Some(generic_arg) }
-                }).filter_map(
-        |generic_arg| generic_arg.as_type(),
-    ).filter(
-        move |self_ty| !explicitly_unsized_tys.contains(self_ty),
-    ).map(move |self_ty| {
+                },
+            )
+            .filter_map(|generic_arg| generic_arg.as_type())
+            .filter(move |self_ty| !explicitly_unsized_tys.contains(self_ty))
+            .map(move |self_ty| {
                 let trait_ref = TraitRef::new_from_args(
                     interner,
                     sized_trait.into(),
@@ -1753,7 +1755,8 @@ fn implicitly_sized_clauses<'a, 'subst, 'db>(
                         }),
                     )),
                 ))
-            }))
+            }),
+    )
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -2144,10 +2147,13 @@ fn named_associated_type_shorthand_candidates<'db, R>(
             }
             let predicates =
                 db.generic_predicates_for_param(def, param_id.into(), assoc_name.clone());
-            predicates.iter().find_map(|pred| match (*pred).kind().skip_binder() {
+            predicates
+                .iter()
+                .find_map(|pred| match (*pred).kind().skip_binder() {
                     rustc_type_ir::ClauseKind::Trait(trait_predicate) => Some(trait_predicate),
                     _ => None,
-                }).and_then(|trait_predicate| {
+                })
+                .and_then(|trait_predicate| {
                     let trait_ref = trait_predicate.trait_ref;
                     assert!(
                         !trait_ref.has_escaping_bound_vars(),

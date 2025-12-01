@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 69401 bytes
-Chloro size:   68015 bytes
+Chloro size:   67998 bytes
 Rustfmt size:  69401 bytes
 
 ✗ Outputs DIFFER
@@ -95,19 +95,6 @@ Rustfmt size:  69401 bytes
              "min_align_of_val" | "align_of_val" => {
                  let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                      return Err(MirEvalError::InternalError(
-                 let addr = self.heap_allocate(len, 1)?;
-                 self.write_memory(addr, ty_name.as_bytes())?;
-                 destination.slice(0..self.ptr_size()).write_from_bytes(self, &addr.to_bytes())?;
--                destination
--                    .slice(self.ptr_size()..2 * self.ptr_size())
--                    .write_from_bytes(self, &len.to_le_bytes())
-+                destination.slice(self.ptr_size()..2 * self.ptr_size()).write_from_bytes(
-+                    self,
-+                    &len.to_le_bytes(),
-+                )
-             }
-             "needs_drop" => {
-                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                  destination.write_from_bytes(self, &[u8::from(result)])
              }
              "ptr_guaranteed_cmp" => {

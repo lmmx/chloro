@@ -19,10 +19,9 @@ pub(crate) fn missing_unsafe(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsaf
         code,
         format!("{operation} is unsafe and requires an unsafe function or block"),
         d.node.map(|it| it.into()),
-    ).stable(
-    ).with_fixes(
-        fixes(ctx, d),
     )
+    .stable()
+    .with_fixes(fixes(ctx, d))
 }
 
 fn display_unsafety_reason(reason: UnsafetyReason) -> &'static str {
@@ -106,14 +105,13 @@ fn pick_best_node_to_add_unsafe_block(unsafe_expr: &ast::Expr) -> Option<SyntaxN
 
 fn needs_parentheses(expr: &ast::Expr) -> bool {
     let node = expr.syntax();
-    node.ancestors().skip(1).take_while(|it| it.text_range().start() == node.text_range().start()).map_while(
-        ast::Expr::cast,
-    ).last(
-    ).and_then(
-        |it| Some(it.syntax().parent()?.kind()),
-    ).is_some_and(
-        |kind| ast::ExprStmt::can_cast(kind) || ast::StmtList::can_cast(kind),
-    )
+    node.ancestors()
+        .skip(1)
+        .take_while(|it| it.text_range().start() == node.text_range().start())
+        .map_while(ast::Expr::cast)
+        .last()
+        .and_then(|it| Some(it.syntax().parent()?.kind()))
+        .is_some_and(|kind| ast::ExprStmt::can_cast(kind) || ast::StmtList::can_cast(kind))
 }
 
 #[cfg(test)]

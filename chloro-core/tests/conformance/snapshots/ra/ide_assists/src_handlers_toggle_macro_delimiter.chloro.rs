@@ -44,10 +44,10 @@ pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>)
     acc.add(
         AssistId::refactor("toggle_macro_delimiter"),
         match token {
-        MacroDelims::LPar | MacroDelims::RPar => "Replace delimiters with braces",
-        MacroDelims::LBra | MacroDelims::RBra => "Replace delimiters with parentheses",
-        MacroDelims::LCur | MacroDelims::RCur => "Replace delimiters with brackets",
-    },
+            MacroDelims::LPar | MacroDelims::RPar => "Replace delimiters with braces",
+            MacroDelims::LBra | MacroDelims::RBra => "Replace delimiters with parentheses",
+            MacroDelims::LCur | MacroDelims::RCur => "Replace delimiters with brackets",
+        },
         token_tree.syntax().text_range(),
         |builder| {
             let make = SyntaxFactory::with_mappings();

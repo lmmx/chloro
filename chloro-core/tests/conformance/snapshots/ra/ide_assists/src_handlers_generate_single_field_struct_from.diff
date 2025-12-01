@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27066 bytes
-Chloro size:   26481 bytes
+Chloro size:   26503 bytes
 Rustfmt size:  27358 bytes
 
 ✗ Outputs DIFFER
@@ -82,24 +82,10 @@ Rustfmt size:  27358 bytes
 -    let cfg = ctx
 -        .config
 -        .find_path_config(ctx.sema.is_nightly(module.krate()));
--    types
--        .iter()
--        .map(|ty| {
 +    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
-+    types.iter().map(|ty| {
-             let ty = sema.resolve_type(ty)?;
-             if ty.is_unit() {
-                 return Some(make::expr_tuple([]).into());
-             let ty_path = module.find_path(db, item_for_path_search(db, item_in_ns)?, cfg)?;
- 
-             use_trivial_constructor(db, mod_path_to_ast(&ty_path, edition), &ty, edition)
--        })
--        .collect()
-+        }).collect(
-+    )
- }
- 
- fn get_fields(strukt: &ast::Struct) -> Option<(Option<Vec<ast::Name>>, Vec<ast::Type>)> {
+     types
+         .iter()
+         .map(|ty| {
      Some(match strukt.kind() {
          ast::StructKind::Unit => return None,
          ast::StructKind::Record(fields) => {

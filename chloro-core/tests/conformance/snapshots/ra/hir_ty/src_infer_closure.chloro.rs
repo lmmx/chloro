@@ -249,13 +249,14 @@ impl<'db> InferenceContext<'_, 'db> {
         closure_kind: ClosureKind,
     ) -> (Option<PolyFnSig<'db>>, Option<rustc_type_ir::ClosureKind>) {
         match expected_ty.kind() {
-            TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id, args, .. }) => self.deduce_closure_signature_from_predicates(
-                expected_ty,
-                closure_kind,
-                explicit_item_bounds(self.interner(), def_id).iter_instantiated(self.interner(), args).map(
-                |clause| clause.as_predicate(),
-            ),
-            ),
+            TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id, args, .. }) => self
+                .deduce_closure_signature_from_predicates(
+                    expected_ty,
+                    closure_kind,
+                    explicit_item_bounds(self.interner(), def_id)
+                        .iter_instantiated(self.interner(), args)
+                        .map(|clause| clause.as_predicate()),
+                ),
             TyKind::Dynamic(object_type, ..) => {
                 let sig = object_type.projection_bounds().into_iter().find_map(|pb| {
                     let pb = pb.with_self_ty(self.interner(), Ty::new_unit(self.interner()));
@@ -266,11 +267,12 @@ impl<'db> InferenceContext<'_, 'db> {
                     .and_then(|did| self.fn_trait_kind_from_def_id(did.0));
                 (sig, kind)
             }
-            TyKind::Infer(rustc_type_ir::TyVar(vid)) => self.deduce_closure_signature_from_predicates(
-                Ty::new_var(self.interner(), self.table.infer_ctxt.root_var(vid)),
-                closure_kind,
-                self.table.obligations_for_self_ty(vid).into_iter().map(|obl| obl.predicate),
-            ),
+            TyKind::Infer(rustc_type_ir::TyVar(vid)) => self
+                .deduce_closure_signature_from_predicates(
+                    Ty::new_var(self.interner(), self.table.infer_ctxt.root_var(vid)),
+                    closure_kind,
+                    self.table.obligations_for_self_ty(vid).into_iter().map(|obl| obl.predicate),
+                ),
             TyKind::FnPtr(sig_tys, hdr) => match closure_kind {
                 ClosureKind::Closure => {
                     let expected_sig = sig_tys.with(hdr);

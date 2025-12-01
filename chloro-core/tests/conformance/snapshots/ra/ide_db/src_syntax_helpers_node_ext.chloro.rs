@@ -372,10 +372,12 @@ pub fn for_each_break_and_continue_expr(
         let tree_depth_iterator = TreeWithDepthIterator::new(b);
         for (expr, depth) in tree_depth_iterator {
             match expr {
-                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none()) || eq_label_lt(&label, &b.lifetime()) => {
+                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none())
+                        || eq_label_lt(&label, &b.lifetime()) => {
                     cb(ast::Expr::BreakExpr(b));
                 }
-                ast::Expr::ContinueExpr(c) if (depth == 0 && c.lifetime().is_none()) || eq_label_lt(&label, &c.lifetime()) => {
+                ast::Expr::ContinueExpr(c) if (depth == 0 && c.lifetime().is_none())
+                        || eq_label_lt(&label, &c.lifetime()) => {
                     cb(ast::Expr::ContinueExpr(c));
                 }
                 _ => (),
@@ -394,7 +396,8 @@ fn for_each_break_expr(
         let tree_depth_iterator = TreeWithDepthIterator::new(b);
         for (expr, depth) in tree_depth_iterator {
             match expr {
-                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none()) || eq_label_lt(&label, &b.lifetime()) => {
+                ast::Expr::BreakExpr(b) if (depth == 0 && b.lifetime().is_none())
+                        || eq_label_lt(&label, &b.lifetime()) => {
                     cb(b);
                 }
                 _ => (),

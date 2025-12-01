@@ -155,10 +155,13 @@ fn augment_references_with_imports(
 ) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
     let mut visited_modules = FxHashSet::default();
 
-    references.iter().filter_map(|FileReference { name, .. }| {
+    references
+        .iter()
+        .filter_map(|FileReference { name, .. }| {
             let name = name.clone().into_name_like()?;
             ctx.sema.scope(name.syntax()).map(|scope| (name, scope.module()))
-        }).map(|(name, ref_module)| {
+        })
+        .map(|(name, ref_module)| {
             let new_name = edit.make_mut(name);
 
             // if the referenced module is not the same as the target one and has not been seen before, add an import
@@ -190,8 +193,8 @@ fn augment_references_with_imports(
             };
 
             (new_name, import_data)
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn add_tuple_struct_def(

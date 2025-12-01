@@ -126,9 +126,9 @@ fn punctuation(
         },
         (T![::] | T![->] | T![=>] | T![=] | T![@] | T![.], _) => HlOperator::Other.into(),
         (T![!], MACRO_CALL) => {
-            if operator_parent.and_then(ast::MacroCall::cast).is_some_and(
-                |macro_call| sema.is_unsafe_macro_call(&macro_call),
-            ) {
+            if operator_parent
+                .and_then(ast::MacroCall::cast)
+                .is_some_and(|macro_call| sema.is_unsafe_macro_call(&macro_call)) {
                 Highlight::from(HlPunct::MacroBang) | HlMod::Unsafe
             } else {
                 HlPunct::MacroBang.into()
@@ -155,8 +155,7 @@ fn punctuation(
             match prefix_expr {
                 Some(ast::Expr::Literal(_)) => HlTag::NumericLiteral,
                 _ => HlTag::Operator(HlOperator::Other),
-            }.into(
-            )
+            }.into()
         }
         (T![+] | T![-] | T![*] | T![/] | T![%], BIN_EXPR) => HlOperator::Arithmetic.into(),
         (T![+=] | T![-=] | T![*=] | T![/=] | T![%=], BIN_EXPR) => {
@@ -171,9 +170,10 @@ fn punctuation(
             HlOperator::Comparison.into()
         }
         (_, ATTR) => HlTag::AttributeBracket.into(),
-        (T![>], _) if operator_parent.as_ref().and_then(SyntaxNode::parent).is_some_and(
-            |it| it.kind() == MACRO_RULES,
-        ) => {
+        (T![>], _) if operator_parent
+                .as_ref()
+                .and_then(SyntaxNode::parent)
+                .is_some_and(|it| it.kind() == MACRO_RULES) => {
             HlOperator::Other.into()
         }
         (kind, _) => match kind {
@@ -236,8 +236,7 @@ fn punctuation(
             T![;] => HlPunct::Semi,
             T![.] => HlPunct::Dot,
             _ => HlPunct::Other,
-        }.into(
-        ),
+        }.into(),
     }
 }
 
@@ -797,11 +796,9 @@ fn highlight_name_ref_by_syntax(
 
     match parent.kind() {
         EXTERN_CRATE => HlTag::Symbol(SymbolKind::Module) | HlMod::CrateRoot,
-        METHOD_CALL_EXPR => ast::MethodCallExpr::cast(parent).and_then(
-            |it| highlight_method_call(sema, krate, &it, is_unsafe_node),
-        ).unwrap_or_else(
-            || SymbolKind::Method.into(),
-        ),
+        METHOD_CALL_EXPR => ast::MethodCallExpr::cast(parent)
+            .and_then(|it| highlight_method_call(sema, krate, &it, is_unsafe_node))
+            .unwrap_or_else(|| SymbolKind::Method.into()),
         FIELD_EXPR => {
             let h = HlTag::Symbol(SymbolKind::Field);
             let is_unsafe = ast::Expr::cast(parent)
@@ -846,8 +843,7 @@ fn highlight_name_ref_by_syntax(
                     SymbolKind::Struct
                 } else {
                     SymbolKind::Const
-                }.into(
-                ),
+                }.into(),
             }
         }
         ASSOC_TYPE_ARG => SymbolKind::TypeAlias.into(),
@@ -858,7 +854,8 @@ fn highlight_name_ref_by_syntax(
 
 fn is_consumed_lvalue(node: &SyntaxNode, local: &hir::Local, db: &RootDatabase) -> bool {
     // When lvalues are passed as arguments and they're not Copy, then mark them as Consuming.
-    parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST]) && !local.ty(db).is_copy(db)
+    parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST])
+        && !local.ty(db).is_copy(db)
 }
 
 /// Returns true if the parent nodes of `node` all match the `SyntaxKind`s in `kinds` exactly.

@@ -381,11 +381,14 @@ fn hover_offset(
         }
     }
 
-    res.into_iter().unique().reduce(|mut acc: HoverResult, HoverResult { markup, actions }| {
+    res.into_iter()
+        .unique()
+        .reduce(|mut acc: HoverResult, HoverResult { markup, actions }| {
             acc.actions.extend(actions);
             acc.markup = Markup::from(format!("{}\n\n---\n{markup}", acc.markup));
             acc
-        }).map(|mut res: HoverResult| {
+        })
+        .map(|mut res: HoverResult| {
             res.actions = dedupe_or_merge_hover_actions(res.actions);
             RangeInfo::new(original_token.text_range(), res)
         })
@@ -495,10 +498,10 @@ pub(crate) fn hover_for_definition(
             show_implementations_action(sema, def),
             runnable_action(sema, def, file_id),
             goto_type_action_for_def(sema, def, &notable_traits, subst_types, edition),
-        ].into_iter(
-        ).flatten(
-        ).collect(
-        ),
+        ]
+        .into_iter()
+        .flatten()
+        .collect(),
     }
 }
 
@@ -512,7 +515,10 @@ fn notable_traits<'db>(
         return Vec::new();
     }
 
-    db.notable_traits_in_deps(ty.krate(db).into()).iter().flat_map(|it| &**it).filter_map(move |&trait_| {
+    db.notable_traits_in_deps(ty.krate(db).into())
+        .iter()
+        .flat_map(|it| &**it)
+        .filter_map(move |&trait_| {
             let trait_ = trait_.into();
             ty.impls_trait(db, trait_, &[]).then(|| {
                 (
@@ -527,10 +533,9 @@ fn notable_traits<'db>(
                         .collect::<Vec<_>>(),
                 )
             })
-        }).sorted_by_cached_key(
-        |(trait_, _)| trait_.name(db),
-    ).collect::<Vec<_>>(
-    )
+        })
+        .sorted_by_cached_key(|(trait_, _)| trait_.name(db))
+        .collect::<Vec<_>>()
 }
 
 fn show_implementations_action(

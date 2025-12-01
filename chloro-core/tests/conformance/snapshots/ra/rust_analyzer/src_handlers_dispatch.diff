@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15570 bytes
-Chloro size:   15517 bytes
+Chloro size:   15529 bytes
 Rustfmt size:  15570 bytes
 
 ✗ Outputs DIFFER
@@ -48,13 +48,12 @@ Rustfmt size:  15570 bytes
          }
      }
  }
-     }
  
      pub(crate) fn finish(&mut self) {
--        if let Some(not) = &self.not
+         if let Some(not) = &self.not
 -            && !not.method.starts_with("$/")
 -        {
-+        if let Some(not) = &self.not && !not.method.starts_with("$/") {
++            && !not.method.starts_with("$/") {
              tracing::error!("unhandled notification: {:?}", not);
          }
      }

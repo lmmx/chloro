@@ -538,10 +538,8 @@ impl Completions {
             ctx.source_range(),
             name.display_no_db(ctx.edition).to_smolstr(),
             ctx.edition,
-        ).add_to(
-            self,
-            ctx.db,
         )
+        .add_to(self, ctx.db)
     }
 
     pub(crate) fn add_label(&mut self, ctx: &CompletionContext<'_>, name: hir::Name) {
@@ -550,10 +548,8 @@ impl Completions {
             ctx.source_range(),
             name.display_no_db(ctx.edition).to_smolstr(),
             ctx.edition,
-        ).add_to(
-            self,
-            ctx.db,
         )
+        .add_to(self, ctx.db)
     }
 
     pub(crate) fn add_variant_pat(

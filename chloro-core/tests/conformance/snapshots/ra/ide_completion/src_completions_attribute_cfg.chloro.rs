@@ -53,9 +53,14 @@ pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
                 acc.add(item.build(ctx.db));
             }),
         },
-        None => ctx.krate.potential_cfg(ctx.db).get_cfg_keys().unique().map(|s| (s.as_str(), "")).chain(
-            CFG_CONDITION.iter().copied(),
-        ).for_each(|(s, snippet)| {
+        None => ctx
+            .krate
+            .potential_cfg(ctx.db)
+            .get_cfg_keys()
+            .unique()
+            .map(|s| (s.as_str(), ""))
+            .chain(CFG_CONDITION.iter().copied())
+            .for_each(|(s, snippet)| {
                 let mut item = CompletionItem::new(
                     SymbolKind::BuiltinAttr,
                     ctx.source_range(),

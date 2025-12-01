@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1313 bytes
-Chloro size:   1310 bytes
+Chloro size:   1313 bytes
 Rustfmt size:  1430 bytes
 
 ✗ Outputs DIFFER
@@ -21,9 +21,9 @@ Rustfmt size:  1430 bytes
 -                elem,
 -            )
 -        })
-+        self.enumerate.next().map(
-+            |(i, elem)| (if i < self.gap_pos { i } else { i + self.gap_len }, elem),
-+        )
++        self.enumerate
++            .next()
++            .map(|(i, elem)| (if i < self.gap_pos { i } else { i + self.gap_len }, elem))
      }
  
      fn size_hint(&self) -> (usize, Option<usize>) {

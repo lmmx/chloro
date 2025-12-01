@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13221 bytes
-Chloro size:   13144 bytes
+Chloro size:   13178 bytes
 Rustfmt size:  13526 bytes
 
 ✗ Outputs DIFFER
@@ -55,9 +55,11 @@ Rustfmt size:  13526 bytes
 -                .drain()
 -                .flat_map(|(_, v)| v.per_file.into_keys())
 -        }))
-+        self.changes.extend(self.check.iter_mut().flat_map(
-+            |it| it.per_package.drain().flat_map(|(_, v)| v.per_file.into_keys()),
-+        ))
++        self.changes.extend(
++            self.check
++                .iter_mut()
++                .flat_map(|it| it.per_package.drain().flat_map(|(_, v)| v.per_file.into_keys())),
++        )
      }
  
      pub(crate) fn clear_check_for_package(

@@ -43,17 +43,18 @@ impl DeclarativeMacroExpander {
             ),
                 ExpandError::new(span, ExpandErrorKind::MacroDefinition),
             ),
-            None => self.mac.expand(
-                &tt,
-                |s| {
+            None => self
+                .mac
+                .expand(
+                    &tt,
+                    |s| {
                         s.ctx =
                             apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
                     },
-                span,
-                loc.def.edition,
-            ).map_err(
-                Into::into,
-            ),
+                    span,
+                    loc.def.edition,
+                )
+                .map_err(Into::into),
         }
     }
 
@@ -71,9 +72,11 @@ impl DeclarativeMacroExpander {
             }),
                 ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
             ),
-            None => self.mac.expand(&tt, |_| (), call_site, def_site_edition).map(TupleExt::head).map_err(
-                Into::into,
-            ),
+            None => self
+                .mac
+                .expand(&tt, |_| (), call_site, def_site_edition)
+                .map(TupleExt::head)
+                .map_err(Into::into),
         }
     }
 

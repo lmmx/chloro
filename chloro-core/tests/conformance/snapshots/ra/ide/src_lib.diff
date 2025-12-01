@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   33078 bytes
+Chloro size:   33092 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -262,8 +262,9 @@ Rustfmt size:  33868 bytes
 -        Ok(self
 -            .with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?
 -            .unwrap_or_default())
-+        Ok(self.with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?.unwrap_or_default(
-+        ))
++        Ok(
++            self.with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?.unwrap_or_default(),
++        )
      }
  
      /// Computes the set of parser level diagnostics for the given file.

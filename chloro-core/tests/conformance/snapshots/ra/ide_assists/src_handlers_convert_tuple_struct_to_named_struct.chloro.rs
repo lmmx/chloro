@@ -227,11 +227,13 @@ fn edit_field_references(
 
 fn generate_names(fields: impl Iterator<Item = ast::TupleField>) -> Vec<ast::Name> {
     let make = SyntaxFactory::without_mappings();
-    fields.enumerate().map(|(i, _)| {
+    fields
+        .enumerate()
+        .map(|(i, _)| {
             let idx = i + 1;
             make.name(&format!("field{idx}"))
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn generate_record_pat_list(

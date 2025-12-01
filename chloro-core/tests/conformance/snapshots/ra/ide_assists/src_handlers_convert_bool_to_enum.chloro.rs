@@ -156,8 +156,7 @@ fn bool_expr_to_enum_expr(expr: ast::Expr) -> ast::Expr {
             expr,
             make::tail_only_block_expr(true_expr),
             Some(ast::ElseBranch::Block(make::tail_only_block_expr(false_expr))),
-        ).into(
-        )
+        ).into()
     }
 }
 
@@ -173,7 +172,8 @@ fn replace_usages(
     for (file_id, references) in usages {
         edit.edit_file(file_id.file_id(ctx.db()));
         let refs_with_imports = augment_references_with_imports(ctx, references, target_module);
-        refs_with_imports.into_iter().rev().for_each(|FileReferenceWithImport { range, name, import_data }| {
+        refs_with_imports.into_iter().rev().for_each(
+            |FileReferenceWithImport { range, name, import_data }| {
                 // replace the usages in patterns and expressions
                 if let Some(ident_pat) = name.syntax().ancestors().find_map(ast::IdentPat::cast) {
                     cov_mark::hit!(replaces_record_pat_shorthand);
@@ -275,7 +275,8 @@ fn replace_usages(
                     let scope = edit.make_import_scope_mut(scope);
                     delayed_mutations.push((scope, path));
                 }
-            })
+            },
+        )
     }
 }
 
@@ -293,10 +294,13 @@ fn augment_references_with_imports(
     let mut visited_modules = FxHashSet::default();
 
     let edition = target_module.krate().edition(ctx.db());
-    references.into_iter().filter_map(|FileReference { range, name, .. }| {
+    references
+        .into_iter()
+        .filter_map(|FileReference { range, name, .. }| {
             let name = name.into_name_like()?;
             ctx.sema.scope(name.syntax()).map(|scope| (range, name, scope.module()))
-        }).map(|(range, name, ref_module)| {
+        })
+        .map(|(range, name, ref_module)| {
             // if the referenced module is not the same as the target one and has not been seen before, add an import
             let import_data = if ref_module.nearest_non_block_module(ctx.db()) != *target_module
                 && !visited_modules.contains(&ref_module)
@@ -329,8 +333,8 @@ fn augment_references_with_imports(
             };
 
             FileReferenceWithImport { range, name, import_data }
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 fn find_assignment_usage(name: &ast::NameLike) -> Option<ast::Expr> {
@@ -455,14 +459,12 @@ fn add_enum_def(
 /// Tries to find the ast node at the nearest module or at top-level, otherwise just
 /// returns the input node.
 fn node_to_insert_before(target_node: SyntaxNode) -> SyntaxNode {
-    target_node.ancestors().take_while(
-        |it| !matches!(it.kind(), SyntaxKind::MODULE | SyntaxKind::SOURCE_FILE),
-    ).filter(
-        |it| ast::Item::can_cast(it.kind()),
-    ).last(
-    ).unwrap_or(
-        target_node,
-    )
+    target_node
+        .ancestors()
+        .take_while(|it| !matches!(it.kind(), SyntaxKind::MODULE | SyntaxKind::SOURCE_FILE))
+        .filter(|it| ast::Item::can_cast(it.kind()))
+        .last()
+        .unwrap_or(target_node)
 }
 
 fn make_bool_enum(make_pub: bool) -> ast::Enum {
@@ -492,8 +494,7 @@ fn make_bool_enum(make_pub: bool) -> ast::Enum {
             make::variant(None, make::name("True"), None, None),
             make::variant(None, make::name("False"), None, None),
         ]),
-    ).clone_for_update(
-    )
+    ).clone_for_update()
 }
 
 #[cfg(test)]

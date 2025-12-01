@@ -943,24 +943,27 @@ impl ExprCollector<'_> {
                     Some(_) => TraitBoundModifier::Maybe,
                     None => TraitBoundModifier::None,
                 };
-                self.lower_path_type(&path_type, impl_trait_lower_fn).map(|p| {
+                self.lower_path_type(&path_type, impl_trait_lower_fn)
+                    .map(|p| {
                         let path = self.alloc_path(p, AstPtr::new(&path_type).upcast());
                         if binder.is_empty() {
                             TypeBound::Path(path, m)
                         } else {
                             TypeBound::ForLifetime(binder, path)
                         }
-                    }).unwrap_or(
-                    TypeBound::Error,
-                )
+                    })
+                    .unwrap_or(TypeBound::Error)
             }
-            ast::TypeBoundKind::Use(gal) => TypeBound::Use(gal.use_bound_generic_args().map(|p| match p {
+            ast::TypeBoundKind::Use(gal) => TypeBound::Use(
+                gal.use_bound_generic_args()
+                    .map(|p| match p {
                         ast::UseBoundGenericArg::Lifetime(l) => {
                             UseArgRef::Lifetime(self.lower_lifetime_ref(l))
                         }
                         ast::UseBoundGenericArg::NameRef(n) => UseArgRef::Name(n.as_name()),
-                    }).collect(
-            )),
+                    })
+                    .collect(),
+            ),
             ast::TypeBoundKind::Lifetime(lifetime) => {
                 TypeBound::Lifetime(self.lower_lifetime_ref(lifetime))
             }
@@ -3466,14 +3469,14 @@ pub fn hir_assoc_type_binding_to_ast(
     segment_args: &ast::GenericArgList,
     binding_idx: u32,
 ) -> Option<ast::AssocTypeArg> {
-    segment_args.generic_args().filter_map(|arg| match arg {
+    segment_args
+        .generic_args()
+        .filter_map(|arg| match arg {
             ast::GenericArg::AssocTypeArg(it) => Some(it),
             _ => None,
-        }).filter(
-        |binding| binding.param_list().is_none() && binding.name_ref().is_some(),
-    ).nth(
-        binding_idx as usize,
-    )
+        })
+        .filter(|binding| binding.param_list().is_none() && binding.name_ref().is_some())
+        .nth(binding_idx as usize)
 }
 
 /// This function find the AST generic argument from the one in the HIR. Does not support the `Self` argument.
@@ -3482,11 +3485,11 @@ pub fn hir_generic_arg_to_ast(
     arg_idx: u32,
     has_self_arg: bool,
 ) -> Option<ast::GenericArg> {
-    args.generic_args().filter(|arg| match arg {
+    args.generic_args()
+        .filter(|arg| match arg {
             ast::GenericArg::AssocTypeArg(_) => false,
             ast::GenericArg::LifetimeArg(arg) => arg.lifetime().is_some(),
             ast::GenericArg::ConstArg(_) | ast::GenericArg::TypeArg(_) => true,
-        }).nth(
-        arg_idx as usize - has_self_arg as usize,
-    )
+        })
+        .nth(arg_idx as usize - has_self_arg as usize)
 }

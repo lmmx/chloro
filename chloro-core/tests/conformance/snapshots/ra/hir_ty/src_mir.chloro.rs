@@ -337,7 +337,8 @@ pub struct Place<'db> {
 
 impl<'db> Place<'db> {
     fn is_parent(&self, child: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
-        self.local == child.local && child.projection.lookup(store).starts_with(self.projection.lookup(store))
+        self.local == child.local
+            && child.projection.lookup(store).starts_with(self.projection.lookup(store))
     }
 
     /// The place itself is not included

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32850 bytes
-Chloro size:   32707 bytes
+Chloro size:   32655 bytes
 Rustfmt size:  32850 bytes
 
 ✗ Outputs DIFFER
@@ -44,71 +44,6 @@ Rustfmt size:  32850 bytes
  };
  
  /// Desugared attributes of an item post `cfg_attr` expansion.
-         span_map: SpanMapRef<'_>,
-         cfg_options: &CfgOptions,
-     ) -> Result<(), CfgExpr> {
--        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options)
--            .filter_map(|attr| attr.cfg())
--            .find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
-+        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options).filter_map(
-+            |attr| attr.cfg(),
-+        ).find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
-                 true => None,
-                 false => Some(cfg),
--            })
--            .map_or(Ok(()), Err)
-+            }).map_or(
-+            Ok(()),
-+            Err,
-+        )
-     }
- }
- 
- 
-     #[inline]
-     pub fn rust_analyzer_tool(&self) -> impl Iterator<Item = &Attr> {
--        self.iter()
--            .filter(|&attr| attr.path.segments().first().is_some_and(|s| *s == sym::rust_analyzer))
-+        self.iter().filter(
-+            |&attr| attr.path.segments().first().is_some_and(|s| *s == sym::rust_analyzer),
-+        )
-     }
- 
-     #[inline]
- 
-     #[inline]
-     pub fn rustc_legacy_const_generics(&self) -> Option<Box<Box<[u32]>>> {
--        self.by_key(sym::rustc_legacy_const_generics)
--            .tt_values()
--            .next()
--            .map(parse_rustc_legacy_const_generics)
--            .filter(|it| !it.is_empty())
--            .map(Box::new)
-+        self.by_key(sym::rustc_legacy_const_generics).tt_values().next().map(
-+            parse_rustc_legacy_const_generics,
-+        ).filter(
-+            |it| !it.is_empty(),
-+        ).map(
-+            Box::new,
-+        )
-     }
- 
-     #[inline]
-     pub fn repr(&self) -> Option<ReprOptions> {
--        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(None, |acc, repr| {
-+        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(
-+            None,
-+            |acc, repr| {
-             acc.map_or(Some(repr), |mut acc| {
-                 merge_repr(&mut acc, repr);
-                 Some(acc)
-             })
--        })
-+        },
-+        )
-     }
- }
- 
      ///
      /// Note that a key can have multiple values that are all considered "active" at the same time.
      /// For example, `#[doc(alias = "x")]` and `#[doc(alias = "y")]`.
@@ -120,16 +55,6 @@ Rustfmt size:  32850 bytes
  }
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-             kind: tt::LitKind::Str, symbol, ..
-         })) => Some(symbol.clone()),
-         _ => None,
--    })
--    .collect()
-+    }).collect(
-+    )
- }
- 
- impl AttrsWithOwner {
              AttrDefId::ModuleId(module) => {
                  let def_map = module.def_map(db);
                  let mod_data = &def_map[module.local_id];
@@ -158,19 +83,6 @@ Rustfmt size:  32850 bytes
                      Attrs(match src.value.get(it.local_id) {
                          Some(val) => RawAttrs::new_expanded(
                              db,
-             _ => self.file_id,
-         };
- 
--        self.source
--            .get(ast_idx)
--            .map(|it| InFile::new(file_id, it))
--            .unwrap_or_else(|| panic!("cannot find attr at index {id:?}"))
-+        self.source.get(ast_idx).map(|it| InFile::new(file_id, it)).unwrap_or_else(
-+            || panic!("cannot find attr at index {id:?}"),
-+        )
-     }
- }
- 
  mod tests {
      //! This module contains tests for doc-expression parsing.
      //! Currently, it tests `#[doc(hidden)]` and `#[doc(alias)]`.

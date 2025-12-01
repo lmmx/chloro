@@ -48,11 +48,8 @@ fn validate_type_recursively(
             ctx,
             ty.as_reference().map(|(ty, _)| ty).as_ref(),
             true,
-            if refed {
-            fuel
-        } else {
-            fuel - 1
-        },
+            // FIXME: Saving fuel when `&` repeating might not be a good idea if there's no TCO.
+            if refed { fuel } else { fuel - 1 },
         ),
         (true, Some(ty)) if ty.is_array() => validate_type_recursively(
             ctx,
@@ -60,11 +57,11 @@ fn validate_type_recursively(
             false,
             fuel - 1,
         ),
-        (true, Some(ty)) if ty.is_tuple() => ty.tuple_fields(ctx.db()).iter().all(
-            |ty| validate_type_recursively(ctx, Some(ty), false, fuel - 1).is_some(),
-        ).then_some(
-            (),
-        ),
+        (true, Some(ty)) if ty.is_tuple() => ty
+            .tuple_fields(ctx.db())
+            .iter()
+            .all(|ty| validate_type_recursively(ctx, Some(ty), false, fuel - 1).is_some())
+            .then_some(()),
         (true, Some(ty)) if refed && ty.is_slice() => {
             validate_type_recursively(ctx, ty.as_slice().as_ref(), false, fuel - 1)
         }

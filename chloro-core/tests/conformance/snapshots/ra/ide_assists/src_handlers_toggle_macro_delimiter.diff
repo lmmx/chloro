@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5732 bytes
-Chloro size:   5366 bytes
+Chloro size:   5382 bytes
 Rustfmt size:  5732 bytes
 
 ✗ Outputs DIFFER
@@ -33,20 +33,6 @@ Rustfmt size:  5732 bytes
  pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      #[derive(Debug)]
      enum MacroDelims {
-     acc.add(
-         AssistId::refactor("toggle_macro_delimiter"),
-         match token {
--            MacroDelims::LPar | MacroDelims::RPar => "Replace delimiters with braces",
--            MacroDelims::LBra | MacroDelims::RBra => "Replace delimiters with parentheses",
--            MacroDelims::LCur | MacroDelims::RCur => "Replace delimiters with brackets",
--        },
-+        MacroDelims::LPar | MacroDelims::RPar => "Replace delimiters with braces",
-+        MacroDelims::LBra | MacroDelims::RBra => "Replace delimiters with parentheses",
-+        MacroDelims::LCur | MacroDelims::RCur => "Replace delimiters with brackets",
-+    },
-         token_tree.syntax().text_range(),
-         |builder| {
-             let make = SyntaxFactory::with_mappings();
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

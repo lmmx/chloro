@@ -395,7 +395,9 @@ fn expand(
         (Some(actual_expansion), Some((fake_expansion, fake_mapped_tokens))) => {
             let mut accumulated_offset_from_fake_tokens = 0;
             let actual_range = actual_expansion.text_range().end();
-            fake_mapped_tokens.into_iter().filter_map(|(fake_mapped_token, rank)| {
+            fake_mapped_tokens
+                .into_iter()
+                .filter_map(|(fake_mapped_token, rank)| {
                     let accumulated_offset = accumulated_offset_from_fake_tokens;
                     if !fake_mapped_token.text().contains(COMPLETION_MARKER) {
                         // Proc macros can make the same span with different text, we don't
@@ -421,11 +423,9 @@ fn expand(
                         relative_offset,
                     )?;
                     Some((result, rank))
-                }).min_by_key(
-                |(_, rank)| *rank,
-            ).map(
-                |(result, _)| result,
-            )
+                })
+                .min_by_key(|(_, rank)| *rank)
+                .map(|(result, _)| result)
         }
         _ => None,
     }
@@ -1661,11 +1661,12 @@ fn has_parens(node: &dyn HasArgList) -> bool {
     let prev_siblings = iter::successors(arg_list.syntax().prev_sibling_or_token(), |it| {
         it.prev_sibling_or_token()
     });
-    prev_siblings.take_while(|syntax| syntax.kind().is_trivia()).filter_map(|syntax| {
+    prev_siblings
+        .take_while(|syntax| syntax.kind().is_trivia())
+        .filter_map(|syntax| {
             syntax.into_token().filter(|token| token.kind() == SyntaxKind::WHITESPACE)
-        }).all(
-        |whitespace| !whitespace.text().contains('\n'),
-    )
+        })
+        .all(|whitespace| !whitespace.text().contains('\n'))
 }
 
 fn pattern_context_for(
@@ -1892,16 +1893,15 @@ fn is_in_token_of_for_loop(path: &ast::Path) -> bool {
                 t.text_range().start() == path.syntax().text_range().start()
             }
         })
-    })(
-    ).unwrap_or(
+    })().unwrap_or(
         false,
     )
 }
 
 fn is_in_breakable(node: &SyntaxNode) -> Option<(BreakableKind, SyntaxNode)> {
-    node.ancestors().take_while(
-        |it| it.kind() != SyntaxKind::FN && it.kind() != SyntaxKind::CLOSURE_EXPR,
-    ).find_map(|it| {
+    node.ancestors()
+        .take_while(|it| it.kind() != SyntaxKind::FN && it.kind() != SyntaxKind::CLOSURE_EXPR)
+        .find_map(|it| {
             let (breakable, loop_body) = match_ast! {
                 match it {
                     ast::ForExpr(it) => (BreakableKind::For, it.loop_body()?),
@@ -1920,11 +1920,9 @@ fn is_in_block(node: &SyntaxNode) -> bool {
     if has_in_newline_expr_first(node) {
         return true;
     };
-    node.parent().map(
-        |node| ast::ExprStmt::can_cast(node.kind()) || ast::StmtList::can_cast(node.kind()),
-    ).unwrap_or(
-        false,
-    )
+    node.parent()
+        .map(|node| ast::ExprStmt::can_cast(node.kind()) || ast::StmtList::can_cast(node.kind()))
+        .unwrap_or(false)
 }
 
 /// Similar to `has_parens`, heuristic sensing incomplete statement before ambiguous `Expr`
@@ -1934,10 +1932,15 @@ fn is_in_block(node: &SyntaxNode) -> bool {
 /// If the `PathExpr` is left part of the `Expr` and there is a newline after the `PathExpr`,
 /// it is considered that the `PathExpr` is not part of the `Expr`.
 fn has_in_newline_expr_first(node: &SyntaxNode) -> bool {
-    if ast::PathExpr::can_cast(node.kind()) && let Some(NodeOrToken::Token(next)) = node.next_sibling_or_token() && next.kind() == SyntaxKind::WHITESPACE && next.text().contains('\n') && let Some(stmt_like) = node.ancestors().take_while(|it| it.text_range().start() == node.text_range().start()).filter_map(
-        Either::<ast::ExprStmt, ast::Expr>::cast,
-    ).last(
-    ) {
+    if ast::PathExpr::can_cast(node.kind())
+        && let Some(NodeOrToken::Token(next)) = node.next_sibling_or_token()
+        && next.kind() == SyntaxKind::WHITESPACE
+        && next.text().contains('\n')
+        && let Some(stmt_like) = node
+            .ancestors()
+            .take_while(|it| it.text_range().start() == node.text_range().start())
+            .filter_map(Either::<ast::ExprStmt, ast::Expr>::cast)
+            .last() {
         stmt_like.syntax().parent().and_then(ast::StmtList::cast).is_some()
     } else {
         false
@@ -1951,10 +1954,9 @@ fn is_after_if_expr(node: SyntaxNode) -> bool {
     };
     let prev_sibling =
         non_trivia_sibling(node.into(), Direction::Prev).and_then(NodeOrToken::into_node);
-    iter::successors(prev_sibling, |it| it.last_child_or_token()?.into_node()).find_map(
-        ast::IfExpr::cast,
-    ).is_some(
-    )
+    iter::successors(prev_sibling, |it| it.last_child_or_token()?.into_node())
+        .find_map(ast::IfExpr::cast)
+        .is_some()
 }
 
 fn next_non_trivia_token(e: impl Into<SyntaxElement>) -> Option<SyntaxToken> {

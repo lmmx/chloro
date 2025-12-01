@@ -1406,10 +1406,12 @@ fn is_pwr2plus1(val: u128) -> bool {
 fn pwr2_to_exponent(num: u128) -> String {
     const DIGITS: [char; 10] = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
     assert_eq!(num.count_ones(), 1);
-    num.trailing_zeros().to_string().chars().map(|c| c.to_digit(10).unwrap() as usize).map(
-        |idx| DIGITS[idx],
-    ).collect::<String>(
-    )
+    num.trailing_zeros()
+        .to_string()
+        .chars()
+        .map(|c| c.to_digit(10).unwrap() as usize)
+        .map(|idx| DIGITS[idx])
+        .collect::<String>()
 }
 
 #[cfg(test)]

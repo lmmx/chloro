@@ -283,11 +283,12 @@ fn try_filter_trait_item_definition(
             let trait_ = assoc.implemented_trait(db)?;
             let name = def.name(db)?;
             let discriminant_value = discriminant(&assoc);
-            trait_.items(db).iter().filter(|itm| discriminant(*itm) == discriminant_value).find_map(
-                |itm| (itm.name(db)? == name).then(|| itm.try_to_nav(sema)).flatten(),
-            ).map(
-                |it| it.collect(),
-            )
+            trait_
+                .items(db)
+                .iter()
+                .filter(|itm| discriminant(*itm) == discriminant_value)
+                .find_map(|itm| (itm.name(db)? == name).then(|| itm.try_to_nav(sema)).flatten())
+                .map(|it| it.collect())
         }
     }
 }
@@ -535,8 +536,11 @@ pub(crate) fn find_loops(
         None
     };
 
-    sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec().into(
-    )
+    sema.descend_into_macros(token.clone())
+        .into_iter()
+        .filter_map(find_ancestors)
+        .collect_vec()
+        .into()
 }
 
 fn nav_for_break_points(

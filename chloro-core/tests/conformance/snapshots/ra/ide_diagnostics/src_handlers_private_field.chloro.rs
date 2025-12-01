@@ -15,8 +15,9 @@ pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField)
             d.field.parent_def(ctx.sema.db).name(ctx.sema.db).display(ctx.sema.db, ctx.edition)
         ),
         d.expr.map(|it| it.into()),
-    ).stable(
-    ).with_fixes(field_is_private_fixes(
+    )
+    .stable()
+    .with_fixes(field_is_private_fixes(
         &ctx.sema,
         d.expr.file_id.original_file(ctx.sema.db),
         d.field,

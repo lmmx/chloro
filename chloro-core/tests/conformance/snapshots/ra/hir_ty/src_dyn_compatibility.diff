@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18694 bytes
-Chloro size:   18488 bytes
+Chloro size:   18527 bytes
 Rustfmt size:  18694 bytes
 
 ✗ Outputs DIFFER
@@ -63,30 +63,15 @@ Rustfmt size:  18694 bytes
 -// but we don't have good way to render such locations.
 -// So, just return single boolean value for existence of such `Self` reference
  fn predicates_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
--    db.generic_predicates(trait_.into())
--        .iter()
--        .any(|pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No))
-+    db.generic_predicates(trait_.into()).iter().any(
-+        |pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No),
-+    )
+     db.generic_predicates(trait_.into())
+         .iter()
+         .any(|pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No))
  }
  
 -// Same as the above, `predicates_reference_self`
  fn bounds_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
      let trait_data = trait_.trait_items(db);
--    trait_data
--        .items
--        .iter()
--        .filter_map(|(_, it)| match *it {
-+    trait_data.items.iter().filter_map(|(_, it)| match *it {
-             AssocItemId::TypeAliasId(id) => Some(associated_ty_item_bounds(db, id)),
-             _ => None,
--        })
--        .any(|bounds| {
-+        }).any(|bounds| {
-             bounds.skip_binder().iter().any(|pred| match pred.skip_binder() {
-                 rustc_type_ir::ExistentialPredicate::Trait(it) => it.args.iter().any(|arg| {
-                     contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)
+     trait_data
      match item {
          AssocItemId::ConstId(it) => cb(DynCompatibilityViolation::AssocConst(it)),
          AssocItemId::FunctionId(it) => {

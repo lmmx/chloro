@@ -86,11 +86,7 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 
     let happy_type = extract_wrapped_type(type_ref)?;
 
-    acc.add(
-        kind.assist_id(),
-        kind.label(),
-        type_ref.syntax().text_range(),
-        |builder| {
+    acc.add(kind.assist_id(), kind.label(), type_ref.syntax().text_range(), |builder| {
         let mut editor = builder.make_editor(&parent);
         let make = SyntaxFactory::with_mappings();
 
@@ -195,8 +191,7 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 
         editor.add_mappings(make.finish_with_mappings());
         builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
-    )
+    })
 }
 
 enum UnwrapperKind {

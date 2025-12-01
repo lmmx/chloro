@@ -813,10 +813,9 @@ impl<'db> Evaluator<'db> {
                 let addr = self.heap_allocate(len, 1)?;
                 self.write_memory(addr, ty_name.as_bytes())?;
                 destination.slice(0..self.ptr_size()).write_from_bytes(self, &addr.to_bytes())?;
-                destination.slice(self.ptr_size()..2 * self.ptr_size()).write_from_bytes(
-                    self,
-                    &len.to_le_bytes(),
-                )
+                destination
+                    .slice(self.ptr_size()..2 * self.ptr_size())
+                    .write_from_bytes(self, &len.to_le_bytes())
             }
             "needs_drop" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {

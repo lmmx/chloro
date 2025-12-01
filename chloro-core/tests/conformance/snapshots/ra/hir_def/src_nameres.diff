@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29394 bytes
+Chloro size:   29449 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -214,22 +214,6 @@ Rustfmt size:  30449 bytes
      fn shrink_to_fit(&mut self) {
          // Exhaustive match to require handling new fields.
          let Self {
-         db: &'a dyn DefDatabase,
-         file_id: FileId,
-     ) -> impl Iterator<Item = LocalModuleId> + 'a {
--        self.modules
--            .iter()
--            .filter(move |(_id, data)| {
-+        self.modules.iter().filter(move |(_id, data)| {
-                 data.origin.file_id().map(|file_id| file_id.file_id(db)) == Some(file_id)
--            })
--            .map(|(id, _data)| id)
-+            }).map(
-+            |(id, _data)| id,
-+        )
-     }
- 
-     pub fn modules(&self) -> impl Iterator<Item = (LocalModuleId, &ModuleData)> + '_ {
          &self,
          id: AstId<ast::Adt>,
      ) -> Option<&[(Name, MacroId, MacroCallId)]> {
@@ -280,9 +264,11 @@ Rustfmt size:  30449 bytes
 -                },
 -            ),
 +            None => {
-+                self.block.map(|BlockInfo { parent: BlockRelativeModuleId { block, local_id }, .. }| {
++                self.block.map(
++                    |BlockInfo { parent: BlockRelativeModuleId { block, local_id }, .. }| {
 +                        ModuleId { krate: self.krate, block, local_id }
-+                    })
++                    },
++                )
 +            }
          }
      }

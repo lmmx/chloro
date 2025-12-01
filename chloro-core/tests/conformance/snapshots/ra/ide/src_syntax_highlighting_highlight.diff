@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34201 bytes
-Chloro size:   34102 bytes
+Chloro size:   34082 bytes
 Rustfmt size:  34201 bytes
 
 ✗ Outputs DIFFER
@@ -33,16 +33,12 @@ Rustfmt size:  34201 bytes
  };
  
  pub(super) fn token(
-         },
-         (T![::] | T![->] | T![=>] | T![=] | T![@] | T![.], _) => HlOperator::Other.into(),
          (T![!], MACRO_CALL) => {
--            if operator_parent
--                .and_then(ast::MacroCall::cast)
+             if operator_parent
+                 .and_then(ast::MacroCall::cast)
 -                .is_some_and(|macro_call| sema.is_unsafe_macro_call(&macro_call))
 -            {
-+            if operator_parent.and_then(ast::MacroCall::cast).is_some_and(
-+                |macro_call| sema.is_unsafe_macro_call(&macro_call),
-+            ) {
++                .is_some_and(|macro_call| sema.is_unsafe_macro_call(&macro_call)) {
                  Highlight::from(HlPunct::MacroBang) | HlMod::Unsafe
              } else {
                  HlPunct::MacroBang.into()
@@ -63,8 +59,7 @@ Rustfmt size:  34201 bytes
                  _ => HlTag::Operator(HlOperator::Other),
 -            }
 -            .into()
-+            }.into(
-+            )
++            }.into()
          }
          (T![+] | T![-] | T![*] | T![/] | T![%], BIN_EXPR) => HlOperator::Arithmetic.into(),
          (T![+=] | T![-=] | T![*=] | T![/=] | T![%=], BIN_EXPR) => {
@@ -73,13 +68,12 @@ Rustfmt size:  34201 bytes
          (_, ATTR) => HlTag::AttributeBracket.into(),
 -        (T![>], _)
 -            if operator_parent
--                .as_ref()
--                .and_then(SyntaxNode::parent)
++        (T![>], _) if operator_parent
+                 .as_ref()
+                 .and_then(SyntaxNode::parent)
 -                .is_some_and(|it| it.kind() == MACRO_RULES) =>
 -        {
-+        (T![>], _) if operator_parent.as_ref().and_then(SyntaxNode::parent).is_some_and(
-+            |it| it.kind() == MACRO_RULES,
-+        ) => {
++                .is_some_and(|it| it.kind() == MACRO_RULES) => {
              HlOperator::Other.into()
          }
          (kind, _) => match kind {
@@ -102,8 +96,7 @@ Rustfmt size:  34201 bytes
              _ => HlPunct::Other,
 -        }
 -        .into(),
-+        }.into(
-+        ),
++        }.into(),
      }
  }
  
@@ -114,18 +107,6 @@ Rustfmt size:  34201 bytes
          T![crate] if parent_matches::<ast::ExternCrate>(&token) => h,
          _ => h,
      }
- 
-     match parent.kind() {
-         EXTERN_CRATE => HlTag::Symbol(SymbolKind::Module) | HlMod::CrateRoot,
--        METHOD_CALL_EXPR => ast::MethodCallExpr::cast(parent)
--            .and_then(|it| highlight_method_call(sema, krate, &it, is_unsafe_node))
--            .unwrap_or_else(|| SymbolKind::Method.into()),
-+        METHOD_CALL_EXPR => ast::MethodCallExpr::cast(parent).and_then(
-+            |it| highlight_method_call(sema, krate, &it, is_unsafe_node),
-+        ).unwrap_or_else(
-+            || SymbolKind::Method.into(),
-+        ),
-         FIELD_EXPR => {
              let h = HlTag::Symbol(SymbolKind::Field);
              let is_unsafe = ast::Expr::cast(parent)
                  .is_some_and(|it| is_unsafe_node(AstPtr::new(&it).wrap_left()));
@@ -150,17 +131,10 @@ Rustfmt size:  34201 bytes
                      SymbolKind::Const
 -                }
 -                .into(),
-+                }.into(
-+                ),
++                }.into(),
              }
          }
          ASSOC_TYPE_ARG => SymbolKind::TypeAlias.into(),
- 
- fn is_consumed_lvalue(node: &SyntaxNode, local: &hir::Local, db: &RootDatabase) -> bool {
-     // When lvalues are passed as arguments and they're not Copy, then mark them as Consuming.
--    parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST])
--        && !local.ty(db).is_copy(db)
-+    parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST]) && !local.ty(db).is_copy(db)
  }
  
  /// Returns true if the parent nodes of `node` all match the `SyntaxKind`s in `kinds` exactly.

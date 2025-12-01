@@ -466,11 +466,12 @@ where
 
 fn has_self_type(trait_: hir::Trait, ctx: &AssistContext<'_>) -> Option<()> {
     let trait_source = ctx.sema.source(trait_)?.value;
-    trait_source.syntax().descendants_with_tokens().filter_map(|e| e.into_token()).find(
-        |e| e.kind() == SyntaxKind::SELF_TYPE_KW,
-    ).map(
-        |_| (),
-    )
+    trait_source
+        .syntax()
+        .descendants_with_tokens()
+        .filter_map(|e| e.into_token())
+        .find(|e| e.kind() == SyntaxKind::SELF_TYPE_KW)
+        .map(|_| ())
 }
 
 fn resolve_name_conflicts(

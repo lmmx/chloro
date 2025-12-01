@@ -473,9 +473,9 @@ impl SourceChangeBuilder {
     /// through a separate rename step.
     pub fn add_placeholder_snippet_group(&mut self, _cap: SnippetCap, nodes: Vec<SyntaxNode>) {
         assert!(nodes.iter().all(|node| node.parent().is_some()));
-        self.add_snippet(
-            PlaceSnippet::OverGroup(nodes.into_iter().map(|node| node.into()).collect()),
-        )
+        self.add_snippet(PlaceSnippet::OverGroup(
+            nodes.into_iter().map(|node| node.into()).collect(),
+        ))
     }
 
     fn add_snippet(&mut self, snippet: PlaceSnippet) {

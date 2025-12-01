@@ -15,9 +15,9 @@ pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     acc.add(
         AssistId::refactor_rewrite("add_return_type"),
         match fn_type {
-        FnType::Function => "Add this function's return type",
-        FnType::Closure { .. } => "Add this closure's return type",
-    },
+            FnType::Function => "Add this function's return type",
+            FnType::Closure { .. } => "Add this closure's return type",
+        },
         tail_expr.syntax().text_range(),
         |builder| {
             match builder_edit_pos {

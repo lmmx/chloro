@@ -774,7 +774,8 @@ impl GlobalState {
                 self.report_progress("Fetching", state, msg, None, None);
             }
             Task::DiscoverLinkedProjects(arg) => {
-                if let Some(cfg) = self.config.discover_workspace_config() && !self.discover_workspace_queue.op_in_progress() {
+                if let Some(cfg) = self.config.discover_workspace_config()
+                    && !self.discover_workspace_queue.op_in_progress() {
                     let title = &cfg.progress_label.clone();
                     let command = cfg.command.clone();
                     let discover = DiscoverCommand::new(self.discover_sender.clone(), command);
@@ -856,7 +857,8 @@ impl GlobalState {
                             .and_then(|contents| String::from_utf8(contents.clone()).ok());
                     }
                     let path = VfsPath::from(path);
-                    if !self.mem_docs.contains(&path) && (is_changed || vfs.file_id(&path).is_none()) {
+                    if !self.mem_docs.contains(&path)
+                        && (is_changed || vfs.file_id(&path).is_none()) {
                         vfs.set_file_contents(path, contents);
                     }
                 }

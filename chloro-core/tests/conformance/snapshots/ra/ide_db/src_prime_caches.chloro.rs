@@ -258,7 +258,10 @@ pub fn parallel_prime_caches(
 }
 
 fn crate_name(db: &RootDatabase, krate: Crate) -> Symbol {
-    krate.extra_data(db).display_name.as_deref().cloned().unwrap_or_else(
-        || Symbol::integer(salsa::plumbing::AsId::as_id(&krate).index() as usize),
-    )
+    krate
+        .extra_data(db)
+        .display_name
+        .as_deref()
+        .cloned()
+        .unwrap_or_else(|| Symbol::integer(salsa::plumbing::AsId::as_id(&krate).index() as usize))
 }

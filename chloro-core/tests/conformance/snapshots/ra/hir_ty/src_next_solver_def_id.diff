@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11678 bytes
-Chloro size:   11582 bytes
+Chloro size:   11690 bytes
 Rustfmt size:  12164 bytes
 
 ✗ Outputs DIFFER
@@ -30,8 +30,17 @@ Rustfmt size:  12164 bytes
 -                .debug_tuple("AdtId")
 -                .field(&db.union_signature(id).name.as_str())
 -                .finish(),
--            SolverDefId::ConstId(id) => f
--                .debug_tuple("ConstId")
++            SolverDefId::AdtId(AdtId::StructId(id)) => {
++                f.debug_tuple("AdtId").field(&db.struct_signature(id).name.as_str()).finish()
++            }
++            SolverDefId::AdtId(AdtId::EnumId(id)) => {
++                f.debug_tuple("AdtId").field(&db.enum_signature(id).name.as_str()).finish()
++            }
++            SolverDefId::AdtId(AdtId::UnionId(id)) => {
++                f.debug_tuple("AdtId").field(&db.union_signature(id).name.as_str()).finish()
++            }
+             SolverDefId::ConstId(id) => f
+                 .debug_tuple("ConstId")
 -                .field(
 -                    &db.const_signature(id)
 -                        .name
@@ -42,20 +51,8 @@ Rustfmt size:  12164 bytes
 -            SolverDefId::FunctionId(id) => f
 -                .debug_tuple("FunctionId")
 -                .field(&db.function_signature(id).name.as_str())
--                .finish(),
-+            SolverDefId::AdtId(AdtId::StructId(id)) => {
-+                f.debug_tuple("AdtId").field(&db.struct_signature(id).name.as_str()).finish()
-+            }
-+            SolverDefId::AdtId(AdtId::EnumId(id)) => {
-+                f.debug_tuple("AdtId").field(&db.enum_signature(id).name.as_str()).finish()
-+            }
-+            SolverDefId::AdtId(AdtId::UnionId(id)) => {
-+                f.debug_tuple("AdtId").field(&db.union_signature(id).name.as_str()).finish()
-+            }
-+            SolverDefId::ConstId(id) => f.debug_tuple("ConstId").field(
-+                &db.const_signature(id).name.as_ref().map_or("_", |name| name.as_str()),
-+            ).finish(
-+            ),
++                .field(&db.const_signature(id).name.as_ref().map_or("_", |name| name.as_str()))
+                 .finish(),
 +            SolverDefId::FunctionId(id) => {
 +                f.debug_tuple("FunctionId").field(&db.function_signature(id).name.as_str()).finish()
 +            }
@@ -68,26 +65,16 @@ Rustfmt size:  12164 bytes
 -                .debug_tuple("TraitId")
 -                .field(&db.trait_signature(id).name.as_str())
 -                .finish(),
--            SolverDefId::TypeAliasId(id) => f
--                .debug_tuple("TypeAliasId")
--                .field(&db.type_alias_signature(id).name.as_str())
--                .finish(),
 +            SolverDefId::StaticId(id) => {
 +                f.debug_tuple("StaticId").field(&db.static_signature(id).name.as_str()).finish()
 +            }
 +            SolverDefId::TraitId(id) => {
 +                f.debug_tuple("TraitId").field(&db.trait_signature(id).name.as_str()).finish()
 +            }
-+            SolverDefId::TypeAliasId(id) => f.debug_tuple("TypeAliasId").field(&db.type_alias_signature(id).name.as_str()).finish(),
-             SolverDefId::InternedClosureId(id) => {
-                 f.debug_tuple("InternedClosureId").field(&id).finish()
-             }
-             }
-             SolverDefId::EnumVariantId(id) => {
-                 let parent_enum = id.loc(db).parent;
--                f.debug_tuple("EnumVariantId")
--                    .field(&format_args!(
-+                f.debug_tuple("EnumVariantId").field(&format_args!(
+             SolverDefId::TypeAliasId(id) => f
+                 .debug_tuple("TypeAliasId")
+                 .field(&db.type_alias_signature(id).name.as_str())
+                     .field(&format_args!(
                          "\"{}::{}\"",
                          db.enum_signature(parent_enum).name.as_str(),
 -                        parent_enum
@@ -95,24 +82,21 @@ Rustfmt size:  12164 bytes
 -                            .variant_name_by_id(id)
 -                            .unwrap()
 -                            .as_str()
--                    ))
--                    .finish()
 +                        parent_enum.enum_variants(db).variant_name_by_id(id).unwrap().as_str()
-+                    )).finish(
-+                )
-+            }
-+            SolverDefId::Ctor(Ctor::Struct(id)) => {
-+                f.debug_tuple("Ctor").field(&db.struct_signature(id).name.as_str()).finish()
+                     ))
+                     .finish()
              }
 -            SolverDefId::Ctor(Ctor::Struct(id)) => f
 -                .debug_tuple("Ctor")
 -                .field(&db.struct_signature(id).name.as_str())
 -                .finish(),
++            SolverDefId::Ctor(Ctor::Struct(id)) => {
++                f.debug_tuple("Ctor").field(&db.struct_signature(id).name.as_str()).finish()
++            }
              SolverDefId::Ctor(Ctor::Enum(id)) => {
                  let parent_enum = id.loc(db).parent;
--                f.debug_tuple("Ctor")
--                    .field(&format_args!(
-+                f.debug_tuple("Ctor").field(&format_args!(
+                 f.debug_tuple("Ctor")
+                     .field(&format_args!(
                          "\"{}::{}\"",
                          db.enum_signature(parent_enum).name.as_str(),
 -                        parent_enum
@@ -120,14 +104,10 @@ Rustfmt size:  12164 bytes
 -                            .variant_name_by_id(id)
 -                            .unwrap()
 -                            .as_str()
--                    ))
--                    .finish()
 +                        parent_enum.enum_variants(db).variant_name_by_id(id).unwrap().as_str()
-+                    )).finish(
-+                )
+                     ))
+                     .finish()
              }
-         }
-     }
      fn as_local(self) -> Option<SolverDefId> {
          Some(self)
      }

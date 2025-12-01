@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10170 bytes
-Chloro size:   9754 bytes
+Chloro size:   9749 bytes
 Rustfmt size:  10229 bytes
 
 ✗ Outputs DIFFER
@@ -60,8 +60,7 @@ Rustfmt size:  10229 bytes
          Some(it_typ.impls_trait(sema.db, iter_trait, &[]))
 -    })()
 -    .unwrap_or(false)
-+    })(
-+    ).unwrap_or(
++    })().unwrap_or(
 +        false,
 +    )
  }

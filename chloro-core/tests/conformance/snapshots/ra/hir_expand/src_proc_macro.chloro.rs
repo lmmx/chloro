@@ -136,7 +136,8 @@ impl CrateProcMacros {
                         idx
                     )
                 )
-            })
+            }
+        )
     }
 
     pub fn get_error(&self) -> Option<&ProcMacroLoadingError> {
@@ -149,11 +150,16 @@ impl CrateProcMacros {
         def_site_ctx: span::SyntaxContext,
     ) -> Option<Box<[(crate::name::Name, CustomProcMacroExpander, bool)]>> {
         match &self.0 {
-            Ok(proc_macros) => Some(proc_macros.iter().enumerate().map(|(idx, it)| {
+            Ok(proc_macros) => Some(
+                proc_macros
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, it)| {
                         let name = crate::name::Name::new_symbol(it.name.clone(), def_site_ctx);
                         (name, CustomProcMacroExpander::new(idx as u32), it.disabled)
-                    }).collect(
-            )),
+                    })
+                    .collect(),
+            ),
             _ => None,
         }
     }

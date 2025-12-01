@@ -299,9 +299,8 @@ impl Definition {
             let name = Some(assoc.name(db)?);
             let item = trait_.items(db).into_iter().find(|it| it.name(db) == name)?;
             item.docs_with_rangemap(db)
-        }).map(
-            |(docs, range_map)| (docs, Some(range_map)),
-        )
+        })
+        .map(|(docs, range_map)| (docs, Some(range_map)))
     }
 
     pub fn label(&self, db: &RootDatabase, display_target: DisplayTarget) -> String {
@@ -422,9 +421,9 @@ impl<'db> IdentClass<'db> {
         sema: &Semantics<'db, RootDatabase>,
         lifetime: &ast::Lifetime,
     ) -> Option<IdentClass<'db>> {
-        NameRefClass::classify_lifetime(sema, lifetime).map(IdentClass::NameRefClass).or_else(
-            || NameClass::classify_lifetime(sema, lifetime).map(IdentClass::NameClass),
-        )
+        NameRefClass::classify_lifetime(sema, lifetime)
+            .map(IdentClass::NameRefClass)
+            .or_else(|| NameClass::classify_lifetime(sema, lifetime).map(IdentClass::NameClass))
     }
 
     pub fn definitions(self) -> ArrayVec<(Definition, Option<GenericSubstitution<'db>>), 2> {
@@ -866,19 +865,20 @@ impl<'db> NameRefClass<'db> {
         }
         let parent = lifetime.syntax().parent()?;
         match parent.kind() {
-            SyntaxKind::BREAK_EXPR | SyntaxKind::CONTINUE_EXPR => sema.resolve_label(lifetime).map(Definition::Label).map(
-                |it| NameRefClass::Definition(it, None),
-            ),
+            SyntaxKind::BREAK_EXPR | SyntaxKind::CONTINUE_EXPR => sema
+                .resolve_label(lifetime)
+                .map(Definition::Label)
+                .map(|it| NameRefClass::Definition(it, None)),
             SyntaxKind::LIFETIME_ARG
             | SyntaxKind::USE_BOUND_GENERIC_ARGS
             | SyntaxKind::SELF_PARAM
             | SyntaxKind::TYPE_BOUND
             | SyntaxKind::WHERE_PRED
-            | SyntaxKind::REF_TYPE => sema.resolve_lifetime_param(lifetime).map(GenericParam::LifetimeParam).map(
-                Definition::GenericParam,
-            ).map(
-                |it| NameRefClass::Definition(it, None),
-            ),
+            | SyntaxKind::REF_TYPE => sema
+                .resolve_lifetime_param(lifetime)
+                .map(GenericParam::LifetimeParam)
+                .map(Definition::GenericParam)
+                .map(|it| NameRefClass::Definition(it, None)),
             _ => None,
         }
     }

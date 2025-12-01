@@ -261,17 +261,14 @@ impl fmt::Debug for FlycheckMessage {
                 workspace_root,
                 diagnostic,
                 package_id,
-            } => f.debug_struct("AddDiagnostic").field("id", id).field("generation", generation).field(
-                "workspace_root",
-                workspace_root,
-            ).field(
-                "package_id",
-                package_id,
-            ).field(
-                "diagnostic_code",
-                &diagnostic.code.as_ref().map(|it| &it.code),
-            ).finish(
-            ),
+            } => f
+                .debug_struct("AddDiagnostic")
+                .field("id", id)
+                .field("generation", generation)
+                .field("workspace_root", workspace_root)
+                .field("package_id", package_id)
+                .field("diagnostic_code", &diagnostic.code.as_ref().map(|it| &it.code))
+                .finish(),
             FlycheckMessage::ClearDiagnostics { id, kind } => {
                 f.debug_struct("ClearDiagnostics").field("id", id).field("kind", kind).finish()
             }

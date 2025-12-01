@@ -2,34 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32105 bytes
-Chloro size:   32098 bytes
+Chloro size:   32105 bytes
 Rustfmt size:  32250 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- pub fn find_builtin_attr_idx(name: &Symbol) -> Option<usize> {
-     static BUILTIN_LOOKUP_TABLE: OnceLock<FxHashMap<Symbol, usize>> = OnceLock::new();
--    BUILTIN_LOOKUP_TABLE
--        .get_or_init(|| {
-+    BUILTIN_LOOKUP_TABLE.get_or_init(|| {
-             INERT_ATTRIBUTES
-                 .iter()
-                 .map(|attr| attr.name)
-                 .enumerate()
-                 .map(|(a, b)| (Symbol::intern(b), a))
-                 .collect()
--        })
--        .get(name)
--        .copied()
-+        }).get(
-+        name,
-+    ).copied(
-+    )
- }
- 
- /// A convenience macro for constructing attribute templates.
  
  macro_rules! ungated {
      ($attr:ident, $typ:expr, $tpl:expr, $duplicates:expr $(, @only_local: $only_local:expr)? $(,)?) => {

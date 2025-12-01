@@ -45,10 +45,10 @@ pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'
     acc.add(
         AssistId::refactor_rewrite("convert_let_else_to_match"),
         if bindings.is_empty() {
-        "Convert let-else to match"
-    } else {
-        "Convert let-else to let and match"
-    },
+            "Convert let-else to match"
+        } else {
+            "Convert let-else to let and match"
+        },
         let_stmt.syntax().text_range(),
         |builder| {
             let mut editor = builder.make_editor(let_stmt.syntax());
@@ -123,32 +123,38 @@ fn remove_mut_and_collect_idents(
         ast::Pat::BoxPat(p) => {
             make.box_pat(remove_mut_and_collect_idents(make, &p.pat()?, acc)?).into()
         }
-        ast::Pat::OrPat(p) => make.or_pat(
-            p.pats().map(|pat| remove_mut_and_collect_idents(make, &pat, acc)).collect::<Option<Vec<_>>>(
-        )?,
-            p.leading_pipe().is_some(),
-        ).into(
-        ),
+        ast::Pat::OrPat(p) => make
+            .or_pat(
+                p.pats()
+                    .map(|pat| remove_mut_and_collect_idents(make, &pat, acc))
+                    .collect::<Option<Vec<_>>>()?,
+                p.leading_pipe().is_some(),
+            )
+            .into(),
         ast::Pat::ParenPat(p) => {
             make.paren_pat(remove_mut_and_collect_idents(make, &p.pat()?, acc)?).into()
         }
-        ast::Pat::RangePat(p) => make.range_pat(
-            if let Some(start) = p.start() {
-            Some(remove_mut_and_collect_idents(make, &start, acc)?)
-        } else {
-            None
-        },
-            if let Some(end) = p.end() {
-            Some(remove_mut_and_collect_idents(make, &end, acc)?)
-        } else {
-            None
-        },
-        ).into(
-        ),
-        ast::Pat::RecordPat(p) => make.record_pat_with_fields(
-            p.path()?,
-            make.record_pat_field_list(
-            p.record_pat_field_list()?.fields().map(|field| {
+        ast::Pat::RangePat(p) => make
+            .range_pat(
+                if let Some(start) = p.start() {
+                    Some(remove_mut_and_collect_idents(make, &start, acc)?)
+                } else {
+                    None
+                },
+                if let Some(end) = p.end() {
+                    Some(remove_mut_and_collect_idents(make, &end, acc)?)
+                } else {
+                    None
+                },
+            )
+            .into(),
+        ast::Pat::RecordPat(p) => make
+            .record_pat_with_fields(
+                p.path()?,
+                make.record_pat_field_list(
+                    p.record_pat_field_list()?
+                        .fields()
+                        .map(|field| {
                             remove_mut_and_collect_idents(make, &field.pat()?, acc).map(|pat| {
                                 if let Some(name_ref) = field.name_ref() {
                                     make.record_pat_field(name_ref, pat)
@@ -156,12 +162,12 @@ fn remove_mut_and_collect_idents(
                                     make.record_pat_field_shorthand(pat)
                                 }
                             })
-                        }).collect::<Option<Vec<_>>>(
-        )?,
-            p.record_pat_field_list()?.rest_pat(),
-        ),
-        ).into(
-        ),
+                        })
+                        .collect::<Option<Vec<_>>>()?,
+                    p.record_pat_field_list()?.rest_pat(),
+                ),
+            )
+            .into(),
         ast::Pat::RefPat(p) => {
             let inner = p.pat()?;
             if let ast::Pat::IdentPat(ident) = inner {
@@ -171,18 +177,28 @@ fn remove_mut_and_collect_idents(
                 make.ref_pat(remove_mut_and_collect_idents(make, &inner, acc)?).into()
             }
         }
-        ast::Pat::SlicePat(p) => make.slice_pat(p.pats().map(|pat| remove_mut_and_collect_idents(make, &pat, acc)).collect::<Option<Vec<_>>>(
-        )?).into(
-        ),
-        ast::Pat::TuplePat(p) => make.tuple_pat(p.fields().map(|field| remove_mut_and_collect_idents(make, &field, acc)).collect::<Option<Vec<_>>>(
-        )?).into(
-        ),
-        ast::Pat::TupleStructPat(p) => make.tuple_struct_pat(
-            p.path()?,
-            p.fields().map(|field| remove_mut_and_collect_idents(make, &field, acc)).collect::<Option<Vec<_>>>(
-        )?,
-        ).into(
-        ),
+        ast::Pat::SlicePat(p) => make
+            .slice_pat(
+                p.pats()
+                    .map(|pat| remove_mut_and_collect_idents(make, &pat, acc))
+                    .collect::<Option<Vec<_>>>()?,
+            )
+            .into(),
+        ast::Pat::TuplePat(p) => make
+            .tuple_pat(
+                p.fields()
+                    .map(|field| remove_mut_and_collect_idents(make, &field, acc))
+                    .collect::<Option<Vec<_>>>()?,
+            )
+            .into(),
+        ast::Pat::TupleStructPat(p) => make
+            .tuple_struct_pat(
+                p.path()?,
+                p.fields()
+                    .map(|field| remove_mut_and_collect_idents(make, &field, acc))
+                    .collect::<Option<Vec<_>>>()?,
+            )
+            .into(),
         ast::Pat::RestPat(_)
         | ast::Pat::LiteralPat(_)
         | ast::Pat::PathPat(_)

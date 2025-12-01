@@ -17,14 +17,6 @@ Rustfmt size:  3239 bytes
  pub(crate) fn private_assoc_item(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::PrivateAssocItem,
-             name,
-         ),
-         d.expr_or_pat.map(Into::into),
-+    ).stable(
-     )
--    .stable()
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

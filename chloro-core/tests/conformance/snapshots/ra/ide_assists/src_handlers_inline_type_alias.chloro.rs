@@ -354,8 +354,7 @@ impl ConstOrTypeGeneric {
             ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
             ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
             ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
-        }.clone_for_update(
-        ))
+        }.clone_for_update())
     }
 }
 

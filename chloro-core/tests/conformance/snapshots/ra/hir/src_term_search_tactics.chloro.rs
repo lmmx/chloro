@@ -112,20 +112,17 @@ pub(super) fn assoc_const<'a, 'lt, 'db, DB: HirDatabase>(
     let db = ctx.sema.db;
     let module = ctx.scope.module();
 
-    defs.iter().filter_map(|def| match def {
+    defs.iter()
+        .filter_map(|def| match def {
             ScopeDef::ModuleDef(ModuleDef::Adt(it)) => Some(it),
             _ => None,
-        }).flat_map(
-        |it| Impl::all_for_type(db, it.ty(db)),
-    ).filter(
-        |it| !it.is_unsafe(db),
-    ).flat_map(
-        |it| it.items(db),
-    ).filter(
-        move |it| it.is_visible_from(db, module),
-    ).filter_map(
-        AssocItem::as_const,
-    ).filter_map(|it| {
+        })
+        .flat_map(|it| Impl::all_for_type(db, it.ty(db)))
+        .filter(|it| !it.is_unsafe(db))
+        .flat_map(|it| it.items(db))
+        .filter(move |it| it.is_visible_from(db, module))
+        .filter_map(AssocItem::as_const)
+        .filter_map(|it| {
             if it.attrs(db).is_unstable() {
                 return None;
             }
@@ -163,11 +160,14 @@ pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(
 ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
     let db = ctx.sema.db;
     let module = ctx.scope.module();
-    lookup.types_wishlist().clone().into_iter().chain(iter::once(ctx.goal.clone())).filter_map(
-        |ty| ty.as_adt().map(|adt| (adt, ty)),
-    ).filter(
-        |_| should_continue(),
-    ).filter_map(move |(adt, ty)| match adt {
+    lookup
+        .types_wishlist()
+        .clone()
+        .into_iter()
+        .chain(iter::once(ctx.goal.clone()))
+        .filter_map(|ty| ty.as_adt().map(|adt| (adt, ty)))
+        .filter(|_| should_continue())
+        .filter_map(move |(adt, ty)| match adt {
             Adt::Struct(strukt) => {
                 // Ignore unstable or not visible
                 if strukt.is_unstable(db) || !strukt.is_visible_from(db, module) {
@@ -283,10 +283,9 @@ pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(
                 Some((ty, exprs))
             }
             Adt::Union(_) => None,
-        }).filter_map(
-        |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
-    ).flatten(
-    )
+        })
+        .filter_map(|(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs))
+        .flatten()
 }
 
 /// # Free function tactic
@@ -310,7 +309,8 @@ pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(
 ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
     let db = ctx.sema.db;
     let module = ctx.scope.module();
-    defs.iter().filter_map(move |def| match def {
+    defs.iter()
+        .filter_map(move |def| match def {
             ScopeDef::ModuleDef(ModuleDef::Function(it)) => {
                 let generics = GenericDef::from(*it);
 
@@ -411,11 +411,10 @@ pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(
                 Some(exprs)
             }
             _ => None,
-        }).flatten(
-    ).filter_map(
-        |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
-    ).flatten(
-    )
+        })
+        .flatten()
+        .filter_map(|(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs))
+        .flatten()
 }
 
 /// # Impl method tactic
@@ -441,20 +440,21 @@ pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(
 ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
     let db = ctx.sema.db;
     let module = ctx.scope.module();
-    lookup.new_types(NewTypesKey::ImplMethod).into_iter().filter(
-        |ty| !ty.type_arguments().any(|it| it.contains_unknown()),
-    ).filter(
-        |_| should_continue(),
-    ).flat_map(|ty| {
+    lookup
+        .new_types(NewTypesKey::ImplMethod)
+        .into_iter()
+        .filter(|ty| !ty.type_arguments().any(|it| it.contains_unknown()))
+        .filter(|_| should_continue())
+        .flat_map(|ty| {
             Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
-        }).flat_map(
-        |(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)),
-    ).filter_map(|(imp, ty, it)| match it {
+        })
+        .flat_map(|(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)))
+        .filter_map(|(imp, ty, it)| match it {
             AssocItem::Function(f) => Some((imp, ty, f)),
             _ => None,
-        }).filter(
-        |_| should_continue(),
-    ).filter_map(move |(imp, ty, it)| {
+        })
+        .filter(|_| should_continue())
+        .filter_map(move |(imp, ty, it)| {
             let fn_generics = GenericDef::from(it);
             let imp_generics = GenericDef::from(imp);
 
@@ -530,10 +530,9 @@ pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(
                 .collect();
 
             Some((ret_ty, fn_exprs))
-        }).filter_map(
-        |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
-    ).flatten(
-    )
+        })
+        .filter_map(|(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs))
+        .flatten()
 }
 
 /// # Struct projection tactic
@@ -556,11 +555,12 @@ pub(super) fn struct_projection<'a, 'lt, 'db, DB: HirDatabase>(
 ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
     let db = ctx.sema.db;
     let module = ctx.scope.module();
-    lookup.new_types(NewTypesKey::StructProjection).into_iter().map(
-        |ty| (ty.clone(), lookup.find(db, &ty).expect("Expr not in lookup")),
-    ).filter(
-        |_| should_continue(),
-    ).flat_map(move |(ty, targets)| {
+    lookup
+        .new_types(NewTypesKey::StructProjection)
+        .into_iter()
+        .map(|ty| (ty.clone(), lookup.find(db, &ty).expect("Expr not in lookup")))
+        .filter(|_| should_continue())
+        .flat_map(move |(ty, targets)| {
             ty.fields(db).into_iter().filter_map(move |(field, filed_ty)| {
                 if !field.is_visible_from(db, module) {
                     return None;
@@ -571,10 +571,9 @@ pub(super) fn struct_projection<'a, 'lt, 'db, DB: HirDatabase>(
                     .map(move |target| Expr::Field { field, expr: Box::new(target) });
                 Some((filed_ty, exprs))
             })
-        }).filter_map(
-        |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
-    ).flatten(
-    )
+        })
+        .filter_map(|(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs))
+        .flatten()
 }
 
 /// # Famous types tactic
@@ -601,24 +600,15 @@ pub(super) fn famous_types<'a, 'lt, 'db, DB: HirDatabase>(
     let bool_ty = Ty::new_bool(interner);
     let unit_ty = Ty::new_unit(interner);
     [
-        Expr::FamousType {
-        ty: Type::new(db, module.id, bool_ty),
-        value: "true",
-    },
-        Expr::FamousType {
-        ty: Type::new(db, module.id, bool_ty),
-        value: "false",
-    },
-        Expr::FamousType {
-        ty: Type::new(db, module.id, unit_ty),
-        value: "()",
-    },
-    ].into_iter(
-    ).inspect(|exprs| {
+        Expr::FamousType { ty: Type::new(db, module.id, bool_ty), value: "true" },
+        Expr::FamousType { ty: Type::new(db, module.id, bool_ty), value: "false" },
+        Expr::FamousType { ty: Type::new(db, module.id, unit_ty), value: "()" },
+    ]
+    .into_iter()
+    .inspect(|exprs| {
         lookup.insert(exprs.ty(db), std::iter::once(exprs.clone()));
-    }).filter(
-        |expr| expr.ty(db).could_unify_with_deeply(db, &ctx.goal),
-    )
+    })
+    .filter(|expr| expr.ty(db).could_unify_with_deeply(db, &ctx.goal))
 }
 
 /// # Impl static method (without self type) tactic
@@ -641,22 +631,24 @@ pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(
 ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
     let db = ctx.sema.db;
     let module = ctx.scope.module();
-    lookup.types_wishlist().clone().into_iter().chain(iter::once(ctx.goal.clone())).filter(
-        |ty| !ty.type_arguments().any(|it| it.contains_unknown()),
-    ).filter(
-        |_| should_continue(),
-    ).flat_map(|ty| {
+    lookup
+        .types_wishlist()
+        .clone()
+        .into_iter()
+        .chain(iter::once(ctx.goal.clone()))
+        .filter(|ty| !ty.type_arguments().any(|it| it.contains_unknown()))
+        .filter(|_| should_continue())
+        .flat_map(|ty| {
             Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
-        }).filter(
-        |(_, imp)| !imp.is_unsafe(db),
-    ).flat_map(
-        |(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)),
-    ).filter_map(|(imp, ty, it)| match it {
+        })
+        .filter(|(_, imp)| !imp.is_unsafe(db))
+        .flat_map(|(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)))
+        .filter_map(|(imp, ty, it)| match it {
             AssocItem::Function(f) => Some((imp, ty, f)),
             _ => None,
-        }).filter(
-        |_| should_continue(),
-    ).filter_map(move |(imp, ty, it)| {
+        })
+        .filter(|_| should_continue())
+        .filter_map(move |(imp, ty, it)| {
             let fn_generics = GenericDef::from(it);
             let imp_generics = GenericDef::from(imp);
 
@@ -716,10 +708,9 @@ pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(
             lookup.insert(ret_ty.clone(), fn_exprs.iter().cloned());
 
             Some((ret_ty, fn_exprs))
-        }).filter_map(
-        |(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs),
-    ).flatten(
-    )
+        })
+        .filter_map(|(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs))
+        .flatten()
 }
 
 /// # Make tuple tactic
@@ -743,9 +734,13 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
     let db = ctx.sema.db;
     let module = ctx.scope.module();
 
-    lookup.types_wishlist().clone().into_iter().filter(|_| should_continue()).filter(
-        |ty| ty.is_tuple(),
-    ).filter_map(move |ty| {
+    lookup
+        .types_wishlist()
+        .clone()
+        .into_iter()
+        .filter(|_| should_continue())
+        .filter(|ty| ty.is_tuple())
+        .filter_map(move |ty| {
             // Double check to not contain unknown
             if ty.contains_unknown() {
                 return None;
@@ -775,8 +770,7 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
                 .collect();
 
             Some(exprs)
-        }).flatten(
-    ).filter_map(
-        |expr| expr.ty(db).could_unify_with_deeply(db, &ctx.goal).then_some(expr),
-    )
+        })
+        .flatten()
+        .filter_map(|expr| expr.ty(db).could_unify_with_deeply(db, &ctx.goal).then_some(expr))
 }

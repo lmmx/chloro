@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16012 bytes
-Chloro size:   15797 bytes
+Chloro size:   15855 bytes
 Rustfmt size:  16309 bytes
 
 ✗ Outputs DIFFER
@@ -134,15 +134,6 @@ Rustfmt size:  16309 bytes
      // then continue to remove trailing whitespace.
      let expr_str = expr_str.trim_end_matches(whitespace_pat);
      let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
- 
--    expr_str
--        .lines()
--        .map(|line| line.replacen("    ", "", 1)) // Delete indentation
--        .collect::<Vec<String>>()
--        .join("\n")
-+    expr_str.lines().map(|line| line.replacen("    ", "", 1)).collect::<Vec<String>>().join("\n")
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

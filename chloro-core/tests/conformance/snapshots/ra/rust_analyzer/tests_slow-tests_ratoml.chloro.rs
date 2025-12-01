@@ -84,8 +84,7 @@ impl RatomlTest {
 
         Url::parse(
             format!("file://{}", path.into_string().replace("C:\\", "/c:/").replace('\\', "/")).as_str(),
-        ).unwrap(
-        )
+        ).unwrap()
     }
 
     fn create(&mut self, fixture_path: &str, text: String) {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 91697 bytes
-Chloro size:   90801 bytes
+Chloro size:   90824 bytes
 Rustfmt size:  91697 bytes
 
 ✗ Outputs DIFFER
@@ -67,19 +67,6 @@ Rustfmt size:  91697 bytes
  pub(crate) fn rename(
      db: &RootDatabase,
      position: FilePosition,
-         })),
-     };
- 
--    ops?.into_iter()
--        .chain(alias_fallback)
--        .reduce(|acc, elem| acc.merge(elem))
--        .ok_or_else(|| format_err!("No references found at position"))
-+    ops?.into_iter().chain(alias_fallback).reduce(|acc, elem| acc.merge(elem)).ok_or_else(
-+        || format_err!("No references found at position"),
-+    )
- }
- 
- /// Called by the client when it is about to rename a file.
      Some(change)
  }
  
@@ -100,19 +87,9 @@ Rustfmt size:  91697 bytes
      match res {
          Ok(v) => {
 -            // remove duplicates, comparing `Definition`s
--            Ok(v.into_iter()
--                .unique_by(|&(.., def, _, _)| def)
--                .map(|(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e))
--                .collect::<Vec<_>>()
--                .into_iter())
-+            Ok(v.into_iter().unique_by(|&(.., def, _, _)| def).map(
-+                |(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e),
-+            ).collect::<Vec<_>>(
-+            ).into_iter(
-+            ))
-         }
-         Err(e) => Err(e),
-     }
+             Ok(v.into_iter()
+                 .unique_by(|&(.., def, _, _)| def)
+                 .map(|(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e))
                  continue;
              };
              let path = path.parent_path();

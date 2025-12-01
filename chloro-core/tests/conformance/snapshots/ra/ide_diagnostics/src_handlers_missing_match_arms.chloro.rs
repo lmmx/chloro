@@ -9,8 +9,8 @@ pub(crate) fn missing_match_arms(
         DiagnosticCode::RustcHardError("E0004"),
         format!("missing match arm: {}", d.uncovered_patterns),
         d.scrutinee_expr.map(Into::into),
-    ).stable(
     )
+    .stable()
 }
 
 #[cfg(test)]

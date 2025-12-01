@@ -70,15 +70,13 @@ impl Attrs {
         span_map: SpanMapRef<'_>,
         cfg_options: &CfgOptions,
     ) -> Result<(), CfgExpr> {
-        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options).filter_map(
-            |attr| attr.cfg(),
-        ).find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
+        RawAttrs::attrs_iter_expanded::<false>(db, owner, span_map, cfg_options)
+            .filter_map(|attr| attr.cfg())
+            .find_map(|cfg| match cfg_options.check(&cfg).is_none_or(identity) {
                 true => None,
                 false => Some(cfg),
-            }).map_or(
-            Ok(()),
-            Err,
-        )
+            })
+            .map_or(Ok(()), Err)
     }
 }
 
@@ -176,9 +174,8 @@ impl Attrs {
 
     #[inline]
     pub fn rust_analyzer_tool(&self) -> impl Iterator<Item = &Attr> {
-        self.iter().filter(
-            |&attr| attr.path.segments().first().is_some_and(|s| *s == sym::rust_analyzer),
-        )
+        self.iter()
+            .filter(|&attr| attr.path.segments().first().is_some_and(|s| *s == sym::rust_analyzer))
     }
 
     #[inline]
@@ -291,26 +288,22 @@ impl Attrs {
 
     #[inline]
     pub fn rustc_legacy_const_generics(&self) -> Option<Box<Box<[u32]>>> {
-        self.by_key(sym::rustc_legacy_const_generics).tt_values().next().map(
-            parse_rustc_legacy_const_generics,
-        ).filter(
-            |it| !it.is_empty(),
-        ).map(
-            Box::new,
-        )
+        self.by_key(sym::rustc_legacy_const_generics)
+            .tt_values()
+            .next()
+            .map(parse_rustc_legacy_const_generics)
+            .filter(|it| !it.is_empty())
+            .map(Box::new)
     }
 
     #[inline]
     pub fn repr(&self) -> Option<ReprOptions> {
-        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(
-            None,
-            |acc, repr| {
+        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(None, |acc, repr| {
             acc.map_or(Some(repr), |mut acc| {
                 merge_repr(&mut acc, repr);
                 Some(acc)
             })
-        },
-        )
+        })
     }
 }
 
@@ -515,8 +508,8 @@ fn parse_comma_sep<S>(iter: TtIter<'_, S>) -> Vec<Symbol> {
             kind: tt::LitKind::Str, symbol, ..
         })) => Some(symbol.clone()),
         _ => None,
-    }).collect(
-    )
+    })
+    .collect()
 }
 
 impl AttrsWithOwner {
@@ -742,9 +735,10 @@ impl AttrSourceMap {
             _ => self.file_id,
         };
 
-        self.source.get(ast_idx).map(|it| InFile::new(file_id, it)).unwrap_or_else(
-            || panic!("cannot find attr at index {id:?}"),
-        )
+        self.source
+            .get(ast_idx)
+            .map(|it| InFile::new(file_id, it))
+            .unwrap_or_else(|| panic!("cannot find attr at index {id:?}"))
     }
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   38062 bytes
+Chloro size:   38681 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -17,47 +17,29 @@ Rustfmt size:  42083 bytes
          opt!(focus_range);
          f.field("name", &self.name);
          opt!(kind container_name description docs);
-         let virtual_file_id = self.file_id;
-         Ok(NavigationTarget {
-             file_id: real_file_id,
--            full_range: self.full_range.upmap_from_ra_fixture(
--                analysis,
--                virtual_file_id,
--                real_file_id,
--            )?,
--            focus_range: self.focus_range.upmap_from_ra_fixture(
--                analysis,
--                virtual_file_id,
--                real_file_id,
--            )?,
+                 virtual_file_id,
+                 real_file_id,
+             )?,
 -            name: self
 -                .name
 -                .upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
 -            kind: self
 -                .kind
 -                .upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
--            container_name: self.container_name.upmap_from_ra_fixture(
--                analysis,
--                virtual_file_id,
--                real_file_id,
--            )?,
--            description: self.description.upmap_from_ra_fixture(
--                analysis,
--                virtual_file_id,
--                real_file_id,
--            )?,
++            name: self.name.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
++            kind: self.kind.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
+             container_name: self.container_name.upmap_from_ra_fixture(
+                 analysis,
+                 virtual_file_id,
+                 virtual_file_id,
+                 real_file_id,
+             )?,
 -            docs: self
 -                .docs
 -                .upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
 -            alias: self
 -                .alias
 -                .upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-+            full_range: self.full_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-+            focus_range: self.focus_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-+            name: self.name.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-+            kind: self.kind.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-+            container_name: self.container_name.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-+            description: self.description.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
 +            docs: self.docs.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
 +            alias: self.alias.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
          })
@@ -126,28 +108,16 @@ Rustfmt size:  42083 bytes
      }
  
      pub(crate) fn from_syntax(
-     ) -> Option<UpmappingResult<NavigationTarget>> {
-         let db = sema.db;
-         let display_target = self.def.krate(db).to_display_target(db);
--        Some(
--            orig_range_with_focus_r(
--                db,
--                self.loc.hir_file_id,
--                self.loc.ptr.text_range(),
--                Some(self.loc.name_ptr.text_range()),
--            )
+                 self.loc.ptr.text_range(),
+                 Some(self.loc.name_ptr.text_range()),
+             )
 -            .map(
 -                |(
 -                    FileRange {
 -                        file_id,
 -                        range: full_range,
 -                    },
-+        Some(orig_range_with_focus_r(
-+            db,
-+            self.loc.hir_file_id,
-+            self.loc.ptr.text_range(),
-+            Some(self.loc.name_ptr.text_range()),
-+        ).map(|(FileRange { file_id, range: full_range }, focus_range)| {
++            .map(|(FileRange { file_id, range: full_range }, focus_range)| {
 +                NavigationTarget {
 +                    file_id,
 +                    name: self
@@ -206,7 +176,6 @@ Rustfmt size:  42083 bytes
 -                    }
 -                },
 -            ),
--        )
 +                    container_name: self.container_name.clone(),
 +                    description: match self.def {
 +                        hir::ModuleDef::Module(it) => {
@@ -238,10 +207,10 @@ Rustfmt size:  42083 bytes
 +                    },
 +                    docs: None,
 +                }
-+            }))
++            }),
+         )
      }
  }
- 
              | Definition::ToolModule(_)
              | Definition::InlineAsmRegOrRegClass(_)
              | Definition::BuiltinAttr(_) => None,
@@ -332,17 +301,7 @@ Rustfmt size:  42083 bytes
      fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
          container_name(db, self)
      }
-     ) -> Option<UpmappingResult<NavigationTarget>> {
-         let db = sema.db;
-         let src = self.source(db)?;
--        Some(
--            NavigationTarget::from_named(
--                db,
--                src.as_ref().map(|it| it as &dyn ast::HasName),
--                D::KIND,
--            )
--            .map(|mut res| {
-+        Some(NavigationTarget::from_named(db, src.as_ref().map(|it| it as &dyn ast::HasName), D::KIND).map(|mut res| {
+             .map(|mut res| {
                  res.docs = self.docs(db);
                  res.description = hir::attach_db(db, || {
 -                    Some(
@@ -353,12 +312,6 @@ Rustfmt size:  42083 bytes
                  });
                  res.container_name = self.container_name(db);
                  res
--            }),
--        )
-+            }))
-     }
- }
- 
      fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
          let InFile { file_id, value } = self.definition_source(db);
  
@@ -487,25 +440,6 @@ Rustfmt size:  42083 bytes
                      NavigationTarget::from_syntax(
                          file_id,
                          Symbol::integer(self.index()),
-             Either::Left(it) => it,
-             Either::Right(it) => it,
-         };
--        Some(
--            NavigationTarget::from_named(
--                db,
--                src.as_ref().with_value(name_owner),
--                self.kind(db).into(),
--            )
--            .map(|mut res| {
-+        Some(NavigationTarget::from_named(db, src.as_ref().with_value(name_owner), self.kind(db).into()).map(|mut res| {
-                 res.docs = self.docs(db);
-                 res
--            }),
--        )
-+            }))
-     }
- }
- 
              Either::Right(it) => (it.syntax(), it.name()),
          };
  
@@ -708,19 +642,6 @@ Rustfmt size:  42083 bytes
              .map(Crate::from)?;
          let edition = krate.edition(db);
  
-     type IntoIter = <ArrayVec<T, 2> as IntoIterator>::IntoIter;
- 
-     fn into_iter(self) -> Self::IntoIter {
--        self.def_site
--            .into_iter()
--            .chain(Some(self.call_site))
--            .collect::<ArrayVec<_, 2>>()
--            .into_iter()
-+        self.def_site.into_iter().chain(Some(self.call_site)).collect::<ArrayVec<_, 2>>().into_iter(
-+        )
-     }
- }
- 
      value: TextRange,
      focus_range: Option<TextRange>,
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
@@ -745,33 +666,27 @@ Rustfmt size:  42083 bytes
  
      // FIXME: Also make use of the syntax context to determine which site we are at?
      let value_range = InFile::new(hir_file, value).original_node_file_range_opt(db);
-     value: &SyntaxNode,
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
      UpmappingResult {
--        call_site: (
+         call_site: (
 -            InFile::new(hir_file, value)
 -                .original_file_range_rooted(db)
 -                .into_file_id(db),
--            None,
--        ),
-+        call_site: (InFile::new(hir_file, value).original_file_range_rooted(db).into_file_id(db), None),
++            InFile::new(hir_file, value).original_file_range_rooted(db).into_file_id(db),
+             None,
+         ),
          def_site: None,
-     }
- }
-     value: TextRange,
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
      UpmappingResult {
--        call_site: (
+         call_site: (
 -            InFile::new(hir_file, value)
 -                .original_node_file_range(db)
 -                .0
 -                .into_file_id(db),
--            None,
--        ),
-+        call_site: (InFile::new(hir_file, value).original_node_file_range(db).0.into_file_id(db), None),
++            InFile::new(hir_file, value).original_node_file_range(db).0.into_file_id(db),
+             None,
+         ),
          def_site: None,
-     }
- }
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

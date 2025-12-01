@@ -492,11 +492,12 @@ impl DefMap {
         db: &'a dyn DefDatabase,
         file_id: FileId,
     ) -> impl Iterator<Item = LocalModuleId> + 'a {
-        self.modules.iter().filter(move |(_id, data)| {
+        self.modules
+            .iter()
+            .filter(move |(_id, data)| {
                 data.origin.file_id().map(|file_id| file_id.file_id(db)) == Some(file_id)
-            }).map(
-            |(id, _data)| id,
-        )
+            })
+            .map(|(id, _data)| id)
     }
 
     pub fn modules(&self) -> impl Iterator<Item = (LocalModuleId, &ModuleData)> + '_ {
@@ -566,9 +567,11 @@ impl DefMap {
         match self[local_mod].parent {
             Some(parent) => Some(self.module_id(parent)),
             None => {
-                self.block.map(|BlockInfo { parent: BlockRelativeModuleId { block, local_id }, .. }| {
+                self.block.map(
+                    |BlockInfo { parent: BlockRelativeModuleId { block, local_id }, .. }| {
                         ModuleId { krate: self.krate, block, local_id }
-                    })
+                    },
+                )
             }
         }
     }

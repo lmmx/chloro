@@ -12,10 +12,10 @@ pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     acc.add(
         AssistId::refactor_rewrite("add_braces"),
         match expr_type {
-        ParentType::ClosureExpr => "Add braces to this closure body",
-        ParentType::MatchArmExpr => "Add braces to this match arm expression",
-        ParentType::Assignment => "Add braces to this assignment expression",
-    },
+            ParentType::ClosureExpr => "Add braces to this closure body",
+            ParentType::MatchArmExpr => "Add braces to this match arm expression",
+            ParentType::Assignment => "Add braces to this assignment expression",
+        },
         expr.syntax().text_range(),
         |builder| {
             let make = SyntaxFactory::with_mappings();

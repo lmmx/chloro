@@ -11,12 +11,13 @@ pub struct CrateInfo {
 }
 
 pub(crate) fn fetch_crates(db: &RootDatabase) -> FxIndexSet<CrateInfo> {
-    db.all_crates().iter().copied().map(|crate_id| (crate_id.data(db), crate_id.extra_data(db))).filter(
-        |(data, _)| !matches!(data.origin, CrateOrigin::Local { .. }),
-    ).map(
-        |(data, extra_data)| crate_info(data, extra_data),
-    ).collect(
-    )
+    db.all_crates()
+        .iter()
+        .copied()
+        .map(|crate_id| (crate_id.data(db), crate_id.extra_data(db)))
+        .filter(|(data, _)| !matches!(data.origin, CrateOrigin::Local { .. }))
+        .map(|(data, extra_data)| crate_info(data, extra_data))
+        .collect()
 }
 
 fn crate_info(

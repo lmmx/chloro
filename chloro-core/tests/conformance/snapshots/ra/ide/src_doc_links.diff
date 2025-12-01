@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30540 bytes
+Chloro size:   30563 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -83,27 +83,6 @@ Rustfmt size:  31554 bytes
  pub(crate) fn external_docs(
      db: &RootDatabase,
      FilePosition { file_id, offset }: FilePosition,
-         docs.as_str(),
-         MARKDOWN_OPTIONS,
-         Some(&mut broken_link_clone_cb),
--    )
--    .into_offset_iter()
--    .filter_map(|(event, range)| match event {
-+    ).into_offset_iter(
-+    ).filter_map(|(event, range)| match event {
-         Event::Start(Tag::Link(_, target, _)) => {
-             let (link, ns) = parse_intra_doc_link(&target);
-             Some((
-             ))
-         }
-         _ => None,
--    })
--    .collect()
-+    }).collect(
-+    )
- }
- 
- pub(crate) fn resolve_doc_path_for_def(
          | Definition::DeriveHelper(_)
          | Definition::InlineAsmRegOrRegClass(_)
          | Definition::InlineAsmOperand(_) => None,
@@ -132,11 +111,7 @@ Rustfmt size:  31554 bytes
          mut cb: impl FnMut(Definition, SyntaxNode, TextRange) -> Option<T>,
      ) -> Option<T> {
          let DocCommentToken { prefix_len, doc_token } = self;
- }
- 
- fn broken_link_clone_cb(link: BrokenLink<'_>) -> Option<(CowStr<'_>, CowStr<'_>)> {
--    Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
-+    Some((link.reference.clone(), link.reference))
+     Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
  }
  
 -// FIXME:

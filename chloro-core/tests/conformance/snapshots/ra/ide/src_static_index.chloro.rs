@@ -118,11 +118,11 @@ fn documentation_for_definition(
     def.docs(
         sema.db,
         famous_defs.as_ref(),
-        def.krate(sema.db).unwrap_or_else(|| {
+        def.krate(sema.db)
+            .unwrap_or_else(|| {
                 (*sema.db.all_crates().last().expect("no crate graph present")).into()
-            }).to_display_target(
-        sema.db,
-    ),
+            })
+            .to_display_target(sema.db),
     )
 }
 

@@ -9,8 +9,8 @@ pub(crate) fn non_exhaustive_let(
         DiagnosticCode::RustcHardError("E0005"),
         format!("non-exhaustive pattern: {}", d.uncovered_patterns),
         d.pat.map(Into::into),
-    ).stable(
     )
+    .stable()
 }
 
 #[cfg(test)]

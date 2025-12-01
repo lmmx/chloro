@@ -37,9 +37,9 @@ use crate::{
 };
 
 pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
-    extract_trivial_expression(&block_expr).filter(|expr| !expr.syntax().text().contains_char('\n')).unwrap_or_else(
-        || block_expr.into(),
-    )
+    extract_trivial_expression(&block_expr)
+        .filter(|expr| !expr.syntax().text().contains_char('\n'))
+        .unwrap_or_else(|| block_expr.into())
 }
 
 pub fn extract_trivial_expression(block_expr: &ast::BlockExpr) -> Option<ast::Expr> {
@@ -194,7 +194,9 @@ pub fn add_trait_assoc_items_to_impl(
     target_scope: &hir::SemanticsScope<'_>,
 ) -> Vec<ast::AssocItem> {
     let new_indent_level = IndentLevel::from_node(impl_.syntax()) + 1;
-    original_items.iter().map(|InFile { file_id, value: original_item }| {
+    original_items
+        .iter()
+        .map(|InFile { file_id, value: original_item }| {
             let mut cloned_item = {
                 if let Some(macro_file) = file_id.macro_file() {
                     let span_map = sema.db.expansion_span_map(macro_file);
@@ -223,7 +225,8 @@ pub fn add_trait_assoc_items_to_impl(
             }
             cloned_item.remove_attrs_and_docs();
             cloned_item
-        }).filter_map(|item| match item {
+        })
+        .filter_map(|item| match item {
             ast::AssocItem::Fn(fn_) if fn_.body().is_none() => {
                 let fn_ = fn_.clone_subtree();
                 let new_body = &make::block_expr(
@@ -252,18 +255,16 @@ pub fn add_trait_assoc_items_to_impl(
                 }
             }
             item => Some(item),
-        }).map(
-        |item| AstNodeEdit::indent(&item, new_indent_level),
-    ).collect(
-    )
+        })
+        .map(|item| AstNodeEdit::indent(&item, new_indent_level))
+        .collect()
 }
 
 pub(crate) fn vis_offset(node: &SyntaxNode) -> TextSize {
-    node.children_with_tokens().find(|it| !matches!(it.kind(), WHITESPACE | COMMENT | ATTR)).map(
-        |it| it.text_range().start(),
-    ).unwrap_or_else(
-        || node.text_range().start(),
-    )
+    node.children_with_tokens()
+        .find(|it| !matches!(it.kind(), WHITESPACE | COMMENT | ATTR))
+        .map(|it| it.text_range().start())
+        .unwrap_or_else(|| node.text_range().start())
 }
 
 pub(crate) fn invert_boolean_expression(make: &SyntaxFactory, expr: ast::Expr) -> ast::Expr {
@@ -468,9 +469,8 @@ fn check_pat_variant_nested_or_literal_with_depth(
         }
         ast::Pat::SlicePat(slice_pat) => {
             let mut pats = slice_pat.pats();
-            pats.next().is_none_or(
-                |pat| !matches!(pat, ast::Pat::RestPat(_)) || pats.next().is_some(),
-            )
+            pats.next()
+                .is_none_or(|pat| !matches!(pat, ast::Pat::RestPat(_)) || pats.next().is_some())
         }
     }
 }
@@ -759,8 +759,7 @@ fn generate_impl_inner(
             body,
         ),
         None => make::impl_(cfg_attrs, generic_params, generic_args, ty, adt.where_clause(), body),
-    }.clone_for_update(
-    )
+    }.clone_for_update()
 }
 
 pub(crate) fn add_method_to_adt(
@@ -873,8 +872,7 @@ impl<'db> ReferenceConversion<'db> {
                 if self.impls_deref {
                     make::expr_ref(expr, false)
                 } else {
-                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([])).into(
-                    )
+                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([])).into()
                 }
             }
         }
@@ -886,17 +884,13 @@ pub(crate) fn convert_reference_type<'db>(
     db: &'db RootDatabase,
     famous_defs: &FamousDefs<'_, 'db>,
 ) -> Option<ReferenceConversion<'db>> {
-    handle_copy(&ty, db).or_else(|| handle_as_ref_str(&ty, db, famous_defs)).or_else(
-        || handle_as_ref_slice(&ty, db, famous_defs),
-    ).or_else(
-        || handle_dereferenced(&ty, db, famous_defs),
-    ).or_else(
-        || handle_option_as_ref(&ty, db, famous_defs),
-    ).or_else(
-        || handle_result_as_ref(&ty, db, famous_defs),
-    ).map(
-        |(conversion, impls_deref)| ReferenceConversion { ty, conversion, impls_deref },
-    )
+    handle_copy(&ty, db)
+        .or_else(|| handle_as_ref_str(&ty, db, famous_defs))
+        .or_else(|| handle_as_ref_slice(&ty, db, famous_defs))
+        .or_else(|| handle_dereferenced(&ty, db, famous_defs))
+        .or_else(|| handle_option_as_ref(&ty, db, famous_defs))
+        .or_else(|| handle_result_as_ref(&ty, db, famous_defs))
+        .map(|(conversion, impls_deref)| ReferenceConversion { ty, conversion, impls_deref })
 }
 
 fn could_deref_to_target(
@@ -923,9 +917,8 @@ fn handle_as_ref_str(
 ) -> Option<(ReferenceConversionType, bool)> {
     let str_type = hir::BuiltinType::str().ty(db);
 
-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type)).then_some(
-        (ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)),
-    )
+    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type))
+        .then_some((ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)))
 }
 
 fn handle_as_ref_slice(
@@ -936,9 +929,10 @@ fn handle_as_ref_slice(
     let type_argument = ty.type_arguments().next()?;
     let slice_type = hir::Type::new_slice(type_argument);
 
-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some(
-        (ReferenceConversionType::AsRefSlice, could_deref_to_target(ty, &slice_type, db)),
-    )
+    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some((
+        ReferenceConversionType::AsRefSlice,
+        could_deref_to_target(ty, &slice_type, db),
+    ))
 }
 
 fn handle_dereferenced(
@@ -948,9 +942,11 @@ fn handle_dereferenced(
 ) -> Option<(ReferenceConversionType, bool)> {
     let type_argument = ty.type_arguments().next()?;
 
-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument)).then_some(
-        (ReferenceConversionType::Dereferenced, could_deref_to_target(ty, &type_argument, db)),
-    )
+    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument))
+        .then_some((
+            ReferenceConversionType::Dereferenced,
+            could_deref_to_target(ty, &type_argument, db),
+        ))
 }
 
 fn handle_option_as_ref(
@@ -978,13 +974,14 @@ fn handle_result_as_ref(
 }
 
 pub(crate) fn get_methods(items: &ast::AssocItemList) -> Vec<ast::Fn> {
-    items.assoc_items().flat_map(|i| match i {
+    items
+        .assoc_items()
+        .flat_map(|i| match i {
             ast::AssocItem::Fn(f) => Some(f),
             _ => None,
-        }).filter(
-        |f| f.name().is_some(),
-    ).collect(
-    )
+        })
+        .filter(|f| f.name().is_some())
+        .collect()
 }
 
 /// Trim(remove leading and trailing whitespace) `initial_range` in `source_file`, return the trimmed range.
@@ -1201,7 +1198,8 @@ pub(crate) fn is_never_block(
 ) -> bool {
     if let Some(tail_expr) = block_expr.tail_expr() {
         sema.type_of_expr(&tail_expr).is_some_and(|ty| ty.original.is_never())
-    } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last() && let Some(expr) = expr_stmt.expr() {
+    } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last()
+        && let Some(expr) = expr_stmt.expr() {
         sema.type_of_expr(&expr).is_some_and(|ty| ty.original.is_never())
     } else {
         false

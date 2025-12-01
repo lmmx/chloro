@@ -258,11 +258,11 @@ fn find_doc_string_in_attr(attr: &hir::Attr, it: &ast::Attr) -> Option<ast::Stri
         },
         None => {
             let text = attr.string_value()?.as_str();
-            it.syntax().descendants_with_tokens().filter_map(NodeOrToken::into_token).filter_map(
-                ast::String::cast,
-            ).find(
-                |string| string.text().get(1..string.text().len() - 1) == Some(text),
-            )
+            it.syntax()
+                .descendants_with_tokens()
+                .filter_map(NodeOrToken::into_token)
+                .filter_map(ast::String::cast)
+                .find(|string| string.text().get(1..string.text().len() - 1) == Some(text))
         }
         _ => None,
     }

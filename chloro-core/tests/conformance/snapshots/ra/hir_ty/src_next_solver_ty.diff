@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   49977 bytes
+Chloro size:   50000 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -64,9 +64,9 @@ Rustfmt size:  52438 bytes
 +            TyKind::Tuple(tys) => {
 +                tys.last().is_none_or(|ty| ty.has_trivial_sizedness(tcx, sizedness))
 +            }
-+            TyKind::Adt(def, args) => def.sizedness_constraint(tcx, sizedness).is_none_or(
-+                |ty| ty.instantiate(tcx, args).has_trivial_sizedness(tcx, sizedness),
-+            ),
++            TyKind::Adt(def, args) => def
++                .sizedness_constraint(tcx, sizedness)
++                .is_none_or(|ty| ty.instantiate(tcx, args).has_trivial_sizedness(tcx, sizedness)),
              TyKind::Alias(..) | TyKind::Param(_) | TyKind::Placeholder(..) | TyKind::Bound(..) => {
                  false
              }
@@ -175,16 +175,8 @@ Rustfmt size:  52438 bytes
      }
  
      /// Returns the type of `*ty`.
-                 Some(interner.fn_sig(callable).instantiate(interner, args))
-             }
-             TyKind::FnPtr(sig, hdr) => Some(sig.with(hdr)),
--            TyKind::Closure(_, closure_args) => closure_args
--                .split_closure_args_untupled()
--                .closure_sig_as_fn_ptr_ty
--                .callable_sig(interner),
-+            TyKind::Closure(_, closure_args) => closure_args.split_closure_args_untupled().closure_sig_as_fn_ptr_ty.callable_sig(
-+                interner,
-+            ),
+                 .closure_sig_as_fn_ptr_ty
+                 .callable_sig(interner),
              TyKind::CoroutineClosure(coroutine_id, args) => {
 -                Some(
 -                    args.as_coroutine_closure()

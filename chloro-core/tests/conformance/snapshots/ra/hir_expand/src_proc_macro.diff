@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12654 bytes
-Chloro size:   12177 bytes
+Chloro size:   12288 bytes
 Rustfmt size:  13004 bytes
 
 ✗ Outputs DIFFER
@@ -39,34 +39,6 @@ Rustfmt size:  13004 bytes
  impl ProcMacros {
      fn get(&self, krate: Crate) -> Option<Arc<CrateProcMacros>> {
          self.0.get(&krate).cloned()
-                         idx
-                     )
-                 )
--            }
--        )
-+            })
-     }
- 
-     pub fn get_error(&self) -> Option<&ProcMacroLoadingError> {
-         def_site_ctx: span::SyntaxContext,
-     ) -> Option<Box<[(crate::name::Name, CustomProcMacroExpander, bool)]>> {
-         match &self.0 {
--            Ok(proc_macros) => Some(
--                proc_macros
--                    .iter()
--                    .enumerate()
--                    .map(|(idx, it)| {
-+            Ok(proc_macros) => Some(proc_macros.iter().enumerate().map(|(idx, it)| {
-                         let name = crate::name::Name::new_symbol(it.name.clone(), def_site_ctx);
-                         (name, CustomProcMacroExpander::new(idx as u32), it.disabled)
--                    })
--                    .collect(),
--            ),
-+                    }).collect(
-+            )),
-             _ => None,
-         }
-     }
      pub disabled: bool,
  }
  

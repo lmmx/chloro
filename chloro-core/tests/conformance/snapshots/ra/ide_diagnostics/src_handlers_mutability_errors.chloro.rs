@@ -41,18 +41,20 @@ pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option
         )])
     })();
 
-    Some(Diagnostic::new_with_syntax_node_ptr(
-        ctx,
-        DiagnosticCode::RustcHardError("E0384"),
-        format!(
+    Some(
+        Diagnostic::new_with_syntax_node_ptr(
+            ctx,
+            // FIXME: `E0384` is not the only error that this diagnostic handles
+            DiagnosticCode::RustcHardError("E0384"),
+            format!(
                 "cannot mutate immutable variable `{}`",
                 d.local.name(ctx.sema.db).display(ctx.sema.db, ctx.edition)
             ),
-        span,
-    ).stable(
-    ).with_fixes(
-        fixes,
-    ))
+            span,
+        )
+        .stable()
+        .with_fixes(fixes),
+    )
 }
 
 pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Option<Diagnostic> {

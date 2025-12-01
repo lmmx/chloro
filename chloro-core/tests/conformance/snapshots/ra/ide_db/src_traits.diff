@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8057 bytes
-Chloro size:   8091 bytes
+Chloro size:   8086 bytes
 Rustfmt size:  8222 bytes
 
 ✗ Outputs DIFFER
@@ -63,8 +63,7 @@ Rustfmt size:  8222 bytes
          assoc_item_of_trait(db, assoc, trait_)
 -    })()
 -    .unwrap_or(def)
-+    })(
-+    ).unwrap_or(
++    })().unwrap_or(
 +        def,
 +    )
  }

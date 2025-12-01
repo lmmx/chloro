@@ -56,7 +56,10 @@ pub(crate) struct QualifierCtx {
 
 impl QualifierCtx {
     pub(crate) fn none(&self) -> bool {
-        self.async_tok.is_none() && self.unsafe_tok.is_none() && self.safe_tok.is_none() && self.vis_node.is_none()
+        self.async_tok.is_none()
+            && self.unsafe_tok.is_none()
+            && self.safe_tok.is_none()
+            && self.vis_node.is_none()
     }
 }
 

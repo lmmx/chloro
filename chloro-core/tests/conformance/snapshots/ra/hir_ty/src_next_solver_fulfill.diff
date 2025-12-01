@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12349 bytes
+Chloro size:   12382 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -41,55 +41,12 @@ Rustfmt size:  12418 bytes
      /// The snapshot in which this context was created. Using the context
      /// outside of this snapshot leads to subtle bugs if the snapshot
      /// gets rolled back. Because of this we explicitly check that we only
-         &mut self,
-         _infcx: &InferCtxt<'db>,
-     ) -> Vec<NextSolverError<'db>> {
--        self.obligations
--            .pending
--            .drain(..)
--            .map(|(obligation, _)| NextSolverError::Ambiguity(obligation))
--            .chain(self.obligations.overflowed.drain(..).map(NextSolverError::Overflow))
--            .collect()
-+        self.obligations.pending.drain(..).map(
-+            |(obligation, _)| NextSolverError::Ambiguity(obligation),
-+        ).chain(
-+            self.obligations.overflowed.drain(..).map(NextSolverError::Overflow),
-+        ).collect(
-+        )
-     }
- 
-     pub(crate) fn try_evaluate_obligations(
-             return Default::default();
          }
  
--        self.obligations
--            .drain_pending(|obl| {
-+        self.obligations.drain_pending(|obl| {
-                 infcx.probe(|_| {
-                     infcx
-                         .visit_proof_tree(
-                         )
-                         .is_break()
-                 })
--            })
--            .into_iter()
--            .map(|(o, _)| o)
--            .collect()
-+            }).into_iter(
-+        ).map(
-+            |(o, _)| o,
-+        ).collect(
-+        )
-     }
- }
- 
-             return ControlFlow::Continue(());
-         }
- 
--        if let TyKind::Coroutine(def_id, _) = ty.kind()
+         if let TyKind::Coroutine(def_id, _) = ty.kind()
 -            && self.stalled_coroutines.contains(&def_id.into())
 -        {
-+        if let TyKind::Coroutine(def_id, _) = ty.kind() && self.stalled_coroutines.contains(&def_id.into()) {
++            && self.stalled_coroutines.contains(&def_id.into()) {
              ControlFlow::Break(())
          } else if ty.has_coroutines() {
              ty.super_visit_with(self)

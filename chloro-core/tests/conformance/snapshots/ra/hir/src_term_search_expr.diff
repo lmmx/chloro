@@ -2,23 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16513 bytes
-Chloro size:   16662 bytes
+Chloro size:   16656 bytes
 Rustfmt size:  16513 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     edition: Edition,
- ) -> Result<String, DisplaySourceCodeError> {
-     let path = mod_item_path(sema_scope, def, cfg);
--    path.map(|it| it.display(sema_scope.db, edition).to_string())
--        .ok_or(DisplaySourceCodeError::PathNotFound)
-+    path.map(|it| it.display(sema_scope.db, edition).to_string()).ok_or(
-+        DisplaySourceCodeError::PathNotFound,
-+    )
- }
- 
- /// Type tree shows how can we get from set of types to some type.
      /// Constant generic parameter
      ConstParam(ConstParam),
      /// Well known type (such as `true` for bool)

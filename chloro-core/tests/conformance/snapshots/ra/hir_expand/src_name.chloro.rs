@@ -25,8 +25,10 @@ pub struct Name {
 
 impl fmt::Debug for Name {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Name").field("symbol", &self.symbol.as_str()).field("ctx", &self.ctx).finish(
-        )
+        f.debug_struct("Name")
+            .field("symbol", &self.symbol.as_str())
+            .field("ctx", &self.ctx)
+            .finish()
     }
 }
 

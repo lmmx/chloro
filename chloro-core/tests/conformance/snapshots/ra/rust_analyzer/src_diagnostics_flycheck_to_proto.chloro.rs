@@ -158,9 +158,10 @@ fn resolve_path(
     workspace_root: &AbsPath,
     file_name: &str,
 ) -> AbsPathBuf {
-    match config.remap_prefix.iter().find_map(
-        |(from, to)| file_name.strip_prefix(from).map(|file_name| (to, file_name)),
-    ) {
+    match config
+        .remap_prefix
+        .iter()
+        .find_map(|(from, to)| file_name.strip_prefix(from).map(|file_name| (to, file_name))) {
         Some((to, file_name)) => workspace_root.join(format!("{to}{file_name}")),
         None => workspace_root.join(file_name),
     }
@@ -490,7 +491,8 @@ fn rustc_code_description(code: Option<&str>) -> Option<lsp_types::CodeDescripti
         chars.next() == Some('E')
             && chars.by_ref().take(4).all(|c| c.is_ascii_digit())
             && chars.next().is_none()
-    }).and_then(|code| {
+    })
+    .and_then(|code| {
         lsp_types::Url::parse(&format!("https://doc.rust-lang.org/error-index.html#{code}"))
             .ok()
             .map(|href| lsp_types::CodeDescription { href })

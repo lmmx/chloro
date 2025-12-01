@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11045 bytes
-Chloro size:   10974 bytes
+Chloro size:   11064 bytes
 Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
@@ -76,16 +76,6 @@ Rustfmt size:  11497 bytes
                  ));
                  let qualifier_generic_args = &generic_args[..generic_args.len() - 1];
                  if type_anchor.is_none() && qualifier_generic_args.iter().all(|it| it.is_none()) {
-         match self {
-             Path::BarePath(mod_path) => mod_path.is_Self(),
-             Path::Normal(path) => {
--                path.type_anchor.is_none()
--                    && path.mod_path.is_Self()
--                    && path.generic_args.iter().all(|args| args.is_none())
-+                path.type_anchor.is_none() && path.mod_path.is_Self() && path.generic_args.iter().all(|args| args.is_none())
-             }
-             Path::LangItem(..) => false,
-         }
  }
  
  impl PathSegment<'_> {
@@ -137,17 +127,13 @@ Rustfmt size:  11497 bytes
 -                .segments
 -                .get(..self.segments.len().saturating_sub(2))
 -                .unwrap_or(&[]),
--            generic_args: self
--                .generic_args
--                .map(|it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[])),
 +            segments: self.segments.get(..self.segments.len().saturating_sub(2)).unwrap_or(&[]),
-+            generic_args: self.generic_args.map(|it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[])),
-         }
-     }
- 
+             generic_args: self
+                 .generic_args
+                 .map(|it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[])),
      pub fn iter(&self) -> impl Iterator<Item = PathSegment<'a>> {
--        self.segments
--            .iter()
+         self.segments
+             .iter()
 -            .zip(
 -                self.generic_args
 -                    .into_iter()
@@ -158,9 +144,8 @@ Rustfmt size:  11497 bytes
 -                name,
 -                args_and_bindings: args.as_ref(),
 -            })
-+        self.segments.iter().zip(self.generic_args.into_iter().flatten().chain(iter::repeat(&None))).map(
-+            |(name, args)| PathSegment { name, args_and_bindings: args.as_ref() },
-+        )
++            .zip(self.generic_args.into_iter().flatten().chain(iter::repeat(&None)))
++            .map(|(name, args)| PathSegment { name, args_and_bindings: args.as_ref() })
      }
  }
  

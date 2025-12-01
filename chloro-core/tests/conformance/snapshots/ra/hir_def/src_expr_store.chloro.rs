@@ -410,9 +410,12 @@ impl ExpressionStore {
         &'a self,
         db: &'a dyn DefDatabase,
     ) -> impl Iterator<Item = (BlockId, &'a DefMap)> + 'a {
-        self.expr_only.as_ref().map(|it| &*it.block_scopes).unwrap_or_default().iter().map(
-            move |&block| (block, block_def_map(db, block)),
-        )
+        self.expr_only
+            .as_ref()
+            .map(|it| &*it.block_scopes)
+            .unwrap_or_default()
+            .iter()
+            .map(move |&block| (block, block_def_map(db, block)))
     }
 
     pub fn walk_bindings_in_pat(&self, pat_id: PatId, mut f: impl FnMut(BindingId)) {
@@ -979,8 +982,12 @@ impl ExpressionStoreSourceMap {
         &self,
         capture_expr: ExprId,
     ) -> Option<InFile<(ExprPtr, TextRange)>> {
-        self.expr_only()?.template_map.as_ref()?.implicit_capture_to_source.get(&capture_expr).copied(
-        )
+        self.expr_only()?
+            .template_map
+            .as_ref()?
+            .implicit_capture_to_source
+            .get(&capture_expr)
+            .copied()
     }
 
     pub fn asm_template_args(

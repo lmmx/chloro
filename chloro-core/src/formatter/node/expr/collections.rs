@@ -13,7 +13,7 @@ pub fn format_array_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
         let mut exprs = array.exprs();
         let expr = exprs.next()?;
         let len = exprs.next()?;
-        let _ = semicolon; // just to confirm it exists
+        let _ = semicolon;
 
         let expr_str = try_format_expr_inner(expr.syntax(), indent)?;
         let len_str = try_format_expr_inner(len.syntax(), indent)?;
@@ -46,7 +46,12 @@ pub fn format_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 
     let callee_text = try_format_expr_inner(callee.syntax(), indent)?;
 
-    // Try single-line first
+    // No args - always single line
+    if args.is_empty() {
+        return Some(format!("{}()", callee_text));
+    }
+
+    // Try to format all args
     let args_formatted: Option<Vec<_>> = args
         .iter()
         .map(|a| try_format_expr_inner(a.syntax(), indent))
@@ -54,21 +59,18 @@ pub fn format_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 
     let args_vec = args_formatted?;
 
+    // Try single-line
     let single_line = format!("{}({})", callee_text, args_vec.join(", "));
     if indent + single_line.len() <= MAX_WIDTH {
         return Some(single_line);
     }
 
-    // Single argument that formats to multi-line: snug wrap it
-    if args.len() == 1 {
-        let arg_str = &args_vec[0];
-        if arg_str.contains('\n') {
-            // Snug: no trailing comma, closing paren right after
-            return Some(format!("{}({})", callee_text, arg_str));
-        }
+    // Single argument that's already multi-line: snug wrap
+    if args.len() == 1 && args_vec[0].contains('\n') {
+        return Some(format!("{}({})", callee_text, args_vec[0]));
     }
 
-    // Multi-line with multiple args
+    // Multi-line with trailing commas
     let mut buf = String::new();
     buf.push_str(&callee_text);
     buf.push_str("(\n");
@@ -86,7 +88,21 @@ pub fn format_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 
 pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let method = ast::MethodCallExpr::cast(node.clone())?;
+
+    // Check if this is part of a method chain - if so, don't format it here,
+    // let the parent handle the whole chain, or fall back to verbatim.
+    // A method chain is when the receiver is also a method call or field access.
     let receiver = method.receiver()?;
+    let is_chain = matches!(
+        receiver,
+        ast::Expr::MethodCallExpr(_) | ast::Expr::FieldExpr(_) | ast::Expr::AwaitExpr(_)
+    );
+
+    // If we're in a chain, preserve verbatim - proper chain formatting is complex
+    if is_chain {
+        return None;
+    }
+
     let name = method.name_ref()?;
     let arg_list = method.arg_list()?;
     let args: Vec<_> = arg_list.args().collect();
@@ -98,6 +114,16 @@ pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<Strin
         .generic_arg_list()
         .map(|g| g.syntax().text().to_string())
         .unwrap_or_default();
+
+    // No args - always single line for this call
+    if args.is_empty() {
+        return Some(format!(
+            "{}.{}{}()",
+            receiver_str,
+            name.text(),
+            generic_args
+        ));
+    }
 
     // Format args
     let args_formatted: Option<Vec<_>> = args
@@ -119,18 +145,15 @@ pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<Strin
         return Some(single_line);
     }
 
-    // Single argument that formats to multi-line: snug wrap it
-    if args.len() == 1 {
-        let arg_str = &args_vec[0];
-        if arg_str.contains('\n') {
-            return Some(format!(
-                "{}.{}{}({})",
-                receiver_str,
-                name.text(),
-                generic_args,
-                arg_str
-            ));
-        }
+    // Single argument that's already multi-line: snug wrap
+    if args.len() == 1 && args_vec[0].contains('\n') {
+        return Some(format!(
+            "{}.{}{}({})",
+            receiver_str,
+            name.text(),
+            generic_args,
+            args_vec[0]
+        ));
     }
 
     // Multi-line args
@@ -169,7 +192,7 @@ pub fn format_record_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let field_list = record.record_expr_field_list()?;
     let fields: Vec<_> = field_list.fields().collect();
 
-    // Single field or fewer: keep inline
+    // Single field or fewer: keep inline (return None to use verbatim)
     if fields.len() < 2 {
         return None;
     }

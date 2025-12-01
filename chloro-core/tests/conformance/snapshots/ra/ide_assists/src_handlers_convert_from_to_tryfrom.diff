@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6719 bytes
-Chloro size:   6136 bytes
+Chloro size:   6131 bytes
 Rustfmt size:  6719 bytes
 
 ✗ Outputs DIFFER
@@ -50,9 +50,9 @@ Rustfmt size:  6719 bytes
      make::expr_call(
          make::expr_path(make::ext::ident_path("Ok")),
          make::arg_list(std::iter::once(expr)),
-+    ).into(
-     )
+-    )
 -    .into()
++    ).into()
  }
  
  #[cfg(test)]

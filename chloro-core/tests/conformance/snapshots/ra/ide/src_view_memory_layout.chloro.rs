@@ -167,7 +167,8 @@ pub(crate) fn view_memory_layout(
         }
     }
 
-    ty.layout(db).map(|layout| {
+    ty.layout(db)
+        .map(|layout| {
             let item_name = match def {
                 // def is a datatype
                 Definition::Adt(_)
@@ -194,8 +195,8 @@ pub(crate) fn view_memory_layout(
             read_layout(&mut nodes, db, &ty, &layout, 0, display_target);
 
             RecursiveMemoryLayout { nodes }
-        }).ok(
-    )
+        })
+        .ok()
 }
 
 #[cfg(test)]

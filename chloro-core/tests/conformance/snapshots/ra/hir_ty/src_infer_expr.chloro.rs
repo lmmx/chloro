@@ -200,13 +200,10 @@ impl<'db> InferenceContext<'_, 'db> {
         match &self.body[expr] {
             Expr::Path(Path::LangItem(_, _)) => false,
             Expr::Path(Path::Normal(path)) => path.type_anchor.is_none(),
-            Expr::Path(path) => self.resolver.resolve_path_in_value_ns_fully(
-                self.db,
-                path,
-                self.body.expr_path_hygiene(expr),
-            ).is_none_or(
-                |res| matches!(res, ValueNs::LocalBinding(_) | ValueNs::StaticId(_)),
-            ),
+            Expr::Path(path) => self
+                .resolver
+                .resolve_path_in_value_ns_fully(self.db, path, self.body.expr_path_hygiene(expr))
+                .is_none_or(|res| matches!(res, ValueNs::LocalBinding(_) | ValueNs::StaticId(_))),
             Expr::Underscore => true,
             Expr::UnaryOp { op: UnaryOp::Deref, .. } => true,
             Expr::Field { .. } | Expr::Index { .. } => true,
@@ -263,9 +260,8 @@ impl<'db> InferenceContext<'_, 'db> {
                 };
             }
             if let Some(target) = expected.only_has_type(&mut self.table) {
-                self.coerce(expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes).expect(
-                    "never-to-any coercion should always succeed",
-                )
+                self.coerce(expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes)
+                    .expect("never-to-any coercion should always succeed")
             } else {
                 ty
             }
@@ -1704,7 +1700,10 @@ impl<'db> InferenceContext<'_, 'db> {
                         self.check_method_call(
                             tgt_expr,
                             &[],
-                            self.db.value_ty(func.into()).unwrap().instantiate(self.interner(), args),
+                            self.db
+                                .value_ty(func.into())
+                                .unwrap()
+                                .instantiate(self.interner(), args),
                             ty,
                             expected,
                         )
@@ -1857,10 +1856,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 self.check_method_call(
                     tgt_expr,
                     args,
-                    self.db.value_ty(func.into()).expect("we have a function def").instantiate(
-                    interner,
-                    gen_args,
-                ),
+                    self.db
+                        .value_ty(func.into())
+                        .expect("we have a function def")
+                        .instantiate(interner, gen_args),
                     ty,
                     expected,
                 )
@@ -1922,7 +1921,10 @@ impl<'db> InferenceContext<'_, 'db> {
                             tgt_expr,
                             args,
                             callee_ty,
-                            sig.inputs_and_output.inputs().get(strip_first as usize..).unwrap_or(&[]),
+                            sig.inputs_and_output
+                                .inputs()
+                                .get(strip_first as usize..)
+                                .unwrap_or(&[]),
                             sig.output(),
                             &[],
                             true,

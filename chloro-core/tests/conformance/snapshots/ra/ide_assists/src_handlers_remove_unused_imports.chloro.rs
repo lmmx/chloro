@@ -140,12 +140,14 @@ fn is_path_unused_in_scope(
     scope: &mut Vec<SearchScope>,
     path: &[Option<PathResolution>],
 ) -> bool {
-    !path.iter().filter_map(|path| *path).filter_map(|res| match res {
+    !path
+        .iter()
+        .filter_map(|path| *path)
+        .filter_map(|res| match res {
             PathResolution::Def(d) => Some(Definition::from(d)),
             _ => None,
-        }).any(
-        |def| used_once_in_scope(ctx, def, u.rename(), scope),
-    )
+        })
+        .any(|def| used_once_in_scope(ctx, def, u.rename(), scope))
 }
 
 fn is_trait_unused_in_scope(
@@ -154,11 +156,9 @@ fn is_trait_unused_in_scope(
     scope: &mut Vec<SearchScope>,
     t: &hir::Trait,
 ) -> bool {
-    !std::iter::once((Definition::Trait(*t), u.rename())).chain(
-        t.items(ctx.db()).into_iter().map(|item| (item.into(), None)),
-    ).any(
-        |(d, rename)| used_once_in_scope(ctx, d, rename, scope),
-    )
+    !std::iter::once((Definition::Trait(*t), u.rename()))
+        .chain(t.items(ctx.db()).into_iter().map(|item| (item.into(), None)))
+        .any(|(d, rename)| used_once_in_scope(ctx, d, rename, scope))
 }
 
 fn used_once_in_scope(

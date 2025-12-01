@@ -412,21 +412,24 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
     }
 
     fn type_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {
-        self.inner().get(i).and_then(|g| g.as_type()).unwrap_or_else(
-            || Ty::new_error(DbInterner::conjure(), ErrorGuaranteed),
-        )
+        self.inner()
+            .get(i)
+            .and_then(|g| g.as_type())
+            .unwrap_or_else(|| Ty::new_error(DbInterner::conjure(), ErrorGuaranteed))
     }
 
     fn region_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Region {
-        self.inner().get(i).and_then(|g| g.as_region()).unwrap_or_else(
-            || Region::error(DbInterner::conjure()),
-        )
+        self.inner()
+            .get(i)
+            .and_then(|g| g.as_region())
+            .unwrap_or_else(|| Region::error(DbInterner::conjure()))
     }
 
     fn const_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Const {
-        self.inner().get(i).and_then(|g| g.as_const()).unwrap_or_else(
-            || Const::error(DbInterner::conjure()),
-        )
+        self.inner()
+            .get(i)
+            .and_then(|g| g.as_const())
+            .unwrap_or_else(|| Const::error(DbInterner::conjure()))
     }
 
     fn split_closure_args(self) -> rustc_type_ir::ClosureArgsParts<DbInterner<'db>> {
@@ -477,7 +480,10 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
                 tupled_upvars_ty,
                 coroutine_captures_by_ref_ty,
             ] => rustc_type_ir::CoroutineClosureArgsParts {
-                parent_args: GenericArgs::new_from_iter(DbInterner::conjure(), parent_args.iter().cloned()),
+                parent_args: GenericArgs::new_from_iter(
+                    DbInterner::conjure(),
+                    parent_args.iter().cloned(),
+                ),
                 closure_kind_ty: closure_kind_ty.expect_ty(),
                 signature_parts_ty: signature_parts_ty.expect_ty(),
                 tupled_upvars_ty: tupled_upvars_ty.expect_ty(),

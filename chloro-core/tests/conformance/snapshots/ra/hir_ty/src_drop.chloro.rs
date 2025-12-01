@@ -84,20 +84,25 @@ fn has_drop_glue_impl<'db>(
                     {
                         return DropGlue::None;
                     }
-                    db.field_types(id.into()).iter().map(|(_, field_ty)| {
+                    db.field_types(id.into())
+                        .iter()
+                        .map(|(_, field_ty)| {
                             has_drop_glue_impl(
                                 infcx,
                                 field_ty.instantiate(infcx.interner, subst),
                                 env.clone(),
                                 visited,
                             )
-                        }).max(
-                    ).unwrap_or(
-                        DropGlue::None,
-                    )
+                        })
+                        .max()
+                        .unwrap_or(DropGlue::None)
                 }
                 AdtId::UnionId(_) => DropGlue::None,
-                AdtId::EnumId(id) => id.enum_variants(db).variants.iter().map(|&(variant, _, _)| {
+                AdtId::EnumId(id) => id
+                    .enum_variants(db)
+                    .variants
+                    .iter()
+                    .map(|&(variant, _, _)| {
                         db.field_types(variant.into())
                             .iter()
                             .map(|(_, field_ty)| {
@@ -110,15 +115,16 @@ fn has_drop_glue_impl<'db>(
                             })
                             .max()
                             .unwrap_or(DropGlue::None)
-                    }).max(
-                ).unwrap_or(
-                    DropGlue::None,
-                ),
+                    })
+                    .max()
+                    .unwrap_or(DropGlue::None),
             }
         }
-        TyKind::Tuple(tys) => tys.iter().map(|ty| has_drop_glue_impl(infcx, ty, env.clone(), visited)).max().unwrap_or(
-            DropGlue::None,
-        ),
+        TyKind::Tuple(tys) => tys
+            .iter()
+            .map(|ty| has_drop_glue_impl(infcx, ty, env.clone(), visited))
+            .max()
+            .unwrap_or(DropGlue::None),
         TyKind::Array(ty, len) => {
             if consteval::try_const_usize(db, len) == Some(0) {
                 // Arrays of size 0 don't have drop glue.
@@ -132,12 +138,13 @@ fn has_drop_glue_impl<'db>(
             let infer = db.infer(owner);
             let (captures, _) = infer.closure_info(closure_id.0);
             let env = db.trait_environment_for_body(owner);
-            captures.iter().map(|capture| {
+            captures
+                .iter()
+                .map(|capture| {
                     has_drop_glue_impl(infcx, capture.ty(db, subst), env.clone(), visited)
-                }).max(
-            ).unwrap_or(
-                DropGlue::None,
-            )
+                })
+                .max()
+                .unwrap_or(DropGlue::None)
         }
         TyKind::Coroutine(..) | TyKind::CoroutineWitness(..) | TyKind::CoroutineClosure(..) => {
             DropGlue::None

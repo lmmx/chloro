@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11544 bytes
-Chloro size:   11430 bytes
+Chloro size:   11420 bytes
 Rustfmt size:  11544 bytes
 
 ✗ Outputs DIFFER
@@ -25,9 +25,7 @@ Rustfmt size:  11544 bytes
          (fa.template()? == ast::Expr::Literal(lit)).then_some(|| ())
 -    })()
 -    .is_some()
-+    })(
-+    ).is_some(
-+    )
++    })().is_some()
  }
  
  #[derive(Debug)]

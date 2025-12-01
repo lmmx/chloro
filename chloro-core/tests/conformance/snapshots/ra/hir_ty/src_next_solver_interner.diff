@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81235 bytes
+Chloro size:   81316 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -476,16 +476,6 @@ Rustfmt size:  84055 bytes
          if all_bounds.len() == own_bounds.len() {
              EarlyBinder::bind(Clauses::new_from_iter(self, []))
          } else {
--            EarlyBinder::bind(Clauses::new_from_iter(
--                self,
--                all_bounds.difference(&own_bounds).cloned(),
--            ))
-+            EarlyBinder::bind(
-+                Clauses::new_from_iter(self, all_bounds.difference(&own_bounds).cloned()),
-+            )
-         }
-     }
- 
          self,
          def_id: Self::DefId,
      ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
@@ -507,51 +497,22 @@ Rustfmt size:  84055 bytes
          trait_ref.map_bound(|trait_ref| {
              let clause: Clause<'_> = trait_ref.upcast(self);
              Clauses::new_from_iter(
-                 unimplemented!()
-             }
-         };
--        lang_item
--            .resolve_trait(self.db(), self.krate.expect("Must have self.krate"))
--            .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."))
--            .into()
-+        lang_item.resolve_trait(self.db(), self.krate.expect("Must have self.krate")).unwrap_or_else(
-+            || panic!("Lang item {lang_item:?} required but not found."),
-+        ).into(
-+        )
-     }
- 
-     fn require_adt_lang_item(self, lang_item: SolverAdtLangItem) -> AdtIdWrapper {
-             SolverAdtLangItem::Option => LangItem::Option,
-             SolverAdtLangItem::Poll => LangItem::Poll,
-         };
--        lang_item
--            .resolve_adt(self.db(), self.krate.expect("Must have self.krate"))
--            .unwrap_or_else(|| panic!("Lang item {lang_item:?} required but not found."))
--            .into()
-+        lang_item.resolve_adt(self.db(), self.krate.expect("Must have self.krate")).unwrap_or_else(
-+            || panic!("Lang item {lang_item:?} required but not found."),
-+        ).into(
-+        )
      }
  
      fn is_lang_item(self, def_id: Self::DefId, lang_item: SolverLangItem) -> bool {
 -        self.as_lang_item(def_id).map_or(false, |l| {
 -            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
 -        })
-+        self.as_lang_item(def_id).map_or(
-+            false,
-+            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
-+        )
++        self.as_lang_item(def_id)
++            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
      }
  
      fn is_trait_lang_item(self, def_id: Self::TraitId, lang_item: SolverTraitLangItem) -> bool {
 -        self.as_trait_lang_item(def_id).map_or(false, |l| {
 -            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
 -        })
-+        self.as_trait_lang_item(def_id).map_or(
-+            false,
-+            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
-+        )
++        self.as_trait_lang_item(def_id)
++            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
      }
  
      fn is_adt_lang_item(self, def_id: Self::AdtId, lang_item: SolverAdtLangItem) -> bool {
@@ -559,10 +520,8 @@ Rustfmt size:  84055 bytes
 -        self.as_adt_lang_item(def_id).map_or(false, |l| {
 -            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
 -        })
-+        self.as_adt_lang_item(def_id).map_or(
-+            false,
-+            |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item),
-+        )
++        self.as_adt_lang_item(def_id)
++            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
      }
  
      fn as_lang_item(self, def_id: Self::DefId) -> Option<SolverLangItem> {
@@ -606,16 +565,6 @@ Rustfmt size:  84055 bytes
                              });
                              if contains_errors {
                                  continue;
-         impl_id: Self::ImplId,
-     ) -> EarlyBinder<Self, rustc_type_ir::TraitRef<Self>> {
-         let db = self.db();
--        db.impl_trait(impl_id.0)
--            // ImplIds for impls where the trait ref can't be resolved should never reach trait solving
--            .expect("invalid impl passed to trait solver")
-+        db.impl_trait(impl_id.0).expect("invalid impl passed to trait solver")
-     }
- 
-     fn impl_polarity(self, impl_id: Self::ImplId) -> rustc_type_ir::ImplPolarity {
          let body = self.db.body(owner);
          matches!(
              body[expr_id],

@@ -33,9 +33,8 @@ fn mod_item_path_str(
     edition: Edition,
 ) -> Result<String, DisplaySourceCodeError> {
     let path = mod_item_path(sema_scope, def, cfg);
-    path.map(|it| it.display(sema_scope.db, edition).to_string()).ok_or(
-        DisplaySourceCodeError::PathNotFound,
-    )
+    path.map(|it| it.display(sema_scope.db, edition).to_string())
+        .ok_or(DisplaySourceCodeError::PathNotFound)
 }
 
 /// Type tree shows how can we get from set of types to some type.

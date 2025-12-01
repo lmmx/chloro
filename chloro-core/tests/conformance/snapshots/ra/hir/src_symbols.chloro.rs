@@ -348,9 +348,7 @@ impl<'a> SymbolCollector<'a> {
                 )
                 .to_smolstr(),
         );
-        self.with_container_name(
-            impl_name.as_deref().map(Symbol::intern),
-            |s| {
+        self.with_container_name(impl_name.as_deref().map(Symbol::intern), |s| {
             for &(ref name, assoc_item_id) in &impl_id.impl_items(self.db).items {
                 if s.collect_pub_only && s.db.assoc_visibility(assoc_item_id) != Visibility::Public
                 {
@@ -359,8 +357,7 @@ impl<'a> SymbolCollector<'a> {
 
                 s.push_assoc_item(assoc_item_id, name, None)
             }
-        },
-        )
+        })
     }
 
     fn collect_from_trait(&mut self, trait_id: TraitId, trait_do_not_complete: Complete) {

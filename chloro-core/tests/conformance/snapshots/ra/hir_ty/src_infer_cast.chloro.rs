@@ -296,7 +296,8 @@ impl<'db> CastCheck<'db> {
                         }
                         let src_principal = ctx.db.trait_signature(src_principal.0);
                         let dst_principal = ctx.db.trait_signature(dst_principal.0);
-                        if src_principal.flags.contains(TraitFlags::AUTO) && dst_principal.flags.contains(TraitFlags::AUTO) {
+                        if src_principal.flags.contains(TraitFlags::AUTO)
+                            && dst_principal.flags.contains(TraitFlags::AUTO) {
                             Ok(())
                         } else {
                             Err(CastError::DifferingKinds)

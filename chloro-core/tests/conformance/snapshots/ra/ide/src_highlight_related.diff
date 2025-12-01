@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58223 bytes
-Chloro size:   56857 bytes
+Chloro size:   56942 bytes
 Rustfmt size:  58223 bytes
 
 ✗ Outputs DIFFER
@@ -56,29 +56,6 @@ Rustfmt size:  58223 bytes
  pub(crate) fn highlight_related(
      sema: &Semantics<'_, RootDatabase>,
      config: HighlightRelatedConfig,
-     let search_range = closure.body()?.syntax().text_range();
-     let ty = &sema.type_of_expr(&closure.into())?.original;
-     let c = ty.as_closure()?;
--    Some(
--        c.captured_items(sema.db)
--            .into_iter()
--            .map(|capture| capture.local())
--            .flat_map(|local| {
-+    Some(c.captured_items(sema.db).into_iter().map(|capture| capture.local()).flat_map(|local| {
-                 let usages = Definition::Local(local)
-                     .usages(sema)
-                     .in_scope(&SearchScope::file_range(FileRange { file_id, range: search_range }))
-                     .filter_map(|decl| decl.focus_range)
-                     .map(move |range| HighlightedRange { range, category })
-                     .chain(usages)
--            })
--            .collect(),
--    )
-+            }).collect(
-+    ))
- }
- 
- fn highlight_references(
      }
  
      res.extend(usages);
@@ -91,18 +68,6 @@ Rustfmt size:  58223 bytes
  }
  
  pub(crate) fn highlight_branch_exit_points(
-         _ => {}
-     }
- 
--    highlights
--        .into_iter()
--        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
--        .collect()
-+    highlights.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect(
-+    )
- }
- 
- fn hl_exit_points(
      });
  
      // We should handle `return` separately, because when it is used in a `try` block,
@@ -117,23 +82,6 @@ Rustfmt size:  58223 bytes
  pub(crate) fn highlight_exit_points(
      sema: &Semantics<'_, RootDatabase>,
      token: SyntaxToken,
- }
- 
- fn find_defs(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashSet<Definition> {
--    sema.descend_into_macros_exact(token)
--        .into_iter()
--        .filter_map(|token| IdentClass::classify_token(sema, &token))
--        .flat_map(IdentClass::definitions_no_ops)
--        .collect()
-+    sema.descend_into_macros_exact(token).into_iter().filter_map(
-+        |token| IdentClass::classify_token(sema, &token),
-+    ).flat_map(
-+        IdentClass::definitions_no_ops,
-+    ).collect(
-+    )
- }
- 
- fn original_frange(
      }
  
      fn walk(&mut self, expr: &ast::Expr, cb: &mut dyn FnMut(usize, ast::Expr)) {

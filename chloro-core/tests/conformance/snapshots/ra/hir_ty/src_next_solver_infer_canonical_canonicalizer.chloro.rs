@@ -667,7 +667,9 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
             .map(|(idx, universe)| (*universe, UniverseIndex::from_usize(idx)))
             .collect();
 
-        self.variables.iter().map(|v| match *v {
+        self.variables
+            .iter()
+            .map(|v| match *v {
                 CanonicalVarKind::Int | CanonicalVarKind::Float => *v,
                 CanonicalVarKind::Ty { ui, sub_root } => {
                     CanonicalVarKind::Ty { ui: reverse_universe_map[&ui], sub_root }
@@ -692,8 +694,8 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
                         ..placeholder
                     })
                 }
-            }).collect(
-        )
+            })
+            .collect()
     }
 
     /// Shorthand helper that creates a canonical region variable for

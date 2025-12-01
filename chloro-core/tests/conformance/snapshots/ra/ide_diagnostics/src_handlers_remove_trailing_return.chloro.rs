@@ -21,14 +21,15 @@ pub(crate) fn remove_trailing_return(
             .and_then(ast::ExprStmt::cast)
             .map(|stmt| stmt.syntax().text_range())
     });
-    Some(Diagnostic::new(
-        DiagnosticCode::Clippy("needless_return"),
-        "replace return <expr>; with <expr>",
-        display_range,
-    ).stable(
-    ).with_fixes(
-        fixes(ctx, d),
-    ))
+    Some(
+        Diagnostic::new(
+            DiagnosticCode::Clippy("needless_return"),
+            "replace return <expr>; with <expr>",
+            display_range,
+        )
+        .stable()
+        .with_fixes(fixes(ctx, d)),
+    )
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<Assist>> {

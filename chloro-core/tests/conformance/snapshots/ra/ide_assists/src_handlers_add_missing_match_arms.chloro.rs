@@ -416,8 +416,11 @@ impl ExtendedEnum {
 
     fn variants(&self, db: &RootDatabase) -> Vec<ExtendedVariant> {
         match *self {
-            ExtendedEnum::Enum { enum_: e, use_self } => e.variants(db).into_iter().map(|variant| ExtendedVariant::Variant { variant, use_self }).collect::<Vec<_>>(
-            ),
+            ExtendedEnum::Enum { enum_: e, use_self } => e
+                .variants(db)
+                .into_iter()
+                .map(|variant| ExtendedVariant::Variant { variant, use_self })
+                .collect::<Vec<_>>(),
             ExtendedEnum::Bool => {
                 Vec::<ExtendedVariant>::from([ExtendedVariant::True, ExtendedVariant::False])
             }
@@ -441,7 +444,11 @@ fn resolve_tuple_of_enum_def(
     expr: &ast::Expr,
     self_ty: Option<&hir::Type<'_>>,
 ) -> Option<Vec<ExtendedEnum>> {
-    sema.type_of_expr(expr)?.adjusted().tuple_fields(sema.db).iter().map(|ty| {
+    sema.type_of_expr(expr)?
+        .adjusted()
+        .tuple_fields(sema.db)
+        .iter()
+        .map(|ty| {
             ty.autoderef(sema.db).find_map(|ty| {
                 match ty.as_adt() {
                     Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
@@ -451,10 +458,9 @@ fn resolve_tuple_of_enum_def(
                     _ => ty.is_bool().then_some(ExtendedEnum::Bool),
                 }
             })
-        }).collect::<Option<Vec<ExtendedEnum>>>(
-    ).and_then(
-        |list| if list.is_empty() { None } else { Some(list) },
-    )
+        })
+        .collect::<Option<Vec<ExtendedEnum>>>()
+        .and_then(|list| if list.is_empty() { None } else { Some(list) })
 }
 
 fn resolve_array_of_enum_def(

@@ -183,9 +183,10 @@ pub(crate) fn rename(
         })),
     };
 
-    ops?.into_iter().chain(alias_fallback).reduce(|acc, elem| acc.merge(elem)).ok_or_else(
-        || format_err!("No references found at position"),
-    )
+    ops?.into_iter()
+        .chain(alias_fallback)
+        .reduce(|acc, elem| acc.merge(elem))
+        .ok_or_else(|| format_err!("No references found at position"))
 }
 
 /// Called by the client when it is about to rename a file.
@@ -354,11 +355,11 @@ fn find_definitions(
     let res: RenameResult<Vec<_>> = ok_if_any(symbols.filter_map(Result::transpose));
     match res {
         Ok(v) => {
-            Ok(v.into_iter().unique_by(|&(.., def, _, _)| def).map(
-                |(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e),
-            ).collect::<Vec<_>>(
-            ).into_iter(
-            ))
+            Ok(v.into_iter()
+                .unique_by(|&(.., def, _, _)| def)
+                .map(|(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e))
+                .collect::<Vec<_>>()
+                .into_iter())
         }
         Err(e) => Err(e),
     }

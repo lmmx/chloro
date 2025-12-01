@@ -423,7 +423,10 @@ impl<'db> ExprValidator<'db> {
                     Statement::Expr { expr, .. } => Some(*expr),
                     _ => None,
                 });
-                if let Some(last_then_expr) = last_then_expr && let Some(last_then_expr_ty) = self.infer.type_of_expr_with_adjust(last_then_expr) && last_then_expr_ty.is_never() {
+                if let Some(last_then_expr) = last_then_expr
+                    && let Some(last_then_expr_ty) =
+                        self.infer.type_of_expr_with_adjust(last_then_expr)
+                    && last_then_expr_ty.is_never() {
                     let source_map = self.db().body_with_source_map(self.owner).1;
                     let Ok(source_ptr) = source_map.expr_syntax(id) else {
                         return;

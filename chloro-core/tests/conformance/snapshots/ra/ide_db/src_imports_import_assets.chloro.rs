@@ -349,8 +349,7 @@ impl<'db> ImportAssets<'db> {
                         .contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
                 },
             ),
-        }.into_iter(
-        )
+        }.into_iter()
     }
 
     fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {
@@ -381,8 +380,17 @@ fn path_applicable_imports(
                 db,
                 current_crate,
                 path_candidate.name.clone(),
+                // FIXME: we could look up assoc items by the input and propose those in completion,
+                // but that requires more preparation first:
+                // * store non-trait assoc items in import_map to fully enable this lookup
+                // * ensure that does not degrade the performance (benchmark it)
+                // * write more logic to check for corresponding trait presence requirement (we're unable to flyimport multiple item right now)
+                // * improve the associated completion item matching and/or scoring to ensure no noisy completions appear
+                //
+                // see also an ignored test under FIXME comment in the qualify_path.rs module
                 AssocSearchMode::Exclude,
-            ).filter_map(|(item, do_not_complete)| {
+            )
+            .filter_map(|(item, do_not_complete)| {
                 if !scope_filter(item) {
                     return None;
                 }
@@ -393,17 +401,17 @@ fn path_applicable_imports(
                     item,
                     CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport),
                 ))
-            }).take(
-                DEFAULT_QUERY_SEARCH_LIMIT,
-            ).collect(
-            )
+            })
+            .take(DEFAULT_QUERY_SEARCH_LIMIT)
+            .collect()
         }
         [first_qsegment, qualifier_rest @ ..] => items_locator::items_with_name(
             db,
             current_crate,
             NameToImport::Exact(first_qsegment.as_str().to_owned(), true),
             AssocSearchMode::Exclude,
-        ).flat_map(|(item, do_not_complete)| {
+        )
+        .flat_map(|(item, do_not_complete)| {
             // we found imports for `first_qsegment`, now we need to filter these imports by whether
             // they result in resolving the rest of the path successfully
             validate_resolvable(
@@ -416,10 +424,9 @@ fn path_applicable_imports(
                 qualifier_rest,
                 CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport),
             )
-        }).take(
-            DEFAULT_QUERY_SEARCH_LIMIT,
-        ).collect(
-        ),
+        })
+        .take(DEFAULT_QUERY_SEARCH_LIMIT)
+        .collect(),
     }
 }
 

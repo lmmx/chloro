@@ -464,9 +464,10 @@ pub fn collect_attrs(
             Either::Right(comment) => comment.is_outer(),
         })
         .zip(iter::repeat(false));
-    outer_attrs.chain(inner_attrs).enumerate().map(
-        |(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr),
-    )
+    outer_attrs
+        .chain(inner_attrs)
+        .enumerate()
+        .map(|(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr))
 }
 
 fn inner_attributes(

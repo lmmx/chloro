@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   47104 bytes
+Chloro size:   47271 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -158,19 +158,6 @@ Rustfmt size:  49754 bytes
              type_variable_storage: Default::default(),
              const_unification_storage: Default::default(),
              int_unification_storage: Default::default(),
- 
-     #[inline]
-     pub fn unwrap_region_constraints(&mut self) -> RegionConstraintCollector<'db, '_> {
--        self.region_constraint_storage
--            .as_mut()
--            .expect("region constraints already solved")
--            .with_log(&mut self.undo_log)
-+        self.region_constraint_storage.as_mut().expect("region constraints already solved").with_log(
-+            &mut self.undo_log,
-+        )
-     }
- }
- 
  #[derive(Clone)]
  pub struct InferCtxt<'db> {
      pub interner: DbInterner<'db>,
@@ -248,24 +235,6 @@ Rustfmt size:  49754 bytes
      }
  
      /// Number of type variables created so far.
-     }
- 
-     pub fn next_const_vid(&self) -> ConstVid {
--        self.inner
--            .borrow_mut()
--            .const_unification_table()
--            .new_key(ConstVariableValue::Unknown {
--                origin: ConstVariableOrigin {},
--                universe: self.universe(),
--            })
--            .vid
-+        self.inner.borrow_mut().const_unification_table().new_key(ConstVariableValue::Unknown {
-+            origin: ConstVariableOrigin {},
-+            universe: self.universe(),
-+        }).vid
-     }
- 
-     pub fn next_const_var_with_origin(&self, origin: ConstVariableOrigin) -> Const<'db> {
      fn var_for_def(&self, id: GenericParamId) -> GenericArg<'db> {
          match id {
              GenericParamId::LifetimeParamId(_) => {
@@ -343,22 +312,6 @@ Rustfmt size:  49754 bytes
                  InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => ty,
              }
          } else {
-     pub fn shallow_resolve_const(&self, ct: Const<'db>) -> Const<'db> {
-         match ct.kind() {
-             ConstKind::Infer(infer_ct) => match infer_ct {
--                InferConst::Var(vid) => self
--                    .inner
--                    .borrow_mut()
--                    .const_unification_table()
--                    .probe_value(vid)
--                    .known()
--                    .unwrap_or(ct),
-+                InferConst::Var(vid) => self.inner.borrow_mut().const_unification_table().probe_value(vid).known().unwrap_or(
-+                    ct,
-+                ),
-                 InferConst::Fresh(_) => ct,
-             },
-             ConstKind::Param(_)
          }
      }
  

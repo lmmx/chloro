@@ -470,8 +470,7 @@ fn moniker_to_symbol(moniker: &Moniker) -> scip_types::Symbol {
             name: moniker.package_information.name.clone(),
             version: moniker.package_information.version.clone().unwrap_or_else(|| ".".to_owned()),
             special_fields: Default::default(),
-        }).into(
-        ),
+        }).into(),
         descriptors: moniker_descriptors(&moniker.identifier),
         special_fields: Default::default(),
     }
@@ -479,7 +478,10 @@ fn moniker_to_symbol(moniker: &Moniker) -> scip_types::Symbol {
 
 fn moniker_descriptors(identifier: &MonikerIdentifier) -> Vec<scip_types::Descriptor> {
     use scip_types::descriptor::Suffix::*;
-    identifier.description.iter().map(|desc| {
+    identifier
+        .description
+        .iter()
+        .map(|desc| {
             new_descriptor_str(
                 &desc.name,
                 match desc.desc {
@@ -493,8 +495,8 @@ fn moniker_descriptors(identifier: &MonikerIdentifier) -> Vec<scip_types::Descri
                     MonikerDescriptorKind::Meta => Meta,
                 },
             )
-        }).collect(
-    )
+        })
+        .collect()
 }
 
 #[cfg(test)]

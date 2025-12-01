@@ -53,7 +53,12 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
                     .map_err(|_| MirLowerError::NotSupported("can't normalize alias".to_owned()))?;
                 ty.try_super_fold_with(self)
             }
-            TyKind::Param(param) => Ok(self.subst.as_slice().get(param.index as usize).and_then(|arg| arg.ty()).ok_or_else(|| {
+            TyKind::Param(param) => Ok(self
+                .subst
+                .as_slice()
+                .get(param.index as usize)
+                .and_then(|arg| arg.ty())
+                .ok_or_else(|| {
                     MirLowerError::GenericArgNotProvided(param.id.into(), self.subst)
                 })?),
             _ => ty.try_super_fold_with(self),
@@ -64,18 +69,22 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
         let ConstKind::Param(param) = ct.kind() else {
             return ct.try_super_fold_with(self);
         };
-        self.subst.as_slice().get(param.index as usize).and_then(|arg| arg.konst()).ok_or_else(
-            || MirLowerError::GenericArgNotProvided(param.id.into(), self.subst),
-        )
+        self.subst
+            .as_slice()
+            .get(param.index as usize)
+            .and_then(|arg| arg.konst())
+            .ok_or_else(|| MirLowerError::GenericArgNotProvided(param.id.into(), self.subst))
     }
 
     fn try_fold_region(&mut self, region: Region<'db>) -> Result<Region<'db>, Self::Error> {
         let RegionKind::ReEarlyParam(param) = region.kind() else {
             return Ok(region);
         };
-        self.subst.as_slice().get(param.index as usize).and_then(|arg| arg.region()).ok_or_else(
-            || MirLowerError::GenericArgNotProvided(param.id.into(), self.subst),
-        )
+        self.subst
+            .as_slice()
+            .get(param.index as usize)
+            .and_then(|arg| arg.region())
+            .ok_or_else(|| MirLowerError::GenericArgNotProvided(param.id.into(), self.subst))
     }
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6595 bytes
-Chloro size:   6651 bytes
+Chloro size:   6728 bytes
 Rustfmt size:  6864 bytes
 
 ✗ Outputs DIFFER
@@ -25,29 +25,7 @@ Rustfmt size:  6864 bytes
 +            ),
                  ExpandError::new(span, ExpandErrorKind::MacroDefinition),
              ),
--            None => self
--                .mac
--                .expand(
--                    &tt,
--                    |s| {
-+            None => self.mac.expand(
-+                &tt,
-+                |s| {
-                         s.ctx =
-                             apply_mark(db, s.ctx, call_id.into(), self.transparency, self.edition)
-                     },
--                    span,
--                    loc.def.edition,
--                )
--                .map_err(Into::into),
-+                span,
-+                loc.def.edition,
-+            ).map_err(
-+                Into::into,
-+            ),
-         }
-     }
- 
+             None => self
          match self.mac.err() {
              Some(_) => ExpandResult::new(
                  tt::TopSubtree::empty(tt::DelimSpan {
@@ -59,17 +37,7 @@ Rustfmt size:  6864 bytes
 +            }),
                  ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
              ),
--            None => self
--                .mac
--                .expand(&tt, |_| (), call_site, def_site_edition)
--                .map(TupleExt::head)
--                .map_err(Into::into),
-+            None => self.mac.expand(&tt, |_| (), call_site, def_site_edition).map(TupleExt::head).map_err(
-+                Into::into,
-+            ),
-         }
-     }
- 
+             None => self
                  def_crate.data(db).edition
              } else {
                  // UNWRAP-SAFETY: Only the root context has no outer expansion

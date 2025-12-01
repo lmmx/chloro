@@ -369,10 +369,13 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<SmallVec<[Type<'db>; 1]>> {
         let pat_id = self.pat_id(pat)?;
         let infer = self.infer()?;
-        Some(infer.pat_adjustment(pat_id.as_pat()?)?.iter().map(
-            |ty| Type::new_with_resolver(db, &self.resolver, *ty),
-        ).collect(
-        ))
+        Some(
+            infer
+                .pat_adjustment(pat_id.as_pat()?)?
+                .iter()
+                .map(|ty| Type::new_with_resolver(db, &self.resolver, *ty))
+                .collect(),
+        )
     }
 
     pub(crate) fn resolve_method_call_as_callable(
@@ -770,11 +773,10 @@ impl<'db> SourceAnalyzer<'db> {
 
     pub(crate) fn resolve_use_type_arg(&self, name: &ast::NameRef) -> Option<crate::TypeParam> {
         let name = name.as_name();
-        self.resolver.all_generic_params().find_map(
-            |(params, parent)| params.find_type_by_name(&name, *parent),
-        ).map(
-            crate::TypeParam::from,
-        )
+        self.resolver
+            .all_generic_params()
+            .find_map(|(params, parent)| params.find_type_by_name(&name, *parent))
+            .map(crate::TypeParam::from)
     }
 
     pub(crate) fn resolve_offset_of_field(
@@ -1255,12 +1257,14 @@ impl<'db> SourceAnalyzer<'db> {
         let interner = DbInterner::new_with(db, None, None);
         let field_types = db.field_types(variant);
 
-        missing_fields.into_iter().map(|local_id| {
+        missing_fields
+            .into_iter()
+            .map(|local_id| {
                 let field = FieldId { parent: variant, local_id };
                 let ty = field_types[local_id].instantiate(interner, substs);
                 (field.into(), Type::new_with_resolver_inner(db, &self.resolver, ty))
-            }).collect(
-        )
+            })
+            .collect()
     }
 
     pub(crate) fn resolve_variant(&self, record_lit: ast::RecordExpr) -> Option<VariantId> {
@@ -1327,9 +1331,12 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<(DefWithBodyId, (ExprId, TextRange, usize))> {
         let (def, _, body_source_map, _) = self.body_()?;
         let (expr, args) = body_source_map.asm_template_args(asm)?;
-        Some(def).zip(args.get(line)?.iter().find(|(range, _)| range.contains_inclusive(offset)).map(
-            |(range, idx)| (expr, *range, *idx),
-        ))
+        Some(def).zip(
+            args.get(line)?
+                .iter()
+                .find(|(range, _)| range.contains_inclusive(offset))
+                .map(|(range, idx)| (expr, *range, *idx)),
+        )
     }
 
     pub(crate) fn as_format_args_parts<'a>(
@@ -1424,19 +1431,17 @@ fn scope_for(
     source_map: &BodySourceMap,
     node: InFile<&SyntaxNode>,
 ) -> Option<ScopeId> {
-    node.ancestors_with_macros(db).take_while(|it| {
+    node.ancestors_with_macros(db)
+        .take_while(|it| {
             let kind = it.kind();
             !ast::Item::can_cast(kind)
                 || ast::MacroCall::can_cast(kind)
                 || ast::Use::can_cast(kind)
                 || ast::AsmExpr::can_cast(kind)
-        }).filter_map(
-        |it| it.map(ast::Expr::cast).transpose(),
-    ).filter_map(
-        |it| source_map.node_expr(it.as_ref())?.as_expr(),
-    ).find_map(
-        |it| scopes.scope_for(it),
-    )
+        })
+        .filter_map(|it| it.map(ast::Expr::cast).transpose())
+        .filter_map(|it| source_map.node_expr(it.as_ref())?.as_expr())
+        .find_map(|it| scopes.scope_for(it))
 }
 
 fn scope_for_offset(
@@ -1446,7 +1451,10 @@ fn scope_for_offset(
     from_file: HirFileId,
     offset: TextSize,
 ) -> Option<ScopeId> {
-    scopes.scope_by_expr().iter().filter_map(|(id, scope)| {
+    scopes
+        .scope_by_expr()
+        .iter()
+        .filter_map(|(id, scope)| {
             let InFile { file_id, value } = source_map.expr_syntax(id).ok()?;
             if from_file == file_id {
                 return Some((value.text_range(), scope));
@@ -1459,11 +1467,11 @@ fn scope_for_offset(
             .find(|it| it.file_id == from_file)
             .filter(|it| it.kind() == SyntaxKind::MACRO_CALL)?;
             Some((source.text_range(), scope))
-        }).filter(
-        |(expr_range, _scope)| expr_range.start() <= offset && offset <= expr_range.end(),
-    ).min_by_key(
-        |(expr_range, _scope)| expr_range.len(),
-    ).map(|(expr_range, scope)| {
+        })
+        .filter(|(expr_range, _scope)| expr_range.start() <= offset && offset <= expr_range.end())
+        // find containing scope
+        .min_by_key(|(expr_range, _scope)| expr_range.len())
+        .map(|(expr_range, scope)| {
             adjust(db, scopes, source_map, expr_range, from_file, offset).unwrap_or(*scope)
         })
 }
@@ -1493,7 +1501,8 @@ fn adjust(
             range.start() <= offset && expr_range.contains_range(range) && range != expr_range
         });
 
-    child_scopes.max_by(|&(r1, _), &(r2, _)| {
+    child_scopes
+        .max_by(|&(r1, _), &(r2, _)| {
             if r1.contains_range(r2) {
                 std::cmp::Ordering::Greater
             } else if r2.contains_range(r1) {
@@ -1501,9 +1510,8 @@ fn adjust(
             } else {
                 r1.start().cmp(&r2.start())
             }
-        }).map(
-        |(_ptr, scope)| *scope,
-    )
+        })
+        .map(|(_ptr, scope)| *scope)
 }
 
 #[inline]
@@ -1523,9 +1531,10 @@ pub(crate) fn resolve_hir_path_as_attr_macro(
     resolver: &Resolver<'_>,
     path: &Path,
 ) -> Option<Macro> {
-    resolver.resolve_path_as_macro(db, path.mod_path()?, Some(MacroSubNs::Attr)).map(|(it, _)| it).map(
-        Into::into,
-    )
+    resolver
+        .resolve_path_as_macro(db, path.mod_path()?, Some(MacroSubNs::Attr))
+        .map(|(it, _)| it)
+        .map(Into::into)
 }
 
 fn resolve_hir_path_(
@@ -1745,8 +1754,7 @@ fn resolve_hir_path_qualifier(
                 .map(PathResolution::Def),
             None => Some(res),
         }
-    })(
-    ).or_else(|| {
+    })().or_else(|| {
         resolver
             .resolve_module_path_in_items(db, path.mod_path()?)
             .take_types()

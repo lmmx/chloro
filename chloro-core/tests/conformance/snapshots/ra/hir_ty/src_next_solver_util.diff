@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   27955 bytes
+Chloro size:   27971 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -184,14 +184,11 @@ Rustfmt size:  28638 bytes
 -        // Recursive cases
          Pat(ty, _) => sizedness_constraint_for_ty(interner, sizedness, ty),
 -
--        Tuple(tys) => tys
--            .into_iter()
--            .next_back()
--            .and_then(|ty| sizedness_constraint_for_ty(interner, sizedness, ty)),
+         Tuple(tys) => tys
+             .into_iter()
+             .next_back()
+             .and_then(|ty| sizedness_constraint_for_ty(interner, sizedness, ty)),
 -
-+        Tuple(tys) => tys.into_iter().next_back().and_then(
-+            |ty| sizedness_constraint_for_ty(interner, sizedness, ty),
-+        ),
          Adt(adt, args) => {
              let tail_ty =
                  EarlyBinder::bind(adt.all_field_tys(interner).skip_binder().into_iter().last()?)

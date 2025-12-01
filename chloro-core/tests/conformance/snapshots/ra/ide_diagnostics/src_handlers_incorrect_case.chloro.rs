@@ -22,10 +22,9 @@ pub(crate) fn incorrect_case(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCas
             d.ident_type, d.ident_text, d.expected_case, d.suggested_text
         ),
         InFile::new(d.file, d.ident.into()),
-    ).stable(
-    ).with_fixes(
-        fixes(ctx, d),
     )
+    .stable()
+    .with_fixes(fixes(ctx, d))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Option<Vec<Assist>> {
