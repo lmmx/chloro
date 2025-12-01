@@ -222,59 +222,44 @@ trait Bar {
     fn not_applicable_if_trait_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(
-            sort_items,
-            r#"
+        check_assist_not_applicable(sort_items, r#"
 t$0rait Bar$0 {
 }
-        "#,
-        )
+        "#)
     }
     #[test]
     fn not_applicable_if_impl_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(
-            sort_items,
-            r#"
+        check_assist_not_applicable(sort_items, r#"
 struct Bar;
 $0impl Bar$0 {
 }
-        "#,
-        )
+        "#)
     }
     #[test]
     fn not_applicable_if_struct_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(
-            sort_items,
-            r#"
+        check_assist_not_applicable(sort_items, r#"
 $0struct Bar$0 ;
-        "#,
-        )
+        "#)
     }
     #[test]
     fn not_applicable_if_struct_empty2() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(
-            sort_items,
-            r#"
+        check_assist_not_applicable(sort_items, r#"
 $0struct Bar$0 { };
-        "#,
-        )
+        "#)
     }
     #[test]
     fn not_applicable_if_enum_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(
-            sort_items,
-            r#"
+        check_assist_not_applicable(sort_items, r#"
 $0enum ZeroVariants$0 {};
-        "#,
-        )
+        "#)
     }
     #[test]
     fn not_applicable_if_trait_sorted() {

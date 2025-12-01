@@ -337,26 +337,20 @@ mod tests {
     #[test]
     fn dont_trigger_on_unit() {
         cov_mark::check!(destructure_tuple_no_tuple);
-        check_assist_not_applicable(
-            assist,
-            r#"
+        check_assist_not_applicable(assist, r#"
 fn main() {
 let $0v = ();
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn dont_trigger_on_number() {
         cov_mark::check!(destructure_tuple_no_tuple);
-        check_assist_not_applicable(
-            assist,
-            r#"
+        check_assist_not_applicable(assist, r#"
 fn main() {
 let $0v = 32;
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn destructure_3_tuple() {
@@ -669,14 +663,11 @@ static $0TUP: (usize, usize) = (1,2);
     }
     #[test]
     fn dont_trigger_on_wildcard() {
-        check_assist_not_applicable(
-            assist,
-            r#"
+        check_assist_not_applicable(assist, r#"
 fn main() {
     let $0_ = (1,2);
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn dont_trigger_in_struct() {
@@ -1360,7 +1351,6 @@ fn main() {
         #[test]
         fn tuple_usage() {
             check_both_assists(
-                // leading `"foo"` to ensure `$e` doesn't start at position `0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1441,7 +1431,6 @@ fn main() {
     m!(t.0);
 }
                 "#,
-                // FIXME: replace `t.0` with `_0` (cannot detect range of tuple index in macro call)
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1452,7 +1441,6 @@ fn main() {
     m!(/*t*/.0);
 }
                 "#,
-                // FIXME: replace `t.0` with `_0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1478,7 +1466,6 @@ fn main() {
     m!((t).0);
 }
                 "#,
-                // FIXME: replace `(t).0` with `_0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1489,7 +1476,6 @@ fn main() {
     m!((/*t*/).0);
 }
                 "#,
-                // FIXME: replace `(t).0` with `_0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1516,7 +1502,6 @@ fn main() {
     m!(t);
 }
                 "#,
-                // FIXME: macro allows no arg -> is valid. But assist should result in invalid code
                 r#"
 macro_rules! m {
     () => { "foo" };
@@ -1543,7 +1528,6 @@ fn main() {
     m!(t, t.0);
 }
                 "#,
-                // FIXME: replace `t.0` in macro call (not IN macro) with `_0`
                 r#"
 macro_rules! m {
     ($t:expr, $i:expr) => { $t.0 + $i };
@@ -1554,7 +1538,6 @@ fn main() {
     m!(/*t*/, /*t*/.0);
 }
                 "#,
-                // FIXME: replace `t.0` in macro call with `_0`
                 r#"
 macro_rules! m {
     ($t:expr, $i:expr) => { $t.0 + $i };
@@ -1814,7 +1797,6 @@ fn main() {
     let s = t.0.f();
 }
                 "#,
-                // FIXME: doesn't need deref * parens. But `ctx.sema.resolve_method_call` doesn't resolve trait implementations
                 r#"
 trait T {
     fn f(self);

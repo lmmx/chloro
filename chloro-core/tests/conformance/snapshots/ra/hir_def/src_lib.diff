@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43701 bytes
+Chloro size:   43724 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -615,7 +615,21 @@ Rustfmt size:  45085 bytes
  impl HasModule for EnumVariantId {
      #[inline]
      fn module(&self, db: &dyn DefDatabase) -> ModuleId {
-         })
+     ///
+     /// Returns `None` if `self` refers to a primitive type.
+     pub fn module(&self, db: &dyn DefDatabase) -> Option<ModuleId> {
+-        Some(match self {
++        Some(
++            match self {
+             ModuleDefId::ModuleId(id) => *id,
+             ModuleDefId::FunctionId(id) => id.module(db),
+             ModuleDefId::AdtId(id) => id.module(db),
+             ModuleDefId::TypeAliasId(id) => id.module(db),
+             ModuleDefId::MacroId(id) => id.module(db),
+             ModuleDefId::BuiltinType(_) => return None,
+-        })
++        },
++        )
      }
  }
 +

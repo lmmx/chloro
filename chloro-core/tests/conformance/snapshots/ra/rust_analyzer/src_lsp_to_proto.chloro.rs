@@ -624,7 +624,8 @@ pub(crate) fn inlay_hint(
         _ => None,
     };
 
-    Ok(lsp_types::InlayHint {
+    Ok(
+        lsp_types::InlayHint {
         position: match inlay_hint.position {
             ide::InlayHintPosition::Before => position(line_index, inlay_hint.range.start()),
             ide::InlayHintPosition::After => position(line_index, inlay_hint.range.end()),
@@ -642,7 +643,8 @@ pub(crate) fn inlay_hint(
         data,
         tooltip,
         label,
-    })
+    },
+    )
 }
 
 fn inlay_hint_label(
@@ -1477,7 +1479,8 @@ pub(crate) fn call_hierarchy_item(
     let detail = target.description.clone();
     let kind = target.kind.map(symbol_kind).unwrap_or(lsp_types::SymbolKind::FUNCTION);
     let (uri, range, selection_range) = location_info(snap, target)?;
-    Ok(lsp_types::CallHierarchyItem {
+    Ok(
+        lsp_types::CallHierarchyItem {
         name,
         kind,
         tags: None,
@@ -1486,7 +1489,8 @@ pub(crate) fn call_hierarchy_item(
         range,
         selection_range,
         data: None,
-    })
+    },
+    )
 }
 
 pub(crate) fn code_action_kind(kind: AssistKind) -> lsp_types::CodeActionKind {
@@ -1809,10 +1813,11 @@ pub(crate) fn test_item(
     test_item: ide::TestItem,
     line_index: Option<&LineIndex>,
 ) -> Option<lsp_ext::TestItem> {
-    Some(lsp_ext::TestItem {
-        id: test_item.id,
-        label: test_item.label,
-        kind: match test_item.kind {
+    Some(
+        lsp_ext::TestItem {
+            id: test_item.id,
+            label: test_item.label,
+            kind: match test_item.kind {
             ide::TestItemKind::Crate(id) => match snap.target_spec_for_crate(id) {
                 Some(target_spec) => match target_spec.target_kind() {
                     project_model::TargetKind::Bin
@@ -1829,17 +1834,18 @@ pub(crate) fn test_item(
             ide::TestItemKind::Module => lsp_ext::TestItemKind::Module,
             ide::TestItemKind::Function => lsp_ext::TestItemKind::Test,
         },
-        can_resolve_children: matches!(
+            can_resolve_children: matches!(
             test_item.kind,
             ide::TestItemKind::Crate(_) | ide::TestItemKind::Module
         ),
-        parent: test_item.parent,
-        text_document: test_item
+            parent: test_item.parent,
+            text_document: test_item
             .file
             .map(|f| lsp_types::TextDocumentIdentifier { uri: url(snap, f) }),
-        range: line_index.and_then(|l| Some(range(l, test_item.text_range?))),
-        runnable: test_item.runnable.and_then(|r| runnable(snap, r).ok()).flatten(),
-    })
+            range: line_index.and_then(|l| Some(range(l, test_item.text_range?))),
+            runnable: test_item.runnable.and_then(|r| runnable(snap, r).ok()).flatten(),
+        },
+    )
 }
 
 pub(crate) mod command {
@@ -1903,11 +1909,13 @@ pub(crate) mod command {
             to_value(location).ok()?
         };
 
-        Some(lsp_types::Command {
-            title: nav.name.to_string(),
-            command: "rust-analyzer.gotoLocation".into(),
-            arguments: Some(vec![value]),
-        })
+        Some(
+            lsp_types::Command {
+                title: nav.name.to_string(),
+                command: "rust-analyzer.gotoLocation".into(),
+                arguments: Some(vec![value]),
+            },
+        )
     }
     pub(crate) fn trigger_parameter_hints() -> lsp_types::Command {
         lsp_types::Command {

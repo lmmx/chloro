@@ -211,11 +211,13 @@ fn early_expression(
         return Some(return_none_expr());
     }
 
-    Some(match parent_container.kind() {
+    Some(
+        match parent_container.kind() {
         WHILE_EXPR | LOOP_EXPR | FOR_EXPR => make::expr_continue(None),
         FN | CLOSURE_EXPR => make::expr_return(None),
         _ => return None,
-    })
+    },
+    )
 }
 
 fn flat_let_chain(mut expr: ast::Expr) -> Vec<ast::Expr> {

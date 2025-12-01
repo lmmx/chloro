@@ -2,12 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39798 bytes
-Chloro size:   39548 bytes
+Chloro size:   39571 bytes
 Rustfmt size:  40546 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     resolve: AssistResolveStrategy,
+     range: ide_db::FileRange,
+ ) -> Vec<Assist> {
+-    hir::attach_db(db, || {
++    hir::attach_db(
++        db,
++        || {
+         HirDatabase::zalsa_register_downcaster(db);
+         crate::assists(db, config, resolve, range)
+-    })
++    },
++    )
+ }
+ 
+ pub(crate) fn with_single_file(text: &str) -> (RootDatabase, EditionedFileId) {
      #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
  ) {
      let ra_fixture_after = trim_indent(ra_fixture_after);

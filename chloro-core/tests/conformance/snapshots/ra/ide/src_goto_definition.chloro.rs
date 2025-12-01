@@ -231,7 +231,8 @@ fn try_lookup_include_path(
 
     let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
     let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
-    Some(NavigationTarget {
+    Some(
+        NavigationTarget {
         file_id,
         full_range: TextRange::new(0.into(), size),
         name: hir::Symbol::intern(&path),
@@ -241,7 +242,8 @@ fn try_lookup_include_path(
         container_name: None,
         description: None,
         docs: None,
-    })
+    },
+    )
 }
 
 fn try_lookup_macro_def_in_macro_use(
@@ -1703,12 +1705,10 @@ impl Foo {
     }
     #[test]
     fn goto_def_for_type_alias_generic_parameter() {
-        check(
-            r#"
+        check(r#"
 type Alias<T> = T$0;
          //^
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_for_macro_container() {
@@ -1859,34 +1859,28 @@ impl Foo {
     }
     #[test]
     fn goto_self_param_on_decl() {
-        check(
-            r#"
+        check(r#"
 struct Foo {}
 
 impl Foo {
     fn bar(&self$0) {
           //^^^^
     }
-}"#,
-        )
+}"#)
     }
     #[test]
     fn goto_lifetime_param_on_decl() {
-        check(
-            r#"
+        check(r#"
 fn foo<'foobar$0>(_: &'foobar ()) {
      //^^^^^^^
-}"#,
-        )
+}"#)
     }
     #[test]
     fn goto_lifetime_param_decl() {
-        check(
-            r#"
+        check(r#"
 fn foo<'foobar>(_: &'foobar$0 ()) {
      //^^^^^^^
-}"#,
-        )
+}"#)
     }
     #[test]
     fn goto_lifetime_param_decl_nested() {
@@ -2022,8 +2016,7 @@ struct S;
     }
     #[test]
     fn goto_def_for_intra_doc_link_inner() {
-        check(
-            r#"
+        check(r#"
 //- /main.rs
 mod m;
 struct S;
@@ -2031,18 +2024,15 @@ struct S;
 
 //- /m.rs
 //! [`super::S$0`]
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_incomplete_field() {
-        check(
-            r#"
+        check(r#"
 struct A { a: u32 }
          //^
 fn foo() { A { a$0: }; }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_proc_macro() {
@@ -2953,42 +2943,36 @@ fn main() {
     }
     #[test]
     fn goto_def_on_break_kw() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     for i in 1..5 {
  // ^^^
         break$0;
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_continue_kw() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     for i in 1..5 {
  // ^^^
         continue$0;
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_break_kw_for_block() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     'a:{
  // ^^^
         break$0 'a;
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_break_with_label() {
@@ -3058,38 +3042,32 @@ fn main() {
     }
     #[test]
     fn goto_def_on_return_in_async_block() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     async {
  // ^^^^^
         return$0;
     }
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_for_kw() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     for$0 i in 1..5 {}
  // ^^^
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_on_fn_kw() {
-        check(
-            r#"
+        check(r#"
 fn main() {
     fn$0 foo() {}
  // ^^
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn shadow_builtin_macro() {

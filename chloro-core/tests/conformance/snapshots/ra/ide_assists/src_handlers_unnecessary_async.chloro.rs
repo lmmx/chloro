@@ -170,7 +170,6 @@ pub async fn f3() { a::f2() }"#,
     fn applies_and_removes_await_on_inner_await() {
         check_assist(
             unnecessary_async,
-            // Ensure that it is the first await on the 3rd line that is removed
             r#"
 pub async fn f() { f2().await }
 pub asy$0nc fn f2() -> i32 { 1 }
@@ -187,7 +186,6 @@ pub async fn f4(i: i32) { }"#,
     fn applies_and_removes_await_on_outer_await() {
         check_assist(
             unnecessary_async,
-            // Ensure that it is the second await on the 3rd line that is removed
             r#"
 pub async fn f() { f2().await }
 pub async$0 fn f2(i: i32) { }

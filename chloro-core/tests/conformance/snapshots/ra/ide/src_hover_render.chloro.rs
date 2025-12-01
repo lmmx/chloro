@@ -372,10 +372,12 @@ pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<Hove
 
     let lint =
         lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
-    Some(HoverResult {
+    Some(
+        HoverResult {
         markup: Markup::from(format!("```\n{}\n```\n---\n\n{}", lint.label, lint.description)),
         ..Default::default()
-    })
+    },
+    )
 }
 
 pub(super) fn process_markup(

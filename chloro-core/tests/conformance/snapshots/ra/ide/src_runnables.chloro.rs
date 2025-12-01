@@ -383,13 +383,15 @@ pub(crate) fn runnable_mod(
     };
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
 
-    Some(Runnable {
+    Some(
+        Runnable {
         use_name_in_title: false,
         nav,
         kind: RunnableKind::TestMod { path },
         cfg,
         update_test,
-    })
+    },
+    )
 }
 
 pub(crate) fn runnable_impl(
@@ -423,13 +425,15 @@ pub(crate) fn runnable_impl(
     let file_range = impl_syntax.original_file_range_with_macro_call_input(sema.db);
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
 
-    Some(Runnable {
+    Some(
+        Runnable {
         use_name_in_title: false,
         nav,
         kind: RunnableKind::DocTest { test_id },
         cfg,
         update_test,
-    })
+    },
+    )
 }
 
 fn has_cfg_test(attrs: AttrsWithOwner) -> bool {
@@ -469,13 +473,15 @@ fn runnable_mod_outline_definition(
     };
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
 
-    Some(Runnable {
+    Some(
+        Runnable {
         use_name_in_title: false,
         nav: def.to_nav(sema.db).call_site(),
         kind: RunnableKind::TestMod { path },
         cfg,
         update_test,
-    })
+    },
+    )
 }
 
 fn module_def_doctest(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Option<Runnable> {

@@ -114,13 +114,9 @@ fn outer(text: &str) {
 
 #[test]
 fn trigger_by_l_paren() {
-    check_with_trigger_character(
-        r#"
+    check_with_trigger_character(r#"
 fn foo($0)
-"#,
-        Some('('),
-        expect![[]],
-    )
+"#, Some('('), expect![[]])
 }
 
 #[test]

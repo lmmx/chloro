@@ -185,10 +185,12 @@ fn on_delimited_node_typed(
     }
 
     // Insert the closing bracket right after the node.
-    Some(TextEdit::insert(
-        node.text_range().end() + TextSize::of(opening_bracket),
-        closing_bracket.to_string(),
-    ))
+    Some(
+        TextEdit::insert(
+            node.text_range().end() + TextSize::of(opening_bracket),
+            closing_bracket.to_string(),
+        ),
+    )
 }
 
 /// Returns an edit which should be applied after `=` was typed. Primarily,
@@ -626,15 +628,12 @@ fn main() {
 }
             "#,
         );
-        type_char_noop(
-            '.',
-            r#"
+        type_char_noop('.', r#"
 fn main() {
     xs.foo()
         $0
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn indents_new_chain_call_with_semi() {
@@ -653,15 +652,12 @@ fn main() {
 }
             "#,
         );
-        type_char_noop(
-            '.',
-            r#"
+        type_char_noop('.', r#"
 fn main() {
     xs.foo()
         $0;
 }
-            "#,
-        )
+            "#)
     }
     #[test]
     fn indents_new_chain_call_with_let() {

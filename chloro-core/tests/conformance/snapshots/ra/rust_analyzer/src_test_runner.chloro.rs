@@ -62,14 +62,16 @@ impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
         let mut deserializer = serde_json::Deserializer::from_str(line);
         deserializer.disable_recursion_limit();
 
-        Some(CargoTestMessage {
-            target: self.target.clone(),
-            output: if let Ok(message) = CargoTestOutput::deserialize(&mut deserializer) {
+        Some(
+            CargoTestMessage {
+                target: self.target.clone(),
+                output: if let Ok(message) = CargoTestOutput::deserialize(&mut deserializer) {
                 message
             } else {
                 CargoTestOutput::Custom { text: line.to_owned() }
             },
-        })
+            },
+        )
     }
 
     fn from_eof(&self) -> Option<CargoTestMessage> {
@@ -137,13 +139,15 @@ impl CargoTestHandle {
             cmd.arg(extra_arg);
         }
 
-        Ok(Self {
+        Ok(
+            Self {
             _handle: CommandHandle::spawn(
                 cmd,
                 CargoTestOutputParser::new(&test_target),
                 sender,
                 None,
             )?,
-        })
+        },
+        )
     }
 }

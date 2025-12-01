@@ -115,14 +115,16 @@ fn add_variant_to_union(
 
     let mut src_change_builder = SourceChangeBuilder::new(range.file_id.file_id(ctx.sema.db));
     src_change_builder.insert(offset, record_field);
-    Some(Assist {
-        id: AssistId::quick_fix("add-variant-to-union"),
-        label: Label::new("Add field to union".to_owned()),
-        group: None,
-        target: error_range.range,
-        source_change: Some(src_change_builder.finish()),
-        command: None,
-    })
+    Some(
+        Assist {
+            id: AssistId::quick_fix("add-variant-to-union"),
+            label: Label::new("Add field to union".to_owned()),
+            group: None,
+            target: error_range.range,
+            source_change: Some(src_change_builder.finish()),
+            command: None,
+        },
+    )
 }
 
 fn add_field_to_struct_fix(
@@ -265,17 +267,21 @@ fn method_fix(
     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
     let expr = expr_ptr.value.to_node(&root);
     let FileRange { range, file_id } = ctx.sema.original_range_opt(expr.syntax())?;
-    Some(Assist {
-        id: AssistId::quick_fix("expected-field-found-method-call-fix"),
-        label: Label::new("Use parentheses to call the method".to_owned()),
-        group: None,
-        target: range,
-        source_change: Some(SourceChange::from_text_edit(
-            file_id.file_id(ctx.sema.db),
-            TextEdit::insert(range.end(), "()".to_owned()),
-        )),
-        command: None,
-    })
+    Some(
+        Assist {
+            id: AssistId::quick_fix("expected-field-found-method-call-fix"),
+            label: Label::new("Use parentheses to call the method".to_owned()),
+            group: None,
+            target: range,
+            source_change: Some(
+                SourceChange::from_text_edit(
+                    file_id.file_id(ctx.sema.db),
+                    TextEdit::insert(range.end(), "()".to_owned()),
+                ),
+            ),
+            command: None,
+        },
+    )
 }
 
 #[cfg(test)]

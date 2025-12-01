@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70570 bytes
+Chloro size:   70309 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -82,6 +82,24 @@ Rustfmt size:  71259 bytes
      // that is we are the string input of it
      if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
          .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
+ 
+     let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
+     let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
+-    Some(NavigationTarget {
++    Some(
++        NavigationTarget {
+         file_id,
+         full_range: TextRange::new(0.into(), size),
+         name: hir::Symbol::intern(&path),
+         container_name: None,
+         description: None,
+         docs: None,
+-    })
++    },
++    )
+ }
+ 
+ fn try_lookup_macro_def_in_macro_use(
  
  #[cfg(test)]
  mod tests {
@@ -516,9 +534,14 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_for_type_alias_generic_parameter() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ type Alias<T> = T$0;
+          //^
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -586,23 +609,42 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_self_param_on_decl() {
-         check(
- }"#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ struct Foo {}
+ 
+ impl Foo {
+     fn bar(&self$0) {
+           //^^^^
+     }
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]
      fn goto_lifetime_param_on_decl() {
-         check(
- }"#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo<'foobar$0>(_: &'foobar ()) {
+      //^^^^^^^
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]
      fn goto_lifetime_param_decl() {
-         check(
- }"#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn foo<'foobar>(_: &'foobar$0 ()) {
+      //^^^^^^^
+-}"#,
+-        )
++}"#)
      }
 -
      #[test]
@@ -656,16 +698,31 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_for_intra_doc_link_inner() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ //- /main.rs
+ mod m;
+ struct S;
+ 
+ //- /m.rs
+ //! [`super::S$0`]
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_incomplete_field() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ struct A { a: u32 }
+          //^
+ fn foo() { A { a$0: }; }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -883,23 +940,50 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_on_break_kw() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     for i in 1..5 {
+  // ^^^
+         break$0;
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_on_continue_kw() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     for i in 1..5 {
+  // ^^^
+         continue$0;
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_on_break_kw_for_block() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     'a:{
+  // ^^^
+         break$0 'a;
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -932,23 +1016,46 @@ Rustfmt size:  71259 bytes
 -
      #[test]
      fn goto_def_on_return_in_async_block() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     async {
+  // ^^^^^
+         return$0;
+     }
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_on_for_kw() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     for$0 i in 1..5 {}
+  // ^^^
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]
      fn goto_def_on_fn_kw() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ fn main() {
+     fn$0 foo() {}
+  // ^^
+ }
+-"#,
+-        )
++"#)
      }
 -
      #[test]

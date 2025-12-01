@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18579 bytes
+Chloro size:   18510 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
@@ -148,9 +148,15 @@ Rustfmt size:  18809 bytes
 -
      #[test]
      fn fold_record_literals() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ const _: S = S <fold block>{
+ 
+ }</fold>;
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -162,9 +168,18 @@ Rustfmt size:  18809 bytes
 -
      #[test]
      fn fold_multiline_array() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ const FOO: [usize; 4] = <fold array>[
+     1,
+     2,
+     3,
+     4,
+ ]</fold>;
+-"#,
+-        )
++"#)
      }
 -
      #[test]
@@ -204,9 +219,16 @@ Rustfmt size:  18809 bytes
 -
      #[test]
      fn fold_generics() {
-         check(
- "#,
-         )
+-        check(
+-            r#"
++        check(r#"
+ type Foo<T, U> = foo<fold arglist><
+     T,
+     U,
+ ></fold>;
+-"#,
+-        )
++"#)
      }
 -
      #[test]

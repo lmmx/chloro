@@ -1,4 +1,7 @@
 // chloro-core/src/formatter/node/expr.rs
+use crate::formatter::config::MAX_WIDTH;
+use crate::formatter::write_indent;
+use ra_ap_syntax::ast::HasArgList;
 use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
 
 /// Result of attempting to format an expression.
@@ -87,9 +90,39 @@ fn format_record_expr(expr: &ast::RecordExpr, indent: usize) -> Option<String> {
     Some(buf)
 }
 
-fn format_call_expr(_expr: &ast::CallExpr, _indent: usize) -> Option<String> {
-    // TODO: Implement when ready
-    None
+fn format_call_expr(expr: &ast::CallExpr, indent: usize) -> Option<String> {
+    let callee = expr.expr()?;
+    let arg_list = expr.arg_list()?;
+    let args: Vec<_> = arg_list.args().collect();
+
+    let callee_text = callee.syntax().text().to_string();
+
+    // Try single-line first
+    let args_single: Vec<_> = args.iter().map(|a| a.syntax().text().to_string()).collect();
+    let single_line = format!("{}({})", callee_text, args_single.join(", "));
+
+    if indent + single_line.len() <= MAX_WIDTH {
+        return Some(single_line);
+    }
+
+    // Multi-line: each arg on its own line
+    let mut buf = String::new();
+    buf.push_str(&callee_text);
+    buf.push_str("(\n");
+
+    for arg in args {
+        write_indent(&mut buf, indent + 4);
+        // Recursively format the argument expression
+        match try_format_expr(arg.syntax(), indent + 4) {
+            FormatResult::Formatted(s) => buf.push_str(&s),
+            FormatResult::Unsupported => buf.push_str(&arg.syntax().text().to_string()),
+        }
+        buf.push_str(",\n");
+    }
+
+    write_indent(&mut buf, indent);
+    buf.push(')');
+    Some(buf)
 }
 
 fn format_method_call_expr(_expr: &ast::MethodCallExpr, _indent: usize) -> Option<String> {

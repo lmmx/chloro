@@ -66,12 +66,14 @@ impl<'db> Ty<'db> {
     }
 
     pub fn inner(&self) -> &WithCachedTypeInfo<TyKind<'db>> {
-        crate::with_attached_db(|db| {
+        crate::with_attached_db(
+            |db| {
             let inner = &self.kind_(db).0;
             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
             // make sure that our returned value is valid for the lifetime `'db`.
             unsafe { std::mem::transmute(inner) }
-        })
+        },
+        )
     }
 
     pub fn new_adt(interner: DbInterner<'db>, adt_id: AdtId, args: GenericArgs<'db>) -> Self {

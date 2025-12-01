@@ -711,12 +711,14 @@ impl<'db> SourceAnalyzer<'db> {
         let variant_data = variant.fields(db);
         let field = FieldId { parent: variant, local_id: variant_data.field(&local_name)? };
         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
-        Some((
+        Some(
+            (
             field.into(),
             local,
             Type::new_with_resolver(db, &self.resolver, field_ty),
             GenericSubstitution::new(adt.into(), subst, self.trait_environment(db)),
-        ))
+        ),
+        )
     }
 
     pub(crate) fn resolve_record_pat_field(
@@ -733,11 +735,13 @@ impl<'db> SourceAnalyzer<'db> {
         let field = FieldId { parent: variant, local_id: variant_data.field(&field_name)? };
         let (adt, subst) = self.infer()?[pat_id.as_pat()?].as_adt()?;
         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
-        Some((
+        Some(
+            (
             field.into(),
             Type::new_with_resolver(db, &self.resolver, field_ty),
             GenericSubstitution::new(adt.into(), subst, self.trait_environment(db)),
-        ))
+        ),
+        )
     }
 
     pub(crate) fn resolve_bind_pat_to_const(
@@ -1194,15 +1198,17 @@ impl<'db> SourceAnalyzer<'db> {
         let hir_path =
             collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
         let (store, _) = collector.store.finish();
-        Some(resolve_hir_path_(
-            db,
-            &self.resolver,
-            &hir_path,
-            false,
-            name_hygiene(db, InFile::new(self.file_id, path.syntax())),
-            Some(&store),
-            true,
-        ))
+        Some(
+            resolve_hir_path_(
+                db,
+                &self.resolver,
+                &hir_path,
+                false,
+                name_hygiene(db, InFile::new(self.file_id, path.syntax())),
+                Some(&store),
+                true,
+            ),
+        )
     }
 
     pub(crate) fn record_literal_missing_fields(
@@ -1343,7 +1349,8 @@ impl<'db> SourceAnalyzer<'db> {
         format_args: InFile<&ast::FormatArgsExpr>,
     ) -> Option<impl Iterator<Item = (TextRange, Option<PathResolution>)> + 'a> {
         let (hygiene, names) = self.store_sm()?.implicit_format_args(format_args)?;
-        Some(names.iter().map(move |(range, name)| {
+        Some(
+            names.iter().map(move |(range, name)| {
             (
                 *range,
                 resolve_hir_value_path(
@@ -1357,7 +1364,8 @@ impl<'db> SourceAnalyzer<'db> {
                     hygiene,
                 ),
             )
-        }))
+        }),
+        )
     }
 
     pub(crate) fn as_asm_parts(

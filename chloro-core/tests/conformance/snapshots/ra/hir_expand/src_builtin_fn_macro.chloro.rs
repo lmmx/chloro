@@ -172,15 +172,17 @@ fn line_expand(
     // dummy implementation for type-checking purposes
     // Note that `line!` and `column!` will never be implemented properly, as they are by definition
     // not incremental
-    ExpandResult::ok(tt::TopSubtree::invisible_from_leaves(
-        span,
-        [tt::Leaf::Literal(tt::Literal {
+    ExpandResult::ok(
+        tt::TopSubtree::invisible_from_leaves(
+            span,
+            [tt::Leaf::Literal(tt::Literal {
             symbol: sym::INTEGER_0,
             span,
             kind: tt::LitKind::Integer,
             suffix: Some(sym::u32),
         })],
-    ))
+        ),
+    )
 }
 
 fn log_syntax_expand(
@@ -826,12 +828,14 @@ fn include_expand(
     };
     let span_map = db.real_span_map(editioned_file_id);
     // FIXME: Parse errors
-    ExpandResult::ok(syntax_node_to_token_tree(
-        &db.parse(editioned_file_id).syntax_node(),
-        SpanMap::RealSpanMap(span_map),
-        span,
-        syntax_bridge::DocCommentDesugarMode::ProcMacro,
-    ))
+    ExpandResult::ok(
+        syntax_node_to_token_tree(
+            &db.parse(editioned_file_id).syntax_node(),
+            SpanMap::RealSpanMap(span_map),
+            span,
+            syntax_bridge::DocCommentDesugarMode::ProcMacro,
+        ),
+    )
 }
 
 pub fn include_input_to_file_id(

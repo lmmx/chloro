@@ -101,26 +101,22 @@ mod tests {
     }
     #[test]
     fn goto_decl_module_outline() {
-        check(
-            r#"
+        check(r#"
 //- /main.rs
 mod foo;
  // ^^^
 //- /foo.rs
 use self$0;
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_decl_module_inline() {
-        check(
-            r#"
+        check(r#"
 mod foo {
  // ^^^
     use self$0;
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_decl_goto_def_fallback() {

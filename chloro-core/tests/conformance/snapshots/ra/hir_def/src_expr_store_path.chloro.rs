@@ -98,11 +98,15 @@ pub enum GenericArg {
 impl Path {
     /// Converts a known mod path to `Path`.
     pub fn from_known_path(path: ModPath, generic_args: Vec<Option<GenericArgs>>) -> Path {
-        Path::Normal(Box::new(NormalPath {
-            generic_args: generic_args.into_boxed_slice(),
-            type_anchor: None,
-            mod_path: Interned::new(path),
-        }))
+        Path::Normal(
+            Box::new(
+                NormalPath {
+                    generic_args: generic_args.into_boxed_slice(),
+                    type_anchor: None,
+                    mod_path: Interned::new(path),
+                },
+            ),
+        )
     }
 
     /// Converts a known mod path to `Path`.

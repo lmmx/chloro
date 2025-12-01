@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 69401 bytes
-Chloro size:   69400 bytes
+Chloro size:   69423 bytes
 Rustfmt size:  69401 bytes
 
 ✗ Outputs DIFFER
@@ -43,6 +43,24 @@ Rustfmt size:  69401 bytes
  macro_rules! from_bytes {
      ($ty:tt, $value:expr) => {
          ($ty::from_le_bytes(match ($value).try_into() {
+         metadata: Interval,
+         locals: &Locals<'db>,
+     ) -> Result<'db, (usize, usize)> {
+-        Ok(match ty.kind() {
++        Ok(
++            match ty.kind() {
+             TyKind::Str => (from_bytes!(usize, metadata.get(self)?), 1),
+             TyKind::Slice(inner) => {
+                 let len = from_bytes!(usize, metadata.get(self)?);
+                 (size as usize, align as usize)
+             }
+             _ => not_supported!("unsized type other than str, slice, struct and dyn"),
+-        })
++        },
++        )
+     }
+ 
+     fn exec_atomic_intrinsic(
      ) -> Result<'db, ()> {
          // We are a single threaded runtime with no UB checking and no optimization, so
          // we can implement atomic intrinsics as normal functions.

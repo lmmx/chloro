@@ -272,11 +272,13 @@ unsafe impl Sync for DbInterner<'_> {
 
 impl<'db> DbInterner<'db> {
     pub fn conjure() -> DbInterner<'db> {
-        crate::with_attached_db(|db| DbInterner {
+        crate::with_attached_db(
+            |db| DbInterner {
             db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
             krate: None,
             block: None,
-        })
+        },
+        )
     }
 
     pub fn new_with(
@@ -564,11 +566,13 @@ impl AdtDef {
     }
 
     pub fn inner(&self) -> &AdtDefInner {
-        crate::with_attached_db(|db| {
+        crate::with_attached_db(
+            |db| {
             let inner = self.data_(db);
             // SAFETY: ¯\_(ツ)_/¯
             unsafe { std::mem::transmute(inner) }
-        })
+        },
+        )
     }
 
     pub fn is_enum(&self) -> bool {
@@ -672,7 +676,8 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
 
 impl fmt::Debug for AdtDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        crate::with_attached_db(|db| match self.inner().id {
+        crate::with_attached_db(
+            |db| match self.inner().id {
             AdtId::StructId(struct_id) => {
                 let data = db.struct_signature(struct_id);
                 f.write_str(data.name.as_str())
@@ -685,7 +690,8 @@ impl fmt::Debug for AdtDef {
                 let data = db.enum_signature(enum_id);
                 f.write_str(data.name.as_str())
             }
-        })
+        },
+        )
     }
 }
 
@@ -741,12 +747,14 @@ impl<'db> Pattern<'db> {
     }
 
     pub fn inner(&self) -> &PatternKind<'db> {
-        crate::with_attached_db(|db| {
+        crate::with_attached_db(
+            |db| {
             let inner = &self.kind_(db).0;
             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
             // make sure that our returned value is valid for the lifetime `'db`.
             unsafe { std::mem::transmute(inner) }
-        })
+        },
+        )
     }
 }
 
@@ -995,9 +1003,12 @@ impl<'db> Interner for DbInterner<'db> {
         I: Iterator<Item = T>,
         T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
     {
-        CollectAndApply::collect_and_apply(args, |g| {
+        CollectAndApply::collect_and_apply(
+            args,
+            |g| {
             GenericArgs::new_from_iter(self, g.iter().cloned())
-        })
+        },
+        )
     }
 
     type UnsizingParams = UnsizingParams;
@@ -2008,10 +2019,14 @@ impl<'db> Interner for DbInterner<'db> {
         _def_id: Self::CoroutineId,
     ) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
         // FIXME: Actually implement this.
-        EarlyBinder::bind(Binder::dummy(CoroutineWitnessTypes {
-            types: Tys::default(),
-            assumptions: RegionAssumptions::default(),
-        }))
+        EarlyBinder::bind(
+            Binder::dummy(
+                CoroutineWitnessTypes {
+                    types: Tys::default(),
+                    assumptions: RegionAssumptions::default(),
+                },
+            ),
+        )
     }
 
     fn is_default_trait(self, def_id: Self::TraitId) -> bool {
@@ -2059,7 +2074,10 @@ impl<'db> Interner for DbInterner<'db> {
         rustc_next_trait_solver::solve::evaluate_root_goal_for_proof_tree_raw_provider::<
             SolverContext<'db>,
             Self,
-        >(self, canonical_goal)
+        >(
+            self,
+            canonical_goal,
+        )
     }
 
     fn is_sizedness_trait(self, def_id: Self::TraitId) -> bool {

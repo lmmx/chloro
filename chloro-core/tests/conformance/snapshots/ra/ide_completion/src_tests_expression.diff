@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75833 bytes
-Chloro size:   75834 bytes
+Chloro size:   75782 bytes
 Rustfmt size:  76019 bytes
 
 ✗ Outputs DIFFER
@@ -13,6 +13,13 @@ Rustfmt size:  76019 bytes
  use expect_test::{expect, Expect};
  
  use crate::{
+     let foo = create_foo(&$0);
+ }
+             "#,
+-        // This should not contain `FooDesc {…}`.
+         expect![[r#"
+             ct CONST                   Unit
+             en Enum                    Enum
  #[test]
  fn return_unit_block() {
      cov_mark::check!(return_unit_block);

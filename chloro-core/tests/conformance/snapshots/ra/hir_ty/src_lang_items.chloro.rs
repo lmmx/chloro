@@ -13,7 +13,8 @@ pub fn is_box(db: &dyn HirDatabase, adt: AdtId) -> bool {
 
 pub fn lang_items_for_bin_op(op: syntax::ast::BinaryOp) -> Option<(Name, LangItem)> {
     use syntax::ast::{ArithOp, BinaryOp, CmpOp, Ordering};
-    Some(match op {
+    Some(
+        match op {
         BinaryOp::LogicOp(_) => return None,
         BinaryOp::ArithOp(aop) => match aop {
             ArithOp::Add => (Name::new_symbol_root(sym::add), LangItem::Add),
@@ -56,5 +57,6 @@ pub fn lang_items_for_bin_op(op: syntax::ast::BinaryOp) -> Option<(Name, LangIte
             }
         },
         BinaryOp::Assignment { op: None } => return None,
-    })
+    },
+    )
 }

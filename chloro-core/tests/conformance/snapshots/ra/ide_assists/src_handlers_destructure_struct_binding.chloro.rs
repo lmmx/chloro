@@ -113,7 +113,8 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
 
     let names_in_scope = get_names_in_scope(ctx, &ident_pat, &usages).unwrap_or_default();
 
-    Some(StructEditData {
+    Some(
+        StructEditData {
         name: ident_pat.name()?,
         ident_pat,
         kind,
@@ -125,7 +126,8 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
         need_record_field_name,
         is_ref,
         edition: module.krate().edition(ctx.db()),
-    })
+    },
+    )
 }
 
 fn get_names_in_scope(

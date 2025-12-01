@@ -257,25 +257,21 @@ fn foo() {
     }
     #[test]
     fn goto_def_for_self_param() {
-        check(
-            r#"
+        check(r#"
 struct Foo;
      //^^^
 impl Foo {
     fn f(&self$0) {}
 }
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_for_type_fallback() {
-        check(
-            r#"
+        check(r#"
 struct Foo;
      //^^^
 impl Foo$0 {}
-"#,
-        )
+"#)
     }
     #[test]
     fn goto_def_for_struct_field() {

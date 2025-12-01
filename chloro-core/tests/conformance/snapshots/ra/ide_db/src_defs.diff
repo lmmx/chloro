@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43904 bytes
+Chloro size:   43927 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -50,6 +50,19 @@ Rustfmt size:  44130 bytes
          self.module(db).map(|it| it.path_to_root(db).into_iter().rev())
      }
  
+     pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
+-        Some(match self {
++        Some(
++            match self {
+             Definition::Module(m) => m.krate(),
+             &Definition::Crate(it) => it,
+             _ => self.module(db)?.krate(),
+-        })
++        },
++        )
+     }
+ 
+     /// Returns the module this definition resides in.
      })
  }
  

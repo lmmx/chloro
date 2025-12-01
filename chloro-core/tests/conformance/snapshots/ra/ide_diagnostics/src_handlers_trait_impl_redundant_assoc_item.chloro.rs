@@ -99,14 +99,16 @@ fn quickfix_for_redundant_assoc_item(
     let mut source_change_builder = SourceChangeBuilder::new(file_id.file_id(ctx.sema.db));
     add_assoc_item_def(&mut source_change_builder)?;
 
-    Some(vec![Assist {
+    Some(
+        vec![Assist {
         id: AssistId::quick_fix("add assoc item def into trait def"),
         label: Label::new("Add assoc item def into trait def".to_owned()),
         group: None,
         target: range,
         source_change: Some(source_change_builder.finish()),
         command: None,
-    }])
+    }],
+    )
 }
 
 #[cfg(test)]

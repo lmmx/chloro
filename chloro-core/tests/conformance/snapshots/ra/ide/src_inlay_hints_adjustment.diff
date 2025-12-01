@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23884 bytes
-Chloro size:   23811 bytes
+Chloro size:   23709 bytes
 Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
@@ -52,6 +52,13 @@ Rustfmt size:  23884 bytes
      #[test]
      fn adjustment_hints_prefer_prefix() {
          check_with_config(
+             InlayHintsConfig {
+                 adjustment_hints: AdjustmentHints::Always,
+                 adjustment_hints_mode: AdjustmentHintsMode::PreferPrefix,
+-                ..DISABLED_CONFIG
+             },
+             r#"
+ fn main() {
              "#,
          )
      }
@@ -59,6 +66,13 @@ Rustfmt size:  23884 bytes
      #[test]
      fn adjustment_hints_prefer_postfix() {
          check_with_config(
+             InlayHintsConfig {
+                 adjustment_hints: AdjustmentHints::Always,
+                 adjustment_hints_mode: AdjustmentHintsMode::PreferPostfix,
+-                ..DISABLED_CONFIG
+             },
+             r#"
+ fn main() {
              "#,
          )
      }
@@ -73,6 +87,13 @@ Rustfmt size:  23884 bytes
      #[test]
      fn adjustment_hints_unsafe_only() {
          check_with_config(
+             InlayHintsConfig {
+                 adjustment_hints: AdjustmentHints::Always,
+                 adjustment_hints_hide_outside_unsafe: true,
+-                ..DISABLED_CONFIG
+             },
+             r#"
+ unsafe fn enabled() {
              "#,
          )
      }

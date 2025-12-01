@@ -379,11 +379,13 @@ impl<'db> SemanticsImpl<'db> {
     }
 
     pub fn attach_first_edition(&self, file: FileId) -> Option<EditionedFileId> {
-        Some(EditionedFileId::new(
-            self.db,
-            file,
-            self.file_to_module_defs(file).next()?.krate().edition(self.db),
-        ))
+        Some(
+            EditionedFileId::new(
+                self.db,
+                file,
+                self.file_to_module_defs(file).next()?.krate().edition(self.db),
+            ),
+        )
     }
 
     pub fn parse_guess_edition(&self, file_id: FileId) -> ast::SourceFile {
@@ -1487,7 +1489,9 @@ impl<'db> SemanticsImpl<'db> {
         &self,
         node: InFile<SyntaxNode>,
     ) -> impl Iterator<Item = InFile<SyntaxNode>> + Clone + '_ {
-        iter::successors(Some(node), move |&InFile { file_id, ref value }| match value.parent() {
+        iter::successors(
+            Some(node),
+            move |&InFile { file_id, ref value }| match value.parent() {
             Some(parent) => Some(InFile::new(file_id, parent)),
             None => {
                 let macro_file = file_id.macro_file()?;
@@ -1497,7 +1501,8 @@ impl<'db> SemanticsImpl<'db> {
                     expansion_info.arg().map(|node| node?.parent()).transpose()
                 })
             }
-        })
+        },
+        )
     }
 
     pub fn ancestors_at_offset_with_macros(

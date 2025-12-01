@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   73140 bytes
+Chloro size:   73155 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -90,6 +90,20 @@ Rustfmt size:  74236 bytes
      // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
      let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
      for mut cast in cast_checks.into_iter() {
+     db: &dyn HirDatabase,
+     _: DefWithBodyId,
+ ) -> Arc<InferenceResult<'_>> {
+-    Arc::new(InferenceResult {
++    Arc::new(
++        InferenceResult {
+         has_errors: true,
+         ..InferenceResult::new(Ty::new_error(DbInterner::new_with(db, None, None), ErrorGuaranteed))
+-    })
++    },
++    )
+ }
+ 
+ /// Binding modes inferred for patterns.
  impl<'db> Adjustment<'db> {
      pub fn borrow(interner: DbInterner<'db>, m: Mutability, ty: Ty<'db>, lt: Region<'db>) -> Self {
          let ty = Ty::new_ref(interner, lt, ty, m);

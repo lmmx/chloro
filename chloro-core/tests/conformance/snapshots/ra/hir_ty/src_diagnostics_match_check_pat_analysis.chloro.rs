@@ -435,7 +435,8 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         // Invariant: this is empty if and only if the type is uninhabited (as determined by
 
         // `cx.is_uninhabited()`).
-        Ok(match ty.kind() {
+        Ok(
+            match ty.kind() {
             TyKind::Bool => ConstructorSet::Bool,
             TyKind::Char => unhandled(),
             TyKind::Int(..) | TyKind::Uint(..) => unhandled(),
@@ -484,7 +485,8 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
             TyKind::Never => ConstructorSet::NoConstructors,
             // This type is one for which we cannot list constructors, like `str` or `f64`.
             _ => ConstructorSet::Unlistable,
-        })
+        },
+        )
     }
 
     fn write_variant_name(

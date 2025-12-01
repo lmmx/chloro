@@ -2,12 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4730 bytes
-Chloro size:   4628 bytes
+Chloro size:   4597 bytes
 Rustfmt size:  4730 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ #[test]
+ fn trigger_by_l_paren() {
+-    check_with_trigger_character(
+-        r#"
++    check_with_trigger_character(r#"
+ fn foo($0)
+-"#,
+-        Some('('),
+-        expect![[]],
+-    )
++"#, Some('('), expect![[]])
+ }
+ 
+ #[test]
      )
  }
  

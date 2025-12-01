@@ -58,12 +58,14 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Option
             TextRange::new(start, end)
         }
     };
-    Some(vec![fix(
+    Some(
+        vec![fix(
         "remove_generic_args",
         "Remove these generics",
         SourceChange::from_text_edit(file_id.file_id(ctx.sema.db), TextEdit::delete(range)),
         syntax.syntax().text_range(),
-    )])
+    )],
+    )
 }
 
 #[cfg(test)]

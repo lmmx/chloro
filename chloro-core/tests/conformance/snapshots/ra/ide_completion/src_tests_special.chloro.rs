@@ -977,12 +977,9 @@ fn foo { crate:::$0 }
 "#,
         expect![""],
     );
-    check_no_kw(
-        r#"
+    check_no_kw(r#"
 fn foo { crate::::$0 }
-"#,
-        expect![""],
-    )
+"#, expect![""])
 }
 
 #[test]

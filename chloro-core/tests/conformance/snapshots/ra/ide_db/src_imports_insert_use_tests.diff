@@ -2,12 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29250 bytes
-Chloro size:   29252 bytes
+Chloro size:   29221 bytes
 Rustfmt size:  29734 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ #[test]
+ fn insert_no_imports() {
+-    check_crate(
+-        "foo::bar",
+-        "fn main() {}",
+-        r"use foo::bar;
++    check_crate("foo::bar", "fn main() {}", r"use foo::bar;
+ 
+-fn main() {}",
+-    )
++fn main() {}")
+ }
+ 
+ #[test]
      cov_mark::check_count!(insert_empty_file, 2);
  
      // Default configuration

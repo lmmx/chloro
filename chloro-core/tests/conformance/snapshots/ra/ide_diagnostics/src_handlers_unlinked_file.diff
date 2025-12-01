@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15808 bytes
-Chloro size:   15573 bytes
+Chloro size:   15588 bytes
 Rustfmt size:  15808 bytes
 
 ✗ Outputs DIFFER
@@ -45,6 +45,23 @@ Rustfmt size:  15808 bytes
      // probably `#[cfg]`d out).
      for item in items.clone() {
          if let ast::Item::Module(m) = item
+         }
+     }
+ 
+-    Some(vec![
++    Some(
++        vec![
+         fix(
+             "add_mod_declaration",
+             &format!("Insert `{mod_decl}`"),
+             SourceChange::from_text_edit(parent_file_id, pub_crate_mod_decl_builder.finish()),
+             trigger_range,
+         ),
+-    ])
++    ],
++    )
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_diagnostics, check_fix, check_fixes, check_no_fix};

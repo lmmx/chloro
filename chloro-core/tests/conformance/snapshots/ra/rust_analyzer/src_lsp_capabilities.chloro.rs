@@ -33,35 +33,45 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 _ => None,
             },
         },
-        text_document_sync: Some(TextDocumentSyncCapability::Options(TextDocumentSyncOptions {
-            open_close: Some(true),
-            change: Some(TextDocumentSyncKind::INCREMENTAL),
-            will_save: None,
-            will_save_wait_until: None,
-            save: Some(SaveOptions::default().into()),
-        })),
+        text_document_sync: Some(
+            TextDocumentSyncCapability::Options(
+                TextDocumentSyncOptions {
+                    open_close: Some(true),
+                    change: Some(TextDocumentSyncKind::INCREMENTAL),
+                    will_save: None,
+                    will_save_wait_until: None,
+                    save: Some(SaveOptions::default().into()),
+                },
+            ),
+        ),
         hover_provider: Some(HoverProviderCapability::Simple(true)),
-        completion_provider: Some(CompletionOptions {
-            resolve_provider: if config.client_is_neovim() {
+        completion_provider: Some(
+            CompletionOptions {
+                resolve_provider: if config.client_is_neovim() {
                 config.has_completion_item_resolve_additionalTextEdits().then_some(true)
             } else {
                 Some(config.caps().completions_resolve_provider())
             },
-            trigger_characters: Some(vec![
+                trigger_characters: Some(
+                    vec![
                 ":".to_owned(),
                 ".".to_owned(),
                 "'".to_owned(),
                 "(".to_owned(),
-            ]),
-            all_commit_characters: None,
-            completion_item: config.caps().completion_item(),
-            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-        }),
-        signature_help_provider: Some(SignatureHelpOptions {
-            trigger_characters: Some(vec!["(".to_owned(), ",".to_owned(), "<".to_owned()]),
-            retrigger_characters: None,
-            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-        }),
+            ],
+                ),
+                all_commit_characters: None,
+                completion_item: config.caps().completion_item(),
+                work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
+            },
+        ),
+        signature_help_provider: Some(
+            SignatureHelpOptions {
+                trigger_characters: Some(vec!["(".to_owned(), ",".to_owned(), "<".to_owned()]),
+                retrigger_characters: None,
+                work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
+            },
+        ),
         declaration_provider: Some(DeclarationCapability::Simple(true)),
         definition_provider: Some(OneOf::Left(true)),
         type_definition_provider: Some(TypeDefinitionProviderCapability::Simple(true)),
@@ -77,33 +87,44 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             RustfmtConfig::Rustfmt { enable_range_formatting: true, .. } => Some(OneOf::Left(true)),
             _ => Some(OneOf::Left(false)),
         },
-        document_on_type_formatting_provider: Some({
+        document_on_type_formatting_provider: Some(
+            {
             let mut chars = ide::Analysis::SUPPORTED_TRIGGER_CHARS.iter();
             DocumentOnTypeFormattingOptions {
                 first_trigger_character: chars.next().unwrap().to_string(),
                 more_trigger_character: Some(chars.map(|c| c.to_string()).collect()),
             }
-        }),
+        },
+        ),
         selection_range_provider: Some(SelectionRangeProviderCapability::Simple(true)),
         folding_range_provider: Some(FoldingRangeProviderCapability::Simple(true)),
-        rename_provider: Some(OneOf::Right(RenameOptions {
-            prepare_provider: Some(true),
-            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-        })),
+        rename_provider: Some(
+            OneOf::Right(
+                RenameOptions {
+                    prepare_provider: Some(true),
+                    work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
+                },
+            ),
+        ),
         linked_editing_range_provider: None,
         document_link_provider: None,
         color_provider: None,
         execute_command_provider: None,
-        workspace: Some(WorkspaceServerCapabilities {
-            workspace_folders: Some(WorkspaceFoldersServerCapabilities {
-                supported: Some(true),
-                change_notifications: Some(OneOf::Left(true)),
-            }),
-            file_operations: Some(WorkspaceFileOperationsServerCapabilities {
-                did_create: None,
-                will_create: None,
-                did_rename: None,
-                will_rename: Some(FileOperationRegistrationOptions {
+        workspace: Some(
+            WorkspaceServerCapabilities {
+                workspace_folders: Some(
+                    WorkspaceFoldersServerCapabilities {
+                        supported: Some(true),
+                        change_notifications: Some(OneOf::Left(true)),
+                    },
+                ),
+                file_operations: Some(
+                    WorkspaceFileOperationsServerCapabilities {
+                        did_create: None,
+                        will_create: None,
+                        did_rename: None,
+                        will_rename: Some(
+                            FileOperationRegistrationOptions {
                     filters: vec![
                         FileOperationFilter {
                             scheme: Some(String::from("file")),
@@ -122,11 +143,14 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                             },
                         },
                     ],
-                }),
-                did_delete: None,
-                will_delete: None,
-            }),
-        }),
+                },
+                        ),
+                        did_delete: None,
+                        will_delete: None,
+                    },
+                ),
+            },
+        ),
         call_hierarchy_provider: Some(CallHierarchyServerCapability::Simple(true)),
         semantic_tokens_provider: Some(
             SemanticTokensOptions {
@@ -142,14 +166,19 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             .into(),
         ),
         moniker_provider: None,
-        inlay_hint_provider: Some(OneOf::Right(InlayHintServerCapabilities::Options(
-            InlayHintOptions {
-                work_done_progress_options: Default::default(),
-                resolve_provider: Some(config.caps().inlay_hints_resolve_provider()),
-            },
-        ))),
+        inlay_hint_provider: Some(
+            OneOf::Right(
+                InlayHintServerCapabilities::Options(
+                    InlayHintOptions {
+                        work_done_progress_options: Default::default(),
+                        resolve_provider: Some(config.caps().inlay_hints_resolve_provider()),
+                    },
+                ),
+            ),
+        ),
         inline_value_provider: None,
-        experimental: Some(json!({
+        experimental: Some(
+            json!({
             "externalDocs": true,
             "hoverRange": true,
             "joinLines": true,
@@ -164,16 +193,18 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             },
             "ssr": true,
             "workspaceSymbolScopeKindFiltering": true,
-        })),
-        diagnostic_provider: Some(lsp_types::DiagnosticServerCapabilities::Options(
-            lsp_types::DiagnosticOptions {
-                identifier: Some("rust-analyzer".to_owned()),
-                inter_file_dependencies: true,
-                // FIXME
-                workspace_diagnostics: false,
-                work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-            },
-        )),
+        }),
+        ),
+        diagnostic_provider: Some(
+            lsp_types::DiagnosticServerCapabilities::Options(
+                lsp_types::DiagnosticOptions {
+                    identifier: Some("rust-analyzer".to_owned()),
+                    inter_file_dependencies: true,
+                    workspace_diagnostics: false,
+                    work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
+                },
+            ),
+        ),
         inline_completion_provider: None,
     }
 }
@@ -242,9 +273,11 @@ impl ClientCapabilities {
     }
 
     fn completion_item(&self) -> Option<CompletionOptionsCompletionItem> {
-        Some(CompletionOptionsCompletionItem {
+        Some(
+            CompletionOptionsCompletionItem {
             label_details_support: Some(self.completion_label_details_support()),
-        })
+        },
+        )
     }
 
     fn code_action_capabilities(&self) -> CodeActionProviderCapability {

@@ -1001,7 +1001,6 @@ pub fn iterate_path_candidates<'db>(
         visible_from_module,
         name,
         LookupMode::Path,
-        // the adjustments are not relevant for path lookup
         callback,
     )
 }

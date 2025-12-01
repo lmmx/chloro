@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   33095 bytes
+Chloro size:   33141 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -256,6 +256,37 @@ Rustfmt size:  33868 bytes
      pub fn inlay_hints_resolve(
          &self,
          config: &InlayHintsConfig<'_>,
+     pub fn symbol_search(&self, query: Query, limit: usize) -> Cancellable<Vec<NavigationTarget>> {
+         // `world_symbols` currently clones the database to run stuff in parallel, which will make any query panic
+         // if we were to attach it here.
+-        Cancelled::catch(|| {
++        Cancelled::catch(
++            || {
+             let symbols = symbol_index::world_symbols(&self.db, query);
+             hir::attach_db(&self.db, || {
+                 symbols
+                     .map(UpmappingResult::call_site)
+                     .collect::<Vec<_>>()
+             })
+-        })
++        },
++        )
+     }
+ 
+     /// Returns the definitions from the symbol at `position`.
+         position: FilePosition,
+         imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe,
+     ) -> Cancellable<Vec<TextEdit>> {
+-        Ok(self
++        Ok(
++            self
+             .with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?
+-            .unwrap_or_default())
++            .unwrap_or_default(),
++        )
+     }
+ 
+     /// Computes the set of parser level diagnostics for the given file.
              let mut match_finder =
                  ide_ssr::MatchFinder::in_context(db, resolve_context, selections)?;
              match_finder.add_rule(rule)?;

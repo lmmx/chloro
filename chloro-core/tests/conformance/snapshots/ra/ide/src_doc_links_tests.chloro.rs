@@ -101,7 +101,8 @@ fn node_to_def(
     sema: &Semantics<'_, RootDatabase>,
     node: &SyntaxNode,
 ) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
-    Some(match_ast! {
+    Some(
+        match_ast! {
         match node {
             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
             ast::Module(it)      => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
@@ -121,7 +122,8 @@ fn node_to_def(
             // ast::Use(it) => sema.to_def(&it).map(|def| (Box::new(it) as _, def.attrs(sema.db))),
             _ => return None,
         }
-    })
+    },
+    )
 }
 
 #[test]

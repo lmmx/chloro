@@ -350,13 +350,14 @@ fn def_to_non_local_moniker(
     reverse_description.reverse();
     let description = reverse_description;
 
-    Some(Moniker {
-        identifier: MonikerIdentifier {
+    Some(
+        Moniker {
+            identifier: MonikerIdentifier {
             crate_name: krate.display_name(db)?.crate_name().to_string(),
             description,
         },
-        kind: if krate == from_crate { MonikerKind::Export } else { MonikerKind::Import },
-        package_information: {
+            kind: if krate == from_crate { MonikerKind::Export } else { MonikerKind::Import },
+            package_information: {
             let (name, repo, version) = match krate.origin(db) {
                 CrateOrigin::Library { repo, name } => (name, repo, krate.version(db)),
                 CrateOrigin::Local { repo, name } => (
@@ -382,7 +383,8 @@ fn def_to_non_local_moniker(
             };
             PackageInformation { name: name.as_str().to_owned(), repo, version }
         },
-    })
+        },
+    )
 }
 
 fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, it: T) -> String {

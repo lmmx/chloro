@@ -137,14 +137,16 @@ impl Snippet {
             return None;
         }
         let (requires, snippet, description) = validate_snippet(snippet, description, requires)?;
-        Some(Snippet {
+        Some(
+            Snippet {
             postfix_triggers: postfix_triggers.iter().map(String::as_str).map(Into::into).collect(),
             prefix_triggers: prefix_triggers.iter().map(String::as_str).map(Into::into).collect(),
             scope,
             snippet,
             description,
             requires,
-        })
+        },
+        )
     }
 
     /// Returns [`None`] if the required items do not resolve.

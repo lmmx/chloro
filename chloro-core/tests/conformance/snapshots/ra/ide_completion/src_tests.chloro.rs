@@ -147,12 +147,9 @@ fn completion_list_with_config(
     include_keywords: bool,
     trigger_character: Option<char>,
 ) -> String {
-    render_completion_list(completion_list_with_config_raw(
-        config,
-        ra_fixture,
-        include_keywords,
-        trigger_character,
-    ))
+    render_completion_list(
+        completion_list_with_config_raw(config, ra_fixture, include_keywords, trigger_character),
+    )
 }
 
 /// Creates analysis from a multi-file fixture, returns positions marked with $0.

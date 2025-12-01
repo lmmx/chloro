@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101181 bytes
-Chloro size:   100596 bytes
+Chloro size:   100878 bytes
 Rustfmt size:  101181 bytes
 
 ✗ Outputs DIFFER
@@ -51,6 +51,24 @@ Rustfmt size:  101181 bytes
  fn all_test_targets(cargo: &CargoWorkspace) -> impl Iterator<Item = TestTarget> {
      cargo.packages().filter(|p| cargo[*p].is_member).flat_map(|p| {
          let package = &cargo[p];
+         None => (snap.analysis.discover_test_roots()?, None),
+     };
+ 
+-    Ok(lsp_ext::DiscoverTestResults {
++    Ok(
++        lsp_ext::DiscoverTestResults {
+         tests: tests
+             .into_iter()
+             .filter_map(|t| {
+             .collect(),
+         scope,
+         scope_file: None,
+-    })
++    },
++    )
+ }
+ 
+ pub(crate) fn handle_view_crate_graph(
      let line_index = snap.file_line_index(position.file_id)?;
  
      // in `ide`, the `on_type` invariant is that
@@ -58,6 +76,65 @@ Rustfmt size:  101181 bytes
      // `text.char_at(position) == typed_char`.
      position.offset -= TextSize::of('.');
  
+ }
+ 
+ pub(crate) fn empty_diagnostic_report() -> lsp_types::DocumentDiagnosticReportResult {
+-    lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(
+-        lsp_types::RelatedFullDocumentDiagnosticReport {
+-            related_documents: None,
+-            full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
+-                result_id: Some("rust-analyzer".to_owned()),
+-                items: vec![],
++    lsp_types::DocumentDiagnosticReportResult::Report(
++        lsp_types::DocumentDiagnosticReport::Full(
++            lsp_types::RelatedFullDocumentDiagnosticReport {
++                related_documents: None,
++                full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
++                    result_id: Some("rust-analyzer".to_owned()),
++                    items: vec![],
++                },
+             },
+-        },
+-    ))
++        ),
++    )
+ }
+ 
+ pub(crate) fn handle_document_diagnostics(
+             }
+             None
+         });
+-    Ok(lsp_types::DocumentDiagnosticReportResult::Report(
+-        lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
+-            full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
+-                result_id: Some("rust-analyzer".to_owned()),
+-                items: diagnostics.collect(),
+-            },
+-            related_documents: related_documents.is_empty().not().then(|| {
++    Ok(
++        lsp_types::DocumentDiagnosticReportResult::Report(
++            lsp_types::DocumentDiagnosticReport::Full(
++                lsp_types::RelatedFullDocumentDiagnosticReport {
++                    full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
++                        result_id: Some("rust-analyzer".to_owned()),
++                        items: diagnostics.collect(),
++                    },
++                    related_documents: related_documents.is_empty().not().then(|| {
+                 related_documents
+                     .into_iter()
+                     .map(|(id, (items, _))| {
+                     })
+                     .collect()
+             }),
+-        }),
+-    ))
++                },
++            ),
++        ),
++    )
+ }
+ 
+ pub(crate) fn handle_document_symbol(
          .map_err(to_proto::rename_error)?;
  
      // this is kind of a hack to prevent double edits from happening when moving files
@@ -73,6 +150,84 @@ Rustfmt size:  101181 bytes
      // See https://github.com/microsoft/vscode-languageserver-node/issues/752 for more info
      if !change.file_system_edits.is_empty() && snap.config.will_rename() {
          change.source_file_edits.clear();
+     );
+ 
+     let inlay_hints_config = snap.config.inlay_hints(snap.minicore());
+-    Ok(Some(
+-        snap.analysis
++    Ok(
++        Some(
++            snap.analysis
+             .inlay_hints(&inlay_hints_config, file_id, Some(range))?
+             .into_iter()
+             .map(|it| {
+                 )
+             })
+             .collect::<Cancellable<Vec<_>>>()?,
+-    ))
++        ),
++    )
+ }
+ 
+ pub(crate) fn handle_inlay_hints_resolve(
+         },
+     )?;
+ 
+-    Ok(resolve_hints
++    Ok(
++        resolve_hints
+         .and_then(|it| {
+             to_proto::inlay_hint(
+                 &snap,
+         })
+         .filter(|hint| hint.position == original_hint.position)
+         .filter(|hint| hint.kind == original_hint.kind)
+-        .unwrap_or(original_hint))
++        .unwrap_or(original_hint),
++    )
+ }
+ 
+ pub(crate) fn handle_call_hierarchy_prepare(
+     let offset = from_proto::offset(&line_index, params.position)?;
+ 
+     let res = snap.analysis.get_recursive_memory_layout(FilePosition { file_id, offset })?;
+-    Ok(res.map(|it| lsp_ext::RecursiveMemoryLayout {
++    Ok(
++        res.map(|it| lsp_ext::RecursiveMemoryLayout {
+         nodes: it
+             .nodes
+             .iter()
+                 children_len: n.children_len,
+             })
+             .collect(),
+-    }))
++    }),
++    )
+ }
+ 
+ fn to_command_link(command: lsp_types::Command, tooltip: String) -> lsp_ext::CommandLink {
+         return None;
+     }
+ 
+-    Some(lsp_ext::CommandLinkGroup {
+-        title: Some("Go to ".into()),
+-        commands: nav_targets
++    Some(
++        lsp_ext::CommandLinkGroup {
++            title: Some("Go to ".into()),
++            commands: nav_targets
+             .iter()
+             .filter_map(|it| {
+                 to_proto::command::goto_location(snap, &it.nav)
+                     .map(|cmd| to_command_link(cmd, it.mod_path.clone()))
+             })
+             .collect(),
+-    })
++        },
++    )
+ }
+ 
+ fn prepare_hover_actions(
      let file = snap.analysis.file_text(file_id)?;
  
      // Determine the edition of the crate the file belongs to (if there's multiple, we pick the
@@ -89,3 +244,23 @@ Rustfmt size:  101181 bytes
      // https://github.com/rust-lang/rustfmt/issues/4660 gets fixed
      let current_dir = match text_document.uri.to_file_path() {
          Ok(mut path) => {
+         ),
+         None => None,
+     };
+-    Ok(Some(match params.config {
++    Ok(
++        Some(
++            match params.config {
+         InternalTestingFetchConfigOption::AssistEmitMustUse => {
+             InternalTestingFetchConfigResponse::AssistEmitMustUse(
+                 state.config.assist(source_root).assist_emit_must_use,
+                 state.config.flycheck_workspace(source_root),
+             )
+         }
+-    }))
++    },
++        ),
++    )
+ }
+ 
+ /// Searches for the directory of a Rust crate given this crate's root file path.
