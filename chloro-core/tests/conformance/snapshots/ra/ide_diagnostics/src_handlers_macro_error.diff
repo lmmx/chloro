@@ -51,6 +51,15 @@ Rustfmt size:  7310 bytes
  pub(crate) fn macro_def_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroDefError) -> Diagnostic {
      // Use more accurate position if available.
      let display_range =
+         DiagnosticCode::Ra("macro-def-error", Severity::Error),
+         d.message.clone(),
+         display_range,
++    ).stable(
+     )
+-    .stable()
+ }
+ 
+ #[cfg(test)]
          tests::{check_diagnostics, check_diagnostics_with_config},
          DiagnosticsConfig,
      };

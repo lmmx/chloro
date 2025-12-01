@@ -173,12 +173,7 @@ impl PartialEq for ExpressionOnlySourceMap {
             expansions,
             diagnostics,
         } = self;
-        *expr_map_back == other.expr_map_back
-            && *pat_map_back == other.pat_map_back
-            && *label_map_back == other.label_map_back
-            && *template_map == other.template_map
-            && *expansions == other.expansions
-            && *diagnostics == other.diagnostics
+        *expr_map_back == other.expr_map_back && *pat_map_back == other.pat_map_back && *label_map_back == other.label_map_back && *template_map == other.template_map && *expansions == other.expansions && *diagnostics == other.diagnostics
     }
 }
 
@@ -202,9 +197,7 @@ impl PartialEq for ExpressionStoreSourceMap {
         // the same as normal mapping
         let Self { expr_only, types_map_back, types_map: _, lifetime_map_back, lifetime_map: _ } =
             self;
-        *expr_only == other.expr_only
-            && *types_map_back == other.types_map_back
-            && *lifetime_map_back == other.lifetime_map_back
+        *expr_only == other.expr_only && *types_map_back == other.types_map_back && *lifetime_map_back == other.lifetime_map_back
     }
 }
 
@@ -982,12 +975,8 @@ impl ExpressionStoreSourceMap {
         &self,
         capture_expr: ExprId,
     ) -> Option<InFile<(ExprPtr, TextRange)>> {
-        self.expr_only()?
-            .template_map
-            .as_ref()?
-            .implicit_capture_to_source
-            .get(&capture_expr)
-            .copied()
+        self.expr_only()?.template_map.as_ref()?.implicit_capture_to_source.get(&capture_expr).copied(
+        )
     }
 
     pub fn asm_template_args(

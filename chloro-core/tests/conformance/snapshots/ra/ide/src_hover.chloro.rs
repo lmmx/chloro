@@ -498,10 +498,10 @@ pub(crate) fn hover_for_definition(
             show_implementations_action(sema, def),
             runnable_action(sema, def, file_id),
             goto_type_action_for_def(sema, def, &notable_traits, subst_types, edition),
-        ]
-        .into_iter()
-        .flatten()
-        .collect(),
+        ].into_iter(
+        ).flatten(
+        ).collect(
+        ),
     }
 }
 

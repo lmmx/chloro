@@ -109,8 +109,8 @@ pub(crate) fn cast_to_unsized(
         DiagnosticCode::RustcHardError("E0620"),
         format_ty!(ctx, "cast to unsized type: `{}`", d.cast_ty),
         display_range,
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

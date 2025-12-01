@@ -190,8 +190,9 @@ impl Diagnostic {
         message: impl Into<String>,
         node: InFile<SyntaxNodePtr>,
     ) -> Diagnostic {
-        Diagnostic::new(code, message, ctx.sema.diagnostics_display_range(node))
-            .with_main_node(node)
+        Diagnostic::new(code, message, ctx.sema.diagnostics_display_range(node)).with_main_node(
+            node,
+        )
     }
 
     fn stable(mut self) -> Diagnostic {

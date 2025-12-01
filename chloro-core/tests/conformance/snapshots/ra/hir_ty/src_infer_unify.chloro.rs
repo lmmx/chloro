@@ -299,10 +299,9 @@ impl<'db> InferenceTable<'db> {
         T: TypeFoldable<DbInterner<'db>> + Clone,
     {
         let ty = self.resolve_vars_with_obligations(ty);
-        self.infer_ctxt
-            .at(&ObligationCause::new(), self.trait_env.env)
-            .deeply_normalize(ty.clone())
-            .unwrap_or(ty)
+        self.infer_ctxt.at(&ObligationCause::new(), self.trait_env.env).deeply_normalize(ty.clone()).unwrap_or(
+            ty,
+        )
     }
 
     /// Works almost same as [`Self::normalize_associated_types_in`], but this also resolves shallow
@@ -317,10 +316,12 @@ impl<'db> InferenceTable<'db> {
     }
 
     pub(crate) fn normalize_alias_ty(&mut self, alias: Ty<'db>) -> Ty<'db> {
-        self.infer_ctxt
-            .at(&ObligationCause::new(), self.trait_env.env)
-            .structurally_normalize_ty(alias, &mut self.fulfillment_cx)
-            .unwrap_or(alias)
+        self.infer_ctxt.at(&ObligationCause::new(), self.trait_env.env).structurally_normalize_ty(
+            alias,
+            &mut self.fulfillment_cx,
+        ).unwrap_or(
+            alias,
+        )
     }
 
     pub(crate) fn next_ty_var(&mut self) -> Ty<'db> {
@@ -813,10 +814,14 @@ impl<'db> InferenceTable<'db> {
 
 impl fmt::Debug for InferenceTable<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("InferenceTable")
-            .field("name", &self.infer_ctxt.inner.borrow().type_variable_storage)
-            .field("fulfillment_cx", &self.fulfillment_cx)
-            .finish()
+        f.debug_struct("InferenceTable").field(
+            "name",
+            &self.infer_ctxt.inner.borrow().type_variable_storage,
+        ).field(
+            "fulfillment_cx",
+            &self.fulfillment_cx,
+        ).finish(
+        )
     }
 }
 

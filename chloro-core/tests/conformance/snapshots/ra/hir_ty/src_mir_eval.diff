@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 131517 bytes
-Chloro size:   131132 bytes
+Chloro size:   131038 bytes
 Rustfmt size:  131517 bytes
 
 ✗ Outputs DIFFER
@@ -122,19 +122,6 @@ Rustfmt size:  131517 bytes
  }
  
  
- impl IntervalOrOwned {
-     fn get<'a, 'db>(&'a self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
--        Ok(match self {
-+        Ok(
-+            match self {
-             IntervalOrOwned::Owned(o) => o,
-             IntervalOrOwned::Borrowed(b) => b.get(memory)?,
--        })
-+        },
-+        )
-     }
- }
- 
  #[cfg(target_pointer_width = "64")]
  const STACK_OFFSET: usize = 1 << 60;
 +
@@ -176,6 +163,15 @@ Rustfmt size:  131517 bytes
      assert_placeholder_ty_is_unused: bool,
      trait_env: Option<Arc<TraitEnvironment<'db>>>,
  ) -> Result<'db, (Result<'db, Const<'db>>, MirOutput)> {
+         };
+         Ok(Const::new_valtree(evaluator.interner(), ty, bytes, memory_map))
+     })();
+-    Ok((it, MirOutput { stdout: evaluator.stdout, stderr: evaluator.stderr }))
++    Ok((it, MirOutput {
++        stdout: evaluator.stdout,
++        stderr: evaluator.stderr,
++    }))
+ }
  
  #[cfg(test)]
  const EXECUTION_LIMIT: usize = 100_000;
@@ -183,24 +179,24 @@ Rustfmt size:  131517 bytes
  #[cfg(not(test))]
  const EXECUTION_LIMIT: usize = 10_000_000;
  
-         let cached_ptr_size = target_data_layout.pointer_size().bytes_usize();
-         let interner = DbInterner::new_with(db, Some(crate_id), module.containing_block());
-         let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);
--        Ok(Evaluator {
+ 
+     fn place_interval(&self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
+         let place_addr_and_ty = self.place_addr_and_ty_and_metadata(p, locals)?;
+-        Ok(Interval {
 +        Ok(
-+            Evaluator {
-             target_data_layout,
-             stack: vec![0],
-             heap: vec![0],
-                 x.trait_items(db).method_by_name(&Name::new_symbol_root(sym::call_once))
-             }),
-             infcx,
++            Interval {
+             addr: place_addr_and_ty.0,
+             size: self.size_of_sized(
+                 place_addr_and_ty.1,
+                 locals,
+                 "Type of place that we need its interval",
+             )?,
 -        })
 +        },
 +        )
      }
  
-     #[inline]
+     fn ptr_size(&self) -> usize {
      ) -> Result<'db, (Address, Ty<'db>, Option<IntervalOrOwned>)> {
          let mut addr = locals.ptr[p.local].addr;
          let mut ty: Ty<'db> = locals.body.locals[p.local].ty;
@@ -210,76 +206,20 @@ Rustfmt size:  131517 bytes
          for proj in p.projection.lookup(&locals.body.projection_store) {
              let prev_ty = ty;
              ty = self.projected_ty(ty, proj.clone());
-     }
- 
-     fn operand_ty(&self, o: &Operand<'db>, locals: &Locals<'db>) -> Result<'db, Ty<'db>> {
--        Ok(match &o.kind {
-+        Ok(
-+            match &o.kind {
-             OperandKind::Copy(p) | OperandKind::Move(p) => self.place_ty(p, locals)?,
-             OperandKind::Constant { konst: _, ty } => *ty,
-             &OperandKind::Static(s) => {
-                     Mutability::Not,
-                 )
-             }
--        })
-+        },
-+        )
-     }
- 
-     fn operand_ty_and_eval(
+         o: &Operand<'db>,
          locals: &mut Locals<'db>,
-     ) -> Result<'db, IntervalOrOwned> {
-         use IntervalOrOwned::*;
--        Ok(match r {
+     ) -> Result<'db, IntervalAndTy<'db>> {
+-        Ok(IntervalAndTy {
 +        Ok(
-+            match r {
-             Rvalue::Use(it) => Borrowed(self.eval_operand(it, locals)?),
-             Rvalue::Ref(_, p) => {
-                 let (addr, _, metadata) = self.place_addr_and_ty_and_metadata(p, locals)?;
-             | Rvalue::AddressOf(n)
-             | Rvalue::BinaryOp(n)
-             | Rvalue::NullaryOp(n) => match *n {},
++            IntervalAndTy {
+             interval: self.eval_operand(o, locals)?,
+             ty: self.operand_ty(o, locals)?,
 -        })
 +        },
 +        )
      }
  
-     fn compute_discriminant(&self, ty: Ty<'db>, bytes: &[u8]) -> Result<'db, i128> {
-         addr: Interval,
-     ) -> Result<'db, IntervalOrOwned> {
-         use IntervalOrOwned::*;
--        Ok(match &target_ty.kind() {
-+        Ok(
-+            match &target_ty.kind() {
-             TyKind::Slice(_) => match &current_ty.kind() {
-                 TyKind::Array(_, size) => {
-                     let len = match try_const_usize(self.db, *size) {
-                 _ => not_supported!("unsizing struct with non adt type"),
-             },
-             _ => not_supported!("unknown unsized cast"),
--        })
-+        },
-+        )
-     }
- 
-     fn layout_of_variant(
-             return Ok((16, self.layout(Ty::new_empty_tuple(self.interner()))?, Some((0, 16, i))));
-         }
-         let layout = self.layout_adt(adt, subst)?;
--        Ok(match &layout.variants {
-+        Ok(
-+            match &layout.variants {
-             Variants::Single { .. } | Variants::Empty => (layout.size.bytes_usize(), layout, None),
-             Variants::Multiple { variants, tag, tag_encoding, .. } => {
-                 let enum_variant_id = match it {
-                     },
-                 )
-             }
--        })
-+        },
-+        )
-     }
+     fn interpret_mir(
  
      fn construct_with_layout(
          &mut self,
@@ -288,42 +228,20 @@ Rustfmt size:  131517 bytes
          variant_layout: &Layout,
          tag: Option<(usize, usize, i128)>,
          values: impl Iterator<Item = IntervalOrOwned>,
-         it: &Operand<'db>,
-         locals: &mut Locals<'db>,
-     ) -> Result<'db, Interval> {
--        Ok(match &it.kind {
+ 
+     fn eval_place(&mut self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
+         let addr = self.place_addr(p, locals)?;
+-        Ok(Interval::new(
 +        Ok(
-+            match &it.kind {
-             OperandKind::Copy(p) | OperandKind::Move(p) => {
-                 locals.drop_flags.remove_place(p, &locals.body.projection_store);
-                 self.eval_place(p, locals)?
-                 Interval::new(addr, self.ptr_size())
-             }
-             OperandKind::Constant { konst, .. } => self.allocate_const_in_heap(locals, *konst)?,
--        })
-+        },
++            Interval::new(
+             addr,
+             self.size_of_sized(self.place_ty(p, locals)?, locals, "type of this place")?,
+-        ))
++        ),
 +        )
      }
  
-     #[allow(clippy::double_parens)]
-         destination: Interval,
-         target_bb: Option<BasicBlockId<'db>>,
-     ) -> Result<'db, Option<StackFrame<'db>>> {
--        Ok(if let Some(target_bb) = target_bb {
-+        Ok(
-+            if let Some(target_bb) = target_bb {
-             let (mut locals, prev_stack_ptr) =
-                 self.create_locals_for_body(&mir_body, Some(destination))?;
-             self.fill_locals_for_body(&mir_body, &mut locals, arg_bytes.into_iter())?;
-             })?;
-             destination.write_from_interval(self, result)?;
-             None
--        })
-+        },
-+        )
-     }
- 
-     fn exec_fn_trait(
+     fn read_memory(&self, addr: Address, size: usize) -> Result<'db, &[u8]> {
          }
          for_each_int_type! { m, [] }
      }

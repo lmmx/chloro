@@ -247,15 +247,15 @@ impl ItemScope {
     }
 
     pub fn imports(&self) -> impl Iterator<Item = ImportId> + '_ {
-        self.use_imports_types
-            .keys()
-            .copied()
-            .chain(self.use_imports_macros.keys().copied())
-            .filter_map(ImportOrExternCrate::import_or_glob)
-            .chain(self.use_imports_values.keys().copied())
-            .filter_map(ImportOrGlob::into_import)
-            .sorted()
-            .dedup()
+        self.use_imports_types.keys().copied().chain(self.use_imports_macros.keys().copied()).filter_map(
+            ImportOrExternCrate::import_or_glob,
+        ).chain(
+            self.use_imports_values.keys().copied(),
+        ).filter_map(
+            ImportOrGlob::into_import,
+        ).sorted(
+        ).dedup(
+        )
     }
 
     pub fn fully_resolve_import(&self, db: &dyn DefDatabase, mut import: ImportId) -> PerNs {

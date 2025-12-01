@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34670 bytes
+Chloro size:   34685 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -155,8 +155,17 @@ Rustfmt size:  36650 bytes
      let mut node = node
          .ancestors()
          .take_while(|n| n.text_range().start() == offset && filter(n.kind()))
+     }
+ 
+     // Insert the closing bracket right after the node.
+-    Some(TextEdit::insert(
++    Some(
++        TextEdit::insert(
+         node.text_range().end() + TextSize::of(opening_bracket),
          closing_bracket.to_string(),
-     ))
+-    ))
++    ),
++    )
  }
 +
  /// Returns an edit which should be applied after `=` was typed. Primarily,

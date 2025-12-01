@@ -49,8 +49,9 @@ pub(crate) fn type_mismatch(
                 .with_closure_style(ClosureStyle::ClosureWithId),
         ),
         display_range,
+    ).with_fixes(
+        fixes(ctx, d),
     )
-    .with_fixes(fixes(ctx, d))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<Assist>> {

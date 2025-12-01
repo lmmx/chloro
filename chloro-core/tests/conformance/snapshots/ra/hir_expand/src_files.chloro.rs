@@ -100,7 +100,12 @@ impl<T> InFileWrapper<span::FileId, T> {
 
 impl HirFileRange {
     pub fn file_range(self) -> Option<FileRange> {
-        Some(FileRange { file_id: self.file_id.file_id()?, range: self.range })
+        Some(
+            FileRange {
+            file_id: self.file_id.file_id()?,
+            range: self.range,
+        },
+        )
     }
 }
 

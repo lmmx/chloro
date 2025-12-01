@@ -452,8 +452,7 @@ impl ModuleDef {
     }
 
     pub fn attrs(&self, db: &dyn HirDatabase) -> Option<AttrsWithOwner> {
-        Some(
-            match self {
+        Some(match self {
             ModuleDef::Module(it) => it.attrs(db),
             ModuleDef::Function(it) => it.attrs(db),
             ModuleDef::Adt(it) => it.attrs(db),
@@ -464,8 +463,7 @@ impl ModuleDef {
             ModuleDef::TypeAlias(it) => it.attrs(db),
             ModuleDef::Macro(it) => it.attrs(db),
             ModuleDef::BuiltinType(_) => return None,
-        },
-        )
+        })
     }
 }
 
@@ -1686,8 +1684,7 @@ impl Variant {
     pub fn layout(&self, db: &dyn HirDatabase) -> Result<Layout, LayoutError> {
         let parent_enum = self.parent_enum(db);
         let parent_layout = parent_enum.layout(db)?;
-        Ok(
-            match &parent_layout.0.variants {
+        Ok(match &parent_layout.0.variants {
             layout::Variants::Multiple { variants, .. } => Layout(
                 {
                     let lookup = self.id.lookup(db);
@@ -1697,8 +1694,7 @@ impl Variant {
                 db.target_data_layout(parent_enum.krate(db).into()).unwrap(),
             ),
             _ => parent_layout,
-        },
-        )
+        })
     }
 
     pub fn is_unstable(self, db: &dyn HirDatabase) -> bool {
@@ -2422,8 +2418,7 @@ impl Function {
 
     /// is this a `fn main` or a function with an `export_name` of `main`?
     pub fn is_main(self, db: &dyn HirDatabase) -> bool {
-        db.attrs(self.id.into()).export_name() == Some(&sym::main)
-            || self.module(db).is_crate_root() && db.function_signature(self.id).name == sym::main
+        db.attrs(self.id.into()).export_name() == Some(&sym::main) || self.module(db).is_crate_root() && db.function_signature(self.id).name == sym::main
     }
 
     /// Is this a function with an `export_name` of `main`?
@@ -3603,11 +3598,8 @@ impl GenericDef {
                 Either::Right(it) => GenericParam::TypeParam(it),
             }
         });
-        self.lifetime_params(db)
-            .into_iter()
-            .map(GenericParam::LifetimeParam)
-            .chain(ty_params)
-            .collect()
+        self.lifetime_params(db).into_iter().map(GenericParam::LifetimeParam).chain(ty_params).collect(
+        )
     }
 
     pub fn lifetime_params(self, db: &dyn HirDatabase) -> Vec<LifetimeParam> {
@@ -4477,7 +4469,10 @@ impl Impl {
             .nth(derive_index as usize)
             .and_then(<ast::Attr as AstNode>::cast)
             .and_then(|it| it.path())?;
-        Some(InMacroFile { file_id: derive_attr, value: path })
+        Some(InMacroFile {
+            file_id: derive_attr,
+            value: path,
+        })
     }
 
     pub fn check_orphan_rules(self, db: &dyn HirDatabase) -> bool {
@@ -4552,10 +4547,8 @@ impl<'db> Closure<'db> {
     }
 
     pub fn display_with_id(&self, db: &dyn HirDatabase, display_target: DisplayTarget) -> String {
-        self.as_ty(db)
-            .display(db, display_target)
-            .with_closure_style(ClosureStyle::ClosureWithId)
-            .to_string()
+        self.as_ty(db).display(db, display_target).with_closure_style(ClosureStyle::ClosureWithId).to_string(
+        )
     }
 
     pub fn display_with_impl(
@@ -4563,10 +4556,8 @@ impl<'db> Closure<'db> {
         db: &dyn HirDatabase,
         display_target: DisplayTarget,
     ) -> String {
-        self.as_ty(db)
-            .display(db, display_target)
-            .with_closure_style(ClosureStyle::ImplFn)
-            .to_string()
+        self.as_ty(db).display(db, display_target).with_closure_style(ClosureStyle::ImplFn).to_string(
+        )
     }
 
     pub fn captured_items(&self, db: &'db dyn HirDatabase) -> Vec<ClosureCapture<'db>> {
@@ -6458,10 +6449,7 @@ fn generic_args_from_tys<'db>(
     args: impl IntoIterator<Item = Ty<'db>>,
 ) -> GenericArgs<'db> {
     let mut args = args.into_iter();
-    GenericArgs::for_item(
-        interner,
-        def_id,
-        |_, id, _| {
+    GenericArgs::for_item(interner, def_id, |_, id, _| {
         if matches!(id, GenericParamId::TypeParamId(_))
             && let Some(arg) = args.next()
         {
@@ -6469,8 +6457,7 @@ fn generic_args_from_tys<'db>(
         } else {
             next_solver::GenericArg::error_from_id(interner, id)
         }
-    },
-    )
+    })
 }
 
 fn has_non_default_type_params(db: &dyn HirDatabase, generic_def: GenericDefId) -> bool {

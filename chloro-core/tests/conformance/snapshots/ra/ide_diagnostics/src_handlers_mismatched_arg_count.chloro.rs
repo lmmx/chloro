@@ -22,8 +22,8 @@ pub(crate) fn mismatched_tuple_struct_pat_arg_count(
         DiagnosticCode::RustcHardError("E0023"),
         message,
         invalid_args_range(ctx, d.expr_or_pat, d.expected, d.found),
+    ).stable(
     )
-    .stable()
 }
 
 pub(crate) fn mismatched_arg_count(
@@ -36,8 +36,8 @@ pub(crate) fn mismatched_arg_count(
         DiagnosticCode::RustcHardError("E0107"),
         message,
         invalid_args_range(ctx, d.call_expr, d.expected, d.found),
+    ).stable(
     )
-    .stable()
 }
 
 fn invalid_args_range(
@@ -46,10 +46,7 @@ fn invalid_args_range(
     expected: usize,
     found: usize,
 ) -> FileRange {
-    adjusted_display_range(
-        ctx,
-        source,
-        &|expr| {
+    adjusted_display_range(ctx, source, &|expr| {
         let (text_range, r_paren_token, expected_arg) = match expr {
             Either::Left(ast::Expr::CallExpr(call)) => {
                 let arg_list = call.arg_list()?;
@@ -97,8 +94,7 @@ fn invalid_args_range(
         }
 
         None
-    },
-    )
+    })
 }
 
 #[cfg(test)]

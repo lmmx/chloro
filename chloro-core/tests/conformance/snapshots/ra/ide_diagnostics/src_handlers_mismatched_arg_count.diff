@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10574 bytes
-Chloro size:   10301 bytes
+Chloro size:   10270 bytes
 Rustfmt size:  10774 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,12 @@ Rustfmt size:  10774 bytes
  pub(crate) fn mismatched_tuple_struct_pat_arg_count(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::MismatchedTupleStructPatArgCount,
-     .stable()
+         DiagnosticCode::RustcHardError("E0023"),
+         message,
+         invalid_args_range(ctx, d.expr_or_pat, d.expected, d.found),
++    ).stable(
+     )
+-    .stable()
  }
  
 -// Diagnostic: mismatched-arg-count
@@ -26,17 +31,15 @@ Rustfmt size:  10774 bytes
  pub(crate) fn mismatched_arg_count(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::MismatchedArgCount,
-     expected: usize,
-     found: usize,
- ) -> FileRange {
--    adjusted_display_range(ctx, source, &|expr| {
-+    adjusted_display_range(
-+        ctx,
-+        source,
-+        &|expr| {
-         let (text_range, r_paren_token, expected_arg) = match expr {
-             Either::Left(ast::Expr::CallExpr(call)) => {
-                 let arg_list = call.arg_list()?;
+         DiagnosticCode::RustcHardError("E0107"),
+         message,
+         invalid_args_range(ctx, d.call_expr, d.expected, d.found),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
+ fn invalid_args_range(
                  (
                      arg_list.syntax().text_range(),
                      arg_list.r_paren_token(),
@@ -69,14 +72,6 @@ Rustfmt size:  10774 bytes
                  )
              }
              _ => return None,
-         }
- 
-         None
--    })
-+    },
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

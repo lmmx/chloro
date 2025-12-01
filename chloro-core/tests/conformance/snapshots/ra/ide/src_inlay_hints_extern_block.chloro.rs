@@ -79,8 +79,7 @@ fn item_hint(
         pad_right: true,
         kind: crate::InlayKind::ExternUnsafety,
         label: crate::InlayHintLabel::from("unsafe"),
-        text_edit: Some(
-            config.lazy_text_edit(|| {
+        text_edit: Some(config.lazy_text_edit(|| {
             let mut builder = TextEdit::builder();
             builder.insert(token.text_range().start(), "unsafe ".to_owned());
             if extern_block.unsafe_token().is_none()
@@ -89,8 +88,7 @@ fn item_hint(
                 builder.insert(abi.syntax().text_range().start(), "unsafe ".to_owned());
             }
             builder.finish()
-        }),
-        ),
+        })),
         resolve_parent: Some(extern_block.syntax().text_range()),
     }
 }

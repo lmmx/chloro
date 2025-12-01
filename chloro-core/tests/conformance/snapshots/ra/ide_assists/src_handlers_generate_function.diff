@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74171 bytes
+Chloro size:   74125 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -77,42 +77,6 @@ Rustfmt size:  75023 bytes
          // as a constructor and assume a "Self" return type.
          if let Some(body) =
              make_fn_body_as_new_function(ctx, &fn_name.text(), adt_info, target_edition)
-         let (generic_param_list, where_clause) =
-             fn_generic_params(ctx, necessary_generic_params, &target)?;
- 
--        Some(Self {
-+        Some(
-+            Self {
-             target,
-             fn_name,
-             generic_param_list,
-             visibility,
-             is_async,
-             target_edition,
--        })
-+        },
-+        )
-     }
- 
-     fn from_method_call(
-         };
-         let fn_body = make::block_expr(vec![], Some(placeholder_expr));
- 
--        Some(Self {
-+        Some(
-+            Self {
-             target,
-             fn_name,
-             generic_param_list,
-             visibility,
-             is_async,
-             target_edition,
--        })
-+        },
-+        )
-     }
- 
-     fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
      let mut where_clauses = Vec::new();
  
      // There are two items where generic parameters currently in scope may be declared: the item

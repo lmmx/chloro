@@ -17,6 +17,14 @@ Rustfmt size:  940 bytes
  pub(crate) fn invalid_derive_target(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::InvalidDeriveTarget,
+         DiagnosticCode::RustcHardError("E0774"),
+         "`derive` may only be applied to `struct`s, `enum`s and `union`s",
+         display_range,
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

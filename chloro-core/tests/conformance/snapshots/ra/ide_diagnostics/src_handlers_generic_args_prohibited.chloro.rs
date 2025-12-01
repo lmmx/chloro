@@ -16,9 +16,10 @@ pub(crate) fn generic_args_prohibited(
         DiagnosticCode::RustcHardError("E0109"),
         describe_reason(d.reason),
         d.args.map(Into::into),
+    ).stable(
+    ).with_fixes(
+        fixes(ctx, d),
     )
-    .stable()
-    .with_fixes(fixes(ctx, d))
 }
 
 fn describe_reason(reason: GenericArgsProhibitedReason) -> String {

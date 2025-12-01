@@ -9,8 +9,8 @@ pub(crate) fn parenthesized_generic_args_without_fn_trait(
         DiagnosticCode::RustcHardError("E0214"),
         "parenthesized type parameters may only be used with a `Fn` trait",
         d.args.map(Into::into),
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

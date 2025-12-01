@@ -83,33 +83,19 @@ impl UpmapFromRaFixture for NavigationTarget {
         real_file_id: FileId,
     ) -> Result<Self, ()> {
         let virtual_file_id = self.file_id;
-        Ok(NavigationTarget {
+        Ok(
+            NavigationTarget {
             file_id: real_file_id,
-            full_range: self.full_range.upmap_from_ra_fixture(
-                analysis,
-                virtual_file_id,
-                real_file_id,
-            )?,
-            focus_range: self.focus_range.upmap_from_ra_fixture(
-                analysis,
-                virtual_file_id,
-                real_file_id,
-            )?,
+            full_range: self.full_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
+            focus_range: self.focus_range.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             name: self.name.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             kind: self.kind.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-            container_name: self.container_name.upmap_from_ra_fixture(
-                analysis,
-                virtual_file_id,
-                real_file_id,
-            )?,
-            description: self.description.upmap_from_ra_fixture(
-                analysis,
-                virtual_file_id,
-                real_file_id,
-            )?,
+            container_name: self.container_name.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
+            description: self.description.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             docs: self.docs.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
             alias: self.alias.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?,
-        })
+        },
+        )
     }
 }
 
@@ -501,8 +487,7 @@ impl TryToNav for hir::Impl {
             None => (file_id, value.self_ty(), value.syntax()),
         };
 
-        Some(
-            orig_range_with_focus(db, file_id, syntax, focus).map(
+        Some(orig_range_with_focus(db, file_id, syntax, focus).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
                 NavigationTarget::from_syntax(
                     file_id,
@@ -512,8 +497,7 @@ impl TryToNav for hir::Impl {
                     SymbolKind::Impl,
                 )
             },
-        ),
-        )
+        ))
     }
 }
 
@@ -530,8 +514,7 @@ impl TryToNav for hir::ExternCrateDecl {
             .map_or_else(|| value.name_ref().map(Either::Left), |it| it.name().map(Either::Right));
         let krate = self.module(db).krate();
 
-        Some(
-            orig_range_with_focus(db, file_id, value.syntax(), focus).map(
+        Some(orig_range_with_focus(db, file_id, value.syntax(), focus).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
                 let mut res = NavigationTarget::from_syntax(
                     file_id,
@@ -546,8 +529,7 @@ impl TryToNav for hir::ExternCrateDecl {
                 res.container_name = container_name(db, *self);
                 res
             },
-        ),
-        )
+        ))
     }
 }
 
@@ -703,8 +685,7 @@ impl TryToNav for hir::Label {
         let InFile { file_id, value } = self.source(db)?;
         let name = self.name(db).symbol().clone();
 
-        Some(
-            orig_range_with_focus(db, file_id, value.syntax(), value.lifetime()).map(
+        Some(orig_range_with_focus(db, file_id, value.syntax(), value.lifetime()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
                 name: name.clone(),
@@ -716,8 +697,7 @@ impl TryToNav for hir::Label {
                 description: None,
                 docs: None,
             },
-        ),
-        )
+        ))
     }
 }
 
@@ -745,8 +725,7 @@ impl TryToNav for hir::TypeParam {
         };
         let focus = value.as_ref().either(|it| it.name(), |it| it.name());
 
-        Some(
-            orig_range_with_focus(db, file_id, syntax, focus).map(
+        Some(orig_range_with_focus(db, file_id, syntax, focus).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
                 name: name.clone(),
@@ -758,8 +737,7 @@ impl TryToNav for hir::TypeParam {
                 description: None,
                 docs: None,
             },
-        ),
-        )
+        ))
     }
 }
 
@@ -781,8 +759,7 @@ impl TryToNav for hir::LifetimeParam {
         let InFile { file_id, value } = self.source(db)?;
         let name = self.name(db).symbol().clone();
 
-        Some(
-            orig_range(db, file_id, value.syntax()).map(
+        Some(orig_range(db, file_id, value.syntax()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
                 name: name.clone(),
@@ -794,8 +771,7 @@ impl TryToNav for hir::LifetimeParam {
                 description: None,
                 docs: None,
             },
-        ),
-        )
+        ))
     }
 }
 
@@ -816,8 +792,7 @@ impl TryToNav for hir::ConstParam {
             }
         };
 
-        Some(
-            orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
+        Some(orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
                 name: name.clone(),
@@ -829,8 +804,7 @@ impl TryToNav for hir::ConstParam {
                 description: None,
                 docs: None,
             },
-        ),
-        )
+        ))
     }
 }
 
@@ -842,8 +816,7 @@ impl TryToNav for hir::InlineAsmOperand {
         let db = sema.db;
         let InFile { file_id, value } = &self.source(db)?;
         let file_id = *file_id;
-        Some(
-            orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
+        Some(orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
                 name:
@@ -856,8 +829,7 @@ impl TryToNav for hir::InlineAsmOperand {
                 description: None,
                 docs: None,
             },
-        ),
-        )
+        ))
     }
 }
 
@@ -907,11 +879,7 @@ impl<T> IntoIterator for UpmappingResult<T> {
     type IntoIter = <ArrayVec<T, 2> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.def_site
-            .into_iter()
-            .chain(Some(self.call_site))
-            .collect::<ArrayVec<_, 2>>()
-            .into_iter()
+        self.def_site.into_iter().chain(Some(self.call_site)).collect().into_iter()
     }
 }
 
@@ -1062,10 +1030,7 @@ fn orig_range(
     value: &SyntaxNode,
 ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
     UpmappingResult {
-        call_site: (
-            InFile::new(hir_file, value).original_file_range_rooted(db).into_file_id(db),
-            None,
-        ),
+        call_site: (InFile::new(hir_file, value).original_file_range_rooted(db).into_file_id(db), None),
         def_site: None,
     }
 }
@@ -1076,10 +1041,7 @@ fn orig_range_r(
     value: TextRange,
 ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
     UpmappingResult {
-        call_site: (
-            InFile::new(hir_file, value).original_node_file_range(db).0.into_file_id(db),
-            None,
-        ),
+        call_site: (InFile::new(hir_file, value).original_node_file_range(db).0.into_file_id(db), None),
         def_site: None,
     }
 }

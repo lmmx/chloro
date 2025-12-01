@@ -696,11 +696,11 @@ impl DefMap {
             self.resolve_in_prelude(db, name)
         };
 
-        from_legacy_macro
-            .or(from_scope_or_builtin)
-            .or_else(extern_prelude)
-            .or_else(macro_use_prelude)
-            .or_else(prelude)
+        from_legacy_macro.or(from_scope_or_builtin).or_else(extern_prelude).or_else(
+            macro_use_prelude,
+        ).or_else(
+            prelude,
+        )
     }
 
     fn resolve_name_in_all_preludes(

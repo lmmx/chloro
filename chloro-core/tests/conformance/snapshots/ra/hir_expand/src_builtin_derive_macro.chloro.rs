@@ -485,14 +485,16 @@ fn expand_simple_derive(
             ExpandError::other(invoc_span, "this trait cannot be derived for unions"),
         );
     }
-    ExpandResult::ok(expand_simple_derive_with_parsed(
+    ExpandResult::ok(
+        expand_simple_derive_with_parsed(
         invoc_span,
         info,
         trait_path,
         make_trait_body,
         true,
         tt::TopSubtree::empty(tt::DelimSpan::from_single(invoc_span)),
-    ))
+    ),
+    )
 }
 
 fn expand_simple_derive_with_parsed(
@@ -567,13 +569,7 @@ fn clone_expand(
     tt: &tt::TopSubtree,
 ) -> ExpandResult<tt::TopSubtree> {
     let krate = dollar_crate(span);
-    expand_simple_derive(
-        db,
-        span,
-        tt,
-        quote! {span => #krate::clone::Clone },
-        true,
-        |adt| {
+    expand_simple_derive(db, span, tt, quote! {span => #krate::clone::Clone }, true, |adt| {
         if matches!(adt.shape, AdtShape::Union) {
             let star = tt::Punct { char: '*', spacing: ::tt::Spacing::Alone, span };
             return quote! {span =>
@@ -607,8 +603,7 @@ fn clone_expand(
                 }
             }
         }
-    },
-    )
+    })
 }
 
 /// This function exists since `quote! {span => => }` doesn't work.
@@ -694,13 +689,7 @@ fn debug_expand(
     tt: &tt::TopSubtree,
 ) -> ExpandResult<tt::TopSubtree> {
     let krate = &dollar_crate(span);
-    expand_simple_derive(
-        db,
-        span,
-        tt,
-        quote! {span => #krate::fmt::Debug },
-        false,
-        |adt| {
+    expand_simple_derive(db, span, tt, quote! {span => #krate::fmt::Debug }, false, |adt| {
         let for_variant = |name: String, v: &VariantShape| match v {
             VariantShape::Struct(fields) => {
                 let for_fields = fields.iter().map(|it| {
@@ -764,8 +753,7 @@ fn debug_expand(
                 }
             }
         }
-    },
-    )
+    })
 }
 
 fn hash_expand(
@@ -774,13 +762,7 @@ fn hash_expand(
     tt: &tt::TopSubtree,
 ) -> ExpandResult<tt::TopSubtree> {
     let krate = &dollar_crate(span);
-    expand_simple_derive(
-        db,
-        span,
-        tt,
-        quote! {span => #krate::hash::Hash },
-        false,
-        |adt| {
+    expand_simple_derive(db, span, tt, quote! {span => #krate::hash::Hash }, false, |adt| {
         if matches!(&adt.shape, AdtShape::Enum { variants, .. } if variants.is_empty()) {
             let star = tt::Punct { char: '*', spacing: ::tt::Spacing::Alone, span };
             return quote! {span =>
@@ -818,8 +800,7 @@ fn hash_expand(
                 }
             }
         }
-    },
-    )
+    })
 }
 
 fn eq_expand(
@@ -844,13 +825,7 @@ fn partial_eq_expand(
     tt: &tt::TopSubtree,
 ) -> ExpandResult<tt::TopSubtree> {
     let krate = dollar_crate(span);
-    expand_simple_derive(
-        db,
-        span,
-        tt,
-        quote! {span => #krate::cmp::PartialEq },
-        false,
-        |adt| {
+    expand_simple_derive(db, span, tt, quote! {span => #krate::cmp::PartialEq }, false, |adt| {
         let name = &adt.name;
 
         let (self_patterns, other_patterns) = self_and_other_patterns(adt, name, span);
@@ -889,8 +864,7 @@ fn partial_eq_expand(
                 }
             }
         }
-    },
-    )
+    })
 }
 
 fn self_and_other_patterns(
@@ -923,13 +897,7 @@ fn ord_expand(
     tt: &tt::TopSubtree,
 ) -> ExpandResult<tt::TopSubtree> {
     let krate = &dollar_crate(span);
-    expand_simple_derive(
-        db,
-        span,
-        tt,
-        quote! {span => #krate::cmp::Ord },
-        false,
-        |adt| {
+    expand_simple_derive(db, span, tt, quote! {span => #krate::cmp::Ord }, false, |adt| {
         fn compare(
             krate: &tt::Ident,
             left: tt::TopSubtree,
@@ -978,8 +946,7 @@ fn ord_expand(
                 #body
             }
         }
-    },
-    )
+    })
 }
 
 fn partial_ord_expand(
@@ -988,13 +955,7 @@ fn partial_ord_expand(
     tt: &tt::TopSubtree,
 ) -> ExpandResult<tt::TopSubtree> {
     let krate = &dollar_crate(span);
-    expand_simple_derive(
-        db,
-        span,
-        tt,
-        quote! {span => #krate::cmp::PartialOrd },
-        false,
-        |adt| {
+    expand_simple_derive(db, span, tt, quote! {span => #krate::cmp::PartialOrd }, false, |adt| {
         fn compare(
             krate: &tt::Ident,
             left: tt::TopSubtree,
@@ -1048,8 +1009,7 @@ fn partial_ord_expand(
                 #body
             }
         }
-    },
-    )
+    })
 }
 
 fn coerce_pointee_expand(

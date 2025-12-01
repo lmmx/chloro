@@ -121,23 +121,27 @@ impl ExprScopes {
     }
 
     fn root_scope(&mut self) -> ScopeId {
-        self.scopes.alloc(ScopeData {
+        self.scopes.alloc(
+            ScopeData {
             parent: None,
             block: None,
             label: None,
             macro_def: None,
             entries: empty_entries(self.scope_entries.len()),
-        })
+        },
+        )
     }
 
     fn new_scope(&mut self, parent: ScopeId) -> ScopeId {
-        self.scopes.alloc(ScopeData {
+        self.scopes.alloc(
+            ScopeData {
             parent: Some(parent),
             block: None,
             label: None,
             macro_def: None,
             entries: empty_entries(self.scope_entries.len()),
-        })
+        },
+        )
     }
 
     fn new_labeled_scope(&mut self, parent: ScopeId, label: Option<(LabelId, Name)>) -> ScopeId {
@@ -166,13 +170,15 @@ impl ExprScopes {
     }
 
     fn new_macro_def_scope(&mut self, parent: ScopeId, macro_id: Box<MacroDefId>) -> ScopeId {
-        self.scopes.alloc(ScopeData {
+        self.scopes.alloc(
+            ScopeData {
             parent: Some(parent),
             block: None,
             label: None,
             macro_def: Some(macro_id),
             entries: empty_entries(self.scope_entries.len()),
-        })
+        },
+        )
     }
 
     fn add_bindings(

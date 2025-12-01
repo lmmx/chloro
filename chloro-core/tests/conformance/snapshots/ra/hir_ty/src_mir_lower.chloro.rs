@@ -362,7 +362,17 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         let Some((p, current)) = self.lower_expr_as_place(current, expr_id, true)? else {
             return Ok(None);
         };
-        Ok(Some((Operand { kind: OperandKind::Copy(p), span: Some(expr_id.into()) }, current)))
+        Ok(
+            Some(
+            (
+            Operand {
+            kind: OperandKind::Copy(p),
+            span: Some(expr_id.into()),
+        },
+            current,
+        ),
+        ),
+        )
     }
 
     fn lower_expr_to_place_with_adjust(
@@ -1538,7 +1548,12 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
             })
             .unwrap()
             .instantiate(self.interner(), subst);
-        Ok(Operand { kind: OperandKind::Constant { konst, ty }, span: None })
+        Ok(
+            Operand {
+            kind: OperandKind::Constant { konst, ty },
+            span: None,
+        },
+        )
     }
 
     fn write_bytes_to_place(
@@ -2073,8 +2088,7 @@ fn cast_kind<'db>(
 ) -> Result<'db, CastKind> {
     let from = CastTy::from_ty(db, source_ty);
     let cast = CastTy::from_ty(db, target_ty);
-    Ok(
-        match (from, cast) {
+    Ok(match (from, cast) {
         (Some(CastTy::Ptr(..) | CastTy::FnPtr), Some(CastTy::Int(_))) => {
             CastKind::PointerExposeAddress
         }
@@ -2086,8 +2100,7 @@ fn cast_kind<'db>(
         (Some(CastTy::Float), Some(CastTy::Float)) => CastKind::FloatToFloat,
         (Some(CastTy::Ptr(..)), Some(CastTy::Ptr(..))) => CastKind::PtrToPtr,
         _ => not_supported!("Unknown cast between {source_ty:?} and {target_ty:?}"),
-    },
-    )
+    })
 }
 
 pub fn mir_body_for_closure_query<'db>(

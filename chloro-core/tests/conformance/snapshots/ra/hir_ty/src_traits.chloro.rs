@@ -40,14 +40,12 @@ pub struct TraitEnvironment<'db> {
 
 impl<'db> TraitEnvironment<'db> {
     pub fn empty(krate: Crate) -> Arc<Self> {
-        Arc::new(
-            TraitEnvironment {
+        Arc::new(TraitEnvironment {
             krate,
             block: None,
             traits_from_clauses: Box::default(),
             env: ParamEnv::empty(),
-        },
-        )
+        })
     }
 
     pub fn new(
@@ -231,14 +229,9 @@ pub fn implements_trait_unique<'db>(
     env: Arc<TraitEnvironment<'db>>,
     trait_: TraitId,
 ) -> bool {
-    implements_trait_unique_impl(
-        db,
-        env,
-        trait_,
-        &mut |infcx| {
+    implements_trait_unique_impl(db, env, trait_, &mut |infcx| {
         infcx.fill_rest_fresh_args(trait_.into(), [ty.into()])
-    },
-    )
+    })
 }
 
 /// This should not be used in `hir-ty`, only in `hir`.

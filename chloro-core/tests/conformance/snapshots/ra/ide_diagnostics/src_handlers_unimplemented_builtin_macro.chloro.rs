@@ -9,6 +9,6 @@ pub(crate) fn unimplemented_builtin_macro(
         DiagnosticCode::Ra("unimplemented-builtin-macro", Severity::WeakWarning),
         "unimplemented built-in macro".to_owned(),
         d.node,
+    ).stable(
     )
-    .stable()
 }

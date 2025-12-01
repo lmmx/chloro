@@ -1645,8 +1645,7 @@ impl<'db> InferenceContext<'_, 'db> {
             Some((Either::Left(field_id), ty))
         });
 
-        Some(
-            match res {
+        Some(match res {
             Some((field_id, ty)) => {
                 let adjustments = autoderef.adjust_steps();
                 let ty = self.process_remote_user_written_ty(ty);
@@ -1662,8 +1661,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
                 (ty, Either::Left(field_id), adjustments, false)
             }
-        },
-        )
+        })
     }
 
     fn infer_field_access(

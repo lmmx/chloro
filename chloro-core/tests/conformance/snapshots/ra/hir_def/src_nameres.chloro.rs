@@ -774,7 +774,12 @@ impl ModuleData {
     /// `None` for the crate root or block.
     pub fn declaration_source_range(&self, db: &dyn DefDatabase) -> Option<InFile<TextRange>> {
         let decl = self.origin.declaration()?;
-        Some(InFile { file_id: decl.file_id, value: decl.to_range(db) })
+        Some(
+            InFile {
+            file_id: decl.file_id,
+            value: decl.to_range(db),
+        },
+        )
     }
 }
 

@@ -21,13 +21,13 @@ pub(crate) fn generate_enum_try_into_method(
         "generate_enum_try_into_method",
         "Generate a `try_into_` method for this enum variant",
         ProjectionProps {
-            fn_name_prefix: "try_into",
-            self_param: "self",
-            return_prefix: "Result<",
-            return_suffix: ", Self>",
-            happy_case: "Ok",
-            sad_case: "Err(self)",
-        },
+        fn_name_prefix: "try_into",
+        self_param: "self",
+        return_prefix: "Result<",
+        return_suffix: ", Self>",
+        happy_case: "Ok",
+        sad_case: "Err(self)",
+    },
     )
 }
 
@@ -38,13 +38,13 @@ pub(crate) fn generate_enum_as_method(acc: &mut Assists, ctx: &AssistContext<'_>
         "generate_enum_as_method",
         "Generate an `as_` method for this enum variant",
         ProjectionProps {
-            fn_name_prefix: "as",
-            self_param: "&self",
-            return_prefix: "Option<&",
-            return_suffix: ">",
-            happy_case: "Some",
-            sad_case: "None",
-        },
+        fn_name_prefix: "as",
+        self_param: "&self",
+        return_prefix: "Option<&",
+        return_suffix: ">",
+        happy_case: "Some",
+        sad_case: "None",
+    },
     )
 }
 

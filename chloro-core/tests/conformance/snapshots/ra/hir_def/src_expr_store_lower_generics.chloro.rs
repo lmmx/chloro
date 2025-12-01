@@ -78,10 +78,10 @@ impl GenericParamsCollector {
         cb(
             ec,
             &mut Self::lower_argument_impl_trait(
-                &mut self.type_or_consts,
-                &mut self.where_predicates,
-                self.parent,
-            ),
+            &mut self.type_or_consts,
+            &mut self.where_predicates,
+            self.parent,
+        ),
         )
     }
 
@@ -102,13 +102,11 @@ impl GenericParamsCollector {
         lifetimes.shrink_to_fit();
         type_or_consts.shrink_to_fit();
         where_predicates.shrink_to_fit();
-        Arc::new(
-            GenericParams {
+        Arc::new(GenericParams {
             type_or_consts,
             lifetimes,
             where_predicates: where_predicates.into_boxed_slice(),
-        },
-        )
+        })
     }
 
     fn lower_param_list(&mut self, ec: &mut ExprCollector<'_>, params: ast::GenericParamList) {

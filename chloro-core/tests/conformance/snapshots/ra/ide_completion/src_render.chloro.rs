@@ -359,14 +359,12 @@ fn scope_def_to_name(
     ctx: &RenderContext<'_>,
     import_edit: &LocatedImport,
 ) -> Option<hir::Name> {
-    Some(
-        match resolution {
+    Some(match resolution {
         ScopeDef::ModuleDef(hir::ModuleDef::Function(f)) => f.name(ctx.completion.db),
         ScopeDef::ModuleDef(hir::ModuleDef::Const(c)) => c.name(ctx.completion.db)?,
         ScopeDef::ModuleDef(hir::ModuleDef::TypeAlias(t)) => t.name(ctx.completion.db),
         _ => item_name(ctx.db(), import_edit.original_item)?,
-    },
-    )
+    })
 }
 
 fn render_resolution_pat(
@@ -1346,10 +1344,10 @@ mod m {
 fn main() { let _: m::Spam = S$0 }
 "#,
             &[
-                CompletionItemKind::SymbolKind(SymbolKind::Function),
-                CompletionItemKind::SymbolKind(SymbolKind::Module),
-                CompletionItemKind::SymbolKind(SymbolKind::Variant),
-            ],
+            CompletionItemKind::SymbolKind(SymbolKind::Function),
+            CompletionItemKind::SymbolKind(SymbolKind::Module),
+            CompletionItemKind::SymbolKind(SymbolKind::Variant),
+        ],
             expect![[r#"
                 [
                     CompletionItem {
@@ -1632,10 +1630,10 @@ enum E {
 use self::E::*;
 "#,
             &[
-                CompletionItemKind::SymbolKind(SymbolKind::Module),
-                CompletionItemKind::SymbolKind(SymbolKind::Variant),
-                CompletionItemKind::SymbolKind(SymbolKind::Enum),
-            ],
+            CompletionItemKind::SymbolKind(SymbolKind::Module),
+            CompletionItemKind::SymbolKind(SymbolKind::Variant),
+            CompletionItemKind::SymbolKind(SymbolKind::Enum),
+        ],
             expect![[r#"
                 [
                     CompletionItem {

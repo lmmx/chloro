@@ -41,15 +41,12 @@ fn check_fail(
     error: impl FnOnce(ConstEvalError<'_>) -> bool,
 ) {
     let (db, file_id) = TestDB::with_single_file(ra_fixture);
-    crate::attach_db(
-        &db,
-        || match eval_goal(&db, file_id) {
+    crate::attach_db(&db, || match eval_goal(&db, file_id) {
         Ok(_) => panic!("Expected fail, but it succeeded"),
         Err(e) => {
             assert!(error(simplify(e.clone())), "Actual error was: {}", pretty_print_err(e, &db))
         }
-    },
-    )
+    })
 }
 
 #[track_caller]
@@ -2512,13 +2509,10 @@ fn enums() {
         const GOAL: E = E::A;
         "#,
     );
-    crate::attach_db(
-        &db,
-        || {
+    crate::attach_db(&db, || {
         let r = eval_goal(&db, file_id).unwrap();
         assert_eq!(try_const_usize(&db, r), Some(1));
-    },
-    )
+    })
 }
 
 #[test]

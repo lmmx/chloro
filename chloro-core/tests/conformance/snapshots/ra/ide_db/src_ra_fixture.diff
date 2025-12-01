@@ -33,24 +33,6 @@ Rustfmt size:  18477 bytes
          // which will then be used to resolve precise location in the enclosing file.
          let mut offset_with_indent = TextSize::new(0);
          // This is used to resolve the location relative to the virtual file into a location
-             virtual_file_id_to_line[file_id.index() as usize] = line;
-         }
- 
--        Some(RaFixtureAnalysis {
-+        Some(
-+            RaFixtureAnalysis {
-             db: analysis,
-             tmp_file_ids,
-             line_offsets,
-             literal,
-             sysroot_files,
-             combined_len,
--        })
-+        },
-+        )
-     }
- 
-     pub fn files(&self) -> impl Iterator<Item = FileId> {
          let combined_offset = self.mapper.map_offset_down(inside_literal_range)?;
          // There is usually a small number of files, so a linear search is smaller and faster.
          let (_, &(file_id, file_line)) =
@@ -107,20 +89,6 @@ Rustfmt size:  18477 bytes
          .collect::<Collection>();
      if result.is_empty() {
          // The collection was emptied by the upmapping - all items errored, therefore mark it as erroring as well.
-         virtual_file_id: FileId,
-         real_file_id: FileId,
-     ) -> Result<Self, ()> {
--        Ok(match self {
-+        Ok(
-+            match self {
-             Some(it) => Some(it.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id)?),
-             None => None,
--        })
-+        },
-+        )
-     }
- }
- 
  }
  
  #[allow(clippy::disallowed_types)]
@@ -217,23 +185,37 @@ Rustfmt size:  18477 bytes
  impl UpmapFromRaFixture for FilePositionWrapper<FileId> {
      fn upmap_from_ra_fixture(
          self,
+         _virtual_file_id: FileId,
+         real_file_id: FileId,
      ) -> Result<Self, ()> {
-         Ok(FilePositionWrapper {
+-        Ok(FilePositionWrapper {
++        Ok(
++            FilePositionWrapper {
              file_id: real_file_id,
 -            offset: self
 -                .offset
 -                .upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
+-        })
 +            offset: self.offset.upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
-         })
++        },
++        )
      }
  }
+ 
+         _virtual_file_id: FileId,
+         real_file_id: FileId,
      ) -> Result<Self, ()> {
-         Ok(FileRangeWrapper {
+-        Ok(FileRangeWrapper {
++        Ok(
++            FileRangeWrapper {
              file_id: real_file_id,
 -            range: self
 -                .range
 -                .upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
+-        })
 +            range: self.range.upmap_from_ra_fixture(analysis, self.file_id, real_file_id)?,
-         })
++        },
++        )
      }
  }
+ 

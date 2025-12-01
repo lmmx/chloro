@@ -349,7 +349,7 @@ impl DocCommentToken {
 }
 
 fn broken_link_clone_cb(link: BrokenLink<'_>) -> Option<(CowStr<'_>, CowStr<'_>)> {
-    Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
+    Some((link.reference.clone(), link.reference))
 }
 
 fn get_doc_links(
@@ -726,8 +726,7 @@ fn filename_and_frag_for_def(
 ///                                                       ^^^^^^^^^^^^^^
 /// ```
 fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
-    Some(
-        match assoc_item {
+    Some(match assoc_item {
         AssocItem::Function(function) => {
             let is_trait_method =
                 function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
@@ -746,6 +745,5 @@ fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> 
         AssocItem::TypeAlias(ty) => {
             format!("associatedtype.{}", ty.name(db).as_str())
         }
-    },
-    )
+    })
 }

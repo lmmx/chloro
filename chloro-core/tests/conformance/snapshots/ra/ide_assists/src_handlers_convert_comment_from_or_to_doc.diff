@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18595 bytes
-Chloro size:   18323 bytes
+Chloro size:   18329 bytes
 Rustfmt size:  18641 bytes
 
 ✗ Outputs DIFFER
@@ -49,10 +49,10 @@ Rustfmt size:  18641 bytes
 -    matches!(
 -        par_kind,
 -        Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST)
--    )
++    matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST)).then_some(
++        CommentPlacement::Outer,
+     )
 -    .then_some(CommentPlacement::Outer)
-+    matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST))
-+        .then_some(CommentPlacement::Outer)
  }
  
  /// The line -> block assist can  be invoked from anywhere within a sequence of line comments.

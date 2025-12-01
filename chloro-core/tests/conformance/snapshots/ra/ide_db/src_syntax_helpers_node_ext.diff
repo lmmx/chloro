@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18749 bytes
-Chloro size:   18737 bytes
+Chloro size:   18714 bytes
 Rustfmt size:  18749 bytes
 
 ✗ Outputs DIFFER
@@ -34,23 +34,6 @@ Rustfmt size:  18749 bytes
      ancestors.take_while(|it| ast::Path::can_cast(it.kind())).last().and_then(ast::Path::cast)
  }
  
- 
- /// Preorder walk all the expression's child expressions.
- pub fn walk_expr(expr: &ast::Expr, cb: &mut dyn FnMut(ast::Expr)) {
--    preorder_expr(expr, &mut |ev| {
-+    preorder_expr(
-+        expr,
-+        &mut |ev| {
-         if let WalkEvent::Enter(expr) = ev {
-             cb(expr);
-         }
-         false
--    })
-+    },
-+    )
- }
- 
- pub fn is_closure_or_blk_with_modif(expr: &ast::Expr) -> bool {
  }
  
  /// Preorder walk all the type's sub types.

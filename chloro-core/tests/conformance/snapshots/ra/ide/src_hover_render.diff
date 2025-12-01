@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53904 bytes
+Chloro size:   53889 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -94,20 +94,6 @@ Rustfmt size:  53876 bytes
      let mut res = HoverResult::default();
      let mut targets: Vec<hir::ModuleDef> = Vec::new();
      let mut push_new_def = |item: hir::ModuleDef| {
- 
-     let lint =
-         lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
--    Some(HoverResult {
-+    Some(
-+        HoverResult {
-         markup: Markup::from(format!("```\n{}\n```\n---\n\n{}", lint.label, lint.description)),
-         ..Default::default()
--    })
-+    },
-+    )
- }
- 
- pub(super) fn process_markup(
              format_to!(label, "niches = {niches}, ");
          }
      }

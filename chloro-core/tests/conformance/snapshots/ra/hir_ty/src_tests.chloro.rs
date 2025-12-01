@@ -254,15 +254,13 @@ fn expr_node(
     expr: ExprId,
     db: &TestDB,
 ) -> Option<InFile<SyntaxNode>> {
-    Some(
-        match body_source_map.expr_syntax(expr) {
+    Some(match body_source_map.expr_syntax(expr) {
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
         }
         Err(SyntheticSyntax) => return None,
-    },
-    )
+    })
 }
 
 fn pat_node(
@@ -270,15 +268,13 @@ fn pat_node(
     pat: PatId,
     db: &TestDB,
 ) -> Option<InFile<SyntaxNode>> {
-    Some(
-        match body_source_map.pat_syntax(pat) {
+    Some(match body_source_map.pat_syntax(pat) {
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
             sp.map(|ptr| ptr.to_node(&root).syntax().clone())
         }
         Err(SyntheticSyntax) => return None,
-    },
-    )
+    })
 }
 
 fn infer(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
@@ -289,9 +285,7 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
     let _tracing = setup_tracing();
     let (db, file_id) = TestDB::with_single_file(content);
 
-    crate::attach_db(
-        &db,
-        || {
+    crate::attach_db(&db, || {
         let mut buf = String::new();
 
         let mut infer_def = |inference_result: Arc<InferenceResult<'_>>,
@@ -424,8 +418,7 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
 
         buf.truncate(buf.trim_end().len());
         buf
-    },
-    )
+    })
 }
 
 pub(crate) fn visit_module(
@@ -608,9 +601,7 @@ fn salsa_bug() {
 
     db.set_file_text(pos.file_id.file_id(&db), new_text);
 
-    crate::attach_db(
-        &db,
-        || {
+    crate::attach_db(&db, || {
         let module = db.module_for_file(pos.file_id.file_id(&db));
         let crate_def_map = module.def_map(&db);
         visit_module(&db, crate_def_map, module.local_id, &mut |def| {
@@ -622,6 +613,5 @@ fn salsa_bug() {
                 _ => return,
             });
         });
-    },
-    )
+    })
 }

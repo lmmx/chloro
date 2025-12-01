@@ -232,8 +232,7 @@ fn safety_builder(ast_func: &ast::Fn) -> Option<Vec<String>> {
 fn is_public(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<bool> {
     let hir_func = ctx.sema.to_def(ast_func)?;
     Some(
-        hir_func.visibility(ctx.db()) == Visibility::Public
-            && all_parent_mods_public(&hir_func, ctx),
+        hir_func.visibility(ctx.db()) == Visibility::Public && all_parent_mods_public(&hir_func, ctx),
     )
 }
 

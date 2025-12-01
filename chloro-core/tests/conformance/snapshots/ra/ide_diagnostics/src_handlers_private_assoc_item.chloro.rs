@@ -23,8 +23,8 @@ pub(crate) fn private_assoc_item(
             name,
         ),
         d.expr_or_pat.map(Into::into),
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

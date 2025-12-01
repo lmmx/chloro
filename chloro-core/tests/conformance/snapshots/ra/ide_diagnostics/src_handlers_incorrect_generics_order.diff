@@ -20,6 +20,14 @@ Rustfmt size:  2328 bytes
  pub(crate) fn incorrect_generics_order(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::IncorrectGenericsOrder,
+         DiagnosticCode::RustcHardError("E0747"),
+         message,
+         d.provided_arg.map(Into::into),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

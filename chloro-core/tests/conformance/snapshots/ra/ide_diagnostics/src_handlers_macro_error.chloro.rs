@@ -31,8 +31,8 @@ pub(crate) fn macro_def_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroDefErr
         DiagnosticCode::Ra("macro-def-error", Severity::Error),
         d.message.clone(),
         display_range,
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

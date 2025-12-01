@@ -350,7 +350,8 @@ fn def_to_non_local_moniker(
     reverse_description.reverse();
     let description = reverse_description;
 
-    Some(Moniker {
+    Some(
+        Moniker {
         identifier: MonikerIdentifier {
             crate_name: krate.display_name(db)?.crate_name().to_string(),
             description,
@@ -382,7 +383,8 @@ fn def_to_non_local_moniker(
             };
             PackageInformation { name: name.as_str().to_owned(), repo, version }
         },
-    })
+    },
+    )
 }
 
 fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, it: T) -> String {

@@ -302,8 +302,7 @@ pub(crate) fn handle_discover_test(
         None => (snap.analysis.discover_test_roots()?, None),
     };
 
-    Ok(
-        lsp_ext::DiscoverTestResults {
+    Ok(lsp_ext::DiscoverTestResults {
         tests: tests
             .into_iter()
             .filter_map(|t| {
@@ -313,8 +312,7 @@ pub(crate) fn handle_discover_test(
             .collect(),
         scope,
         scope_file: None,
-    },
-    )
+    })
 }
 
 pub(crate) fn handle_view_crate_graph(
@@ -494,13 +492,17 @@ pub(crate) fn handle_on_type_formatting(
 }
 
 pub(crate) fn empty_diagnostic_report() -> lsp_types::DocumentDiagnosticReportResult {
-    lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
+    lsp_types::DocumentDiagnosticReportResult::Report(
+        lsp_types::DocumentDiagnosticReport::Full(
+        lsp_types::RelatedFullDocumentDiagnosticReport {
         related_documents: None,
         full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
             result_id: Some("rust-analyzer".to_owned()),
             items: vec![],
         },
-    }))
+    },
+    ),
+    )
 }
 
 pub(crate) fn handle_document_diagnostics(
@@ -543,7 +545,10 @@ pub(crate) fn handle_document_diagnostics(
             }
             None
         });
-    Ok(lsp_types::DocumentDiagnosticReportResult::Report(lsp_types::DocumentDiagnosticReport::Full(lsp_types::RelatedFullDocumentDiagnosticReport {
+    Ok(
+        lsp_types::DocumentDiagnosticReportResult::Report(
+        lsp_types::DocumentDiagnosticReport::Full(
+        lsp_types::RelatedFullDocumentDiagnosticReport {
         full_document_diagnostic_report: lsp_types::FullDocumentDiagnosticReport {
             result_id: Some("rust-analyzer".to_owned()),
             items: diagnostics.collect(),
@@ -564,7 +569,10 @@ pub(crate) fn handle_document_diagnostics(
                     })
                     .collect()
             }),
-    })))
+    },
+    ),
+    ),
+    )
 }
 
 pub(crate) fn handle_document_symbol(
@@ -1814,8 +1822,7 @@ pub(crate) fn handle_inlay_hints_resolve(
         },
     )?;
 
-    Ok(
-        resolve_hints
+    Ok(resolve_hints
         .and_then(|it| {
             to_proto::inlay_hint(
                 &snap,
@@ -1828,8 +1835,7 @@ pub(crate) fn handle_inlay_hints_resolve(
         })
         .filter(|hint| hint.position == original_hint.position)
         .filter(|hint| hint.kind == original_hint.kind)
-        .unwrap_or(original_hint),
-    )
+        .unwrap_or(original_hint))
 }
 
 pub(crate) fn handle_call_hierarchy_prepare(
@@ -2126,8 +2132,7 @@ pub(crate) fn handle_view_recursive_memory_layout(
     let offset = from_proto::offset(&line_index, params.position)?;
 
     let res = snap.analysis.get_recursive_memory_layout(FilePosition { file_id, offset })?;
-    Ok(
-        res.map(|it| lsp_ext::RecursiveMemoryLayout {
+    Ok(res.map(|it| lsp_ext::RecursiveMemoryLayout {
         nodes: it
             .nodes
             .iter()
@@ -2142,8 +2147,7 @@ pub(crate) fn handle_view_recursive_memory_layout(
                 children_len: n.children_len,
             })
             .collect(),
-    }),
-    )
+    }))
 }
 
 fn to_command_link(command: lsp_types::Command, tooltip: String) -> lsp_ext::CommandLink {
@@ -2277,7 +2281,8 @@ fn goto_type_action_links(
         return None;
     }
 
-    Some(lsp_ext::CommandLinkGroup {
+    Some(
+        lsp_ext::CommandLinkGroup {
         title: Some("Go to ".into()),
         commands: nav_targets
             .iter()
@@ -2286,7 +2291,8 @@ fn goto_type_action_links(
                     .map(|cmd| to_command_link(cmd, it.mod_path.clone()))
             })
             .collect(),
-    })
+    },
+    )
 }
 
 fn prepare_hover_actions(
@@ -2560,8 +2566,7 @@ pub(crate) fn internal_testing_fetch_config(
         ),
         None => None,
     };
-    Ok(Some(
-        match params.config {
+    Ok(Some(match params.config {
         InternalTestingFetchConfigOption::AssistEmitMustUse => {
             InternalTestingFetchConfigResponse::AssistEmitMustUse(
                 state.config.assist(source_root).assist_emit_must_use,
@@ -2572,8 +2577,7 @@ pub(crate) fn internal_testing_fetch_config(
                 state.config.flycheck_workspace(source_root),
             )
         }
-    },
-    ))
+    }))
 }
 
 /// Searches for the directory of a Rust crate given this crate's root file path.

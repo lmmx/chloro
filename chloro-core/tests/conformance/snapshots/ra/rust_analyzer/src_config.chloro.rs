@@ -1020,21 +1020,47 @@ pub struct Config {
 
 impl fmt::Debug for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Config")
-            .field("discovered_projects_from_filesystem", &self.discovered_projects_from_filesystem)
-            .field("discovered_projects_from_command", &self.discovered_projects_from_command)
-            .field("workspace_roots", &self.workspace_roots)
-            .field("caps", &self.caps)
-            .field("root_path", &self.root_path)
-            .field("snippets", &self.snippets)
-            .field("client_info", &self.client_info)
-            .field("client_config", &self.client_config)
-            .field("user_config", &self.user_config)
-            .field("ratoml_file", &self.ratoml_file)
-            .field("source_root_parent_map", &self.source_root_parent_map)
-            .field("validation_errors", &self.validation_errors)
-            .field("detached_files", &self.detached_files)
-            .finish()
+        f.debug_struct("Config").field(
+            "discovered_projects_from_filesystem",
+            &self.discovered_projects_from_filesystem,
+        ).field(
+            "discovered_projects_from_command",
+            &self.discovered_projects_from_command,
+        ).field(
+            "workspace_roots",
+            &self.workspace_roots,
+        ).field(
+            "caps",
+            &self.caps,
+        ).field(
+            "root_path",
+            &self.root_path,
+        ).field(
+            "snippets",
+            &self.snippets,
+        ).field(
+            "client_info",
+            &self.client_info,
+        ).field(
+            "client_config",
+            &self.client_config,
+        ).field(
+            "user_config",
+            &self.user_config,
+        ).field(
+            "ratoml_file",
+            &self.ratoml_file,
+        ).field(
+            "source_root_parent_map",
+            &self.source_root_parent_map,
+        ).field(
+            "validation_errors",
+            &self.validation_errors,
+        ).field(
+            "detached_files",
+            &self.detached_files,
+        ).finish(
+        )
     }
 }
 
@@ -1330,9 +1356,10 @@ impl ConfigChange {
         vfs_path: VfsPath,
         content: Option<Arc<str>>,
     ) -> Option<(RatomlFileKind, VfsPath, Option<Arc<str>>)> {
-        self.ratoml_file_change
-            .get_or_insert_with(Default::default)
-            .insert(source_root, (RatomlFileKind::Crate, vfs_path, content))
+        self.ratoml_file_change.get_or_insert_with(Default::default).insert(
+            source_root,
+            (RatomlFileKind::Crate, vfs_path, content),
+        )
     }
 
     pub fn change_user_config(&mut self, content: Option<Arc<str>>) {
@@ -1347,9 +1374,10 @@ impl ConfigChange {
         vfs_path: VfsPath,
         content: Option<Arc<str>>,
     ) -> Option<(RatomlFileKind, VfsPath, Option<Arc<str>>)> {
-        self.ratoml_file_change
-            .get_or_insert_with(Default::default)
-            .insert(source_root, (RatomlFileKind::Workspace, vfs_path, content))
+        self.ratoml_file_change.get_or_insert_with(Default::default).insert(
+            source_root,
+            (RatomlFileKind::Workspace, vfs_path, content),
+        )
     }
 
     pub fn change_client_config(&mut self, change: serde_json::Value) {
@@ -1435,14 +1463,7 @@ impl From<AnnotationLocation> for ide::AnnotationLocation {
 
 impl LensConfig {
     pub fn any(&self) -> bool {
-        self.run
-            || self.debug
-            || self.update_test
-            || self.implementations
-            || self.method_refs
-            || self.refs_adt
-            || self.refs_trait
-            || self.enum_variant_refs
+        self.run || self.debug || self.update_test || self.implementations || self.method_refs || self.refs_adt || self.refs_trait || self.enum_variant_refs
     }
 
     pub fn none(&self) -> bool {
@@ -1861,9 +1882,7 @@ impl Config {
             references: enable && self.hover_actions_references_enable().to_owned(),
             run: enable && self.hover_actions_run_enable().to_owned(),
             debug: enable && self.hover_actions_debug_enable().to_owned(),
-            update_test: enable
-                && self.hover_actions_run_enable().to_owned()
-                && self.hover_actions_updateTest_enable().to_owned(),
+            update_test: enable && self.hover_actions_run_enable().to_owned() && self.hover_actions_updateTest_enable().to_owned(),
             goto_type_def: enable && self.hover_actions_gotoTypeDef_enable().to_owned(),
         }
     }
@@ -2361,8 +2380,8 @@ impl Config {
                 "scope": "expr"
             }
         }"#,
+        ).unwrap(
         )
-        .unwrap()
     }
 
     pub fn rustfmt(&self, source_root_id: Option<SourceRootId>) -> RustfmtConfig {
@@ -2511,9 +2530,7 @@ impl Config {
         LensConfig {
             run: *self.lens_enable() && *self.lens_run_enable(),
             debug: *self.lens_enable() && *self.lens_debug_enable(),
-            update_test: *self.lens_enable()
-                && *self.lens_updateTest_enable()
-                && *self.lens_run_enable(),
+            update_test: *self.lens_enable() && *self.lens_updateTest_enable() && *self.lens_run_enable(),
             interpret: *self.lens_enable() && *self.lens_run_enable() && *self.interpret_tests(),
             implementations: *self.lens_enable() && *self.lens_implementations_enable(),
             method_refs: *self.lens_enable() && *self.lens_references_method_enable(),
@@ -2521,8 +2538,7 @@ impl Config {
             refs_trait: *self.lens_enable() && *self.lens_references_trait_enable(),
             enum_variant_refs: *self.lens_enable() && *self.lens_references_enumVariant_enable(),
             location: *self.lens_location(),
-            filter_adjacent_derive_implementations: *self
-                .gotoImplementations_filterAdjacentDerives(),
+            filter_adjacent_derive_implementations: *self.gotoImplementations_filterAdjacentDerives(),
         }
     }
 

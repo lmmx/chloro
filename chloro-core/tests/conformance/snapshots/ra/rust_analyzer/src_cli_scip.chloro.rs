@@ -465,13 +465,15 @@ impl SymbolGenerator {
 fn moniker_to_symbol(moniker: &Moniker) -> scip_types::Symbol {
     scip_types::Symbol {
         scheme: "rust-analyzer".into(),
-        package: Some(scip_types::Package {
+        package: Some(
+            scip_types::Package {
             manager: "cargo".to_owned(),
             name: moniker.package_information.name.clone(),
             version: moniker.package_information.version.clone().unwrap_or_else(|| ".".to_owned()),
             special_fields: Default::default(),
-        })
-        .into(),
+        },
+        ).into(
+        ),
         descriptors: moniker_descriptors(&moniker.identifier),
         special_fields: Default::default(),
     }

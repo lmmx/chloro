@@ -23,12 +23,13 @@ pub(crate) fn remove_trailing_return(
     });
     Some(
         Diagnostic::new(
-            DiagnosticCode::Clippy("needless_return"),
-            "replace return <expr>; with <expr>",
-            display_range,
-        )
-        .stable()
-        .with_fixes(fixes(ctx, d)),
+        DiagnosticCode::Clippy("needless_return"),
+        "replace return <expr>; with <expr>",
+        display_range,
+    ).stable(
+    ).with_fixes(
+        fixes(ctx, d),
+    ),
     )
 }
 

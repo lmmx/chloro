@@ -158,11 +158,7 @@ impl SnapshotVarData {
 
     fn is_empty(&self) -> bool {
         let SnapshotVarData { region_vars, type_vars, int_vars, float_vars, const_vars } = self;
-        region_vars.is_empty()
-            && type_vars.0.is_empty()
-            && int_vars.is_empty()
-            && float_vars.is_empty()
-            && const_vars.0.is_empty()
+        region_vars.is_empty() && type_vars.0.is_empty() && int_vars.is_empty() && float_vars.is_empty() && const_vars.0.is_empty()
     }
 }
 

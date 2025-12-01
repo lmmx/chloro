@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35489 bytes
-Chloro size:   35173 bytes
+Chloro size:   35033 bytes
 Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
@@ -118,6 +118,19 @@ Rustfmt size:  37277 bytes
      diagnostics: ThinVec<ExpressionStoreDiagnostics>,
  }
  
+             expansions,
+             diagnostics,
+         } = self;
+-        *expr_map_back == other.expr_map_back
+-            && *pat_map_back == other.pat_map_back
+-            && *label_map_back == other.label_map_back
+-            && *template_map == other.template_map
+-            && *expansions == other.expansions
+-            && *diagnostics == other.diagnostics
++        *expr_map_back == other.expr_map_back && *pat_map_back == other.pat_map_back && *label_map_back == other.label_map_back && *template_map == other.template_map && *expansions == other.expansions && *diagnostics == other.diagnostics
+     }
+ }
+ 
  #[derive(Debug, Eq, Default)]
  pub struct ExpressionStoreSourceMap {
      expr_only: Option<Box<ExpressionOnlySourceMap>>,
@@ -138,11 +151,15 @@ Rustfmt size:  37277 bytes
 -            lifetime_map_back,
 -            lifetime_map: _,
 -        } = self;
+-        *expr_only == other.expr_only
+-            && *types_map_back == other.types_map_back
+-            && *lifetime_map_back == other.lifetime_map_back
 +        let Self { expr_only, types_map_back, types_map: _, lifetime_map_back, lifetime_map: _ } =
 +            self;
-         *expr_only == other.expr_only
-             && *types_map_back == other.types_map_back
-             && *lifetime_map_back == other.lifetime_map_back
++        *expr_only == other.expr_only && *types_map_back == other.types_map_back && *lifetime_map_back == other.lifetime_map_back
+     }
+ }
+ 
      pub types: Arena<TypeRef>,
      block_scopes: Vec<BlockId>,
      ident_hygiene: FxHashMap<ExprOrPatId, HygieneId>,
@@ -497,6 +514,20 @@ Rustfmt size:  37277 bytes
      }
  
      pub fn implicit_format_args(
+         &self,
+         capture_expr: ExprId,
+     ) -> Option<InFile<(ExprPtr, TextRange)>> {
+-        self.expr_only()?
+-            .template_map
+-            .as_ref()?
+-            .implicit_capture_to_source
+-            .get(&capture_expr)
+-            .copied()
++        self.expr_only()?.template_map.as_ref()?.implicit_capture_to_source.get(&capture_expr).copied(
++        )
+     }
+ 
+     pub fn asm_template_args(
          let src = node.map(AstPtr::new).map(AstPtr::upcast::<ast::Expr>);
          let expr = expr_only.expr_map.get(&src)?.as_expr()?;
          Some(expr).zip(

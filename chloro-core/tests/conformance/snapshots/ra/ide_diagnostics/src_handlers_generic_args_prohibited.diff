@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16831 bytes
-Chloro size:   16659 bytes
+Chloro size:   16669 bytes
 Rustfmt size:  16831 bytes
 
 ✗ Outputs DIFFER
@@ -18,6 +18,18 @@ Rustfmt size:  16831 bytes
  pub(crate) fn generic_args_prohibited(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::GenericArgsProhibited,
+         DiagnosticCode::RustcHardError("E0109"),
+         describe_reason(d.reason),
+         d.args.map(Into::into),
++    ).stable(
++    ).with_fixes(
++        fixes(ctx, d),
+     )
+-    .stable()
+-    .with_fixes(fixes(ctx, d))
+ }
+ 
+ fn describe_reason(reason: GenericArgsProhibitedReason) -> String {
              TextRange::new(start, end)
          }
      };

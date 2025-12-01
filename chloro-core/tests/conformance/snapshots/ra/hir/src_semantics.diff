@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   100369 bytes
+Chloro size:   100357 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -113,6 +113,21 @@ Rustfmt size:  101650 bytes
      pub fn find_namelike_at_offset_with_descend<'slf>(
          &'slf self,
          node: &SyntaxNode,
+     }
+ 
+     pub fn attach_first_edition(&self, file: FileId) -> Option<EditionedFileId> {
+-        Some(EditionedFileId::new(
++        Some(
++            EditionedFileId::new(
+             self.db,
+             file,
+             self.file_to_module_defs(file).next()?.krate().edition(self.db),
+-        ))
++        ),
++        )
+     }
+ 
+     pub fn parse_guess_edition(&self, file_id: FileId) -> ast::SourceFile {
  
      /// Retrieves the formatting part of the format_args! template string at the given offset.
      ///
@@ -178,25 +193,6 @@ Rustfmt size:  101650 bytes
      pub fn ancestors_with_macros(
          &self,
          node: SyntaxNode,
-         &self,
-         node: InFile<SyntaxNode>,
-     ) -> impl Iterator<Item = InFile<SyntaxNode>> + Clone + '_ {
--        iter::successors(Some(node), move |&InFile { file_id, ref value }| match value.parent() {
-+        iter::successors(
-+            Some(node),
-+            move |&InFile { file_id, ref value }| match value.parent() {
-             Some(parent) => Some(InFile::new(file_id, parent)),
-             None => {
-                 let macro_file = file_id.macro_file()?;
-                     expansion_info.arg().map(|node| node?.parent()).transpose()
-                 })
-             }
--        })
-+        },
-+        )
-     }
- 
-     pub fn ancestors_at_offset_with_macros(
      }
  
      /// Env is used to derive the trait environment

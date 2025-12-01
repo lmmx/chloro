@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10179 bytes
-Chloro size:   9946 bytes
+Chloro size:   9936 bytes
 Rustfmt size:  10254 bytes
 
 ✗ Outputs DIFFER
@@ -31,6 +31,23 @@ Rustfmt size:  10254 bytes
  pub(crate) fn remove_unnecessary_else(
      ctx: &DiagnosticsContext<'_>,
      d: &RemoveUnnecessaryElse,
+     });
+     Some(
+         Diagnostic::new(
+-            DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
+-            "remove unnecessary else block",
+-            display_range,
+-        )
+-        .with_fixes(fixes(ctx, d)),
++        DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
++        "remove unnecessary else block",
++        display_range,
++    ).with_fixes(
++        fixes(ctx, d),
++    ),
+     )
+ }
+ 
      let if_expr = ctx.sema.original_ast_node(if_expr)?;
  
      let mut indent = IndentLevel::from_node(if_expr.syntax());

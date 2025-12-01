@@ -548,20 +548,22 @@ fn signature_help_for_tuple_pat(
     let ty = sema.type_of_pat(&pat)?;
     let fields = ty.original.tuple_fields(db);
 
-    Some(signature_help_for_tuple_pat_ish(
+    Some(
+        signature_help_for_tuple_pat_ish(
         db,
         SignatureHelp {
-            doc: None,
-            signature: String::from('('),
-            parameters: vec![],
-            active_parameter: None,
-        },
+        doc: None,
+        signature: String::from('('),
+        parameters: vec![],
+        active_parameter: None,
+    },
         pat.syntax(),
         token,
         field_pats,
         fields.into_iter(),
         display_target,
-    ))
+    ),
+    )
 }
 
 fn signature_help_for_tuple_expr(

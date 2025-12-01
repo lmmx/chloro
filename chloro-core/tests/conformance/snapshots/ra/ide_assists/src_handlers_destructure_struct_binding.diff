@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23187 bytes
-Chloro size:   22732 bytes
+Chloro size:   22717 bytes
 Rustfmt size:  23470 bytes
 
 ✗ Outputs DIFFER
@@ -85,24 +85,6 @@ Rustfmt size:  23470 bytes
  
      if visible_fields.is_empty() {
          return None;
- 
-     let names_in_scope = get_names_in_scope(ctx, &ident_pat, &usages).unwrap_or_default();
- 
--    Some(StructEditData {
-+    Some(
-+        StructEditData {
-         name: ident_pat.name()?,
-         ident_pat,
-         kind,
-         need_record_field_name,
-         is_ref,
-         edition: module.krate().edition(ctx.db()),
--    })
-+    },
-+    )
- }
- 
- fn get_names_in_scope(
      }
  
      // If available, find names visible to the last usage of the binding

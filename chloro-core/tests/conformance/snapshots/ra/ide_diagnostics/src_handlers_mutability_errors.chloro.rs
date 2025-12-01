@@ -43,17 +43,17 @@ pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option
 
     Some(
         Diagnostic::new_with_syntax_node_ptr(
-            ctx,
-            // FIXME: `E0384` is not the only error that this diagnostic handles
-            DiagnosticCode::RustcHardError("E0384"),
-            format!(
+        ctx,
+        DiagnosticCode::RustcHardError("E0384"),
+        format!(
                 "cannot mutate immutable variable `{}`",
                 d.local.name(ctx.sema.db).display(ctx.sema.db, ctx.edition)
             ),
-            span,
-        )
-        .stable()
-        .with_fixes(fixes),
+        span,
+    ).stable(
+    ).with_fixes(
+        fixes,
+    ),
     )
 }
 
@@ -84,13 +84,13 @@ pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Op
     let ast = d.local.primary_source(ctx.sema.db).syntax_ptr();
     Some(
         Diagnostic::new_with_syntax_node_ptr(
-            ctx,
-            DiagnosticCode::RustcLint("unused_mut"),
-            "variable does not need to be mutable",
-            ast,
-        )
-        // Not supporting `#[allow(unused_mut)]` in proc macros leads to false positive, hence not stable.
-        .with_fixes(fixes),
+        ctx,
+        DiagnosticCode::RustcLint("unused_mut"),
+        "variable does not need to be mutable",
+        ast,
+    ).with_fixes(
+        fixes,
+    ),
     )
 }
 

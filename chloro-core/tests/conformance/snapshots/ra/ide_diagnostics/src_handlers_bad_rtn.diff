@@ -18,6 +18,14 @@ Rustfmt size:  1132 bytes
  pub(crate) fn bad_rtn(ctx: &DiagnosticsContext<'_>, d: &hir::BadRtn) -> Diagnostic {
      Diagnostic::new_with_syntax_node_ptr(
          ctx,
+         DiagnosticCode::Ra("bad-rtn", Severity::Error),
+         "return type notation not allowed in this position yet",
+         d.rtn.map(Into::into),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

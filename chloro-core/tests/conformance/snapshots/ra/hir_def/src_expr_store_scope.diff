@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19259 bytes
-Chloro size:   19156 bytes
+Chloro size:   19225 bytes
 Rustfmt size:  19938 bytes
 
 ✗ Outputs DIFFER
@@ -21,6 +21,54 @@ Rustfmt size:  19938 bytes
      pub fn macro_def(&self, scope: ScopeId) -> Option<&Box<MacroDefId>> {
          self.scopes[scope].macro_def.as_ref()
      }
+     }
+ 
+     fn root_scope(&mut self) -> ScopeId {
+-        self.scopes.alloc(ScopeData {
++        self.scopes.alloc(
++            ScopeData {
+             parent: None,
+             block: None,
+             label: None,
+             macro_def: None,
+             entries: empty_entries(self.scope_entries.len()),
+-        })
++        },
++        )
+     }
+ 
+     fn new_scope(&mut self, parent: ScopeId) -> ScopeId {
+-        self.scopes.alloc(ScopeData {
++        self.scopes.alloc(
++            ScopeData {
+             parent: Some(parent),
+             block: None,
+             label: None,
+             macro_def: None,
+             entries: empty_entries(self.scope_entries.len()),
+-        })
++        },
++        )
+     }
+ 
+     fn new_labeled_scope(&mut self, parent: ScopeId, label: Option<(LabelId, Name)>) -> ScopeId {
+     }
+ 
+     fn new_macro_def_scope(&mut self, parent: ScopeId, macro_id: Box<MacroDefId>) -> ScopeId {
+-        self.scopes.alloc(ScopeData {
++        self.scopes.alloc(
++            ScopeData {
+             parent: Some(parent),
+             block: None,
+             label: None,
+             macro_def: Some(macro_id),
+             entries: empty_entries(self.scope_entries.len()),
+-        })
++        },
++        )
+     }
+ 
+     fn add_bindings(
          hygiene: HygieneId,
      ) {
          let Binding { name, .. } = &store[binding];

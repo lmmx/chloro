@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98258 bytes
+Chloro size:   98211 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -63,22 +63,6 @@ Rustfmt size:  98473 bytes
      // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
      if import_edit.item_to_import == import_edit.original_item {
          import_edit.import_path.segments().last().cloned()
-     ctx: &RenderContext<'_>,
-     import_edit: &LocatedImport,
- ) -> Option<hir::Name> {
--    Some(match resolution {
-+    Some(
-+        match resolution {
-         ScopeDef::ModuleDef(hir::ModuleDef::Function(f)) => f.name(ctx.completion.db),
-         ScopeDef::ModuleDef(hir::ModuleDef::Const(c)) => c.name(ctx.completion.db)?,
-         ScopeDef::ModuleDef(hir::ModuleDef::TypeAlias(t)) => t.name(ctx.completion.db),
-         _ => item_name(ctx.db(), import_edit.original_item)?,
--    })
-+    },
-+    )
- }
- 
- fn render_resolution_pat(
      }
  }
  
@@ -260,6 +244,20 @@ Rustfmt size:  98473 bytes
      #[test]
      fn lookup_enums_by_two_qualifiers() {
          check_kinds(
+ fn main() { let _: m::Spam = S$0 }
+ "#,
+             &[
+-                CompletionItemKind::SymbolKind(SymbolKind::Function),
+-                CompletionItemKind::SymbolKind(SymbolKind::Module),
+-                CompletionItemKind::SymbolKind(SymbolKind::Variant),
+-            ],
++            CompletionItemKind::SymbolKind(SymbolKind::Function),
++            CompletionItemKind::SymbolKind(SymbolKind::Module),
++            CompletionItemKind::SymbolKind(SymbolKind::Variant),
++        ],
+             expect![[r#"
+                 [
+                     CompletionItem {
              "#]],
          )
      }
@@ -274,6 +272,20 @@ Rustfmt size:  98473 bytes
      #[test]
      fn renders_docs() {
          check_kinds(
+ use self::E::*;
+ "#,
+             &[
+-                CompletionItemKind::SymbolKind(SymbolKind::Module),
+-                CompletionItemKind::SymbolKind(SymbolKind::Variant),
+-                CompletionItemKind::SymbolKind(SymbolKind::Enum),
+-            ],
++            CompletionItemKind::SymbolKind(SymbolKind::Module),
++            CompletionItemKind::SymbolKind(SymbolKind::Variant),
++            CompletionItemKind::SymbolKind(SymbolKind::Enum),
++        ],
+             expect![[r#"
+                 [
+                     CompletionItem {
              "#]],
          )
      }

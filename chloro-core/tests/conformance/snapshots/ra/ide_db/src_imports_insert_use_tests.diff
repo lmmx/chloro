@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29250 bytes
-Chloro size:   29221 bytes
+Chloro size:   29173 bytes
 Rustfmt size:  29734 bytes
 
 ✗ Outputs DIFFER
@@ -72,6 +72,42 @@ Rustfmt size:  29734 bytes
  }
  
  #[test]
+         r"use token::TokenKind::*;",
+         r"use token::TokenKind::{self, *};",
+         &InsertUseConfig {
+-            granularity: ImportGranularity::Crate,
+-            enforce_granularity: true,
+-            prefix_kind: PrefixKind::Plain,
+-            group: false,
+-            skip_glob_imports: false,
+-        },
++        granularity: ImportGranularity::Crate,
++        enforce_granularity: true,
++        prefix_kind: PrefixKind::Plain,
++        group: false,
++        skip_glob_imports: false,
++    },
+     )
+ }
+ 
+         r"use self::*;",
+         r"use self::{self, *};",
+         &InsertUseConfig {
+-            granularity: ImportGranularity::Crate,
+-            enforce_granularity: true,
+-            prefix_kind: PrefixKind::Plain,
+-            group: false,
+-            skip_glob_imports: false,
+-        },
++        granularity: ImportGranularity::Crate,
++        enforce_granularity: true,
++        prefix_kind: PrefixKind::Plain,
++        group: false,
++        skip_glob_imports: false,
++    },
+     )
+ }
+ 
  
  #[test]
  fn guess_single() {

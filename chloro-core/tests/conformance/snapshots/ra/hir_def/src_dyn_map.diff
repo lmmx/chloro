@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6860 bytes
-Chloro size:   6866 bytes
+Chloro size:   6817 bytes
 Rustfmt size:  6980 bytes
 
 ✗ Outputs DIFFER
@@ -77,7 +77,8 @@ Rustfmt size:  6980 bytes
          }
 +
          fn get<'a>(map: &'a DynMap, key: &AstPtr<AST>) -> Option<&'a ID> {
-             map.map.get::<FxHashMap<AstPtr<AST>, ID>>()?.get(key)
+-            map.map.get::<FxHashMap<AstPtr<AST>, ID>>()?.get(key)
++            map.map.get()?.get(key)
          }
 +
          fn is_empty(map: &DynMap) -> bool {
@@ -144,7 +145,8 @@ Rustfmt size:  6980 bytes
      }
 +
      fn get<'a>(map: &'a DynMap, key: &K) -> Option<&'a V> {
-         map.map.get::<FxHashMap<K, V>>()?.get(key)
+-        map.map.get::<FxHashMap<K, V>>()?.get(key)
++        map.map.get()?.get(key)
      }
 +
      fn is_empty(map: &DynMap) -> bool {

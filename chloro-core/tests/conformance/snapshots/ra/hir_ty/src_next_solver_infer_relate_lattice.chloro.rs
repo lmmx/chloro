@@ -157,15 +157,13 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
     fn regions(&mut self, a: Region<'db>, b: Region<'db>) -> RelateResult<'db, Region<'db>> {
         let mut inner = self.infcx.inner.borrow_mut();
         let mut constraints = inner.unwrap_region_constraints();
-        Ok(
-            match self.kind {
+        Ok(match self.kind {
             // GLB(&'static u8, &'a u8) == &RegionLUB('static, 'a) u8 == &'static u8
             LatticeOpKind::Glb => constraints.lub_regions(self.cx(), a, b),
 
             // LUB(&'static u8, &'a u8) == &RegionGLB('static, 'a) u8 == &'a u8
             LatticeOpKind::Lub => constraints.glb_regions(self.cx(), a, b),
-        },
-        )
+        })
     }
 
     fn consts(&mut self, a: Const<'db>, b: Const<'db>) -> RelateResult<'db, Const<'db>> {

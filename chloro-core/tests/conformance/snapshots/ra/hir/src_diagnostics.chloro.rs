@@ -652,8 +652,7 @@ impl<'db> AnyDiagnostic<'db> {
             ExprOrPatId::ExprId(expr) => expr_syntax(expr),
             ExprOrPatId::PatId(pat) => pat_syntax(pat),
         };
-        Some(
-            match d {
+        Some(match d {
             &InferenceDiagnostic::NoSuchField { field: expr, private, variant } => {
                 let expr_or_pat = match expr {
                     ExprOrPatId::ExprId(expr) => {
@@ -823,16 +822,14 @@ impl<'db> AnyDiagnostic<'db> {
                 let expected_kind = GenericArgKind::from_id(param_id);
                 IncorrectGenericsOrder { provided_arg, expected_kind }.into()
             }
-        },
-        )
+        })
     }
 
     fn path_diagnostic(
         diag: &PathLoweringDiagnostic,
         path: InFile<ast::Path>,
     ) -> Option<AnyDiagnostic<'db>> {
-        Some(
-            match *diag {
+        Some(match *diag {
             PathLoweringDiagnostic::GenericArgsProhibited { segment, reason } => {
                 let segment = hir_segment_to_ast_segment(&path.value, segment)?;
 
@@ -918,8 +915,7 @@ impl<'db> AnyDiagnostic<'db> {
                 }
                 .into()
             }
-        },
-        )
+        })
     }
 
     pub(crate) fn ty_diagnostic(
@@ -932,14 +928,12 @@ impl<'db> AnyDiagnostic<'db> {
             return None;
         };
         let syntax = || source.value.to_node(&db.parse_or_expand(source.file_id));
-        Some(
-            match &diag.kind {
+        Some(match &diag.kind {
             TyLoweringDiagnosticKind::PathDiagnostic(diag) => {
                 let ast::Type::PathType(syntax) = syntax() else { return None };
                 Self::path_diagnostic(diag, source.with_value(syntax.path()?))?
             }
-        },
-        )
+        })
     }
 }
 
@@ -947,8 +941,7 @@ fn path_generics_source_to_ast(
     path: &ast::Path,
     generics_source: PathGenericsSource,
 ) -> Option<Either<ast::GenericArgList, ast::NameRef>> {
-    Some(
-        match generics_source {
+    Some(match generics_source {
         PathGenericsSource::Segment(segment) => {
             let segment = hir_segment_to_ast_segment(path, segment)?;
             segment
@@ -965,6 +958,5 @@ fn path_generics_source_to_ast(
                 .map(Either::Left)
                 .or_else(|| assoc.name_ref().map(Either::Right))?
         }
-    },
-    )
+    })
 }

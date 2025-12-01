@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23884 bytes
-Chloro size:   23709 bytes
+Chloro size:   23673 bytes
 Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
@@ -53,12 +53,16 @@ Rustfmt size:  23884 bytes
      fn adjustment_hints_prefer_prefix() {
          check_with_config(
              InlayHintsConfig {
-                 adjustment_hints: AdjustmentHints::Always,
-                 adjustment_hints_mode: AdjustmentHintsMode::PreferPrefix,
+-                adjustment_hints: AdjustmentHints::Always,
+-                adjustment_hints_mode: AdjustmentHintsMode::PreferPrefix,
 -                ..DISABLED_CONFIG
-             },
+-            },
++            adjustment_hints: AdjustmentHints::Always,
++            adjustment_hints_mode: AdjustmentHintsMode::PreferPrefix,
++        },
              r#"
  fn main() {
+     let _: u32         = loop {};
              "#,
          )
      }
@@ -67,12 +71,16 @@ Rustfmt size:  23884 bytes
      fn adjustment_hints_prefer_postfix() {
          check_with_config(
              InlayHintsConfig {
-                 adjustment_hints: AdjustmentHints::Always,
-                 adjustment_hints_mode: AdjustmentHintsMode::PreferPostfix,
+-                adjustment_hints: AdjustmentHints::Always,
+-                adjustment_hints_mode: AdjustmentHintsMode::PreferPostfix,
 -                ..DISABLED_CONFIG
-             },
+-            },
++            adjustment_hints: AdjustmentHints::Always,
++            adjustment_hints_mode: AdjustmentHintsMode::PreferPostfix,
++        },
              r#"
  fn main() {
+     let _: u32         = loop {};
              "#,
          )
      }
@@ -88,12 +96,16 @@ Rustfmt size:  23884 bytes
      fn adjustment_hints_unsafe_only() {
          check_with_config(
              InlayHintsConfig {
-                 adjustment_hints: AdjustmentHints::Always,
-                 adjustment_hints_hide_outside_unsafe: true,
+-                adjustment_hints: AdjustmentHints::Always,
+-                adjustment_hints_hide_outside_unsafe: true,
 -                ..DISABLED_CONFIG
-             },
+-            },
++            adjustment_hints: AdjustmentHints::Always,
++            adjustment_hints_hide_outside_unsafe: true,
++        },
              r#"
  unsafe fn enabled() {
+     f(&&());
              "#,
          )
      }

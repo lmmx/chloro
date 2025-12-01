@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21053 bytes
+Chloro size:   21030 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -245,12 +245,8 @@ Rustfmt size:  22047 bytes
          // Invariant: this is empty if and only if the type is uninhabited (as determined by
 +
          // `cx.is_uninhabited()`).
--        Ok(match ty.kind() {
-+        Ok(
-+            match ty.kind() {
+         Ok(match ty.kind() {
              TyKind::Bool => ConstructorSet::Bool,
-             TyKind::Char => unhandled(),
-             TyKind::Int(..) | TyKind::Uint(..) => unhandled(),
                          }
                      }
                      hir_def::AdtId::UnionId(_) => ConstructorSet::Union,
@@ -269,13 +265,6 @@ Rustfmt size:  22047 bytes
              TyKind::Ref(..) => ConstructorSet::Ref,
              TyKind::Never => ConstructorSet::NoConstructors,
              // This type is one for which we cannot list constructors, like `str` or `f64`.
-             _ => ConstructorSet::Unlistable,
--        })
-+        },
-+        )
-     }
- 
-     fn write_variant_name(
          // let variant = ty.as_adt().and_then(|(adt, _)| Self::variant_id_for_adt(db, ctor, adt));
  
          // if let Some(variant) = variant {

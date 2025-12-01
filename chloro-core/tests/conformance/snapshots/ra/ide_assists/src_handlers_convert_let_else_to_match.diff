@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14334 bytes
-Chloro size:   14009 bytes
+Chloro size:   13994 bytes
 Rustfmt size:  14420 bytes
 
 ✗ Outputs DIFFER
@@ -51,15 +51,6 @@ Rustfmt size:  14420 bytes
              } else {
                  None
              }
-     pat: &ast::Pat,
-     acc: &mut Vec<ast::IdentPat>,
- ) -> Option<ast::Pat> {
--    Some(match pat {
-+    Some(
-+        match pat {
-         ast::Pat::IdentPat(p) => {
-             acc.push(p.clone());
-             let non_mut_pat = make.ident_pat(
              }
              non_mut_pat.into()
          }
@@ -93,14 +84,6 @@ Rustfmt size:  14420 bytes
              }
          }
          ast::Pat::SlicePat(p) => make
-         | ast::Pat::ConstBlockPat(_) => pat.clone(),
-         // don't support macro pat yet
-         ast::Pat::MacroPat(_) => return None,
--    })
-+    },
-+    )
- }
- 
  #[cfg(test)]
  mod tests {
      use super::*;

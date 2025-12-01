@@ -800,14 +800,12 @@ impl ExprCollector<'_> {
                 bounds: Box::default(),
             }])
         };
-        Some(
-            GenericArgs {
+        Some(GenericArgs {
             args,
             has_self_type: false,
             bindings,
             parenthesized: GenericArgsParentheses::ParenSugar,
-        },
-        )
+        })
     }
 
     pub(super) fn lower_generic_args(
@@ -872,12 +870,14 @@ impl ExprCollector<'_> {
         if args.is_empty() && bindings.is_empty() {
             return None;
         }
-        Some(GenericArgs {
+        Some(
+            GenericArgs {
             args: args.into_boxed_slice(),
             has_self_type: false,
             bindings: bindings.into_boxed_slice(),
             parenthesized: GenericArgsParentheses::No,
-        })
+        },
+        )
     }
 
     fn collect(&mut self, expr: Option<ast::Expr>, awaitable: Awaitable) -> ExprId {
@@ -989,8 +989,7 @@ impl ExprCollector<'_> {
         }
 
         // FIXME: Move some of these arms out into separate methods for clarity
-        Some(
-            match expr {
+        Some(match expr {
             ast::Expr::IfExpr(e) => {
                 let then_branch = self.collect_block_opt(e.then_branch());
 
@@ -1413,8 +1412,7 @@ impl ExprCollector<'_> {
                 self.alloc_expr(Expr::OffsetOf(OffsetOf { container, fields }), syntax_ptr)
             }
             ast::Expr::FormatArgsExpr(f) => self.collect_format_args(f, syntax_ptr),
-        },
-        )
+        })
     }
 
     fn collect_expr_path(&mut self, e: ast::PathExpr) -> Option<(Path, HygieneId)> {
@@ -1742,7 +1740,13 @@ impl ExprCollector<'_> {
             Expr::If { condition, then_branch: body, else_branch: Some(break_expr) },
             syntax_ptr,
         );
-        self.alloc_expr(Expr::Loop { body: if_expr, label: label.map(|it| it.1) }, syntax_ptr)
+        self.alloc_expr(
+            Expr::Loop {
+            body: if_expr,
+            label: label.map(|it| it.1),
+        },
+            syntax_ptr,
+        )
     }
 
     /// Desugar `ast::ForExpr` from: `[opt_ident]: for <pat> in <head> <body>` into:
@@ -1823,9 +1827,17 @@ impl ExprCollector<'_> {
         self.add_definition_to_binding(iter_binding, iter_pat);
         self.alloc_expr(
             Expr::Match {
-                expr: iterator,
-                arms: Box::new([MatchArm { pat: iter_pat, guard: None, expr: loop_outer }]),
+            expr: iterator,
+            arms: Box::new(
+                [
+                MatchArm {
+                pat: iter_pat,
+                guard: None,
+                expr: loop_outer,
             },
+            ],
+            ),
+        },
             syntax_ptr,
         )
     }
@@ -2568,12 +2580,10 @@ impl ExprCollector<'_> {
             }
         }
 
-        Err(
-            ExpressionStoreDiagnostics::UndeclaredLabel {
+        Err(ExpressionStoreDiagnostics::UndeclaredLabel {
             name,
             node: self.expander.in_file(AstPtr::new(&lifetime)),
-        },
-        )
+        })
     }
 
     fn is_label_valid_from_rib(&self, rib_index: usize) -> bool {
@@ -2904,9 +2914,9 @@ impl ExprCollector<'_> {
 
         self.alloc_expr(
             Expr::Call {
-                callee: new_v1_formatted,
-                args: Box::new([lit_pieces, args, format_options, unsafe_arg_new]),
-            },
+            callee: new_v1_formatted,
+            args: Box::new([lit_pieces, args, format_options, unsafe_arg_new]),
+        },
             syntax_ptr,
         )
     }
@@ -3326,7 +3336,12 @@ impl ExprCollector<'_> {
             Some(new_fn) => self.alloc_expr_desugared(Expr::Path(new_fn)),
             None => self.missing_expr(),
         };
-        self.alloc_expr_desugared(Expr::Call { callee: new_fn, args: Box::new([arg]) })
+        self.alloc_expr_desugared(
+            Expr::Call {
+            callee: new_fn,
+            args: Box::new([arg]),
+        },
+        )
     }
 
     // endregion: format

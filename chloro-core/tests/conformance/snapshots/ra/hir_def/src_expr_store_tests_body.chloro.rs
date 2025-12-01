@@ -173,8 +173,9 @@ fn main() {
                     }
                 },
             }
-        }"#]]
-    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
+        }"#]].assert_eq(
+        &body.pretty_print(&db, def, Edition::CURRENT),
+    )
 }
 
 #[test]
@@ -256,8 +257,9 @@ fn main() {
                     }
                 },
             );
-        }"#]]
-    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
+        }"#]].assert_eq(
+        &body.pretty_print(&db, def, Edition::CURRENT),
+    )
 }
 
 #[test]
@@ -339,8 +341,9 @@ fn main() {
                     )
                 }
             };
-        }"#]]
-    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
+        }"#]].assert_eq(
+        &body.pretty_print(&db, def, Edition::CURRENT),
+    )
 }
 
 #[test]
@@ -407,8 +410,9 @@ impl SsrError {
                     }
                 },
             );
-        }"#]]
-    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
+        }"#]].assert_eq(
+        &body.pretty_print(&db, def, Edition::CURRENT),
+    )
 }
 
 #[test]
@@ -455,8 +459,9 @@ fn f(a: i32, b: u32) -> String {
                     ),
                 );
             };
-        }"#]]
-    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
+        }"#]].assert_eq(
+        &body.pretty_print(&db, def, Edition::CURRENT),
+    )
 }
 
 #[test]
@@ -488,8 +493,9 @@ fn foo() {
     expect![[r#"
         fn foo() {
             Bar() = Bar();
-        }"#]]
-    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
+        }"#]].assert_eq(
+        &body.pretty_print(&db, def, Edition::CURRENT),
+    )
 }
 
 #[test]

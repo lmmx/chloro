@@ -211,13 +211,11 @@ fn early_expression(
         return Some(return_none_expr());
     }
 
-    Some(
-        match parent_container.kind() {
+    Some(match parent_container.kind() {
         WHILE_EXPR | LOOP_EXPR | FOR_EXPR => make::expr_continue(None),
         FN | CLOSURE_EXPR => make::expr_return(None),
         _ => return None,
-    },
-    )
+    })
 }
 
 fn flat_let_chain(mut expr: ast::Expr) -> Vec<ast::Expr> {
@@ -263,8 +261,7 @@ fn is_early_block(then_block: &ast::StmtList) -> bool {
         ast::Stmt::ExprStmt(expr_stmt) => expr_stmt.expr(),
         _ => None,
     };
-    then_block.tail_expr().is_some_and(is_early_expr)
-        || then_block.statements().filter_map(into_expr).any(is_early_expr)
+    then_block.tail_expr().is_some_and(is_early_expr) || then_block.statements().filter_map(into_expr).any(is_early_expr)
 }
 
 #[cfg(test)]

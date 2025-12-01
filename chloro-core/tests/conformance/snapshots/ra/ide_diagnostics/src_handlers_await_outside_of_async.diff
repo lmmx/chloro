@@ -25,8 +25,11 @@ Rustfmt size:  2131 bytes
 -        ),
 +        format!("`await` is used inside {}, which is not an `async` context", d.location),
          display_range,
++    ).stable(
      )
-     .stable()
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

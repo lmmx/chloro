@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4096 bytes
-Chloro size:   4095 bytes
+Chloro size:   4079 bytes
 Rustfmt size:  4239 bytes
 
 ✗ Outputs DIFFER
@@ -63,6 +63,16 @@ Rustfmt size:  4239 bytes
  
          self.inner.borrow_mut().commit(undo_snapshot);
      }
+     /// Scan the constraints produced since `snapshot` and check whether
+     /// we added any region constraints.
+     pub fn region_constraints_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {
+-        self.inner
+-            .borrow_mut()
+-            .unwrap_region_constraints()
+-            .region_constraints_added_in_snapshot(&snapshot.undo_snapshot)
++        self.inner.borrow_mut().unwrap_region_constraints().region_constraints_added_in_snapshot(
++            &snapshot.undo_snapshot,
++        )
      }
  
      pub fn opaque_types_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {

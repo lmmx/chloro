@@ -25,8 +25,8 @@ pub(crate) fn incorrect_generics_order(
         DiagnosticCode::RustcHardError("E0747"),
         message,
         d.provided_arg.map(Into::into),
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

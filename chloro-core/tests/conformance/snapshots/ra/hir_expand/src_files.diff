@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19382 bytes
+Chloro size:   19438 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -39,10 +39,13 @@ Rustfmt size:  20465 bytes
  impl HirFileRange {
      pub fn file_range(self) -> Option<FileRange> {
 -        Some(FileRange {
--            file_id: self.file_id.file_id()?,
--            range: self.range,
++        Some(
++            FileRange {
+             file_id: self.file_id.file_id()?,
+             range: self.range,
 -        })
-+        Some(FileRange { file_id: self.file_id.file_id()?, range: self.range })
++        },
++        )
      }
  }
  

@@ -25,11 +25,12 @@ pub(crate) fn remove_unnecessary_else(
     });
     Some(
         Diagnostic::new(
-            DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
-            "remove unnecessary else block",
-            display_range,
-        )
-        .with_fixes(fixes(ctx, d)),
+        DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
+        "remove unnecessary else block",
+        display_range,
+    ).with_fixes(
+        fixes(ctx, d),
+    ),
     )
 }
 

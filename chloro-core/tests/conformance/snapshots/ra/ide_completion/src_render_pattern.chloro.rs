@@ -89,7 +89,8 @@ pub(crate) fn render_variant_pat(
         }
     };
 
-    Some(build_completion(
+    Some(
+        build_completion(
         ctx,
         label,
         lookup,
@@ -97,7 +98,8 @@ pub(crate) fn render_variant_pat(
         variant,
         enum_ty,
         pattern_ctx.missing_variants.contains(&variant),
-    ))
+    ),
+    )
 }
 
 fn build_completion(

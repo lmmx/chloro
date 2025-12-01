@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11079 bytes
-Chloro size:   11106 bytes
+Chloro size:   11102 bytes
 Rustfmt size:  11433 bytes
 
 ✗ Outputs DIFFER
@@ -27,7 +27,17 @@ Rustfmt size:  11433 bytes
      }
  
      fn universe_of_ct(&self, ct: ConstVid) -> Option<UniverseIndex> {
-             .opportunistic_resolve_var(self.interner, vid)
+     }
+ 
+     fn opportunistic_resolve_lt_var(&self, vid: RegionVid) -> Region<'db> {
+-        self.inner
+-            .borrow_mut()
+-            .unwrap_region_constraints()
+-            .opportunistic_resolve_var(self.interner, vid)
++        self.inner.borrow_mut().unwrap_region_constraints().opportunistic_resolve_var(
++            self.interner,
++            vid,
++        )
      }
  
 -    fn is_changed_arg(&self, arg: <Self::Interner as rustc_type_ir::Interner>::GenericArg) -> bool {

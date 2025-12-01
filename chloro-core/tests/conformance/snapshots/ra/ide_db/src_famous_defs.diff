@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7323 bytes
-Chloro size:   7324 bytes
+Chloro size:   7276 bytes
 Rustfmt size:  7435 bytes
 
 ✗ Outputs DIFFER
@@ -13,8 +13,21 @@ Rustfmt size:  7435 bytes
      }
 +
      pub fn builtin_crates(&self) -> impl Iterator<Item = Crate> {
-         IntoIterator::into_iter([
-             self.std(),
+-        IntoIterator::into_iter([
+-            self.std(),
+-            self.core(),
+-            self.alloc(),
+-            self.test(),
+-            self.proc_macro(),
+-        ])
+-        .flatten()
++        IntoIterator::into_iter(
++            [self.std(), self.core(), self.alloc(), self.test(), self.proc_macro()],
++        ).flatten(
++        )
+     }
+ 
+     fn find_trait(&self, path: &str) -> Option<Trait> {
          for segment in path {
              module = module.children(db).find_map(|child| {
                  let name = child.name(db)?;

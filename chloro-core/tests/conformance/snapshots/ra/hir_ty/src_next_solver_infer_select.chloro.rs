@@ -395,8 +395,7 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
             .collect(),
     };
 
-    Some(
-        match cand.kind() {
+    Some(match cand.kind() {
         ProbeKind::TraitCandidate { source, result: _ } => match source {
             CandidateSource::Impl(impl_def_id) => {
                 // FIXME: Remove this in favor of storing this in the tree
@@ -424,6 +423,5 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
         | ProbeKind::RigidAlias { result: _ } => {
             panic!("didn't expect to assemble trait candidate from {:#?}", cand.kind())
         }
-    },
-    )
+    })
 }

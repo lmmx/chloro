@@ -16,6 +16,14 @@ Rustfmt size:  27822 bytes
  pub(crate) fn missing_match_arms(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::MissingMatchArms,
+         DiagnosticCode::RustcHardError("E0004"),
+         format!("missing match arm: {}", d.uncovered_patterns),
+         d.scrutinee_expr.map(Into::into),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::{

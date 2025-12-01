@@ -62,9 +62,9 @@ impl DefMap {
             None => return Err(UnresolvedMacro { path: ast_id.path.as_ref().clone() }),
         };
 
-        Ok(ResolvedAttr::Macro(
-            attr_macro_as_call_id(db, &ast_id, attr, self.krate, db.macro_def(def)),
-        ))
+        Ok(
+            ResolvedAttr::Macro(attr_macro_as_call_id(db, &ast_id, attr, self.krate, db.macro_def(def))),
+        )
     }
 
     pub(crate) fn is_builtin_or_registered_attr(&self, path: &ModPath) -> bool {
@@ -113,10 +113,10 @@ pub(super) fn attr_macro_as_call_id(
         db,
         krate,
         MacroCallKind::Attr {
-            ast_id: item_attr.ast_id,
-            attr_args: arg.map(Arc::new),
-            invoc_attr_index: macro_attr.id,
-        },
+        ast_id: item_attr.ast_id,
+        attr_args: arg.map(Arc::new),
+        invoc_attr_index: macro_attr.id,
+    },
         macro_attr.ctxt,
     )
 }

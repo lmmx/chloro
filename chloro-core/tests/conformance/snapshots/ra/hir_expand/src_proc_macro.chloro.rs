@@ -187,10 +187,7 @@ impl PartialEq for ProcMacro {
             expander: other_expander,
             disabled: other_disabled,
         } = other;
-        name == other_name
-            && kind == other_kind
-            && expander == other_expander
-            && disabled == other_disabled
+        name == other_name && kind == other_kind && expander == other_expander && disabled == other_disabled
     }
 }
 

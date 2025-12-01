@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86946 bytes
+Chloro size:   86869 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -125,6 +125,21 @@ Rustfmt size:  87058 bytes
  impl_from!(FunctionId, StructId, UnionId, EnumVariantId, ConstId, StaticId for ValueTyDefId);
  
  impl ValueTyDefId {
+ /// function body.
+ fn type_for_fn<'db>(db: &'db dyn HirDatabase, def: FunctionId) -> EarlyBinder<'db, Ty<'db>> {
+     let interner = DbInterner::new_with(db, None, None);
+-    EarlyBinder::bind(Ty::new_fn_def(
++    EarlyBinder::bind(
++        Ty::new_fn_def(
+         interner,
+         CallableDefId::FunctionId(def).into(),
+         GenericArgs::identity_for_item(interner, def.into()),
+-    ))
++    ),
++    )
+ }
+ 
+ /// Build the declared type of a const.
      db.const_param_ty_with_diagnostics(def).0
  }
  
@@ -150,73 +165,13 @@ Rustfmt size:  87058 bytes
      defaults.extend(generic_params.iter_self().map(|(_id, p)| {
          let (result, has_default) = handle_generic_param(&mut ctx, idx, p);
          has_any_default |= has_default;
- 
-     let inputs_and_output = Tys::new_from_iter(interner, params.chain(Some(ret)));
-     // If/when we track late bound vars, we need to switch this to not be `dummy`
--    EarlyBinder::bind(rustc_type_ir::Binder::dummy(FnSig {
-+    EarlyBinder::bind(rustc_type_ir::Binder::dummy(
-+        FnSig {
-         abi: data.abi.as_ref().map_or(FnAbi::Rust, FnAbi::from_symbol),
-         c_variadic: data.is_varargs(),
-         safety: if data.is_unsafe() { Safety::Unsafe } else { Safety::Safe },
-         inputs_and_output,
--    }))
-+    },
-+    ))
- }
- 
- fn type_for_adt<'db>(db: &'db dyn HirDatabase, adt: AdtId) -> EarlyBinder<'db, Ty<'db>> {
- 
-     let inputs_and_output =
-         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
--    EarlyBinder::bind(Binder::dummy(FnSig {
-+    EarlyBinder::bind(Binder::dummy(
-+        FnSig {
-         abi: FnAbi::RustCall,
-         c_variadic: false,
-         safety: Safety::Safe,
-         inputs_and_output,
--    }))
-+    },
-+    ))
- }
- 
- fn fn_sig_for_enum_variant_constructor<'db>(
- 
-     let inputs_and_output =
-         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
--    EarlyBinder::bind(Binder::dummy(FnSig {
-+    EarlyBinder::bind(Binder::dummy(
-+        FnSig {
-         abi: FnAbi::RustCall,
-         c_variadic: false,
-         safety: Safety::Safe,
-         inputs_and_output,
--    }))
-+    },
-+    ))
+     }))
  }
  
 -// FIXME(next-solver): should merge this with `explicit_item_bounds` in some way
  pub(crate) fn associated_ty_item_bounds<'db>(
      db: &'db dyn HirDatabase,
      type_alias: TypeAliasId,
-     mut cb: impl FnMut(&Name, TypeAliasId) -> bool,
- ) -> Option<TypeAliasId> {
-     let interner = DbInterner::new_with(db, None, None);
--    named_associated_type_shorthand_candidates(interner, def, res, None, |name, _, id| {
-+    named_associated_type_shorthand_candidates(
-+        interner,
-+        def,
-+        res,
-+        None,
-+        |name, _, id| {
-         cb(name, id).then_some(id)
--    })
-+    },
-+    )
- }
- 
  #[tracing::instrument(skip(interner, check_alias))]
  fn named_associated_type_shorthand_candidates<'db, R>(
      interner: DbInterner<'db>,

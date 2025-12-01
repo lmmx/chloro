@@ -17,6 +17,14 @@ Rustfmt size:  3698 bytes
  pub(crate) fn non_exhaustive_let(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::NonExhaustiveLet,
+         DiagnosticCode::RustcHardError("E0005"),
+         format!("non-exhaustive pattern: {}", d.uncovered_patterns),
+         d.pat.map(Into::into),
++    ).stable(
+     )
+-    .stable()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

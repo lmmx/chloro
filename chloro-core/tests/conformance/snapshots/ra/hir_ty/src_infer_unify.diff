@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34234 bytes
+Chloro size:   34277 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -124,6 +124,34 @@ Rustfmt size:  35032 bytes
      pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
      where
          T: TypeFoldable<DbInterner<'db>> + Clone,
+     {
+         let ty = self.resolve_vars_with_obligations(ty);
+-        self.infer_ctxt
+-            .at(&ObligationCause::new(), self.trait_env.env)
+-            .deeply_normalize(ty.clone())
+-            .unwrap_or(ty)
++        self.infer_ctxt.at(&ObligationCause::new(), self.trait_env.env).deeply_normalize(ty.clone()).unwrap_or(
++            ty,
++        )
+     }
+ 
+     /// Works almost same as [`Self::normalize_associated_types_in`], but this also resolves shallow
+     }
+ 
+     pub(crate) fn normalize_alias_ty(&mut self, alias: Ty<'db>) -> Ty<'db> {
+-        self.infer_ctxt
+-            .at(&ObligationCause::new(), self.trait_env.env)
+-            .structurally_normalize_ty(alias, &mut self.fulfillment_cx)
+-            .unwrap_or(alias)
++        self.infer_ctxt.at(&ObligationCause::new(), self.trait_env.env).structurally_normalize_ty(
++            alias,
++            &mut self.fulfillment_cx,
++        ).unwrap_or(
++            alias,
++        )
+     }
+ 
+     pub(crate) fn next_ty_var(&mut self) -> Ty<'db> {
          let mut goals = vec![];
  
          // FIXME(next-solver): Handle `goals`.
@@ -239,17 +267,26 @@ Rustfmt size:  35032 bytes
      }
  
      /// Check if given type is `Sized` or not
+ 
  impl fmt::Debug for InferenceTable<'_> {
      fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-         f.debug_struct("InferenceTable")
+-        f.debug_struct("InferenceTable")
 -            .field(
 -                "name",
 -                &self.infer_ctxt.inner.borrow().type_variable_storage,
 -            )
-+            .field("name", &self.infer_ctxt.inner.borrow().type_variable_storage)
-             .field("fulfillment_cx", &self.fulfillment_cx)
-             .finish()
+-            .field("fulfillment_cx", &self.fulfillment_cx)
+-            .finish()
++        f.debug_struct("InferenceTable").field(
++            "name",
++            &self.infer_ctxt.inner.borrow().type_variable_storage,
++        ).field(
++            "fulfillment_cx",
++            &self.fulfillment_cx,
++        ).finish(
++        )
      }
+ }
  
  mod resolve_completely {
      use rustc_type_ir::{DebruijnIndex, Flags, TypeFolder, TypeSuperFoldable};

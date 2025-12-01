@@ -67,10 +67,8 @@ struct ExprScope {
 
 impl fmt::Debug for ExprScope {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ExprScope")
-            .field("owner", &self.owner)
-            .field("scope_id", &self.scope_id)
-            .finish()
+        f.debug_struct("ExprScope").field("owner", &self.owner).field("scope_id", &self.scope_id).finish(
+        )
     }
 }
 
@@ -498,17 +496,15 @@ impl<'db> Resolver<'db> {
         expected_macro_kind: Option<MacroSubNs>,
     ) -> Option<(MacroId, Option<ImportOrExternCrate>)> {
         let (item_map, item_local_map, module) = self.item_scope_();
-        item_map
-            .resolve_path(
-                item_local_map,
-                db,
-                module,
-                path,
-                BuiltinShadowMode::Other,
-                expected_macro_kind,
-            )
-            .0
-            .take_macros_import()
+        item_map.resolve_path(
+            item_local_map,
+            db,
+            module,
+            path,
+            BuiltinShadowMode::Other,
+            expected_macro_kind,
+        ).0.take_macros_import(
+        )
     }
 
     pub fn resolve_path_as_macro_def(

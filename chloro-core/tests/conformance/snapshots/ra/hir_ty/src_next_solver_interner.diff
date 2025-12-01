@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81977 bytes
+Chloro size:   81763 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -130,18 +130,8 @@ Rustfmt size:  84055 bytes
  impl<'db> DbInterner<'db> {
 -    // FIXME(next-solver): remove this method
      pub fn conjure() -> DbInterner<'db> {
--        crate::with_attached_db(|db| DbInterner {
-+        crate::with_attached_db(
-+            |db| DbInterner {
+         crate::with_attached_db(|db| DbInterner {
              db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
-             krate: None,
-             block: None,
--        })
-+        },
-+        )
-     }
- 
-     pub fn new_with(
      }
  }
  
@@ -200,18 +190,6 @@ Rustfmt size:  84055 bytes
      }
  
      pub fn inner(&self) -> &AdtDefInner {
--        crate::with_attached_db(|db| {
-+        crate::with_attached_db(
-+            |db| {
-             let inner = self.data_(db);
-             // SAFETY: ¯\_(ツ)_/¯
-             unsafe { std::mem::transmute(inner) }
--        })
-+        },
-+        )
-     }
- 
-     pub fn is_enum(&self) -> bool {
          let db = interner.db();
          // FIXME: this is disabled just to match the behavior with chalk right now
          let _field_tys = |id: VariantId| {
@@ -234,40 +212,6 @@ Rustfmt size:  84055 bytes
 +            let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
  
              let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
- 
- 
- impl fmt::Debug for AdtDef {
-     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
--        crate::with_attached_db(|db| match self.inner().id {
-+        crate::with_attached_db(
-+            |db| match self.inner().id {
-             AdtId::StructId(struct_id) => {
-                 let data = db.struct_signature(struct_id);
-                 f.write_str(data.name.as_str())
-                 let data = db.enum_signature(enum_id);
-                 f.write_str(data.name.as_str())
-             }
--        })
-+        },
-+        )
-     }
- }
- 
-     }
- 
-     pub fn inner(&self) -> &PatternKind<'db> {
--        crate::with_attached_db(|db| {
-+        crate::with_attached_db(
-+            |db| {
-             let inner = &self.kind_(db).0;
-             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
-             // make sure that our returned value is valid for the lifetime `'db`.
-             unsafe { std::mem::transmute(inner) }
--        })
-+        },
-+        )
-     }
- }
  
  
      fn outer_exclusive_binder(&self) -> rustc_type_ir::DebruijnIndex {
@@ -408,20 +352,6 @@ Rustfmt size:  84055 bytes
      type Clauses = Clauses<'db>;
  
      type GenericsOf = Generics;
-         I: Iterator<Item = T>,
-         T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
-     {
--        CollectAndApply::collect_and_apply(args, |g| {
-+        CollectAndApply::collect_and_apply(
-+            args,
-+            |g| {
-             GenericArgs::new_from_iter(self, g.iter().cloned())
--        })
-+        },
-+        )
-     }
- 
-     type UnsizingParams = UnsizingParams;
                      Ctor::Struct(id) => id.into(),
                      Ctor::Enum(id) => id.into(),
                  };
@@ -571,6 +501,16 @@ Rustfmt size:  84055 bytes
                              });
                              if contains_errors {
                                  continue;
+         impl_id: Self::ImplId,
+     ) -> EarlyBinder<Self, rustc_type_ir::TraitRef<Self>> {
+         let db = self.db();
+-        db.impl_trait(impl_id.0)
+-            // ImplIds for impls where the trait ref can't be resolved should never reach trait solving
+-            .expect("invalid impl passed to trait solver")
++        db.impl_trait(impl_id.0).expect("invalid impl passed to trait solver")
+     }
+ 
+     fn impl_polarity(self, impl_id: Self::ImplId) -> rustc_type_ir::ImplPolarity {
          let body = self.db.body(owner);
          matches!(
              body[expr_id],
@@ -623,6 +563,19 @@ Rustfmt size:  84055 bytes
      }
  
      fn impl_is_const(self, _def_id: Self::ImplId) -> bool {
+         _def_id: Self::CoroutineId,
+     ) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
+         // FIXME: Actually implement this.
+-        EarlyBinder::bind(Binder::dummy(CoroutineWitnessTypes {
++        EarlyBinder::bind(
++            Binder::dummy(
++            CoroutineWitnessTypes {
+             types: Tys::default(),
+             assumptions: RegionAssumptions::default(),
+-        }))
++        },
++        ),
++        )
      }
  
      fn is_default_trait(self, def_id: Self::TraitId) -> bool {
@@ -670,6 +623,11 @@ Rustfmt size:  84055 bytes
      }
  
      fn is_sizedness_trait(self, def_id: Self::TraitId) -> bool {
+         self.replace_escaping_bound_vars_uncached(
+             value,
+             FnMutDelegate {
+-                regions: &mut |r: BoundRegion| {
++            regions: &mut |r: BoundRegion| {
                      Region::new_bound(
                          self,
                          DebruijnIndex::ZERO,
@@ -680,7 +638,8 @@ Rustfmt size:  84055 bytes
 +                        BoundRegion { var: shift_bv(r.var), kind: r.kind },
                      )
                  },
-                 types: &mut |t: BoundTy| {
+-                types: &mut |t: BoundTy| {
++            types: &mut |t: BoundTy| {
                      Ty::new_bound(
                          self,
                          DebruijnIndex::ZERO,
@@ -691,7 +650,7 @@ Rustfmt size:  84055 bytes
 +                        BoundTy { var: shift_bv(t.var), kind: t.kind },
                      )
                  },
-                 consts: &mut |c| {
+-                consts: &mut |c| {
 -                    Const::new_bound(
 -                        self,
 -                        DebruijnIndex::ZERO,
@@ -699,10 +658,14 @@ Rustfmt size:  84055 bytes
 -                            var: shift_bv(c.var),
 -                        },
 -                    )
++            consts: &mut |c| {
 +                    Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
                  },
-             },
+-            },
++        },
          )
+     }
+ 
  
  mod tls_db {
      use std::{cell::Cell, ptr::NonNull};

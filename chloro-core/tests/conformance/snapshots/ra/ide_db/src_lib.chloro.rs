@@ -373,10 +373,7 @@ impl<'a> Ranker<'a> {
         // anything that mapped into a token tree has likely no semantic information
         let no_tt_parent =
             tok.parent().is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
-        (both_idents as usize)
-            | ((exact_same_kind as usize) << 1)
-            | ((same_text as usize) << 2)
-            | ((no_tt_parent as usize) << 3)
+        (both_idents as usize) | ((exact_same_kind as usize) << 1) | ((same_text as usize) << 2) | ((no_tt_parent as usize) << 3)
     }
 }
 

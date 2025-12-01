@@ -1471,7 +1471,12 @@ fn f() {
 impl FnScopes {
     fn new_scope(&) -> ScopeId {
         let res = self.scopes.len();
-        self.scopes.push(ScopeData { parent: None, entries: vec![] })
+        self.scopes.push(
+            ScopeData {
+            parent: None,
+            entries: vec![],
+        },
+        )
     }
 
     fn set_parent();
@@ -2427,7 +2432,7 @@ fn foo() {
 
 fn foo() {
     builtin#asm("");
-    builtin#global_asm("")
+    builtin#global_asm("");
     builtin#naked_asm("");
 }
 
@@ -3337,7 +3342,7 @@ impl Whatever {
 }
 
 fn f() {
-    (#[a] lhs? + #[b] rhs.await)
+    (lhs? + rhs.await)
 }
 
 /// Some docs
@@ -3558,13 +3563,7 @@ fn special_characters() {
 }
 
 fn punch_card() -> impl std::fmt::Debug {
-    ..=..=.. ..    .. .. .. ..    .. .. .. ..    .. ..=.. ..
-    ..=.. ..=..    .. .. .. ..    .. .. .. ..    ..=..=..=..
-    ..=.. ..=..    ..=.. ..=..    .. ..=..=..    .. ..=.. ..
-    ..=..=.. ..    ..=.. ..=..    ..=.. .. ..    .. ..=.. ..
-    ..=.. ..=..    ..=.. ..=..    .. ..=.. ..    .. ..=.. ..
-    ..=.. ..=..    ..=.. ..=..    .. .. ..=..    .. ..=.. ..
-    ..=.. ..=..    .. ..=..=..    ..=..=.. ..    .. ..=.. ..
+    ..=..=........................=......=....=....................=..=..=....=....=....=....=......=..=......=......=..=......=....=....=..........=......=....=....=....=......=........=......=....=....=....=........=......=......=....=......=..=....=..=........=....
 }
 
 fn ktulhu() {
@@ -4069,7 +4068,7 @@ fn foo() {
 
 fn foo() {
     #[A] { #[B] bar!()? }
-    #[C] &()
+    &()
 }
 //") || content.contains(";\n")) {
 fn finalize_with_eof(mut self) -> LexedStr<'a> {
@@ -5414,17 +5413,11 @@ impl<'t> Parser<'t> {
     }
 
     fn at_composite2(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind) -> bool {
-        self.inp.kind(self.pos + n) == k1
-            && self.inp.kind(self.pos + n + 1) == k2
-            && self.inp.is_joint(self.pos + n)
+        self.inp.kind(self.pos + n) == k1 && self.inp.kind(self.pos + n + 1) == k2 && self.inp.is_joint(self.pos + n)
     }
 
     fn at_composite3(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind, k3: SyntaxKind) -> bool {
-        self.inp.kind(self.pos + n) == k1
-            && self.inp.kind(self.pos + n + 1) == k2
-            && self.inp.kind(self.pos + n + 2) == k3
-            && self.inp.is_joint(self.pos + n)
-            && self.inp.is_joint(self.pos + n + 1)
+        self.inp.kind(self.pos + n) == k1 && self.inp.kind(self.pos + n + 1) == k2 && self.inp.kind(self.pos + n + 2) == k3 && self.inp.is_joint(self.pos + n) && self.inp.is_joint(self.pos + n + 1)
     }
 
     /// Checks if the current token is in `kinds`.
@@ -6052,8 +6045,7 @@ fn not_a_qualified_path(p: &Parser<'_>) -> bool {
     if [T![#], T![>], T![const]].contains(&p.nth(1)) {
         return true;
     }
-    ([LIFETIME_IDENT, IDENT].contains(&p.nth(1)))
-        && ([T![>], T![,], T![:], T![=]].contains(&p.nth(2)))
+    ([LIFETIME_IDENT, IDENT].contains(&p.nth(1))) && ([T![>], T![,], T![:], T![=]].contains(&p.nth(2)))
 }
 
 pub(crate) fn impl_type(p: &mut Parser<'_>) {
@@ -9721,8 +9713,7 @@ fn atom_pat(p: &mut Parser<'_>, recovery_set: TokenSet) -> Option<CompletedMarke
 }
 
 fn is_literal_pat_start(p: &Parser<'_>) -> bool {
-    p.at(T![-]) && (p.nth(1) == INT_NUMBER || p.nth(1) == FLOAT_NUMBER)
-        || p.at_ts(expressions::LITERAL_FIRST)
+    p.at(T![-]) && (p.nth(1) == INT_NUMBER || p.nth(1) == FLOAT_NUMBER) || p.at_ts(expressions::LITERAL_FIRST)
 }
 
 fn literal_pat(p: &mut Parser<'_>) -> CompletedMarker {

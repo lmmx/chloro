@@ -263,8 +263,7 @@ impl FunctionBuilder {
         let (generic_param_list, where_clause) =
             fn_generic_params(ctx, necessary_generic_params, &target)?;
 
-        Some(
-            Self {
+        Some(Self {
             target,
             fn_name,
             generic_param_list,
@@ -276,8 +275,7 @@ impl FunctionBuilder {
             visibility,
             is_async,
             target_edition,
-        },
-        )
+        })
     }
 
     fn from_method_call(
@@ -320,8 +318,7 @@ impl FunctionBuilder {
         };
         let fn_body = make::block_expr(vec![], Some(placeholder_expr));
 
-        Some(
-            Self {
+        Some(Self {
             target,
             fn_name,
             generic_param_list,
@@ -333,8 +330,7 @@ impl FunctionBuilder {
             visibility,
             is_async,
             target_edition,
-        },
-        )
+        })
     }
 
     fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {

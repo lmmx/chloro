@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44666 bytes
+Chloro size:   44635 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -166,6 +166,44 @@ Rustfmt size:  45288 bytes
      let ty_ref = ty.add_reference(hir::Mutability::Shared);
      let target_ref = target.add_reference(hir::Mutability::Shared);
      ty_ref.could_coerce_to(db, &target_ref)
+ ) -> Option<(ReferenceConversionType, bool)> {
+     let str_type = hir::BuiltinType::str().ty(db);
+ 
+-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type))
+-        .then_some((ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)))
++    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type)).then_some(
++        (ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)),
++    )
+ }
+ 
+ fn handle_as_ref_slice(
+     let type_argument = ty.type_arguments().next()?;
+     let slice_type = hir::Type::new_slice(type_argument);
+ 
+-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some((
+-        ReferenceConversionType::AsRefSlice,
+-        could_deref_to_target(ty, &slice_type, db),
+-    ))
++    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some(
++        (ReferenceConversionType::AsRefSlice, could_deref_to_target(ty, &slice_type, db)),
++    )
+ }
+ 
+ fn handle_dereferenced(
+ ) -> Option<(ReferenceConversionType, bool)> {
+     let type_argument = ty.type_arguments().next()?;
+ 
+-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument))
+-        .then_some((
+-            ReferenceConversionType::Dereferenced,
+-            could_deref_to_target(ty, &type_argument, db),
+-        ))
++    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument)).then_some(
++        (ReferenceConversionType::Dereferenced, could_deref_to_target(ty, &type_argument, db)),
++    )
+ }
+ 
+ fn handle_option_as_ref(
      }
      res
  }

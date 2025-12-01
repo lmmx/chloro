@@ -56,9 +56,7 @@ fn is_generic(function: &ast::Fn) -> bool {
 /// - `const` or
 /// - `unsafe`
 fn has_modifiers(function: &ast::Fn) -> bool {
-    function.async_token().is_some()
-        || function.const_token().is_some()
-        || function.unsafe_token().is_some()
+    function.async_token().is_some() || function.const_token().is_some() || function.unsafe_token().is_some()
 }
 
 /// Returns whether the given nested function has a trailing semicolon.

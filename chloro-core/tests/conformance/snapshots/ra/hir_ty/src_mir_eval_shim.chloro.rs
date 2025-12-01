@@ -1365,8 +1365,7 @@ impl<'db> Evaluator<'db> {
         metadata: Interval,
         locals: &Locals<'db>,
     ) -> Result<'db, (usize, usize)> {
-        Ok(
-            match ty.kind() {
+        Ok(match ty.kind() {
             TyKind::Str => (from_bytes!(usize, metadata.get(self)?), 1),
             TyKind::Slice(inner) => {
                 let len = from_bytes!(usize, metadata.get(self)?);
@@ -1409,8 +1408,7 @@ impl<'db> Evaluator<'db> {
                 (size as usize, align as usize)
             }
             _ => not_supported!("unsized type other than str, slice, struct and dyn"),
-        },
-        )
+        })
     }
 
     fn exec_atomic_intrinsic(

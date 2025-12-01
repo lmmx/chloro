@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16020 bytes
-Chloro size:   16066 bytes
+Chloro size:   16051 bytes
 Rustfmt size:  16174 bytes
 
 ✗ Outputs DIFFER
@@ -73,15 +73,6 @@ Rustfmt size:  16174 bytes
  
          _ => false,
      }
-             .collect(),
-     };
- 
--    Some(match cand.kind() {
-+    Some(
-+        match cand.kind() {
-         ProbeKind::TraitCandidate { source, result: _ } => match source {
-             CandidateSource::Impl(impl_def_id) => {
-                 // FIXME: Remove this in favor of storing this in the tree
          | ProbeKind::Root { result: _ }
          | ProbeKind::ShadowedEnvProbing
          | ProbeKind::RigidAlias { result: _ } => {
@@ -91,7 +82,5 @@ Rustfmt size:  16174 bytes
 -            )
 +            panic!("didn't expect to assemble trait candidate from {:#?}", cand.kind())
          }
--    })
-+    },
-+    )
+     })
  }

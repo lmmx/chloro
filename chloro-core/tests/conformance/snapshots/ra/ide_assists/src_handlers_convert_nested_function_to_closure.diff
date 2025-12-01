@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5052 bytes
-Chloro size:   4573 bytes
+Chloro size:   4557 bytes
 Rustfmt size:  5151 bytes
 
 ✗ Outputs DIFFER
@@ -60,6 +60,16 @@ Rustfmt size:  5151 bytes
  }
  
  /// Returns whether the given nested function has generic parameters.
+ /// - `const` or
+ /// - `unsafe`
+ fn has_modifiers(function: &ast::Fn) -> bool {
+-    function.async_token().is_some()
+-        || function.const_token().is_some()
+-        || function.unsafe_token().is_some()
++    function.async_token().is_some() || function.const_token().is_some() || function.unsafe_token().is_some()
+ }
+ 
+ /// Returns whether the given nested function has a trailing semicolon.
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

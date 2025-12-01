@@ -32,9 +32,9 @@ pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -
         )
     };
 
-    Diagnostic::new(DiagnosticCode::RustcHardError("typed-hole"), message, display_range)
-        .stable()
-        .with_fixes(fixes)
+    Diagnostic::new(DiagnosticCode::RustcHardError("typed-hole"), message, display_range).stable().with_fixes(
+        fixes,
+    )
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Assist>> {

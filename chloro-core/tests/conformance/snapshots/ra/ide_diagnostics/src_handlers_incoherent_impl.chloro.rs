@@ -18,8 +18,8 @@ pub(crate) fn incoherent_impl(
         DiagnosticCode::RustcHardError("E0210"),
         "cannot define inherent `impl` for foreign type".to_owned(),
         display_range,
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

@@ -198,10 +198,9 @@ impl<'db> InferCtxtInner<'db> {
 
     #[inline]
     pub fn unwrap_region_constraints(&mut self) -> RegionConstraintCollector<'db, '_> {
-        self.region_constraint_storage
-            .as_mut()
-            .expect("region constraints already solved")
-            .with_log(&mut self.undo_log)
+        self.region_constraint_storage.as_mut().expect("region constraints already solved").with_log(
+            &mut self.undo_log,
+        )
     }
 }
 
@@ -382,11 +381,9 @@ impl<'db> InferCtxt<'db> {
         &self,
         obligation: &PredicateObligation<'db>,
     ) -> bool {
-        <&SolverContext<'db>>::from(self).root_goal_may_hold_opaque_types_jank(Goal::new(
-            self.interner,
-            obligation.param_env,
-            obligation.predicate,
-        ))
+        <&SolverContext<'db>>::from(self).root_goal_may_hold_opaque_types_jank(
+            Goal::new(self.interner, obligation.param_env, obligation.predicate),
+        )
     }
 
     pub(crate) fn insert_type_vars<T>(&self, ty: T) -> T
@@ -655,14 +652,12 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_const_vid(&self) -> ConstVid {
-        self.inner
-            .borrow_mut()
-            .const_unification_table()
-            .new_key(ConstVariableValue::Unknown {
-                origin: ConstVariableOrigin {},
-                universe: self.universe(),
-            })
-            .vid
+        self.inner.borrow_mut().const_unification_table().new_key(
+            ConstVariableValue::Unknown {
+            origin: ConstVariableOrigin {},
+            universe: self.universe(),
+        },
+        ).vid
     }
 
     pub fn next_const_var_with_origin(&self, origin: ConstVariableOrigin) -> Const<'db> {
@@ -806,14 +801,9 @@ impl<'db> InferCtxt<'db> {
         def_id: SolverDefId,
         first: impl IntoIterator<Item = GenericArg<'db>>,
     ) -> GenericArgs<'db> {
-        GenericArgs::fill_rest(
-            self.interner,
-            def_id,
-            first,
-            |_index, kind, _| {
+        GenericArgs::fill_rest(self.interner, def_id, first, |_index, kind, _| {
             self.var_for_def(kind)
-        },
-        )
+        })
     }
 
     /// Returns `true` if errors have been reported since this infcx was

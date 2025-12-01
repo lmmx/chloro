@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9501 bytes
-Chloro size:   9352 bytes
+Chloro size:   9349 bytes
 Rustfmt size:  9638 bytes
 
 ✗ Outputs DIFFER
@@ -41,12 +41,11 @@ Rustfmt size:  9638 bytes
 -        DiagnosticCode::RustcHardError("typed-hole"),
 -        message,
 -        display_range,
--    )
++    Diagnostic::new(DiagnosticCode::RustcHardError("typed-hole"), message, display_range).stable().with_fixes(
++        fixes,
+     )
 -    .stable()
 -    .with_fixes(fixes)
-+    Diagnostic::new(DiagnosticCode::RustcHardError("typed-hole"), message, display_range)
-+        .stable()
-+        .with_fixes(fixes)
  }
  
  fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Assist>> {

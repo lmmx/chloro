@@ -10,8 +10,8 @@ pub(crate) fn await_outside_of_async(
         crate::DiagnosticCode::RustcHardError("E0728"),
         format!("`await` is used inside {}, which is not an `async` context", d.location),
         display_range,
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

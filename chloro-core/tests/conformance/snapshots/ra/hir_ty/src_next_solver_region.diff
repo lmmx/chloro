@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11497 bytes
-Chloro size:   11590 bytes
+Chloro size:   11567 bytes
 Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
@@ -15,22 +15,6 @@ Rustfmt size:  11829 bytes
  use super::{
      interned_vec_db,
      interner::{BoundVarKind, DbInterner, Placeholder},
-     }
- 
-     pub fn inner(&self) -> &RegionKind<'db> {
--        crate::with_attached_db(|db| {
-+        crate::with_attached_db(
-+            |db| {
-             let inner = self.kind_(db);
-             // SAFETY: The caller already has access to a `Region<'db>`, so borrowchecking will
-             // make sure that our returned value is valid for the lifetime `'db`.
-             unsafe { std::mem::transmute::<&RegionKind<'_>, &RegionKind<'db>>(inner) }
--        })
-+        },
-+        )
-     }
- 
-     pub fn new_early_param(
          index: DebruijnIndex,
          bound: BoundRegion,
      ) -> Region<'db> {

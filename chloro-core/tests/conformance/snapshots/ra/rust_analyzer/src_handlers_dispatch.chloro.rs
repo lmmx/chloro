@@ -121,11 +121,7 @@ impl RequestDispatcher<'_> {
             }
             return self;
         }
-        self.on_with_thread_intent::<false, ALLOW_RETRYING, R>(
-            ThreadIntent::Worker,
-            f,
-            Self::content_modified_error,
-        )
+        self.on_with_thread_intent(ThreadIntent::Worker, f, Self::content_modified_error)
     }
 
     /// Dispatches a non-latency-sensitive request onto the thread pool. When the VFS is marked not
@@ -150,7 +146,7 @@ impl RequestDispatcher<'_> {
             }
             return self;
         }
-        self.on_with_thread_intent::<false, false, R>(ThreadIntent::Worker, f, on_cancelled)
+        self.on_with_thread_intent(ThreadIntent::Worker, f, on_cancelled)
     }
 
     /// Dispatches a non-latency-sensitive request onto the thread pool. When the VFS is marked not
@@ -169,11 +165,7 @@ impl RequestDispatcher<'_> {
             }
             return self;
         }
-        self.on_with_thread_intent::<false, ALLOW_RETRYING, R>(
-            ThreadIntent::Worker,
-            f,
-            Self::content_modified_error,
-        )
+        self.on_with_thread_intent(ThreadIntent::Worker, f, Self::content_modified_error)
     }
 
     /// Dispatches a latency-sensitive request onto the thread pool. When the VFS is marked not
@@ -196,11 +188,7 @@ impl RequestDispatcher<'_> {
             }
             return self;
         }
-        self.on_with_thread_intent::<false, ALLOW_RETRYING, R>(
-            ThreadIntent::LatencySensitive,
-            f,
-            Self::content_modified_error,
-        )
+        self.on_with_thread_intent(ThreadIntent::LatencySensitive, f, Self::content_modified_error)
     }
 
     /// Formatting requests should never block on waiting a for task thread to open up, editors will wait
@@ -215,11 +203,7 @@ impl RequestDispatcher<'_> {
         R::Params: DeserializeOwned + panic::UnwindSafe + Send + fmt::Debug,
         R::Result: Serialize,
     {
-        self.on_with_thread_intent::<true, false, R>(
-            ThreadIntent::LatencySensitive,
-            f,
-            Self::content_modified_error,
-        )
+        self.on_with_thread_intent(ThreadIntent::LatencySensitive, f, Self::content_modified_error)
     }
 
     pub(crate) fn finish(&mut self) {

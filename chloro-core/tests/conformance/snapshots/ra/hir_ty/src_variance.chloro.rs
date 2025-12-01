@@ -863,9 +863,7 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
         // ));
         let (db, file_id) = TestDB::with_single_file(ra_fixture);
 
-        crate::attach_db(
-            &db,
-            || {
+        crate::attach_db(&db, || {
             let mut defs: Vec<GenericDefId> = Vec::new();
             let module = db.module_for_file_opt(file_id.file_id(&db)).unwrap();
             let def_map = module.def_map(&db);
@@ -946,7 +944,6 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
             }
 
             expected.assert_eq(&res);
-        },
-        )
+        })
     }
 }

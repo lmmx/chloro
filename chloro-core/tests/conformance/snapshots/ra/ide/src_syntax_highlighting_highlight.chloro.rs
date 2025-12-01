@@ -857,8 +857,7 @@ fn highlight_name_ref_by_syntax(
 
 fn is_consumed_lvalue(node: &SyntaxNode, local: &hir::Local, db: &RootDatabase) -> bool {
     // When lvalues are passed as arguments and they're not Copy, then mark them as Consuming.
-    parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST])
-        && !local.ty(db).is_copy(db)
+    parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST]) && !local.ty(db).is_copy(db)
 }
 
 /// Returns true if the parent nodes of `node` all match the `SyntaxKind`s in `kinds` exactly.

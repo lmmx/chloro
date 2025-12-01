@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4268 bytes
+Chloro size:   4324 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -18,6 +18,13 @@ Rustfmt size:  4381 bytes
      }
  }
  
+         let mut deserializer = serde_json::Deserializer::from_str(line);
+         deserializer.disable_recursion_limit();
+ 
+-        Some(CargoTestMessage {
++        Some(
++            CargoTestMessage {
+             target: self.target.clone(),
              output: if let Ok(message) = CargoTestOutput::deserialize(&mut deserializer) {
                  message
              } else {
@@ -26,15 +33,20 @@ Rustfmt size:  4381 bytes
 -                }
 +                CargoTestOutput::Custom { text: line.to_owned() }
              },
-         })
+-        })
++        },
++        )
      }
  
      fn from_eof(&self) -> Option<CargoTestMessage> {
 -        Some(CargoTestMessage {
--            target: self.target.clone(),
--            output: CargoTestOutput::Finished,
++        Some(
++            CargoTestMessage {
+             target: self.target.clone(),
+             output: CargoTestOutput::Finished,
 -        })
-+        Some(CargoTestMessage { target: self.target.clone(), output: CargoTestOutput::Finished })
++        },
++        )
      }
  }
  
@@ -61,20 +73,3 @@ Rustfmt size:  4381 bytes
          }
  
          // --no-fail-fast is needed to ensure that all requested tests will run
-             cmd.arg(extra_arg);
-         }
- 
--        Ok(Self {
-+        Ok(
-+            Self {
-             _handle: CommandHandle::spawn(
-                 cmd,
-                 CargoTestOutputParser::new(&test_target),
-                 sender,
-                 None,
-             )?,
--        })
-+        },
-+        )
-     }
- }

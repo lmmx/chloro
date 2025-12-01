@@ -2,12 +2,24 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8537 bytes
-Chloro size:   8328 bytes
+Chloro size:   8298 bytes
 Rustfmt size:  8636 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ impl fmt::Debug for Name {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+-        f.debug_struct("Name")
+-            .field("symbol", &self.symbol.as_str())
+-            .field("ctx", &self.ctx)
+-            .finish()
++        f.debug_struct("Name").field("symbol", &self.symbol.as_str()).field("ctx", &self.ctx).finish(
++        )
+     }
+ }
+ 
      }
  }
  

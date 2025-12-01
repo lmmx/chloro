@@ -66,14 +66,12 @@ impl<'db> Ty<'db> {
     }
 
     pub fn inner(&self) -> &WithCachedTypeInfo<TyKind<'db>> {
-        crate::with_attached_db(
-            |db| {
+        crate::with_attached_db(|db| {
             let inner = &self.kind_(db).0;
             // SAFETY: The caller already has access to a `Ty<'db>`, so borrowchecking will
             // make sure that our returned value is valid for the lifetime `'db`.
             unsafe { std::mem::transmute(inner) }
-        },
-        )
+        })
     }
 
     pub fn new_adt(interner: DbInterner<'db>, adt_id: AdtId, args: GenericArgs<'db>) -> Self {
@@ -487,9 +485,9 @@ impl<'db> Ty<'db> {
     /// This needs to be called for every type that may contain infer vars and is yielded to outside inference,
     /// as things other than inference do not expect to see infer vars.
     pub fn replace_infer_with_error(self, interner: DbInterner<'db>) -> Ty<'db> {
-        self.fold_with(&mut crate::next_solver::infer::resolve::ReplaceInferWithError::new(
-            interner,
-        ))
+        self.fold_with(
+            &mut crate::next_solver::infer::resolve::ReplaceInferWithError::new(interner),
+        )
     }
 
     pub fn from_builtin_type(

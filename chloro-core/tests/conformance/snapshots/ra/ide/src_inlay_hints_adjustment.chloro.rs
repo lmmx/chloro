@@ -553,9 +553,9 @@ impl core::ops::IndexMut for Struct {}
     fn adjustment_hints_prefer_prefix() {
         check_with_config(
             InlayHintsConfig {
-                adjustment_hints: AdjustmentHints::Always,
-                adjustment_hints_mode: AdjustmentHintsMode::PreferPrefix,
-            },
+            adjustment_hints: AdjustmentHints::Always,
+            adjustment_hints_mode: AdjustmentHintsMode::PreferPrefix,
+        },
             r#"
 fn main() {
     let _: u32         = loop {};
@@ -577,9 +577,9 @@ fn main() {
     fn adjustment_hints_prefer_postfix() {
         check_with_config(
             InlayHintsConfig {
-                adjustment_hints: AdjustmentHints::Always,
-                adjustment_hints_mode: AdjustmentHintsMode::PreferPostfix,
-            },
+            adjustment_hints: AdjustmentHints::Always,
+            adjustment_hints_mode: AdjustmentHintsMode::PreferPostfix,
+        },
             r#"
 fn main() {
     let _: u32         = loop {};
@@ -617,9 +617,9 @@ fn or_else() {
     fn adjustment_hints_unsafe_only() {
         check_with_config(
             InlayHintsConfig {
-                adjustment_hints: AdjustmentHints::Always,
-                adjustment_hints_hide_outside_unsafe: true,
-            },
+            adjustment_hints: AdjustmentHints::Always,
+            adjustment_hints_hide_outside_unsafe: true,
+        },
             r#"
 unsafe fn enabled() {
     f(&&());

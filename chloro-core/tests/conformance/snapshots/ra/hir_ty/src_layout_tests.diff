@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15972 bytes
-Chloro size:   16009 bytes
+Chloro size:   15963 bytes
 Rustfmt size:  15995 bytes
 
 ✗ Outputs DIFFER
@@ -21,44 +21,14 @@ Rustfmt size:  15995 bytes
  fn current_machine_target_data() -> TargetData {
      project_model::toolchain_info::target_data::get(
          QueryConfig::Rustc(&Sysroot::empty(), &std::env::current_dir().unwrap()),
-             Some(adt_or_type_alias_id)
-         })
-         .unwrap();
--    crate::attach_db(&db, || {
-+    crate::attach_db(
-+        &db,
-+        || {
-         let interner = DbInterner::new_with(&db, None, None);
-         let goal_ty = match adt_or_type_alias_id {
-             Either::Left(adt_id) => crate::next_solver::Ty::new_adt(
-                 Either::Right(ty) => hir_def::GenericDefId::TypeAliasId(ty),
-             }),
-         )
--    })
-+    },
-+    )
+         None,
+         &FxHashMap::default(),
++    ).unwrap(
+     )
+-    .unwrap()
  }
  
- /// A version of `eval_goal` for types that can not be expressed in ADTs, like closures and `impl Trait`
-     );
- 
-     let (db, file_id) = TestDB::with_single_file(&ra_fixture);
--    crate::attach_db(&db, || {
-+    crate::attach_db(
-+        &db,
-+        || {
-         let module_id = db.module_for_file(file_id.file_id(&db));
-         let def_map = module_id.def_map(&db);
-         let scope = &def_map[module_id.local_id].scope;
-         let infer = db.infer(function_id.into());
-         let goal_ty = infer.type_of_binding[b];
-         db.layout_of_ty(goal_ty, db.trait_environment(function_id.into()))
--    })
-+    },
-+    )
- }
- 
- #[track_caller]
+ fn eval_goal(
          struct BoxLike<T: ?Sized>(*mut T);
          struct Goal(BoxLike<Goal>);
      }

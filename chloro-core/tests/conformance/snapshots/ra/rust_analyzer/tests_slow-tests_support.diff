@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20688 bytes
+Chloro size:   20628 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -140,6 +140,21 @@ Rustfmt size:  21158 bytes
      fn send_notification(&self, not: Notification) {
          self.client.sender.send(Message::Notification(not)).unwrap();
      }
+ 
+     pub(crate) fn write_file_and_save(&self, path: &str, text: String) {
+         fs::write(self.dir.path().join(path), &text).unwrap();
+-        self.notification::<lsp_types::notification::DidSaveTextDocument>(
++        self.notification(
+             lsp_types::DidSaveTextDocumentParams {
+-                text_document: self.doc_id(path),
+-                text: Some(text),
+-            },
++            text_document: self.doc_id(path),
++            text: Some(text),
++        },
+         )
+     }
+ }
  struct Timeout;
  
  fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout> {

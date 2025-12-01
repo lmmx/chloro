@@ -231,8 +231,7 @@ fn try_lookup_include_path(
 
     let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
     let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
-    Some(
-        NavigationTarget {
+    Some(NavigationTarget {
         file_id,
         full_range: TextRange::new(0.into(), size),
         name: hir::Symbol::intern(&path),
@@ -242,8 +241,7 @@ fn try_lookup_include_path(
         container_name: None,
         description: None,
         docs: None,
-    },
-    )
+    })
 }
 
 fn try_lookup_macro_def_in_macro_use(
@@ -540,11 +538,8 @@ pub(crate) fn find_loops(
         None
     };
 
-    sema.descend_into_macros(token.clone())
-        .into_iter()
-        .filter_map(find_ancestors)
-        .collect_vec()
-        .into()
+    sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec().into(
+    )
 }
 
 fn nav_for_break_points(

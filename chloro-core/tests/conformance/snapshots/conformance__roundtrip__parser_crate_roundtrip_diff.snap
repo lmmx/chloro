@@ -1146,7 +1146,16 @@ expression: cleaned_diff
  fn f() {
      let foo = X {
          a: 1
-         self.scopes.push(ScopeData { parent: None, entries: vec![] })
+ impl FnScopes {
+     fn new_scope(&) -> ScopeId {
+         let res = self.scopes.len();
+-        self.scopes.push(ScopeData { parent: None, entries: vec![] })
++        self.scopes.push(
++            ScopeData {
++            parent: None,
++            entries: vec![],
++        },
++        )
      }
  
 -    fn set_parent
@@ -2067,11 +2076,6 @@ expression: cleaned_diff
  
  fn foo() {
      let _ = a;
- 
- fn foo() {
-     builtin#asm("");
--    builtin#global_asm("");
-+    builtin#global_asm("")
      builtin#naked_asm("");
  }
  
@@ -2899,6 +2903,12 @@ expression: cleaned_diff
      }
  }
  
+ fn f() {
+-    (#[a] lhs? + #[b] rhs.await)
++    (lhs? + rhs.await)
+ }
+ 
+ /// Some docs
      for<'a> F: Fn(&'a str),
  {
  }
@@ -3024,6 +3034,17 @@ expression: cleaned_diff
  
  fn dots() {
      assert_eq!(String::from(".................................................."),
+ }
+ 
+ fn punch_card() -> impl std::fmt::Debug {
+-    ..=..=.. ..    .. .. .. ..    .. .. .. ..    .. ..=.. ..
+-    ..=.. ..=..    .. .. .. ..    .. .. .. ..    ..=..=..=..
+-    ..=.. ..=..    ..=.. ..=..    .. ..=..=..    .. ..=.. ..
+-    ..=..=.. ..    ..=.. ..=..    ..=.. .. ..    .. ..=.. ..
+-    ..=.. ..=..    ..=.. ..=..    .. ..=.. ..    .. ..=.. ..
+-    ..=.. ..=..    ..=.. ..=..    .. .. ..=..    .. ..=.. ..
+-    ..=.. ..=..    .. ..=..=..    ..=..=.. ..    .. ..=.. ..
++    ..=..=........................=......=....=....................=..=..=....=....=....=....=......=..=......=......=..=......=....=....=..........=......=....=....=....=......=........=......=....=....=....=........=......=......=....=......=..=....=..=........=....
  }
  
  fn ktulhu() {
@@ -3529,10 +3550,18 @@ expression: cleaned_diff
         break;
     }
  }
+ 
+ fn foo() {
      #[A] { #[B] bar!()? }
-     #[C] &()
+-    #[C] &()
++    &()
++}
++//") || content.contains(";\n")) {
++fn finalize_with_eof(mut self) -> LexedStr<'a> {
++    self.res.push(EOF, self.offset);
++    self.res
  }
--
+ 
 -br##"
 -
 -b"\💩"
@@ -3642,12 +3671,8 @@ expression: cleaned_diff
 -    hello("world);
 -    // a bunch of code was here
 -    env("FLAGS", "-help")
-+//") || content.contains(";\n")) {
-+fn finalize_with_eof(mut self) -> LexedStr<'a> {
-+    self.res.push(EOF, self.offset);
-+    self.res
- }
- 
+-}
+-
 -b'\n
 -
 -'
@@ -4517,6 +4542,25 @@ expression: cleaned_diff
  /// navigating through the stream of tokens and
  /// constructing the parse tree. The actual parsing
      }
+ 
+     fn at_composite2(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind) -> bool {
+-        self.inp.kind(self.pos + n) == k1
+-            && self.inp.kind(self.pos + n + 1) == k2
+-            && self.inp.is_joint(self.pos + n)
++        self.inp.kind(self.pos + n) == k1 && self.inp.kind(self.pos + n + 1) == k2 && self.inp.is_joint(self.pos + n)
+     }
+ 
+     fn at_composite3(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind, k3: SyntaxKind) -> bool {
+-        self.inp.kind(self.pos + n) == k1
+-            && self.inp.kind(self.pos + n + 1) == k2
+-            && self.inp.kind(self.pos + n + 2) == k3
+-            && self.inp.is_joint(self.pos + n)
+-            && self.inp.is_joint(self.pos + n + 1)
++        self.inp.kind(self.pos + n) == k1 && self.inp.kind(self.pos + n + 1) == k2 && self.inp.kind(self.pos + n + 2) == k3 && self.inp.is_joint(self.pos + n) && self.inp.is_joint(self.pos + n + 1)
+     }
+ 
+     /// Checks if the current token is in `kinds`.
+     }
  }
  
 -//! See [`Output`]
@@ -4702,7 +4746,12 @@ expression: cleaned_diff
  fn not_a_qualified_path(p: &Parser<'_>) -> bool {
      // There's an ambiguity between generic parameters and qualified paths in impls.
      // If we see `<` it may start both, so we have to inspect some following tokens.
-         && ([T![>], T![,], T![:], T![=]].contains(&p.nth(2)))
+     if [T![#], T![>], T![const]].contains(&p.nth(1)) {
+         return true;
+     }
+-    ([LIFETIME_IDENT, IDENT].contains(&p.nth(1)))
+-        && ([T![>], T![,], T![:], T![=]].contains(&p.nth(2)))
++    ([LIFETIME_IDENT, IDENT].contains(&p.nth(1))) && ([T![>], T![,], T![:], T![=]].contains(&p.nth(2)))
  }
  
 -// test_err impl_type
@@ -5992,7 +6041,12 @@ expression: cleaned_diff
      // }
      if p.at(T![..]) {
          let m = p.start();
-         || p.at_ts(expressions::LITERAL_FIRST)
+ }
+ 
+ fn is_literal_pat_start(p: &Parser<'_>) -> bool {
+-    p.at(T![-]) && (p.nth(1) == INT_NUMBER || p.nth(1) == FLOAT_NUMBER)
+-        || p.at_ts(expressions::LITERAL_FIRST)
++    p.at(T![-]) && (p.nth(1) == INT_NUMBER || p.nth(1) == FLOAT_NUMBER) || p.at_ts(expressions::LITERAL_FIRST)
  }
  
 -// test literal_pattern

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70309 bytes
+Chloro size:   70263 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -82,24 +82,19 @@ Rustfmt size:  71259 bytes
      // that is we are the string input of it
      if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
          .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
+         None
+     };
  
-     let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
-     let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
--    Some(NavigationTarget {
-+    Some(
-+        NavigationTarget {
-         file_id,
-         full_range: TextRange::new(0.into(), size),
-         name: hir::Symbol::intern(&path),
-         container_name: None,
-         description: None,
-         docs: None,
--    })
-+    },
+-    sema.descend_into_macros(token.clone())
+-        .into_iter()
+-        .filter_map(find_ancestors)
+-        .collect_vec()
+-        .into()
++    sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec().into(
 +    )
  }
  
- fn try_lookup_macro_def_in_macro_use(
+ fn nav_for_break_points(
  
  #[cfg(test)]
  mod tests {

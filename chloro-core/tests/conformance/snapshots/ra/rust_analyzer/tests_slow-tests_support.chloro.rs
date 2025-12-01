@@ -446,11 +446,11 @@ impl Server {
 
     pub(crate) fn write_file_and_save(&self, path: &str, text: String) {
         fs::write(self.dir.path().join(path), &text).unwrap();
-        self.notification::<lsp_types::notification::DidSaveTextDocument>(
+        self.notification(
             lsp_types::DidSaveTextDocumentParams {
-                text_document: self.doc_id(path),
-                text: Some(text),
-            },
+            text_document: self.doc_id(path),
+            text: Some(text),
+        },
         )
     }
 }

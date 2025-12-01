@@ -10,8 +10,8 @@ pub(crate) fn malformed_derive(
         DiagnosticCode::RustcHardError("E0777"),
         "malformed derive input, derive attributes are of the form `#[derive(Derive1, Derive2, ...)]`",
         display_range,
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

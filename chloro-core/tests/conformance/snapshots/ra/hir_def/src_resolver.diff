@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54439 bytes
+Chloro size:   54351 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -67,6 +67,18 @@ Rustfmt size:  54481 bytes
  };
  
  #[derive(Debug, Clone)]
+ 
+ impl fmt::Debug for ExprScope {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+-        f.debug_struct("ExprScope")
+-            .field("owner", &self.owner)
+-            .field("scope_id", &self.scope_id)
+-            .finish()
++        f.debug_struct("ExprScope").field("owner", &self.owner).field("scope_id", &self.scope_id).finish(
++        )
+     }
+ }
+ 
      BlockScope(ModuleItemMap<'db>),
      /// Brings the generic parameters of an item into scope as well as the `Self` type alias /
      /// generic for ADTs and impls.
@@ -96,6 +108,32 @@ Rustfmt size:  54481 bytes
          // `use core::u16;`.
          if path.kind == PathKind::Plain
              && n_segments > 1
+         expected_macro_kind: Option<MacroSubNs>,
+     ) -> Option<(MacroId, Option<ImportOrExternCrate>)> {
+         let (item_map, item_local_map, module) = self.item_scope_();
+-        item_map
+-            .resolve_path(
+-                item_local_map,
+-                db,
+-                module,
+-                path,
+-                BuiltinShadowMode::Other,
+-                expected_macro_kind,
+-            )
+-            .0
+-            .take_macros_import()
++        item_map.resolve_path(
++            item_local_map,
++            db,
++            module,
++            path,
++            BuiltinShadowMode::Other,
++            expected_macro_kind,
++        ).0.take_macros_import(
++        )
+     }
+ 
+     pub fn resolve_path_as_macro_def(
          &self,
          db: &dyn DefDatabase,
          path: &ModPath,

@@ -112,10 +112,9 @@ impl<'db> InferCtxt<'db> {
     /// Scan the constraints produced since `snapshot` and check whether
     /// we added any region constraints.
     pub fn region_constraints_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {
-        self.inner
-            .borrow_mut()
-            .unwrap_region_constraints()
-            .region_constraints_added_in_snapshot(&snapshot.undo_snapshot)
+        self.inner.borrow_mut().unwrap_region_constraints().region_constraints_added_in_snapshot(
+            &snapshot.undo_snapshot,
+        )
     }
 
     pub fn opaque_types_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {

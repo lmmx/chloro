@@ -8,8 +8,8 @@ pub(crate) fn bad_rtn(ctx: &DiagnosticsContext<'_>, d: &hir::BadRtn) -> Diagnost
         DiagnosticCode::Ra("bad-rtn", Severity::Error),
         "return type notation not allowed in this position yet",
         d.rtn.map(Into::into),
+    ).stable(
     )
-    .stable()
 }
 
 #[cfg(test)]

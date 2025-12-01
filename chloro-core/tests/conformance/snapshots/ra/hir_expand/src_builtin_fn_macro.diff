@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   32301 bytes
+Chloro size:   32337 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -51,6 +51,22 @@ Rustfmt size:  32290 bytes
  
  fn concat_expand(
      };
+     let span_map = db.real_span_map(editioned_file_id);
+     // FIXME: Parse errors
+-    ExpandResult::ok(syntax_node_to_token_tree(
++    ExpandResult::ok(
++        syntax_node_to_token_tree(
+         &db.parse(editioned_file_id).syntax_node(),
+         SpanMap::RealSpanMap(span_map),
+         span,
+         syntax_bridge::DocCommentDesugarMode::ProcMacro,
+-    ))
++    ),
++    )
+ }
+ 
+ pub fn include_input_to_file_id(
+     };
  
      // FIXME: we're not able to read excluded files (which is most of them because
 +
@@ -61,3 +77,14 @@ Rustfmt size:  32290 bytes
      // expansion.
      let file_id = match relative_file(db, arg_id, path.as_str(), true, input_span) {
          Ok(file_id) => file_id,
+     span: Span,
+ ) -> ExpandResult<tt::TopSubtree> {
+     ExpandResult::new(
+-        tt::TopSubtree::empty(tt::DelimSpan { open: span, close: span }),
++        tt::TopSubtree::empty(tt::DelimSpan {
++        open: span,
++        close: span,
++    }),
+         ExpandError::other(span, "quote! is not implemented"),
+     )
+ }

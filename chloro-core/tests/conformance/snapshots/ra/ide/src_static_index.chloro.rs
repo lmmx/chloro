@@ -296,9 +296,7 @@ impl StaticIndex<'_> {
         vendored_libs_config: VendoredLibrariesConfig<'_>,
     ) -> StaticIndex<'a> {
         let db = &analysis.db;
-        hir::attach_db(
-            db,
-            || {
+        hir::attach_db(db, || {
             let work = all_modules(db).into_iter().filter(|module| {
                 let file_id = module.definition_source_file_id(db).original_file(db);
                 let source_root =
@@ -331,8 +329,7 @@ impl StaticIndex<'_> {
                 visited_files.insert(file_id);
             }
             this
-        },
-        )
+        })
     }
 }
 

@@ -99,7 +99,7 @@ pub mod keys {
         }
 
         fn get<'a>(map: &'a DynMap, key: &AstPtr<AST>) -> Option<&'a ID> {
-            map.map.get::<FxHashMap<AstPtr<AST>, ID>>()?.get(key)
+            map.map.get()?.get(key)
         }
 
         fn is_empty(map: &DynMap) -> bool {
@@ -153,7 +153,7 @@ impl<K: Hash + Eq + 'static, V: 'static> Policy for (K, V) {
     }
 
     fn get<'a>(map: &'a DynMap, key: &K) -> Option<&'a V> {
-        map.map.get::<FxHashMap<K, V>>()?.get(key)
+        map.map.get()?.get(key)
     }
 
     fn is_empty(map: &DynMap) -> bool {

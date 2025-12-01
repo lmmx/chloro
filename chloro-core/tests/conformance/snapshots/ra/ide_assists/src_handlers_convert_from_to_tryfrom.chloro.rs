@@ -103,8 +103,8 @@ fn wrap_ok(expr: ast::Expr) -> ast::Expr {
     make::expr_call(
         make::expr_path(make::ext::ident_path("Ok")),
         make::arg_list(std::iter::once(expr)),
+    ).into(
     )
-    .into()
 }
 
 #[cfg(test)]

@@ -136,8 +136,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                 .collect::<Vec<_>>()
                 .into(),
         );
-        Ok(
-            match &self.body[pattern] {
+        Ok(match &self.body[pattern] {
             Pat::Missing => return Err(MirLowerError::IncompletePattern),
             Pat::Wild => (current, current_else),
             Pat::Tuple { args, ellipsis } => {
@@ -505,8 +504,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
             }
             Pat::Box { .. } => not_supported!("box pattern"),
             Pat::ConstBlock(_) => not_supported!("const block pattern"),
-        },
-        )
+        })
     }
 
     fn pattern_match_binding(
@@ -594,8 +592,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
         shape: AdtPatternShape<'_>,
         mode: MatchingMode,
     ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
-        Ok(
-            match variant {
+        Ok(match variant {
             VariantId::EnumVariantId(v) => {
                 if mode == MatchingMode::Check {
                     let e = self.const_eval_discriminant(v)? as u128;
@@ -635,8 +632,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
             VariantId::UnionId(_) => {
                 return Err(MirLowerError::TypeError("pattern matching on union"));
             }
-        },
-        )
+        })
     }
 
     fn pattern_matching_variant_fields(
@@ -649,8 +645,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
         cond_place: &Place<'db>,
         mode: MatchingMode,
     ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
-        Ok(
-            match shape {
+        Ok(match shape {
             AdtPatternShape::Record { args } => {
                 let it = args
                     .iter()
@@ -683,8 +678,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                 )?
             }
             AdtPatternShape::Unit => (current, current_else),
-        },
-        )
+        })
     }
 
     fn pattern_match_adt(

@@ -6,7 +6,7 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lmmx/chloro/master.svg)](https://results.pre-commit.ci/latest/github/lmmx/chloro/master)
 [![free of syn](https://img.shields.io/badge/free%20of-syn-hotpink)](https://github.com/fasterthanlime/free-of-syn)<!-- blazon -->
 [![Dependencies: 32](https://img.shields.io/badge/cargo%20tree-32-blue)](https://crates.io/crates/chloro)
-[![Binary Size: 1.6M](https://img.shields.io/badge/build%20size-1.6M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
+[![Binary Size: 1.7M](https://img.shields.io/badge/build%20size-1.7M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
 
 chloro is a minimal Rust code formatter.
 

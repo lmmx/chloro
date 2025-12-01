@@ -421,10 +421,8 @@ struct LocalUsages(ide_db::search::UsageSearchResult);
 impl LocalUsages {
     fn find_local_usages(ctx: &AssistContext<'_>, var: Local) -> Self {
         Self(
-            Definition::Local(var)
-                .usages(&ctx.sema)
-                .in_scope(&SearchScope::single_file(ctx.file_id()))
-                .all(),
+            Definition::Local(var).usages(&ctx.sema).in_scope(&SearchScope::single_file(ctx.file_id())).all(
+        ),
         )
     }
 
@@ -953,8 +951,7 @@ impl FunctionBody {
         let generic_param_lists = parents.iter().filter_map(|it| it.generic_param_list()).collect();
         let where_clauses = parents.iter().filter_map(|it| it.where_clause()).collect();
 
-        Some(
-            (
+        Some((
             ContainerInfo {
                 is_const,
                 parent_loop,
@@ -964,8 +961,7 @@ impl FunctionBody {
                 edition,
             },
             contains_tail_expr,
-        ),
-        )
+        ))
     }
 
     fn return_ty<'db>(&self, ctx: &AssistContext<'db>) -> Option<RetType<'db>> {

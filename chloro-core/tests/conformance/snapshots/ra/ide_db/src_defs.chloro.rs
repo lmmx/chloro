@@ -62,13 +62,11 @@ impl Definition {
     }
 
     pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
-        Some(
-            match self {
+        Some(match self {
             Definition::Module(m) => m.krate(),
             &Definition::Crate(it) => it,
             _ => self.module(db)?.krate(),
-        },
-        )
+        })
     }
 
     /// Returns the module this definition resides in.

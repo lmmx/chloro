@@ -172,8 +172,7 @@ fn make_constructors(
 }
 
 fn get_fields(strukt: &ast::Struct) -> Option<(Option<Vec<ast::Name>>, Vec<ast::Type>)> {
-    Some(
-        match strukt.kind() {
+    Some(match strukt.kind() {
         ast::StructKind::Unit => return None,
         ast::StructKind::Record(fields) => {
             let names = fields.fields().map(|field| field.name()).collect::<Option<_>>()?;
@@ -183,8 +182,7 @@ fn get_fields(strukt: &ast::Struct) -> Option<(Option<Vec<ast::Name>>, Vec<ast::
         ast::StructKind::Tuple(fields) => {
             (None, fields.fields().map(|field| field.ty()).collect::<Option<_>>()?)
         }
-    },
-    )
+    })
 }
 
 #[tracing::instrument(ret)]

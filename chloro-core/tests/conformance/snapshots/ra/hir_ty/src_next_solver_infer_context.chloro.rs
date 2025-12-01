@@ -80,10 +80,10 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
     }
 
     fn opportunistic_resolve_lt_var(&self, vid: RegionVid) -> Region<'db> {
-        self.inner
-            .borrow_mut()
-            .unwrap_region_constraints()
-            .opportunistic_resolve_var(self.interner, vid)
+        self.inner.borrow_mut().unwrap_region_constraints().opportunistic_resolve_var(
+            self.interner,
+            vid,
+        )
     }
 
     fn is_changed_arg(

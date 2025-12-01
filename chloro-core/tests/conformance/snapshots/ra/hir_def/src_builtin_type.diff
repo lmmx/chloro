@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8029 bytes
-Chloro size:   8032 bytes
+Chloro size:   8008 bytes
 Rustfmt size:  8029 bytes
 
 ✗ Outputs DIFFER
@@ -15,6 +15,39 @@ Rustfmt size:  8029 bytes
  /// Different signed int types.
  #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
  pub enum BuiltinInt {
+         [
+             (Name::new_symbol_root(sym::char), BuiltinType::Char),
+             (Name::new_symbol_root(sym::bool), BuiltinType::Bool),
+-            (Name::new_symbol_root(sym::str),  BuiltinType::Str),
+-
++            (Name::new_symbol_root(sym::str), BuiltinType::Str),
+             (Name::new_symbol_root(sym::isize), BuiltinType::Int(BuiltinInt::Isize)),
+-            (Name::new_symbol_root(sym::i8),    BuiltinType::Int(BuiltinInt::I8)),
+-            (Name::new_symbol_root(sym::i16),   BuiltinType::Int(BuiltinInt::I16)),
+-            (Name::new_symbol_root(sym::i32),   BuiltinType::Int(BuiltinInt::I32)),
+-            (Name::new_symbol_root(sym::i64),   BuiltinType::Int(BuiltinInt::I64)),
+-            (Name::new_symbol_root(sym::i128),  BuiltinType::Int(BuiltinInt::I128)),
+-
++            (Name::new_symbol_root(sym::i8), BuiltinType::Int(BuiltinInt::I8)),
++            (Name::new_symbol_root(sym::i16), BuiltinType::Int(BuiltinInt::I16)),
++            (Name::new_symbol_root(sym::i32), BuiltinType::Int(BuiltinInt::I32)),
++            (Name::new_symbol_root(sym::i64), BuiltinType::Int(BuiltinInt::I64)),
++            (Name::new_symbol_root(sym::i128), BuiltinType::Int(BuiltinInt::I128)),
+             (Name::new_symbol_root(sym::usize), BuiltinType::Uint(BuiltinUint::Usize)),
+-            (Name::new_symbol_root(sym::u8),    BuiltinType::Uint(BuiltinUint::U8)),
+-            (Name::new_symbol_root(sym::u16),   BuiltinType::Uint(BuiltinUint::U16)),
+-            (Name::new_symbol_root(sym::u32),   BuiltinType::Uint(BuiltinUint::U32)),
+-            (Name::new_symbol_root(sym::u64),   BuiltinType::Uint(BuiltinUint::U64)),
+-            (Name::new_symbol_root(sym::u128),  BuiltinType::Uint(BuiltinUint::U128)),
+-
++            (Name::new_symbol_root(sym::u8), BuiltinType::Uint(BuiltinUint::U8)),
++            (Name::new_symbol_root(sym::u16), BuiltinType::Uint(BuiltinUint::U16)),
++            (Name::new_symbol_root(sym::u32), BuiltinType::Uint(BuiltinUint::U32)),
++            (Name::new_symbol_root(sym::u64), BuiltinType::Uint(BuiltinUint::U64)),
++            (Name::new_symbol_root(sym::u128), BuiltinType::Uint(BuiltinUint::U128)),
+             (Name::new_symbol_root(sym::f16), BuiltinType::Float(BuiltinFloat::F16)),
+             (Name::new_symbol_root(sym::f32), BuiltinType::Float(BuiltinFloat::F32)),
+             (Name::new_symbol_root(sym::f64), BuiltinType::Float(BuiltinFloat::F64)),
          };
          Some(res)
      }

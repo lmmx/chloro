@@ -47,6 +47,14 @@ Rustfmt size:  6719 bytes
  pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
      let trait_ty = impl_.trait_()?;
+     make::expr_call(
+         make::expr_path(make::ext::ident_path("Ok")),
+         make::arg_list(std::iter::once(expr)),
++    ).into(
+     )
+-    .into()
+ }
+ 
  #[cfg(test)]
  mod tests {
      use super::*;
