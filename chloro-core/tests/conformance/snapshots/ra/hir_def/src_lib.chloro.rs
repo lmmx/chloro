@@ -64,22 +64,14 @@ use crate::{
 pub use self::hir::type_ref;
 
 pub mod expr_store;
-
 pub mod resolver;
-
 pub mod nameres;
-
 pub mod src;
-
 pub mod find_path;
-
 pub mod import_map;
-
 pub mod visibility;
-
 #[cfg(test)]
 mod macro_expansion_tests;
-
 #[cfg(test)]
 mod test_db;
 

@@ -46,6 +46,11 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
             return false;
         }
 
+        // No blank line between consecutive mod declarations
+        if prev == SyntaxKind::MODULE && curr_kind == SyntaxKind::MODULE {
+            return false;
+        }
+
         // Blank line between different top-level items
         matches!(
             prev,
@@ -78,10 +83,6 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
                 | SyntaxKind::MACRO_CALL
         )
     };
-
-    // if prev_kind == Some(SyntaxKind::MODULE) && curr_kind == SyntaxKind::MODULE {
-    //     println!("should_add_blank_line(MODULE, MODULE) = {}", result);
-    // }
 
     result
 }

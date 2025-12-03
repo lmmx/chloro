@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   49363 bytes
+Chloro size:   49359 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -44,13 +44,13 @@ Rustfmt size:  50490 bytes
      },
      CallableDefId, InferenceResult, MemoryMap,
  };
--
--mod borrowck;
--mod eval;
--mod lower;
--mod monomorphization;
--mod pretty;
--
++use super::consteval::try_const_usize;
+ 
+ mod borrowck;
+ mod eval;
+ mod monomorphization;
+ mod pretty;
+ 
 -pub use borrowck::{borrowck_query, BorrowckResult, MutabilityReason};
 -pub use eval::{
 -    interpret_mir, pad16, render_const_using_debug_impl, Evaluator, MirEvalError, VTableMap,
@@ -63,18 +63,8 @@ Rustfmt size:  50490 bytes
 -pub(crate) use lower::mir_body_cycle_result;
 -pub(crate) use monomorphization::monomorphized_mir_body_cycle_result;
 -
- use super::consteval::try_const_usize;
- 
-+mod borrowck;
-+
-+mod eval;
-+
-+mod lower;
-+
-+mod monomorphization;
-+
-+mod pretty;
-+
+-use super::consteval::try_const_usize;
+-
  pub type BasicBlockId<'db> = Idx<BasicBlock<'db>>;
 +
  pub type LocalId<'db> = Idx<Local<'db>>;

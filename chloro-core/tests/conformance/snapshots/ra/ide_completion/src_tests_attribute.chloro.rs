@@ -957,7 +957,6 @@ mod cfg {
         );
     }
 }
-
 mod derive {
     use super::*;
     #[test]
@@ -1126,7 +1125,6 @@ use proc_macros::DeriveIdentity;
         );
     }
 }
-
 mod lint {
     use super::*;
     #[test]
@@ -1207,7 +1205,6 @@ mod lint {
         );
     }
 }
-
 mod repr {
     use super::*;
     #[test]
@@ -1320,7 +1317,6 @@ mod repr {
         );
     }
 }
-
 mod macro_use {
     use super::*;
     #[test]

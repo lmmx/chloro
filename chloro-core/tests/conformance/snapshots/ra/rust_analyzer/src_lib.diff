@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2169 bytes
-Chloro size:   2122 bytes
+Chloro size:   2120 bytes
 Rustfmt size:  2169 bytes
 
 ✗ Outputs DIFFER
@@ -54,9 +54,17 @@ Rustfmt size:  2169 bytes
  
  mod handlers {
      pub(crate) mod dispatch;
+     pub(crate) mod notification;
+     pub(crate) mod request;
+ }
+-
+ pub mod tracing {
+     pub mod config;
+     pub mod json;
+     pub use config::Config;
      pub mod hprof;
  }
- 
+-
 -pub mod config;
 -mod global_state;
 -pub mod lsp;

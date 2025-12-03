@@ -32,7 +32,6 @@ use crate::next_solver::{
 };
 
 pub mod canonicalizer;
-
 pub mod instantiate;
 
 impl<'db> InferCtxt<'db> {

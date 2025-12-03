@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40650 bytes
-Chloro size:   40245 bytes
+Chloro size:   40229 bytes
 Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
@@ -16,25 +16,51 @@ Rustfmt size:  40650 bytes
 +
  #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
  
--pub use intern;
++use core::fmt;
++use std::hash::Hash;
++
++use attrs::collect_attrs;
++use base_db::Crate;
++pub use base_db::EditionedFileId;
++use either::Either;
+ pub use intern;
++pub use mbe::{DeclarativeMacro, ValueResult};
++use rustc_hash::FxHashMap;
++use salsa::plumbing::{AsId, FromId};
++use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
++use stdx::TupleExt;
++use syntax::{
++    ast::{self, AstNode},
++    SyntaxNode, SyntaxToken, TextRange, TextSize,
++};
++use triomphe::Arc;
++
++use crate::{
++    attrs::AttrId,
++    builtin::{
++        include_input_to_file_id, BuiltinAttrExpander, BuiltinDeriveExpander,
++        BuiltinFnLikeExpander, EagerExpander,
++    },
++    db::ExpandDatabase,
++    mod_path::ModPath,
++    proc_macro::{CustomProcMacroExpander, ProcMacroKind},
++    span_map::{ExpansionSpanMap, SpanMap},
++};
++pub use crate::{
++    cfg_process::check_cfg_attr_value,
++    files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
++    prettify_macro_expansion_::prettify_macro_expansion,
++};
+ 
+ pub mod attrs;
+ pub mod builtin;
+ pub mod name;
+ pub mod proc_macro;
+ pub mod span_map;
 -
--pub mod attrs;
--pub mod builtin;
--pub mod change;
--pub mod db;
--pub mod declarative;
--pub mod eager;
--pub mod files;
--pub mod hygiene;
--pub mod inert_attr_macro;
--pub mod mod_path;
--pub mod name;
--pub mod proc_macro;
--pub mod span_map;
--
--mod cfg_process;
--mod fixup;
--mod prettify_macro_expansion_;
+ mod cfg_process;
+ mod fixup;
+ mod prettify_macro_expansion_;
 -
 -use attrs::collect_attrs;
 -use rustc_hash::FxHashMap;
@@ -42,80 +68,38 @@ Rustfmt size:  40650 bytes
 -use stdx::TupleExt;
 -use triomphe::Arc;
 -
- use core::fmt;
- use std::hash::Hash;
- 
-+use attrs::collect_attrs;
- use base_db::Crate;
-+pub use base_db::EditionedFileId;
- use either::Either;
-+pub use intern;
-+pub use mbe::{DeclarativeMacro, ValueResult};
-+use rustc_hash::FxHashMap;
-+use salsa::plumbing::{AsId, FromId};
- use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
-+use stdx::TupleExt;
- use syntax::{
+-use core::fmt;
+-use std::hash::Hash;
+-
+-use base_db::Crate;
+-use either::Either;
+-use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
+-use syntax::{
 -    SyntaxNode, SyntaxToken, TextRange, TextSize,
-     ast::{self, AstNode},
-+    SyntaxNode, SyntaxToken, TextRange, TextSize,
- };
-+use triomphe::Arc;
- 
- use crate::{
-     attrs::AttrId,
-     builtin::{
+-    ast::{self, AstNode},
+-};
+-
+-use crate::{
+-    attrs::AttrId,
+-    builtin::{
 -        BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander,
 -        include_input_to_file_id,
-+        include_input_to_file_id, BuiltinAttrExpander, BuiltinDeriveExpander,
-+        BuiltinFnLikeExpander, EagerExpander,
-     },
-     db::ExpandDatabase,
-     mod_path::ModPath,
-     proc_macro::{CustomProcMacroExpander, ProcMacroKind},
-     span_map::{ExpansionSpanMap, SpanMap},
- };
+-    },
+-    db::ExpandDatabase,
+-    mod_path::ModPath,
+-    proc_macro::{CustomProcMacroExpander, ProcMacroKind},
+-    span_map::{ExpansionSpanMap, SpanMap},
+-};
 -
- pub use crate::{
-     cfg_process::check_cfg_attr_value,
-     files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
-     prettify_macro_expansion_::prettify_macro_expansion,
- };
- 
+-pub use crate::{
+-    cfg_process::check_cfg_attr_value,
+-    files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
+-    prettify_macro_expansion_::prettify_macro_expansion,
+-};
+-
 -pub use base_db::EditionedFileId;
 -pub use mbe::{DeclarativeMacro, ValueResult};
-+pub mod attrs;
-+
-+pub mod builtin;
-+
-+pub mod change;
-+
-+pub mod db;
-+
-+pub mod declarative;
-+
-+pub mod eager;
-+
-+pub mod files;
-+
-+pub mod hygiene;
-+
-+pub mod inert_attr_macro;
-+
-+pub mod mod_path;
-+
-+pub mod name;
-+
-+pub mod proc_macro;
-+
-+pub mod span_map;
-+
-+mod cfg_process;
-+
-+mod fixup;
-+
-+mod prettify_macro_expansion_;
- 
+-
  pub mod tt {
      pub use span::Span;
 -    pub use tt::{DelimiterKind, IdentIsRaw, LitKind, Spacing, token_to_literal};

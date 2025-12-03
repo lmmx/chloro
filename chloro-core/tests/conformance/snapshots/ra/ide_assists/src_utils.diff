@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44628 bytes
+Chloro size:   44627 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -55,10 +55,6 @@ Rustfmt size:  45288 bytes
  };
  
  mod gen_trait_fn_body;
-+
- pub(crate) mod ref_field_expr;
- 
- pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
      invert_special_case(make, &expr).unwrap_or_else(|| make.expr_prefix(T![!], expr).into())
  }
  

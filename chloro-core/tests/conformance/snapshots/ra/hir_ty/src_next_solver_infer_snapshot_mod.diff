@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4096 bytes
-Chloro size:   4096 bytes
+Chloro size:   4095 bytes
 Rustfmt size:  4239 bytes
 
 ✗ Outputs DIFFER
@@ -20,13 +20,13 @@ Rustfmt size:  4239 bytes
 +use super::region_constraints::RegionSnapshot;
  
  mod fudge;
--pub(crate) mod undo_log;
+ pub(crate) mod undo_log;
  
 -use undo_log::{Snapshot, UndoLog};
-+pub(crate) mod undo_log;
- 
+-
  #[must_use = "once you start a snapshot, you should always consume it"]
  pub struct CombinedSnapshot {
+     pub(super) undo_snapshot: Snapshot,
  
      #[instrument(skip(self, snapshot), level = "debug")]
      pub(crate) fn rollback_to(&self, snapshot: CombinedSnapshot) {

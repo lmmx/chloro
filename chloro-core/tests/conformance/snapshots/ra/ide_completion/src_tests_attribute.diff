@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31419 bytes
-Chloro size:   31389 bytes
+Chloro size:   31385 bytes
 Rustfmt size:  31419 bytes
 
 ✗ Outputs DIFFER
@@ -41,7 +41,10 @@ Rustfmt size:  31419 bytes
      #[test]
      fn inside_conditional() {
          check_edit(
- 
+         );
+     }
+ }
+-
  mod derive {
      use super::*;
 -
@@ -97,7 +100,10 @@ Rustfmt size:  31419 bytes
      #[test]
      fn qualified() {
          check(
- 
+         );
+     }
+ }
+-
  mod lint {
      use super::*;
 -
@@ -160,7 +166,10 @@ Rustfmt size:  31419 bytes
      #[test]
      fn lint_unclosed() {
          check_edit(
- 
+         );
+     }
+ }
+-
  mod repr {
      use super::*;
 -
@@ -205,7 +214,10 @@ Rustfmt size:  31419 bytes
      #[test]
      fn prim() {
          check(
- 
+         );
+     }
+ }
+-
  mod macro_use {
      use super::*;
 -

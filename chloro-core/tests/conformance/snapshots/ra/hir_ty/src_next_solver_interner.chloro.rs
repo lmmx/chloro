@@ -2301,7 +2301,6 @@ mod tls_db {
         GLOBAL_DB.with(#[inline] |a| a.with(op))
     }
 }
-
 mod tls_cache {
     use crate::db::HirDatabase;
     use super::DbInterner;
