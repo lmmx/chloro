@@ -425,6 +425,7 @@ impl ModuleDef {
             ModuleDef::Const(it) => Some(it.into()),
             ModuleDef::Static(it) => Some(it.into()),
             ModuleDef::Variant(it) => Some(it.into()),
+
             ModuleDef::Module(_)
             | ModuleDef::Adt(_)
             | ModuleDef::Trait(_)
@@ -720,6 +721,7 @@ impl Module {
 
         let mut impl_assoc_items_scratch = vec![];
         for impl_def in self.impl_defs(db) {
+            // Negative impls can't have items, don't emit missing items diagnostic for them
             GenericDef::Impl(impl_def).diagnostics(db, acc);
             let loc = impl_def.id.lookup(db);
             let (impl_signature, source_map) = db.impl_signature_with_source_map(impl_def.id);
@@ -1024,6 +1026,7 @@ fn emit_def_diagnostic_<'db>(
             let item = ast.to_ptr(db);
             acc.push(UnresolvedExternCrate { decl: InFile::new(ast.file_id, item) }.into());
         }
+
         DefDiagnosticKind::MacroError { ast, path, err } => {
             let item = ast.to_ptr(db);
             let RenderedExpandError { message, error, kind } = err.render_to_string(db);
@@ -1045,6 +1048,7 @@ fn emit_def_diagnostic_<'db>(
                 UnresolvedImport { decl: InFile::new(file_id, AstPtr::new(&use_tree)) }.into(),
             );
         }
+
         DefDiagnosticKind::UnconfiguredCode { ast_id, cfg, opts } => {
             let ast_id_map = db.ast_id_map(ast_id.file_id);
             let ptr = ast_id_map.get_erased(ast_id.value);
@@ -1070,6 +1074,7 @@ fn emit_def_diagnostic_<'db>(
             );
         }
         DefDiagnosticKind::UnimplementedBuiltinMacro { ast } => {
+            // Must have a name, otherwise we wouldn't emit it.
             let node = ast.to_node(db);
             let name = node.name().expect("unimplemented builtin macro with no name");
             acc.push(
@@ -1141,6 +1146,8 @@ fn precise_macro_call_location(
             )
         }
         MacroCallKind::Derive { ast_id, derive_attr_index, derive_index, .. } => {
+            // Compute the precise location of the macro name's token in the derive
+            // list.
             let node = ast_id.to_node(db);
             let token = (|| {
                 let derive_attr = collect_attrs(&node)
@@ -4590,6 +4597,7 @@ impl<'db> Closure<'db> {
                 info.1
             }
             AnyClosureId::CoroutineClosureId(_id) => {
+                // FIXME: Infer kind for coroutine closures.
                 match self.subst.as_coroutine_closure().kind() {
                     rustc_type_ir::ClosureKind::Fn => FnTrait::AsyncFn,
                     rustc_type_ir::ClosureKind::FnMut => FnTrait::AsyncFnMut,

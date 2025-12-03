@@ -1076,8 +1076,7 @@ impl<'a> FindUsages<'a> {
                     }
                 }
             }
-            _ => {
-            }
+            _ => {},
         }
     }
 
@@ -1187,6 +1186,8 @@ impl<'a> FindUsages<'a> {
                 };
                 sink(file_id, reference)
             }
+            // FIXME: special case type aliases, we can't filter between impl and trait defs here as we lack the substitutions
+            // so we always resolve all assoc type aliases to both their trait def and impl defs
             Some(NameRefClass::Definition(def, _)) if self.assoc_item_container.is_some()
                     && matches!(self.def, Definition::TypeAlias(_))
                     && convert_to_def_in_trait(self.sema.db, def)

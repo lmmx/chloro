@@ -434,7 +434,9 @@ impl UseTreeLowering<'_> {
                     self.mapping.alloc(tree.clone());
                     Some(UseTree { kind: UseTreeKind::Glob { path: path.map(Interned::new) } })
                 }
+                // Globs can't be renamed
                 (_, Some(_), true) | (None, None, false) => None,
+                // `bla::{ as Name}` is invalid
                 (None, Some(_), false) => None,
                 (Some(path), alias, false) => {
                     self.mapping.alloc(tree.clone());

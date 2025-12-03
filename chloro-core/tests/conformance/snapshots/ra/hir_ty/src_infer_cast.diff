@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16159 bytes
+Chloro size:   16464 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -74,14 +74,6 @@ Rustfmt size:  16583 bytes
          match (t_from, t_cast) {
              (_, CastTy::Int(Int::CEnum) | CastTy::FnPtr) => Err(CastError::NonScalar),
              (_, CastTy::Int(Int::Bool)) => Err(CastError::CastToBool),
- 
-         match (src_kind, dst_kind) {
-             (Some(PointerKind::Error), _) | (_, Some(PointerKind::Error)) => Ok(()),
--            // (_, None) => Err(CastError::UnknownCastPtrKind),
--            // (None, _) => Err(CastError::UnknownExprPtrKind),
-             (_, None) | (None, _) => Ok(()),
-             (_, Some(PointerKind::Thin)) => Ok(()),
-             (Some(PointerKind::Thin), _) => Err(CastError::SizedUnsizedCast),
                          let src_principal = ctx.db.trait_signature(src_principal.0);
                          let dst_principal = ctx.db.trait_signature(dst_principal.0);
                          if src_principal.flags.contains(TraitFlags::AUTO)
@@ -91,27 +83,6 @@ Rustfmt size:  16583 bytes
                              Ok(())
                          } else {
                              Err(CastError::DifferingKinds)
-         expr_ty: Ty<'db>,
-     ) -> Result<(), CastError> {
-         match pointer_kind(expr_ty, ctx).map_err(|_| CastError::Unknown)? {
--            // None => Err(CastError::UnknownExprPtrKind),
-             None => Ok(()),
-             Some(PointerKind::Error) => Ok(()),
-             Some(PointerKind::Thin) => Ok(()),
-         cast_ty: Ty<'db>,
-     ) -> Result<(), CastError> {
-         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
--            // None => Err(CastError::UnknownCastPtrKind),
-             None => Ok(()),
-             Some(PointerKind::Error) => Ok(()),
-             Some(PointerKind::Thin) => Ok(()),
-         cast_ty: Ty<'db>,
-     ) -> Result<(), CastError> {
-         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
--            // None => Err(CastError::UnknownCastPtrKind),
-             None => Ok(()),
-             Some(PointerKind::Error) => Ok(()),
-             Some(PointerKind::Thin) => Ok(()),
                  never!("`{:?}` should be sized but is not?", ty);
                  return Err(());
              };

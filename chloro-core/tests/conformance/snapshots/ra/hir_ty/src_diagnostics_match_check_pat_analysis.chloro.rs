@@ -480,6 +480,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
             TyKind::Tuple(..) => ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) },
             TyKind::Ref(..) => ConstructorSet::Ref,
             TyKind::Never => ConstructorSet::NoConstructors,
+            // This type is one for which we cannot list constructors, like `str` or `f64`.
             _ => ConstructorSet::Unlistable,
         })
     }

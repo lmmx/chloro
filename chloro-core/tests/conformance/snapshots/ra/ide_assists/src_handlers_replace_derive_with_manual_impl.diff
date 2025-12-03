@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30915 bytes
-Chloro size:   30120 bytes
+Chloro size:   30405 bytes
 Rustfmt size:  30915 bytes
 
 ✗ Outputs DIFFER
@@ -78,10 +78,12 @@ Rustfmt size:  30915 bytes
  }
  
  fn impl_def_from_trait(
-     let has_more_derives = !new_derives.is_empty();
  
      if has_more_derives {
--        // Make the paths into flat lists of tokens in a vec
+         // Make the paths into flat lists of tokens in a vec
++        // ...which are interspersed with ", "
++        // ...wrap them into the appropriate `NodeOrToken` variant
++        // ...and make them into a flat list of tokens
          let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
              node.descendants_with_tokens()
                  .filter_map(|element| element.into_token())
@@ -97,7 +99,7 @@ Rustfmt size:  30915 bytes
          let new_tree = make::token_tree(T!['('], tt).clone_for_update();
          editor.replace(old_tree.syntax(), new_tree.syntax());
      } else {
--        // Remove the attr and any trailing whitespace
+         // Remove the attr and any trailing whitespace
 -
          if let Some(line_break) =
              attr.syntax().next_sibling_or_token().filter(|t| t.kind() == WHITESPACE)

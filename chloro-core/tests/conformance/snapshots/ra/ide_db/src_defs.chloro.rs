@@ -357,6 +357,7 @@ impl Definition {
             Definition::DeriveHelper(it) => {
                 format!("derive_helper {}", it.name(db).display(db, display_target.edition))
             }
+            // FIXME
             Definition::InlineAsmRegOrRegClass(_) => "inline_asm_reg_or_reg_class".to_owned(),
             Definition::InlineAsmOperand(_) => "inline_asm_reg_operand".to_owned(),
         }

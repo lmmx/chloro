@@ -366,6 +366,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     mode,
                 )?,
                 None => {
+                    // The path is not a variant or a local, so it is a const
                     let unresolved_name = || {
                         MirLowerError::unresolved_path(self.db, p, self.display_target(), self.body)
                     };

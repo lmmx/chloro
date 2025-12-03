@@ -893,6 +893,7 @@ fn compute_contained_params_in_generic_param(
             Some(ParamBoundWithParams { node, self_ty_param, other_params: FxHashSet::default() })
         }
         ast::GenericParam::LifetimeParam(_) => {
+            // FIXME: It might be a good idea to handle lifetime parameters too.
             None
         }
     }

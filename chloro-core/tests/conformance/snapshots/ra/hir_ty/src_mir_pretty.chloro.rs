@@ -377,6 +377,8 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
     fn operand(&mut self, r: &Operand<'db>) {
         match &r.kind {
             OperandKind::Copy(p) | OperandKind::Move(p) => {
+                // MIR at the time of writing doesn't have difference between move and copy, so we show them
+                // equally. Feel free to change it.
                 self.place(p);
             }
             OperandKind::Constant { konst, .. } => w!(self, "Const({})", self.hir_display(konst)),

@@ -314,10 +314,13 @@ fn mode_and_needs_parens_for_adjustment_hints(
 fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, bool) {
     let prec = expr.precedence();
     if postfix {
+        // given we are the higher precedence, no parent expression will have stronger requirements
         let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Postfix);
         let needs_outer_parens = false;
         (needs_outer_parens, needs_inner_parens)
     } else {
+        // if we have no parent, we don't need outer parens to disambiguate
+        // otherwise anything with higher precedence than what we insert needs to wrap us
         let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Prefix);
         let parent = expr
             .syntax()

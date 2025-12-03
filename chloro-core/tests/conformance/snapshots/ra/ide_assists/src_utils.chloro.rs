@@ -427,12 +427,14 @@ fn check_pat_variant_nested_or_literal_with_depth(
 
     match pat {
         ast::Pat::RestPat(_) | ast::Pat::WildcardPat(_) | ast::Pat::RefPat(_) => false,
+
         ast::Pat::LiteralPat(_)
         | ast::Pat::RangePat(_)
         | ast::Pat::MacroPat(_)
         | ast::Pat::PathPat(_)
         | ast::Pat::BoxPat(_)
         | ast::Pat::ConstBlockPat(_) => true,
+
         ast::Pat::IdentPat(ident_pat) => ident_pat.pat().is_some_and(|pat| {
             check_pat_variant_nested_or_literal_with_depth(ctx, &pat, depth_after_refutable)
         }),
@@ -1087,9 +1089,11 @@ pub(crate) fn replace_record_field_expr(
     initializer: ast::Expr,
 ) {
     if let Some(ast::Expr::PathExpr(path_expr)) = record_field.expr() {
+        // replace field shorthand
         let file_range = ctx.sema.original_range(path_expr.syntax());
         edit.insert(file_range.range.end(), format!(": {}", initializer.syntax().text()))
     } else if let Some(expr) = record_field.expr() {
+        // just replace expr
         let file_range = ctx.sema.original_range(expr.syntax());
         edit.replace(file_range.range, initializer.syntax().text());
     }

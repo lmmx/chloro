@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17010 bytes
-Chloro size:   16807 bytes
+Chloro size:   16957 bytes
 Rustfmt size:  17010 bytes
 
 ✗ Outputs DIFFER
@@ -34,32 +34,15 @@ Rustfmt size:  17010 bytes
      let param_name = param_name.trim_matches('_');
      if param_name.is_empty() {
          return true;
-             };
-             Some(Either::Left(res))
-         }
--        // paths
          ast::Expr::MacroExpr(macro_expr) => macro_expr.macro_call()?.path().map(Either::Right),
          ast::Expr::RecordExpr(record_expr) => record_expr.path().map(Either::Right),
          ast::Expr::PathExpr(path_expr) => {
-             let path = path_expr.path()?;
--            // single segment paths are likely locals
+-            let path = path_expr.path()?;
+             // single segment paths are likely locals
++            let path = path_expr.path()?;
              Some(match path.as_single_name_ref() {
                  None => Either::Right(path),
                  Some(name_ref) => Either::Left(vec![name_ref]),
-             })
-         }
-         ast::Expr::PrefixExpr(prefix_expr) if prefix_expr.op_kind() == Some(UnaryOp::Not) => None,
--        // recurse
-         ast::Expr::PrefixExpr(prefix_expr) => get_segment_representation(&prefix_expr.expr()?),
-         ast::Expr::RefExpr(ref_expr) => get_segment_representation(&ref_expr.expr()?),
-         ast::Expr::CastExpr(cast_expr) => get_segment_representation(&cast_expr.expr()?),
-         ast::Expr::IndexExpr(index_expr) => get_segment_representation(&index_expr.base()?),
-         ast::Expr::ParenExpr(paren_expr) => get_segment_representation(&paren_expr.expr()?),
-         ast::Expr::TryExpr(try_expr) => get_segment_representation(&try_expr.expr()?),
--        // ast::Expr::ClosureExpr(closure_expr) => todo!(),
-         _ => None,
-     }
- }
              }
          }
          _ => None,

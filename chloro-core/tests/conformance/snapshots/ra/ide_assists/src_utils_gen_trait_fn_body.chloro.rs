@@ -155,7 +155,10 @@ fn gen_clone_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
 fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
     let annotated_name = adt.name()?;
     match adt {
+        // `Debug` cannot be derived for unions, so no default impl can be provided.
         ast::Adt::Union(_) => None,
+
+        // => match self { Self::Variant => write!(f, "Variant") }
         ast::Adt::Enum(enum_) => {
             let list = enum_.variant_list()?;
             let mut arms = vec![];
@@ -253,6 +256,7 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
             let body = body.indent(ast::edit::IndentLevel(1));
             Some(body)
         }
+
         ast::Adt::Struct(strukt) => {
             let name = format!("\"{annotated_name}\"");
             let args = make::arg_list(Some(make::expr_literal(&name).into()));
@@ -307,7 +311,9 @@ fn gen_default_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
         Some(make::expr_call(make::expr_path(fn_name), make::arg_list(None)).into())
     }
     match adt {
+        // `Debug` cannot be derived for unions, so no default impl can be provided.
         ast::Adt::Union(_) => None,
+        // Deriving `Debug` for enums is not stable yet.
         ast::Adt::Enum(_) => None,
         ast::Adt::Struct(strukt) => {
             let expr = match strukt.field_list() {

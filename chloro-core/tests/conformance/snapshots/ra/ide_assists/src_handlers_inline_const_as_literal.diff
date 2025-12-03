@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19183 bytes
-Chloro size:   18421 bytes
+Chloro size:   18495 bytes
 Rustfmt size:  19179 bytes
 
 ✗ Outputs DIFFER
@@ -49,13 +49,6 @@ Rustfmt size:  19179 bytes
  
          let id = AssistId::refactor_inline("inline_const_as_literal");
  
-             validate_type_recursively(ctx, ty.as_slice().as_ref(), false, fuel - 1)
-         }
-         (_, Some(ty)) => match ty.as_builtin() {
--            // `const A: str` is not correct, but `const A: &builtin` is.
-             Some(builtin) if refed || !builtin.is_str() => Some(()),
-             _ => None,
-         },
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -174,10 +174,23 @@ impl<'db> InferenceContext<'_, 'db> {
     /// perform `NeverToAny` coercions.
     fn pat_guaranteed_to_constitute_read_for_never(&self, pat: PatId) -> bool {
         match &self.body[pat] {
+            // Does not constitute a read.
             Pat::Wild => false,
+
+            // This is unnecessarily restrictive when the pattern that doesn't
+            // constitute a read is unreachable.
+            //
+            // For example `match *never_ptr { value => {}, _ => {} }` or
+            // `match *never_ptr { _ if false => {}, value => {} }`.
+            //
+            // It is however fine to be restrictive here; only returning `true`
+            // can lead to unsoundness.
             Pat::Or(subpats) => {
                 subpats.iter().all(|pat| self.pat_guaranteed_to_constitute_read_for_never(*pat))
             }
+
+            // All of these constitute a read, or match on something that isn't `!`,
+            // which would require a `NeverToAny` coercion.
             Pat::Bind { .. }
             | Pat::TupleStruct { .. }
             | Pat::Path(_)
@@ -198,6 +211,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
     fn is_syntactic_place_expr(&self, expr: ExprId) -> bool {
         match &self.body[expr] {
+            // Lang item paths cannot currently be local variables or statics.
             Expr::Path(Path::LangItem(_, _)) => false,
             Expr::Path(Path::Normal(path)) => path.type_anchor.is_none(),
             Expr::Path(path) => self
@@ -1429,6 +1443,7 @@ impl<'db> InferenceContext<'_, 'db> {
         let ret_ty = self.process_remote_user_written_ty(ret_ty);
 
         if self.is_builtin_binop(lhs_ty, rhs_ty, op) {
+            // use knowledge of built-in binary ops, which can sometimes help inference
             let builtin_ret = self.enforce_builtin_binop_types(lhs_ty, rhs_ty, op);
             self.unify(builtin_ret, ret_ty);
             builtin_ret
@@ -1675,6 +1690,8 @@ impl<'db> InferenceContext<'_, 'db> {
                 ty
             }
             None => {
+                // no field found, lets attempt to resolve it like a function so that IDE things
+                // work out while people are typing
                 let canonicalized_receiver = self.canonicalize(receiver_ty);
                 let resolved = method_resolution::lookup_method(
                     &canonicalized_receiver,
@@ -1864,6 +1881,8 @@ impl<'db> InferenceContext<'_, 'db> {
                     expected,
                 )
             }
+            // Failed to resolve, report diagnostic and try to resolve as call to field access or
+            // assoc function
             None => {
                 let field_with_same_name_exists = match self.lookup_field(receiver_ty, method_name)
                 {
@@ -2317,6 +2336,7 @@ impl<'db> InferenceContext<'_, 'db> {
     fn register_obligations_for_call(&mut self, callable_ty: Ty<'db>) {
         let callable_ty = self.table.try_structurally_resolve_type(callable_ty);
         if let TyKind::FnDef(fn_def, parameters) = callable_ty.kind() {
+            // add obligation for trait implementation, if this is a trait method
             let generic_predicates =
                 self.db.generic_predicates(GenericDefId::from_callable(self.db, fn_def.0));
             if let Some(predicates) = generic_predicates.instantiate(self.interner(), parameters) {
@@ -2329,6 +2349,7 @@ impl<'db> InferenceContext<'_, 'db> {
             match fn_def.0 {
                 CallableDefId::FunctionId(f) => {
                     if let ItemContainerId::TraitId(trait_) = f.lookup(self.db).container {
+                        // construct a TraitRef
                         let trait_params_len = generics(self.db, trait_.into()).len();
                         let substs = GenericArgs::new_from_iter(
                             self.interner(),
@@ -2342,8 +2363,7 @@ impl<'db> InferenceContext<'_, 'db> {
                         ));
                     }
                 }
-                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {
-                }
+                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {},
             }
         }
     }
@@ -2473,17 +2493,21 @@ impl<'db> InferenceContext<'_, 'db> {
 
         match op {
             BinaryOp::LogicOp(_) => true,
+
             BinaryOp::ArithOp(ArithOp::Shl | ArithOp::Shr) => {
                 lhs.is_integral() && rhs.is_integral()
             }
+
             BinaryOp::ArithOp(
                 ArithOp::Add | ArithOp::Sub | ArithOp::Mul | ArithOp::Div | ArithOp::Rem,
             ) => {
                 lhs.is_integral() && rhs.is_integral() || lhs.is_floating_point() && rhs.is_floating_point()
             }
+
             BinaryOp::ArithOp(ArithOp::BitAnd | ArithOp::BitOr | ArithOp::BitXor) => {
                 lhs.is_integral() && rhs.is_integral() || lhs.is_floating_point() && rhs.is_floating_point() || matches!((lhs.kind(), rhs.kind()), (TyKind::Bool, TyKind::Bool))
             }
+
             BinaryOp::CmpOp(_) => {
                 let is_scalar = |kind| {
                     matches!(
@@ -2501,10 +2525,12 @@ impl<'db> InferenceContext<'_, 'db> {
                 };
                 is_scalar(lhs.kind()) && is_scalar(rhs.kind())
             }
+
             BinaryOp::Assignment { op: None } => {
                 stdx::never!("Simple assignment operator is not binary op.");
                 false
             }
+
             BinaryOp::Assignment { .. } => unreachable!("handled above"),
         }
     }

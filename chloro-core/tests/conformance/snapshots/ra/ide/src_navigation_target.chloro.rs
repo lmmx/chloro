@@ -311,6 +311,7 @@ impl TryToNav for Definition {
             | Definition::ToolModule(_)
             | Definition::InlineAsmRegOrRegClass(_)
             | Definition::BuiltinAttr(_) => None,
+            // FIXME: The focus range should be set to the helper declaration
             Definition::DeriveHelper(it) => it.derive().try_to_nav(sema),
         }
     }
@@ -348,6 +349,7 @@ pub(crate) trait ToNavFromAst {
 fn container_name(db: &RootDatabase, t: impl HasContainer) -> Option<Symbol> {
     match t.container(db) {
         hir::ItemContainer::Trait(it) => Some(it.name(db).symbol().clone()),
+        // FIXME: Handle owners of blocks correctly here
         hir::ItemContainer::Module(it) => it.name(db).map(|name| name.symbol().clone()),
         _ => None,
     }

@@ -73,7 +73,12 @@ impl Attrs {
 #[rustfmt::skip]
 pub(crate) fn parse_macro_name_and_helper_attrs(tt: &TopSubtree) -> Option<(Name, Box<[Name]>)> {
     match tt.token_trees().flat_tokens() {
+        // `#[proc_macro_derive(Trait)]`
+        // `#[rustc_builtin_macro(Trait)]`
         [TokenTree::Leaf(Leaf::Ident(trait_name))] => Some((trait_name.as_name(), Box::new([]))),
+
+        // `#[proc_macro_derive(Trait, attributes(helper1, helper2, ...))]`
+        // `#[rustc_builtin_macro(Trait, attributes(helper1, helper2, ...))]`
         [
             TokenTree::Leaf(Leaf::Ident(trait_name)),
             TokenTree::Leaf(Leaf::Punct(comma)),
@@ -94,6 +99,7 @@ pub(crate) fn parse_macro_name_and_helper_attrs(tt: &TopSubtree) -> Option<(Name
                 .collect::<Option<Box<[_]>>>()?;
             Some((trait_name.as_name(), helpers))
         }
+
         _ => None,
     }
 }

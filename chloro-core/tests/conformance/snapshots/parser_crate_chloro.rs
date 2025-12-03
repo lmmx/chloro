@@ -2062,10 +2062,8 @@ fn f() {
 
 fn main() {
     match 42 {
-        ..0 => {
-        }
-        1..2 => {
-        }
+        ..0 => {},
+        1..2 => {},
     }
 }
 
@@ -2805,12 +2803,9 @@ struct A<const N: i32 = i32::MAX>;
 
 fn foo() {
     match () {
-        _ => {
-        }
-        () => {
-        }
-        [] => {
-        }
+        _ => {},
+        () => {},
+        [] => {},
     }
 }
 fn printf(format: *const i8, ..., _: u8) -> i32;
@@ -2861,8 +2856,7 @@ impl S {
 fn foo() {
     match () {
         _ => (),
-        _ => {
-        }
+        _ => {},
         _ => (),
     }
 }
@@ -3328,6 +3322,7 @@ fn inner() {
         //! As are ModuleDoc style comments
     };
     {
+        //! As are ModuleDoc style comments
     }
 }
 
@@ -5371,10 +5366,12 @@ impl<'t> Parser<'t> {
             T![>>] => self.at_composite2(n, T![>], T![>]),
             T![|=] => self.at_composite2(n, T![|], T![=]),
             T![||] => self.at_composite2(n, T![|], T![|]),
+
             T![...] => self.at_composite3(n, T![.], T![.], T![.]),
             T![..=] => self.at_composite3(n, T![.], T![.], T![=]),
             T![<<=] => self.at_composite3(n, T![<], T![<], T![=]),
             T![>>=] => self.at_composite3(n, T![>], T![>], T![=]),
+
             _ => self.inp.kind(self.pos + n) == kind,
         }
     }
@@ -6319,6 +6316,7 @@ fn tuple_field_list(p: &mut Parser<'_>) {
 pub(super) fn mod_contents(p: &mut Parser<'_>, stop_on_r_curly: bool) {
     attributes::inner_attrs(p);
     while !(p.at(EOF) || (p.at(T!['}']) && stop_on_r_curly)) {
+        // We can set `is_in_extern=true`, because it only allows `safe fn`, and there is no ambiguity here.
         item_or_macro(p, stop_on_r_curly, true);
     }
 }
@@ -7040,6 +7038,14 @@ fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
     p.bump_remap(T![builtin]);
     p.bump(T![#]);
     if p.eat_contextual_kw(T![offset_of]) {
+        // Due to our incomplete handling of macro groups, especially
+        // those with empty delimiters, we wrap `expr` fragments in
+        // parentheses sometimes. Since `offset_of` is a macro, and takes
+        // `expr`, the field names could be wrapped in parentheses.
+        // test offset_of_parens
+        // fn foo() {
+        //     builtin#offset_of(Foo, (bar.baz.0));
+        // }
         p.expect(T!['(']);
         type_(p);
         p.expect(T![,]);
@@ -7079,6 +7085,12 @@ fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
         p.expect(T![')']);
         Some(m.complete(p, FORMAT_ARGS_EXPR))
     } else if p.eat_contextual_kw(T![asm]) || p.eat_contextual_kw(T![global_asm]) || p.eat_contextual_kw(T![naked_asm]) {
+        // test asm_kinds
+        // fn foo() {
+        //     builtin#asm("");
+        //     builtin#global_asm("");
+        //     builtin#naked_asm("");
+        // }
         parse_asm_expr(p, m)
     } else {
         m.abandon(p);
@@ -7205,6 +7217,7 @@ fn parse_options(p: &mut Parser<'_>) {
     p.expect(T!['(']);
 
     while !p.eat(T![')']) && !p.at(EOF) {
+        // Allow trailing commas
         const OPTIONS: &[SyntaxKind] = &[
             T![pure],
             T![nomem],
@@ -7234,6 +7247,7 @@ fn parse_clobber_abi(p: &mut Parser<'_>) {
     p.expect(T!['(']);
 
     while !p.eat(T![')']) && !p.at(EOF) {
+        // Allow trailing commas
         if !p.expect(T![string]) {
             break;
         }
@@ -7956,6 +7970,20 @@ pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
     }
 
     if let Some((cm, blocklike)) = expr_stmt(p, Some(m)) && !(p.at(T!['}']) || (semicolon != Semicolon::Required && p.at(EOF))) {
+        // test no_semi_after_block
+        // fn foo() {
+        //     if true {}
+        //     loop {}
+        //     match () {}
+        //     while true {}
+        //     for _ in () {}
+        //     {}
+        //     {}
+        //     macro_rules! test {
+        //          () => {}
+        //     }
+        //     test!{}
+        // }
         let m = cm.precede(p);
         match semicolon {
             Semicolon::Required => {
@@ -8024,6 +8052,19 @@ pub(super) fn expr_block_contents(p: &mut Parser<'_>) {
     attributes::inner_attrs(p);
 
     while !p.at(EOF) && !p.at(T!['}']) {
+        // test nocontentexpr
+        // fn foo(){
+        //     ;;;some_expr();;;;{;;;};;;;Ok(())
+        // }
+        // test nocontentexpr_after_item
+        // fn simple_function() {
+        //     enum LocalEnum {
+        //         One,
+        //         Two,
+        //     };
+        //     fn f() {};
+        //     struct S {};
+        // }
         stmt(p, Semicolon::Required);
     }
 }
@@ -8070,6 +8111,7 @@ fn current_op(p: &Parser<'_>) -> (u8, SyntaxKind, Associativity) {
         T![%] if p.at(T![%=]) => (1, T![%=], Right),
         T![%] => (11, T![%], Left),
         T![&] if p.at(T![&=]) => (1, T![&=], Right),
+        // If you update this, remember to update `expr_let()` too.
         T![&] if p.at(T![&&]) => (4, T![&&], Left),
         T![&] => (8, T![&], Left),
         T![/] if p.at(T![/=]) => (1, T![/=], Right),
@@ -8082,6 +8124,7 @@ fn current_op(p: &Parser<'_>) -> (u8, SyntaxKind, Associativity) {
         T![-] if p.at(T![-=]) => (1, T![-=], Right),
         T![-] => (10, T![-], Left),
         T![as] => (12, T![as], Left),
+
         _ => NOT_AN_OP,
     }
 }
@@ -8703,15 +8746,23 @@ pub(super) fn const_arg_expr(p: &mut Parser<'_>) {
     // The tests in here are really for `const_arg`, which wraps the content
     // CONST_ARG.
     match p.current() {
+        // test const_arg_block
+        // type T = S<{90 + 2}>;
         T!['{'] => {
             expressions::block_expr(p);
         }
+        // test const_arg_literal
+        // type T = S<"hello", 0xdeadbeef>;
         k if k.is_literal() => {
             expressions::literal(p);
         }
+        // test const_arg_bool_literal
+        // type T = S<true>;
         T![true] | T![false] => {
             expressions::literal(p);
         }
+        // test const_arg_negative_number
+        // type T = S<-92>;
         T![-] => {
             let lm = p.start();
             p.bump(T![-]);
@@ -8719,11 +8770,14 @@ pub(super) fn const_arg_expr(p: &mut Parser<'_>) {
             lm.complete(p, PREFIX_EXPR);
         }
         _ if paths::is_path_start(p) => {
+            // This shouldn't be hit by `const_arg`
             let lm = p.start();
             paths::expr_path(p);
             lm.complete(p, PATH_EXPR);
         }
         _ => {
+            // test_err recover_from_missing_const_default
+            // struct A<const N: i32 = , const M: i32 =>;
             p.err_recover("expected a generic const argument", GENERIC_ARG_RECOVERY_SET);
         }
     }
@@ -8950,6 +9004,8 @@ fn path_type_bound(p: &mut Parser<'_>) -> Result<(), ()> {
 
     // fn f<T>() where T: ?for<> Sized {}
     if paths::is_use_path_start(p) {
+        // test_err type_bounds_macro_call_recovery
+        // fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
         types::path_type_bounds(p, false);
         if p.at(T![!]) {
             let m = p.start();
@@ -9087,6 +9143,7 @@ fn type_with_bounds_cond(p: &mut Parser<'_>, allow_bounds: bool) {
         T![for] => for_type(p, allow_bounds),
         T![impl] => impl_trait_type(p),
         T![dyn] => dyn_trait_type(p),
+        // Some path types are not allowed to have bounds (no plus)
         T![<] => path_type_bounds(p, allow_bounds),
         T![ident] if !p.edition().at_least_2018() && is_dyn_weak(p) => dyn_trait_type_weak(p),
         _ if paths::is_path_start(p) => path_or_macro_type(p, allow_bounds),
@@ -9578,6 +9635,23 @@ fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     if let Some(lhs) = atom_pat(p, recovery_set) {
         for range_op in [T![...], T![..=], T![..]] {
             if p.at(range_op) {
+                // testing if we're at one of the following positions:
+                // `0 .. =>`
+                //       ^
+                // `let 0 .. =`
+                //           ^
+                // `let 0..: _ =`
+                //         ^
+                // (1.., _)
+                //     ^
+                // `Some(0 .. )`
+                //            ^
+                // `S { t: 0.. }`
+                //             ^
+                // `[0..]`
+                //      ^
+                // `0 .. if`
+                //       ^
                 let m = lhs.precede(p);
                 p.bump(range_op);
                 if matches!(
@@ -9698,16 +9772,23 @@ fn tuple_pat_fields(p: &mut Parser<'_>) {
 fn record_pat_field(p: &mut Parser<'_>) {
     match p.current() {
         IDENT | INT_NUMBER if p.nth(1) == T![:] => {
+            // test record_field_pat_leading_or
+            // fn foo() { let R { a: | 1 | 2 } = 0; }
             name_ref_or_index(p);
             p.bump(T![:]);
             pattern(p);
         }
+        // test_err record_pat_field_eq_recovery
+        // fn main() {
+        //     let S { field = foo };
+        // }
         IDENT | INT_NUMBER if p.nth(1) == T![=] => {
             name_ref_or_index(p);
             p.err_and_bump("expected `:`");
             pattern(p);
         }
         T![box] => {
+            // FIXME: not all box patterns should be allowed
             box_pat(p);
         }
         T![ref] | T![mut] | IDENT => {
@@ -10016,6 +10097,9 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
     }
     let current = p.current();
     if current == T![<] {
+        // test_err generic_arg_list_recover
+        // type T = T<0, ,T>;
+        // type T = T::<0, ,T>;
         delimited(
             p,
             T![<],
@@ -10027,11 +10111,23 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
         );
         m.complete(p, GENERIC_ARG_LIST);
     } else if p.nth_at(1, T![..]) {
+        // test return_type_syntax_in_path
+        // fn foo<T>()
+        // where
+        //     T::method(..): Send,
+        //     method(..): Send,
+        //     method::(..): Send,
+        // {}
         p.bump(T!['(']);
         p.bump(T![..]);
         p.expect(T![')']);
         m.complete(p, RETURN_TYPE_SYNTAX);
     } else {
+        // test path_fn_trait_args
+        // type F = Box<Fn(i32) -> ()>;
+        // type F = Box<::Fn(i32) -> ()>;
+        // type F = Box<Fn::(i32) -> ()>;
+        // type F = Box<::Fn::(i32) -> ()>;
         delimited(
             p,
             T!['('],
@@ -10052,8 +10148,7 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
 
 fn opt_path_args(p: &mut Parser<'_>, mode: Mode) {
     match mode {
-        Mode::Use | Mode::Attr | Mode::Vis => {
-        }
+        Mode::Use | Mode::Attr | Mode::Vis => {},
         Mode::Type => opt_path_type_args(p),
         Mode::Expr => generic_args::opt_generic_arg_list_expr(p),
     }

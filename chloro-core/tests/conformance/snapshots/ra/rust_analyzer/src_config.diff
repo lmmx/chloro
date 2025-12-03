@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166188 bytes
+Chloro size:   166246 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -344,12 +344,6 @@ Rustfmt size:  167117 bytes
      pub(super) fn serialize<S>(vec: &[String], serializer: S) -> Result<S::Ok, S::Error>
      where
          S: serde::Serializer,
-     {
-         match vec {
--            // []  case is handled by skip_serializing_if
-             [single] => serializer.serialize_str(single),
-             slice => slice.serialize(serializer),
-         }
  {
      let path = String::deserialize(de)?;
  

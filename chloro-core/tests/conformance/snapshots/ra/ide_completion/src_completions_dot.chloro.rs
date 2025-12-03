@@ -86,6 +86,11 @@ pub(crate) fn complete_dot(
     });
 
     if ctx.config.enable_auto_iter && !receiver_ty.strip_references().impls_iterator(ctx.db) {
+        // FIXME:
+        // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
+        // its return type, so we instead check for `<&Self as IntoIterator>::IntoIter`.
+        // Does <&receiver_ty as IntoIterator>::IntoIter` exist? Assume `iter` is valid
+        // Does <receiver_ty as IntoIterator>::IntoIter` exist?
         let iter = receiver_ty
             .strip_references()
             .add_reference(hir::Mutability::Shared)
@@ -98,6 +103,7 @@ pub(crate) fn complete_dot(
                 .map(|ty| (ty, SmolStr::new_static("into_iter()")))
         };
         if let Some((iter, iter_sym)) = iter.or_else(into_iter) {
+            // Skip iterators, e.g. complete `.iter().filter_map()`.
             let dot_access_kind = match &dot_access.kind {
                 DotAccessKind::Field { receiver_is_ambiguous_float_literal: _ } => {
                     DotAccessKind::Field { receiver_is_ambiguous_float_literal: false }
@@ -202,7 +208,10 @@ fn complete_fields(
             }
         }
         for (i, ty) in receiver.tuple_fields(ctx.db).into_iter().enumerate() {
+            // Tuples are always the last type in a deref chain, so just check if the name is
+            // already seen without inserting into the hashset.
             if !seen_names.contains(&hir::Name::new_tuple_field(i)) && (!has_parens || ty.is_fn() || ty.is_closure()) {
+                // Tuple fields are always public (tuple struct fields are handled above).
                 tuple_index(acc, i, ty);
             }
         }

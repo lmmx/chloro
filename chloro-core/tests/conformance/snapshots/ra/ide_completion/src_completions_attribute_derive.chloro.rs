@@ -39,6 +39,7 @@ pub(crate) fn complete_derive_path(
             }
         }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
+        // only show modules in a fresh UseTree
         Qualified::No => {
             ctx.process_all_names(&mut |name, def, doc_aliases| {
                 let mac = match def {
@@ -94,8 +95,7 @@ pub(crate) fn complete_derive_path(
             });
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
-        }
+        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {},
     }
 }
 

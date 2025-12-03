@@ -1088,6 +1088,10 @@ impl<'db> Interner for DbInterner<'db> {
                 self.db().ty(id.into())
             }
             SolverDefId::AdtId(id) => self.db().ty(id.into()),
+            // FIXME(next-solver): This uses the types of `query mir_borrowck` in rustc.
+            //
+            // We currently always use the type from HIR typeck which ignores regions. This
+            // should be fine.
             SolverDefId::InternedOpaqueTyId(_) => self.type_of_opaque_hir_typeck(def_id),
             SolverDefId::FunctionId(id) => self.db.value_ty(id.into()).unwrap(),
             SolverDefId::Ctor(id) => {
@@ -1134,6 +1138,8 @@ impl<'db> Interner for DbInterner<'db> {
                 }
                 _ => AliasTermKind::FreeTy,
             },
+            // rustc creates an `AnonConst` for consts, and evaluates them with CTFE (normalizing projections
+            // via selection, similar to ours `find_matching_impl()`, and not with the trait solver), so mimic it.
             SolverDefId::ConstId(_) => AliasTermKind::UnevaluatedConst,
             _ => unimplemented!("Unexpected alias: {:?}", alias.def_id),
         }

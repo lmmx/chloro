@@ -277,6 +277,7 @@ impl ImportGroup {
                 "core" => ImportGroup::Std,
                 _ => ImportGroup::ExternCrate,
             },
+            // these aren't valid use paths, so fall back to something random
             PathSegmentKind::SelfTypeKw => ImportGroup::ExternCrate,
             PathSegmentKind::Type { .. } => ImportGroup::ExternCrate,
         }

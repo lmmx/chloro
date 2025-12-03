@@ -272,15 +272,26 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
 
         match a.kind() {
             TyKind::FnDef(..) => {
+                // Function items are coercible to any closure
+                // type; function pointers are not (that would
+                // require double indirection).
+                // Additionally, we permit coercion of function
+                // items to drop the unsafe qualifier.
                 self.coerce_from_fn_item(a, b)
             }
             TyKind::FnPtr(a_sig_tys, a_hdr) => {
+                // We permit coercion of fn pointers to drop the
+                // unsafe qualifier.
                 self.coerce_from_fn_pointer(a_sig_tys.with(a_hdr), b)
             }
             TyKind::Closure(closure_def_id_a, args_a) => {
+                // Non-capturing closures are coercible to
+                // function pointers or unsafe function pointers.
+                // It cannot convert closures that require unsafe.
                 self.coerce_closure_to_fn(a, closure_def_id_a.0, args_a, b)
             }
             _ => {
+                // Otherwise, just use unification rules.
                 self.unify(a, b)
             }
         }
@@ -295,6 +306,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         debug_assert!(self.table.shallow_resolve(b) == b);
 
         if b.is_infer() {
+            // Two unresolved type variables: create a `Coerce` predicate.
             let target_ty = if self.use_lub { self.table.next_ty_var() } else { b };
             let mut obligations = PredicateObligations::with_capacity(2);
             for &source_ty in &[a, b] {
@@ -316,6 +328,8 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
             );
             success(vec![], target_ty, obligations)
         } else {
+            // One unresolved type variable: just apply subtyping, we may be able
+            // to do something useful.
             self.unify(a, b)
         }
     }
@@ -927,7 +941,20 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         debug_assert!(self.table.shallow_resolve(b) == b);
 
         match b.kind() {
+            // FIXME: We need to have an `upvars_mentioned()` query:
+            // At this point we haven't done capture analysis, which means
+            // that the ClosureArgs just contains an inference variable instead
+            // of tuple of captured types.
+            //
+            // All we care here is if any variable is being captured and not the exact paths,
+            // so we check `upvars_mentioned` for root variables being captured.
             TyKind::FnPtr(_, hdr) => {
+                // We coerce the closure, which has fn type
+                //     `extern "rust-call" fn((arg0,arg1,...)) -> _`
+                // to
+                //     `fn(arg0,arg1,...) -> _`
+                // or
+                //     `unsafe fn(arg0,arg1,...) -> _`
                 let safety = hdr.safety;
                 let closure_sig = args_a.closure_sig_untupled().map_bound(|mut sig| {
                     sig.safety = hdr.safety;
@@ -1229,6 +1256,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
         match coerce.commit_if_ok(|coerce| coerce.coerce(prev_ty, new_ty)) {
             Err(_) => {
+                // Avoid giving strange errors on failed attempts.
                 if let Some(e) = first_error {
                     Err(e)
                 } else {
@@ -1525,6 +1553,8 @@ impl<'db, 'exprs> CoerceMany<'db, 'exprs> {
         if let Some(final_ty) = self.final_ty {
             final_ty
         } else {
+            // If we only had inputs that were of type `!` (or no
+            // inputs at all), then the final type is `!`.
             assert_eq!(self.pushed, 0);
             icx.types.never
         }

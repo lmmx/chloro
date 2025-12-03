@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   10958 bytes
+Chloro size:   11268 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -72,18 +72,6 @@ Rustfmt size:  11331 bytes
      }
  
      pub fn relate<T>(self, expected: T, variance: Variance, actual: T) -> InferResult<'db, ()>
-             Variance::Covariant => self.sub(expected, actual),
-             Variance::Invariant => self.eq(expected, actual),
-             Variance::Contravariant => self.sup(expected, actual),
--
--            // We could make this make sense but it's not readily
--            // exposed and I don't feel like dealing with it. Note
--            // that bivariance in general does a bit more than just
--            // *nothing*, it checks that the types are the same
--            // "modulo variance" basically.
-             Variance::Bivariant => panic!("Bivariant given to `relate()`"),
-         }
-     }
              LatticeOpKind::Lub,
          );
          let value = op.relate(expected, actual)?;

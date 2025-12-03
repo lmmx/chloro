@@ -1,4 +1,3 @@
-// chloro-core/src/formatter/node.rs
 mod block;
 pub mod common;
 mod const_static;

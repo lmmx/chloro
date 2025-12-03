@@ -76,9 +76,11 @@ fn stable_cmp_existential_predicate<'db>(
     match (a, b) {
         (ExistentialPredicate::Trait(_), ExistentialPredicate::Trait(_)) => Ordering::Equal,
         (ExistentialPredicate::Projection(_a), ExistentialPredicate::Projection(_b)) => {
+            // Should sort by def path hash
             Ordering::Equal
         }
         (ExistentialPredicate::AutoTrait(_a), ExistentialPredicate::AutoTrait(_b)) => {
+            // Should sort by def path hash
             Ordering::Equal
         }
         (ExistentialPredicate::Trait(_), _) => Ordering::Less,

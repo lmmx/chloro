@@ -152,9 +152,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         match remaining_segments {
             0 => (ty, res),
             1 => {
+                // resolve unselected assoc types
                 (self.select_associated_type(res, infer_args), None)
             }
             _ => {
+                // FIXME report error (ambiguous associated type)
                 (Ty::new_error(self.ctx.interner, ErrorGuaranteed), None)
             }
         }

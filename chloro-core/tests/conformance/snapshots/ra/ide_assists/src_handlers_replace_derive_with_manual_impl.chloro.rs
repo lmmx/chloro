@@ -233,6 +233,10 @@ fn update_attribute(
     let has_more_derives = !new_derives.is_empty();
 
     if has_more_derives {
+        // Make the paths into flat lists of tokens in a vec
+        // ...which are interspersed with ", "
+        // ...wrap them into the appropriate `NodeOrToken` variant
+        // ...and make them into a flat list of tokens
         let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
             node.descendants_with_tokens()
                 .filter_map(|element| element.into_token())
@@ -244,6 +248,7 @@ fn update_attribute(
         let new_tree = make::token_tree(T!['('], tt).clone_for_update();
         editor.replace(old_tree.syntax(), new_tree.syntax());
     } else {
+        // Remove the attr and any trailing whitespace
         if let Some(line_break) =
             attr.syntax().next_sibling_or_token().filter(|t| t.kind() == WHITESPACE)
         {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23406 bytes
-Chloro size:   22459 bytes
+Chloro size:   22521 bytes
 Rustfmt size:  23406 bytes
 
 ✗ Outputs DIFFER
@@ -77,13 +77,6 @@ Rustfmt size:  23406 bytes
  pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let star = ctx.find_token_syntax_at_offset(T![*])?;
      let use_tree = star.parent().and_then(ast::UseTree::cast)?;
-             VisibilityKind::PubCrate => VisibilityKind::PubCrate,
-             VisibilityKind::Pub => VisibilityKind::Pub,
-             VisibilityKind::PubSelf => VisibilityKind::PubSelf,
--            // We don't handle pub(in ...) and pub(super) yet
-             VisibilityKind::In(_) => VisibilityKind::PubSelf,
-             VisibilityKind::PubSuper => VisibilityKind::PubSelf,
-         },
      }
  }
  

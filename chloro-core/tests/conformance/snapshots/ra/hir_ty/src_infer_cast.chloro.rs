@@ -285,6 +285,8 @@ impl<'db> CastCheck<'db> {
 
         match (src_kind, dst_kind) {
             (Some(PointerKind::Error), _) | (_, Some(PointerKind::Error)) => Ok(()),
+            // (_, None) => Err(CastError::UnknownCastPtrKind),
+            // (None, _) => Err(CastError::UnknownExprPtrKind),
             (_, None) | (None, _) => Ok(()),
             (_, Some(PointerKind::Thin)) => Ok(()),
             (Some(PointerKind::Thin), _) => Err(CastError::SizedUnsizedCast),
@@ -317,6 +319,7 @@ impl<'db> CastCheck<'db> {
         expr_ty: Ty<'db>,
     ) -> Result<(), CastError> {
         match pointer_kind(expr_ty, ctx).map_err(|_| CastError::Unknown)? {
+            // None => Err(CastError::UnknownExprPtrKind),
             None => Ok(()),
             Some(PointerKind::Error) => Ok(()),
             Some(PointerKind::Thin) => Ok(()),
@@ -330,6 +333,7 @@ impl<'db> CastCheck<'db> {
         cast_ty: Ty<'db>,
     ) -> Result<(), CastError> {
         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
+            // None => Err(CastError::UnknownCastPtrKind),
             None => Ok(()),
             Some(PointerKind::Error) => Ok(()),
             Some(PointerKind::Thin) => Ok(()),
@@ -345,6 +349,7 @@ impl<'db> CastCheck<'db> {
         cast_ty: Ty<'db>,
     ) -> Result<(), CastError> {
         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
+            // None => Err(CastError::UnknownCastPtrKind),
             None => Ok(()),
             Some(PointerKind::Error) => Ok(()),
             Some(PointerKind::Thin) => Ok(()),

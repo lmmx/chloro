@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   20991 bytes
+Chloro size:   21093 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
@@ -192,10 +192,12 @@ Rustfmt size:  21200 bytes
      fn type_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {
          self.inner()
              .get(i)
+         // FIXME: should use `ClosureSubst` when possible
          match self.inner().as_slice() {
              [parent_args @ .., closure_kind_ty, sig_ty, tupled_upvars_ty] => {
-                 let interner = DbInterner::conjure();
--                // This is stupid, but the next solver expects the first input to actually be a tuple
+-                let interner = DbInterner::conjure();
+                 // This is stupid, but the next solver expects the first input to actually be a tuple
++                let interner = DbInterner::conjure();
                  let sig_ty = match sig_ty.expect_ty().kind() {
                      TyKind::FnPtr(sig_tys, header) => Ty::new(
                          interner,

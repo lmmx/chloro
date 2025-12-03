@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5559 bytes
-Chloro size:   5269 bytes
+Chloro size:   5501 bytes
 Rustfmt size:  5644 bytes
 
 ✗ Outputs DIFFER
@@ -73,14 +73,10 @@ Rustfmt size:  5644 bytes
                  let region = self.delegate.replace_region(br);
 -                if let RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn1), br) = region.kind()
 -                {
--                    // If the callback returns a bound region,
--                    // that region should always use the INNERMOST
--                    // debruijn index. Then we adjust it to the
--                    // correct depth.
 +                if let RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn1), br) = region.kind() {
-                     assert_eq!(debruijn1, DebruijnIndex::ZERO);
-                     Region::new_bound(self.interner, debruijn, br)
-                 } else {
+                     // If the callback returns a bound region,
+                     // that region should always use the INNERMOST
+                     // debruijn index. Then we adjust it to the
  
      fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
          match ct.kind() {

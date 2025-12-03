@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13679 bytes
-Chloro size:   13664 bytes
+Chloro size:   13739 bytes
 Rustfmt size:  13851 bytes
 
 ✗ Outputs DIFFER
@@ -39,13 +39,6 @@ Rustfmt size:  13851 bytes
          // currently computing, so we must not call the `def_map` query for it.
          let def_map_block = def_map.block_id();
          loop {
-                             def_map = parent_arc;
-                             from_module = module.local_id;
-                         }
--                        // Reached the root module, nothing left to check.
-                         None => return false,
-                     }
-                 }
                          },
                      ));
                  }

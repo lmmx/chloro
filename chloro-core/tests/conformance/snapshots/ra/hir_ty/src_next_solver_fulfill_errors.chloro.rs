@@ -794,6 +794,12 @@ mod wf {
             // Note: in fact we only permit builtin traits, not `Bar<'d>`, I
             // am looking forward to the future here.
             if !data.has_escaping_bound_vars() && !region.has_escaping_bound_vars() {
+                // We don't add any wf predicates corresponding to the trait ref's generic arguments
+                // which allows code like this to compile:
+                // ```rust
+                // trait Trait<T: Sized> {}
+                // fn foo(_: &dyn Trait<[u32]>) {}
+                // ```
                 let implicit_bounds = object_region_bounds(self.interner(), data);
                 let explicit_bound = region;
                 self.out.reserve(implicit_bounds.len());

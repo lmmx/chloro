@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10503 bytes
-Chloro size:   10438 bytes
+Chloro size:   10505 bytes
 Rustfmt size:  10686 bytes
 
 ✗ Outputs DIFFER
@@ -49,13 +49,6 @@ Rustfmt size:  10686 bytes
                      == Some("ra_test_fixture")
              })
              .unwrap_or(*all_crates.last().unwrap())
-                     def_map = new_block;
-                 }
-                 _ => {
--                    // FIXME: handle `mod` inside block expression
-                     return def_map.module_id(DefMap::ROOT);
-                 }
-             }
              });
  
          for scope in scope_iter {

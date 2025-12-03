@@ -731,6 +731,9 @@ fn filename_and_frag_for_def(
 fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
     Some(match assoc_item {
         AssocItem::Function(function) => {
+            // This distinction may get more complicated when specialization is available.
+            // Rustdoc makes this decision based on whether a method 'has defaultness'.
+            // Currently this is only the case for provided trait methods.
             let is_trait_method =
                 function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
             if is_trait_method && !function.has_body(db) {

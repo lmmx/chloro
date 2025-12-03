@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11639 bytes
+Chloro size:   11688 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
@@ -98,11 +98,10 @@ Rustfmt size:  13263 bytes
          add_sort_field_list_assist(acc, variant_ast.field_list())
 -    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>()
 -    {
--        // should be above enum and below struct
 +    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>() {
+         // should be above enum and below struct
          add_sort_fields_assist(acc, enum_struct_variant_ast)
      } else if let Some(enum_ast) = ctx.find_node_at_offset::<ast::Enum>() {
-         add_sort_variants_assist(acc, enum_ast.variant_list()?)
              label,
              target.text_range(),
              |builder| {

@@ -597,6 +597,7 @@ impl MacroCallLoc {
                 ast_id.with_value(ast_id.to_node(db).syntax().clone())
             }
             MacroCallKind::Derive { ast_id, derive_attr_index, .. } => {
+                // FIXME: handle `cfg_attr`
                 ast_id.with_value(ast_id.to_node(db)).map(|it| {
                     collect_attrs(&it)
                         .nth(derive_attr_index.ast_index())
@@ -609,6 +610,7 @@ impl MacroCallLoc {
             }
             MacroCallKind::Attr { ast_id, invoc_attr_index, .. } => {
                 if self.def.is_attribute_derive() {
+                    // FIXME: handle `cfg_attr`
                     ast_id.with_value(ast_id.to_node(db)).map(|it| {
                         collect_attrs(&it)
                             .nth(invoc_attr_index.ast_index())
@@ -643,6 +645,7 @@ impl MacroCallLoc {
             MacroCallKind::Derive { .. } => ExpandTo::Items,
             MacroCallKind::Attr { .. } if self.def.is_attribute_derive() => ExpandTo::Items,
             MacroCallKind::Attr { .. } => {
+                // FIXME(stmt_expr_attributes)
                 ExpandTo::Items
             }
         }
@@ -1051,12 +1054,14 @@ impl ExpandTo {
             MACRO_STMTS | EXPR_STMT | STMT_LIST => ExpandTo::Statements,
             MACRO_PAT => ExpandTo::Pattern,
             MACRO_TYPE => ExpandTo::Type,
+
             ARG_LIST | ARRAY_EXPR | AWAIT_EXPR | BIN_EXPR | BREAK_EXPR | CALL_EXPR | CAST_EXPR
             | CLOSURE_EXPR | FIELD_EXPR | FOR_EXPR | IF_EXPR | INDEX_EXPR | LET_EXPR
             | MATCH_ARM | MATCH_EXPR | MATCH_GUARD | METHOD_CALL_EXPR | PAREN_EXPR | PATH_EXPR
             | PREFIX_EXPR | RANGE_EXPR | RECORD_EXPR_FIELD | REF_EXPR | RETURN_EXPR | TRY_EXPR
             | TUPLE_EXPR | WHILE_EXPR | MACRO_EXPR => ExpandTo::Expr,
             _ => {
+                // Unknown , Just guess it is `Items`
                 ExpandTo::Items
             }
         }

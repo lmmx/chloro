@@ -97,6 +97,7 @@ pub(crate) fn prepare_rename(
         });
 
     match res {
+        // ensure at least one definition was found
         Some(res) => res.map(|range| RangeInfo::new(range, ())),
         None => bail!("No references found at position"),
     }
@@ -355,6 +356,7 @@ fn find_definitions(
     let res: RenameResult<Vec<_>> = ok_if_any(symbols.filter_map(Result::transpose));
     match res {
         Ok(v) => {
+            // remove duplicates, comparing `Definition`s
             Ok(v.into_iter()
                 .unique_by(|&(.., def, _, _)| def)
                 .map(|(a, b, c, d, e)| (a.into_file_id(sema.db), b, c, d, e))
@@ -373,6 +375,8 @@ fn transform_assoc_fn_into_method_call(
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
+            // The `PathExpr` is the direct parent, above it is the `CallExpr`.
+            // Strip (de)references, as they will be taken automatically by auto(de)ref.
             let Some(fn_name) = call.name.as_name_ref() else { continue };
             let Some(path) = fn_name.syntax().parent().and_then(ast::PathSegment::cast) else {
                 continue;
@@ -582,6 +586,7 @@ fn transform_method_call_into_assoc_fn(
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
+            // Strip parentheses, function arguments have higher precedence than any operator.
             let Some(fn_name) = call.name.as_name_ref() else { continue };
             let Some(method_call) = fn_name.syntax().parent().and_then(ast::MethodCallExpr::cast)
             else {

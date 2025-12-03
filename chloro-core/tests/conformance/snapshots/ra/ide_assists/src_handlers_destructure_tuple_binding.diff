@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   42590 bytes
+Chloro size:   42742 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -199,7 +199,7 @@ Rustfmt size:  44616 bytes
      if let Some(field_expr) = ast::FieldExpr::cast(node) {
          let idx = field_expr.name_ref()?.as_tuple_field()?;
          if idx < data.field_names.len() {
--            // special case: in macro call -> range of `field_expr` in applied macro, NOT range in actual file!
+             // special case: in macro call -> range of `field_expr` in applied macro, NOT range in actual file!
 -            if field_expr
 -                .syntax()
 -                .ancestors()
@@ -219,10 +219,8 @@ Rustfmt size:  44616 bytes
 -            })
 +            Some(TupleIndex { index: idx, field_expr })
          } else {
--            // tuple index out of range
+             // tuple index out of range
              None
-         }
-     } else {
  #[cfg(test)]
  mod tests {
      use super::*;

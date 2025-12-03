@@ -66,6 +66,7 @@ fn validate_type_recursively(
             validate_type_recursively(ctx, ty.as_slice().as_ref(), false, fuel - 1)
         }
         (_, Some(ty)) => match ty.as_builtin() {
+            // `const A: str` is not correct, but `const A: &builtin` is.
             Some(builtin) if refed || !builtin.is_str() => Some(()),
             _ => None,
         },

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20947 bytes
-Chloro size:   19996 bytes
+Chloro size:   20890 bytes
 Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
@@ -34,11 +34,9 @@ Rustfmt size:  21861 bytes
      } else {
          false
      };
-     };
- 
      match qualified {
--        // We exclude associated types/consts of excluded traits here together with methods,
--        // even though we don't exclude them when completing in type position, because it's easier.
+         // We exclude associated types/consts of excluded traits here together with methods,
+         // even though we don't exclude them when completing in type position, because it's easier.
 -        Qualified::TypeAnchor {
 -            ty: None,
 -            trait_: None,
@@ -54,12 +52,12 @@ Rustfmt size:  21861 bytes
 -            trait_: Some(trait_),
 -            ..
 -        } => {
--            // Don't filter excluded traits here, user requested this specific trait.
++        Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
+             // Don't filter excluded traits here, user requested this specific trait.
 -            trait_
 -                .items(ctx.sema.db)
 -                .into_iter()
 -                .for_each(|item| add_assoc_item(acc, item))
-+        Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
 +            trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
          }
 -        Qualified::TypeAnchor {
@@ -67,6 +65,7 @@ Rustfmt size:  21861 bytes
 -            trait_: None,
 -        } => {
 +        Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
++            // Iterate assoc types separately
              if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                  cov_mark::hit!(completes_variant_through_alias);
                  acc.add_enum_variants(ctx, path_ctx, e);
@@ -101,14 +100,13 @@ Rustfmt size:  21861 bytes
 -            resolution: Some(resolution),
 -            ..
 -        } => {
--            // Add associated types on type parameters and `Self`.
++        Qualified::With { resolution: None, .. } => {},
++        Qualified::With { resolution: Some(resolution), .. } => {
+             // Add associated types on type parameters and `Self`.
 -            ctx.scope
 -                .assoc_type_shorthand_candidates(resolution, |alias| {
 -                    acc.add_type_alias(ctx, alias);
 -                });
-+        Qualified::With { resolution: None, .. } => {
-+        }
-+        Qualified::With { resolution: Some(resolution), .. } => {
 +            ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
 +                acc.add_type_alias(ctx, alias);
 +            });
@@ -122,6 +120,15 @@ Rustfmt size:  21861 bytes
                      let module_scope = module.scope(ctx.db, visible_from);
                      for (name, def) in module_scope {
                          if scope_def_applicable(def) {
+                     | hir::ModuleDef::TypeAlias(_)
+                     | hir::ModuleDef::BuiltinType(_)),
+                 ) => {
++                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
++                    // (where AssocType is defined on a trait, not an inherent impl)
++                    // Iterate assoc types separately
+                     let ty = match def {
+                         hir::ModuleDef::Adt(adt) => adt.ty(ctx.db),
+                         hir::ModuleDef::TypeAlias(a) => a.ty(ctx.db),
                          }
                          _ => return,
                      };
@@ -153,14 +160,6 @@ Rustfmt size:  21861 bytes
                      ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                          if let hir::AssocItem::TypeAlias(ty) = item {
                              acc.add_type_alias(ctx, ty)
-                     });
-                 }
-                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
--                    // Don't filter excluded traits here, user requested this specific trait.
--                    // Handles `Trait::assoc` as well as `<Ty as Trait>::assoc`.
-                     for item in t.items(ctx.db) {
-                         add_assoc_item(acc, item);
-                     }
                          hir::PathResolution::SelfType(impl_def) => impl_def.self_ty(ctx.db),
                          _ => return,
                      };
@@ -258,10 +257,6 @@ Rustfmt size:  21861 bytes
                      if let Some(ret_ty) = innermost_ret_ty {
                          add_keyword(
                              "return",
-     }
- 
-     if let Some(ty) = &ctx.expected_type {
--        // Ignore unit types as they are not very interesting
          if ty.is_unit() || ty.is_unknown() {
              return;
          }
@@ -269,10 +264,8 @@ Rustfmt size:  21861 bytes
          let term_search_ctx = hir::term_search::TermSearchCtx {
              sema: &ctx.sema,
              scope: &ctx.scope,
-         };
-         let exprs = hir::term_search::term_search(&term_search_ctx);
          for expr in exprs {
--            // Expand method calls
+             // Expand method calls
              match expr {
 -                hir::term_search::Expr::Method {
 -                    func,

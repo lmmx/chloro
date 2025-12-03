@@ -53,6 +53,7 @@ pub(crate) fn add_format_like_completions(
     };
 
     if let Ok((mut out, mut exprs)) = parse_format_exprs(receiver_text.text()) {
+        // Escape any snippet bits in the out text and any of the exprs.
         escape_snippet_bits(&mut out);
         for arg in &mut exprs {
             if let Arg::Ident(text) | Arg::Expr(text) = arg {

@@ -117,6 +117,8 @@ fn assoc_func_fix(
     d: &hir::UnresolvedMethodCall<'_>,
 ) -> Option<Assist> {
     if let Some(f) = d.assoc_func_with_same_name {
+        // if receiver should be pass as first arg in the assoc func,
+        // we could omit generic parameters cause compiler can deduce it automatically
         let db = ctx.sema.db;
         let expr_ptr = &d.expr;
         let root = db.parse_or_expand(expr_ptr.file_id);

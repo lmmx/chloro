@@ -21,6 +21,7 @@ pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     } else if let Some(variant_ast) = ctx.find_node_at_offset::<ast::Variant>() {
         add_sort_field_list_assist(acc, variant_ast.field_list())
     } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>() {
+        // should be above enum and below struct
         add_sort_fields_assist(acc, enum_struct_variant_ast)
     } else if let Some(enum_ast) = ctx.find_node_at_offset::<ast::Enum>() {
         add_sort_variants_assist(acc, enum_ast.variant_list()?)

@@ -315,6 +315,7 @@ impl AppState {
                 if let Ok(content) = fs::read_to_string(&section.file_path) {
                     let bytes = content.as_bytes();
                     if section.byte_start < bytes.len() && section.byte_end <= bytes.len() {
+                        // Section exists and can be loaded
                     }
                 }
             }

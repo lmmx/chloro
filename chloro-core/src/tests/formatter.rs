@@ -5,6 +5,7 @@ mod comments;
 mod functions;
 mod impl_blocks;
 mod macros;
+mod self_format;
 mod struct_literals;
 mod use_items;
 

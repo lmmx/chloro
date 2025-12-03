@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10022 bytes
-Chloro size:   9794 bytes
+Chloro size:   9951 bytes
 Rustfmt size:  10253 bytes
 
 ✗ Outputs DIFFER
@@ -69,8 +69,11 @@ Rustfmt size:  10253 bytes
          ])),
          command: None,
      })
+     d: &hir::UnresolvedMethodCall<'_>,
  ) -> Option<Assist> {
      if let Some(f) = d.assoc_func_with_same_name {
++        // if receiver should be pass as first arg in the assoc func,
++        // we could omit generic parameters cause compiler can deduce it automatically
          let db = ctx.sema.db;
 -
          let expr_ptr = &d.expr;

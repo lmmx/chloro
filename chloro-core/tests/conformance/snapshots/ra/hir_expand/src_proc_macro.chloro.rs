@@ -285,6 +285,8 @@ impl CustomProcMacroExpander {
                 ExpandError::new(call_site, ExpandErrorKind::MacroDisabled),
             ),
             id => {
+                // Proc macros have access to the environment variables of the invoking crate.
+                // FIXME: Can we avoid the string allocation here?
                 let proc_macros = match db.proc_macros_for_crate(def_crate) {
                     Some(it) => it,
                     None => {
@@ -325,6 +327,7 @@ impl CustomProcMacroExpander {
                 ) {
                     Ok(t) => ExpandResult::ok(t),
                     Err(err) => match err {
+                        // Don't discard the item in case something unexpected happened while expanding attributes
                         ProcMacroExpansionError::System(text) if proc_macro.kind == ProcMacroKind::Attr => {
                             ExpandResult {
                                 value: tt.clone(),

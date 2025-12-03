@@ -568,6 +568,7 @@ impl AttrsWithOwner {
             AttrDefId::TypeAliasId(it) => attrs_from_ast_id_loc(db, it),
             AttrDefId::GenericParamId(it) => match it {
                 GenericParamId::ConstParamId(it) => {
+                    // FIXME: We should be never getting `None` here.
                     let src = it.parent().child_source(db);
                     Attrs(match src.value.get(it.local_id()) {
                         Some(val) => RawAttrs::new_expanded(
@@ -580,6 +581,7 @@ impl AttrsWithOwner {
                     })
                 }
                 GenericParamId::TypeParamId(it) => {
+                    // FIXME: We should be never getting `None` here.
                     let src = it.parent().child_source(db);
                     Attrs(match src.value.get(it.local_id()) {
                         Some(val) => RawAttrs::new_expanded(
@@ -592,6 +594,7 @@ impl AttrsWithOwner {
                     })
                 }
                 GenericParamId::LifetimeParamId(it) => {
+                    // FIXME: We should be never getting `None` here.
                     let src = it.parent.child_source(db);
                     Attrs(match src.value.get(it.local_id) {
                         Some(val) => RawAttrs::new_expanded(

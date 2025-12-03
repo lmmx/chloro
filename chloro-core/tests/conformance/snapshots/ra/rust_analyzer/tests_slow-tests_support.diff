@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20573 bytes
+Chloro size:   20647 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -218,7 +218,3 @@ Rustfmt size:  21158 bytes
              l.into_iter().zip(r).find_map(|(l, r)| find_mismatch(l, r))
          }
          (Value::Null, Value::Null) => None,
--        // magic string literal "{...}" acts as wildcard for any sub-JSON
-         (Value::String(l), _) if l == "{...}" => None,
-         _ => Some((expected, actual)),
-     }

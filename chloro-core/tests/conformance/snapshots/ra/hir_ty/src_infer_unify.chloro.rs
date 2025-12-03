@@ -508,6 +508,9 @@ impl<'db> InferenceTable<'db> {
     /// in this case.
     pub(crate) fn try_structurally_resolve_type(&mut self, ty: Ty<'db>) -> Ty<'db> {
         if let TyKind::Alias(..) = ty.kind() {
+            // We need to use a separate variable here as otherwise the temporary for
+            // `self.fulfillment_cx.borrow_mut()` is alive in the `Err` branch, resulting
+            // in a reentrant borrow, causing an ICE.
             let result = self
                 .infer_ctxt
                 .at(&ObligationCause::misc(), self.trait_env.env)
@@ -588,10 +591,8 @@ impl<'db> InferenceTable<'db> {
         let result = next_trait_solve_in_ctxt(&self.infer_ctxt, goal);
         tracing::debug!(?result);
         match result {
-            Ok((_, Certainty::Yes)) => {
-            }
-            Err(rustc_type_ir::solve::NoSolution) => {
-            }
+            Ok((_, Certainty::Yes)) => {},
+            Err(rustc_type_ir::solve::NoSolution) => {},
             Ok((_, Certainty::Maybe { .. })) => {
                 self.fulfillment_cx.register_predicate_obligation(
                     &self.infer_ctxt,

@@ -119,6 +119,12 @@ impl fmt::Display for FlycheckConfig {
         match self {
             FlycheckConfig::CargoCommand { command, .. } => write!(f, "cargo {command}"),
             FlycheckConfig::CustomCommand { command, args, .. } => {
+                // Don't show `my_custom_check --foo $saved_file` literally to the user, as it
+                // looks like we've forgotten to substitute $saved_file.
+                //
+                // Instead, show `my_custom_check --foo ...`. The
+                // actual path is often too long to be worth showing
+                // in the IDE (e.g. in the VS Code status bar).
                 let display_args = args
                     .iter()
                     .map(|arg| if arg == SAVED_FILE_PLACEHOLDER { "..." } else { arg })
@@ -694,6 +700,8 @@ impl FlycheckActor {
                 Some(cmd)
             }
             FlycheckConfig::CustomCommand { command, args, extra_env, invocation_strategy } => {
+                // If the custom command has a $saved_file placeholder, and
+                // we're saving a file, replace the placeholder in the arguments.
                 let root = match invocation_strategy {
                     InvocationStrategy::Once => &*self.root,
                     InvocationStrategy::PerWorkspace => {

@@ -389,6 +389,7 @@ impl<'db> Evaluator<'db> {
     ) -> Result<'db, ()> {
         match id {
             318 => {
+                // SYS_getrandom
                 let [buf, len, _flags] = args else {
                     return Err(MirEvalError::InternalError(
                         "SYS_getrandom args are not provided".into(),
@@ -458,6 +459,7 @@ impl<'db> Evaluator<'db> {
                 Ok(())
             }
             "pthread_key_create" => {
+                // return 0 as success
                 let key = self.thread_local_storage.create_key();
                 let Some(arg0) = args.first() else {
                     return Err(MirEvalError::InternalError(
@@ -492,6 +494,7 @@ impl<'db> Evaluator<'db> {
                 Ok(())
             }
             "pthread_setspecific" => {
+                // return 0 as success
                 let Some(arg0) = args.first() else {
                     return Err(MirEvalError::InternalError(
                         "pthread_setspecific arg0 is not provided".into(),
@@ -509,6 +512,8 @@ impl<'db> Evaluator<'db> {
                 Ok(())
             }
             "pthread_key_delete" => {
+                // we ignore this currently
+                // return 0 as success
                 destination.write_from_bytes(self, &0u64.to_le_bytes()[0..destination.size])?;
                 Ok(())
             }
@@ -520,6 +525,8 @@ impl<'db> Evaluator<'db> {
                 self.exec_syscall(id, rest, destination, locals, span)
             }
             "sched_getaffinity" => {
+                // Only enable core 0 (we are single threaded anyway), which is bitset 0x0000001
+                // return 0 as success
                 let [_pid, _set_size, set] = args else {
                     return Err(MirEvalError::InternalError(
                         "libc::write args are not provided".into(),
@@ -743,6 +750,8 @@ impl<'db> Evaluator<'db> {
                 let size = self.size_of_sized(ty, locals, "size_of arg")?;
                 destination.write_from_bytes(self, &size.to_le_bytes()[0..destination.size])
             }
+            // FIXME: `min_align_of` was renamed to `align_of` in Rust 1.89
+            // (https://github.com/rust-lang/rust/pull/142410)
             "min_align_of" | "align_of" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                     return Err(MirEvalError::InternalError(
@@ -771,6 +780,8 @@ impl<'db> Evaluator<'db> {
                     destination.write_from_bytes(self, &size.to_le_bytes())
                 }
             }
+            // FIXME: `min_align_of_val` was renamed to `align_of_val` in Rust 1.89
+            // (https://github.com/rust-lang/rust/pull/142410)
             "min_align_of_val" | "align_of_val" => {
                 let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
                     return Err(MirEvalError::InternalError(
@@ -834,6 +845,8 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &[u8::from(result)])
             }
             "ptr_guaranteed_cmp" => {
+                // FIXME: this is wrong for const eval, it should return 2 in some
+                // cases.
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
                         "wrapping_add args are not provided".into(),
@@ -843,6 +856,8 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &[u8::from(ans)])
             }
             "saturating_add" | "saturating_sub" => {
+                // FIXME: signed
+                // FIXME: signed
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
                         "saturating_add args are not provided".into(),
@@ -914,6 +929,7 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
             }
             "wrapping_shl" | "unchecked_shl" => {
+                // FIXME: signed
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
                         "unchecked_shl args are not provided".into(),
@@ -925,6 +941,7 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
             }
             "wrapping_shr" | "unchecked_shr" => {
+                // FIXME: signed
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
                         "unchecked_shr args are not provided".into(),
@@ -936,6 +953,7 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
             }
             "unchecked_rem" => {
+                // FIXME: signed
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
                         "unchecked_rem args are not provided".into(),
@@ -949,6 +967,7 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
             }
             "unchecked_div" | "exact_div" => {
+                // FIXME: signed
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
                         "unchecked_div args are not provided".into(),
@@ -1061,9 +1080,11 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
             }
             "assert_inhabited" | "assert_zero_valid" | "assert_uninit_valid" | "assume" => {
+                // FIXME: We should actually implement these checks
                 Ok(())
             }
             "forget" => {
+                // We don't call any drop glue yet, so there is nothing here
                 Ok(())
             }
             "transmute" | "transmute_unchecked" => {
@@ -1364,6 +1385,16 @@ impl<'db> Evaluator<'db> {
                 "dyn concrete type",
             )?,
             TyKind::Adt(adt_def, subst) => {
+                // Must add any necessary padding to `size`
+                // (to make it a multiple of `align`) before returning it.
+                //
+                // Namely, the returned size should be, in C notation:
+                //
+                //   `size + ((size & (align-1)) ? align : 0)`
+                //
+                // emulated via the semi-standard fast bit trick:
+                //
+                //   `(size + (align-1)) & -align`
                 let id = adt_def.def_id().0;
                 let layout = self.layout_adt(id, subst)?;
                 let id = match id {

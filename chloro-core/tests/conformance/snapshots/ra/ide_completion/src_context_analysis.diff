@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 89146 bytes
-Chloro size:   88940 bytes
+Chloro size:   89128 bytes
 Rustfmt size:  89146 bytes
 
 ✗ Outputs DIFFER
@@ -75,26 +75,10 @@ Rustfmt size:  89146 bytes
              !sema.is_inside_macro_call(original_file.with_value(&original_token))
 -        })
 -    {
--        // Recursion base case.
 +        }) {
+         // Recursion base case.
          Some(ExpansionResult {
              original_file: original_file.value,
-             speculative_file,
-         sema.expand_macro_call(&actual_macro_call),
-         sema.speculative_expand_macro_call(&actual_macro_call, &speculative_args, fake_ident_token),
-     ) {
--        // successful expansions
-         (Some(actual_expansion), Some((fake_expansion, fake_mapped_tokens))) => {
-             let mut accumulated_offset_from_fake_tokens = 0;
-             let actual_range = actual_expansion.text_range().end();
-                 .min_by_key(|(_, rank)| *rank)
-                 .map(|(result, _)| result)
-         }
--        // at least one expansion failed, we won't have anything to expand from this point
--        // onwards so break out
-         _ => None,
-     }
- }
      expansion_result: ExpansionResult,
      original_token: &SyntaxToken,
      self_token: &SyntaxToken,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3153 bytes
-Chloro size:   3032 bytes
+Chloro size:   3217 bytes
 Rustfmt size:  3226 bytes
 
 ✗ Outputs DIFFER
@@ -38,6 +38,7 @@ Rustfmt size:  3226 bytes
      fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
          if !t.has_non_region_infer() {
 -            t // micro-optimize -- if there is nothing in this type that this fold affects...
++            // micro-optimize -- if there is nothing in this type that this fold affects...
 +            t
          } else if let Some(ty) = self.cache.get(&t) {
              *ty
@@ -46,6 +47,7 @@ Rustfmt size:  3226 bytes
      fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
          if !ct.has_non_region_infer() {
 -            ct // micro-optimize -- if there is nothing in this const that this fold affects...
++            // micro-optimize -- if there is nothing in this const that this fold affects...
 +            ct
          } else {
              let ct = self.infcx.shallow_resolve_const(ct);

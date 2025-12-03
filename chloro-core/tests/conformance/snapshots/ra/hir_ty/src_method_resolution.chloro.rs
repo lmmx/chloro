@@ -226,6 +226,8 @@ impl TraitImpls {
 
     fn collect_def_map(db: &dyn HirDatabase, map: &mut TraitFpMapCollector, def_map: &DefMap) {
         for (_module_id, module_data) in def_map.modules() {
+            // To better support custom derives, collect impls in all unnamed const items.
+            // const _: () = { ... };
             for impl_id in module_data.scope.impls() {
                 // Reservation impls should be ignored during trait resolution, so we never need
                 // them during type analysis. See rust-lang/rust#64631 for details.
@@ -349,6 +351,8 @@ impl InherentImpls {
 
     fn collect_def_map(&mut self, db: &dyn HirDatabase, def_map: &DefMap) {
         for (_module_id, module_data) in def_map.modules() {
+            // To better support custom derives, collect impls in all unnamed const items.
+            // const _: () = { ... };
             for impl_id in module_data.scope.impls() {
                 let data = db.impl_signature(impl_id);
                 if data.target_trait.is_some() {
@@ -462,6 +466,9 @@ pub fn def_crates<'db>(
                 smallvec![trait_id.module(db).krate()]
             })
         }
+        // for primitives, there may be impls in various places (core and alloc
+        // mostly). We just check the whole crate graph for crates with impls
+        // (cached behind a query).
         TyKind::Bool
         | TyKind::Char
         | TyKind::Int(_)
@@ -1035,6 +1042,23 @@ fn iterate_method_candidates_dyn_impl<'db>(
 
     match mode {
         LookupMode::MethodCall => {
+            // For method calls, rust first does any number of autoderef, and
+            // then one autoref (i.e. when the method takes &self or &mut self).
+            // Note that when we've got a receiver like &S, even if the method
+            // we find in the end takes &self, we still do the autoderef step
+            // (just as rustc does an autoderef and then autoref again).
+            // We have to be careful about the order we're looking at candidates
+            // in here. Consider the case where we're resolving `it.clone()`
+            // where `it: &Vec<_>`. This resolves to the clone method with self
+            // type `Vec<_>`, *not* `&_`. I.e. we need to consider methods where
+            // the receiver type exactly matches before cases where we have to
+            // do autoref. But in the autoderef steps, the `&_` self type comes
+            // up *before* the `Vec<_>` self type.
+            //
+            // On the other hand, we don't want to just pick any by-value method
+            // before any by-autoref method; it's just that we need to consider
+            // the methods by autoderef order of *receiver types*, not *self
+            // types*.
             table.run_in_snapshot(|table| {
                 let ty = table.instantiate_canonical(*ty);
                 let deref_chain = autoderef_method_receiver(table, ty);
@@ -1053,6 +1077,7 @@ fn iterate_method_candidates_dyn_impl<'db>(
             })
         }
         LookupMode::Path => {
+            // No autoderef for path lookups
             iterate_method_candidates_for_self_ty(
                 ty,
                 table,

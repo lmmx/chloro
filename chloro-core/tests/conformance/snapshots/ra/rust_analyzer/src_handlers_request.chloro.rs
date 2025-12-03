@@ -137,6 +137,7 @@ pub(crate) fn handle_memory_usage(_state: &mut GlobalState, _: ()) -> anyhow::Re
     }
     #[cfg(feature = "dhat")] {
         if let Some(dhat_output_file) = _state.config.dhat_output_file() {
+            // Need to drop the old profiler before creating a new one.
             let mut profiler = crate::DHAT_PROFILER.lock().unwrap();
             let old_profiler = profiler.take();
             drop(old_profiler);
@@ -2315,6 +2316,7 @@ fn prepare_hover_actions(
 fn should_skip_target(runnable: &Runnable, cargo_spec: Option<&TargetSpec>) -> bool {
     match runnable.kind {
         RunnableKind::Bin => {
+            // Do not suggest binary run on other target than binary
             match &cargo_spec {
                 Some(spec) => !matches!(
                     spec.target_kind(),
@@ -2504,11 +2506,15 @@ fn run_rustfmt(
     let (new_text, new_line_endings) = LineEndings::normalize(captured_stdout);
 
     if line_index.endings != new_line_endings {
+        // If line endings are different, send the entire file.
+        // Diffing would not work here, as the line endings might be the only
+        // difference.
         Ok(Some(to_proto::text_edit_vec(
             &line_index,
             TextEdit::replace(TextRange::up_to(TextSize::of(&*file)), new_text),
         )))
     } else if *file == new_text {
+        // The document is already formatted correctly -- no edits needed.
         Ok(None)
     } else {
         Ok(Some(to_proto::text_edit_vec(&line_index, diff(&file, &new_text))))

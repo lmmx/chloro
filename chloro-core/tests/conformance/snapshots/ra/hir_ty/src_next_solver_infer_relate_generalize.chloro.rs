@@ -397,6 +397,9 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
         b_arg: GenericArgs<'db>,
     ) -> RelateResult<'db, GenericArgs<'db>> {
         if self.ambient_variance == Variance::Invariant {
+            // Avoid fetching the variance if we are in an invariant
+            // context; no need, and it can induce dependency cycles
+            // (e.g., #41849).
             relate::relate_args_invariantly(self, a_arg, b_arg)
         } else {
             let tcx = self.cx();
@@ -599,6 +602,9 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match c.kind() {
             ConstKind::Infer(InferConst::Var(vid)) => {
+                // If root const vids are equal, then `root_vid` and
+                // `vid` are related and we'd be inferring an infinitely
+                // deep const.
                 if TermVid::Const(
                     self.infcx.inner.borrow_mut().const_unification_table().find(vid).vid,
                 ) == self.root_vid
@@ -616,6 +622,8 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                         if self.for_universe.can_name(universe) {
                             Ok(c)
                         } else {
+                            // See the comment for type inference variables
+                            // for more details.
                             let new_var_id = variable_table
                                 .new_key(ConstVariableValue::Unknown {
                                     origin,
@@ -636,6 +644,11 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                     }
                 }
             }
+            // FIXME: Unevaluated constants are also not rigid, so the current
+            // approach of always relating them structurally is incomplete.
+            //
+            // FIXME: remove this branch once `structurally_relate_consts` is fully
+            // structural.
             ConstKind::Unevaluated(UnevaluatedConst { def, args }) => {
                 let args = self.relate_with_variance(
                     Variance::Invariant,

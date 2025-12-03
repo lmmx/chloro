@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5560 bytes
+Chloro size:   5602 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -20,17 +20,11 @@ Rustfmt size:  5891 bytes
  
  #[derive(Default, Debug, Clone)]
  pub(crate) struct OpaqueTypeStorage<'db> {
-         if let Some(prev) = prev {
-             *self.opaque_types.get_mut(&key).unwrap() = prev;
-         } else {
--            // FIXME(#120456) - is `swap_remove` correct?
-             match self.opaque_types.swap_remove(&key) {
                  None => {
                      panic!("reverted opaque type inference that was never registered: {key:?}")
                  }
 -                Some(_) => {}
-+                Some(_) => {
-+                }
++                Some(_) => {},
              }
          }
      }

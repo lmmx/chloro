@@ -293,6 +293,7 @@ fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
             }
         }
         Expr::ReturnExpr(_) => {
+            // all return expressions have already been handled by the walk loop
         }
         e => acc.push(e.clone()),
     }

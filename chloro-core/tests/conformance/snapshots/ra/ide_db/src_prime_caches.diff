@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12112 bytes
-Chloro size:   11237 bytes
+Chloro size:   12097 bytes
 Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
@@ -95,6 +95,7 @@ Rustfmt size:  12243 bytes
 -        || module_symbols_done < module_symbols_total
 -    {
 +    while crate_def_maps_done < crate_def_maps_total || crate_import_maps_done < crate_import_maps_total || module_symbols_done < module_symbols_total {
++        // Biased to prefer progress updates (and because it's faster).
          db.unwind_if_revision_cancelled();
 -
          let progress = ParallelPrimeCachesProgress {
@@ -123,6 +124,7 @@ Rustfmt size:  12243 bytes
                  crates_currently_indexing.insert(crate_id, crate_name);
              }
              ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {
++                // Fire ready dependencies.
                  crates_currently_indexing.swap_remove(&crate_id);
                  crate_def_maps_done += 1;
 -
@@ -144,24 +146,3 @@ Rustfmt size:  12243 bytes
                  let origin = &crate_id.data(db).origin;
                  if origin.is_lang() {
                      crate_import_maps_total += 1;
-                     import_map_work_sender.send(crate_id).ok();
-                 } else if origin.is_local() {
--                    // Compute the symbol search index.
--                    // This primes the cache for `ide_db::symbol_index::world_symbols()`.
--                    //
--                    // We do this for workspace crates only (members of local_roots), because doing it
--                    // for all dependencies could be *very* unnecessarily slow in a large project.
--                    //
--                    // FIXME: We should do it unconditionally if the configuration is set to default to
--                    // searching dependencies (rust-analyzer.workspace.symbol.search.scope), but we
--                    // would need to pipe that configuration information down here.
-                     let modules = hir::Crate::from(crate_id).modules(db);
-                     module_symbols_total += modules.len();
-                     for module in modules {
-             ParallelPrimeCacheWorkerProgress::EndCrateImportMap => crate_import_maps_done += 1,
-             ParallelPrimeCacheWorkerProgress::EndModuleSymbols => module_symbols_done += 1,
-             ParallelPrimeCacheWorkerProgress::Cancelled(cancelled) => {
--                // Cancelled::throw should probably be public
-                 std::panic::resume_unwind(Box::new(cancelled));
-             }
-         }

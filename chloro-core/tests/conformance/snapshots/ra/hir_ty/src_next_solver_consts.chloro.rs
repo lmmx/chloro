@@ -267,6 +267,7 @@ impl<'db> TypeSuperVisitable<DbInterner<'db>> for Const<'db> {
             ConstKind::Value(v) => v.visit_with(visitor),
             ConstKind::Expr(e) => e.visit_with(visitor),
             ConstKind::Error(e) => e.visit_with(visitor),
+
             ConstKind::Param(_)
             | ConstKind::Infer(_)
             | ConstKind::Bound(..)

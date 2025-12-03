@@ -192,6 +192,7 @@ pub fn parallel_prime_caches(
     }
 
     while crate_def_maps_done < crate_def_maps_total || crate_import_maps_done < crate_import_maps_total || module_symbols_done < module_symbols_total {
+        // Biased to prefer progress updates (and because it's faster).
         db.unwind_if_revision_cancelled();
         let progress = ParallelPrimeCachesProgress {
             crates_currently_indexing: crates_currently_indexing.values().cloned().collect(),
@@ -218,6 +219,7 @@ pub fn parallel_prime_caches(
                 crates_currently_indexing.insert(crate_id, crate_name);
             }
             ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {
+                // Fire ready dependencies.
                 crates_currently_indexing.swap_remove(&crate_id);
                 crate_def_maps_done += 1;
                 for &dep in &reverse_deps[&crate_id] {
@@ -241,6 +243,15 @@ pub fn parallel_prime_caches(
                     crate_import_maps_total += 1;
                     import_map_work_sender.send(crate_id).ok();
                 } else if origin.is_local() {
+                    // Compute the symbol search index.
+                    // This primes the cache for `ide_db::symbol_index::world_symbols()`.
+                    //
+                    // We do this for workspace crates only (members of local_roots), because doing it
+                    // for all dependencies could be *very* unnecessarily slow in a large project.
+                    //
+                    // FIXME: We should do it unconditionally if the configuration is set to default to
+                    // searching dependencies (rust-analyzer.workspace.symbol.search.scope), but we
+                    // would need to pipe that configuration information down here.
                     let modules = hir::Crate::from(crate_id).modules(db);
                     module_symbols_total += modules.len();
                     for module in modules {
@@ -251,6 +262,7 @@ pub fn parallel_prime_caches(
             ParallelPrimeCacheWorkerProgress::EndCrateImportMap => crate_import_maps_done += 1,
             ParallelPrimeCacheWorkerProgress::EndModuleSymbols => module_symbols_done += 1,
             ParallelPrimeCacheWorkerProgress::Cancelled(cancelled) => {
+                // Cancelled::throw should probably be public
                 std::panic::resume_unwind(Box::new(cancelled));
             }
         }

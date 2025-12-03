@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23615 bytes
-Chloro size:   22788 bytes
+Chloro size:   22875 bytes
 Rustfmt size:  23945 bytes
 
 ✗ Outputs DIFFER
@@ -120,10 +120,9 @@ Rustfmt size:  23945 bytes
  
      if full_path.segment()?.name_ref()? != *name_ref {
          // `name_ref` isn't the last segment of the path, so `full_path` doesn't point to the
-             edit.edit_file(file_id.file_id(ctx.db()));
              for r in refs {
                  if let Some(name_ref) = r.name.as_name_ref() {
--                    // Only edit the field reference if it's part of a `.field` access
+                     // Only edit the field reference if it's part of a `.field` access
 -                    if name_ref
 -                        .syntax()
 -                        .parent()

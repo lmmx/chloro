@@ -422,6 +422,8 @@ fn sequence_name<'db>(
     };
 
     if name.ends_with(['s', 'x', 'y']) {
+        // Given a type called e.g. "Boss", "Fox" or "Story", don't try to
+        // create a plural.
         items_str
     } else {
         SmolStr::new(format!("{name}s"))

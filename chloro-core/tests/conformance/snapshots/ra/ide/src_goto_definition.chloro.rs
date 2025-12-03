@@ -298,6 +298,8 @@ fn handle_control_flow_keywords(
     token: &SyntaxToken,
 ) -> Option<Vec<NavigationTarget>> {
     match token.kind() {
+        // For `fn` / `loop` / `while` / `for` / `async` / `match`, return the keyword it self,
+        // so that VSCode will find the references when using `ctrl + click`
         T![fn] | T![async] | T![try] | T![return] => nav_for_exit_points(sema, token),
         T![loop] | T![while] | T![break] | T![continue] => nav_for_break_points(sema, token),
         T![for] if token.parent().and_then(ast::ForExpr::cast).is_some() => {

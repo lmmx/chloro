@@ -97,6 +97,7 @@ fn has_drop_glue_impl<'db>(
                         .max()
                         .unwrap_or(DropGlue::None)
                 }
+                // Unions cannot have fields with destructors.
                 AdtId::UnionId(_) => DropGlue::None,
                 AdtId::EnumId(id) => id
                     .enum_variants(db)
@@ -146,6 +147,7 @@ fn has_drop_glue_impl<'db>(
                 .max()
                 .unwrap_or(DropGlue::None)
         }
+        // FIXME: Handle coroutines.
         TyKind::Coroutine(..) | TyKind::CoroutineWitness(..) | TyKind::CoroutineClosure(..) => {
             DropGlue::None
         }

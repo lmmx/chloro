@@ -1468,14 +1468,18 @@ fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -
     let parent_match_arm = fun.body.parent().and_then(ast::MatchArm::cast);
 
     if let Some(bindings) = outliving_bindings {
+        // with bindings that outlive it
         make::let_stmt(bindings, None, Some(expr)).syntax().clone_for_update()
     } else if parent_match_arm.as_ref().is_some() {
+        // as a tail expr for a match arm
         expr.syntax().clone()
     } else if parent_match_arm.as_ref().is_none()
         && fun.ret_ty.is_unit()
         && (!fun.outliving_locals.is_empty() || !expr.is_block_like()) {
+        // as an expr stmt
         make::expr_stmt(expr).syntax().clone_for_update()
     } else {
+        // as a tail expr, or a block
         expr.syntax().clone()
     }
 }

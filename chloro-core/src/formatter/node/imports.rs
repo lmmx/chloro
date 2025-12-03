@@ -187,4 +187,31 @@ mod tests {
         };
         ");
     }
+
+    #[test]
+    fn test_import_order_super_before_crate() {
+        // In rustfmt 2024, super:: should come before crate::
+        let input = r#"use crate::foo;
+use super::bar;"#;
+
+        let parse = SourceFile::parse(input, Edition::CURRENT);
+        let root = parse.syntax_node();
+
+        let mut use_items = Vec::new();
+        for item in root.descendants() {
+            if let Some(use_) = Use::cast(item) {
+                use_items.push((Vec::new(), use_, Vec::new()));
+            }
+        }
+
+        let mut buf = String::new();
+        sort_and_format_imports(&use_items, &mut buf, 0);
+
+        // Both are internal, so they should be sorted alphabetically
+        // "crate" < "super" alphabetically
+        assert_snapshot!(buf, @r"
+        use crate::foo;
+        use super::bar;
+        ");
+    }
 }

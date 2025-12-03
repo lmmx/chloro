@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7506 bytes
-Chloro size:   7292 bytes
+Chloro size:   7577 bytes
 Rustfmt size:  7929 bytes
 
 ✗ Outputs DIFFER
@@ -42,11 +42,9 @@ Rustfmt size:  7929 bytes
              return Unsafety::Unsafe;
          }
      }
-         hir_def::ItemContainerId::ExternBlockId(block) => {
-             let is_intrinsic_block = block.abi(db) == Some(sym::rust_dash_intrinsic);
              if is_intrinsic_block {
--                // legacy intrinsics
--                // extern "rust-intrinsic" intrinsics are unsafe unless they have the rustc_safe_intrinsic attribute
+                 // legacy intrinsics
+                 // extern "rust-intrinsic" intrinsics are unsafe unless they have the rustc_safe_intrinsic attribute
 -                if db
 -                    .attrs(func.into())
 -                    .by_key(sym::rustc_safe_intrinsic)
@@ -56,13 +54,6 @@ Rustfmt size:  7929 bytes
                      Unsafety::Safe
                  } else {
                      Unsafety::Unsafe
-                 }
-             } else {
--                // Function in an `extern` block are always unsafe to call, except when
--                // it is marked as `safe`.
-                 if data.is_safe() {
-                     Unsafety::Safe
-                 } else {
          hir_def::layout::Variants::Single { index } => {
              (e.enum_variants(db).variants[index.0].0, layout)
          }

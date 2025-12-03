@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5724 bytes
-Chloro size:   5087 bytes
+Chloro size:   5722 bytes
 Rustfmt size:  5762 bytes
 
 ✗ Outputs DIFFER
@@ -18,24 +18,14 @@ Rustfmt size:  5762 bytes
      },
  };
  
-         match (&*self, &other) {
-             (UsageKind::HasDefiningUse(_), _) | (_, UsageKind::None) => unreachable!(),
-             (UsageKind::None, _) => *self = other,
--            // When mergining non-defining uses, prefer earlier ones. This means
--            // the error happens as early as possible.
              (
                  UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                  UsageKind::NonDefiningUse(..),
 -            ) => {}
--            // When merging unconstrained hidden types, we prefer later ones. This is
--            // used as in most cases, the defining use is the final return statement
--            // of our function, and other uses with defining arguments are likely not
--            // intended to be defining.
-+            ) => {
-+            }
-             (
-                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
-                 UsageKind::UnconstrainedHiddenType(..) | UsageKind::HasDefiningUse(_),
++            ) => {},
+             // When merging unconstrained hidden types, we prefer later ones. This is
+             // used as in most cases, the defining use is the final return statement
+             // of our function, and other uses with defining arguments are likely not
          debug!(?opaque_types);
  
          let interner = self.interner();
@@ -47,6 +37,12 @@ Rustfmt size:  5762 bytes
          else {
              unreachable!();
          };
+ 
+         for def_id in defining_opaque_types_and_generators {
++            // We do actually need to check this the second pass (we can't just
++            // store this), because we can go from `UnconstrainedHiddenType` to
++            // `HasDefiningUse` (because of fallback)
+             let def_id = match def_id {
                  SolverDefId::InternedOpaqueTyId(it) => it,
                  _ => continue,
              };

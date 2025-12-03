@@ -315,6 +315,7 @@ where
         .filter_map(|item| item.upmap_from_ra_fixture(analysis, virtual_file_id, real_file_id).ok())
         .collect::<Collection>();
     if result.is_empty() {
+        // The collection was emptied by the upmapping - all items errored, therefore mark it as erroring as well.
         Err(())
     } else {
         Ok(result)

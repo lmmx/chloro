@@ -92,6 +92,7 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
     ) -> bool {
         match arg.kind() {
             GenericArgKind::Lifetime(_) => {
+                // Lifetimes should not change affect trait selection.
                 false
             }
             GenericArgKind::Type(ty) => {

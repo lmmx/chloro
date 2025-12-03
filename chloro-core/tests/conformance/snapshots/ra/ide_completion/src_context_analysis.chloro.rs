@@ -156,6 +156,7 @@ fn expand_maybe_stop(
     if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset).is_some_and(|original_token| {
             !sema.is_inside_macro_call(original_file.with_value(&original_token))
         }) {
+        // Recursion base case.
         Some(ExpansionResult {
             original_file: original_file.value,
             speculative_file,
@@ -392,6 +393,7 @@ fn expand(
         sema.expand_macro_call(&actual_macro_call),
         sema.speculative_expand_macro_call(&actual_macro_call, &speculative_args, fake_ident_token),
     ) {
+        // successful expansions
         (Some(actual_expansion), Some((fake_expansion, fake_mapped_tokens))) => {
             let mut accumulated_offset_from_fake_tokens = 0;
             let actual_range = actual_expansion.text_range().end();
@@ -427,6 +429,8 @@ fn expand(
                 .min_by_key(|(_, rank)| *rank)
                 .map(|(result, _)| result)
         }
+        // at least one expansion failed, we won't have anything to expand from this point
+        // onwards so break out
         _ => None,
     }
 }

@@ -40,6 +40,7 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for OpportunisticVarResolver<'a, 'db> 
     #[inline]
     fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
         if !t.has_non_region_infer() {
+            // micro-optimize -- if there is nothing in this type that this fold affects...
             t
         } else if let Some(ty) = self.cache.get(&t) {
             *ty
@@ -53,6 +54,7 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for OpportunisticVarResolver<'a, 'db> 
 
     fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
         if !ct.has_non_region_infer() {
+            // micro-optimize -- if there is nothing in this const that this fold affects...
             ct
         } else {
             let ct = self.infcx.shallow_resolve_const(ct);

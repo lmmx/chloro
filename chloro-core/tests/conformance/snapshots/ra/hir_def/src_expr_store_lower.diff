@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   142965 bytes
+Chloro size:   144464 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -205,7 +205,7 @@ Rustfmt size:  144317 bytes
 +                    },
 +                    )
                  }
--                // FIXME
+                 // FIXME
                  Some(ast::BlockModifier::AsyncGen(_)) => {
                      self.with_awaitable_block(Awaitable::Yes, |this| this.collect_block(e))
                  }
@@ -221,17 +221,12 @@ Rustfmt size:  144317 bytes
                  None => self.collect_block(e),
              },
              ast::Expr::LoopExpr(e) => {
-             ast::Expr::WhileExpr(e) => self.collect_while_loop(syntax_ptr, e),
-             ast::Expr::ForExpr(e) => self.collect_for_loop(syntax_ptr, e),
-             ast::Expr::CallExpr(e) => {
--                // FIXME: Remove this once we drop support for <1.86, https://github.com/rust-lang/rust/commit/ac9cb908ac4301dfc25e7a2edee574320022ae2c
-                 let is_rustc_box = {
-                     let attrs = e.attrs();
-                     attrs.filter_map(|it| it.as_simple_atom()).any(|it| it == "rustc_box")
+                 self.alloc_expr(Expr::Break { expr, label }, syntax_ptr)
              }
              ast::Expr::ParenExpr(e) => {
-                 let inner = self.collect_expr_opt(e.expr());
--                // make the paren expr point to the inner expression as well for IDE resolution
+-                let inner = self.collect_expr_opt(e.expr());
+                 // make the paren expr point to the inner expression as well for IDE resolution
++                let inner = self.collect_expr_opt(e.expr());
                  let src = self.expander.in_file(syntax_ptr);
                  self.store.expr_map.insert(src, inner.into());
                  inner
@@ -261,11 +256,13 @@ Rustfmt size:  144317 bytes
              ast::Expr::BinExpr(e) => {
                  let op = e.op_kind();
                  if let Some(ast::BinaryOp::Assignment { op: None }) = op {
+                 }
              }
              ast::Expr::TupleExpr(e) => {
-                 let mut exprs: Vec<_> = e.fields().map(|expr| self.collect_expr(expr)).collect();
--                // if there is a leading comma, the user is most likely to type out a leading expression
--                // so we insert a missing expression at the beginning for IDE features
+-                let mut exprs: Vec<_> = e.fields().map(|expr| self.collect_expr(expr)).collect();
+                 // if there is a leading comma, the user is most likely to type out a leading expression
+                 // so we insert a missing expression at the beginning for IDE features
++                let mut exprs: Vec<_> = e.fields().map(|expr| self.collect_expr(expr)).collect();
                  if comma_follows_token(e.l_paren_token()) {
                      exprs.insert(0, self.missing_expr());
                  }
@@ -278,21 +275,6 @@ Rustfmt size:  144317 bytes
                  match kind {
                      ArrayExprKind::ElementList(e) => {
                          let elements = e.map(|expr| self.collect_expr(expr)).collect();
-                     }
-                 }
-             }
--
-             ast::Expr::Literal(e) => self.alloc_expr(Expr::Literal(e.kind().into()), syntax_ptr),
-             ast::Expr::IndexExpr(e) => {
-                 let base = self.collect_expr_opt(e.base());
-                 });
-                 match id {
-                     Some(id) => {
--                        // Make the macro-call point to its expanded expression so we can query
--                        // semantics on syntax pointers to the macro
-                         let src = self.expander.in_file(syntax_ptr);
-                         self.store.expr_map.insert(src, id.into());
-                         id
          let body = self.collect_labelled_block_opt(label, e.loop_body());
  
          // Labels can also be used in the condition expression, like this:
@@ -359,8 +341,7 @@ Rustfmt size:  144317 bytes
 -
          match res.value {
              Some((mark, expansion)) => {
--                // Keep collecting even with expansion errors so we can provide completions and
--                // other services in incomplete macro expressions.
+                 // Keep collecting even with expansion errors so we can provide completions and
                  if let Some(macro_file) = self.expander.current_file_id().macro_file() {
                      self.store.expansions.insert(macro_call_ptr, macro_file);
                  }
@@ -368,6 +349,13 @@ Rustfmt size:  144317 bytes
                  let id = collector(self, expansion.map(|it| it.tree()));
                  self.expander.exit(mark);
                  id
+                 statements.push(Statement::Let { pat, type_ref, initializer, else_branch });
+             }
+             ast::Stmt::ExprStmt(stmt) => {
++                // Note that macro could be expanded to multiple statements
+                 let expr = stmt.expr();
+                 match &expr {
+                     Some(expr) if !self.check_cfg(expr) => return,
                      _ => (),
                  }
                  let has_semi = stmt.semicolon_token().is_some();
@@ -400,13 +388,6 @@ Rustfmt size:  144317 bytes
      fn collect_pat_possibly_rest(
          &mut self,
          pat: ast::Pat,
-     fn pop_label_rib(&mut self) {
-         // We need to pop all macro defs, plus one rib.
-         while let Some(LabelRib { kind: RibKind::MacroDef(_) }) = self.label_ribs.pop() {
--            // Do nothing.
-         }
-     }
- 
      }
      // endregion: labels
  
@@ -471,15 +452,6 @@ Rustfmt size:  144317 bytes
          //     &args
          let args = self.alloc_expr_desugared(Expr::Ref {
              expr: args,
-         };
- 
-         if !let_stmts.is_empty() {
--            // Generate:
--            //     {
--            //         super let …
--            //         super let …
--            //         <core::fmt::Arguments>::new_…(…)
--            //     }
              let call = self.alloc_expr_desugared(call_block);
              self.alloc_expr(
                  Expr::Block {
@@ -496,10 +468,11 @@ Rustfmt size:  144317 bytes
                  syntax_ptr,
              )
          } else {
-         let width_expr = self.make_count(width, argmap);
  
          if self.module.krate().workspace_data(self.db).is_atleast_187() {
--            // These need to match the constants in library/core/src/fmt/rt.rs.
+             // These need to match the constants in library/core/src/fmt/rt.rs.
++            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
++            // Highest bit always set.
              let align = match alignment {
                  Some(FormatAlignment::Left) => 0,
                  Some(FormatAlignment::Right) => 1,
@@ -523,6 +496,13 @@ Rustfmt size:  144317 bytes
              let position =
                  RecordLitField { name: Name::new_symbol_root(sym::position), expr: position };
              let flags = RecordLitField { name: Name::new_symbol_root(sym::flags), expr: flags };
+                 spread: None,
+             })
+         } else {
++            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
+             let format_placeholder_new = {
+                 let format_placeholder_new = LangItem::FormatPlaceholder.ty_rel_path(
+                     self.db,
                      None => self.missing_expr(),
                  }
              };
@@ -546,14 +526,6 @@ Rustfmt size:  144317 bytes
                      let args = self.alloc_expr_desugared(Expr::Literal(Literal::Uint(
                          i as u128,
                          Some(BuiltinUint::Usize),
-                         args: Box::new([args]),
-                     })
-                 } else {
--                    // FIXME: This drops arg causing it to potentially not be resolved/type checked
--                    // when typing?
-                     self.missing_expr()
-                 }
-             }
              Some(new_fn) => self.alloc_expr_desugared(Expr::Path(new_fn)),
              None => self.missing_expr(),
          };

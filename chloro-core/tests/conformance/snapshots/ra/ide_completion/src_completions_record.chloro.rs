@@ -104,6 +104,8 @@ pub(crate) fn add_default_update(
         .zip(ty.as_ref())
         .is_some_and(|(default_trait, ty)| ty.original.impls_trait(ctx.db, default_trait, &[]));
     if impls_default_trait {
+        // FIXME: This should make use of scope_def like completions so we get all the other goodies
+        // that is we should handle this like actually completing the default function
         let completion_text = "..Default::default()";
         let mut item = CompletionItem::new(
             SymbolKind::Field,
@@ -127,6 +129,7 @@ fn complete_fields(
     missing_fields: Vec<(hir::Field, hir::Type<'_>)>,
 ) {
     for (field, ty) in missing_fields {
+        // This should call something else, we shouldn't be synthesizing a DotAccess here
         acc.add_field(
             ctx,
             &DotAccess {
