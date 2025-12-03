@@ -43,27 +43,16 @@ use super::{
 };
 
 pub mod at;
-
 pub mod canonical;
-
 mod context;
-
 pub mod opaque_types;
-
 pub mod region_constraints;
-
 pub mod relate;
-
 pub mod resolve;
-
 pub(crate) mod select;
-
 pub(crate) mod snapshot;
-
 pub(crate) mod traits;
-
 mod type_variable;
-
 mod unify_key;
 
 /// `InferOk<'db, ()>` is used a lot. It may seem like a useless wrapper

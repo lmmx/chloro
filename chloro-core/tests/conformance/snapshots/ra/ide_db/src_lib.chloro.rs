@@ -51,11 +51,9 @@ pub mod imports {
     pub mod insert_use;
     pub mod merge_imports;
 }
-
 pub mod generated {
     pub mod lints;
 }
-
 pub mod syntax_helpers {
     pub mod format_string;
     pub mod format_string_exprs;

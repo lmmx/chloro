@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49462 bytes
+Chloro size:   49451 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -47,33 +47,6 @@ Rustfmt size:  49754 bytes
  use super::{
      AliasTerm, Binder, CanonicalQueryInput, CanonicalVarValues, Const, ConstKind, DbInterner,
      ErrorGuaranteed, GenericArg, GenericArgs, OpaqueTypeKey, ParamEnv, PolyCoercePredicate,
- };
- 
- pub mod at;
-+
- pub mod canonical;
-+
- mod context;
-+
- pub mod opaque_types;
-+
- pub mod region_constraints;
-+
- pub mod relate;
-+
- pub mod resolve;
-+
- pub(crate) mod select;
-+
- pub(crate) mod snapshot;
-+
- pub(crate) mod traits;
-+
- mod type_variable;
-+
- mod unify_key;
- 
- /// `InferOk<'db, ()>` is used a lot. It may seem like a useless wrapper
      pub value: T,
      pub obligations: PredicateObligations<'db>,
  }

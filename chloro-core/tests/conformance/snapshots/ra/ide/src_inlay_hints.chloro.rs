@@ -24,39 +24,22 @@ use syntax::{
 use crate::{navigation_target::TryToNav, FileId};
 
 mod adjustment;
-
 mod bind_pat;
-
 mod binding_mode;
-
 mod bounds;
-
 mod chaining;
-
 mod closing_brace;
-
 mod closure_captures;
-
 mod closure_ret;
-
 mod discriminant;
-
 mod extern_block;
-
 mod generic_param;
-
 mod implicit_drop;
-
 mod implicit_static;
-
 mod implied_dyn_trait;
-
 mod lifetime;
-
 mod param_name;
-
 mod ra_fixture;
-
 mod range_exclusive;
 
 pub(crate) fn inlay_hints(

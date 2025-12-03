@@ -984,10 +984,8 @@ expression: cleaned_diff
 +        run_and_expect_no_errors("test_data/parser/inline/ok/yield_expr.rs");
 +    }
  }
-+
  mod err {
      use crate::tests::*;
-     #[test]
          run_and_expect_errors("test_data/parser/inline/err/async_without_semicolon.rs");
      }
      #[test]
@@ -3371,8 +3369,10 @@ expression: cleaned_diff
 +    struct S {
 +    }
  }
- 
+-
  mod d {
+     #![attr]
+     mod e;
      }
  }
  
@@ -4363,12 +4363,10 @@ expression: cleaned_diff
      fn len(&self) -> usize {
          self.kind.len()
      }
- }
  
  mod prefix_entries;
-+
  mod top_entries;
- 
+-
 -use std::{
 -    fmt::Write,
 -    fs,
@@ -4416,35 +4414,14 @@ expression: cleaned_diff
 +#
 +#
  mod event;
--mod frontmatter;
--mod grammar;
--mod input;
--mod lexed_str;
--mod output;
--mod parser;
--mod shortcuts;
--mod syntax_kind;
--mod token_set;
- 
+ mod frontmatter;
+ mod grammar;
+ mod shortcuts;
+ mod syntax_kind;
+ mod token_set;
+-
 -pub use T_ as T;
-+mod frontmatter;
-+
-+mod grammar;
-+
-+mod input;
-+
-+mod lexed_str;
-+
-+mod output;
-+
-+mod parser;
-+
-+mod shortcuts;
-+
-+mod syntax_kind;
-+
-+mod token_set;
- 
+-
  #[cfg(test)]
  mod tests;
  
@@ -4525,36 +4502,18 @@ expression: cleaned_diff
 -//! caller is responsible for branching on the first token.
 -
  mod attributes;
--mod expressions;
--mod generic_args;
--mod generic_params;
--mod items;
--mod params;
--mod paths;
--mod patterns;
--mod types;
- 
+ mod expressions;
+ mod generic_args;
+ mod paths;
+ mod patterns;
+ mod types;
+-
 -use crate::{
 -    SyntaxKind::{self, *},
 -    T, TokenSet,
 -    parser::{CompletedMarker, Marker, Parser},
 -};
-+mod expressions;
-+
-+mod generic_args;
-+
-+mod generic_params;
-+
-+mod items;
-+
-+mod params;
-+
-+mod paths;
-+
-+mod patterns;
-+
-+mod types;
- 
+-
  pub(crate) mod entry {
      use super::*;
 -
@@ -4951,14 +4910,7 @@ expression: cleaned_diff
  fn tuple_field_list(p: &mut Parser<'_>) {
      assert!(p.at(T!['(']));
      let m = p.start();
- }
- 
- mod adt;
-+
- mod consts;
-+
  mod traits;
-+
  mod use_item;
  
 -pub(crate) use self::{

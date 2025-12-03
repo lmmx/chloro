@@ -111,3 +111,36 @@ fn preserve_blank_line_in_file_before_commented_code() {
         output
     );
 }
+
+#[test]
+fn preserve_mod_declarations_without_extra_blank_lines() {
+    // Mod declarations should stay grouped together without blank lines between them
+    let input = r#"use ra_ap_syntax::{
+    AstNode, SyntaxNode,
+    ast::{self, HasVisibility},
+};
+
+pub mod grouping;
+pub mod sort;
+
+use crate::formatter::config::MAX_WIDTH;
+use crate::formatter::write_indent;
+
+pub fn format_use() {}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+use ra_ap_syntax::{
+    ast::{self, HasVisibility},
+    AstNode, SyntaxNode,
+};
+
+pub mod grouping;
+pub mod sort;
+
+use crate::formatter::config::MAX_WIDTH;
+use crate::formatter::write_indent;
+
+pub fn format_use() {}
+"#);
+}

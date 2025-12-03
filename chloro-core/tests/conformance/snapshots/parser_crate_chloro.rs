@@ -1141,7 +1141,6 @@ mod ok {
         run_and_expect_no_errors("test_data/parser/inline/ok/yield_expr.rs");
     }
 }
-
 mod err {
     use crate::tests::*;
     #[test]
@@ -3761,7 +3760,6 @@ mod c {
     struct S {
     }
 }
-
 mod d {
     #![attr]
     mod e;
@@ -4430,9 +4428,7 @@ impl Input {
 }
 
 mod prefix_entries;
-
 mod top_entries;
-
 #[rustfmt::skip]
 #[path = "../test_data/generated/runner.rs"]
 mod runner;
@@ -4619,25 +4615,15 @@ fn run_and_expect_errors_with_edition(path: &str, edition: Edition) {
 #
 #
 mod event;
-
 mod frontmatter;
-
 mod grammar;
-
 mod input;
-
 mod lexed_str;
-
 mod output;
-
 mod parser;
-
 mod shortcuts;
-
 mod syntax_kind;
-
 mod token_set;
-
 #[cfg(test)]
 mod tests;
 
@@ -4918,23 +4904,14 @@ pub(super) fn process(mut events: Vec<Event>) -> Output {
 }
 
 mod attributes;
-
 mod expressions;
-
 mod generic_args;
-
 mod generic_params;
-
 mod items;
-
 mod params;
-
 mod paths;
-
 mod patterns;
-
 mod types;
-
 pub(crate) mod entry {
     use super::*;
     pub(crate) mod prefix {
@@ -6334,11 +6311,8 @@ fn tuple_field_list(p: &mut Parser<'_>) {
 }
 
 mod adt;
-
 mod consts;
-
 mod traits;
-
 mod use_item;
 
 pub(super) fn mod_contents(p: &mut Parser<'_>, stop_on_r_curly: bool) {

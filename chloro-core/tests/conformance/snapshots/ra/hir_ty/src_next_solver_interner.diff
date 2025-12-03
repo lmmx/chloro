@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81768 bytes
+Chloro size:   81767 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -763,7 +763,7 @@ Rustfmt size:  84055 bytes
 +        GLOBAL_DB.with(#[inline] |a| a.with(op))
      }
  }
- 
+-
  mod tls_cache {
      use crate::db::HirDatabase;
 -

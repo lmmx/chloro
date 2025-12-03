@@ -41,13 +41,9 @@ use crate::{
 use super::consteval::try_const_usize;
 
 mod borrowck;
-
 mod eval;
-
 mod lower;
-
 mod monomorphization;
-
 mod pretty;
 
 pub type BasicBlockId<'db> = Idx<BasicBlock<'db>>;

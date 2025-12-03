@@ -9,7 +9,6 @@ use super::InferCtxt;
 use super::region_constraints::RegionSnapshot;
 
 mod fudge;
-
 pub(crate) mod undo_log;
 
 #[must_use = "once you start a snapshot, you should always consume it"]

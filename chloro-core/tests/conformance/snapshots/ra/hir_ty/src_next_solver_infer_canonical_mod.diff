@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6444 bytes
-Chloro size:   6446 bytes
+Chloro size:   6445 bytes
 Rustfmt size:  6615 bytes
 
 ✗ Outputs DIFFER
@@ -26,10 +26,8 @@ Rustfmt size:  6615 bytes
 +};
 +
  pub mod canonicalizer;
-+
  pub mod instantiate;
  
- impl<'db> InferCtxt<'db> {
      ) -> GenericArg<'db> {
          match cv_info {
              CanonicalVarKind::Ty { ui, sub_root } => {

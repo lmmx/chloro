@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11162 bytes
-Chloro size:   11237 bytes
+Chloro size:   11236 bytes
 Rustfmt size:  11162 bytes
 
 ✗ Outputs DIFFER
@@ -18,9 +18,10 @@ Rustfmt size:  11162 bytes
  
  mod expr;
 -pub use expr::Expr;
- 
+-
  mod tactics;
  
+ /// Key for lookup table to query new types reached.
                          *self = AlternativeExprs::Many;
                          break;
                      }

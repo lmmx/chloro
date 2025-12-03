@@ -34,7 +34,6 @@ use crate::{
 };
 
 mod gen_trait_fn_body;
-
 pub(crate) mod ref_field_expr;
 
 pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
