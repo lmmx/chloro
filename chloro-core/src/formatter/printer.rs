@@ -1,4 +1,3 @@
-// chloro-core/src/formatter/printer.rs
 //! A trait-based printer to reduce repetitive formatting patterns.
 
 use ra_ap_syntax::ast::{AstNode, AstToken, HasAttrs, HasDocComments, HasVisibility};

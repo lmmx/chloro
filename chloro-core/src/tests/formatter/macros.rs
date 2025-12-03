@@ -1,4 +1,3 @@
-// chloro-core/src/tests/formatter/macros.rs
 use super::*;
 use insta::assert_snapshot;
 

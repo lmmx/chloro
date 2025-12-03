@@ -1,5 +1,3 @@
-// chloro-core/src/tests/formatter/comments.rs
-
 use super::*;
 use insta::assert_snapshot;
 
