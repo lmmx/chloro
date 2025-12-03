@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45331 bytes
+Chloro size:   45287 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
@@ -60,8 +60,7 @@ Rustfmt size:  45518 bytes
      fn whitespace(&mut self) {
          match self.buf.chars().next_back() {
 -            None | Some('\n' | ' ') => {}
-+            None | Some('\n' | ' ') => {
-+            }
++            None | Some('\n' | ' ') => {},
              _ => self.buf.push(' '),
          }
      }
@@ -75,8 +74,7 @@ Rustfmt size:  45518 bytes
          if matches!(self.line_format, LineFormat::Oneline) {
              match self.buf.chars().last() {
 -                Some(' ') | None => {}
-+                Some(' ') | None => {
-+                }
++                Some(' ') | None => {},
                  Some(_) => {
                      w!(self, " ");
                  }
@@ -84,8 +82,7 @@ Rustfmt size:  45518 bytes
          } else {
              match self.buf.chars().rev().find_position(|ch| *ch != ' ') {
 -                Some((_, '\n')) | None => {}
-+                Some((_, '\n')) | None => {
-+                }
++                Some((_, '\n')) | None => {},
                  Some((idx, _)) => {
                      if idx != 0 {
                          self.buf.drain(self.buf.len() - idx..);

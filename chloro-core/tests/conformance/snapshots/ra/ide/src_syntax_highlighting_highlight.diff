@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34201 bytes
-Chloro size:   34082 bytes
+Chloro size:   34251 bytes
 Rustfmt size:  34201 bytes
 
 ✗ Outputs DIFFER
@@ -84,13 +84,6 @@ Rustfmt size:  34201 bytes
                  if is_unsafe {
                      return Highlight::from(HlPunct::Parenthesis) | HlMod::Unsafe;
                  } else {
-                 }
-             }
-             T![<] | T![>] => HlPunct::Angle,
--            // Early return as otherwise we'd highlight these in
--            // asm expressions
-             T![,] => return HlPunct::Comma.into(),
-             T![:] => HlPunct::Colon,
              T![;] => HlPunct::Semi,
              T![.] => HlPunct::Dot,
              _ => HlPunct::Other,
@@ -100,13 +93,6 @@ Rustfmt size:  34201 bytes
      }
  }
  
-         T![unsafe] => h | HlMod::Unsafe,
-         T![const] => h | HlMod::Const,
-         T![true] | T![false] => HlTag::BoolLiteral.into(),
--        // crate is handled just as a token if it's in an `extern crate`
-         T![crate] if parent_matches::<ast::ExternCrate>(&token) => h,
-         _ => h,
-     }
              let h = HlTag::Symbol(SymbolKind::Field);
              let is_unsafe = ast::Expr::cast(parent)
                  .is_some_and(|it| is_unsafe_node(AstPtr::new(&it).wrap_left()));

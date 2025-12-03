@@ -255,8 +255,7 @@ fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
                 }
             }
         }
-        _ => {
-        }
+        _ => {},
     }
 }
 

@@ -139,6 +139,10 @@ fn traverse(
     // If in macro, expand it first and highlight the expanded code.
     let mut preorder = root.preorder_with_tokens();
     while let Some(event) = preorder.next() {
+        // Element outside of the viewport, no need to highlight
+        // Descending tokens into macros is expensive even if no descending occurs, so make sure
+        // that we actually are in a position where descending is possible.
+        // string highlight injections
         use WalkEvent::{Enter, Leave};
         let range = match &event {
             Enter(it) | Leave(it) => it.text_range(),
@@ -322,6 +326,7 @@ fn traverse(
             }),
         };
         if let Some((mut highlight, binding_hash)) = element {
+            // apply config filtering
             if is_unlinked && highlight.tag == HlTag::UnresolvedReference {
                 // do not emit unresolved references if the file is unlinked
                 // let the editor do its highlighting for these tokens instead

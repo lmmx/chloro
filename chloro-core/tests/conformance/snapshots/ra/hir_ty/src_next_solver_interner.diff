@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81316 bytes
+Chloro size:   81768 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -378,16 +378,6 @@ Rustfmt size:  84055 bytes
      }
  
      type UnsizingParams = UnsizingParams;
-                 self.db().ty(id.into())
-             }
-             SolverDefId::AdtId(id) => self.db().ty(id.into()),
--            // FIXME(next-solver): This uses the types of `query mir_borrowck` in rustc.
--            //
--            // We currently always use the type from HIR typeck which ignores regions. This
--            // should be fine.
-             SolverDefId::InternedOpaqueTyId(_) => self.type_of_opaque_hir_typeck(def_id),
-             SolverDefId::FunctionId(id) => self.db.value_ty(id.into()).unwrap(),
-             SolverDefId::Ctor(id) => {
                      Ctor::Struct(id) => id.into(),
                      Ctor::Enum(id) => id.into(),
                  };
@@ -418,14 +408,6 @@ Rustfmt size:  84055 bytes
                      AliasTermKind::InherentTy
                  }
                  ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => {
-                 }
-                 _ => AliasTermKind::FreeTy,
-             },
--            // rustc creates an `AnonConst` for consts, and evaluates them with CTFE (normalizing projections
--            // via selection, similar to ours `find_matching_impl()`, and not with the trait solver), so mimic it.
-             SolverDefId::ConstId(_) => AliasTermKind::UnevaluatedConst,
-             _ => unimplemented!("Unexpected alias: {:?}", alias.def_id),
-         }
          let trait_generics = self.generics_of(trait_def_id);
          let trait_args = GenericArgs::new_from_iter(
              self,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57517 bytes
+Chloro size:   57729 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
@@ -143,8 +143,7 @@ Rustfmt size:  58275 bytes
                  }
              }
 -            _ => {}
-+            _ => {
-+            }
++            _ => {},
          }
      }
  
@@ -171,11 +170,9 @@ Rustfmt size:  58275 bytes
                  let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
                  let reference = FileReference {
                      range,
-                 };
-                 sink(file_id, reference)
              }
--            // FIXME: special case type aliases, we can't filter between impl and trait defs here as we lack the substitutions
--            // so we always resolve all assoc type aliases to both their trait def and impl defs
+             // FIXME: special case type aliases, we can't filter between impl and trait defs here as we lack the substitutions
+             // so we always resolve all assoc type aliases to both their trait def and impl defs
 -            Some(NameRefClass::Definition(def, _))
 -                if self.assoc_item_container.is_some()
 +            Some(NameRefClass::Definition(def, _)) if self.assoc_item_container.is_some()

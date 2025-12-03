@@ -1192,6 +1192,8 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                         [Adjustment { kind: Adjust::NeverToAny, target }],
                         [.., Adjustment { target: new_target, .. }],
                     ) => {
+                        // NeverToAny coercion can target any type, so instead of adding a new
+                        // adjustment on top we can change the target.
                         *target = *new_target;
                     }
                     _ => {
@@ -1440,6 +1442,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             .eq(expected, actual)
             .map(|infer_ok| self.table.register_infer_ok(infer_ok));
         if let Err(_err) = result {
+            // FIXME: Emit diagnostic.
         }
     }
 
@@ -1684,6 +1687,8 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                 (ty, variant)
             }
             Some(1) => {
+                // this could be an enum variant or associated type
+                // FIXME potentially resolve assoc type
                 let segment = path.segments().last().unwrap();
                 if let Some((AdtId::EnumId(enum_id), _)) = ty.as_adt() {
                     let enum_data = enum_id.enum_variants(self.db);
@@ -1694,6 +1699,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                 (self.err_ty(), None)
             }
             Some(_) => {
+                // FIXME diagnostic
                 (self.err_ty(), None)
             }
         }
@@ -1804,6 +1810,7 @@ impl<'db> Expectation<'db> {
     /// type.
     fn has_type(ty: Ty<'db>) -> Self {
         if ty.is_ty_error() {
+            // FIXME: get rid of this?
             Expectation::None
         } else {
             Expectation::HasType(ty)

@@ -190,15 +190,18 @@ fn compute_return_type_match(
     ret_type: &hir::Type<'_>,
 ) -> CompletionRelevanceReturnType {
     if match_types(ctx.completion, &self_type, ret_type).is_some() {
+        // fn([..]) -> Self
         CompletionRelevanceReturnType::DirectConstructor
     } else if ret_type
         .type_arguments()
         .any(|ret_type_arg| match_types(ctx.completion, &self_type, &ret_type_arg).is_some()) {
+        // fn([..]) -> Result<Self, E> OR Wrapped<Foo, Self>
         CompletionRelevanceReturnType::Constructor
     } else if ret_type
         .as_adt()
         .map(|adt| adt.name(db).as_str().ends_with("Builder"))
         .unwrap_or(false) {
+        // fn([..]) -> [..]Builder
         CompletionRelevanceReturnType::Builder
     } else {
         CompletionRelevanceReturnType::Other

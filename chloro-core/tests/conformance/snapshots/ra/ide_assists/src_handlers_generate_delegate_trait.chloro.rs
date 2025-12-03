@@ -139,6 +139,14 @@ impl Struct {
         let db = ctx.db();
 
         for (index, delegee) in field.impls.iter().enumerate() {
+            // Skip trait that has `Self` type, which cannot be delegated
+            //
+            // See [`test_self_ty`]
+            // FIXME :  We can omit already implemented impl_traits
+            // But we don't know what the &[hir::Type] argument should look like.
+            // if self.hir_ty.impls_trait(db, trait_, &[]) {
+            //     continue;
+            // }
             let trait_ = match delegee {
                 Delegee::Bound(b) => b,
                 Delegee::Impls(i, _) => i,
@@ -187,6 +195,7 @@ fn generate_impl(
 
     match delegee {
         Delegee::Bound(delegee) => {
+            // Goto link : https://doc.rust-lang.org/reference/paths.html#qualified-paths
             let bound_def = ctx.sema.source(delegee.to_owned())?.value;
             let bound_params = bound_def.generic_param_list();
             let delegate = make::impl_trait(
@@ -227,6 +236,23 @@ fn generate_impl(
             ast::Impl::cast(transform.apply(delegate.syntax()))
         }
         Delegee::Impls(trait_, old_impl) => {
+            // 1) Resolve conflicts between generic parameters in old_impl and
+            // those in strukt.
+            //
+            // These generics parameters will also be used in `field_ty` and
+            // `where_clauses`, so we should substitute arguments in them as well.
+            // 2) Handle instantiated generics in `field_ty`.
+            // 2.1) Some generics used in `self_ty` may be instantiated, so they
+            // are no longer generics, we should remove and instantiate those
+            // generics in advance.
+            // `old_trait_args` contains names of generic args for trait in `old_impl`
+            // 2.2) Generate generic args applied on impl.
+            // 2.3) Instantiate generics with `transform_impl`, this step also
+            // remove unused params.
+            // 3) Generate delegate trait impl
+            // Goto link : https://doc.rust-lang.org/reference/paths.html#qualified-paths
+            // 4) Transform associated items in delegte trait impl
+            // 5) Remove useless where clauses
             let old_impl = ctx.sema.source(old_impl.to_owned())?.value;
             let old_impl_params = old_impl.generic_param_list();
             let strukt_params = resolve_name_conflicts(strukt_params, &old_impl_params);
@@ -389,6 +415,8 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
     wc.predicates().filter(has_live_generics).for_each(|pred| wc.remove_predicate(pred));
 
     if wc.predicates().count() == 0 {
+        // Remove useless whitespaces
+        // Remove where clause
         [syntax::Direction::Prev, syntax::Direction::Next]
             .into_iter()
             .flat_map(|dir| {
@@ -542,6 +570,8 @@ fn process_assoc_item(
         AssocItem::Const(c) => const_assoc_item(c, qual_path_ty),
         AssocItem::Fn(f) => func_assoc_item(f, qual_path_ty, base_name),
         AssocItem::MacroCall(_) => {
+            // FIXME : Handle MacroCall case.
+            // macro_assoc_item(mac, qual_path_ty)
             None
         }
         AssocItem::TypeAlias(ta) => ty_assoc_item(ta, qual_path_ty),

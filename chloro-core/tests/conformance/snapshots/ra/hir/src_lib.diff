@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   226245 bytes
+Chloro size:   226571 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -234,15 +234,10 @@ Rustfmt size:  227843 bytes
  impl_from!(
      Module,
      Function,
-             ModuleDef::Const(it) => Some(it.into()),
-             ModuleDef::Static(it) => Some(it.into()),
-             ModuleDef::Variant(it) => Some(it.into()),
--
-             ModuleDef::Module(_)
-             | ModuleDef::Adt(_)
-             | ModuleDef::Trait(_)
+ 
          let mut impl_assoc_items_scratch = vec![];
          for impl_def in self.impl_defs(db) {
++            // Negative impls can't have items, don't emit missing items diagnostic for them
              GenericDef::Impl(impl_def).diagnostics(db, acc);
 -
              let loc = impl_def.id.lookup(db);
@@ -340,12 +335,6 @@ Rustfmt size:  227843 bytes
          }
          DefDiagnosticKind::UnresolvedExternCrate { ast } => {
              let item = ast.to_ptr(db);
-             acc.push(UnresolvedExternCrate { decl: InFile::new(ast.file_id, item) }.into());
-         }
--
-         DefDiagnosticKind::MacroError { ast, path, err } => {
-             let item = ast.to_ptr(db);
-             let RenderedExpandError { message, error, kind } = err.render_to_string(db);
          }
          DefDiagnosticKind::UnresolvedImport { id, index } => {
              let file_id = id.file_id;
@@ -355,22 +344,20 @@ Rustfmt size:  227843 bytes
                  UnresolvedImport { decl: InFile::new(file_id, AstPtr::new(&use_tree)) }.into(),
              );
          }
--
-         DefDiagnosticKind::UnconfiguredCode { ast_id, cfg, opts } => {
-             let ast_id_map = db.ast_id_map(ast_id.file_id);
-             let ptr = ast_id_map.get_erased(ast_id.value);
-         }
          DefDiagnosticKind::UnimplementedBuiltinMacro { ast } => {
-             let node = ast.to_node(db);
--            // Must have a name, otherwise we wouldn't emit it.
+-            let node = ast.to_node(db);
+             // Must have a name, otherwise we wouldn't emit it.
++            let node = ast.to_node(db);
              let name = node.name().expect("unimplemented builtin macro with no name");
              acc.push(
                  UnimplementedBuiltinMacro {
+             )
          }
          MacroCallKind::Derive { ast_id, derive_attr_index, derive_index, .. } => {
-             let node = ast_id.to_node(db);
--            // Compute the precise location of the macro name's token in the derive
--            // list.
+-            let node = ast_id.to_node(db);
+             // Compute the precise location of the macro name's token in the derive
+             // list.
++            let node = ast_id.to_node(db);
              let token = (|| {
                  let derive_attr = collect_attrs(&node)
                      .nth(derive_attr_index.ast_index())
@@ -597,13 +584,6 @@ Rustfmt size:  227843 bytes
          self.as_ty(db)
              .display(db, display_target)
              .with_closure_style(ClosureStyle::ImplFn)
-                 info.1
-             }
-             AnyClosureId::CoroutineClosureId(_id) => {
--                // FIXME: Infer kind for coroutine closures.
-                 match self.subst.as_coroutine_closure().kind() {
-                     rustc_type_ir::ClosureKind::Fn => FnTrait::AsyncFn,
-                     rustc_type_ir::ClosureKind::FnMut => FnTrait::AsyncFnMut,
  
  impl<'db> ClosureCapture<'db> {
      pub fn local(&self) -> Local {

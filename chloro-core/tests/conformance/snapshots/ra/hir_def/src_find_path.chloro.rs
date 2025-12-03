@@ -318,9 +318,11 @@ fn is_kw_kind_relative_to_from(
     let item = item.local_id;
     let from = from.local_id;
     if item == from {
+        // - if the item is the module we're in, use `self`
         Some(PathKind::SELF)
     } else if let Some(parent_id) = def_map[from].parent {
         if item == parent_id {
+            // - if the item is the parent module, use `super` (this is not used recursively, since `super::super` is ugly)
             Some(if parent_id == DefMap::ROOT {
                 PathKind::Crate
             } else {
@@ -355,10 +357,19 @@ fn calculate_best_path(
     ctx.fuel.set(fuel - 1);
 
     if item.krate(ctx.db) == Some(ctx.from.krate) {
+        // Item was defined in the same crate that wants to import it. It cannot be found in any
+        // dependency in this case.
         calculate_best_path_local(ctx, visited_modules, item, max_len, best_choice)
     } else if ctx.is_std_item {
+        // The item we are searching for comes from the sysroot libraries, so skip prefer looking in
+        // the sysroot libraries directly.
+        // We do need to fallback as the item in question could be re-exported by another crate
+        // while not being a transitive dependency of the current crate.
         find_in_sysroot(ctx, visited_modules, item, max_len, best_choice)
     } else {
+        // Item was defined in some upstream crate. This means that it must be exported from one,
+        // too (unless we can't name it at all). It could *also* be (re)exported by the same crate
+        // that wants to import it here, but we always prefer to use the external path here.
         ctx.from.krate.data(ctx.db).dependencies.iter().for_each(|dep| {
             find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id)
         });
@@ -424,6 +435,8 @@ fn find_in_dep(
         return;
     };
     for info in import_info_for {
+        // Determine best path for containing module and append last segment from `info`.
+        // FIXME: we should guide this to look up the path locally, or from the same crate again?
         if info.is_doc_hidden {
             // the item or import is `#[doc(hidden)]`, so skip it as it is in an external crate
             continue;

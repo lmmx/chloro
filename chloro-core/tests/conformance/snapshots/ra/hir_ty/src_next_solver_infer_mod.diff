@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   47271 bytes
+Chloro size:   49451 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -235,24 +235,6 @@ Rustfmt size:  49754 bytes
      }
  
      /// Number of type variables created so far.
-     fn var_for_def(&self, id: GenericParamId) -> GenericArg<'db> {
-         match id {
-             GenericParamId::LifetimeParamId(_) => {
--                // Create a region inference variable for the given
--                // region parameter definition.
-                 self.next_region_var().into()
-             }
-             GenericParamId::TypeParamId(_) => {
--                // Create a type inference variable for the given
--                // type parameter definition. The generic parameters are
--                // for actual parameters that may be referred to by
--                // the default of this type parameter, if it exists.
--                // e.g., `struct Foo<A, B, C = (A, B)>(...);` when
--                // used in a path such as `Foo::<T, U>::new()` will
--                // use an inference variable for `C` with `[T, U]`
--                // as the generic parameters for the default, `(T, U)`.
-                 let ty_var_id = self
-                     .inner
                      .borrow_mut()
                      .type_variables()
                      .new_var(self.universe(), TypeVariableOrigin { param_def_id: None });
@@ -276,42 +258,6 @@ Rustfmt size:  49754 bytes
      }
  
      /// Returns `true` if errors have been reported since this infcx was
-         if let TyKind::Infer(v) = ty.kind() {
-             match v {
-                 InferTy::TyVar(v) => {
--                    // Not entirely obvious: if `typ` is a type variable,
--                    // it can be resolved to an int/float variable, which
--                    // can then be recursively resolved, hence the
--                    // recursion. Note though that we prevent type
--                    // variables from unifying to other type variables
--                    // directly (though they may be embedded
--                    // structurally), and we prevent cycles in any case,
--                    // so this recursion should always be of very limited
--                    // depth.
--                    //
--                    // Note: if these two lines are combined into one we get
--                    // dynamic borrow errors on `self.inner`.
-                     let known = self.inner.borrow_mut().type_variables().probe(v).known();
-                     known.map_or(ty, |t| self.shallow_resolve(t))
-                 }
--
-                 InferTy::IntVar(v) => {
-                     match self.inner.borrow_mut().int_unification_table().probe_value(v) {
-                         IntVarValue::IntType(ty) => Ty::new_int(self.interner, ty),
-                         IntVarValue::Unknown => ty,
-                     }
-                 }
--
-                 InferTy::FloatVar(v) => {
-                     match self.inner.borrow_mut().float_unification_table().probe_value(v) {
-                         FloatVarValue::Known(ty) => Ty::new_float(self.interner, ty),
-                         FloatVarValue::Unknown => ty,
-                     }
-                 }
--
-                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_) => ty,
-             }
-         } else {
          }
      }
  
@@ -325,41 +271,17 @@ Rustfmt size:  49754 bytes
      pub fn instantiate_binder_with_fresh_vars<T>(
          &self,
          _lbrct: BoundRegionConversionTime,
+     pub fn ty_or_const_infer_var_changed(&self, infer_var: TyOrConstInferVar) -> bool {
          match infer_var {
              TyOrConstInferVar::Ty(v) => {
-                 use self::type_variable::TypeVariableValue;
+-                use self::type_variable::TypeVariableValue;
 -
--                // If `inlined_probe` returns a `Known` value, it never equals
--                // `Infer(TyVar(v))`.
+                 // If `inlined_probe` returns a `Known` value, it never equals
+                 // `Infer(TyVar(v))`.
++                use self::type_variable::TypeVariableValue;
                  match self.inner.borrow_mut().type_variables().inlined_probe(v) {
                      TypeVariableValue::Unknown { .. } => false,
                      TypeVariableValue::Known { .. } => true,
-                 }
-             }
--
-             TyOrConstInferVar::TyInt(v) => {
--                // If `inlined_probe_value` returns a value it's always a
--                // `Int(_)` or `UInt(_)`, which never matches a
--                // `Infer(_)`.
-                 self.inner.borrow_mut().int_unification_table().inlined_probe_value(v).is_known()
-             }
--
-             TyOrConstInferVar::TyFloat(v) => {
--                // If `probe_value` returns a value it's always a
--                // `Float(_)`, which never matches a `Infer(_)`.
--                //
--                // Not `inlined_probe_value(v)` because this call site is colder.
-                 self.inner.borrow_mut().float_unification_table().probe_value(v).is_known()
-             }
--
-             TyOrConstInferVar::Const(v) => {
--                // If `probe_value` returns a `Known` value, it never equals
--                // `ConstKind::Infer(InferConst::Var(v))`.
--                //
--                // Not `inlined_probe_value(v)` because this call site is colder.
-                 match self.inner.borrow_mut().const_unification_table().probe_value(v) {
-                     ConstVariableValue::Unknown { .. } => false,
-                     ConstVariableValue::Known { .. } => true,
          a: TraitRef<'db>,
          b: TraitRef<'db>,
      ) -> TypeTrace<'db> {

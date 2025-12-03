@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10280 bytes
-Chloro size:   9850 bytes
+Chloro size:   10274 bytes
 Rustfmt size:  10776 bytes
 
 ✗ Outputs DIFFER
@@ -35,6 +35,7 @@ Rustfmt size:  10776 bytes
 +            trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
 +        }
 +        Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
++            // Iterate assoc types separately
              ctx.iterate_path_candidates(ty, |item| {
                  add_assoc_item(acc, item);
              });
@@ -53,21 +54,29 @@ Rustfmt size:  10776 bytes
 -            resolution: Some(resolution),
 -            ..
 -        } => {
--            // Add associated types on type parameters and `Self`.
++        Qualified::With { resolution: None, .. } => {},
++        Qualified::With { resolution: Some(resolution), .. } => {
+             // Add associated types on type parameters and `Self`.
 -            ctx.scope
 -                .assoc_type_shorthand_candidates(resolution, |alias| {
 -                    acc.add_type_alias(ctx, alias);
 -                });
 -
-+        Qualified::With { resolution: None, .. } => {
-+        }
-+        Qualified::With { resolution: Some(resolution), .. } => {
 +            ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
 +                acc.add_type_alias(ctx, alias);
 +            });
              match resolution {
                  hir::PathResolution::Def(hir::ModuleDef::Module(module)) => {
                      let module_scope = module.scope(ctx.db, Some(ctx.module));
+                     | hir::ModuleDef::TypeAlias(_)
+                     | hir::ModuleDef::BuiltinType(_)),
+                 ) => {
++                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
++                    // (where AssocType is defined on a trait, not an inherent impl)
++                    // Iterate assoc types separately
+                     let ty = match def {
+                         hir::ModuleDef::Adt(adt) => adt.ty(ctx.db),
+                         hir::ModuleDef::TypeAlias(a) => a.ty(ctx.db),
                          hir::ModuleDef::BuiltinType(builtin) => builtin.ty(ctx.db),
                          _ => return,
                      };
@@ -83,13 +92,6 @@ Rustfmt size:  10776 bytes
                      ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                          if let hir::AssocItem::TypeAlias(ty) = item {
                              acc.add_type_alias(ctx, ty)
-                     });
-                 }
-                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
--                    // Handles `Trait::assoc` as well as `<Ty as Trait>::assoc`.
-                     for item in t.items(ctx.db) {
-                         add_assoc_item(acc, item);
-                     }
                          hir::PathResolution::SelfType(impl_def) => impl_def.self_ty(ctx.db),
                          _ => return,
                      };

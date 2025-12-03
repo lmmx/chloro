@@ -319,11 +319,14 @@ impl HasDocs for hir::ExternCrateDecl {
 
 fn get_doc_string_in_attr(it: &ast::Attr) -> Option<ast::String> {
     match it.expr() {
+        // #[doc = lit]
         Some(ast::Expr::Literal(lit)) => match lit.kind() {
             ast::LiteralKind::String(it) => Some(it),
             _ => None,
         },
+        // #[cfg_attr(..., doc = "", ...)]
         None => {
+            // FIXME: See highlight injection for what to do here
             None
         }
         _ => None,

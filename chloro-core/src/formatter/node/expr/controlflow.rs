@@ -1,5 +1,6 @@
 use ra_ap_syntax::SyntaxNode;
 use ra_ap_syntax::ast::{self, AstNode, HasAttrs, HasLoopBody};
+use ra_ap_syntax::{NodeOrToken, SyntaxKind};
 
 use super::try_format_expr_inner;
 use crate::formatter::write_indent;
@@ -20,6 +21,18 @@ fn format_block_contents(block: &ast::BlockExpr, indent: usize) -> String {
     if let Some(stmt_list) = block.stmt_list() {
         let stmts: Vec<_> = stmt_list.statements().collect();
         let tail = stmt_list.tail_expr();
+
+        // Also collect comments from the stmt_list
+        for child in stmt_list.syntax().children_with_tokens() {
+            match child {
+                NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT => {
+                    write_indent(&mut buf, indent);
+                    buf.push_str(t.text());
+                    buf.push('\n');
+                }
+                _ => {}
+            }
+        }
 
         for stmt in &stmts {
             write_indent(&mut buf, indent);
@@ -89,6 +102,29 @@ pub fn format_if_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     Some(buf)
 }
 
+/// Check if a block expression is empty (no statements, no tail expr, no comments)
+fn is_block_empty(block: &ast::BlockExpr) -> bool {
+    if let Some(stmt_list) = block.stmt_list() {
+        if stmt_list.statements().next().is_some() {
+            return false;
+        }
+        if stmt_list.tail_expr().is_some() {
+            return false;
+        }
+        // Check for comments
+        for child in stmt_list.syntax().children_with_tokens() {
+            if let NodeOrToken::Token(t) = child {
+                if t.kind() == SyntaxKind::COMMENT {
+                    return false;
+                }
+            }
+        }
+        true
+    } else {
+        true
+    }
+}
+
 pub fn format_match_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let match_expr = ast::MatchExpr::cast(node.clone())?;
     let attrs = format_expr_attrs(&match_expr);
@@ -107,50 +143,88 @@ pub fn format_match_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 
     buf.push_str(" {\n");
 
-    for arm in arm_list.arms() {
-        write_indent(&mut buf, indent + 4);
+    // Collect all children (arms and comments) to preserve comment positioning
+    let children: Vec<_> = arm_list.syntax().children_with_tokens().collect();
+    let mut prev_was_arm = false;
 
-        // Arm attributes
-        for attr in arm.attrs() {
-            buf.push_str(&attr.syntax().text().to_string());
-            buf.push(' ');
-        }
+    for (idx, child) in children.iter().enumerate() {
+        match child {
+            NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT => {
+                // Check for blank line before this comment
+                if prev_was_arm && has_blank_line_before(&children, idx) {
+                    buf.push('\n');
+                }
+                write_indent(&mut buf, indent + 4);
+                buf.push_str(t.text());
+                buf.push('\n');
+                prev_was_arm = false;
+            }
+            NodeOrToken::Node(n) if n.kind() == SyntaxKind::MATCH_ARM => {
+                if let Some(arm) = ast::MatchArm::cast(n.clone()) {
+                    // Check for blank line before this arm
+                    if prev_was_arm && has_blank_line_before(&children, idx) {
+                        buf.push('\n');
+                    }
 
-        // Pattern
-        if let Some(pat) = arm.pat() {
-            buf.push_str(&pat.syntax().text().to_string());
-        }
+                    write_indent(&mut buf, indent + 4);
 
-        // Guard
-        if let Some(guard) = arm.guard() {
-            buf.push_str(" if ");
-            if let Some(cond) = guard.condition() {
-                match try_format_expr_inner(cond.syntax(), indent + 4) {
-                    Some(s) => buf.push_str(&s),
-                    None => buf.push_str(&cond.syntax().text().to_string()),
+                    // Arm attributes
+                    for attr in arm.attrs() {
+                        buf.push_str(&attr.syntax().text().to_string());
+                        buf.push(' ');
+                    }
+
+                    // Pattern
+                    if let Some(pat) = arm.pat() {
+                        buf.push_str(&pat.syntax().text().to_string());
+                    }
+
+                    // Guard
+                    if let Some(guard) = arm.guard() {
+                        buf.push_str(" if ");
+                        if let Some(cond) = guard.condition() {
+                            match try_format_expr_inner(cond.syntax(), indent + 4) {
+                                Some(s) => buf.push_str(&s),
+                                None => buf.push_str(&cond.syntax().text().to_string()),
+                            }
+                        }
+                    }
+
+                    buf.push_str(" => ");
+
+                    // Arm expression
+                    if let Some(expr) = arm.expr() {
+                        // Check if it's an empty block - keep it inline as {}
+                        if let ast::Expr::BlockExpr(block) = &expr {
+                            if is_block_empty(block) {
+                                buf.push_str("{}");
+                                buf.push_str(",\n");
+                                prev_was_arm = true;
+                                continue;
+                            }
+                        }
+
+                        let is_block = matches!(expr, ast::Expr::BlockExpr(_));
+
+                        match try_format_expr_inner(expr.syntax(), indent + 4) {
+                            Some(s) => buf.push_str(&s),
+                            None => buf.push_str(&expr.syntax().text().to_string()),
+                        }
+
+                        // No comma after block expressions in match arms
+                        if is_block {
+                            buf.push('\n');
+                        } else {
+                            buf.push_str(",\n");
+                        }
+                    } else {
+                        buf.push_str(",\n");
+                    }
+
+                    prev_was_arm = true;
                 }
             }
-        }
-
-        buf.push_str(" => ");
-
-        // Arm expression
-        if let Some(expr) = arm.expr() {
-            let is_block = matches!(expr, ast::Expr::BlockExpr(_));
-
-            match try_format_expr_inner(expr.syntax(), indent + 4) {
-                Some(s) => buf.push_str(&s),
-                None => buf.push_str(&expr.syntax().text().to_string()),
-            }
-
-            // No comma after block expressions in match arms
-            if is_block {
-                buf.push('\n');
-            } else {
-                buf.push_str(",\n");
-            }
-        } else {
-            buf.push_str(",\n");
+            _ => {}
         }
     }
 
@@ -158,6 +232,28 @@ pub fn format_match_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     buf.push('}');
 
     Some(buf)
+}
+
+/// Check if there's a blank line (2+ newlines) before the item at the given index
+fn has_blank_line_before(
+    children: &[NodeOrToken<SyntaxNode, ra_ap_syntax::SyntaxToken>],
+    idx: usize,
+) -> bool {
+    for i in (0..idx).rev() {
+        match &children[i] {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::WHITESPACE {
+                    if t.text().matches('\n').count() >= 2 {
+                        return true;
+                    }
+                } else if t.kind() != SyntaxKind::COMMENT {
+                    return false;
+                }
+            }
+            NodeOrToken::Node(_) => return false,
+        }
+    }
+    false
 }
 
 pub fn format_loop_expr(node: &SyntaxNode, indent: usize) -> Option<String> {

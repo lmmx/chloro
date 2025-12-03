@@ -242,6 +242,11 @@ pub(crate) fn check_diagnostics_with_config(
         .map(|(diagnostic, annotation)| (diagnostic.file_id, (diagnostic.range, annotation)))
         .into_group_map();
     for file_id in files {
+        // FIXME: We should panic on duplicates instead, but includes currently cause us to report
+        // diagnostics twice for the calling module when both files are queried.
+        // actual.iter().duplicates().for_each(|(range, msg)| {
+        //     panic!("duplicate diagnostic at {:?}: {msg:?}", line_index.line_col(range.start()))
+        // });
         let file_id = file_id.file_id(&db);
         let line_index = db.line_index(file_id);
         let mut actual = annotations.remove(&file_id).unwrap_or_default();

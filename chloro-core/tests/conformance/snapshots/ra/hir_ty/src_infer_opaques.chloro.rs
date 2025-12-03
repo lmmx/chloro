@@ -44,11 +44,16 @@ impl<'db> UsageKind<'db> {
         match (&*self, &other) {
             (UsageKind::HasDefiningUse(_), _) | (_, UsageKind::None) => unreachable!(),
             (UsageKind::None, _) => *self = other,
+            // When mergining non-defining uses, prefer earlier ones. This means
+            // the error happens as early as possible.
             (
                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                 UsageKind::NonDefiningUse(..),
-            ) => {
-            }
+            ) => {},
+            // When merging unconstrained hidden types, we prefer later ones. This is
+            // used as in most cases, the defining use is the final return statement
+            // of our function, and other uses with defining arguments are likely not
+            // intended to be defining.
             (
                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                 UsageKind::UnconstrainedHiddenType(..) | UsageKind::HasDefiningUse(_),
@@ -75,6 +80,9 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         for def_id in defining_opaque_types_and_generators {
+            // We do actually need to check this the second pass (we can't just
+            // store this), because we can go from `UnconstrainedHiddenType` to
+            // `HasDefiningUse` (because of fallback)
             let def_id = match def_id {
                 SolverDefId::InternedOpaqueTyId(it) => it,
                 _ => continue,

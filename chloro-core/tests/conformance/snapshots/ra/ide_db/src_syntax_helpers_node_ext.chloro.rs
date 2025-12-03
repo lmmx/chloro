@@ -94,9 +94,12 @@ pub fn preorder_expr_with_ctx_checker(
             continue;
         }
         match ast::Stmt::cast(node.clone()) {
+            // Don't skip subtree since we want to process the expression child next
             Some(ast::Stmt::ExprStmt(_)) | Some(ast::Stmt::LetStmt(_)) => (),
+            // skip inner items which might have their own expressions
             Some(ast::Stmt::Item(_)) => preorder.skip_subtree(),
             None => {
+                // skip const args, those expressions are a different context
                 if ast::GenericArg::can_cast(node.kind()) {
                     preorder.skip_subtree();
                 } else if let Some(expr) = ast::Expr::cast(node) {
@@ -132,9 +135,12 @@ pub fn walk_patterns_in_expr(start: &ast::Expr, cb: &mut dyn FnMut(ast::Pat)) {
                 }
                 preorder.skip_subtree();
             }
+            // Don't skip subtree since we want to process the expression child next
             Some(ast::Stmt::ExprStmt(_)) => (),
+            // skip inner items which might have their own patterns
             Some(ast::Stmt::Item(_)) => preorder.skip_subtree(),
             None => {
+                // skip const args, those are a different context
                 if ast::GenericArg::can_cast(node.kind()) {
                     preorder.skip_subtree();
                 } else if let Some(expr) = ast::Expr::cast(node.clone()) {
@@ -216,6 +222,7 @@ pub fn walk_ty(ty: &ast::Type, cb: &mut dyn FnMut(ast::Type) -> bool) {
                     preorder.skip_subtree();
                 }
             }
+            // skip const args
             None if ast::ConstArg::can_cast(kind) => {
                 preorder.skip_subtree();
             }

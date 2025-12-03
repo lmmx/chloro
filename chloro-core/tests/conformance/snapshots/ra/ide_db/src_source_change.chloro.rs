@@ -201,8 +201,10 @@ impl SnippetEdit {
         // Start from the back so that we don't have to adjust ranges
         for (index, range) in self.0.iter().rev() {
             if range.is_empty() {
+                // is a tabstop
                 text.insert_str(range.start().into(), &format!("${index}"));
             } else {
+                // is a placeholder
                 text.insert(range.end().into(), '}');
                 text.insert_str(range.start().into(), &format!("${{{index}:"));
             }

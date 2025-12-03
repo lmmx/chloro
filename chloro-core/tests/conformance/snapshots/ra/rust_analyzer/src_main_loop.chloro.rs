@@ -604,6 +604,8 @@ impl GlobalState {
 
         let mut start = 0;
         for task_idx in 0..max_tasks {
+            // Diagnostics are triggered by the user typing
+            // so we run them on a latency sensitive thread.
             let extra = if task_idx < remainder { 1 } else { 0 };
             let end = start + chunk_length + extra;
             let slice = start..end;
@@ -739,6 +741,7 @@ impl GlobalState {
     fn handle_task(&mut self, prime_caches_progress: &mut Vec<PrimeCachesProgress>, task: Task) {
         match task {
             Task::Response(response) => self.respond(response),
+            // Only retry requests that haven't been cancelled. Otherwise we do unnecessary work.
             Task::Retry(req) if !self.is_completed(&req) => self.on_request(req),
             Task::Retry(_) => (),
             Task::Diagnostics(kind) => {
@@ -749,6 +752,7 @@ impl GlobalState {
                 PrimeCachesProgress::Report(_) => {
                     match prime_caches_progress.last_mut() {
                         Some(last @ PrimeCachesProgress::Report(_)) => {
+                            // Coalesce subsequent update events.
                             *last = progress;
                         }
                         _ => prime_caches_progress.push(progress),
@@ -776,6 +780,8 @@ impl GlobalState {
             Task::DiscoverLinkedProjects(arg) => {
                 if let Some(cfg) = self.config.discover_workspace_config()
                     && !self.discover_workspace_queue.op_in_progress() {
+                    // the clone is unfortunately necessary to avoid a borrowck error when
+                    // `self.report_progress` is called later
                     let title = &cfg.progress_label.clone();
                     let command = cfg.command.clone();
                     let discover = DiscoverCommand::new(self.discover_sender.clone(), command);
@@ -850,6 +856,8 @@ impl GlobalState {
                 self.debounce_workspace_fetch();
                 let vfs = &mut self.vfs.write().0;
                 for (path, contents) in files {
+                    // if the file is in mem docs, it's managed by the client via notifications
+                    // so only set it if its not in there
                     if matches!(path.name_and_extension(), Some(("minicore", Some("rs")))) {
                         // Not a lot of bad can happen from mistakenly identifying `minicore`, so proceed with that.
                         self.minicore.minicore_text = contents
@@ -978,6 +986,7 @@ impl GlobalState {
     fn handle_cargo_test_msg(&mut self, message: CargoTestMessage) {
         match message.output {
             CargoTestOutput::Test { name, state } => {
+                // The notification requires the namespace form (with underscores) of the target
                 let state = match state {
                     TestState::Started => lsp_ext::TestState::Started,
                     TestState::Ignored => lsp_ext::TestState::Skipped,
@@ -1056,6 +1065,8 @@ impl GlobalState {
                 kind: ClearDiagnosticsKind::OlderThan(generation, ClearScope::Package(package_id)),
             } => self.diagnostics.clear_check_older_than_for_package(id, package_id, generation),
             FlycheckMessage::Progress { id, progress } => {
+                // When we're running multiple flychecks, we have to include a disambiguator in
+                // the title, or the editor complains. Note that this is a user-facing string.
                 let (state, message) = match progress {
                     flycheck::Progress::DidStart => (Progress::Begin, None),
                     flycheck::Progress::DidCheckCrate(target) => (Progress::Report, Some(target)),

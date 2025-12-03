@@ -207,8 +207,7 @@ impl<'db> UnsafeVisitor<'db> {
             self.target_feature_is_safe,
         );
         match unsafety {
-            crate::utils::Unsafety::Safe => {
-            }
+            crate::utils::Unsafety::Safe => {},
             crate::utils::Unsafety::Unsafe => {
                 self.on_unsafe_op(node.into(), UnsafetyReason::UnsafeFnCall)
             }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6415 bytes
-Chloro size:   6225 bytes
+Chloro size:   6299 bytes
 Rustfmt size:  6524 bytes
 
 ✗ Outputs DIFFER
@@ -59,11 +59,6 @@ Rustfmt size:  6524 bytes
      }
  
      #[inline]
-     ) -> ControlFlow<VisiblyUninhabited> {
-         // An ADT is uninhabited iff all its variants uninhabited.
-         match adt {
--            // rustc: For now, `union`s are never considered uninhabited.
-             AdtId::UnionId(_) => CONTINUE_OPAQUELY_INHABITED,
              AdtId::StructId(s) => self.visit_variant(s.into(), subst),
              AdtId::EnumId(e) => {
                  let enum_data = e.enum_variants(self.db());

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16167 bytes
-Chloro size:   16234 bytes
+Chloro size:   16226 bytes
 Rustfmt size:  16197 bytes
 
 ✗ Outputs DIFFER
@@ -113,7 +113,6 @@ Rustfmt size:  16197 bytes
              assert!(matches!(hir_end, Expr::Path { .. }));
          }
 -        _ => {}
-+        _ => {
-+        }
++        _ => {},
      }
  }

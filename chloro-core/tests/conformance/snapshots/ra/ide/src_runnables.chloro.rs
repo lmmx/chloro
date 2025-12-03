@@ -249,8 +249,10 @@ fn find_related_tests(
             if let Some(fn_def) =
                 sema.ancestors_with_macros(name_ref.syntax().clone()).find_map(ast::Fn::cast) {
                 if let Some(runnable) = as_test_runnable(sema, &fn_def) {
+                    // direct test
                     tests.insert(runnable);
                 } else if let Some(module) = parent_test_module(sema, &fn_def) {
+                    // indirect test
                     find_related_tests_in_module(sema, syntax, &fn_def, &module, tests);
                 }
             }

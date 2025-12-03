@@ -1056,6 +1056,8 @@ impl<'db> Evaluator<'db> {
                     return Ok(return_interval);
                 }
                 Some(bb) => {
+                    // We don't support const promotion, so we can't truncate the stack yet.
+                    // self.stack.truncate(my_stack_frame.prev_stack_ptr);
                     let _ = my_stack_frame.prev_stack_ptr;
                     current_block_idx = bb;
                 }
@@ -1529,9 +1531,11 @@ impl<'db> Evaluator<'db> {
                         self.coerce_unsized(addr, current_ty, *target_ty)?
                     }
                     PointerCast::MutToConstPointer | PointerCast::UnsafeFnPointer => {
+                        // This is no-op
                         Borrowed(self.eval_operand(operand, locals)?)
                     }
                     PointerCast::ArrayToPointer => {
+                        // We should remove the metadata part if the current type is slice
                         Borrowed(self.eval_operand(operand, locals)?.slice(0..self.ptr_size()))
                     }
                 },
@@ -1654,6 +1658,7 @@ impl<'db> Evaluator<'db> {
                 Ok(r)
             }
             Variants::Multiple { tag, tag_encoding, variants, .. } => {
+                // The only field on enum variants is the tag field
                 let size = tag.size(&*self.target_data_layout).bytes_usize();
                 let offset = layout.fields.offset(0).bytes_usize();
                 let is_signed = tag.is_signed();
@@ -2642,6 +2647,10 @@ impl<'db> Evaluator<'db> {
         let arg_bytes = args.iter().map(|it| IntervalOrOwned::Borrowed(it.interval));
         match self.get_mir_or_dyn_index(def, generic_args, locals, span)? {
             MirOrDynIndex::Dyn(self_ty_idx) => {
+                // In the layout of current possible receiver, which at the moment of writing this code is one of
+                // `&T`, `&mut T`, `Box<T>`, `Rc<T>`, `Arc<T>`, and `Pin<P>` where `P` is one of possible receivers,
+                // the vtable is exactly in the `[ptr_size..2*ptr_size]` bytes. So we can use it without branching on
+                // the type.
                 let first_arg = arg_bytes.clone().next().unwrap();
                 let first_arg = first_arg.get(self)?;
                 let ty = self
@@ -2744,6 +2753,7 @@ impl<'db> Evaluator<'db> {
                 span,
             ),
             _ => {
+                // try to execute the manual impl of `FnTrait` for structs (nightly feature used in std)
                 let arg0 = func;
                 let args = &args[1..];
                 let arg1 = {

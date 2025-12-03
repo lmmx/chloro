@@ -153,6 +153,12 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Covariant => self.sub(expected, actual),
             Variance::Invariant => self.eq(expected, actual),
             Variance::Contravariant => self.sup(expected, actual),
+
+            // We could make this make sense but it's not readily
+            // exposed and I don't feel like dealing with it. Note
+            // that bivariance in general does a bit more than just
+            // *nothing*, it checks that the types are the same
+            // "modulo variance" basically.
             Variance::Bivariant => panic!("Bivariant given to `relate()`"),
         }
     }

@@ -170,6 +170,8 @@ impl<'db> ExprValidator<'db> {
         }
         // Check that the number of arguments matches the number of parameters.
         if self.infer.expr_type_mismatches().next().is_some() {
+            // FIXME: Due to shortcomings in the current type system implementation, only emit
+            // this diagnostic if there are no type mismatches in the containing function.
         } else if let Expr::MethodCall { receiver, .. } = expr {
             let (callee, _) = match self.infer.method_resolution(call_id) {
                 Some(it) => it,
@@ -316,6 +318,7 @@ impl<'db> ExprValidator<'db> {
         let pattern_arena = Arena::new();
         let cx = MatchCheckCtx::new(self.owner.module(self.db()), &self.infcx, self.env.clone());
         for stmt in &**statements {
+            // optimization, wildcard trivially hold
             let &Statement::Let { pat, initializer, else_branch: None, .. } = stmt else {
                 continue;
             };
@@ -427,6 +430,7 @@ impl<'db> ExprValidator<'db> {
                     && let Some(last_then_expr_ty) =
                         self.infer.type_of_expr_with_adjust(last_then_expr)
                     && last_then_expr_ty.is_never() {
+                    // Only look at sources if the then branch diverges and we have an else branch.
                     let source_map = self.db().body_with_source_map(self.owner).1;
                     let Ok(source_ptr) = source_map.expr_syntax(id) else {
                         return;

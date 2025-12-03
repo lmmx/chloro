@@ -294,6 +294,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             ),
             hir_def::hir::Expr::UnaryOp { expr: inner_expr, op: hir_def::hir::UnaryOp::Neg } => {
                 if let hir_def::hir::Expr::Literal(literal) = &self.store[*inner_expr] {
+                    // Only handle negation for signed integers and floats
                     match literal {
                         hir_def::hir::Literal::Int(_, _) | hir_def::hir::Literal::Float(_, _) => {
                             if let Some(negated_literal) = literal.clone().negate() {
@@ -307,6 +308,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                                 unknown_const(const_type)
                             }
                         }
+                        // For unsigned integers, chars, bools, etc., negation is not meaningful
                         _ => unknown_const(const_type),
                     }
                 } else {
@@ -362,6 +364,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
 
     fn type_param(&mut self, id: TypeParamId, index: u32) -> Ty<'db> {
         if self.param_index_is_disallowed(index) {
+            // FIXME: Report an error.
             Ty::new_error(self.interner, ErrorGuaranteed)
         } else {
             Ty::new_param(self.interner, id, index)
@@ -370,6 +373,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
 
     fn const_param(&mut self, id: ConstParamId, index: u32) -> Const<'db> {
         if self.param_index_is_disallowed(index) {
+            // FIXME: Report an error.
             Const::error(self.interner)
         } else {
             Const::new_param(self.interner, ParamConst { id, index })
@@ -378,6 +382,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
 
     fn region_param(&mut self, id: LifetimeParamId, index: u32) -> Region<'db> {
         if self.param_index_is_disallowed(index) {
+            // FIXME: Report an error.
             Region::error(self.interner)
         } else {
             Region::new_early_param(self.interner, EarlyParamRegion { id, index })
@@ -867,6 +872,8 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             };
             Ty::new_dynamic(self.interner, bounds, region)
         } else {
+            // FIXME: report error
+            // (additional non-auto traits, associated type rebound, or no resolved trait)
             Ty::new_error(self.interner, ErrorGuaranteed)
         }
     }
@@ -2129,10 +2136,17 @@ fn named_associated_type_shorthand_candidates<'db, R>(
 
     match res {
         TypeNs::SelfType(impl_id) => {
+            // FIXME(next-solver): same method in `lower` checks for impl or not
+            // Is that needed here?
+            // we're _in_ the impl -- the binders get added back later. Correct,
+            // but it would be nice to make this more explicit
             let trait_ref = db.impl_trait(impl_id)?;
             search(trait_ref.skip_binder())
         }
         TypeNs::GenericParam(param_id) => {
+            // Handle `Self::Type` referring to own associated type in trait definitions
+            // This *must* be done first to avoid cycles with
+            // `generic_predicates_for_param`, but not sure that it's sufficient,
             if let GenericDefId::TraitId(trait_id) = param_id.parent() {
                 let trait_name = &db.trait_signature(trait_id).name;
                 tracing::debug!(?trait_name);

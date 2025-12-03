@@ -657,6 +657,8 @@ fn enum_variants_with_paths(
             hir::ModuleDef::from(variant),
             ctx.config.find_path_config(ctx.is_nightly),
         ) {
+            // Variants with trivial paths are already added by the existing completion logic,
+            // so we should avoid adding these twice
             if path.segments().len() > 1 {
                 cb(acc, ctx, variant, path);
             }

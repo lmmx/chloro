@@ -180,6 +180,7 @@ pub(crate) fn complete_pattern_path(
         }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
         Qualified::No => {
+            // this will only be hit if there are brackets or braces, otherwise this will be parsed as an ident pattern
             ctx.process_all_names(&mut |name, res, doc_aliases| {
                 // FIXME: we should check what kind of pattern we are in and filter accordingly
                 let add_completion = match res {
@@ -196,7 +197,6 @@ pub(crate) fn complete_pattern_path(
             });
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
-        }
+        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {},
     }
 }

@@ -181,10 +181,17 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
             match infer_ty {
                 rustc_type_ir::TyVar(vid) => {
                     if self.snapshot_vars.type_vars.0.contains(&vid) {
+                        // This variable was created during the fudging.
+                        // Recreate it with a fresh variable here.
                         let idx = vid.as_usize() - self.snapshot_vars.type_vars.0.start.as_usize();
                         let origin = self.snapshot_vars.type_vars.1[idx];
                         self.infcx.next_ty_var_with_origin(origin)
                     } else {
+                        // This variable was created before the
+                        // "fudging". Since we refresh all type
+                        // variables to their binding anyhow, we know
+                        // that it is unbound, so we can just return
+                        // it.
                         debug_assert!(
                             self.infcx.inner.borrow_mut().type_variables().probe(vid).is_unknown()
                         );

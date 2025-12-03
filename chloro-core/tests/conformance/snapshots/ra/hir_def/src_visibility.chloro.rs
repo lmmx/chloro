@@ -129,6 +129,7 @@ impl Visibility {
                             def_map = parent_arc;
                             from_module = module.local_id;
                         }
+                        // Reached the root module, nothing left to check.
                         None => return false,
                     }
                 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32277 bytes
+Chloro size:   32348 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -81,6 +81,7 @@ Rustfmt size:  32996 bytes
              ))
          } else {
 -            Either::Right(ReachedFixedPoint::No) // extern crate declarations can add to the extern prelude
++            // extern crate declarations can add to the extern prelude
 +            Either::Right(ReachedFixedPoint::No)
          }
      }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   11914 bytes
+Chloro size:   12272 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
@@ -36,7 +36,14 @@ Rustfmt size:  12328 bytes
      check_diagnostics_with_config(config, ra_fixture)
  }
  
+         .map(|(diagnostic, annotation)| (diagnostic.file_id, (diagnostic.range, annotation)))
+         .into_group_map();
      for file_id in files {
++        // FIXME: We should panic on duplicates instead, but includes currently cause us to report
++        // diagnostics twice for the calling module when both files are queried.
++        // actual.iter().duplicates().for_each(|(range, msg)| {
++        //     panic!("duplicate diagnostic at {:?}: {msg:?}", line_index.line_col(range.start()))
++        // });
          let file_id = file_id.file_id(&db);
          let line_index = db.line_index(file_id);
 -

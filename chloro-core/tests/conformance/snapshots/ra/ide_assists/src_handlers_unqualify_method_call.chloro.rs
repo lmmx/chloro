@@ -79,6 +79,8 @@ fn add_import(
     edit: &mut ide_db::source_change::SourceChangeBuilder,
 ) {
     if let Some(path_segment) = qualifier.segment() {
+        // for `<i32 as std::ops::Add>`
+        // in case for `<_>`
         let path_type = path_segment.qualifying_trait();
         let import = match path_type {
             Some(it) => {

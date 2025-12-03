@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26380 bytes
+Chloro size:   26483 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -47,14 +47,6 @@ Rustfmt size:  26702 bytes
          return None;
      }
  
-     };
- 
-     if name.ends_with(['s', 'x', 'y']) {
--        // Given a type called e.g. "Boss", "Fox" or "Story", don't try to
--        // create a plural.
-         items_str
-     } else {
-         SmolStr::new(format!("{name}s"))
  mod tests {
      use hir::FileRange;
      use test_fixture::WithFixture;

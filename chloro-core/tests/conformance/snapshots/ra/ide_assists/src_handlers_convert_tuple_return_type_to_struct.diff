@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20081 bytes
-Chloro size:   19427 bytes
+Chloro size:   19508 bytes
 Rustfmt size:  20081 bytes
 
 ✗ Outputs DIFFER
@@ -78,13 +78,6 @@ Rustfmt size:  20081 bytes
  fn add_tuple_struct_def(
      edit: &mut SourceChangeBuilder,
      ctx: &AssistContext<'_>,
-             }
-         }
-         ast::Expr::ReturnExpr(_) => {
--            // all return expressions have already been handled by the walk loop
-         }
-         e => acc.push(e.clone()),
-     }
  #[cfg(test)]
  mod tests {
      use super::*;

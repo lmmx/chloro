@@ -113,6 +113,7 @@ pub(crate) fn diagnostic_severity(severity: Severity) -> lsp_types::DiagnosticSe
         Severity::Error => lsp_types::DiagnosticSeverity::ERROR,
         Severity::Warning => lsp_types::DiagnosticSeverity::WARNING,
         Severity::WeakWarning => lsp_types::DiagnosticSeverity::HINT,
+        // unreachable
         Severity::Allow => lsp_types::DiagnosticSeverity::INFORMATION,
     }
 }
@@ -929,6 +930,10 @@ pub(crate) fn folding_range(
     let range = range(line_index, fold.range);
 
     if line_folding_only {
+        // Clients with line_folding_only == true (such as VSCode) will fold the whole end line
+        // even if it contains text not in the folding range. To prevent that we exclude
+        // range.end.line from the folding region if there is more text after range.end
+        // on the same line.
         let has_more_text_on_end_line = text[TextRange::new(fold.range.end(), TextSize::of(text))]
             .chars()
             .take_while(|it| *it != '\n')
@@ -1808,6 +1813,7 @@ pub(crate) fn test_item(
                     | project_model::TargetKind::BuildScript
                     | project_model::TargetKind::Other => lsp_ext::TestItemKind::Package,
                     project_model::TargetKind::Test => lsp_ext::TestItemKind::Test,
+                    // benches are not tests needed to be shown in the test explorer
                     project_model::TargetKind::Bench => return None,
                 },
                 None => lsp_ext::TestItemKind::Package,

@@ -204,6 +204,7 @@ fn remove_mut_and_collect_idents(
         | ast::Pat::PathPat(_)
         | ast::Pat::WildcardPat(_)
         | ast::Pat::ConstBlockPat(_) => pat.clone(),
+        // don't support macro pat yet
         ast::Pat::MacroPat(_) => return None,
     })
 }

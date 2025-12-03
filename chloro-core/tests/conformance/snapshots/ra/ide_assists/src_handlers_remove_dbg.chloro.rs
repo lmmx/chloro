@@ -80,6 +80,7 @@ fn compute_dbg_replacement(
 
     let parent = macro_expr.syntax().parent()?;
     Some(match &*input_expressions {
+        // dbg!()
         [] => {
             match_ast! {
                 match parent {
@@ -103,6 +104,7 @@ fn compute_dbg_replacement(
                 }
             }
         }
+        // dbg!(2, 'x', &x, x, ...);
         exprs if ast::ExprStmt::can_cast(parent.kind()) && exprs.iter().all(pure_expr) => {
             let mut replace = vec![parent.clone().into()];
             if let Some(prev_sibling) = parent.prev_sibling_or_token()
@@ -112,7 +114,9 @@ fn compute_dbg_replacement(
             }
             (replace, None)
         }
+        // dbg!(expr0)
         [expr] => {
+            // dbg!(expr, &parent);
             let wrap = match ast::Expr::cast(parent) {
                 Some(parent) => match (expr, parent) {
                     (ast::Expr::CastExpr(_), ast::Expr::CastExpr(_)) => false,
@@ -152,6 +156,7 @@ fn compute_dbg_replacement(
             let expr = if wrap { make::expr_paren(expr).into() } else { expr.clone_subtree() };
             (vec![macro_call.syntax().clone().into()], Some(expr))
         }
+        // dbg!(expr0, expr1, ...)
         exprs => {
             let exprs = exprs.iter().cloned().map(replace_nested_dbgs);
             let expr = make::expr_tuple(exprs);

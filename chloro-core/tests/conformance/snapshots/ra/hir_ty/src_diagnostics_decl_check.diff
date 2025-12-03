@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   22486 bytes
+Chloro size:   23117 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -36,13 +36,6 @@ Rustfmt size:  23115 bytes
  use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
  
  pub fn incorrect_case(db: &dyn HirDatabase, owner: ModuleDefId) -> Vec<IncorrectCase> {
-             AdtId::StructId(struct_id) => self.validate_struct(struct_id),
-             AdtId::EnumId(enum_id) => self.validate_enum(enum_id),
-             AdtId::UnionId(_) => {
--                // FIXME: Unions aren't yet supported by this validator.
-             }
-         }
-     }
          }
  
          // Check the function name.
@@ -67,14 +60,6 @@ Rustfmt size:  23115 bytes
              self.create_incorrect_case_diagnostic_for_ast_node(
                  replacement,
                  source_ptr.file_id,
-         };
-         let mut struct_fields_iter = struct_fields_list.fields();
-         for field_replacement in struct_fields_replacements {
--            // We assume that parameters in replacement are in the same order as in the
--            // actual params list, but just some of them (ones that named correctly) are skipped.
-             let field = loop {
-                 if let Some(field) = struct_fields_iter.next() {
-                     let Some(field_name) = field.name() else {
                      return;
                  }
              };
@@ -82,14 +67,6 @@ Rustfmt size:  23115 bytes
              self.create_incorrect_case_diagnostic_for_ast_node(
                  field_replacement,
                  struct_src.file_id,
-         };
-         let mut enum_variants_iter = enum_variants_list.variants();
-         for variant_replacement in enum_variants_replacements {
--            // We assume that parameters in replacement are in the same order as in the
--            // actual params list, but just some of them (ones that named correctly) are skipped.
-             let variant = loop {
-                 if let Some(variant) = enum_variants_iter.next() {
-                     let Some(variant_name) = variant.name() else {
                      return;
                  }
              };
@@ -97,14 +74,6 @@ Rustfmt size:  23115 bytes
              self.create_incorrect_case_diagnostic_for_ast_node(
                  variant_replacement,
                  enum_src.file_id,
-         };
-         let mut variant_variants_iter = variant_fields_list.fields();
-         for field_replacement in variant_field_replacements {
--            // We assume that parameters in replacement are in the same order as in the
--            // actual params list, but just some of them (ones that named correctly) are skipped.
-             let field = loop {
-                 if let Some(field) = variant_variants_iter.next() {
-                     let Some(field_name) = field.name() else {
                      return;
                  }
              };

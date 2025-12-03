@@ -1065,6 +1065,7 @@ impl ExprCollector<'_> {
                     },
                     )
                 }
+                // FIXME
                 Some(ast::BlockModifier::AsyncGen(_)) => {
                     self.with_awaitable_block(Awaitable::Yes, |this| this.collect_block(e))
                 }
@@ -1086,6 +1087,7 @@ impl ExprCollector<'_> {
             ast::Expr::WhileExpr(e) => self.collect_while_loop(syntax_ptr, e),
             ast::Expr::ForExpr(e) => self.collect_for_loop(syntax_ptr, e),
             ast::Expr::CallExpr(e) => {
+                // FIXME: Remove this once we drop support for <1.86, https://github.com/rust-lang/rust/commit/ac9cb908ac4301dfc25e7a2edee574320022ae2c
                 let is_rustc_box = {
                     let attrs = e.attrs();
                     attrs.filter_map(|it| it.as_simple_atom()).any(|it| it == "rustc_box")
@@ -1173,6 +1175,7 @@ impl ExprCollector<'_> {
                 self.alloc_expr(Expr::Break { expr, label }, syntax_ptr)
             }
             ast::Expr::ParenExpr(e) => {
+                // make the paren expr point to the inner expression as well for IDE resolution
                 let inner = self.collect_expr_opt(e.expr());
                 let src = self.expander.in_file(syntax_ptr);
                 self.store.expr_map.insert(src, inner.into());
@@ -1345,6 +1348,8 @@ impl ExprCollector<'_> {
                 }
             }
             ast::Expr::TupleExpr(e) => {
+                // if there is a leading comma, the user is most likely to type out a leading expression
+                // so we insert a missing expression at the beginning for IDE features
                 let mut exprs: Vec<_> = e.fields().map(|expr| self.collect_expr(expr)).collect();
                 if comma_follows_token(e.l_paren_token()) {
                     exprs.insert(0, self.missing_expr());
@@ -1378,6 +1383,7 @@ impl ExprCollector<'_> {
                     }
                 }
             }
+
             ast::Expr::Literal(e) => self.alloc_expr(Expr::Literal(e.kind().into()), syntax_ptr),
             ast::Expr::IndexExpr(e) => {
                 let base = self.collect_expr_opt(e.base());
@@ -1402,6 +1408,8 @@ impl ExprCollector<'_> {
                 });
                 match id {
                     Some(id) => {
+                        // Make the macro-call point to its expanded expression so we can query
+                        // semantics on syntax pointers to the macro
                         let src = self.expander.in_file(syntax_ptr);
                         self.store.expr_map.insert(src, id.into());
                         id
@@ -1974,6 +1982,8 @@ impl ExprCollector<'_> {
         // No need to push macro and parsing errors as they'll be recreated from `macro_calls()`.
         match res.value {
             Some((mark, expansion)) => {
+                // Keep collecting even with expansion errors so we can provide completions and
+                // other services in incomplete macro expressions.
                 if let Some(macro_file) = self.expander.current_file_id().macro_file() {
                     self.store.expansions.insert(macro_call_ptr, macro_file);
                 }
@@ -2039,6 +2049,7 @@ impl ExprCollector<'_> {
                 statements.push(Statement::Let { pat, type_ref, initializer, else_branch });
             }
             ast::Stmt::ExprStmt(stmt) => {
+                // Note that macro could be expanded to multiple statements
                 let expr = stmt.expr();
                 match &expr {
                     Some(expr) if !self.check_cfg(expr) => return,
@@ -2595,6 +2606,7 @@ impl ExprCollector<'_> {
     fn pop_label_rib(&mut self) {
         // We need to pop all macro defs, plus one rib.
         while let Some(LabelRib { kind: RibKind::MacroDef(_) }) = self.label_ribs.pop() {
+            // Do nothing.
         }
     }
 
@@ -3078,6 +3090,12 @@ impl ExprCollector<'_> {
         };
 
         if !let_stmts.is_empty() {
+            // Generate:
+            //     {
+            //         super let …
+            //         super let …
+            //         <core::fmt::Arguments>::new_…(…)
+            //     }
             let call = self.alloc_expr_desugared(call_block);
             self.alloc_expr(
                 Expr::Block {
@@ -3138,6 +3156,9 @@ impl ExprCollector<'_> {
         let width_expr = self.make_count(width, argmap);
 
         if self.module.krate().workspace_data(self.db).is_atleast_187() {
+            // These need to match the constants in library/core/src/fmt/rt.rs.
+            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
+            // Highest bit always set.
             let align = match alignment {
                 Some(FormatAlignment::Left) => 0,
                 Some(FormatAlignment::Right) => 1,
@@ -3174,6 +3195,7 @@ impl ExprCollector<'_> {
                 spread: None,
             })
         } else {
+            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
             let format_placeholder_new = {
                 let format_placeholder_new = LangItem::FormatPlaceholder.ty_rel_path(
                     self.db,
@@ -3283,6 +3305,8 @@ impl ExprCollector<'_> {
                         args: Box::new([args]),
                     })
                 } else {
+                    // FIXME: This drops arg causing it to potentially not be resolved/type checked
+                    // when typing?
                     self.missing_expr()
                 }
             }

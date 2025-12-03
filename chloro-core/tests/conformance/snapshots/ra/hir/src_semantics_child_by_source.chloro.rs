@@ -222,6 +222,8 @@ impl ChildBySource for DefWithBodyId {
         });
 
         for (block, def_map) in body.blocks(db) {
+            // All block expressions are merged into the same map, because they logically all add
+            // inner items to the containing `DefWithBodyId`.
             def_map[DefMap::ROOT].scope.child_by_source_to(db, res, file_id);
             res[keys::BLOCK].insert(block.lookup(db).ast_id.to_ptr(db), block);
         }

@@ -517,6 +517,7 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
             l.into_iter().zip(r).find_map(|(l, r)| find_mismatch(l, r))
         }
         (Value::Null, Value::Null) => None,
+        // magic string literal "{...}" acts as wildcard for any sub-JSON
         (Value::String(l), _) if l == "{...}" => None,
         _ => Some((expected, actual)),
     }

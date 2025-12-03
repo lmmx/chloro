@@ -62,6 +62,7 @@ pub(crate) fn complete_type_path(
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
         }
         Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
+            // Iterate assoc types separately
             ctx.iterate_path_candidates(ty, |item| {
                 add_assoc_item(acc, item);
             });
@@ -72,9 +73,9 @@ pub(crate) fn complete_type_path(
                 None::<()>
             });
         }
-        Qualified::With { resolution: None, .. } => {
-        }
+        Qualified::With { resolution: None, .. } => {},
         Qualified::With { resolution: Some(resolution), .. } => {
+            // Add associated types on type parameters and `Self`.
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
                 acc.add_type_alias(ctx, alias);
             });
@@ -92,6 +93,9 @@ pub(crate) fn complete_type_path(
                     | hir::ModuleDef::TypeAlias(_)
                     | hir::ModuleDef::BuiltinType(_)),
                 ) => {
+                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
+                    // (where AssocType is defined on a trait, not an inherent impl)
+                    // Iterate assoc types separately
                     let ty = match def {
                         hir::ModuleDef::Adt(adt) => adt.ty(ctx.db),
                         hir::ModuleDef::TypeAlias(a) => a.ty(ctx.db),
@@ -109,6 +113,7 @@ pub(crate) fn complete_type_path(
                     });
                 }
                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
+                    // Handles `Trait::assoc` as well as `<Ty as Trait>::assoc`.
                     for item in t.items(ctx.db) {
                         add_assoc_item(acc, item);
                     }

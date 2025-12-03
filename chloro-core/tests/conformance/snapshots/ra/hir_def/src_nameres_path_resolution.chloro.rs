@@ -448,6 +448,7 @@ impl DefMap {
                 extern_crate.map(ImportOrExternCrate::ExternCrate),
             ))
         } else {
+            // extern crate declarations can add to the extern prelude
             Either::Right(ReachedFixedPoint::No)
         }
     }

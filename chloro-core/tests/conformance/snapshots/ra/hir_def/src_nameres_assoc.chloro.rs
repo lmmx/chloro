@@ -315,6 +315,7 @@ impl<'a> AssocItemCollector<'a> {
                         self.macro_calls.push((ptr.map(|(_, it)| it.upcast()), call_id))
                     },
                 ) {
+                    // FIXME: Expansion error?
                     Ok(call_id) => match call_id.value {
                         Some(call_id) => {
                             self.macro_calls.push((ast_id.upcast(), call_id));

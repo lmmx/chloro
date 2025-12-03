@@ -274,6 +274,7 @@ fn build_usage_edit(
 ) -> Option<(SyntaxNode, SyntaxNode)> {
     match usage.name.syntax().ancestors().find_map(ast::FieldExpr::cast) {
         Some(field_expr) => Some({
+            // If struct binding is a reference, we might need to deref field usages
             let field_name: SmolStr = field_expr.name_ref()?.to_string().into();
             let new_field_name = field_names.get(&field_name)?;
             let new_expr = ast::make::expr_path(ast::make::ext::ident_path(new_field_name));

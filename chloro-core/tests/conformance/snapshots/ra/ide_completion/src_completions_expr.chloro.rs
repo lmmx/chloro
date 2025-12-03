@@ -100,6 +100,8 @@ pub(crate) fn complete_expr_path(
     };
 
     match qualified {
+        // We exclude associated types/consts of excluded traits here together with methods,
+        // even though we don't exclude them when completing in type position, because it's easier.
         Qualified::TypeAnchor { ty: None, trait_: None } => ctx
             .traits_in_scope()
             .iter()
@@ -111,9 +113,11 @@ pub(crate) fn complete_expr_path(
             .flat_map(|it| it.items(ctx.sema.db))
             .for_each(|item| add_assoc_item(acc, item)),
         Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
+            // Don't filter excluded traits here, user requested this specific trait.
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
         }
         Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
+            // Iterate assoc types separately
             if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                 cov_mark::hit!(completes_variant_through_alias);
                 acc.add_enum_variants(ctx, path_ctx, e);
@@ -133,9 +137,9 @@ pub(crate) fn complete_expr_path(
                 None::<()>
             });
         }
-        Qualified::With { resolution: None, .. } => {
-        }
+        Qualified::With { resolution: None, .. } => {},
         Qualified::With { resolution: Some(resolution), .. } => {
+            // Add associated types on type parameters and `Self`.
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
                 acc.add_type_alias(ctx, alias);
             });
@@ -167,6 +171,9 @@ pub(crate) fn complete_expr_path(
                     | hir::ModuleDef::TypeAlias(_)
                     | hir::ModuleDef::BuiltinType(_)),
                 ) => {
+                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
+                    // (where AssocType is defined on a trait, not an inherent impl)
+                    // Iterate assoc types separately
                     let ty = match def {
                         hir::ModuleDef::Adt(adt) => adt.ty(ctx.db),
                         hir::ModuleDef::TypeAlias(a) => a.ty(ctx.db),
@@ -196,6 +203,8 @@ pub(crate) fn complete_expr_path(
                     });
                 }
                 hir::PathResolution::Def(hir::ModuleDef::Trait(t)) => {
+                    // Don't filter excluded traits here, user requested this specific trait.
+                    // Handles `Trait::assoc` as well as `<Ty as Trait>::assoc`.
                     for item in t.items(ctx.db) {
                         add_assoc_item(acc, item);
                     }
@@ -435,6 +444,7 @@ pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) 
     }
 
     if let Some(ty) = &ctx.expected_type {
+        // Ignore unit types as they are not very interesting
         if ty.is_unit() || ty.is_unknown() {
             return;
         }
@@ -450,6 +460,7 @@ pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) 
         };
         let exprs = hir::term_search::term_search(&term_search_ctx);
         for expr in exprs {
+            // Expand method calls
             match expr {
                 hir::term_search::Expr::Method { func, generics, target, params } if target.is_many() => {
                     let target_ty = target.ty(ctx.db);

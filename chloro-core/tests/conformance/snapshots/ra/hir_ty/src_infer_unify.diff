@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34166 bytes
+Chloro size:   34372 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -152,15 +152,6 @@ Rustfmt size:  35032 bytes
      }
  
      pub(crate) fn shallow_resolve(&self, ty: Ty<'db>) -> Ty<'db> {
-     /// in this case.
-     pub(crate) fn try_structurally_resolve_type(&mut self, ty: Ty<'db>) -> Ty<'db> {
-         if let TyKind::Alias(..) = ty.kind() {
--            // We need to use a separate variable here as otherwise the temporary for
--            // `self.fulfillment_cx.borrow_mut()` is alive in the `Err` branch, resulting
--            // in a reentrant borrow, causing an ICE.
-             let result = self
-                 .infer_ctxt
-                 .at(&ObligationCause::misc(), self.trait_env.env)
      pub(crate) fn snapshot(&mut self) -> InferenceTableSnapshot<'db> {
          let ctxt_snapshot = self.infer_ctxt.start_snapshot();
          let obligations = self.fulfillment_cx.clone();
@@ -199,10 +190,8 @@ Rustfmt size:  35032 bytes
          match result {
 -            Ok((_, Certainty::Yes)) => {}
 -            Err(rustc_type_ir::solve::NoSolution) => {}
-+            Ok((_, Certainty::Yes)) => {
-+            }
-+            Err(rustc_type_ir::solve::NoSolution) => {
-+            }
++            Ok((_, Certainty::Yes)) => {},
++            Err(rustc_type_ir::solve::NoSolution) => {},
              Ok((_, Certainty::Maybe { .. })) => {
                  self.fulfillment_cx.register_predicate_obligation(
                      &self.infer_ctxt,

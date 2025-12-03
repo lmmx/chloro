@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   38681 bytes
+Chloro size:   38816 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -211,13 +211,6 @@ Rustfmt size:  42083 bytes
          )
      }
  }
-             | Definition::ToolModule(_)
-             | Definition::InlineAsmRegOrRegClass(_)
-             | Definition::BuiltinAttr(_) => None,
--            // FIXME: The focus range should be set to the helper declaration
-             Definition::DeriveHelper(it) => it.derive().try_to_nav(sema),
-         }
-     }
      }
  }
  
@@ -228,13 +221,6 @@ Rustfmt size:  42083 bytes
      fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
          _ = db;
          None
- fn container_name(db: &RootDatabase, t: impl HasContainer) -> Option<Symbol> {
-     match t.container(db) {
-         hir::ItemContainer::Trait(it) => Some(it.name(db).symbol().clone()),
--        // FIXME: Handle owners of blocks correctly here
-         hir::ItemContainer::Module(it) => it.name(db).map(|name| name.symbol().clone()),
-         _ => None,
-     }
  
  impl ToNavFromAst for hir::Function {
      const KIND: SymbolKind = SymbolKind::Function;

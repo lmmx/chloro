@@ -231,6 +231,8 @@ fn punctuation(
                 }
             }
             T![<] | T![>] => HlPunct::Angle,
+            // Early return as otherwise we'd highlight these in
+            // asm expressions
             T![,] => return HlPunct::Comma.into(),
             T![:] => HlPunct::Colon,
             T![;] => HlPunct::Semi,
@@ -260,6 +262,7 @@ fn keyword(token: SyntaxToken, kind: SyntaxKind) -> Highlight {
         T![unsafe] => h | HlMod::Unsafe,
         T![const] => h | HlMod::Const,
         T![true] | T![false] => HlTag::BoolLiteral.into(),
+        // crate is handled just as a token if it's in an `extern crate`
         T![crate] if parent_matches::<ast::ExternCrate>(&token) => h,
         _ => h,
     }

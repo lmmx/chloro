@@ -154,6 +154,7 @@ fn get_export_visibility_kind(use_item: &Use) -> VisibilityKind {
             VisibilityKind::PubCrate => VisibilityKind::PubCrate,
             VisibilityKind::Pub => VisibilityKind::Pub,
             VisibilityKind::PubSelf => VisibilityKind::PubSelf,
+            // We don't handle pub(in ...) and pub(super) yet
             VisibilityKind::In(_) => VisibilityKind::PubSelf,
             VisibilityKind::PubSuper => VisibilityKind::PubSelf,
         },

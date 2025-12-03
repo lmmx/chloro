@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14334 bytes
-Chloro size:   13955 bytes
+Chloro size:   13994 bytes
 Rustfmt size:  14420 bytes
 
 ✗ Outputs DIFFER
@@ -84,13 +84,6 @@ Rustfmt size:  14420 bytes
              }
          }
          ast::Pat::SlicePat(p) => make
-         | ast::Pat::PathPat(_)
-         | ast::Pat::WildcardPat(_)
-         | ast::Pat::ConstBlockPat(_) => pat.clone(),
--        // don't support macro pat yet
-         ast::Pat::MacroPat(_) => return None,
-     })
- }
  #[cfg(test)]
  mod tests {
      use super::*;

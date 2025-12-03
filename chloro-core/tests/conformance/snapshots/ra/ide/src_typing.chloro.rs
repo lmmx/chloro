@@ -362,6 +362,7 @@ fn on_left_angle_typed(
                 || ast::GenericArgList::can_cast(n.kind())
                 || ast::UseBoundGenericArgs::can_cast(n.kind())
         }) {
+        // Insert the closing bracket right after
         Some(TextEdit::insert(offset + TextSize::of('<'), '>'.to_string()))
     } else {
         None

@@ -147,6 +147,8 @@ fn add_field_to_struct_fix(
     let field_list = struct_source.value.field_list();
     match field_list {
         Some(FieldList::RecordFieldList(field_list)) => {
+            // Get range of final field in the struct
+            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
             let visibility = if error_range.file_id == struct_range.file_id {
                 None
             } else {
@@ -177,6 +179,9 @@ fn add_field_to_struct_fix(
             })
         }
         None => {
+            // Add a field list to the Unit Struct
+            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
+            // A Unit Struct with no `;` is invalid syntax. We should not suggest this fix.
             let mut src_change_builder =
                 SourceChangeBuilder::new(struct_range.file_id.file_id(ctx.sema.db));
             let field_name = match field_name.chars().next() {
@@ -212,6 +217,7 @@ fn add_field_to_struct_fix(
             })
         }
         Some(FieldList::TupleFieldList(_tuple)) => {
+            // FIXME: Add support for Tuple Structs. Tuple Structs are not sent to this diagnostic
             None
         }
     }

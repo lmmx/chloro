@@ -537,6 +537,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
                         Ok(Some(current))
                     }
                     ValueNs::EnumVariantId(variant_id) => {
+                        // Otherwise its a tuple like enum, treated like a zero sized function, so no action is needed
                         let variant_fields = variant_id.fields(self.db);
                         if variant_fields.shape == FieldsShape::Unit {
                             let ty = self.infer.type_of_expr[expr_id];
@@ -578,6 +579,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
                         Ok(Some(current))
                     }
                     ValueNs::FunctionId(_) | ValueNs::StructId(_) | ValueNs::ImplSelf(_) => {
+                        // It's probably a unit struct or a zero sized function, so no action is needed.
                         Ok(Some(current))
                     }
                 }
@@ -961,9 +963,21 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
             Expr::Yeet { .. } => not_supported!("yeet"),
             Expr::Async { .. } => not_supported!("async block"),
             &Expr::Const(_) => {
+                // let subst = self.placeholder_subst();
+                // self.lower_const(
+                //     id.into(),
+                //     current,
+                //     place,
+                //     subst,
+                //     expr_id.into(),
+                //     self.expr_ty_without_adjust(expr_id),
+                // )?;
+                // Ok(Some(current))
                 not_supported!("const block")
             }
             Expr::Cast { expr, type_ref: _ } => {
+                // Since we don't have THIR, this is the "zipped" version of [rustc's HIR lowering](https://github.com/rust-lang/rust/blob/e71f9529121ca8f687e4b725e3c9adc3f1ebab4d/compiler/rustc_mir_build/src/thir/cx/expr.rs#L165-L178)
+                // and [THIR lowering as RValue](https://github.com/rust-lang/rust/blob/a4601859ae3875732797873612d424976d9e3dd0/compiler/rustc_mir_build/src/build/expr/as_rvalue.rs#L193-L313)
                 let Some((it, current)) = self.lower_expr_to_some_operand(*expr, current)? else {
                     return Ok(None);
                 };
@@ -1685,6 +1699,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         match &self.discr_temp {
             Some(it) => *it,
             None => {
+                // FIXME: rustc's ty is dependent on the adt type, maybe we need to do that as well
                 let discr_ty = Ty::new_int(self.interner(), rustc_type_ir::IntTy::I128);
                 let tmp: Place<'db> = self
                     .temp(discr_ty, current, MirSpan::Unknown)
@@ -1965,6 +1980,9 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         match self.result.binding_locals.get(b) {
             Some(it) => Ok(*it),
             None => {
+                // FIXME: It should never happens, but currently it will happen in `const_dependent_on_local` test, which
+                // is a hir lowering problem IMO.
+                // never!("Using inaccessible local for binding is always a bug");
                 Err(MirLowerError::InaccessibleLocal)
             }
         }

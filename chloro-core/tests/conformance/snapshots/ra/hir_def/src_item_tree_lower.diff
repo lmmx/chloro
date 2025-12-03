@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20372 bytes
-Chloro size:   20279 bytes
+Chloro size:   20369 bytes
 Rustfmt size:  20372 bytes
 
 ✗ Outputs DIFFER
@@ -49,12 +49,3 @@ Rustfmt size:  20372 bytes
              match (path, alias, is_glob) {
                  (path, None, true) => {
                      if path.is_none() {
-                     self.mapping.alloc(tree.clone());
-                     Some(UseTree { kind: UseTreeKind::Glob { path: path.map(Interned::new) } })
-                 }
--                // Globs can't be renamed
-                 (_, Some(_), true) | (None, None, false) => None,
--                // `bla::{ as Name}` is invalid
-                 (None, Some(_), false) => None,
-                 (Some(path), alias, false) => {
-                     self.mapping.alloc(tree.clone());

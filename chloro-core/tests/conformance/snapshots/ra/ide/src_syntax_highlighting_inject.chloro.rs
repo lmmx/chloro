@@ -252,11 +252,16 @@ pub(super) fn doc_comment(
 
 fn find_doc_string_in_attr(attr: &hir::Attr, it: &ast::Attr) -> Option<ast::String> {
     match it.expr() {
+        // #[doc = lit]
         Some(ast::Expr::Literal(lit)) => match lit.kind() {
             ast::LiteralKind::String(it) => Some(it),
             _ => None,
         },
+        // #[cfg_attr(..., doc = "", ...)]
         None => {
+            // We gotta hunt the string token manually here
+            // FIXME: We just pick the first string literal that has the same text as the doc attribute
+            // This means technically we might highlight the wrong one
             let text = attr.string_value()?.as_str();
             it.syntax()
                 .descendants_with_tokens()

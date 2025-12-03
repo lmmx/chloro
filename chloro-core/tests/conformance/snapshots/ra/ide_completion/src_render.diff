@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   97887 bytes
+Chloro size:   98217 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -89,10 +89,8 @@ Rustfmt size:  98473 bytes
      // nearly always this is not meaningful to the user.
      if expected_type.is_unit() {
          return None;
-     item: &mut Builder,
- ) {
      if let Some(original_path) = &path_ctx.original_path {
--        // At least one char was typed by the user already, in that case look for the original path
+         // At least one char was typed by the user already, in that case look for the original path
          if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())
 -            && let Some(ref_mode) = compute_ref_match(completion, ty)
 -        {
@@ -100,12 +98,6 @@ Rustfmt size:  98473 bytes
              item.ref_match(ref_mode, original_path.syntax().text_range().start());
          }
      } else {
--        // completion requested on an empty identifier, there is no path here yet.
--        // FIXME: This might create inconsistent completions where we show a ref match in macro inputs
--        // as long as nothing was typed yet
-         if let Some(ref_mode) = compute_ref_match(completion, ty) {
-             item.ref_match(ref_mode, completion.position.offset);
-         }
  #[cfg(test)]
  mod tests {
      use std::cmp;

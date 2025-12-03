@@ -418,7 +418,9 @@ fn macro_arg_considering_derives(
     kind: &MacroCallKind,
 ) -> MacroArgResult {
     match kind {
+        // Get the macro arg for the derive macro
         MacroCallKind::Derive { derive_macro_id, .. } => db.macro_arg(*derive_macro_id),
+        // Normal macro arg
         _ => db.macro_arg(id),
     }
 }

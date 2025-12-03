@@ -442,6 +442,9 @@ impl<'db> InferenceContext<'_, 'db> {
             ClosureKind::Async if lang_item == Some(LangItem::AsyncFnOnceOutput) => {
                 self.extract_sig_from_projection(projection)
             }
+            // It's possible we've passed the closure to a (somewhat out-of-fashion)
+            // `F: FnOnce() -> Fut, Fut: Future<Output = T>` style bound. Let's still
+            // guide inference here, since it's beneficial for the user.
             ClosureKind::Async if lang_item == Some(LangItem::FnOnceOutput) => {
                 self.extract_sig_from_projection_and_future_bound(projection)
             }

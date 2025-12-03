@@ -405,6 +405,10 @@ fn path_applicable_imports(
             .take(DEFAULT_QUERY_SEARCH_LIMIT)
             .collect()
         }
+        // we have some unresolved qualifier that we search an import for
+        // The key here is that whatever we import must form a resolved path for the remainder of
+        // what follows
+        // FIXME: This doesn't handle visibility
         [first_qsegment, qualifier_rest @ ..] => items_locator::items_with_name(
             db,
             current_crate,

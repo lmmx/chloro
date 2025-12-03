@@ -233,9 +233,11 @@ pub(super) fn get_segment_representation(
             };
             Some(Either::Left(res))
         }
+        // paths
         ast::Expr::MacroExpr(macro_expr) => macro_expr.macro_call()?.path().map(Either::Right),
         ast::Expr::RecordExpr(record_expr) => record_expr.path().map(Either::Right),
         ast::Expr::PathExpr(path_expr) => {
+            // single segment paths are likely locals
             let path = path_expr.path()?;
             Some(match path.as_single_name_ref() {
                 None => Either::Right(path),
@@ -243,6 +245,7 @@ pub(super) fn get_segment_representation(
             })
         }
         ast::Expr::PrefixExpr(prefix_expr) if prefix_expr.op_kind() == Some(UnaryOp::Not) => None,
+        // recurse
         ast::Expr::PrefixExpr(prefix_expr) => get_segment_representation(&prefix_expr.expr()?),
         ast::Expr::RefExpr(ref_expr) => get_segment_representation(&ref_expr.expr()?),
         ast::Expr::CastExpr(cast_expr) => get_segment_representation(&cast_expr.expr()?),
@@ -251,6 +254,7 @@ pub(super) fn get_segment_representation(
         ast::Expr::IndexExpr(index_expr) => get_segment_representation(&index_expr.base()?),
         ast::Expr::ParenExpr(paren_expr) => get_segment_representation(&paren_expr.expr()?),
         ast::Expr::TryExpr(try_expr) => get_segment_representation(&try_expr.expr()?),
+        // ast::Expr::ClosureExpr(closure_expr) => todo!(),
         _ => None,
     }
 }

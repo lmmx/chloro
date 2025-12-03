@@ -126,6 +126,7 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
     ) -> ControlFlow<VisiblyUninhabited> {
         // An ADT is uninhabited iff all its variants uninhabited.
         match adt {
+            // rustc: For now, `union`s are never considered uninhabited.
             AdtId::UnionId(_) => CONTINUE_OPAQUELY_INHABITED,
             AdtId::StructId(s) => self.visit_variant(s.into(), subst),
             AdtId::EnumId(e) => {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32237 bytes
+Chloro size:   32325 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -82,17 +82,6 @@ Rustfmt size:  32663 bytes
  pub type PolyExistentialProjection<'db> = Binder<'db, ExistentialProjection<'db>>;
  
  /// Compares via an ordering that will not change if modules are reordered or other changes are
-     match (a, b) {
-         (ExistentialPredicate::Trait(_), ExistentialPredicate::Trait(_)) => Ordering::Equal,
-         (ExistentialPredicate::Projection(_a), ExistentialPredicate::Projection(_b)) => {
--            // Should sort by def path hash
-             Ordering::Equal
-         }
-         (ExistentialPredicate::AutoTrait(_a), ExistentialPredicate::AutoTrait(_b)) => {
--            // Should sort by def path hash
-             Ordering::Equal
-         }
-         (ExistentialPredicate::Trait(_), _) => Ordering::Less,
          (ExistentialPredicate::AutoTrait(_), _) => Ordering::Greater,
      }
  }

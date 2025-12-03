@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11079 bytes
-Chloro size:   11035 bytes
+Chloro size:   11106 bytes
 Rustfmt size:  11433 bytes
 
 ✗ Outputs DIFFER
@@ -37,9 +37,7 @@ Rustfmt size:  11433 bytes
 +    ) -> bool {
          match arg.kind() {
              GenericArgKind::Lifetime(_) => {
--                // Lifetimes should not change affect trait selection.
-                 false
-             }
+                 // Lifetimes should not change affect trait selection.
              GenericArgKind::Type(ty) => {
                  if let TyKind::Infer(infer_ty) = ty.kind() {
                      match infer_ty {

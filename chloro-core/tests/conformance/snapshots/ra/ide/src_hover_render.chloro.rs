@@ -413,6 +413,7 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
             hir::GenericDef::Adt(it) => Some(it.name(db)),
             hir::GenericDef::Trait(it) => Some(it.name(db)),
             hir::GenericDef::TypeAlias(it) => Some(it.name(db)),
+
             hir::GenericDef::Impl(i) => i.self_ty(db).as_adt().map(|adt| adt.name(db)),
             hir::GenericDef::Function(it) => {
                 let container = it.as_assoc_item(db).and_then(|assoc| match assoc.container(db) {
@@ -1297,6 +1298,7 @@ fn keyword_hints(
         T![await] | T![loop] | T![match] | T![unsafe] | T![as] | T![try] | T![if] | T![else] => {
             let keyword_mod = format!("{}_keyword", token.text());
             match ast::Expr::cast(parent).and_then(|site| sema.type_of_expr(&site)) {
+                // ignore the unit type ()
                 Some(ty) if !ty.adjusted.as_ref().unwrap_or(&ty.original).is_unit() => {
                     let mut targets: Vec<hir::ModuleDef> = Vec::new();
                     let mut push_new_def = |item: hir::ModuleDef| {

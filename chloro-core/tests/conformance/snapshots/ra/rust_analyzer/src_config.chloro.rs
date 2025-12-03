@@ -2741,6 +2741,7 @@ mod single_or_array {
         S: serde::Serializer,
     {
         match vec {
+            // []  case is handled by skip_serializing_if
             [single] => serializer.serialize_str(single),
             slice => slice.serialize(serializer),
         }

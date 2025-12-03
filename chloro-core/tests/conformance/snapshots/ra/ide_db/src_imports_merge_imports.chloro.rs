@@ -32,6 +32,7 @@ impl MergeBehavior {
     fn is_tree_allowed(&self, tree: &ast::UseTree) -> bool {
         match self {
             MergeBehavior::Crate | MergeBehavior::One => true,
+            // only simple single segment paths are allowed
             MergeBehavior::Module => {
                 tree.use_tree_list().is_none() && tree.path().map(path_len) <= Some(1)
             }
@@ -570,6 +571,8 @@ pub(super) fn use_tree_cmp(a: &ast::UseTree, b: &ast::UseTree) -> Ordering {
         (None, Some(_)) if !a_is_simple_path => Ordering::Greater,
         (None, Some(_)) => Ordering::Less,
         (Some(a_path), Some(b_path)) => {
+            // cmp_by would be useful for us here but that is currently unstable
+            // cmp doesn't work due the lifetimes on text's return type
             a_path
                 .segments()
                 .zip_longest(b_path.segments())
@@ -595,15 +598,19 @@ fn path_segment_cmp(a: &ast::PathSegment, b: &ast::PathSegment) -> Ordering {
         (None, None) => Ordering::Equal,
         (Some(_), None) => Ordering::Greater,
         (None, Some(_)) => Ordering::Less,
+        // self
         (Some(PathSegmentKind::SelfKw), Some(PathSegmentKind::SelfKw)) => Ordering::Equal,
         (Some(PathSegmentKind::SelfKw), _) => Ordering::Less,
         (_, Some(PathSegmentKind::SelfKw)) => Ordering::Greater,
+        // super
         (Some(PathSegmentKind::SuperKw), Some(PathSegmentKind::SuperKw)) => Ordering::Equal,
         (Some(PathSegmentKind::SuperKw), _) => Ordering::Less,
         (_, Some(PathSegmentKind::SuperKw)) => Ordering::Greater,
+        // crate
         (Some(PathSegmentKind::CrateKw), Some(PathSegmentKind::CrateKw)) => Ordering::Equal,
         (Some(PathSegmentKind::CrateKw), _) => Ordering::Less,
         (_, Some(PathSegmentKind::CrateKw)) => Ordering::Greater,
+        // identifiers (everything else is treated as an identifier).
         _ => {
             match (
                 a.name_ref().as_ref().map(ast::NameRef::text),

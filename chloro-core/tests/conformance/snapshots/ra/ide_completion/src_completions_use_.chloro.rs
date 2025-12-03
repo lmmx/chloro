@@ -18,6 +18,7 @@ pub(crate) fn complete_use_path(
 ) {
     match qualified {
         Qualified::With { path, resolution: Some(resolution), super_chain_len } => {
+            // only show `self` in a new use-tree when the qualifier doesn't end in self
             acc.add_super_keyword(ctx, *super_chain_len);
             let not_preceded_by_self = *use_tree_parent
                 && !matches!(
@@ -80,14 +81,15 @@ pub(crate) fn complete_use_path(
                     cov_mark::hit!(enum_plain_qualified_use_tree);
                     acc.add_enum_variants(ctx, path_ctx, *e);
                 }
-                _ => {
-                }
+                _ => {},
             }
         }
+        // fresh use tree with leading colon2, only show crate roots
         Qualified::Absolute => {
             cov_mark::hit!(use_tree_crate_roots_only);
             acc.add_crate_roots(ctx, path_ctx);
         }
+        // only show modules and non-std enum in a fresh UseTree
         Qualified::No => {
             cov_mark::hit!(unqualified_path_selected_only);
             ctx.process_all_names(&mut |name, res, doc_aliases| {
@@ -118,7 +120,6 @@ pub(crate) fn complete_use_path(
             });
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {
-        }
+        Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {},
     }
 }

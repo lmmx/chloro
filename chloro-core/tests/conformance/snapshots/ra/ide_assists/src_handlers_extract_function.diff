@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 141954 bytes
-Chloro size:   141256 bytes
+Chloro size:   141404 bytes
 Rustfmt size:  141954 bytes
 
 ✗ Outputs DIFFER
@@ -152,26 +152,15 @@ Rustfmt size:  141954 bytes
          let parent_match_arm = builder.make_mut(parent_match_arm);
          ted::append_child_raw(parent_match_arm.syntax(), make::token(T![,]));
      }
-     let parent_match_arm = fun.body.parent().and_then(ast::MatchArm::cast);
- 
-     if let Some(bindings) = outliving_bindings {
--        // with bindings that outlive it
-         make::let_stmt(bindings, None, Some(expr)).syntax().clone_for_update()
-     } else if parent_match_arm.as_ref().is_some() {
--        // as a tail expr for a match arm
          expr.syntax().clone()
      } else if parent_match_arm.as_ref().is_none()
          && fun.ret_ty.is_unit()
 -        && (!fun.outliving_locals.is_empty() || !expr.is_block_like())
 -    {
--        // as an expr stmt
 +        && (!fun.outliving_locals.is_empty() || !expr.is_block_like()) {
+         // as an expr stmt
          make::expr_stmt(expr).syntax().clone_for_update()
      } else {
--        // as a tail expr, or a block
-         expr.syntax().clone()
-     }
- }
  
  enum FlowHandler<'db> {
      None,

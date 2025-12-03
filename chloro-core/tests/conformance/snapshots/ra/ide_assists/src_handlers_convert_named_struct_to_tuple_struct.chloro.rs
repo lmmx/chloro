@@ -205,6 +205,7 @@ fn edit_field_references(
             edit.edit_file(file_id.file_id(ctx.db()));
             for r in refs {
                 if let Some(name_ref) = r.name.as_name_ref() {
+                    // Only edit the field reference if it's part of a `.field` access
                     if name_ref.syntax().parent().and_then(ast::FieldExpr::cast).is_some() {
                         edit.replace(r.range, index.to_string());
                     }

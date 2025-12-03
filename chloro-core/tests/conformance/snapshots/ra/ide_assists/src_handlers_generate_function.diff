@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74070 bytes
+Chloro size:   74151 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -219,13 +219,6 @@ Rustfmt size:  75023 bytes
              Some(ParamBoundWithParams { node, self_ty_param, other_params })
          }
          ast::GenericParam::ConstParam(ct) => {
-             Some(ParamBoundWithParams { node, self_ty_param, other_params: FxHashSet::default() })
-         }
-         ast::GenericParam::LifetimeParam(_) => {
--            // FIXME: It might be a good idea to handle lifetime parameters too.
-             None
-         }
-     }
      let node_count = generic_params_upper_bound + where_preds.len();
  
      // | node index range                        | what the node represents |

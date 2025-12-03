@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36739 bytes
+Chloro size:   36983 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -59,15 +59,6 @@ Rustfmt size:  36953 bytes
          // for closures and async closures, respectively.
          match closure_kind {
              ClosureKind::Closure if lang_item == Some(LangItem::FnOnceOutput) => {
-             ClosureKind::Async if lang_item == Some(LangItem::AsyncFnOnceOutput) => {
-                 self.extract_sig_from_projection(projection)
-             }
--            // It's possible we've passed the closure to a (somewhat out-of-fashion)
--            // `F: FnOnce() -> Fut, Fut: Future<Output = T>` style bound. Let's still
--            // guide inference here, since it's beneficial for the user.
-             ClosureKind::Async if lang_item == Some(LangItem::FnOnceOutput) => {
-                 self.extract_sig_from_projection_and_future_bound(projection)
-             }
          };
  
          // If the return type is a type variable, look for bounds on it.

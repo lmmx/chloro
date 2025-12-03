@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1436 bytes
-Chloro size:   1339 bytes
+Chloro size:   1436 bytes
 Rustfmt size:  1436 bytes
 
 ✗ Outputs DIFFER
@@ -17,13 +17,6 @@ Rustfmt size:  1436 bytes
  };
  
  pub(crate) fn complete_vis_path(
-             super_chain_len,
-             ..
-         } => {
--            // Try completing next child module of the path that is still a parent of the current module
-             let next_towards_current =
-                 ctx.module.path_to_root(ctx.db).into_iter().take_while(|it| it != module).last();
-             if let Some(next) = next_towards_current
                  cov_mark::hit!(visibility_qualified);
                  acc.add_module(ctx, path_ctx, next, name, vec![]);
              }
@@ -31,8 +24,7 @@ Rustfmt size:  1436 bytes
              acc.add_super_keyword(ctx, *super_chain_len);
          }
 -        Qualified::Absolute | Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
-+        Qualified::Absolute | Qualified::TypeAnchor { .. } | Qualified::With { .. } => {
-+        }
++        Qualified::Absolute | Qualified::TypeAnchor { .. } | Qualified::With { .. } => {},
          Qualified::No => {
              if !has_in_token {
                  cov_mark::hit!(kw_completion_in);

@@ -146,6 +146,7 @@ impl<'a> DeclValidator<'a> {
             AdtId::StructId(struct_id) => self.validate_struct(struct_id),
             AdtId::EnumId(enum_id) => self.validate_enum(enum_id),
             AdtId::UnionId(_) => {
+                // FIXME: Unions aren't yet supported by this validator.
             }
         }
     }
@@ -343,6 +344,8 @@ impl<'a> DeclValidator<'a> {
         };
         let mut struct_fields_iter = struct_fields_list.fields();
         for field_replacement in struct_fields_replacements {
+            // We assume that parameters in replacement are in the same order as in the
+            // actual params list, but just some of them (ones that named correctly) are skipped.
             let field = loop {
                 if let Some(field) = struct_fields_iter.next() {
                     let Some(field_name) = field.name() else {
@@ -428,6 +431,8 @@ impl<'a> DeclValidator<'a> {
         };
         let mut enum_variants_iter = enum_variants_list.variants();
         for variant_replacement in enum_variants_replacements {
+            // We assume that parameters in replacement are in the same order as in the
+            // actual params list, but just some of them (ones that named correctly) are skipped.
             let variant = loop {
                 if let Some(variant) = enum_variants_iter.next() {
                     let Some(variant_name) = variant.name() else {
@@ -498,6 +503,8 @@ impl<'a> DeclValidator<'a> {
         };
         let mut variant_variants_iter = variant_fields_list.fields();
         for field_replacement in variant_field_replacements {
+            // We assume that parameters in replacement are in the same order as in the
+            // actual params list, but just some of them (ones that named correctly) are skipped.
             let field = loop {
                 if let Some(field) = variant_variants_iter.next() {
                     let Some(field_name) = field.name() else {

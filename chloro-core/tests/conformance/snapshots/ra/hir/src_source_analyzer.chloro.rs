@@ -1125,8 +1125,10 @@ impl<'db> SourceAnalyzer<'db> {
             };
         }
         if parent().is_some_and(|it| ast::Visibility::can_cast(it.kind())) {
+            // No substitution because only modules can be inside visibilities, and those have no generics.
             resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store).map(|it| (it, None))
         } else {
+            // Probably a type, no need to show substitutions for those.
             let res = resolve_hir_path_(
                 db,
                 &self.resolver,

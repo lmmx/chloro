@@ -332,6 +332,8 @@ fn build_source_change(
     let assoc_item_list = impl_def.get_or_create_assoc_item_list();
 
     for (i, record_field_info) in info_of_record_fields.iter().enumerate() {
+        // Make the new getter or setter fn
+        // Insert a tabstop only for last method we generate
         let new_fn = match assist_info.assist_type {
             AssistType::Set => generate_setter_from_info(&assist_info, record_field_info),
             _ => generate_getter_from_info(ctx, &assist_info, record_field_info),

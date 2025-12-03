@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11810 bytes
-Chloro size:   11706 bytes
+Chloro size:   11839 bytes
 Rustfmt size:  12398 bytes
 
 ✗ Outputs DIFFER
@@ -144,20 +144,6 @@ Rustfmt size:  12398 bytes
      fn resolve_doc_path(
          self,
          db: &dyn HirDatabase,
- 
- fn get_doc_string_in_attr(it: &ast::Attr) -> Option<ast::String> {
-     match it.expr() {
--        // #[doc = lit]
-         Some(ast::Expr::Literal(lit)) => match lit.kind() {
-             ast::LiteralKind::String(it) => Some(it),
-             _ => None,
-         },
--        // #[cfg_attr(..., doc = "", ...)]
-         None => {
--            // FIXME: See highlight injection for what to do here
-             None
-         }
-         _ => None,
  
  fn doc_indent(attrs: &hir::Attrs) -> usize {
      let mut min = !0;

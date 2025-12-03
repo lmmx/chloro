@@ -195,10 +195,12 @@ impl CanonicalizeMode for CanonicalizeQueryResponse {
             | RegionKind::ReStatic
             | RegionKind::ReEarlyParam(..)
             | RegionKind::ReError(..) => r,
+
             RegionKind::RePlaceholder(placeholder) => canonicalizer.canonical_var_for_region(
                 CanonicalVarKind::PlaceholderRegion(placeholder),
                 r,
             ),
+
             RegionKind::ReVar(vid) => {
                 let universe = infcx
                     .inner
@@ -208,7 +210,16 @@ impl CanonicalizeMode for CanonicalizeQueryResponse {
                     .unwrap_err();
                 canonicalizer.canonical_var_for_region(CanonicalVarKind::Region(universe), r)
             }
+
             _ => {
+                // Other than `'static` or `'empty`, the query
+                // response should be executing in a fully
+                // canonicalized environment, so there shouldn't be
+                // any other region names it can come up.
+                //
+                // rust-lang/rust#57464: `impl Trait` can leak local
+                // scopes (in manner violating typeck). Therefore, use
+                // `delayed_bug` to allow type error over an ICE.
                 panic!("unexpected region in query response: `{r:?}`");
             }
         }
@@ -239,6 +250,7 @@ impl CanonicalizeMode for CanonicalizeUserTypeAnnotation {
             | RegionKind::ReError(_) => r,
             RegionKind::ReVar(_) => canonicalizer.canonical_var_for_region_in_root_universe(r),
             RegionKind::RePlaceholder(..) | RegionKind::ReBound(..) => {
+                // We only expect region names that the user can type.
                 panic!("unexpected region in query response: `{r:?}`")
             }
         }
@@ -339,6 +351,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
             RegionKind::ReBound(BoundVarIndexKind::Canonical, ..) => {
                 panic!("canonicalized bound var found during canonicalization");
             }
+
             RegionKind::ReStatic
             | RegionKind::ReEarlyParam(..)
             | RegionKind::ReError(_)
@@ -352,6 +365,9 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
     fn fold_ty(&mut self, mut t: Ty<'db>) -> Ty<'db> {
         match t.kind() {
             TyKind::Infer(TyVar(mut vid)) => {
+                // We need to canonicalize the *root* of our ty var.
+                // This is so that our canonical response correctly reflects
+                // any equated inference vars correctly!
                 let root_vid = self.infcx.root_var(vid);
                 if root_vid != vid {
                     t = Ty::new_var(self.tcx, root_vid);
@@ -359,10 +375,14 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                 }
                 debug!("canonical: type var found with vid {:?}", vid);
                 match self.infcx.probe_ty_var(vid) {
+                    // `t` could be a float / int variable; canonicalize that instead.
                     Ok(t) => {
                         debug!("(resolved to {:?})", t);
                         self.fold_ty(t)
                     }
+
+                    // `TyVar(vid)` is unresolved, track its universe index in the canonicalized
+                    // result.
                     Err(mut ui) => {
                         if !self.canonicalize_mode.preserve_universes() {
                             // FIXME: perf problem described in #55921.
@@ -373,6 +393,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                     }
                 }
             }
+
             TyKind::Infer(IntVar(vid)) => {
                 let nt = self.infcx.opportunistic_resolve_int_var(vid);
                 if nt != t {
@@ -389,21 +410,25 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                     self.canonicalize_ty_var(CanonicalVarKind::Float, t)
                 }
             }
+
             TyKind::Infer(
                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_),
             ) => {
                 panic!("encountered a fresh type during canonicalization")
             }
+
             TyKind::Placeholder(mut placeholder) => {
                 if !self.canonicalize_mode.preserve_universes() {
                     placeholder.universe = UniverseIndex::ROOT;
                 }
                 self.canonicalize_ty_var(CanonicalVarKind::PlaceholderTy(placeholder), t)
             }
+
             TyKind::Bound(BoundVarIndexKind::Bound(..), _) => t,
             TyKind::Bound(BoundVarIndexKind::Canonical, ..) => {
                 panic!("canonicalized bound var found during canonicalization");
             }
+
             TyKind::Closure(..)
             | TyKind::CoroutineClosure(..)
             | TyKind::Coroutine(..)
@@ -618,9 +643,17 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
 
         // been exceeded, to also avoid allocations for `indices`.
         if !var_values.spilled() {
+            // `var_values` is stack-allocated. `indices` isn't used yet. Do a
+            // direct linear search of `var_values`.
             if let Some(idx) = var_values.iter().position(|&k| k == kind) {
+                // `kind` is already present in `var_values`.
                 BoundVar::new(idx)
             } else {
+                // `kind` isn't present in `var_values`. Append it. Likewise
+                // for `info` and `variables`.
+                // If `var_values` has become big enough to be heap-allocated,
+                // fill up `indices` to facilitate subsequent lookups.
+                // The cv is the index of the appended element.
                 variables.push(info);
                 var_values.push(kind);
                 assert_eq!(variables.len(), var_values.len());
@@ -635,6 +668,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
                 BoundVar::new(var_values.len() - 1)
             }
         } else {
+            // `var_values` is large. Do a hashmap search via `indices`.
             *indices.entry(kind).or_insert_with(|| {
                 variables.push(info);
                 var_values.push(kind);

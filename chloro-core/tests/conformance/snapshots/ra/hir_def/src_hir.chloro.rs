@@ -639,8 +639,7 @@ impl Pat {
             | Pat::ConstBlock(..)
             | Pat::Wild
             | Pat::Missing
-            | Pat::Expr(_) => {
-            }
+            | Pat::Expr(_) => {},
             Pat::Bind { subpat, .. } => {
                 subpat.iter().copied().for_each(f);
             }
