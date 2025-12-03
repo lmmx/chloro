@@ -14,8 +14,6 @@ Rustfmt size:  167117 bytes
  //! configure the server itself, feature flags are passed into analysis, and
  //! tweak things like automatic insertion of `()` in completions.
 +
-+mod patch_old_style;
-+
  use std::{env, fmt, iter, ops::Not, sync::OnceLock};
  
  use cfg::{CfgAtom, CfgDiff};
@@ -46,11 +44,8 @@ Rustfmt size:  167117 bytes
  
  use crate::{
      diagnostics::DiagnosticsMapConfig,
+ mod patch_old_style;
  
- type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
- 
--mod patch_old_style;
--
  // Conventions for configuration keys to preserve maximal extendability without breakage:
 -//  - Toggles (be it binary true/false or with more options in-between) should almost always suffix as `_enable`
 -//    This has the benefit of namespaces being extensible, and if the suffix doesn't fit later it can be changed without breakage.

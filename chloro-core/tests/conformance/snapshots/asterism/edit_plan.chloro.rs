@@ -3,10 +3,6 @@
 //! This module defines the transformation that work in the TUI manifests as actual edits on disk.
 //! asterism uses textum for generic line-based patching that works with any text format.
 
-#[cfg(test)]
-#[path = "tests/edit_plan.rs"]
-mod tests;
-
 use std::collections::HashMap;
 use std::io;
 
@@ -97,3 +93,7 @@ impl EditPlan {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "tests/edit_plan.rs"]
+mod tests;

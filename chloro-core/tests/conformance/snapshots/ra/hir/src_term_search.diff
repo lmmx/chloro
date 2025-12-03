@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11162 bytes
-Chloro size:   11236 bytes
+Chloro size:   11237 bytes
 Rustfmt size:  11162 bytes
 
 ✗ Outputs DIFFER
@@ -10,24 +10,17 @@ Rustfmt size:  11162 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Term search
  
-+mod expr;
-+mod tactics;
-+
 +pub use expr::Expr;
  use hir_def::type_ref::Mutability;
  use hir_ty::db::HirDatabase;
  use itertools::Itertools;
- 
  use crate::{ModuleDef, ScopeDef, Semantics, SemanticsScope, Type};
  
--mod expr;
+ mod expr;
 -pub use expr::Expr;
--
--mod tactics;
--
- /// Key for lookup table to query new types reached.
- #[derive(Debug, Hash, PartialEq, Eq)]
- enum NewTypesKey {
+ 
+ mod tactics;
+ 
                          *self = AlternativeExprs::Many;
                          break;
                      }

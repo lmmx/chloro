@@ -27,8 +27,6 @@ mod version;
 pub mod config;
 mod global_state;
 pub mod lsp;
-#[cfg(test)]
-mod integrated_benchmarks;
 
 use serde::de::DeserializeOwned;
 pub(crate) use try_default_ as try_default;
@@ -60,6 +58,9 @@ pub mod tracing {
     pub use config::Config;
     pub mod hprof;
 }
+
+#[cfg(test)]
+mod integrated_benchmarks;
 
 pub fn from_json<T: DeserializeOwned>(
     what: &'static str,

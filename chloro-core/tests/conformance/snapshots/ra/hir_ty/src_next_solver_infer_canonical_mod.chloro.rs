@@ -21,9 +21,6 @@
 //!
 //! [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html
 
-pub mod canonicalizer;
-pub mod instantiate;
-
 use instantiate::CanonicalExt;
 use rustc_index::IndexVec;
 use rustc_type_ir::inherent::IntoKind;
@@ -33,6 +30,10 @@ use crate::next_solver::{
     infer::InferCtxt, Canonical, CanonicalVarValues, Const, DbInterner, GenericArg,
     PlaceholderConst, PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
 };
+
+pub mod canonicalizer;
+
+pub mod instantiate;
 
 impl<'db> InferCtxt<'db> {
     /// Creates an instantiation S for the canonical value with fresh inference

@@ -4,8 +4,6 @@
 //! configure the server itself, feature flags are passed into analysis, and
 //! tweak things like automatic insertion of `()` in completions.
 
-mod patch_old_style;
-
 use std::{env, fmt, iter, ops::Not, sync::OnceLock};
 
 use cfg::{CfgAtom, CfgDiff};
@@ -50,6 +48,8 @@ use crate::{
 };
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
+
+mod patch_old_style;
 
 // Conventions for configuration keys to preserve maximal extendability without breakage:
 

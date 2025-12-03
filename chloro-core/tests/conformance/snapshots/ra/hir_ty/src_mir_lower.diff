@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95968 bytes
+Chloro size:   95970 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -10,11 +10,6 @@ Rustfmt size:  95826 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! This module generates a polymorphic MIR from a hir body
  
-+mod as_place;
-+mod pattern_matching;
-+#[cfg(test)]
-+mod tests;
-+
  use std::{fmt::Write, iter, mem};
  
  use base_db::Crate;
@@ -75,14 +70,13 @@ Rustfmt size:  95826 bytes
 -
  use super::OperandKind;
  
--mod as_place;
--mod pattern_matching;
--#[cfg(test)]
--mod tests;
--
- #[derive(Debug, Clone)]
- struct LoopBlocks<'db> {
-     begin: BasicBlockId<'db>,
+ mod as_place;
++
+ mod pattern_matching;
++
+ #[cfg(test)]
+ mod tests;
+ 
      infcx: InferCtxt<'db>,
  }
  

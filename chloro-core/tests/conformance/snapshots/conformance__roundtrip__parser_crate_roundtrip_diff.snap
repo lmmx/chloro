@@ -79,43 +79,6 @@ expression: cleaned_diff
 +#[cfg(not(feature = "in-rust-tree"))]
 +#[cfg(feature = "in-rust-tree")]
 +
-+mod a;
-+#[path = "a.rs"]
-+mod b;
-+mod prefix_entries;
-+mod top_entries;
-+#[rustfmt::skip]
-+#[path = "../test_data/generated/runner.rs"]
-+mod runner;
-+mod event;
-+mod frontmatter;
-+mod grammar;
-+mod input;
-+mod lexed_str;
-+mod output;
-+mod parser;
-+mod shortcuts;
-+mod syntax_kind;
-+mod token_set;
-+#[cfg(test)]
-+mod tests;
-+mod attributes;
-+mod expressions;
-+mod generic_args;
-+mod generic_params;
-+mod items;
-+mod params;
-+mod paths;
-+mod patterns;
-+mod types;
-+#[rustfmt::skip]
-+mod generated;
-+mod adt;
-+mod consts;
-+mod traits;
-+mod use_item;
-+mod atom;
-+
 +use std::*;
 +use std::cell::Cell;
 +use std::cell::Cell;
@@ -2822,10 +2785,9 @@ expression: cleaned_diff
  
  fn main() {
      let m!(x) = 0;
- }
  
--mod a;
--
+ mod a;
+ 
 -fn foo() {}
 +fn foo() {
 +}
@@ -3648,11 +3610,11 @@ expression: cleaned_diff
  #[cfg(test)]
  #[Ignore]
 -fn foo() {}
--
--#[path = "a.rs"]
--mod b;
 +fn foo() {
 +}
+ 
+ #[path = "a.rs"]
+ mod b;
  
  struct S1<T>;
 +
@@ -4403,9 +4365,10 @@ expression: cleaned_diff
      }
  }
  
--mod prefix_entries;
--mod top_entries;
--
+ mod prefix_entries;
++
+ mod top_entries;
+ 
 -use std::{
 -    fmt::Write,
 -    fs,
@@ -4416,13 +4379,9 @@ expression: cleaned_diff
 -
 -use crate::{Edition, LexedStr, TopEntryPoint};
 -
--#[rustfmt::skip]
--#[path = "../test_data/generated/runner.rs"]
--mod runner;
--
- fn infer_edition(file_path: &Path) -> Edition {
-     let file_content = std::fs::read_to_string(file_path).unwrap();
-     if let Some(edition) = file_content.strip_prefix("//@ edition: ") {
+ #[rustfmt::skip]
+ #[path = "../test_data/generated/runner.rs"]
+ mod runner;
      p.set_extension("rast");
      expect_file![p].assert_eq(&actual)
  }
@@ -4454,7 +4413,9 @@ expression: cleaned_diff
 -#[cfg(feature = "in-rust-tree")]
 -extern crate rustc_lexer;
 -
--mod event;
++#
++#
+ mod event;
 -mod frontmatter;
 -mod grammar;
 -mod input;
@@ -4464,12 +4425,29 @@ expression: cleaned_diff
 -mod shortcuts;
 -mod syntax_kind;
 -mod token_set;
--
+ 
 -pub use T_ as T;
--
--#[cfg(test)]
--mod tests;
--
++mod frontmatter;
++
++mod grammar;
++
++mod input;
++
++mod lexed_str;
++
++mod output;
++
++mod parser;
++
++mod shortcuts;
++
++mod syntax_kind;
++
++mod token_set;
+ 
+ #[cfg(test)]
+ mod tests;
+ 
 -pub(crate) use token_set::TokenSet;
 -
 -pub use edition::Edition;
@@ -4482,8 +4460,6 @@ expression: cleaned_diff
 -    syntax_kind::SyntaxKind,
 -};
 -
-+#
-+#
  /// Parse the whole of the input as a given syntactic construct.
  ///
  /// This covers two main use-cases:
@@ -4548,7 +4524,7 @@ expression: cleaned_diff
 -//! Non-opt rules typically start with `assert!(p.at(FIRST_TOKEN))`, the
 -//! caller is responsible for branching on the first token.
 -
--mod attributes;
+ mod attributes;
 -mod expressions;
 -mod generic_args;
 -mod generic_params;
@@ -4557,13 +4533,28 @@ expression: cleaned_diff
 -mod paths;
 -mod patterns;
 -mod types;
--
+ 
 -use crate::{
 -    SyntaxKind::{self, *},
 -    T, TokenSet,
 -    parser::{CompletedMarker, Marker, Parser},
 -};
--
++mod expressions;
++
++mod generic_args;
++
++mod generic_params;
++
++mod items;
++
++mod params;
++
++mod paths;
++
++mod patterns;
++
++mod types;
+ 
  pub(crate) mod entry {
      use super::*;
 -
@@ -4760,9 +4751,9 @@ expression: cleaned_diff
 -//! Defines [`SyntaxKind`] -- a fieldless enum of all possible syntactic
 -//! constructs of the Rust language.
 -
--#[rustfmt::skip]
--mod generated;
--
+ #[rustfmt::skip]
+ mod generated;
+ 
 -use crate::Edition;
 -
 -#[allow(unreachable_pub)]
@@ -4960,14 +4951,16 @@ expression: cleaned_diff
  fn tuple_field_list(p: &mut Parser<'_>) {
      assert!(p.at(T!['(']));
      let m = p.start();
-     m.complete(p, TUPLE_FIELD_LIST);
  }
  
--mod adt;
--mod consts;
--mod traits;
--mod use_item;
--
+ mod adt;
++
+ mod consts;
++
+ mod traits;
++
+ mod use_item;
+ 
 -pub(crate) use self::{
 -    adt::{record_field_list, variant_list},
 -    expressions::{match_arm_list, record_expr_field_list},
@@ -5698,11 +5691,9 @@ expression: cleaned_diff
  pub(super) fn meta(p: &mut Parser<'_>) {
      let meta = p.start();
      let is_unsafe = p.eat(T![unsafe]);
-     meta.complete(p, META);
- }
  
--mod atom;
--
+ mod atom;
+ 
 -use crate::grammar::attributes::ATTRIBUTE_FIRST;
 -
 -use super::*;

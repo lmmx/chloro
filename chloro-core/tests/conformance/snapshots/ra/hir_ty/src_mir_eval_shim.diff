@@ -12,8 +12,6 @@ Rustfmt size:  69401 bytes
  //! is not available.
  //!
 +
-+mod simd;
-+
  use std::cmp::{self, Ordering};
  
 -use hir_def::{CrateRootModuleId, resolver::HasResolver, signatures::FunctionSignature};
@@ -37,12 +35,6 @@ Rustfmt size:  69401 bytes
      },
      next_solver::Region,
  };
- 
--mod simd;
--
- macro_rules! from_bytes {
-     ($ty:tt, $value:expr) => {
-         ($ty::from_le_bytes(match ($value).try_into() {
                  Ok(())
              }
              "pthread_key_create" => {

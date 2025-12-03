@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4096 bytes
-Chloro size:   4095 bytes
+Chloro size:   4096 bytes
 Rustfmt size:  4239 bytes
 
 ✗ Outputs DIFFER
@@ -10,27 +10,23 @@ Rustfmt size:  4239 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Snapshotting in the infer ctxt of the next-trait-solver.
  
--use ena::undo_log::UndoLogs;
--use rustc_type_ir::UniverseIndex;
--use tracing::{debug, instrument};
--
+ use ena::undo_log::UndoLogs;
+ use rustc_type_ir::UniverseIndex;
+ use tracing::{debug, instrument};
++use undo_log::{Snapshot, UndoLog};
+ 
 -use super::region_constraints::RegionSnapshot;
--use super::InferCtxt;
--
- mod fudge;
- pub(crate) mod undo_log;
- 
-+use ena::undo_log::UndoLogs;
-+use rustc_type_ir::UniverseIndex;
-+use tracing::{debug, instrument};
- use undo_log::{Snapshot, UndoLog};
- 
-+use super::InferCtxt;
+ use super::InferCtxt;
 +use super::region_constraints::RegionSnapshot;
-+
+ 
+ mod fudge;
+-pub(crate) mod undo_log;
+ 
+-use undo_log::{Snapshot, UndoLog};
++pub(crate) mod undo_log;
+ 
  #[must_use = "once you start a snapshot, you should always consume it"]
  pub struct CombinedSnapshot {
-     pub(super) undo_snapshot: Snapshot,
  
      #[instrument(skip(self, snapshot), level = "debug")]
      pub(crate) fn rollback_to(&self, snapshot: CombinedSnapshot) {

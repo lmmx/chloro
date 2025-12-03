@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   49359 bytes
+Chloro size:   49363 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -10,12 +10,6 @@ Rustfmt size:  50490 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! MIR definitions and implementation
  
-+mod borrowck;
-+mod eval;
-+mod lower;
-+mod monomorphization;
-+mod pretty;
-+
  use std::{collections::hash_map::Entry, fmt::Display, iter};
  
  use base_db::Crate;
@@ -71,6 +65,16 @@ Rustfmt size:  50490 bytes
 -
  use super::consteval::try_const_usize;
  
++mod borrowck;
++
++mod eval;
++
++mod lower;
++
++mod monomorphization;
++
++mod pretty;
++
  pub type BasicBlockId<'db> = Idx<BasicBlock<'db>>;
 +
  pub type LocalId<'db> = Idx<Local<'db>>;

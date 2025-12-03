@@ -2,8 +2,6 @@
 //! is not available.
 //!
 
-mod simd;
-
 use std::cmp::{self, Ordering};
 
 use hir_def::{resolver::HasResolver, signatures::FunctionSignature, CrateRootModuleId};
@@ -22,6 +20,8 @@ use crate::{
     },
     next_solver::Region,
 };
+
+mod simd;
 
 macro_rules! from_bytes {
     ($ty:tt, $value:expr) => {
