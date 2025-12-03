@@ -28,12 +28,13 @@ Rustfmt size:  41840 bytes
  use lsp_types::FileSystemWatcher;
  use paths::Utf8Path;
  use proc_macro_api::ProcMacroClient;
- use project_model::{ManifestPath, ProjectWorkspace, ProjectWorkspaceKind, WorkspaceBuildScripts};
  use stdx::{format_to, thread::ThreadIntent};
-+use tracing::{debug, info};
  use triomphe::Arc;
  use vfs::{AbsPath, AbsPathBuf, ChangeKind};
++use tracing::{debug, info};
  
+ use crate::{
+     config::{Config, FilesWatcher, LinkedProject},
      main_loop::{DiscoverProjectParam, Task},
      op_queue::Cause,
  };

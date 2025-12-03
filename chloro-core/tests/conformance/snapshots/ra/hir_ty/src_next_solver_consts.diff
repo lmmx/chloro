@@ -2,16 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14449 bytes
+Chloro size:   14450 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     next_solver::{interner::InternedWrapperNoDebug, ClauseKind, ParamEnv},
-     MemoryMap,
- };
--
  use super::{BoundVarKind, DbInterner, ErrorGuaranteed, GenericArgs, Placeholder, Ty};
  
  pub type ConstKind<'db> = rustc_type_ir::ConstKind<DbInterner<'db>>;

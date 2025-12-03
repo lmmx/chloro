@@ -10,10 +10,10 @@ use rustc_index::IndexVec;
 use rustc_type_ir::inherent::IntoKind;
 use rustc_type_ir::{RegionKind, RegionVid, UniverseIndex};
 use tracing::{debug, instrument};
-
 use crate::next_solver::infer::snapshot::undo_log::{InferCtxtUndoLogs, Snapshot};
 use crate::next_solver::infer::unify_key::RegionVariableValue;
 use crate::next_solver::{AliasTy, Binder, DbInterner, ParamTy, PlaceholderTy, Region, Ty};
+
 use self::CombineMapType::*;
 use self::UndoLog::*;
 use super::MemberConstraint;

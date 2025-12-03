@@ -2,32 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8624 bytes
-Chloro size:   8622 bytes
+Chloro size:   8624 bytes
 Rustfmt size:  8816 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::ops::ControlFlow;
- 
- use hir_def::db::DefDatabase;
- use rustc_hash::{FxHashMap, FxHashSet};
- use syntax::ToSmolStr;
- use test_fixture::WithFixture;
-+use DynCompatibilityViolationKind::*;
- 
- use crate::{dyn_compatibility::dyn_compatibility_with_callback, test_db::TestDB};
--
- use super::{
-     DynCompatibilityViolation,
-     MethodViolationCode::{self, *},
- };
- 
--use DynCompatibilityViolationKind::*;
--
- #[allow(clippy::upper_case_acronyms)]
- #[derive(Debug, Clone, PartialEq, Eq, Hash)]
- enum DynCompatibilityViolationKind {
      #[rust_analyzer::rust_fixture] ra_fixture: &str,
      expected: impl IntoIterator<Item = (&'a str, Vec<DynCompatibilityViolationKind>)>,
  ) {

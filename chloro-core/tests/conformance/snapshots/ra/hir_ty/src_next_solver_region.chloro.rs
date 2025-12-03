@@ -10,6 +10,7 @@ use rustc_type_ir::{
 };
 
 use crate::next_solver::{GenericArg, OutlivesPredicate};
+
 use super::{
     interned_vec_db,
     interner::{BoundVarKind, DbInterner, Placeholder},

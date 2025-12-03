@@ -3,7 +3,6 @@ use syntax::{
     ast::{self, edit_in_place::Indent, HasName},
     AstNode,
 };
-
 use crate::assist_context::{AssistContext, Assists};
 
 pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

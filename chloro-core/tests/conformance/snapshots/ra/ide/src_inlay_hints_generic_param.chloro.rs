@@ -11,6 +11,7 @@ use crate::{
     inlay_hints::{param_name, GenericParameterHints},
     InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
 };
+
 use super::param_name::is_argument_similar_to_param_name;
 
 pub(crate) fn hints(

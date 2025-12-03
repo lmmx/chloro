@@ -59,8 +59,9 @@ use syntax::{ast, match_ast, SyntaxKind};
 use thin_vec::ThinVec;
 use triomphe::Arc;
 
-pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
 use crate::{attr::Attrs, db::DefDatabase, BlockId, Lookup};
+
+pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub(crate) struct RawVisibilityId(u32);

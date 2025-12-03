@@ -2,25 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13440 bytes
-Chloro size:   13438 bytes
+Chloro size:   13439 bytes
 Rustfmt size:  13679 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     imports::insert_use::{ImportGranularity, InsertUseConfig},
-     MiniCore, SnippetCap,
- };
-+use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
- use project_model::CargoConfig;
- use test_utils::project_root;
- use vfs::{AbsPathBuf, VfsPath};
- 
--use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
--
- #[track_caller]
- fn file_id(vfs: &vfs::Vfs, path: &VfsPath) -> vfs::FileId {
-     match vfs.file_id(path) {
      };
  
      // kick off parsing and index population

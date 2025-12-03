@@ -9,6 +9,7 @@ use std::iter::zip;
 use either::Either;
 use hir::{EditionedFileId, Semantics};
 use ide_db::{famous_defs::FamousDefs, RootDatabase};
+
 use stdx::to_lower_snake_case;
 use syntax::ast::{self, AstNode, HasArgList, HasName, UnaryOp};
 

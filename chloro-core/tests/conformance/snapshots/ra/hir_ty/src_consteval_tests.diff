@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 57017 bytes
-Chloro size:   57044 bytes
+Chloro size:   57045 bytes
 Rustfmt size:  57422 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     test_db::TestDB,
-     MemoryMap,
- };
--
- use super::{
-     super::mir::{MirEvalError, MirLowerError},
-     ConstEvalError,
      error: impl FnOnce(ConstEvalError<'_>) -> bool,
  ) {
      let (db, file_id) = TestDB::with_single_file(ra_fixture);

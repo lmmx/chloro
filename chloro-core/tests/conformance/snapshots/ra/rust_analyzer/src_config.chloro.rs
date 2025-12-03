@@ -35,10 +35,6 @@ use serde::{
 use stdx::format_to_acc;
 use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, VfsPath};
-use _config_data as config_data;
-use _default_str as default_str;
-use _default_val as default_val;
-use _impl_for_config_data as impl_for_config_data;
 
 use crate::{
     diagnostics::DiagnosticsMapConfig,
@@ -3004,6 +3000,7 @@ macro_rules! _default_val {
         default_
     }};
 }
+use _default_val as default_val;
 
 macro_rules! _default_str {
     ($default:expr, $ty:ty) => {{
@@ -3011,6 +3008,7 @@ macro_rules! _default_str {
         serde_json::to_string_pretty(&val).unwrap()
     }};
 }
+use _default_str as default_str;
 
 macro_rules! _impl_for_config_data {
     (local, $(
@@ -3138,6 +3136,7 @@ macro_rules! _impl_for_config_data {
         }
     };
 }
+use _impl_for_config_data as impl_for_config_data;
 
 macro_rules! _config_data {
     // modname is for the tests
@@ -3233,6 +3232,7 @@ macro_rules! _config_data {
         }
     };
 }
+use _config_data as config_data;
 
 #[derive(Default, Debug, Clone)]
 struct DefaultConfigData {

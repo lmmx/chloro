@@ -3,23 +3,13 @@
 use std::{collections::hash_map::Entry, fmt::Display, iter};
 
 use base_db::Crate;
-pub use borrowck::{borrowck_query, BorrowckResult, MutabilityReason};
 use either::Either;
-pub use eval::{
-    interpret_mir, pad16, render_const_using_debug_impl, Evaluator, MirEvalError, VTableMap,
-};
 use hir_def::{
     expr_store::Body,
     hir::{BindingAnnotation, BindingId, Expr, ExprId, Ordering, PatId},
     DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
 };
 use la_arena::{Arena, ArenaMap, Idx, RawIdx};
-pub(crate) use lower::mir_body_cycle_result;
-pub use lower::{lower_to_mir, mir_body_for_closure_query, mir_body_query, MirLowerError};
-pub(crate) use monomorphization::monomorphized_mir_body_cycle_result;
-pub use monomorphization::{
-    monomorphized_mir_body_for_closure_query, monomorphized_mir_body_query,
-};
 use rustc_ast_ir::Mutability;
 use rustc_hash::FxHashMap;
 use rustc_type_ir::inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _};
@@ -38,13 +28,26 @@ use crate::{
     },
     CallableDefId, InferenceResult, MemoryMap,
 };
-use super::consteval::try_const_usize;
 
 mod borrowck;
 mod eval;
 mod lower;
 mod monomorphization;
 mod pretty;
+
+pub use borrowck::{borrowck_query, BorrowckResult, MutabilityReason};
+pub use eval::{
+    interpret_mir, pad16, render_const_using_debug_impl, Evaluator, MirEvalError, VTableMap,
+};
+pub use lower::{lower_to_mir, mir_body_for_closure_query, mir_body_query, MirLowerError};
+pub use monomorphization::{
+    monomorphized_mir_body_for_closure_query, monomorphized_mir_body_query,
+};
+
+pub(crate) use lower::mir_body_cycle_result;
+pub(crate) use monomorphization::monomorphized_mir_body_cycle_result;
+
+use super::consteval::try_const_usize;
 
 pub type BasicBlockId<'db> = Idx<BasicBlock<'db>>;
 

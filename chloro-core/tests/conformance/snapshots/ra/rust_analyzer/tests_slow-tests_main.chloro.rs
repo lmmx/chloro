@@ -33,6 +33,7 @@ use lsp_types::{
 use rust_analyzer::lsp::ext::{OnEnter, Runnables, RunnablesParams};
 use serde_json::json;
 use stdx::format_to_acc;
+
 use test_utils::skip_slow_tests;
 use testdir::TestDir;
 

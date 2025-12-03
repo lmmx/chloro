@@ -2,25 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 210028 bytes
-Chloro size:   209817 bytes
+Chloro size:   209818 bytes
 Rustfmt size:  210967 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use expect_test::{expect, Expect};
-+use hir::setup_tracing;
- use ide_db::{base_db::SourceDatabase, FileRange, MiniCore};
- use syntax::TextRange;
- 
-     fixture, HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
- };
- 
--use hir::setup_tracing;
--
- const HOVER_BASE_CONFIG: HoverConfig<'_> = HoverConfig {
-     links_in_hover: false,
-     memory_layout: Some(MemoryLayoutHoverConfig {
      let (analysis, position) = fixture::position(ra_fixture);
      let hover = analysis
          .hover(

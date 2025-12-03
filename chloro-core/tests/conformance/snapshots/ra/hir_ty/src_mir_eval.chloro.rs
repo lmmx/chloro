@@ -32,7 +32,6 @@ use span::FileId;
 use stdx::never;
 use syntax::{SyntaxNodePtr, TextRange};
 use triomphe::Arc;
-use Address::*;
 
 use crate::{
     consteval::{self, try_const_usize, ConstEvalError},
@@ -51,6 +50,7 @@ use crate::{
     utils::detect_variant_from_bytes,
     CallableDefId, ComplexMemoryMap, MemoryMap, TraitEnvironment,
 };
+
 use super::{
     return_slot, AggregateKind, BasicBlockId, BinOp, CastKind, LocalId, MirBody, MirLowerError,
     MirSpan, Operand, OperandKind, Place, PlaceElem, ProjectionElem, ProjectionStore, Rvalue,
@@ -212,6 +212,8 @@ enum Address {
     Heap(usize),
     Invalid(usize),
 }
+
+use Address::*;
 
 #[derive(Debug, Clone, Copy)]
 struct Interval {

@@ -7,7 +7,6 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-
 // NOTE: Code may break if the self type implements a trait that has associated const with the same
 
 // name, but it's pretty expensive to check that (`hir::Impl::all_for_type()`) and we assume that's

@@ -17,6 +17,7 @@ use crate::next_solver::{
     Clause, DbInterner, Goal, ParamEnv, PolyTraitPredicate, Predicate, Span, TraitPredicate,
     TraitRef, Ty,
 };
+
 use super::InferCtxt;
 
 /// The reason why we incurred this obligation; used for error reporting.

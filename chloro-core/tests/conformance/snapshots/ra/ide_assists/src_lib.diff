@@ -2,30 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18403 bytes
-Chloro size:   17851 bytes
+Chloro size:   17852 bytes
 Rustfmt size:  18467 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- mod tests;
- pub mod utils;
  
-+pub use assist_config::AssistConfig;
- use hir::Semantics;
-+pub use ide_db::assists::{
-+    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
-+};
- use ide_db::{EditionedFileId, RootDatabase};
- use syntax::{Edition, TextRange};
- 
- pub(crate) use crate::assist_context::{AssistContext, Assists};
- 
--pub use assist_config::AssistConfig;
--pub use ide_db::assists::{
--    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
--};
--
  /// Return all the assists applicable at the given position.
  ///
 -// NOTE: We don't have a `Feature: ` section for assists, they are special-cased

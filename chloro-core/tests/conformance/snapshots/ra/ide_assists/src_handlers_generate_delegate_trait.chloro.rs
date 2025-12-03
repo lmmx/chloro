@@ -1,5 +1,4 @@
 use std::ops::Not;
-
 use either::Either;
 use hir::{db::HirDatabase, HasVisibility};
 use ide_db::{

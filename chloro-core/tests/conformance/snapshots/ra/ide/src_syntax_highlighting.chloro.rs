@@ -1,9 +1,12 @@
 pub(crate) mod tags;
+
 mod highlights;
+
 mod escape;
 mod format;
 mod highlight;
 mod inject;
+
 mod html;
 #[cfg(test)]
 mod tests;
@@ -12,8 +15,6 @@ use std::ops::ControlFlow;
 
 use either::Either;
 use hir::{DefWithBody, EditionedFileId, InFile, InRealFile, MacroKind, Name, Semantics};
-pub(crate) use html::highlight_as_html;
-pub(crate) use html::highlight_as_html_with_config;
 use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
 use syntax::{
     ast::{self, IsString},
@@ -29,6 +30,9 @@ use crate::{
     },
     FileId, HlMod, HlOperator, HlPunct, HlTag,
 };
+
+pub(crate) use html::highlight_as_html;
+pub(crate) use html::highlight_as_html_with_config;
 
 #[derive(Debug, Clone, Copy)]
 pub struct HlRange {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95968 bytes
+Chloro size:   95969 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -67,10 +67,8 @@ Rustfmt size:  95826 bytes
      traits::FnTrait,
 +    Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,
  };
--
- use super::OperandKind;
  
- mod as_place;
+ use super::OperandKind;
      infcx: InferCtxt<'db>,
  }
  

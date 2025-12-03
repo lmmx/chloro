@@ -1,5 +1,3 @@
-use std::hash::Hash;
-
 use ide_db::{syntax_helpers::node_ext::vis_eq, FxHashSet};
 use syntax::{
     ast::{self, AstNode, AstToken},
@@ -7,6 +5,8 @@ use syntax::{
     SyntaxKind::{self, *},
     SyntaxNode, TextRange, TextSize,
 };
+
+use std::hash::Hash;
 
 const REGION_START: &str = "// region:";
 

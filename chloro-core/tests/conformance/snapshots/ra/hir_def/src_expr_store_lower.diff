@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   144464 bytes
+Chloro size:   144465 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -75,10 +75,8 @@ Rustfmt size:  144317 bytes
 +    AdtId, BlockId, BlockLoc, DefWithBodyId, FunctionId, GenericDefId, ImplId, MacroId,
 +    ModuleDefId, ModuleId, TraitId, TypeAliasId, UnresolvedMacro,
  };
--
- pub use self::path::hir_segment_to_ast_segment;
  
- pub(super) fn lower_body(
+ pub use self::path::hir_segment_to_ast_segment;
      // with the inner macro, and that will cause confusion because they won't be the same as `ROOT`
      // even though they should be the same. Also, when the body comes from multiple expansions, their
      // hygiene is different.

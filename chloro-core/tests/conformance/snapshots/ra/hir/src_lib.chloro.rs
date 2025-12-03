@@ -26,11 +26,15 @@ mod from_id;
 mod has_source;
 mod semantics;
 mod source_analyzer;
+
 pub mod db;
 pub mod diagnostics;
 pub mod symbols;
 pub mod term_search;
+
 mod display;
+
+pub use hir_def::ModuleId;
 
 use std::{
     fmt,
@@ -41,7 +45,6 @@ use std::{
 use arrayvec::ArrayVec;
 use base_db::{CrateDisplayName, CrateOrigin, LangCrateOrigin};
 use either::Either;
-pub use hir_def::ModuleId;
 use hir_def::{
     expr_store::{ExpressionStoreDiagnostics, ExpressionStoreSourceMap},
     hir::{
@@ -66,8 +69,6 @@ use hir_expand::{
     attrs::collect_attrs, proc_macro::ProcMacroKind, AstId, MacroCallKind, RenderedExpandError,
     ValueResult,
 };
-pub use hir_ty::next_solver;
-pub use hir_ty::setup_tracing;
 use hir_ty::{
     all_super_traits, autoderef, check_orphan_rules,
     consteval::try_const_usize,
@@ -99,6 +100,19 @@ use syntax::{
     format_smolstr, AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr, T,
 };
 use triomphe::{Arc, ThinArc};
+
+use crate::db::{DefDatabase, HirDatabase};
+
+pub use crate::{
+    attrs::{resolve_doc_path_on, HasAttrs},
+    diagnostics::*,
+    has_source::HasSource,
+    semantics::{
+        PathResolution, PathResolutionPerNs, Semantics, SemanticsImpl, SemanticsScope, TypeInfo,
+        VisibleTraits,
+    },
+};
+
 pub use {
     cfg::{CfgAtom, CfgExpr, CfgOptions},
     hir_def::{
@@ -133,20 +147,10 @@ pub use {
     // FIXME: Properly encapsulate mir
     hir_ty::mir,
 };
+
 use {
     hir_def::expr_store::path::Path,
     hir_expand::{name::AsName, span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef}},
-};
-
-use crate::db::{DefDatabase, HirDatabase};
-pub use crate::{
-    attrs::{resolve_doc_path_on, HasAttrs},
-    diagnostics::*,
-    has_source::HasSource,
-    semantics::{
-        PathResolution, PathResolutionPerNs, Semantics, SemanticsImpl, SemanticsScope, TypeInfo,
-        VisibleTraits,
-    },
 };
 
 /// hir::Crate describes a single crate. It's the main interface with which
@@ -6481,3 +6485,6 @@ fn has_non_default_type_params(db: &dyn HirDatabase, generic_def: GenericDefId) 
             defaults.get(param).is_none()
         })
 }
+
+pub use hir_ty::next_solver;
+pub use hir_ty::setup_tracing;

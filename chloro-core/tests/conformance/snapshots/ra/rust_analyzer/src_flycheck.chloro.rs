@@ -9,9 +9,6 @@ use std::{
 };
 
 use cargo_metadata::PackageId;
-pub(crate) use cargo_metadata::diagnostic::{
-    Applicability, Diagnostic, DiagnosticCode, DiagnosticLevel, DiagnosticSpan,
-};
 use crossbeam_channel::{select_biased, unbounded, Receiver, Sender};
 use ide_db::FxHashSet;
 use itertools::Itertools;
@@ -20,6 +17,10 @@ use project_model::TargetDirectoryConfig;
 use rustc_hash::FxHashMap;
 use serde::Deserialize as _;
 use serde_derive::Deserialize;
+
+pub(crate) use cargo_metadata::diagnostic::{
+    Applicability, Diagnostic, DiagnosticCode, DiagnosticLevel, DiagnosticSpan,
+};
 use toolchain::Tool;
 use triomphe::Arc;
 

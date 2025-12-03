@@ -10,7 +10,17 @@
 //! a debugging aid.
 
 
+/// Any toolchain less than this version will likely not work with rust-analyzer built from this revision.
+pub const MINIMUM_SUPPORTED_TOOLCHAIN_VERSION: semver::Version = semver::Version {
+    major: 1,
+    minor: 78,
+    patch: 0,
+    pre: semver::Prerelease::EMPTY,
+    build: semver::BuildMetadata::EMPTY,
+};
+
 pub mod cli;
+
 mod command;
 mod diagnostics;
 mod discover;
@@ -24,41 +34,34 @@ mod target_spec;
 mod task_pool;
 mod test_runner;
 mod version;
-pub mod config;
-mod global_state;
-pub mod lsp;
-
-use serde::de::DeserializeOwned;
-pub(crate) use try_default_ as try_default;
-
-pub use crate::{
-    lsp::capabilities::server_capabilities, main_loop::main_loop, reload::ws_to_crate_graph,
-    version::version,
-};
-use self::lsp::ext as lsp_ext;
-
-/// Any toolchain less than this version will likely not work with rust-analyzer built from this revision.
-pub const MINIMUM_SUPPORTED_TOOLCHAIN_VERSION: semver::Version = semver::Version {
-    major: 1,
-    minor: 78,
-    patch: 0,
-    pre: semver::Prerelease::EMPTY,
-    build: semver::BuildMetadata::EMPTY,
-};
 
 mod handlers {
     pub(crate) mod dispatch;
     pub(crate) mod notification;
     pub(crate) mod request;
 }
+
 pub mod tracing {
     pub mod config;
     pub mod json;
     pub use config::Config;
     pub mod hprof;
 }
+
+pub mod config;
+mod global_state;
+pub mod lsp;
+use self::lsp::ext as lsp_ext;
+
 #[cfg(test)]
 mod integrated_benchmarks;
+
+use serde::de::DeserializeOwned;
+
+pub use crate::{
+    lsp::capabilities::server_capabilities, main_loop::main_loop, reload::ws_to_crate_graph,
+    version::version,
+};
 
 pub fn from_json<T: DeserializeOwned>(
     what: &'static str,
@@ -78,6 +81,7 @@ macro_rules! try_default_ {
         }
     };
 }
+pub(crate) use try_default_ as try_default;
 
 #[cfg(feature = "dhat")]
 #[global_allocator]

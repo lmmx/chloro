@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45287 bytes
+Chloro size:   45288 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
@@ -40,10 +40,8 @@ Rustfmt size:  45518 bytes
 -use crate::{LifetimeParamId, signatures::StructFlags};
 +use crate::{signatures::StructFlags, LifetimeParamId};
  use crate::{item_tree::FieldsShape, signatures::FieldData};
--
- use super::*;
  
- macro_rules! w {
+ use super::*;
      }
  }
  

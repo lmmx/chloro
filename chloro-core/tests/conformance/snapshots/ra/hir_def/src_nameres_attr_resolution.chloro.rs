@@ -17,6 +17,7 @@ use crate::{
     nameres::{path_resolution::ResolveMode, LocalDefMap},
     AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
 };
+
 use super::{DefMap, MacroSubNs};
 
 pub enum ResolvedAttr {

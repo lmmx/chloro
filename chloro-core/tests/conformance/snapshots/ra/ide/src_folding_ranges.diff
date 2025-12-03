@@ -9,24 +9,19 @@ Rustfmt size:  18809 bytes
 
 === DIFF (- rustfmt, + chloro) ===
 -use ide_db::{FxHashSet, syntax_helpers::node_ext::vis_eq};
--use syntax::{
--    Direction, NodeOrToken, SourceFile,
--    SyntaxKind::{self, *},
--    SyntaxNode, TextRange, TextSize,
--    ast::{self, AstNode, AstToken},
--    match_ast,
--};
--
- use std::hash::Hash;
- 
 +use ide_db::{syntax_helpers::node_ext::vis_eq, FxHashSet};
-+use syntax::{
+ use syntax::{
+-    Direction, NodeOrToken, SourceFile,
 +    ast::{self, AstNode, AstToken},
 +    match_ast, Direction, NodeOrToken, SourceFile,
-+    SyntaxKind::{self, *},
-+    SyntaxNode, TextRange, TextSize,
-+};
-+
+     SyntaxKind::{self, *},
+     SyntaxNode, TextRange, TextSize,
+-    ast::{self, AstNode, AstToken},
+-    match_ast,
+ };
+ 
+ use std::hash::Hash;
+ 
  const REGION_START: &str = "// region:";
 +
  const REGION_END: &str = "// endregion";

@@ -6,7 +6,6 @@
 
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
-pub use hir_def::VariantId;
 use hir_def::{
     expr_store::{
         hir_assoc_type_binding_to_ast, hir_generic_arg_to_ast, hir_segment_to_ast_segment,
@@ -22,10 +21,6 @@ use hir_ty::{
     CastError, InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource,
     PathLoweringDiagnostic, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
 };
-pub use hir_ty::{
-    diagnostics::{CaseType, IncorrectCase},
-    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
-};
 use syntax::{
     ast::{self, HasGenericArgs},
     match_ast, AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
@@ -33,6 +28,12 @@ use syntax::{
 use triomphe::Arc;
 
 use crate::{AssocItem, Field, Function, GenericDef, Local, Trait, Type};
+
+pub use hir_def::VariantId;
+pub use hir_ty::{
+    diagnostics::{CaseType, IncorrectCase},
+    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
+};
 
 macro_rules! diagnostics {
     ($AnyDiagnostic:ident <$db:lifetime> -> $($diag:ident $(<$lt:lifetime>)?,)*) => {

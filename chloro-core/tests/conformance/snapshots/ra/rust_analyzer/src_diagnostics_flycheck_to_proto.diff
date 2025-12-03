@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 77855 bytes
-Chloro size:   77866 bytes
+Chloro size:   77868 bytes
 Rustfmt size:  77855 bytes
 
 ✗ Outputs DIFFER
@@ -19,14 +19,10 @@ Rustfmt size:  77855 bytes
  use vfs::{AbsPath, AbsPathBuf};
  
 +use crate::flycheck::{Applicability, DiagnosticLevel, DiagnosticSpan};
++
  use crate::{
      global_state::GlobalStateSnapshot, line_index::PositionEncoding,
      lsp::to_proto::url_from_abs_path, lsp_ext,
- };
--
- use super::{DiagnosticsMapConfig, Fix};
- 
- /// Determines the LSP severity from a diagnostic
      match config
          .remap_prefix
          .iter()

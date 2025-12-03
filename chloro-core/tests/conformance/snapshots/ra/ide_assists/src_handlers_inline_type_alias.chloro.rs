@@ -19,6 +19,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
     AssistId,
 };
+
 use super::inline_call::split_refs_and_uses;
 
 pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

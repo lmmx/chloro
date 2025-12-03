@@ -18,6 +18,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, Assists};
+
 use super::remove_unused_param::range_to_remove;
 
 pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

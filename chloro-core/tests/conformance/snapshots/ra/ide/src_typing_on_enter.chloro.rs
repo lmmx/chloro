@@ -2,7 +2,6 @@
 //! comments, but should handle indent some time in the future as well.
 
 use ide_db::base_db::RootQueryDb;
-use ide_db::text_edit::TextEdit;
 use ide_db::{FilePosition, RootDatabase};
 use syntax::{
     algo::find_node_at_offset,
@@ -11,6 +10,8 @@ use syntax::{
     SyntaxKind::*,
     SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset,
 };
+
+use ide_db::text_edit::TextEdit;
 
 pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
     let editioned_file_id_wrapper =

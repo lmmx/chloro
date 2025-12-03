@@ -14,7 +14,7 @@ mod traitdef;
 mod typealias;
 mod useitem;
 
-use ra_ap_syntax::ast::{Attr, Comment, Module, Use};
+use ra_ap_syntax::ast::{Attr, Comment, Use};
 use ra_ap_syntax::{AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
@@ -24,7 +24,6 @@ pub use debug::{debug_children_with_tokens, debug_node_siblings};
 pub use enumdef::format_enum;
 pub use function::format_function;
 pub use implblock::format_impl;
-pub use imports::sort_and_format_imports;
 pub use macrocall::format_macro_call;
 pub use module::format_module;
 pub use structdef::format_struct;
@@ -76,7 +75,6 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
                 | SyntaxKind::CONST
                 | SyntaxKind::STATIC
                 | SyntaxKind::TYPE_ALIAS
-                | SyntaxKind::USE
                 | SyntaxKind::TRAIT
                 | SyntaxKind::MACRO_RULES
                 | SyntaxKind::MACRO_DEF
@@ -95,15 +93,59 @@ struct ItemWithComments {
     blank_line_before: bool,
 }
 
+fn sort_use_groups(items: &mut Vec<ItemWithComments>) {
+    let mut i = 0;
+    while i < items.len() {
+        if let NodeOrToken::Node(n) = &items[i].node {
+            if n.kind() == SyntaxKind::USE {
+                let start = i;
+                let mut end = i + 1;
+                while end < items.len() {
+                    if let NodeOrToken::Node(n) = &items[end].node {
+                        if n.kind() == SyntaxKind::USE && !items[end].blank_line_before {
+                            end += 1;
+                            continue;
+                        }
+                    }
+                    break;
+                }
+                if end > start + 1 {
+                    items[start..end].sort_by(|a, b| {
+                        let use_a = match &a.node {
+                            NodeOrToken::Node(n) => Use::cast(n.clone()),
+                            _ => None,
+                        };
+                        let use_b = match &b.node {
+                            NodeOrToken::Node(n) => Use::cast(n.clone()),
+                            _ => None,
+                        };
+                        match (use_a, use_b) {
+                            (Some(a), Some(b)) => {
+                                let (group_a, path_a) = imports::classify_import(&a);
+                                let (group_b, path_b) = imports::classify_import(&b);
+                                group_a.cmp(&group_b).then_with(|| {
+                                    useitem::sort::sort_key(&path_a)
+                                        .cmp(&useitem::sort::sort_key(&path_b))
+                                })
+                            }
+                            _ => std::cmp::Ordering::Equal,
+                        }
+                    });
+                }
+                i = end;
+                continue;
+            }
+        }
+        i += 1;
+    }
+}
+
 /// Main node formatting dispatcher
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
             let mut module_inner_docs = Vec::new();
             let mut inner_attrs: Vec<(Vec<Comment>, Attr)> = Vec::new();
-            let mut extern_crates: Vec<(Vec<Comment>, SyntaxNode)> = Vec::new();
-            let mut mod_decls: Vec<(Vec<Comment>, SyntaxNode)> = Vec::new();
-            let mut use_items_with_comments = Vec::new();
             let mut other_items: Vec<ItemWithComments> = Vec::new();
 
             let mut pending_comments: Vec<Comment> = Vec::new();
@@ -111,101 +153,33 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
             let children: Vec<_> = node.children_with_tokens().collect();
 
-            for (idx, child) in children.iter().enumerate() {
+            for child in children.iter() {
                 match child {
-                    NodeOrToken::Node(n) => {
-                        match n.kind() {
-                            SyntaxKind::ATTR => {
-                                if let Some(attr) = Attr::cast(n.clone()) {
-                                    if attr.excl_token().is_some() {
-                                        inner_attrs
-                                            .push((std::mem::take(&mut pending_comments), attr));
-                                        pending_blank_line = false;
-                                    } else {
-                                        other_items.push(ItemWithComments {
-                                            comments: std::mem::take(&mut pending_comments),
-                                            node: NodeOrToken::Node(n.clone()),
-                                            blank_line_before: pending_blank_line,
-                                        });
-                                        pending_blank_line = false;
-                                    }
-                                }
-                            }
-                            SyntaxKind::EXTERN_CRATE => {
-                                extern_crates
-                                    .push((std::mem::take(&mut pending_comments), n.clone()));
-                                pending_blank_line = false;
-                            }
-                            SyntaxKind::MODULE => {
-                                if let Some(module) = Module::cast(n.clone())
-                                    && module.item_list().is_none()
-                                {
-                                    // Only group mod declarations at the top, before any use statements
-                                    // Once we've seen use statements, preserve the original order
-                                    if use_items_with_comments.is_empty() {
-                                        mod_decls.push((
-                                            std::mem::take(&mut pending_comments),
-                                            n.clone(),
-                                        ));
-                                        pending_blank_line = false;
-                                        continue;
-                                    }
-                                }
-                                other_items.push(ItemWithComments {
-                                    comments: std::mem::take(&mut pending_comments),
-                                    node: NodeOrToken::Node(n.clone()),
-                                    blank_line_before: pending_blank_line,
-                                });
-                                pending_blank_line = false;
-                            }
-                            SyntaxKind::USE => {
-                                if let Some(use_) = Use::cast(n.clone()) {
-                                    // Collect comments before this use
-                                    let before: Vec<_> = std::mem::take(&mut pending_comments);
-
-                                    // Now collect trailing comments/content after this use
-                                    let mut trailing = Vec::new();
-                                    let mut next_idx = idx + 1;
-
-                                    while next_idx < children.len() {
-                                        match &children[next_idx] {
-                                            NodeOrToken::Token(t)
-                                                if t.kind() == SyntaxKind::COMMENT =>
-                                            {
-                                                if let Some(comment) = Comment::cast(t.clone()) {
-                                                    trailing.push(comment);
-                                                }
-                                                next_idx += 1;
-                                            }
-                                            NodeOrToken::Token(t)
-                                                if t.kind() == SyntaxKind::WHITESPACE =>
-                                            {
-                                                // Check if this is just a newline or contains multiple newlines
-                                                let text = t.text();
-                                                if text.matches('\n').count() >= 2 {
-                                                    // Double newline = end of comment block
-                                                    break;
-                                                }
-                                                next_idx += 1;
-                                            }
-                                            _ => break,
-                                        }
-                                    }
-
-                                    use_items_with_comments.push((before, use_, trailing));
+                    NodeOrToken::Node(n) => match n.kind() {
+                        SyntaxKind::ATTR => {
+                            if let Some(attr) = Attr::cast(n.clone()) {
+                                if attr.excl_token().is_some() {
+                                    inner_attrs.push((std::mem::take(&mut pending_comments), attr));
+                                    pending_blank_line = false;
+                                } else {
+                                    other_items.push(ItemWithComments {
+                                        comments: std::mem::take(&mut pending_comments),
+                                        node: NodeOrToken::Node(n.clone()),
+                                        blank_line_before: pending_blank_line,
+                                    });
                                     pending_blank_line = false;
                                 }
                             }
-                            _ => {
-                                other_items.push(ItemWithComments {
-                                    comments: std::mem::take(&mut pending_comments),
-                                    node: NodeOrToken::Node(n.clone()),
-                                    blank_line_before: pending_blank_line,
-                                });
-                                pending_blank_line = false;
-                            }
                         }
-                    }
+                        _ => {
+                            other_items.push(ItemWithComments {
+                                comments: std::mem::take(&mut pending_comments),
+                                node: NodeOrToken::Node(n.clone()),
+                                blank_line_before: pending_blank_line,
+                            });
+                            pending_blank_line = false;
+                        }
+                    },
                     NodeOrToken::Token(t) => {
                         if t.kind() == SyntaxKind::COMMENT {
                             if let Some(comment) = Comment::cast(t.clone()) {
@@ -216,7 +190,6 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 }
                             }
                         } else if t.kind() == SyntaxKind::WHITESPACE {
-                            // Check for blank lines
                             if t.text().matches('\n').count() >= 2 {
                                 pending_blank_line = true;
                             }
@@ -225,7 +198,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
 
-            // If there are leftover pending comments (at the end of file), add them to other_items
+            // Leftover comments
             if !pending_comments.is_empty() {
                 for comment in pending_comments {
                     other_items.push(ItemWithComments {
@@ -237,86 +210,33 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
 
-            // 1. Module-level inner doc comments
+            // Sort contiguous USE groups in place
+            sort_use_groups(&mut other_items);
+
+            // Output
             for doc in &module_inner_docs {
                 buf.push_str(doc.text());
                 buf.push('\n');
             }
 
-            // 2. Inner attributes
             if !module_inner_docs.is_empty() && !inner_attrs.is_empty() {
-                buf.push('\n');
+                buf.blank();
             }
             for (comments, attr) in &inner_attrs {
                 for comment in comments {
-                    buf.push_str(comment.text());
-                    buf.push('\n');
+                    buf.newline(comment.text());
                 }
-                buf.push_str(attr.syntax().text().to_string().as_str());
-                buf.push('\n');
+                buf.newline(&attr.syntax().text().to_string());
             }
 
-            let has_preamble = !inner_attrs.is_empty() || !module_inner_docs.is_empty();
-            let has_content = !extern_crates.is_empty()
-                || !mod_decls.is_empty()
-                || !use_items_with_comments.is_empty()
-                || !other_items.is_empty();
-
-            if has_preamble && has_content {
-                buf.push('\n');
-            }
-
-            // 3. Extern crate declarations
-            for (comments, extern_crate) in &extern_crates {
-                for comment in comments {
-                    buf.push_str(comment.text());
-                    buf.push('\n');
-                }
-                format_node(extern_crate, buf, indent);
-            }
-            if !extern_crates.is_empty()
-                && (!mod_decls.is_empty()
-                    || !use_items_with_comments.is_empty()
-                    || !other_items.is_empty())
+            if (!inner_attrs.is_empty() || !module_inner_docs.is_empty()) && !other_items.is_empty()
             {
-                buf.push('\n');
+                buf.blank();
             }
 
-            // 4. Module declarations
-            for (comments, mod_decl) in &mod_decls {
-                for comment in comments {
-                    buf.push_str(comment.text());
-                    buf.push('\n');
-                }
-                format_node(mod_decl, buf, indent);
-            }
-            if !mod_decls.is_empty()
-                && (!use_items_with_comments.is_empty() || !other_items.is_empty())
-            {
-                buf.push('\n');
-            }
-
-            // 5. Use statements with their trailing comments (SORTED)
-            if !use_items_with_comments.is_empty() {
-                sort_and_format_imports(&use_items_with_comments, buf, indent);
-                if !other_items.is_empty() {
-                    buf.push('\n');
-                }
-            }
-
-            // 6. Everything else
-            let mut last_kind: Option<SyntaxKind> = if !use_items_with_comments.is_empty() {
-                Some(SyntaxKind::USE)
-            } else if !mod_decls.is_empty() {
-                Some(SyntaxKind::MODULE)
-            } else {
-                None
-            };
-
+            let mut last_kind: Option<SyntaxKind> = None;
             for item in other_items {
-                // Output preceding comments
                 for comment in &item.comments {
-                    // Add blank line before comment block if there was one in original
                     if item.blank_line_before && last_kind.is_some() {
                         buf.blank();
                     }
@@ -326,17 +246,17 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 match item.node {
                     NodeOrToken::Node(n) => {
                         let current_kind = n.kind();
-                        // Add blank line between major items (but comments already added their blank line)
-                        if item.comments.is_empty()
-                            && should_add_blank_line(last_kind, current_kind)
-                        {
-                            buf.blank();
+                        if item.comments.is_empty() {
+                            if item.blank_line_before && last_kind.is_some() {
+                                buf.blank();
+                            } else if should_add_blank_line(last_kind, current_kind) {
+                                buf.blank();
+                            }
                         }
                         format_node(&n, buf, indent);
                         last_kind = Some(current_kind);
                     }
                     NodeOrToken::Token(t) => {
-                        // Standalone token (like a trailing comment)
                         if t.kind() == SyntaxKind::COMMENT {
                             buf.newline(t.text());
                         }

@@ -4,7 +4,6 @@
 //! It can be viewed as a dual for `Change`.
 
 use std::{collections::hash_map::Entry, fmt, iter, mem};
-
 use base_db::AnchoredPathBuf;
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;

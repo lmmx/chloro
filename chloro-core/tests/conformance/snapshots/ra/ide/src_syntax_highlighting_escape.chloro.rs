@@ -2,7 +2,6 @@
 
 use syntax::ast::{Byte, Char, IsString};
 use syntax::{AstToken, TextRange, TextSize};
-
 use crate::syntax_highlighting::highlights::Highlights;
 use crate::{HlRange, HlTag};
 

@@ -17,6 +17,7 @@ use crate::{
     next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, GenericArgs, Ty, TypingMode},
     TraitEnvironment,
 };
+
 use super::{
     BasicBlockId, BorrowKind, LocalId, MirBody, MirLowerError, MirSpan, MutBorrowKind, Operand,
     Place, ProjectionElem, Rvalue, StatementKind, TerminatorKind,

@@ -16,19 +16,11 @@ Rustfmt size:  23115 bytes
      VersionedTextDocumentIdentifier,
  };
  use paths::Utf8PathBuf;
--
- use rust_analyzer::config::Config;
- use rust_analyzer::lsp::ext::{
-     InternalTestingFetchConfig, InternalTestingFetchConfigOption, InternalTestingFetchConfigParams,
- use serde_json::json;
- use test_utils::skip_slow_tests;
- 
 +use crate::support::{Project, Server};
 +use crate::testdir::TestDir;
-+
- struct RatomlTest {
-     urls: Vec<Url>,
-     server: Server,
+ 
+ use rust_analyzer::config::Config;
+ use rust_analyzer::lsp::ext::{
  
  impl RatomlTest {
      const EMIT_MUST_USE: &'static str = r#"assist.emitMustUse = true"#;

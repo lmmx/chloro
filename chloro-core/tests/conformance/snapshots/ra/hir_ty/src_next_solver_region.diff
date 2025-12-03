@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11497 bytes
-Chloro size:   11567 bytes
+Chloro size:   11568 bytes
 Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- 
- use crate::next_solver::{GenericArg, OutlivesPredicate};
--
- use super::{
-     interned_vec_db,
-     interner::{BoundVarKind, DbInterner, Placeholder},
          index: DebruijnIndex,
          bound: BoundRegion,
      ) -> Region<'db> {

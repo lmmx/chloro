@@ -2,19 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12477 bytes
-Chloro size:   12454 bytes
+Chloro size:   12455 bytes
 Rustfmt size:  12826 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! node for a *child*, and get its hir.
  
- use either::Either;
--use hir_expand::{attrs::collect_attrs, HirFileId};
--use span::AstIdNode;
--use syntax::{ast, AstPtr};
--
  use hir_def::{
      db::DefDatabase,
 -    dyn_map::{
@@ -25,15 +19,6 @@ Rustfmt size:  12826 bytes
      hir::generics::GenericParams,
      item_scope::ItemScope,
      nameres::DefMap,
-     LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
-     VariantId,
- };
-+use hir_expand::{attrs::collect_attrs, HirFileId};
-+use span::AstIdNode;
-+use syntax::{ast, AstPtr};
- 
- pub(crate) trait ChildBySource {
-     fn child_by_source(&self, db: &dyn DefDatabase, file_id: HirFileId) -> DynMap {
          self.child_by_source_to(db, &mut res, file_id);
          res
      }

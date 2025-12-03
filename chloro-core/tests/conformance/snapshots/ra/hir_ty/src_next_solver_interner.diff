@@ -2,31 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81767 bytes
+Chloro size:   81772 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Things related to the Interner in the next-trait-solver.
- 
- use std::{fmt, ops::ControlFlow};
- 
--pub use tls_cache::clear_tls_solver_cache;
--pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
--
- use base_db::Crate;
- use hir_def::{
-     lang_item::LangItem,
-     EarlyBinder, FlagComputation, Flags, GenericArgKind, ImplPolarity, InferTy, Interner, TraitRef,
-     TypeVisitableExt, UniverseIndex, Upcast, Variance,
- };
-+pub use tls_cache::clear_tls_solver_cache;
-+pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
- 
-+pub use crate::_interned_vec_db as interned_vec_db;
-+pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
- use crate::{
      db::{HirDatabase, InternedCoroutine, InternedCoroutineId},
      method_resolution::{TyFingerprint, ALL_FLOAT_FPS, ALL_INT_FPS},
      next_solver::{
@@ -41,9 +22,6 @@ Rustfmt size:  84055 bytes
      },
      FnAbi,
  };
--
- use super::{
-     abi::Safety,
      fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
      generics::{generics, Generics},
      region::{
@@ -76,14 +54,6 @@ Rustfmt size:  84055 bytes
              }
  
              pub fn inner(&self) -> &smallvec::SmallVec<[$ty; 2]> {
-     };
- }
- 
--pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
--
- #[macro_export]
- #[doc(hidden)]
- macro_rules! _interned_vec_db {
                  folder: &mut F,
              ) -> Result<Self, F::Error> {
                  use rustc_type_ir::inherent::SliceLike as _;
@@ -107,14 +77,6 @@ Rustfmt size:  84055 bytes
              }
  
              pub fn inner(&self) -> &smallvec::SmallVec<[$ty<'db>; 2]> {
-     };
- }
- 
--pub use crate::_interned_vec_db as interned_vec_db;
--
- #[derive(Debug, Copy, Clone)]
- pub struct DbInterner<'db> {
-     pub(crate) db: &'db dyn HirDatabase,
      pub(crate) block: Option<BlockId>,
  }
  
@@ -763,7 +725,7 @@ Rustfmt size:  84055 bytes
 +        GLOBAL_DB.with(#[inline] |a| a.with(op))
      }
  }
--
+ 
  mod tls_cache {
      use crate::db::HirDatabase;
 -

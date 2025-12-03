@@ -5,6 +5,7 @@ use ide_db::{
     assists::{AssistId, GroupLabel},
     famous_defs::FamousDefs,
 };
+
 use itertools::Itertools;
 use syntax::{ast, AstNode};
 

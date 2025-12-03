@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5844 bytes
-Chloro size:   5815 bytes
+Chloro size:   5816 bytes
 Rustfmt size:  5887 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,9 @@ Rustfmt size:  5887 bytes
  use std::ops::ControlFlow;
  
  use either::Either;
- use hir::{import_map, Complete, Crate, ItemInNs, Module};
-+pub use import_map::AssocSearchMode;
  
- use crate::{
-     imports::import_assets::NameToImport,
- /// A value to use, when uncertain which limit to pick.
- pub const DEFAULT_QUERY_SEARCH_LIMIT: usize = 100;
+ pub use import_map::AssocSearchMode;
  
--pub use import_map::AssocSearchMode;
--
 -// FIXME: Do callbacks instead to avoid allocations.
  /// Searches for importable items with the given name in the crate and its dependencies.
  pub fn items_with_name(

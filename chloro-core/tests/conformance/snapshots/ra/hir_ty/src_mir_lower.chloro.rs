@@ -46,6 +46,7 @@ use crate::{
     traits::FnTrait,
     Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,
 };
+
 use super::OperandKind;
 
 mod as_place;

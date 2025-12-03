@@ -5,6 +5,10 @@
 //! node for a *child*, and get its hir.
 
 use either::Either;
+use hir_expand::{attrs::collect_attrs, HirFileId};
+use span::AstIdNode;
+use syntax::{ast, AstPtr};
+
 use hir_def::{
     db::DefDatabase,
     dyn_map::{keys::{self, Key}, DynMap},
@@ -16,9 +20,6 @@ use hir_def::{
     LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
     VariantId,
 };
-use hir_expand::{attrs::collect_attrs, HirFileId};
-use span::AstIdNode;
-use syntax::{ast, AstPtr};
 
 pub(crate) trait ChildBySource {
     fn child_by_source(&self, db: &dyn DefDatabase, file_id: HirFileId) -> DynMap {

@@ -10,18 +10,49 @@
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 
 #[cfg(feature = "in-rust-tree")]
+
 #[cfg(not(feature = "in-rust-tree"))]
 
+
 pub mod db;
+
 pub mod attr;
 pub mod builtin_type;
 pub mod item_scope;
 pub mod per_ns;
+
 pub mod signatures;
+
 pub mod dyn_map;
+
 pub mod item_tree;
+
 pub mod lang_item;
+
 pub mod hir;
+pub use self::hir::type_ref;
+pub mod expr_store;
+pub mod resolver;
+
+pub mod nameres;
+
+pub mod src;
+
+pub mod find_path;
+pub mod import_map;
+pub mod visibility;
+
+use intern::{sym, Interned, Symbol};
+pub use rustc_abi as layout;
+use thin_vec::ThinVec;
+use triomphe::Arc;
+
+pub use crate::signatures::LocalFieldId;
+
+#[cfg(test)]
+mod macro_expansion_tests;
+#[cfg(test)]
+mod test_db;
 
 use std::hash::{Hash, Hasher};
 
@@ -37,18 +68,14 @@ use hir_expand::{
     AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
     MacroDefKind,
 };
-pub use hir_expand::{tt, Intern, Lookup};
-use intern::{sym, Interned, Symbol};
 use la_arena::Idx;
 use nameres::DefMap;
-pub use rustc_abi as layout;
 use span::{AstIdNode, Edition, FileAstId, SyntaxContext};
 use stdx::impl_from;
 use syntax::{ast, AstNode};
-use thin_vec::ThinVec;
-use triomphe::Arc;
 
-pub use crate::signatures::LocalFieldId;
+pub use hir_expand::{tt, Intern, Lookup};
+
 use crate::{
     attr::Attrs,
     builtin_type::BuiltinType,
@@ -61,19 +88,6 @@ use crate::{
     },
     signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
 };
-pub use self::hir::type_ref;
-
-pub mod expr_store;
-pub mod resolver;
-pub mod nameres;
-pub mod src;
-pub mod find_path;
-pub mod import_map;
-pub mod visibility;
-#[cfg(test)]
-mod macro_expansion_tests;
-#[cfg(test)]
-mod test_db;
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
 

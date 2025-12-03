@@ -2,26 +2,20 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30817 bytes
+Chloro size:   30819 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Extracts, resolves and rewrites links and intra-doc links in markdown documentation.
- 
- #[cfg(test)]
- mod tests;
--
- mod intra_doc_links;
- 
  use std::ops::Range;
  
--use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
+ use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
 -use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
--use stdx::format_to;
--use url::Url;
--
++use pulldown_cmark_to_cmark::{cmark_resume_with_options, Options as CMarkOptions};
+ use stdx::format_to;
+ use url::Url;
+ 
  use hir::{
 -    Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs, db::HirDatabase, sym,
 +    db::HirDatabase, sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner,
@@ -36,9 +30,6 @@ Rustfmt size:  31554 bytes
      helpers::pick_best_token,
 +    RootDatabase,
  };
-+use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
-+use pulldown_cmark_to_cmark::{cmark_resume_with_options, Options as CMarkOptions};
-+use stdx::format_to;
  use syntax::{
 -    AstNode, AstToken,
 -    SyntaxKind::*,
@@ -49,7 +40,6 @@ Rustfmt size:  31554 bytes
 +    SyntaxKind::*,
 +    SyntaxNode, SyntaxToken, TextRange, TextSize, T,
  };
-+use url::Url;
  
  use crate::{
 -    FilePosition, Semantics,

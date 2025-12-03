@@ -13,8 +13,10 @@
 
 #[cfg(test)]
 mod fixture;
+
 mod markup;
 mod navigation_target;
+
 mod annotations;
 mod call_hierarchy;
 mod child_modules;
@@ -59,8 +61,22 @@ use std::panic::{AssertUnwindSafe, UnwindSafe};
 
 use cfg::CfgOptions;
 use fetch_crates::CrateInfo;
-pub use hir::Semantics;
 use hir::{crate_def_map, sym, ChangeWithProcMacros, EditionedFileId};
+use ide_db::{
+    base_db::{
+        salsa::Cancelled, CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb,
+        SourceDatabase, VfsPath,
+    },
+    prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
+};
+use ide_db::{ra_fixture::RaFixtureAnalysis, MiniCore};
+use macros::UpmapFromRaFixture;
+use syntax::{ast, SourceFile};
+use triomphe::Arc;
+use view_memory_layout::{view_memory_layout, RecursiveMemoryLayout};
+
+use crate::navigation_target::ToNav;
+pub use hir::Semantics;
 pub use ide_assists::{
     Assist, AssistConfig, AssistId, AssistKind, AssistResolveStrategy, SingleResolve,
 };
@@ -81,24 +97,11 @@ pub use ide_db::{
     text_edit::{Indel, TextEdit},
     FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
 };
-use ide_db::{
-    base_db::{
-        salsa::Cancelled, CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb,
-        SourceDatabase, VfsPath,
-    },
-    prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
-};
-use ide_db::{ra_fixture::RaFixtureAnalysis, MiniCore};
 pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
 pub use ide_ssr::SsrError;
-use macros::UpmapFromRaFixture;
 pub use span::Edition;
-use syntax::{ast, SourceFile};
 pub use syntax::{TextRange, TextSize};
-use triomphe::Arc;
-use view_memory_layout::{view_memory_layout, RecursiveMemoryLayout};
 
-use crate::navigation_target::ToNav;
 pub use crate::{
     annotations::{Annotation, AnnotationConfig, AnnotationKind, AnnotationLocation},
     call_hierarchy::{CallHierarchyConfig, CallItem},

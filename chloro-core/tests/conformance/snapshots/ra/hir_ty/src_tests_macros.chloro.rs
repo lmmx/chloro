@@ -2,6 +2,7 @@ use expect_test::expect;
 use test_utils::{bench, bench_fixture, skip_slow_tests};
 
 use crate::tests::{check_infer_with_mismatches, check_no_mismatches};
+
 use super::{check_infer, check_types};
 
 #[test]

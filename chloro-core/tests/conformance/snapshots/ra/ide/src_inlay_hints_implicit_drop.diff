@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7526 bytes
-Chloro size:   7508 bytes
+Chloro size:   7509 bytes
 Rustfmt size:  7585 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  7585 bytes
  use hir::{
      db::{DefDatabase as _, HirDatabase as _},
      mir::{MirSpan, TerminatorKind},
-     DefWithBody,
- };
- use ide_db::{famous_defs::FamousDefs, FileRange};
--
- use syntax::{
-     ast::{self, AstNode},
-     match_ast, ToSmolStr,
                  MirSpan::Unknown => continue,
              };
              let binding = &hir[binding_idx];

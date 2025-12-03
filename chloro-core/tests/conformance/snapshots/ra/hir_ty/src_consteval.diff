@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10586 bytes
-Chloro size:   10283 bytes
+Chloro size:   10284 bytes
 Rustfmt size:  10586 bytes
 
 ✗ Outputs DIFFER
@@ -31,10 +31,8 @@ Rustfmt size:  10586 bytes
      },
 +    LifetimeElisionKind, MemoryMap, TraitEnvironment, TyLoweringContext,
  };
--
- use super::mir::{interpret_mir, lower_to_mir, pad16};
  
- pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {
+ use super::mir::{interpret_mir, lower_to_mir, pad16};
  }
  
  /// Interns a possibly-unknown target usize

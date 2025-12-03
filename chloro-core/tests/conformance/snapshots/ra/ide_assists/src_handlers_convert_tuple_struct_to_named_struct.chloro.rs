@@ -1,5 +1,4 @@
 use std::ops::RangeInclusive;
-
 use either::Either;
 use hir::FileRangeWrapper;
 use ide_db::defs::{Definition, NameRefClass};

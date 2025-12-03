@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20501 bytes
+Chloro size:   20502 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -13,9 +13,7 @@ Rustfmt size:  20506 bytes
  #[cfg(test)]
  mod tests;
  
- use std::cmp::Ordering;
  
-+pub use hir::PrefixKind;
  use hir::Semantics;
  use syntax::{
 -    Direction, NodeOrToken, SyntaxKind, SyntaxNode, algo,
@@ -41,11 +39,7 @@ Rustfmt size:  20506 bytes
 +    RootDatabase,
  };
  
--pub use hir::PrefixKind;
--
- /// How imports should be grouped into use statements.
- #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- pub enum ImportGranularity {
+ pub use hir::PrefixKind;
                  res = ImportGranularityGuess::CrateOrModule;
              }
          }

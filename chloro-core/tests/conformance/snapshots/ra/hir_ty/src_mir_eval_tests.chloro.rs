@@ -12,6 +12,7 @@ use crate::{
     setup_tracing,
     test_db::TestDB,
 };
+
 use super::{interpret_mir, MirEvalError};
 
 fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {

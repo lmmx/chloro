@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28332 bytes
-Chloro size:   28245 bytes
+Chloro size:   28246 bytes
 Rustfmt size:  28759 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,7 @@ Rustfmt size:  28759 bytes
 +
  use hir::{DisplayTarget, Semantics};
  use ide_db::{famous_defs::FamousDefs, RootDatabase};
--
- use itertools::Itertools;
- use syntax::{
-     ast::{self, AstNode, HasGenericArgs, HasName},
+ 
          }
      }?;
  

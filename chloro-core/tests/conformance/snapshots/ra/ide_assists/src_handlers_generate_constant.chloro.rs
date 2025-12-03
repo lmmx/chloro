@@ -8,9 +8,7 @@ use syntax::{
     ast::{self, edit::IndentLevel, NameRef},
     AstNode, Direction, SyntaxKind, TextSize,
 };
-
 use crate::assist_context::{AssistContext, Assists};
-
 
 // Assist: generate_constant
 

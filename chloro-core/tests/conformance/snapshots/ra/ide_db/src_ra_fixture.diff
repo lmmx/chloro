@@ -2,30 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18130 bytes
-Chloro size:   18069 bytes
+Chloro size:   18070 bytes
 Rustfmt size:  18477 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Working with the fixtures in r-a tests, and providing IDE services for them.
- 
- use std::hash::{BuildHasher, Hash};
- 
- use hir::{CfgExpr, FilePositionWrapper, FileRangeWrapper, Semantics, Symbol};
- use smallvec::SmallVec;
-+pub use span::FileId;
- use span::{TextRange, TextSize};
- use syntax::{
-     ast::{self, IsString},
-     search::ReferenceCategory, MiniCore, RootDatabase, SymbolKind,
- };
- 
--pub use span::FileId;
--
- impl RootDatabase {
-     fn from_ra_fixture(
-         text: &str,
                  .map(|(file_id, range)| (file_id.file_id(&db), range))
                  .collect();
              (db, files, fixture.sysroot_files)

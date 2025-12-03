@@ -8,7 +8,6 @@ use hir_expand::{
 };
 use intern::sym;
 use la_arena::ArenaMap;
-use salsa::plumbing::AsId;
 use syntax::{ast, AstPtr};
 use triomphe::Arc;
 
@@ -33,6 +32,8 @@ use crate::{
     ProcMacroLoc, StaticId, StaticLoc, StructId, StructLoc, TraitId, TraitLoc, TypeAliasId,
     TypeAliasLoc, UnionId, UnionLoc, UseId, UseLoc, VariantId,
 };
+
+use salsa::plumbing::AsId;
 
 #[query_group::query_group(InternDatabaseStorage)]
 pub trait InternDatabase {

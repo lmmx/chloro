@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33220 bytes
-Chloro size:   33220 bytes
+Chloro size:   33221 bytes
 Rustfmt size:  33220 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,6 @@ Rustfmt size:  33220 bytes
 +
  use cfg::{CfgExpr, CfgOptions};
  use either::Either;
-+pub use hir_def::VariantId;
  use hir_def::{
 -    DefWithBodyId, GenericParamId, SyntheticSyntax,
      expr_store::{
@@ -37,10 +36,6 @@ Rustfmt size:  33220 bytes
      diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
 +    CastError, InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource,
 +    PathLoweringDiagnostic, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
-+};
-+pub use hir_ty::{
-+    diagnostics::{CaseType, IncorrectCase},
-+    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
  };
  use syntax::{
 -    AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
@@ -50,17 +45,15 @@ Rustfmt size:  33220 bytes
  };
  use triomphe::Arc;
  
- use crate::{AssocItem, Field, Function, GenericDef, Local, Trait, Type};
  
--pub use hir_def::VariantId;
--pub use hir_ty::{
+ pub use hir_def::VariantId;
+ pub use hir_ty::{
 -    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
--    diagnostics::{CaseType, IncorrectCase},
--};
--
+     diagnostics::{CaseType, IncorrectCase},
++    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
+ };
+ 
  macro_rules! diagnostics {
-     ($AnyDiagnostic:ident <$db:lifetime> -> $($diag:ident $(<$lt:lifetime>)?,)*) => {
-         #[derive(Debug)]
          )*
      };
  }

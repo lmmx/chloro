@@ -2,26 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11162 bytes
-Chloro size:   11236 bytes
+Chloro size:   11237 bytes
 Rustfmt size:  11162 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Term search
- 
-+pub use expr::Expr;
- use hir_def::type_ref::Mutability;
- use hir_ty::db::HirDatabase;
- use itertools::Itertools;
- use crate::{ModuleDef, ScopeDef, Semantics, SemanticsScope, Type};
- 
- mod expr;
--pub use expr::Expr;
--
- mod tactics;
- 
- /// Key for lookup table to query new types reached.
                          *self = AlternativeExprs::Many;
                          break;
                      }

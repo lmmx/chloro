@@ -2,25 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12984 bytes
-Chloro size:   11627 bytes
+Chloro size:   11628 bytes
 Rustfmt size:  13116 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Handles the `Enter` key press. At the momently, this only continues
- //! comments, but should handle indent some time in the future as well.
  
- use ide_db::base_db::RootQueryDb;
-+use ide_db::text_edit::TextEdit;
- use ide_db::{FilePosition, RootDatabase};
- use syntax::{
-     algo::find_node_at_offset,
-     SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset,
- };
+ use ide_db::text_edit::TextEdit;
  
--use ide_db::text_edit::TextEdit;
--
 -// Feature: On Enter
 -//
 -// rust-analyzer can override <kbd>Enter</kbd> key to make it smarter:

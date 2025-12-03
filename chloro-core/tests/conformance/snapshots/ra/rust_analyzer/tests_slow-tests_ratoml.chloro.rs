@@ -5,6 +5,9 @@ use lsp_types::{
     VersionedTextDocumentIdentifier,
 };
 use paths::Utf8PathBuf;
+use crate::support::{Project, Server};
+use crate::testdir::TestDir;
+
 use rust_analyzer::config::Config;
 use rust_analyzer::lsp::ext::{
     InternalTestingFetchConfig, InternalTestingFetchConfigOption, InternalTestingFetchConfigParams,
@@ -12,9 +15,6 @@ use rust_analyzer::lsp::ext::{
 };
 use serde_json::json;
 use test_utils::skip_slow_tests;
-
-use crate::support::{Project, Server};
-use crate::testdir::TestDir;
 
 struct RatomlTest {
     urls: Vec<Url>,

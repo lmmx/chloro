@@ -6,6 +6,7 @@
 
 use hir::{DisplayTarget, Semantics};
 use ide_db::{famous_defs::FamousDefs, RootDatabase};
+
 use itertools::Itertools;
 use syntax::{
     ast::{self, AstNode, HasGenericArgs, HasName},

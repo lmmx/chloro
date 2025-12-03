@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23712 bytes
+Chloro size:   23713 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -19,10 +19,6 @@ Rustfmt size:  23725 bytes
  };
  
  use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};
--
- use super::label_of_ty;
- 
- pub(super) fn hints(
          });
  
      // Chaining can be defined as an expression whose next sibling tokens are newline and dot

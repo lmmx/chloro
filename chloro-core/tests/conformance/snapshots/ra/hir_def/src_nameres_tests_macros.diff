@@ -2,17 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27466 bytes
-Chloro size:   27462 bytes
+Chloro size:   27463 bytes
 Rustfmt size:  27512 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use expect_test::expect;
--
- use itertools::Itertools;
- use span::Edition;
- 
  fn unresolved_attributes_fall_back_track_per_file_moditems() {
      // Tests that we track per-file ModItems when ignoring an unresolved attribute.
      // Just tracking the `ModItem` leads to `Foo` getting ignored.

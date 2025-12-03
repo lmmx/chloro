@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8787 bytes
-Chloro size:   8441 bytes
+Chloro size:   8440 bytes
 Rustfmt size:  8787 bytes
 
 ✗ Outputs DIFFER
@@ -23,7 +23,6 @@ Rustfmt size:  8787 bytes
  
  use crate::assist_context::{AssistContext, Assists};
  
-+
  // Assist: desugar_try_expr_match
 +
  //

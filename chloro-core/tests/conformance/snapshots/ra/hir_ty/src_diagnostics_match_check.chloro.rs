@@ -6,6 +6,7 @@
 //! It is modeled on the rustc module `rustc_mir_build::thir::pattern`.
 
 mod pat_util;
+
 pub(crate) mod pat_analysis;
 
 use hir_def::{
@@ -26,6 +27,7 @@ use crate::{
     next_solver::{GenericArgs, Mutability, Ty, TyKind},
     InferenceResult,
 };
+
 use self::pat_util::EnumerateAndAdjustIterator;
 
 #[derive(Clone, Debug)]

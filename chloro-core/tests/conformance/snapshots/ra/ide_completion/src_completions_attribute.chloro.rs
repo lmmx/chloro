@@ -22,7 +22,6 @@ use crate::{
     item::CompletionItem,
     Completions,
 };
-pub(crate) use self::derive::complete_derive_path;
 
 mod cfg;
 mod derive;
@@ -30,6 +29,8 @@ mod diagnostic;
 mod lint;
 mod macro_use;
 mod repr;
+
+pub(crate) use self::derive::complete_derive_path;
 
 /// Complete inputs to known builtin attributes as well as derive attributes
 pub(crate) fn complete_known_attribute_input(

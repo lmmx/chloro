@@ -7,6 +7,7 @@ use hir_def::{
     AdtId, LocalFieldId, StructId,
 };
 use la_arena::{Idx, RawIdx};
+
 use rustc_abi::{
     AddressSpace, Float, Integer, LayoutCalculator, Primitive, ReprOptions, Scalar, StructKind,
     TargetDataLayout, WrappingRange,
@@ -27,6 +28,7 @@ use crate::{
     },
     TraitEnvironment,
 };
+
 pub(crate) use self::adt::layout_of_adt_cycle_result;
 pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
 

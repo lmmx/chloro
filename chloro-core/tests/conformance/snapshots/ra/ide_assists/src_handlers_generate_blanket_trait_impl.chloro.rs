@@ -13,7 +13,6 @@ use syntax::{
     syntax_editor::Position,
     AstNode,
 };
-
 use crate::{
     assist_context::{AssistContext, Assists},
     AssistConfig,

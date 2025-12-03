@@ -19,6 +19,7 @@ use crate::{
     },
     InferenceDiagnostic, ValueTyDefId,
 };
+
 use super::{ExprOrPatId, InferenceContext, InferenceTyDiagnosticSource};
 
 impl<'db> InferenceContext<'_, 'db> {

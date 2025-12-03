@@ -25,6 +25,7 @@ use crate::{
     },
     LifetimeElisionKind, MemoryMap, TraitEnvironment, TyLoweringContext,
 };
+
 use super::mir::{interpret_mir, lower_to_mir, pad16};
 
 pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {

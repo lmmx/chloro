@@ -2,27 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   16206 bytes
+Chloro size:   16207 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     item::CompletionItem,
-     Completions,
- };
-+pub(crate) use self::derive::complete_derive_path;
- 
- mod cfg;
- mod derive;
- mod macro_use;
- mod repr;
- 
--pub(crate) use self::derive::complete_derive_path;
--
- /// Complete inputs to known builtin attributes as well as derive attributes
- pub(crate) fn complete_known_attribute_input(
-     acc: &mut Completions,
  ) -> Option<()> {
      let attribute = fake_attribute_under_caret;
      let path = attribute.path()?;

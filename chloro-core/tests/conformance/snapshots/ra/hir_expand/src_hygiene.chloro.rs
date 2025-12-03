@@ -24,10 +24,11 @@
 // which contains a bunch of unrelated things
 use std::convert::identity;
 
-pub use span::Transparency;
 use span::{Edition, MacroCallId, Span, SyntaxContext};
 
 use crate::db::ExpandDatabase;
+
+pub use span::Transparency;
 
 pub fn span_with_def_site_ctxt(
     db: &dyn ExpandDatabase,

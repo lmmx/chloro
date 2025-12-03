@@ -1,5 +1,4 @@
 use hir::IncorrectGenericsLenKind;
-
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn incorrect_generics_len(

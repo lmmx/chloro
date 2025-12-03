@@ -1,11 +1,12 @@
 use expect_test::{expect, Expect};
-use hir::setup_tracing;
 use ide_db::{base_db::SourceDatabase, FileRange, MiniCore};
 use syntax::TextRange;
 
 use crate::{
     fixture, HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
 };
+
+use hir::setup_tracing;
 
 const HOVER_BASE_CONFIG: HoverConfig<'_> = HoverConfig {
     links_in_hover: false,

@@ -12,6 +12,7 @@ use crate::next_solver::{
     Binder, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, OpaqueTypeKey, Region,
     SolverDefId, Span, Ty, TyKind,
 };
+
 use super::{relate::RelateResult, BoundRegionConversionTime, InferCtxt};
 
 impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {

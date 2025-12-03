@@ -6,7 +6,6 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-
 // FIXME: Generate proper `index_mut` method body refer to `index` method body may impossible due to the unpredictable case [#15581].
 
 // Here just leave the `index_mut` method body be same as `index` method body, user can modify it manually to meet their need.

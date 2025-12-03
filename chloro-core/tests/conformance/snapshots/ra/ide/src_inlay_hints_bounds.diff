@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4954 bytes
-Chloro size:   4947 bytes
+Chloro size:   4948 bytes
 Rustfmt size:  5099 bytes
 
 ✗ Outputs DIFFER
@@ -11,12 +11,10 @@ Rustfmt size:  5099 bytes
  //! Implementation of trait bound hints.
  //!
  //! Currently this renders the implied `Sized` bound.
--use ide_db::{famous_defs::FamousDefs, FileRange};
++
+ use ide_db::{famous_defs::FamousDefs, FileRange};
  
-+use ide_db::{famous_defs::FamousDefs, FileRange};
  use syntax::ast::{self, AstNode, HasTypeBounds};
- 
- use crate::{
          match param {
              ast::TypeOrConstParam::Type(type_param) => {
                  let c = type_param.colon_token().map(|it| it.text_range());

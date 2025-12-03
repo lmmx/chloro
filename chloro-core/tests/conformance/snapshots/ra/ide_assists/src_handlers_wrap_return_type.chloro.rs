@@ -13,7 +13,6 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-
 // Assist: wrap_return_type_in_option
 
 //

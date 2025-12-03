@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22820 bytes
+Chloro size:   22821 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use thin_vec::ThinVec;
- use triomphe::Arc;
- 
--use crate::{attr::Attrs, db::DefDatabase, BlockId, Lookup};
--
- pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
-+use crate::{attr::Attrs, db::DefDatabase, BlockId, Lookup};
- 
- #[derive(Copy, Clone, Eq, PartialEq)]
- pub(crate) struct RawVisibilityId(u32);
  
  impl RawVisibilityId {
      const PUB: Self = RawVisibilityId(u32::MAX);

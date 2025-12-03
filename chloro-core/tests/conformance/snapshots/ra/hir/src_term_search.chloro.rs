@@ -1,6 +1,5 @@
 //! Term search
 
-pub use expr::Expr;
 use hir_def::type_ref::Mutability;
 use hir_ty::db::HirDatabase;
 use itertools::Itertools;
@@ -9,6 +8,8 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use crate::{ModuleDef, ScopeDef, Semantics, SemanticsScope, Type};
 
 mod expr;
+pub use expr::Expr;
+
 mod tactics;
 
 /// Key for lookup table to query new types reached.

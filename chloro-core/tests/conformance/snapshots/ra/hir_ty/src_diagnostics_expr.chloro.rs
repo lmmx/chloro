@@ -11,11 +11,6 @@ use hir_def::{
     resolver::{HasResolver, ValueNs},
     AdtId, AssocItemId, DefWithBodyId, HasModule, ItemContainerId, Lookup,
 };
-pub(crate) use hir_def::{
-    expr_store::Body,
-    hir::{Expr, ExprId, MatchArm, Pat, PatId, Statement},
-    LocalFieldId, VariantId,
-};
 use intern::sym;
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
@@ -37,6 +32,12 @@ use crate::{
     display::{DisplayTarget, HirDisplay},
     next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, Ty, TyKind, TypingMode},
     Adjust, InferenceResult, TraitEnvironment,
+};
+
+pub(crate) use hir_def::{
+    expr_store::Body,
+    hir::{Expr, ExprId, MatchArm, Pat, PatId, Statement},
+    LocalFieldId, VariantId,
 };
 
 pub enum BodyValidationDiagnostic {

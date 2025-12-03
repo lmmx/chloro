@@ -2,6 +2,9 @@
 
 use std::{fmt, ops::ControlFlow};
 
+pub use tls_cache::clear_tls_solver_cache;
+pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
+
 use base_db::Crate;
 use hir_def::{
     lang_item::LangItem,
@@ -23,11 +26,7 @@ use rustc_type_ir::{
     EarlyBinder, FlagComputation, Flags, GenericArgKind, ImplPolarity, InferTy, Interner, TraitRef,
     TypeVisitableExt, UniverseIndex, Upcast, Variance,
 };
-pub use tls_cache::clear_tls_solver_cache;
-pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
 
-pub use crate::_interned_vec_db as interned_vec_db;
-pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
 use crate::{
     db::{HirDatabase, InternedCoroutine, InternedCoroutineId},
     method_resolution::{TyFingerprint, ALL_FLOAT_FPS, ALL_INT_FPS},
@@ -39,6 +38,7 @@ use crate::{
     },
     FnAbi,
 };
+
 use super::{
     abi::Safety,
     fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
@@ -157,6 +157,8 @@ macro_rules! _interned_vec_nolifetime_salsa {
     };
 }
 
+pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
+
 #[macro_export]
 #[doc(hidden)]
 macro_rules! _interned_vec_db {
@@ -256,6 +258,8 @@ macro_rules! _interned_vec_db {
         }
     };
 }
+
+pub use crate::_interned_vec_db as interned_vec_db;
 
 #[derive(Debug, Copy, Clone)]
 pub struct DbInterner<'db> {
@@ -2301,6 +2305,7 @@ mod tls_db {
         GLOBAL_DB.with(#[inline] |a| a.with(op))
     }
 }
+
 mod tls_cache {
     use crate::db::HirDatabase;
     use super::DbInterner;

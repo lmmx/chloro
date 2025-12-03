@@ -1,6 +1,7 @@
 use expect_test::expect;
 
 use crate::tests::check;
+
 use super::{check_infer, check_no_mismatches, check_types};
 
 #[test]

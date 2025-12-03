@@ -5,7 +5,6 @@ mod tests;
 
 use std::cmp::Ordering;
 
-pub use hir::PrefixKind;
 use hir::Semantics;
 use syntax::{
     algo,
@@ -23,6 +22,8 @@ use crate::{
     },
     RootDatabase,
 };
+
+pub use hir::PrefixKind;
 
 /// How imports should be grouped into use statements.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

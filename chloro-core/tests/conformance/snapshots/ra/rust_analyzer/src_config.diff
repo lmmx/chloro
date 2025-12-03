@@ -36,14 +36,6 @@ Rustfmt size:  167117 bytes
  };
  use stdx::format_to_acc;
  use triomphe::Arc;
- use vfs::{AbsPath, AbsPathBuf, VfsPath};
-+use _config_data as config_data;
-+use _default_str as default_str;
-+use _default_val as default_val;
-+use _impl_for_config_data as impl_for_config_data;
- 
- use crate::{
-     diagnostics::DiagnosticsMapConfig,
  mod patch_old_style;
  
  // Conventions for configuration keys to preserve maximal extendability without breakage:
@@ -369,34 +361,6 @@ Rustfmt size:  167117 bytes
  
  #[derive(Serialize, Deserialize, Debug, Clone)]
  #[serde(rename_all = "snake_case")]
-         default_
-     }};
- }
--use _default_val as default_val;
- 
- macro_rules! _default_str {
-     ($default:expr, $ty:ty) => {{
-         serde_json::to_string_pretty(&val).unwrap()
-     }};
- }
--use _default_str as default_str;
- 
- macro_rules! _impl_for_config_data {
-     (local, $(
-         }
-     };
- }
--use _impl_for_config_data as impl_for_config_data;
- 
- macro_rules! _config_data {
-     // modname is for the tests
-         }
-     };
- }
--use _config_data as config_data;
- 
- #[derive(Default, Debug, Clone)]
- struct DefaultConfigData {
  }
  
  impl GlobalWorkspaceLocalConfigInput {

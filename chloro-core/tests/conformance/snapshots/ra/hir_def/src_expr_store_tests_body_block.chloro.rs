@@ -1,5 +1,4 @@
 use expect_test::expect;
-
 use super::*;
 
 #[test]

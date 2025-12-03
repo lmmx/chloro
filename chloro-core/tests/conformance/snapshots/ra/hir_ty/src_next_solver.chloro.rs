@@ -28,9 +28,9 @@ pub use interner::*;
 pub use opaques::*;
 pub use predicate::*;
 pub use region::*;
-pub use rustc_ast_ir::Mutability;
 pub use solver::*;
 pub use ty::*;
+pub use rustc_ast_ir::Mutability;
 
 pub use crate::lower::ImplTraitIdx;
 

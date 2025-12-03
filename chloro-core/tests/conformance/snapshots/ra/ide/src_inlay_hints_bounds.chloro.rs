@@ -3,6 +3,7 @@
 //! Currently this renders the implied `Sized` bound.
 
 use ide_db::{famous_defs::FamousDefs, FileRange};
+
 use syntax::ast::{self, AstNode, HasTypeBounds};
 
 use crate::{

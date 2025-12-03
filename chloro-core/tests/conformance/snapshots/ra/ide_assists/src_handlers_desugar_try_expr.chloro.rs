@@ -11,7 +11,6 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-
 // Assist: desugar_try_expr_match
 
 //

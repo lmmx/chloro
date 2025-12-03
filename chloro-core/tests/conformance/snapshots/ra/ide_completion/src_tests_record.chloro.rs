@@ -1,6 +1,7 @@
 use expect_test::expect;
 
 use crate::tests::check;
+
 use super::check_edit;
 
 #[test]

@@ -21,7 +21,6 @@ Rustfmt size:  62212 bytes
  };
  use intern::sym;
  use rustc_hash::FxHashSet;
-+use Stability::*;
  
  use crate::{
 -    FindPathConfig, ModuleDefId, ModuleId,
@@ -40,10 +39,7 @@ Rustfmt size:  62212 bytes
      // default to plain paths.
      let item_module = item.module(db)?;
      if item_module.is_within_block() {
-     Unstable,
-     Stable,
- }
--use Stability::*;
+ use Stability::*;
  
  const MAX_PATH_LEN: usize = 15;
 +

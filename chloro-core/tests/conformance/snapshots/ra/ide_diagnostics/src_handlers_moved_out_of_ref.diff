@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4320 bytes
-Chloro size:   4127 bytes
+Chloro size:   4126 bytes
 Rustfmt size:  4354 bytes
 
 ✗ Outputs DIFFER
@@ -10,12 +10,11 @@ Rustfmt size:  4354 bytes
 === DIFF (- rustfmt, + chloro) ===
 -use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  use hir::HirDisplay;
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: moved-out-of-ref
 -//
 -// This diagnostic is triggered on moving non copy things out of references.
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
-+
  pub(crate) fn moved_out_of_ref(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::MovedOutOfRef<'_>,

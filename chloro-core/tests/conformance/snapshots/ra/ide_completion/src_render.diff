@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98217 bytes
+Chloro size:   98216 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -38,10 +38,8 @@ Rustfmt size:  98473 bytes
 +    CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
 +    CompletionRelevance,
  };
-+
  /// Interface for data and methods required for items rendering.
  #[derive(Debug, Clone)]
- pub(crate) struct RenderContext<'a> {
          CompletionRelevance {
              is_private_editable: self.is_private_editable,
              requires_import: self.import_to_add.is_some(),

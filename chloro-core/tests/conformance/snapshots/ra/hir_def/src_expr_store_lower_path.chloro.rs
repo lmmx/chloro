@@ -5,6 +5,11 @@ mod tests;
 
 use std::iter;
 
+use crate::expr_store::{
+    lower::{generics::ImplTraitLowerFn, ExprCollector},
+    path::NormalPath,
+};
+
 use hir_expand::{
     mod_path::{resolve_crate_root, ModPath, PathKind},
     name::{AsName, Name},
@@ -15,10 +20,6 @@ use syntax::{
     AstPtr,
 };
 
-use crate::expr_store::{
-    lower::{generics::ImplTraitLowerFn, ExprCollector},
-    path::NormalPath,
-};
 use crate::{
     expr_store::path::{GenericArg, GenericArgs, Path},
     type_ref::TypeRef,

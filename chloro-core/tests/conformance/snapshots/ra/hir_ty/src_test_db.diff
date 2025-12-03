@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6478 bytes
-Chloro size:   6479 bytes
+Chloro size:   6480 bytes
 Rustfmt size:  6513 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
-     SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
- };
--
- use hir_def::{db::DefDatabase, nameres::crate_def_map, ModuleId};
- use hir_expand::EditionedFileId;
- use rustc_hash::FxHashMap;
      }
  
      fn nonce_and_revision(&self) -> (Nonce, salsa::Revision) {

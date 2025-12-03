@@ -7,7 +7,6 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-
 // Assist: generate_fn_type_alias_named
 
 //

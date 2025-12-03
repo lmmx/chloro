@@ -4,6 +4,7 @@
 
 
 mod apply_change;
+
 pub mod active_parameter;
 pub mod assists;
 pub mod defs;
@@ -26,34 +27,16 @@ pub mod traits;
 pub mod ty_filter;
 pub mod use_trivial_constructor;
 
-use std::{fmt, mem::ManuallyDrop};
-
-use base_db::{
-    query_group, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce,
-    RootQueryDb, SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
-};
-pub use base_db::{self, FxIndexMap, FxIndexSet};
-use hir::{
-    db::{DefDatabase, ExpandDatabase},
-    FilePositionWrapper, FileRangeWrapper,
-};
-pub use hir::{ChangeWithProcMacros, EditionedFileId};
-pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
-use salsa::Durability;
-pub use span::{self, FileId};
-use triomphe::Arc;
-pub use ::line_index;
-
-use crate::line_index::LineIndex;
-
 pub mod imports {
     pub mod import_assets;
     pub mod insert_use;
     pub mod merge_imports;
 }
+
 pub mod generated {
     pub mod lints;
 }
+
 pub mod syntax_helpers {
     pub mod format_string;
     pub mod format_string_exprs;
@@ -63,6 +46,29 @@ pub mod syntax_helpers {
     pub mod suggest_name;
     pub use parser::LexedStr;
 }
+
+pub use hir::{ChangeWithProcMacros, EditionedFileId};
+use salsa::Durability;
+
+use std::{fmt, mem::ManuallyDrop};
+
+use base_db::{
+    query_group, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce,
+    RootQueryDb, SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
+};
+use hir::{
+    db::{DefDatabase, ExpandDatabase},
+    FilePositionWrapper, FileRangeWrapper,
+};
+use triomphe::Arc;
+pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
+
+use crate::line_index::LineIndex;
+
+pub use ::line_index;
+
+pub use base_db::{self, FxIndexMap, FxIndexSet};
+pub use span::{self, FileId};
 
 pub type FilePosition = FilePositionWrapper<FileId>;
 

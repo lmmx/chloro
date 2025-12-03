@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2201 bytes
-Chloro size:   2201 bytes
+Chloro size:   2202 bytes
 Rustfmt size:  2201 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- mod ssr;
- mod symbols;
- mod unresolved_references;
--
- mod progress_report;
- 
- use std::io::Read;
      pub fn is_verbose(self) -> bool {
          matches!(self, Verbosity::Verbose | Verbosity::Spammy)
      }

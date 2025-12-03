@@ -1,12 +1,13 @@
 //! Analyze all modules in a project for diagnostics. Exits with a non-zero
 //! status code if any errors are found.
 
+use project_model::{CargoConfig, RustLibSource};
+use rustc_hash::FxHashSet;
+
 use hir::{db::HirDatabase, sym, Crate, Module};
 use ide::{AnalysisHost, AssistResolveStrategy, Diagnostic, DiagnosticsConfig, Severity};
 use ide_db::{base_db::SourceDatabase, LineIndexDatabase};
 use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
-use project_model::{CargoConfig, RustLibSource};
-use rustc_hash::FxHashSet;
 
 use crate::cli::{flags, progress_report::ProgressReport};
 

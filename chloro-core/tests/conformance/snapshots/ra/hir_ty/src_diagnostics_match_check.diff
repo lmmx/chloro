@@ -2,16 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   15899 bytes
+Chloro size:   15901 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! It is modeled on the rustc module `rustc_mir_build::thir::pattern`.
- 
- mod pat_util;
--
  pub(crate) mod pat_analysis;
  
  use hir_def::{
@@ -34,10 +30,8 @@ Rustfmt size:  15979 bytes
      next_solver::{GenericArgs, Mutability, Ty, TyKind},
 +    InferenceResult,
  };
--
- use self::pat_util::EnumerateAndAdjustIterator;
  
- #[derive(Clone, Debug)]
+ use self::pat_util::EnumerateAndAdjustIterator;
                          AdtId::EnumId(_) => None,
                      }),
                  };

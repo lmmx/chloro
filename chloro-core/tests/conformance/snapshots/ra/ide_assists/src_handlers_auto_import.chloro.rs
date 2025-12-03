@@ -14,7 +14,6 @@ use syntax::{ast, match_ast, AstNode, Edition, SyntaxNode};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
-
 // Feature: Auto Import
 
 //

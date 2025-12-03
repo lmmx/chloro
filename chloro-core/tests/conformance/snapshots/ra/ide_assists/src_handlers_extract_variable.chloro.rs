@@ -12,7 +12,6 @@ use syntax::{
 
 use crate::{utils::is_body_const, AssistContext, AssistId, Assists};
 
-
 // Assist: extract_variable
 
 //

@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2866 bytes
-Chloro size:   2866 bytes
+Chloro size:   2865 bytes
 Rustfmt size:  2945 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
  use crate::NavigationTarget;
  
--// Feature: Child Modules
+ // Feature: Child Modules
 -//
 -// Navigates to the child modules of the current module.
 -//
@@ -19,8 +18,6 @@ Rustfmt size:  2945 bytes
 -// |---------|-------------|
 -// | VS Code | **rust-analyzer: Locate child modules** |
  
-+// Feature: Child Modules
-+
 +//
 +
 +// Navigates to the child modules of the current module.

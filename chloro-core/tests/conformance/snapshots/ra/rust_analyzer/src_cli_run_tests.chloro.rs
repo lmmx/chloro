@@ -3,10 +3,11 @@
 use hir::{Crate, Module};
 use hir_ty::db::HirDatabase;
 use ide_db::{base_db::SourceDatabase, LineIndexDatabase};
-use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
 use profile::StopWatch;
 use project_model::{CargoConfig, RustLibSource};
 use syntax::TextRange;
+
+use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
 
 use crate::cli::{flags, full_name_of_item, Result};
 

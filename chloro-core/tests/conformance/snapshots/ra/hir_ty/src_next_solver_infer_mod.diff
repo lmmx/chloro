@@ -2,15 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49451 bytes
+Chloro size:   49452 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Infer context the next-trait-solver.
+ 
+ use std::cell::{Cell, RefCell};
+ use std::fmt;
  use std::ops::Range;
  use std::sync::Arc;
- 
+-
 -pub use BoundRegionConversionTime::*;
  use ena::unify as ut;
  use hir_def::GenericParamId;
@@ -31,11 +35,11 @@ Rustfmt size:  49754 bytes
  };
  use snapshot::undo_log::InferCtxtUndoLogs;
  use tracing::{debug, instrument};
- use traits::{ObligationCause, PredicateObligations};
  use type_variable::TypeVariableOrigin;
  use unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey};
-+pub use BoundRegionConversionTime::*;
  
++pub use BoundRegionConversionTime::*;
++
  use crate::next_solver::{
 -    BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
      fold::BoundVarReplacerDelegate,
@@ -43,10 +47,8 @@ Rustfmt size:  49754 bytes
      obligation_ctxt::ObligationCtxt,
 +    BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
  };
--
+ 
  use super::{
-     AliasTerm, Binder, CanonicalQueryInput, CanonicalVarValues, Const, ConstKind, DbInterner,
-     ErrorGuaranteed, GenericArg, GenericArgs, OpaqueTypeKey, ParamEnv, PolyCoercePredicate,
      pub value: T,
      pub obligations: PredicateObligations<'db>,
  }

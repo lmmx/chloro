@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3783 bytes
-Chloro size:   3568 bytes
+Chloro size:   3567 bytes
 Rustfmt size:  3796 bytes
 
 ✗ Outputs DIFFER
@@ -14,6 +14,7 @@ Rustfmt size:  3796 bytes
      ast::{self, edit_in_place::Indent, HasName},
      AstNode,
  };
++use crate::assist_context::{AssistContext, Assists};
  
 -// Assist: bind_unused_param
 -//
@@ -28,8 +29,6 @@ Rustfmt size:  3796 bytes
 -//     let _ = x;
 -// }
 -// ```
-+use crate::assist_context::{AssistContext, Assists};
-+
  pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let param: ast::Param = ctx.find_node_at_offset()?;
  

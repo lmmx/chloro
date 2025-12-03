@@ -17,6 +17,7 @@ use crate::{
     next_solver::{interner::InternedWrapperNoDebug, ClauseKind, ParamEnv},
     MemoryMap,
 };
+
 use super::{BoundVarKind, DbInterner, ErrorGuaranteed, GenericArgs, Placeholder, Ty};
 
 pub type ConstKind<'db> = rustc_type_ir::ConstKind<DbInterner<'db>>;

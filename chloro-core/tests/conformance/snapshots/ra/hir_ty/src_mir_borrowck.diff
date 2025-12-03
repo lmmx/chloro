@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25852 bytes
-Chloro size:   25864 bytes
+Chloro size:   25865 bytes
 Rustfmt size:  25852 bytes
 
 ✗ Outputs DIFFER
@@ -30,9 +30,8 @@ Rustfmt size:  25852 bytes
 +    next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, GenericArgs, Ty, TypingMode},
 +    TraitEnvironment,
  };
--
+ 
  use super::{
-     BasicBlockId, BorrowKind, LocalId, MirBody, MirLowerError, MirSpan, MutBorrowKind, Operand,
      Place, ProjectionElem, Rvalue, StatementKind, TerminatorKind,
  };
  

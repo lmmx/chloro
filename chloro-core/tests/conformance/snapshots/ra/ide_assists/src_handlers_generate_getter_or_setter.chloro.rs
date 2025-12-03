@@ -820,6 +820,7 @@ impl Context {
         );
     }
 }
+
 #[cfg(test)]
 mod tests_setter {
     use crate::tests::{check_assist, check_assist_not_applicable};

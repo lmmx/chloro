@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4426 bytes
+Chloro size:   4427 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     nameres::{path_resolution::ResolveMode, LocalDefMap},
-     AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
- };
--
- use super::{DefMap, MacroSubNs};
- 
- pub enum ResolvedAttr {
          attr: &Attr,
      ) -> Result<ResolvedAttr, UnresolvedMacro> {
          // NB: does not currently work for derive helpers as they aren't recorded in the `DefMap`

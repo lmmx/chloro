@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4004 bytes
-Chloro size:   4004 bytes
+Chloro size:   4003 bytes
 Rustfmt size:  4004 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,9 @@ Rustfmt size:  4004 bytes
  };
  use itertools::Itertools;
  use syntax::{
- 
  use crate::NavigationTarget;
  
--// Feature: Parent Module
+ // Feature: Parent Module
 -//
 -// Navigates to the parent module of the current module.
 -//
@@ -30,8 +29,6 @@ Rustfmt size:  4004 bytes
 -//
 -// ![Parent Module](https://user-images.githubusercontent.com/48062697/113065580-04c21800-91b1-11eb-9a32-00086161c0bd.gif)
  
-+// Feature: Parent Module
-+
 +//
 +
 +// Navigates to the parent module of the current module.

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6943 bytes
-Chloro size:   6644 bytes
+Chloro size:   6643 bytes
 Rustfmt size:  7038 bytes
 
 ✗ Outputs DIFFER
@@ -27,7 +27,6 @@ Rustfmt size:  7038 bytes
 -//    if x == 3 && y == 4 { 1 }
 -// }
 -// ```
-+
  pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let if_keyword = ctx.find_token_syntax_at_offset(T![if])?;
      let expr = ast::IfExpr::cast(if_keyword.parent()?)?;

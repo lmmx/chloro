@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111676 bytes
-Chloro size:   111481 bytes
+Chloro size:   111482 bytes
 Rustfmt size:  111676 bytes
 
 ✗ Outputs DIFFER
@@ -71,7 +71,7 @@ Rustfmt size:  111676 bytes
 +    Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,
 +    IncorrectGenericsLenKind, Rawness, TraitEnvironment,
  };
--
+ 
  use super::{
 -    BreakableContext, Diverges, Expectation, InferenceContext, InferenceDiagnostic, TypeMismatch,
 -    cast::CastCheck, find_breakable,

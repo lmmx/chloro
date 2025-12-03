@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8087 bytes
-Chloro size:   8151 bytes
+Chloro size:   8152 bytes
 Rustfmt size:  8281 bytes
 
 ✗ Outputs DIFFER
@@ -17,13 +17,6 @@ Rustfmt size:  8281 bytes
  use tracing::debug;
  
  use crate::next_solver::{
-     Clause, DbInterner, Goal, ParamEnv, PolyTraitPredicate, Predicate, Span, TraitPredicate,
-     TraitRef, Ty,
- };
--
- use super::InferCtxt;
- 
- /// The reason why we incurred this obligation; used for error reporting.
  /// scope. The eventual result is usually a `Selection` (defined below).
  #[derive(Clone, Debug, TypeVisitable, TypeFoldable)]
  pub struct Obligation<'db, T> {

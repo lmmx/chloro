@@ -7,6 +7,7 @@ use base_db::Crate;
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
 use intern::{sym, Interned, Symbol};
+
 use mbe::{DelimiterKind, Punct};
 use smallvec::{smallvec, SmallVec};
 use span::{Span, SyntaxContext};
