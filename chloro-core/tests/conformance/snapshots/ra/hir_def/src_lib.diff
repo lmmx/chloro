@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43719 bytes
+Chloro size:   43728 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -35,16 +35,16 @@ Rustfmt size:  45085 bytes
 -
  pub mod hir;
 -pub use self::hir::type_ref;
- pub mod expr_store;
- pub mod resolver;
+-pub mod expr_store;
+-pub mod resolver;
 -
- pub mod nameres;
+-pub mod nameres;
 -
- pub mod src;
+-pub mod src;
 -
- pub mod find_path;
- pub mod import_map;
- pub mod visibility;
+-pub mod find_path;
+-pub mod import_map;
+-pub mod visibility;
 -
 -use intern::{sym, Interned, Symbol};
 -pub use rustc_abi as layout;
@@ -53,9 +53,13 @@ Rustfmt size:  45085 bytes
 -
 -pub use crate::signatures::LocalFieldId;
 -
- #[cfg(test)]
- mod macro_expansion_tests;
- #[cfg(test)]
+-#[cfg(test)]
+-mod macro_expansion_tests;
+-#[cfg(test)]
+-mod test_db;
+ 
+ use std::hash::{Hash, Hasher};
+ 
      AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
      MacroDefKind,
  };
@@ -89,6 +93,26 @@ Rustfmt size:  45085 bytes
      signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
  };
 +pub use self::hir::type_ref;
++
++pub mod expr_store;
++
++pub mod resolver;
++
++pub mod nameres;
++
++pub mod src;
++
++pub mod find_path;
++
++pub mod import_map;
++
++pub mod visibility;
++
++#[cfg(test)]
++mod macro_expansion_tests;
++
++#[cfg(test)]
++mod test_db;
  
  type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
 +

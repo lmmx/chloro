@@ -1,8 +1,5 @@
 //! Compute the dyn-compatibility of a trait
 
-#[cfg(test)]
-mod tests;
-
 use std::ops::ControlFlow;
 
 use hir_def::{
@@ -538,3 +535,6 @@ fn contains_illegal_impl_trait_in_trait<'db>(
 
     None
 }
+
+#[cfg(test)]
+mod tests;

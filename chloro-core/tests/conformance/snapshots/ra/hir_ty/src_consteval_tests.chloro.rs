@@ -1,5 +1,3 @@
-mod intrinsics;
-
 use base_db::RootQueryDb;
 use hir_def::db::DefDatabase;
 use hir_expand::EditionedFileId;
@@ -25,6 +23,8 @@ use super::{
     super::mir::{MirEvalError, MirLowerError},
     ConstEvalError,
 };
+
+mod intrinsics;
 
 fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
     match e {

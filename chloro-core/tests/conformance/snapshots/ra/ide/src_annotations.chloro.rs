@@ -1,5 +1,3 @@
-mod fn_references;
-
 use hir::{HasSource, InFile, InRealFile, Semantics};
 use ide_db::{
     defs::Definition, helpers::visit_file_defs, FileId, FilePosition, FileRange, FxIndexSet,
@@ -16,6 +14,8 @@ use crate::{
     runnables::{runnables, Runnable},
     NavigationTarget, RunnableKind,
 };
+
+mod fn_references;
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 pub struct Annotation {

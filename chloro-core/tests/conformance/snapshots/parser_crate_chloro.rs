@@ -75,43 +75,6 @@
 #[cfg(not(feature = "in-rust-tree"))]
 #[cfg(feature = "in-rust-tree")]
 
-mod a;
-#[path = "a.rs"]
-mod b;
-mod prefix_entries;
-mod top_entries;
-#[rustfmt::skip]
-#[path = "../test_data/generated/runner.rs"]
-mod runner;
-mod event;
-mod frontmatter;
-mod grammar;
-mod input;
-mod lexed_str;
-mod output;
-mod parser;
-mod shortcuts;
-mod syntax_kind;
-mod token_set;
-#[cfg(test)]
-mod tests;
-mod attributes;
-mod expressions;
-mod generic_args;
-mod generic_params;
-mod items;
-mod params;
-mod paths;
-mod patterns;
-mod types;
-#[rustfmt::skip]
-mod generated;
-mod adt;
-mod consts;
-mod traits;
-mod use_item;
-mod atom;
-
 use std::*;
 use std::cell::Cell;
 use std::cell::Cell;
@@ -3156,6 +3119,8 @@ fn main() {
     let m!(x) = 0;
 }
 
+mod a;
+
 fn foo() {
 }
 
@@ -4022,6 +3987,9 @@ unsafe impl T for () {
 fn foo() {
 }
 
+#[path = "a.rs"]
+mod b;
+
 struct S1<T>;
 
 struct S2<T>(u32);
@@ -4461,6 +4429,14 @@ impl Input {
     }
 }
 
+mod prefix_entries;
+
+mod top_entries;
+
+#[rustfmt::skip]
+#[path = "../test_data/generated/runner.rs"]
+mod runner;
+
 fn infer_edition(file_path: &Path) -> Edition {
     let file_content = std::fs::read_to_string(file_path).unwrap();
     if let Some(edition) = file_content.strip_prefix("//@ edition: ") {
@@ -4642,6 +4618,29 @@ fn run_and_expect_errors_with_edition(path: &str, edition: Edition) {
 }
 #
 #
+mod event;
+
+mod frontmatter;
+
+mod grammar;
+
+mod input;
+
+mod lexed_str;
+
+mod output;
+
+mod parser;
+
+mod shortcuts;
+
+mod syntax_kind;
+
+mod token_set;
+
+#[cfg(test)]
+mod tests;
+
 /// Parse the whole of the input as a given syntactic construct.
 ///
 /// This covers two main use-cases:
@@ -4917,6 +4916,24 @@ pub(super) fn process(mut events: Vec<Event>) -> Output {
 
     res
 }
+
+mod attributes;
+
+mod expressions;
+
+mod generic_args;
+
+mod generic_params;
+
+mod items;
+
+mod params;
+
+mod paths;
+
+mod patterns;
+
+mod types;
 
 pub(crate) mod entry {
     use super::*;
@@ -5809,6 +5826,9 @@ impl Output {
     }
 }
 
+#[rustfmt::skip]
+mod generated;
+
 impl From<u16> for SyntaxKind {
     #[inline]
     fn from(d: u16) -> SyntaxKind {
@@ -6312,6 +6332,14 @@ fn tuple_field_list(p: &mut Parser<'_>) {
 
     m.complete(p, TUPLE_FIELD_LIST);
 }
+
+mod adt;
+
+mod consts;
+
+mod traits;
+
+mod use_item;
 
 pub(super) fn mod_contents(p: &mut Parser<'_>, stop_on_r_curly: bool) {
     attributes::inner_attrs(p);
@@ -7897,6 +7925,8 @@ pub(super) fn meta(p: &mut Parser<'_>) {
 
     meta.complete(p, META);
 }
+
+mod atom;
 
 #[derive(PartialEq, Eq)]
 pub(super) enum Semicolon {

@@ -14,10 +14,6 @@ Rustfmt size:  3468 bytes
  //! asterism uses textum for generic line-based patching that works with any text format.
  
 -use serde::{Deserialize, Serialize};
-+#[cfg(test)]
-+#[path = "tests/edit_plan.rs"]
-+mod tests;
-+
  use std::collections::HashMap;
  use std::io;
 +
@@ -25,10 +21,3 @@ Rustfmt size:  3468 bytes
  use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
  
  /// Serialisable collection of file modifications for atomic application.
-         Ok(())
-     }
- }
--
--#[cfg(test)]
--#[path = "tests/edit_plan.rs"]
--mod tests;

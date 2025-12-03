@@ -8,11 +8,6 @@ Rustfmt size:  57422 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-+mod intrinsics;
-+
- use base_db::RootQueryDb;
- use hir_def::db::DefDatabase;
- use hir_expand::EditionedFileId;
      test_db::TestDB,
      MemoryMap,
  };
@@ -20,13 +15,6 @@ Rustfmt size:  57422 bytes
  use super::{
      super::mir::{MirEvalError, MirLowerError},
      ConstEvalError,
- };
- 
--mod intrinsics;
--
- fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
-     match e {
-         ConstEvalError::MirEvalError(MirEvalError::InFunction(e, _)) => {
      error: impl FnOnce(ConstEvalError<'_>) -> bool,
  ) {
      let (db, file_id) = TestDB::with_single_file(ra_fixture);

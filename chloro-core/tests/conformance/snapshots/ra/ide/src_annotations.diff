@@ -8,23 +8,30 @@ Rustfmt size:  37056 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use hir::{HasSource, InFile, InRealFile, Semantics};
--use ide_db::{
+ use hir::{HasSource, InFile, InRealFile, Semantics};
+ use ide_db::{
 -    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase, defs::Definition,
 -    helpers::visit_file_defs,
--};
--use itertools::Itertools;
++    defs::Definition, helpers::visit_file_defs, FileId, FilePosition, FileRange, FxIndexSet,
++    MiniCore, RootDatabase,
+ };
+ use itertools::Itertools;
 -use syntax::{AstNode, TextRange, ast::HasName};
--
--use crate::{
++use syntax::{ast::HasName, AstNode, TextRange};
+ 
+ use crate::{
 -    NavigationTarget, RunnableKind,
--    annotations::fn_references::find_all_methods,
+     annotations::fn_references::find_all_methods,
 -    goto_implementation::{GotoImplementationConfig, goto_implementation},
--    navigation_target,
++    goto_implementation::{goto_implementation, GotoImplementationConfig},
+     navigation_target,
 -    references::{FindAllRefsConfig, find_all_refs},
 -    runnables::{Runnable, runnables},
--};
--
++    references::{find_all_refs, FindAllRefsConfig},
++    runnables::{runnables, Runnable},
++    NavigationTarget, RunnableKind,
+ };
+ 
  mod fn_references;
  
 -// Feature: Annotations
@@ -33,23 +40,6 @@ Rustfmt size:  37056 bytes
 -// and running/debugging binaries.
 -//
 -// ![Annotations](https://user-images.githubusercontent.com/48062697/113020672-b7c34f00-917a-11eb-8f6e-858735660a0e.png)
-+use hir::{HasSource, InFile, InRealFile, Semantics};
-+use ide_db::{
-+    defs::Definition, helpers::visit_file_defs, FileId, FilePosition, FileRange, FxIndexSet,
-+    MiniCore, RootDatabase,
-+};
-+use itertools::Itertools;
-+use syntax::{ast::HasName, AstNode, TextRange};
-+
-+use crate::{
-+    annotations::fn_references::find_all_methods,
-+    goto_implementation::{goto_implementation, GotoImplementationConfig},
-+    navigation_target,
-+    references::{find_all_refs, FindAllRefsConfig},
-+    runnables::{runnables, Runnable},
-+    NavigationTarget, RunnableKind,
-+};
-+
  #[derive(Debug, Hash, PartialEq, Eq)]
  pub struct Annotation {
      pub range: TextRange,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 544 bytes
-Chloro size:   544 bytes
+Chloro size:   546 bytes
 Rustfmt size:  544 bytes
 
 ✗ Outputs DIFFER
@@ -13,17 +13,15 @@ Rustfmt size:  544 bytes
  //! As well as the implementation of `Relate` for interned things (`Ty`/`Const`/etc).
  
 -pub use rustc_type_ir::relate::combine::PredicateEmittingRelation;
--pub use rustc_type_ir::relate::*;
--
--use crate::next_solver::DbInterner;
--
+ pub use rustc_type_ir::relate::*;
++pub use rustc_type_ir::relate::combine::PredicateEmittingRelation;
+ 
+ use crate::next_solver::DbInterner;
+ 
  mod generalize;
++
  mod higher_ranked;
++
  pub(crate) mod lattice;
  
-+pub use rustc_type_ir::relate::*;
-+pub use rustc_type_ir::relate::combine::PredicateEmittingRelation;
-+
-+use crate::next_solver::DbInterner;
-+
  pub type RelateResult<'db, T> = rustc_type_ir::relate::RelateResult<DbInterner<'db>, T>;

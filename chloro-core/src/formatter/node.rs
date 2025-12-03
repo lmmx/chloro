@@ -32,48 +32,58 @@ pub use traitdef::format_trait;
 pub use typealias::format_type_alias;
 pub use useitem::format_use;
 
+use super::printer::Printer;
+
 /// Determine if a blank line should be added between two items
 fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -> bool {
-    let Some(prev) = prev_kind else {
-        return false;
+    let result = {
+        let Some(prev) = prev_kind else {
+            return false;
+        };
+
+        // No blank line between consecutive uses
+        if prev == SyntaxKind::USE && curr_kind == SyntaxKind::USE {
+            return false;
+        }
+
+        // Blank line between different top-level items
+        matches!(
+            prev,
+            SyntaxKind::FN
+                | SyntaxKind::STRUCT
+                | SyntaxKind::ENUM
+                | SyntaxKind::IMPL
+                | SyntaxKind::MODULE
+                | SyntaxKind::CONST
+                | SyntaxKind::STATIC
+                | SyntaxKind::TYPE_ALIAS
+                | SyntaxKind::TRAIT
+                | SyntaxKind::MACRO_RULES
+                | SyntaxKind::MACRO_DEF
+                | SyntaxKind::MACRO_CALL
+        ) && matches!(
+            curr_kind,
+            SyntaxKind::FN
+                | SyntaxKind::STRUCT
+                | SyntaxKind::ENUM
+                | SyntaxKind::IMPL
+                | SyntaxKind::MODULE
+                | SyntaxKind::CONST
+                | SyntaxKind::STATIC
+                | SyntaxKind::TYPE_ALIAS
+                | SyntaxKind::USE
+                | SyntaxKind::TRAIT
+                | SyntaxKind::MACRO_RULES
+                | SyntaxKind::MACRO_DEF
+                | SyntaxKind::MACRO_CALL
+        )
     };
 
-    // No blank line between consecutive uses
-    if prev == SyntaxKind::USE && curr_kind == SyntaxKind::USE {
-        return false;
-    }
+    // if prev_kind == Some(SyntaxKind::MODULE) && curr_kind == SyntaxKind::MODULE {
+    //     println!("should_add_blank_line(MODULE, MODULE) = {}", result);
+    // }
 
-    // Blank line between different top-level items
-    matches!(
-        prev,
-        SyntaxKind::FN
-            | SyntaxKind::STRUCT
-            | SyntaxKind::ENUM
-            | SyntaxKind::IMPL
-            | SyntaxKind::MODULE
-            | SyntaxKind::CONST
-            | SyntaxKind::STATIC
-            | SyntaxKind::TYPE_ALIAS
-            | SyntaxKind::TRAIT
-            | SyntaxKind::MACRO_RULES
-            | SyntaxKind::MACRO_DEF
-            | SyntaxKind::MACRO_CALL
-    ) && matches!(
-        curr_kind,
-        SyntaxKind::FN
-            | SyntaxKind::STRUCT
-            | SyntaxKind::ENUM
-            | SyntaxKind::IMPL
-            | SyntaxKind::MODULE
-            | SyntaxKind::CONST
-            | SyntaxKind::STATIC
-            | SyntaxKind::TYPE_ALIAS
-            | SyntaxKind::USE
-            | SyntaxKind::TRAIT
-            | SyntaxKind::MACRO_RULES
-            | SyntaxKind::MACRO_DEF
-            | SyntaxKind::MACRO_CALL
-    )
+    result
 }
 
 /// An item with its associated preceding comments and whether there's a blank line before it
@@ -129,10 +139,16 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 if let Some(module) = Module::cast(n.clone())
                                     && module.item_list().is_none()
                                 {
-                                    mod_decls
-                                        .push((std::mem::take(&mut pending_comments), n.clone()));
-                                    pending_blank_line = false;
-                                    continue;
+                                    // Only group mod declarations at the top, before any use statements
+                                    // Once we've seen use statements, preserve the original order
+                                    if use_items_with_comments.is_empty() {
+                                        mod_decls.push((
+                                            std::mem::take(&mut pending_comments),
+                                            n.clone(),
+                                        ));
+                                        pending_blank_line = false;
+                                        continue;
+                                    }
                                 }
                                 other_items.push(ItemWithComments {
                                     comments: std::mem::take(&mut pending_comments),
@@ -301,10 +317,9 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 for comment in &item.comments {
                     // Add blank line before comment block if there was one in original
                     if item.blank_line_before && last_kind.is_some() {
-                        buf.push('\n');
+                        buf.blank();
                     }
-                    buf.push_str(comment.text());
-                    buf.push('\n');
+                    buf.newline(comment.text());
                 }
 
                 match item.node {
@@ -314,7 +329,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         if item.comments.is_empty()
                             && should_add_blank_line(last_kind, current_kind)
                         {
-                            buf.push('\n');
+                            buf.blank();
                         }
                         format_node(&n, buf, indent);
                         last_kind = Some(current_kind);
@@ -322,8 +337,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     NodeOrToken::Token(t) => {
                         // Standalone token (like a trailing comment)
                         if t.kind() == SyntaxKind::COMMENT {
-                            buf.push_str(t.text());
-                            buf.push('\n');
+                            buf.newline(t.text());
                         }
                     }
                 }

@@ -2,40 +2,37 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   16206 bytes
+Chloro size:   16211 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion for (built-in) attributes, derives and lints.
- //!
- //! This module uses a bit of static metadata to provide completions for builtin-in attributes and lints.
- 
-+mod cfg;
-+mod derive;
-+mod diagnostic;
-+mod lint;
-+mod macro_use;
-+mod repr;
-+
- use std::sync::LazyLock;
- 
- use ide_db::{
      item::CompletionItem,
      Completions,
  };
--
--mod cfg;
++pub(crate) use self::derive::complete_derive_path;
+ 
+ mod cfg;
 -mod derive;
 -mod diagnostic;
 -mod lint;
 -mod macro_use;
 -mod repr;
--
- pub(crate) use self::derive::complete_derive_path;
+ 
+-pub(crate) use self::derive::complete_derive_path;
++mod derive;
++
++mod diagnostic;
++
++mod lint;
++
++mod macro_use;
++
++mod repr;
  
  /// Complete inputs to known builtin attributes as well as derive attributes
+ pub(crate) fn complete_known_attribute_input(
  ) -> Option<()> {
      let attribute = fake_attribute_under_caret;
      let path = attribute.path()?;

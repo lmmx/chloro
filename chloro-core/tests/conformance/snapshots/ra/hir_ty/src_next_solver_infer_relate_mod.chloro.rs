@@ -2,13 +2,15 @@
 //! (except for some relations used for diagnostics and heuristics in the compiler).
 //! As well as the implementation of `Relate` for interned things (`Ty`/`Const`/etc).
 
-mod generalize;
-mod higher_ranked;
-pub(crate) mod lattice;
-
 pub use rustc_type_ir::relate::*;
 pub use rustc_type_ir::relate::combine::PredicateEmittingRelation;
 
 use crate::next_solver::DbInterner;
+
+mod generalize;
+
+mod higher_ranked;
+
+pub(crate) mod lattice;
 
 pub type RelateResult<'db, T> = rustc_type_ir::relate::RelateResult<DbInterner<'db>, T>;

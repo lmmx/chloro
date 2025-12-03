@@ -10,9 +10,6 @@ Rustfmt size:  18694 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Compute the dyn-compatibility of a trait
  
-+#[cfg(test)]
-+mod tests;
-+
  use std::ops::ControlFlow;
  
  use hir_def::{
@@ -109,9 +106,3 @@ Rustfmt size:  18694 bytes
      // just check whether `ret` contains RPIT for now
      for opaque_ty in visitor.0 {
          let impl_trait_id = db.lookup_intern_impl_trait_id(opaque_ty);
- 
-     None
- }
--
--#[cfg(test)]
--mod tests;

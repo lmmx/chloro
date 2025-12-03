@@ -1,11 +1,11 @@
 //! Completion of paths and keywords at item list position.
 
-pub(crate) mod trait_impl;
-
 use crate::{
     context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
     CompletionContext, Completions,
 };
+
+pub(crate) mod trait_impl;
 
 pub(crate) fn complete_item_list_in_expr(
     acc: &mut Completions,

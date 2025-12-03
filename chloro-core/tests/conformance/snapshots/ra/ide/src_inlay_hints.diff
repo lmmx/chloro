@@ -2,42 +2,75 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34277 bytes
+Chloro size:   34294 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use std::{
--    fmt::{self, Write},
--    mem::{self, take},
--};
--
--use either::Either;
--use hir::{
+ 
+ use either::Either;
+ use hir::{
 -    ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
 -    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics, sym,
--};
--use ide_db::{
++    sym, ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
++    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
+ };
+ use ide_db::{
 -    FileRange, MiniCore, RootDatabase, famous_defs::FamousDefs, text_edit::TextEditBuilder,
--};
++    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
+ };
 -use ide_db::{FxHashSet, text_edit::TextEdit};
--use itertools::Itertools;
--use macros::UpmapFromRaFixture;
++use ide_db::{text_edit::TextEdit, FxHashSet};
+ use itertools::Itertools;
+ use macros::UpmapFromRaFixture;
 -use smallvec::{SmallVec, smallvec};
--use stdx::never;
--use syntax::{
++use smallvec::{smallvec, SmallVec};
+ use stdx::never;
+ use syntax::{
 -    SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
--    ast::{self, AstNode, HasGenericParams},
+     ast::{self, AstNode, HasGenericParams},
 -    format_smolstr, match_ast,
--};
--
++    format_smolstr, match_ast, SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
+ };
+ 
 -use crate::{FileId, navigation_target::TryToNav};
--
++use crate::{navigation_target::TryToNav, FileId};
+ 
  mod adjustment;
++
  mod bind_pat;
++
  mod binding_mode;
++
+ mod bounds;
++
+ mod chaining;
++
+ mod closing_brace;
++
+ mod closure_captures;
++
+ mod closure_ret;
++
+ mod discriminant;
++
+ mod extern_block;
++
+ mod generic_param;
++
+ mod implicit_drop;
++
+ mod implicit_static;
++
+ mod implied_dyn_trait;
++
+ mod lifetime;
++
+ mod param_name;
++
  mod ra_fixture;
++
  mod range_exclusive;
  
 -// Feature: Inlay Hints
@@ -77,31 +110,6 @@ Rustfmt size:  36233 bytes
 -// in a unary function
 -//
 -// ![Inlay hints](https://user-images.githubusercontent.com/48062697/113020660-b5f98b80-917a-11eb-8d70-3be3fd558cdd.png)
-+use std::{
-+    fmt::{self, Write},
-+    mem::{self, take},
-+};
-+
-+use either::Either;
-+use hir::{
-+    sym, ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
-+    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
-+};
-+use ide_db::{
-+    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
-+};
-+use ide_db::{text_edit::TextEdit, FxHashSet};
-+use itertools::Itertools;
-+use macros::UpmapFromRaFixture;
-+use smallvec::{smallvec, SmallVec};
-+use stdx::never;
-+use syntax::{
-+    ast::{self, AstNode, HasGenericParams},
-+    format_smolstr, match_ast, SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
-+};
-+
-+use crate::{navigation_target::TryToNav, FileId};
-+
  pub(crate) fn inlay_hints(
      db: &RootDatabase,
      file_id: FileId,

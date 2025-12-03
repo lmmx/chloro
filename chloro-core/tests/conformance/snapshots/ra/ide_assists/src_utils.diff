@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44627 bytes
+Chloro size:   44628 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -10,9 +10,6 @@ Rustfmt size:  45288 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Assorted functions shared by several assists.
  
-+mod gen_trait_fn_body;
-+pub(crate) mod ref_field_expr;
-+
  use std::slice;
  
  pub(crate) use gen_trait_fn_body::gen_trait_fn_body;
@@ -57,12 +54,11 @@ Rustfmt size:  45288 bytes
 +    AssistConfig,
  };
  
--mod gen_trait_fn_body;
--pub(crate) mod ref_field_expr;
--
+ mod gen_trait_fn_body;
++
+ pub(crate) mod ref_field_expr;
+ 
  pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
-     extract_trivial_expression(&block_expr)
-         .filter(|expr| !expr.syntax().text().contains_char('\n'))
      invert_special_case(make, &expr).unwrap_or_else(|| make.expr_prefix(T![!], expr).into())
  }
  
