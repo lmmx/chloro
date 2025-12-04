@@ -424,7 +424,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
                         self.storage.any_unifications = true;
                     };
                 }
-                (_, _) => {},
+                (_, _) => {}
             }
         }
     }

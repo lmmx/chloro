@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12076 bytes
-Chloro size:   12079 bytes
+Chloro size:   12076 bytes
 Rustfmt size:  12861 bytes
 
 ✗ Outputs DIFFER
@@ -32,22 +32,6 @@ Rustfmt size:  12861 bytes
  
      p.print_attrs(&tree.top_attrs, true, "\n");
      p.blank();
-     fn blank(&mut self) {
-         let mut iter = self.buf.chars().rev().fuse();
-         match (iter.next(), iter.next()) {
--            (Some('\n'), Some('\n') | None) | (None, None) => {}
-+            (Some('\n'), Some('\n') | None) | (None, None) => {},
-             (Some('\n'), Some(_)) => {
-                 self.buf.push('\n');
-             }
- 
-     fn whitespace(&mut self) {
-         match self.buf.chars().next_back() {
--            None | Some('\n' | ' ') => {}
-+            None | Some('\n' | ' ') => {},
-             _ => self.buf.push(' '),
-         }
-     }
                  "#{}[{}{}]{}",
                  inner,
                  attr.path.display(self.db, self.edition),
@@ -59,14 +43,6 @@ Rustfmt size:  12861 bytes
                  separated_by,
              );
          }
-             FieldsShape::Tuple => {
-                 w!(self, "(...)");
-             }
--            FieldsShape::Unit => {}
-+            FieldsShape::Unit => {},
-         }
-     }
- 
  
          match item {
              ModItemId::Use(ast_id) => {

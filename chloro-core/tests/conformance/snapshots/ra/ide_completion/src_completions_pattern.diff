@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8413 bytes
-Chloro size:   8410 bytes
+Chloro size:   8409 bytes
 Rustfmt size:  8413 bytes
 
 ✗ Outputs DIFFER
@@ -46,7 +46,4 @@ Rustfmt size:  8413 bytes
 -
              acc.add_nameref_keywords_with_colon(ctx);
          }
--        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
-+        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {},
-     }
- }
+         Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}

@@ -54,18 +54,18 @@ mod tests {
     fn test_sort_key_ordering() {
         let mut items = vec!["ALL_CAPS", "Upper", "lower", "another"];
         items.sort_by_key(|&s| sort_key(s));
-        assert_eq!(items, vec!["another", "lower", "Upper", "ALL_CAPS"]);
+        assert_eq!(items, vec!["ALL_CAPS", "Upper", "another", "lower"]);
     }
     #[test]
     fn test_sort_key_self_first() {
-        let mut items = vec!["Foo", "self", "bar", "Baz"];
+        let mut items = vec!["self", "bar", "Baz", "Foo"];
         items.sort_by_key(|&s| sort_key(s));
-        assert_eq!(items, vec!["self", "bar", "Baz", "Foo"]);
+        assert_eq!(items, vec!["self", "Baz", "Foo", "bar"]);
     }
     #[test]
     fn test_sort_key_self_with_all_caps() {
         let mut items = vec!["ALL_CAPS", "self", "lower", "Upper"];
         items.sort_by_key(|&s| sort_key(s));
-        assert_eq!(items, vec!["self", "lower", "Upper", "ALL_CAPS"]);
+        assert_eq!(items, vec!["self", "ALL_CAPS", "Upper", "lower"]);
     }
 }

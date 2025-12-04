@@ -253,7 +253,7 @@ impl<'db> Context<'db> {
                                 Term::Const(konst) => self.add_constraints_from_const(konst),
                             }
                         }
-                        ExistentialPredicate::AutoTrait(_) => {},
+                        ExistentialPredicate::AutoTrait(_) => {}
                     }
                 }
             }
@@ -267,7 +267,7 @@ impl<'db> Context<'db> {
                 // we encounter this when walking the trait references for object
                 // types, where we use Error as the Self type
             }
-            TyKind::Bound(..) => {},
+            TyKind::Bound(..) => {}
             TyKind::CoroutineWitness(..)
             | TyKind::Placeholder(..)
             | TyKind::Infer(..)
@@ -317,7 +317,7 @@ impl<'db> Context<'db> {
     fn add_constraints_from_const(&mut self, c: Const<'db>) {
         match c.kind() {
             ConstKind::Unevaluated(c) => self.add_constraints_from_invariant_args(c.args),
-            _ => {},
+            _ => {}
         }
     }
 
@@ -348,14 +348,14 @@ impl<'db> Context<'db> {
         );
         match region.kind() {
             RegionKind::ReEarlyParam(param) => self.constrain(param.index as usize, variance),
-            RegionKind::ReStatic => {},
+            RegionKind::ReStatic => {}
             RegionKind::ReBound(..) => {
                 // Either a higher-ranked region inside of a type or a
                 // late-bound function parameter.
                 //
                 // We do not compute constraints for either of these.
             }
-            RegionKind::ReError(_) => {},
+            RegionKind::ReError(_) => {}
             RegionKind::ReLateParam(..)
             | RegionKind::RePlaceholder(..)
             | RegionKind::ReVar(..)

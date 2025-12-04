@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35489 bytes
-Chloro size:   35177 bytes
+Chloro size:   35174 bytes
 Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
@@ -239,14 +239,6 @@ Rustfmt size:  37277 bytes
          };
  
          let source_map = {
-             | Pat::ConstBlock(..)
-             | Pat::Wild
-             | Pat::Missing
--            | Pat::Expr(_) => {}
-+            | Pat::Expr(_) => {},
-             &Pat::Bind { subpat, .. } => {
-                 if let Some(subpat) = subpat {
-                     f(subpat);
                  args.iter().copied().for_each(f);
              }
              Pat::Ref { pat, .. } => f(*pat),
@@ -269,11 +261,7 @@ Rustfmt size:  37277 bytes
          match expr_only.binding_owners.get(&binding) {
              Some(it) => {
                  // We assign expression ids in a way that outer closures will receive
-             | Expr::Path(_)
-             | Expr::OffsetOf(_)
-             | Expr::Literal(_)
--            | Expr::Underscore => {}
-+            | Expr::Underscore => {},
+             | Expr::Underscore => {}
              Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                  AsmOperand::In { expr, .. }
 -                | AsmOperand::Out {
@@ -350,11 +338,7 @@ Rustfmt size:  37277 bytes
                      f(*initializer);
                      f(*repeat)
                  }
-             | Expr::Path(_)
-             | Expr::OffsetOf(_)
-             | Expr::Literal(_)
--            | Expr::Underscore => {}
-+            | Expr::Underscore => {},
+             | Expr::Underscore => {}
              Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                  AsmOperand::In { expr, .. }
 -                | AsmOperand::Out {

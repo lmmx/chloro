@@ -113,8 +113,7 @@ some_macro! { content }"#;
     let output = format_source(input);
     // Should have blank line between function and macro call
     assert_snapshot!(output, @r"
-    fn foo() {
-    }
+    fn foo() {}
 
     some_macro! { content }
     ");
@@ -129,8 +128,7 @@ fn foo() {}"#;
     assert_snapshot!(output, @r"
     some_macro! { content }
 
-    fn foo() {
-    }
+    fn foo() {}
     ");
 }
 
@@ -183,8 +181,7 @@ struct Foo;"#;
         }
     }
 
-    fn helper() {
-    }
+    fn helper() {}
 
     config_data! {
         /// Local configs

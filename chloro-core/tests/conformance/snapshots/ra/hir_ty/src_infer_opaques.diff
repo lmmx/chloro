@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5724 bytes
-Chloro size:   5722 bytes
+Chloro size:   5721 bytes
 Rustfmt size:  5762 bytes
 
 ✗ Outputs DIFFER
@@ -23,14 +23,6 @@ Rustfmt size:  5762 bytes
      },
  };
  
-             (
-                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
-                 UsageKind::NonDefiningUse(..),
--            ) => {}
-+            ) => {},
-             // When merging unconstrained hidden types, we prefer later ones. This is
-             // used as in most cases, the defining use is the final return statement
-             // of our function, and other uses with defining arguments are likely not
          debug!(?opaque_types);
  
          let interner = self.interner();

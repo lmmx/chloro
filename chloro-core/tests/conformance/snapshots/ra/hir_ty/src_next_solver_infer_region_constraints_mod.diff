@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24418 bytes
-Chloro size:   24461 bytes
+Chloro size:   24460 bytes
 Rustfmt size:  24577 bytes
 
 ✗ Outputs DIFFER
@@ -142,14 +142,6 @@ Rustfmt size:  24577 bytes
              match (a.kind(), b.kind()) {
                  (RegionKind::ReVar(a), RegionKind::ReVar(b)) => {
                      debug!("make_eqregion: unifying {:?} with {:?}", a, b);
-                         self.storage.any_unifications = true;
-                     };
-                 }
--                (_, _) => {}
-+                (_, _) => {},
-             }
-         }
-     }
      #[instrument(skip(self), level = "debug")]
      pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
          // cannot add constraints once regions are resolved

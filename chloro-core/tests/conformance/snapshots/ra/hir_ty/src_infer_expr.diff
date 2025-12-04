@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111676 bytes
-Chloro size:   111482 bytes
+Chloro size:   111481 bytes
 Rustfmt size:  111676 bytes
 
 ✗ Outputs DIFFER
@@ -213,14 +213,6 @@ Rustfmt size:  111676 bytes
              match fn_def.0 {
                  CallableDefId::FunctionId(f) => {
                      if let ItemContainerId::TraitId(trait_) = f.lookup(self.db).container {
-                         ));
-                     }
-                 }
--                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {}
-+                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {},
-             }
-         }
-     }
  
      /// Enforces expectations on lhs type and rhs type depending on the operator and returns the
      /// output type of the binary op.

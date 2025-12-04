@@ -436,7 +436,7 @@ impl ExpressionStore {
             | Pat::ConstBlock(..)
             | Pat::Wild
             | Pat::Missing
-            | Pat::Expr(_) => {},
+            | Pat::Expr(_) => {}
             &Pat::Bind { subpat, .. } => {
                 if let Some(subpat) = subpat {
                     f(subpat);
@@ -491,7 +491,7 @@ impl ExpressionStore {
             | Expr::Path(_)
             | Expr::OffsetOf(_)
             | Expr::Literal(_)
-            | Expr::Underscore => {},
+            | Expr::Underscore => {}
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
                 | AsmOperand::Out { expr: Some(expr), .. }
@@ -627,7 +627,7 @@ impl ExpressionStore {
             | Expr::Path(_)
             | Expr::OffsetOf(_)
             | Expr::Literal(_)
-            | Expr::Underscore => {},
+            | Expr::Underscore => {}
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
                 | AsmOperand::Out { expr: Some(expr), .. }

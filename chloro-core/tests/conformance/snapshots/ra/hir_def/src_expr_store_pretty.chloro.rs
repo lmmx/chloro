@@ -483,7 +483,7 @@ impl Printer<'_> {
 
     fn whitespace(&mut self) {
         match self.buf.chars().next_back() {
-            None | Some('\n' | ' ') => {},
+            None | Some('\n' | ' ') => {}
             _ => self.buf.push(' '),
         }
     }
@@ -491,14 +491,14 @@ impl Printer<'_> {
     fn newline(&mut self) {
         if matches!(self.line_format, LineFormat::Oneline) {
             match self.buf.chars().last() {
-                Some(' ') | None => {},
+                Some(' ') | None => {}
                 Some(_) => {
                     w!(self, " ");
                 }
             }
         } else {
             match self.buf.chars().rev().find_position(|ch| *ch != ' ') {
-                Some((_, '\n')) | None => {},
+                Some((_, '\n')) | None => {}
                 Some((idx, _)) => {
                     if idx != 0 {
                         self.buf.drain(self.buf.len() - idx..);

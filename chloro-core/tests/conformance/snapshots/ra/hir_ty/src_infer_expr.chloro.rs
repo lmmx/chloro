@@ -2364,7 +2364,7 @@ impl<'db> InferenceContext<'_, 'db> {
                         ));
                     }
                 }
-                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {},
+                CallableDefId::StructId(_) | CallableDefId::EnumVariantId(_) => {}
             }
         }
     }

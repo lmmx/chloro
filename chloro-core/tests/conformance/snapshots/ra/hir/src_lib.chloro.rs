@@ -34,6 +34,7 @@ pub mod term_search;
 
 mod display;
 
+#[doc(hidden)]
 pub use hir_def::ModuleId;
 
 use std::{
@@ -149,6 +150,7 @@ pub use {
     hir_ty::mir,
 };
 
+#[allow(unused)]
 use {
     hir_def::expr_store::path::Path,
     hir_expand::{name::AsName, span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef}},

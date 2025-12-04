@@ -4,6 +4,7 @@ use ra_ap_syntax::{
 };
 
 use crate::formatter::node::common::{fields, header};
+use crate::formatter::printer::Printer;
 use crate::formatter::write_indent;
 
 /// Collect non-doc comments from inside a variant node (before the name)
@@ -31,6 +32,30 @@ fn collect_inner_comments(node: &SyntaxNode) -> Vec<String> {
     }
 
     comments
+}
+
+fn get_trailing_comment(node: &SyntaxNode) -> Option<String> {
+    let mut next = node.next_sibling_or_token();
+    while let Some(item) = next {
+        match &item {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::COMMENT {
+                    return Some(t.text().to_string());
+                } else if t.kind() == SyntaxKind::WHITESPACE {
+                    // Only continue if no newline
+                    if t.text().contains('\n') {
+                        return None;
+                    }
+                    next = t.next_sibling_or_token();
+                    continue;
+                } else {
+                    return None;
+                }
+            }
+            NodeOrToken::Node(_) => return None,
+        }
+    }
+    None
 }
 
 /// Check if there's a blank line before this node (looking at preceding siblings)
@@ -129,7 +154,12 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     }
                 }
             }
-            buf.push_str(",\n");
+            if let Some(trailing) = get_trailing_comment(variant.syntax()) {
+                buf.push_str(", ");
+                buf.newline(&trailing);
+            } else {
+                buf.newline(",");
+            }
 
             first_variant = false;
         }

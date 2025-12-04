@@ -44,7 +44,7 @@ impl<'db> OpaqueTypeStorage<'db> {
                 None => {
                     panic!("reverted opaque type inference that was never registered: {key:?}")
                 }
-                Some(_) => {},
+                Some(_) => {}
             }
         }
     }

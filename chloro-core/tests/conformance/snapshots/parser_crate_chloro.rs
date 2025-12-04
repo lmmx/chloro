@@ -1255,13 +1255,11 @@ fn o() -> Result<(), ()> {
 
 fn ();
 
-fn foo() {
-}
+fn foo() {}
 
 struct Foo;
 
-fn foo(x: i32, y) {
-}
+fn foo(x: i32, y) {}
 
 struct S {
     f: u32,
@@ -1328,8 +1326,7 @@ fn foo() {
     return 92;
 }
 
-async fn foo() {
-}
+async fn foo() {}
 
 const ;
 
@@ -1348,8 +1345,7 @@ fn g() {
     ();
 }
 
-fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {
-}
+fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {}
 
 fn main() {
     let _: Box<(Copy) + (?Sized) + (for<'a> Trait<'a>)
@@ -1373,9 +1369,7 @@ use ;
 use ;
 
 fn foo()
-where for<'a>
-{
-}
+where for<'a> {}
 
 {
     x
@@ -1415,8 +1409,7 @@ fn f() {
 }
 
 #[foo(foo, +, 92)]
-fn foo() {
-}
+fn foo() {}
 
 #[foo(
 fn foo() {
@@ -1434,8 +1427,7 @@ fn r() {
 struct S;
 
 
-fn foo() {
-}
+fn foo() {}
 
 
 struct S {
@@ -1455,8 +1447,7 @@ use ;
 use ;
 
 use foo::bar;
-fn f() {
-}
+fn f() {}
 
 fn foo(a: A) {
     a.
@@ -1551,9 +1542,7 @@ struct S {
 }
 
 fn foo<T>()
-where T
-{
-}
+where T {}
 
 fn a() {
     [1, 2, @
@@ -1626,20 +1615,16 @@ type ForForFn = for<'a> for<'b> fn(&'a i32, &'b i32);
 
 fn for_for_for<T>()
 where
-    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy,
-{
-}
+    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy, {}
 
-fn foo() {
-}
+fn foo() {}
 
 {
     1
 }{
     2 + 3
 }
-fn baz() {
-}
+fn baz() {}
 
 {
     1
@@ -1660,9 +1645,7 @@ fn main() {
 }
 
 fn f<T>()
-where T: ?for<> Sized
-{
-}
+where T: ?for<> Sized {}
 
 type T = *();
 
@@ -1776,32 +1759,26 @@ fn foo() {
     ()
 }
 
-fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {
-}
+fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
 use b;
 
 use {a;
 struct T;
 
-fn test() {
-}
+fn test() {}
 use {a, b};
 
-fn foo() {
-}
-fn bar() {
-}
+fn foo() {}
+fn bar() {}
 
 fn foo() {
     pub
     92;
 }
 
-fn f() -> impl Iterator<Item = , Item = > {
-}
+fn f() -> impl Iterator<Item = , Item = > {}
 
-fn f<T: Clone,, U:, V>() {
-}
+fn f<T: Clone,, U:, V>() {}
 
 fn main() {
     'loop:
@@ -1839,19 +1816,16 @@ fn foo() {
     let (,);
 }
 
-fn gen_fn() {
-}
+fn gen_fn() {}
 
-async fn async_gen_fn() {
-}
+async fn async_gen_fn() {}
 
 fn main() {
     S { S::default() };
     S { 0::default() };
 }
 
-fn f(x, y: i32, z, t: i32) {
-}
+fn f(x, y: i32, z, t: i32) {}
 
 fn foo() {
     builtin#asm(
@@ -1859,8 +1833,7 @@ fn foo() {
     );
 }
 
-fn f(y: i32, t: i32) {
-}
+fn f(y: i32, t: i32) {}
 
 #
 #
@@ -1885,17 +1858,13 @@ fn foo() {
     x.0();
 }
 
-fn a() {
-}
+fn a() {}
 
-fn b(x: i32) {
-}
+fn b(x: i32) {}
 
-fn c(x: i32) {
-}
+fn c(x: i32) {}
 
-fn d(x: i32, y: ()) {
-}
+fn d(x: i32, y: ()) {}
 
 fn foo() {
     if true {};
@@ -1952,8 +1921,8 @@ fn f() {
 
 fn main() {
     match 42 {
-        ..0 => {},
-        1..2 => {},
+        ..0 => {}
+        1..2 => {}
     }
 }
 
@@ -2111,8 +2080,7 @@ fn main() {
     let [| a, ..] = [];
 }
 
-fn foo(..., (x, y): (i32, i32)) {
-}
+fn foo(..., (x, y): (i32, i32)) {}
 
 fn foo() {
     x?;
@@ -2132,20 +2100,15 @@ fn main() {
 }
 
 impl S {
-    fn a(self) {
-    }
+    fn a(self) {}
 
-    fn b(&self) {
-    }
+    fn b(&self) {}
 
-    fn c(&'a self) {
-    }
+    fn c(&'a self) {}
 
-    fn d(&'a mut self, x: i32) {
-    }
+    fn d(&'a mut self, x: i32) {}
 
-    fn e(mut self) {
-    }
+    fn e(mut self) {}
 }
 
 type Foo where Foo: Copy = ();
@@ -2178,9 +2141,7 @@ macro_rules! m [ ($i:ident) => {} ];
 macro m { ($i:ident) => {} }
 
 fn f<T>()
-where T: for<> ?Sized
-{
-}
+where T: for<> ?Sized {}
 
 struct S<T>(T);
 
@@ -2320,9 +2281,7 @@ type Foo where Foo: Copy = ();
 type Never = !;
 
 fn foo<T>()
-where T: Copy
-{
-}
+where T: Copy {}
 
 fn foo() {
     let _ = a;
@@ -2337,8 +2296,7 @@ fn foo() {
     builtin#naked_asm("");
 }
 
-fn foo<T: for<'a> [const] async Trait>() {
-}
+fn foo<T: for<'a> [const] async Trait>() {}
 
 type A = dyn Iterator<Item=Foo<'a>> + 'a;
 
@@ -2357,11 +2315,9 @@ pub fn main() {
     async gen move { yield ""; };
 }
 
-fn foo() {
-}
+fn foo() {}
 
-fn bar() -> () {
-}
+fn bar() -> () {}
 
 fn main() {
     S { #[cfg(test)] field: 1 }
@@ -2410,8 +2366,7 @@ fn foo() {
     !(Ok(()));
 }
 
-fn f<T: Clone>() {
-}
+fn f<T: Clone>() {}
 
 fn foo() {
     let foo::Bar = ();
@@ -2467,16 +2422,13 @@ fn foo<T>()
 where
     T::method(..): Send,
     method(..): Send,
-    method::(..): Send,
-{
-}
+    method::(..): Send, {}
 
 impl S {
     #![attr]
 }
 
-fn a() {
-}
+fn a() {}
 
 fn b() {
     let _ = 1;
@@ -2507,8 +2459,7 @@ fn foo() {
 }
 
 impl T for Foo {
-    async fn foo() {
-    }
+    async fn foo() {}
 }
 
 trait Z<U> {}
@@ -2533,9 +2484,7 @@ where
    'a: 'b + 'c,
    T: Clone + Copy + 'static,
    Iterator::Item: 'a,
-   <T as Iterator>::Item: 'a
-{
-}
+   <T as Iterator>::Item: 'a {}
 
 macro_rules! {}
 
@@ -2547,8 +2496,7 @@ fn main() {
     let foo = macro_rules!();
 }
 
-fn f<T: Clone>() {
-}
+fn f<T: Clone>() {}
 
 struct B(pub (super::A));
 
@@ -2560,13 +2508,11 @@ type B = S<'static + Trait>;
 
 type A = Foo<syn::Token![_]>;
 
-fn foo<F: Foo<N=3>>() {
-}
+fn foo<F: Foo<N=3>>() {}
 
 const TEST: usize = 3;
 
-fn bar<F: Foo<N={TEST}>>() {
-}
+fn bar<F: Foo<N={TEST}>>() {}
 
 type F = Start::(Middle) -> (Middle)::End;
 
@@ -2593,8 +2539,7 @@ type T = StreamingIterator<Item<'a>: Clone>;
 
 type T = StreamingIterator<Item(T): Clone>;
 
-fn foo() {
-}
+fn foo() {}
 
 macro_rules! foo {}
 
@@ -2612,16 +2557,14 @@ type B = for<'a> unsafe extern "C" fn(&'a ()) -> ();
 
 type Obj = for<'a> PartialEq<&'a i32>;
 
-const fn foo(_: impl [const] Trait) {
-}
+const fn foo(_: impl [const] Trait) {}
 use std::{*};
 
 use *;
 
 const u32 = 0;
 
-fn foo<T: Clone + Copy>() {
-}
+fn foo<T: Clone + Copy>() {}
 
 fn f() {
     v = {1}&2;
@@ -2658,8 +2601,7 @@ fn foo() {
 }
 
 unsafe impl T for Foo {
-    unsafe fn foo() {
-    }
+    unsafe fn foo() {}
 }
 
 pub(in super::A) struct S;
@@ -2681,8 +2623,7 @@ fn foo() {
 
 struct S;
 
-fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {
-}
+fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {}
 
 enum E {
     X(i32),
@@ -2715,9 +2656,9 @@ struct A<const N: i32 = i32::MAX>;
 
 fn foo() {
     match () {
-        _ => {},
-        () => {},
-        [] => {},
+        _ => {}
+        () => {}
+        [] => {}
     }
 }
 
@@ -2741,8 +2682,7 @@ fn main() {
 }
 
 impl T for Foo {
-    async unsafe fn foo() {
-    }
+    async unsafe fn foo() {}
 }
 
 fn foo() {
@@ -2769,17 +2709,15 @@ type Qux =
     );
 
 impl S {
-    fn a(self: &Self) {
-    }
+    fn a(self: &Self) {}
 
-    fn b(mut self: Box<Self>) {
-    }
+    fn b(mut self: Box<Self>) {}
 }
 
 fn foo() {
     match () {
         _ => (),
-        _ => {},
+        _ => {}
         _ => (),
     }
 }
@@ -2940,8 +2878,7 @@ fn foo() {
     0x36 as u8 <= 0x37;
 }
 
-fn f(#[attr1] pat: Type) {
-}
+fn f(#[attr1] pat: Type) {}
 
 struct S(f32);
 
@@ -2965,15 +2902,12 @@ fn f() {
 
 fn for_trait<F>()
 where
-   for<'a> F: Fn(&'a str)
-{
-}
+   for<'a> F: Fn(&'a str) {}
 
 #
 
 
-fn main() {
-}
+fn main() {}
 
 fn foo() {
     loop {
@@ -2990,8 +2924,7 @@ where U: Copy {}
 trait Z<U>
 where Self: T<U> {}
 
-const fn foo(_: impl const Trait) {
-}
+const fn foo(_: impl const Trait) {}
 
 fn foo() {
     become foo();
@@ -3042,11 +2975,9 @@ fn a() {
     fn b() {}
 }
 
-fn foo() -> Box<T + 'f> {
-}
+fn foo() -> Box<T + 'f> {}
 
-fn foo() -> Box<dyn T + 'f> {
-}
+fn foo() -> Box<dyn T + 'f> {}
 
 fn main() {
     match () {
@@ -3057,11 +2988,9 @@ fn main() {
     }
 }
 
-fn async_foo(_: impl async Fn(&i32)) {
-}
+fn async_foo(_: impl async Fn(&i32)) {}
 
-fn foo<#[lt_attr] 'a, #[t_attr] T>() {
-}
+fn foo<#[lt_attr] 'a, #[t_attr] T>() {}
 
 type T = ();
 
@@ -3070,18 +2999,14 @@ impl F {
 
     const B: i32 = 92;
 
-    fn foo() {
-    }
+    fn foo() {}
 
-    fn bar(&self) {
-    }
+    fn bar(&self) {}
 }
 
-fn f<'a: 'b>() {
-}
+fn f<'a: 'b>() {}
 
-fn f(#[must_use] self) {
-}
+fn f(#[must_use] self) {}
 
 fn main() {
     let m!(x) = 0;
@@ -3089,8 +3014,7 @@ fn main() {
 
 mod a;
 
-fn foo() {
-}
+fn foo() {}
 
 type T = S<'static>;
 
@@ -3100,8 +3024,7 @@ fn foo() {
     --1;
 }
 
-fn foo(x: i32) {
-}
+fn foo(x: i32) {}
 
 fn main() {
     foo(loop {});
@@ -3119,29 +3042,23 @@ fn main() {
 }
 
 /// Example
-fn test() {
-}
+fn test() {}
 
 static FOO: u32 = 1;
 
 static mut BAR: i32 = 92;
 
-fn a() {
-}
+fn a() {}
 
-pub fn b() {
-}
+pub fn b() {}
 
 pub macro m($:ident) {}
 
-pub(crate) fn c() {
-}
+pub(crate) fn c() {}
 
-pub(super) fn d() {
-}
+pub(super) fn d() {}
 
-pub(in foo::bar::baz) fn e() {
-}
+pub(in foo::bar::baz) fn e() {}
 use foo::bar::baz;
 
 use ::foo::bar::baz;
@@ -3232,14 +3149,11 @@ enum A {
     B(i8, i8),
 }
 
-fn foo(-128..=127: i8) {
-}
+fn foo(-128..=127: i8) {}
 
 fn test_serialization<SER>()
 where
-    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
-{
-}
+    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug, {}
 
 struct S {
     r#foo: u32,
@@ -3292,39 +3206,27 @@ macro_rules! foo {
 
 fn for_trait<F>()
 where
-    for<'a> F: Fn(&'a str),
-{
-}
+    for<'a> F: Fn(&'a str), {}
 
 fn for_ref<F>()
 where
-    for<'a> &'a F: Debug,
-{
-}
+    for<'a> &'a F: Debug, {}
 
 fn for_parens<F>()
 where
-    for<'a> (&'a F): Fn(&'a str),
-{
-}
+    for<'a> (&'a F): Fn(&'a str), {}
 
 fn for_slice<F>()
 where
-    for<'a> [&'a F]: Eq,
-{
-}
+    for<'a> [&'a F]: Eq, {}
 
 fn for_qpath<T>(_t: &T)
 where
-    for<'a> <&'a T as Baz>::Foo: Iterator,
-{
-}
+    for<'a> <&'a T as Baz>::Foo: Iterator, {}
 
 fn for_for_fn<T>()
 where
-    for<'a> for<'b> fn(&'a T, &'b T): Copy,
-{
-}
+    for<'a> for<'b> fn(&'a T, &'b T): Copy, {}
 
 #
 #
@@ -3544,11 +3446,9 @@ pub fn main() {
 use foo as bar;
 use foo::{a as b, *, ::foo as x, ::*};
 
-fn g1(#[attr1] #[attr2] pat: Type) {
-}
+fn g1(#[attr1] #[attr2] pat: Type) {}
 
-fn g2(#[attr1] x: u8) {
-}
+fn g2(#[attr1] x: u8) {}
 
 fn printf(format: *const i8, #[attr] ...) -> i32;
 
@@ -3557,33 +3457,24 @@ trait Foo {
 }
 
 impl S {
-    fn f(#[must_use] self) {
-    }
+    fn f(#[must_use] self) {}
 
-    fn g1(#[attr] self) {
-    }
+    fn g1(#[attr] self) {}
 
-    fn g2(#[attr] &self) {
-    }
+    fn g2(#[attr] &self) {}
 
-    fn g3<'a>(#[attr] &mut self) {
-    }
+    fn g3<'a>(#[attr] &mut self) {}
 
-    fn g4<'a>(#[attr] &'a self) {
-    }
+    fn g4<'a>(#[attr] &'a self) {}
 
-    fn g5<'a>(#[attr] &'a mut self) {
-    }
+    fn g5<'a>(#[attr] &'a mut self) {}
 
-    fn c(#[attr] self: Self) {
-    }
+    fn c(#[attr] self: Self) {}
 
-    fn d(#[attr] self: Rc<Self>) {
-    }
+    fn d(#[attr] self: Rc<Self>) {}
 }
 
-fn r#foo() {
-}
+fn r#foo() {}
 
 use foo;
 use ::bar;
@@ -3618,8 +3509,7 @@ use ::*;
 use ::{};
 use {};
 
-fn foo(x: impl std::future::Future<Output = i32>) {
-}
+fn foo(x: impl std::future::Future<Output = i32>) {}
 
 fn main() {
     foo(async {
@@ -3647,29 +3537,21 @@ struct I<T:, U:,>;
 
 struct K<'a: 'd, 'd: 'a + 'b, T: 'a + 'd + Clone>;
 
-async fn foo() {
-}
+async fn foo() {}
 
-fn foo() {
-}
+fn foo() {}
 
-const fn foo() {
-}
+const fn foo() {}
 
-const unsafe fn foo() {
-}
+const unsafe fn foo() {}
 
-unsafe fn foo() {
-}
+unsafe fn foo() {}
 
-unsafe fn foo() {
-}
+unsafe fn foo() {}
 
-async unsafe fn foo() {
-}
+async unsafe fn foo() {}
 
-const unsafe fn bar() {
-}
+const unsafe fn bar() {}
 
 trait T {
 }
@@ -3762,8 +3644,7 @@ fn main() {
 }
 
 mod c {
-    fn foo() {
-    }
+    fn foo() {}
     struct S {
     }
 }
@@ -3776,22 +3657,16 @@ mod d {
 }
 
 fn test()
-where (u64, u64): Foo
-{
-}
+where (u64, u64): Foo {}
 
-fn a() -> Foo<bar::Baz> {
-}
+fn a() -> Foo<bar::Baz> {}
 
-fn b(_: impl FnMut(x::Y)) {
-}
+fn b(_: impl FnMut(x::Y)) {}
 
-fn c(_: impl FnMut(&x::Y)) {
-}
+fn c(_: impl FnMut(&x::Y)) {}
 
 #[foo(a,)]
-fn foo() {
-}
+fn foo() {}
 
 type Foo<'a> = &'a (dyn Send + Sync);
 
@@ -3897,8 +3772,7 @@ impl Foo {
     }
 }
 
-fn baz(_: bool) {
-}
+fn baz(_: bool) {}
 
 fn main() {
     baz(<Foo>::bar())
@@ -3926,38 +3800,28 @@ fn main() {
 }
 
 trait T {
-    fn f1((a, b): (usize, usize)) {
-    }
+    fn f1((a, b): (usize, usize)) {}
 
-    fn f2(S { a, b }: S) {
-    }
+    fn f2(S { a, b }: S) {}
 
-    fn f3(NewType(a): NewType) {
-    }
+    fn f3(NewType(a): NewType) {}
 
-    fn f4(&&a: &&usize) {
-    }
+    fn f4(&&a: &&usize) {}
 
     fn bar(_: u64, mut x: i32);
 }
 
 fn f<T>()
-where T: Fn() -> u8 + Send
-{
-}
+where T: Fn() -> u8 + Send {}
 
 impl U {
-    fn f1((a, b): (usize, usize)) {
-    }
+    fn f1((a, b): (usize, usize)) {}
 
-    fn f2(S { a, b }: S) {
-    }
+    fn f2(S { a, b }: S) {}
 
-    fn f3(NewType(a): NewType) {
-    }
+    fn f3(NewType(a): NewType) {}
 
-    fn f4(&&a: &&usize) {
-    }
+    fn f4(&&a: &&usize) {}
 }
 
 trait T {
@@ -3965,11 +3829,9 @@ trait T {
 
     const f: u8 = 0;
 
-    fn foo() {
-    }
+    fn foo() {}
 
-    unsafe fn bar() {
-    }
+    unsafe fn bar() {}
 }
 
 impl T for Foo {
@@ -3977,11 +3839,9 @@ impl T for Foo {
 
     const f: u8 = 0;
 
-    fn foo() {
-    }
+    fn foo() {}
 
-    unsafe fn bar() {
-    }
+    unsafe fn bar() {}
 }
 
 impl T for () {
@@ -3994,8 +3854,7 @@ unsafe impl T for () {
 
 #[cfg(test)]
 #[Ignore]
-fn foo() {
-}
+fn foo() {}
 
 #[path = "a.rs"]
 mod b;
@@ -4040,8 +3899,7 @@ trait TraitWithExpr {
     fn fn_with_expr(x: [i32; 1]);
 }
 
-fn foo() {
-}
+fn foo() {}
 
 fn foo() {
     for _x in 0..(0..{
@@ -5884,6 +5742,7 @@ mod generated;
 
 use crate::Edition;
 
+#[allow(unreachable_pub)]
 pub use self::generated::SyntaxKind;
 
 impl From<u16> for SyntaxKind {
@@ -10279,7 +10138,7 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
 
 fn opt_path_args(p: &mut Parser<'_>, mode: Mode) {
     match mode {
-        Mode::Use | Mode::Attr | Mode::Vis => {},
+        Mode::Use | Mode::Attr | Mode::Vis => {}
         Mode::Type => opt_path_type_args(p),
         Mode::Expr => generic_args::opt_generic_arg_list_expr(p),
     }

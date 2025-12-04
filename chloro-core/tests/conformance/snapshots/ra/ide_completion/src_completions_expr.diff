@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20947 bytes
-Chloro size:   20890 bytes
+Chloro size:   20889 bytes
 Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
@@ -117,7 +117,7 @@ Rustfmt size:  21861 bytes
 -            resolution: Some(resolution),
 -            ..
 -        } => {
-+        Qualified::With { resolution: None, .. } => {},
++        Qualified::With { resolution: None, .. } => {}
 +        Qualified::With { resolution: Some(resolution), .. } => {
              // Add associated types on type parameters and `Self`.
 -            ctx.scope

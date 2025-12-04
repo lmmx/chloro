@@ -1041,7 +1041,7 @@ impl<'db> Scope<'db> {
                     acc.add_local(e.name(), e.binding());
                 });
             }
-            Scope::MacroDefScope(_) => {},
+            Scope::MacroDefScope(_) => {}
         }
     }
 }

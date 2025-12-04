@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5785 bytes
-Chloro size:   5782 bytes
+Chloro size:   5780 bytes
 Rustfmt size:  5785 bytes
 
 ✗ Outputs DIFFER
@@ -46,18 +46,3 @@ Rustfmt size:  5785 bytes
                          if add_resolution {
                              let mut builder = Builder::from_resolution(ctx, path_ctx, name, def);
                              builder.with_relevance(|r| CompletionRelevance {
-                     cov_mark::hit!(enum_plain_qualified_use_tree);
-                     acc.add_enum_variants(ctx, path_ctx, *e);
-                 }
--                _ => {}
-+                _ => {},
-             }
-         }
-         // fresh use tree with leading colon2, only show crate roots
-             });
-             acc.add_nameref_keywords_with_colon(ctx);
-         }
--        Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {}
-+        Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {},
-     }
- }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57729 bytes
+Chloro size:   57728 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
@@ -109,14 +109,6 @@ Rustfmt size:  58275 bytes
                          if self.found_self_module_name_ref(&name_ref, sink) {
                              return;
                          }
-                     }
-                 }
-             }
--            _ => {}
-+            _ => {},
-         }
-     }
- 
          };
  
          match NameRefClass::classify(self.sema, name_ref) {

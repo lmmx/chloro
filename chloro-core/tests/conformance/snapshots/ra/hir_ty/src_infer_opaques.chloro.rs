@@ -49,7 +49,7 @@ impl<'db> UsageKind<'db> {
             (
                 UsageKind::NonDefiningUse(..) | UsageKind::UnconstrainedHiddenType(..),
                 UsageKind::NonDefiningUse(..),
-            ) => {},
+            ) => {}
             // When merging unconstrained hidden types, we prefer later ones. This is
             // used as in most cases, the defining use is the final return statement
             // of our function, and other uses with defining arguments are likely not

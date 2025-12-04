@@ -1170,15 +1170,13 @@ impl<'db> Interner for DbInterner<'db> {
         true
     }
 
-    fn debug_assert_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {
-    }
+    fn debug_assert_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {}
 
     fn debug_assert_existential_args_compatible(
         self,
         _def_id: Self::DefId,
         _args: Self::GenericArgs,
-    ) {
-    }
+    ) {}
 
     fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
     where

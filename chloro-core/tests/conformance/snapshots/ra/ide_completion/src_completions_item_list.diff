@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6052 bytes
-Chloro size:   6050 bytes
+Chloro size:   6049 bytes
 Rustfmt size:  6074 bytes
 
 ✗ Outputs DIFFER
@@ -24,14 +24,6 @@ Rustfmt size:  6074 bytes
              acc.add_super_keyword(ctx, *super_chain_len);
          }
          Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
-             });
-             acc.add_nameref_keywords_with_colon(ctx);
-         }
--        Qualified::TypeAnchor { .. } | Qualified::No | Qualified::With { .. } => {}
-+        Qualified::TypeAnchor { .. } | Qualified::No | Qualified::With { .. } => {},
-     }
- }
- 
  fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
  
