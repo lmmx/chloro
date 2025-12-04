@@ -62,6 +62,7 @@ use crate::{
     AdtId, BlockId, BlockLoc, DefWithBodyId, FunctionId, GenericDefId, ImplId, MacroId,
     ModuleDefId, ModuleId, TraitId, TypeAliasId, UnresolvedMacro,
 };
+
 pub use self::path::hir_segment_to_ast_segment;
 
 pub(super) fn lower_body(

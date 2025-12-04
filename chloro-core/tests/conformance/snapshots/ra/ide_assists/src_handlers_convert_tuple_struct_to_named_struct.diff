@@ -2,14 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26763 bytes
-Chloro size:   25991 bytes
+Chloro size:   25990 bytes
 Rustfmt size:  26763 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
 +use std::ops::RangeInclusive;
-+
  use either::Either;
  use hir::FileRangeWrapper;
  use ide_db::defs::{Definition, NameRefClass};

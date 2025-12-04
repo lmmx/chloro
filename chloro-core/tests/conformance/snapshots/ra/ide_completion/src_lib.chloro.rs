@@ -5,6 +5,7 @@ mod config;
 mod context;
 mod item;
 mod render;
+
 mod snippet;
 #[cfg(test)]
 mod tests;
@@ -24,6 +25,7 @@ use crate::{
         PathKind,
     },
 };
+
 pub use crate::{
     config::{AutoImportExclusionType, CallableSnippets, CompletionConfig},
     item::{

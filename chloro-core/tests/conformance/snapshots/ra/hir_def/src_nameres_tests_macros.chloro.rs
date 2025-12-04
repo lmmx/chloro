@@ -1,4 +1,5 @@
 use expect_test::expect;
+
 use itertools::Itertools;
 use span::Edition;
 

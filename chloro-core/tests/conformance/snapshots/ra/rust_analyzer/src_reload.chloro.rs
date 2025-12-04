@@ -27,9 +27,9 @@ use paths::Utf8Path;
 use proc_macro_api::ProcMacroClient;
 use project_model::{ManifestPath, ProjectWorkspace, ProjectWorkspaceKind, WorkspaceBuildScripts};
 use stdx::{format_to, thread::ThreadIntent};
-use tracing::{debug, info};
 use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, ChangeKind};
+use tracing::{debug, info};
 
 use crate::{
     config::{Config, FilesWatcher, LinkedProject},

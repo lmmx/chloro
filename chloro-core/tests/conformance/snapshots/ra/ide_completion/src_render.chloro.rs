@@ -30,7 +30,6 @@ use crate::{
     CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
     CompletionRelevance,
 };
-
 /// Interface for data and methods required for items rendering.
 #[derive(Debug, Clone)]
 pub(crate) struct RenderContext<'a> {

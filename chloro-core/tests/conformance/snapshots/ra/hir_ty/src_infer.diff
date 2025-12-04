@@ -2,18 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   73212 bytes
+Chloro size:   73214 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::{cell::OnceCell, convert::identity, iter, ops::Index};
- 
  use base_db::Crate;
-+use cast::{CastCheck, CastError};
-+pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
-+pub use coerce::could_coerce;
  use either::Either;
  use hir_def::{
 -    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
@@ -41,7 +36,6 @@ Rustfmt size:  74236 bytes
  };
  use stdx::never;
  use triomphe::Arc;
-+pub use unify::{could_unify, could_unify_deeply};
  
  use crate::{
 -    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
@@ -71,16 +65,11 @@ Rustfmt size:  74236 bytes
 -//
 -// https://github.com/rust-lang/rust/issues/57411
 -#[allow(unreachable_pub)]
--pub use coerce::could_coerce;
+ pub use coerce::could_coerce;
 -#[allow(unreachable_pub)]
--pub use unify::{could_unify, could_unify_deeply};
--
--use cast::{CastCheck, CastError};
--pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
--
- /// The entry point of type inference.
- pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<InferenceResult<'_>> {
-     let _p = tracing::info_span!("infer_query").entered();
+ pub use unify::{could_unify, could_unify_deeply};
+ 
+ use cast::{CastCheck, CastError};
      ctx.type_inference_fallback();
  
      // Comment from rustc:

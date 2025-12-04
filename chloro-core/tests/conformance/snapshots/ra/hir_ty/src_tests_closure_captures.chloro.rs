@@ -12,6 +12,7 @@ use crate::{
     mir::MirSpan,
     test_db::TestDB,
 };
+
 use super::{setup_tracing, visit_module};
 
 fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

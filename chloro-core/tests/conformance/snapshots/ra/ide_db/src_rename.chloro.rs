@@ -22,7 +22,6 @@
 //! Our current behavior is ¯\_(ツ)_/¯.
 
 use std::fmt::{self, Display};
-
 use base_db::AnchoredPathBuf;
 use either::Either;
 use hir::{sym, FieldSource, FileRange, InFile, ModuleSource, Name, Semantics};
@@ -32,8 +31,11 @@ use syntax::{
     ast::{self, HasName},
     AstNode, SyntaxKind, TextRange, T,
 };
-pub use _bail as bail;
-pub use _format_err as format_err;
+
+use crate::{
+    source_change::ChangeAnnotation,
+    text_edit::{TextEdit, TextEditBuilder},
+};
 
 use crate::{
     defs::Definition,
@@ -42,10 +44,6 @@ use crate::{
     syntax_helpers::node_ext::expr_as_name_ref,
     traits::convert_to_def_in_trait,
     RootDatabase,
-};
-use crate::{
-    source_change::ChangeAnnotation,
-    text_edit::{TextEdit, TextEditBuilder},
 };
 
 pub type Result<T, E = RenameError> = std::result::Result<T, E>;
@@ -64,11 +62,13 @@ macro_rules! _format_err {
     ($fmt:expr) => { RenameError(format!($fmt)) };
     ($fmt:expr, $($arg:tt)+) => { RenameError(format!($fmt, $($arg)+)) }
 }
+pub use _format_err as format_err;
 
 #[macro_export]
 macro_rules! _bail {
     ($($tokens:tt)*) => { return Err(format_err!($($tokens)*)) }
 }
+pub use _bail as bail;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum RenameDefinition {

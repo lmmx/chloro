@@ -1,7 +1,6 @@
 //! A desugared representation of paths like `crate::foo` or `<Type as Trait>::bar`.
 
 use std::iter;
-
 use hir_expand::{
     mod_path::{ModPath, PathKind},
     name::Name,

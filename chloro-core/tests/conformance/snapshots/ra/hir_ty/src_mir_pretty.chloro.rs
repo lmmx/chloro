@@ -15,6 +15,7 @@ use crate::{
     display::{ClosureStyle, DisplayTarget, HirDisplay},
     mir::{PlaceElem, ProjectionElem, StatementKind, TerminatorKind},
 };
+
 use super::{
     AggregateKind, BasicBlockId, BorrowKind, LocalId, MirBody, MutBorrowKind, Operand, OperandKind,
     Place, Rvalue, UnOp,

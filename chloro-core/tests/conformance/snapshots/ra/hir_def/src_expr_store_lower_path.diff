@@ -2,20 +2,20 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11991 bytes
-Chloro size:   11870 bytes
+Chloro size:   11871 bytes
 Rustfmt size:  11991 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
  use std::iter;
  
--use crate::expr_store::{
+ use crate::expr_store::{
 -    lower::{ExprCollector, generics::ImplTraitLowerFn},
--    path::NormalPath,
--};
--
++    lower::{generics::ImplTraitLowerFn, ExprCollector},
+     path::NormalPath,
+ };
+ 
  use hir_expand::{
 -    mod_path::{ModPath, PathKind, resolve_crate_root},
 +    mod_path::{resolve_crate_root, ModPath, PathKind},
@@ -29,13 +29,7 @@ Rustfmt size:  11991 bytes
 +    AstPtr,
  };
  
-+use crate::expr_store::{
-+    lower::{generics::ImplTraitLowerFn, ExprCollector},
-+    path::NormalPath,
-+};
  use crate::{
-     expr_store::path::{GenericArg, GenericArgs, Path},
-     type_ref::TypeRef,
  
  /// Converts an `ast::Path` to `Path`. Works with use trees.
  /// It correctly handles `$crate` based path from macro call.

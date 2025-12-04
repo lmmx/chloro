@@ -1,5 +1,6 @@
-use rustc_ast_ir::try_visit;
 pub(crate) use rustc_next_trait_solver::solve::inspect::*;
+
+use rustc_ast_ir::try_visit;
 use rustc_next_trait_solver::{
     canonical::instantiate_canonical_state,
     resolve::eager_resolve_vars,

@@ -54,6 +54,7 @@ pub mod diagnostics;
 mod mod_resolution;
 mod path_resolution;
 pub mod proc_macro;
+
 #[cfg(test)]
 mod tests;
 
@@ -84,6 +85,7 @@ use crate::{
     AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
     LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
 };
+
 pub use self::path_resolution::ResolvePathResultPrefixInfo;
 
 const PREDEFINED_TOOLS: &[SmolStr] = &[

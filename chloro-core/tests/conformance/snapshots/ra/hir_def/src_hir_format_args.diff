@@ -8,13 +8,6 @@ Rustfmt size:  17849 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     ast::{self, IsString},
-     TextRange,
- };
-+use PositionUsedAs::*;
- 
- use crate::hir::ExprId;
- 
      /// The `x` or `X` flag (for `Debug` only). E.g. the `x` in `{:x?}`.
      pub debug_hex: Option<FormatDebugHex>,
  }
@@ -30,13 +23,6 @@ Rustfmt size:  17849 bytes
  #[derive(Clone, Copy, Debug, PartialEq, Eq)]
  enum PositionUsedAs {
      Placeholder(Option<TextRange>),
-     Precision,
-     Width,
- }
--use PositionUsedAs::*;
- 
- #[allow(clippy::unnecessary_lazy_evaluations)]
- pub(crate) fn parse(
          }
          None => None,
      };

@@ -2,27 +2,26 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13520 bytes
-Chloro size:   13522 bytes
+Chloro size:   13524 bytes
 Rustfmt size:  13520 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! A lowering for `use`-paths (more generally, paths without angle-bracketed segments).
+ 
+ use std::{
+     fmt::{self, Display as _},
      iter,
  };
- 
 +use base_db::Crate;
 +use intern::sym;
 +use smallvec::SmallVec;
 +use span::{Edition, SyntaxContext};
 +use syntax::{ast, AstNode};
-+
-+pub use crate::__path as path;
-+pub use crate::__tool_path as tool_path;
-+pub use crate::name as __name;
+ 
  use crate::{
      db::ExpandDatabase,
-     hygiene::Transparency,
      name::{AsName, Name},
      tt,
  };
@@ -52,24 +51,3 @@ Rustfmt size:  13520 bytes
      // We follow what it did anyway :)
      if mod_path.segments.len() == 1
          && mod_path.kind == PathKind::Plain
-     result_mark.map(|call| db.lookup_intern_macro_call(call.into()).def.krate)
- }
- 
--pub use crate::name as __name;
--
- #[macro_export]
- macro_rules! __known_path {
-     (core::iter::IntoIterator) => {};
-     });
- }
- 
--pub use crate::__path as path;
--
- #[macro_export]
- macro_rules! __tool_path {
-     ($start:ident $(:: $seg:ident)*) => ({
-         ])
-     });
- }
--
--pub use crate::__tool_path as tool_path;

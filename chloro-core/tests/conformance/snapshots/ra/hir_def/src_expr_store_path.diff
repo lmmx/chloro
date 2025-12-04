@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11045 bytes
-Chloro size:   11064 bytes
+Chloro size:   11063 bytes
 Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
@@ -11,7 +11,7 @@ Rustfmt size:  11497 bytes
  //! A desugared representation of paths like `crate::foo` or `<Type as Trait>::bar`.
  
  use std::iter;
- 
+-
 -use crate::{
 -    lang_item::LangItemTarget,
 -    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},

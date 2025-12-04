@@ -6,6 +6,7 @@ use rustc_type_ir::{
 };
 
 use crate::next_solver::BoundConst;
+
 use super::{
     Binder, BoundRegion, BoundTy, Const, ConstKind, DbInterner, Predicate, Region, Ty, TyKind,
 };

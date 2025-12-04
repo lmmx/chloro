@@ -5,6 +5,7 @@ use ide_db::{documentation::HasDocs, SymbolKind};
 use syntax::ToSmolStr;
 
 use crate::{context::CompletionContext, CompletionItem, CompletionItemKind};
+
 use super::Completions;
 
 pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionContext<'_>) {

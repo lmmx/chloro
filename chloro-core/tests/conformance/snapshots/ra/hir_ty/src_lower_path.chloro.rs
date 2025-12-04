@@ -38,6 +38,7 @@ use crate::{
     GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
     PathLoweringDiagnostic, TyDefId, ValueTyDefId,
 };
+
 use super::{
     associated_type_by_name_including_super_traits, const_param_ty_query, ty_query,
     ImplTraitLoweringMode, TyLoweringContext,

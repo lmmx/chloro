@@ -4,6 +4,7 @@ use intern::sym;
 use span::Span;
 
 use crate::{db::ExpandDatabase, name, tt, ExpandResult, MacroCallId, MacroCallKind};
+
 use super::quote;
 
 macro_rules! register_builtin {

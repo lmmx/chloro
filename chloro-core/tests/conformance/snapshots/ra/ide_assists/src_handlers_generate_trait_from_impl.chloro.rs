@@ -4,9 +4,7 @@ use syntax::{
     syntax_editor::{Position, SyntaxEditor},
     AstNode, SyntaxKind, T,
 };
-
 use crate::assist_context::{AssistContext, Assists};
-
 
 // NOTES :
 

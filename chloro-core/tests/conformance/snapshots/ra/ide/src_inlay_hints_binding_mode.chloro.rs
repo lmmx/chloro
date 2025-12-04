@@ -7,6 +7,7 @@ use std::mem;
 
 use hir::Mutability;
 use ide_db::famous_defs::FamousDefs;
+
 use ide_db::text_edit::TextEditBuilder;
 use syntax::ast::{self, AstNode};
 

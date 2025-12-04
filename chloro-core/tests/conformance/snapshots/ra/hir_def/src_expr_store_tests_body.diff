@@ -9,7 +9,7 @@ Rustfmt size:  16197 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  mod block;
- 
+-
 -use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};
  use expect_test::{expect, Expect};
  use la_arena::RawIdx;
@@ -17,6 +17,7 @@ Rustfmt size:  16197 bytes
  use triomphe::Arc;
  
 +use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};
++
  use super::super::*;
  
  fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>, DefWithBodyId) {

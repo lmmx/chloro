@@ -4,13 +4,15 @@ use hir_def::db::DefDatabase;
 use rustc_hash::{FxHashMap, FxHashSet};
 use syntax::ToSmolStr;
 use test_fixture::WithFixture;
-use DynCompatibilityViolationKind::*;
 
 use crate::{dyn_compatibility::dyn_compatibility_with_callback, test_db::TestDB};
+
 use super::{
     DynCompatibilityViolation,
     MethodViolationCode::{self, *},
 };
+
+use DynCompatibilityViolationKind::*;
 
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

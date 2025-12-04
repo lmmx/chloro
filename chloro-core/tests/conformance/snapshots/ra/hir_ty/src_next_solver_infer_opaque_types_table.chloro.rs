@@ -4,11 +4,11 @@ use std::ops::Deref;
 
 use ena::undo_log::UndoLogs;
 use tracing::instrument;
-
 use crate::next_solver::{
     infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
     FxIndexMap, OpaqueTypeKey, Ty,
 };
+
 use super::OpaqueHiddenType;
 
 #[derive(Default, Debug, Clone)]

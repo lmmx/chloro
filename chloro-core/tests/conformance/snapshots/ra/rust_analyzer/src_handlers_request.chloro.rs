@@ -4,6 +4,7 @@
 use std::{fs, io::Write as _, ops::Not, process::Stdio};
 
 use anyhow::Context;
+
 use base64::{prelude::BASE64_STANDARD, Engine};
 use ide::{
     AssistKind, AssistResolveStrategy, Cancellable, CompletionFieldsToResolve, FilePosition,

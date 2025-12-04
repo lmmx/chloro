@@ -8,6 +8,7 @@ use syntax::{
 };
 
 use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};
+
 use super::label_of_ty;
 
 pub(super) fn hints(

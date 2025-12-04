@@ -6,8 +6,10 @@ use hir_def::{
 };
 
 use crate::{db::HirDatabase, generics::parent_generic_def};
-use super::DbInterner;
+
 use super::SolverDefId;
+
+use super::DbInterner;
 
 pub(crate) fn generics(db: &dyn HirDatabase, def: SolverDefId) -> Generics {
     let mk_lt = |parent, index, local_id| {

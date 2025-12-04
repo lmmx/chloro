@@ -2,32 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24849 bytes
-Chloro size:   18537 bytes
+Chloro size:   18541 bytes
 Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- pub(crate) mod tags;
--
- mod highlights;
--
- mod escape;
- mod format;
- mod highlight;
- mod inject;
--
- mod html;
- #[cfg(test)]
- mod tests;
- 
- use either::Either;
- use hir::{DefWithBody, EditionedFileId, InFile, InRealFile, MacroKind, Name, Semantics};
-+pub(crate) use html::highlight_as_html;
-+pub(crate) use html::highlight_as_html_with_config;
- use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
- use syntax::{
-     ast::{self, IsString},
  use crate::{
      syntax_highlighting::{
          escape::{highlight_escape_byte, highlight_escape_char, highlight_escape_string},
@@ -38,13 +18,6 @@ Rustfmt size:  25118 bytes
      },
      FileId, HlMod, HlOperator, HlPunct, HlTag,
  };
- 
--pub(crate) use html::highlight_as_html;
--pub(crate) use html::highlight_as_html_with_config;
--
- #[derive(Debug, Clone, Copy)]
- pub struct HlRange {
-     pub range: TextRange,
      pub minicore: MiniCore<'a>,
  }
  

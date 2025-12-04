@@ -1,5 +1,4 @@
 use std::iter::successors;
-
 use hir::Type;
 use ide_db::FxHashMap;
 use syntax::{

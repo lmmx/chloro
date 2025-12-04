@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16657 bytes
+Chloro size:   16658 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -13,13 +13,6 @@ Rustfmt size:  17571 bytes
  use std::iter;
  use std::{borrow::Cow, fmt, ops};
  
- use cfg::{CfgExpr, CfgOptions};
- use either::Either;
- use intern::{sym, Interned, Symbol};
--
- use mbe::{DelimiterKind, Punct};
- use smallvec::{smallvec, SmallVec};
- use span::{Span, SyntaxContext};
          span_map: SpanMapRef<'_>,
      ) -> impl Iterator<Item = Attr> {
          collect_attrs(owner).filter_map(move |(id, attr)| match attr {

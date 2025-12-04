@@ -2,18 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   11547 bytes
+Chloro size:   11549 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- mod context;
- mod item;
- mod render;
--
- mod snippet;
- #[cfg(test)]
  mod tests;
  
  use ide_db::{
@@ -25,13 +19,6 @@ Rustfmt size:  11494 bytes
  };
  use syntax::ast::make;
  
-         PathKind,
-     },
- };
--
- pub use crate::{
-     config::{AutoImportExclusionType, CallableSnippets, CompletionConfig},
-     item::{
  //FIXME: split the following feature into fine-grained features.
  
  // Feature: Magic Completions

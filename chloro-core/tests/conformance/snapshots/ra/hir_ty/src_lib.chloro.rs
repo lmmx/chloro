@@ -9,6 +9,12 @@
 // For details, see the zulip discussion below:
 // https://rust-lang.zulipchat.com/#narrow/channel/185405-t-compiler.2Frust-analyzer/topic/relying.20on.20in-tree.20.60rustc_type_ir.60.2F.60rustc_next_trait_solver.60/with/541055689
 
+
+
+
+
+
+
 mod infer;
 mod inhabitedness;
 mod lower;
@@ -18,6 +24,7 @@ mod specialization;
 mod target_feature;
 mod utils;
 mod variance;
+
 pub mod autoderef;
 pub mod consteval;
 pub mod db;
@@ -32,6 +39,7 @@ pub mod method_resolution;
 pub mod mir;
 pub mod primitive;
 pub mod traits;
+
 #[cfg(test)]
 mod test_db;
 #[cfg(test)]
@@ -39,39 +47,19 @@ mod tests;
 
 use std::hash::Hash;
 
-pub use autoderef::autoderef;
 use hir_def::{type_ref::Rawness, CallableDefId, TypeOrConstParamId};
 use hir_expand::name::Name;
 use indexmap::{map::Entry, IndexMap};
-pub use infer::{
-    cast::CastError,
-    closure::analysis::{CaptureKind, CapturedItem},
-    could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
-    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref,
-    PointerCast,
-};
 use intern::{sym, Symbol};
-pub use lower::{
-    associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
-    TyLoweringContext, ValueTyDefId,
-};
-pub use method_resolution::check_orphan_rules;
 use mir::{MirEvalError, VTableMap};
-pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use rustc_type_ir::{
     inherent::{IntoKind, SliceLike, Ty as _},
     BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
 };
 use syntax::ast::{make, ConstArg};
-pub use target_feature::TargetFeatures;
 use traits::FnTrait;
-pub use traits::TraitEnvironment;
 use triomphe::Arc;
-pub use utils::{
-    all_super_traits, direct_super_traits, is_fn_unsafe_to_call, target_feature_is_safe_in_target,
-    TargetFeatureIsSafeInTarget, Unsafety,
-};
 
 use crate::{
     db::HirDatabase,
@@ -82,6 +70,27 @@ use crate::{
         Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
         PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys,
     },
+};
+
+pub use autoderef::autoderef;
+pub use infer::{
+    cast::CastError,
+    closure::analysis::{CaptureKind, CapturedItem},
+    could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
+    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref,
+    PointerCast,
+};
+pub use lower::{
+    associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
+    TyLoweringContext, ValueTyDefId,
+};
+pub use method_resolution::check_orphan_rules;
+pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
+pub use target_feature::TargetFeatures;
+pub use traits::TraitEnvironment;
+pub use utils::{
+    all_super_traits, direct_super_traits, is_fn_unsafe_to_call, target_feature_is_safe_in_target,
+    TargetFeatureIsSafeInTarget, Unsafety,
 };
 
 /// A constant can have reference to other things. Memory map job is holding

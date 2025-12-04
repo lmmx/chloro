@@ -10,7 +10,6 @@ use hir_expand::{
 };
 use intern::sym;
 use rustc_hash::FxHashSet;
-use Stability::*;
 
 use crate::{
     db::DefDatabase,
@@ -67,6 +66,7 @@ enum Stability {
     Unstable,
     Stable,
 }
+use Stability::*;
 
 const MAX_PATH_LEN: usize = 15;
 

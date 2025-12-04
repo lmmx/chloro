@@ -7,8 +7,8 @@ use rustc_type_ir::{
 };
 
 use crate::next_solver::{Const, DbInterner, ErrorGuaranteed, Region, Ty};
-use super::InferCtxt;
 
+use super::InferCtxt;
 
 ///////////////////////////////////////////////////////////////////////////
 

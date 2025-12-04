@@ -2,15 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21058 bytes
-Chloro size:   21096 bytes
+Chloro size:   21095 bytes
 Rustfmt size:  21705 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! This modules defines type to represent changes to the source code, that flow
+ //! from the server to the client.
+ //!
+ //! It can be viewed as a dual for `Change`.
  
  use std::{collections::hash_map::Entry, fmt, iter, mem};
- 
+-
 -use crate::imports::insert_use::{ImportScope, ImportScopeKind};
 -use crate::text_edit::{TextEdit, TextEditBuilder};
 -use crate::{assists::Command, syntax_helpers::tree_diff::diff, SnippetCap};

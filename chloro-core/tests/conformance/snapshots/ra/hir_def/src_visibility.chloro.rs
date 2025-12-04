@@ -8,11 +8,12 @@ use la_arena::ArenaMap;
 use syntax::ast::{self, HasVisibility};
 use triomphe::Arc;
 
-pub use crate::item_tree::{RawVisibility, VisibilityExplicitness};
 use crate::{
     db::DefDatabase, nameres::DefMap, resolver::HasResolver, src::HasSource, AssocItemId,
     HasModule, ItemContainerId, LocalFieldId, LocalModuleId, ModuleId, TraitId, VariantId,
 };
+
+pub use crate::item_tree::{RawVisibility, VisibilityExplicitness};
 
 /// Visibility of an item, with the path resolved.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]

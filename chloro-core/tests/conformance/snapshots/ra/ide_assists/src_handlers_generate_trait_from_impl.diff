@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10188 bytes
-Chloro size:   9016 bytes
+Chloro size:   9014 bytes
 Rustfmt size:  10188 bytes
 
 ✗ Outputs DIFFER
@@ -17,12 +17,12 @@ Rustfmt size:  10188 bytes
      syntax_editor::{Position, SyntaxEditor},
 +    AstNode, SyntaxKind, T,
  };
++use crate::assist_context::{AssistContext, Assists};
  
--// NOTES :
+ // NOTES :
 -// We generate erroneous code if a function is declared const (E0379)
 -// This is left to the user to correct as our only option is to remove the
 -// function completely which we should not be doing.
-+use crate::assist_context::{AssistContext, Assists};
  
 -// Assist: generate_trait_from_impl
 -//
@@ -78,9 +78,6 @@ Rustfmt size:  10188 bytes
 -//     const_maker! {i32, 7}
 -// }
 -// ```
-+
-+// NOTES :
-+
 +// We generate erroneous code if a function is declared const (E0379)
 +
 +// This is left to the user to correct as our only option is to remove the

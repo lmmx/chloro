@@ -2,21 +2,18 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22395 bytes
+Chloro size:   22394 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     InferenceResult,
  };
  
--// These tests compare the inference results for all expressions in a file
+ // These tests compare the inference results for all expressions in a file
 -// against snapshots of the expected results using expect. Use
 -// `env UPDATE_EXPECT=1 cargo test -p hir_ty` to update the snapshots.
  
-+// These tests compare the inference results for all expressions in a file
-+
 +// against snapshots of the expected results using expect. Use
 +
 +// `env UPDATE_EXPECT=1 cargo test -p hir_ty` to update the snapshots.

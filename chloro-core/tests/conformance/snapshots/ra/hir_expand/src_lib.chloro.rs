@@ -6,41 +6,7 @@
 
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 
-use core::fmt;
-use std::hash::Hash;
-
-use attrs::collect_attrs;
-use base_db::Crate;
-pub use base_db::EditionedFileId;
-use either::Either;
 pub use intern;
-pub use mbe::{DeclarativeMacro, ValueResult};
-use rustc_hash::FxHashMap;
-use salsa::plumbing::{AsId, FromId};
-use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
-use stdx::TupleExt;
-use syntax::{
-    ast::{self, AstNode},
-    SyntaxNode, SyntaxToken, TextRange, TextSize,
-};
-use triomphe::Arc;
-
-use crate::{
-    attrs::AttrId,
-    builtin::{
-        include_input_to_file_id, BuiltinAttrExpander, BuiltinDeriveExpander,
-        BuiltinFnLikeExpander, EagerExpander,
-    },
-    db::ExpandDatabase,
-    mod_path::ModPath,
-    proc_macro::{CustomProcMacroExpander, ProcMacroKind},
-    span_map::{ExpansionSpanMap, SpanMap},
-};
-pub use crate::{
-    cfg_process::check_cfg_attr_value,
-    files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
-    prettify_macro_expansion_::prettify_macro_expansion,
-};
 
 pub mod attrs;
 pub mod builtin;
@@ -55,9 +21,49 @@ pub mod mod_path;
 pub mod name;
 pub mod proc_macro;
 pub mod span_map;
+
 mod cfg_process;
 mod fixup;
 mod prettify_macro_expansion_;
+
+use attrs::collect_attrs;
+use rustc_hash::FxHashMap;
+use salsa::plumbing::{AsId, FromId};
+use stdx::TupleExt;
+use triomphe::Arc;
+
+use core::fmt;
+use std::hash::Hash;
+
+use base_db::Crate;
+use either::Either;
+use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
+use syntax::{
+    ast::{self, AstNode},
+    SyntaxNode, SyntaxToken, TextRange, TextSize,
+};
+
+use crate::{
+    attrs::AttrId,
+    builtin::{
+        include_input_to_file_id, BuiltinAttrExpander, BuiltinDeriveExpander,
+        BuiltinFnLikeExpander, EagerExpander,
+    },
+    db::ExpandDatabase,
+    mod_path::ModPath,
+    proc_macro::{CustomProcMacroExpander, ProcMacroKind},
+    span_map::{ExpansionSpanMap, SpanMap},
+};
+
+pub use crate::{
+    cfg_process::check_cfg_attr_value,
+    files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
+    prettify_macro_expansion_::prettify_macro_expansion,
+};
+
+pub use base_db::EditionedFileId;
+pub use mbe::{DeclarativeMacro, ValueResult};
+
 pub mod tt {
     pub use span::Span;
     pub use tt::{token_to_literal, DelimiterKind, IdentIsRaw, LitKind, Spacing};

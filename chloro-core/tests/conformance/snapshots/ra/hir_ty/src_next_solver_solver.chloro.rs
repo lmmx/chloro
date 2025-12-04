@@ -19,6 +19,7 @@ use crate::{
     },
     ImplTraitId,
 };
+
 use super::{
     infer::{canonical::instantiate::CanonicalExt, DbInternerInferExt, InferCtxt},
     DbInterner, ErrorGuaranteed, GenericArg, SolverDefId, Span,

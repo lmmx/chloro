@@ -22,19 +22,3 @@ pub use hir_ty::db::HirDatabase;
 //     TraitImplsInCrateQuery, TraitImplsInDepsQuery, TraitSolveQuery, TyQuery,
 //     TypeAliasImplTraitsQuery, ValueTyQuery,
 // };
-
-//     AdtDatumQuery, AdtVarianceQuery, AssociatedTyDataQuery, AssociatedTyValueQuery, BorrowckQuery,
-//     CallableItemSignatureQuery, ConstEvalDiscriminantQuery, ConstEvalQuery, ConstEvalStaticQuery,
-//     ConstParamTyQuery, DynCompatibilityOfTraitQuery, FieldTypesQuery, FnDefDatumQuery,
-//     FnDefVarianceQuery, GenericDefaultsQuery, GenericPredicatesForParamQuery,
-//     GenericPredicatesQuery, GenericPredicatesWithoutParentQuery, HirDatabase, HirDatabaseStorage,
-//     ImplDatumQuery, ImplSelfTyQuery, ImplTraitQuery, IncoherentInherentImplCratesQuery, InferQuery,
-//     InherentImplsInBlockQuery, InherentImplsInCrateQuery, InternCallableDefQuery,
-//     InternClosureQuery, InternCoroutineQuery, InternImplTraitIdQuery, InternLifetimeParamIdQuery,
-//     InternTypeOrConstParamIdQuery, LayoutOfAdtQuery, LayoutOfTyQuery, LookupImplMethodQuery,
-//     MirBodyForClosureQuery, MirBodyQuery, MonomorphizedMirBodyForClosureQuery,
-//     MonomorphizedMirBodyQuery, ProgramClausesForChalkEnvQuery, ReturnTypeImplTraitsQuery,
-//     TargetDataLayoutQuery, TraitDatumQuery, TraitEnvironmentQuery, TraitImplsInBlockQuery,
-//     TraitImplsInCrateQuery, TraitImplsInDepsQuery, TraitSolveQuery, TyQuery,
-//     TypeAliasImplTraitsQuery, ValueTyQuery,
-// };

@@ -7,7 +7,6 @@ use syntax::{
 
 use crate::NavigationTarget;
 
-
 // Feature: Child Modules
 
 //

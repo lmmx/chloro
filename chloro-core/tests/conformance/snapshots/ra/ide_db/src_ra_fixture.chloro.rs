@@ -4,7 +4,6 @@ use std::hash::{BuildHasher, Hash};
 
 use hir::{CfgExpr, FilePositionWrapper, FileRangeWrapper, Semantics, Symbol};
 use smallvec::SmallVec;
-pub use span::FileId;
 use span::{TextRange, TextSize};
 use syntax::{
     ast::{self, IsString},
@@ -15,6 +14,8 @@ use crate::{
     active_parameter::ActiveParameter, documentation::Documentation, range_mapper::RangeMapper,
     search::ReferenceCategory, MiniCore, RootDatabase, SymbolKind,
 };
+
+pub use span::FileId;
 
 impl RootDatabase {
     fn from_ra_fixture(

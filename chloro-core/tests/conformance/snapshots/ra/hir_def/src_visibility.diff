@@ -2,26 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13679 bytes
-Chloro size:   13739 bytes
+Chloro size:   13740 bytes
 Rustfmt size:  13851 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::ast::{self, HasVisibility};
- use triomphe::Arc;
- 
-+pub use crate::item_tree::{RawVisibility, VisibilityExplicitness};
- use crate::{
-     db::DefDatabase, nameres::DefMap, resolver::HasResolver, src::HasSource, AssocItemId,
-     HasModule, ItemContainerId, LocalFieldId, LocalModuleId, ModuleId, TraitId, VariantId,
- };
- 
--pub use crate::item_tree::{RawVisibility, VisibilityExplicitness};
--
- /// Visibility of an item, with the path resolved.
- #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
- pub enum Visibility {
          raw_vis: &RawVisibility,
      ) -> Self {
          // we fall back to public visibility (i.e. fail open) if the path can't be resolved

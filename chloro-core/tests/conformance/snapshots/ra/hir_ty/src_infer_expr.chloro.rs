@@ -52,6 +52,7 @@ use crate::{
     Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,
     IncorrectGenericsLenKind, Rawness, TraitEnvironment,
 };
+
 use super::{
     cast::CastCheck, find_breakable, BreakableContext, Diverges, Expectation, InferenceContext,
     InferenceDiagnostic, TypeMismatch,

@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   69903 bytes
+Chloro size:   69902 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
  use std::{iter, mem::discriminant};
- 
+-
 -use crate::Analysis;
 -use crate::{
 -    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,

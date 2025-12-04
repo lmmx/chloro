@@ -11,7 +11,6 @@ use syntax::{
 
 use crate::NavigationTarget;
 
-
 // Feature: Parent Module
 
 //

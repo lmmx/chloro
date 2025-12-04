@@ -9,9 +9,7 @@ use syntax::{
     SyntaxKind::WHITESPACE,
     SyntaxToken, T,
 };
-
 use crate::{utils, AssistContext, Assists};
-
 
 // Assist: extract_expressions_from_format_string
 

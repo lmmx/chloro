@@ -10,7 +10,6 @@ use syntax::{
     ast::{self, IsString},
     TextRange,
 };
-use PositionUsedAs::*;
 
 use crate::hir::ExprId;
 
@@ -166,6 +165,7 @@ enum PositionUsedAs {
     Precision,
     Width,
 }
+use PositionUsedAs::*;
 
 #[allow(clippy::unnecessary_lazy_evaluations)]
 pub(crate) fn parse(

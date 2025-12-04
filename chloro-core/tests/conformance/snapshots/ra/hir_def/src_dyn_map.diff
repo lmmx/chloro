@@ -8,18 +8,7 @@ Rustfmt size:  6980 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! This is a work of fiction. Any similarities to Kotlin's `BindingContext` are
- //! a coincidence.
  
-+use std::{
-+    hash::Hash,
-+    marker::PhantomData,
-+    ops::{Index, IndexMut},
-+};
-+
-+use rustc_hash::FxHashMap;
-+use stdx::anymap::Map;
-+
  pub mod keys {
      use std::marker::PhantomData;
 -
@@ -87,19 +76,6 @@ Rustfmt size:  6980 bytes
 +            map.map.get::<FxHashMap<AstPtr<AST>, ID>>().is_none_or(|it| it.is_empty())
          }
      }
- }
- 
--use std::{
--    hash::Hash,
--    marker::PhantomData,
--    ops::{Index, IndexMut},
--};
--
--use rustc_hash::FxHashMap;
--use stdx::anymap::Map;
--
- pub struct Key<K, V, P = (K, V)> {
-     _phantom: PhantomData<(K, V, P)>,
  }
          reason = "this a const fn, so it can't be default yet. See <https://github.com/rust-lang/rust/issues/63065>"
      )]

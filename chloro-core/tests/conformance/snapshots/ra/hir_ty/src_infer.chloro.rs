@@ -29,9 +29,6 @@ pub(crate) mod unify;
 use std::{cell::OnceCell, convert::identity, iter, ops::Index};
 
 use base_db::Crate;
-use cast::{CastCheck, CastError};
-pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
-pub use coerce::could_coerce;
 use either::Either;
 use hir_def::{
     expr_store::{path::Path, Body, ExpressionStore, HygieneId},
@@ -56,7 +53,6 @@ use rustc_type_ir::{
 };
 use stdx::never;
 use triomphe::Arc;
-pub use unify::{could_unify, could_unify_deeply};
 
 use crate::{
     db::{HirDatabase, InternedClosureId, InternedOpaqueTyId},
@@ -78,6 +74,12 @@ use crate::{
     utils::TargetFeatureIsSafeInTarget,
     ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
 };
+
+pub use coerce::could_coerce;
+pub use unify::{could_unify, could_unify_deeply};
+
+use cast::{CastCheck, CastError};
+pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
 
 /// The entry point of type inference.
 pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<InferenceResult<'_>> {

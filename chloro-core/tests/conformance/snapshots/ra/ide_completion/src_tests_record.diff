@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5682 bytes
-Chloro size:   5681 bytes
+Chloro size:   5682 bytes
 Rustfmt size:  5682 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- use expect_test::expect;
- 
- use crate::tests::check;
--
- use super::check_edit;
- 
- #[test]
+✓ Outputs are IDENTICAL

@@ -22,7 +22,6 @@ use crate::{
     EagerExpander, EditionedFileId, ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId,
     MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
 };
-
 /// This is just to ensure the types of smart_macro_arg and macro_arg are the same
 type MacroArgResult = (Arc<tt::TopSubtree>, SyntaxFixupUndoInfo, Span);
 

@@ -126,7 +126,7 @@ pub mod sort;
 use crate::formatter::config::MAX_WIDTH;
 use crate::formatter::write_indent;
 
-pub fn format_use() {}
+pub fn format_use();
 "#;
     let output = format_source(input);
     assert_snapshot!(output, @r#"
@@ -141,6 +141,6 @@ pub mod sort;
 use crate::formatter::config::MAX_WIDTH;
 use crate::formatter::write_indent;
 
-pub fn format_use() {}
+pub fn format_use();
 "#);
 }

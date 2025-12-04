@@ -2,14 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18737 bytes
-Chloro size:   18196 bytes
+Chloro size:   18195 bytes
 Rustfmt size:  18737 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
 +use std::iter::successors;
-+
  use hir::Type;
  use ide_db::FxHashMap;
 -use std::iter::successors;

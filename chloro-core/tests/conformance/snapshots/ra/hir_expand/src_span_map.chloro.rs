@@ -1,10 +1,11 @@
 //! Span maps for real files and macro expansions.
 
-pub use span::RealSpanMap;
 use span::{Span, SyntaxContext};
 use stdx::TupleExt;
 use syntax::{ast, AstNode, TextRange};
 use triomphe::Arc;
+
+pub use span::RealSpanMap;
 
 use crate::{attrs::collect_attrs, db::ExpandDatabase, HirFileId, MacroCallId};
 

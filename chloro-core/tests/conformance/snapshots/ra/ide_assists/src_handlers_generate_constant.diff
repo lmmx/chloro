@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7755 bytes
-Chloro size:   7808 bytes
+Chloro size:   7806 bytes
 Rustfmt size:  8317 bytes
 
 ✗ Outputs DIFFER
@@ -12,12 +12,11 @@ Rustfmt size:  8317 bytes
  use hir::{HasVisibility, HirDisplay, Module};
  use ide_db::{
      assists::AssistId,
+     ast::{self, edit::IndentLevel, NameRef},
      AstNode, Direction, SyntaxKind, TextSize,
  };
- 
 +use crate::assist_context::{AssistContext, Assists};
-+
-+
+ 
  // Assist: generate_constant
 +
  //

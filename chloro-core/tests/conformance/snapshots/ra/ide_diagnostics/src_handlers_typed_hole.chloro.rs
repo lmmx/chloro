@@ -12,9 +12,10 @@ use ide_db::{
     source_change::SourceChange,
 };
 use itertools::Itertools;
-use syntax::AstNode;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
+use syntax::AstNode;
 
 pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));

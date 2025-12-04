@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22284 bytes
-Chloro size:   20775 bytes
+Chloro size:   20776 bytes
 Rustfmt size:  22284 bytes
 
 ✗ Outputs DIFFER
@@ -262,10 +262,6 @@ Rustfmt size:  22284 bytes
      #[test]
      fn test_generate_multiple_getters_from_selection_one_already_exists() {
          // As impl for one of the fields already exist, skip it
-         );
-     }
- }
--
  #[cfg(test)]
  mod tests_setter {
      use crate::tests::{check_assist, check_assist_not_applicable};

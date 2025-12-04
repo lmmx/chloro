@@ -2,6 +2,7 @@ use cov_mark::check;
 use expect_test::expect;
 
 use crate::tests::infer_with_mismatches;
+
 use super::{check, check_infer, check_infer_with_mismatches, check_no_mismatches, check_types};
 
 #[test]

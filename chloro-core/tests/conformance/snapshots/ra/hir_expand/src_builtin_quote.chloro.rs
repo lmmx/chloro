@@ -3,8 +3,6 @@
 #![allow(clippy::crate_in_macro_def)]
 
 use intern::{sym, Symbol};
-pub use quote;
-pub use quote_impl__ as __quote;
 use span::Span;
 use syntax::ToSmolStr;
 use tt::IdentIsRaw;
@@ -112,6 +110,7 @@ macro_rules! quote_impl__ {
         $crate::builtin::quote::__quote!($span $builder $($tail)*);
     }};
 }
+pub use quote_impl__ as __quote;
 
 /// FIXME:
 /// It probably should implement in proc-macro
@@ -131,6 +130,7 @@ macro_rules! quote {
         }
     }
 }
+pub use quote;
 
 pub trait ToTokenTree {
     fn to_tokens(self, span: Span, builder: &mut TopSubtreeBuilder);

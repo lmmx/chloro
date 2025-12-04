@@ -2,17 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17460 bytes
-Chloro size:   17111 bytes
+Chloro size:   17112 bytes
 Rustfmt size:  17756 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use la_arena::Idx;
- use rustc_apfloat::ieee::{Half as f16, Quad as f128};
- use syntax::ast;
-+pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
- use type_ref::TypeRefId;
  
  use crate::{
      builtin_type::{BuiltinFloat, BuiltinInt, BuiltinUint},
@@ -24,12 +19,6 @@ Rustfmt size:  17756 bytes
      type_ref::{Mutability, Rawness},
      BlockId,
  };
- 
--pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
--
- pub type BindingId = Idx<Binding>;
- 
- pub type ExprId = Idx<Expr>;
  
  pub type PatId = Idx<Pat>;
  

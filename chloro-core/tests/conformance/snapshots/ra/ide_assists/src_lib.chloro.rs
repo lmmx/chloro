@@ -66,15 +66,16 @@ mod assist_context;
 mod tests;
 pub mod utils;
 
-pub use assist_config::AssistConfig;
 use hir::Semantics;
-pub use ide_db::assists::{
-    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
-};
 use ide_db::{EditionedFileId, RootDatabase};
 use syntax::{Edition, TextRange};
 
 pub(crate) use crate::assist_context::{AssistContext, Assists};
+
+pub use assist_config::AssistConfig;
+pub use ide_db::assists::{
+    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
+};
 
 /// Return all the assists applicable at the given position.
 ///

@@ -12,7 +12,6 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-
 // FIXME: This ought to be a diagnostic lint.
 pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let function: ast::Fn = ctx.find_node_at_offset()?;

@@ -4,6 +4,7 @@
 
 use either::Either;
 use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
+
 use syntax::ast::{self, AstNode};
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};

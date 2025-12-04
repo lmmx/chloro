@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   45563 bytes
+Chloro size:   45562 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,9 @@ Rustfmt size:  46663 bytes
      },
  };
  use syntax::{ast, match_ast, AstNode, Edition, SyntaxNode};
- 
  use crate::{AssistContext, AssistId, Assists, GroupLabel};
  
--// Feature: Auto Import
+ // Feature: Auto Import
 -//
 -// Using the `auto-import` assist it is possible to insert missing imports for unresolved items.
 -// When inserting an import it will do so in a structured manner by keeping imports grouped,
@@ -78,8 +77,6 @@ Rustfmt size:  46663 bytes
 -// ![Auto Import](https://user-images.githubusercontent.com/48062697/113020673-b85be580-917a-11eb-9022-59585f35d4f8.gif)
  
 -// Assist: auto_import
-+// Feature: Auto Import
-+
  //
 -// If the name is unresolved, provides all possible imports for it.
 +

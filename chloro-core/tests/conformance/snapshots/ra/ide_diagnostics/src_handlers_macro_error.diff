@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7219 bytes
-Chloro size:   6895 bytes
+Chloro size:   6894 bytes
 Rustfmt size:  7310 bytes
 
 ✗ Outputs DIFFER
@@ -10,7 +10,6 @@ Rustfmt size:  7310 bytes
 === DIFF (- rustfmt, + chloro) ===
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
  
-+
  // Diagnostic: macro-error
 +
  //

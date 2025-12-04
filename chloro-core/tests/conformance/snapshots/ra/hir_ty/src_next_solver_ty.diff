@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   51484 bytes
+Chloro size:   51485 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -18,12 +18,6 @@ Rustfmt size:  52438 bytes
          AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
          CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
      },
-     ImplTraitId,
- };
--
- use super::{
-     interned_vec_db,
-     util::{FloatExt, IntegerExt},
  };
  
  pub type TyKind<'db> = rustc_type_ir::TyKind<DbInterner<'db>>;

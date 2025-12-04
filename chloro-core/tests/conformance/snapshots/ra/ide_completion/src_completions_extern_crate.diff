@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1954 bytes
-Chloro size:   1949 bytes
+Chloro size:   1950 bytes
 Rustfmt size:  1954 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::ToSmolStr;
- 
- use crate::{context::CompletionContext, CompletionItem, CompletionItemKind};
--
- use super::Completions;
- 
- pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionContext<'_>) {
          if imported_extern_crates.contains(&name) {
              continue;
          }

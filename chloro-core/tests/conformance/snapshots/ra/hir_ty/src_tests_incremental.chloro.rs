@@ -5,6 +5,7 @@ use salsa::EventKind;
 use test_fixture::WithFixture;
 
 use crate::{db::HirDatabase, test_db::TestDB};
+
 use super::visit_module;
 
 #[test]

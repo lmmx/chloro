@@ -1,11 +1,11 @@
 mod block;
-
 use expect_test::{expect, Expect};
 use la_arena::RawIdx;
 use test_fixture::WithFixture;
 use triomphe::Arc;
 
 use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};
+
 use super::super::*;
 
 fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>, DefWithBodyId) {

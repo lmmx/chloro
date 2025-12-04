@@ -23,31 +23,6 @@
 //! There are also a couple of ad-hoc diagnostics implemented directly here, we
 //! don't yet have a great pattern for how to do them properly.
 
-#[cfg(test)]
-mod tests;
-
-use std::{iter, sync::LazyLock};
-
-use either::Either;
-use hir::{
-    db::ExpandDatabase, diagnostics::AnyDiagnostic, Crate, DisplayTarget, InFile, Semantics,
-};
-use ide_db::{
-    assists::{Assist, AssistId, AssistResolveStrategy, ExprFillDefaultMode},
-    base_db::{ReleaseChannel, RootQueryDb as _},
-    generated::lints::{Lint, LintGroup, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, DEFAULT_LINT_GROUPS},
-    imports::insert_use::InsertUseConfig,
-    label::Label,
-    source_change::SourceChange,
-    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
-    EditionedFileId, FileId, FileRange, FxHashMap, FxHashSet, RootDatabase, Severity, SnippetCap,
-};
-use itertools::Itertools;
-use syntax::{
-    ast::{self, AstNode, HasAttrs},
-    AstPtr, Edition, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode, SyntaxNodePtr, TextRange, T,
-};
-
 mod handlers {
     pub(crate) mod await_outside_of_async;
     pub(crate) mod bad_rtn;
@@ -102,6 +77,31 @@ mod handlers {
     pub(crate) mod unlinked_file;
     pub(crate) mod useless_braces;
 }
+
+#[cfg(test)]
+mod tests;
+
+use std::{iter, sync::LazyLock};
+
+use either::Either;
+use hir::{
+    db::ExpandDatabase, diagnostics::AnyDiagnostic, Crate, DisplayTarget, InFile, Semantics,
+};
+use ide_db::{
+    assists::{Assist, AssistId, AssistResolveStrategy, ExprFillDefaultMode},
+    base_db::{ReleaseChannel, RootQueryDb as _},
+    generated::lints::{Lint, LintGroup, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, DEFAULT_LINT_GROUPS},
+    imports::insert_use::InsertUseConfig,
+    label::Label,
+    source_change::SourceChange,
+    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
+    EditionedFileId, FileId, FileRange, FxHashMap, FxHashSet, RootDatabase, Severity, SnippetCap,
+};
+use itertools::Itertools;
+use syntax::{
+    ast::{self, AstNode, HasAttrs},
+    AstPtr, Edition, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode, SyntaxNodePtr, TextRange, T,
+};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum DiagnosticCode {

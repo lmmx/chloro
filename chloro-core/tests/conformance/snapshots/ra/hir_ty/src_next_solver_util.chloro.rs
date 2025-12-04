@@ -29,6 +29,7 @@ use crate::{
         PlaceholderRegion,
     },
 };
+
 use super::{
     fold::{BoundVarReplacer, FnMutDelegate},
     Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,

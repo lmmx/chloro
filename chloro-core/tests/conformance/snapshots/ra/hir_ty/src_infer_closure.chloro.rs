@@ -34,6 +34,7 @@ use crate::{
     traits::FnTrait,
     FnAbi,
 };
+
 use super::{Expectation, InferenceContext};
 
 #[derive(Debug)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32325 bytes
+Chloro size:   32326 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -26,10 +26,6 @@ Rustfmt size:  32663 bytes
 +    TypeVisitable, Upcast, UpcastFrom, WithCachedTypeInfo,
  };
  use smallvec::SmallVec;
- 
- use crate::next_solver::{InternedWrapperNoDebug, TraitIdWrapper};
--
- use super::{interned_vec_db, Binder, BoundVarKinds, DbInterner, Region, Ty};
  
  pub type BoundExistentialPredicate<'db> = Binder<'db, ExistentialPredicate<'db>>;
  

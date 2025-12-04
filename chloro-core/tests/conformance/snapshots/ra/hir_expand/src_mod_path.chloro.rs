@@ -4,16 +4,12 @@ use std::{
     fmt::{self, Display as _},
     iter,
 };
-
 use base_db::Crate;
 use intern::sym;
 use smallvec::SmallVec;
 use span::{Edition, SyntaxContext};
 use syntax::{ast, AstNode};
 
-pub use crate::__path as path;
-pub use crate::__tool_path as tool_path;
-pub use crate::name as __name;
 use crate::{
     db::ExpandDatabase,
     hygiene::Transparency,
@@ -364,6 +360,8 @@ pub fn resolve_crate_root(db: &dyn ExpandDatabase, mut ctxt: SyntaxContext) -> O
     result_mark.map(|call| db.lookup_intern_macro_call(call.into()).def.krate)
 }
 
+pub use crate::name as __name;
+
 #[macro_export]
 macro_rules! __known_path {
     (core::iter::IntoIterator) => {};
@@ -399,6 +397,8 @@ macro_rules! __path {
     });
 }
 
+pub use crate::__path as path;
+
 #[macro_export]
 macro_rules! __tool_path {
     ($start:ident $(:: $seg:ident)*) => ({
@@ -407,3 +407,5 @@ macro_rules! __tool_path {
         ])
     });
 }
+
+pub use crate::__tool_path as tool_path;

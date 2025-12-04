@@ -1,7 +1,6 @@
 //! See [`AssistContext`].
 
 use hir::{EditionedFileId, FileRange, Semantics};
-pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
 use ide_db::{label::Label, FileId, RootDatabase};
 use syntax::Edition;
 use syntax::{
@@ -13,6 +12,8 @@ use syntax::{
 use crate::{
     assist_config::AssistConfig, Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
 };
+
+pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
 
 /// `AssistContext` allows to apply an assist or check if it could be applied.
 ///

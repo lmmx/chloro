@@ -2,17 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25435 bytes
-Chloro size:   25048 bytes
+Chloro size:   25049 bytes
 Rustfmt size:  25435 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- mod render;
--
- #[cfg(test)]
- mod tests;
- 
  
  use either::Either;
  use hir::{

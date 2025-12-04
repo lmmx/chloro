@@ -2,27 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8527 bytes
-Chloro size:   8491 bytes
+Chloro size:   8492 bytes
 Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! See [`AssistContext`].
- 
- use hir::{EditionedFileId, FileRange, Semantics};
-+pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
- use ide_db::{label::Label, FileId, RootDatabase};
- use syntax::Edition;
- use syntax::{
-     assist_config::AssistConfig, Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
- };
- 
--pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
--
- /// `AssistContext` allows to apply an assist or check if it could be applied.
- ///
- /// Assists use a somewhat over-engineered approach, given the current needs.
          let end = frange.range.end();
          let left = source_file.syntax().token_at_offset(start);
          let right = source_file.syntax().token_at_offset(end);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3906 bytes
-Chloro size:   3897 bytes
+Chloro size:   3898 bytes
 Rustfmt size:  4014 bytes
 
 ✗ Outputs DIFFER
@@ -14,10 +14,7 @@ Rustfmt size:  4014 bytes
 +
  use either::Either;
  use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
--
- use syntax::ast::{self, AstNode};
  
- use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
                      it.trait_().map_or(
                          // only show it for impl type if the impl is not incomplete, otherwise we
                          // are likely typing a trait impl

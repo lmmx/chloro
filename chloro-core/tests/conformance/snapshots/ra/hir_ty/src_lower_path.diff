@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55236 bytes
+Chloro size:   55237 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -58,7 +58,7 @@ Rustfmt size:  55742 bytes
 +    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
 +    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
  };
--
+ 
  use super::{
 -    ImplTraitLoweringMode, TyLoweringContext, associated_type_by_name_including_super_traits,
 -    const_param_ty_query, ty_query,

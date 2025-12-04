@@ -39,6 +39,7 @@ use crate::next_solver::{
     PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
     TraitRef, Ty,
 };
+
 use super::{
     traits::{Obligation, ObligationCause},
     InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,

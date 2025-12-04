@@ -45,7 +45,6 @@ use crate::{
     InferenceResult,
 };
 
-
 // These tests compare the inference results for all expressions in a file
 
 // against snapshots of the expected results using expect. Use

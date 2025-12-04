@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20373 bytes
-Chloro size:   20307 bytes
+Chloro size:   20308 bytes
 Rustfmt size:  20373 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use test_fixture::WithFixture;
- 
- use crate::{db::HirDatabase, test_db::TestDB};
--
- use super::visit_module;
- 
- #[test]
      );
  }
  

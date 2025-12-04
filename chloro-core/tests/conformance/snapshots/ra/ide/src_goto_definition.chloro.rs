@@ -1,5 +1,4 @@
 use std::{iter, mem::discriminant};
-
 use hir::{
     sym, AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics,
 };

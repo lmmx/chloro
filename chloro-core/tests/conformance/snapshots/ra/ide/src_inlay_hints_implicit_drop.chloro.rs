@@ -12,6 +12,7 @@ use hir::{
     DefWithBody,
 };
 use ide_db::{famous_defs::FamousDefs, FileRange};
+
 use syntax::{
     ast::{self, AstNode},
     match_ast, ToSmolStr,

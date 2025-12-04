@@ -24,6 +24,7 @@ use crate::{
     },
     TraitEnvironment,
 };
+
 use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};
 
 struct Filler<'db> {

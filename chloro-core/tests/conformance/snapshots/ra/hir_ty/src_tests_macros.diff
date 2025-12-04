@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30351 bytes
-Chloro size:   30335 bytes
+Chloro size:   30336 bytes
 Rustfmt size:  30351 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use expect_test::expect;
- use test_utils::{bench, bench_fixture, skip_slow_tests};
- 
- use crate::tests::{check_infer_with_mismatches, check_no_mismatches};
--
- use super::{check_infer, check_types};
- 
- #[test]
  
  #[test]
  fn infer_builtin_macros_include_expression() {

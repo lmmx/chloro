@@ -7,6 +7,8 @@ use parser::SyntaxKind;
 use rustc_hash::FxHashSet;
 use span::{Edition, Span, SyntaxContext};
 use stdx::never;
+use syntax_bridge::DocCommentDesugarMode;
+use tracing::debug;
 use syntax::{
     ast::{
         self, edit_in_place::GenericParamsOwnerEdit, make, AstNode, FieldList, HasAttrs,
@@ -14,8 +16,6 @@ use syntax::{
     },
     ted,
 };
-use syntax_bridge::DocCommentDesugarMode;
-use tracing::debug;
 
 use crate::{
     builtin::quote::dollar_crate,

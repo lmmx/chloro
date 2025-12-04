@@ -2,21 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9501 bytes
-Chloro size:   9376 bytes
+Chloro size:   9377 bytes
 Rustfmt size:  9638 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     source_change::SourceChange,
- };
- use itertools::Itertools;
-+use syntax::AstNode;
  
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ use syntax::AstNode;
  
--use syntax::AstNode;
--
 -// Diagnostic: typed-hole
 -//
 -// This diagnostic is triggered when an underscore expression is used in an invalid position.

@@ -7,7 +7,6 @@ use std::ops::ControlFlow;
 
 use either::Either;
 use hir::{import_map, Complete, Crate, ItemInNs, Module};
-pub use import_map::AssocSearchMode;
 
 use crate::{
     imports::import_assets::NameToImport,
@@ -17,6 +16,8 @@ use crate::{
 
 /// A value to use, when uncertain which limit to pick.
 pub const DEFAULT_QUERY_SEARCH_LIMIT: usize = 100;
+
+pub use import_map::AssocSearchMode;
 
 /// Searches for importable items with the given name in the crate and its dependencies.
 pub fn items_with_name(

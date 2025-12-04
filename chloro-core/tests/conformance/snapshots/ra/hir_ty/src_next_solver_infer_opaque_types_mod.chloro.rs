@@ -2,8 +2,9 @@
 
 pub(crate) mod table;
 
-use macros::{TypeFoldable, TypeVisitable};
 pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
+
+use macros::{TypeFoldable, TypeVisitable};
 
 use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
 

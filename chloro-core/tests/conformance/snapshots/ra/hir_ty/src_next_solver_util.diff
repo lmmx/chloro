@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   28561 bytes
+Chloro size:   28562 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -39,7 +39,7 @@ Rustfmt size:  28638 bytes
 +        PlaceholderRegion,
      },
  };
--
+ 
  use super::{
 +    fold::{BoundVarReplacer, FnMutDelegate},
      Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,

@@ -33,6 +33,7 @@ use crate::{
     },
     ImplTraitId,
 };
+
 use super::{
     interned_vec_db,
     util::{FloatExt, IntegerExt},

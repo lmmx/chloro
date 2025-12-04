@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11268 bytes
+Chloro size:   11269 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
-     TraitRef, Ty,
- };
--
- use super::{
-     traits::{Obligation, ObligationCause},
-     InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
  impl<'db> InferCtxt<'db> {
      #[inline]
      pub fn at<'a>(&'a self, cause: &'a ObligationCause, param_env: ParamEnv<'db>) -> At<'a, 'db> {

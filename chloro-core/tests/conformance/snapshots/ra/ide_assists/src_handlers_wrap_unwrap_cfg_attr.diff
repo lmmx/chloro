@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18779 bytes
-Chloro size:   18818 bytes
+Chloro size:   18817 bytes
 Rustfmt size:  18779 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,6 @@ Rustfmt size:  18779 bytes
  
  use crate::{AssistContext, AssistId, Assists};
  
-+
  // Assist: wrap_unwrap_cfg_attr
 +
  //

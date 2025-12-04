@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5407 bytes
-Chloro size:   5254 bytes
+Chloro size:   5253 bytes
 Rustfmt size:  5407 bytes
 
 ✗ Outputs DIFFER
@@ -10,12 +10,11 @@ Rustfmt size:  5407 bytes
 === DIFF (- rustfmt, + chloro) ===
 -use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  use hir::IncorrectGenericsLenKind;
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: incorrect-generics-len
 -//
 -// This diagnostic is triggered if the number of generic arguments does not match their declaration.
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
-+
  pub(crate) fn incorrect_generics_len(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::IncorrectGenericsLen,

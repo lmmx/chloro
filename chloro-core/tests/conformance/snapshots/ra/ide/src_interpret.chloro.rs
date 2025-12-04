@@ -1,5 +1,4 @@
 use std::time::{Duration, Instant};
-
 use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
 use ide_db::{base_db::SourceDatabase, FilePosition, LineIndexDatabase, RootDatabase};
 use stdx::format_to;

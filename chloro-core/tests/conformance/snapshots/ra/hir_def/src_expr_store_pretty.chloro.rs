@@ -26,6 +26,7 @@ use crate::{
 };
 use crate::{signatures::StructFlags, LifetimeParamId};
 use crate::{item_tree::FieldsShape, signatures::FieldData};
+
 use super::*;
 
 macro_rules! w {

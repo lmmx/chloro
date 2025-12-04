@@ -14,22 +14,24 @@
 //! block user's typing and should be pretty fast for this reason!
 
 mod on_enter;
-
 use std::iter;
 
 use either::Either;
 use hir::EditionedFileId;
-use ide_db::text_edit::TextEdit;
 use ide_db::{base_db::RootQueryDb, FilePosition, RootDatabase};
-pub(crate) use on_enter::on_enter;
 use span::Edition;
+
 use syntax::{
     algo::{ancestors_at_offset, find_node_at_offset},
     ast::{self, edit::IndentLevel, AstToken},
     AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
 };
 
+use ide_db::text_edit::TextEdit;
+
 use crate::SourceChange;
+
+pub(crate) use on_enter::on_enter;
 
 pub(crate) const TRIGGER_CHARS: &[char] = &['.', '=', '<', '>', '{', '(', '|', '+'];
 

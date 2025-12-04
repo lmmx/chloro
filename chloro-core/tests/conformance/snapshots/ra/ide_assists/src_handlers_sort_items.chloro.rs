@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use itertools::Itertools;
+
 use syntax::{
     ast::{self, HasName},
     AstNode, SyntaxNode,

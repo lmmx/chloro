@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   31456 bytes
+Chloro size:   31455 bytes
 Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,6 @@ Rustfmt size:  31467 bytes
 +use std::collections::HashMap;
 +use std::path::PathBuf;
 +use std::{fs, io};
-+
 +use edtui::{EditorState, Lines};
 +
  use crate::edit_plan::{Edit, EditPlan};

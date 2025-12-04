@@ -12,6 +12,7 @@ use hir::{
     PointerCast, Safety,
 };
 use ide_db::famous_defs::FamousDefs;
+
 use ide_db::text_edit::TextEditBuilder;
 use syntax::ast::{self, prec::ExprPrecedence, AstNode};
 

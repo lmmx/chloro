@@ -13,7 +13,6 @@ use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 use smallvec::{smallvec, SmallVec};
 use stdx::never;
 use triomphe::Arc;
-use Constructor::*;
 
 use crate::{
     db::HirDatabase,
@@ -21,7 +20,10 @@ use crate::{
     next_solver::{infer::{InferCtxt, traits::ObligationCause}, Ty, TyKind},
     TraitEnvironment,
 };
+
 use super::{FieldPat, Pat, PatKind};
+
+use Constructor::*;
 
 pub(crate) type DeconstructedPat<'a, 'db> = rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
 

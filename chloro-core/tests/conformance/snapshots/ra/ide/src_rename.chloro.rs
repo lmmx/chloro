@@ -7,8 +7,6 @@
 use std::fmt::Write;
 
 use hir::{sym, AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics};
-pub use ide_db::rename::RenameError;
-use ide_db::text_edit::TextEdit;
 use ide_db::{
     defs::{Definition, NameClass, NameRefClass},
     rename::{bail, format_err, source_edit_from_references, IdentifierKind, RenameDefinition},
@@ -22,7 +20,11 @@ use syntax::{
     AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
 };
 
+use ide_db::text_edit::TextEdit;
+
 use crate::{FilePosition, RangeInfo, SourceChange};
+
+pub use ide_db::rename::RenameError;
 
 type RenameResult<T> = Result<T, RenameError>;
 

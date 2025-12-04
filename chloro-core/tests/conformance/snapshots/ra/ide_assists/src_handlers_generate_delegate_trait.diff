@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 46739 bytes
-Chloro size:   45092 bytes
+Chloro size:   45091 bytes
 Rustfmt size:  47157 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
  use std::ops::Not;
- 
+-
 -use crate::{
 -    assist_context::{AssistContext, Assists},
 -    utils::convert_param_list_to_arg_list,

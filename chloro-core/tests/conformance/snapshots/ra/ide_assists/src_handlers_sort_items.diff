@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11688 bytes
+Chloro size:   11689 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::cmp::Ordering;
- 
- use itertools::Itertools;
--
- use syntax::{
-     ast::{self, HasName},
-     AstNode, SyntaxNode,
  
  use crate::{utils::get_methods, AssistContext, AssistId, Assists};
  

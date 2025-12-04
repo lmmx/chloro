@@ -4,7 +4,6 @@ use std::cell::{Cell, RefCell};
 use std::fmt;
 use std::ops::Range;
 use std::sync::Arc;
-
 use ena::unify as ut;
 use hir_def::GenericParamId;
 use hir_def::lang_item::LangItem;
@@ -26,6 +25,7 @@ use tracing::{debug, instrument};
 use traits::{ObligationCause, PredicateObligations};
 use type_variable::TypeVariableOrigin;
 use unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey};
+
 pub use BoundRegionConversionTime::*;
 
 use crate::next_solver::{
@@ -34,6 +34,7 @@ use crate::next_solver::{
     obligation_ctxt::ObligationCtxt,
     BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
 };
+
 use super::{
     AliasTerm, Binder, CanonicalQueryInput, CanonicalVarValues, Const, ConstKind, DbInterner,
     ErrorGuaranteed, GenericArg, GenericArgs, OpaqueTypeKey, ParamEnv, PolyCoercePredicate,

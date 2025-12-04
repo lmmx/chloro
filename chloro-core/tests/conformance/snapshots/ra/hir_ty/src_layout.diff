@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14447 bytes
+Chloro size:   14449 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     AdtId, LocalFieldId, StructId,
- };
- use la_arena::{Idx, RawIdx};
--
- use rustc_abi::{
-     AddressSpace, Float, Integer, LayoutCalculator, Primitive, ReprOptions, Scalar, StructKind,
-     TargetDataLayout, WrappingRange,
      consteval::try_const_usize,
      db::HirDatabase,
      next_solver::{
@@ -25,10 +18,6 @@ Rustfmt size:  14808 bytes
      },
      TraitEnvironment,
  };
--
- pub(crate) use self::adt::layout_of_adt_cycle_result;
- pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
- 
  }
  
  pub type Layout = LayoutData<RustcFieldIdx, RustcEnumVariantIdx>;

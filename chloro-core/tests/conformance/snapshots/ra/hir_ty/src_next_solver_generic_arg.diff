@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   21093 bytes
+Chloro size:   21094 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use smallvec::SmallVec;
- 
- use crate::next_solver::{interned_vec_db, PolyFnSig};
--
- use super::{
-     generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
-     SolverDefId, Ty, Tys,
                  Ok(relation.relate(a_ct, b_ct)?.into())
              }
              (GenericArgKind::Lifetime(unpacked), x) => {

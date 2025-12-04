@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23884 bytes
-Chloro size:   23669 bytes
+Chloro size:   23670 bytes
 Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,8 @@ Rustfmt size:  23884 bytes
  use std::ops::Not;
  
  use either::Either;
-     PointerCast, Safety,
- };
  use ide_db::famous_defs::FamousDefs;
--
+ 
  use ide_db::text_edit::TextEditBuilder;
 -use syntax::ast::{self, AstNode, prec::ExprPrecedence};
 +use syntax::ast::{self, prec::ExprPrecedence, AstNode};

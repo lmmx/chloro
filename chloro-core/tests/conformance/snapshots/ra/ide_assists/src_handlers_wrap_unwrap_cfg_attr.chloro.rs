@@ -8,7 +8,6 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-
 // Assist: wrap_unwrap_cfg_attr
 
 //

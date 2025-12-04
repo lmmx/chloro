@@ -8,7 +8,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{fs, io};
-
 use edtui::{EditorState, Lines};
 
 use crate::edit_plan::{Edit, EditPlan};

@@ -10,7 +10,6 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-
 // Assist: unwrap_option_return_type
 
 //

@@ -23,7 +23,6 @@ use intern::Symbol;
 use la_arena::Idx;
 use rustc_apfloat::ieee::{Half as f16, Quad as f128};
 use syntax::ast;
-pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
 use type_ref::TypeRefId;
 
 use crate::{
@@ -32,6 +31,8 @@ use crate::{
     type_ref::{Mutability, Rawness},
     BlockId,
 };
+
+pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
 
 pub type BindingId = Idx<Binding>;
 

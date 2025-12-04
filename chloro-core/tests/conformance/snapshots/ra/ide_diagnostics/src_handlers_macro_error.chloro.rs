@@ -1,6 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 
-
 // Diagnostic: macro-error
 
 //

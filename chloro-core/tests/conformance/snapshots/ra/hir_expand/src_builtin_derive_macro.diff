@@ -8,9 +8,9 @@ Rustfmt size:  56860 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use rustc_hash::FxHashSet;
- use span::{Edition, Span, SyntaxContext};
  use stdx::never;
+ use syntax_bridge::DocCommentDesugarMode;
+ use tracing::debug;
 +use syntax::{
 +    ast::{
 +        self, edit_in_place::GenericParamsOwnerEdit, make, AstNode, FieldList, HasAttrs,
@@ -18,9 +18,9 @@ Rustfmt size:  56860 bytes
 +    },
 +    ted,
 +};
- use syntax_bridge::DocCommentDesugarMode;
- use tracing::debug;
  
+ use crate::{
+     builtin::quote::dollar_crate,
      span_map::ExpansionSpanMap,
      tt, ExpandError, ExpandResult, MacroCallId,
  };

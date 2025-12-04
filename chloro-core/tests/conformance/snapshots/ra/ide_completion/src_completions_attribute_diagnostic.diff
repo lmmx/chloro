@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2095 bytes
-Chloro size:   2093 bytes
+Chloro size:   2094 bytes
 Rustfmt size:  2157 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion for diagnostic attributes.
- 
- use ide_db::SymbolKind;
- use syntax::ast;
- 
- use crate::{context::CompletionContext, CompletionItem, Completions};
--
- use super::AttrCompletion;
- 
- pub(super) fn complete_on_unimplemented(
              if already_annotated {
                  continue;
              }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36983 bytes
+Chloro size:   36984 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -48,10 +48,8 @@ Rustfmt size:  36953 bytes
      traits::FnTrait,
 +    FnAbi,
  };
--
- use super::{Expectation, InferenceContext};
  
- #[derive(Debug)]
+ use super::{Expectation, InferenceContext};
          let lang_item = self.db.lang_attr(def_id.into());
  
          // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,

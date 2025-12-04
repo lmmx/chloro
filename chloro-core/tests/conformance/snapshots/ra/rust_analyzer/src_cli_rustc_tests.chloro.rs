@@ -9,13 +9,14 @@ use hir::{ChangeWithProcMacros, Crate};
 use ide::{AnalysisHost, DiagnosticCode, DiagnosticsConfig};
 use ide_db::base_db;
 use itertools::Either;
-use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
 use profile::StopWatch;
 use project_model::toolchain_info::{target_data, QueryConfig};
 use project_model::{
     CargoConfig, ManifestPath, ProjectWorkspace, ProjectWorkspaceKind, RustLibSource,
     RustSourceWorkspaceConfig, Sysroot,
 };
+
+use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
 use rustc_hash::FxHashMap;
 use vfs::{AbsPathBuf, FileId};
 use walkdir::WalkDir;
