@@ -9,6 +9,18 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: unmerge_imports
+//
+// Extracts a use item from a use list into a standalone use list.
+//
+// ```
+// use std::fmt::{Debug, Display$0};
+// ```
+// ->
+// ```
+// use std::fmt::{Debug};
+// use std::fmt::Display;
+// ```
 pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let tree = ctx.find_node_at_offset::<ast::UseTree>()?;
 

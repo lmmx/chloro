@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23884 bytes
-Chloro size:   23670 bytes
+Chloro size:   23733 bytes
 Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
@@ -148,10 +148,9 @@ Rustfmt size:  23884 bytes
          )
      }
 -
--    // regression test for a stackoverflow in hir display code
+     // regression test for a stackoverflow in hir display code
      #[test]
      fn adjustment_hints_method_call_on_impl_trait_self() {
-         check_with_config(
  "#,
          );
      }

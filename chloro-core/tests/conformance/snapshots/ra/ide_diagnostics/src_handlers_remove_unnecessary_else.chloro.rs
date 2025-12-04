@@ -11,6 +11,10 @@ use crate::{
     Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range, fix,
 };
 
+// Diagnostic: remove-unnecessary-else
+//
+// This diagnostic is triggered when there is an `else` block for an `if` expression whose
+// then branch diverges (e.g. ends with a `return`, `continue`, `break` e.t.c).
 pub(crate) fn remove_unnecessary_else(
     ctx: &DiagnosticsContext<'_>,
     d: &RemoveUnnecessaryElse,

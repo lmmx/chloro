@@ -126,6 +126,7 @@ fn documentation_for_definition(
     )
 }
 
+// FIXME: This is a weird function
 fn get_definitions(
     sema: &Semantics<'_, RootDatabase>,
     token: SyntaxToken,

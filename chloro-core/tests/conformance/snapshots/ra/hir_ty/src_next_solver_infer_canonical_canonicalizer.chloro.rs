@@ -164,6 +164,7 @@ trait CanonicalizeMode {
 
     fn any(&self) -> bool;
 
+    // Do we preserve universe of variables.
     fn preserve_universes(&self) -> bool;
 }
 

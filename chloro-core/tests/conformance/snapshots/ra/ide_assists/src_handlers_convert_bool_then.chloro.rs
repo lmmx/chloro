@@ -18,6 +18,26 @@ use crate::{
     utils::{invert_boolean_expression, unwrap_trivial_block},
 };
 
+// Assist: convert_if_to_bool_then
+//
+// Converts an if expression into a corresponding `bool::then` call.
+//
+// ```
+// # //- minicore: option
+// fn main() {
+//     if$0 cond {
+//         Some(val)
+//     } else {
+//         None
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     cond.then(|| val)
+// }
+// ```
 pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // FIXME applies to match as well
     let expr = ctx.find_node_at_offset::<ast::IfExpr>()?;
@@ -119,6 +139,26 @@ pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>
     )
 }
 
+// Assist: convert_bool_then_to_if
+//
+// Converts a `bool::then` method call to an equivalent if expression.
+//
+// ```
+// # //- minicore: bool_impl
+// fn main() {
+//     (0 == 0).then$0(|| val)
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     if 0 == 0 {
+//         Some(val)
+//     } else {
+//         None
+//     }
+// }
+// ```
 pub(crate) fn convert_bool_then_to_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name_ref = ctx.find_node_at_offset::<ast::NameRef>()?;
     let mcall = name_ref.syntax().parent().and_then(ast::MethodCallExpr::cast)?;

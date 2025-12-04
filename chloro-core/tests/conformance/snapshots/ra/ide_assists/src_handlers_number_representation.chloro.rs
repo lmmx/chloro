@@ -4,6 +4,17 @@ use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
 const MIN_NUMBER_OF_DIGITS_TO_FORMAT: usize = 5;
 
+// Assist: reformat_number_literal
+//
+// Adds or removes separators from integer literal.
+//
+// ```
+// const _: i32 = 1012345$0;
+// ```
+// ->
+// ```
+// const _: i32 = 1_012_345;
+// ```
 pub(crate) fn reformat_number_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let literal = ctx.find_node_at_offset::<ast::Literal>()?;
     let literal = match literal.kind() {

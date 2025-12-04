@@ -112,6 +112,7 @@ impl<'a> RenderContext<'a> {
                 .unwrap_or(false)
     }
 
+    // FIXME: remove this
     fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
         def.docs(self.db())
     }
@@ -576,6 +577,7 @@ fn scope_def_is_deprecated(ctx: &RenderContext<'_>, resolution: ScopeDef) -> boo
     }
 }
 
+// FIXME: This checks types without possible coercions which some completions might want to do
 fn match_types(
     ctx: &CompletionContext<'_>,
     ty1: &hir::Type<'_>,

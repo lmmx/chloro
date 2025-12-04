@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18749 bytes
-Chloro size:   18643 bytes
+Chloro size:   18687 bytes
 Rustfmt size:  18749 bytes
 
 ✗ Outputs DIFFER
@@ -49,10 +49,12 @@ Rustfmt size:  18749 bytes
          match ast::Stmt::cast(node.clone()) {
              // Don't skip subtree since we want to process the expression child next
              Some(ast::Stmt::ExprStmt(_)) | Some(ast::Stmt::LetStmt(_)) => (),
+     ControlFlow::Continue(())
  }
  
- /// Preorder walk all the type's sub types.
--// FIXME: Make the control flow more proper
+-/// Preorder walk all the type's sub types.
+ // FIXME: Make the control flow more proper
++/// Preorder walk all the type's sub types.
  pub fn walk_ty(ty: &ast::Type, cb: &mut dyn FnMut(ast::Type) -> bool) {
      let mut preorder = ty.syntax().preorder();
      while let Some(event) = preorder.next() {

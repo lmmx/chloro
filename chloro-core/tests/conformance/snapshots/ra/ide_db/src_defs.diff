@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43921 bytes
+Chloro size:   44064 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -54,14 +54,6 @@ Rustfmt size:  44130 bytes
      }
  }
  
- }
- 
- impl<'db> NameRefClass<'db> {
--    // Note: we don't have unit-tests for this rather important function.
--    // It is primarily exercised via goto definition tests in `ide`.
-     pub fn classify(
-         sema: &Semantics<'db, RootDatabase>,
-         name_ref: &ast::NameRef,
  
  impl TryFrom<DefWithBody> for Definition {
      type Error = ();

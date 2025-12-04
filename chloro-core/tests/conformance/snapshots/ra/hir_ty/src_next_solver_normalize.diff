@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9752 bytes
+Chloro size:   9794 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -84,10 +84,3 @@ Rustfmt size:  9886 bytes
  
          if ct.has_escaping_bound_vars() {
              let (ct, mapped_regions, mapped_types, mapped_consts) =
-     }
- }
- 
--// Deeply normalize a value and return it
- pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(
-     infcx: &InferCtxt<'db>,
-     param_env: ParamEnv<'db>,

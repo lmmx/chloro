@@ -213,6 +213,7 @@ impl<DB: HirDatabase + ?Sized> Semantics<'_, DB> {
         self.imp.ancestors_at_offset_with_macros(node, offset).find_map(N::cast)
     }
 
+    // FIXME: Rethink this API
     /// Find an AstNode by offset inside SyntaxNode, if it is inside *MacroCall*,
     /// descend it and find again
     pub fn find_node_at_offset_with_descend<N: AstNode>(
@@ -223,6 +224,7 @@ impl<DB: HirDatabase + ?Sized> Semantics<'_, DB> {
         self.imp.descend_node_at_offset(node, offset).flatten().find_map(N::cast)
     }
 
+    // FIXME: Rethink this API
     /// Find an AstNode by offset inside SyntaxNode, if it is inside an attribute macro call,
     /// descend it and find again
     pub fn find_nodes_at_offset_with_descend<'slf, N: AstNode + 'slf>(
@@ -233,6 +235,7 @@ impl<DB: HirDatabase + ?Sized> Semantics<'_, DB> {
         self.imp.descend_node_at_offset(node, offset).filter_map(|mut it| it.find_map(N::cast))
     }
 
+    // FIXME: Rethink this API
     pub fn find_namelike_at_offset_with_descend<'slf>(
         &'slf self,
         node: &SyntaxNode,
@@ -742,6 +745,8 @@ impl<'db> SemanticsImpl<'db> {
         )
     }
 
+    // FIXME: Type the return type
+    // FIXME: Remove this in favor of `check_for_format_args_template_with_file`
     /// Retrieves the formatting part of the format_args! template string at the given offset.
     ///
     /// Returns the range (pre-expansion) in the string literal corresponding to the resolution,
@@ -763,6 +768,7 @@ impl<'db> SemanticsImpl<'db> {
         self.check_for_format_args_template_with_file(original_token, offset)
     }
 
+    // FIXME: Type the return type
     /// Retrieves the formatting part of the format_args! template string at the given offset.
     ///
     /// Returns the range (pre-expansion) in the string literal corresponding to the resolution,
@@ -1403,6 +1409,10 @@ impl<'db> SemanticsImpl<'db> {
         None
     }
 
+    // Note this return type is deliberate as [`find_nodes_at_offset_with_descend`] wants to stop
+    // traversing the inner iterator when it finds a node.
+    // The outer iterator is over the tokens descendants
+    // The inner iterator is the ancestors of a descendant
     fn descend_node_at_offset(
         &self,
         node: &SyntaxNode,
@@ -1476,6 +1486,7 @@ impl<'db> SemanticsImpl<'db> {
         token.parent().into_iter().flat_map(move |parent| self.ancestors_with_macros(parent))
     }
 
+    // FIXME: Replace with `ancestors_with_macros_file` when all usages are updated.
     /// Iterates the ancestors of the given node, climbing up macro expansions while doing so.
     pub fn ancestors_with_macros(
         &self,
@@ -1644,6 +1655,7 @@ impl<'db> SemanticsImpl<'db> {
         self.analyze(call.syntax())?.resolve_method_call_fallback(self.db, call)
     }
 
+    // FIXME: better api for the trait environment
     /// Env is used to derive the trait environment
     pub fn resolve_trait_impl_method(
         &self,
@@ -1691,6 +1703,8 @@ impl<'db> SemanticsImpl<'db> {
         self.analyze(try_expr.syntax())?.resolve_try_expr(self.db, try_expr)
     }
 
+    // This does not resolve the method call to the correct trait impl!
+    // We should probably fix that.
     pub fn resolve_method_call_as_callable(
         &self,
         call: &ast::MethodCallExpr,
@@ -1738,6 +1752,7 @@ impl<'db> SemanticsImpl<'db> {
         self.analyze(field.syntax())?.resolve_record_pat_field(self.db, field)
     }
 
+    // FIXME: Replace this with `resolve_macro_call2`
     pub fn resolve_macro_call(&self, macro_call: &ast::MacroCall) -> Option<Macro> {
         let macro_call = self.find_file(macro_call.syntax()).with_value(macro_call);
         self.resolve_macro_call2(macro_call)
@@ -2113,6 +2128,7 @@ impl<'db> SemanticsImpl<'db> {
     }
 }
 
+// FIXME This can't be the best way to do this
 fn macro_call_to_macro_id(
     ctx: &mut SourceToDefCtx<'_, '_>,
     macro_call_id: MacroCallId,

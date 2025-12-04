@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53059 bytes
-Chloro size:   52907 bytes
+Chloro size:   52990 bytes
 Rustfmt size:  53059 bytes
 
 ✗ Outputs DIFFER
@@ -22,13 +22,6 @@ Rustfmt size:  53059 bytes
  pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
      let parent = ret_type.syntax().parent()?;
-     }
- }
- 
--// Try to find an wrapper type alias in the current scope (shadowing the default).
- fn wrapper_alias<'db>(
-     ctx: &AssistContext<'db>,
-     make: &SyntaxFactory,
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist_by_label, check_assist_not_applicable_by_label};

@@ -10,6 +10,15 @@ pub struct CrateInfo {
     pub root_file_id: FileId,
 }
 
+// Feature: Show Dependency Tree
+//
+// Shows a view tree with all the dependencies of this project
+//
+// | Editor  | Panel Name |
+// |---------|------------|
+// | VS Code | **Rust Dependencies** |
+//
+// ![Show Dependency Tree](https://user-images.githubusercontent.com/5748995/229394139-2625beab-f4c9-484b-84ed-ad5dee0b1e1a.png)
 pub(crate) fn fetch_crates(db: &RootDatabase) -> FxIndexSet<CrateInfo> {
     db.all_crates()
         .iter()

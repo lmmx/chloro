@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5845 bytes
-Chloro size:   5650 bytes
+Chloro size:   5873 bytes
 Rustfmt size:  6089 bytes
 
 ✗ Outputs DIFFER
@@ -22,21 +22,7 @@ Rustfmt size:  6089 bytes
 +    assist_context::{AssistContext, Assists},
  };
  
--// Assist: unmerge_imports
--//
--// Extracts a use item from a use list into a standalone use list.
--//
--// ```
--// use std::fmt::{Debug, Display$0};
--// ```
--// ->
--// ```
--// use std::fmt::{Debug};
--// use std::fmt::Display;
--// ```
- pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let tree = ctx.find_node_at_offset::<ast::UseTree>()?;
- 
+ // Assist: unmerge_imports
          label,
          target,
          |builder| {

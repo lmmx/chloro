@@ -19,6 +19,7 @@ pub const DEFAULT_QUERY_SEARCH_LIMIT: usize = 100;
 
 pub use import_map::AssocSearchMode;
 
+// FIXME: Do callbacks instead to avoid allocations.
 /// Searches for importable items with the given name in the crate and its dependencies.
 pub fn items_with_name(
     db: &RootDatabase,

@@ -1,5 +1,6 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: undeclared-label
 pub(crate) fn undeclared_label(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UndeclaredLabel,

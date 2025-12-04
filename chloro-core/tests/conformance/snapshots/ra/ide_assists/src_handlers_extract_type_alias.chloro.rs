@@ -7,6 +7,23 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: extract_type_alias
+//
+// Extracts the selected type as a type alias.
+//
+// ```
+// struct S {
+//     field: $0(u8, u8, u8)$0,
+// }
+// ```
+// ->
+// ```
+// type $0Type = (u8, u8, u8);
+//
+// struct S {
+//     field: Type,
+// }
+// ```
 pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {
         return None;

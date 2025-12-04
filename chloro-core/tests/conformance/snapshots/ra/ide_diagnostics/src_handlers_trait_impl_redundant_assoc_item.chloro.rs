@@ -9,6 +9,9 @@ use syntax::ToSmolStr;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: trait-impl-redundant-assoc_item
+//
+// Diagnoses redundant trait items in a trait impl.
 pub(crate) fn trait_impl_redundant_assoc_item(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::TraitImplRedundantAssocItems,

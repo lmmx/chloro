@@ -5,6 +5,24 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::test_related_attribute_syn};
 
+// Assist: toggle_ignore
+//
+// Adds `#[ignore]` attribute to the test.
+//
+// ```
+// $0#[test]
+// fn arithmetics {
+//     assert_eq!(2 + 2, 5);
+// }
+// ```
+// ->
+// ```
+// #[test]
+// #[ignore]
+// fn arithmetics {
+//     assert_eq!(2 + 2, 5);
+// }
+// ```
 pub(crate) fn toggle_ignore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let attr: ast::Attr = ctx.find_node_at_offset()?;
     let func = attr.syntax().parent().and_then(ast::Fn::cast)?;

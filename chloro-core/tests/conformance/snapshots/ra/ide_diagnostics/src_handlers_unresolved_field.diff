@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15690 bytes
-Chloro size:   15466 bytes
+Chloro size:   15693 bytes
 Rustfmt size:  15822 bytes
 
 ✗ Outputs DIFFER
@@ -32,12 +32,8 @@ Rustfmt size:  15822 bytes
 -use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
  
--// Diagnostic: unresolved-field
--//
--// This diagnostic is triggered if a field does not exist on a given type.
- pub(crate) fn unresolved_field(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::UnresolvedField<'_>,
+ // Diagnostic: unresolved-field
+ //
              d.name.display(ctx.sema.db, ctx.edition),
              d.receiver.display(ctx.sema.db, ctx.display_target)
          ),
@@ -62,13 +58,6 @@ Rustfmt size:  15822 bytes
  }
  
  fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Vec<Assist>> {
-     }
- }
- 
--// FIXME: Add Snippet Support
- fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Assist> {
-     // Get the FileRange of the invalid field access
-     let root = ctx.sema.db.parse_or_expand(d.expr.file_id);
      let adt = d.receiver.strip_references().as_adt()?;
      let target_module = adt.module(ctx.sema.db);
  
@@ -170,10 +159,7 @@ Rustfmt size:  15822 bytes
 +    Some((offset, format!("{comma}{indent}{record_field}{trailing_new_line}")))
  }
  
--// FIXME: We should fill out the call here, move the cursor and trigger signature help
- fn method_fix(
-     ctx: &DiagnosticsContext<'_>,
-     expr_ptr: &InFile<AstPtr<Either<ast::Expr, ast::Pat>>>,
+ // FIXME: We should fill out the call here, move the cursor and trigger signature help
          command: None,
      })
  }

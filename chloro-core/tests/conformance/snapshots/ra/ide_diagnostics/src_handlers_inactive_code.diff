@@ -2,23 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6321 bytes
-Chloro size:   6208 bytes
+Chloro size:   6312 bytes
 Rustfmt size:  6321 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use cfg::DnfExpr;
- use stdx::format_to;
- 
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
- 
--// Diagnostic: inactive-code
--//
--// This diagnostic is shown for code with inactive `#[cfg]` attributes.
- pub(crate) fn inactive_code(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::InactiveCode,
  
  #[cfg(test)]
  mod tests {

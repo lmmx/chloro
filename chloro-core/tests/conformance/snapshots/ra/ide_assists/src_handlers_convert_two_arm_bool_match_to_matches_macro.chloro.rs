@@ -5,6 +5,24 @@ use syntax::ast::{self, AstNode};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: convert_two_arm_bool_match_to_matches_macro
+//
+// Convert 2-arm match that evaluates to a boolean into the equivalent matches! invocation.
+//
+// ```
+// fn main() {
+//     match scrutinee$0 {
+//         Some(val) if val.cond() => true,
+//         _ => false,
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     matches!(scrutinee, Some(val) if val.cond())
+// }
+// ```
 pub(crate) fn convert_two_arm_bool_match_to_matches_macro(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

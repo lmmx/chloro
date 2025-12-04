@@ -10,6 +10,35 @@ use crate::{
     utils::{add_method_to_adt, find_struct_impl},
 };
 
+// Assist: generate_enum_is_method
+//
+// Generate an `is_` method for this enum variant.
+//
+// ```
+// enum Version {
+//  Undefined,
+//  Minor$0,
+//  Major,
+// }
+// ```
+// ->
+// ```
+// enum Version {
+//  Undefined,
+//  Minor,
+//  Major,
+// }
+//
+// impl Version {
+//     /// Returns `true` if the version is [`Minor`].
+//     ///
+//     /// [`Minor`]: Version::Minor
+//     #[must_use]
+//     fn is_minor(&self) -> bool {
+//         matches!(self, Self::Minor)
+//     }
+// }
+// ```
 pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let variant_name = variant.name()?;

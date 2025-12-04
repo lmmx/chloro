@@ -217,6 +217,7 @@ fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
     }
 }
 
+// Tries to extract `T` from `Option<T>` or `Result<T, E>`.
 fn extract_wrapped_type(ty: &ast::Type) -> Option<ast::Type> {
     let ast::Type::PathType(path_ty) = ty else {
         return None;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30823 bytes
+Chloro size:   31503 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -34,22 +34,6 @@ Rustfmt size:  31554 bytes
  
  /// Rewrite documentation links in markdown to point to an online host (e.g. docs.rs)
  pub(crate) fn rewrite_links(
-     out
- }
- 
--// Feature: Open Docs
--//
--// Retrieve a links to documentation for the given symbol.
--//
--// The simplest way to use this feature is via the context menu. Right-click on
--// the selected item. The context menu opens. Select **Open Docs**.
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **rust-analyzer: Open Docs** |
- pub(crate) fn external_docs(
-     db: &RootDatabase,
-     FilePosition { file_id, offset }: FilePosition,
          | Definition::DeriveHelper(_)
          | Definition::InlineAsmRegOrRegClass(_)
          | Definition::InlineAsmOperand(_) => None,
@@ -78,19 +62,6 @@ Rustfmt size:  31554 bytes
          mut cb: impl FnMut(Definition, SyntaxNode, TextRange) -> Option<T>,
      ) -> Option<T> {
          let DocCommentToken { prefix_len, doc_token } = self;
-     Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
- }
- 
--// FIXME:
--// BUG: For Option::Some
--// Returns https://doc.rust-lang.org/nightly/core/prelude/v1/enum.Option.html#variant.Some
--// Instead of https://doc.rust-lang.org/nightly/core/option/enum.Option.html
--//
--// This should cease to be a problem if RFC2988 (Stable Rustdoc URLs) is implemented
--// https://github.com/rust-lang/rfcs/pull/2988
- fn get_doc_links(
-     db: &RootDatabase,
-     def: Definition,
      url.set_fragment(frag);
  
      // We want to strip the keyword prefix from the title, but only if the target is implicitly the same

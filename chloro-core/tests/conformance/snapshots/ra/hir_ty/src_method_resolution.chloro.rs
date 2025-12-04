@@ -648,6 +648,9 @@ impl ReceiverAdjustments {
     }
 }
 
+// This would be nicer if it just returned an iterator, but that runs into
+// lifetime problems, because we need to borrow temp `CrateImplDefs`.
+// FIXME add a context type here?
 pub(crate) fn iterate_method_candidates<'db, T>(
     ty: &Canonical<'db, Ty<'db>>,
     table: &mut InferenceTable<'db>,

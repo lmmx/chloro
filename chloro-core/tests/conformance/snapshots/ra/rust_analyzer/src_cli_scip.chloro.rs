@@ -344,6 +344,10 @@ fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
     }
 }
 
+// SCIP Ranges have a (very large) optimization that ranges if they are on the same line
+// only encode as a vector of [start_line, start_col, end_col].
+//
+// This transforms a line index into the optimized SCIP Range.
 fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
     let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
     let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
@@ -779,6 +783,7 @@ pub mod example_mod {
             "rust-analyzer cargo main . MyTypeAlias#",
         );
     }
+    // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_nested_function() {
         check_symbol(
@@ -793,6 +798,7 @@ pub mod example_mod {
             // "local enclosed by rust-analyzer cargo main . func().",
         );
     }
+    // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_struct_in_function() {
         check_symbol(
@@ -807,6 +813,7 @@ pub mod example_mod {
             // "local enclosed by rust-analyzer cargo main . func().",
         );
     }
+    // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_const_in_function() {
         check_symbol(
@@ -821,6 +828,7 @@ pub mod example_mod {
             // "local enclosed by rust-analyzer cargo main . func().",
         );
     }
+    // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_static_in_function() {
         check_symbol(

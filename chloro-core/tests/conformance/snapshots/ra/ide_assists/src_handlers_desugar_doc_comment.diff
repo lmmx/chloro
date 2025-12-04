@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6079 bytes
-Chloro size:   5875 bytes
+Chloro size:   6066 bytes
 Rustfmt size:  6079 bytes
 
 ✗ Outputs DIFFER
@@ -23,22 +23,7 @@ Rustfmt size:  6079 bytes
 -    AssistContext, AssistId, Assists,
  };
  
--// Assist: desugar_doc_comment
--//
--// Desugars doc-comments to the attribute form.
--//
--// ```
--// /// Multi-line$0
--// /// comment
--// ```
--// ->
--// ```
--// #[doc = r"Multi-line
--// comment"]
--// ```
- pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
-     // Only allow doc comments
+ // Assist: desugar_doc_comment
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

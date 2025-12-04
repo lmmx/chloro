@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30594 bytes
+Chloro size:   31037 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -110,13 +110,8 @@ Rustfmt size:  31747 bytes
  }
  
  fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
-     }
- }
- 
--// SCIP Ranges have a (very large) optimization that ranges if they are on the same line
--// only encode as a vector of [start_line, start_col, end_col].
--//
--// This transforms a line index into the optimized SCIP Range.
+ //
+ // This transforms a line index into the optimized SCIP Range.
  fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
 -    let LineCol {
 -        line: start_line,
@@ -327,34 +322,30 @@ Rustfmt size:  31747 bytes
          );
      }
 -
--    // FIXME: This test represents current misbehavior.
+     // FIXME: This test represents current misbehavior.
      #[test]
      fn symbol_for_nested_function() {
-         check_symbol(
              // "local enclosed by rust-analyzer cargo main . func().",
          );
      }
 -
--    // FIXME: This test represents current misbehavior.
+     // FIXME: This test represents current misbehavior.
      #[test]
      fn symbol_for_struct_in_function() {
-         check_symbol(
              // "local enclosed by rust-analyzer cargo main . func().",
          );
      }
 -
--    // FIXME: This test represents current misbehavior.
+     // FIXME: This test represents current misbehavior.
      #[test]
      fn symbol_for_const_in_function() {
-         check_symbol(
              // "local enclosed by rust-analyzer cargo main . func().",
          );
      }
 -
--    // FIXME: This test represents current misbehavior.
+     // FIXME: This test represents current misbehavior.
      #[test]
      fn symbol_for_static_in_function() {
-         check_symbol(
              // "local enclosed by rust-analyzer cargo main . func().",
          );
      }

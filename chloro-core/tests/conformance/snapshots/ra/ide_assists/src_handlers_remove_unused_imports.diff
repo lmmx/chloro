@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21087 bytes
-Chloro size:   20826 bytes
+Chloro size:   21060 bytes
 Rustfmt size:  21244 bytes
 
 ✗ Outputs DIFFER
@@ -23,26 +23,6 @@ Rustfmt size:  21244 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
- 
--// Assist: remove_unused_imports
--//
--// Removes any use statements in the current selection that are unused.
--//
--// ```
--// struct X();
--// mod foo {
--//     use super::X$0;
--// }
--// ```
--// ->
--// ```
--// struct X();
--// mod foo {
--// }
--// ```
- pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     // First, grab the uses that intersect with the current selection.
-     let selected_el = match ctx.covering_element() {
      t: &hir::Trait,
  ) -> bool {
      !std::iter::once((Definition::Trait(*t), u.rename()))

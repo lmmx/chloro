@@ -23,6 +23,67 @@ use syntax::{
     ted::{self, Position},
 };
 
+// Assist: generate_delegate_trait
+//
+// Generate delegate trait implementation for `StructField`s.
+//
+// ```
+// trait SomeTrait {
+//     type T;
+//     fn fn_(arg: u32) -> u32;
+//     fn method_(&mut self) -> bool;
+// }
+// struct A;
+// impl SomeTrait for A {
+//     type T = u32;
+//
+//     fn fn_(arg: u32) -> u32 {
+//         42
+//     }
+//
+//     fn method_(&mut self) -> bool {
+//         false
+//     }
+// }
+// struct B {
+//     a$0: A,
+// }
+// ```
+// ->
+// ```
+// trait SomeTrait {
+//     type T;
+//     fn fn_(arg: u32) -> u32;
+//     fn method_(&mut self) -> bool;
+// }
+// struct A;
+// impl SomeTrait for A {
+//     type T = u32;
+//
+//     fn fn_(arg: u32) -> u32 {
+//         42
+//     }
+//
+//     fn method_(&mut self) -> bool {
+//         false
+//     }
+// }
+// struct B {
+//     a: A,
+// }
+//
+// impl SomeTrait for B {
+//     type T = <A as SomeTrait>::T;
+//
+//     fn fn_(arg: u32) -> u32 {
+//         <A as SomeTrait>::fn_(arg)
+//     }
+//
+//     fn method_(&mut self) -> bool {
+//         <A as SomeTrait>::method_(&mut self.a)
+//     }
+// }
+// ```
 pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if !ctx.config.code_action_grouping {
         return None;
@@ -433,6 +494,12 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
     }
 }
 
+// Generate generic args that should be apply to current impl.
+//
+// For example, say we have implementation `impl<A, B, C> Trait for B<A>`,
+// and `b: B<T>` in struct `S<T>`. Then the `A` should be instantiated to `T`.
+// While the last two generic args `B` and `C` doesn't change, it remains
+// `<B, C>`. So we apply `<T, B, C>` as generic arguments to impl.
 fn generate_args_for_impl(
     old_impl_gpl: Option<GenericParamList>,
     self_ty: &ast::Type,
@@ -775,6 +842,9 @@ impl Trait for Base {}
 "#,
         )
     }
+    // Structs need to be by def populated with fields
+    // However user can invoke this assist while still editing
+    // We therefore assert its non-applicability
     #[test]
     fn test_yet_empty_struct() {
         check_assist_not_applicable(

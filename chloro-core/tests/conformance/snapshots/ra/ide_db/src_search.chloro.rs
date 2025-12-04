@@ -462,6 +462,9 @@ impl<'a> FindUsages<'a> {
         self
     }
 
+    // FIXME: This is just a temporary fix for not handling import aliases like
+    // `use Foo as Bar`. We need to support them in a proper way.
+    // See issue #14079
     pub fn with_rename(mut self, rename: Option<&'a Rename>) -> Self {
         self.rename = rename;
         self
@@ -550,6 +553,7 @@ impl<'a> FindUsages<'a> {
             })
     }
 
+    // FIXME: Extend this to other cases, such as associated types/consts/enum variants (note those can be `use`d).
     /// Performs a special fast search for associated functions. This is mainly intended
     /// to speed up `new()` which can take a long time.
     ///

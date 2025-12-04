@@ -128,6 +128,7 @@ impl<'a> LayoutCx<'a> {
     }
 }
 
+// FIXME: move this to the `rustc_abi`.
 fn layout_of_simd_ty<'db>(
     db: &'db dyn HirDatabase,
     id: StructId,

@@ -7,6 +7,24 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
+// Assist: sugar_impl_future_into_async
+//
+// Rewrites asynchronous function from `-> impl Future` into `async fn`.
+// This action does not touch the function body and therefore `async { 0 }`
+// block does not transform to just `0`.
+//
+// ```
+// # //- minicore: future
+// pub fn foo() -> impl core::future::F$0uture<Output = usize> {
+//     async { 0 }
+// }
+// ```
+// ->
+// ```
+// pub async fn foo() -> usize {
+//     async { 0 }
+// }
+// ```
 pub(crate) fn sugar_impl_future_into_async(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -79,6 +97,24 @@ pub(crate) fn sugar_impl_future_into_async(
     )
 }
 
+// Assist: desugar_async_into_impl_future
+//
+// Rewrites asynchronous function from `async fn` into `-> impl Future`.
+// This action does not touch the function body and therefore `0`
+// block does not transform to `async { 0 }`.
+//
+// ```
+// # //- minicore: future
+// pub as$0ync fn foo() -> usize {
+//     0
+// }
+// ```
+// ->
+// ```
+// pub fn foo() -> impl core::future::Future<Output = usize> {
+//     0
+// }
+// ```
 pub(crate) fn desugar_async_into_impl_future(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

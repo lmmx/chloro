@@ -196,6 +196,12 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
 }
 
 impl<'infcx, 'db> LatticeOp<'infcx, 'db> {
+    // Relates the type `v` to `a` and `b` such that `v` represents
+    // the LUB/GLB of `a` and `b` as appropriate.
+    //
+    // Subtle hack: ordering *may* be significant here. This method
+    // relates `v` to `a` first, which may help us to avoid unnecessary
+    // type variable obligations. See caller for details.
     fn relate_bound(&mut self, v: Ty<'db>, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, ()> {
         let at = self.infcx.at(&self.trace.cause, self.param_env);
         match self.kind {

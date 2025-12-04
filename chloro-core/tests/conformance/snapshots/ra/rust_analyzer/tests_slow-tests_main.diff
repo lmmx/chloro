@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 38709 bytes
-Chloro size:   38516 bytes
+Chloro size:   38649 bytes
 Rustfmt size:  39488 bytes
 
 ✗ Outputs DIFFER
@@ -71,20 +71,6 @@ Rustfmt size:  39488 bytes
          json!([
            {
              "args": {
-     );
- }
- 
--// Each package in these workspaces should be run from its own root
- #[test]
- fn test_path_dependency_runnables() {
-     if skip_slow_tests() {
-     }
- }
- 
--// The main fn in packages should be run from the workspace root
- #[test]
- fn test_runnables_cwd() {
-     if skip_slow_tests() {
      .wait_until_workspace_is_loaded();
  
      server.request::<Runnables>(

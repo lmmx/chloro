@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11413 bytes
-Chloro size:   10644 bytes
+Chloro size:   11407 bytes
 Rustfmt size:  11741 bytes
 
 ✗ Outputs DIFFER
@@ -21,43 +21,9 @@ Rustfmt size:  11741 bytes
  // FIXME: Generate proper `index_mut` method body refer to `index` method body may impossible due to the unpredictable case [#15581].
  // Here just leave the `index_mut` method body be same as `index` method body, user can modify it manually to meet their need.
 -
--// Assist: generate_mut_trait_impl
--//
--// Adds a IndexMut impl from the `Index` trait.
--//
--// ```
--// # //- minicore: index
--// pub enum Axis { X = 0, Y = 1, Z = 2 }
--//
--// impl<T> core::ops::Index$0<Axis> for [T; 3] {
--//     type Output = T;
--//
--//     fn index(&self, index: Axis) -> &Self::Output {
--//         &self[index as usize]
--//     }
--// }
--// ```
--// ->
--// ```
--// pub enum Axis { X = 0, Y = 1, Z = 2 }
--//
--// $0impl<T> core::ops::IndexMut<Axis> for [T; 3] {
--//     fn index_mut(&mut self, index: Axis) -> &mut Self::Output {
--//         &mut self[index as usize]
--//     }
--// }
--//
--// impl<T> core::ops::Index<Axis> for [T; 3] {
--//     type Output = T;
--//
--//     fn index(&self, index: Axis) -> &Self::Output {
--//         &self[index as usize]
--//     }
--// }
--// ```
- pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let impl_def = ctx.find_node_at_offset::<ast::Impl>()?.clone_for_update();
-     let indent = impl_def.indent_level();
+ // Assist: generate_mut_trait_impl
+ //
+ // Adds a IndexMut impl from the `Index` trait.
      let trait_new = get_trait_mut(&trait_, famous)?;
  
      // Index -> IndexMut

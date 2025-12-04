@@ -12,6 +12,32 @@ use crate::{
     utils::{does_pat_match_variant, does_pat_variant_nested_or_literal, unwrap_trivial_block},
 };
 
+// Assist: replace_if_let_with_match
+//
+// Replaces a `if let` expression with a `match` expression.
+//
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     $0if let Action::Move { distance } = action {
+//         foo(distance)
+//     } else {
+//         bar()
+//     }
+// }
+// ```
+// ->
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move { distance } => foo(distance),
+//         _ => bar(),
+//     }
+// }
+// ```
 pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let if_expr: ast::IfExpr = ctx.find_node_at_offset()?;
     let available_range = TextRange::new(
@@ -160,6 +186,32 @@ fn make_else_arm(
     make.match_arm(pattern, None, expr)
 }
 
+// Assist: replace_match_with_if_let
+//
+// Replaces a binary `match` with a wildcard pattern with an `if let` expression.
+//
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     $0match action {
+//         Action::Move { distance } => foo(distance),
+//         _ => bar(),
+//     }
+// }
+// ```
+// ->
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     if let Action::Move { distance } = action {
+//         foo(distance)
+//     } else {
+//         bar()
+//     }
+// }
+// ```
 pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_expr: ast::MatchExpr = ctx.find_node_at_offset()?;
     let match_arm_list = match_expr.match_arm_list()?;

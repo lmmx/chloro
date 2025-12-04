@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65634 bytes
+Chloro size:   65813 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -141,15 +141,6 @@ Rustfmt size:  65944 bytes
          }
          // for primitives, there may be impls in various places (core and alloc
          // mostly). We just check the whole crate graph for crates with impls
-     }
- }
- 
--// This would be nicer if it just returned an iterator, but that runs into
--// lifetime problems, because we need to borrow temp `CrateImplDefs`.
--// FIXME add a context type here?
- pub(crate) fn iterate_method_candidates<'db, T>(
-     ty: &Canonical<'db, Ty<'db>>,
-     table: &mut InferenceTable<'db>,
      let selection = infcx.select(&obligation).ok()??;
  
      // Currently, we use a fulfillment context to completely resolve

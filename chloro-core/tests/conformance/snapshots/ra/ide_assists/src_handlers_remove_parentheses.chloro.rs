@@ -6,6 +6,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: remove_parentheses
+//
+// Removes redundant parentheses.
+//
+// ```
+// fn main() {
+//     _ = $0(2) + 2;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     _ = 2 + 2;
+// }
+// ```
 pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let parens = ctx.find_node_at_offset::<ast::ParenExpr>()?;
 

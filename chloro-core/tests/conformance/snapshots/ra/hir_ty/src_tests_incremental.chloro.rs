@@ -516,6 +516,7 @@ impl SomeStruct {
     );
 }
 
+// FIXME(next-solver): does this test make sense with fast path?
 #[test]
 fn add_struct_invalidates_trait_solve() {
     let (mut db, file_id) = TestDB::with_single_file(

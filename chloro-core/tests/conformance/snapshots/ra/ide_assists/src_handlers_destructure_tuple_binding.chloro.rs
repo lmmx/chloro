@@ -17,10 +17,45 @@ use crate::{
     utils::ref_field_expr::determine_ref_and_parens,
 };
 
+// Assist: destructure_tuple_binding
+//
+// Destructures a tuple binding in place.
+//
+// ```
+// fn main() {
+//     let $0t = (1,2);
+//     let v = t.0;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let ($0_0, _1) = (1,2);
+//     let v = _0;
+// }
+// ```
 pub(crate) fn destructure_tuple_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     destructure_tuple_binding_impl(acc, ctx, false)
 }
 
+// And when `with_sub_pattern` enabled (currently disabled):
+// Assist: destructure_tuple_binding_in_sub_pattern
+//
+// Destructures tuple items in sub-pattern (after `@`).
+//
+// ```
+// fn main() {
+//     let $0t = (1,2);
+//     let v = t.0;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let t @ ($0_0, _1) = (1,2);
+//     let v = _0;
+// }
+// ```
 pub(crate) fn destructure_tuple_binding_impl(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

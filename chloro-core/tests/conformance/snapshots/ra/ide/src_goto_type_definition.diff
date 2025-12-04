@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8960 bytes
-Chloro size:   8580 bytes
+Chloro size:   8898 bytes
 Rustfmt size:  9057 bytes
 
 ✗ Outputs DIFFER
@@ -16,18 +16,6 @@ Rustfmt size:  9057 bytes
  
  use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
  
--// Feature: Go to Type Definition
--//
--// Navigates to the type of an identifier.
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **Go to Type Definition** |
--//
--// ![Go to Type Definition](https://user-images.githubusercontent.com/48062697/113020657-b560f500-917a-11eb-9007-0f809733a338.gif)
- pub(crate) fn goto_type_definition(
-     db: &RootDatabase,
-     FilePosition { file_id, offset }: FilePosition,
  mod tests {
      use ide_db::FileRange;
      use itertools::Itertools;

@@ -30,6 +30,24 @@ use crate::assist_context::{AssistContext, Assists};
 //     };
 // }
 // ```
+// Assist: desugar_try_expr_let_else
+//
+// Replaces a `try` expression with a `let else` statement.
+//
+// ```
+// # //- minicore: try, option
+// fn handle() {
+//     let pat = Some(true)$0?;
+// }
+// ```
+// ->
+// ```
+// fn handle() {
+//     let Some(pat) = Some(true) else {
+//         return None;
+//     };
+// }
+// ```
 pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let question_tok = ctx.find_token_syntax_at_offset(T![?])?;
     let try_expr = question_tok.parent().and_then(ast::TryExpr::cast)?;

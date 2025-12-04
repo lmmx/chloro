@@ -182,6 +182,7 @@ impl<'db> SourceAnalyzer<'db> {
         SourceAnalyzer { resolver, body_or_sig: None, file_id: node.file_id }
     }
 
+    // FIXME: Remove this
     fn body_(
         &self,
     ) -> Option<(DefWithBodyId, &Body, &BodySourceMap, Option<&InferenceResult<'db>>)> {
@@ -1478,6 +1479,8 @@ fn scope_for_offset(
         })
 }
 
+// XXX: during completion, cursor might be outside of any particular
+// expression. Try to figure out the correct scope...
 fn adjust(
     db: &dyn HirDatabase,
     scopes: &ExprScopes,

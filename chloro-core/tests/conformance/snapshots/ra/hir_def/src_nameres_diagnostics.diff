@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4245 bytes
-Chloro size:   4513 bytes
+Chloro size:   4587 bytes
 Rustfmt size:  4722 bytes
 
 ✗ Outputs DIFFER
@@ -34,13 +34,6 @@ Rustfmt size:  4722 bytes
          }
      }
  
-         }
-     }
- 
--    // FIXME: Whats the difference between this and unresolved_proc_macro
-     pub(crate) fn unresolved_macro_call(
-         container: LocalModuleId,
-         ast: MacroCallKind,
      ) -> Self {
          Self {
              in_module: container,

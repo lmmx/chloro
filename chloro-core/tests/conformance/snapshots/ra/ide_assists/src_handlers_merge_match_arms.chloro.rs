@@ -9,6 +9,30 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, TextRange};
 
+// Assist: merge_match_arms
+//
+// Merges the current match arm with the following if their bodies are identical.
+//
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         $0Action::Move(..) => foo(),
+//         Action::Stop => foo(),
+//     }
+// }
+// ```
+// ->
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move(..) | Action::Stop => foo(),
+//     }
+// }
+// ```
 pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let current_arm = ctx.find_node_at_trimmed_offset::<ast::MatchArm>()?;
     // Don't try to handle arms with guards for now - can add support for this later

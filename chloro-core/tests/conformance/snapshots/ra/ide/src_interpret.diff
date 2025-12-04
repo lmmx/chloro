@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3508 bytes
-Chloro size:   3350 bytes
+Chloro size:   3508 bytes
 Rustfmt size:  3508 bytes
 
 ✗ Outputs DIFFER
@@ -17,11 +17,5 @@ Rustfmt size:  3508 bytes
 +use std::time::{Duration, Instant};
 +use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
  
--// Feature: Interpret A Function, Static Or Const.
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **rust-analyzer: Interpret** |
- pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
-     match find_and_interpret(db, position) {
-         Some((duration, mut result)) => {
+ // Feature: Interpret A Function, Static Or Const.
+ //

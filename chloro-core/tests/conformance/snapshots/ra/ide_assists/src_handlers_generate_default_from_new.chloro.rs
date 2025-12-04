@@ -10,6 +10,36 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: generate_default_from_new
+//
+// Generates default implementation from new method.
+//
+// ```
+// # //- minicore: default
+// struct Example { _inner: () }
+//
+// impl Example {
+//     pub fn n$0ew() -> Self {
+//         Self { _inner: () }
+//     }
+// }
+// ```
+// ->
+// ```
+// struct Example { _inner: () }
+//
+// impl Example {
+//     pub fn new() -> Self {
+//         Self { _inner: () }
+//     }
+// }
+//
+// impl Default for Example {
+//     fn default() -> Self {
+//         Self::new()
+//     }
+// }
+// ```
 pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
     let fn_name = fn_node.name()?;
@@ -48,6 +78,7 @@ pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'
     )
 }
 
+// FIXME: based on from utils::generate_impl_text_inner
 fn generate_trait_impl_text_from_impl(
     impl_: &ast::Impl,
     self_ty: ast::Type,

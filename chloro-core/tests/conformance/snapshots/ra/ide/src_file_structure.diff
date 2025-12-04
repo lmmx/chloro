@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34792 bytes
-Chloro size:   34315 bytes
+Chloro size:   34785 bytes
 Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
@@ -18,25 +18,6 @@ Rustfmt size:  34938 bytes
  };
  
  #[derive(Debug, Clone)]
-     pub exclude_locals: bool,
- }
- 
--// Feature: File Structure
--//
--// Provides a tree of the symbols defined in the file. Can be used to
--//
--// * fuzzy search symbol in a file (super useful)
--// * draw breadcrumbs to describe the context around the cursor
--// * draw outline of the file
--//
--// | Editor  | Shortcut |
--// |---------|----------|
--// | VS Code | <kbd>Ctrl+Shift+O</kbd> |
--//
--// ![File Structure](https://user-images.githubusercontent.com/48062697/113020654-b42fc800-917a-11eb-8388-e7dc4d92b02e.gif)
- pub(crate) fn file_structure(
-     file: &SourceFile,
-     config: &FileStructureConfig,
              node_range: node.syntax().text_range(),
              kind,
              detail,

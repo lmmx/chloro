@@ -344,6 +344,7 @@ fn main() {}
     );
 }
 
+// Each package in these workspaces should be run from its own root
 #[test]
 fn test_path_dependency_runnables() {
     if skip_slow_tests() {
@@ -430,6 +431,7 @@ mod tests {
     }
 }
 
+// The main fn in packages should be run from the workspace root
 #[test]
 fn test_runnables_cwd() {
     if skip_slow_tests() {

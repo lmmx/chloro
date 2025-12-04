@@ -1015,6 +1015,13 @@ impl<'db> InferCtxt<'db> {
         }
     }
 
+    // Instantiates the bound variables in a given binder with fresh inference
+    // variables in the current universe.
+    //
+    // Use this method if you'd like to find some generic parameters of the binder's
+    // variables (e.g. during a method call). If there isn't a [`BoundRegionConversionTime`]
+    // that corresponds to your use case, consider whether or not you should
+    // use [`InferCtxt::enter_forall`] instead.
     pub fn instantiate_binder_with_fresh_vars<T>(
         &self,
         _lbrct: BoundRegionConversionTime,

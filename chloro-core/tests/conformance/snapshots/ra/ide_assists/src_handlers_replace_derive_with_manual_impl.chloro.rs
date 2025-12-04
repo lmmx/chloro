@@ -17,6 +17,28 @@ use crate::{
     },
 };
 
+// Assist: replace_derive_with_manual_impl
+//
+// Converts a `derive` impl into a manual one.
+//
+// ```
+// # //- minicore: derive
+// # trait Debug { fn fmt(&self, f: &mut Formatter) -> Result<()>; }
+// #[derive(Deb$0ug, Display)]
+// struct S;
+// ```
+// ->
+// ```
+// # trait Debug { fn fmt(&self, f: &mut Formatter) -> Result<()>; }
+// #[derive(Display)]
+// struct S;
+//
+// impl Debug for S {
+//     $0fn fmt(&self, f: &mut Formatter) -> Result<()> {
+//         f.debug_struct("S").finish()
+//     }
+// }
+// ```
 pub(crate) fn replace_derive_with_manual_impl(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

@@ -1306,6 +1306,7 @@ impl Field {
         TypeNs::new(db, var_id, ty)
     }
 
+    // FIXME: Find better API to also handle const generics
     pub fn ty_with_args<'db>(
         &self,
         db: &'db dyn HirDatabase,
@@ -2248,6 +2249,7 @@ impl Function {
         Type::new_with_resolver_inner(db, &resolver, ty)
     }
 
+    // FIXME: Find better API to also handle const generics
     pub fn ret_type_with_args<'db>(
         self,
         db: &'db dyn HirDatabase,
@@ -2338,6 +2340,7 @@ impl Function {
             .collect()
     }
 
+    // FIXME: Find better API to also handle const generics
     pub fn params_without_self_with_args<'db>(
         self,
         db: &'db dyn HirDatabase,
@@ -2646,6 +2649,7 @@ impl SelfParam {
         Type { env: environment, ty }
     }
 
+    // FIXME: Find better API to also handle const generics
     pub fn ty_with_args<'db>(
         &self,
         db: &'db dyn HirDatabase,
@@ -3008,6 +3012,7 @@ pub struct BuiltinType {
 }
 
 impl BuiltinType {
+    // Constructors are added on demand, feel free to add more.
     pub fn str() -> BuiltinType {
         BuiltinType { inner: hir_def::builtin_type::BuiltinType::Str }
     }
@@ -4791,6 +4796,7 @@ impl<'db> Type<'db> {
         Type::new(db, def, ty.instantiate(interner, args))
     }
 
+    // FIXME: We shouldn't leak `TyKind::Param`s.
     fn from_def_params(db: &'db dyn HirDatabase, def: impl Into<TyDefId> + HasResolver) -> Self {
         let ty = db.ty(def.into());
         Type::new(db, def, ty.instantiate_identity())
@@ -5001,6 +5007,7 @@ impl<'db> Type<'db> {
         self.derived(self.ty.strip_references())
     }
 
+    // FIXME: This is the same as `remove_ref()`, remove one of these methods.
     pub fn strip_reference(&self) -> Self {
         self.derived(self.ty.strip_reference())
     }
@@ -5086,6 +5093,7 @@ impl<'db> Type<'db> {
         traits::implements_trait_unique(self.ty, db, self.env.clone(), fnonce_trait)
     }
 
+    // FIXME: Find better API that also handles const generics
     pub fn impls_trait(
         &self,
         db: &'db dyn HirDatabase,
@@ -5279,6 +5287,8 @@ impl<'db> Type<'db> {
         autoderef(db, self.env.clone(), canonical)
     }
 
+    // This would be nicer if it just returned an iterator, but that runs into
+    // lifetime problems, because we need to borrow temp `CrateImplDefs`.
     pub fn iterate_assoc_items<T>(
         &self,
         db: &'db dyn HirDatabase,
@@ -5772,6 +5782,7 @@ impl<'db> TypeNs<'db> {
         }
     }
 
+    // FIXME: Find better API that also handles const generics
     pub fn impls_trait(&self, infcx: InferCtxt<'db>, trait_: Trait, args: &[TypeNs<'db>]) -> bool {
         let args = GenericArgs::new_from_iter(
             infcx.interner,

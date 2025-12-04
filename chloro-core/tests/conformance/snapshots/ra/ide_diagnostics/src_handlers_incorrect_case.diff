@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27018 bytes
-Chloro size:   26670 bytes
+Chloro size:   26862 bytes
 Rustfmt size:  27018 bytes
 
 ✗ Outputs DIFFER
@@ -22,12 +22,7 @@ Rustfmt size:  27018 bytes
 -    DiagnosticsContext,
  };
  
--// Diagnostic: incorrect-ident-case
--//
--// This diagnostic is triggered if an item name doesn't follow [Rust naming convention](https://doc.rust-lang.org/1.0.0/style/style/naming/README.html).
- pub(crate) fn incorrect_case(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Diagnostic {
-     let code = match d.expected_case {
-         CaseType::LowerSnakeCase => DiagnosticCode::RustcLint("non_snake_case"),
+ // Diagnostic: incorrect-ident-case
  #[cfg(test)]
  mod change_case {
      use crate::tests::{check_diagnostics, check_diagnostics_with_disabled, check_fix};

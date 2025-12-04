@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6359 bytes
-Chloro size:   6061 bytes
+Chloro size:   6363 bytes
 Rustfmt size:  6555 bytes
 
 ✗ Outputs DIFFER
@@ -24,28 +24,9 @@ Rustfmt size:  6555 bytes
  };
  
  use crate::assist_context::{AssistContext, Assists};
- 
--// Assist: convert_range_for_to_while
--//
--// Convert for each range into while loop.
--//
--// ```
--// fn foo() {
--//     $0for i in 3..7 {
--//         foo(i);
--//     }
--// }
--// ```
--// ->
--// ```
--// fn foo() {
--//     let mut i = 3;
--//     while i < 7 {
--//         foo(i);
--//         i += 1;
--//     }
--// }
--// ```
+ //     }
+ // }
+ // ```
 -pub(crate) fn convert_range_for_to_while(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
 +pub(crate) fn convert_range_for_to_while(
 +    acc: &mut Assists,

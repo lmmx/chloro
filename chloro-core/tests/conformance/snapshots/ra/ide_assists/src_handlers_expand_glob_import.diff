@@ -2,90 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23406 bytes
-Chloro size:   22521 bytes
+Chloro size:   23390 bytes
 Rustfmt size:  23406 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     assist_context::{AssistContext, Assists},
- };
- 
--// Assist: expand_glob_import
--//
--// Expands glob imports.
--//
--// ```
--// mod foo {
--//     pub struct Bar;
--//     pub struct Baz;
--// }
--//
--// use foo::*$0;
--//
--// fn qux(bar: Bar, baz: Baz) {}
--// ```
--// ->
--// ```
--// mod foo {
--//     pub struct Bar;
--//     pub struct Baz;
--// }
--//
--// use foo::{Bar, Baz};
--//
--// fn qux(bar: Bar, baz: Baz) {}
--// ```
- pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let star = ctx.find_token_syntax_at_offset(T![*])?;
-     let use_tree = star.parent().and_then(ast::UseTree::cast)?;
-     )
- }
- 
--// Assist: expand_glob_reexport
--//
--// Expands non-private glob imports.
--//
--// ```
--// mod foo {
--//     pub struct Bar;
--//     pub struct Baz;
--// }
--//
--// pub use foo::*$0;
--// ```
--// ->
--// ```
--// mod foo {
--//     pub struct Bar;
--//     pub struct Baz;
--// }
--//
--// pub use foo::{Bar, Baz};
--// ```
- pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let star = ctx.find_token_syntax_at_offset(T![*])?;
-     let use_tree = star.parent().and_then(ast::UseTree::cast)?;
-     }
- }
- 
--// looks for name refs in parent use block's siblings
--//
--// mod bar {
--//     mod qux {
--//         struct Qux;
--//     }
--//
--//     pub use qux::Qux;
--// }
--//
--// ↓ ---------------
--// use foo::*$0;
--// use baz::Baz;
--// ↑ ---------------
- fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition> {
-     [Direction::Prev, Direction::Next]
-         .into_iter()
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

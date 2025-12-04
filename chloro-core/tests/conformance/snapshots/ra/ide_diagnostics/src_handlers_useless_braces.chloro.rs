@@ -7,6 +7,9 @@ use syntax::{AstNode, SyntaxNode, SyntaxNodePtr, ast};
 
 use crate::{Diagnostic, DiagnosticCode, fix};
 
+// Diagnostic: unnecessary-braces
+//
+// Diagnostic for unnecessary braces in `use` items.
 pub(crate) fn useless_braces(
     db: &RootDatabase,
     acc: &mut Vec<Diagnostic>,

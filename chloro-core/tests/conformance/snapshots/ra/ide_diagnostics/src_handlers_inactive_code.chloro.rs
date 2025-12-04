@@ -3,6 +3,9 @@ use stdx::format_to;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 
+// Diagnostic: inactive-code
+//
+// This diagnostic is shown for code with inactive `#[cfg]` attributes.
 pub(crate) fn inactive_code(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::InactiveCode,

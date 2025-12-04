@@ -2,34 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 906 bytes
-Chloro size:   727 bytes
+Chloro size:   945 bytes
 Rustfmt size:  977 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{SyntaxKind, T};
- 
- use crate::{AssistContext, AssistId, Assists};
- 
--// Assist: remove_mut
--//
--// Removes the `mut` keyword.
--//
--// ```
--// impl Walrus {
--//     fn feed(&mut$0 self, amount: u32) {}
--// }
--// ```
--// ->
--// ```
--// impl Walrus {
--//     fn feed(&self, amount: u32) {}
--// }
--// ```
- pub(crate) fn remove_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let mut_token = ctx.find_token_syntax_at_offset(T![mut])?;
- 
          "Remove `mut` keyword",
          target,
          |builder| {

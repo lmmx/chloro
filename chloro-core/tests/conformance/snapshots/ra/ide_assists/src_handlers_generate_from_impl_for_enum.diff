@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7226 bytes
-Chloro size:   6794 bytes
+Chloro size:   7215 bytes
 Rustfmt size:  7244 bytes
 
 ✗ Outputs DIFFER
@@ -16,26 +16,8 @@ Rustfmt size:  7244 bytes
 -use crate::{utils::generate_trait_impl_text_intransitive, AssistContext, AssistId, Assists};
 +use crate::{AssistContext, AssistId, Assists, utils::generate_trait_impl_text_intransitive};
  
--// Assist: generate_from_impl_for_enum
--//
--// Adds a From impl for this enum variant with one tuple field.
--//
--// ```
--// enum A { $0One(u32) }
--// ```
--// ->
--// ```
--// enum A { One(u32) }
--//
--// impl From<u32> for A {
--//     fn from(v: u32) -> Self {
--//         Self::One(v)
--//     }
--// }
--// ```
- pub(crate) fn generate_from_impl_for_enum(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
+ // Assist: generate_from_impl_for_enum
+ //
      let field_ty = variant.fields(sema.db).first()?.ty(sema.db);
      let enum_ty = enum_.ty(sema.db);
      tracing::debug!(?enum_, ?field_ty, ?enum_ty);
@@ -58,11 +40,9 @@ Rustfmt size:  7244 bytes
          );
      }
 -
--    // FIXME(next-solver): it would be nice to not be *required* to resolve the
--    // path in order to properly generate assists
+     // FIXME(next-solver): it would be nice to not be *required* to resolve the
+     // path in order to properly generate assists
      #[test]
-     fn test_generate_from_impl_for_enum_complicated_path() {
-         check_assist(
  "#,
          );
      }

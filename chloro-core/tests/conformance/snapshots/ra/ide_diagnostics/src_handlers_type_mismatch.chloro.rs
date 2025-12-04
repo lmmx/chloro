@@ -15,6 +15,10 @@ use syntax::{
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
 
+// Diagnostic: type-mismatch
+//
+// This diagnostic is triggered when the type of an expression or pattern does not match
+// the expected type.
 pub(crate) fn type_mismatch(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::TypeMismatch<'_>,

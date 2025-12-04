@@ -1364,6 +1364,7 @@ impl AnotherTrait for () {
 "#,
         );
     }
+    // FIXME: `T` in `ty!(T)` should be replaced by `PathTransform`.
     #[test]
     fn macro_generated_assoc_item2() {
         check_edit(

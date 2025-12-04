@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9020 bytes
-Chloro size:   8629 bytes
+Chloro size:   9012 bytes
 Rustfmt size:  9083 bytes
 
 ✗ Outputs DIFFER
@@ -26,35 +26,7 @@ Rustfmt size:  9083 bytes
 -    AssistId,
  };
  
--// Assist: generate_deref
--//
--// Generate `Deref` impl using the given struct field.
--//
--// ```
--// # //- minicore: deref, deref_mut
--// struct A;
--// struct B {
--//    $0a: A
--// }
--// ```
--// ->
--// ```
--// struct A;
--// struct B {
--//    a: A
--// }
--//
--// impl core::ops::Deref for B {
--//     type Target = A;
--//
--//     fn deref(&self) -> &Self::Target {
--//         &self.a
--//     }
--// }
--// ```
- pub(crate) fn generate_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     generate_record_deref(acc, ctx).or_else(|| generate_tuple_deref(acc, ctx))
- }
+ // Assist: generate_deref
      };
  
      let module = ctx.sema.to_def(&strukt)?.module(ctx.db());

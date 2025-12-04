@@ -16,6 +16,10 @@ use crate::{
     },
 };
 
+// rustc does not have a cycle handling for the `specializes` query, meaning a cycle is a bug,
+// and indeed I was unable to cause cycles even with erroneous code. However, in r-a we can
+// create a cycle if there is an error in the impl's where clauses. I believe well formed code
+// cannot create a cycle, but a cycle handler is required nevertheless.
 fn specializes_query_cycle(
     _db: &dyn HirDatabase,
     _specializing_impl_def_id: ImplId,
@@ -139,6 +143,8 @@ fn specializes_query(
     true
 }
 
+// This function is used to avoid creating the query for crates that does not define `#![feature(specialization)]`,
+// as the solver is calling this a lot, and creating the query consumes a lot of memory.
 pub(crate) fn specializes(
     db: &dyn HirDatabase,
     specializing_impl_def_id: ImplId,

@@ -154,6 +154,7 @@ pub trait HirDatabase {
     #[salsa::transparent]
     fn impl_self_ty<'db>(&'db self, def: ImplId) -> EarlyBinder<'db, Ty<'db>>;
 
+    // FIXME: Make this a non-interned query.
     #[salsa::invoke_interned(crate::lower::const_param_ty_with_diagnostics_query)]
     #[salsa::cycle(cycle_result = crate::lower::const_param_ty_with_diagnostics_cycle_result)]
     fn const_param_ty_with_diagnostics<'db>(
@@ -281,6 +282,7 @@ pub trait HirDatabase {
     #[salsa::invoke(TraitImpls::trait_impls_in_deps_query)]
     fn trait_impls_in_deps(&self, krate: Crate) -> Arc<[Arc<TraitImpls>]>;
 
+    // Interned IDs for solver integration
     #[salsa::interned]
     fn intern_impl_trait_id(&self, id: ImplTraitId<'_>) -> InternedOpaqueTyId;
 

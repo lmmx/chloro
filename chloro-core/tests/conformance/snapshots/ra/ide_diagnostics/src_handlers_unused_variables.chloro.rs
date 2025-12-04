@@ -10,6 +10,9 @@ use syntax::{AstNode, Edition, TextRange, ToSmolStr};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: unused-variables
+//
+// This diagnostic is triggered when a local variable is not used.
 pub(crate) fn unused_variables(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UnusedVariable,
@@ -308,6 +311,7 @@ fn main() {
 "#,
         );
     }
+    // regression test as we used to panic in this scenario
     #[test]
     fn unknown_struct_pattern_param_type() {
         check_diagnostics(

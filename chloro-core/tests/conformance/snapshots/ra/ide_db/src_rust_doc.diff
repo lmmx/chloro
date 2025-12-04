@@ -2,18 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5770 bytes
-Chloro size:   5606 bytes
+Chloro size:   5756 bytes
 Rustfmt size:  5934 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Rustdoc specific doc comment handling
- 
- use crate::documentation::Documentation;
- 
--// stripped down version of https://github.com/rust-lang/rust/blob/392ba2ba1a7d6c542d2459fb8133bebf62a4a423/src/librustdoc/html/markdown.rs#L810-L933
- pub fn is_rust_fence(s: &str) -> bool {
      let mut seen_rust_tags = false;
      let mut seen_other_tags = false;
  

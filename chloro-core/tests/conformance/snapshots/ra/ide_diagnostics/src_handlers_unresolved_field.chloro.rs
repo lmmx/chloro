@@ -18,6 +18,9 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
+// Diagnostic: unresolved-field
+//
+// This diagnostic is triggered if a field does not exist on a given type.
 pub(crate) fn unresolved_field(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UnresolvedField<'_>,
@@ -67,6 +70,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<V
     }
 }
 
+// FIXME: Add Snippet Support
 fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Assist> {
     // Get the FileRange of the invalid field access
     let root = ctx.sema.db.parse_or_expand(d.expr.file_id);
@@ -260,6 +264,7 @@ fn record_field_layout(
     Some((offset, format!("{comma}{indent}{record_field}{trailing_new_line}")))
 }
 
+// FIXME: We should fill out the call here, move the cursor and trigger signature help
 fn method_fix(
     ctx: &DiagnosticsContext<'_>,
     expr_ptr: &InFile<AstPtr<Either<ast::Expr, ast::Pat>>>,

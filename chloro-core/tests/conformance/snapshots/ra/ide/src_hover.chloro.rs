@@ -125,6 +125,12 @@ pub struct HoverResult {
     pub actions: Vec<HoverAction>,
 }
 
+// Feature: Hover
+//
+// Shows additional information, like the type of an expression or the documentation for a definition when "focusing" code.
+// Focusing is usually hovering with a mouse, but can also be triggered with a shortcut.
+//
+// ![Hover](https://user-images.githubusercontent.com/48062697/113020658-b5f98b80-917a-11eb-9f88-3dbc27320c95.gif)
 pub(crate) fn hover(
     db: &RootDatabase,
     frange @ FileRange { file_id, range }: FileRange,
@@ -445,6 +451,7 @@ fn hover_ranged(
     })
 }
 
+// FIXME: Why is this pub(crate)?
 pub(crate) fn hover_for_definition(
     sema: &Semantics<'_, RootDatabase>,
     file_id: FileId,

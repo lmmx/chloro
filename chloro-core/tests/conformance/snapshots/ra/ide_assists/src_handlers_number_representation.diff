@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5483 bytes
-Chloro size:   5293 bytes
+Chloro size:   5478 bytes
 Rustfmt size:  5609 bytes
 
 ✗ Outputs DIFFER
@@ -13,22 +13,6 @@ Rustfmt size:  5609 bytes
  
  use crate::{AssistContext, AssistId, Assists, GroupLabel};
  
- const MIN_NUMBER_OF_DIGITS_TO_FORMAT: usize = 5;
- 
--// Assist: reformat_number_literal
--//
--// Adds or removes separators from integer literal.
--//
--// ```
--// const _: i32 = 1012345$0;
--// ```
--// ->
--// ```
--// const _: i32 = 1_012_345;
--// ```
- pub(crate) fn reformat_number_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let literal = ctx.find_node_at_offset::<ast::Literal>()?;
-     let literal = match literal.kind() {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist_by_label, check_assist_not_applicable, check_assist_target};

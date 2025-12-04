@@ -2,6 +2,21 @@ use syntax::{SyntaxKind, T};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: remove_mut
+//
+// Removes the `mut` keyword.
+//
+// ```
+// impl Walrus {
+//     fn feed(&mut$0 self, amount: u32) {}
+// }
+// ```
+// ->
+// ```
+// impl Walrus {
+//     fn feed(&self, amount: u32) {}
+// }
+// ```
 pub(crate) fn remove_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let mut_token = ctx.find_token_syntax_at_offset(T![mut])?;
 

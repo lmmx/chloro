@@ -1,5 +1,8 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: missing-lifetime
+//
+// This diagnostic is triggered when a lifetime argument is missing.
 pub(crate) fn missing_lifetime(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::MissingLifetime,

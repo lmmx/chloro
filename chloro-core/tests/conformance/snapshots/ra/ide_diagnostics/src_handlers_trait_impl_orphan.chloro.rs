@@ -2,6 +2,9 @@ use hir::InFile;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: trait-impl-orphan
+//
+// Only traits defined in the current crate can be implemented for arbitrary types
 pub(crate) fn trait_impl_orphan(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::TraitImplOrphan,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6348 bytes
-Chloro size:   5808 bytes
+Chloro size:   6367 bytes
 Rustfmt size:  6412 bytes
 
 ✗ Outputs DIFFER
@@ -29,13 +29,6 @@ Rustfmt size:  6412 bytes
      },
  };
  
--// rustc does not have a cycle handling for the `specializes` query, meaning a cycle is a bug,
--// and indeed I was unable to cause cycles even with erroneous code. However, in r-a we can
--// create a cycle if there is an error in the impl's where clauses. I believe well formed code
--// cannot create a cycle, but a cycle handler is required nevertheless.
- fn specializes_query_cycle(
-     _db: &dyn HirDatabase,
-     _specializing_impl_def_id: ImplId,
      let parent_impl_signature = db.impl_signature(parent_impl_def_id);
  
      // We determine whether there's a subset relationship by:
@@ -121,14 +114,6 @@ Rustfmt size:  6412 bytes
      debug!(
          "fulfill_implication: an impl for {:?} specializes {:?}",
          specializing_impl_trait_ref, parent_impl_trait_ref
-     true
- }
- 
--// This function is used to avoid creating the query for crates that does not define `#![feature(specialization)]`,
--// as the solver is calling this a lot, and creating the query consumes a lot of memory.
- pub(crate) fn specializes(
-     db: &dyn HirDatabase,
-     specializing_impl_def_id: ImplId,
      let module = specializing_impl_def_id.loc(db).container;
  
      // We check that the specializing impl comes from a crate that has specialization enabled.

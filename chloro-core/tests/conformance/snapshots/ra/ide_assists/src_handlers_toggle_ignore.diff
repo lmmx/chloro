@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2414 bytes
-Chloro size:   2158 bytes
+Chloro size:   2411 bytes
 Rustfmt size:  2432 bytes
 
 ✗ Outputs DIFFER
@@ -17,27 +17,8 @@ Rustfmt size:  2432 bytes
 -use crate::{utils::test_related_attribute_syn, AssistContext, AssistId, Assists};
 +use crate::{AssistContext, AssistId, Assists, utils::test_related_attribute_syn};
  
--// Assist: toggle_ignore
--//
--// Adds `#[ignore]` attribute to the test.
--//
--// ```
--// $0#[test]
--// fn arithmetics {
--//     assert_eq!(2 + 2, 5);
--// }
--// ```
--// ->
--// ```
--// #[test]
--// #[ignore]
--// fn arithmetics {
--//     assert_eq!(2 + 2, 5);
--// }
--// ```
- pub(crate) fn toggle_ignore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let attr: ast::Attr = ctx.find_node_at_offset()?;
-     let func = attr.syntax().parent().and_then(ast::Fn::cast)?;
+ // Assist: toggle_ignore
+ //
  }
  
  fn has_ignore_attribute(fn_def: &ast::Fn) -> Option<ast::Attr> {

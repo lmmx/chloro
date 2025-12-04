@@ -213,6 +213,16 @@ pub(crate) fn handle_view_item_tree(
     Ok(res)
 }
 
+// cargo test requires:
+// - the package is a member of the workspace
+// - the target in the package is not a build script (custom-build)
+// - the package name - the root of the test identifier supplied to this handler can be
+//   a package or a target inside a package.
+// - the target name - if the test identifier is a target, it's needed in addition to the
+//   package name to run the right test
+// - real names - the test identifier uses the namespace form where hyphens are replaced with
+//   underscores. cargo test requires the real name.
+// - the target kind e.g. bin or lib
 fn all_test_targets(cargo: &CargoWorkspace) -> impl Iterator<Item = TestTarget> {
     cargo.packages().filter(|p| cargo[*p].is_member).flat_map(|p| {
         let package = &cargo[p];

@@ -11,6 +11,19 @@ use crate::{
     utils::required_hashes,
 };
 
+// Assist: desugar_doc_comment
+//
+// Desugars doc-comments to the attribute form.
+//
+// ```
+// /// Multi-line$0
+// /// comment
+// ```
+// ->
+// ```
+// #[doc = r"Multi-line
+// comment"]
+// ```
 pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     // Only allow doc comments

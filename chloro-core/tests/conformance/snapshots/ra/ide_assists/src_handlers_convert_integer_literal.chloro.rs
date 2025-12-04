@@ -2,6 +2,17 @@ use syntax::{AstToken, ast, ast::Radix};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
+// Assist: convert_integer_literal
+//
+// Converts the base of integer literals to other bases.
+//
+// ```
+// const _: i32 = 10$0;
+// ```
+// ->
+// ```
+// const _: i32 = 0b1010;
+// ```
 pub(crate) fn convert_integer_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if !ctx.has_empty_selection() {
         return None;

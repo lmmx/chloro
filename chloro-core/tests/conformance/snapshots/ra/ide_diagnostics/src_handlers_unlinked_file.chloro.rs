@@ -17,6 +17,10 @@ use syntax::{
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
 
+// Diagnostic: unlinked-file
+//
+// This diagnostic is shown for files that are not included in any crate, or files that are part of
+// crates rust-analyzer failed to discover. The file will not have IDE features available.
 pub(crate) fn unlinked_file(
     ctx: &DiagnosticsContext<'_>,
     acc: &mut Vec<Diagnostic>,

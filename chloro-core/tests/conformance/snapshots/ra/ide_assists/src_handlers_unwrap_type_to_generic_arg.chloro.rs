@@ -6,6 +6,21 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
+// Assist: unwrap_type_to_generic_arg
+//
+// This assist unwraps a type into its generic type argument.
+//
+// ```
+// fn foo() -> $0Option<i32> {
+//     todo!()
+// }
+// ```
+// ->
+// ```
+// fn foo() -> i32 {
+//     todo!()
+// }
+// ```
 pub(crate) fn unwrap_type_to_generic_arg(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

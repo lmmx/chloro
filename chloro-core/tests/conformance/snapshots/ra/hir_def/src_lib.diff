@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43691 bytes
+Chloro size:   43732 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -515,10 +515,9 @@ Rustfmt size:  45085 bytes
  //     }
  // }
 -
--// region: manual-assoc-has-module-impls
+ // region: manual-assoc-has-module-impls
  #[inline]
  fn module_for_assoc_item_loc<'db>(
-     db: &(dyn 'db + DefDatabase),
          module_for_assoc_item_loc(db, *self)
      }
  }

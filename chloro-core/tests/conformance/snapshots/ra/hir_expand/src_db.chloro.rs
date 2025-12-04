@@ -355,6 +355,8 @@ fn parse_or_expand(db: &dyn ExpandDatabase, file_id: HirFileId) -> SyntaxNode {
     }
 }
 
+// FIXME: We should verify that the parsed node is one of the many macro node variants we expect
+// instead of having it be untyped
 fn parse_macro_expansion(
     db: &dyn ExpandDatabase,
     macro_file: MacroCallId,
@@ -564,6 +566,7 @@ fn macro_arg(db: &dyn ExpandDatabase, id: MacroCallId) -> MacroArgResult {
     (Arc::new(tt), undo_info, span)
 }
 
+// FIXME: Censoring info should be calculated by the caller! Namely by name resolution
 /// Derives expect all `#[derive(..)]` invocations up to (and including) the currently invoked one to be stripped
 fn censor_derive_input(derive_attr_index: AttrId, node: &ast::Adt) -> FxHashSet<SyntaxElement> {
     // FIXME: handle `cfg_attr`

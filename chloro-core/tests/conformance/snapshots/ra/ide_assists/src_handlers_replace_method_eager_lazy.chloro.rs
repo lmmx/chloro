@@ -6,6 +6,24 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
+// Assist: replace_with_lazy_method
+//
+// Replace `unwrap_or` with `unwrap_or_else` and `ok_or` with `ok_or_else`.
+//
+// ```
+// # //- minicore:option, fn
+// fn foo() {
+//     let a = Some(1);
+//     a.unwra$0p_or(2);
+// }
+// ```
+// ->
+// ```
+// fn foo() {
+//     let a = Some(1);
+//     a.unwrap_or_else(|| 2);
+// }
+// ```
 pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let scope = ctx.sema.scope(call.syntax())?;
@@ -65,6 +83,24 @@ fn into_closure(param: &Expr) -> Expr {
     )
 }
 
+// Assist: replace_with_eager_method
+//
+// Replace `unwrap_or_else` with `unwrap_or` and `ok_or_else` with `ok_or`.
+//
+// ```
+// # //- minicore:option, fn
+// fn foo() {
+//     let a = Some(1);
+//     a.unwra$0p_or_else(|| 2);
+// }
+// ```
+// ->
+// ```
+// fn foo() {
+//     let a = Some(1);
+//     a.unwrap_or(2);
+// }
+// ```
 pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let scope = ctx.sema.scope(call.syntax())?;

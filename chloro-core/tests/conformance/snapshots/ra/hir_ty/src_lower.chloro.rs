@@ -1251,6 +1251,7 @@ pub(crate) fn const_param_ty_query<'db>(db: &'db dyn HirDatabase, def: ConstPara
     db.const_param_ty_with_diagnostics(def).0
 }
 
+// returns None if def is a type arg
 pub(crate) fn const_param_ty_with_diagnostics_query<'db>(
     db: &'db dyn HirDatabase,
     def: ConstParamId,
@@ -1960,6 +1961,7 @@ fn fn_sig_for_enum_variant_constructor<'db>(
     }))
 }
 
+// FIXME(next-solver): should merge this with `explicit_item_bounds` in some way
 pub(crate) fn associated_ty_item_bounds<'db>(
     db: &'db dyn HirDatabase,
     type_alias: TypeAliasId,

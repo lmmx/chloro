@@ -12,6 +12,27 @@ use crate::{
     utils::{find_struct_impl, generate_impl_with_item},
 };
 
+// Assist: generate_new
+//
+// Adds a `fn new` for a type.
+//
+// ```
+// struct Ctx<T: Clone> {
+//      data: T,$0
+// }
+// ```
+// ->
+// ```
+// struct Ctx<T: Clone> {
+//      data: T,
+// }
+//
+// impl<T: Clone> Ctx<T> {
+//     fn $0new(data: T) -> Self {
+//         Self { data }
+//     }
+// }
+// ```
 pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
 

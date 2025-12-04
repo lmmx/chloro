@@ -275,6 +275,7 @@ unsafe impl Sync for DbInterner<'_> {
 }
 
 impl<'db> DbInterner<'db> {
+    // FIXME(next-solver): remove this method
     pub fn conjure() -> DbInterner<'db> {
         crate::with_attached_db(|db| DbInterner {
             db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },

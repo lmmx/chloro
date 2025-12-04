@@ -12,6 +12,25 @@ use crate::{
     AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder, utils::next_prev,
 };
 
+// Assist: remove_unused_param
+//
+// Removes unused function parameter.
+//
+// ```
+// fn frobnicate(x: i32$0) {}
+//
+// fn main() {
+//     frobnicate(92);
+// }
+// ```
+// ->
+// ```
+// fn frobnicate() {}
+//
+// fn main() {
+//     frobnicate();
+// }
+// ```
 pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;
     let ident_pat = match param.pat()? {

@@ -3,6 +3,9 @@ use syntax::{AstNode, TextRange};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
+// Diagnostic: incoherent-impl
+//
+// This diagnostic is triggered if the targe type of an impl is from a foreign crate.
 pub(crate) fn incoherent_impl(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::IncoherentImpl,

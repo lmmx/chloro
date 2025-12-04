@@ -1,5 +1,8 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: unresolved-assoc-item
+//
+// This diagnostic is triggered if the referenced associated item does not exist.
 pub(crate) fn unresolved_assoc_item(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UnresolvedAssocItem,

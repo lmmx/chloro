@@ -7,6 +7,43 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: add_braces
+//
+// Adds braces to closure bodies, match arm expressions and assignment bodies.
+//
+// ```
+// fn foo(n: i32) -> i32 {
+//     match n {
+//         1 =>$0 n + 1,
+//         _ => 0
+//     }
+// }
+// ```
+// ->
+// ```
+// fn foo(n: i32) -> i32 {
+//     match n {
+//         1 => {
+//             n + 1
+//         },
+//         _ => 0
+//     }
+// }
+// ```
+// ---
+// ```
+// fn foo(n: i32) -> i32 {
+//     let x =$0 n + 2;
+// }
+// ```
+// ->
+// ```
+// fn foo(n: i32) -> i32 {
+//     let x = {
+//         n + 2
+//     };
+// }
+// ```
 pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (expr_type, expr) = get_replacement_node(ctx)?;
 

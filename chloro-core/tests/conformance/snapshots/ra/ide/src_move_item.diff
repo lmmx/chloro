@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18777 bytes
-Chloro size:   18411 bytes
+Chloro size:   18767 bytes
 Rustfmt size:  18816 bytes
 
 ✗ Outputs DIFFER
@@ -21,22 +21,6 @@ Rustfmt size:  18816 bytes
  
  #[derive(Copy, Clone, Debug)]
  pub enum Direction {
-     Down,
- }
- 
--// Feature: Move Item
--//
--// Move item under cursor or selection up and down.
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **rust-analyzer: Move item up**
--// | VS Code | **rust-analyzer: Move item down**
--//
--// ![Move Item](https://user-images.githubusercontent.com/48062697/113065576-04298180-91b1-11eb-91ce-4505e99ed598.gif)
- pub(crate) fn move_item(
-     db: &RootDatabase,
-     range: FileRange,
      find_ancestors(item, direction, range.range)
  }
  

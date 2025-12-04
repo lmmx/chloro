@@ -12,6 +12,29 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
+    // Output leading non-doc comments (// style) that appear before visibility/keywords
+    // These are children of the FN node that come before VISIBILITY or FN_KW
+    for child in node.children_with_tokens() {
+        match child {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::COMMENT {
+                    let text = t.text();
+                    // Skip doc comments - they're handled by doc_comments() below
+                    if !text.starts_with("///") && !text.starts_with("//!") {
+                        buf.line(indent, text);
+                    }
+                } else if t.kind() != SyntaxKind::WHITESPACE {
+                    // Hit a non-comment, non-whitespace token - stop
+                    break;
+                }
+            }
+            NodeOrToken::Node(_) => {
+                // Hit a node (like VISIBILITY) - stop
+                break;
+            }
+        }
+    }
+
     // Format doc comments using the HasDocComments trait
     buf.doc_comments(&func, indent);
 

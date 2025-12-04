@@ -16,6 +16,32 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: generate_single_field_struct_from
+//
+// Implement From for a single field structure, ignore trivial types.
+//
+// ```
+// # //- minicore: from, phantom_data
+// use core::marker::PhantomData;
+// struct $0Foo<T> {
+//     id: i32,
+//     _phantom_data: PhantomData<T>,
+// }
+// ```
+// ->
+// ```
+// use core::marker::PhantomData;
+// struct Foo<T> {
+//     id: i32,
+//     _phantom_data: PhantomData<T>,
+// }
+//
+// impl<T> From<i32> for Foo<T> {
+//     fn from(id: i32) -> Self {
+//         Self { id, _phantom_data: PhantomData }
+//     }
+// }
+// ```
 pub(crate) fn generate_single_field_struct_from(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

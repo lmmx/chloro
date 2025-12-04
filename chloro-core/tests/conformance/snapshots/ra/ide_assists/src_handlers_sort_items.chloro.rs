@@ -9,6 +9,78 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::get_methods};
 
+// Assist: sort_items
+//
+// Sorts item members alphabetically: fields, enum variants and methods.
+//
+// ```
+// struct $0Foo$0 { second: u32, first: String }
+// ```
+// ->
+// ```
+// struct Foo { first: String, second: u32 }
+// ```
+// ---
+// ```
+// trait $0Bar$0 {
+//     fn second(&self) -> u32;
+//     fn first(&self) -> String;
+// }
+// ```
+// ->
+// ```
+// trait Bar {
+//     fn first(&self) -> String;
+//     fn second(&self) -> u32;
+// }
+// ```
+// ---
+// ```
+// struct Baz;
+// impl $0Baz$0 {
+//     fn second(&self) -> u32;
+//     fn first(&self) -> String;
+// }
+// ```
+// ->
+// ```
+// struct Baz;
+// impl Baz {
+//     fn first(&self) -> String;
+//     fn second(&self) -> u32;
+// }
+// ```
+// ---
+// There is a difference between sorting enum variants:
+//
+// ```
+// enum $0Animal$0 {
+//   Dog(String, f64),
+//   Cat { weight: f64, name: String },
+// }
+// ```
+// ->
+// ```
+// enum Animal {
+//   Cat { weight: f64, name: String },
+//   Dog(String, f64),
+// }
+// ```
+// and sorting a single enum struct variant:
+//
+// ```
+// enum Animal {
+//   Dog(String, f64),
+//   Cat $0{ weight: f64, name: String }$0,
+// }
+// ```
+// ->
+// ```
+// enum Animal {
+//   Dog(String, f64),
+//   Cat { name: String, weight: f64 },
+// }
+// ```
 pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {
         cov_mark::hit!(not_applicable_if_no_selection);

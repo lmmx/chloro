@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20373 bytes
-Chloro size:   20308 bytes
+Chloro size:   20373 bytes
 Rustfmt size:  20373 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     );
- }
- 
--// FIXME(next-solver): does this test make sense with fast path?
- #[test]
- fn add_struct_invalidates_trait_solve() {
-     let (mut db, file_id) = TestDB::with_single_file(
+✓ Outputs are IDENTICAL

@@ -11,6 +11,33 @@ use crate::{
     utils::{add_method_to_adt, find_struct_impl},
 };
 
+// Assist: generate_enum_try_into_method
+//
+// Generate a `try_into_` method for this enum variant.
+//
+// ```
+// enum Value {
+//  Number(i32),
+//  Text(String)$0,
+// }
+// ```
+// ->
+// ```
+// enum Value {
+//  Number(i32),
+//  Text(String),
+// }
+//
+// impl Value {
+//     fn try_into_text(self) -> Result<String, Self> {
+//         if let Self::Text(v) = self {
+//             Ok(v)
+//         } else {
+//             Err(self)
+//         }
+//     }
+// }
+// ```
 pub(crate) fn generate_enum_try_into_method(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -31,6 +58,33 @@ pub(crate) fn generate_enum_try_into_method(
     )
 }
 
+// Assist: generate_enum_as_method
+//
+// Generate an `as_` method for this enum variant.
+//
+// ```
+// enum Value {
+//  Number(i32),
+//  Text(String)$0,
+// }
+// ```
+// ->
+// ```
+// enum Value {
+//  Number(i32),
+//  Text(String),
+// }
+//
+// impl Value {
+//     fn as_text(&self) -> Option<&String> {
+//         if let Self::Text(v) = self {
+//             Some(v)
+//         } else {
+//             None
+//         }
+//     }
+// }
+// ```
 pub(crate) fn generate_enum_as_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_enum_projection_method(
         acc,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3679 bytes
-Chloro size:   3651 bytes
+Chloro size:   3773 bytes
 Rustfmt size:  3832 bytes
 
 ✗ Outputs DIFFER
@@ -37,14 +37,6 @@ Rustfmt size:  3832 bytes
                  },
              })
          } else {
-     }
- }
- 
--// This fn is intended for `#[proc_macro_derive(..)]` and `#[rustc_builtin_macro(..)]`, which have
--// the same structure.
- #[rustfmt::skip]
- pub(crate) fn parse_macro_name_and_helper_attrs(tt: &TopSubtree) -> Option<(Name, Box<[Name]>)> {
-     match tt.token_trees().flat_tokens() {
              TokenTree::Leaf(Leaf::Ident(attributes)),
              TokenTree::Subtree(_),
              ..

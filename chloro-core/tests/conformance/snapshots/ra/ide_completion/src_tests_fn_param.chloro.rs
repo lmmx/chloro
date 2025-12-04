@@ -221,6 +221,8 @@ trait A {
     )
 }
 
+// doesn't complete qux due to there being no expression after
+// see source_analyzer::adjust comment
 #[test]
 fn local_fn_shows_locals_for_params() {
     check(

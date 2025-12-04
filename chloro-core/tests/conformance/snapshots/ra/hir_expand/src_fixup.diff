@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   26996 bytes
+Chloro size:   27239 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
@@ -148,11 +148,9 @@ Rustfmt size:  28368 bytes
          tt,
      };
 -
--    // The following three functions are only meant to check partial structural equivalence of
--    // `TokenTree`s, see the last assertion in `check()`.
+     // The following three functions are only meant to check partial structural equivalence of
+     // `TokenTree`s, see the last assertion in `check()`.
      fn check_leaf_eq(a: &tt::Leaf, b: &tt::Leaf) -> bool {
-         match (a, b) {
-             (tt::Leaf::Literal(a), tt::Leaf::Literal(b)) => a.symbol == b.symbol,
              _ => false,
          }
      }
@@ -232,7 +230,7 @@ Rustfmt size:  28368 bytes
          )
      }
 -
--    // FIXME: https://github.com/rust-lang/rust-analyzer/pull/12937#discussion_r937633695
+     // FIXME: https://github.com/rust-lang/rust-analyzer/pull/12937#discussion_r937633695
      #[test]
      fn for_no_pat() {
 -        check(

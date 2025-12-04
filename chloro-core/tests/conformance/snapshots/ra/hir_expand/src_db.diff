@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   31964 bytes
+Chloro size:   32183 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -179,14 +179,6 @@ Rustfmt size:  33429 bytes
          .map(|(t, ctx)| {
              // prefer tokens of the same kind and text, as well as non opaque marked ones
              // Note the inversion of the score here, as we want to prefer the first token in case
-     }
- }
- 
--// FIXME: We should verify that the parsed node is one of the many macro node variants we expect
--// instead of having it be untyped
- fn parse_macro_expansion(
-     db: &dyn ExpandDatabase,
-     macro_file: MacroCallId,
      let loc = db.lookup_intern_macro_call(macro_file);
      let def_edition = loc.def.edition;
      let expand_to = loc.expand_to();
@@ -333,13 +325,6 @@ Rustfmt size:  33429 bytes
              }
          }
      };
-     (Arc::new(tt), undo_info, span)
- }
- 
--// FIXME: Censoring info should be calculated by the caller! Namely by name resolution
- /// Derives expect all `#[derive(..)]` invocations up to (and including) the currently invoked one to be stripped
- fn censor_derive_input(derive_attr_index: AttrId, node: &ast::Adt) -> FxHashSet<SyntaxElement> {
-     // FIXME: handle `cfg_attr`
  fn attr_source(invoc_attr_index: AttrId, node: &ast::Item) -> Option<ast::Attr> {
      // FIXME: handle `cfg_attr`
      cov_mark::hit!(attribute_macro_attr_censoring);

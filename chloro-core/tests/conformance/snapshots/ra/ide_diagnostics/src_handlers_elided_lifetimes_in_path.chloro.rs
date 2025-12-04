@@ -1,5 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: elided-lifetimes-in-path
+//
+// This diagnostic is triggered when lifetimes are elided in paths. It is a lint only for some cases,
+// and a hard error for others.
 pub(crate) fn elided_lifetimes_in_path(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::ElidedLifetimesInPath,

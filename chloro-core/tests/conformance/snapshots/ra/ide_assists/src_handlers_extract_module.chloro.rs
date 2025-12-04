@@ -22,6 +22,32 @@ use crate::{AssistContext, Assists};
 
 use super::remove_unused_param::range_to_remove;
 
+// Assist: extract_module
+//
+// Extracts a selected region as separate module. All the references, visibility and imports are
+// resolved.
+//
+// ```
+// $0fn foo(name: i32) -> i32 {
+//     name + 1
+// }$0
+//
+// fn bar(name: i32) -> i32 {
+//     name + 2
+// }
+// ```
+// ->
+// ```
+// mod modname {
+//     pub(crate) fn foo(name: i32) -> i32 {
+//         name + 1
+//     }
+// }
+//
+// fn bar(name: i32) -> i32 {
+//     name + 2
+// }
+// ```
 pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {
         return None;

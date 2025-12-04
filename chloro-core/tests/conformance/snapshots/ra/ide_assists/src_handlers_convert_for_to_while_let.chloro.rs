@@ -8,6 +8,28 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: convert_for_loop_to_while_let
+//
+// Converts a for loop into a while let on the Iterator.
+//
+// ```
+// fn main() {
+//     let x = vec![1, 2, 3];
+//     for$0 v in x {
+//         let y = v * 2;
+//     };
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let x = vec![1, 2, 3];
+//     let mut tmp = x.into_iter();
+//     while let Some(v) = tmp.next() {
+//         let y = v * 2;
+//     };
+// }
+// ```
 pub(crate) fn convert_for_loop_to_while_let(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

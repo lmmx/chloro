@@ -22,6 +22,17 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
+// Diagnostic: missing-fields
+//
+// This diagnostic is triggered if record lacks some fields that exist in the corresponding structure.
+//
+// Example:
+//
+// ```rust
+// struct A { a: u8, b: u8 }
+//
+// let a = A { a: 10 };
+// ```
 pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Diagnostic {
     let mut message = String::from("missing structure fields:\n");
     for field in &d.missed_fields {

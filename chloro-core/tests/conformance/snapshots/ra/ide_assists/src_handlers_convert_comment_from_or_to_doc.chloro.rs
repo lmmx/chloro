@@ -6,6 +6,19 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: comment_to_doc
+//
+// Converts comments to documentation.
+//
+// ```
+// // Wow what $0a nice module
+// // I sure hope this shows up when I hover over it
+// ```
+// ->
+// ```
+// //! Wow what a nice module
+// //! I sure hope this shows up when I hover over it
+// ```
 pub(crate) fn convert_comment_from_or_to_doc(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

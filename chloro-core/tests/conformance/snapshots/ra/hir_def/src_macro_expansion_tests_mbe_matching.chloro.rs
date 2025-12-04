@@ -136,6 +136,7 @@ macro_rules! m { ($($i:ident)? $vis:vis) => () }
     )
 }
 
+// For this test and the one below, see rust-lang/rust#86730.
 #[test]
 fn expr_dont_match_let_expr() {
     check(

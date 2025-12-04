@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   66199 bytes
+Chloro size:   66533 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
@@ -501,18 +501,16 @@ Rustfmt size:  66636 bytes
          )
      }
 -
--    // FIXME: import is classified as function
+     // FIXME: import is classified as function
      #[test]
      fn attr() {
-         check(
              "#]],
          );
      }
 -
--    // FIXME: import is classified as function
+     // FIXME: import is classified as function
      #[test]
      fn proc_macro() {
-         check(
              "#]],
          )
      }
@@ -681,12 +679,9 @@ Rustfmt size:  66636 bytes
          );
      }
 -
--    // Checks that we can circumvent our fast path logic using complicated type level functions.
--    // This mainly exists as a documentation. I don't believe it is fixable.
--    // Usages search is not 100% accurate anyway; we miss macros.
-     #[test]
-     fn goto_ref_on_short_associated_function_complicated_type_magic_can_confuse_our_logic() {
-         cov_mark::check!(short_associated_function_fast_search);
+     // Checks that we can circumvent our fast path logic using complicated type level functions.
+     // This mainly exists as a documentation. I don't believe it is fixable.
+     // Usages search is not 100% accurate anyway; we miss macros.
              "#]],
          );
      }

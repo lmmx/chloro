@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10022 bytes
-Chloro size:   9955 bytes
+Chloro size:   10067 bytes
 Rustfmt size:  10253 bytes
 
 ✗ Outputs DIFFER
@@ -26,12 +26,8 @@ Rustfmt size:  10253 bytes
 -use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
  
--// Diagnostic: unresolved-method
--//
--// This diagnostic is triggered if a method does not exist on a given type.
- pub(crate) fn unresolved_method(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::UnresolvedMethodCall<'_>,
+ // Diagnostic: unresolved-method
+ //
              d.name.display(ctx.sema.db, ctx.edition),
              d.receiver.display(ctx.sema.db, ctx.display_target)
          ),

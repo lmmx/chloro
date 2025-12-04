@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15808 bytes
-Chloro size:   15573 bytes
+Chloro size:   15796 bytes
 Rustfmt size:  15808 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
- 
--// Diagnostic: unlinked-file
--//
--// This diagnostic is shown for files that are not included in any crate, or files that are part of
--// crates rust-analyzer failed to discover. The file will not have IDE features available.
- pub(crate) fn unlinked_file(
-     ctx: &DiagnosticsContext<'_>,
-     acc: &mut Vec<Diagnostic>,
  ) -> Option<Vec<Assist>> {
      // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
      // suggest that as a fix.

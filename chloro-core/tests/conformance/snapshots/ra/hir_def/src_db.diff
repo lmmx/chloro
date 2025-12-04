@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   12837 bytes
+Chloro size:   12987 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -58,11 +58,10 @@ Rustfmt size:  13097 bytes
  
  #[query_group::query_group(InternDatabaseStorage)]
 -pub trait InternDatabase: RootQueryDb {
--    // region: items
 +pub trait InternDatabase {
+     // region: items
      #[salsa::interned]
      fn intern_use(&self, loc: UseLoc) -> UseId;
- 
  }
  
  #[query_group::query_group]
@@ -83,20 +82,6 @@ Rustfmt size:  13097 bytes
  
      // region:attrs
  
-     #[salsa::invoke(Attrs::fields_attrs_query)]
-     fn fields_attrs(&self, def: VariantId) -> Arc<ArenaMap<LocalFieldId, Attrs>>;
- 
--    // should this really be a query?
-     #[salsa::invoke(crate::attr::fields_attrs_source_map)]
-     fn fields_attrs_source_map(
-         &self,
-         def: VariantId,
-     ) -> Arc<ArenaMap<LocalFieldId, AstPtr<Either<ast::TupleField, ast::RecordField>>>>;
- 
--    // FIXME: Make this a non-interned query.
-     #[salsa::invoke_interned(AttrsWithOwner::attrs_query)]
-     fn attrs(&self, def: AttrDefId) -> Attrs;
- 
  
      #[salsa::invoke(crate::lang_item::notable_traits_in_deps)]
      fn notable_traits_in_deps(&self, krate: Crate) -> Arc<[Arc<[TraitId]>]>;
@@ -104,13 +89,6 @@ Rustfmt size:  13097 bytes
      #[salsa::invoke(crate::lang_item::crate_notable_traits)]
      fn crate_notable_traits(&self, krate: Crate) -> Option<Arc<[TraitId]>>;
  
-     fn include_macro_invoc(&self, crate_id: Crate) -> Arc<[(MacroCallId, EditionedFileId)]>;
- }
- 
--// return: macro call id and include file id
- fn include_macro_invoc(
-     db: &dyn DefDatabase,
-     krate: Crate,
      match id {
          MacroId::Macro2Id(it) => {
              let loc: Macro2Loc = it.lookup(db);

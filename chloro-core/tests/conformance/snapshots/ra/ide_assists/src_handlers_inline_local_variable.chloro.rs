@@ -14,6 +14,22 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: inline_local_variable
+//
+// Inlines a local variable.
+//
+// ```
+// fn main() {
+//     let x$0 = 1 + 2;
+//     x * 4;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     (1 + 2) * 4;
+// }
+// ```
 pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let file_id = ctx.file_id();
     let range = ctx.selection_trimmed();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   100370 bytes
+Chloro size:   101232 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -32,25 +32,24 @@ Rustfmt size:  101650 bytes
  impl<DB: HirDatabase + ?Sized> Semantics<'_, DB> {
      pub fn hir_file_for(&self, syntax_node: &SyntaxNode) -> HirFileId {
          self.imp.find_file(syntax_node).file_id
+         self.imp.ancestors_at_offset_with_macros(node, offset).find_map(N::cast)
+     }
  
++    // FIXME: Rethink this API
      /// Find an AstNode by offset inside SyntaxNode, if it is inside *MacroCall*,
      /// descend it and find again
 -    // FIXME: Rethink this API
      pub fn find_node_at_offset_with_descend<N: AstNode>(
          &self,
          node: &SyntaxNode,
+         self.imp.descend_node_at_offset(node, offset).flatten().find_map(N::cast)
+     }
  
++    // FIXME: Rethink this API
      /// Find an AstNode by offset inside SyntaxNode, if it is inside an attribute macro call,
      /// descend it and find again
 -    // FIXME: Rethink this API
      pub fn find_nodes_at_offset_with_descend<'slf, N: AstNode + 'slf>(
-         &'slf self,
-         node: &SyntaxNode,
-         self.imp.descend_node_at_offset(node, offset).filter_map(|mut it| it.find_map(N::cast))
-     }
- 
--    // FIXME: Rethink this API
-     pub fn find_namelike_at_offset_with_descend<'slf>(
          &'slf self,
          node: &SyntaxNode,
      ) -> Option<Vec<(TextRange, Option<Either<PathResolution, InlineAsmOperand>>)>> {
@@ -71,6 +70,8 @@ Rustfmt size:  101650 bytes
 +        )
      }
  
++    // FIXME: Type the return type
++    // FIXME: Remove this in favor of `check_for_format_args_template_with_file`
      /// Retrieves the formatting part of the format_args! template string at the given offset.
      ///
 -    // FIXME: Type the return type
@@ -82,7 +83,10 @@ Rustfmt size:  101650 bytes
      pub fn check_for_format_args_template(
          &self,
          original_token: SyntaxToken,
+         self.check_for_format_args_template_with_file(original_token, offset)
+     }
  
++    // FIXME: Type the return type
      /// Retrieves the formatting part of the format_args! template string at the given offset.
      ///
 -    // FIXME: Type the return type
@@ -118,20 +122,12 @@ Rustfmt size:  101650 bytes
          // token is redundant as the corresponding macro call has already been processed
          let filter_duplicates = |tokens: &mut SmallVec<_>, range: TextRange| {
              tokens.retain(|(t, _): &mut (SyntaxToken, _)| !range.contains_range(t.text_range()))
-         None
+         token.parent().into_iter().flat_map(move |parent| self.ancestors_with_macros(parent))
      }
  
--    // Note this return type is deliberate as [`find_nodes_at_offset_with_descend`] wants to stop
--    // traversing the inner iterator when it finds a node.
--    // The outer iterator is over the tokens descendants
--    // The inner iterator is the ancestors of a descendant
-     fn descend_node_at_offset(
-         &self,
-         node: &SyntaxNode,
-     }
- 
-     /// Iterates the ancestors of the given node, climbing up macro expansions while doing so.
--    // FIXME: Replace with `ancestors_with_macros_file` when all usages are updated.
+-    /// Iterates the ancestors of the given node, climbing up macro expansions while doing so.
+     // FIXME: Replace with `ancestors_with_macros_file` when all usages are updated.
++    /// Iterates the ancestors of the given node, climbing up macro expansions while doing so.
      pub fn ancestors_with_macros(
          &self,
          node: SyntaxNode,
@@ -154,21 +150,15 @@ Rustfmt size:  101650 bytes
      }
  
      pub fn ancestors_at_offset_with_macros(
+         self.analyze(call.syntax())?.resolve_method_call_fallback(self.db, call)
      }
  
-     /// Env is used to derive the trait environment
--    // FIXME: better api for the trait environment
+-    /// Env is used to derive the trait environment
+     // FIXME: better api for the trait environment
++    /// Env is used to derive the trait environment
      pub fn resolve_trait_impl_method(
          &self,
          env: Type<'db>,
-         self.analyze(try_expr.syntax())?.resolve_try_expr(self.db, try_expr)
-     }
- 
--    // This does not resolve the method call to the correct trait impl!
--    // We should probably fix that.
-     pub fn resolve_method_call_as_callable(
-         &self,
-         call: &ast::MethodCallExpr,
      pub fn resolve_field_fallback(
          &self,
          field: &ast::FieldExpr,
@@ -178,13 +168,6 @@ Rustfmt size:  101650 bytes
          self.analyze(field.syntax())?.resolve_field_fallback(self.db, field)
      }
  
-         self.analyze(field.syntax())?.resolve_record_pat_field(self.db, field)
-     }
- 
--    // FIXME: Replace this with `resolve_macro_call2`
-     pub fn resolve_macro_call(&self, macro_call: &ast::MacroCall) -> Option<Macro> {
-         let macro_call = self.find_file(macro_call.syntax()).with_value(macro_call);
-         self.resolve_macro_call2(macro_call)
          &self,
          node: InFile<&SyntaxNode>,
          offset: Option<TextSize>,
@@ -206,13 +189,6 @@ Rustfmt size:  101650 bytes
              let Some(parent_) = parent.parent() else { break false };
              parent = parent_;
          }
-     }
- }
- 
--// FIXME This can't be the best way to do this
- fn macro_call_to_macro_id(
-     ctx: &mut SourceToDefCtx<'_, '_>,
-     macro_call_id: MacroCallId,
      }
  }
  

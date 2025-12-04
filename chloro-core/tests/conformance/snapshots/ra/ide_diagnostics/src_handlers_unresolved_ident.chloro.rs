@@ -1,5 +1,8 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: unresolved-ident
+//
+// This diagnostic is triggered if an expr-position ident is invalid.
 pub(crate) fn unresolved_ident(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UnresolvedIdent,

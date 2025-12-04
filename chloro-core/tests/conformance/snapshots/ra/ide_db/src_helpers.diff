@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4302 bytes
-Chloro size:   4264 bytes
+Chloro size:   4299 bytes
 Rustfmt size:  4302 bytes
 
 ✗ Outputs DIFFER
@@ -24,10 +24,3 @@ Rustfmt size:  4302 bytes
          group.children.contains(&lint)
      } else {
          false
-     !db.source_root(source_root_id).source_root(db).is_library
- }
- 
--// FIXME: This is a weird function
- pub fn get_definition(
-     sema: &Semantics<'_, RootDatabase>,
-     token: SyntaxToken,

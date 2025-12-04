@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55237 bytes
+Chloro size:   55334 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -54,13 +54,6 @@ Rustfmt size:  55742 bytes
          res: Option<TypeNs>,
          infer_args: bool,
      ) -> (Ty<'db>, Option<TypeNs>) {
-         }
-     }
- 
--    // When calling this, the current segment is the resolved segment (we don't advance it yet).
-     pub(crate) fn lower_partly_resolved_path(
-         &mut self,
-         resolution: TypeNs,
              res,
              Some(assoc_name.clone()),
              check_alias,

@@ -276,6 +276,11 @@ impl<'db> ExprValidator<'db> {
         }
     }
 
+    // [rustc's `is_known_valid_scrutinee`](https://github.com/rust-lang/rust/blob/c9bd03cb724e13cca96ad320733046cbdb16fbbe/compiler/rustc_mir_build/src/thir/pattern/check_match.rs#L288)
+    //
+    // While the above function in rustc uses thir exprs, r-a doesn't have them.
+    // So, the logic here is getting same result as "hir lowering + match with lowered thir"
+    // with "hir only"
     fn is_known_valid_scrutinee(&self, scrutinee_expr: ExprId) -> bool {
         let db = self.db();
 
@@ -505,6 +510,7 @@ impl<'db> FilterMapNextChecker<'db> {
         }
     }
 
+    // check for instances of .filter_map(..).next()
     fn check(
         &mut self,
         current_expr_id: ExprId,

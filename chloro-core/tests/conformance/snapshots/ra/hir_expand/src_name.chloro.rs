@@ -129,6 +129,7 @@ impl Name {
         Self { symbol, ctx: () }
     }
 
+    // FIXME: This needs to go once we have hygiene
     pub fn new_symbol_root(sym: Symbol) -> Self {
         Self::new_symbol(sym, SyntaxContext::root(Edition::Edition2015))
     }
@@ -175,6 +176,7 @@ impl Name {
         is_raw_identifier(self.symbol.as_str(), edition)
     }
 
+    // FIXME: This should take a database argument to hide the interning
     /// Returns the text this name represents if it isn't a tuple field.
     ///
     /// Do not use this for user-facing text, use `display` instead to handle editions properly.
@@ -191,6 +193,7 @@ impl Name {
         self.display_no_db(edition)
     }
 
+    // FIXME: Remove this in favor of `display`, see fixme on `as_str`
     #[doc(hidden)]
     pub fn display_no_db(&self, edition: Edition) -> impl fmt::Display + '_ {
         Display { name: self, edition }

@@ -9,6 +9,23 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: replace_turbofish_with_explicit_type
+//
+// Converts `::<_>` to an explicit type assignment.
+//
+// ```
+// fn make<T>() -> T { ) }
+// fn main() {
+//     let a = make$0::<i32>();
+// }
+// ```
+// ->
+// ```
+// fn make<T>() -> T { ) }
+// fn main() {
+//     let a: i32 = make();
+// }
+// ```
 pub(crate) fn replace_turbofish_with_explicit_type(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

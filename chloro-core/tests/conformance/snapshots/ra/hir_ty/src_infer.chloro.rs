@@ -643,18 +643,22 @@ impl<'db> InferenceResult<'db> {
         self.binding_modes.get(id).copied()
     }
 
+    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
     pub fn expression_types(&self) -> impl Iterator<Item = (ExprId, Ty<'db>)> {
         self.type_of_expr.iter().map(|(k, v)| (k, *v))
     }
 
+    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
     pub fn pattern_types(&self) -> impl Iterator<Item = (PatId, Ty<'db>)> {
         self.type_of_pat.iter().map(|(k, v)| (k, *v))
     }
 
+    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
     pub fn binding_types(&self) -> impl Iterator<Item = (BindingId, Ty<'db>)> {
         self.type_of_binding.iter().map(|(k, v)| (k, *v))
     }
 
+    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
     pub fn return_position_impl_trait_types(
         &self,
         db: &'db dyn HirDatabase,
@@ -939,6 +943,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         self.result.has_errors = true;
     }
 
+    // FIXME: Remove this.
     /// Clones `self` and calls `resolve_all()` on it.
     pub(crate) fn fixme_resolve_all_clone(&self) -> InferenceResult<'db> {
         let mut ctx = self.clone();
@@ -962,6 +967,10 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         ctx.resolve_all()
     }
 
+    // FIXME: This function should be private in module. It is currently only used in the consteval, since we need
+    // `InferenceResult` in the middle of inference. See the fixme comment in `consteval::eval_to_const`. If you
+    // used this function for another workaround, mention it here. If you really need this function and believe that
+    // there is no problem in it being `pub(crate)`, remove this comment.
     fn resolve_all(self) -> InferenceResult<'db> {
         let InferenceContext {
             mut table, mut result, tuple_field_accesses_rev, diagnostics, ..

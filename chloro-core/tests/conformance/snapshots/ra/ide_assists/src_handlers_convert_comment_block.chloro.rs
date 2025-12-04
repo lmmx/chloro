@@ -6,6 +6,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: line_to_block
+//
+// Converts comments between block and single-line form.
+//
+// ```
+//    // Multi-line$0
+//    // comment
+// ```
+// ->
+// ```
+//   /*
+//   Multi-line
+//   comment
+//   */
+// ```
 pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     // Only allow comments which are alone on their line
@@ -132,6 +147,20 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     comments
 }
 
+// Line comments usually begin with a single space character following the prefix as seen here:
+//^
+// But comments can also include indented text:
+//    > Hello there
+//
+// We handle this by stripping *AT MOST* one space character from the start of the line
+// This has its own problems because it can cause alignment issues:
+//
+//              /*
+// a      ----> a
+//b       ----> b
+//              */
+//
+// But since such comments aren't idiomatic we're okay with this.
 pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) -> String {
     let text = comm.text();
     let contents_without_prefix = text.strip_prefix(comm.prefix()).unwrap_or(text);

@@ -10,6 +10,14 @@ use crate::{
     goto_definition::goto_definition, navigation_target::TryToNav,
 };
 
+// Feature: Go to Declaration
+//
+// Navigates to the declaration of an identifier.
+//
+// This is the same as `Go to Definition` with the following exceptions:
+// - outline modules will navigate to the `mod name;` item declaration
+// - trait assoc items will navigate to the assoc item of the trait declaration as opposed to the trait impl
+// - fields in patterns will navigate to the field declaration of the struct, union or variant
 pub(crate) fn goto_declaration(
     db: &RootDatabase,
     position @ FilePosition { file_id, offset }: FilePosition,

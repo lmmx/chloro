@@ -2476,6 +2476,8 @@ impl ExprCollector<'_> {
         (args.into_boxed_slice(), ellipsis)
     }
 
+    // `collect_pat` rejects `ast::Pat::RestPat`, but it should be handled in some cases that
+    // it is the macro expansion result of an arg sub-pattern in a slice or tuple pattern.
     fn collect_pat_possibly_rest(
         &mut self,
         pat: ast::Pat,
@@ -2646,6 +2648,7 @@ impl ExprCollector<'_> {
     }
     // endregion: labels
 
+    // region: format
     fn expand_macros_to_string(&mut self, expr: ast::Expr) -> Option<(ast::String, bool)> {
         let m = match expr {
             ast::Expr::MacroExpr(m) => m,
@@ -3383,6 +3386,8 @@ impl ExprCollector<'_> {
         id
     }
 
+    // FIXME: desugared exprs don't have ptr, that's wrong and should be fixed.
+    // Migrate to alloc_expr_desugared_with_ptr and then rename back
     fn alloc_expr_desugared(&mut self, expr: Expr) -> ExprId {
         self.store.exprs.alloc(expr)
     }
@@ -3437,6 +3442,7 @@ impl ExprCollector<'_> {
         id
     }
 
+    // FIXME: desugared pats don't have ptr, that's wrong and should be fixed somehow.
     fn alloc_pat_desugared(&mut self, pat: Pat) -> PatId {
         self.store.pats.alloc(pat)
     }
@@ -3453,6 +3459,7 @@ impl ExprCollector<'_> {
         id
     }
 
+    // FIXME: desugared labels don't have ptr, that's wrong and should be fixed somehow.
     fn alloc_label_desugared(&mut self, label: Label) -> LabelId {
         self.store.labels.alloc(label)
     }

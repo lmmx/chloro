@@ -4,6 +4,27 @@ use syntax::{AstNode, ast};
 
 use crate::{AssistContext, Assists};
 
+// Assist: add_explicit_enum_discriminant
+//
+// Adds explicit discriminant to all enum variants.
+//
+// ```
+// enum TheEnum$0 {
+//     Foo,
+//     Bar,
+//     Baz = 42,
+//     Quux,
+// }
+// ```
+// ->
+// ```
+// enum TheEnum {
+//     Foo = 0,
+//     Bar = 1,
+//     Baz = 42,
+//     Quux = 43,
+// }
+// ```
 pub(crate) fn add_explicit_enum_discriminant(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   35549 bytes
+Chloro size:   36393 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
@@ -20,44 +20,6 @@ Rustfmt size:  36442 bytes
      hacks::parse_expr_from_str,
      ted,
  };
- 
- use crate::assist_context::{AssistContext, Assists};
- 
--// Assist: convert_closure_to_fn
--//
--// This converts a closure to a freestanding function, changing all captures to parameters.
--//
--// ```
--// # //- minicore: copy
--// # struct String;
--// # impl String {
--// #     fn new() -> Self {}
--// #     fn push_str(&mut self, s: &str) {}
--// # }
--// fn main() {
--//     let mut s = String::new();
--//     let closure = |$0a| s.push_str(a);
--//     closure("abc");
--// }
--// ```
--// ->
--// ```
--// # struct String;
--// # impl String {
--// #     fn new() -> Self {}
--// #     fn push_str(&mut self, s: &str) {}
--// # }
--// fn main() {
--//     let mut s = String::new();
--//     fn closure(a: &str, s: &mut String) {
--//         s.push_str(a)
--//     }
--//     closure("abc", &mut s);
--// }
--// ```
- pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let closure = ctx.find_node_at_offset::<ast::ClosureExpr>()?;
-     if ctx.find_node_at_offset::<ast::Expr>() != Some(ast::Expr::ClosureExpr(closure.clone())) {
          .collect::<FxHashSet<_>>();
  
      // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
@@ -72,15 +34,6 @@ Rustfmt size:  36442 bytes
      // written explicitly inside the closure.
      (Some(make::generic_param_list(include_params)), where_clause)
  }
-     expr
- }
- 
--// FIXME:
--// Somehow handle the case of `let Struct { field, .. } = capture`.
--// Replacing `capture` with `capture_field` won't work.
- fn expr_of_pat(pat: ast::Pat) -> Option<ast::Expr> {
-     'find_expr: {
-         for ancestor in pat.syntax().ancestors() {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

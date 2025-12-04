@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1047 bytes
-Chloro size:   922 bytes
+Chloro size:   1047 bytes
 Rustfmt size:  1047 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,5 @@ Rustfmt size:  1047 bytes
 -use syntax::{algo::ancestors_at_offset, ast, AstNode};
 +use syntax::{AstNode, algo::ancestors_at_offset, ast};
  
--// Feature: View Mir
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **rust-analyzer: View Mir**
- pub(crate) fn view_mir(db: &RootDatabase, position: FilePosition) -> String {
-     body_mir(db, position).unwrap_or_else(|| "Not inside a function body".to_owned())
- }
+ // Feature: View Mir
+ //

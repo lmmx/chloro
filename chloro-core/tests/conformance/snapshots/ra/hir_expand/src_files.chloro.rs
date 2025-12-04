@@ -298,6 +298,7 @@ impl<FileId: Copy, N: AstNode> InFileWrapper<FileId, N> {
 }
 
 impl<FileId: Copy, N: AstNode> InFileWrapper<FileId, &N> {
+    // unfortunately `syntax` collides with the impl above, because `&_` is fundamental
     pub fn syntax_ref(&self) -> InFileWrapper<FileId, &SyntaxNode> {
         self.with_value(self.value.syntax())
     }

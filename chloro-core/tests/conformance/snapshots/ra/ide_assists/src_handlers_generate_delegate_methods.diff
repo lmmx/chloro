@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17091 bytes
-Chloro size:   16591 bytes
+Chloro size:   17067 bytes
 Rustfmt size:  17091 bytes
 
 ✗ Outputs DIFFER
@@ -19,47 +19,6 @@ Rustfmt size:  17091 bytes
      },
      syntax_editor::Position,
  };
-     utils::{convert_param_list_to_arg_list, find_struct_impl},
- };
- 
--// Assist: generate_delegate_methods
--//
--// Generate delegate methods.
--//
--// ```
--// struct Age(u8);
--// impl Age {
--//     fn age(&self) -> u8 {
--//         self.0
--//     }
--// }
--//
--// struct Person {
--//     ag$0e: Age,
--// }
--// ```
--// ->
--// ```
--// struct Age(u8);
--// impl Age {
--//     fn age(&self) -> u8 {
--//         self.0
--//     }
--// }
--//
--// struct Person {
--//     age: Age,
--// }
--//
--// impl Person {
--//     $0fn age(&self) -> u8 {
--//         self.age.age()
--//     }
--// }
--// ```
- pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     if !ctx.config.code_action_grouping {
-         return None;
      use crate::tests::{
          check_assist, check_assist_not_applicable, check_assist_not_applicable_no_grouping,
      };

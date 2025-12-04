@@ -158,12 +158,16 @@ pub fn generics_require_sized_self(db: &dyn HirDatabase, def: GenericDefId) -> b
     })
 }
 
+// rustc gathers all the spans that references `Self` for error rendering,
+// but we don't have good way to render such locations.
+// So, just return single boolean value for existence of such `Self` reference
 fn predicates_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
     db.generic_predicates(trait_.into())
         .iter()
         .any(|pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No))
 }
 
+// Same as the above, `predicates_reference_self`
 fn bounds_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
     let trait_data = trait_.trait_items(db);
     trait_data

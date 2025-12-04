@@ -4940,6 +4940,8 @@ fn main() {
     );
 }
 
+// FIXME(next-solver): Was `<D as Deserializer<'de>>::Error` but now getting error lifetime.
+// This might be fixed once we migrate into next-solver fully without chalk-ir in lowering.
 #[test]
 fn new_solver_crash_1() {
     check_infer(

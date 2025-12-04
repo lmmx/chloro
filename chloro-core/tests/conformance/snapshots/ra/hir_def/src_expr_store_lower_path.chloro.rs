@@ -31,6 +31,8 @@ thread_local! {
     pub(super) static SEGMENT_LOWERING_MAP: std::cell::RefCell<rustc_hash::FxHashMap<ast::PathSegment, usize>> = std::cell::RefCell::default();
 }
 
+// If you modify the logic of the lowering, make sure to check if `hir_segment_to_ast_segment()`
+// also needs an update.
 /// Converts an `ast::Path` to `Path`. Works with use trees.
 /// It correctly handles `$crate` based path from macro call.
 pub(super) fn lower_path(

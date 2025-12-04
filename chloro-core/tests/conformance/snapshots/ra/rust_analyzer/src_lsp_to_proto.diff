@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111392 bytes
+Chloro size:   111458 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -916,10 +916,9 @@ Rustfmt size:  113494 bytes
          )
      }
 -
--    // `Url` is not able to parse windows paths on unix machines.
+     // `Url` is not able to parse windows paths on unix machines.
      #[test]
      #[cfg(target_os = "windows")]
-     fn test_lowercase_drive_letter() {
          let url = url_from_abs_path(Utf8Path::new("C:\\Test").try_into().unwrap());
          assert_eq!(url.to_string(), "file:///c:/Test");
  

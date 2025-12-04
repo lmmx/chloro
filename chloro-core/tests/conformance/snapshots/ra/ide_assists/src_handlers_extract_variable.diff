@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51652 bytes
+Chloro size:   51970 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -32,25 +32,9 @@ Rustfmt size:  52351 bytes
  // }
  // ```
 -
--// Assist: extract_static
--//
--// Extracts subexpression into a static.
--//
--// ```
--// fn main() {
--//     $0(1 + 2)$0 * 4;
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     static $0VAR_NAME: i32 = 1 + 2;
--//     VAR_NAME * 4;
--// }
--// ```
- pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let node = if ctx.has_empty_selection() {
-         if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
+ // Assist: extract_static
+ //
+ // Extracts subexpression into a static.
  }
  
  impl ExtractionKind {
@@ -369,10 +353,9 @@ Rustfmt size:  52351 bytes
          );
      }
 -
--    // FIXME: This is not quite correct, but good enough(tm) for the sorting heuristic
+     // FIXME: This is not quite correct, but good enough(tm) for the sorting heuristic
      #[test]
      fn extract_var_target() {
-         check_assist_target(extract_variable, r#"fn foo() -> u32 { $0return 2 + 2$0; }"#, "2 + 2");
              "2 + 2",
          );
      }

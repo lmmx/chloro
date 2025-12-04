@@ -12,6 +12,9 @@ use crate::{
     handlers::private_field::field_is_private_fixes,
 };
 
+// Diagnostic: no-such-field
+//
+// This diagnostic is triggered if created structure does not have field provided in record.
 pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
     let (code, message) = if d.private.is_some() {
         ("E0451", "field is private")

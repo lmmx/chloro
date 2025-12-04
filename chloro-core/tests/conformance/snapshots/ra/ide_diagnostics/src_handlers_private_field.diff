@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5466 bytes
-Chloro size:   5333 bytes
+Chloro size:   5459 bytes
 Rustfmt size:  5636 bytes
 
 ✗ Outputs DIFFER
@@ -17,12 +17,8 @@ Rustfmt size:  5636 bytes
 -use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
  
--// Diagnostic: private-field
--//
--// This diagnostic is triggered if the accessed field is not visible from the current module.
- pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField) -> Diagnostic {
-     // FIXME: add quickfix
-     Diagnostic::new_with_syntax_node_ptr(
+ // Diagnostic: private-field
+ //
          format!(
              "field `{}` of `{}` is private",
              d.field.name(ctx.sema.db).display(ctx.sema.db, ctx.edition),

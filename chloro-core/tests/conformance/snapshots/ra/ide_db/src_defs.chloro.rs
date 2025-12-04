@@ -736,6 +736,8 @@ pub enum NameRefClass<'db> {
 }
 
 impl<'db> NameRefClass<'db> {
+    // Note: we don't have unit-tests for this rather important function.
+    // It is primarily exercised via goto definition tests in `ide`.
     pub fn classify(
         sema: &Semantics<'db, RootDatabase>,
         name_ref: &ast::NameRef,

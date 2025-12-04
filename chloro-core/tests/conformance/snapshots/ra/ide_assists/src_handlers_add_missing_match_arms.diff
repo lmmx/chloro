@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51270 bytes
-Chloro size:   50323 bytes
+Chloro size:   51253 bytes
 Rustfmt size:  51735 bytes
 
 ✗ Outputs DIFFER
@@ -29,33 +29,8 @@ Rustfmt size:  51735 bytes
 -use crate::{utils, AssistContext, AssistId, Assists};
 +use crate::{AssistContext, AssistId, Assists, utils};
  
--// Assist: add_missing_match_arms
--//
--// Adds missing clauses to a `match` expression.
--//
--// ```
--// enum Action { Move { distance: u32 }, Stop }
--//
--// fn handle(action: Action) {
--//     match action {
--//         $0
--//     }
--// }
--// ```
--// ->
--// ```
--// enum Action { Move { distance: u32 }, Stop }
--//
--// fn handle(action: Action) {
--//     match action {
--//         Action::Move { distance } => ${1:todo!()},
--//         Action::Stop => ${2:todo!()},$0
--//     }
--// }
--// ```
- pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
-     let match_arm_list = match_expr.match_arm_list()?;
+ // Assist: add_missing_match_arms
+ //
  
      let scope = ctx.sema.scope(expr.syntax())?;
      let module = scope.module();
@@ -138,7 +113,7 @@ Rustfmt size:  51735 bytes
 +    !existing_pats.iter().any(|pat| does_pat_match_variant(pat, var))
  }
  
--// Fixme: this is still somewhat limited, use hir_ty::diagnostics::match_check?
+ // Fixme: this is still somewhat limited, use hir_ty::diagnostics::match_check?
  fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
      match (pat, var) {
          (Pat::WildcardPat(_), _) => true,
@@ -457,20 +432,16 @@ Rustfmt size:  51735 bytes
          );
      }
 -
--    // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
--    // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
+     // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
+     // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
      #[ignore]
-     #[test]
-     fn add_missing_match_arms_preserves_comments() {
  "#,
          );
      }
 -
--    // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
--    // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
+     // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
+     // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
      #[ignore]
-     #[test]
-     fn add_missing_match_arms_preserves_comments_empty() {
  "#,
          );
      }

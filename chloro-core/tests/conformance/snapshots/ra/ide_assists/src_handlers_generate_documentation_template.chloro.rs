@@ -11,6 +11,36 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: generate_documentation_template
+//
+// Adds a documentation template above a function definition / declaration.
+//
+// ```
+// pub struct S;
+// impl S {
+//     pub unsafe fn set_len$0(&mut self, len: usize) -> Result<(), std::io::Error> {
+//         /* ... */
+//     }
+// }
+// ```
+// ->
+// ```
+// pub struct S;
+// impl S {
+//     /// Sets the length of this [`S`].
+//     ///
+//     /// # Errors
+//     ///
+//     /// This function will return an error if .
+//     ///
+//     /// # Safety
+//     ///
+//     /// .
+//     pub unsafe fn set_len(&mut self, len: usize) -> Result<(), std::io::Error> {
+//         /* ... */
+//     }
+// }
+// ```
 pub(crate) fn generate_documentation_template(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -44,6 +74,27 @@ pub(crate) fn generate_documentation_template(
     )
 }
 
+// Assist: generate_doc_example
+//
+// Generates a rustdoc example when editing an item's documentation.
+//
+// ```
+// /// Adds two numbers.$0
+// pub fn add(a: i32, b: i32) -> i32 { a + b }
+// ```
+// ->
+// ```
+// /// Adds two numbers.
+// ///
+// /// # Examples
+// ///
+// /// ```
+// /// use ra_test_fixture::add;
+// ///
+// /// assert_eq!(add(a, b), );
+// /// ```
+// pub fn add(a: i32, b: i32) -> i32 { a + b }
+// ```
 pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let tok: ast::Comment = ctx.find_token_at_offset()?;
     let node = tok.syntax().parent()?;

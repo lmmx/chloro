@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8537 bytes
-Chloro size:   8328 bytes
+Chloro size:   8524 bytes
 Rustfmt size:  8636 bytes
 
 ✗ Outputs DIFFER
@@ -24,13 +24,10 @@ Rustfmt size:  8636 bytes
  impl PartialEq<Symbol> for Name {
      fn eq(&self, sym: &Symbol) -> bool {
          self.symbol == *sym
-         Self { symbol, ctx: () }
+         is_raw_identifier(self.symbol.as_str(), edition)
      }
  
--    // FIXME: This needs to go once we have hygiene
-     pub fn new_symbol_root(sym: Symbol) -> Self {
-         Self::new_symbol(sym, SyntaxContext::root(Edition::Edition2015))
-     }
++    // FIXME: This should take a database argument to hide the interning
      /// Returns the text this name represents if it isn't a tuple field.
      ///
      /// Do not use this for user-facing text, use `display` instead to handle editions properly.
@@ -38,10 +35,7 @@ Rustfmt size:  8636 bytes
      pub fn as_str(&self) -> &str {
          self.symbol.as_str()
      }
-         self.display_no_db(edition)
-     }
- 
--    // FIXME: Remove this in favor of `display`, see fixme on `as_str`
+     // FIXME: Remove this in favor of `display`, see fixme on `as_str`
      #[doc(hidden)]
      pub fn display_no_db(&self, edition: Edition) -> impl fmt::Display + '_ {
 -        Display {

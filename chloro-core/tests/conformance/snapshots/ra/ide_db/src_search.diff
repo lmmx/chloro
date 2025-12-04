@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57728 bytes
+Chloro size:   58014 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
@@ -57,15 +57,13 @@ Rustfmt size:  58275 bytes
      type IntoIter = std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
  
      fn into_iter(self) -> Self::IntoIter {
-         self
+             })
      }
  
--    // FIXME: This is just a temporary fix for not handling import aliases like
--    // `use Foo as Bar`. We need to support them in a proper way.
--    // See issue #14079
-     pub fn with_rename(mut self, rename: Option<&'a Rename>) -> Self {
-         self.rename = rename;
-         self
++    // FIXME: Extend this to other cases, such as associated types/consts/enum variants (note those can be `use`d).
+     /// Performs a special fast search for associated functions. This is mainly intended
+     /// to speed up `new()` which can take a long time.
+     ///
      /// that).
      ///
      /// Returns true if completed the search.

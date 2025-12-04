@@ -4,6 +4,23 @@ use syntax::ast::{self, AstNode, syntax_factory::SyntaxFactory};
 
 use crate::{AssistContext, AssistId, Assists, utils::cover_let_chain};
 
+// Assist: replace_is_some_with_if_let_some
+//
+// Replace `if x.is_some()` with `if let Some(_tmp) = x` or `if x.is_ok()` with `if let Ok(_tmp) = x`.
+//
+// ```
+// fn main() {
+//     let x = Some(1);
+//     if x.is_som$0e() {}
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let x = Some(1);
+//     if let Some(${0:x1}) = x {}
+// }
+// ```
 pub(crate) fn replace_is_method_with_if_let_method(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

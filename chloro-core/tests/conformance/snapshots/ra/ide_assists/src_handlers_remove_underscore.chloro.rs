@@ -7,6 +7,23 @@ use syntax::{AstNode, ast};
 
 use crate::{AssistContext, Assists};
 
+// Assist: remove_underscore_from_used_variables
+//
+// Removes underscore from used variables.
+//
+// ```
+// fn main() {
+//     let mut _$0foo = 1;
+//     _foo = 2;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let mut foo = 1;
+//     foo = 2;
+// }
+// ```
 pub(crate) fn remove_underscore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (text, text_range, def) = if let Some(name_ref) = ctx.find_node_at_offset::<ast::Name>() {
         let text = name_ref.text();

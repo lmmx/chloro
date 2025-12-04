@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8324 bytes
-Chloro size:   8290 bytes
+Chloro size:   8355 bytes
 Rustfmt size:  8412 bytes
 
 ✗ Outputs DIFFER
@@ -51,10 +51,7 @@ Rustfmt size:  8412 bytes
 +        Arc::new(TraitEnvironment { krate, block, traits_from_clauses, env })
      }
  
--    // pub fn with_block(self: &mut Arc<Self>, block: BlockId) {
-     pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
-         Arc::make_mut(this).block = Some(block);
-     }
+     // pub fn with_block(self: &mut Arc<Self>, block: BlockId) {
      ty: Ty<'db>,
      env: Arc<TraitEnvironment<'db>>,
  ) -> Ty<'db> {

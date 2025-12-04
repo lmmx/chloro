@@ -6,6 +6,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: flip_binexpr
+//
+// Flips operands of a binary expression.
+//
+// ```
+// fn main() {
+//     let _ = 90 +$0 2;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let _ = 2 + 90;
+// }
+// ```
 pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let expr = ctx.find_node_at_offset::<BinExpr>()?;
     let lhs = expr.lhs()?;
@@ -73,6 +88,33 @@ impl From<ast::BinaryOp> for FlipAction {
     }
 }
 
+// Assist: flip_range_expr
+//
+// Flips operands of a range expression.
+//
+// ```
+// fn main() {
+//     let _ = 90..$02;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let _ = 2..90;
+// }
+// ```
+// ---
+// ```
+// fn main() {
+//     let _ = 90..$0;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let _ = ..90;
+// }
+// ```
 pub(crate) fn flip_range_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let range_expr = ctx.find_node_at_offset::<ast::RangeExpr>()?;
     let op = range_expr.op_token()?;

@@ -104,6 +104,15 @@ pub(crate) fn prepare_rename(
     }
 }
 
+// Feature: Rename
+//
+// Renames the item below the cursor and all of its references
+//
+// | Editor  | Shortcut |
+// |---------|----------|
+// | VS Code | <kbd>F2</kbd> |
+//
+// ![Rename](https://user-images.githubusercontent.com/48062697/113065582-055aae80-91b1-11eb-8ade-2b58e6d81883.gif)
 pub(crate) fn rename(
     db: &RootDatabase,
     position: FilePosition,
@@ -205,6 +214,7 @@ pub(crate) fn will_rename_file(
     Some(change)
 }
 
+// FIXME: Should support `extern crate`.
 fn alias_fallback(
     syntax: &SyntaxNode,
     FilePosition { file_id, offset }: FilePosition,

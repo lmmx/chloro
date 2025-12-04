@@ -4,6 +4,29 @@ use syntax::{AstNode, SyntaxKind};
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: convert_nested_function_to_closure
+//
+// Converts a function that is defined within the body of another function into a closure.
+//
+// ```
+// fn main() {
+//     fn fo$0o(label: &str, number: u64) {
+//         println!("{}: {}", label, number);
+//     }
+//
+//     foo("Bar", 100);
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let foo = |label: &str, number: u64| {
+//         println!("{}: {}", label, number);
+//     };
+//
+//     foo("Bar", 100);
+// }
+// ```
 pub(crate) fn convert_nested_function_to_closure(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

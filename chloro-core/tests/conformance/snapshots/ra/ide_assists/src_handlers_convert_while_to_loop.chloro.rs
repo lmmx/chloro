@@ -13,6 +13,28 @@ use crate::{
     utils::invert_boolean_expression_legacy,
 };
 
+// Assist: convert_while_to_loop
+//
+// Replace a while with a loop.
+//
+// ```
+// fn main() {
+//     $0while cond {
+//         foo();
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     loop {
+//         if !cond {
+//             break;
+//         }
+//         foo();
+//     }
+// }
+// ```
 pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let while_kw = ctx.find_token_syntax_at_offset(T![while])?;
     let while_expr = while_kw.parent().and_then(ast::WhileExpr::cast)?;

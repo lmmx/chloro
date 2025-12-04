@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 72179 bytes
-Chloro size:   71992 bytes
+Chloro size:   72141 bytes
 Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
@@ -41,13 +41,6 @@ Rustfmt size:  72179 bytes
      },
  }
  
-         SourceAnalyzer { resolver, body_or_sig: None, file_id: node.file_id }
-     }
- 
--    // FIXME: Remove this
-     fn body_(
-         &self,
-     ) -> Option<(DefWithBodyId, &Body, &BodySourceMap, Option<&InferenceResult<'db>>)> {
  
      fn binding_id_of_pat(&self, pat: &ast::IdentPat) -> Option<BindingId> {
          let pat_id = self.pat_id(&pat.clone().into())?;
@@ -104,14 +97,6 @@ Rustfmt size:  72179 bytes
          // trying to resolve foo::bar.
          if let Some(parent_hir_path) = parent_hir_path {
              return match resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store) {
-         })
- }
- 
--// XXX: during completion, cursor might be outside of any particular
--// expression. Try to figure out the correct scope...
- fn adjust(
-     db: &dyn HirDatabase,
-     scopes: &ExprScopes,
                  .map(|type_ns| PathResolutionPerNs::new(Some(type_ns), None, None))
                  .unwrap_or_else(|| PathResolutionPerNs::new(None, values(), None))
          };

@@ -7,6 +7,24 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: generate_derive
+//
+// Adds a new `#[derive()]` clause to a struct or enum.
+//
+// ```
+// struct Point {
+//     x: u32,
+//     y: u32,$0
+// }
+// ```
+// ->
+// ```
+// #[derive($0)]
+// struct Point {
+//     x: u32,
+//     y: u32,
+// }
+// ```
 pub(crate) fn generate_derive(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let cap = ctx.config.snippet_cap?;
     let nominal = ctx.find_node_at_offset::<ast::Adt>()?;

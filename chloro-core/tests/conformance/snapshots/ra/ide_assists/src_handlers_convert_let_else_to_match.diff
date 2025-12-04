@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14334 bytes
-Chloro size:   13994 bytes
+Chloro size:   14315 bytes
 Rustfmt size:  14420 bytes
 
 ✗ Outputs DIFFER
@@ -22,27 +22,6 @@ Rustfmt size:  14420 bytes
  
  use crate::{AssistContext, AssistId, Assists};
  
--// Assist: convert_let_else_to_match
--//
--// Converts let-else statement to let statement and match expression.
--//
--// ```
--// fn main() {
--//     let Ok(mut x) = f() else$0 { return };
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     let mut x = match f() {
--//         Ok(x) => x,
--//         _ => return,
--//     };
--// }
--// ```
- pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     // Should focus on the `else` token to trigger
-     let let_stmt = ctx
          .filter_map(|ref pat| {
              // Identifiers which resolve to constants are not bindings
              if ctx.sema.resolve_bind_pat_to_const(pat).is_none() {

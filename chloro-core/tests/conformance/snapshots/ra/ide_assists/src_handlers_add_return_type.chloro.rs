@@ -3,6 +3,18 @@ use syntax::{AstNode, SyntaxKind, SyntaxToken, TextRange, TextSize, ast, match_a
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: add_return_type
+//
+// Adds the return type to a function or closure inferred from its tail expression if it doesn't have a return
+// type specified. This assists is useable in a functions or closures tail expression or return type position.
+//
+// ```
+// fn foo() { 4$02i32 }
+// ```
+// ->
+// ```
+// fn foo() -> i32 { 42i32 }
+// ```
 pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (fn_type, tail_expr, builder_edit_pos) = extract_tail(ctx)?;
     let module = ctx.sema.scope(tail_expr.syntax())?.module();

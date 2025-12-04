@@ -4,6 +4,38 @@ use syntax::{AstNode, ast};
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: into_to_qualified_from
+//
+// Convert an `into` method call to a fully qualified `from` call.
+//
+// ```
+// //- minicore: from
+// struct B;
+// impl From<i32> for B {
+//     fn from(a: i32) -> Self {
+//        B
+//     }
+// }
+//
+// fn main() -> () {
+//     let a = 3;
+//     let b: B = a.in$0to();
+// }
+// ```
+// ->
+// ```
+// struct B;
+// impl From<i32> for B {
+//     fn from(a: i32) -> Self {
+//        B
+//     }
+// }
+//
+// fn main() -> () {
+//     let a = 3;
+//     let b: B = B::from(a);
+// }
+// ```
 pub(crate) fn into_to_qualified_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let method_call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let nameref = method_call.name_ref()?;

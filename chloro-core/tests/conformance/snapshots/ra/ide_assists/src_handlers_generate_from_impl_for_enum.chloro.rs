@@ -4,6 +4,23 @@ use syntax::ast::{self, AstNode, HasName};
 
 use crate::{AssistContext, AssistId, Assists, utils::generate_trait_impl_text_intransitive};
 
+// Assist: generate_from_impl_for_enum
+//
+// Adds a From impl for this enum variant with one tuple field.
+//
+// ```
+// enum A { $0One(u32) }
+// ```
+// ->
+// ```
+// enum A { One(u32) }
+//
+// impl From<u32> for A {
+//     fn from(v: u32) -> Self {
+//         Self::One(v)
+//     }
+// }
+// ```
 pub(crate) fn generate_from_impl_for_enum(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -103,6 +120,8 @@ impl From<u32> for A {
 "#,
         );
     }
+    // FIXME(next-solver): it would be nice to not be *required* to resolve the
+    // path in order to properly generate assists
     #[test]
     fn test_generate_from_impl_for_enum_complicated_path() {
         check_assist(

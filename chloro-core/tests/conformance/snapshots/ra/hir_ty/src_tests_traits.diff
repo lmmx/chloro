@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 107313 bytes
-Chloro size:   107023 bytes
+Chloro size:   107208 bytes
 Rustfmt size:  107313 bytes
 
 ✗ Outputs DIFFER
@@ -134,11 +134,3 @@ Rustfmt size:  107313 bytes
  }
  
  #[test]
-     );
- }
- 
--// FIXME(next-solver): Was `<D as Deserializer<'de>>::Error` but now getting error lifetime.
--// This might be fixed once we migrate into next-solver fully without chalk-ir in lowering.
- #[test]
- fn new_solver_crash_1() {
-     check_infer(

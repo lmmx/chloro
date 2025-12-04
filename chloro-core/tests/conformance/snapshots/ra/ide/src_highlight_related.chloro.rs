@@ -42,6 +42,18 @@ pub struct HighlightRelatedConfig {
 
 type HighlightMap = FxHashMap<EditionedFileId, FxHashSet<HighlightedRange>>;
 
+// Feature: Highlight Related
+//
+// Highlights constructs related to the thing under the cursor:
+//
+// 1. if on an identifier, highlights all references to that identifier in the current file
+//      * additionally, if the identifier is a trait in a where clause, type parameter trait bound or use item, highlights all references to that trait's assoc items in the corresponding scope
+// 1. if on an `async` or `await` token, highlights all yield points for that async context
+// 1. if on a `return` or `fn` keyword, `?` character or `->` return type arrow, highlights all exit points for that context
+// 1. if on a `break`, `loop`, `while` or `for` token, highlights all break points for that loop or block context
+// 1. if on a `move` or `|` token that belongs to a closure, highlights all captures of the closure.
+//
+// Note: `?`, `|` and `->` do not currently trigger this behavior in the VSCode editor.
 pub(crate) fn highlight_related(
     sema: &Semantics<'_, RootDatabase>,
     config: HighlightRelatedConfig,
@@ -452,6 +464,7 @@ fn hl_exit_points(
     Some(highlights)
 }
 
+// If `file_id` is None,
 pub(crate) fn highlight_exit_points(
     sema: &Semantics<'_, RootDatabase>,
     token: SyntaxToken,

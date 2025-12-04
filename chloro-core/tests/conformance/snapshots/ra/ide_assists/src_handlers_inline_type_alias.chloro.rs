@@ -22,6 +22,29 @@ use crate::{
 
 use super::inline_call::split_refs_and_uses;
 
+// Assist: inline_type_alias_uses
+//
+// Inline a type alias into all of its uses where possible.
+//
+// ```
+// type $0A = i32;
+// fn id(x: A) -> A {
+//     x
+// };
+// fn foo() {
+//     let _: A = 3;
+// }
+// ```
+// ->
+// ```
+//
+// fn id(x: i32) -> i32 {
+//     x
+// };
+// fn foo() {
+//     let _: i32 = 3;
+// }
+// ```
 pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let ast_alias = name.syntax().parent().and_then(ast::TypeAlias::cast)?;
@@ -84,6 +107,25 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
     )
 }
 
+// Assist: inline_type_alias
+//
+// Replace a type alias with its concrete type.
+//
+// ```
+// type A<T = u32> = Vec<T>;
+//
+// fn main() {
+//     let a: $0A;
+// }
+// ```
+// ->
+// ```
+// type A<T = u32> = Vec<T>;
+//
+// fn main() {
+//     let a: Vec<u32>;
+// }
+// ```
 pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let alias_instance = ctx.find_node_at_offset::<ast::PathType>()?;
     let concrete_type;
@@ -445,6 +487,8 @@ fn f<'a>() {
 "#,
         );
     }
+    // This must be supported in order to support "inline_alias_to_users" or
+    // whatever it will be called.
     #[test]
     fn alias_as_expression_ignored() {
         check_assist_not_applicable(
@@ -605,6 +649,7 @@ fn main() {
 "#,
         );
     }
+    // This doesn't actually cause the GenericArgsList to contain a AssocTypeArg.
     #[test]
     fn arg_associated_type() {
         check_assist(
@@ -699,6 +744,8 @@ fn main() {
 "#,
         );
     }
+    // Type aliases can't be used in traits, but someone might use the assist to
+    // fix the error.
     #[test]
     fn bounds() {
         check_assist(

@@ -6,6 +6,25 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
+// Assist: toggle_macro_delimiter
+//
+// Change macro delimiters in the order of `( -> { -> [ -> (`.
+//
+// ```
+// macro_rules! sth {
+//     () => {};
+// }
+//
+// sth!$0( );
+// ```
+// ->
+// ```
+// macro_rules! sth {
+//     () => {};
+// }
+//
+// sth!{ }
+// ```
 pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     #[derive(Debug)]
     enum MacroDelims {
@@ -234,6 +253,7 @@ prt!{(3 + 5)}
 "#,
         )
     }
+    // FIXME @alibektas : Inner macro_call is not seen as such. So this doesn't work.
     #[test]
     fn test_nested_macros() {
         check_assist_not_applicable(

@@ -1,5 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: private-assoc-item
+//
+// This diagnostic is triggered if the referenced associated item is not visible from the current
+// module.
 pub(crate) fn private_assoc_item(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::PrivateAssocItem,

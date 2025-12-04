@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12337 bytes
-Chloro size:   11772 bytes
+Chloro size:   12323 bytes
 Rustfmt size:  12415 bytes
 
 ✗ Outputs DIFFER
@@ -23,28 +23,7 @@ Rustfmt size:  12415 bytes
 +    assist_context::{AssistContext, Assists},
  };
  
--// Assist: convert_match_to_let_else
--//
--// Converts let statement with match initializer to let-else statement.
--//
--// ```
--// # //- minicore: option
--// fn foo(opt: Option<()>) {
--//     let val$0 = match opt {
--//         Some(it) => it,
--//         None => return,
--//     };
--// }
--// ```
--// ->
--// ```
--// fn foo(opt: Option<()>) {
--//     let Some(val) = opt else { return };
--// }
--// ```
- pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let let_stmt: ast::LetStmt = ctx.find_node_at_offset()?;
-     let pat = let_stmt.pat()?;
+ // Assist: convert_match_to_let_else
          return None;
      }
  
@@ -55,20 +34,6 @@ Rustfmt size:  12415 bytes
      let initializer_expr = initializer.expr()?;
  
      let (extracting_arm, diverging_arm) = find_arms(ctx, &initializer)?;
-     )
- }
- 
--// Given a match expression, find extracting and diverging arms.
- fn find_arms(
-     ctx: &AssistContext<'_>,
-     match_expr: &ast::MatchExpr,
-     }
- }
- 
--// Given an extracting arm, find the extracted variable.
- fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Option<Vec<Name>> {
-     match arm.expr()? {
-         ast::Expr::PathExpr(path) => {
              let name_ref = path.syntax().descendants().find_map(ast::NameRef::cast)?;
              match NameRefClass::classify(&ctx.sema, &name_ref)? {
                  NameRefClass::Definition(Definition::Local(local), _) => {
@@ -81,13 +46,6 @@ Rustfmt size:  12415 bytes
                      source.collect()
                  }
                  _ => None,
-     }
- }
- 
--// Rename `extracted` with `binding` in `pat`.
- fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> SyntaxNode {
-     let syntax = pat.syntax().clone_subtree();
-     let mut editor = SyntaxEditor::new(syntax.clone());
      for extracted_syntax in extracted {
          // If `extracted` variable is a record field, we should rename it to `binding`,
          // otherwise we just need to replace `extracted` with `binding`.

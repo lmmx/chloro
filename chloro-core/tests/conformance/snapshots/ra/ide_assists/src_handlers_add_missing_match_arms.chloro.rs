@@ -14,6 +14,30 @@ use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
 
 use crate::{AssistContext, AssistId, Assists, utils};
 
+// Assist: add_missing_match_arms
+//
+// Adds missing clauses to a `match` expression.
+//
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         $0
+//     }
+// }
+// ```
+// ->
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move { distance } => ${1:todo!()},
+//         Action::Stop => ${2:todo!()},$0
+//     }
+// }
+// ```
 pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
     let match_arm_list = match_expr.match_arm_list()?;
@@ -348,6 +372,7 @@ fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
     !existing_pats.iter().any(|pat| does_pat_match_variant(pat, var))
 }
 
+// Fixme: this is still somewhat limited, use hir_ty::diagnostics::match_check?
 fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
     match (pat, var) {
         (Pat::WildcardPat(_), _) => true,
@@ -1423,6 +1448,8 @@ fn main() {
 "#,
         );
     }
+    // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
+    // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
     #[ignore]
     #[test]
     fn add_missing_match_arms_preserves_comments() {
@@ -1451,6 +1478,8 @@ fn foo(a: A) {
 "#,
         );
     }
+    // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
+    // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
     #[ignore]
     #[test]
     fn add_missing_match_arms_preserves_comments_empty() {

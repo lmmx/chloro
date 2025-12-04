@@ -6,6 +6,25 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: unqualify_method_call
+//
+// Transforms universal function call syntax into a method call.
+//
+// ```
+// fn main() {
+//     std::ops::Add::add$0(1, 2);
+// }
+// # mod std { pub mod ops { pub trait Add { fn add(self, _: Self) {} } impl Add for i32 {} } }
+// ```
+// ->
+// ```
+// use std::ops::Add;
+//
+// fn main() {
+//     1.add(2);
+// }
+// # mod std { pub mod ops { pub trait Add { fn add(self, _: Self) {} } impl Add for i32 {} } }
+// ```
 pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call = ctx.find_node_at_offset::<ast::CallExpr>()?;
     let ast::Expr::PathExpr(path_expr) = call.expr()? else { return None };

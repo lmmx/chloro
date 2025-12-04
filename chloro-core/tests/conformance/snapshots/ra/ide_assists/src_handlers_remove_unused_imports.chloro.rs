@@ -17,6 +17,22 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: remove_unused_imports
+//
+// Removes any use statements in the current selection that are unused.
+//
+// ```
+// struct X();
+// mod foo {
+//     use super::X$0;
+// }
+// ```
+// ->
+// ```
+// struct X();
+// mod foo {
+// }
+// ```
 pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // First, grab the uses that intersect with the current selection.
     let selected_el = match ctx.covering_element() {

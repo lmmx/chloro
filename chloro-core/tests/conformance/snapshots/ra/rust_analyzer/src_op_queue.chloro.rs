@@ -68,10 +68,12 @@ impl<Args: std::fmt::Debug, Output> OpQueue<Args, Output> {
         self.last_op_result.as_ref()
     }
 
+    // Is there an operation that has started, but hasn't yet finished?
     pub(crate) fn op_in_progress(&self) -> bool {
         self.op_in_progress
     }
 
+    // Has an operation been requested?
     pub(crate) fn op_requested(&self) -> bool {
         self.op_requested.is_some()
     }

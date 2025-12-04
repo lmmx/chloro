@@ -702,6 +702,7 @@ fn main() {
             "#,
         )
     }
+    // regression test for a stackoverflow in hir display code
     #[test]
     fn adjustment_hints_method_call_on_impl_trait_self() {
         check_with_config(

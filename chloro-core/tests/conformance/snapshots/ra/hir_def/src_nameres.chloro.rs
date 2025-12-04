@@ -588,6 +588,8 @@ impl DefMap {
         self.data.recursion_limit.unwrap_or(128)
     }
 
+    // FIXME: this can use some more human-readable format (ideally, an IR
+    // even), as this should be a great debugging aid.
     pub fn dump(&self, db: &dyn DefDatabase) -> String {
         let mut buf = String::new();
         let mut arc;

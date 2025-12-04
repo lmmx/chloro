@@ -9,6 +9,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: move_bounds_to_where_clause
+//
+// Moves inline type bounds to a where clause.
+//
+// ```
+// fn apply<T, U, $0F: FnOnce(T) -> U>(f: F, x: T) -> U {
+//     f(x)
+// }
+// ```
+// ->
+// ```
+// fn apply<T, U, F>(f: F, x: T) -> U where F: FnOnce(T) -> U {
+//     f(x)
+// }
+// ```
 pub(crate) fn move_bounds_to_where_clause(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

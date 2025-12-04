@@ -8,6 +8,30 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: convert_iter_for_each_to_for
+//
+// Converts an Iterator::for_each function into a for loop.
+//
+// ```
+// # //- minicore: iterators
+// # use core::iter;
+// fn main() {
+//     let iter = iter::repeat((9, 2));
+//     iter.for_each$0(|(x, y)| {
+//         println!("x: {}, y: {}", x, y);
+//     });
+// }
+// ```
+// ->
+// ```
+// # use core::iter;
+// fn main() {
+//     let iter = iter::repeat((9, 2));
+//     for (x, y) in iter {
+//         println!("x: {}, y: {}", x, y);
+//     }
+// }
+// ```
 pub(crate) fn convert_iter_for_each_to_for(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -49,6 +73,27 @@ pub(crate) fn convert_iter_for_each_to_for(
     )
 }
 
+// Assist: convert_for_loop_with_for_each
+//
+// Converts a for loop into a for_each loop on the Iterator.
+//
+// ```
+// fn main() {
+//     let x = vec![1, 2, 3];
+//     for$0 v in x {
+//         let y = v * 2;
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let x = vec![1, 2, 3];
+//     x.into_iter().for_each(|v| {
+//         let y = v * 2;
+//     });
+// }
+// ```
 pub(crate) fn convert_for_loop_with_for_each(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

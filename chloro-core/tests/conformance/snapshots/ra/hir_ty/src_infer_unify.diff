@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34370 bytes
+Chloro size:   34589 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -140,14 +140,6 @@ Rustfmt size:  35032 bytes
      where
          T: TypeFoldable<DbInterner<'db>>,
      {
-         self.infer_ctxt.canonicalize_response(t)
-     }
- 
--    // FIXME: We should get rid of this method. We cannot deeply normalize during inference, only when finishing.
--    // Inference should use shallow normalization (`try_structurally_resolve_type()`) only, when needed.
-     pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
-     where
-         T: TypeFoldable<DbInterner<'db>> + Clone,
          let mut goals = vec![];
  
          // FIXME(next-solver): Handle `goals`.

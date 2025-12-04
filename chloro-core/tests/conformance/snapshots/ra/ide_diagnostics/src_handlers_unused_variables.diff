@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7192 bytes
-Chloro size:   6977 bytes
+Chloro size:   7139 bytes
 Rustfmt size:  7216 bytes
 
 ✗ Outputs DIFFER
@@ -19,14 +19,6 @@ Rustfmt size:  7216 bytes
  };
  use syntax::{AstNode, Edition, TextRange, ToSmolStr};
  
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
- 
--// Diagnostic: unused-variables
--//
--// This diagnostic is triggered when a local variable is not used.
- pub(crate) fn unused_variables(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::UnusedVariable,
          .and_then(syntax::ast::RecordPatField::cast)
          .is_some_and(|field| field.colon_token().is_none());
      let var_name = d.local.name(ctx.sema.db);
@@ -128,7 +120,6 @@ Rustfmt size:  7216 bytes
          );
      }
 -
--    // regression test as we used to panic in this scenario
+     // regression test as we used to panic in this scenario
      #[test]
      fn unknown_struct_pattern_param_type() {
-         check_diagnostics(

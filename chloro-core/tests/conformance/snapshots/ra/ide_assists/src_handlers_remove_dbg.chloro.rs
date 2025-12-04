@@ -8,6 +8,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: remove_dbg
+//
+// Removes `dbg!()` macro call.
+//
+// ```
+// fn main() {
+//     let x = $0dbg!(42 * dbg!(4 + 2));$0
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let x = 42 * (4 + 2);
+// }
+// ```
 pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let macro_calls = if ctx.has_empty_selection() {
         vec![ctx.find_node_at_offset::<ast::MacroExpr>()?]

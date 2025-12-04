@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36630 bytes
-Chloro size:   36486 bytes
+Chloro size:   36555 bytes
 Rustfmt size:  36630 bytes
 
 ✗ Outputs DIFFER
@@ -219,10 +219,9 @@ Rustfmt size:  36630 bytes
          );
      }
 -
--    // FIXME: `T` in `ty!(T)` should be replaced by `PathTransform`.
+     // FIXME: `T` in `ty!(T)` should be replaced by `PathTransform`.
      #[test]
      fn macro_generated_assoc_item2() {
-         check_edit(
  "#,
          );
      }

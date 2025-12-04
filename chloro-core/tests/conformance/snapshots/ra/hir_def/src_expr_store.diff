@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35489 bytes
-Chloro size:   35174 bytes
+Chloro size:   35200 bytes
 Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
@@ -51,13 +51,6 @@ Rustfmt size:  37277 bytes
      pub const ROOT: Self = Self(span::SyntaxContext::root(Edition::Edition2015));
  
      pub fn new(mut ctx: span::SyntaxContext) -> Self {
-         Self(ctx)
-     }
- 
--    // FIXME: Inline this
-     pub(crate) fn lookup(self) -> SyntaxContext {
-         self.0
-     }
  }
  
  pub type ExprPtr = AstPtr<ast::Expr>;

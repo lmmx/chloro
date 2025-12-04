@@ -4,6 +4,17 @@ use syntax::ast::{self, AstNode, HasGenericParams, HasName, syntax_factory::Synt
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: introduce_named_type_parameter
+//
+// Replaces `impl Trait` function argument with the named generic.
+//
+// ```
+// fn foo(bar: $0impl Bar) {}
+// ```
+// ->
+// ```
+// fn foo<$0B: Bar>(bar: B) {}
+// ```
 pub(crate) fn introduce_named_type_parameter(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8787 bytes
-Chloro size:   8422 bytes
+Chloro size:   8741 bytes
 Rustfmt size:  8787 bytes
 
 ✗ Outputs DIFFER
@@ -25,27 +25,9 @@ Rustfmt size:  8787 bytes
  // }
  // ```
 -
--// Assist: desugar_try_expr_let_else
--//
--// Replaces a `try` expression with a `let else` statement.
--//
--// ```
--// # //- minicore: try, option
--// fn handle() {
--//     let pat = Some(true)$0?;
--// }
--// ```
--// ->
--// ```
--// fn handle() {
--//     let Some(pat) = Some(true) else {
--//         return None;
--//     };
--// }
--// ```
- pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let question_tok = ctx.find_token_syntax_at_offset(T![?])?;
-     let try_expr = question_tok.parent().and_then(ast::TryExpr::cast)?;
+ // Assist: desugar_try_expr_let_else
+ //
+ // Replaces a `try` expression with a `let else` statement.
  #[cfg(test)]
  mod tests {
      use super::*;

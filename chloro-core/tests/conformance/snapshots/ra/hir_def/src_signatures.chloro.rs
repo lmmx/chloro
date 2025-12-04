@@ -987,6 +987,7 @@ impl EnumVariants {
             .find_map(|(id, name, _)| if *id == variant_id { Some(name.clone()) } else { None })
     }
 
+    // [Adopted from rustc](https://github.com/rust-lang/rust/blob/bd53aa3bf7a24a70d763182303bd75e5fc51a9af/compiler/rustc_middle/src/ty/adt.rs#L446-L448)
     pub fn is_payload_free(&self, db: &dyn DefDatabase) -> bool {
         self.variants.iter().all(|&(v, _, _)| {
             // The condition check order is slightly modified from rustc

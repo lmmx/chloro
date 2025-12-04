@@ -40,6 +40,27 @@ struct ExtendedTextEdit {
     is_snippet: bool,
 }
 
+// Feature: On Typing Assists
+//
+// Some features trigger on typing certain characters:
+//
+// - typing `let =` tries to smartly add `;` if `=` is followed by an existing expression
+// - typing `=` between two expressions adds `;` when in statement position
+// - typing `=` to turn an assignment into an equality comparison removes `;` when in expression position
+// - typing `.` in a chain method call auto-indents
+// - typing `{` or `(` in front of an expression inserts a closing `}` or `)` after the expression
+// - typing `{` in a use item adds a closing `}` in the right place
+// - typing `>` to complete a return type `->` will insert a whitespace after it
+//
+// #### VS Code
+//
+// Add the following to `settings.json`:
+// ```json
+// "editor.formatOnType": true,
+// ```
+//
+// ![On Typing Assists](https://user-images.githubusercontent.com/48062697/113166163-69758500-923a-11eb-81ee-eb33ec380399.gif)
+// ![On Typing Assists](https://user-images.githubusercontent.com/48062697/113171066-105c2000-923f-11eb-87ab-f4a263346567.gif)
 pub(crate) fn on_char_typed(
     db: &RootDatabase,
     position: FilePosition,
@@ -194,6 +215,7 @@ fn on_delimited_node_typed(
     ))
 }
 
+// FIXME: use a snippet completion instead of this hack here.
 /// Returns an edit which should be applied after `=` was typed. Primarily,
 /// this works when adding `let =`.
 fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {

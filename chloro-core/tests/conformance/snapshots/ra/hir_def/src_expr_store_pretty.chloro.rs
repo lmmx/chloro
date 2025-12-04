@@ -488,6 +488,11 @@ impl Printer<'_> {
         }
     }
 
+    // Add a newline if the current line is not empty.
+    // If the current line is empty, add a space instead.
+    //
+    // Do not use [`writeln!()`] or [`wln!()`] here, which will result in
+    // infinite recursive calls to this function.
     fn newline(&mut self) {
         if matches!(self.line_format, LineFormat::Oneline) {
             match self.buf.chars().last() {

@@ -1,5 +1,8 @@
 use crate::{Diagnostic, DiagnosticsContext, adjusted_display_range};
 
+// Diagnostic: await-outside-of-async
+//
+// This diagnostic is triggered if the `await` keyword is used outside of an async function or block
 pub(crate) fn await_outside_of_async(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::AwaitOutsideOfAsync,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11158 bytes
-Chloro size:   10975 bytes
+Chloro size:   11100 bytes
 Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
@@ -27,12 +27,7 @@ Rustfmt size:  11215 bytes
 +    handlers::private_field::field_is_private_fixes,
  };
  
--// Diagnostic: no-such-field
--//
--// This diagnostic is triggered if created structure does not have field provided in record.
- pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
-     let (code, message) = if d.private.is_some() {
-         ("E0451", "field is private")
+ // Diagnostic: no-such-field
      let new_field = make::record_field(
          None,
          make::name(record_expr_field.field_name()?.ident_token()?.text()),

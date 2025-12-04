@@ -1,6 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 use hir::IncorrectGenericsLenKind;
 
+// Diagnostic: incorrect-generics-len
+//
+// This diagnostic is triggered if the number of generic arguments does not match their declaration.
 pub(crate) fn incorrect_generics_len(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::IncorrectGenericsLen,

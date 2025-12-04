@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12008 bytes
-Chloro size:   11703 bytes
+Chloro size:   11992 bytes
 Rustfmt size:  12073 bytes
 
 ✗ Outputs DIFFER
@@ -24,23 +24,9 @@ Rustfmt size:  12073 bytes
 +    assist_context::{AssistContext, Assists},
  };
  
--// Assist: add_turbo_fish
--//
--// Adds `::<_>` to a call of a generic method or function.
--//
--// ```
--// fn make<T>() -> T { todo!() }
--// fn main() {
--//     let x = make$0();
--// }
--// ```
--// ->
--// ```
--// fn make<T>() -> T { todo!() }
--// fn main() {
--//     let x = make::<${0:_}>();
--// }
--// ```
+ // Assist: add_turbo_fish
+ // }
+ // ```
  pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
 -    let turbofish_target = ctx
 -        .find_node_at_offset::<ast::PathSegment>()
