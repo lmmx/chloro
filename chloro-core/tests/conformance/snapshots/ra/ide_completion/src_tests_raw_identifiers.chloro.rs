@@ -1,5 +1,5 @@
 use base_db::SourceDatabase;
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 use itertools::Itertools;
 
 use crate::tests::{completion_list_with_config_raw, position, TEST_CONFIG};

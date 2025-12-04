@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33220 bytes
-Chloro size:   33221 bytes
+Chloro size:   33225 bytes
 Rustfmt size:  33220 bytes
 
 ✗ Outputs DIFFER
@@ -17,43 +17,6 @@ Rustfmt size:  33220 bytes
  use cfg::{CfgExpr, CfgOptions};
  use either::Either;
  use hir_def::{
--    DefWithBodyId, GenericParamId, SyntheticSyntax,
-     expr_store::{
--        ExprOrPatPtr, ExpressionStoreSourceMap, hir_assoc_type_binding_to_ast,
--        hir_generic_arg_to_ast, hir_segment_to_ast_segment,
-+        hir_assoc_type_binding_to_ast, hir_generic_arg_to_ast, hir_segment_to_ast_segment,
-+        ExprOrPatPtr, ExpressionStoreSourceMap,
-     },
-     hir::ExprOrPatId,
-+    DefWithBodyId, GenericParamId, SyntheticSyntax,
- };
--use hir_expand::{HirFileId, InFile, mod_path::ModPath, name::Name};
-+use hir_expand::{mod_path::ModPath, name::Name, HirFileId, InFile};
- use hir_ty::{
--    CastError, InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource,
--    PathLoweringDiagnostic, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
-     db::HirDatabase,
-     diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
-+    CastError, InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource,
-+    PathLoweringDiagnostic, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
- };
- use syntax::{
--    AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
-     ast::{self, HasGenericArgs},
--    match_ast,
-+    match_ast, AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
- };
- use triomphe::Arc;
- 
- 
- pub use hir_def::VariantId;
- pub use hir_ty::{
--    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
-     diagnostics::{CaseType, IncorrectCase},
-+    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
- };
- 
- macro_rules! diagnostics {
          )*
      };
  }

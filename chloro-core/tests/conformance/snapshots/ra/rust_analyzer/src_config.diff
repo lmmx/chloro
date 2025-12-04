@@ -17,25 +17,6 @@ Rustfmt size:  167117 bytes
  use std::{env, fmt, iter, ops::Not, sync::OnceLock};
  
  use cfg::{CfgAtom, CfgDiff};
-     MemoryLayoutHoverRenderKind, RenameConfig, Snippet, SnippetScope, SourceRootId,
- };
- use ide_db::{
--    MiniCore, SnippetCap,
-     assists::ExprFillDefaultMode,
-     imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
-+    MiniCore, SnippetCap,
- };
- use itertools::{Either, Itertools};
- use paths::{Utf8Path, Utf8PathBuf};
- use rustc_hash::{FxHashMap, FxHashSet};
- use semver::Version;
- use serde::{
--    Deserialize, Serialize,
-     de::{DeserializeOwned, Error},
-+    Deserialize, Serialize,
- };
- use stdx::format_to_acc;
- use triomphe::Arc;
  mod patch_old_style;
  
  // Conventions for configuration keys to preserve maximal extendability without breakage:

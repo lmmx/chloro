@@ -2,20 +2,20 @@ use std::ops::Range;
 
 use ena::{
     snapshot_vec as sv,
-    unify::{self as ut, UnifyKey},
+    unify::{UnifyKey, self as ut},
 };
 use rustc_type_ir::{
-    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
-    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
+    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
+    TypeSuperFoldable, TypeVisitableExt, inherent::IntoKind,
 };
 
 use crate::next_solver::{
-    infer::{
-        iter_idx_range, snapshot::VariableLengths, type_variable::TypeVariableOrigin,
-        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey}, InferCtxt,
-        UnificationTable,
-    },
     Const, ConstKind, DbInterner, Region, Ty, TyKind,
+    infer::{
+        InferCtxt, UnificationTable, iter_idx_range, snapshot::VariableLengths,
+        type_variable::TypeVariableOrigin,
+        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
+    },
 };
 
 fn vars_since_snapshot<'db, T>(

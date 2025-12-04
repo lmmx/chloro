@@ -9,7 +9,7 @@ use std::{
 };
 
 use cargo_metadata::PackageId;
-use crossbeam_channel::{select_biased, unbounded, Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender, select_biased, unbounded};
 use ide_db::FxHashSet;
 use itertools::Itertools;
 use paths::{AbsPath, AbsPathBuf, Utf8Path, Utf8PathBuf};

@@ -14,18 +14,19 @@ Rustfmt size:  5891 bytes
  
  use ena::undo_log::UndoLogs;
  use tracing::instrument;
--
--use super::OpaqueHiddenType;
- use crate::next_solver::{
-     infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
-     FxIndexMap, OpaqueTypeKey, Ty,
- };
++use crate::next_solver::{
++    FxIndexMap, OpaqueTypeKey, Ty,
++    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
++};
  
-+use super::OpaqueHiddenType;
-+
+ use super::OpaqueHiddenType;
+-use crate::next_solver::{
+-    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
+-    FxIndexMap, OpaqueTypeKey, Ty,
+-};
+ 
  #[derive(Default, Debug, Clone)]
  pub(crate) struct OpaqueTypeStorage<'db> {
-     opaque_types: FxIndexMap<OpaqueTypeKey<'db>, OpaqueHiddenType<'db>>,
                  None => {
                      panic!("reverted opaque type inference that was never registered: {key:?}")
                  }

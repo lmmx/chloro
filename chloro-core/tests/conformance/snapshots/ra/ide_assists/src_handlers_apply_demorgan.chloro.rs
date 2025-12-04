@@ -6,15 +6,16 @@ use ide_db::{
     syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
 };
 use syntax::{
+    NodeOrToken, SyntaxKind,
     ast::{
-        self, prec::{ExprPrecedence, precedence}, syntax_factory::SyntaxFactory, AstNode,
-        Expr::BinExpr, HasArgList,
+        self, AstNode, Expr::BinExpr, HasArgList, prec::{ExprPrecedence, precedence},
+        syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Position, SyntaxEditor},
-    NodeOrToken, SyntaxKind, T,
+    T,
 };
 
-use crate::{utils::invert_boolean_expression, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};
 
 pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let mut bin_expr = if let Some(not) = ctx.find_token_syntax_at_offset(T![!])

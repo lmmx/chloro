@@ -1,10 +1,10 @@
+use crate::formatter::printer::Printer;
 use ra_ap_syntax::{
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasName},
 };
 
 use super::format_node;
-use crate::formatter::printer::Printer;
 
 pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let Some(module) = ast::Module::cast(node.clone()) else {

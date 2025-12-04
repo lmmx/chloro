@@ -3,8 +3,9 @@
 use hir::DisplayTarget;
 use ide_db::famous_defs::FamousDefs;
 use syntax::{
+    Direction, NodeOrToken, SyntaxKind,
     ast::{self, AstNode},
-    Direction, NodeOrToken, SyntaxKind, T,
+    T,
 };
 
 use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};
@@ -77,14 +78,13 @@ pub(super) fn hints(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use ide_db::text_edit::{TextRange, TextSize};
     use crate::{
-        fixture,
+        InlayHintsConfig, fixture,
         inlay_hints::{
-            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config}, LazyProperty,
+            LazyProperty, tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
         },
-        InlayHintsConfig,
     };
     #[track_caller]
     fn check_chains(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

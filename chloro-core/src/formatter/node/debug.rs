@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-#[cfg(debug_assertions)]
+
 use ra_ap_syntax::{NodeOrToken, SyntaxNode};
 
 #[cfg(debug_assertions)]

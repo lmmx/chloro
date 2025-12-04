@@ -2,42 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58223 bytes
-Chloro size:   56942 bytes
+Chloro size:   56946 bytes
 Rustfmt size:  58223 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::iter;
- 
--use hir::{EditionedFileId, FilePosition, FileRange, HirFileId, InFile, Semantics, db};
-+use hir::{db, EditionedFileId, FilePosition, FileRange, HirFileId, InFile, Semantics};
- use ide_db::{
--    FxHashMap, FxHashSet, RootDatabase,
-     defs::{Definition, IdentClass},
-     helpers::pick_best_token,
-     search::{FileReference, ReferenceCategory, SearchScope},
-         eq_label_lt, for_each_tail_expr, full_path_of_name_ref, is_closure_or_blk_with_modif,
-         preorder_expr_with_ctx_checker,
-     },
-+    FxHashMap, FxHashSet, RootDatabase,
- };
  use syntax::{
--    AstNode,
--    SyntaxKind::{self, IDENT, INT_NUMBER},
+     AstNode,
+     SyntaxKind::{self, IDENT, INT_NUMBER},
 -    SyntaxToken, T, TextRange, WalkEvent,
++    SyntaxToken, TextRange, WalkEvent,
      ast::{self, HasLoopBody},
 -    match_ast,
-+    match_ast, AstNode,
-+    SyntaxKind::{self, IDENT, INT_NUMBER},
-+    SyntaxToken, TextRange, WalkEvent, T,
++    match_ast, T,
  };
  
--use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};
-+use crate::{goto_definition, navigation_target::ToNav, NavigationTarget, TryToNav};
- 
- #[derive(PartialEq, Eq, Hash)]
- pub struct HighlightedRange {
+ use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};
  
  type HighlightMap = FxHashMap<EditionedFileId, FxHashSet<HighlightedRange>>;
  

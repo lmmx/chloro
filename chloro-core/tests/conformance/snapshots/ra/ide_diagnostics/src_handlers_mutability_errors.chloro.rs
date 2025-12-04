@@ -1,9 +1,9 @@
 use hir::db::ExpandDatabase;
 use ide_db::source_change::SourceChange;
 use ide_db::text_edit::TextEdit;
-use syntax::{ast, AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, T};
+use syntax::{AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, ast, T};
 
-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
 pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option<Diagnostic> {
     let root = ctx.sema.db.parse_or_expand(d.span.file_id);

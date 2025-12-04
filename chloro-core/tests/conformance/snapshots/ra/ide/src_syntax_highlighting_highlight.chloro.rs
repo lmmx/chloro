@@ -5,21 +5,21 @@ use std::ops::ControlFlow;
 use either::Either;
 use hir::{AsAssocItem, HasVisibility, Semantics};
 use ide_db::{
+    FxHashMap, RootDatabase, SymbolKind,
     defs::{Definition, IdentClass, NameClass, NameRefClass},
     syntax_helpers::node_ext::walk_pat,
-    FxHashMap, RootDatabase, SymbolKind,
 };
 use span::Edition;
 use stdx::hash_once;
 use syntax::{
-    ast, match_ast, AstNode, AstPtr, AstToken, NodeOrToken,
+    AstNode, AstPtr, AstToken, NodeOrToken,
     SyntaxKind::{self, *},
-    SyntaxNode, SyntaxNodePtr, SyntaxToken, T,
+    SyntaxNode, SyntaxNodePtr, SyntaxToken, ast, match_ast, T,
 };
 
 use crate::{
-    syntax_highlighting::tags::{HlOperator, HlPunct},
     Highlight, HlMod, HlTag,
+    syntax_highlighting::tags::{HlOperator, HlPunct},
 };
 
 pub(super) fn token(

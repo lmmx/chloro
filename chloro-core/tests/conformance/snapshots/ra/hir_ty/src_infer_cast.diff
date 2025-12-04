@@ -8,28 +8,6 @@ Rustfmt size:  16583 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Type cast logic. Basically coercion + additional casts.
- 
--use hir_def::{AdtId, hir::ExprId, signatures::TraitFlags};
-+use hir_def::{hir::ExprId, signatures::TraitFlags, AdtId};
- use rustc_ast_ir::Mutability;
- use rustc_type_ir::{
--    Flags, InferTy, TypeFlags, UintTy,
-     inherent::{AdtDef, BoundExistentialPredicates as _, IntoKind, SliceLike, Ty as _},
-+    Flags, InferTy, TypeFlags, UintTy,
- };
- use stdx::never;
- 
- use crate::{
--    InferenceDiagnostic,
-     db::HirDatabase,
--    infer::{AllowTwoPhase, InferenceContext, coerce::CoerceNever},
-+    infer::{coerce::CoerceNever, AllowTwoPhase, InferenceContext},
-     next_solver::{BoundExistentialPredicates, DbInterner, ParamTy, Ty, TyKind},
-+    InferenceDiagnostic,
- };
- 
- #[derive(Debug)]
      Float,
      FnPtr,
      Ptr(Ty<'db>, Mutability),

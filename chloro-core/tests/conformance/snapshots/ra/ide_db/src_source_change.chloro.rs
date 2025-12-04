@@ -12,13 +12,13 @@ use rustc_hash::FxHashMap;
 use span::FileId;
 use stdx::never;
 use syntax::{
-    syntax_editor::{SyntaxAnnotation, SyntaxEditor},
     AstNode, SyntaxElement, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
+    syntax_editor::{SyntaxAnnotation, SyntaxEditor},
 };
 
 use crate::imports::insert_use::{ImportScope, ImportScopeKind};
 use crate::text_edit::{TextEdit, TextEditBuilder};
-use crate::{assists::Command, syntax_helpers::tree_diff::diff, SnippetCap};
+use crate::{SnippetCap, assists::Command, syntax_helpers::tree_diff::diff};
 
 /// An annotation ID associated with an indel, to describe changes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, UpmapFromRaFixture)]

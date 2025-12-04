@@ -8,19 +8,7 @@ Rustfmt size:  19028 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! This module provides `StaticIndex` which is used for powering
- //! read-only code browsers and emitting LSIF
- 
- use arrayvec::ArrayVec;
--use hir::{Crate, Module, Semantics, db::HirDatabase};
-+use hir::{db::HirDatabase, Crate, Module, Semantics};
- use ide_db::{
--    FileId, FileRange, FxHashMap, FxHashSet, MiniCore, RootDatabase,
-     base_db::{RootQueryDb, SourceDatabase, VfsPath},
-     defs::{Definition, IdentClass},
-     documentation::Documentation,
      famous_defs::FamousDefs,
-+    FileId, FileRange, FxHashMap, FxHashSet, MiniCore, RootDatabase,
  };
  use span::Edition;
 -use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, T, TextRange};
@@ -28,17 +16,6 @@ Rustfmt size:  19028 bytes
  
  use crate::navigation_target::UpmappingResult;
  use crate::{
--    Analysis, Fold, HoverConfig, HoverResult, InlayHint, InlayHintsConfig, TryToNav,
--    hover::{SubstTyLen, hover_for_definition},
-+    hover::{hover_for_definition, SubstTyLen},
-     inlay_hints::{AdjustmentHintsMode, InlayFieldsToResolve},
--    moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
-+    moniker::{def_to_kind, def_to_moniker, MonikerResult, SymbolInformationKind},
-     parent_module::crates_for,
-+    Analysis, Fold, HoverConfig, HoverResult, InlayHint, InlayHintsConfig, TryToNav,
- };
- 
- /// A static representation of fully analyzed source code.
      )
  }
  
@@ -75,12 +52,8 @@ Rustfmt size:  19028 bytes
      }
  }
  
- #[cfg(test)]
- mod tests {
--    use crate::{StaticIndex, fixture};
--    use ide_db::{FileRange, FxHashMap, FxHashSet, base_db::VfsPath};
-+    use crate::{fixture, StaticIndex};
-+    use ide_db::{base_db::VfsPath, FileRange, FxHashMap, FxHashSet};
+     use crate::{StaticIndex, fixture};
+     use ide_db::{FileRange, FxHashMap, FxHashSet, base_db::VfsPath};
      use syntax::TextSize;
 -
      use super::VendoredLibrariesConfig;

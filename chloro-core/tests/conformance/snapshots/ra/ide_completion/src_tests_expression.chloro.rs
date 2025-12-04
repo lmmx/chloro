@@ -1,14 +1,14 @@
 //! Completion tests for expressions.
 
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 
 use crate::{
+    CompletionConfig,
     config::AutoImportExclusionType,
     tests::{
         check, check_edit, check_with_base_items, completion_list_with_config, BASE_ITEMS_FIXTURE,
         TEST_CONFIG,
     },
-    CompletionConfig,
 };
 
 fn check_with_config(

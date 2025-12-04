@@ -4,35 +4,35 @@ use std::{fmt, mem};
 
 use base_db::Crate;
 use hir_expand::{
+    MacroDefId,
     mod_path::{ModPath, PathKind},
     name::{AsName, Name},
-    MacroDefId,
 };
-use intern::{sym, Symbol};
+use intern::{Symbol, sym};
 use itertools::Itertools as _;
 use rustc_hash::FxHashSet;
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use span::SyntaxContext;
 use syntax::ast::HasName;
 use triomphe::Arc;
 
 use crate::{
-    builtin_type::BuiltinType,
-    db::DefDatabase,
-    expr_store::{path::Path, scope::{ExprScopes, ScopeId}, HygieneId},
-    hir::{generics::{GenericParams, TypeOrConstParamData}, BindingId, ExprId, LabelId},
-    item_scope::{BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope, BUILTIN_SCOPE},
-    lang_item::LangItemTarget,
-    nameres::{block_def_map, DefMap, LocalDefMap, MacroSubNs, ResolvePathResultPrefixInfo},
-    per_ns::PerNs,
-    src::HasSource,
-    type_ref::LifetimeRef,
-    visibility::{RawVisibility, Visibility},
     AdtId, AstIdLoc, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId,
     EnumVariantId, ExternBlockId, ExternCrateId, FunctionId, FxIndexMap, GenericDefId,
     GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId, LocalModuleId, Lookup,
     Macro2Id, MacroId, MacroRulesId, ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId,
     TraitId, TypeAliasId, TypeOrConstParamId, TypeParamId, UseId, VariantId,
+    builtin_type::BuiltinType,
+    db::DefDatabase,
+    expr_store::{HygieneId, path::Path, scope::{ExprScopes, ScopeId}},
+    hir::{BindingId, ExprId, LabelId, generics::{GenericParams, TypeOrConstParamData}},
+    item_scope::{BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope, BUILTIN_SCOPE},
+    lang_item::LangItemTarget,
+    nameres::{DefMap, LocalDefMap, MacroSubNs, ResolvePathResultPrefixInfo, block_def_map},
+    per_ns::PerNs,
+    src::HasSource,
+    type_ref::LifetimeRef,
+    visibility::{RawVisibility, Visibility},
 };
 
 #[derive(Debug, Clone)]

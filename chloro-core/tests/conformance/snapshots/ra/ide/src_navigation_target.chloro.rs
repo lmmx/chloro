@@ -5,22 +5,22 @@ use std::fmt;
 use arrayvec::ArrayVec;
 use either::Either;
 use hir::{
-    db::ExpandDatabase, sym, symbols::FileSymbol, AssocItem, Crate, FieldSource, HasContainer,
-    HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
-    Symbol,
+    AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId,
+    InFile, LocalSource, ModuleSource, Semantics, Symbol, db::ExpandDatabase, sym,
+    symbols::FileSymbol,
 };
 use ide_db::{
+    FileId, FileRange, RootDatabase, SymbolKind,
     base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
-    defs::{find_std_module, Definition},
+    defs::{Definition, find_std_module},
     documentation::{Documentation, HasDocs},
     famous_defs::FamousDefs,
     ra_fixture::UpmapFromRaFixture,
-    FileId, FileRange, RootDatabase, SymbolKind,
 };
 use stdx::never;
 use syntax::{
-    ast::{self, HasName},
     AstNode, SyntaxNode, TextRange,
+    ast::{self, HasName},
 };
 
 /// `NavigationTarget` represents an element in the editor's UI which you can
@@ -1051,7 +1051,7 @@ fn orig_range_r(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
-    use crate::{fixture, Query};
+    use crate::{Query, fixture};
     #[test]
     fn test_nav_for_symbol() {
         let (analysis, _) = fixture::file(

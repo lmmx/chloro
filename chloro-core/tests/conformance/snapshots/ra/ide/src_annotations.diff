@@ -8,29 +8,6 @@ Rustfmt size:  37056 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::{HasSource, InFile, InRealFile, Semantics};
- use ide_db::{
--    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase, defs::Definition,
--    helpers::visit_file_defs,
-+    defs::Definition, helpers::visit_file_defs, FileId, FilePosition, FileRange, FxIndexSet,
-+    MiniCore, RootDatabase,
- };
- use itertools::Itertools;
--use syntax::{AstNode, TextRange, ast::HasName};
-+use syntax::{ast::HasName, AstNode, TextRange};
- 
- use crate::{
--    NavigationTarget, RunnableKind,
-     annotations::fn_references::find_all_methods,
--    goto_implementation::{GotoImplementationConfig, goto_implementation},
-+    goto_implementation::{goto_implementation, GotoImplementationConfig},
-     navigation_target,
--    references::{FindAllRefsConfig, find_all_refs},
--    runnables::{Runnable, runnables},
-+    references::{find_all_refs, FindAllRefsConfig},
-+    runnables::{runnables, Runnable},
-+    NavigationTarget, RunnableKind,
- };
  
  mod fn_references;
  
@@ -59,16 +36,12 @@ Rustfmt size:  37056 bytes
  }
  
  pub struct AnnotationConfig<'a> {
- 
- #[cfg(test)]
  mod tests {
--    use expect_test::{Expect, expect};
-+    use expect_test::{expect, Expect};
+     use expect_test::{Expect, expect};
      use ide_db::MiniCore;
 -
--    use crate::{Annotation, AnnotationConfig, fixture};
+     use crate::{Annotation, AnnotationConfig, fixture};
 -
-+    use crate::{fixture, Annotation, AnnotationConfig};
      use super::AnnotationLocation;
 -
      const DEFAULT_CONFIG: AnnotationConfig<'_> = AnnotationConfig {

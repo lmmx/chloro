@@ -126,8 +126,8 @@ pub(super) fn hints(
 mod tests {
     use expect_test::expect;
     use crate::{
-        inlay_hints::tests::{check_edit, check_with_config, DISABLED_CONFIG},
         InlayHintsConfig,
+        inlay_hints::tests::{check_edit, check_with_config, DISABLED_CONFIG},
     };
     #[test]
     fn hints_binding_modes() {

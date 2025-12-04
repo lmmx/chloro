@@ -8,6 +8,17 @@ Rustfmt size:  2003 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+-use rustc_type_ir::{inherent::Term as _, AliasRelationDirection};
++use rustc_type_ir::{AliasRelationDirection, inherent::Term as _};
+ 
+ use crate::next_solver::{
++    Const, PredicateKind, Term, Ty,
+     fulfill::{FulfillmentCtxt, NextSolverError},
+     infer::{at::At, traits::Obligation},
+-    Const, PredicateKind, Term, Ty,
+ };
+ 
+ impl<'db> At<'_, 'db> {
          ty: Ty<'db>,
          fulfill_cx: &mut FulfillmentCtxt<'db>,
      ) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {

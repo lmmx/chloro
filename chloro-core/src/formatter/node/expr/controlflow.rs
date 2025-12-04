@@ -1,9 +1,9 @@
+use crate::formatter::write_indent;
 use ra_ap_syntax::SyntaxNode;
 use ra_ap_syntax::ast::{self, AstNode, HasAttrs, HasLoopBody};
 use ra_ap_syntax::{NodeOrToken, SyntaxKind};
 
 use super::try_format_expr_inner;
-use crate::formatter::write_indent;
 
 fn format_expr_attrs(node: &impl HasAttrs) -> String {
     let mut result = String::new();
@@ -105,13 +105,13 @@ pub fn format_if_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 /// Check if a block expression is empty (no statements, no tail expr, no comments)
 fn is_block_empty(block: &ast::BlockExpr) -> bool {
     if let Some(stmt_list) = block.stmt_list() {
+        // Check for comments
         if stmt_list.statements().next().is_some() {
             return false;
         }
         if stmt_list.tail_expr().is_some() {
             return false;
         }
-        // Check for comments
         for child in stmt_list.syntax().children_with_tokens() {
             if let NodeOrToken::Token(t) = child {
                 if t.kind() == SyntaxKind::COMMENT {
@@ -423,11 +423,17 @@ pub fn format_closure_expr(node: &SyntaxNode, _indent: usize) -> Option<String> 
     }
 
     // Body - closures are tricky because they can be:
+
     // 1. Simple expression: |x| x + 1
+
     // 2. Block expression: |x| { ... }
+
     //
+
     // For now, preserve the body verbatim to avoid breaking method chains.
+
     // The issue is that when we format a closure's block body, it interacts
+
     // badly with the parent call expression's formatting.
     if let Some(body) = closure.body() {
         buf.push(' ');

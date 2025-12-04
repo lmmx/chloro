@@ -1,8 +1,8 @@
 use std::time::{Duration, Instant};
 use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
-use ide_db::{base_db::SourceDatabase, FilePosition, LineIndexDatabase, RootDatabase};
+use ide_db::{FilePosition, LineIndexDatabase, RootDatabase, base_db::SourceDatabase};
 use stdx::format_to;
-use syntax::{algo::ancestors_at_offset, ast, AstNode, TextRange};
+use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
 
 pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
     match find_and_interpret(db, position) {

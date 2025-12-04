@@ -61,19 +61,20 @@ use std::panic::{AssertUnwindSafe, UnwindSafe};
 
 use cfg::CfgOptions;
 use fetch_crates::CrateInfo;
-use hir::{crate_def_map, sym, ChangeWithProcMacros, EditionedFileId};
+use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
 use ide_db::{
+    FxHashMap, FxIndexSet, LineIndexDatabase,
     base_db::{
-        salsa::Cancelled, CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb,
-        SourceDatabase, VfsPath,
+        CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb, SourceDatabase, VfsPath,
+        salsa::Cancelled,
     },
-    prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
+    prime_caches, symbol_index,
 };
-use ide_db::{ra_fixture::RaFixtureAnalysis, MiniCore};
+use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 use macros::UpmapFromRaFixture;
-use syntax::{ast, SourceFile};
+use syntax::{SourceFile, ast};
 use triomphe::Arc;
-use view_memory_layout::{view_memory_layout, RecursiveMemoryLayout};
+use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
 
 use crate::navigation_target::ToNav;
 pub use hir::Semantics;
@@ -85,6 +86,7 @@ pub use ide_completion::{
     CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
 };
 pub use ide_db::{
+    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
     assists::ExprFillDefaultMode,
     base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
     documentation::Documentation,
@@ -95,7 +97,6 @@ pub use ide_db::{
     source_change::{FileSystemEdit, SnippetEdit, SourceChange},
     symbol_index::Query,
     text_edit::{Indel, TextEdit},
-    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
 };
 pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
 pub use ide_ssr::SsrError;
@@ -137,7 +138,7 @@ pub use crate::{
         StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
     },
     syntax_highlighting::{
-        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag}, HighlightConfig, HlRange,
+        HighlightConfig, HlRange, tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
     },
     test_explorer::{TestItem, TestItemKind},
 };

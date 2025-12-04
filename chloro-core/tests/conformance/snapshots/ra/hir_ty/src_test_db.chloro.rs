@@ -7,7 +7,7 @@ use base_db::{
     SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
 };
 
-use hir_def::{db::DefDatabase, nameres::crate_def_map, ModuleId};
+use hir_def::{ModuleId, db::DefDatabase, nameres::crate_def_map};
 use hir_expand::EditionedFileId;
 use rustc_hash::FxHashMap;
 use salsa::Durability;

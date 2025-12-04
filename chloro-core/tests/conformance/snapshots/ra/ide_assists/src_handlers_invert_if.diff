@@ -8,7 +8,13 @@ Rustfmt size:  4770 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     AssistId,
+ };
+ 
+ use crate::{
++    AssistId,
+     assist_context::{AssistContext, Assists},
+     utils::invert_boolean_expression_legacy,
+-    AssistId,
  };
  
 -// Assist: invert_if

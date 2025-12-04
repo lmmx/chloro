@@ -2,19 +2,19 @@
 
 use either::Either;
 use hir_def::{
+    AdtId, GenericDefId,
     expr_store::ExpressionStore,
     hir::generics::{GenericParams, TypeOrConstParamData, TypeParamProvenance, WherePredicate},
     item_tree::FieldsShape,
     lang_item::LangItem,
     signatures::{StaticFlags, TraitFlags},
     type_ref::{TypeBound, TypeRef, TypeRefId},
-    AdtId, GenericDefId,
 };
 use hir_ty::{
     db::HirDatabase,
     display::{
-        hir_display_with_store, write_bounds_like_dyn_trait_with_prefix, write_visibility,
         HirDisplay, HirDisplayError, HirDisplayWithExpressionStore, HirFormatter, SizedByDefault,
+        hir_display_with_store, write_bounds_like_dyn_trait_with_prefix, write_visibility,
     },
     next_solver::ClauseKind,
 };

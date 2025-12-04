@@ -1778,9 +1778,9 @@ fn foo() {
 
 fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {
 }
-use b;
 
 use {a;
+use b;
 struct T;
 
 fn test() {
@@ -2262,9 +2262,9 @@ fn foo() {
 
 macro_rules!
 {
-}
+}use Trait as _;
+
 use std as stdlib;
-use Trait as _;
 
 struct S(String, usize);
 
@@ -3142,9 +3142,9 @@ pub(super) fn d() {
 
 pub(in foo::bar::baz) fn e() {
 }
-use foo::bar::baz;
 
 use ::foo::bar::baz;
+use foo::bar::baz;
 
 struct S<T: Copy> {
     f: T,
@@ -3542,7 +3542,7 @@ pub fn main() {
 }
 
 use foo as bar;
-use foo::{a as b, ::foo as x, *, ::*};
+use foo::{::foo as x, a as b, *, ::*};
 
 fn g1(#[attr1] #[attr2] pat: Type) {
 }
@@ -3584,9 +3584,9 @@ impl S {
 
 fn r#foo() {
 }
+use ::bar;
 
 use foo;
-use ::bar;
 
 struct S {
     foo: u32,
@@ -3609,9 +3609,9 @@ type X = ();
 fn main() {
     let ():::X = ();
 }
+use ::foo::{a, b, c};
 use foo::*;
 use foo::{};
-use ::foo::{a, b, c};
 
 use *;
 use ::*;
@@ -4822,8 +4822,8 @@ impl Reparser {
 use std::mem;
 
 use crate::{
-    output::Output,
     SyntaxKind::{self, *},
+    output::Output,
 };
 
 /// `Parser` produces a flat list of `Event`s.
@@ -4969,9 +4969,10 @@ mod patterns;
 mod types;
 
 use crate::{
-    parser::{CompletedMarker, Marker, Parser},
     SyntaxKind::{self, *},
-    TokenSet, T,
+    TokenSet,
+    parser::{CompletedMarker, Marker, Parser},
+    T,
 };
 
 pub(crate) mod entry {
@@ -5353,11 +5354,12 @@ use std::cell::Cell;
 use drop_bomb::DropBomb;
 
 use crate::{
-    event::Event,
-    input::Input,
     Edition,
     SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-    TokenSet, T,
+    TokenSet,
+    event::Event,
+    input::Input,
+    T,
 };
 
 /// `Parser` struct provides the low-level API for

@@ -9,8 +9,9 @@ use span::{
 };
 use stdx::never;
 use syntax::{
+    SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
     ast::{self, AstNode, HasLoopBody},
-    match_ast, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
+    match_ast,
 };
 use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
@@ -459,7 +460,7 @@ fn reverse_fixups_(tt: &mut TopSubtree, undo_info: &[TopSubtree]) {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use span::{Edition, EditionedFileId, FileId};
     use syntax::TextRange;
     use syntax_bridge::DocCommentDesugarMode;

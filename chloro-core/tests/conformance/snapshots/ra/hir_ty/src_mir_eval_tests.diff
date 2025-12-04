@@ -8,7 +8,11 @@ Rustfmt size:  19179 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use super::{interpret_mir, MirEvalError};
+     test_db::TestDB,
+ };
+ 
+-use super::{interpret_mir, MirEvalError};
++use super::{MirEvalError, interpret_mir};
  
  fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {
 -    crate::attach_db(db, || {

@@ -1,8 +1,8 @@
+use crate::formatter::printer::expr_attrs_prefix;
 use ra_ap_syntax::SyntaxNode;
 use ra_ap_syntax::ast::{self, AstNode};
 
 use super::try_format_expr_inner;
-use crate::formatter::printer::expr_attrs_prefix;
 
 pub fn format_paren_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let paren = ast::ParenExpr::cast(node.clone())?;

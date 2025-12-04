@@ -3,13 +3,14 @@ use either::Either;
 use hir::FileRangeWrapper;
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{self, syntax_factory::SyntaxFactory, AstNode, HasAttrs, HasGenericParams, HasVisibility},
+    SyntaxElement, SyntaxKind, SyntaxNode, TextSize,
+    ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory},
     match_ast,
     syntax_editor::{Element, Position, SyntaxEditor},
-    SyntaxElement, SyntaxKind, SyntaxNode, TextSize, T,
+    T,
 };
 
-use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
 pub(crate) fn convert_tuple_struct_to_named_struct(
     acc: &mut Assists,

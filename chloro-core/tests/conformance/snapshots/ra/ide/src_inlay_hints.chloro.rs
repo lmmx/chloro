@@ -5,23 +5,24 @@ use std::{
 
 use either::Either;
 use hir::{
-    sym, ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
-    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
+    ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
+    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics, sym,
 };
 use ide_db::{
-    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
+    FileRange, MiniCore, RootDatabase, famous_defs::FamousDefs, text_edit::TextEditBuilder,
 };
-use ide_db::{text_edit::TextEdit, FxHashSet};
+use ide_db::{FxHashSet, text_edit::TextEdit};
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use syntax::{
+    SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
     ast::{self, AstNode, HasGenericParams},
-    format_smolstr, match_ast, SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
+    format_smolstr, match_ast,
 };
 
-use crate::{navigation_target::TryToNav, FileId};
+use crate::{FileId, navigation_target::TryToNav};
 
 mod adjustment;
 mod bind_pat;
@@ -830,7 +831,7 @@ mod tests {
     use test_utils::extract_annotations;
     use crate::DiscriminantHints;
     use crate::inlay_hints::{AdjustmentHints, AdjustmentHintsMode};
-    use crate::{fixture, inlay_hints::InlayHintsConfig, LifetimeElisionHints};
+    use crate::{LifetimeElisionHints, fixture, inlay_hints::InlayHintsConfig};
     use super::{ClosureReturnTypeHints, GenericParameterHints, InlayFieldsToResolve};
     pub(super) const DISABLED_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {
         discriminant_hints: DiscriminantHints::Never,

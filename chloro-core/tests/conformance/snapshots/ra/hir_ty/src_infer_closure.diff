@@ -8,48 +8,15 @@ Rustfmt size:  36953 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::{iter, mem, ops::ControlFlow};
- 
- use hir_def::{
--    TraitId,
-     hir::{ClosureKind, ExprId, PatId},
-     lang_item::LangItem,
-     type_ref::TypeRefId,
-+    TraitId,
- };
- use rustc_type_ir::{
-+    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
-     ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
-     CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-     TypeVisitor,
--    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
- };
- use tracing::debug;
- 
- use crate::{
--    FnAbi,
-     db::{InternedClosure, InternedCoroutine},
--    infer::{BreakableKind, Diverges, coerce::CoerceMany},
-+    infer::{coerce::CoerceMany, BreakableKind, Diverges},
      next_solver::{
--        AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
--        ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
+         AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
+         ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
 -        PredicateKind, SolverDefId, Ty, TyKind,
-         abi::Safety,
+-        abi::Safety,
++        PredicateKind, SolverDefId, Ty, TyKind, abi::Safety,
          infer::{
              BoundRegionConversionTime, InferOk, InferResult,
              traits::{ObligationCause, PredicateObligations},
-         },
--        util::explicit_item_bounds,
-+        util::explicit_item_bounds, AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds,
-+        ClauseKind, DbInterner, ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig,
-+        PolyProjectionPredicate, Predicate, PredicateKind, SolverDefId, Ty, TyKind,
-     },
-     traits::FnTrait,
-+    FnAbi,
- };
- 
- use super::{Expectation, InferenceContext};
          let lang_item = self.db.lang_attr(def_id.into());
  
          // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,

@@ -10,13 +10,13 @@ use syntax::ast;
 use triomphe::Arc;
 
 use crate::{
+    ImplTraitId,
     db::{HirDatabase, InternedOpaqueTyId},
     lower::{ImplTraitIdx, ImplTraits},
     next_solver::{
-        infer::{DbInternerInferExt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
         DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
+        infer::{DbInternerInferExt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
     },
-    ImplTraitId,
 };
 
 pub(crate) fn opaque_types_defined_by(

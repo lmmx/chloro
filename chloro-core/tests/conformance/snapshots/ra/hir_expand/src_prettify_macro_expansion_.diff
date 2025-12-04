@@ -8,6 +8,16 @@ Rustfmt size:  3430 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Pretty printing of macros output.
+ 
+ use base_db::Crate;
+ use rustc_hash::FxHashMap;
+ use syntax::NodeOrToken;
+-use syntax::{ast::make, SyntaxNode};
++use syntax::{SyntaxNode, ast::make};
+ 
+ use crate::{db::ExpandDatabase, span_map::ExpansionSpanMap};
+ 
      syntax_bridge::prettify_macro_expansion::prettify_macro_expansion(
          syn,
          &mut |dollar_crate| {

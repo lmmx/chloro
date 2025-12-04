@@ -5,22 +5,23 @@
 
 use std::fmt;
 
-use hir_def::{lang_item::LangItem, TraitId, TypeAliasId};
+use hir_def::{TraitId, TypeAliasId, lang_item::LangItem};
 use rustc_type_ir::inherent::{IntoKind, Ty as _};
 use tracing::debug;
 use triomphe::Arc;
 
 use crate::{
+    TraitEnvironment,
     db::HirDatabase,
     infer::unify::InferenceTable,
     next_solver::{
+        Canonical, TraitRef, Ty, TyKind,
         infer::{
             InferOk,
             traits::{Obligation, ObligationCause, PredicateObligations},
         },
-        obligation_ctxt::ObligationCtxt, Canonical, TraitRef, Ty, TyKind,
+        obligation_ctxt::ObligationCtxt,
     },
-    TraitEnvironment,
 };
 
 const AUTODEREF_RECURSION_LIMIT: usize = 20;

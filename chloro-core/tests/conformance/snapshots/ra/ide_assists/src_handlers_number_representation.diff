@@ -8,7 +8,8 @@ Rustfmt size:  5609 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{ast, ast::Radix, AstToken};
+-use syntax::{ast, ast::Radix, AstToken};
++use syntax::{AstToken, ast, ast::Radix};
  
  use crate::{AssistContext, AssistId, Assists, GroupLabel};
  

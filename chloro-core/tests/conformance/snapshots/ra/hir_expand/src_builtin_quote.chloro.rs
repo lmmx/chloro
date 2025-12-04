@@ -2,7 +2,7 @@
 
 #![allow(clippy::crate_in_macro_def)]
 
-use intern::{sym, Symbol};
+use intern::{Symbol, sym};
 use span::Span;
 use syntax::ToSmolStr;
 use tt::IdentIsRaw;

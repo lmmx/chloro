@@ -1,6 +1,6 @@
 use hir::{DefWithBody, Semantics};
 use ide_db::{FilePosition, RootDatabase};
-use syntax::{algo::ancestors_at_offset, ast, AstNode};
+use syntax::{AstNode, algo::ancestors_at_offset, ast};
 
 pub(crate) fn view_mir(db: &RootDatabase, position: FilePosition) -> String {
     body_mir(db, position).unwrap_or_else(|| "Not inside a function body".to_owned())

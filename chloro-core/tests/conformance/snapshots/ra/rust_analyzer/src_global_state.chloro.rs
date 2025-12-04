@@ -10,12 +10,12 @@ use std::{
 };
 
 use cargo_metadata::PackageId;
-use crossbeam_channel::{unbounded, Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender, unbounded};
 use hir::ChangeWithProcMacros;
 use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
 use ide_db::{
-    base_db::{Crate, ProcMacroPaths, SourceDatabase},
     MiniCore,
+    base_db::{Crate, ProcMacroPaths, SourceDatabase},
 };
 use itertools::Itertools;
 use load_cargo::SourceRootConfig;
@@ -28,7 +28,7 @@ use proc_macro_api::ProcMacroClient;
 use project_model::{ManifestPath, ProjectWorkspace, ProjectWorkspaceKind, WorkspaceBuildScripts};
 use rustc_hash::{FxHashMap, FxHashSet};
 use stdx::thread;
-use tracing::{span, trace, Level};
+use tracing::{Level, span, trace};
 use triomphe::Arc;
 use vfs::{AbsPathBuf, AnchoredPathBuf, ChangeKind, Vfs, VfsPath};
 

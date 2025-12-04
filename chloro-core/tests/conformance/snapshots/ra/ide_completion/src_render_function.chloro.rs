@@ -1,12 +1,13 @@
 //! Renderer for function calls.
 
-use hir::{db::HirDatabase, AsAssocItem, HirDisplay};
+use hir::{AsAssocItem, HirDisplay, db::HirDatabase};
 use ide_db::{SnippetCap, SymbolKind};
 use itertools::Itertools;
 use stdx::{format_to, to_lower_snake_case};
-use syntax::{format_smolstr, AstNode, SmolStr, ToSmolStr};
+use syntax::{AstNode, SmolStr, ToSmolStr, format_smolstr};
 
 use crate::{
+    CallableSnippets,
     context::{
         CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx,
         PathKind,
@@ -16,10 +17,9 @@ use crate::{
         CompletionRelevanceReturnType, CompletionRelevanceTraitInfo,
     },
     render::{
-        compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
-        RenderContext,
+        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match,
+        match_types,
     },
-    CallableSnippets,
 };
 
 #[derive(Debug)]
@@ -396,8 +396,8 @@ fn params<'db>(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
         CallableSnippets, CompletionConfig,
+        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
     };
     #[test]
     fn inserts_parens_for_function_calls() {

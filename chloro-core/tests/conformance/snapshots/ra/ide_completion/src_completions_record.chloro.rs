@@ -2,14 +2,14 @@
 
 use ide_db::SymbolKind;
 use syntax::{
-    ast::{self, Expr},
     SmolStr,
+    ast::{self, Expr},
 };
 
 use crate::{
-    context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
     CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
     CompletionRelevancePostfixMatch, Completions,
+    context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
 };
 
 pub(crate) fn complete_record_pattern_fields(
@@ -149,8 +149,8 @@ fn complete_fields(
 mod tests {
     use ide_db::SnippetCap;
     use crate::{
-        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
         CompletionConfig,
+        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
     };
     #[test]
     fn literal_struct_completion_edit() {

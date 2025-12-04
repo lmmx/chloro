@@ -1,11 +1,12 @@
 //! The home of `HirDatabase`, which is the Salsa database containing all the
 //! type inference-related queries.
 
-use base_db::{target::TargetLoadError, Crate};
+use base_db::{Crate, target::TargetLoadError};
 use hir_def::{
-    db::DefDatabase, hir::ExprId, layout::TargetDataLayout, AdtId, BlockId, CallableDefId,
-    ConstParamId, DefWithBodyId, EnumVariantId, FunctionId, GeneralConstId, GenericDefId, ImplId,
-    LifetimeParamId, LocalFieldId, StaticId, TraitId, TypeAliasId, TypeOrConstParamId, VariantId,
+    AdtId, BlockId, CallableDefId, ConstParamId, DefWithBodyId, EnumVariantId, FunctionId,
+    GeneralConstId, GenericDefId, ImplId, LifetimeParamId, LocalFieldId, StaticId, TraitId,
+    TypeAliasId, TypeOrConstParamId, VariantId, db::DefDatabase, hir::ExprId,
+    layout::TargetDataLayout,
 };
 use hir_expand::name::Name;
 use la_arena::ArenaMap;
@@ -14,6 +15,7 @@ use smallvec::SmallVec;
 use triomphe::Arc;
 
 use crate::{
+    ImplTraitId, InferenceResult, TraitEnvironment, TyDefId, ValueTyDefId,
     consteval::ConstEvalError,
     dyn_compatibility::DynCompatibilityViolation,
     layout::{Layout, LayoutError},
@@ -21,7 +23,6 @@ use crate::{
     method_resolution::{InherentImpls, TraitImpls, TyFingerprint},
     mir::{BorrowckResult, MirBody, MirLowerError},
     next_solver::{Const, EarlyBinder, GenericArgs, PolyFnSig, TraitRef, Ty, VariancesOf},
-    ImplTraitId, InferenceResult, TraitEnvironment, TyDefId, ValueTyDefId,
 };
 
 #[query_group::query_group]

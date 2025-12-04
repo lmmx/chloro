@@ -3,7 +3,7 @@ use ide_db::{
     defs::{Definition, NameClass, NameRefClass},
     rename::RenameDefinition,
 };
-use syntax::{ast, AstNode};
+use syntax::{AstNode, ast};
 
 use crate::{AssistContext, Assists};
 

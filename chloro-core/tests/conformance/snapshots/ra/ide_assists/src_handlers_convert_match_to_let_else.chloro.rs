@@ -1,13 +1,13 @@
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{self, edit::AstNodeEdit, syntax_factory::SyntaxFactory, HasName, Name},
-    syntax_editor::SyntaxEditor,
     AstNode, SyntaxNode,
+    ast::{self, HasName, Name, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
+    syntax_editor::SyntaxEditor,
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistId,
+    assist_context::{AssistContext, Assists},
 };
 
 pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

@@ -5,25 +5,25 @@ mod format_like;
 use base_db::SourceDatabase;
 use hir::{ItemInNs, Semantics};
 use ide_db::{
+    RootDatabase, SnippetCap,
     documentation::{Documentation, HasDocs},
     imports::insert_use::ImportScope,
     text_edit::TextEdit,
     ty_filter::TryEnum,
-    RootDatabase, SnippetCap,
 };
 use stdx::never;
 use syntax::{
-    ast::{self, AstNode, AstToken},
-    match_ast,
     SyntaxKind::{EXPR_STMT, STMT_LIST},
-    TextRange, TextSize, T,
+    TextRange, TextSize,
+    ast::{self, AstNode, AstToken},
+    match_ast, T,
 };
 
 use crate::{
+    CompletionItem, CompletionItemKind, CompletionRelevance, Completions, SnippetScope,
     completions::postfix::format_like::add_format_like_completions,
     context::{BreakableKind, CompletionContext, DotAccess, DotAccessKind},
     item::{Builder, CompletionRelevancePostfixMatch},
-    CompletionItem, CompletionItemKind, CompletionRelevance, Completions, SnippetScope,
 };
 
 pub(crate) fn complete_postfix(
@@ -471,8 +471,8 @@ pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
 mod tests {
     use expect_test::expect;
     use crate::{
-        tests::{check, check_edit, check_edit_with_config, TEST_CONFIG},
         CompletionConfig, Snippet,
+        tests::{check, check_edit, check_edit_with_config, TEST_CONFIG},
     };
     #[test]
     fn postfix_completion_works_for_trivial_path_expression() {

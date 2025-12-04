@@ -17,18 +17,19 @@ use either::Either;
 use hir::{DefWithBody, EditionedFileId, InFile, InRealFile, MacroKind, Name, Semantics};
 use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
 use syntax::{
-    ast::{self, IsString},
     AstNode, AstToken, NodeOrToken,
     SyntaxKind::*,
-    SyntaxNode, SyntaxToken, TextRange, WalkEvent, T,
+    SyntaxNode, SyntaxToken, TextRange, WalkEvent,
+    ast::{self, IsString},
+    T,
 };
 
 use crate::{
+    FileId, HlMod, HlOperator, HlPunct, HlTag,
     syntax_highlighting::{
         escape::{highlight_escape_byte, highlight_escape_char, highlight_escape_string},
         format::highlight_format_string, highlights::Highlights, tags::Highlight,
     },
-    FileId, HlMod, HlOperator, HlPunct, HlTag,
 };
 
 pub(crate) use html::highlight_as_html;

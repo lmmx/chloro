@@ -8,9 +8,9 @@ use ide::{
     TokenStaticData, VendoredLibrariesConfig,
 };
 use ide_db::LineIndexDatabase;
-use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
+use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use rustc_hash::{FxHashMap, FxHashSet};
-use scip::types::{self as scip_types, SymbolInformation};
+use scip::types::{SymbolInformation, self as scip_types};
 use tracing::error;
 use vfs::FileId;
 

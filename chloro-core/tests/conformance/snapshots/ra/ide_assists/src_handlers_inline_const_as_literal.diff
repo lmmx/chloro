@@ -9,7 +9,8 @@ Rustfmt size:  19179 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  use hir::HasCrate;
- use syntax::{ast, AstNode};
+-use syntax::{ast, AstNode};
++use syntax::{AstNode, ast};
  
  use crate::{AssistContext, AssistId, Assists};
  

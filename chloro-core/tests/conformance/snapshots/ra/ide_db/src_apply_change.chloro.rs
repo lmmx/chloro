@@ -6,8 +6,8 @@ use rustc_hash::FxHashSet;
 use salsa::{Database as _, Durability, Setter as _};
 
 use crate::{
-    symbol_index::{LibraryRoots, LocalRoots},
     ChangeWithProcMacros, RootDatabase,
+    symbol_index::{LibraryRoots, LocalRoots},
 };
 
 impl RootDatabase {

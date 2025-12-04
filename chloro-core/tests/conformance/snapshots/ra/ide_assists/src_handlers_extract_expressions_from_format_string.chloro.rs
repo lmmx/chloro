@@ -1,15 +1,16 @@
 use ide_db::{
     assists::{AssistId, AssistKind},
-    syntax_helpers::format_string_exprs::{parse_format_exprs, Arg},
+    syntax_helpers::format_string_exprs::{Arg, parse_format_exprs},
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, make, syntax_factory::SyntaxFactory, TokenTree},
     AstNode, AstToken, NodeOrToken,
     SyntaxKind::WHITESPACE,
-    SyntaxToken, T,
+    SyntaxToken,
+    ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
+    T,
 };
-use crate::{utils, AssistContext, Assists};
+use crate::{AssistContext, Assists, utils};
 
 // Assist: extract_expressions_from_format_string
 

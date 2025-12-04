@@ -1,18 +1,18 @@
 use hir::{HasSource, InFile, InRealFile, Semantics};
 use ide_db::{
-    defs::Definition, helpers::visit_file_defs, FileId, FilePosition, FileRange, FxIndexSet,
-    MiniCore, RootDatabase,
+    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase, defs::Definition,
+    helpers::visit_file_defs,
 };
 use itertools::Itertools;
-use syntax::{ast::HasName, AstNode, TextRange};
+use syntax::{AstNode, TextRange, ast::HasName};
 
 use crate::{
-    annotations::fn_references::find_all_methods,
-    goto_implementation::{goto_implementation, GotoImplementationConfig},
-    navigation_target,
-    references::{find_all_refs, FindAllRefsConfig},
-    runnables::{runnables, Runnable},
     NavigationTarget, RunnableKind,
+    annotations::fn_references::find_all_methods,
+    goto_implementation::{GotoImplementationConfig, goto_implementation},
+    navigation_target,
+    references::{FindAllRefsConfig, find_all_refs},
+    runnables::{Runnable, runnables},
 };
 
 mod fn_references;
@@ -243,9 +243,9 @@ fn should_skip_runnable(kind: &RunnableKind, binary_target: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use ide_db::MiniCore;
-    use crate::{fixture, Annotation, AnnotationConfig};
+    use crate::{Annotation, AnnotationConfig, fixture};
     use super::AnnotationLocation;
     const DEFAULT_CONFIG: AnnotationConfig<'_> = AnnotationConfig {
         binary_target: true,

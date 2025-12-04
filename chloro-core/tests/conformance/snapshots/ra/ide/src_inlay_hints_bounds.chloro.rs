@@ -2,7 +2,7 @@
 //!
 //! Currently this renders the implied `Sized` bound.
 
-use ide_db::{famous_defs::FamousDefs, FileRange};
+use ide_db::{FileRange, famous_defs::FamousDefs};
 
 use syntax::ast::{self, AstNode, HasTypeBounds};
 

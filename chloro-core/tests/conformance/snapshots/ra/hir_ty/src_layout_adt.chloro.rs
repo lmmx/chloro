@@ -3,8 +3,8 @@
 use std::{cmp, ops::Bound};
 
 use hir_def::{
-    signatures::{StructFlags, VariantFields},
     AdtId, VariantId,
+    signatures::{StructFlags, VariantFields},
 };
 use intern::sym;
 use rustc_abi::{Integer, ReprOptions, TargetDataLayout};
@@ -13,10 +13,10 @@ use smallvec::SmallVec;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase,
-    layout::{field_ty, Layout, LayoutCx, LayoutError},
-    next_solver::GenericArgs,
     TraitEnvironment,
+    db::HirDatabase,
+    layout::{Layout, LayoutCx, LayoutError, field_ty},
+    next_solver::GenericArgs,
 };
 
 pub fn layout_of_adt_query<'db>(

@@ -8,6 +8,11 @@ Rustfmt size:  11096 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use hir::HirDisplay;
+ 
+ use crate::{
  fn check_expected_type_and_name(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
      let (db, pos) = position(ra_fixture);
      let config = TEST_CONFIG;

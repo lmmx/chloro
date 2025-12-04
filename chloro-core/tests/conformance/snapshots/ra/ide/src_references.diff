@@ -2,43 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   66214 bytes
+Chloro size:   66218 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use hir::{PathResolution, Semantics};
- use ide_db::{
--    FileId, MiniCore, RootDatabase,
-     defs::{Definition, NameClass, NameRefClass},
-     helpers::pick_best_token,
-     ra_fixture::UpmapFromRaFixture,
-     search::{ReferenceCategory, SearchScope, UsageSearchResult},
-+    FileId, MiniCore, RootDatabase,
- };
- use itertools::Itertools;
- use macros::UpmapFromRaFixture;
- use span::Edition;
- use syntax::AstToken;
  use syntax::{
--    AstNode,
--    SyntaxKind::*,
+     AstNode,
+     SyntaxKind::*,
 -    SyntaxNode, T, TextRange, TextSize,
++    SyntaxNode, TextRange, TextSize,
      ast::{self, HasName},
 -    match_ast,
-+    match_ast, AstNode,
-+    SyntaxKind::*,
-+    SyntaxNode, TextRange, TextSize, T,
++    match_ast, T,
  };
  
  use crate::{
--    Analysis, FilePosition, HighlightedRange, NavigationTarget, TryToNav, highlight_related,
-+    highlight_related, Analysis, FilePosition, HighlightedRange, NavigationTarget, TryToNav,
- };
- 
- /// Result of a reference search operation.
  }
  
  // Feature: Find All References
@@ -107,18 +87,12 @@ Rustfmt size:  66636 bytes
      }
  }
  
- 
- #[cfg(test)]
- mod tests {
--    use expect_test::{Expect, expect};
-+    use expect_test::{expect, Expect};
      use hir::EditionedFileId;
      use ide_db::{FileId, MiniCore, RootDatabase};
      use stdx::format_to;
 -
--    use crate::{SearchScope, fixture, references::FindAllRefsConfig};
+     use crate::{SearchScope, fixture, references::FindAllRefsConfig};
 -
-+    use crate::{fixture, references::FindAllRefsConfig, SearchScope};
      #[test]
      fn exclude_tests() {
          check(

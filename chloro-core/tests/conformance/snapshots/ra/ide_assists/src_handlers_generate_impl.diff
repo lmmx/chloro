@@ -8,19 +8,6 @@ Rustfmt size:  21468 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{
--    ast::{self, AstNode, HasGenericParams, HasName, edit_in_place::Indent, make},
-+    ast::{self, edit_in_place::Indent, make, AstNode, HasGenericParams, HasName},
-     syntax_editor::{Position, SyntaxEditor},
- };
- 
- use crate::{
--    AssistContext, AssistId, Assists,
-     utils::{self, DefaultMethods, IgnoreAssocItems},
-+    AssistContext, AssistId, Assists,
- };
- 
- fn insert_impl(editor: &mut SyntaxEditor, impl_: &ast::Impl, nominal: &impl Indent) {
      );
  }
  

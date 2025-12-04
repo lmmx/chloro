@@ -8,28 +8,6 @@ Rustfmt size:  37899 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- 
- use cargo_metadata::PackageId;
--use crossbeam_channel::{Receiver, Sender, unbounded};
-+use crossbeam_channel::{unbounded, Receiver, Sender};
- use hir::ChangeWithProcMacros;
- use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
- use ide_db::{
--    MiniCore,
-     base_db::{Crate, ProcMacroPaths, SourceDatabase},
-+    MiniCore,
- };
- use itertools::Itertools;
- use load_cargo::SourceRootConfig;
- use project_model::{ManifestPath, ProjectWorkspace, ProjectWorkspaceKind, WorkspaceBuildScripts};
- use rustc_hash::{FxHashMap, FxHashSet};
- use stdx::thread;
--use tracing::{Level, span, trace};
-+use tracing::{span, trace, Level};
- use triomphe::Arc;
- use vfs::{AbsPathBuf, AnchoredPathBuf, ChangeKind, Vfs, VfsPath};
- 
      pub(crate) build_scripts: Vec<anyhow::Result<WorkspaceBuildScripts>>,
  }
  

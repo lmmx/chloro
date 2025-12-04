@@ -1,4 +1,4 @@
-use syntax::{ast, AstNode, SyntaxKind, TextRange, T};
+use syntax::{AstNode, SyntaxKind, TextRange, ast, T};
 
 use crate::{AssistContext, AssistId, Assists};
 

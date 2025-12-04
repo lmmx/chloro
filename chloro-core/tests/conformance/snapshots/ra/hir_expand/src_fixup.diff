@@ -2,12 +2,22 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   26992 bytes
+Chloro size:   26996 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ };
+ use stdx::never;
+ use syntax::{
++    SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
+     ast::{self, AstNode, HasLoopBody},
+-    match_ast, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
++    match_ast,
+ };
+ use syntax_bridge::DocCommentDesugarMode;
+ use triomphe::Arc;
      pub(crate) const NONE: Self = SyntaxFixupUndoInfo { original: None };
  }
  
@@ -107,6 +117,12 @@ Rustfmt size:  28368 bytes
                  for &subtree_idx in &subtrees_stack {
                      let tt::TokenTree::Subtree(subtree) = &mut tt[subtree_idx] else {
                          unreachable!("non-subtree on subtrees stack");
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{expect, Expect};
++    use expect_test::{Expect, expect};
+     use span::{Edition, EditionedFileId, FileId};
      use syntax::TextRange;
      use syntax_bridge::DocCommentDesugarMode;
      use triomphe::Arc;

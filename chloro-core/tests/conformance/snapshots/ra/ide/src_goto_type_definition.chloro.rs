@@ -1,6 +1,6 @@
 use hir::GenericParam;
-use ide_db::{defs::Definition, helpers::pick_best_token, RootDatabase};
-use syntax::{ast, match_ast, AstNode, SyntaxKind::*, SyntaxToken, T};
+use ide_db::{RootDatabase, defs::Definition, helpers::pick_best_token};
+use syntax::{AstNode, SyntaxKind::*, SyntaxToken, ast, match_ast, T};
 
 use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
 

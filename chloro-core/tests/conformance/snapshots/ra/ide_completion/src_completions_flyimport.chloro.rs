@@ -6,16 +6,16 @@ use ide_db::imports::{
     insert_use::ImportScope,
 };
 use itertools::Itertools;
-use syntax::{ast, AstNode, SyntaxNode};
+use syntax::{AstNode, SyntaxNode, ast};
 
 use crate::{
+    Completions,
     config::AutoImportExclusionType,
     context::{
         CompletionContext, DotAccess, PathCompletionCtx, PathKind, PatternContext, Qualified,
         TypeLocation,
     },
-    render::{render_resolution_with_import, render_resolution_with_import_pat, RenderContext},
-    Completions,
+    render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
 };
 
 pub(crate) fn import_on_the_fly_path(

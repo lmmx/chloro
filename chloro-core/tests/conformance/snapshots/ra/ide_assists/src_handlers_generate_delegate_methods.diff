@@ -9,23 +9,17 @@ Rustfmt size:  17091 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  use hir::{HasCrate, HasVisibility};
--use ide_db::{FxHashSet, path_transform::PathTransform};
-+use ide_db::{path_transform::PathTransform, FxHashSet};
+ use ide_db::{FxHashSet, path_transform::PathTransform};
  use syntax::{
      ast::{
--        self, AstNode, HasGenericParams, HasName, HasVisibility as _,
+         self, AstNode, HasGenericParams, HasName, HasVisibility as _,
 -        edit::{AstNodeEdit, IndentLevel},
 -        make,
-+        self, edit::{AstNodeEdit, IndentLevel}, make, AstNode, HasGenericParams, HasName,
-+        HasVisibility as _,
++        edit::{AstNodeEdit, IndentLevel}, make,
      },
      syntax_editor::Position,
  };
- 
- use crate::{
--    AssistContext, AssistId, AssistKind, Assists, GroupLabel,
      utils::{convert_param_list_to_arg_list, find_struct_impl},
-+    AssistContext, AssistId, AssistKind, Assists, GroupLabel,
  };
  
 -// Assist: generate_delegate_methods

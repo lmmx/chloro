@@ -4,19 +4,19 @@ use std::{cell::Cell, cmp::Ordering, iter};
 
 use base_db::{Crate, CrateOrigin, LangCrateOrigin};
 use hir_expand::{
+    Lookup,
     mod_path::{ModPath, PathKind},
     name::{AsName, Name},
-    Lookup,
 };
 use intern::sym;
 use rustc_hash::FxHashSet;
 
 use crate::{
+    FindPathConfig, ModuleDefId, ModuleId,
     db::DefDatabase,
     item_scope::ItemInNs,
     nameres::DefMap,
     visibility::{Visibility, VisibilityExplicitness},
-    FindPathConfig, ModuleDefId, ModuleId,
 };
 
 /// Find a path that can be used to refer to a certain item. This can depend on
@@ -663,7 +663,7 @@ fn find_local_import_locations(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use hir_expand::db::ExpandDatabase;
     use itertools::Itertools;
     use span::Edition;

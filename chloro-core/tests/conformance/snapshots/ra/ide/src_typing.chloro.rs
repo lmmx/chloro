@@ -18,13 +18,13 @@ use std::iter;
 
 use either::Either;
 use hir::EditionedFileId;
-use ide_db::{base_db::RootQueryDb, FilePosition, RootDatabase};
+use ide_db::{FilePosition, RootDatabase, base_db::RootQueryDb};
 use span::Edition;
 
 use syntax::{
-    algo::{ancestors_at_offset, find_node_at_offset},
-    ast::{self, edit::IndentLevel, AstToken},
     AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
+    algo::{ancestors_at_offset, find_node_at_offset},
+    ast::{self, AstToken, edit::IndentLevel},
 };
 
 use ide_db::text_edit::TextEdit;

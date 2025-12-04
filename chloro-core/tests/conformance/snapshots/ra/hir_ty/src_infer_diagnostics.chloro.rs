@@ -13,10 +13,10 @@ use hir_def::{hir::ExprOrPatId, resolver::Resolver};
 use la_arena::{Idx, RawIdx};
 
 use crate::{
+    InferenceDiagnostic, InferenceTyDiagnosticSource, TyLoweringDiagnostic,
     db::HirDatabase,
     lower::path::{PathDiagnosticCallback, PathLoweringContext},
     lower::{LifetimeElisionKind, TyLoweringContext},
-    InferenceDiagnostic, InferenceTyDiagnosticSource, TyLoweringDiagnostic,
 };
 
 #[derive(Debug, Default, Clone)]

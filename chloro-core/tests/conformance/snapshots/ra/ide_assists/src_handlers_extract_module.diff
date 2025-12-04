@@ -2,41 +2,24 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53252 bytes
+Chloro size:   53256 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::{iter::once, ops::RangeInclusive};
- 
- use hir::{HasSource, ModuleSource};
- use ide_db::{
--    FileId, FxHashMap, FxHashSet,
-     assists::AssistId,
-     defs::{Definition, NameClass, NameRefClass},
-     search::{FileReference, SearchScope},
-+    FileId, FxHashMap, FxHashSet,
- };
- use itertools::Itertools;
- use smallvec::SmallVec;
- use syntax::{
--    AstNode,
-+    algo::find_node_at_range,
-+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, HasVisibility},
-+    match_ast, ted, AstNode,
      SyntaxKind::{self, WHITESPACE},
      SyntaxNode, TextRange, TextSize,
--    algo::find_node_at_range,
+     algo::find_node_at_range,
 -    ast::{
 -        self, HasVisibility,
 -        edit::{AstNodeEdit, IndentLevel},
 -        make,
 -    },
--    match_ast, ted,
++    ast::{self, HasVisibility, edit::{AstNodeEdit, IndentLevel}, make},
+     match_ast, ted,
  };
  
- use crate::{AssistContext, Assists};
  
  use super::remove_unused_param::range_to_remove;
  

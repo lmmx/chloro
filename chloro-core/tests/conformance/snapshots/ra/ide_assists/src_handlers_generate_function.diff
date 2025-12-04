@@ -2,44 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74151 bytes
+Chloro size:   74155 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::{
-     Adt, AsAssocItem, HasSource, HirDisplay, Module, PathResolution, Semantics, StructKind, Type,
-     TypeInfo,
- };
- use ide_db::{
--    FileId, FxHashMap, FxHashSet, RootDatabase, SnippetCap,
-     assists::ExprFillDefaultMode,
-     defs::{Definition, NameRefClass},
-     famous_defs::FamousDefs,
-     helpers::is_editable_crate,
-     path_transform::PathTransform,
-     source_change::SourceChangeBuilder,
-+    FileId, FxHashMap, FxHashSet, RootDatabase, SnippetCap,
- };
  use itertools::Itertools;
  use stdx::to_lower_snake_case;
  use syntax::{
 -    Edition, SyntaxKind, SyntaxNode, T, TextRange,
++    Edition, SyntaxKind, SyntaxNode, TextRange,
      ast::{
--        self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
--        HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
-+        self, edit::IndentLevel, edit_in_place::Indent, make, AstNode, BlockExpr, CallExpr,
-+        HasArgList, HasGenericParams, HasModuleItem, HasTypeBounds,
+         self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
+         HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
      },
 -    ted,
-+    ted, Edition, SyntaxKind, SyntaxNode, TextRange, T,
++    ted, T,
  };
  
  use crate::{
--    AssistContext, AssistId, Assists,
      utils::{convert_reference_type, find_struct_impl},
-+    AssistContext, AssistId, Assists,
  };
  
 -// Assist: generate_function

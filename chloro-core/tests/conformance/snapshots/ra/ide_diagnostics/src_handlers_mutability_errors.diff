@@ -12,10 +12,9 @@ Rustfmt size:  28412 bytes
  use ide_db::source_change::SourceChange;
  use ide_db::text_edit::TextEdit;
 -use syntax::{AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, T, ast};
-+use syntax::{ast, AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, T};
++use syntax::{AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, ast, T};
  
--use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
-+use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
  
 -// Diagnostic: need-mut
 -//

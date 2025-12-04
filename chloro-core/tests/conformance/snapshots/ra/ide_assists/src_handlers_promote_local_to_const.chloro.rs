@@ -2,8 +2,8 @@ use hir::HirDisplay;
 use ide_db::{assists::AssistId, defs::Definition};
 use stdx::to_upper_snake_case;
 use syntax::{
-    ast::{self, syntax_factory::SyntaxFactory, HasName},
     AstNode,
+    ast::{self, HasName, syntax_factory::SyntaxFactory},
 };
 
 use crate::{

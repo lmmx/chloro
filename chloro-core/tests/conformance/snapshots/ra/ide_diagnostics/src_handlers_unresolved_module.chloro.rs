@@ -3,7 +3,7 @@ use ide_db::{assists::Assist, base_db::AnchoredPathBuf, source_change::FileSyste
 use itertools::Itertools;
 use syntax::AstNode;
 
-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
 pub(crate) fn unresolved_module(
     ctx: &DiagnosticsContext<'_>,

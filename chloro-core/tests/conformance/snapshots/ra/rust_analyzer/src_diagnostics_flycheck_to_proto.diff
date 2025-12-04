@@ -45,8 +45,7 @@ Rustfmt size:  77855 bytes
 -
      use super::*;
 -
--    use expect_test::{ExpectFile, expect_file};
-+    use expect_test::{expect_file, ExpectFile};
+     use expect_test::{ExpectFile, expect_file};
      use lsp_types::ClientCapabilities;
      use paths::Utf8Path;
 -

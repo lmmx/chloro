@@ -13,19 +13,6 @@ Rustfmt size:  15570 bytes
  use std::{
      fmt::{self, Debug},
      panic, thread,
- };
- 
- use ide_db::base_db::{
--    DbPanicContext,
-     salsa::{self, Cancelled},
-+    DbPanicContext,
- };
- use lsp_server::{ExtractError, Response, ResponseError};
--use serde::{Serialize, de::DeserializeOwned};
-+use serde::{de::DeserializeOwned, Serialize};
- use stdx::thread::ThreadIntent;
- 
- use crate::{
                  .downcast_ref::<String>()
                  .map(String::as_str)
                  .or_else(|| panic.downcast_ref::<&str>().copied());

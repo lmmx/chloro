@@ -1,8 +1,8 @@
 use hir::{EditionedFileId, FileRange, HasCrate, HasSource, Semantics};
-use ide_db::{assists::Assist, source_change::SourceChange, text_edit::TextEdit, RootDatabase};
-use syntax::{ast::HasVisibility, AstNode, TextRange, TextSize};
+use ide_db::{RootDatabase, assists::Assist, source_change::SourceChange, text_edit::TextEdit};
+use syntax::{AstNode, TextRange, TextSize, ast::HasVisibility};
 
-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
 pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField) -> Diagnostic {
     // FIXME: add quickfix

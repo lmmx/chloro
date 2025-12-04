@@ -8,36 +8,6 @@ Rustfmt size:  58275 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use base_db::{RootQueryDb, SourceDatabase};
- use either::Either;
- use hir::{
--    Adt, AsAssocItem, DefWithBody, EditionedFileId, FileRange, FileRangeWrapper, HasAttrs,
-+    sym, Adt, AsAssocItem, DefWithBody, EditionedFileId, FileRange, FileRangeWrapper, HasAttrs,
-     HasContainer, HasSource, InFile, InFileWrapper, InRealFile, InlineAsmOperand, ItemContainer,
--    ModuleSource, PathResolution, Semantics, Visibility, sym,
-+    ModuleSource, PathResolution, Semantics, Visibility,
- };
- use memchr::memmem::Finder;
- use parser::SyntaxKind;
- use rustc_hash::{FxHashMap, FxHashSet};
- use salsa::Database;
- use syntax::{
--    AstNode, AstToken, SmolStr, SyntaxElement, SyntaxNode, TextRange, TextSize, ToSmolStr,
-     ast::{self, HasName, Rename},
--    match_ast,
-+    match_ast, AstNode, AstToken, SmolStr, SyntaxElement, SyntaxNode, TextRange, TextSize,
-+    ToSmolStr,
- };
- use triomphe::Arc;
- 
- use crate::{
--    RootDatabase,
-     defs::{Definition, NameClass, NameRefClass},
-     traits::{as_trait_assoc_def, convert_to_def_in_trait},
-+    RootDatabase,
- };
- 
- #[derive(Debug, Default, Clone)]
  
  impl IntoIterator for UsageSearchResult {
      type Item = (EditionedFileId, Vec<FileReference>);

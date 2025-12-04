@@ -11,7 +11,8 @@ Rustfmt size:  51735 bytes
  use std::iter::{self, Peekable};
  
  use either::Either;
- use hir::{sym, Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics};
+-use hir::{sym, Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics};
++use hir::{Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics, sym};
 +use ide_db::RootDatabase;
  use ide_db::assists::ExprFillDefaultMode;
  use ide_db::syntax_helpers::suggest_name;
@@ -21,10 +22,12 @@ Rustfmt size:  51735 bytes
 +use syntax::ToSmolStr;
  use syntax::ast::edit::{AstNodeEdit, IndentLevel};
  use syntax::ast::syntax_factory::SyntaxFactory;
- use syntax::ast::{self, make, AstNode, MatchArmList, MatchExpr, Pat};
+-use syntax::ast::{self, make, AstNode, MatchArmList, MatchExpr, Pat};
 -use syntax::ToSmolStr;
++use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
  
- use crate::{utils, AssistContext, AssistId, Assists};
+-use crate::{utils, AssistContext, AssistId, Assists};
++use crate::{AssistContext, AssistId, Assists, utils};
  
 -// Assist: add_missing_match_arms
 -//

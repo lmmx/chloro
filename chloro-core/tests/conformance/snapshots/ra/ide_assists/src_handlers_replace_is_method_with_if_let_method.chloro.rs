@@ -1,8 +1,8 @@
 use either::Either;
 use ide_db::syntax_helpers::suggest_name;
-use syntax::ast::{self, syntax_factory::SyntaxFactory, AstNode};
+use syntax::ast::{self, AstNode, syntax_factory::SyntaxFactory};
 
-use crate::{utils::cover_let_chain, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, utils::cover_let_chain};
 
 pub(crate) fn replace_is_method_with_if_let_method(
     acc: &mut Assists,

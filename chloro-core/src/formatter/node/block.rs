@@ -1,7 +1,7 @@
+use crate::formatter::write_indent;
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode};
 
 use super::expr::{FormatResult, try_format_expr};
-use crate::formatter::write_indent;
 
 pub fn format_block(node: &SyntaxNode, buf: &mut String, indent: usize) {
     buf.push_str("{\n");
@@ -22,20 +22,17 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
     for (idx, child) in children.iter().enumerate() {
         match child {
             NodeOrToken::Node(n) => {
-                let is_last_node = Some(idx) == last_node_idx;
-
                 // Check for blank line before this node
+                let is_last_node = Some(idx) == last_node_idx;
                 if prev_was_item && should_have_blank_line_before(&children, idx) {
                     buf.push('\n');
                 }
-
                 match n.kind() {
                     SyntaxKind::WHITESPACE => continue,
 
                     _ => {
-                        write_indent(buf, indent);
-
                         // Try to format the expression; fall back to verbatim if unsupported
+                        write_indent(buf, indent);
                         match try_format_expr(n, indent) {
                             FormatResult::Formatted(s) => {
                                 buf.push_str(&s);
@@ -49,7 +46,6 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 buf.push('\n');
                             }
                         }
-
                         prev_was_item = true;
                         prev_was_comment = false;
                     }

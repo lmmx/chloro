@@ -3,10 +3,12 @@
 use std::iter;
 
 use hir::{ExpandResult, InFile, Semantics, Type, TypeInfo, Variant};
-use ide_db::{active_parameter::ActiveParameter, RootDatabase};
+use ide_db::{RootDatabase, active_parameter::ActiveParameter};
 use itertools::Either;
 use stdx::always;
 use syntax::{
+    AstNode, AstToken, Direction, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, SyntaxToken,
+    TextRange, TextSize,
     algo::{
         self, ancestors_at_offset, find_node_at_offset, non_trivia_sibling,
         previous_non_trivia_token,
@@ -15,8 +17,7 @@ use syntax::{
         self, AttrKind, HasArgList, HasGenericArgs, HasGenericParams, HasLoopBody, HasName,
         NameOrNameRef,
     },
-    match_ast, AstNode, AstToken, Direction, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode,
-    SyntaxToken, TextRange, TextSize, T,
+    match_ast, T,
 };
 
 use crate::{

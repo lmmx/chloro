@@ -6,7 +6,7 @@ use std::mem;
 
 use cargo_metadata::PackageId;
 use ide::FileId;
-use ide_db::{base_db::DbPanicContext, FxHashMap};
+use ide_db::{FxHashMap, base_db::DbPanicContext};
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 use smallvec::SmallVec;

@@ -31,15 +31,15 @@ use std::{cell::OnceCell, convert::identity, iter, ops::Index};
 use base_db::Crate;
 use either::Either;
 use hir_def::{
-    expr_store::{path::Path, Body, ExpressionStore, HygieneId},
+    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
+    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
+    expr_store::{Body, ExpressionStore, HygieneId, path::Path},
     hir::{BindingAnnotation, BindingId, ExprId, ExprOrPatId, LabelId, PatId},
-    lang_item::{lang_item, LangItem, LangItemTarget},
+    lang_item::{LangItem, LangItemTarget, lang_item},
     layout::Integer,
     resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
     signatures::{ConstSignature, StaticSignature},
     type_ref::{ConstRef, LifetimeRefId, TypeRefId},
-    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
-    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
 };
 use hir_expand::{mod_path::ModPath, name::Name};
 use indexmap::IndexSet;
@@ -48,13 +48,14 @@ use la_arena::ArenaMap;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
     AliasTyKind, TypeFoldable,
+    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
 };
 use stdx::never;
 use triomphe::Arc;
 
 use crate::{
+    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
     db::{HirDatabase, InternedClosureId, InternedOpaqueTyId},
     infer::{
         coerce::{CoerceMany, DynamicCoerceMany},
@@ -62,17 +63,16 @@ use crate::{
         expr::ExprIsRead,
     },
     lower::{
-        diagnostics::TyLoweringDiagnostic, ImplTraitIdx, ImplTraitLoweringMode,
-        LifetimeElisionKind,
+        ImplTraitIdx, ImplTraitLoweringMode, LifetimeElisionKind,
+        diagnostics::TyLoweringDiagnostic,
     },
     mir::MirSpan,
     next_solver::{
-        abi::Safety, infer::traits::ObligationCause, AliasTy, Const, DbInterner, ErrorGuaranteed,
-        GenericArg, GenericArgs, Region, Ty, TyKind, Tys,
+        AliasTy, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Region, Ty, TyKind,
+        Tys, abi::Safety, infer::traits::ObligationCause,
     },
     traits::FnTrait,
     utils::TargetFeatureIsSafeInTarget,
-    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
 };
 
 pub use coerce::could_coerce;

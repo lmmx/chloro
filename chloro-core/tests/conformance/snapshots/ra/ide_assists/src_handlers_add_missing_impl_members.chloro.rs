@@ -1,17 +1,17 @@
 use hir::HasSource;
 use syntax::{
-    ast::{self, make, AstNode},
-    syntax_editor::{Position, SyntaxEditor},
     Edition,
+    ast::{self, AstNode, make},
+    syntax_editor::{Position, SyntaxEditor},
 };
 
 use crate::{
+    AssistId,
     assist_context::{AssistContext, Assists},
     utils::{
-        add_trait_assoc_items_to_impl, filter_assoc_items, gen_trait_fn_body, DefaultMethods,
-        IgnoreAssocItems,
+        DefaultMethods, IgnoreAssocItems, add_trait_assoc_items_to_impl, filter_assoc_items,
+        gen_trait_fn_body,
     },
-    AssistId,
 };
 
 pub(crate) fn add_missing_impl_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

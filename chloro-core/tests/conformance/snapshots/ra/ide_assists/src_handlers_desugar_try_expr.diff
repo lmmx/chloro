@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8787 bytes
-Chloro size:   8440 bytes
+Chloro size:   8444 bytes
 Rustfmt size:  8787 bytes
 
 ✗ Outputs DIFFER
@@ -11,14 +11,16 @@ Rustfmt size:  8787 bytes
      ty_filter::TryEnum,
  };
  use syntax::{
-+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory},
-     AstNode, T,
+-    AstNode, T,
 -    ast::{
 -        self,
 -        edit::{AstNodeEdit, IndentLevel},
 -        make,
 -        syntax_factory::SyntaxFactory,
 -    },
++    AstNode,
++    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory},
++    T,
  };
  
  use crate::assist_context::{AssistContext, Assists};

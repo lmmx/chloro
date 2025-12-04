@@ -9,18 +9,18 @@ use hir::{
     Semantics, Trait,
 };
 use ide_db::{
+    FilePosition, FxIndexMap,
     active_parameter::{callable_for_arg_list, generic_def_for_node},
     documentation::{Documentation, HasDocs},
-    FilePosition, FxIndexMap,
 };
 use itertools::Itertools;
 use span::Edition;
 use stdx::format_to;
 use syntax::{
-    algo,
+    AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken, TextRange,
+    TextSize, ToSmolStr, algo,
     ast::{self, AstChildren},
-    match_ast, AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken,
-    TextRange, TextSize, ToSmolStr, T,
+    match_ast, T,
 };
 
 use crate::RootDatabase;
@@ -734,7 +734,7 @@ fn signature_help_for_tuple_pat_ish<'db>(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use ide_db::FilePosition;
     use stdx::format_to;
     use test_fixture::ChangeFixture;

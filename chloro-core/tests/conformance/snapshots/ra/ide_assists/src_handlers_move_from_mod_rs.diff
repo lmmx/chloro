@@ -8,6 +8,12 @@ Rustfmt size:  2883 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use ide_db::{assists::AssistId, base_db::AnchoredPathBuf};
+-use syntax::{ast, AstNode, ToSmolStr};
++use syntax::{AstNode, ToSmolStr, ast};
+ 
+ use crate::{
+     assist_context::{AssistContext, Assists},
      utils::trimmed_text_range,
  };
  

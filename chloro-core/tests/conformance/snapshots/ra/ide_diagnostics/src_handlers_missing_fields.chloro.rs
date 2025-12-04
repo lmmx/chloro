@@ -1,9 +1,11 @@
 use either::Either;
 use hir::{
+    AssocItem, FindPathConfig, HirDisplay, InFile, Type,
     db::{ExpandDatabase, HirDatabase},
-    sym, AssocItem, FindPathConfig, HirDisplay, InFile, Type,
+    sym,
 };
 use ide_db::{
+    FxHashMap,
     assists::{Assist, ExprFillDefaultMode},
     famous_defs::FamousDefs,
     imports::import_assets::item_for_path_search,
@@ -11,15 +13,14 @@ use ide_db::{
     syntax_helpers::tree_diff::diff,
     text_edit::TextEdit,
     use_trivial_constructor::use_trivial_constructor,
-    FxHashMap,
 };
 use stdx::format_to;
 use syntax::{
-    ast::{self, make},
     AstNode, Edition, SyntaxNode, SyntaxNodePtr, ToSmolStr,
+    ast::{self, make},
 };
 
-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
 pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Diagnostic {
     let mut message = String::from("missing structure fields:\n");

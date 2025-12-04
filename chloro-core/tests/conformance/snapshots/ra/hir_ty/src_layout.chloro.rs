@@ -3,8 +3,8 @@
 use std::fmt;
 
 use hir_def::{
-    layout::{LayoutCalculatorError, LayoutData},
     AdtId, LocalFieldId, StructId,
+    layout::{LayoutCalculatorError, LayoutData},
 };
 use la_arena::{Idx, RawIdx};
 
@@ -14,19 +14,19 @@ use rustc_abi::{
 };
 use rustc_index::IndexVec;
 use rustc_type_ir::{
-    inherent::{IntoKind, SliceLike},
     FloatTy, IntTy, UintTy,
+    inherent::{IntoKind, SliceLike},
 };
 use triomphe::Arc;
 
 use crate::{
+    TraitEnvironment,
     consteval::try_const_usize,
     db::HirDatabase,
     next_solver::{
-        infer::{DbInternerInferExt, traits::ObligationCause}, DbInterner, GenericArgs, ParamEnv,
-        Ty, TyKind, TypingMode,
+        DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
+        infer::{DbInternerInferExt, traits::ObligationCause},
     },
-    TraitEnvironment,
 };
 
 pub(crate) use self::adt::layout_of_adt_cycle_result;

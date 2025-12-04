@@ -8,15 +8,22 @@ Rustfmt size:  7430 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use triomphe::Arc;
+ 
+ use crate::{
++    ImplTraitId,
      db::{HirDatabase, InternedOpaqueTyId},
      lower::{ImplTraitIdx, ImplTraits},
      next_solver::{
 -        infer::{traits::ObligationCause, DbInternerInferExt},
 -        obligation_ctxt::ObligationCtxt,
-+        infer::{DbInternerInferExt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
          DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
++        infer::{DbInternerInferExt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
      },
-     ImplTraitId,
+-    ImplTraitId,
+ };
+ 
+ pub(crate) fn opaque_types_defined_by(
      }
  
      // FIXME: Collect opaques from `#[define_opaque]`.

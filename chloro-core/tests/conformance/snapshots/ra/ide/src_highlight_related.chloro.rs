@@ -1,7 +1,8 @@
 use std::iter;
 
-use hir::{db, EditionedFileId, FilePosition, FileRange, HirFileId, InFile, Semantics};
+use hir::{EditionedFileId, FilePosition, FileRange, HirFileId, InFile, Semantics, db};
 use ide_db::{
+    FxHashMap, FxHashSet, RootDatabase,
     defs::{Definition, IdentClass},
     helpers::pick_best_token,
     search::{FileReference, ReferenceCategory, SearchScope},
@@ -9,16 +10,16 @@ use ide_db::{
         eq_label_lt, for_each_tail_expr, full_path_of_name_ref, is_closure_or_blk_with_modif,
         preorder_expr_with_ctx_checker,
     },
-    FxHashMap, FxHashSet, RootDatabase,
 };
 use syntax::{
-    ast::{self, HasLoopBody},
-    match_ast, AstNode,
+    AstNode,
     SyntaxKind::{self, IDENT, INT_NUMBER},
-    SyntaxToken, TextRange, WalkEvent, T,
+    SyntaxToken, TextRange, WalkEvent,
+    ast::{self, HasLoopBody},
+    match_ast, T,
 };
 
-use crate::{goto_definition, navigation_target::ToNav, NavigationTarget, TryToNav};
+use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};
 
 #[derive(PartialEq, Eq, Hash)]
 pub struct HighlightedRange {

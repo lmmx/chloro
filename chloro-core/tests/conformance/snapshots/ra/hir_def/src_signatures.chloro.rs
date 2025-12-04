@@ -5,35 +5,36 @@ use std::{cell::LazyCell, ops::Not as _};
 use bitflags::bitflags;
 use cfg::{CfgExpr, CfgOptions};
 use hir_expand::{
-    name::{AsName, Name},
     InFile, Intern, Lookup,
+    name::{AsName, Name},
 };
-use intern::{sym, Symbol};
+use intern::{Symbol, sym};
 use la_arena::{Arena, Idx};
 use rustc_abi::{IntegerType, ReprOptions};
 use syntax::{
+    NodeOrToken, SyntaxNodePtr,
     ast::{self, HasGenericParams, HasName, HasVisibility, IsString},
-    NodeOrToken, SyntaxNodePtr, T,
+    T,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
 
 use crate::{
+    ConstId, EnumId, EnumVariantId, EnumVariantLoc, ExternBlockId, FunctionId, HasModule, ImplId,
+    ItemContainerId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, UnionId, VariantId,
     attr::Attrs,
     db::DefDatabase,
     expr_store::{
+        ExpressionStore, ExpressionStoreSourceMap,
         lower::{
             ExprCollector, lower_function, lower_generic_params, lower_trait, lower_type_alias,
         },
-        ExpressionStore, ExpressionStoreSourceMap,
     },
-    hir::{generics::GenericParams, ExprId, PatId},
-    item_tree::{visibility_from_ast, FieldsShape, RawVisibility},
+    hir::{ExprId, PatId, generics::GenericParams},
+    item_tree::{FieldsShape, RawVisibility, visibility_from_ast},
     lang_item::LangItem,
     src::HasSource,
     type_ref::{TraitRef, TypeBound, TypeRefId},
-    ConstId, EnumId, EnumVariantId, EnumVariantLoc, ExternBlockId, FunctionId, HasModule, ImplId,
-    ItemContainerId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, UnionId, VariantId,
 };
 
 #[inline]

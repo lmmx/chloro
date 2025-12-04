@@ -1,10 +1,10 @@
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 use test_fixture::WithFixture;
 use crate::{
+    GenericDefId, ModuleDefId,
     expr_store::pretty::{print_function, print_struct},
     nameres::crate_def_map,
     test_db::TestDB,
-    GenericDefId, ModuleDefId,
 };
 
 use super::super::*;

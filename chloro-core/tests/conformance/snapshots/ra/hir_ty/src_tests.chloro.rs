@@ -16,33 +16,33 @@ mod traits;
 use base_db::{Crate, SourceDatabase};
 use expect_test::Expect;
 use hir_def::{
+    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
     db::DefDatabase,
     expr_store::{Body, BodySourceMap},
     hir::{ExprId, Pat, PatId},
     item_scope::ItemScope,
     nameres::DefMap,
     src::HasSource,
-    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
 };
-use hir_expand::{db::ExpandDatabase, FileRange, InFile};
+use hir_expand::{FileRange, InFile, db::ExpandDatabase};
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use stdx::format_to;
 use syntax::{
-    ast::{self, AstNode, HasName},
     SyntaxNode,
+    ast::{self, AstNode, HasName},
 };
 use test_fixture::WithFixture;
 use triomphe::Arc;
 
 use crate::{
+    InferenceResult,
     db::HirDatabase,
     display::{DisplayTarget, HirDisplay},
     infer::{Adjustment, TypeMismatch},
     next_solver::Ty,
     setup_tracing,
     test_db::TestDB,
-    InferenceResult,
 };
 
 // These tests compare the inference results for all expressions in a file

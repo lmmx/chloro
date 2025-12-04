@@ -3,7 +3,7 @@
 use rustc_ast_ir::try_visit;
 use rustc_type_ir::inherent::SliceLike;
 
-use super::{interned_vec_db, interned_vec_nolifetime_salsa, DbInterner, SolverDefId, Ty};
+use super::{DbInterner, SolverDefId, Ty, interned_vec_db, interned_vec_nolifetime_salsa};
 
 pub type OpaqueTypeKey<'db> = rustc_type_ir::OpaqueTypeKey<DbInterner<'db>>;
 

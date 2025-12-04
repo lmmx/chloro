@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23406 bytes
-Chloro size:   22521 bytes
+Chloro size:   22525 bytes
 Rustfmt size:  23406 bytes
 
 ✗ Outputs DIFFER
@@ -11,15 +11,14 @@ Rustfmt size:  23406 bytes
  };
  use stdx::never;
  use syntax::{
-+    ast::{self, make, Use, UseTree, VisibilityKind},
-     AstNode, Direction, SyntaxNode, SyntaxToken, T,
--    ast::{self, Use, UseTree, VisibilityKind, make},
+-    AstNode, Direction, SyntaxNode, SyntaxToken, T,
++    AstNode, Direction, SyntaxNode, SyntaxToken,
+     ast::{self, Use, UseTree, VisibilityKind, make},
++    T,
  };
  
  use crate::{
--    AssistId,
      assist_context::{AssistContext, Assists},
-+    AssistId,
  };
  
 -// Assist: expand_glob_import

@@ -8,33 +8,7 @@ Rustfmt size:  58838 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     time::{Duration, Instant},
- };
- 
--use crossbeam_channel::{Receiver, never, select};
--use ide_db::base_db::{SourceDatabase, VfsPath, salsa::Database as _};
-+use crossbeam_channel::{never, select, Receiver};
-+use ide_db::base_db::{salsa::Database as _, SourceDatabase, VfsPath};
- use lsp_server::{Connection, Notification, Request};
--use lsp_types::{TextDocumentIdentifier, notification::Notification as _};
-+use lsp_types::{notification::Notification as _, TextDocumentIdentifier};
- use stdx::thread::ThreadIntent;
--use tracing::{Level, error, span};
--use vfs::{AbsPathBuf, FileId, loader::LoadingProgress};
-+use tracing::{error, span, Level};
-+use vfs::{loader::LoadingProgress, AbsPathBuf, FileId};
- 
- use crate::{
-     config::Config,
--    diagnostics::{DiagnosticsGeneration, NativeDiagnosticsFetchKind, fetch_native_diagnostics},
-+    diagnostics::{fetch_native_diagnostics, DiagnosticsGeneration, NativeDiagnosticsFetchKind},
-     discover::{DiscoverArgument, DiscoverCommand, DiscoverProjectMessage},
-     flycheck::{self, ClearDiagnosticsKind, ClearScope, FlycheckMessage},
-     global_state::{
--        FetchBuildDataResponse, FetchWorkspaceRequest, FetchWorkspaceResponse, GlobalState,
--        file_id_to_url, url_to_file_id,
-+        file_id_to_url, url_to_file_id, FetchBuildDataResponse, FetchWorkspaceRequest,
-+        FetchWorkspaceResponse, GlobalState,
+         file_id_to_url, url_to_file_id,
      },
      handlers::{
 -        dispatch::{NotificationDispatcher, RequestDispatcher},

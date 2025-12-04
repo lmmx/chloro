@@ -8,6 +8,14 @@ Rustfmt size:  18799 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ use either::Either;
+ use hir_def::{expr_store::Body, hir::BindingId};
+-use hir_expand::{name::Name, Lookup};
++use hir_expand::{Lookup, name::Name};
+ use la_arena::ArenaMap;
+ 
+ use crate::{
          ctx.for_body(|this| match ctx.body.owner {
              hir_def::DefWithBodyId::FunctionId(id) => {
                  let data = db.function_signature(id);

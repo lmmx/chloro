@@ -8,24 +8,15 @@ Rustfmt size:  12418 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     solve::{GoalEvaluation, GoalStalledOn, HasChanged, SolverDelegateEvalExt},
- };
- use rustc_type_ir::{
--    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
-     inherent::{IntoKind, Span as _},
-     solve::{Certainty, NoSolution},
-+    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
- };
  
  use crate::next_solver::{
--    DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
+     DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
 -    infer::{
 -        InferCtxt,
 -        traits::{PredicateObligation, PredicateObligations},
 -    },
-+    infer::{traits::{PredicateObligation, PredicateObligations}, InferCtxt},
++    infer::{InferCtxt, traits::{PredicateObligation, PredicateObligations}},
      inspect::ProofTreeVisitor,
-+    DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
  };
  
 -type PendingObligations<'db> =

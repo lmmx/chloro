@@ -8,7 +8,8 @@ Rustfmt size:  2131 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use crate::{adjusted_display_range, Diagnostic, DiagnosticsContext};
+-use crate::{adjusted_display_range, Diagnostic, DiagnosticsContext};
++use crate::{Diagnostic, DiagnosticsContext, adjusted_display_range};
  
 -// Diagnostic: await-outside-of-async
 -//

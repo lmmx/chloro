@@ -8,17 +8,8 @@ Rustfmt size:  25127 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::db::ExpandDatabase;
- use hir::{UnsafeLint, UnsafetyReason};
- use ide_db::text_edit::TextEdit;
- use ide_db::{assists::Assist, source_change::SourceChange};
--use syntax::{AstNode, match_ast};
--use syntax::{SyntaxNode, ast};
-+use syntax::{match_ast, AstNode};
-+use syntax::{ast, SyntaxNode};
  
--use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
-+use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
  
 -// Diagnostic: missing-unsafe
 -//

@@ -8,21 +8,6 @@ Rustfmt size:  5785 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion for use trees
- 
- use hir::ScopeDef;
- use ide_db::{FxHashSet, SymbolKind};
--use syntax::{AstNode, ast, format_smolstr};
-+use syntax::{ast, format_smolstr, AstNode};
- 
- use crate::{
--    CompletionItem, CompletionItemKind, CompletionRelevance, Completions,
-     context::{CompletionContext, PathCompletionCtx, Qualified},
-     item::Builder,
-+    CompletionItem, CompletionItemKind, CompletionRelevance, Completions,
- };
- 
- pub(crate) fn complete_use_path(
  ) {
      match qualified {
          Qualified::With { path, resolution: Some(resolution), super_chain_len } => {

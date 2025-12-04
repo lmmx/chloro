@@ -7,12 +7,12 @@ fn format_use_items_multiline_nested_mods() {
     let output = format_source(input);
     assert_snapshot!(output, @r"
     use hir_def::{
+        DefWithBodyId, GenericParamId, SyntheticSyntax,
         expr_store::{
-            hir_assoc_type_binding_to_ast, hir_generic_arg_to_ast, hir_segment_to_ast_segment,
-            ExprOrPatPtr, ExpressionStoreSourceMap,
+            ExprOrPatPtr, ExpressionStoreSourceMap, hir_assoc_type_binding_to_ast,
+            hir_generic_arg_to_ast, hir_segment_to_ast_segment,
         },
         hir::ExprOrPatId,
-        DefWithBodyId, GenericParamId, SyntheticSyntax,
     };
     ");
 }
@@ -23,8 +23,9 @@ fn format_use_items_multiline_nested_ast_module() {
     let output = format_source(input);
     assert_snapshot!(output, @r"
     use syntax::{
+        AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
         ast::{self, HasGenericArgs},
-        match_ast, AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
+        match_ast,
     };
     ");
 }
@@ -35,9 +36,9 @@ fn format_use_items_multiline_nested_one_group() {
     let output = format_source(input);
     assert_snapshot!(output, @r"
     use hir::{
-        db::ExpandDatabase, sym, symbols::FileSymbol, AssocItem, Crate, FieldSource, HasContainer,
-        HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
-        Symbol,
+        AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId,
+        InFile, LocalSource, ModuleSource, Semantics, Symbol, db::ExpandDatabase, sym,
+        symbols::FileSymbol,
     };
     ");
 }
@@ -49,9 +50,9 @@ fn format_use_items_multiline_nested_db_singleton_not_a_group() {
     let output = format_source(input);
     assert_snapshot!(output, @r"
     use hir::{
-        db::ExpandDatabase, sym, symbols::FileSymbol, AssocItem, Crate, FieldSource, HasContainer,
-        HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
-        Symbol,
+        AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId,
+        InFile, LocalSource, ModuleSource, Semantics, Symbol, db::ExpandDatabase, sym,
+        symbols::FileSymbol,
     };
     ");
 }
@@ -62,11 +63,11 @@ fn format_use_items_multiline_nested_db_self() {
     let output = format_source(input);
     assert_snapshot!(output, @r"
     use hir::{
+        AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId,
+        InFile, LocalSource, ModuleSource, Semantics, Symbol,
         db::{self, ExpandDatabase},
         sym,
         symbols::FileSymbol,
-        AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId,
-        InFile, LocalSource, ModuleSource, Semantics, Symbol,
     };
     ");
 }
@@ -94,10 +95,10 @@ fn format_use_items_multiline_nested_db_self_abbreviated_reduced() {
     let output = format_source(input);
     assert_snapshot!(output, @r"
     use hir::{
+        Ha,
         db::{s, E},
         sym,
         symbols::F,
-        Ha,
     };
     ");
 }
@@ -134,8 +135,7 @@ use bar::Baz;
 fn test_sort_imports_simple() {
     let input = "use a::{A, Ab, Ac, a, ab, ac, self};";
     let output = format_source(input);
-    assert_snapshot!(output, @"use a::{self, a, ab, ac, Ab, Ac, A};
-");
+    assert_snapshot!(output, @"use a::{self, Ab, Ac, a, ab, ac, A};");
 }
 
 #[test]

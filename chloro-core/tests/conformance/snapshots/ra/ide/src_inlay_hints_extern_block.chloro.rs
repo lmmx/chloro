@@ -1,7 +1,7 @@
 //! Extern block hints
 
 use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
-use syntax::{ast, AstNode, SyntaxToken};
+use syntax::{AstNode, SyntaxToken, ast};
 
 use crate::{InlayHint, InlayHintsConfig};
 

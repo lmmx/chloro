@@ -5,4 +5,13 @@ Original size: 2660 bytes
 Chloro size:   2660 bytes
 Rustfmt size:  2660 bytes
 
-✓ Outputs are IDENTICAL
+✗ Outputs DIFFER
+
+=== DIFF (- rustfmt, + chloro) ===
+ //! Target dependent parameters needed for layouts
+ 
+-use base_db::{target::TargetLoadError, Crate};
++use base_db::{Crate, target::TargetLoadError};
+ use hir_def::layout::TargetDataLayout;
+ use rustc_abi::{AddressSpace, AlignFromBytesError, TargetDataLayoutErrors};
+ use triomphe::Arc;

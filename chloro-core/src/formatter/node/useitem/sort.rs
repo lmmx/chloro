@@ -27,27 +27,25 @@ pub fn sort_key(s: &str) -> (u8, bool, bool, &str) {
         !has_lowercase(s)
     };
 
-    (1, is_all_caps, !first_is_lower, s)
+    // (1, is_all_caps, !first_is_lower, s) pre-2024
+    (1, is_all_caps, first_is_lower, s) // 2024 edition
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn test_sort_key_ordering() {
         let mut items = vec!["ALL_CAPS", "Upper", "lower", "another"];
         items.sort_by_key(|&s| sort_key(s));
         assert_eq!(items, vec!["another", "lower", "Upper", "ALL_CAPS"]);
     }
-
     #[test]
     fn test_sort_key_self_first() {
         let mut items = vec!["Foo", "self", "bar", "Baz"];
         items.sort_by_key(|&s| sort_key(s));
         assert_eq!(items, vec!["self", "bar", "Baz", "Foo"]);
     }
-
     #[test]
     fn test_sort_key_self_with_all_caps() {
         let mut items = vec!["ALL_CAPS", "self", "lower", "Upper"];

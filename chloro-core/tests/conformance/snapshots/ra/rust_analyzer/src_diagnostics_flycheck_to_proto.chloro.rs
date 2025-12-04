@@ -516,7 +516,7 @@ fn clippy_code_description(code: Option<&str>) -> Option<lsp_types::CodeDescript
 mod tests {
     use crate::{config::Config, global_state::GlobalState};
     use super::*;
-    use expect_test::{expect_file, ExpectFile};
+    use expect_test::{ExpectFile, expect_file};
     use lsp_types::ClientCapabilities;
     use paths::Utf8Path;
     fn check(diagnostics_json: &str, expect: ExpectFile) {

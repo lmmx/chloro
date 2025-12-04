@@ -1,6 +1,7 @@
 use syntax::{
+    AstNode, SyntaxKind, TextRange,
     ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
-    AstNode, SyntaxKind, TextRange, T,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6951 bytes
-Chloro size:   6946 bytes
+Chloro size:   6950 bytes
 Rustfmt size:  6951 bytes
 
 ✗ Outputs DIFFER
@@ -18,25 +18,18 @@ Rustfmt size:  6951 bytes
  use ide_db::{FileRange, RootDatabase};
  use syntax::{
 -    SyntaxKind, SyntaxNode, T,
++    SyntaxKind, SyntaxNode,
      ast::{self, AstNode, HasLoopBody, HasName},
 -    match_ast,
-+    match_ast, SyntaxKind, SyntaxNode, T,
++    match_ast, T,
  };
  
  use crate::{
--    InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
--    inlay_hints::LazyProperty,
-+    inlay_hints::LazyProperty, InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig,
-+    InlayKind,
- };
- 
- pub(super) fn hints(
- #[cfg(test)]
  mod tests {
      use crate::{
-+        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
          InlayHintsConfig,
 -        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
++        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
      };
 -
      #[test]

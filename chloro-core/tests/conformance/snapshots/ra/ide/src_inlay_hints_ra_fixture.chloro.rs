@@ -1,8 +1,8 @@
 //! Injected inlay hints for `#[rust_analyzer::rust_fixture]`.
 
 use hir::{EditionedFileId, Semantics};
-use ide_db::{impl_empty_upmap_from_ra_fixture, ra_fixture::UpmapFromRaFixture, RootDatabase};
-use syntax::{ast, AstToken};
+use ide_db::{RootDatabase, impl_empty_upmap_from_ra_fixture, ra_fixture::UpmapFromRaFixture};
+use syntax::{AstToken, ast};
 
 use crate::{Analysis, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip};
 

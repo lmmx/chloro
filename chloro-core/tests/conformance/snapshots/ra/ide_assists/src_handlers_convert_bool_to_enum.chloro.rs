@@ -2,18 +2,19 @@ use either::Either;
 use hir::ModuleDef;
 use ide_db::text_edit::TextRange;
 use ide_db::{
+    FxHashSet,
     assists::AssistId,
     defs::Definition,
     helpers::mod_path_to_ast,
-    imports::insert_use::{insert_use, ImportScope},
+    imports::insert_use::{ImportScope, insert_use},
     search::{FileReference, UsageSearchResult},
     source_change::SourceChangeBuilder,
-    FxHashSet,
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, edit::IndentLevel, edit_in_place::Indent, make, HasName},
-    AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T,
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
+    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
+    T,
 };
 
 use crate::{

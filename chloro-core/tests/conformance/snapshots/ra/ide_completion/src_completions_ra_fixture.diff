@@ -8,6 +8,16 @@ Rustfmt size:  2828 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use syntax::ast;
+ 
+ use crate::{
+-    completions::Completions, context::CompletionContext, item::CompletionItemLabel,
+-    CompletionItemKind, CompletionItemRefMode, CompletionRelevance,
++    CompletionItemKind, CompletionItemRefMode, CompletionRelevance, completions::Completions,
++    context::CompletionContext, item::CompletionItemLabel,
+ };
+ 
+ pub(crate) fn complete_ra_fixture(
          crate::completions(
              &analysis.db,
              ctx.config,

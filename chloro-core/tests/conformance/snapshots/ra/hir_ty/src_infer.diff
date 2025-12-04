@@ -8,57 +8,16 @@ Rustfmt size:  74236 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use base_db::Crate;
- use either::Either;
- use hir_def::{
--    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
--    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
--    expr_store::{Body, ExpressionStore, HygieneId, path::Path},
-+    expr_store::{path::Path, Body, ExpressionStore, HygieneId},
-     hir::{BindingAnnotation, BindingId, ExprId, ExprOrPatId, LabelId, PatId},
--    lang_item::{LangItem, LangItemTarget, lang_item},
-+    lang_item::{lang_item, LangItem, LangItemTarget},
-     layout::Integer,
-     resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
-     signatures::{ConstSignature, StaticSignature},
-     type_ref::{ConstRef, LifetimeRefId, TypeRefId},
-+    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
-+    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
- };
- use hir_expand::{mod_path::ModPath, name::Name};
- use indexmap::IndexSet;
- use rustc_ast_ir::Mutability;
- use rustc_hash::{FxHashMap, FxHashSet};
- use rustc_type_ir::{
--    AliasTyKind, TypeFoldable,
-     inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
-+    AliasTyKind, TypeFoldable,
- };
- use stdx::never;
- use triomphe::Arc;
- 
- use crate::{
--    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
-     db::{HirDatabase, InternedClosureId, InternedOpaqueTyId},
-     infer::{
-         coerce::{CoerceMany, DynamicCoerceMany},
          expr::ExprIsRead,
      },
      lower::{
 -        ImplTraitIdx, ImplTraitLoweringMode, LifetimeElisionKind, diagnostics::TyLoweringDiagnostic,
-+        diagnostics::TyLoweringDiagnostic, ImplTraitIdx, ImplTraitLoweringMode,
-+        LifetimeElisionKind,
++        ImplTraitIdx, ImplTraitLoweringMode, LifetimeElisionKind,
++        diagnostics::TyLoweringDiagnostic,
      },
      mir::MirSpan,
      next_solver::{
--        AliasTy, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Region, Ty, TyKind,
--        Tys, abi::Safety, infer::traits::ObligationCause,
-+        abi::Safety, infer::traits::ObligationCause, AliasTy, Const, DbInterner, ErrorGuaranteed,
-+        GenericArg, GenericArgs, Region, Ty, TyKind, Tys,
-     },
-     traits::FnTrait,
      utils::TargetFeatureIsSafeInTarget,
-+    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
  };
  
 -// This lint has a false positive here. See the link below for details.

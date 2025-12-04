@@ -13,33 +13,6 @@ Rustfmt size:  20506 bytes
  #[cfg(test)]
  mod tests;
  
- 
- use hir::Semantics;
- use syntax::{
--    Direction, NodeOrToken, SyntaxKind, SyntaxNode, algo,
-+    algo,
-     ast::{
--        self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
--        edit_in_place::Removable, make,
-+        self, edit_in_place::Removable, make, AstNode, HasAttrs, HasModuleItem, HasVisibility,
-+        PathSegmentKind,
-     },
--    ted,
-+    ted, Direction, NodeOrToken, SyntaxKind, SyntaxNode,
- };
- 
- use crate::{
--    RootDatabase,
-     imports::merge_imports::{
--        MergeBehavior, NormalizationStyle, common_prefix, eq_attrs, eq_visibility,
--        try_merge_imports, use_tree_cmp,
-+        common_prefix, eq_attrs, eq_visibility, try_merge_imports, use_tree_cmp, MergeBehavior,
-+        NormalizationStyle,
-     },
-+    RootDatabase,
- };
- 
- pub use hir::PrefixKind;
                  res = ImportGranularityGuess::CrateOrModule;
              }
          }

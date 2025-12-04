@@ -8,22 +8,22 @@ use std::{
     time::{Duration, Instant},
 };
 
-use crossbeam_channel::{never, select, Receiver};
-use ide_db::base_db::{salsa::Database as _, SourceDatabase, VfsPath};
+use crossbeam_channel::{Receiver, never, select};
+use ide_db::base_db::{SourceDatabase, VfsPath, salsa::Database as _};
 use lsp_server::{Connection, Notification, Request};
-use lsp_types::{notification::Notification as _, TextDocumentIdentifier};
+use lsp_types::{TextDocumentIdentifier, notification::Notification as _};
 use stdx::thread::ThreadIntent;
-use tracing::{error, span, Level};
-use vfs::{loader::LoadingProgress, AbsPathBuf, FileId};
+use tracing::{Level, error, span};
+use vfs::{AbsPathBuf, FileId, loader::LoadingProgress};
 
 use crate::{
     config::Config,
-    diagnostics::{fetch_native_diagnostics, DiagnosticsGeneration, NativeDiagnosticsFetchKind},
+    diagnostics::{DiagnosticsGeneration, NativeDiagnosticsFetchKind, fetch_native_diagnostics},
     discover::{DiscoverArgument, DiscoverCommand, DiscoverProjectMessage},
     flycheck::{self, ClearDiagnosticsKind, ClearScope, FlycheckMessage},
     global_state::{
-        file_id_to_url, url_to_file_id, FetchBuildDataResponse, FetchWorkspaceRequest,
-        FetchWorkspaceResponse, GlobalState,
+        FetchBuildDataResponse, FetchWorkspaceRequest, FetchWorkspaceResponse, GlobalState,
+        file_id_to_url, url_to_file_id,
     },
     handlers::{
         dispatch::{NotificationDispatcher, RequestDispatcher}, request::empty_diagnostic_report,

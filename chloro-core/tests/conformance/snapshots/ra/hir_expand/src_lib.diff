@@ -17,30 +17,10 @@ Rustfmt size:  40650 bytes
  #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
  
  pub use intern;
- use either::Either;
- use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
- use syntax::{
--    SyntaxNode, SyntaxToken, TextRange, TextSize,
-     ast::{self, AstNode},
-+    SyntaxNode, SyntaxToken, TextRange, TextSize,
- };
- 
- use crate::{
-     attrs::AttrId,
-     builtin::{
--        BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander,
--        include_input_to_file_id,
-+        include_input_to_file_id, BuiltinAttrExpander, BuiltinDeriveExpander,
-+        BuiltinFnLikeExpander, EagerExpander,
-     },
-     db::ExpandDatabase,
-     mod_path::ModPath,
- 
  pub mod tt {
      pub use span::Span;
--    pub use tt::{DelimiterKind, IdentIsRaw, LitKind, Spacing, token_to_literal};
+     pub use tt::{DelimiterKind, IdentIsRaw, LitKind, Spacing, token_to_literal};
 -
-+    pub use tt::{token_to_literal, DelimiterKind, IdentIsRaw, LitKind, Spacing};
      pub type Delimiter = ::tt::Delimiter<Span>;
      pub type DelimSpan = ::tt::DelimSpan<Span>;
      pub type Subtree = ::tt::Subtree<Span>;

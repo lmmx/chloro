@@ -1,9 +1,10 @@
 use itertools::Itertools;
 use syntax::{
-    ast::{self, make, AstNode},
+    Edition, NodeOrToken, SyntaxNode, SyntaxToken,
+    ast::{self, AstNode, make},
     match_ast,
     syntax_editor::{Position, SyntaxEditor},
-    Edition, NodeOrToken, SyntaxNode, SyntaxToken, T,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

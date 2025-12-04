@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14081 bytes
-Chloro size:   14082 bytes
+Chloro size:   14086 bytes
 Rustfmt size:  14081 bytes
 
 ✗ Outputs DIFFER
@@ -15,8 +15,9 @@ Rustfmt size:  14081 bytes
  use rustc_hash::{FxHashMap, FxHashSet};
  use syntax::{
 -    AstNode, AstPtr, AstToken, T,
++    AstNode, AstPtr, AstToken,
      ast::{self, HasName, IsString},
-+    AstNode, AstPtr, AstToken, T,
++    T,
  };
  use tt::TextRange;
  

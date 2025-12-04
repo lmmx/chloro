@@ -4,16 +4,16 @@ use std::{cell::OnceCell, collections::hash_map::Entry};
 
 use base_db::FxIndexSet;
 use hir_expand::{
+    HirFileId,
     mod_path::PathKind,
     name::AsName,
     span_map::{SpanMap, SpanMapRef},
-    HirFileId,
 };
 use la_arena::Arena;
 use span::{AstIdMap, FileAstId, SyntaxContext};
 use syntax::{
-    ast::{self, HasModuleItem, HasName},
     AstNode,
+    ast::{self, HasModuleItem, HasName},
 };
 use triomphe::Arc;
 

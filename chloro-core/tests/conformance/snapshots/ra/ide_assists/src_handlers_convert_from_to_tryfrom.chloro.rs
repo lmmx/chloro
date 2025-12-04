@@ -1,6 +1,6 @@
 use ide_db::{famous_defs::FamousDefs, traits::resolve_target_trait};
 use syntax::ast::edit::IndentLevel;
-use syntax::ast::{self, make, AstNode, HasGenericArgs, HasName};
+use syntax::ast::{self, AstNode, HasGenericArgs, HasName, make};
 use syntax::syntax_editor::{Element, Position};
 
 use crate::{AssistContext, AssistId, Assists};

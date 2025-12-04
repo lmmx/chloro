@@ -17,28 +17,10 @@ Rustfmt size:  32290 bytes
 -    Symbol,
 -    sym::{self},
 -};
-+use intern::{sym::self, Symbol};
++use intern::{Symbol, sym::self};
  use itertools::Itertools;
--use mbe::{DelimiterKind, expect_fragment};
-+use mbe::{expect_fragment, DelimiterKind};
+ use mbe::{DelimiterKind, expect_fragment};
  use span::{Edition, FileId, Span};
- use stdx::format_to;
- use syntax::{
- use syntax_bridge::syntax_node_to_token_tree;
- 
- use crate::{
--    EditionedFileId, ExpandError, ExpandResult, Lookup as _, MacroCallId,
--    builtin::quote::{WithDelimiter, dollar_crate},
-+    builtin::quote::{dollar_crate, WithDelimiter},
-     db::ExpandDatabase,
-     hygiene::{span_with_call_site_ctxt, span_with_def_site_ctxt},
-     name,
-     span_map::SpanMap,
-     tt::{self, DelimSpan, TtElement, TtIter},
-+    EditionedFileId, ExpandError, ExpandResult, Lookup as _, MacroCallId,
- };
- 
- macro_rules! register_builtin {
          }
          None => ExpandResult::new(
              tt::TopSubtree::empty(tt::DelimSpan::from_single(span)),

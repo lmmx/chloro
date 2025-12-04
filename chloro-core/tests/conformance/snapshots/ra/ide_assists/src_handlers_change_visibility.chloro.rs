@@ -1,14 +1,15 @@
 use syntax::{
-    ast::{self, HasName, HasVisibility},
     AstNode,
     SyntaxKind::{
         self, ASSOC_ITEM_LIST, CONST, ENUM, FN, MACRO_DEF, MODULE, SOURCE_FILE, STATIC, STRUCT,
         TRAIT, TYPE_ALIAS, USE, VISIBILITY,
     },
-    SyntaxNode, T,
+    SyntaxNode,
+    ast::{self, HasName, HasVisibility},
+    T,
 };
 
-use crate::{utils::vis_offset, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, utils::vis_offset};
 
 pub(crate) fn change_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if let Some(vis) = ctx.find_node_at_offset::<ast::Visibility>() {

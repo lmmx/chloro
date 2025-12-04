@@ -1,7 +1,7 @@
 //! Utilities for creating `Analysis` instances for tests.
 
 use test_fixture::ChangeFixture;
-use test_utils::{extract_annotations, RangeOrOffset};
+use test_utils::{RangeOrOffset, extract_annotations};
 
 use crate::{Analysis, AnalysisHost, FileId, FilePosition, FileRange};
 

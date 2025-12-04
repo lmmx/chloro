@@ -2,52 +2,32 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30819 bytes
+Chloro size:   30823 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::ops::Range;
- 
- use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
--use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
-+use pulldown_cmark_to_cmark::{cmark_resume_with_options, Options as CMarkOptions};
- use stdx::format_to;
  use url::Url;
  
  use hir::{
 -    Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs, db::HirDatabase, sym,
-+    db::HirDatabase, sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner,
-+    HasAttrs,
++    Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs, db::HirDatabase,
++    sym,
  };
  use ide_db::{
--    RootDatabase,
-     base_db::{CrateOrigin, LangCrateOrigin, ReleaseChannel, RootQueryDb},
-     defs::{Definition, NameClass, NameRefClass},
--    documentation::{DocsRangeMap, Documentation, HasDocs, docs_with_rangemap},
-+    documentation::{docs_with_rangemap, DocsRangeMap, Documentation, HasDocs},
-     helpers::pick_best_token,
-+    RootDatabase,
- };
+     RootDatabase,
  use syntax::{
--    AstNode, AstToken,
--    SyntaxKind::*,
+     AstNode, AstToken,
+     SyntaxKind::*,
 -    SyntaxNode, SyntaxToken, T, TextRange, TextSize,
++    SyntaxNode, SyntaxToken, TextRange, TextSize,
      ast::{self, IsString},
 -    match_ast,
-+    match_ast, AstNode, AstToken,
-+    SyntaxKind::*,
-+    SyntaxNode, SyntaxToken, TextRange, TextSize, T,
++    match_ast, T,
  };
  
  use crate::{
--    FilePosition, Semantics,
-     doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
-+    FilePosition, Semantics,
- };
- 
- /// Web and local links to an item's documentation.
      pub local_url: Option<String>,
  }
  

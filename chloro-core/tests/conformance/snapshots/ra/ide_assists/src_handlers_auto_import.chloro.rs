@@ -1,7 +1,7 @@
 use std::cmp::Reverse;
 
 use either::Either;
-use hir::{db::HirDatabase, Module, Type};
+use hir::{Module, Type, db::HirDatabase};
 use ide_db::{
     active_parameter::ActiveParameter,
     helpers::mod_path_to_ast,
@@ -10,7 +10,7 @@ use ide_db::{
         insert_use::{ImportScope, insert_use, insert_use_as_alias},
     },
 };
-use syntax::{ast, match_ast, AstNode, Edition, SyntaxNode};
+use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
@@ -368,7 +368,7 @@ fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Modu
 mod tests {
     use super::*;
     use hir::{FileRange, Semantics};
-    use ide_db::{assists::AssistResolveStrategy, RootDatabase};
+    use ide_db::{RootDatabase, assists::AssistResolveStrategy};
     use test_fixture::WithFixture;
     use crate::tests::{
         check_assist, check_assist_by_label, check_assist_not_applicable, check_assist_target,

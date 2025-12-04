@@ -1,9 +1,9 @@
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 
 use crate::{
+    CompletionConfig,
     context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
     tests::{check_edit, check_edit_with_config, TEST_CONFIG},
-    CompletionConfig,
 };
 
 fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

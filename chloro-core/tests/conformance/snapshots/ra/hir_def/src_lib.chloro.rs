@@ -42,7 +42,7 @@ pub mod find_path;
 pub mod import_map;
 pub mod visibility;
 
-use intern::{sym, Interned, Symbol};
+use intern::{Interned, Symbol, sym};
 pub use rustc_abi as layout;
 use thin_vec::ThinVec;
 use triomphe::Arc;
@@ -56,8 +56,10 @@ mod test_db;
 
 use std::hash::{Hash, Hasher};
 
-use base_db::{impl_intern_key, Crate};
+use base_db::{Crate, impl_intern_key};
 use hir_expand::{
+    AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
+    MacroDefKind,
     builtin::{BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander},
     db::ExpandDatabase,
     eager::expand_eager_macro_input,
@@ -65,16 +67,14 @@ use hir_expand::{
     mod_path::ModPath,
     name::Name,
     proc_macro::{CustomProcMacroExpander, ProcMacroKind},
-    AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
-    MacroDefKind,
 };
 use la_arena::Idx;
 use nameres::DefMap;
 use span::{AstIdNode, Edition, FileAstId, SyntaxContext};
 use stdx::impl_from;
-use syntax::{ast, AstNode};
+use syntax::{AstNode, ast};
 
-pub use hir_expand::{tt, Intern, Lookup};
+pub use hir_expand::{Intern, Lookup, tt};
 
 use crate::{
     attr::Attrs,
@@ -83,8 +83,8 @@ use crate::{
     expr_store::ExpressionStoreSourceMap,
     hir::generics::{LocalLifetimeParamId, LocalTypeOrConstParamId},
     nameres::{
-        assoc::{ImplItems, TraitItems}, block_def_map, crate_def_map, crate_local_def_map,
-        diagnostics::DefDiagnostics, LocalDefMap,
+        LocalDefMap, assoc::{ImplItems, TraitItems}, block_def_map, crate_def_map,
+        crate_local_def_map, diagnostics::DefDiagnostics,
     },
     signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
 };

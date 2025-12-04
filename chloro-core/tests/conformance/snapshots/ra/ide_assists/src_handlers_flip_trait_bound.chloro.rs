@@ -1,7 +1,8 @@
 use syntax::{
+    Direction,
     algo::non_trivia_sibling,
     ast::{self, AstNode},
-    Direction, T,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

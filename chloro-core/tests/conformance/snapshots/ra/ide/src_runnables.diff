@@ -2,50 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50564 bytes
-Chloro size:   49635 bytes
+Chloro size:   49639 bytes
 Rustfmt size:  50564 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::{fmt, sync::OnceLock};
- 
- use arrayvec::ArrayVec;
- use ast::HasName;
- use cfg::{CfgAtom, CfgExpr};
- use hir::{
--    AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics, Symbol, db::HirDatabase,
--    sym,
-+    db::HirDatabase, sym, AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics,
-+    Symbol,
- };
- use ide_assists::utils::{has_test_related_attribute, test_related_attribute_syn};
- use ide_db::impl_empty_upmap_from_ra_fixture;
- use ide_db::{
--    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SymbolKind,
-     base_db::RootQueryDb,
-     defs::Definition,
-     documentation::docs_from_attrs,
-     helpers::visit_file_defs,
-     search::{FileReferenceNode, SearchScope},
-+    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SymbolKind,
- };
- use itertools::Itertools;
- use macros::UpmapFromRaFixture;
- use span::{Edition, TextSize};
- use stdx::format_to;
- use syntax::{
--    SmolStr, SyntaxNode, ToSmolStr,
-     ast::{self, AstNode},
--    format_smolstr,
-+    format_smolstr, SmolStr, SyntaxNode, ToSmolStr,
- };
- 
--use crate::{FileId, NavigationTarget, ToNav, TryToNav, references};
-+use crate::{references, FileId, NavigationTarget, ToNav, TryToNav};
- 
- #[derive(Debug, Clone, Hash, PartialEq, Eq, UpmapFromRaFixture)]
- pub struct Runnable {
  
  #[derive(Debug, Clone, Hash, PartialEq, Eq)]
  pub enum RunnableKind {
@@ -155,12 +117,10 @@ Rustfmt size:  50564 bytes
          fn init<'a>(
              krate_name: &'a str,
              paths: &[&str],
- 
  #[cfg(test)]
  mod tests {
--    use expect_test::{Expect, expect};
+     use expect_test::{Expect, expect};
 -
-+    use expect_test::{expect, Expect};
      use crate::fixture;
 -
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

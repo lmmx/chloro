@@ -1,15 +1,16 @@
 use either::Either;
 use hir::{CaptureKind, ClosureCapture, FileRangeWrapper, HirDisplay};
 use ide_db::{
-    assists::AssistId, base_db::SourceDatabase, defs::Definition, search::FileReferenceNode,
-    source_change::SourceChangeBuilder, FxHashSet,
+    FxHashSet, assists::AssistId, base_db::SourceDatabase, defs::Definition,
+    search::FileReferenceNode, source_change::SourceChangeBuilder,
 };
 use stdx::format_to;
 use syntax::{
+    AstNode, Direction, SyntaxKind, SyntaxNode, TextSize, ToSmolStr,
     algo::{skip_trivia_token, skip_whitespace_token},
-    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, HasArgList, HasGenericParams, HasName},
+    ast::{self, HasArgList, HasGenericParams, HasName, edit::{AstNodeEdit, IndentLevel}, make},
     hacks::parse_expr_from_str,
-    ted, AstNode, Direction, SyntaxKind, SyntaxNode, TextSize, ToSmolStr, T,
+    ted, T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

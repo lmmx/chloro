@@ -2,43 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34277 bytes
+Chloro size:   34281 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use either::Either;
- use hir::{
--    ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
--    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics, sym,
-+    sym, ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
-+    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
- };
- use ide_db::{
--    FileRange, MiniCore, RootDatabase, famous_defs::FamousDefs, text_edit::TextEditBuilder,
-+    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
- };
--use ide_db::{FxHashSet, text_edit::TextEdit};
-+use ide_db::{text_edit::TextEdit, FxHashSet};
- use itertools::Itertools;
- use macros::UpmapFromRaFixture;
--use smallvec::{SmallVec, smallvec};
-+use smallvec::{smallvec, SmallVec};
- use stdx::never;
- use syntax::{
--    SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
-     ast::{self, AstNode, HasGenericParams},
--    format_smolstr, match_ast,
-+    format_smolstr, match_ast, SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
- };
- 
--use crate::{FileId, navigation_target::TryToNav};
-+use crate::{navigation_target::TryToNav, FileId};
- 
- mod adjustment;
- mod bind_pat;
  mod ra_fixture;
  mod range_exclusive;
  
@@ -112,9 +81,8 @@ Rustfmt size:  36233 bytes
 -
      use crate::DiscriminantHints;
      use crate::inlay_hints::{AdjustmentHints, AdjustmentHintsMode};
--    use crate::{LifetimeElisionHints, fixture, inlay_hints::InlayHintsConfig};
+     use crate::{LifetimeElisionHints, fixture, inlay_hints::InlayHintsConfig};
 -
-+    use crate::{fixture, inlay_hints::InlayHintsConfig, LifetimeElisionHints};
      use super::{ClosureReturnTypeHints, GenericParameterHints, InlayFieldsToResolve};
 -
      pub(super) const DISABLED_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {

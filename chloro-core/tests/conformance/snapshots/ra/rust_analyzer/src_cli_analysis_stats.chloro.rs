@@ -4,32 +4,32 @@
 use std::{
     env, fmt,
     ops::AddAssign,
-    panic::{catch_unwind, AssertUnwindSafe},
+    panic::{AssertUnwindSafe, catch_unwind},
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use cfg::{CfgAtom, CfgDiff};
 use hir::{
-    db::{DefDatabase, ExpandDatabase, HirDatabase},
-    next_solver::{DbInterner, GenericArgs},
     Adt, AssocItem, Crate, DefWithBody, FindPathConfig, HasCrate, HasSource, HirDisplay, ModuleDef,
     Name,
+    db::{DefDatabase, ExpandDatabase, HirDatabase},
+    next_solver::{DbInterner, GenericArgs},
 };
 use hir_def::{
+    SyntheticSyntax,
     expr_store::BodySourceMap,
     hir::{ExprId, PatId},
-    SyntheticSyntax,
 };
 use ide::{
     Analysis, AnalysisHost, AnnotationConfig, DiagnosticsConfig, Edition, InlayFieldsToResolve,
     InlayHintsConfig, LineCol, RootDatabase,
 };
 use ide_db::{
-    base_db::{salsa::Database, SourceDatabase},
     EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
+    base_db::{SourceDatabase, salsa::Database},
 };
 use itertools::Itertools;
-use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
+use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
 use oorandom::Rand32;
 use profile::StopWatch;
 use project_model::{CargoConfig, CfgOverrides, ProjectManifest, ProjectWorkspace, RustLibSource};
@@ -40,10 +40,11 @@ use syntax::AstNode;
 use vfs::{AbsPathBuf, Vfs, VfsPath};
 
 use crate::cli::{
+    Verbosity,
     flags::{self, OutputFormat},
     full_name_of_item, print_memory_usage,
     progress_report::ProgressReport,
-    report_metric, Verbosity,
+    report_metric,
 };
 
 impl flags::AnalysisStats {

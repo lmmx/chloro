@@ -8,6 +8,29 @@ Rustfmt size:  11433 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Definition of `InferCtxtLike` from the librarified type layer.
+ 
+ use rustc_type_ir::{
+-    inherent::{Const as _, IntoKind, Ty as _},
+-    relate::combine::PredicateEmittingRelation,
+     ConstVid, FloatVarValue, FloatVid, GenericArgKind, InferConst, InferTy, IntVarValue, IntVid,
+     RegionVid, TyVid, TypeFoldable, TypingMode, UniverseIndex,
++    inherent::{Const as _, IntoKind, Ty as _},
++    relate::combine::PredicateEmittingRelation,
+ };
+ 
+ use crate::next_solver::{
+-    infer::opaque_types::{table::OpaqueTypeStorageEntries, OpaqueHiddenType},
+     Binder, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, OpaqueTypeKey, Region,
+     SolverDefId, Span, Ty, TyKind,
++    infer::opaque_types::{OpaqueHiddenType, table::OpaqueTypeStorageEntries},
+ };
+ 
+-use super::{relate::RelateResult, BoundRegionConversionTime, InferCtxt};
++use super::{BoundRegionConversionTime, InferCtxt, relate::RelateResult};
+ 
+ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
+     type Interner = DbInterner<'db>;
      }
  
      fn universe_of_lt(&self, lt: RegionVid) -> Option<UniverseIndex> {

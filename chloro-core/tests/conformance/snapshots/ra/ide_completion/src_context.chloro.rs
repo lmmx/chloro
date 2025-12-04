@@ -12,21 +12,22 @@ use hir::{
     ScopeDef, Semantics, SemanticsScope, Symbol, Type, TypeInfo,
 };
 use ide_db::{
-    famous_defs::FamousDefs, helpers::is_editable_crate, FilePosition, FxHashMap, FxHashSet,
-    RootDatabase,
+    FilePosition, FxHashMap, FxHashSet, RootDatabase, famous_defs::FamousDefs,
+    helpers::is_editable_crate,
 };
 use itertools::Either;
 use syntax::{
-    ast::{self, AttrKind, NameOrNameRef},
-    match_ast, AstNode, Edition, SmolStr,
+    AstNode, Edition, SmolStr,
     SyntaxKind::{self, *},
-    SyntaxToken, TextRange, TextSize, T,
+    SyntaxToken, TextRange, TextSize,
+    ast::{self, AttrKind, NameOrNameRef},
+    match_ast, T,
 };
 
 use crate::{
-    config::AutoImportExclusionType,
-    context::analysis::{expand_and_analyze, AnalysisResult},
     CompletionConfig,
+    config::AutoImportExclusionType,
+    context::analysis::{AnalysisResult, expand_and_analyze},
 };
 
 const COMPLETION_MARKER: &str = "raCompletionMarker";

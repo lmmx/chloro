@@ -16,8 +16,9 @@ use hir::{
 use span::Edition;
 use stdx::{format_to, impl_from};
 use syntax::{
+    SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
     ast::{self, AstNode},
-    match_ast, SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
+    match_ast,
 };
 
 // FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).

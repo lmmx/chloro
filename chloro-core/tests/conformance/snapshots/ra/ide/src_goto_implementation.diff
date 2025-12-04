@@ -8,6 +8,18 @@ Rustfmt size:  10803 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use hir::{AsAssocItem, Impl, Semantics};
+ use ide_db::{
++    RootDatabase,
+     defs::{Definition, NameClass, NameRefClass},
+     helpers::pick_best_token,
+-    RootDatabase,
+ };
+-use syntax::{ast, AstNode, SyntaxKind::*, T};
++use syntax::{AstNode, SyntaxKind::*, ast, T};
+ 
+ use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
+ 
      pub filter_adjacent_derive_implementations: bool,
  }
  
@@ -27,12 +39,13 @@ Rustfmt size:  10803 bytes
      use ide_db::FileRange;
      use itertools::Itertools;
 -
-     use crate::{fixture, GotoImplementationConfig};
+-    use crate::{fixture, GotoImplementationConfig};
 -
 -    const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig {
 -        filter_adjacent_derive_implementations: false,
 -    };
 -
++    use crate::{GotoImplementationConfig, fixture};
 +    const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig { filter_adjacent_derive_implementations: false };
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

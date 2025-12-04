@@ -2,24 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18325 bytes
+Chloro size:   18329 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use ide_db::{FxHashSet, syntax_helpers::node_ext::vis_eq};
-+use ide_db::{syntax_helpers::node_ext::vis_eq, FxHashSet};
- use syntax::{
--    Direction, NodeOrToken, SourceFile,
-+    ast::{self, AstNode, AstToken},
-+    match_ast, Direction, NodeOrToken, SourceFile,
-     SyntaxKind::{self, *},
-     SyntaxNode, TextRange, TextSize,
--    ast::{self, AstNode, AstToken},
--    match_ast,
- };
- 
  use std::hash::Hash;
  
  const REGION_START: &str = "// region:";

@@ -3,13 +3,13 @@ use ide_db::{
     use_trivial_constructor::use_trivial_constructor,
 };
 use syntax::{
-    ast::{self, edit_in_place::Indent, make, AstNode, HasName, HasVisibility, StructKind},
+    ast::{self, AstNode, HasName, HasVisibility, StructKind, edit_in_place::Indent, make},
     syntax_editor::Position,
 };
 
 use crate::{
-    utils::{find_struct_impl, generate_impl_with_item},
     AssistContext, AssistId, Assists,
+    utils::{find_struct_impl, generate_impl_with_item},
 };
 
 pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

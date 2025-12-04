@@ -1,14 +1,14 @@
 //! Tests that don't fit into a specific category.
 
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 use ide_db::SymbolKind;
 
 use crate::{
+    CompletionItemKind,
     tests::{
         check, check_edit, check_no_kw, check_with_trigger_character, do_completion_with_config,
         TEST_CONFIG,
     },
-    CompletionItemKind,
 };
 
 #[test]

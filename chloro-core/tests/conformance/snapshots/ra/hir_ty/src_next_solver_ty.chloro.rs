@@ -3,14 +3,18 @@
 use std::ops::ControlFlow;
 
 use hir_def::{
+    AdtId, HasModule, TypeParamId,
     hir::generics::{TypeOrConstParamData, TypeParamProvenance},
     lang_item::LangItem,
-    AdtId, HasModule, TypeParamId,
 };
-use hir_def::{type_ref::Rawness, TraitId};
+use hir_def::{TraitId, type_ref::Rawness};
 use rustc_abi::{Float, Integer, Size};
-use rustc_ast_ir::{try_visit, visit::VisitorResult, Mutability};
+use rustc_ast_ir::{Mutability, try_visit, visit::VisitorResult};
 use rustc_type_ir::{
+    AliasTyKind, BoundVar, BoundVarIndexKind, ClosureKind, CoroutineArgs, CoroutineArgsParts,
+    DebruijnIndex, FlagComputation, Flags, FloatTy, FloatVid, InferTy, IntTy, IntVid, Interner,
+    TyVid, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
+    TypeVisitor, UintTy, Upcast, WithCachedTypeInfo,
     inherent::{
         AdtDef as _, BoundExistentialPredicates, BoundVarLike, Const as _, GenericArgs as _,
         IntoKind, ParamLike, PlaceholderLike, Safety as _, SliceLike, Ty as _,
@@ -18,26 +22,21 @@ use rustc_type_ir::{
     relate::Relate,
     solve::SizedTraitKind,
     walk::TypeWalker,
-    AliasTyKind, BoundVar, BoundVarIndexKind, ClosureKind, CoroutineArgs, CoroutineArgsParts,
-    DebruijnIndex, FlagComputation, Flags, FloatTy, FloatVid, InferTy, IntTy, IntVid, Interner,
-    TyVid, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-    TypeVisitor, UintTy, Upcast, WithCachedTypeInfo,
 };
 
 use crate::{
+    ImplTraitId,
     db::{HirDatabase, InternedCoroutine},
     next_solver::{
-        abi::Safety, interner::InternedWrapperNoDebug, util::{CoroutineArgsExt, IntegerTypeExt},
         AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
         CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
+        abi::Safety, interner::InternedWrapperNoDebug, util::{CoroutineArgsExt, IntegerTypeExt},
     },
-    ImplTraitId,
 };
 
 use super::{
-    interned_vec_db,
+    BoundVarKind, DbInterner, GenericArgs, Placeholder, SolverDefId, interned_vec_db,
     util::{FloatExt, IntegerExt},
-    BoundVarKind, DbInterner, GenericArgs, Placeholder, SolverDefId,
 };
 
 pub type TyKind<'db> = rustc_type_ir::TyKind<DbInterner<'db>>;

@@ -8,7 +8,20 @@ Rustfmt size:  12073 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use either::Either;
+ use ide_db::defs::{Definition, NameRefClass};
+ use syntax::{
+-    ast::{self, make, syntax_factory::SyntaxFactory, HasArgList, HasGenericArgs},
+-    syntax_editor::Position,
+     AstNode,
++    ast::{self, HasArgList, HasGenericArgs, make, syntax_factory::SyntaxFactory},
++    syntax_editor::Position,
+ };
+ 
+ use crate::{
+-    assist_context::{AssistContext, Assists},
      AssistId,
++    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: add_turbo_fish

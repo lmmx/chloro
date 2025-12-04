@@ -12,48 +12,48 @@ use std::{
 
 use either::Either;
 use hir_def::{
-    expr_store::{path::Path, Body, ExprOrPatSource},
+    DefWithBodyId, FunctionId, MacroId, StructId, TraitId, VariantId,
+    expr_store::{Body, ExprOrPatSource, path::Path},
     hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat},
-    nameres::{crate_def_map, ModuleOrigin},
+    nameres::{ModuleOrigin, crate_def_map},
     resolver::{self, HasResolver, Resolver, TypeNs},
     type_ref::Mutability,
-    DefWithBodyId, FunctionId, MacroId, StructId, TraitId, VariantId,
 };
 use hir_expand::{
+    EditionedFileId, ExpandResult, FileRange, HirFileId, InMacroFile, MacroCallId,
     attrs::collect_attrs,
     builtin::{BuiltinFnLikeExpander, EagerExpander},
     db::ExpandDatabase,
     files::{FileRangeWrapper, HirFileRange, InRealFile},
     mod_path::{ModPath, PathKind},
     name::AsName,
-    EditionedFileId, ExpandResult, FileRange, HirFileId, InMacroFile, MacroCallId,
 };
 use hir_ty::{
     diagnostics::{unsafe_operations, unsafe_operations_for_body},
     next_solver::DbInterner,
 };
-use intern::{sym, Interned, Symbol};
+use intern::{Interned, Symbol, sym};
 use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use span::{Edition, FileId, SyntaxContext};
-use stdx::{always, TupleExt};
+use stdx::{TupleExt, always};
 use syntax::{
-    algo::skip_trivia_token,
-    ast::{self, HasAttrs as _, HasGenericParams},
     AstNode, AstToken, Direction, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange,
     TextSize,
+    algo::skip_trivia_token,
+    ast::{self, HasAttrs as _, HasGenericParams},
 };
 
 use crate::{
-    db::HirDatabase,
-    semantics::source_to_def::{ChildContainer, SourceToDefCache, SourceToDefCtx},
-    source_analyzer::{name_hygiene, resolve_hir_path, SourceAnalyzer},
     Adjust, Adjustment, Adt, AutoBorrow, BindingMode, BuiltinAttr, Callable, Const, ConstParam,
     Crate, DefWithBody, DeriveHelper, Enum, Field, Function, GenericSubstitution, HasSource, Impl,
     InFile, InlineAsmOperand, ItemInNs, Label, LifetimeParam, Local, Macro, Module, ModuleDef,
     Name, OverloadedDeref, ScopeDef, Static, Struct, ToolModule, Trait, TupleField, Type,
     TypeAlias, TypeParam, Union, Variant, VariantDef,
+    db::HirDatabase,
+    semantics::source_to_def::{ChildContainer, SourceToDefCache, SourceToDefCtx},
+    source_analyzer::{SourceAnalyzer, name_hygiene, resolve_hir_path},
 };
 
 const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());

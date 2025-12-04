@@ -85,9 +85,10 @@ use std::{iter, sync::LazyLock};
 
 use either::Either;
 use hir::{
-    db::ExpandDatabase, diagnostics::AnyDiagnostic, Crate, DisplayTarget, InFile, Semantics,
+    Crate, DisplayTarget, InFile, Semantics, db::ExpandDatabase, diagnostics::AnyDiagnostic,
 };
 use ide_db::{
+    EditionedFileId, FileId, FileRange, FxHashMap, FxHashSet, RootDatabase, Severity, SnippetCap,
     assists::{Assist, AssistId, AssistResolveStrategy, ExprFillDefaultMode},
     base_db::{ReleaseChannel, RootQueryDb as _},
     generated::lints::{Lint, LintGroup, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, DEFAULT_LINT_GROUPS},
@@ -95,12 +96,12 @@ use ide_db::{
     label::Label,
     source_change::SourceChange,
     syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
-    EditionedFileId, FileId, FileRange, FxHashMap, FxHashSet, RootDatabase, Severity, SnippetCap,
 };
 use itertools::Itertools;
 use syntax::{
+    AstPtr, Edition, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode, SyntaxNodePtr, TextRange,
     ast::{self, AstNode, HasAttrs},
-    AstPtr, Edition, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode, SyntaxNodePtr, TextRange, T,
+    T,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]

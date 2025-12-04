@@ -1,13 +1,13 @@
 use ide_db::{
+    EditionedFileId,
     assists::AssistId,
     defs::Definition,
     search::{FileReference, FileReferenceNode},
     syntax_helpers::node_ext::full_path_of_name_ref,
-    EditionedFileId,
 };
 use syntax::{
-    ast::{self, NameRef},
     AstNode, SyntaxKind, TextRange,
+    ast::{self, NameRef},
 };
 
 use crate::{AssistContext, Assists};

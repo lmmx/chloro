@@ -8,18 +8,8 @@ Rustfmt size:  21606 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Renderer for function calls.
- 
--use hir::{AsAssocItem, HirDisplay, db::HirDatabase};
-+use hir::{db::HirDatabase, AsAssocItem, HirDisplay};
- use ide_db::{SnippetCap, SymbolKind};
- use itertools::Itertools;
- use stdx::{format_to, to_lower_snake_case};
--use syntax::{AstNode, SmolStr, ToSmolStr, format_smolstr};
-+use syntax::{format_smolstr, AstNode, SmolStr, ToSmolStr};
- 
  use crate::{
--    CallableSnippets,
+     CallableSnippets,
      context::{
 -        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx, PathKind,
 +        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx,
@@ -31,13 +21,11 @@ Rustfmt size:  21606 bytes
      },
      render::{
 -        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
-+        compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
-+        RenderContext,
++        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match,
++        match_types,
      },
-+    CallableSnippets,
  };
  
- #[derive(Debug)]
          CompletionRelevanceReturnType::DirectConstructor
      } else if ret_type
          .type_arguments()
@@ -55,12 +43,11 @@ Rustfmt size:  21606 bytes
          // fn([..]) -> [..]Builder
          CompletionRelevanceReturnType::Builder
      } else {
- #[cfg(test)]
  mod tests {
      use crate::{
-+        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
          CallableSnippets, CompletionConfig,
 -        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
++        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
      };
 -
      #[test]

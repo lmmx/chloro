@@ -8,12 +8,6 @@ Rustfmt size:  7893 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::AsAssocItem;
- use syntax::{
-+    ast::{self, prec::ExprPrecedence, AstNode, HasArgList},
-     TextRange,
--    ast::{self, AstNode, HasArgList, prec::ExprPrecedence},
- };
  
  use crate::{AssistContext, AssistId, Assists};
  

@@ -8,7 +8,7 @@ use base_db::Crate;
 use intern::sym;
 use smallvec::SmallVec;
 use span::{Edition, SyntaxContext};
-use syntax::{ast, AstNode};
+use syntax::{AstNode, ast};
 
 use crate::{
     db::ExpandDatabase,

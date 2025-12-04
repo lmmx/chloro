@@ -5,20 +5,20 @@ use std::ops::ControlFlow;
 use hir_def::{ImplId, TraitId};
 use macros::{TypeFoldable, TypeVisitable};
 use rustc_type_ir::{
-    solve::{inspect::ProbeKind, BuiltinImplSource, CandidateSource, Certainty},
     Interner,
+    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind},
 };
 
 use crate::{
     db::InternedOpaqueTyId,
     next_solver::{
+        Const, ErrorGuaranteed, GenericArgs, Goal, TraitRef, Ty, TypeError,
         infer::{
             InferCtxt,
             select::EvaluationResult::*,
             traits::{Obligation, ObligationCause, PredicateObligation, TraitObligation},
         },
-        inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor}, Const, ErrorGuaranteed,
-        GenericArgs, Goal, TraitRef, Ty, TypeError,
+        inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor},
     },
 };
 

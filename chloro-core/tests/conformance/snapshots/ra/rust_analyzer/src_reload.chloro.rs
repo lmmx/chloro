@@ -15,13 +15,13 @@
 
 use std::{iter, mem};
 
-use hir::{db::DefDatabase, ChangeWithProcMacros, ProcMacrosBuilder};
+use hir::{ChangeWithProcMacros, ProcMacrosBuilder, db::DefDatabase};
 use ide_db::{
-    base_db::{salsa::Durability, CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths},
     FxHashMap,
+    base_db::{CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths, salsa::Durability},
 };
 use itertools::Itertools;
-use load_cargo::{load_proc_macro, ProjectFolders};
+use load_cargo::{ProjectFolders, load_proc_macro};
 use lsp_types::FileSystemWatcher;
 use paths::Utf8Path;
 use proc_macro_api::ProcMacroClient;

@@ -1462,10 +1462,9 @@ expression: cleaned_diff
 -fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
 +fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {
 +}
-+use b;
  
  use {a;
--use b;
+ use b;
  struct T;
 -fn test() {}
 -use {a ,, b};
@@ -1908,12 +1907,14 @@ expression: cleaned_diff
  
 -// 2015
 -macro_rules! try { () => {} }
--
 +macro_rules!
 +{
-+}
++}use Trait as _;
+ 
  use std as stdlib;
- use Trait as _;
+-use Trait as _;
+ 
+ struct S(String, usize);
  
  
  type T = S<i32, dyn T, fn()>;
@@ -2708,13 +2709,9 @@ expression: cleaned_diff
 +
 +pub(in foo::bar::baz) fn e() {
 +}
-+use foo::bar::baz;
  
  use ::foo::bar::baz;
--use foo::bar::baz;
- 
- struct S<T: Copy> {
-     f: T,
+ use foo::bar::baz;
  }
  
  enum E3 {
@@ -3011,7 +3008,7 @@ expression: cleaned_diff
  
  use foo as bar;
 -use foo::{a as b, *, ::*, ::foo as x};
-+use foo::{a as b, ::foo as x, *, ::*};
++use foo::{::foo as x, a as b, *, ::*};
  
 -fn g1(#[attr1] #[attr2] pat: Type) {}
 -fn g2(#[attr1] x: u8) {}
@@ -3063,10 +3060,13 @@ expression: cleaned_diff
  }
  
  fn r#foo() {
- use foo;
+ }
+-
+-use foo;
  use ::bar;
  
--
++use foo;
+ 
  struct S {
 -    foo: u32
 +    foo: u32,
@@ -3093,9 +3093,9 @@ expression: cleaned_diff
  fn main() {
      let ():::X = ();
  }
++use ::foo::{a, b, c};
 +use foo::*;
 +use foo::{};
-+use ::foo::{a, b, c};
  
  use *;
  use ::*;
@@ -4259,12 +4259,6 @@ expression: cleaned_diff
  use std::mem;
  
  use crate::{
--    SyntaxKind::{self, *},
-     output::Output,
-+    SyntaxKind::{self, *},
- };
- 
- /// `Parser` produces a flat list of `Event`s.
  
  impl Event {
      pub(crate) fn tombstone() -> Self {
@@ -4312,14 +4306,13 @@ expression: cleaned_diff
  mod attributes;
  mod expressions;
  mod generic_args;
- mod types;
  
  use crate::{
--    SyntaxKind::{self, *},
+     SyntaxKind::{self, *},
 -    T, TokenSet,
++    TokenSet,
      parser::{CompletedMarker, Marker, Parser},
-+    SyntaxKind::{self, *},
-+    TokenSet, T,
++    T,
  };
  
  pub(crate) mod entry {
@@ -4441,16 +4434,14 @@ expression: cleaned_diff
  use std::cell::Cell;
  
  use drop_bomb::DropBomb;
- 
  use crate::{
--    Edition,
--    SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
+     Edition,
+     SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
 -    T, TokenSet,
++    TokenSet,
      event::Event,
      input::Input,
-+    Edition,
-+    SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-+    TokenSet, T,
++    T,
  };
  
  /// `Parser` struct provides the low-level API for

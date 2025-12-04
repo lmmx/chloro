@@ -1,7 +1,8 @@
 use ide_db::{famous_defs::FamousDefs, traits::resolve_target_trait};
 use syntax::{
+    AstNode,
     ast::{self, edit_in_place::Indent, make},
-    ted, AstNode, T,
+    ted, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};
@@ -134,8 +135,8 @@ fn process_ret_type(ref_ty: &ast::RetType) -> Option<ast::Type> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{check_assist, check_assist_not_applicable, check_assist_with_config, TEST_CONFIG},
         AssistConfig,
+        tests::{check_assist, check_assist_not_applicable, check_assist_with_config, TEST_CONFIG},
     };
     use super::*;
     #[test]

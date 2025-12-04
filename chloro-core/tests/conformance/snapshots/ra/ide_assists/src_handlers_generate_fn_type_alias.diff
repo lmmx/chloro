@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11167 bytes
-Chloro size:   11169 bytes
+Chloro size:   11173 bytes
 Rustfmt size:  11167 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use either::Either;
- use ide_db::assists::{AssistId, GroupLabel};
- use syntax::{
--    AstNode,
--    ast::{self, HasGenericParams, HasName, edit::IndentLevel, make},
--    syntax_editor,
-+    ast::{self, edit::IndentLevel, make, HasGenericParams, HasName},
-+    syntax_editor, AstNode,
- };
- 
  use crate::{AssistContext, Assists};
  
  // Assist: generate_fn_type_alias_named

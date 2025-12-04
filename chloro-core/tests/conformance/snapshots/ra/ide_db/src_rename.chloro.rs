@@ -24,12 +24,13 @@
 use std::fmt::{self, Display};
 use base_db::AnchoredPathBuf;
 use either::Either;
-use hir::{sym, FieldSource, FileRange, InFile, ModuleSource, Name, Semantics};
+use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
 use span::{Edition, FileId, SyntaxContext};
-use stdx::{never, TupleExt};
+use stdx::{TupleExt, never};
 use syntax::{
+    AstNode, SyntaxKind, TextRange,
     ast::{self, HasName},
-    AstNode, SyntaxKind, TextRange, T,
+    T,
 };
 
 use crate::{
@@ -38,12 +39,12 @@ use crate::{
 };
 
 use crate::{
+    RootDatabase,
     defs::Definition,
     search::{FileReference, FileReferenceNode},
     source_change::{FileSystemEdit, SourceChange},
     syntax_helpers::node_ext::expr_as_name_ref,
     traits::convert_to_def_in_trait,
-    RootDatabase,
 };
 
 pub type Result<T, E = RenameError> = std::result::Result<T, E>;

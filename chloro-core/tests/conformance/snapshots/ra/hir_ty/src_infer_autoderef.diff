@@ -8,17 +8,21 @@ Rustfmt size:  1772 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use rustc_ast_ir::Mutability;
+ 
  use crate::{
++    Adjust, Adjustment, OverloadedDeref,
      autoderef::{Autoderef, AutoderefKind},
      infer::unify::InferenceTable,
 -    next_solver::{
 -        infer::{traits::PredicateObligations, InferOk},
 -        Ty,
 -    },
-+    next_solver::{infer::{InferOk, traits::PredicateObligations}, Ty},
-     Adjust, Adjustment, OverloadedDeref,
+-    Adjust, Adjustment, OverloadedDeref,
++    next_solver::{Ty, infer::{InferOk, traits::PredicateObligations}},
  };
  
+ impl<'db> InferenceTable<'db> {
      pub(crate) fn adjust_steps_as_infer_ok(&mut self) -> InferOk<'db, Vec<Adjustment<'db>>> {
          let steps = self.steps();
          if steps.is_empty() {

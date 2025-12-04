@@ -1,17 +1,18 @@
 //! Impl specialization related things
 
-use hir_def::{nameres::crate_def_map, ImplId};
+use hir_def::{ImplId, nameres::crate_def_map};
 use intern::sym;
 use tracing::debug;
 
 use crate::{
     db::HirDatabase,
     next_solver::{
+        DbInterner, TypingMode,
         infer::{
             DbInternerInferExt,
             traits::{Obligation, ObligationCause},
         },
-        obligation_ctxt::ObligationCtxt, DbInterner, TypingMode,
+        obligation_ctxt::ObligationCtxt,
     },
 };
 

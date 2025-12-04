@@ -10,57 +10,57 @@ use std::iter::{self, once};
 
 use either::Either;
 use hir_def::{
+    AdtId, AssocItemId, CallableDefId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId,
+    LocalFieldId, ModuleDefId, StructId, TraitId, VariantId,
     expr_store::{
-        lower::ExprCollector, path::Path, scope::{ExprScopes, ScopeId}, Body, BodySourceMap,
-        ExpressionStore, ExpressionStoreSourceMap, HygieneId,
+        Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, HygieneId,
+        lower::ExprCollector, path::Path, scope::{ExprScopes, ScopeId},
     },
     hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat},
     lang_item::LangItem,
     nameres::MacroSubNs,
-    resolver::{resolver_for_scope, HasResolver, Resolver, TypeNs, ValueNs},
+    resolver::{HasResolver, Resolver, TypeNs, ValueNs, resolver_for_scope},
     type_ref::{Mutability, TypeRefId},
-    AdtId, AssocItemId, CallableDefId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId,
-    LocalFieldId, ModuleDefId, StructId, TraitId, VariantId,
 };
 use hir_expand::{
-    mod_path::{path, ModPath, PathKind},
-    name::{AsName, Name},
     HirFileId, InFile,
+    mod_path::{ModPath, PathKind, path},
+    name::{AsName, Name},
 };
 use hir_ty::{
+    Adjustment, InferenceResult, LifetimeElisionKind, TraitEnvironment, TyLoweringContext,
     diagnostics::{
-        record_literal_missing_fields, record_pattern_missing_fields, unsafe_operations,
-        InsideUnsafeBlock,
+        InsideUnsafeBlock, record_literal_missing_fields, record_pattern_missing_fields,
+        unsafe_operations,
     },
     lang_items::lang_items_for_bin_op,
     method_resolution,
     next_solver::{
-        infer::DbInternerInferExt, DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind,
-        TypingMode,
+        DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind, TypingMode,
+        infer::DbInternerInferExt,
     },
     traits::structurally_normalize_ty,
-    Adjustment, InferenceResult, LifetimeElisionKind, TraitEnvironment, TyLoweringContext,
 };
 use intern::sym;
 use itertools::Itertools;
 use rustc_type_ir::{
-    inherent::{AdtDef, IntoKind, Ty as _},
     AliasTyKind,
+    inherent::{AdtDef, IntoKind, Ty as _},
 };
 use smallvec::SmallVec;
 use stdx::never;
 use syntax::{
-    ast::{self, AstNode, RangeItem, RangeOp},
     SyntaxKind, SyntaxNode, TextRange, TextSize,
+    ast::{self, AstNode, RangeItem, RangeOp},
 };
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase,
-    semantics::{PathResolution, PathResolutionPerNs},
     Adt, AssocItem, BindingMode, BuiltinAttr, BuiltinType, Callable, Const, DeriveHelper, Field,
     Function, GenericSubstitution, Local, Macro, ModuleDef, Static, Struct, ToolModule, Trait,
     TupleField, Type, TypeAlias, Variant,
+    db::HirDatabase,
+    semantics::{PathResolution, PathResolutionPerNs},
 };
 
 /// `SourceAnalyzer` is a convenience wrapper which exposes HIR API in terms of

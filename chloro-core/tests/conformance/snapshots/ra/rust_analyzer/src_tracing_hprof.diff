@@ -2,12 +2,29 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7460 bytes
+Chloro size:   7456 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ use rustc_hash::FxHashSet;
+ use tracing::{
++    Event, Id, Level, Subscriber,
+     field::{Field, Visit},
+     span::Attributes,
+-    Event, Id, Level, Subscriber,
+ };
+ use tracing_subscriber::{
+-    filter,
++    Layer, Registry, filter,
+     layer::{Context, SubscriberExt},
+     registry::LookupSpan,
+-    Layer, Registry,
+ };
+ 
+ pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {
          let (write_filter, allowed_names) = WriteFilter::from_spec(spec);
  
          // this filter the first pass for `tracing`: these are all the "profiling" spans, but things like

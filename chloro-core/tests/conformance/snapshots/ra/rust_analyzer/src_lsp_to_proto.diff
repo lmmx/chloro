@@ -13,6 +13,22 @@ Rustfmt size:  113494 bytes
  use std::{
      iter::once,
      mem,
+     sync::atomic::{AtomicU32, Ordering},
+ };
+ 
+-use base64::{prelude::BASE64_STANDARD, Engine};
++use base64::{Engine, prelude::BASE64_STANDARD};
+ use ide::{
+     Annotation, AnnotationKind, Assist, AssistKind, Cancellable, CompletionFieldsToResolve,
+     CompletionItem, CompletionItemKind, CompletionRelevance, Documentation, FileId, FileRange,
+     UpdateTest,
+ };
+ use ide_db::{
+-    assists, rust_doc::format_docs, source_change::ChangeAnnotationId, FxHasher, MiniCore,
++    FxHasher, MiniCore, assists, rust_doc::format_docs, source_change::ChangeAnnotationId,
+ };
+ use itertools::Itertools;
+ use paths::{Utf8Component, Utf8Prefix};
      global_state::GlobalStateSnapshot,
      line_index::{LineEndings, LineIndex, PositionEncoding},
      lsp::{
@@ -21,8 +37,8 @@ Rustfmt size:  113494 bytes
 -        semantic_tokens::{self, standard_fallback_type},
 -        utils::invalid_params_error,
 -        LspError,
-+        completion_item_hash, ext::ShellRunnableArgs,
-+        semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error, LspError,
++        LspError, completion_item_hash, ext::ShellRunnableArgs,
++        semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error,
      },
      lsp_ext::{self, SnippetTextEdit},
      target_spec::{CargoTargetSpec, TargetSpec},
@@ -681,6 +697,12 @@ Rustfmt size:  113494 bytes
  
      if update_test.insta {
          r.cargo_args.insert(0, "insta".to_owned());
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{expect, Expect};
++    use expect_test::{Expect, expect};
+     use ide::{Analysis, FilePosition};
      use ide_db::source_change::Snippet;
      use test_utils::extract_offset;
      use triomphe::Arc;

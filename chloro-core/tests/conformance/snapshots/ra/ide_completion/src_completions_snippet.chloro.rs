@@ -1,11 +1,11 @@
 //! This file provides snippet completions, like `pd` => `eprintln!(...)`.
 
-use ide_db::{documentation::Documentation, imports::insert_use::ImportScope, SnippetCap};
+use ide_db::{SnippetCap, documentation::Documentation, imports::insert_use::ImportScope};
 
 use crate::{
+    CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
     context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
     item::Builder,
-    CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
 };
 
 pub(crate) fn complete_expr_snippet(
@@ -151,8 +151,8 @@ fn add_custom_completions(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{check_edit_with_config, TEST_CONFIG},
         CompletionConfig, Snippet,
+        tests::{check_edit_with_config, TEST_CONFIG},
     };
     #[test]
     fn custom_snippet_completion() {

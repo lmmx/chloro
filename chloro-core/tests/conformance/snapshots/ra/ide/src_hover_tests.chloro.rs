@@ -1,9 +1,9 @@
-use expect_test::{expect, Expect};
-use ide_db::{base_db::SourceDatabase, FileRange, MiniCore};
+use expect_test::{Expect, expect};
+use ide_db::{FileRange, MiniCore, base_db::SourceDatabase};
 use syntax::TextRange;
 
 use crate::{
-    fixture, HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
+    HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, fixture,
 };
 
 use hir::setup_tracing;

@@ -14,8 +14,8 @@ Rustfmt size:  3074 bytes
 -    base_db::{
 -        BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase,
 -    },
-+    base_db::{BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase},
      FxHashMap, RootDatabase,
++    base_db::{BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase},
  };
  
 -// Feature: View Crate Graph
