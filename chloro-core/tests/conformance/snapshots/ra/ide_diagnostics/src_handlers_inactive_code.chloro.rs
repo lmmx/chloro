@@ -82,6 +82,7 @@ fn f() {
     #[test]
     fn inactive_item() {
         // Additional tests in `cfg` crate. This only tests disabled cfgs.
+
         check(
             r#"
     #[cfg(no)] pub fn f() {}

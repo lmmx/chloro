@@ -1515,6 +1515,7 @@ fn main() {
     }
 
     // recover...
+
     let a = 1;
     enum Test2 {
         Fine,
@@ -5906,6 +5907,7 @@ pub(crate) fn use_tree_list(p: &mut Parser<'_>) {
     // fn test() {}
 
     // use {a ,, b};
+
     delimited(
         p,
         T!['{'],
@@ -5928,6 +5930,7 @@ pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
     // test trait_item_generic_params
 
     // trait X<U: Debug + Display> {}
+
     generic_params::opt_generic_param_list(p);
 
     if p.eat(T![=]) {
@@ -5953,6 +5956,7 @@ pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
     // test trait_item_where_clause
 
     // trait T where Self: Copy {}
+
     generic_params::opt_where_clause(p);
 
     if p.at(T!['{']) {
@@ -5972,11 +5976,13 @@ pub(super) fn impl_(p: &mut Parser<'_>, m: Marker) {
     // test impl_item_const
 
     // impl const Send for S {}
+
     p.eat(T![const]);
 
     // test impl_item_never_type
 
     // impl ! {}
+
     if p.at(T![!]) && !p.nth_at(1, T!['{']) {
         // test impl_item_neg
         // impl !Send for S {}
@@ -6071,6 +6077,7 @@ fn const_or_static(p: &mut Parser<'_>, m: Marker, is_const: bool) {
     }
 
     // FIXME: Recover on statics with generic params/where clause.
+
     if !is_const && p.at(T![<]) {
         // test_err generic_static
         // static C<i32>: u32 = 0;
@@ -6110,6 +6117,7 @@ fn const_or_static(p: &mut Parser<'_>, m: Marker, is_const: bool) {
     // test_err static_where_clause
     // static C: u32 = 0
     // where i32: Copy;
+
     p.expect(T![;]);
     m.complete(p, if is_const { CONST } else { STATIC });
 }
@@ -6374,6 +6382,7 @@ pub(super) fn item_or_macro(p: &mut Parser<'_>, stop_on_r_curly: bool, is_in_ext
     // macro_rules! ()
 
     // macro_rules! []
+
     if paths::is_use_path_start(p) {
         paths::use_path(p);
         // Do not create a MACRO_CALL node here if this isn't a macro call, this causes problems with completion.
@@ -6420,6 +6429,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     let mut has_extern = false;
 
     // modifiers
+
     if p.at(T![const]) && p.nth(1) != T!['{'] {
         p.eat(T![const]);
         has_mods = true;
@@ -6428,6 +6438,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     // test_err async_without_semicolon
 
     // fn foo() { let _ = async {} }
+
     if p.at(T![async])
         && (!matches!(p.nth(1), T!['{'] | T![gen] | T![move] | T![|])
             || matches!((p.nth(1), p.nth(2)), (T![gen], T![fn])))
@@ -6441,6 +6452,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     // gen fn gen_fn() {}
 
     // async gen fn async_gen_fn() {}
+
     if p.at(T![gen]) && p.nth(1) == T![fn] {
         p.eat(T![gen]);
         has_mods = true;
@@ -6449,6 +6461,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     // test_err unsafe_block_in_mod
 
     // fn foo(){} unsafe { } fn bar(){}
+
     if p.at(T![unsafe]) && p.nth(1) != T!['{'] {
         p.eat(T![unsafe]);
         has_mods = true;
@@ -6457,6 +6470,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     // test safe_outside_of_extern
 
     // fn foo() { safe = true; }
+
     if is_in_extern && p.at_contextual_kw(T![safe]) {
         p.eat_contextual_kw(T![safe]);
         has_mods = true;
@@ -6475,6 +6489,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     // test default_item
 
     // default impl T for Foo {}
+
     if p.at_contextual_kw(T![default]) {
         match p.nth(1) {
             T![fn] | T![type] | T![const] | T![impl] => {
@@ -6513,6 +6528,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     }
 
     // items
+
     match p.current() {
         T![fn] => fn_(p, m),
 
@@ -6596,6 +6612,7 @@ fn extern_crate(p: &mut Parser<'_>, m: Marker) {
     // extern crate foo as bar;
 
     // extern crate self as bar;
+
     opt_rename(p);
     p.expect(T![;]);
     m.complete(p, EXTERN_CRATE);
@@ -6622,6 +6639,7 @@ fn type_alias(p: &mut Parser<'_>, m: Marker) {
     // test type_item_type_params
 
     // type Result<T> = ();
+
     generic_params::opt_generic_param_list(p);
 
     if p.at(T![:]) {
@@ -6631,6 +6649,7 @@ fn type_alias(p: &mut Parser<'_>, m: Marker) {
     // test type_item_where_clause_deprecated
 
     // type Foo where Foo: Copy = ();
+
     generic_params::opt_where_clause(p);
     if p.eat(T![=]) {
         types::type_(p);
@@ -6639,6 +6658,7 @@ fn type_alias(p: &mut Parser<'_>, m: Marker) {
     // test type_item_where_clause
 
     // type Foo = () where Foo: Copy;
+
     generic_params::opt_where_clause(p);
 
     p.expect(T![;]);
@@ -6727,6 +6747,7 @@ fn fn_(p: &mut Parser<'_>, m: Marker) {
     // fn foo() -> A>]) { let x = 1; }
 
     // fn foo() -> A>]) where T: Copy { let x = 1; }
+
     while p.at(T![')']) | p.at(T![']']) | p.at(T![>]) {
         // recover from unbalanced return type brackets
         p.err_and_bump("expected a curly brace");
@@ -6735,11 +6756,13 @@ fn fn_(p: &mut Parser<'_>, m: Marker) {
     // test function_where_clause
 
     // fn foo<T>() where T: Copy {}
+
     generic_params::opt_where_clause(p);
 
     // test fn_decl
 
     // trait T { fn foo(); }
+
     if !p.eat(T![;]) {
         expressions::block_expr(p);
     }
@@ -7002,6 +7025,7 @@ fn tuple_expr(p: &mut Parser<'_>) -> CompletedMarker {
     //     (,);
 
     // }
+
     if p.eat(T![,]) {
         p.error("expected expression");
         saw_comma = true;
@@ -7316,6 +7340,7 @@ fn closure_expr(p: &mut Parser<'_>) -> CompletedMarker {
     // test closure_binder
 
     // fn main() { for<'a> || (); }
+
     if p.at(T![for]) {
         types::for_binder(p);
     }
@@ -7448,6 +7473,7 @@ pub(crate) fn match_arm_list(p: &mut Parser<'_>) {
     //     }
 
     // }
+
     attributes::inner_attrs(p);
 
     while !p.at(EOF) && !p.at(T!['}']) {
@@ -7962,6 +7988,7 @@ pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
     // test block_items
 
     // fn a() { fn b() {} }
+
     let m = match items::opt_item(p, m, false) {
         Ok(()) => return,
         Err(m) => m,
@@ -8369,6 +8396,7 @@ fn postfix_dot_expr<const FLOAT_RECOVERY: bool>(
     //     x.0. await;
 
     // }
+
     if p.nth(nth1) == T![await] {
         let m = lhs.precede(p);
         if !FLOAT_RECOVERY {
@@ -9012,6 +9040,7 @@ fn path_type_bound(p: &mut Parser<'_>) -> Result<(), ()> {
     // test_err invalid_question_for_type_trait_bound
 
     // fn f<T>() where T: ?for<> Sized {}
+
     if paths::is_use_path_start(p) {
         // test_err type_bounds_macro_call_recovery
         // fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
@@ -9366,6 +9395,7 @@ pub(super) fn for_type(p: &mut Parser<'_>, allow_bounds: bool) {
     // test no_dyn_trait_leading_for
 
     // type A = for<'a> Test<'a> + Send;
+
     if allow_bounds {
         opt_type_bounds_as_dyn_trait_type(p, completed);
     }
@@ -9434,6 +9464,7 @@ pub(super) fn path_type_bounds(p: &mut Parser<'_>, allow_bounds: bool) {
     // fn foo() -> Box<T + 'f> {}
 
     // fn foo() -> Box<dyn T + 'f> {}
+
     let path = m.complete(p, PATH_TYPE);
     if allow_bounds {
         opt_type_bounds_as_dyn_trait_type(p, path);
@@ -9455,20 +9486,25 @@ pub(super) fn opt_type_bounds_as_dyn_trait_type(
     }
 
     // First create a TYPE_BOUND from the completed PATH_TYPE
+
     let m = type_marker.precede(p).complete(p, TYPE_BOUND);
 
     // Next setup a marker for the TYPE_BOUND_LIST
+
     let m = m.precede(p);
 
     // This gets consumed here so it gets properly set
 
     // in the TYPE_BOUND_LIST
+
     p.eat(T![+]);
 
     // Parse rest of the bounds into the TYPE_BOUND_LIST
+
     let m = generic_params::bounds_without_colon_m(p, m);
 
     // Finally precede everything with DYN_TRAIT_TYPE
+
     m.precede(p).complete(p, DYN_TRAIT_TYPE)
 }
 
@@ -9560,6 +9596,7 @@ fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     //         (..=2, _) => (),
     //     }
     // }
+
     if p.at(T![..=]) {
         let m = p.start();
         p.bump(T![..=]);
@@ -9633,6 +9670,7 @@ fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     //     let [head, .., mid, .., cons] = ();
 
     // }
+
     if p.at(T![..]) {
         let m = p.start();
         p.bump(T![..]);
@@ -9875,6 +9913,7 @@ fn tuple_pat(p: &mut Parser<'_>) -> CompletedMarker {
     //     let (,);
 
     // }
+
     if p.eat(T![,]) {
         p.error("expected pattern");
         has_comma = true;
@@ -10318,6 +10357,7 @@ impl LexedStr<'_> {
         }
 
         // is_eof?
+
         builder.pos == builder.lexed.len()
     }
 }
@@ -10565,6 +10605,7 @@ impl<'s> ScriptSource<'s> {
         }
 
         // Whitespace may precede a frontmatter but must end with a newline
+
         if let Some(nl_end) = strip_ws_lines(input.as_ref()) {
             let _ = input.next_slice(nl_end);
         }
@@ -10613,6 +10654,7 @@ impl<'s> ScriptSource<'s> {
         }
 
         // Ends with a line that starts with a matching number of `-` only followed by whitespace
+
         let nl_fence_pattern = format!("\n{fence_pattern}");
         let Some(frontmatter_nl) = input.find_slice(nl_fence_pattern.as_str()) else {
             for len in (2..(nl_fence_pattern.len() - 1)).rev() {
@@ -10782,6 +10824,7 @@ fn is_whitespace(c: char) -> bool {
     //
     // Note that this set is stable (ie, it doesn't change with different
     // Unicode versions), so it's ok to just hard-code the values.
+
     matches!(
         c,
         // End-of-line characters
@@ -10809,6 +10852,7 @@ fn is_horizontal_whitespace(c: char) -> bool {
     //
     // Note that this set is stable (ie, it doesn't change with different
     // Unicode versions), so it's ok to just hard-code the values.
+
     matches!(
         c,
         // Horizontal space characters

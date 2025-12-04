@@ -77,6 +77,7 @@ pub(crate) fn highlight(
         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
 
     // Determine the root based on the given range.
+
     let (root, range_to_highlight) = {
         let file = sema.parse(file_id);
         let source_file = file.syntax();
@@ -124,6 +125,7 @@ fn traverse(
     let empty = FxHashSet::default();
 
     // FIXME: accommodate range highlighting
+
     let mut tt_level = 0;
     // FIXME: accommodate range highlighting
     let mut attr_or_derive_item = None;
@@ -131,9 +133,11 @@ fn traverse(
     // FIXME: these are not perfectly accurate, we determine them by the real file's syntax tree
 
     // an attribute nested in a macro call will not emit `inside_attribute`
+
     let mut inside_attribute = false;
 
     // FIXME: accommodate range highlighting
+
     let mut body_stack: Vec<Option<DefWithBody>> = vec![];
     let mut per_body_cache: FxHashMap<DefWithBody, (FxHashSet<_>, FxHashMap<Name, u32>)> =
         FxHashMap::default();
@@ -141,6 +145,7 @@ fn traverse(
     // Walk all nodes, keeping track of whether we are inside a macro or not.
 
     // If in macro, expand it first and highlight the expanded code.
+
     let mut preorder = root.preorder_with_tokens();
     while let Some(event) = preorder.next() {
         // Element outside of the viewport, no need to highlight

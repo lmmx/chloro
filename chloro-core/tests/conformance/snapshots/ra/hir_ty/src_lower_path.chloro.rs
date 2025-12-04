@@ -1109,10 +1109,12 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
     // - Lifetime parameters
 
     // - Type or Const parameters
+
     let def_generics = generics(db, def);
     let args_slice = args_and_bindings.map(|it| &*it.args).unwrap_or_default();
 
     // We do not allow inference if there are specified args, i.e. we do not allow partial inference.
+
     let has_non_lifetime_args =
         args_slice.iter().any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
     infer_args &= !has_non_lifetime_args;
@@ -1141,6 +1143,7 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
     // wrong order. `force_infer_lt` records the type or const that forced lifetimes to be
 
     // inferred, so we can use it for diagnostics later.
+
     let mut force_infer_lt = None;
 
     let has_self_arg = args_and_bindings.is_some_and(|it| it.has_self_type);

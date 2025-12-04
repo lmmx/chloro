@@ -70,6 +70,7 @@ pub(crate) fn complete_item_snippet(
     }
 
     // Test-related snippets shouldn't be shown in blocks.
+
     if let ItemListKind::SourceFile | ItemListKind::Module = kind {
         let mut item = snippet(
             ctx,

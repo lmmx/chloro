@@ -17,6 +17,7 @@ pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let placement = comment.kind().doc?;
 
     // Only allow comments which are alone on their line
+
     if let Some(prev) = comment.syntax().prev_token() {
         Whitespace::cast(prev).filter(|w| w.text().contains('\n'))?;
     }

@@ -171,6 +171,7 @@ pub(crate) fn find_all_refs(
     };
 
     // Find references for control-flow keywords.
+
     if let Some(res) = handle_control_flow_keywords(sema, position) {
         return Some(vec![res]);
     }

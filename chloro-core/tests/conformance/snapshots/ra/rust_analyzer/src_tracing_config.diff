@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4764 bytes
-Chloro size:   4763 bytes
+Chloro size:   4764 bytes
 Rustfmt size:  4820 bytes
 
 ✗ Outputs DIFFER
@@ -57,3 +57,7 @@ Rustfmt size:  4820 bytes
          };
  
          // TODO: remove `.with_filter(LevelFilter::OFF)` on the `None` branch.
++
+         let profiler_layer = match self.profile_filter {
+             Some(spec) => Some(hprof::SpanTree::new(&spec)).with_filter(LevelFilter::INFO),
+             None => None.with_filter(LevelFilter::OFF),

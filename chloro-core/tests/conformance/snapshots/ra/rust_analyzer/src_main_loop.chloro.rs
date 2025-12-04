@@ -58,6 +58,7 @@ pub fn main_loop(config: Config, connection: Connection) -> anyhow::Result<()> {
     // https://docs.microsoft.com/en-us/windows/win32/procthread/priority-boosts
 
     // https://github.com/rust-lang/rust-analyzer/issues/2835
+
     #[cfg(windows)]
     unsafe {
         use windows_sys::Win32::System::Threading::*;
@@ -682,6 +683,7 @@ impl GlobalState {
         // Updating tests are triggered by the user typing
 
         // so we run them on a latency sensitive thread.
+
         self.task_pool.handle.spawn(ThreadIntent::LatencySensitive, {
             let snapshot = self.snapshot();
             move || {

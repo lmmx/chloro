@@ -61,6 +61,7 @@ pub fn try_merge_imports(
     try_merge_trees_mut(&lhs_tree, &rhs_tree, merge_behavior)?;
 
     // Ignore `None` result because normalization should not affect the merge result.
+
     try_normalize_use_tree_mut(&lhs_tree, merge_behavior.into());
 
     Some(lhs)
@@ -78,6 +79,7 @@ pub fn try_merge_trees(
     try_merge_trees_mut(&lhs, &rhs, merge)?;
 
     // Ignore `None` result because normalization should not affect the merge result.
+
     try_normalize_use_tree_mut(&lhs, merge.into());
 
     Some(lhs)

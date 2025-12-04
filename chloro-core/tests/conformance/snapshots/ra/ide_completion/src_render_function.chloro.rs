@@ -376,6 +376,7 @@ fn params<'db>(
     ctx.config.callable.as_ref()?;
 
     // Don't add parentheses if the expected type is a function reference with the same signature.
+
     if let Some(expected) = ctx.expected_type.as_ref().filter(|e| e.is_fn())
         && let Some(expected) = expected.as_callable(ctx.db)
         && let Some(completed) = func.ty(ctx.db).as_callable(ctx.db)
@@ -680,6 +681,7 @@ fn g(foo: (), mut bar: u32)
         );
 
         // has type param
+
         check_edit(
             "mut bar: u32",
             r#"

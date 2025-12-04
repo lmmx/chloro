@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9752 bytes
+Chloro size:   9753 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -62,8 +62,10 @@ Rustfmt size:  9886 bytes
          // Alias is guaranteed to be fully structurally resolved,
 +
          // so we can super fold here.
++
          let term = infcx.resolve_vars_if_possible(infer_term);
          // super-folding the `term` will directly fold the `Ty` or `Const` so
+         // we have to match on the term and super-fold them manually.
              return Ok(ty);
          }
  

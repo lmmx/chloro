@@ -97,6 +97,7 @@ impl Visibility {
         // Additional complication: `to_module` might be in `from_module`'s `DefMap`, which we're
 
         // currently computing, so we must not call the `def_map` query for it.
+
         let def_map_block = def_map.block_id();
         loop {
             match (to_module.block, def_map_block) {
@@ -115,6 +116,7 @@ impl Visibility {
         }
 
         // from_module needs to be a descendant of to_module
+
         let mut def_map = def_map;
         let mut parent_arc;
         loop {

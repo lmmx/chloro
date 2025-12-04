@@ -58,6 +58,7 @@ pub fn expand_eager_macro_input(
     // Here we store an eager macro id for the argument expanded subtree
 
     // for that purpose.
+
     let loc = MacroCallLoc {
         def,
         krate,
@@ -159,10 +160,12 @@ fn eager_macro_recur(
     let mut replacements = Vec::new();
 
     // FIXME: We only report a single error inside of eager expansions
+
     let mut error = None;
     let mut children = original.preorder_with_tokens();
 
     // Collect replacement
+
     while let Some(child) = children.next() {
         let call = match child {
             WalkEvent::Enter(SyntaxElement::Node(child)) => match ast::MacroCall::cast(child) {

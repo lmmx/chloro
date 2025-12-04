@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21058 bytes
-Chloro size:   21095 bytes
+Chloro size:   21098 bytes
 Rustfmt size:  21705 bytes
 
 ✗ Outputs DIFFER
@@ -79,6 +79,13 @@ Rustfmt size:  21705 bytes
          SourceChange {
              source_file_edits,
              file_system_edits: Vec::new(),
+         snippet_ranges.sort_by_key(|(_, range)| range.start());
+ 
+         // Ensure that none of the ranges overlap
++
+         let disjoint_ranges = snippet_ranges
+             .iter()
+             .zip(snippet_ranges.iter().skip(1))
      pub file_id: FileId,
      pub source_change: SourceChange,
      pub command: Option<Command>,
@@ -121,6 +128,7 @@ Rustfmt size:  21705 bytes
          }
  
          // Apply mutable edits
++
          let snippet_edit = self.snippet_builder.take().map(|builder| {
              SnippetEdit::new(
 -                builder
@@ -230,6 +238,7 @@ Rustfmt size:  21705 bytes
 -            .filter(|(_, (_, snippet_edit))| snippet_edit.is_some())
 -            .at_most_one()
 -            .is_err());
++
 +        stdx::never!(
 +            self.source_change
 +                .source_file_edits

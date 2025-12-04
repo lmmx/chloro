@@ -17,6 +17,7 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     let function: ast::Fn = ctx.find_node_at_offset()?;
 
     // Do nothing if the cursor isn't on the async token.
+
     let async_token = function.async_token()?;
     if !async_token.text_range().contains_inclusive(ctx.offset()) {
         return None;
@@ -33,6 +34,7 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     }
 
     // Remove the `async` keyword plus whitespace after it, if any.
+
     let async_range = {
         let async_token = function.async_token()?;
         let next_token = async_token.next_token()?;
@@ -44,6 +46,7 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     };
 
     // Otherwise, we may remove the `async` keyword.
+
     acc.add(
         AssistId::quick_fix("unnecessary_async"),
         "Remove unnecessary async",

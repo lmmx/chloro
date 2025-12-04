@@ -135,6 +135,7 @@ pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<Infer
     // Even though coercion casts provide type hints, we check casts after fallback for
 
     // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
+
     let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
     for mut cast in cast_checks.into_iter() {
         if let Err(diag) = cast.check(&mut ctx) {
@@ -950,6 +951,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         // Even though coercion casts provide type hints, we check casts after fallback for
 
         // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
+
         let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
         for mut cast in cast_checks.into_iter() {
             if let Err(diag) = cast.check(&mut ctx) {
@@ -1116,6 +1118,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         // Check if function contains a va_list, if it does then we append it to the parameter types
 
         // that are collected from the function data
+
         if data.is_varargs() {
             let va_list_ty = match self.resolve_va_list() {
                 Some(va_list) => Ty::new_adt(

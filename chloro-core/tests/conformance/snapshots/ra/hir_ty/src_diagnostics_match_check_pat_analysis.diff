@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21030 bytes
+Chloro size:   21032 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -240,6 +240,7 @@ Rustfmt size:  22047 bytes
          // Unhandled types are treated as non-exhaustive. Being explicit here instead of falling
 +
          // to catchall arm to ease further implementation.
++
          let unhandled = || ConstructorSet::Unlistable;
  
          // This determines the set of all possible constructors for the type `ty`. For numbers,
@@ -257,8 +258,10 @@ Rustfmt size:  22047 bytes
          // Invariant: this is empty if and only if the type is uninhabited (as determined by
 +
          // `cx.is_uninhabited()`).
++
          Ok(match ty.kind() {
              TyKind::Bool => ConstructorSet::Bool,
+             TyKind::Char => unhandled(),
                      hir_def::AdtId::EnumId(enum_id) => {
                          let enum_data = enum_id.enum_variants(cx.db);
                          let is_declared_nonexhaustive = cx.is_foreign_non_exhaustive(adt);

@@ -351,6 +351,7 @@ fn get_literal_name(ctx: &AssistContext<'_>, expr: &ast::Expr) -> Option<String>
     };
 
     // Entirely arbitrary
+
     if inner.len() > 32 {
         return None;
     }

@@ -348,6 +348,7 @@ fn get_import_name(
     // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
 
     // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
+
     if import_edit.item_to_import == import_edit.original_item {
         import_edit.import_path.segments().last().cloned()
     } else {
@@ -599,6 +600,7 @@ fn compute_type_match(
     // We don't ever consider unit type to be an exact type match, since
 
     // nearly always this is not meaningful to the user.
+
     if expected_type.is_unit() {
         return None;
     }

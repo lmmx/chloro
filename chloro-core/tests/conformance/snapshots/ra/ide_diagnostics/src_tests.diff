@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12272 bytes
+Chloro size:   12273 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
@@ -86,6 +86,13 @@ Rustfmt size:  12328 bytes
              panic!("Diagnostic test failed.\nFalse negatives: {fneg:?}\nFalse positives: {fpos:?}");
          }
      }
+     }
+ 
+     // Checks that there is no diagnostic in minicore for each flag.
++
+     for flag in MiniCore::available_flags(MiniCore::RAW_SOURCE) {
+         if flag == "clone" {
+             // Clone without copy has `moved-out-of-ref`, so ignoring.
      }
      // And one time for all flags, to check codes which are behind multiple flags + prevent name collisions
      eprintln!("Checking all minicore flags");

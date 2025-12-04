@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4427 bytes
+Chloro size:   4428 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -32,13 +32,6 @@ Rustfmt size:  4581 bytes
  };
  
  use super::{DefMap, MacroSubNs};
-         attr: &Attr,
-     ) -> Result<ResolvedAttr, UnresolvedMacro> {
-         // NB: does not currently work for derive helpers as they aren't recorded in the `DefMap`
--
-         if self.is_builtin_or_registered_attr(&ast_id.path) {
-             return Ok(ResolvedAttr::Other);
-         }
                      return Ok(ResolvedAttr::Other);
                  }
              }

@@ -504,6 +504,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
         // FIXME: Also, what about considering >1 layer up the stack? May be necessary
 
         // for normalizes-to.
+
         let child_mode = match pred.kind().skip_binder() {
             PredicateKind::Clause(ClauseKind::Trait(trait_pred)) => {
                 ChildMode::Trait(pred.kind().rebind(trait_pred))
@@ -543,6 +544,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
         // We do this as a separate loop so that we do not choose to tell the user about some nested
 
         // goal before we encounter a `T: FnPtr` nested goal.
+
         for nested_goal in &nested_goals {
             if let Some(poly_trait_pred) = nested_goal.goal().predicate.as_trait_clause()
                 && interner
@@ -593,6 +595,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
         // alias-relate may fail because the lhs or rhs can't be normalized,
 
         // and therefore is treated as rigid.
+
         if let Some(PredicateKind::AliasRelate(lhs, rhs, _)) = pred.kind().no_bound_vars() {
             goal.infcx().visit_proof_tree_at_depth(
                 goal.goal().with(interner, ClauseKind::WellFormed(lhs)),
@@ -677,6 +680,7 @@ mod wf {
         // because we are not able to make any progress at all. This is to prevent
 
         // cycles where we say "?0 is WF if ?0 is WF".
+
         if term.is_infer() {
             return None;
         }

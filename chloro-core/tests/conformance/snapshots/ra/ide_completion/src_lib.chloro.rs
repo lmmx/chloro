@@ -189,6 +189,7 @@ pub fn completions(
     let mut completions = Completions::default();
 
     // prevent `(` from triggering unwanted completion noise
+
     if trigger_character == Some('(') {
         if let CompletionAnalysis::NameRef(NameRefContext {
             kind:
@@ -208,6 +209,7 @@ pub fn completions(
     // the user might just wanted to type a `_` for type inference or pattern discarding
 
     // so try to suppress completions in those cases
+
     if trigger_character == Some('_')
         && ctx.original_token.kind() == syntax::SyntaxKind::UNDERSCORE
         && let CompletionAnalysis::NameRef(NameRefContext {

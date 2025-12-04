@@ -106,6 +106,7 @@ impl<'a, 'db> ProofTreeVisitor<'db> for NestedObligationsForSelfTy<'a, 'db> {
         // and a `(): Trait<?0>` goal we recurse into the impl and look at
 
         // the nested `?0: FnOnce(u32)` goal.
+
         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
             candidate.visit_nested_no_probe(self)
         }
@@ -451,6 +452,7 @@ impl<'db> InferenceTable<'db> {
         let mut goals = vec![];
 
         // FIXME(next-solver): Handle `goals`.
+
         value.fold_with(&mut resolve_completely::Resolver::new(self, true, &mut goals))
     }
 

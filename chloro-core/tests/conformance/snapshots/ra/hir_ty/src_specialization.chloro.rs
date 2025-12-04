@@ -70,6 +70,7 @@ fn specializes_query(
     // See RFC 1210 for more details and justification.
 
     // Currently we do not allow e.g., a negative impl to specialize a positive one
+
     if specializing_impl_signature.is_negative() != parent_impl_signature.is_negative() {
         return false;
     }
@@ -77,9 +78,11 @@ fn specializes_query(
     // create a parameter environment corresponding to an identity instantiation of the specializing impl,
 
     // i.e. the most generic instantiation of the specializing impl.
+
     let param_env = trait_env.env;
 
     // Create an infcx, taking the predicates of the specializing impl as assumptions:
+
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
 
     let specializing_impl_trait_ref =
@@ -91,6 +94,7 @@ fn specializes_query(
     );
 
     // Attempt to prove that the parent impl applies, given all of the above.
+
     let mut ocx = ObligationCtxt::new(&infcx);
 
     let parent_args = infcx.fresh_args_for_item(parent_impl_def_id.into());
@@ -100,6 +104,7 @@ fn specializes_query(
         .instantiate(interner, parent_args);
 
     // do the impls unify? If not, no specialization.
+
     let Ok(()) = ocx.eq(cause, param_env, specializing_impl_trait_ref, parent_impl_trait_ref)
     else {
         return false;
@@ -110,6 +115,7 @@ fn specializes_query(
     // This is not just for correctness; we also need this to constrain any params that may
 
     // only be referenced via projection predicates.
+
     if let Some(predicates) =
         db.generic_predicates(parent_impl_def_id.into()).instantiate(interner, parent_args)
     {
@@ -131,6 +137,7 @@ fn specializes_query(
     }
 
     // FIXME: Check impl constness (when we implement const impls).
+
     debug!(
         "fulfill_implication: an impl for {:?} specializes {:?}",
         specializing_impl_trait_ref, parent_impl_trait_ref
@@ -163,6 +170,7 @@ pub(crate) fn specializes(
     // is an internal feature, std is not using it for specialization nor is likely to
 
     // ever use it, and we don't have the span information necessary to replicate that.
+
     let def_map = crate_def_map(db, module.krate());
     if !def_map.is_unstable_feature_enabled(&sym::specialization)
         && !def_map.is_unstable_feature_enabled(&sym::min_specialization)

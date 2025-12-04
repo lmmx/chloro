@@ -209,6 +209,7 @@ impl CargoTargetSpec {
         buf.push(self.package);
 
         // Can't mix --doc with other target flags
+
         if let RunnableKind::DocTest { .. } = kind {
             return;
         }

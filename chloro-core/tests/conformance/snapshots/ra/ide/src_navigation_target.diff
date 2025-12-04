@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   38816 bytes
+Chloro size:   38819 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -679,7 +679,10 @@ Rustfmt size:  42083 bytes
 +        || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).def.definition_range(db);
  
      // FIXME: Also make use of the syntax context to determine which site we are at?
++
      let value_range = InFile::new(hir_file, value).original_node_file_range_opt(db);
+     let ((call_site_range, call_site_focus), def_site) =
+         match InFile::new(hir_file, name).original_node_file_range_opt(db) {
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
      UpmappingResult {
          call_site: (
@@ -747,6 +750,7 @@ Rustfmt size:  42083 bytes
 -        let navs = analysis
 -            .symbol_search(Query::new("foo".to_owned()), !0)
 -            .unwrap();
++
 +        let navs = analysis.symbol_search(Query::new("foo".to_owned()), !0).unwrap();
          assert_eq!(navs.len(), 2);
 -        let navs = analysis
@@ -756,3 +760,7 @@ Rustfmt size:  42083 bytes
          assert_eq!(navs.len(), 0);
  
          // Unless we explicitly search for a `__` prefix
++
+         let query = Query::new("__foo".to_owned());
+         let navs = analysis.symbol_search(query, !0).unwrap();
+         assert_eq!(navs.len(), 1);

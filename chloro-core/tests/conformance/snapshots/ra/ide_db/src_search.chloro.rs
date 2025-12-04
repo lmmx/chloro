@@ -302,6 +302,7 @@ impl Definition {
         }
 
         // def is crate root
+
         if let &Definition::Module(module) = self
             && module.is_crate_root()
         {
@@ -850,6 +851,7 @@ impl<'a> FindUsages<'a> {
         // FIXME: If Rust ever gains the ability to `use Struct::method` we'll also need to account for free
 
         // functions.
+
         let finder = Finder::new(name.as_bytes());
         // The search for `Self` may return duplicate results with `ContainerName`, so deduplicate them.
         let mut self_positions = FxHashSet::default();
@@ -946,6 +948,7 @@ impl<'a> FindUsages<'a> {
         };
 
         // FIXME: This should probably depend on the number of the results (specifically, the number of false results).
+
         if name.len() <= 7 && self.short_associated_function_fast_search(sink, &search_scope, name)
         {
             return;
@@ -1004,6 +1007,7 @@ impl<'a> FindUsages<'a> {
         }
 
         // Search for `super` and `crate` resolving to our module
+
         if let Definition::Module(module) = self.def {
             let scope =
                 search_scope.intersection(&SearchScope::module_and_children(self.sema.db, module));
@@ -1040,6 +1044,7 @@ impl<'a> FindUsages<'a> {
         }
 
         // search for module `self` references in our module's definition source
+
         match self.def {
             Definition::Module(module) if self.search_self_mod => {
                 let src = module.definition_source(sema.db);
@@ -1323,6 +1328,7 @@ impl ReferenceCategory {
         }
 
         // Only Locals and Fields have accesses for now.
+
         if !matches!(def, Definition::Local(_) | Definition::Field(_)) {
             if is_name_ref_in_import(r) {
                 result |= ReferenceCategory::IMPORT;

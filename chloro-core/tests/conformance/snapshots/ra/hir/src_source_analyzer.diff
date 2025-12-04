@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 72179 bytes
-Chloro size:   71992 bytes
+Chloro size:   71995 bytes
 Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
@@ -90,20 +90,31 @@ Rustfmt size:  72179 bytes
                      None,
                  )),
              },
+         }
+ 
+         // FIXME: collectiong here shouldnt be necessary?
++
+         let mut collector = ExprCollector::new(db, self.resolver.module(), self.file_id);
+         let hir_path =
+             collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
          let (store, _) = collector.store.finish();
  
          // Case where path is a qualifier of a use tree, e.g. foo::bar::{Baz, Qux} where we are
 +
          // trying to resolve foo::bar.
++
          if let Some(use_tree) = parent().and_then(ast::UseTree::cast)
              && use_tree.coloncolon_token().is_some()
+         {
              .and_then(ast::Meta::cast);
  
          // Case where path is a qualifier of another path, e.g. foo::bar::Baz where we are
 +
          // trying to resolve foo::bar.
++
          if let Some(parent_hir_path) = parent_hir_path {
              return match resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store) {
+                 None if meta_path.is_some() => path
          })
  }
  

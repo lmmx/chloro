@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   49362 bytes
+Chloro size:   49363 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -108,8 +108,10 @@ Rustfmt size:  50490 bytes
          // but error types may pop up resulting in us still attempting to build the mir
 +
          // so just propagate the error type
++
          if base.is_ty_error() {
              return Ty::new_error(interner, ErrorGuaranteed);
+         }
                  }
              },
              ProjectionElem::Field(Either::Right(f)) => match base.kind() {

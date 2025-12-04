@@ -210,6 +210,7 @@ fn get_default_constructor(
     let module = krate.root_module();
 
     // Look for a ::new() associated function
+
     let has_new_func = ty
         .iterate_assoc_items(ctx.sema.db, krate, |assoc_item| {
             if let AssocItem::Function(func) = assoc_item
@@ -411,6 +412,7 @@ fn test_fn() {
         );
 
         // make sure the assist doesn't fill non Unit variants
+
         check_fix(
             r#"
 struct Empty {};
@@ -786,6 +788,7 @@ fn f() {
     #[test]
     fn import_extern_crate_clash_with_inner_item() {
         // This is more of a resolver test, but doesn't really work with the hir_def testsuite.
+
         check_diagnostics(
             r#"
 //- /lib.rs crate:lib deps:jwt

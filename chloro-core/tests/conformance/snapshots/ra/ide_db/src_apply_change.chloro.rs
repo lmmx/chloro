@@ -87,6 +87,7 @@ impl RootDatabase {
         //     table.entries::<EntryCounter>().0
 
         // }
+
         macro_rules! purge_each_query {
             ($($q:path)*) => {$(
                 let before = memory_usage().allocated;

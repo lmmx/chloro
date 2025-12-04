@@ -465,6 +465,7 @@ pub(crate) fn handle_on_type_formatting(
     // in `ide`, the `on_type` invariant is that
 
     // `text.char_at(position) == typed_char`.
+
     position.offset -= TextSize::of('.');
 
     let text = snap.analysis.file_text(position.file_id)?;
@@ -479,6 +480,7 @@ pub(crate) fn handle_on_type_formatting(
     };
 
     // This should be a single-file edit
+
     let (_, (text_edit, snippet_edit)) = edit.source_file_edits.into_iter().next().unwrap();
     stdx::always!(snippet_edit.is_none(), "on type formatting shouldn't use structured snippets");
 
@@ -603,6 +605,7 @@ pub(crate) fn handle_document_symbol(
     }
 
     // Builds hierarchy from a flat list, in reverse order (so that the indices make sense)
+
     let document_symbols = {
         let mut acc = Vec::new();
         while let Some((mut symbol, parent_idx)) = symbols.pop() {
@@ -798,6 +801,7 @@ pub(crate) fn handle_will_rename_files(
         .collect();
 
     // Drop file system edits since we're just renaming things on the same level
+
     let mut source_changes = source_changes.into_iter();
     let mut source_change = source_changes.next().unwrap_or_default();
     source_change.file_system_edits.clear();
@@ -946,6 +950,7 @@ pub(crate) fn handle_parent_module(
     }
 
     // locate parent module by semantics
+
     let position = try_default!(from_proto::file_position(&snap, params)?);
     let navs = snap.analysis.parent_module(position)?;
     let res = to_proto::goto_definition_response(&snap, None, navs)?;
@@ -1003,6 +1008,7 @@ pub(crate) fn handle_runnables(
     }
 
     // Add `cargo check` and `cargo test` for all targets of the whole package
+
     let config = snap.config.runnables(source_root);
     match target_spec {
         Some(TargetSpec::Cargo(spec)) => {
@@ -1350,6 +1356,7 @@ pub(crate) fn handle_rename(
     // with this we only emit source_file_edits in the WillRenameFiles response which will do the rename instead
 
     // See https://github.com/microsoft/vscode-languageserver-node/issues/752 for more info
+
     if !change.file_system_edits.is_empty() && snap.config.will_rename() {
         change.source_file_edits.clear();
     }
@@ -1498,6 +1505,7 @@ pub(crate) fn handle_code_action(
     }
 
     // Fixes from `cargo check`.
+
     for fix in snap
         .check_fixes
         .iter()
@@ -1952,6 +1960,7 @@ pub(crate) fn handle_semantic_tokens_full(
     );
 
     // Unconditionally cache the tokens
+
     snap.semantic_tokens_cache.lock().insert(params.text_document.uri, semantic_tokens.clone());
 
     Ok(Some(semantic_tokens.into()))
@@ -1993,6 +2002,7 @@ pub(crate) fn handle_semantic_tokens_full_delta(
     }
 
     // Clone first to keep the lock short
+
     let semantic_tokens_clone = semantic_tokens.clone();
     snap.semantic_tokens_cache.lock().insert(params.text_document.uri, semantic_tokens_clone);
 
@@ -2341,6 +2351,7 @@ fn run_rustfmt(
     // Determine the edition of the crate the file belongs to (if there's multiple, we pick the
 
     // highest edition).
+
     let Ok(editions) = snap
         .analysis
         .relevant_crates_for(file_id)?
@@ -2360,6 +2371,7 @@ fn run_rustfmt(
     // FIXME: use `rustfmt --config-path` once
 
     // https://github.com/rust-lang/rustfmt/issues/4660 gets fixed
+
     let current_dir = match text_document.uri.to_file_path() {
         Ok(mut path) => {
             // pop off file name

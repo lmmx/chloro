@@ -213,6 +213,7 @@ fn bar() {
         );
 
         // With a raw string
+
         check(
             r###"fn test() {
     assert!(r#"
@@ -228,6 +229,7 @@ fn bar() {
         );
 
         // With a raw string
+
         check(
             r###"fn test() {
     assert!(r$0#"

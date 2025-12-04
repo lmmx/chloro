@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10482 bytes
-Chloro size:   10511 bytes
+Chloro size:   10514 bytes
 Rustfmt size:  10879 bytes
 
 ✗ Outputs DIFFER
@@ -49,6 +49,7 @@ Rustfmt size:  10879 bytes
      // Here we store an eager macro id for the argument expanded subtree
 +
      // for that purpose.
++
      let loc = MacroCallLoc {
          def,
          krate,
@@ -110,6 +111,18 @@ Rustfmt size:  10879 bytes
  }
  
  fn eager_macro_recur(
+     let mut replacements = Vec::new();
+ 
+     // FIXME: We only report a single error inside of eager expansions
++
+     let mut error = None;
+     let mut children = original.preorder_with_tokens();
+ 
+     // Collect replacement
++
+     while let Some(child) = children.next() {
+         let call = match child {
+             WalkEvent::Enter(SyntaxElement::Node(child)) => match ast::MacroCall::cast(child) {
                  match value {
                      Some(call_id) => {
                          eager_callback(

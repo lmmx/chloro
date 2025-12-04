@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10203 bytes
-Chloro size:   9697 bytes
+Chloro size:   9698 bytes
 Rustfmt size:  10203 bytes
 
 ✗ Outputs DIFFER
@@ -59,8 +59,10 @@ Rustfmt size:  10203 bytes
      // it's somewhat complex to handle it correctly when the const's name conflicts with
 +
      // supertrait's item. We may want to consider implementing it in the future.
++
      let AssocItemContainer::Impl(impl_) =
          ctx.sema.to_def(&parent_fn)?.as_assoc_item(db)?.container(db)
+     else {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6757 bytes
-Chloro size:   6268 bytes
+Chloro size:   6269 bytes
 Rustfmt size:  6791 bytes
 
 ✗ Outputs DIFFER
@@ -48,6 +48,13 @@ Rustfmt size:  6791 bytes
  pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let variant = ctx.find_node_at_offset::<ast::Variant>()?;
      let variant_name = variant.name()?;
+     let fn_name = format!("is_{}", &to_lower_snake_case(&variant_name.text()));
+ 
+     // Return early if we've found an existing new fn
++
+     let impl_def = find_struct_impl(ctx, &parent_enum, slice::from_ref(&fn_name))?;
+ 
+     let target = variant.syntax().text_range();
          "Generate an `is_` method for this enum variant",
          target,
          |builder| {

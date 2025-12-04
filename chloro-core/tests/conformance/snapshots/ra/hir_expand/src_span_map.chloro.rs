@@ -101,6 +101,7 @@ pub(crate) fn real_span_map(
     // them again, something we might get access to in the future. But even then, proc-macros doing
     // this kind of joining makes them as stable as the AstIdMap (which is basically changing on
     // every input of the file)…
+
     let item_to_entry =
         |item: ast::Item| (item.syntax().text_range().start(), ast_id_map.ast_id(&item).erase());
     // Top level items make for great anchors as they are the most stable and a decent boundary

@@ -112,6 +112,7 @@ mod tests {
         // compilation error (the name `bar` is defined multiple times).
 
         // Therefore, the normalize_input assist must not apply here.
+
         check_assist_not_applicable(
             normalize_import,
             r"

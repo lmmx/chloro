@@ -520,6 +520,7 @@ mod tests {
         expect.assert_eq(&actual);
 
         // the fixed-up tree should be syntactically valid
+
         let (parse, _) = syntax_bridge::token_tree_to_syntax_node(
             &tt,
             syntax_bridge::TopEntryPoint::MacroItems,
@@ -535,6 +536,7 @@ mod tests {
         // the fixed-up tree should not contain braces as punct
 
         // FIXME: should probably instead check that it's a valid punctuation character
+
         for x in tt.token_trees().flat_tokens() {
             match x {
                 ::tt::TokenTree::Leaf(::tt::Leaf::Punct(punct)) => {
@@ -549,6 +551,7 @@ mod tests {
         // the fixed-up + reversed version should be equivalent to the original input
 
         // modulo token IDs and `Punct`s' spacing.
+
         let original_as_tt = syntax_bridge::syntax_node_to_token_tree(
             &parsed.syntax_node(),
             span_map.as_ref(),

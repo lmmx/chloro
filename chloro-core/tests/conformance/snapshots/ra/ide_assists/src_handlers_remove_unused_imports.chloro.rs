@@ -25,6 +25,7 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
     };
 
     // This applies to all uses that are selected, or are ancestors of our selection.
+
     let uses_up = selected_el.ancestors().skip(1).filter_map(ast::Use::cast);
     let uses_down = selected_el
         .descendants()
@@ -33,9 +34,11 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
     let uses = uses_up.chain(uses_down).collect::<Vec<_>>();
 
     // Maps use nodes to the scope that we should search through to find
+
     let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();
 
     // iterator over all unused use trees
+
     let mut unused = uses
         .into_iter()
         .flat_map(|u| u.syntax().descendants().filter_map(ast::UseTree::cast))
@@ -98,6 +101,7 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
         .peekable();
 
     // Peek so we terminate early if an unused use is found. Only do the rest of the work if the user selects the assist.
+
     if unused.peek().is_some() {
         acc.add(
             AssistId::quick_fix("remove_unused_imports"),

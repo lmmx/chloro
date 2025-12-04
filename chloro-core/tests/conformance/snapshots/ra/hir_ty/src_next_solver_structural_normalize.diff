@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1977 bytes
-Chloro size:   1979 bytes
+Chloro size:   1980 bytes
 Rustfmt size:  2003 bytes
 
 ✗ Outputs DIFFER
@@ -44,5 +44,7 @@ Rustfmt size:  2003 bytes
          // normalizing the LHS of the projection until it is a rigid projection
 +
          // (or a not-yet-defined opaque in scope).
++
          let obligation = Obligation::new(
              self.infcx.interner,
+             self.cause.clone(),

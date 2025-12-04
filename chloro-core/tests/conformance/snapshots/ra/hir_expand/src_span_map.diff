@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6275 bytes
-Chloro size:   6274 bytes
+Chloro size:   6275 bytes
 Rustfmt size:  6621 bytes
 
 ✗ Outputs DIFFER
@@ -23,10 +23,9 @@ Rustfmt size:  6621 bytes
  
  pub type ExpansionSpanMap = span::SpanMap<SyntaxContext>;
  
-     // them again, something we might get access to in the future. But even then, proc-macros doing
      // this kind of joining makes them as stable as the AstIdMap (which is basically changing on
      // every input of the file)…
--
+ 
 -    let item_to_entry = |item: ast::Item| {
 -        (
 -            item.syntax().text_range().start(),

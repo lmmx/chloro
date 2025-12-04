@@ -262,6 +262,7 @@ impl TestDB {
         }
 
         // Find the innermost block expression that has a `DefMap`.
+
         let def_with_body = fn_def?.into();
         let source_map = self.body_with_source_map(def_with_body).1;
         let scopes = self.expr_scopes(def_with_body);

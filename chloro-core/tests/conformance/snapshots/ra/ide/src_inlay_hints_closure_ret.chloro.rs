@@ -55,6 +55,7 @@ pub(super) fn hints(
         arrow.as_ref().map_or_else(|| param_list.syntax().text_range(), |t| t.text_range()).end();
 
     // Insert braces if necessary
+
     let insert_braces = |builder: &mut TextEditBuilder| {
         if !has_block_body && let Some(range) = closure.body().map(|b| b.syntax().text_range()) {
             builder.insert(range.start(), "{ ".to_owned());

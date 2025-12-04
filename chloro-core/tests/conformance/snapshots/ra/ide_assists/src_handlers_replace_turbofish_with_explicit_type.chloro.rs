@@ -20,6 +20,7 @@ pub(crate) fn replace_turbofish_with_explicit_type(
     let generic_args = generic_arg_list(&initializer)?;
 
     // Find range of ::<_>
+
     let colon2 = generic_args.coloncolon_token()?;
     let r_angle = generic_args.r_angle_token()?;
     let turbofish_range = TextRange::new(colon2.text_range().start(), r_angle.text_range().end());
@@ -27,6 +28,7 @@ pub(crate) fn replace_turbofish_with_explicit_type(
     let turbofish_args: Vec<GenericArg> = generic_args.generic_args().collect();
 
     // Find type of ::<_>
+
     if turbofish_args.len() != 1 {
         cov_mark::hit!(not_applicable_if_not_single_arg);
         return None;
@@ -35,6 +37,7 @@ pub(crate) fn replace_turbofish_with_explicit_type(
     // An improvement would be to check that this is correctly part of the return value of the
 
     // function call, or sub in the actual return type.
+
     let returned_type = match ctx.sema.type_of_expr(&initializer) {
         Some(returned_type) if !returned_type.original.contains_unknown() => {
             let module = ctx.sema.scope(let_stmt.syntax())?.module();

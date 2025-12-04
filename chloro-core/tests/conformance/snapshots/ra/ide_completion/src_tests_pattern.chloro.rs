@@ -904,6 +904,7 @@ fn foo(s1: S1) {
     );
 
     // Tests for &adt
+
     check_edit(
         "s1",
         r#"
@@ -923,6 +924,7 @@ fn foo() {
     );
 
     // Do not suggest reserved keywords
+
     check(
         r#"
 struct Struct;

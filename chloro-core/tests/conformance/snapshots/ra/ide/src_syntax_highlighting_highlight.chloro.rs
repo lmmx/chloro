@@ -876,6 +876,7 @@ fn parents_match(
     }
 
     // Only true if we matched all expected kinds
+
     kinds.is_empty()
 }
 

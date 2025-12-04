@@ -404,6 +404,7 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
     // Keep where-clauses that have generics after substitution, and remove the
 
     // rest.
+
     let has_live_generics = |pred: &WherePred| {
         pred.syntax()
             .descendants_with_tokens()
@@ -591,6 +592,7 @@ fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option
     // FIXME : We can't rely on `make::path_qualified` for now but it would be nice to replace the following with it.
 
     // make::path_qualified(qual_path_ty, path_expr_segment.as_single_segment().unwrap());
+
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let inner = make::item_const(
         item.attrs(),

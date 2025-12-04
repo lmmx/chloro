@@ -39,6 +39,7 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     let op_range = bin_expr.op_token()?.text_range();
 
     // Walk up the tree while we have the same binary operator
+
     while let Some(parent_expr) = bin_expr.syntax().parent().and_then(ast::BinExpr::cast) {
         match parent_expr.op_kind() {
             Some(parent_op) if parent_op == op => {

@@ -96,6 +96,7 @@ where
         };
 
         // TODO: remove `.with_filter(LevelFilter::OFF)` on the `None` branch.
+
         let profiler_layer = match self.profile_filter {
             Some(spec) => Some(hprof::SpanTree::new(&spec)).with_filter(LevelFilter::INFO),
             None => None.with_filter(LevelFilter::OFF),

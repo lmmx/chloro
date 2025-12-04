@@ -22,6 +22,7 @@ pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     let path = resolve_full_path(&tree)?;
 
     // If possible, explain what is going to be done.
+
     let label = match tree.path().and_then(|path| path.first_segment()) {
         Some(name) => format!("Unmerge use of `{name}`"),
         None => "Unmerge use".into(),

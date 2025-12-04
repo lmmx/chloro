@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31093 bytes
-Chloro size:   31122 bytes
+Chloro size:   31132 bytes
 Rustfmt size:  31849 bytes
 
 ✗ Outputs DIFFER
@@ -65,6 +65,7 @@ Rustfmt size:  31849 bytes
 -            instantiation_variance,
 -            source_ty,
 -        )?;
++
 +        let Generalization { value_may_be_infer: generalized_ty, has_unconstrained_ty_var } = self
 +            .generalize(
 +                relation.structurally_relate_aliases(),
@@ -74,6 +75,7 @@ Rustfmt size:  31849 bytes
 +            )?;
  
          // Constrain `b_vid` to the generalized type `generalized_ty`.
++
          if let TyKind::Infer(InferTy::TyVar(generalized_vid)) = generalized_ty.kind() {
 -            self.inner
 -                .borrow_mut()
@@ -89,6 +91,9 @@ Rustfmt size:  31849 bytes
          }
  
          // See the comment on `Generalization::has_unconstrained_ty_var`.
++
+         if has_unconstrained_ty_var {
+             relation.register_predicates([ClauseKind::WellFormed(generalized_ty.into())]);
          }
  
          // Finally, relate `generalized_ty` to `source_ty`, as described in previous comment.
@@ -102,8 +107,10 @@ Rustfmt size:  31849 bytes
          // to associate causes/spans with each of the relations in
 +
          // the stack to get this right.
++
          if generalized_ty.is_ty_var() {
              // This happens for cases like `<?0 as Trait>::Assoc == ?0`.
+             // We can't instantiate `?0` here as that would result in a
              // the alias can be normalized to something which does not
              // mention `?0`.
              let (lhs, rhs, direction) = match instantiation_variance {
@@ -170,8 +177,10 @@ Rustfmt size:  31849 bytes
          // Make sure that the order is correct when relating the
 +
          // generalized const and the source.
++
          if target_is_expected {
              relation.relate_with_variance(
+                 Variance::Invariant,
      ) -> RelateResult<'db, Generalization<T>> {
          assert!(!source_term.clone().has_escaping_bound_vars());
          let (for_universe, root_vid) = match target_vid.into() {
@@ -247,9 +256,9 @@ Rustfmt size:  31849 bytes
      #[instrument(level = "debug", skip(self, t2), ret)]
      fn tys(&mut self, t: Ty<'db>, t2: Ty<'db>) -> RelateResult<'db, Ty<'db>> {
 -        assert_eq!(t, t2); // we are misusing TypeRelation here; both LHS and RHS ought to be ==
--
 +        assert_eq!(t, t2);
 +        // we are misusing TypeRelation here; both LHS and RHS ought to be ==
+ 
          if let Some(result) = self.cache.get(&(t, self.ambient_variance, self.in_alias)) {
              return Ok(*result);
          }
@@ -261,8 +270,10 @@ Rustfmt size:  31849 bytes
          // subtyping. This is basically our "occurs check", preventing
 +
          // us from creating infinitely sized types.
++
          let g = match t.kind() {
              TyKind::Infer(
+                 InferTy::FreshTy(_) | InferTy::FreshIntTy(_) | InferTy::FreshFloatTy(_),
              _ => relate::structurally_relate_tys(self, t, t),
          }?;
  
@@ -275,12 +286,11 @@ Rustfmt size:  31849 bytes
      #[instrument(level = "debug", skip(self, r2), ret)]
      fn regions(&mut self, r: Region<'db>, r2: Region<'db>) -> RelateResult<'db, Region<'db>> {
 -        assert_eq!(r, r2); // we are misusing TypeRelation here; both LHS and RHS ought to be ==
--
 +        assert_eq!(r, r2);
 +        // we are misusing TypeRelation here; both LHS and RHS ought to be ==
+ 
          match r.kind() {
              // Never make variables for regions bound within the type itself,
-             // nor for erased regions.
          }
  
          // If we are in an invariant context, we can re-use the region
@@ -288,18 +298,19 @@ Rustfmt size:  31849 bytes
          // as is, unless it happens to be in some universe that we
 +
          // can't name.
++
          if let Variance::Invariant = self.ambient_variance {
              let r_universe = self.infcx.universe_of_region(r);
+             if self.for_universe.can_name(r_universe) {
  
      #[instrument(level = "debug", skip(self, c2), ret)]
      fn consts(&mut self, c: Const<'db>, c2: Const<'db>) -> RelateResult<'db, Const<'db>> {
 -        assert_eq!(c, c2); // we are misusing TypeRelation here; both LHS and RHS ought to be ==
--
 +        assert_eq!(c, c2);
 +        // we are misusing TypeRelation here; both LHS and RHS ought to be ==
+ 
          match c.kind() {
              ConstKind::Infer(InferConst::Var(vid)) => {
-                 // If root const vids are equal, then `root_vid` and
                  // `vid` are related and we'd be inferring an infinitely
                  // deep const.
                  if TermVid::Const(

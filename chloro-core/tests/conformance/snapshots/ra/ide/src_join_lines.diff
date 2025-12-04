@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22055 bytes
-Chloro size:   21503 bytes
+Chloro size:   21510 bytes
 Rustfmt size:  22055 bytes
 
 ✗ Outputs DIFFER
@@ -25,6 +25,27 @@ Rustfmt size:  22055 bytes
  pub(crate) fn join_lines(
      config: &JoinLinesConfig,
      file: &SourceFile,
+     }
+ 
+     // The node is between two other nodes
++
+     let (prev, next) = match (token.prev_sibling_or_token(), token.next_sibling_or_token()) {
+         (Some(prev), Some(next)) => (prev, next),
+         _ => return,
+     }
+ 
+     // Remove newline but add a computed amount of whitespace characters
++
+     edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
+ }
+ 
+     let mut buf = expr.syntax().text().to_string();
+ 
+     // Match block needs to have a comma after the block
++
+     if let Some(match_arm) = block_expr.syntax().parent().and_then(ast::MatchArm::cast)
+         && match_arm.comma_token().is_none()
+     {
  #[cfg(test)]
  mod tests {
      use test_utils::{add_cursor, assert_eq_text, extract_offset, extract_range};
@@ -90,6 +111,20 @@ Rustfmt size:  22055 bytes
      #[test]
      fn join_lines_keeps_comma_for_block_in_match_arm() {
          // We already have a comma
+         );
+ 
+         // comma with whitespace between brace and ,
++
+         check_join_lines(
+             r"
+ fn foo(e: Result<U, V>) {
+         );
+ 
+         // comma with newline between brace and ,
++
+         check_join_lines(
+             r"
+ fn foo(e: Result<U, V>) {
  }",
          );
      }
@@ -97,6 +132,20 @@ Rustfmt size:  22055 bytes
      #[test]
      fn join_lines_keeps_comma_with_single_arg_tuple() {
          // A single arg tuple
+         );
+ 
+         // single arg tuple with whitespace between brace and comma
++
+         check_join_lines(
+             r"
+ fn foo() {
+         );
+ 
+         // single arg tuple with newline between brace and comma
++
+         check_join_lines(
+             r"
+ fn foo() {
  }",
          );
      }

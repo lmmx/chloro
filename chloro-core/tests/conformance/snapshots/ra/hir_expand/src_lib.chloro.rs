@@ -1046,6 +1046,7 @@ impl ExpandTo {
         // FIXME: macros in statement position are treated as expression statements, they should
 
         // probably be their own statement kind. The *grand*parent indicates what's valid.
+
         if parent.kind() == MACRO_EXPR
             && parent
                 .parent()

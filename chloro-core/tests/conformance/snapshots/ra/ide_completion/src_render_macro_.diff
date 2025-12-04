@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7655 bytes
-Chloro size:   7650 bytes
+Chloro size:   7651 bytes
 Rustfmt size:  7898 bytes
 
 ✗ Outputs DIFFER
@@ -101,8 +101,10 @@ Rustfmt size:  7898 bytes
      // Insert a space before `{}`.
 +
      // We prefer the last one when some votes equal.
++
      let (_vote, (bra, ket)) = votes
          .iter()
+         .zip(&[(" {", "}"), ("[", "]"), ("(", ")")])
  #[cfg(test)]
  mod tests {
      use crate::tests::check_edit;

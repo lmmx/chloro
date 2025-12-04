@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6079 bytes
-Chloro size:   5875 bytes
+Chloro size:   5876 bytes
 Rustfmt size:  6079 bytes
 
 ✗ Outputs DIFFER
@@ -39,6 +39,13 @@ Rustfmt size:  6079 bytes
  pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let comment = ctx.find_token_at_offset::<ast::Comment>()?;
      // Only allow doc comments
+     let placement = comment.kind().doc?;
+ 
+     // Only allow comments which are alone on their line
++
+     if let Some(prev) = comment.syntax().prev_token() {
+         Whitespace::cast(prev).filter(|w| w.text().contains('\n'))?;
+     }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

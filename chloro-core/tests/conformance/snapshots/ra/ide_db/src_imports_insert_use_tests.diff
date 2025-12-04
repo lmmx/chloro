@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29250 bytes
-Chloro size:   29173 bytes
+Chloro size:   29179 bytes
 Rustfmt size:  29734 bytes
 
 ✗ Outputs DIFFER
@@ -37,8 +37,45 @@ Rustfmt size:  29734 bytes
      // empty files will get two trailing newlines
 +
      // this is due to the test case insert_no_imports above
++
      check_crate(
          "foo::bar",
+         "",
+     );
+ 
+     // "not group" configuration
++
+     check_with_config(
+         "use external_crate2::bar::A",
+         r"",
+     cov_mark::check_count!(insert_empty_module, 2);
+ 
+     // Default configuration
++
+     check(
+         "foo::bar",
+         r"
+     );
+ 
+     // "not group" configuration
++
+     check_with_config(
+         "foo::bar",
+         r"mod x {$0}",
+     cov_mark::check_count!(insert_empty_inner_attr, 2);
+ 
+     // Default configuration
++
+     check_crate(
+         "foo::bar",
+         r"#![allow(unused_imports)]",
+     );
+ 
+     // "not group" configuration
++
+     check_with_config(
+         "foo::bar",
+         r"#![allow(unused_imports)]",
  
  #[test]
  fn merge_last_into_self() {

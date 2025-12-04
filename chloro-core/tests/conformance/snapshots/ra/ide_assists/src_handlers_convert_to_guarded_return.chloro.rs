@@ -59,6 +59,7 @@ fn if_expr_to_guarded_return(
     }
 
     // check for early return and continue
+
     if is_early_block(&then_block) || is_never_block(&ctx.sema, &then_branch) {
         return None;
     }

@@ -49,6 +49,7 @@ pub fn direct_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[T
 pub fn all_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[TraitId; 4]> {
     // we need to take care a bit here to avoid infinite loops in case of cycles
     // (i.e. if we have `trait A: B; trait B: A;`)
+
     let mut result = smallvec![trait_];
     let mut i = 0;
     while let Some(&t) = result.get(i) {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20553 bytes
-Chloro size:   20642 bytes
+Chloro size:   20643 bytes
 Rustfmt size:  21116 bytes
 
 ✗ Outputs DIFFER
@@ -87,6 +87,13 @@ Rustfmt size:  21116 bytes
  }
  
  fn enclosing_def_to_moniker(
+     let edition = krate.edition(db);
+ 
+     // Add descriptors for this definition and every enclosing definition.
++
+     let mut reverse_description = vec![];
+     let mut def = definition;
+     loop {
                      }),
                  ),
              };

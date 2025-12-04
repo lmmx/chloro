@@ -420,6 +420,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         // Unhandled types are treated as non-exhaustive. Being explicit here instead of falling
 
         // to catchall arm to ease further implementation.
+
         let unhandled = || ConstructorSet::Unlistable;
 
         // This determines the set of all possible constructors for the type `ty`. For numbers,
@@ -437,6 +438,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         // Invariant: this is empty if and only if the type is uninhabited (as determined by
 
         // `cx.is_uninhabited()`).
+
         Ok(match ty.kind() {
             TyKind::Bool => ConstructorSet::Bool,
             TyKind::Char => unhandled(),

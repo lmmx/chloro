@@ -224,6 +224,7 @@ fn resolve_assoc_or_field(
     };
 
     // Resolve inherent items first, then trait items, then fields.
+
     if let Some(assoc_item_def) = resolve_assoc_item(db, &ty, &name, ns) {
         return Some(assoc_item_def);
     }
@@ -281,6 +282,7 @@ fn resolve_impl_trait_item<'db>(
     //
 
     // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
+
     _ = method_resolution::iterate_path_candidates(
         &canonical,
         db,

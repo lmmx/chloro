@@ -24,6 +24,7 @@ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
     // We check if the following match arms match this one. We could, but don't,
 
     // compare to the previous match arm as well.
+
     let arms_to_merge = successors(Some(current_arm), |it| neighbor(it, Direction::Next))
         .take_while(|arm| match arm.expr() {
             Some(expr) if arm.guard().is_none() => {

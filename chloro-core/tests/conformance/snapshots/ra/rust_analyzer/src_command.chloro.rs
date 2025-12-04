@@ -52,6 +52,7 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
         // Because cargo only outputs one JSON object per line, we can
         // simply skip a line if it doesn't parse, which just ignores any
         // erroneous output.
+
         let mut stdout = outfile.as_ref().and_then(|path| {
             _ = std::fs::create_dir_all(path);
             Some(BufWriter::new(std::fs::File::create(path.join("stdout")).ok()?))

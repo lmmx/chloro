@@ -220,6 +220,7 @@ impl IntegerExt for Integer {
         };
 
         // If there are no negative values, we can use the unsigned fit.
+
         if min >= 0 {
             (std::cmp::max(unsigned_fit, at_least), false)
         } else {

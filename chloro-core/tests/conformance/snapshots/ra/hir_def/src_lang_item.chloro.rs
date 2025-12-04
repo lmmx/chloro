@@ -198,6 +198,7 @@ pub fn lang_item(
     //
 
     // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
+
     crate_local_def_map(db, start_crate).local(db).extern_prelude().find_map(|(_, (krate, _))| {
         // Some crates declares themselves as extern crate like `extern crate self as core`.
         // Ignore these to prevent cycles.

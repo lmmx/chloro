@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11108 bytes
-Chloro size:   11146 bytes
+Chloro size:   11147 bytes
 Rustfmt size:  11838 bytes
 
 ✗ Outputs DIFFER
@@ -39,6 +39,13 @@ Rustfmt size:  11838 bytes
      }
  
      /// Push a new token onto the builder
+         }
+ 
+         // A token cannot be multiline
++
+         let token_len = range.end.character - range.start.character;
+ 
+         let token = SemanticToken {
      }
  }
  

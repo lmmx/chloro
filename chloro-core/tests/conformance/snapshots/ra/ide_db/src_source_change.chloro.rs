@@ -186,6 +186,7 @@ impl SnippetEdit {
         snippet_ranges.sort_by_key(|(_, range)| range.start());
 
         // Ensure that none of the ranges overlap
+
         let disjoint_ranges = snippet_ranges
             .iter()
             .zip(snippet_ranges.iter().skip(1))
@@ -348,6 +349,7 @@ impl SourceChangeBuilder {
         }
 
         // Apply mutable edits
+
         let snippet_edit = self.snippet_builder.take().map(|builder| {
             SnippetEdit::new(
                 builder.places.into_iter().flat_map(PlaceSnippet::finalize_position).collect(),
@@ -496,6 +498,7 @@ impl SourceChangeBuilder {
         self.commit();
 
         // Only one file can have snippet edits
+
         stdx::never!(
             self.source_change
                 .source_file_edits

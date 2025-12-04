@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29629 bytes
+Chloro size:   29632 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -96,6 +96,13 @@ Rustfmt size:  29841 bytes
      }
  
      fn canonicalize_with_base<U, V>(
+         };
+ 
+         // Fast path: nothing that needs to be canonicalized.
++
+         if !value.has_type_flags(needs_canonical_flags) {
+             return base.unchecked_map(|b| (b, value));
+         }
          let out_value = value.fold_with(&mut canonicalizer);
  
          // Once we have canonicalized `out_value`, it should not
@@ -103,8 +110,10 @@ Rustfmt size:  29841 bytes
          // contain anything that ties it to this inference context
 +
          // anymore.
++
          debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
  
+         let canonical_variables =
              .max()
              .unwrap_or(UniverseIndex::ROOT);
  
@@ -141,8 +150,10 @@ Rustfmt size:  29841 bytes
          // determine if a kind has been seen before until the limit of 8 has
 +
          // been exceeded, to also avoid allocations for `indices`.
++
          if !var_values.spilled() {
              // `var_values` is stack-allocated. `indices` isn't used yet. Do a
+             // direct linear search of `var_values`.
              } else {
                  // `kind` isn't present in `var_values`. Append it. Likewise
                  // for `info` and `variables`.

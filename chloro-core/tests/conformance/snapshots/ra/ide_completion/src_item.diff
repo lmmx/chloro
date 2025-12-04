@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27860 bytes
-Chloro size:   27789 bytes
+Chloro size:   27793 bytes
 Rustfmt size:  27860 bytes
 
 ✗ Outputs DIFFER
@@ -79,8 +79,30 @@ Rustfmt size:  27860 bytes
          // only applicable for completions within use items
 +
          // lower rank for conflicting import names
++
          if is_name_already_imported {
              score -= 1;
+         }
+         }
+ 
+         // lower rank private things
++
+         if !is_private_editable {
+             score += 1;
+         }
+         }
+ 
+         // Lower rank for completions that skip `await` and `iter()`.
++
+         if is_skipping_completion {
+             score -= 7;
+         }
+ 
+         // lower rank for items that need an import
++
+         if requires_import {
+             score -= 1;
+         }
              import_to_add,
          }
      }

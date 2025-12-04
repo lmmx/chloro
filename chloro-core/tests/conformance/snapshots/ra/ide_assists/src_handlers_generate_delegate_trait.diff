@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 46739 bytes
-Chloro size:   45091 bytes
+Chloro size:   45093 bytes
 Rustfmt size:  47157 bytes
 
 ✗ Outputs DIFFER
@@ -323,8 +323,10 @@ Rustfmt size:  47157 bytes
      // Keep where-clauses that have generics after substitution, and remove the
 +
      // rest.
++
      let has_live_generics = |pred: &WherePred| {
          pred.syntax()
+             .descendants_with_tokens()
              .any(|e| e.kind() == SyntaxKind::IDENT && live_generics.contains(&e.to_string()))
              .not()
      };
@@ -397,8 +399,10 @@ Rustfmt size:  47157 bytes
      // FIXME : We can't rely on `make::path_qualified` for now but it would be nice to replace the following with it.
 +
      // make::path_qualified(qual_path_ty, path_expr_segment.as_single_segment().unwrap());
++
      let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
      let inner = make::item_const(
+         item.attrs(),
  
                  make::expr_call(make::expr_path(qualified_path), args)
              }

@@ -407,6 +407,7 @@ pub(crate) fn incoherent_inherent_impl_crates(
     let mut res = SmallVec::new();
 
     // should pass crate for finger print and do reverse deps
+
     for krate in db.transitive_deps(krate) {
         let impls = db.inherent_impls_in_crate(krate);
         if impls.map.get(&fp).is_some_and(|v| !v.is_empty()) {
@@ -812,6 +813,7 @@ pub(crate) fn find_matching_impl<'db>(
     // all nested obligations. This is because they can inform the
 
     // inference of the impl's type parameters.
+
     let mut ocx = ObligationCtxt::new(infcx);
     let impl_source = selection.map(|obligation| ocx.register_obligation(obligation));
 
@@ -968,6 +970,7 @@ pub fn check_orphan_rules<'db>(db: &'db dyn HirDatabase, impl_: ImplId) -> bool 
     // FIXME: param coverage
 
     //   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
+
     let is_not_orphan = trait_ref.args.types().any(|ty| match unwrap_fundamental(ty).kind() {
         TyKind::Adt(adt_def, _) => is_local(adt_def.def_id().0.module(db).krate()),
         TyKind::Error(_) => true,
@@ -1400,6 +1403,7 @@ fn iterate_inherent_methods<'db>(
     // higher priority than the other traits' methods, which would be considered in
 
     // `iterate_trait_method_candidates()` only after this function.
+
     match self_ty.kind() {
         TyKind::Param(_) => {
             let env = table.trait_env.clone();

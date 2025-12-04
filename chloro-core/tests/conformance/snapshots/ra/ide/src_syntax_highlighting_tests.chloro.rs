@@ -1205,6 +1205,7 @@ struct Foo {
     );
 
     // The "x"
+
     let highlights = &analysis
         .highlight_range(
             HL_CONFIG,

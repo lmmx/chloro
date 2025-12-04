@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   66199 bytes
+Chloro size:   66200 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
@@ -15,6 +15,13 @@ Rustfmt size:  66636 bytes
  #[derive(Debug)]
  pub struct FindAllRefsConfig<'a> {
      pub search_scope: Option<SearchScope>,
+     };
+ 
+     // Find references for control-flow keywords.
++
+     if let Some(res) = handle_control_flow_keywords(sema, position) {
+         return Some(vec![res]);
+     }
      use hir::EditionedFileId;
      use ide_db::{FileId, MiniCore, RootDatabase};
      use stdx::format_to;

@@ -578,6 +578,7 @@ impl Test for T {
         );
 
         // https://github.com/rust-lang/rust-analyzer/pull/5976#issuecomment-692332191
+
         check_no_kw(
             r"
 trait Test { fn test(); fn test2(); }
@@ -1017,6 +1018,7 @@ impl Test for T {{
         };
 
         // Enumerate some possible next siblings.
+
         for next_sibling in [
             "",
             "fn other_fn() {}",

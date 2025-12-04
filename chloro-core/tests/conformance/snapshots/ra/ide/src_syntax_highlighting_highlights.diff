@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2643 bytes
-Chloro size:   2644 bytes
+Chloro size:   2645 bytes
 Rustfmt size:  2800 bytes
 
 ✗ Outputs DIFFER
@@ -36,6 +36,13 @@ Rustfmt size:  2800 bytes
      }
  
      fn add(&mut self, hl_range: HlRange) {
+         assert!(self.hl_range.range.contains_range(hl_range.range));
+ 
+         // Fast path
++
+         if let Some(last) = self.nested.last_mut() {
+             if last.hl_range.range.contains_range(hl_range.range) {
+                 return last.add(hl_range);
              }
          }
  

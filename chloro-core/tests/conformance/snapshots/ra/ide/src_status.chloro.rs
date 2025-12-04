@@ -26,6 +26,7 @@ pub(crate) fn status(db: &RootDatabase, file_id: Option<FileId>) -> String {
     // format_to!(buf, "{} ast id maps\n", collect_query_count(AstIdMapQuery.in_db(db)));
 
     // format_to!(buf, "{} block def maps\n", collect_query_count(BlockDefMapQuery.in_db(db)));
+
     if let Some(file_id) = file_id {
         format_to!(buf, "\nCrates for file {}:\n", file_id.index());
         let crates = crate::parent_module::crates_for(db, file_id);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35928 bytes
-Chloro size:   35860 bytes
+Chloro size:   35862 bytes
 Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
@@ -28,6 +28,19 @@ Rustfmt size:  36357 bytes
  };
  
  use crate::syntax_helpers::node_ext::vis_eq;
+     try_merge_trees_mut(&lhs_tree, &rhs_tree, merge_behavior)?;
+ 
+     // Ignore `None` result because normalization should not affect the merge result.
++
+     try_normalize_use_tree_mut(&lhs_tree, merge_behavior.into());
+ 
+     Some(lhs)
+     try_merge_trees_mut(&lhs, &rhs, merge)?;
+ 
+     // Ignore `None` result because normalization should not affect the merge result.
++
+     try_normalize_use_tree_mut(&lhs, merge.into());
+ 
      Some(lhs)
  }
  

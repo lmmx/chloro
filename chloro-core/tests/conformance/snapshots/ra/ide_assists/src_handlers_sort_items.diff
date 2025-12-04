@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11689 bytes
+Chloro size:   11690 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
@@ -140,6 +140,7 @@ Rustfmt size:  13263 bytes
 -    if item_list
 -        .assoc_items()
 -        .any(|item| item.syntax().text_range().intersect(selection).is_some())
++
 +    if item_list.assoc_items().any(|item| item.syntax().text_range().intersect(selection).is_some())
      {
          return None;

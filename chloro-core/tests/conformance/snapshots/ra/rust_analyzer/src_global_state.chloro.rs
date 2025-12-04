@@ -533,6 +533,7 @@ impl GlobalState {
         // Or maybe instead of replacing that check, kick off a semantic one if the syntactic one
 
         // didn't find anything (to make up for the lack of precision).
+
         {
             if !matches!(&workspace_structure_change, Some((.., true))) {
                 _ = self

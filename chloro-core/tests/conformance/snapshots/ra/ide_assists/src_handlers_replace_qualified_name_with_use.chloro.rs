@@ -27,6 +27,7 @@ pub(crate) fn replace_qualified_name_with_use(
     }
 
     // only offer replacement for non assoc items
+
     match ctx.sema.resolve_path(&original_path)? {
         hir::PathResolution::Def(def) if def.as_assoc_item(ctx.sema.db).is_none() => (),
         _ => return None,
@@ -118,6 +119,7 @@ fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
     }
 
     // Shorten `path`, leaving only its last segment.
+
     if let Some(parent) = path.qualifier() {
         ted::remove(parent.syntax());
     }

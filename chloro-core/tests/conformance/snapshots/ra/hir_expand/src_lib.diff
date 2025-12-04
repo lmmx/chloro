@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40650 bytes
-Chloro size:   40235 bytes
+Chloro size:   40236 bytes
 Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
@@ -148,8 +148,10 @@ Rustfmt size:  40650 bytes
          // FIXME: macros in statement position are treated as expression statements, they should
 +
          // probably be their own statement kind. The *grand*parent indicates what's valid.
++
          if parent.kind() == MACRO_EXPR
              && parent
+                 .parent()
          *self == HirFileId::from(other)
      }
  }

@@ -1290,6 +1290,7 @@ use crate::old_folder::nested::foo as bar;
         Project::with_fixture(code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
 
     //rename same level file
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
@@ -1325,6 +1326,7 @@ use crate::old_folder::nested::foo as bar;
     );
 
     //rename file from mod.rs to foo.rs
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
@@ -1336,6 +1338,7 @@ use crate::old_folder::nested::foo as bar;
     );
 
     //rename file from foo.rs to mod.rs
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
@@ -1347,6 +1350,7 @@ use crate::old_folder::nested::foo as bar;
     );
 
     //rename same level file
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {

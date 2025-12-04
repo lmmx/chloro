@@ -1091,6 +1091,7 @@ pub struct UninhabitedStruct {
             cov_mark::check_count!(validate_match_bailed_out, 1);
 
             // We don't currently check integer exhaustiveness.
+
             check_diagnostics(
                 r#"
 fn main() {

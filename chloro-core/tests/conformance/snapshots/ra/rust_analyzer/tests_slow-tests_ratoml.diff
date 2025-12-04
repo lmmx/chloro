@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22465 bytes
-Chloro size:   22424 bytes
+Chloro size:   22425 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -157,6 +157,7 @@ Rustfmt size:  23115 bytes
 -                },
 -                text: Some("".to_owned()),
 -            });
++
 +        self.server.notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
 +            text_document: TextDocumentIdentifier { uri: self.urls[file_idx].clone() },
 +            text: Some("".to_owned()),

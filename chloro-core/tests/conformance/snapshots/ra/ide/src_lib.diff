@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   33099 bytes
+Chloro size:   33100 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -128,6 +128,13 @@ Rustfmt size:  33868 bytes
      pub fn from_single_file(text: String) -> (Analysis, FileId) {
          let mut host = AnalysisHost::default();
          let file_id = FileId::from_raw(0);
+         let mut cfg_options = CfgOptions::default();
+ 
+         // FIXME: This is less than ideal
++
+         let proc_macro_cwd = Arc::new(
+             TryFrom::try_from(&*std::env::current_dir().unwrap().as_path().to_string_lossy())
+                 .unwrap(),
              cfg_options,
              None,
              Env::default(),

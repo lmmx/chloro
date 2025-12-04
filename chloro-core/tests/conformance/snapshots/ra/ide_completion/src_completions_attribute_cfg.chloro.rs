@@ -15,6 +15,7 @@ pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
     };
 
     // FIXME: Move this into context/analysis.rs
+
     let previous = ctx
         .original_token
         .prev_token()

@@ -214,6 +214,7 @@ fn run_server() -> anyhow::Result<()> {
     } = from_json::<lsp_types::InitializeParams>("InitializeParams", &initialize_params)?;
 
     // lsp-types has a typo in the `/capabilities/workspace/diagnostics` field, its typoed as `diagnostic`
+
     if let Some(val) = initialize_params.pointer("/capabilities/workspace/diagnostics")
         && let Ok(diag_caps) = from_json::<lsp_types::DiagnosticWorkspaceClientCapabilities>(
             "DiagnosticWorkspaceClientCapabilities",
@@ -308,6 +309,7 @@ fn run_server() -> anyhow::Result<()> {
     // If the io_threads have an error, there's usually an error on the main
 
     // loop too because the channels are closed. Ensure we report both errors.
+
     match (rust_analyzer::main_loop(config, connection), io_threads.join()) {
         (Err(loop_e), Err(join_e)) => anyhow::bail!("{loop_e}\n{join_e}"),
         (Ok(_), Err(join_e)) => anyhow::bail!("{join_e}"),

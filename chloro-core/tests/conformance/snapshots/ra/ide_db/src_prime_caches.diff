@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12112 bytes
-Chloro size:   12097 bytes
+Chloro size:   12099 bytes
 Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
@@ -31,42 +31,30 @@ Rustfmt size:  12243 bytes
      }
  
      // The setup here is a bit complicated. We try to make best use of compute resources.
--    // The idea is that if we have a def map available to compute, we should do that first.
--    // This is because def map is a dependency of both import map and symbols. So if we have
--    // e.g. a def map and a symbols, if we compute the def map we can, after it completes,
--    // compute the def maps of dependencies, the existing symbols and the symbols of the
--    // new crate, all in parallel. But if we compute the symbols, after that we will only
--    // have the def map to compute, and the rest of the CPU cores will rest, which is not
--    // good.
--    // However, it's better to compute symbols/import map than to compute a def map that
--    // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
--    // Such def map will just block on the dependency, which is just wasted time. So better
--    // to compute the symbols/import map of an already computed def map in that time.
++
+     // The idea is that if we have a def map available to compute, we should do that first.
++
+     // This is because def map is a dependency of both import map and symbols. So if we have
++
+     // e.g. a def map and a symbols, if we compute the def map we can, after it completes,
++
+     // compute the def maps of dependencies, the existing symbols and the symbols of the
++
+     // new crate, all in parallel. But if we compute the symbols, after that we will only
++
+     // have the def map to compute, and the rest of the CPU cores will rest, which is not
++
+     // good.
++
+     // However, it's better to compute symbols/import map than to compute a def map that
++
+     // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
++
+     // Such def map will just block on the dependency, which is just wasted time. So better
++
+     // to compute the symbols/import map of an already computed def map in that time.
  
-+    // The idea is that if we have a def map available to compute, we should do that first.
-+
-+    // This is because def map is a dependency of both import map and symbols. So if we have
-+
-+    // e.g. a def map and a symbols, if we compute the def map we can, after it completes,
-+
-+    // compute the def maps of dependencies, the existing symbols and the symbols of the
-+
-+    // new crate, all in parallel. But if we compute the symbols, after that we will only
-+
-+    // have the def map to compute, and the rest of the CPU cores will rest, which is not
-+
-+    // good.
-+
-+    // However, it's better to compute symbols/import map than to compute a def map that
-+
-+    // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
-+
-+    // Such def map will just block on the dependency, which is just wasted time. So better
-+
-+    // to compute the symbols/import map of an already computed def map in that time.
      let (reverse_deps, mut to_be_done_deps) = {
-         let all_crates = db.all_crates();
-         let to_be_done_deps = all_crates
              .iter()
              .map(|&krate| (krate, krate.data(db).dependencies.len() as u32))
              .collect::<FxHashMap<_, _>>();
@@ -97,8 +85,10 @@ Rustfmt size:  12243 bytes
      // an index map is used to preserve ordering so we can sort the progress report in order of
 +
      // "longest crate to index" first
++
      let mut crates_currently_indexing =
          FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
+ 
          def_map_work_sender.send((krate, name)).ok();
      }
  

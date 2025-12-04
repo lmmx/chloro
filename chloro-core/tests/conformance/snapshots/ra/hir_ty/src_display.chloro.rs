@@ -417,6 +417,7 @@ impl<'db> HirFormatter<'_, 'db> {
         self.curr_size += self.buf.len();
 
         // Then we write to the internal formatter from the buffer
+
         self.fmt.write_str(&self.buf).map_err(HirDisplayError::from)
     }
 
@@ -620,6 +621,7 @@ fn write_projection<'db>(
     // itself, if so, we render them directly as `impl Bound` instead of the less useful
 
     // `<Param as Trait>::Assoc`
+
     if !f.display_kind.is_source_code()
         && let TyKind::Param(param) = self_ty.kind()
         && !f.bounds_formatting_ctx.contains(alias)
@@ -2391,6 +2393,7 @@ impl<'db> HirDisplayWithExpressionStore<'db> for Path {
         // =>
 
         // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
+
         let trait_self_ty = self.segments().iter().find_map(|seg| {
             let generic_args = seg.args_and_bindings?;
             generic_args.has_self_type.then(|| &generic_args.args[0])

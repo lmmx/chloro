@@ -111,6 +111,7 @@ impl<'db> InferCtxt<'db> {
         // variable of the appropriate kind. We can't do this during
 
         // the probe because they would just get popped then too. =)
+
         Ok(self.fudge_inference(snapshot_vars, value))
     }
 

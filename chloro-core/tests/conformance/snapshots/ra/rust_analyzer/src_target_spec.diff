@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10531 bytes
-Chloro size:   10526 bytes
+Chloro size:   10527 bytes
 Rustfmt size:  11050 bytes
 
 ✗ Outputs DIFFER
@@ -72,6 +72,13 @@ Rustfmt size:  11050 bytes
                  );
                  feats.extend(target_required_features);
  
+         buf.push(self.package);
+ 
+         // Can't mix --doc with other target flags
++
+         if let RunnableKind::DocTest { .. } = kind {
+             return;
+         }
              features.push(value.to_string())
          }
          CfgExpr::All(preds) => {

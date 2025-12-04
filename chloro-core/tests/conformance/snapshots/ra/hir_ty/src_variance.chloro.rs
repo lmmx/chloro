@@ -73,6 +73,7 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
     // (therefore, less room for mistakes) and that IMO incorrect covariance can be more problematic that incorrect
 
     // bivariance, at least while we don't handle lifetimes anyway.
+
     for variance in &mut variances {
         if *variance == Variance::Bivariant {
             *variance = Variance::Invariant;
@@ -119,6 +120,7 @@ pub(crate) fn variances_of_cycle_initial(
     let count = generics.len();
 
     // FIXME(next-solver): Returns `Invariance` and not `Bivariance` here, see the comment in the main query.
+
     VariancesOf::new_from_iter(interner, std::iter::repeat_n(Variance::Invariant, count))
 }
 
@@ -164,6 +166,7 @@ impl<'db> Context<'db> {
         // Const parameters are always invariant.
 
         // Make all const parameters invariant.
+
         for (idx, param) in self.generics.iter_id().enumerate() {
             if let GenericParamId::ConstParamId(_) = param {
                 variances[idx] = Variance::Invariant;
@@ -171,6 +174,7 @@ impl<'db> Context<'db> {
         }
 
         // Functions are permitted to have unused generic parameters: make those invariant.
+
         if let GenericDefId::FunctionId(_) = self.generics.def() {
             variances
                 .iter_mut()

@@ -43,6 +43,7 @@ impl Node {
         assert!(self.hl_range.range.contains_range(hl_range.range));
 
         // Fast path
+
         if let Some(last) = self.nested.last_mut() {
             if last.hl_range.range.contains_range(hl_range.range) {
                 return last.add(hl_range);

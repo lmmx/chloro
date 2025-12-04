@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10574 bytes
-Chloro size:   10575 bytes
+Chloro size:   10576 bytes
 Rustfmt size:  10574 bytes
 
 ✗ Outputs DIFFER
@@ -13,3 +13,10 @@ Rustfmt size:  10574 bytes
  use expect_test::expect;
  
  use crate::tests::{check, check_edit, check_with_base_items};
+     );
+ 
+     // Should suggest `fn`, `static`, `safe`, `unsafe`
++
+     check_with_base_items(
+         r#"unsafe extern { $0 }"#,
+         expect![[r#"

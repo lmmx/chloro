@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19114 bytes
-Chloro size:   18777 bytes
+Chloro size:   18780 bytes
 Rustfmt size:  19114 bytes
 
 ✗ Outputs DIFFER
@@ -53,6 +53,13 @@ Rustfmt size:  19114 bytes
              let old_field_list = field_list_parent.record_pat_field_list()?;
              let new_field_list = old_field_list.clone_for_update();
              for (f, _) in missing_fields.iter() {
+     let module = krate.root_module();
+ 
+     // Look for a ::new() associated function
++
+     let has_new_func = ty
+         .iterate_assoc_items(ctx.sema.db, krate, |assoc_item| {
+             if let AssocItem::Function(func) = assoc_item
          Some(make::ext::expr_ty_new(&make_ty(ty, ctx.sema.db, module, ctx.edition)))
      } else if ty.as_adt() == famous_defs.core_option_Option()?.ty(ctx.sema.db).as_adt() {
          Some(make::ext::option_none())
@@ -143,6 +150,13 @@ Rustfmt size:  19114 bytes
      #[test]
      fn test_fill_struct_zst_fields() {
          check_fix(
+         );
+ 
+         // make sure the assist doesn't fill non Unit variants
++
+         check_fix(
+             r#"
+ struct Empty {};
  "#,
          );
      }
@@ -248,7 +262,3 @@ Rustfmt size:  19114 bytes
      #[test]
      fn import_extern_crate_clash_with_inner_item() {
          // This is more of a resolver test, but doesn't really work with the hir_def testsuite.
--
-         check_diagnostics(
-             r#"
- //- /lib.rs crate:lib deps:jwt

@@ -1075,6 +1075,7 @@ fn main() {
         assert_eq!(generator.suggest_name("b3"), "b5");
 
         // ---------
+
         let mut generator = NameGenerator::new_with_names(["a", "b", "b2", "c4"].into_iter());
         assert_eq!(generator.suggest_name("a"), "a1");
         assert_eq!(generator.suggest_name("a"), "a2");

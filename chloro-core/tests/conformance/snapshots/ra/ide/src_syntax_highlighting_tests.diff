@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31331 bytes
-Chloro size:   31169 bytes
+Chloro size:   31170 bytes
 Rustfmt size:  31474 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,10 @@ Rustfmt size:  31474 bytes
  #[cfg(target_pointer_width = "64")]
  #[test]
  fn test_rainbow_highlighting() {
+     );
+ 
+     // The "x"
++
      let highlights = &analysis
          .highlight_range(
              HL_CONFIG,

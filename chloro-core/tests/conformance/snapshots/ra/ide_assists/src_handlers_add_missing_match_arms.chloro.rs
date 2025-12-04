@@ -323,6 +323,7 @@ fn cursor_at_trivial_match_arm_list(
     //     $0
 
     // }
+
     if let Some(last_arm) = match_arm_list.arms().last() {
         let last_arm_range = last_arm.syntax().text_range();
         let match_expr_range = match_expr.syntax().text_range();
@@ -333,6 +334,7 @@ fn cursor_at_trivial_match_arm_list(
     }
 
     // match { _$0 => {...} }
+
     let wild_pat = ctx.find_node_at_offset_with_descend::<ast::WildcardPat>()?;
     let arm = wild_pat.syntax().parent().and_then(ast::MatchArm::cast)?;
     let arm_match_expr = arm.syntax().ancestors().nth(2).and_then(ast::MatchExpr::cast)?;
@@ -2052,6 +2054,7 @@ fn f() {
         );
 
         // multiple tuple struct patterns
+
         check_assist(
             add_missing_match_arms,
             r#"

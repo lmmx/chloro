@@ -3988,6 +3988,7 @@ mod tests {
         //
 
         // https://link[text] => [text](https://link)
+
         let url_matches = schema.match_indices("https://");
         let mut url_offsets = url_matches.map(|(idx, _)| idx).collect::<Vec<usize>>();
         url_offsets.reverse();

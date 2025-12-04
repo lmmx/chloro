@@ -31,6 +31,7 @@ pub(crate) fn complete_item_list(
     let _p = tracing::info_span!("complete_item_list").entered();
 
     // We handle completions for trait-impls in [`item_list::trait_impl`]
+
     if path_ctx.is_trivial_path() && !matches!(kind, ItemListKind::TraitImpl(_)) {
         add_keywords(acc, ctx, Some(kind));
     }
@@ -91,6 +92,7 @@ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option
     let has_safe_kw = ctx.qualifier_ctx.safe_tok.is_some();
 
     // Some keywords are invalid after non-vis qualifiers, so we handle them first.
+
     if (has_unsafe_kw || has_safe_kw) && in_extern_block {
         add_keyword("fn", "fn $1($2);");
         add_keyword("static", "static $1: $2;");
@@ -127,6 +129,7 @@ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option
     // ...and the rest deals with cases without any non-vis qualifiers.
 
     // Visibility qualifiers
+
     if !in_trait && !in_block && no_vis_qualifiers {
         add_keyword("pub(crate)", "pub(crate) $0");
         add_keyword("pub(super)", "pub(super) $0");
@@ -134,6 +137,7 @@ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option
     }
 
     // Keywords that are valid in `item_list`
+
     if in_item_list {
         add_keyword("enum", "enum $1 {\n    $0\n}");
         add_keyword("mod", "mod $0");

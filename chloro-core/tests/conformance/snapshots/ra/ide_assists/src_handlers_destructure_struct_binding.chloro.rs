@@ -86,6 +86,7 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
         (is_non_exhaustive && is_foreign_crate) || visible_fields.len() < n_fields;
 
     // If private members are present, we can only destructure records
+
     if !matches!(kind, hir::StructKind::Record) && has_private_members {
         return None;
     }
@@ -140,6 +141,7 @@ fn get_names_in_scope(
     // If available, find names visible to the last usage of the binding
 
     // else, find names visible to the binding itself
+
     let last_usage = last_usage(usages);
     let node = last_usage.as_ref().unwrap_or(ident_pat.syntax());
     let scope = ctx.sema.scope(node)?;
@@ -200,6 +202,7 @@ fn destructure_pat(
     // If the binding is nested inside a record, we need to wrap the new
 
     // destructured pattern in a non-shorthand record field
+
     let destructured_pat = if data.need_record_field_name {
         make.record_pat_field(make.name_ref(&name.to_string()), new_pat).syntax().clone()
     } else {

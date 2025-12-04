@@ -197,6 +197,7 @@ impl<'a> DeclValidator<'a> {
         // Check the function name.
 
         // Skipped if function is an associated item of a trait implementation.
+
         if !self.is_trait_impl_container(container) {
             let data = self.db.function_signature(func);
 
@@ -218,6 +219,7 @@ impl<'a> DeclValidator<'a> {
         }
 
         // Check the patterns inside the function body.
+
         self.validate_func_body(func);
     }
 
@@ -247,6 +249,7 @@ impl<'a> DeclValidator<'a> {
             .peekable();
 
         // XXX: only look at source_map if we do have missing fields
+
         if pats_replacements.peek().is_none() {
             return;
         }
@@ -299,6 +302,7 @@ impl<'a> DeclValidator<'a> {
         );
 
         // Check the field names.
+
         self.validate_struct_fields(struct_id);
     }
 
@@ -324,6 +328,7 @@ impl<'a> DeclValidator<'a> {
             .peekable();
 
         // XXX: Only look at sources if we do have incorrect names.
+
         if struct_fields_replacements.peek().is_none() {
             return;
         }
@@ -378,6 +383,7 @@ impl<'a> DeclValidator<'a> {
         let data = self.db.enum_signature(enum_id);
 
         // Check the enum name.
+
         self.create_incorrect_case_diagnostic_for_item_name(
             enum_id,
             &data.name,
@@ -386,6 +392,7 @@ impl<'a> DeclValidator<'a> {
         );
 
         // Check the variant names.
+
         self.validate_enum_variants(enum_id)
     }
 
@@ -413,6 +420,7 @@ impl<'a> DeclValidator<'a> {
             .peekable();
 
         // XXX: only look at sources if we do have incorrect names
+
         if enum_variants_replacements.peek().is_none() {
             return;
         }
@@ -483,6 +491,7 @@ impl<'a> DeclValidator<'a> {
             .peekable();
 
         // XXX: only look at sources if we do have incorrect names
+
         if variant_field_replacements.peek().is_none() {
             return;
         }
@@ -575,6 +584,7 @@ impl<'a> DeclValidator<'a> {
         }
 
         // Check the type alias name.
+
         let data = self.db.type_alias_signature(type_alias_id);
         self.create_incorrect_case_diagnostic_for_item_name(
             type_alias_id,

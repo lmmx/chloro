@@ -201,6 +201,7 @@ impl flags::AnalysisStats {
         // }
 
         // eprintln!("source files: {total_file_size}, macro files: {total_macro_file_size}");
+
         eprintln!("{:<20} {}", "Item Tree Collection:", item_tree_time);
         report_metric("item tree time", item_tree_time.time.as_millis() as u64, "ms");
         eprintln!("  Total Statistics:");

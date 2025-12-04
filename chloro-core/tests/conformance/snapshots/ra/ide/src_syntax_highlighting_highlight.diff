@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34201 bytes
-Chloro size:   34251 bytes
+Chloro size:   34252 bytes
 Rustfmt size:  34201 bytes
 
 ✗ Outputs DIFFER
@@ -107,3 +107,10 @@ Rustfmt size:  34201 bytes
      while let (Some(parent), [kind, rest @ ..]) = (node.parent(), kinds) {
          if parent.kind() != *kind {
              return false;
+     }
+ 
+     // Only true if we matched all expected kinds
++
+     kinds.is_empty()
+ }
+ 

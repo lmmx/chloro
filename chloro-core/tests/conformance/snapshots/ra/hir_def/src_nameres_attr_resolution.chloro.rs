@@ -37,6 +37,7 @@ impl DefMap {
         attr: &Attr,
     ) -> Result<ResolvedAttr, UnresolvedMacro> {
         // NB: does not currently work for derive helpers as they aren't recorded in the `DefMap`
+
         if self.is_builtin_or_registered_attr(&ast_id.path) {
             return Ok(ResolvedAttr::Other);
         }

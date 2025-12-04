@@ -438,6 +438,7 @@ fn insert_empty_file() {
     // empty files will get two trailing newlines
 
     // this is due to the test case insert_no_imports above
+
     check_crate(
         "foo::bar",
         "",
@@ -447,6 +448,7 @@ fn insert_empty_file() {
     );
 
     // "not group" configuration
+
     check_with_config(
         "use external_crate2::bar::A",
         r"",
@@ -468,6 +470,7 @@ fn insert_empty_module() {
     cov_mark::check_count!(insert_empty_module, 2);
 
     // Default configuration
+
     check(
         "foo::bar",
         r"
@@ -482,6 +485,7 @@ mod x {
     );
 
     // "not group" configuration
+
     check_with_config(
         "foo::bar",
         r"mod x {$0}",
@@ -503,6 +507,7 @@ fn insert_after_inner_attr() {
     cov_mark::check_count!(insert_empty_inner_attr, 2);
 
     // Default configuration
+
     check_crate(
         "foo::bar",
         r"#![allow(unused_imports)]",
@@ -512,6 +517,7 @@ use foo::bar;",
     );
 
     // "not group" configuration
+
     check_with_config(
         "foo::bar",
         r"#![allow(unused_imports)]",

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53967 bytes
-Chloro size:   54214 bytes
+Chloro size:   54215 bytes
 Rustfmt size:  56860 bytes
 
 ✗ Outputs DIFFER
@@ -140,8 +140,10 @@ Rustfmt size:  56860 bytes
      // `SyntaxNode` that contains fields and look for descendant `ast::PathType`s. Of note is that
 +
      // we should not inspect `ast::PathType`s in parameter bounds and where clauses.
++
      let field_list = match adt {
          ast::Adt::Enum(it) => it.variant_list().map(|list| list.syntax().clone()),
+         ast::Adt::Struct(it) => it.field_list().map(|list| list.syntax().clone()),
          })
          .collect();
      let name_token = name_to_token(call_site, tm, name)?;

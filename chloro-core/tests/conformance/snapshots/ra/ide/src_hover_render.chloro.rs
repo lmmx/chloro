@@ -270,6 +270,7 @@ pub(super) fn underscore(
     // FIXME: https://github.com/rust-lang/rust-analyzer/issues/11762, this currently always returns Unknown
 
     // type_info(sema, config, sema.resolve_type(&ast::Type::InferType(it))?, None)
+
     None
 }
 
@@ -314,6 +315,7 @@ pub(super) fn struct_rest_pat(
     // should be left in to indicate that there are no more fields in the pattern
 
     // example, S {a: 1, b: 2, ..} when struct S {a: u32, b: u32}
+
     let mut res = HoverResult::default();
     let mut targets: Vec<hir::ModuleDef> = Vec::new();
     let mut push_new_def = |item: hir::ModuleDef| {

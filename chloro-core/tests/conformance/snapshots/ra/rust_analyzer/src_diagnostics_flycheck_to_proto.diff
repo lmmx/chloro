@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 77855 bytes
-Chloro size:   77867 bytes
+Chloro size:   77869 bytes
 Rustfmt size:  77855 bytes
 
 ✗ Outputs DIFFER
@@ -18,6 +18,13 @@ Rustfmt size:  77855 bytes
  };
  
  use super::{DiagnosticsMapConfig, Fix};
+     }
+ 
+     // Fall back to the outermost macro invocation if no suitable span comes up.
++
+     let last_span = span_stack.last().unwrap();
+     location(config, workspace_root, last_span, snap)
+ }
      match config
          .remap_prefix
          .iter()
@@ -32,8 +39,10 @@ Rustfmt size:  77855 bytes
      // rustc renders suggestion diagnostics by appending the suggested replacement, so do the same
 +
      // here, otherwise the diagnostic text is missing useful information.
++
      let mut message = rd.message.clone();
      if !suggested_replacements.is_empty() {
+         message.push_str(": ");
  #[cfg(not(windows))]
  mod tests {
      use crate::{config::Config, global_state::GlobalState};

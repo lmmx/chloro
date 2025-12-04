@@ -65,6 +65,7 @@ pub fn parallel_prime_caches(
     // Such def map will just block on the dependency, which is just wasted time. So better
 
     // to compute the symbols/import map of an already computed def map in that time.
+
     let (reverse_deps, mut to_be_done_deps) = {
         let all_crates = db.all_crates();
         let to_be_done_deps = all_crates
@@ -179,6 +180,7 @@ pub fn parallel_prime_caches(
     // an index map is used to preserve ordering so we can sort the progress report in order of
 
     // "longest crate to index" first
+
     let mut crates_currently_indexing =
         FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
 

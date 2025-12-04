@@ -612,6 +612,7 @@ fn trait_applicable_items<'db>(
     };
 
     // can be empty if the entire deref chain is has no valid trait impl fingerprints
+
     if autoderef_method_receiver.is_empty() {
         return Default::default();
     }
@@ -621,6 +622,7 @@ fn trait_applicable_items<'db>(
     // type in the deref chain matches `TyFingerprint::Unnameable`. This fingerprint
 
     // won't be in `TraitImpls` anyways, as `TraitImpls` only contains actual implementations.
+
     if !autoderef_method_receiver
         .iter()
         .any(|(_, fingerprint)| matches!(fingerprint, TyFingerprint::Unnameable))

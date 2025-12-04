@@ -147,6 +147,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for BoundExistentialPre
         let interner = relation.cx();
 
         // We need to perform this deduplication as we sometimes generate duplicate projections in `a`.
+
         let mut a_v: Vec<_> = a.into_iter().collect();
         let mut b_v: Vec<_> = b.into_iter().collect();
         // `skip_binder` here is okay because `stable_cmp` doesn't look at binders

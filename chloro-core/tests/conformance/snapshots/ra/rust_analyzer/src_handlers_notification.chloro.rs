@@ -54,6 +54,7 @@ pub(crate) fn handle_work_done_progress_cancel(
     // notifications for this token, as the client can't know when
 
     // we accepted notification.
+
     Ok(())
 }
 

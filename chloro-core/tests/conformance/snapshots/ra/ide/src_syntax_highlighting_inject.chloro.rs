@@ -99,6 +99,7 @@ pub(super) fn doc_comment(
     let src_file_id: HirFileId = src_file_id.into();
 
     // Extract intra-doc links and emit highlights for them.
+
     if let Some((docs, doc_mapping)) = docs_with_rangemap(sema.db, &attributes) {
         extract_definitions_from_docs(&docs)
             .into_iter()
@@ -129,6 +130,7 @@ pub(super) fn doc_comment(
     }
 
     // Extract doc-test sources from the docs and calculate highlighting for them.
+
     let mut inj = RangeMapper::default();
     inj.add_unmapped("fn doctest() {\n");
 

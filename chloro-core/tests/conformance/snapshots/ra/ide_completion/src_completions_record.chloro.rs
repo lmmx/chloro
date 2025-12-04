@@ -234,6 +234,7 @@ impl Enum {
         );
 
         // record variant
+
         check_edit_with_config(
             conf,
             "Variant{}",

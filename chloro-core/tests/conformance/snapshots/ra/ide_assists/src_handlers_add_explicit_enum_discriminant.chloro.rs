@@ -15,6 +15,7 @@ pub(crate) fn add_explicit_enum_discriminant(
     let has_primitive_repr = enum_def.repr(ctx.db()).and_then(|repr| repr.int).is_some();
 
     // Data carrying enums without a primitive repr have no stable discriminants.
+
     if is_data_carrying && !has_primitive_repr {
         return None;
     }
@@ -24,6 +25,7 @@ pub(crate) fn add_explicit_enum_discriminant(
     // Don't offer the assist if the enum has no variants or if all variants already have an
 
     // explicit discriminant.
+
     if variant_list.variants().all(|variant_node| variant_node.expr().is_some()) {
         return None;
     }

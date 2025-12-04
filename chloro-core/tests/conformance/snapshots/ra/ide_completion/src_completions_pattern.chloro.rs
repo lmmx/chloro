@@ -52,6 +52,7 @@ pub(crate) fn complete_pattern(
     }
 
     // Suggest name only in let-stmt and fn param
+
     if pattern_ctx.should_suggest_name {
         let mut name_generator = suggest_name::NameGenerator::default();
         if let Some(suggested) = ctx
@@ -85,6 +86,7 @@ pub(crate) fn complete_pattern(
     // FIXME: ideally, we should look at the type we are matching against and
 
     // suggest variants + auto-imports
+
     ctx.process_all_names(&mut |name, res, _| {
         let add_simple_path = match res {
             hir::ScopeDef::ModuleDef(def) => match def {

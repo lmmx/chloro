@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26487 bytes
+Chloro size:   26488 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -456,3 +456,10 @@ Rustfmt size:  26702 bytes
      #[test]
      fn conflicts_with_existing_names() {
          let mut generator = NameGenerator::default();
+         assert_eq!(generator.suggest_name("b3"), "b5");
+ 
+         // ---------
++
+         let mut generator = NameGenerator::new_with_names(["a", "b", "b2", "c4"].into_iter());
+         assert_eq!(generator.suggest_name("a"), "a1");
+         assert_eq!(generator.suggest_name("a"), "a2");

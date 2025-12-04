@@ -486,6 +486,7 @@ pub fn callable_sig_from_fn_trait<'db>(
     // - Self: FnOnce<?args_ty>
 
     // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
+
     let args_ty = table.next_ty_var();
     let args = [self_ty, args_ty];
     let trait_ref = TraitRef::new(table.interner(), fn_once_trait.into(), args);

@@ -297,6 +297,7 @@ fn def_to_non_local_moniker(
     let edition = krate.edition(db);
 
     // Add descriptors for this definition and every enclosing definition.
+
     let mut reverse_description = vec![];
     let mut def = definition;
     loop {

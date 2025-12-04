@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   69906 bytes
+Chloro size:   69907 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -37,8 +37,10 @@ Rustfmt size:  71259 bytes
      // Check that we are in the eager argument expansion of an include macro
 +
      // that is we are the string input of it
++
      if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
          .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
+     {
      use crate::{GotoDefinitionConfig, fixture};
      use ide_db::{FileRange, MiniCore};
      use itertools::Itertools;

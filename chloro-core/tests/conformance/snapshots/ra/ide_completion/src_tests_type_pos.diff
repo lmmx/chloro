@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27572 bytes
-Chloro size:   27573 bytes
+Chloro size:   27581 bytes
 Rustfmt size:  27572 bytes
 
 ✗ Outputs DIFFER
@@ -13,3 +13,59 @@ Rustfmt size:  27572 bytes
  use expect_test::expect;
  
  use crate::tests::{check, check_with_base_items};
+     );
+ 
+     // Method generic params
++
+     check_with_base_items(
+         r#"
+     const X: usize = 0;
+     );
+ 
+     // Associated type generic params
++
+     check_with_base_items(
+         r#"
+     const X: usize = 0;
+     );
+ 
+     // Type generic params
++
+     check_with_base_items(
+         r#"
+     const X: usize = 0;
+     );
+ 
+     // Type alias generic params
++
+     check_with_base_items(
+         r#"
+     const X: usize = 0;
+     );
+ 
+     // Enum variant params
++
+     check_with_base_items(
+         r#"
+     const X: usize = 0;
+     );
+ 
+     // Trait params
++
+     check_with_base_items(
+         r#"
+     const X: usize = 0;
+     );
+ 
+     // Trait alias params
++
+     check_with_base_items(
+         r#"
+     #![feature(trait_alias)]
+     );
+ 
+     // Omitted lifetime params
++
+     check_with_base_items(
+         r#"
+ struct S<'a, 'b, const C: usize, T>(core::marker::PhantomData<&'a &'b T>);
