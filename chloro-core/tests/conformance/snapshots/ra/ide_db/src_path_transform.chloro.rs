@@ -1,5 +1,6 @@
 //! See [`PathTransform`].
 
+use crate::helpers::mod_path_to_ast;
 use either::Either;
 use hir::{
     AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef, SemanticsScope,
@@ -13,8 +14,6 @@ use syntax::{
     ast::{self, AstNode, HasGenericArgs, HasName, make},
     syntax_editor::{self, SyntaxEditor},
 };
-
-use crate::helpers::mod_path_to_ast;
 
 #[derive(Default, Debug)]
 struct AstSubsts {

@@ -2,26 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25826 bytes
-Chloro size:   25677 bytes
+Chloro size:   25676 bytes
 Rustfmt size:  25826 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! See [`PathTransform`].
- 
--use crate::helpers::mod_path_to_ast;
- use either::Either;
- use hir::{
-     AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef, SemanticsScope,
-     syntax_editor::{self, SyntaxEditor},
- };
- 
-+use crate::helpers::mod_path_to_ast;
-+
- #[derive(Default, Debug)]
- struct AstSubsts {
-     types_and_consts: Vec<TypeOrConst>,
  
  #[derive(Debug)]
  enum TypeOrConst {

@@ -8,29 +8,6 @@ Rustfmt size:  71259 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::{iter, mem::discriminant};
--
--use crate::Analysis;
--use crate::{
--    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
--    doc_links::token_as_doc_comment,
--    navigation_target::{self, ToNav},
--};
- use hir::{
-     AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
- };
-     match_ast,
- };
- 
-+use crate::Analysis;
-+use crate::{
-+    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
-+    doc_links::token_as_doc_comment,
-+    navigation_target::{self, ToNav},
-+};
-+
- #[derive(Debug)]
- pub struct GotoDefinitionConfig<'a> {
      pub minicore: MiniCore<'a>,
  }
  

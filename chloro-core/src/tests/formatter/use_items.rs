@@ -217,7 +217,37 @@ use super::bar;"#;
 
     let output = format_source(input);
     assert_snapshot!(output, @r"
-    use crate::foo;
     use super::bar;
+    use crate::foo;
     ");
+}
+
+#[test]
+fn test_use_reordering() {
+    let input = r#"use std::*;
+use a;
+use b;
+use c;
+use z;
+use crate::e;
+use crate::f;
+use super::a;
+use self::*;
+use alloc::*;
+use core::*;
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r"
+use self::*;
+use super::a;
+use crate::e;
+use crate::f;
+use a;
+use alloc::*;
+use b;
+use c;
+use core::*;
+use std::*;
+use z;
+");
 }

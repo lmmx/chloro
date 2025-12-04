@@ -4,11 +4,6 @@ use std::{
     fmt::{self, Display as _},
     iter,
 };
-use base_db::Crate;
-use intern::sym;
-use smallvec::SmallVec;
-use span::{Edition, SyntaxContext};
-use syntax::{AstNode, ast};
 
 use crate::{
     db::ExpandDatabase,
@@ -16,6 +11,11 @@ use crate::{
     name::{AsName, Name},
     tt,
 };
+use base_db::Crate;
+use intern::sym;
+use smallvec::SmallVec;
+use span::{Edition, SyntaxContext};
+use syntax::{AstNode, ast};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ModPath {

@@ -2,32 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   31455 bytes
+Chloro size:   31454 bytes
 Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! track of the cumulative total number of lines that have been added to the file during the
- //! session so that we can determine the correct offset to insert content at without re-parsing.
- 
-+use std::collections::HashMap;
-+use std::path::PathBuf;
-+use std::{fs, io};
-+use edtui::{EditorState, Lines};
-+
- use crate::edit_plan::{Edit, EditPlan};
- use crate::formats::markdown::MarkdownFormat;
- use crate::input;
- use crate::section::ChunkType;
- use crate::section::{Section, TreeNode};
--use edtui::{EditorState, Lines};
--use std::collections::HashMap;
--use std::path::PathBuf;
--use std::{fs, io};
- 
- /// Determines navigation scope and quit behavior based on project size.
- #[derive(PartialEq)]
          let mut nodes = Vec::new();
  
          // Determine if this is difftastic mode by checking if multiple sections share the same file_path

@@ -9,6 +9,7 @@ Rustfmt size:  9843 bytes
 
 === DIFF (- rustfmt, + chloro) ===
 -use crate::{utils, AssistContext, Assists};
++use crate::{AssistContext, Assists, utils};
  use ide_db::{
      assists::{AssistId, AssistKind},
 -    syntax_helpers::format_string_exprs::{parse_format_exprs, Arg},
@@ -22,7 +23,6 @@ Rustfmt size:  9843 bytes
      SyntaxToken, T,
 +    ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
  };
-+use crate::{AssistContext, Assists, utils};
  
  // Assist: extract_expressions_from_format_string
 +

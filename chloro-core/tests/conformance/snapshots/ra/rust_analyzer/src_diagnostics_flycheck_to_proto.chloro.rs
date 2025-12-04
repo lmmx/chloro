@@ -1,13 +1,12 @@
 //! This module provides the functionality needed to convert diagnostics from
 //! `cargo check` json format to the LSP diagnostic format.
 
+use crate::flycheck::{Applicability, DiagnosticLevel, DiagnosticSpan};
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 use stdx::format_to;
 use vfs::{AbsPath, AbsPathBuf};
-
-use crate::flycheck::{Applicability, DiagnosticLevel, DiagnosticSpan};
 
 use crate::{
     global_state::GlobalStateSnapshot, line_index::PositionEncoding, lsp_ext,

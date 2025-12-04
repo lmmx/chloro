@@ -18,10 +18,9 @@ Rustfmt size:  31849 bytes
  };
 -use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
  use tracing::{debug, instrument, warn};
--
--use super::{
--    PredicateEmittingRelation, Relate, RelateResult, StructurallyRelateAliases, TypeRelation,
--};
+ 
+ use super::{
+ };
  use crate::next_solver::infer::type_variable::TypeVariableValue;
  use crate::next_solver::infer::unify_key::ConstVariableValue;
 -use crate::next_solver::infer::{relate, InferCtxt};
@@ -29,16 +28,6 @@ Rustfmt size:  31849 bytes
  use crate::next_solver::util::MaxUniverse;
  use crate::next_solver::{
      AliasTy, Binder, ClauseKind, Const, ConstKind, DbInterner, GenericArgs, PredicateKind, Region,
-     SolverDefId, Term, TermVid, Ty, TyKind, TypingMode, UnevaluatedConst,
- };
- 
-+use super::{
-+    PredicateEmittingRelation, Relate, RelateResult, StructurallyRelateAliases, TypeRelation,
-+};
-+
- impl<'db> InferCtxt<'db> {
-     /// The idea is that we should ensure that the type variable `target_vid`
-     /// is equal to, a subtype of, or a supertype of `source_ty`.
          instantiation_variance: Variance,
          source_ty: Ty<'db>,
      ) -> RelateResult<'db, ()> {

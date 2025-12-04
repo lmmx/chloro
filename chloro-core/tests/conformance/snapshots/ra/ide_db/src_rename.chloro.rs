@@ -22,6 +22,11 @@
 //! Our current behavior is ¯\_(ツ)_/¯.
 
 use std::fmt::{self, Display};
+
+use crate::{
+    source_change::ChangeAnnotation,
+    text_edit::{TextEdit, TextEditBuilder},
+};
 use base_db::AnchoredPathBuf;
 use either::Either;
 use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
@@ -30,11 +35,6 @@ use stdx::{TupleExt, never};
 use syntax::{
     AstNode, SyntaxKind, T, TextRange,
     ast::{self, HasName},
-};
-
-use crate::{
-    source_change::ChangeAnnotation,
-    text_edit::{TextEdit, TextEditBuilder},
 };
 
 use crate::{

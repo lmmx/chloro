@@ -29,7 +29,6 @@ use project_model::{ManifestPath, ProjectWorkspace, ProjectWorkspaceKind, Worksp
 use stdx::{format_to, thread::ThreadIntent};
 use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, ChangeKind};
-use tracing::{debug, info};
 
 use crate::{
     config::{Config, FilesWatcher, LinkedProject},
@@ -41,6 +40,7 @@ use crate::{
     main_loop::{DiscoverProjectParam, Task},
     op_queue::Cause,
 };
+use tracing::{debug, info};
 
 #[derive(Debug)]
 pub(crate) enum ProjectWorkspaceProgress {

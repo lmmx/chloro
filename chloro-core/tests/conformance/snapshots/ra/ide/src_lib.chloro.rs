@@ -77,31 +77,6 @@ use triomphe::Arc;
 use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
 
 use crate::navigation_target::ToNav;
-pub use hir::Semantics;
-pub use ide_assists::{
-    Assist, AssistConfig, AssistId, AssistKind, AssistResolveStrategy, SingleResolve,
-};
-pub use ide_completion::{
-    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
-    CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
-};
-pub use ide_db::{
-    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
-    assists::ExprFillDefaultMode,
-    base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
-    documentation::Documentation,
-    label::Label,
-    line_index::{LineCol, LineIndex},
-    prime_caches::ParallelPrimeCachesProgress,
-    search::{ReferenceCategory, SearchScope},
-    source_change::{FileSystemEdit, SnippetEdit, SourceChange},
-    symbol_index::Query,
-    text_edit::{Indel, TextEdit},
-};
-pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
-pub use ide_ssr::SsrError;
-pub use span::Edition;
-pub use syntax::{TextRange, TextSize};
 
 pub use crate::{
     annotations::{Annotation, AnnotationConfig, AnnotationKind, AnnotationLocation},
@@ -142,6 +117,31 @@ pub use crate::{
     },
     test_explorer::{TestItem, TestItemKind},
 };
+pub use hir::Semantics;
+pub use ide_assists::{
+    Assist, AssistConfig, AssistId, AssistKind, AssistResolveStrategy, SingleResolve,
+};
+pub use ide_completion::{
+    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
+    CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
+};
+pub use ide_db::{
+    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
+    assists::ExprFillDefaultMode,
+    base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
+    documentation::Documentation,
+    label::Label,
+    line_index::{LineCol, LineIndex},
+    prime_caches::ParallelPrimeCachesProgress,
+    search::{ReferenceCategory, SearchScope},
+    source_change::{FileSystemEdit, SnippetEdit, SourceChange},
+    symbol_index::Query,
+    text_edit::{Indel, TextEdit},
+};
+pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
+pub use ide_ssr::SsrError;
+pub use span::Edition;
+pub use syntax::{TextRange, TextSize};
 
 pub type Cancellable<T> = Result<T, Cancelled>;
 

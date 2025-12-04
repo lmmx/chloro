@@ -2,22 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3468 bytes
-Chloro size:   3469 bytes
+Chloro size:   3468 bytes
 Rustfmt size:  3468 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! The edit plan manages document modifications using textum patches.
- //!
- //! This module defines the transformation that work in the TUI manifests as actual edits on disk.
- //! asterism uses textum for generic line-based patching that works with any text format.
- 
--use serde::{Deserialize, Serialize};
- use std::collections::HashMap;
- use std::io;
-+
-+use serde::{Deserialize, Serialize};
- use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
- 
- /// Serialisable collection of file modifications for atomic application.
+✓ Outputs are IDENTICAL

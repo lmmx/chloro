@@ -6,16 +6,15 @@
 //!
 //! [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html
 
+use crate::next_solver::{
+    BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
+    DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
+};
 use rustc_hash::FxHashMap;
 use rustc_type_ir::{
     BoundVarIndexKind, GenericArgKind, TypeFlags, TypeFoldable, TypeFolder, TypeSuperFoldable,
     TypeVisitableExt,
     inherent::{GenericArg as _, IntoKind, SliceLike},
-};
-
-use crate::next_solver::{
-    BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
-    DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
 };
 
 pub trait CanonicalExt<'db, V> {

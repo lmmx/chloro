@@ -1,11 +1,10 @@
 //! Code common to structs, unions, and enum variants.
 
+use crate::context::CompletionContext;
 use hir::{HasAttrs, HasCrate, HasVisibility, HirDisplay, StructKind, sym};
 use ide_db::SnippetCap;
 use itertools::Itertools;
 use syntax::SmolStr;
-
-use crate::context::CompletionContext;
 
 /// A rendered struct, union, or enum variant, split into fields for actual
 /// auto-completion (`literal`, using `field: ()`) and display in the

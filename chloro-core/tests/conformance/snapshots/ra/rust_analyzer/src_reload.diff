@@ -16,20 +16,6 @@ Rustfmt size:  41840 bytes
  use std::{iter, mem};
  
  use hir::{ChangeWithProcMacros, ProcMacrosBuilder, db::DefDatabase};
- use stdx::{format_to, thread::ThreadIntent};
- use triomphe::Arc;
- use vfs::{AbsPath, AbsPathBuf, ChangeKind};
-+use tracing::{debug, info};
- 
- use crate::{
-     config::{Config, FilesWatcher, LinkedProject},
-     main_loop::{DiscoverProjectParam, Task},
-     op_queue::Cause,
- };
--use tracing::{debug, info};
- 
- #[derive(Debug)]
- pub(crate) enum ProjectWorkspaceProgress {
          );
  
          // crate graph construction relies on these paths, record them so when one of them gets

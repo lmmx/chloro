@@ -4,6 +4,10 @@
 //! It can be viewed as a dual for `Change`.
 
 use std::{collections::hash_map::Entry, fmt, iter, mem};
+
+use crate::imports::insert_use::{ImportScope, ImportScopeKind};
+use crate::text_edit::{TextEdit, TextEditBuilder};
+use crate::{SnippetCap, assists::Command, syntax_helpers::tree_diff::diff};
 use base_db::AnchoredPathBuf;
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
@@ -15,10 +19,6 @@ use syntax::{
     AstNode, SyntaxElement, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
     syntax_editor::{SyntaxAnnotation, SyntaxEditor},
 };
-
-use crate::imports::insert_use::{ImportScope, ImportScopeKind};
-use crate::text_edit::{TextEdit, TextEditBuilder};
-use crate::{SnippetCap, assists::Command, syntax_helpers::tree_diff::diff};
 
 /// An annotation ID associated with an indel, to describe changes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, UpmapFromRaFixture)]

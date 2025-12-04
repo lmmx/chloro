@@ -1450,11 +1450,11 @@ fn foo();
 }{
     return;
 }
+use crate::baz;
 use ;
 use ;
 
 use foo::bar;
-use crate::baz;
 fn f() {
 }
 
@@ -2727,10 +2727,10 @@ type T = [(); 92];
 use std::collections;
 
 use ::std;
-use crate::m;
 
 use self::m;
 use super::m;
+use crate::m;
 
 fn main() {
     let (a, b, ..) = ();

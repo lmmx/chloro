@@ -1,10 +1,9 @@
 //! Functionality for obtaining data related to traits from the DB.
 
+use crate::{RootDatabase, defs::Definition};
 use hir::{AsAssocItem, Semantics, db::HirDatabase};
 use rustc_hash::FxHashSet;
 use syntax::{AstNode, ast};
-
-use crate::{RootDatabase, defs::Definition};
 
 /// Given the `impl` block, attempts to find the trait this `impl` corresponds to.
 pub fn resolve_target_trait(
