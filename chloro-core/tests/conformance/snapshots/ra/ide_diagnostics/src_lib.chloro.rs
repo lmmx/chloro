@@ -72,6 +72,7 @@ mod handlers {
     pub(crate) mod unresolved_method;
     pub(crate) mod unresolved_module;
     pub(crate) mod unused_variables;
+    // The handlers below are unusual, the implement the diagnostics as well.
     pub(crate) mod field_shorthand;
     pub(crate) mod json_is_not_rust;
     pub(crate) mod unlinked_file;

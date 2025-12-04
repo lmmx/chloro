@@ -2902,7 +2902,7 @@ expression: cleaned_diff
  // https://github.com/rust-lang/rust-analyzer/issues/357
 -
 -//! docs
--// non-docs
+ // non-docs
 -mod foo {}
 +mod foo {
 +}

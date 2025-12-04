@@ -3524,6 +3524,7 @@ fn foo() {
 use ;
 
 // https://github.com/rust-lang/rust-analyzer/issues/357
+// non-docs
 mod foo {
 }
 
