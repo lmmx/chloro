@@ -1,15 +1,16 @@
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 use span::Edition;
 use syntax::ast::{self, make};
 use test_fixture::WithFixture;
 
 use crate::{
     expr_store::{
+        ExpressionStore,
         lower::{
             ExprCollector,
             path::{SEGMENT_LOWERING_MAP, hir_segment_to_ast_segment},
         },
-        path::Path, pretty, ExpressionStore,
+        path::Path, pretty,
     },
     nameres::crate_def_map,
     test_db::TestDB,

@@ -1,12 +1,12 @@
 use ide_db::syntax_helpers::node_ext::is_pattern_cond;
 use syntax::{
-    ast::{self, AstNode, BinaryOp},
     T,
+    ast::{self, AstNode, BinaryOp},
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistId,
+    assist_context::{AssistContext, Assists},
 };
 pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let if_keyword = ctx.find_token_syntax_at_offset(T![if])?;

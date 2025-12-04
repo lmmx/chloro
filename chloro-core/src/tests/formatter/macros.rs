@@ -196,7 +196,6 @@ struct Foo;"#;
     struct Foo;
     ");
 }
-
 // // This would be a good test case:
 //
 // config_data! {

@@ -11,10 +11,12 @@ Rustfmt size:  5099 bytes
  //! Implementation of trait bound hints.
  //!
  //! Currently this renders the implied `Sized` bound.
+-use ide_db::{famous_defs::FamousDefs, FileRange};
 +
- use ide_db::{famous_defs::FamousDefs, FileRange};
++use ide_db::{FileRange, famous_defs::FamousDefs};
  
  use syntax::ast::{self, AstNode, HasTypeBounds};
+ 
          match param {
              ast::TypeOrConstParam::Type(type_param) => {
                  let c = type_param.colon_token().map(|it| it.text_range());
@@ -32,8 +34,9 @@ Rustfmt size:  5099 bytes
 -
      use crate::inlay_hints::InlayHintsConfig;
 -
-     use crate::inlay_hints::tests::{check_expect, check_with_config, DISABLED_CONFIG};
+-    use crate::inlay_hints::tests::{check_expect, check_with_config, DISABLED_CONFIG};
 -
++    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_expect, check_with_config};
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
 -        check_with_config(

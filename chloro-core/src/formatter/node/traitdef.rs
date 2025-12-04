@@ -1,11 +1,11 @@
+use crate::formatter::node::common::{comments, header};
+use crate::formatter::write_indent;
 use ra_ap_syntax::{
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasGenericParams},
 };
 
 use super::format_node;
-use crate::formatter::node::common::{comments, header};
-use crate::formatter::write_indent;
 
 pub fn format_trait(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let trait_ = match ast::Trait::cast(node.clone()) {
@@ -32,14 +32,11 @@ pub fn format_trait(node: &SyntaxNode, buf: &mut String, indent: usize) {
         } else {
             buf.push_str(" {\n");
         }
-
         let mut first_item = true;
         let children: Vec<_> = item_list.syntax().children_with_tokens().collect();
-
         // Item kinds we care about in trait blocks
         const TRAIT_ITEM_KINDS: &[SyntaxKind] =
             &[SyntaxKind::FN, SyntaxKind::TYPE_ALIAS, SyntaxKind::CONST];
-
         for (idx, child) in children.iter().enumerate() {
             match child {
                 NodeOrToken::Node(n) => {
@@ -87,7 +84,6 @@ pub fn format_trait(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
         }
-
         write_indent(buf, indent);
         buf.push_str("}\n");
     } else {

@@ -2,14 +2,15 @@ use base_db::RootQueryDb;
 use hir_def::db::DefDatabase;
 use hir_expand::EditionedFileId;
 use rustc_apfloat::{
-    ieee::{Half as f16, Quad as f128},
     Float,
+    ieee::{Half as f16, Quad as f128},
 };
 use rustc_type_ir::inherent::IntoKind;
 use test_fixture::WithFixture;
 use test_utils::skip_slow_tests;
 
 use crate::{
+    MemoryMap,
     consteval::try_const_usize,
     db::HirDatabase,
     display::DisplayTarget,
@@ -17,12 +18,11 @@ use crate::{
     next_solver::{Const, ConstBytes, ConstKind, DbInterner, GenericArgs},
     setup_tracing,
     test_db::TestDB,
-    MemoryMap,
 };
 
 use super::{
-    super::mir::{MirEvalError, MirLowerError},
     ConstEvalError,
+    super::mir::{MirEvalError, MirLowerError},
 };
 
 mod intrinsics;

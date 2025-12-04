@@ -1,4 +1,3 @@
-// src/formatter/node/comments.rs
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
 
 /// Collect comments immediately before an item at the given index in a children list.

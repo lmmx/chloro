@@ -1,7 +1,7 @@
 //! This module contains functions to generate default trait impl function bodies where possible.
 
 use hir::TraitRef;
-use syntax::ast::{self, edit::AstNodeEdit, make, AstNode, BinaryOp, CmpOp, HasName, LogicOp};
+use syntax::ast::{self, AstNode, BinaryOp, CmpOp, HasName, LogicOp, edit::AstNodeEdit, make};
 
 /// Generate custom trait bodies without default implementation where possible.
 ///

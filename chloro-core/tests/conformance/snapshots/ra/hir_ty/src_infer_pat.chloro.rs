@@ -3,24 +3,24 @@
 use std::iter::repeat_with;
 
 use hir_def::{
-    expr_store::{path::Path, Body},
-    hir::{Binding, BindingAnnotation, BindingId, Expr, ExprId, Literal, Pat, PatId},
     HasModule,
+    expr_store::{Body, path::Path},
+    hir::{Binding, BindingAnnotation, BindingId, Expr, ExprId, Literal, Pat, PatId},
 };
 use hir_expand::name::Name;
 use rustc_ast_ir::Mutability;
-use rustc_type_ir::inherent::{GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Ty as _};
+use rustc_type_ir::inherent::{GenericArgs as _, GenericArg as _, IntoKind, SliceLike, Ty as _};
 use stdx::TupleExt;
 
 use crate::{
+    DeclContext, DeclOrigin, InferenceDiagnostic,
     consteval::{self, try_const_usize, usize_const},
     infer::{
-        coerce::CoerceNever, expr::ExprIsRead, AllowTwoPhase, BindingMode, Expectation,
-        InferenceContext, TypeMismatch,
+        AllowTwoPhase, BindingMode, Expectation, InferenceContext, TypeMismatch,
+        coerce::CoerceNever, expr::ExprIsRead,
     },
     lower::lower_mutability,
     next_solver::{GenericArgs, Ty, TyKind},
-    DeclContext, DeclOrigin, InferenceDiagnostic,
 };
 
 impl<'db> InferenceContext<'_, 'db> {

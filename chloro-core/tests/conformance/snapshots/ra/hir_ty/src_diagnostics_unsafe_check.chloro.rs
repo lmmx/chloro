@@ -5,21 +5,21 @@ use std::mem;
 
 use either::Either;
 use hir_def::{
-    expr_store::{path::Path, Body},
+    AdtId, CallableDefId, DefWithBodyId, FieldId, FunctionId, VariantId,
+    expr_store::{Body, path::Path},
     hir::{AsmOperand, Expr, ExprId, ExprOrPatId, InlineAsmKind, Pat, PatId, Statement, UnaryOp},
     resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
     signatures::StaticFlags,
     type_ref::Rawness,
-    AdtId, CallableDefId, DefWithBodyId, FieldId, FunctionId, VariantId,
 };
 use rustc_type_ir::inherent::IntoKind;
 use span::Edition;
 
 use crate::{
-    db::HirDatabase,
-    next_solver::{abi::Safety, CallableIdWrapper, TyKind},
-    utils::{is_fn_unsafe_to_call, target_feature_is_safe_in_target, TargetFeatureIsSafeInTarget},
     InferenceResult, TargetFeatures,
+    db::HirDatabase,
+    next_solver::{CallableIdWrapper, TyKind, abi::Safety},
+    utils::{TargetFeatureIsSafeInTarget, is_fn_unsafe_to_call, target_feature_is_safe_in_target},
 };
 
 #[derive(Debug, Default)]

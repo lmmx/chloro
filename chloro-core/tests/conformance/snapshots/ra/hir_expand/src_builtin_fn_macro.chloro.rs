@@ -3,25 +3,25 @@
 use base_db::AnchoredPath;
 use cfg::CfgExpr;
 use either::Either;
-use intern::{sym::self, Symbol};
+use intern::{Symbol, sym::self};
 use itertools::Itertools;
-use mbe::{expect_fragment, DelimiterKind};
+use mbe::{DelimiterKind, expect_fragment};
 use span::{Edition, FileId, Span};
 use stdx::format_to;
+use syntax_bridge::syntax_node_to_token_tree;
 use syntax::{
     format_smolstr,
     unescape::{unescape_byte, unescape_char, unescape_str},
 };
-use syntax_bridge::syntax_node_to_token_tree;
 
 use crate::{
-    builtin::quote::{dollar_crate, WithDelimiter},
+    EditionedFileId, ExpandError, ExpandResult, Lookup as _, MacroCallId,
+    builtin::quote::{WithDelimiter, dollar_crate},
     db::ExpandDatabase,
     hygiene::{span_with_call_site_ctxt, span_with_def_site_ctxt},
     name,
     span_map::SpanMap,
     tt::{self, DelimSpan, TtElement, TtIter},
-    EditionedFileId, ExpandError, ExpandResult, Lookup as _, MacroCallId,
 };
 
 macro_rules! register_builtin {

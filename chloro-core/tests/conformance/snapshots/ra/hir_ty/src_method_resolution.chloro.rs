@@ -7,40 +7,41 @@ use std::ops::ControlFlow;
 
 use base_db::Crate;
 use hir_def::{
-    nameres::{block_def_map, crate_def_map, DefMap},
-    signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
     AdtId, AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup,
     ModuleId, TraitId, TypeAliasId,
+    nameres::{DefMap, block_def_map, crate_def_map},
+    signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
 };
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
     FloatTy, IntTy, TypeVisitableExt, UintTy,
+    inherent::{AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
 };
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use triomphe::Arc;
 
 use crate::{
+    TraitEnvironment,
     autoderef::{self, AutoderefKind},
     db::HirDatabase,
-    infer::{unify::InferenceTable, Adjust, Adjustment, OverloadedDeref, PointerCast},
+    infer::{Adjust, Adjustment, OverloadedDeref, PointerCast, unify::InferenceTable},
     lang_items::is_box,
     next_solver::{
+        Canonical, DbInterner, ErrorGuaranteed, GenericArgs, Goal, Predicate, Region, SolverDefId,
+        TraitRef, Ty, TyKind, TypingMode,
         infer::{
             DbInternerInferExt, InferCtxt,
             select::ImplSource,
             traits::{Obligation, ObligationCause, PredicateObligation},
         },
-        obligation_ctxt::ObligationCtxt, Canonical, DbInterner, ErrorGuaranteed, GenericArgs,
-        Goal, Predicate, Region, SolverDefId, TraitRef, Ty, TyKind, TypingMode,
+        obligation_ctxt::ObligationCtxt,
     },
     traits::next_trait_solve_canonical_in_ctxt,
     utils::all_super_traits,
-    TraitEnvironment,
 };
 
 /// This is used as a key for indexing impls.

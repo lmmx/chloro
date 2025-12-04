@@ -6,12 +6,12 @@
 use std::ops::ControlFlow;
 
 use either::Either;
-use hir::{import_map, Complete, Crate, ItemInNs, Module};
+use hir::{Complete, Crate, ItemInNs, Module, import_map};
 
 use crate::{
+    RootDatabase,
     imports::import_assets::NameToImport,
     symbol_index::{self, SymbolIndex},
-    RootDatabase,
 };
 
 /// A value to use, when uncertain which limit to pick.

@@ -1,12 +1,12 @@
-use hir::{db::ExpandDatabase, InFile};
+use hir::{InFile, db::ExpandDatabase};
 use ide_db::source_change::SourceChange;
 use ide_db::text_edit::TextEdit;
 use syntax::{
-    ast::{self, HasArgList},
     AstNode, TextRange,
+    ast::{self, HasArgList},
 };
 
-use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
+use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
 pub(crate) fn replace_filter_map_next_with_find_map(
     ctx: &DiagnosticsContext<'_>,
@@ -55,8 +55,8 @@ fn fixes(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{check_diagnostics_with_config, check_fix},
         DiagnosticsConfig,
+        tests::{check_diagnostics_with_config, check_fix},
     };
     #[track_caller]
     pub(crate) fn check_diagnostics(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

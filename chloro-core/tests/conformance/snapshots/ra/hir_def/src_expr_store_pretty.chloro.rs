@@ -7,25 +7,25 @@ use std::{
     mem,
 };
 
-use hir_expand::{mod_path::PathKind, Lookup};
+use hir_expand::{Lookup, mod_path::PathKind};
 use itertools::Itertools;
 use span::Edition;
 use syntax::ast::HasName;
+use crate::{LifetimeParamId, signatures::StructFlags};
+use crate::{item_tree::FieldsShape, signatures::FieldData};
 
 use crate::{
+    AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
     expr_store::path::{GenericArg, GenericArgs},
     hir::{
-        generics::{GenericParams, WherePredicate}, Array, BindingAnnotation, CaptureBy,
-        ClosureKind, Literal, Movability, Statement,
+        Array, BindingAnnotation, CaptureBy, ClosureKind, Literal, Movability, Statement,
+        generics::{GenericParams, WherePredicate},
     },
     lang_item::LangItemTarget,
     signatures::{FnFlags, FunctionSignature, StructSignature},
     src::HasSource,
     type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef},
-    AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
 };
-use crate::{signatures::StructFlags, LifetimeParamId};
-use crate::{item_tree::FieldsShape, signatures::FieldData};
 
 use super::*;
 

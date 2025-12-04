@@ -2,14 +2,29 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10022 bytes
-Chloro size:   9951 bytes
+Chloro size:   9955 bytes
 Rustfmt size:  10253 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+-use hir::{db::ExpandDatabase, FileRange, HirDisplay, InFile};
++use hir::{FileRange, HirDisplay, InFile, db::ExpandDatabase};
+ use ide_db::text_edit::TextEdit;
+ use ide_db::{
+     assists::{Assist, AssistId},
+     source_change::SourceChange,
+ };
+ use syntax::{
+-    ast::{self, make, HasArgList},
+-    format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
++    AstNode, SmolStr, TextRange, ToSmolStr,
++    ast::{self, HasArgList, make},
++    format_smolstr,
+ };
  
- use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
+-use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
  
 -// Diagnostic: unresolved-method
 -//

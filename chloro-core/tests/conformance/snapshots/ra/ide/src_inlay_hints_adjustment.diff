@@ -17,14 +17,6 @@ Rustfmt size:  23884 bytes
  use std::ops::Not;
  
  use either::Either;
- use ide_db::famous_defs::FamousDefs;
- 
- use ide_db::text_edit::TextEditBuilder;
--use syntax::ast::{self, AstNode, prec::ExprPrecedence};
-+use syntax::ast::{self, prec::ExprPrecedence, AstNode};
- 
- use crate::{
-     AdjustmentHints, AdjustmentHintsMode, InlayHint, InlayHintLabel, InlayHintLabelPart,
          }
          PreferPrefix | PreferPostfix => {
              let prefer_postfix = matches!(mode, PreferPostfix);
@@ -63,12 +55,8 @@ Rustfmt size:  23884 bytes
          let needs_outer_parens = parent
              .is_some_and(|parent_prec| ExprPrecedence::Prefix.needs_parentheses_in(parent_prec));
          (needs_outer_parens, needs_inner_parens)
- #[cfg(test)]
- mod tests {
-     use crate::{
-+        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
          AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
--        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
      };
 -
      #[test]

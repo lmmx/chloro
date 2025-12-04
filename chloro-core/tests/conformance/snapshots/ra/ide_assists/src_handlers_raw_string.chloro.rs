@@ -1,12 +1,12 @@
 use ide_db::source_change::SourceChangeBuilder;
 use syntax::{
-    ast::{self, make::tokens::literal, IsString},
     AstToken,
+    ast::{self, IsString, make::tokens::literal},
 };
 
 use crate::{
-    utils::{required_hashes, string_prefix, string_suffix},
     AssistContext, AssistId, Assists,
+    utils::{required_hashes, string_prefix, string_suffix},
 };
 
 pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

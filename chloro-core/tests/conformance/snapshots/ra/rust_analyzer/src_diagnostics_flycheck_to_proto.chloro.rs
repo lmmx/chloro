@@ -10,8 +10,8 @@ use vfs::{AbsPath, AbsPathBuf};
 use crate::flycheck::{Applicability, DiagnosticLevel, DiagnosticSpan};
 
 use crate::{
-    global_state::GlobalStateSnapshot, line_index::PositionEncoding,
-    lsp::to_proto::url_from_abs_path, lsp_ext,
+    global_state::GlobalStateSnapshot, line_index::PositionEncoding, lsp_ext,
+    lsp::to_proto::url_from_abs_path,
 };
 
 use super::{DiagnosticsMapConfig, Fix};
@@ -516,7 +516,7 @@ fn clippy_code_description(code: Option<&str>) -> Option<lsp_types::CodeDescript
 mod tests {
     use crate::{config::Config, global_state::GlobalState};
     use super::*;
-    use expect_test::{expect_file, ExpectFile};
+    use expect_test::{ExpectFile, expect_file};
     use lsp_types::ClientCapabilities;
     use paths::Utf8Path;
     fn check(diagnostics_json: &str, expect: ExpectFile) {

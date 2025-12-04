@@ -1,4 +1,4 @@
-use hir::{db::DefDatabase, EditionedFileId, Semantics};
+use hir::{EditionedFileId, Semantics, db::DefDatabase};
 use ide_db::{FileId, RootDatabase};
 
 pub(crate) fn view_item_tree(db: &RootDatabase, file_id: FileId) -> String {

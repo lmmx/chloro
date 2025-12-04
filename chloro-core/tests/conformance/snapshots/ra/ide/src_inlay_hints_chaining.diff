@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23713 bytes
+Chloro size:   23705 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -13,12 +13,6 @@ Rustfmt size:  23725 bytes
  use hir::DisplayTarget;
  use ide_db::famous_defs::FamousDefs;
  use syntax::{
--    Direction, NodeOrToken, SyntaxKind, T,
-     ast::{self, AstNode},
-+    Direction, NodeOrToken, SyntaxKind, T,
- };
- 
- use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};
          });
  
      // Chaining can be defined as an expression whose next sibling tokens are newline and dot
@@ -26,22 +20,17 @@ Rustfmt size:  23725 bytes
      // Ignoring extra whitespace and comments
      let next = tokens.next()?.kind();
      if next == SyntaxKind::WHITESPACE {
- 
- #[cfg(test)]
  mod tests {
--    use expect_test::{Expect, expect};
-+    use expect_test::{expect, Expect};
+     use expect_test::{Expect, expect};
      use ide_db::text_edit::{TextRange, TextSize};
 -
      use crate::{
--        InlayHintsConfig, fixture,
-+        fixture,
+         InlayHintsConfig, fixture,
          inlay_hints::{
 -            LazyProperty,
 -            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
-+            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config}, LazyProperty,
++            LazyProperty, tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
          },
-+        InlayHintsConfig,
      };
 -
      #[track_caller]

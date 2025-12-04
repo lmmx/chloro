@@ -11,9 +11,14 @@ Rustfmt size:  2243 bytes
  //! Completes function abi strings.
 +
  use syntax::{
-     ast::{self, IsString},
+-    ast::{self, IsString},
      AstNode, AstToken, SmolStr,
-     completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
++    ast::{self, IsString},
+ };
+ 
+ use crate::{
+-    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
++    CompletionItem, CompletionItemKind, completions::Completions, context::CompletionContext,
  };
  
 -// Most of these are feature gated, we should filter/add feature gate completions once we have them.

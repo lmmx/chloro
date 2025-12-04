@@ -1,19 +1,19 @@
 use either::Either;
-use hir::{db::ExpandDatabase, CallableKind, ClosureStyle, HirDisplay, InFile};
+use hir::{CallableKind, ClosureStyle, HirDisplay, InFile, db::ExpandDatabase};
 use ide_db::{
     famous_defs::FamousDefs,
     source_change::{SourceChange, SourceChangeBuilder},
     text_edit::TextEdit,
 };
 use syntax::{
-    ast::{
-        self, edit::{AstNodeEdit, IndentLevel}, syntax_factory::SyntaxFactory, BlockExpr, Expr,
-        ExprStmt, HasArgList,
-    },
     AstNode, AstPtr, TextSize,
+    ast::{
+        self, BlockExpr, Expr, ExprStmt, HasArgList, edit::{AstNodeEdit, IndentLevel},
+        syntax_factory::SyntaxFactory,
+    },
 };
 
-use crate::{adjusted_display_range, fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
+use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
 
 pub(crate) fn type_mismatch(
     ctx: &DiagnosticsContext<'_>,

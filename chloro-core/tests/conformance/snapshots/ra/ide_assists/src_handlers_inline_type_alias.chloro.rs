@@ -11,13 +11,13 @@ use itertools::Itertools;
 use syntax::ast::syntax_factory::SyntaxFactory;
 use syntax::syntax_editor::SyntaxEditor;
 use syntax::{
-    ast::{self, HasGenericParams, HasName},
     AstNode, NodeOrToken, SyntaxNode,
+    ast::{self, HasGenericParams, HasName},
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistId,
+    assist_context::{AssistContext, Assists},
 };
 
 use super::inline_call::split_refs_and_uses;

@@ -2,19 +2,19 @@ use hir::{InFile, ModuleDef};
 use ide_db::{helpers::mod_path_to_ast, imports::import_assets::NameToImport, items_locator};
 use itertools::Itertools;
 use syntax::{
-    ast::{self, make, AstNode, HasName},
-    syntax_editor::{Position, SyntaxEditor},
     SyntaxKind::WHITESPACE,
     T,
+    ast::{self, AstNode, HasName, make},
+    syntax_editor::{Position, SyntaxEditor},
 };
 
 use crate::{
+    AssistConfig, AssistId,
     assist_context::{AssistContext, Assists},
     utils::{
-        add_trait_assoc_items_to_impl, filter_assoc_items, gen_trait_fn_body, generate_trait_impl,
-        DefaultMethods, IgnoreAssocItems,
+        DefaultMethods, IgnoreAssocItems, add_trait_assoc_items_to_impl, filter_assoc_items,
+        gen_trait_fn_body, generate_trait_impl,
     },
-    AssistConfig, AssistId,
 };
 
 pub(crate) fn replace_derive_with_manual_impl(

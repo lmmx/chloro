@@ -9,8 +9,9 @@ Rustfmt size:  2888 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  use syntax::{
++    SourceFile, SyntaxKind, T, TextSize,
      ast::{self, AstNode},
-     SourceFile, SyntaxKind, TextSize, T,
+-    SourceFile, SyntaxKind, TextSize, T,
  };
  
 -// Feature: Matching Brace

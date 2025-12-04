@@ -7,7 +7,10 @@ use std::{
     sync::atomic::{AtomicU32, Ordering},
 };
 
-use base64::{prelude::BASE64_STANDARD, Engine};
+use base64::{Engine, prelude::BASE64_STANDARD};
+use ide_db::{
+    FxHasher, MiniCore, assists, rust_doc::format_docs, source_change::ChangeAnnotationId,
+};
 use ide::{
     Annotation, AnnotationKind, Assist, AssistKind, Cancellable, CompletionFieldsToResolve,
     CompletionItem, CompletionItemKind, CompletionRelevance, Documentation, FileId, FileRange,
@@ -16,9 +19,6 @@ use ide::{
     Markup, NavigationTarget, ReferenceCategory, RenameError, Runnable, Severity, SignatureHelp,
     SnippetEdit, SourceChange, StructureNodeKind, SymbolKind, TextEdit, TextRange, TextSize,
     UpdateTest,
-};
-use ide_db::{
-    assists, rust_doc::format_docs, source_change::ChangeAnnotationId, FxHasher, MiniCore,
 };
 use itertools::Itertools;
 use paths::{Utf8Component, Utf8Prefix};
@@ -30,11 +30,11 @@ use crate::{
     config::{CallInfoConfig, ClientCommandsConfig, Config},
     global_state::GlobalStateSnapshot,
     line_index::{LineEndings, LineIndex, PositionEncoding},
-    lsp::{
-        completion_item_hash, ext::ShellRunnableArgs,
-        semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error, LspError,
-    },
     lsp_ext::{self, SnippetTextEdit},
+    lsp::{
+        LspError, completion_item_hash, ext::ShellRunnableArgs,
+        semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error,
+    },
     target_spec::{CargoTargetSpec, TargetSpec},
 };
 
@@ -1839,8 +1839,8 @@ pub(crate) mod command {
     use serde_json::to_value;
     use crate::{
         global_state::GlobalStateSnapshot,
-        lsp::to_proto::{location, location_link},
         lsp_ext,
+        lsp::to_proto::{location, location_link},
     };
     pub(crate) fn show_references(
         title: String,
@@ -1975,7 +1975,7 @@ pub(crate) fn rename_error(err: RenameError) -> LspError {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use ide::{Analysis, FilePosition};
     use ide_db::source_change::Snippet;
     use test_utils::extract_offset;

@@ -8,29 +8,43 @@ Rustfmt size:  101181 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
  use anyhow::Context;
  
--use base64::{Engine, prelude::BASE64_STANDARD};
-+use base64::{prelude::BASE64_STANDARD, Engine};
+ use base64::{Engine, prelude::BASE64_STANDARD};
++use ide_db::{FxHashMap, SymbolKind};
  use ide::{
      AssistKind, AssistResolveStrategy, Cancellable, CompletionFieldsToResolve, FilePosition,
      FileRange, FileStructureConfig, FindAllRefsConfig, HoverAction, HoverGotoTypeData,
+     InlayFieldsToResolve, Query, RangeInfo, ReferenceCategory, Runnable, RunnableKind,
+     SingleResolve, SourceChange, TextEdit,
+ };
+-use ide_db::{FxHashMap, SymbolKind};
+ use itertools::Itertools;
+ use lsp_server::ErrorCode;
+ use lsp_types::{
+     diagnostics::convert_diagnostic,
      global_state::{FetchWorkspaceRequest, GlobalState, GlobalStateSnapshot},
      line_index::LineEndings,
++    lsp_ext::{
++        self, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
++        FetchDependencyListResult, PositionOrRange, ViewCrateGraphParams, WorkspaceSymbolParams,
++    },
      lsp::{
--        LspError, completion_item_hash,
-+        completion_item_hash,
+         LspError, completion_item_hash,
          ext::{
              InternalTestingFetchConfigOption, InternalTestingFetchConfigParams,
              InternalTestingFetchConfigResponse,
          },
 -        from_proto, to_proto,
 -        utils::{all_edits_are_disjoint, invalid_params_error},
-+        from_proto, to_proto, utils::{all_edits_are_disjoint, invalid_params_error}, LspError,
+-    },
+-    lsp_ext::{
+-        self, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
+-        FetchDependencyListResult, PositionOrRange, ViewCrateGraphParams, WorkspaceSymbolParams,
++        from_proto, to_proto, utils::{all_edits_are_disjoint, invalid_params_error},
      },
-     lsp_ext::{
-         self, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
+     target_spec::{CargoTargetSpec, TargetSpec},
+     test_runner::{CargoTestHandle, TestTarget},
              when building from source, or pass `--enable-profiling` to `cargo xtask`."
          ))
      }

@@ -2,13 +2,13 @@ use either::Either;
 use ide_db::{defs::Definition, search::FileReference};
 use itertools::Itertools;
 use syntax::{
+    SyntaxKind,
     ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility},
     match_ast,
     syntax_editor::{Position, SyntaxEditor},
-    SyntaxKind,
 };
 
-use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
 pub(crate) fn convert_named_struct_to_tuple_struct(
     acc: &mut Assists,

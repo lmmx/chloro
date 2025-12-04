@@ -5,15 +5,15 @@ use core::fmt;
 
 use hir::{Adt, AsAssocItem, Crate, HirDisplay, MacroKind, Semantics};
 use ide_db::{
+    FilePosition, RootDatabase,
     base_db::{CrateOrigin, LangCrateOrigin},
     defs::{Definition, IdentClass},
     helpers::pick_best_token,
-    FilePosition, RootDatabase,
 };
 use itertools::Itertools;
 use syntax::{AstNode, SyntaxKind::*, T};
 
-use crate::{doc_links::token_as_doc_comment, parent_module::crates_for, RangeInfo};
+use crate::{RangeInfo, doc_links::token_as_doc_comment, parent_module::crates_for};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum MonikerDescriptorKind {
@@ -410,7 +410,7 @@ fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, 
 
 #[cfg(test)]
 mod tests {
-    use crate::{fixture, MonikerResult};
+    use crate::{MonikerResult, fixture};
     use super::MonikerKind;
     #[allow(dead_code)]
     #[track_caller]

@@ -17,15 +17,17 @@ Rustfmt size:  6179 bytes
 -};
  use rustc_hash::FxHashMap;
  use rustc_type_ir::{
-     inherent::{GenericArg as _, IntoKind, SliceLike},
+-    inherent::{GenericArg as _, IntoKind, SliceLike},
+     BoundVarIndexKind, GenericArgKind, TypeFlags, TypeFoldable, TypeFolder, TypeSuperFoldable,
      TypeVisitableExt,
- };
- 
-+use crate::next_solver::{
-+    fold::FnMutDelegate, BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses,
-+    Const, ConstKind, DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind,
++    inherent::{GenericArg as _, IntoKind, SliceLike},
 +};
 +
++use crate::next_solver::{
++    BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
++    DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
+ };
+ 
  pub trait CanonicalExt<'db, V> {
      fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
      where

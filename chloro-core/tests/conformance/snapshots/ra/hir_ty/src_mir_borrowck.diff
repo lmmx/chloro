@@ -16,10 +16,6 @@ Rustfmt size:  25852 bytes
  use std::iter;
  
  use hir_def::{DefWithBodyId, HasModule};
- use triomphe::Arc;
- 
- use crate::{
--    TraitEnvironment,
      db::{HirDatabase, InternedClosure, InternedClosureId},
      display::DisplayTarget,
      mir::OperandKind,
@@ -27,8 +23,7 @@ Rustfmt size:  25852 bytes
 -        DbInterner, GenericArgs, Ty, TypingMode,
 -        infer::{DbInternerInferExt, InferCtxt},
 -    },
-+    next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, GenericArgs, Ty, TypingMode},
-+    TraitEnvironment,
++    next_solver::{DbInterner, GenericArgs, Ty, TypingMode, infer::{DbInternerInferExt, InferCtxt}},
  };
  
  use super::{

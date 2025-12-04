@@ -8,6 +8,15 @@ Rustfmt size:  22455 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     config::{Config, ConfigChange},
+     flycheck::{InvocationStrategy, Target},
+     global_state::{FetchWorkspaceRequest, GlobalState},
+-    lsp::{from_proto, utils::apply_document_changes},
+     lsp_ext::{self, RunFlycheckParams},
++    lsp::{from_proto, utils::apply_document_changes},
+     mem_docs::DocumentData,
+     reload,
+     target_spec::TargetSpec,
      }
  
      // Just ignore this. It is OK to continue sending progress

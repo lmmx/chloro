@@ -8,32 +8,6 @@ Rustfmt size:  17194 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use either::Either;
- use hir_def::{
--    AdtId, CallableDefId, DefWithBodyId, FieldId, FunctionId, VariantId,
--    expr_store::{Body, path::Path},
-+    expr_store::{path::Path, Body},
-     hir::{AsmOperand, Expr, ExprId, ExprOrPatId, InlineAsmKind, Pat, PatId, Statement, UnaryOp},
-     resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
-     signatures::StaticFlags,
-     type_ref::Rawness,
-+    AdtId, CallableDefId, DefWithBodyId, FieldId, FunctionId, VariantId,
- };
- use rustc_type_ir::inherent::IntoKind;
- use span::Edition;
- 
- use crate::{
--    InferenceResult, TargetFeatures,
-     db::HirDatabase,
--    next_solver::{CallableIdWrapper, TyKind, abi::Safety},
--    utils::{TargetFeatureIsSafeInTarget, is_fn_unsafe_to_call, target_feature_is_safe_in_target},
-+    next_solver::{abi::Safety, CallableIdWrapper, TyKind},
-+    utils::{is_fn_unsafe_to_call, target_feature_is_safe_in_target, TargetFeatureIsSafeInTarget},
-+    InferenceResult, TargetFeatures,
- };
- 
- #[derive(Debug, Default)]
          reason: UnsafetyReason,
      },
      /// A lint.

@@ -2,12 +2,20 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11413 bytes
-Chloro size:   10641 bytes
+Chloro size:   10645 bytes
 Rustfmt size:  11741 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use ide_db::{famous_defs::FamousDefs, traits::resolve_target_trait};
+ use syntax::{
++    AstNode, T,
+     ast::{self, edit_in_place::Indent, make},
+-    ted, AstNode, T,
++    ted,
+ };
+ 
  use crate::{AssistContext, AssistId, Assists};
  
  // FIXME: Generate proper `index_mut` method body refer to `index` method body may impossible due to the unpredictable case [#15581].
@@ -140,8 +148,12 @@ Rustfmt size:  11741 bytes
              );
          }
          _ => {}
-         tests::{check_assist, check_assist_not_applicable, check_assist_with_config, TEST_CONFIG},
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        tests::{check_assist, check_assist_not_applicable, check_assist_with_config, TEST_CONFIG},
          AssistConfig,
++        tests::{TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_with_config},
      };
 -
      use super::*;

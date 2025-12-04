@@ -1,29 +1,30 @@
 use std::{iter, mem::discriminant};
 use hir::{
-    sym, AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics,
+    AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
 };
+use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
 use ide_db::{
+    RootDatabase, SymbolKind,
     base_db::{AnchoredPath, SourceDatabase},
     defs::{Definition, IdentClass},
     famous_defs::FamousDefs,
     helpers::pick_best_token,
-    RootDatabase, SymbolKind,
 };
-use ide_db::{ra_fixture::UpmapFromRaFixture, MiniCore};
 use itertools::Itertools;
 use span::{Edition, FileId};
 use syntax::{
-    ast::{self, HasLoopBody},
-    match_ast, AstNode, AstToken,
+    AstNode, AstToken,
     SyntaxKind::*,
-    SyntaxNode, SyntaxToken, TextRange, T,
+    SyntaxNode, SyntaxToken, T, TextRange,
+    ast::{self, HasLoopBody},
+    match_ast,
 };
 
 use crate::Analysis;
 use crate::{
+    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
     doc_links::token_as_doc_comment,
     navigation_target::{self, ToNav},
-    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
 };
 
 #[derive(Debug)]
@@ -598,7 +599,7 @@ fn expr_to_nav(
 
 #[cfg(test)]
 mod tests {
-    use crate::{fixture, GotoDefinitionConfig};
+    use crate::{GotoDefinitionConfig, fixture};
     use ide_db::{FileRange, MiniCore};
     use itertools::Itertools;
     const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig { minicore: MiniCore::default() };

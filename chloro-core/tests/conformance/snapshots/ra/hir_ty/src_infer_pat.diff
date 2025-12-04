@@ -8,36 +8,14 @@ Rustfmt size:  25364 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Type inference for patterns.
- 
- use std::iter::repeat_with;
- 
- use hir_def::{
--    HasModule,
--    expr_store::{Body, path::Path},
-+    expr_store::{path::Path, Body},
-     hir::{Binding, BindingAnnotation, BindingId, Expr, ExprId, Literal, Pat, PatId},
-+    HasModule,
  };
  use hir_expand::name::Name;
  use rustc_ast_ir::Mutability;
+-use rustc_type_ir::inherent::{GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Ty as _};
++use rustc_type_ir::inherent::{GenericArgs as _, GenericArg as _, IntoKind, SliceLike, Ty as _};
  use stdx::TupleExt;
  
  use crate::{
--    DeclContext, DeclOrigin, InferenceDiagnostic,
-     consteval::{self, try_const_usize, usize_const},
-     infer::{
--        AllowTwoPhase, BindingMode, Expectation, InferenceContext, TypeMismatch,
--        coerce::CoerceNever, expr::ExprIsRead,
-+        coerce::CoerceNever, expr::ExprIsRead, AllowTwoPhase, BindingMode, Expectation,
-+        InferenceContext, TypeMismatch,
-     },
-     lower::lower_mutability,
-     next_solver::{GenericArgs, Ty, TyKind},
-+    DeclContext, DeclOrigin, InferenceDiagnostic,
- };
- 
- impl<'db> InferenceContext<'_, 'db> {
          let expected = self.table.structurally_resolve_type(expected);
  
          // If `expected` is an infer ty, we try to equate it to an array if the given pattern

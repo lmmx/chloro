@@ -11,9 +11,8 @@ Rustfmt size:  11544 bytes
  //! Tools to work with format string literals for the `format_args!` family of macros.
 +
  use syntax::{
--    AstNode, AstToken, TextRange, TextSize,
+     AstNode, AstToken, TextRange, TextSize,
      ast::{self, IsString},
-+    AstNode, AstToken, TextRange, TextSize,
  };
  
 -// FIXME: This can probably be re-implemented via the HIR?

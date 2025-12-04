@@ -8,18 +8,6 @@ Rustfmt size:  35861 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::SmolStr;
- 
- use crate::{
--    CompletionItem, CompletionItemKind, Completions,
-     context::{
-         CompletionContext, DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx,
-         PathExprCtx, Qualified,
-     },
-+    CompletionItem, CompletionItemKind, Completions,
- };
- 
- /// Complete dot accesses, i.e. fields or methods.
          // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
          // its return type, so we instead check for `<&Self as IntoIterator>::IntoIter`.
          // Does <&receiver_ty as IntoIterator>::IntoIter` exist? Assume `iter` is valid

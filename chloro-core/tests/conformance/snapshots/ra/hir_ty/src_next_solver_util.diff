@@ -8,47 +8,14 @@ Rustfmt size:  28638 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- 
- use base_db::Crate;
--use hir_def::{BlockId, HasModule, lang_item::LangItem};
-+use hir_def::{lang_item::LangItem, BlockId, HasModule};
- use la_arena::Idx;
- use rustc_abi::{Float, HasDataLayout, Integer, IntegerType, Primitive, ReprOptions};
- use rustc_type_ir::{
--    ConstKind, CoroutineArgs, DebruijnIndex, FloatTy, INNERMOST, IntTy, Interner,
--    PredicatePolarity, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable,
--    TypeVisitableExt, TypeVisitor, UintTy, UniverseIndex,
+     PredicatePolarity, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable,
+     TypeVisitableExt, TypeVisitor, UintTy, UniverseIndex,
      inherent::{
-         AdtDef, GenericArg as _, GenericArgs as _, IntoKind, ParamEnv as _, SliceLike, Ty as _,
+-        AdtDef, GenericArg as _, GenericArgs as _, IntoKind, ParamEnv as _, SliceLike, Ty as _,
++        AdtDef, GenericArgs as _, GenericArg as _, IntoKind, ParamEnv as _, SliceLike, Ty as _,
      },
      lang_items::SolverTraitLangItem,
      solve::SizedTraitKind,
-+    ConstKind, CoroutineArgs, DebruijnIndex, FloatTy, IntTy, Interner, PredicatePolarity,
-+    RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable, TypeVisitableExt,
-+    TypeVisitor, UintTy, UniverseIndex, INNERMOST,
- };
- 
- use crate::{
-     lower::{LifetimeElisionKind, TyLoweringContext},
-     method_resolution::{TraitImpls, TyFingerprint},
-     next_solver::{
--        BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst, PlaceholderRegion,
--        infer::InferCtxt,
-+        infer::InferCtxt, BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst,
-+        PlaceholderRegion,
-     },
- };
- 
- use super::{
-+    fold::{BoundVarReplacer, FnMutDelegate},
-     Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,
-     GenericArgs, Predicate, PredicateKind, Region, SolverDefId, TraitPredicate, TraitRef, Ty,
-     TyKind,
--    fold::{BoundVarReplacer, FnMutDelegate},
- };
- 
- #[derive(Clone, Debug)]
      pub fn wrap_incr(self, interner: DbInterner<'db>) -> Self {
          self.checked_add(interner, 1).0
      }

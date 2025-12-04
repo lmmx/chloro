@@ -5,57 +5,57 @@ use std::{iter::repeat_with, mem};
 use either::Either;
 use hir_def::hir::ClosureKind;
 use hir_def::{
-    expr_store::path::{GenericArg as HirGenericArg, GenericArgs as HirGenericArgs, Path},
+    BlockId, FieldId, GenericDefId, GenericParamId, ItemContainerId, Lookup, TupleFieldId, TupleId,
+    expr_store::path::{GenericArgs as HirGenericArgs, GenericArg as HirGenericArg, Path},
     hir::{
-        generics::GenericParamDataRef, ArithOp, Array, AsmOperand, AsmOptions, BinaryOp, Expr,
-        ExprId, ExprOrPatId, LabelId, Literal, Pat, PatId, Statement, UnaryOp,
+        ArithOp, Array, AsmOperand, AsmOptions, BinaryOp, Expr, ExprId, ExprOrPatId, LabelId,
+        Literal, Pat, PatId, Statement, UnaryOp, generics::GenericParamDataRef,
     },
     lang_item::{LangItem, LangItemTarget},
     resolver::ValueNs,
-    BlockId, FieldId, GenericDefId, GenericParamId, ItemContainerId, Lookup, TupleFieldId, TupleId,
 };
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _},
     CoroutineArgs, CoroutineArgsParts, InferTy, Interner,
+    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _},
 };
 use syntax::ast::RangeOp;
 use tracing::debug;
 
 use crate::{
+    Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,
+    IncorrectGenericsLenKind, Rawness, TraitEnvironment,
     autoderef::overloaded_deref_ty,
     consteval,
     db::InternedCoroutine,
     generics::generics,
     infer::{
-        coerce::{CoerceMany, CoerceNever}, find_continuable, pat::contains_explicit_ref_binding,
-        AllowTwoPhase, BreakableKind,
+        AllowTwoPhase, BreakableKind, coerce::{CoerceMany, CoerceNever}, find_continuable,
+        pat::contains_explicit_ref_binding,
     },
     lang_items::lang_items_for_bin_op,
     lower::{
-        lower_mutability,
+        LifetimeElisionKind, lower_mutability,
         path::{GenericArgsLowerer, TypeLikeConst, substs_from_args_and_bindings},
-        LifetimeElisionKind,
     },
     method_resolution::{self, VisibleFromModule},
     next_solver::{
+        Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, TraitRef, Ty, TyKind,
+        TypeError,
         infer::{
             InferOk,
             traits::{Obligation, ObligationCause},
         },
-        obligation_ctxt::ObligationCtxt, Const, DbInterner, ErrorGuaranteed, GenericArg,
-        GenericArgs, TraitRef, Ty, TyKind, TypeError,
+        obligation_ctxt::ObligationCtxt,
     },
     traits::FnTrait,
-    Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,
-    IncorrectGenericsLenKind, Rawness, TraitEnvironment,
 };
 
 use super::{
-    cast::CastCheck, find_breakable, BreakableContext, Diverges, Expectation, InferenceContext,
-    InferenceDiagnostic, TypeMismatch,
+    BreakableContext, Diverges, Expectation, InferenceContext, InferenceDiagnostic, TypeMismatch,
+    cast::CastCheck, find_breakable,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]

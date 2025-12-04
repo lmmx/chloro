@@ -11,56 +11,56 @@ use base_db::FxIndexSet;
 use cfg::CfgOptions;
 use either::Either;
 use hir_expand::{
+    HirFileId, InFile, MacroDefId,
     mod_path::tool_path,
     name::{AsName, Name},
     span_map::SpanMapRef,
-    HirFileId, InFile, MacroDefId,
 };
-use intern::{sym, Symbol};
+use intern::{Symbol, sym};
 use rustc_hash::FxHashMap;
 use stdx::never;
 use syntax::{
+    AstNode, AstPtr, AstToken as _, SyntaxNodePtr,
     ast::{
         self, ArrayExprKind, AstChildren, BlockExpr, HasArgList, HasAttrs, HasGenericArgs,
         HasGenericParams, HasLoopBody, HasName, HasTypeBounds, IsString, RangeItem,
         SlicePatComponents,
     },
-    AstNode, AstPtr, AstToken as _, SyntaxNodePtr,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
+    AdtId, BlockId, BlockLoc, DefWithBodyId, FunctionId, GenericDefId, ImplId, MacroId,
+    ModuleDefId, ModuleId, TraitId, TypeAliasId, UnresolvedMacro,
     builtin_type::BuiltinUint,
     db::DefDatabase,
     expr_store::{
-        expander::Expander, lower::generics::ImplTraitLowerFn,
-        path::{AssociatedTypeBinding, GenericArg, GenericArgs, GenericArgsParentheses, Path},
         Body, BodySourceMap, ExprPtr, ExpressionStore, ExpressionStoreBuilder,
         ExpressionStoreDiagnostics, ExpressionStoreSourceMap, HygieneId, LabelPtr, LifetimePtr,
-        PatPtr, TypePtr,
+        PatPtr, TypePtr, expander::Expander, lower::generics::ImplTraitLowerFn,
+        path::{AssociatedTypeBinding, GenericArg, GenericArgs, GenericArgsParentheses, Path},
     },
     hir::{
+        Array, Binding, BindingAnnotation, BindingId, BindingProblems, CaptureBy, ClosureKind,
+        Expr, ExprId, Item, Label, LabelId, Literal, MatchArm, Movability, OffsetOf, Pat, PatId,
+        RecordFieldPat, RecordLitField, Statement,
         format_args::{
             self, FormatAlignment, FormatArgs, FormatArgsPiece, FormatArgument, FormatArgumentKind,
             FormatArgumentsCollector, FormatCount, FormatDebugHex, FormatOptions,
             FormatPlaceholder, FormatSign, FormatTrait,
         },
-        generics::GenericParams, Array, Binding, BindingAnnotation, BindingId, BindingProblems,
-        CaptureBy, ClosureKind, Expr, ExprId, Item, Label, LabelId, Literal, MatchArm, Movability,
-        OffsetOf, Pat, PatId, RecordFieldPat, RecordLitField, Statement,
+        generics::GenericParams,
     },
     item_scope::BuiltinShadowMode,
     item_tree::FieldsShape,
     lang_item::LangItem,
-    nameres::{block_def_map, DefMap, LocalDefMap, MacroSubNs},
+    nameres::{DefMap, LocalDefMap, MacroSubNs, block_def_map},
     type_ref::{
         ArrayType, ConstRef, FnType, LifetimeRef, LifetimeRefId, Mutability, PathId, Rawness,
         RefType, TraitBoundModifier, TraitRef, TypeBound, TypeRef, TypeRefId, UseArgRef,
     },
-    AdtId, BlockId, BlockLoc, DefWithBodyId, FunctionId, GenericDefId, ImplId, MacroId,
-    ModuleDefId, ModuleId, TraitId, TypeAliasId, UnresolvedMacro,
 };
 
 pub use self::path::hir_segment_to_ast_segment;

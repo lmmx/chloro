@@ -8,17 +8,6 @@ Rustfmt size:  11494 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- mod tests;
- 
- use ide_db::{
--    FilePosition, FxHashSet, RootDatabase,
-     imports::insert_use::{self, ImportScope},
-     syntax_helpers::tree_diff::diff,
-     text_edit::TextEdit,
-+    FilePosition, FxHashSet, RootDatabase,
- };
- use syntax::ast::make;
- 
  //FIXME: split the following feature into fine-grained features.
  
  // Feature: Magic Completions

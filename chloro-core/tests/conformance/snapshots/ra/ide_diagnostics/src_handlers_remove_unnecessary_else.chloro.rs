@@ -3,12 +3,12 @@ use ide_db::text_edit::TextEdit;
 use ide_db::{assists::Assist, source_change::SourceChange};
 use itertools::Itertools;
 use syntax::{
-    ast::{self, edit::{AstNodeEdit, IndentLevel}},
     AstNode, SyntaxToken, TextRange,
+    ast::{self, edit::{AstNodeEdit, IndentLevel}},
 };
 
 use crate::{
-    adjusted_display_range, fix, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity,
+    Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range, fix,
 };
 
 pub(crate) fn remove_unnecessary_else(

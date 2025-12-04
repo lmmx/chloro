@@ -8,42 +8,6 @@ Rustfmt size:  32850 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use cfg::{CfgExpr, CfgOptions};
- use either::Either;
- use hir_expand::{
--    HirFileId, InFile,
--    attrs::{Attr, AttrId, RawAttrs, collect_attrs},
-+    attrs::{collect_attrs, Attr, AttrId, RawAttrs},
-     span_map::SpanMapRef,
-+    HirFileId, InFile,
- };
--use intern::{Symbol, sym};
-+use intern::{sym, Symbol};
- use la_arena::{ArenaMap, Idx, RawIdx};
- use mbe::DelimiterKind;
- use rustc_abi::ReprOptions;
- use span::AstIdNode;
- use syntax::{
--    AstPtr,
-     ast::{self, HasAttrs},
-+    AstPtr,
- };
- use triomphe::Arc;
- use tt::iter::{TtElement, TtIter};
- 
- use crate::{
--    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId,
--    VariantId,
-     db::DefDatabase,
-     item_tree::block_item_tree_query,
-     lang_item::LangItem,
-     nameres::{ModuleOrigin, ModuleSource},
-     src::{HasChildSource, HasSource},
-+    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId,
-+    VariantId,
- };
- 
- /// Desugared attributes of an item post `cfg_attr` expansion.
      ///
      /// Note that a key can have multiple values that are all considered "active" at the same time.
      /// For example, `#[doc(alias = "x")]` and `#[doc(alias = "y")]`.
@@ -99,11 +63,9 @@ Rustfmt size:  32850 bytes
 -
      use hir_expand::span_map::{RealSpanMap, SpanMap};
      use span::FileId;
--    use syntax::{AstNode, TextRange, ast};
--    use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
+     use syntax::{AstNode, TextRange, ast};
+     use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
 -
-+    use syntax::{ast, AstNode, TextRange};
-+    use syntax_bridge::{syntax_node_to_token_tree, DocCommentDesugarMode};
      use crate::attr::{DocAtom, DocExpr};
 -
      fn assert_parse_result(input: &str, expected: DocExpr) {

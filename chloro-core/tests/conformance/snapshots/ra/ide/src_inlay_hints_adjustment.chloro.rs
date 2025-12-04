@@ -14,7 +14,7 @@ use hir::{
 use ide_db::famous_defs::FamousDefs;
 
 use ide_db::text_edit::TextEditBuilder;
-use syntax::ast::{self, prec::ExprPrecedence, AstNode};
+use syntax::ast::{self, AstNode, prec::ExprPrecedence};
 
 use crate::{
     AdjustmentHints, AdjustmentHintsMode, InlayHint, InlayHintLabel, InlayHintLabelPart,
@@ -340,8 +340,8 @@ fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, 
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
         AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
+        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
     #[test]
     fn adjustment_hints_prefix() {

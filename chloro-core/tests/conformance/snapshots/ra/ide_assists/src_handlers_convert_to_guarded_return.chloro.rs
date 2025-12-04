@@ -2,18 +2,18 @@ use std::iter::once;
 
 use either::Either;
 use hir::{Semantics, TypeInfo};
-use ide_db::{ty_filter::TryEnum, RootDatabase};
+use ide_db::{RootDatabase, ty_filter::TryEnum};
 use syntax::{
-    ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
     AstNode,
     SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
     SyntaxNode, T,
+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
 };
 
 use crate::{
+    AssistId,
     assist_context::{AssistContext, Assists},
     utils::{invert_boolean_expression_legacy, is_never_block},
-    AssistId,
 };
 
 pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

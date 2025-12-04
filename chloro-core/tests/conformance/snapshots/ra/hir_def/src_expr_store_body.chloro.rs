@@ -9,13 +9,13 @@ use syntax::ast;
 use triomphe::Arc;
 
 use crate::{
+    DefWithBodyId, HasModule,
     db::DefDatabase,
     expr_store::{
-        lower::lower_body, pretty, ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr,
+        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
     },
     hir::{BindingId, ExprId, PatId},
     src::HasSource,
-    DefWithBodyId, HasModule,
 };
 
 /// The body of an item (function, const etc.).

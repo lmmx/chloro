@@ -1,10 +1,10 @@
+use crate::formatter::write_indent;
 use ra_ap_syntax::{
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
 };
 
 use super::{format_block_expr_contents, format_stmt_list};
-use crate::formatter::write_indent;
 
 pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let func = match ast::Fn::cast(node.clone()) {

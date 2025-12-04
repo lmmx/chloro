@@ -1,21 +1,21 @@
 use hir::{HasCrate, Semantics};
 use ide_db::{
+    RootDatabase,
     assists::{AssistId, AssistKind, ExprFillDefaultMode},
     famous_defs::FamousDefs,
     syntax_helpers::suggest_name,
-    RootDatabase,
 };
 use syntax::{
+    AstNode,
     ast::{
-        self, edit::AstNodeEdit, make, AssocItem, BlockExpr, GenericParam, HasAttrs,
-        HasGenericParams, HasName, HasTypeBounds, HasVisibility,
+        self, AssocItem, BlockExpr, GenericParam, HasAttrs, HasGenericParams, HasName,
+        HasTypeBounds, HasVisibility, edit::AstNodeEdit, make,
     },
     syntax_editor::Position,
-    AstNode,
 };
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistConfig,
+    assist_context::{AssistContext, Assists},
 };
 
 pub(crate) fn generate_blanket_trait_impl(

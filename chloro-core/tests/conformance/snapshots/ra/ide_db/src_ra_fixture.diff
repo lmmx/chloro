@@ -8,6 +8,22 @@ Rustfmt size:  18477 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use smallvec::SmallVec;
+ use span::{TextRange, TextSize};
+ use syntax::{
+-    ast::{self, IsString},
+     AstToken, SmolStr,
++    ast::{self, IsString},
+ };
+ 
+ use crate::{
+-    active_parameter::ActiveParameter, documentation::Documentation, range_mapper::RangeMapper,
+-    search::ReferenceCategory, MiniCore, RootDatabase, SymbolKind,
++    MiniCore, RootDatabase, SymbolKind, active_parameter::ActiveParameter,
++    documentation::Documentation, range_mapper::RangeMapper, search::ReferenceCategory,
+ };
+ 
+ pub use span::FileId;
                  .map(|(file_id, range)| (file_id.file_id(&db), range))
                  .collect();
              (db, files, fixture.sysroot_files)

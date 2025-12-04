@@ -5,10 +5,10 @@ use std::{
     time::Duration,
 };
 
-use crossbeam_channel::{after, select, Receiver};
+use crossbeam_channel::{Receiver, after, select};
 use itertools::Itertools;
 use lsp_server::{Connection, Message, Notification, Request};
-use lsp_types::{notification::Exit, request::Shutdown, TextDocumentIdentifier, Url};
+use lsp_types::{TextDocumentIdentifier, Url, notification::Exit, request::Shutdown};
 use parking_lot::{Mutex, MutexGuard};
 use paths::{Utf8Path, Utf8PathBuf};
 use rust_analyzer::{
@@ -16,8 +16,8 @@ use rust_analyzer::{
     config::{Config, ConfigChange, ConfigErrors},
     lsp, main_loop,
 };
+use serde_json::{Value, json, to_string_pretty};
 use serde::Serialize;
-use serde_json::{json, to_string_pretty, Value};
 use test_utils::FixtureWithProjectMeta;
 use tracing_subscriber::fmt::TestWriter;
 use vfs::AbsPathBuf;

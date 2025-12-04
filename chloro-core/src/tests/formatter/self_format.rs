@@ -1,8 +1,9 @@
 //! Tests to ensure chloro can format its own code correctly.
 //! These are regression tests for bugs found when running `chloro -w` on chloro-core.
 
-use super::*;
 use insta::assert_snapshot;
+
+use super::*;
 
 #[test]
 fn preserve_section_comments_in_match() {
@@ -129,18 +130,18 @@ use crate::formatter::write_indent;
 pub fn format_use();
 "#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"
-use ra_ap_syntax::{
-    ast::{self, HasVisibility},
-    AstNode, SyntaxNode,
-};
+    assert_snapshot!(output, @r"
+    use ra_ap_syntax::{
+        AstNode, SyntaxNode,
+        ast::{self, HasVisibility},
+    };
 
-pub mod grouping;
-pub mod sort;
+    pub mod grouping;
+    pub mod sort;
 
-use crate::formatter::config::MAX_WIDTH;
-use crate::formatter::write_indent;
+    use crate::formatter::config::MAX_WIDTH;
+    use crate::formatter::write_indent;
 
-pub fn format_use();
-"#);
+    pub fn format_use();
+    ");
 }

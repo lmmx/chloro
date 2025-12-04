@@ -5,8 +5,8 @@ use ide_db::{
     ty_filter::TryEnum,
 };
 use syntax::{
-    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory},
     AstNode, T,
+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory},
 };
 
 use crate::assist_context::{AssistContext, Assists};

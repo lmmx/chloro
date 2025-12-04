@@ -2,25 +2,39 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12917 bytes
+Chloro size:   12925 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ use std::fmt;
+ 
+-use hir_def::{lang_item::LangItem, TraitId, TypeAliasId};
++use hir_def::{TraitId, TypeAliasId, lang_item::LangItem};
+ use rustc_type_ir::inherent::{IntoKind, Ty as _};
+ use tracing::debug;
+ use triomphe::Arc;
+ 
+ use crate::{
++    TraitEnvironment,
+     db::HirDatabase,
      infer::unify::InferenceTable,
      next_solver::{
++        Canonical, TraitRef, Ty, TyKind,
          infer::{
 -            traits::{Obligation, ObligationCause, PredicateObligations},
              InferOk,
 +            traits::{Obligation, ObligationCause, PredicateObligations},
          },
--        obligation_ctxt::ObligationCtxt,
+         obligation_ctxt::ObligationCtxt,
 -        Canonical, TraitRef, Ty, TyKind,
-+        obligation_ctxt::ObligationCtxt, Canonical, TraitRef, Ty, TyKind,
      },
-     TraitEnvironment,
+-    TraitEnvironment,
  };
+ 
+ const AUTODEREF_RECURSION_LIMIT: usize = 20;
      v.into_iter()
  }
  

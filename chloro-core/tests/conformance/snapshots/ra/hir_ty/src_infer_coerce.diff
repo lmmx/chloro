@@ -8,55 +8,6 @@ Rustfmt size:  68687 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! ```
- 
- use hir_def::{
--    CallableDefId,
-     hir::{ExprId, ExprOrPatId},
-     lang_item::LangItem,
-     signatures::FunctionSignature,
-+    CallableDefId,
- };
- use intern::sym;
- use rustc_ast_ir::Mutability;
- use rustc_type_ir::{
--    BoundVar, TypeAndMut,
-     error::TypeError,
-     inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
-+    BoundVar, TypeAndMut,
- };
--use smallvec::{SmallVec, smallvec};
-+use smallvec::{smallvec, SmallVec};
- use tracing::{debug, instrument};
- use triomphe::Arc;
- 
- use crate::{
--    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
-     autoderef::Autoderef,
-     db::{HirDatabase, InternedClosureId},
--    infer::{AllowTwoPhase, InferenceContext, TypeMismatch, unify::InferenceTable},
-+    infer::{unify::InferenceTable, AllowTwoPhase, InferenceContext, TypeMismatch},
-     next_solver::{
--        Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, CallableIdWrapper,
--        Canonical, ClauseKind, CoercePredicate, Const, ConstKind, DbInterner, ErrorGuaranteed,
--        GenericArgs, PolyFnSig, PredicateKind, Region, RegionKind, TraitRef, Ty, TyKind,
-         infer::{
-             InferCtxt, InferOk, InferResult,
-             relate::RelateResult,
-             select::{ImplSource, SelectionError},
-             traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
-         },
--        obligation_ctxt::ObligationCtxt,
-+        obligation_ctxt::ObligationCtxt, Binder, BoundConst, BoundRegion, BoundRegionKind,
-+        BoundTy, BoundTyKind, CallableIdWrapper, Canonical, ClauseKind, CoercePredicate, Const,
-+        ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, PolyFnSig, PredicateKind, Region,
-+        RegionKind, TraitRef, Ty, TyKind,
-     },
-     utils::TargetFeatureIsSafeInTarget,
-+    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
- };
- 
- struct Coerce<'a, 'b, 'db> {
  /// Coercing a mutable reference to an immutable works, while
  /// coercing `&T` to `&mut T` should be forbidden.
  fn coerce_mutbls<'db>(from_mutbl: Mutability, to_mutbl: Mutability) -> RelateResult<'db, ()> {

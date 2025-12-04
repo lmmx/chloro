@@ -8,6 +8,14 @@ Rustfmt size:  8029 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use std::fmt;
+ 
+ use hir_expand::name::{AsName, Name};
+-use intern::{sym, Symbol};
++use intern::{Symbol, sym};
+ /// Different signed int types.
+ #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+ pub enum BuiltinInt {
          [
              (Name::new_symbol_root(sym::char), BuiltinType::Char),
              (Name::new_symbol_root(sym::bool), BuiltinType::Bool),

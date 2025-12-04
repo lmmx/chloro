@@ -18,8 +18,12 @@ use std::{
 use base_db::Crate;
 use either::Either;
 use hir_def::{
+    AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId,
+    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
+    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId,
+    UnionId, VariantId,
     builtin_type::BuiltinType,
-    expr_store::{path::Path, ExpressionStore, HygieneId},
+    expr_store::{ExpressionStore, HygieneId, path::Path},
     hir::generics::{GenericParamDataRef, TypeOrConstParamData, TypeParamProvenance, WherePredicate},
     item_tree::FieldsShape,
     lang_item::LangItem,
@@ -29,10 +33,6 @@ use hir_def::{
         ConstRef, LifetimeRefId, LiteralConstRef, PathId, TraitBoundModifier,
         TraitRef as HirTraitRef, TypeBound, TypeRef, TypeRefId,
     },
-    AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId,
-    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
-    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId,
-    UnionId, VariantId,
 };
 use hir_expand::name::Name;
 use la_arena::{Arena, ArenaMap, Idx};
@@ -41,28 +41,28 @@ use rustc_ast_ir::Mutability;
 use rustc_hash::FxHashSet;
 use rustc_pattern_analysis::Captures;
 use rustc_type_ir::{
-    inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
     AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex, ExistentialPredicate,
     ExistentialProjection, ExistentialTraitRef, FnSig, OutlivesPredicate,
     TyKind::self,
     TypeVisitableExt,
+    inherent::{GenericArgs as _, GenericArg as _, IntoKind as _, Region as _, SliceLike, Ty as _},
 };
 use salsa::plumbing::AsId;
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use stdx::{impl_from, never};
 use triomphe::{Arc, ThinArc};
 
 use crate::{
+    FnAbi, ImplTraitId, TraitEnvironment, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
     consteval::intern_const_ref,
     db::HirDatabase,
-    generics::{generics, trait_self_param_idx, Generics},
+    generics::{Generics, generics, trait_self_param_idx},
     next_solver::{
-        abi::Safety, AliasTy, Binder, BoundExistentialPredicates, Clause, Clauses, Const,
-        DbInterner, EarlyBinder, EarlyParamRegion, ErrorGuaranteed, GenericArg, GenericArgs,
-        ParamConst, ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitPredicate, TraitRef,
-        Ty, Tys, UnevaluatedConst,
+        AliasTy, Binder, BoundExistentialPredicates, Clause, Clauses, Const, DbInterner,
+        EarlyBinder, EarlyParamRegion, ErrorGuaranteed, GenericArg, GenericArgs, ParamConst,
+        ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitPredicate, TraitRef, Ty, Tys,
+        UnevaluatedConst, abi::Safety,
     },
-    FnAbi, ImplTraitId, TraitEnvironment, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
 };
 
 pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);

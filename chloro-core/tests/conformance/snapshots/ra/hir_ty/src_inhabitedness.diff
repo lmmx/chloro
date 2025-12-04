@@ -12,17 +12,27 @@ Rustfmt size:  6524 bytes
 +
  use std::ops::ControlFlow::{self, Break, Continue};
  
- use hir_def::{visibility::Visibility, AdtId, EnumVariantId, ModuleId, VariantId};
+-use hir_def::{visibility::Visibility, AdtId, EnumVariantId, ModuleId, VariantId};
++use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility};
+ use rustc_hash::FxHashSet;
+ use rustc_type_ir::{
+-    inherent::{AdtDef, IntoKind},
+     TypeSuperVisitable, TypeVisitable, TypeVisitor,
++    inherent::{AdtDef, IntoKind},
+ };
+ use triomphe::Arc;
+ 
+ use crate::{
++    TraitEnvironment,
      consteval::try_const_usize,
      db::HirDatabase,
      next_solver::{
 -        infer::{traits::ObligationCause, InferCtxt},
 -        obligation_ctxt::ObligationCtxt,
--        DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
-+        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt, DbInterner,
-+        EarlyBinder, GenericArgs, Ty, TyKind,
+         DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
++        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
      },
-     TraitEnvironment,
+-    TraitEnvironment,
  };
  
 -// FIXME: Turn this into a query, it can be quite slow

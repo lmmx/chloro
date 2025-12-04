@@ -8,31 +8,6 @@ Rustfmt size:  34201 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use either::Either;
- use hir::{AsAssocItem, HasVisibility, Semantics};
- use ide_db::{
--    FxHashMap, RootDatabase, SymbolKind,
-     defs::{Definition, IdentClass, NameClass, NameRefClass},
-     syntax_helpers::node_ext::walk_pat,
-+    FxHashMap, RootDatabase, SymbolKind,
- };
- use span::Edition;
- use stdx::hash_once;
- use syntax::{
--    AstNode, AstPtr, AstToken, NodeOrToken,
-+    ast, match_ast, AstNode, AstPtr, AstToken, NodeOrToken,
-     SyntaxKind::{self, *},
--    SyntaxNode, SyntaxNodePtr, SyntaxToken, T, ast, match_ast,
-+    SyntaxNode, SyntaxNodePtr, SyntaxToken, T,
- };
- 
- use crate::{
--    Highlight, HlMod, HlTag,
-     syntax_highlighting::tags::{HlOperator, HlPunct},
-+    Highlight, HlMod, HlTag,
- };
- 
- pub(super) fn token(
          (T![!], MACRO_CALL) => {
              if operator_parent
                  .and_then(ast::MacroCall::cast)

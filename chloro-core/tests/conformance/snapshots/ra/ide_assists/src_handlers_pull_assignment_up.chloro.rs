@@ -1,14 +1,14 @@
 use either::Either;
 use syntax::{
+    AstNode,
     algo::find_node_at_range,
     ast::{self, syntax_factory::SyntaxFactory},
     syntax_editor::SyntaxEditor,
-    AstNode,
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistId,
+    assist_context::{AssistContext, Assists},
 };
 
 pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

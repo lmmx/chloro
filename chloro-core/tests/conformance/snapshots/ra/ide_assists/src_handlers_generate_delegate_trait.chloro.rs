@@ -1,21 +1,21 @@
 use std::ops::Not;
 use either::Either;
-use hir::{db::HirDatabase, HasVisibility};
+use hir::{HasVisibility, db::HirDatabase};
 use ide_db::{
+    FxHashMap, FxHashSet,
     assists::{AssistId, GroupLabel},
     path_transform::PathTransform,
     syntax_helpers::suggest_name,
-    FxHashMap, FxHashSet,
 };
 use itertools::Itertools;
 use syntax::{
+    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
     ast::{
-        self, edit::{self, AstNodeEdit}, make, AssocItem, GenericArgList, GenericParamList,
-        HasAttrs, HasGenericArgs, HasGenericParams, HasName, HasTypeBounds,
-        HasVisibility as astHasVisibility, Path, WherePred,
+        self, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
+        HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
+        WherePred, edit::{self, AstNodeEdit}, make,
     },
     ted::{self, Position},
-    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
 };
 
 use crate::{

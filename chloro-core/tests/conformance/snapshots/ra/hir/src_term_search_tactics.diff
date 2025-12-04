@@ -8,6 +8,16 @@ Rustfmt size:  32147 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use span::Edition;
+ 
+ use crate::{
+-    term_search::Expr, Adt, AssocItem, GenericDef, GenericParam, HasAttrs, HasVisibility, Impl,
+-    ModuleDef, ScopeDef, Type, TypeParam,
++    Adt, AssocItem, GenericDef, GenericParam, HasAttrs, HasVisibility, Impl, ModuleDef, ScopeDef,
++    Type, TypeParam, term_search::Expr,
+ };
+ 
+ use super::{LookupTable, NewTypesKey, TermSearchCtx};
                  // Note that we need special case for 0 param constructors because of multi cartesian
                  // product
                  let exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {

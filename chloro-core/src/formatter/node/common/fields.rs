@@ -25,7 +25,6 @@ pub fn format_record_fields(fields: &ast::RecordFieldList, buf: &mut String, ind
         }
         buf.doc_comments(&field, indent);
         buf.attrs(&field, indent);
-
         buf.indent(indent);
         buf.visibility(&field);
         if let Some(name) = field.name() {

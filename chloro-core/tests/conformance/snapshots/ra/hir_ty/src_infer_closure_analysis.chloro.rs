@@ -4,6 +4,7 @@ use std::{cmp, convert::Infallible, mem};
 
 use either::Either;
 use hir_def::{
+    DefWithBodyId, FieldId, HasModule, TupleFieldId, TupleId, VariantId,
     expr_store::path::Path,
     hir::{
         Array, AsmOperand, BinaryOp, BindingId, CaptureBy, Expr, ExprId, ExprOrPatId, Pat, PatId,
@@ -12,24 +13,23 @@ use hir_def::{
     item_tree::FieldsShape,
     lang_item::LangItem,
     resolver::ValueNs,
-    DefWithBodyId, FieldId, HasModule, TupleFieldId, TupleId, VariantId,
 };
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::inherent::{IntoKind, SliceLike, Ty as _};
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use stdx::{format_to, never};
 use syntax::utils::is_raw_identifier;
 
 use crate::{
+    Adjust, Adjustment, BindingMode,
     db::{HirDatabase, InternedClosure, InternedClosureId},
     infer::InferenceContext,
     mir::{BorrowKind, MirSpan, MutBorrowKind, ProjectionElem},
     next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
     traits::FnTrait,
-    Adjust, Adjustment, BindingMode,
 };
 
 // The below functions handle capture and closure kind (Fn, FnMut, ..)

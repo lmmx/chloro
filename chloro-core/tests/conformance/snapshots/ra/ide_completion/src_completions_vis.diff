@@ -8,15 +8,6 @@ Rustfmt size:  1436 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion for visibility specifiers.
- 
- use crate::{
--    Completions,
-     context::{CompletionContext, PathCompletionCtx, Qualified},
-+    Completions,
- };
- 
- pub(crate) fn complete_vis_path(
                  cov_mark::hit!(visibility_qualified);
                  acc.add_module(ctx, path_ctx, next, name, vec![]);
              }

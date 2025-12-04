@@ -6,18 +6,18 @@
 
 use std::fmt::Write;
 
-use hir::{sym, AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics};
+use hir::{AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics, sym};
 use ide_db::{
-    defs::{Definition, NameClass, NameRefClass},
-    rename::{bail, format_err, source_edit_from_references, IdentifierKind, RenameDefinition},
-    source_change::SourceChangeBuilder,
     FileId, FileRange, RootDatabase,
+    defs::{Definition, NameClass, NameRefClass},
+    rename::{IdentifierKind, RenameDefinition, bail, format_err, source_edit_from_references},
+    source_change::SourceChangeBuilder,
 };
 use itertools::Itertools;
 use stdx::{always, format_to, never};
 use syntax::{
-    ast::{self, prec::ExprPrecedence, HasArgList},
     AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
+    ast::{self, HasArgList, prec::ExprPrecedence},
 };
 
 use ide_db::text_edit::TextEdit;
@@ -768,7 +768,7 @@ fn text_edit_from_self_param(self_param: &ast::SelfParam, new_name: String) -> O
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use ide_db::source_change::SourceChange;
     use ide_db::text_edit::TextEdit;
     use itertools::Itertools;

@@ -1,6 +1,6 @@
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 use hir_def::db::DefDatabase;
-use hir_expand::{files::InFileWrapper, HirFileId};
+use hir_expand::{HirFileId, files::InFileWrapper};
 use itertools::Itertools;
 use span::TextRange;
 use syntax::{AstNode, AstPtr};

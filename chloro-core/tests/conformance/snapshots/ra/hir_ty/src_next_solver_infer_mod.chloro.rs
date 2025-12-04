@@ -4,6 +4,8 @@ use std::cell::{Cell, RefCell};
 use std::fmt;
 use std::ops::Range;
 use std::sync::Arc;
+
+pub use BoundRegionConversionTime::*;
 use ena::unify as ut;
 use hir_def::GenericParamId;
 use hir_def::lang_item::LangItem;
@@ -12,13 +14,13 @@ use region_constraints::{RegionConstraintCollector, RegionConstraintStorage};
 use rustc_next_trait_solver::solve::SolverDelegateEvalExt;
 use rustc_pattern_analysis::Captures;
 use rustc_type_ir::{
-    error::{ExpectedFound, TypeError},
-    inherent::{
-        Const as _, GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _,
-    },
     ClosureKind, ConstVid, FloatVarValue, FloatVid, GenericArgKind, InferConst, InferTy,
     IntVarValue, IntVid, OutlivesPredicate, RegionVid, TermKind, TyVid, TypeFoldable, TypeFolder,
     TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
+    error::{ExpectedFound, TypeError},
+    inherent::{
+        Const as _, GenericArgs as _, GenericArg as _, IntoKind, SliceLike, Term as _, Ty as _,
+    },
 };
 use snapshot::undo_log::InferCtxtUndoLogs;
 use tracing::{debug, instrument};
@@ -26,13 +28,11 @@ use traits::{ObligationCause, PredicateObligations};
 use type_variable::TypeVariableOrigin;
 use unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey};
 
-pub use BoundRegionConversionTime::*;
-
 use crate::next_solver::{
+    BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
     fold::BoundVarReplacerDelegate,
     infer::{select::EvaluationResult, traits::PredicateObligation},
     obligation_ctxt::ObligationCtxt,
-    BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
 };
 
 use super::{

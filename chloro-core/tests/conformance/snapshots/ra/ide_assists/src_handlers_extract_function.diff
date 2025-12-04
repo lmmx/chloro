@@ -2,51 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 141954 bytes
-Chloro size:   141404 bytes
+Chloro size:   141408 bytes
 Rustfmt size:  141954 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     TypeInfo, TypeParam,
- };
- use ide_db::{
--    FxIndexSet, RootDatabase,
-     assists::GroupLabel,
-     defs::{Definition, NameRefClass},
-     famous_defs::FamousDefs,
-     helpers::mod_path_to_ast,
--    imports::insert_use::{ImportScope, insert_use},
-+    imports::insert_use::{insert_use, ImportScope},
-     search::{FileReference, ReferenceCategory, SearchScope},
-     source_change::SourceChangeBuilder,
-     syntax_helpers::node_ext::{
-         for_each_tail_expr, preorder_expr, walk_expr, walk_pat, walk_patterns_in_expr,
-     },
-+    FxIndexSet, RootDatabase,
- };
- use itertools::Itertools;
- use syntax::{
--    Edition, SyntaxElement,
--    SyntaxKind::{self, COMMENT},
--    SyntaxNode, SyntaxToken, T, TextRange, TextSize, TokenAtOffset, WalkEvent,
+     SyntaxKind::{self, COMMENT},
+     SyntaxNode, SyntaxToken, T, TextRange, TextSize, TokenAtOffset, WalkEvent,
      ast::{
 -        self, AstNode, AstToken, HasGenericParams, HasName, edit::IndentLevel,
 -        edit_in_place::Indent,
-+        self, edit::IndentLevel, edit_in_place::Indent, AstNode, AstToken, HasGenericParams,
-+        HasName,
++        self, AstNode, AstToken, HasGenericParams, HasName, edit_in_place::Indent,
++        edit::IndentLevel,
      },
--    match_ast, ted,
-+    match_ast, ted, Edition, SyntaxElement,
-+    SyntaxKind::{self, COMMENT},
-+    SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset, WalkEvent, T,
+     match_ast, ted,
  };
- 
- use crate::{
--    AssistId,
-     assist_context::{AssistContext, Assists, TreeMutator},
      utils::generate_impl,
-+    AssistId,
  };
  
 -// Assist: extract_function

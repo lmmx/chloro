@@ -2,12 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   42742 bytes
+Chloro size:   42746 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ };
+ use itertools::Itertools;
+ use syntax::{
+-    ast::{self, make, AstNode, FieldExpr, HasName, IdentPat},
+-    ted, T,
++    T,
++    ast::{self, AstNode, FieldExpr, HasName, IdentPat, make},
++    ted,
+ };
+ 
+ use crate::{
      utils::ref_field_expr::determine_ref_and_parens,
  };
  

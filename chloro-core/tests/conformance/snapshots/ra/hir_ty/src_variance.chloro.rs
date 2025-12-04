@@ -13,17 +13,17 @@
 //! by the next salsa version. If not, we will likely have to adapt and go with the rustc approach
 //! while installing firewall per item queries to prevent invalidation issues.
 
-use hir_def::{signatures::StructFlags, AdtId, GenericDefId, GenericParamId, VariantId};
+use hir_def::{AdtId, GenericDefId, GenericParamId, VariantId, signatures::StructFlags};
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    inherent::{AdtDef, IntoKind, SliceLike},
     Variance,
+    inherent::{AdtDef, IntoKind, SliceLike},
 };
 use stdx::never;
 
 use crate::{
     db::HirDatabase,
-    generics::{generics, Generics},
+    generics::{Generics, generics},
     next_solver::{
         Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
         RegionKind, Term, Ty, TyKind, VariancesOf,
@@ -396,14 +396,14 @@ impl<'db> Context<'db> {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use hir_def::{
-        hir::generics::GenericParamDataRef, src::HasSource, AdtId, GenericDefId, ModuleDefId,
+        AdtId, GenericDefId, ModuleDefId, hir::generics::GenericParamDataRef, src::HasSource,
     };
     use itertools::Itertools;
-    use rustc_type_ir::{inherent::SliceLike, Variance};
+    use rustc_type_ir::{Variance, inherent::SliceLike};
     use stdx::format_to;
-    use syntax::{ast::HasName, AstNode};
+    use syntax::{AstNode, ast::HasName};
     use test_fixture::WithFixture;
     use hir_def::Lookup;
     use crate::{db::HirDatabase, test_db::TestDB, variance::generics};

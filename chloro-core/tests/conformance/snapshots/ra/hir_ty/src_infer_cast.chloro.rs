@@ -1,18 +1,18 @@
 //! Type cast logic. Basically coercion + additional casts.
 
-use hir_def::{hir::ExprId, signatures::TraitFlags, AdtId};
+use hir_def::{AdtId, hir::ExprId, signatures::TraitFlags};
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    inherent::{AdtDef, BoundExistentialPredicates as _, IntoKind, SliceLike, Ty as _},
     Flags, InferTy, TypeFlags, UintTy,
+    inherent::{AdtDef, BoundExistentialPredicates as _, IntoKind, SliceLike, Ty as _},
 };
 use stdx::never;
 
 use crate::{
-    db::HirDatabase,
-    infer::{coerce::CoerceNever, AllowTwoPhase, InferenceContext},
-    next_solver::{BoundExistentialPredicates, DbInterner, ParamTy, Ty, TyKind},
     InferenceDiagnostic,
+    db::HirDatabase,
+    infer::{AllowTwoPhase, InferenceContext, coerce::CoerceNever},
+    next_solver::{BoundExistentialPredicates, DbInterner, ParamTy, Ty, TyKind},
 };
 
 #[derive(Debug)]

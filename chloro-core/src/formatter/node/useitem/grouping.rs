@@ -50,7 +50,6 @@ pub fn group_by_submodule(items: Vec<String>) -> Vec<Vec<String>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn test_group_by_submodule_mixed() {
         let items = vec![
@@ -68,7 +67,6 @@ mod tests {
 
         assert_eq!(groups.len(), 1);
     }
-
     #[test]
     fn test_group_by_submodule_same_module() {
         let items = vec![
@@ -82,7 +80,6 @@ mod tests {
         assert_eq!(groups.len(), 1);
         assert_eq!(groups[0], vec!["foo::A", "foo::B", "foo::C"]);
     }
-
     #[test]
     fn test_group_by_submodule_root_only() {
         let items = vec!["A".to_string(), "B".to_string(), "C".to_string()];
@@ -92,7 +89,6 @@ mod tests {
         assert_eq!(groups.len(), 1);
         assert_eq!(groups[0], vec!["A", "B", "C"]);
     }
-
     #[test]
     fn test_group_by_submodule_nested_imports() {
         let items = vec![

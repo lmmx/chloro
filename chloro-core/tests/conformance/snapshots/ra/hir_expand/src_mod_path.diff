@@ -18,7 +18,7 @@ Rustfmt size:  13520 bytes
 +use intern::sym;
 +use smallvec::SmallVec;
 +use span::{Edition, SyntaxContext};
-+use syntax::{ast, AstNode};
++use syntax::{AstNode, ast};
  
  use crate::{
      db::ExpandDatabase,

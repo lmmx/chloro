@@ -39,15 +39,15 @@ use base_db::Crate;
 use either::Either;
 use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
 use syntax::{
-    ast::{self, AstNode},
     SyntaxNode, SyntaxToken, TextRange, TextSize,
+    ast::{self, AstNode},
 };
 
 use crate::{
     attrs::AttrId,
     builtin::{
-        include_input_to_file_id, BuiltinAttrExpander, BuiltinDeriveExpander,
-        BuiltinFnLikeExpander, EagerExpander,
+        BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander,
+        include_input_to_file_id,
     },
     db::ExpandDatabase,
     mod_path::ModPath,
@@ -66,7 +66,7 @@ pub use mbe::{DeclarativeMacro, ValueResult};
 
 pub mod tt {
     pub use span::Span;
-    pub use tt::{token_to_literal, DelimiterKind, IdentIsRaw, LitKind, Spacing};
+    pub use tt::{DelimiterKind, IdentIsRaw, LitKind, Spacing, token_to_literal};
     pub type Delimiter = ::tt::Delimiter<Span>;
     pub type DelimSpan = ::tt::DelimSpan<Span>;
     pub type Subtree = ::tt::Subtree<Span>;

@@ -1450,10 +1450,10 @@ fn foo();
 }{
     return;
 }
+use ;
+use ;
 
 use foo::bar;
-use ;
-use ;
 use crate::baz;
 fn f() {
 }
@@ -2262,9 +2262,9 @@ fn foo() {
 
 macro_rules!
 {
-}
+}use Trait as _;
+
 use std as stdlib;
-use Trait as _;
 
 struct S(String, usize);
 
@@ -3542,7 +3542,7 @@ pub fn main() {
 }
 
 use foo as bar;
-use foo::{a as b, ::foo as x, *, ::*};
+use foo::{a as b, *, ::foo as x, ::*};
 
 fn g1(#[attr1] #[attr2] pat: Type) {
 }
@@ -3611,9 +3611,9 @@ fn main() {
 }
 use foo::*;
 use foo::{};
-use ::foo::{a, b, c};
 
 use *;
+use ::foo::{a, b, c};
 use ::*;
 use ::{};
 use {};
@@ -4822,8 +4822,8 @@ impl Reparser {
 use std::mem;
 
 use crate::{
-    output::Output,
     SyntaxKind::{self, *},
+    output::Output,
 };
 
 /// `Parser` produces a flat list of `Event`s.
@@ -4969,9 +4969,9 @@ mod patterns;
 mod types;
 
 use crate::{
-    parser::{CompletedMarker, Marker, Parser},
     SyntaxKind::{self, *},
-    TokenSet, T,
+    T, TokenSet,
+    parser::{CompletedMarker, Marker, Parser},
 };
 
 pub(crate) mod entry {
@@ -5353,11 +5353,11 @@ use std::cell::Cell;
 use drop_bomb::DropBomb;
 
 use crate::{
-    event::Event,
-    input::Input,
     Edition,
     SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-    TokenSet, T,
+    T, TokenSet,
+    event::Event,
+    input::Input,
 };
 
 /// `Parser` struct provides the low-level API for
@@ -8014,7 +8014,7 @@ use crate::grammar::attributes::ATTRIBUTE_FIRST;
 
 use super::*;
 
-pub(super) use atom::{literal, parse_asm_expr, EXPR_RECOVERY_SET, LITERAL_FIRST};
+pub(super) use atom::{EXPR_RECOVERY_SET, LITERAL_FIRST, literal, parse_asm_expr};
 pub(crate) use atom::{block_expr, match_arm_list};
 
 #[derive(PartialEq, Eq)]

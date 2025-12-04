@@ -8,14 +8,6 @@ Rustfmt size:  22391 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::iter::once;
- 
- use either::Either;
- use hir::{Semantics, TypeInfo};
--use ide_db::{RootDatabase, ty_filter::TryEnum};
-+use ide_db::{ty_filter::TryEnum, RootDatabase};
- use syntax::{
-+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
      AstNode,
      SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
      SyntaxNode, T,
@@ -24,13 +16,11 @@ Rustfmt size:  22391 bytes
 -        edit::{AstNodeEdit, IndentLevel},
 -        make,
 -    },
++    ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
  };
  
  use crate::{
--    AssistId,
-     assist_context::{AssistContext, Assists},
      utils::{invert_boolean_expression_legacy, is_never_block},
-+    AssistId,
  };
  
 -// Assist: convert_to_guarded_return

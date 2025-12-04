@@ -5,28 +5,28 @@ use std::{collections::hash_map::Entry, fmt::Display, iter};
 use base_db::Crate;
 use either::Either;
 use hir_def::{
+    DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
     expr_store::Body,
     hir::{BindingAnnotation, BindingId, Expr, ExprId, Ordering, PatId},
-    DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
 };
 use la_arena::{Arena, ArenaMap, Idx, RawIdx};
 use rustc_ast_ir::Mutability;
 use rustc_hash::FxHashMap;
 use rustc_type_ir::inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _};
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use stdx::{impl_from, never};
 
 use crate::{
+    CallableDefId, InferenceResult, MemoryMap,
     consteval::usize_const,
     db::{HirDatabase, InternedClosureId},
     display::{DisplayTarget, HirDisplay},
     infer::PointerCast,
     lang_items::is_box,
     next_solver::{
-        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt, Const,
-        DbInterner, ErrorGuaranteed, GenericArgs, ParamEnv, Ty, TyKind,
+        Const, DbInterner, ErrorGuaranteed, GenericArgs, ParamEnv, Ty, TyKind,
+        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
     },
-    CallableDefId, InferenceResult, MemoryMap,
 };
 
 mod borrowck;
@@ -35,11 +35,11 @@ mod lower;
 mod monomorphization;
 mod pretty;
 
-pub use borrowck::{borrowck_query, BorrowckResult, MutabilityReason};
+pub use borrowck::{BorrowckResult, MutabilityReason, borrowck_query};
 pub use eval::{
-    interpret_mir, pad16, render_const_using_debug_impl, Evaluator, MirEvalError, VTableMap,
+    Evaluator, MirEvalError, VTableMap, interpret_mir, pad16, render_const_using_debug_impl,
 };
-pub use lower::{lower_to_mir, mir_body_for_closure_query, mir_body_query, MirLowerError};
+pub use lower::{MirLowerError, lower_to_mir, mir_body_for_closure_query, mir_body_query};
 pub use monomorphization::{
     monomorphized_mir_body_for_closure_query, monomorphized_mir_body_query,
 };

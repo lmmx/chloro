@@ -6,30 +6,30 @@ use base_db::Crate;
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
 use hir_expand::{
-    attrs::{collect_attrs, Attr, AttrId, RawAttrs},
-    span_map::SpanMapRef,
     HirFileId, InFile,
+    attrs::{Attr, AttrId, RawAttrs, collect_attrs},
+    span_map::SpanMapRef,
 };
-use intern::{sym, Symbol};
+use intern::{Symbol, sym};
 use la_arena::{ArenaMap, Idx, RawIdx};
 use mbe::DelimiterKind;
 use rustc_abi::ReprOptions;
 use span::AstIdNode;
 use syntax::{
-    ast::{self, HasAttrs},
     AstPtr,
+    ast::{self, HasAttrs},
 };
 use triomphe::Arc;
 use tt::iter::{TtElement, TtIter};
 
 use crate::{
+    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId,
+    VariantId,
     db::DefDatabase,
     item_tree::block_item_tree_query,
     lang_item::LangItem,
     nameres::{ModuleOrigin, ModuleSource},
     src::{HasChildSource, HasSource},
-    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId,
-    VariantId,
 };
 
 /// Desugared attributes of an item post `cfg_attr` expansion.
@@ -850,8 +850,8 @@ mod tests {
     use triomphe::Arc;
     use hir_expand::span_map::{RealSpanMap, SpanMap};
     use span::FileId;
-    use syntax::{ast, AstNode, TextRange};
-    use syntax_bridge::{syntax_node_to_token_tree, DocCommentDesugarMode};
+    use syntax::{AstNode, TextRange, ast};
+    use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
     use crate::attr::{DocAtom, DocExpr};
     fn assert_parse_result(input: &str, expected: DocExpr) {
         let source_file = ast::SourceFile::parse(input, span::Edition::CURRENT).ok().unwrap();

@@ -7,25 +7,24 @@ use std::{fmt::Debug, ops::ControlFlow};
 
 use rustc_next_trait_solver::solve::{GoalEvaluation, SolverDelegateEvalExt};
 use rustc_type_ir::{
+    AliasRelationDirection, AliasTermKind, HostEffectPredicate, Interner, PredicatePolarity,
     error::ExpectedFound,
     inherent::{IntoKind, SliceLike, Span as _},
     lang_items::SolverTraitLangItem,
     solve::{Certainty, GoalSource, MaybeCause, NoSolution},
-    AliasRelationDirection, AliasTermKind, HostEffectPredicate, Interner, PredicatePolarity,
 };
 use tracing::{instrument, trace};
 
 use crate::next_solver::{
+    AliasTerm, Binder, ClauseKind, Const, ConstKind, DbInterner, PolyTraitPredicate, PredicateKind,
+    SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError,
     fulfill::NextSolverError,
     infer::{
-        select::SelectionError,
+        InferCtxt, select::SelectionError,
         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
-        InferCtxt,
     },
     inspect::{self, ProofTreeVisitor},
     normalize::deeply_normalize_for_diagnostics,
-    AliasTerm, Binder, ClauseKind, Const, ConstKind, DbInterner, PolyTraitPredicate, PredicateKind,
-    SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError,
 };
 
 #[derive(Debug)]

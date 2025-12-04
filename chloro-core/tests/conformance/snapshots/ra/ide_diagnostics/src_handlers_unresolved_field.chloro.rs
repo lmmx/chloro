@@ -1,5 +1,5 @@
 use either::Either;
-use hir::{db::ExpandDatabase, Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union};
+use hir::{Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union, db::ExpandDatabase};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
     assists::{Assist, AssistId},
@@ -8,16 +8,15 @@ use ide_db::{
     source_change::{SourceChange, SourceChangeBuilder},
 };
 use syntax::{
-    algo,
-    ast::{self, edit::IndentLevel, make, FieldList, Name, Visibility},
-    AstNode, AstPtr, Direction, SyntaxKind, TextSize,
+    AstNode, AstPtr, Direction, SyntaxKind, TextSize, algo,
+    ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
 };
 use syntax::{
-    ast::{edit::AstNodeEdit, Type},
     SyntaxNode,
+    ast::{Type, edit::AstNodeEdit},
 };
 
-use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
 pub(crate) fn unresolved_field(
     ctx: &DiagnosticsContext<'_>,
@@ -284,11 +283,11 @@ fn method_fix(
 #[cfg(test)]
 mod tests {
     use crate::{
+        DiagnosticsConfig,
         tests::{
             check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
             check_fix, check_no_fix,
         },
-        DiagnosticsConfig,
     };
     #[test]
     fn smoke_test() {

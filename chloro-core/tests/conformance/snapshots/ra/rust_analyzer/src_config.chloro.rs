@@ -8,17 +8,17 @@ use std::{env, fmt, iter, ops::Not, sync::OnceLock};
 
 use cfg::{CfgAtom, CfgDiff};
 use hir::Symbol;
+use ide_db::{
+    MiniCore, SnippetCap,
+    assists::ExprFillDefaultMode,
+    imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
+};
 use ide::{
     AnnotationConfig, AssistConfig, CallHierarchyConfig, CallableSnippets, CompletionConfig,
     CompletionFieldsToResolve, DiagnosticsConfig, GenericParameterHints, GotoDefinitionConfig,
     GotoImplementationConfig, HighlightConfig, HighlightRelatedConfig, HoverConfig, HoverDocFormat,
     InlayFieldsToResolve, InlayHintsConfig, JoinLinesConfig, MemoryLayoutHoverConfig,
     MemoryLayoutHoverRenderKind, RenameConfig, Snippet, SnippetScope, SourceRootId,
-};
-use ide_db::{
-    assists::ExprFillDefaultMode,
-    imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
-    MiniCore, SnippetCap,
 };
 use itertools::{Either, Itertools};
 use paths::{Utf8Path, Utf8PathBuf};
@@ -29,8 +29,8 @@ use project_model::{
 use rustc_hash::{FxHashMap, FxHashSet};
 use semver::Version;
 use serde::{
-    de::{DeserializeOwned, Error},
     Deserialize, Serialize,
+    de::{DeserializeOwned, Error},
 };
 use stdx::format_to_acc;
 use triomphe::Arc;
@@ -39,8 +39,8 @@ use vfs::{AbsPath, AbsPathBuf, VfsPath};
 use crate::{
     diagnostics::DiagnosticsMapConfig,
     flycheck::{CargoOptions, FlycheckConfig},
-    lsp::capabilities::ClientCapabilities,
     lsp_ext::{WorkspaceSymbolSearchKind, WorkspaceSymbolSearchScope},
+    lsp::capabilities::ClientCapabilities,
 };
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;

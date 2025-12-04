@@ -4,18 +4,18 @@ use arrayvec::ArrayVec;
 use ast::HasName;
 use cfg::{CfgAtom, CfgExpr};
 use hir::{
-    db::HirDatabase, sym, AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics,
-    Symbol,
+    AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics, Symbol, db::HirDatabase,
+    sym,
 };
 use ide_assists::utils::{has_test_related_attribute, test_related_attribute_syn};
 use ide_db::impl_empty_upmap_from_ra_fixture;
 use ide_db::{
+    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SymbolKind,
     base_db::RootQueryDb,
     defs::Definition,
     documentation::docs_from_attrs,
     helpers::visit_file_defs,
     search::{FileReferenceNode, SearchScope},
-    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SymbolKind,
 };
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
@@ -23,11 +23,12 @@ use smallvec::SmallVec;
 use span::{Edition, TextSize};
 use stdx::format_to;
 use syntax::{
+    SmolStr, SyntaxNode, ToSmolStr,
     ast::{self, AstNode},
-    format_smolstr, SmolStr, SyntaxNode, ToSmolStr,
+    format_smolstr,
 };
 
-use crate::{references, FileId, NavigationTarget, ToNav, TryToNav};
+use crate::{FileId, NavigationTarget, ToNav, TryToNav, references};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, UpmapFromRaFixture)]
 pub struct Runnable {
@@ -745,7 +746,7 @@ impl UpdateTest {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use crate::fixture;
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);

@@ -9,8 +9,8 @@ use triomphe::Arc;
 use crate::{
     global_state::GlobalState,
     line_index::{LineEndings, LineIndex, PositionEncoding},
-    lsp::{from_proto, LspError},
     lsp_ext,
+    lsp::{LspError, from_proto},
 };
 
 pub(crate) fn invalid_params_error(message: String) -> LspError {

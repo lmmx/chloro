@@ -8,6 +8,18 @@ Rustfmt size:  4381 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! This module provides the functionality needed to run `cargo test` in a background
+ //! thread and report the result of each test in a channel.
+ 
+ use crossbeam_channel::Sender;
+ use paths::{AbsPath, Utf8Path};
+ use project_model::TargetKind;
+-use serde::Deserialize as _;
+ use serde_derive::Deserialize;
++use serde::Deserialize as _;
+ use toolchain::Tool;
+ 
+ use crate::{
  
  impl CargoTestOutputParser {
      pub(crate) fn new(test_target: &TestTarget) -> Self {

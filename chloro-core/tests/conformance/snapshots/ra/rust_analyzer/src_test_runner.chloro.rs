@@ -4,8 +4,8 @@
 use crossbeam_channel::Sender;
 use paths::{AbsPath, Utf8Path};
 use project_model::TargetKind;
-use serde::Deserialize as _;
 use serde_derive::Deserialize;
+use serde::Deserialize as _;
 use toolchain::Tool;
 
 use crate::{

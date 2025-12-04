@@ -70,7 +70,7 @@ pub(super) fn hints(
 mod tests {
     use expect_test::expect;
     use crate::inlay_hints::InlayHintsConfig;
-    use crate::inlay_hints::tests::{check_edit, check_with_config, DISABLED_CONFIG};
+    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_edit, check_with_config};
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(InlayHintsConfig { sized_bound: true, ..DISABLED_CONFIG }, ra_fixture);

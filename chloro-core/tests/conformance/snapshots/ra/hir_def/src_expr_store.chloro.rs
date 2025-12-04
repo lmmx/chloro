@@ -17,26 +17,26 @@ use std::{
 
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
-use hir_expand::{mod_path::ModPath, name::Name, InFile, MacroCallId};
+use hir_expand::{InFile, MacroCallId, mod_path::ModPath, name::Name};
 use la_arena::{Arena, ArenaMap};
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 use span::{Edition, SyntaxContext};
-use syntax::{ast, AstPtr, SyntaxNodePtr};
+use syntax::{AstPtr, SyntaxNodePtr, ast};
 use thin_vec::ThinVec;
 use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
+    BlockId, SyntheticSyntax,
     db::DefDatabase,
     expr_store::path::Path,
     hir::{
         Array, AsmOperand, Binding, BindingId, Expr, ExprId, ExprOrPatId, Label, LabelId, Pat,
         PatId, RecordFieldPat, Statement,
     },
-    nameres::{block_def_map, DefMap},
+    nameres::{DefMap, block_def_map},
     type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
-    BlockId, SyntheticSyntax,
 };
 
 pub use self::body::{Body, BodySourceMap};

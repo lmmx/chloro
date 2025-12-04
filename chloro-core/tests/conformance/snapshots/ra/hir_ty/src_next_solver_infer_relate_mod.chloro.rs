@@ -2,9 +2,8 @@
 //! (except for some relations used for diagnostics and heuristics in the compiler).
 //! As well as the implementation of `Relate` for interned things (`Ty`/`Const`/etc).
 
-pub use rustc_type_ir::relate::*;
-
 pub use rustc_type_ir::relate::combine::PredicateEmittingRelation;
+pub use rustc_type_ir::relate::*;
 
 use crate::next_solver::DbInterner;
 

@@ -10,15 +10,15 @@ use rustc_next_trait_solver::{
     solve::{GoalEvaluation, GoalStalledOn, HasChanged, SolverDelegateEvalExt},
 };
 use rustc_type_ir::{
+    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
     inherent::{IntoKind, Span as _},
     solve::{Certainty, NoSolution},
-    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
 };
 
 use crate::next_solver::{
-    infer::{traits::{PredicateObligation, PredicateObligations}, InferCtxt},
-    inspect::ProofTreeVisitor,
     DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
+    infer::{InferCtxt, traits::{PredicateObligation, PredicateObligations}},
+    inspect::ProofTreeVisitor,
 };
 
 type PendingObligations<'db> = Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;

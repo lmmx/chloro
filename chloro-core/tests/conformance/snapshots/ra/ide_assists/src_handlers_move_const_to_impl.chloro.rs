@@ -1,8 +1,8 @@
 use hir::{AsAssocItem, AssocItemContainer, FileRange, HasCrate, HasSource};
 use ide_db::{assists::AssistId, defs::Definition, search::SearchScope};
 use syntax::{
-    ast::{self, edit::IndentLevel, edit_in_place::Indent, AstNode},
     SyntaxKind,
+    ast::{self, AstNode, edit_in_place::Indent, edit::IndentLevel},
 };
 
 use crate::assist_context::{AssistContext, Assists};

@@ -29,17 +29,18 @@ use hir_def::{
     }
 
     // Should match rustfmt's output: each submodule on its own line(s),
+
     // separated by blank lines
     assert_snapshot!(formatted, @r"
-use hir_def::{
-    attr::AttrsWithOwner,
-    expr_store::path::Path,
-    item_scope::ItemInNs,
-    per_ns::Namespace,
-    resolver::{HasResolver, Resolver, TypeNs},
-    AssocItemId, AttrDefId, ModuleDefId,
-};
-");
+    use hir_def::{
+        AssocItemId, AttrDefId, ModuleDefId,
+        attr::AttrsWithOwner,
+        expr_store::path::Path,
+        item_scope::ItemInNs,
+        per_ns::Namespace,
+        resolver::{HasResolver, Resolver, TypeNs},
+    };
+    ");
 }
 
 #[test]
@@ -116,10 +117,10 @@ fn test_format_use_with_nested_braces() {
     // Should not add blank lines between items when nested braces are present
     assert_snapshot!(formatted, @r"
     use crate::{
+        Edition,
+        SyntaxKind::{self, EOF, ERROR, T, TOMBSTONE, TokenSet},
         event::Event,
         input::Input,
-        Edition,
-        SyntaxKind::{self, TokenSet, EOF, ERROR, T, TOMBSTONE},
     };
     ");
 }

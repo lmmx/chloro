@@ -8,6 +8,14 @@ Rustfmt size:  13462 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use hir_def::db::DefDatabase;
+-use hir_expand::{files::InFileWrapper, HirFileId};
++use hir_expand::{HirFileId, files::InFileWrapper};
+ use itertools::Itertools;
+ use span::TextRange;
+ use syntax::{AstNode, AstPtr};
  fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
      let _tracing = setup_tracing();
      let (db, file_id) = TestDB::with_single_file(ra_fixture);

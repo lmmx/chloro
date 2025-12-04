@@ -10,8 +10,10 @@ use std::{
 use base_db::Crate;
 use either::Either;
 use hir_def::{
+    FindPathConfig, GeneralConstId, GenericDefId, HasModule, LocalFieldId, Lookup, ModuleDefId,
+    ModuleId, TraitId,
     db::DefDatabase,
-    expr_store::{path::Path, ExpressionStore},
+    expr_store::{ExpressionStore, path::Path},
     find_path::{self, PrefixKind},
     hir::generics::{TypeOrConstParamData, TypeParamProvenance, WherePredicate},
     item_scope::ItemInNs,
@@ -24,23 +26,21 @@ use hir_def::{
         UseArgRef,
     },
     visibility::Visibility,
-    FindPathConfig, GeneralConstId, GenericDefId, HasModule, LocalFieldId, Lookup, ModuleDefId,
-    ModuleId, TraitId,
 };
 use hir_expand::{mod_path::PathKind, name::Name};
-use intern::{sym, Internable, Interned};
+use intern::{Internable, Interned, sym};
 use itertools::Itertools;
 use la_arena::ArenaMap;
 use rustc_apfloat::{
-    ieee::{Half as f16, Quad as f128},
     Float,
+    ieee::{Half as f16, Quad as f128},
 };
 use rustc_ast_ir::FloatTy;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _, Tys as _},
     AliasTyKind, BoundVarIndexKind, CoroutineArgsParts, CoroutineClosureArgsParts, RegionKind,
     Upcast,
+    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Tys as _, Ty as _},
 };
 use smallvec::SmallVec;
 use span::Edition;
@@ -48,20 +48,19 @@ use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    consteval,
+    CallableDefId, FnAbi, ImplTraitId, MemoryMap, TraitEnvironment, consteval,
     db::{HirDatabase, InternedClosure, InternedCoroutine},
     generics::generics,
     layout::Layout,
     mir::pad16,
     next_solver::{
-        abi::Safety, infer::{DbInternerInferExt, traits::ObligationCause}, AliasTy, Clause,
-        ClauseKind, Const, ConstKind, DbInterner, EarlyBinder, ExistentialPredicate, FnSig,
-        GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId, Term, TraitRef, Ty, TyKind,
-        TypingMode,
+        AliasTy, Clause, ClauseKind, Const, ConstKind, DbInterner, EarlyBinder,
+        ExistentialPredicate, FnSig, GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId,
+        Term, TraitRef, Ty, TyKind, TypingMode, abi::Safety,
+        infer::{DbInternerInferExt, traits::ObligationCause},
     },
     primitive,
     utils::{self, detect_variant_from_bytes},
-    CallableDefId, FnAbi, ImplTraitId, MemoryMap, TraitEnvironment,
 };
 
 pub trait HirWrite {

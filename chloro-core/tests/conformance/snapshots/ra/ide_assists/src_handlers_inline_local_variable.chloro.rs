@@ -1,17 +1,17 @@
 use hir::{PathResolution, Semantics};
 use ide_db::{
+    EditionedFileId, RootDatabase,
     defs::Definition,
     search::{FileReference, FileReferenceNode, UsageSearchResult},
-    EditionedFileId, RootDatabase,
 };
 use syntax::{
-    ast::{self, syntax_factory::SyntaxFactory, AstNode, AstToken, HasName},
     SyntaxElement, TextRange,
+    ast::{self, AstNode, AstToken, HasName, syntax_factory::SyntaxFactory},
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistId,
+    assist_context::{AssistContext, Assists},
 };
 
 pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

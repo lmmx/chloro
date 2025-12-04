@@ -4,19 +4,19 @@
 
 use std::cmp::{self, Ordering};
 
-use hir_def::{resolver::HasResolver, signatures::FunctionSignature, CrateRootModuleId};
+use hir_def::{CrateRootModuleId, resolver::HasResolver, signatures::FunctionSignature};
 use hir_expand::name::Name;
-use intern::{sym, Symbol};
+use intern::{Symbol, sym};
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike, Ty as _};
 use stdx::never;
 
 use crate::{
     display::DisplayTarget,
-    drop::{has_drop_glue, DropGlue},
+    drop::{DropGlue, has_drop_glue},
     mir::eval::{
-        pad16, Address, AdtId, Arc, Evaluator, FunctionId, GenericArgs, HasModule, HirDisplay,
+        Address, AdtId, Arc, Evaluator, FunctionId, GenericArgs, HasModule, HirDisplay,
         InternedClosure, Interval, IntervalAndTy, IntervalOrOwned, ItemContainerId, LangItem,
-        Layout, Locals, Lookup, MirEvalError, MirSpan, Mutability, Result, Ty, TyKind,
+        Layout, Locals, Lookup, MirEvalError, MirSpan, Mutability, Result, Ty, TyKind, pad16,
     },
     next_solver::Region,
 };

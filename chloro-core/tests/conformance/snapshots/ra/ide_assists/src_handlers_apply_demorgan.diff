@@ -8,25 +8,19 @@ Rustfmt size:  18486 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
- };
  use syntax::{
--    NodeOrToken, SyntaxKind, T,
+     NodeOrToken, SyntaxKind, T,
      ast::{
 -        self, AstNode,
 -        Expr::BinExpr,
 -        HasArgList,
 -        prec::{ExprPrecedence, precedence},
--        syntax_factory::SyntaxFactory,
-+        self, prec::{ExprPrecedence, precedence}, syntax_factory::SyntaxFactory, AstNode,
-+        Expr::BinExpr, HasArgList,
++        self, AstNode, Expr::BinExpr, HasArgList, prec::{ExprPrecedence, precedence},
+         syntax_factory::SyntaxFactory,
      },
      syntax_editor::{Position, SyntaxEditor},
-+    NodeOrToken, SyntaxKind, T,
- };
  
--use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};
-+use crate::{utils::invert_boolean_expression, AssistContext, AssistId, Assists};
+ use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};
  
 -// Assist: apply_demorgan
 -//

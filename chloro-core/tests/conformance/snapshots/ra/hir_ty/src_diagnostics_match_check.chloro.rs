@@ -10,10 +10,10 @@ mod pat_util;
 pub(crate) mod pat_analysis;
 
 use hir_def::{
-    expr_store::{path::Path, Body},
+    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
+    expr_store::{Body, path::Path},
     hir::PatId,
     item_tree::FieldsShape,
-    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::inherent::{IntoKind, SliceLike};
@@ -21,11 +21,11 @@ use span::Edition;
 use stdx::{always, never, variance::PhantomCovariantLifetime};
 
 use crate::{
+    InferenceResult,
     db::HirDatabase,
     display::{HirDisplay, HirDisplayError, HirFormatter},
     infer::BindingMode,
     next_solver::{GenericArgs, Mutability, Ty, TyKind},
-    InferenceResult,
 };
 
 use self::pat_util::EnumerateAndAdjustIterator;

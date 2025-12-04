@@ -19,8 +19,6 @@ use ra_ap_syntax::{AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, Synta
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
 pub use const_static::format_const_or_static;
-#[allow(unused_imports)]
-pub use debug::{debug_children_with_tokens, debug_node_siblings};
 pub use enumdef::format_enum;
 pub use function::format_function;
 pub use implblock::format_impl;
@@ -144,15 +142,15 @@ fn sort_use_groups(items: &mut Vec<ItemWithComments>) {
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
+            // Leftover comments
+            // Sort contiguous USE groups in place
+            // Output
             let mut module_inner_docs = Vec::new();
             let mut inner_attrs: Vec<(Vec<Comment>, Attr)> = Vec::new();
             let mut other_items: Vec<ItemWithComments> = Vec::new();
-
             let mut pending_comments: Vec<Comment> = Vec::new();
             let mut pending_blank_line = false;
-
             let children: Vec<_> = node.children_with_tokens().collect();
-
             for child in children.iter() {
                 match child {
                     NodeOrToken::Node(n) => match n.kind() {
@@ -197,8 +195,6 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     }
                 }
             }
-
-            // Leftover comments
             if !pending_comments.is_empty() {
                 for comment in pending_comments {
                     other_items.push(ItemWithComments {
@@ -209,16 +205,11 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     pending_blank_line = false;
                 }
             }
-
-            // Sort contiguous USE groups in place
             sort_use_groups(&mut other_items);
-
-            // Output
             for doc in &module_inner_docs {
                 buf.push_str(doc.text());
                 buf.push('\n');
             }
-
             if !module_inner_docs.is_empty() && !inner_attrs.is_empty() {
                 buf.blank();
             }
@@ -228,12 +219,10 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
                 buf.newline(&attr.syntax().text().to_string());
             }
-
             if (!inner_attrs.is_empty() || !module_inner_docs.is_empty()) && !other_items.is_empty()
             {
                 buf.blank();
             }
-
             let mut last_kind: Option<SyntaxKind> = None;
             for item in other_items {
                 for comment in &item.comments {
@@ -242,7 +231,6 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     }
                     buf.newline(comment.text());
                 }
-
                 match item.node {
                     NodeOrToken::Node(n) => {
                         let current_kind = n.kind();

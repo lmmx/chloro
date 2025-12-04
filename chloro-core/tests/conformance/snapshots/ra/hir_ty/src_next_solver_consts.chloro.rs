@@ -6,16 +6,16 @@ use hir_def::ConstParamId;
 use macros::{TypeFoldable, TypeVisitable};
 use rustc_ast_ir::visit::VisitorResult;
 use rustc_type_ir::{
-    inherent::{IntoKind, ParamEnv as _, PlaceholderLike, SliceLike},
-    relate::Relate,
     BoundVar, BoundVarIndexKind, ConstVid, DebruijnIndex, FlagComputation, Flags, InferConst,
     TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
     WithCachedTypeInfo,
+    inherent::{IntoKind, ParamEnv as _, PlaceholderLike, SliceLike},
+    relate::Relate,
 };
 
 use crate::{
-    next_solver::{interner::InternedWrapperNoDebug, ClauseKind, ParamEnv},
     MemoryMap,
+    next_solver::{ClauseKind, ParamEnv, interner::InternedWrapperNoDebug},
 };
 
 use super::{BoundVarKind, DbInterner, ErrorGuaranteed, GenericArgs, Placeholder, Ty};

@@ -8,6 +8,19 @@ Rustfmt size:  4729 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! This file provides snippet completions, like `pd` => `eprintln!(...)`.
+ 
+-use ide_db::{documentation::Documentation, imports::insert_use::ImportScope, SnippetCap};
++use ide_db::{SnippetCap, documentation::Documentation, imports::insert_use::ImportScope};
+ 
+ use crate::{
++    CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
+     context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
+     item::Builder,
+-    CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
+ };
+ 
+ pub(crate) fn complete_expr_snippet(
          );
          item.lookup_by("tmod");
          item.add_to(acc, ctx.db);
@@ -57,8 +70,12 @@ Rustfmt size:  4729 bytes
      None
  }
  
-         tests::{check_edit_with_config, TEST_CONFIG},
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        tests::{check_edit_with_config, TEST_CONFIG},
          CompletionConfig, Snippet,
++        tests::{TEST_CONFIG, check_edit_with_config},
      };
 -
      #[test]

@@ -1153,11 +1153,11 @@ expression: cleaned_diff
 -
 -extern "C" extern "C"
 +}
++use ;
++use ;
  
  use foo::bar;
 -use
-+use ;
-+use ;
  use crate::baz;
 -use
 -fn f() {}
@@ -1908,12 +1908,14 @@ expression: cleaned_diff
  
 -// 2015
 -macro_rules! try { () => {} }
--
 +macro_rules!
 +{
-+}
++}use Trait as _;
+ 
  use std as stdlib;
- use Trait as _;
+-use Trait as _;
+ 
+ struct S(String, usize);
  
  
  type T = S<i32, dyn T, fn()>;
@@ -3011,7 +3013,7 @@ expression: cleaned_diff
  
  use foo as bar;
 -use foo::{a as b, *, ::*, ::foo as x};
-+use foo::{a as b, ::foo as x, *, ::*};
++use foo::{a as b, *, ::foo as x, ::*};
  
 -fn g1(#[attr1] #[attr2] pat: Type) {}
 -fn g2(#[attr1] x: u8) {}
@@ -3095,9 +3097,9 @@ expression: cleaned_diff
  }
 +use foo::*;
 +use foo::{};
-+use ::foo::{a, b, c};
  
  use *;
++use ::foo::{a, b, c};
  use ::*;
  use ::{};
  use {};
@@ -4259,12 +4261,6 @@ expression: cleaned_diff
  use std::mem;
  
  use crate::{
--    SyntaxKind::{self, *},
-     output::Output,
-+    SyntaxKind::{self, *},
- };
- 
- /// `Parser` produces a flat list of `Event`s.
  
  impl Event {
      pub(crate) fn tombstone() -> Self {
@@ -4312,15 +4308,6 @@ expression: cleaned_diff
  mod attributes;
  mod expressions;
  mod generic_args;
- mod types;
- 
- use crate::{
--    SyntaxKind::{self, *},
--    T, TokenSet,
-     parser::{CompletedMarker, Marker, Parser},
-+    SyntaxKind::{self, *},
-+    TokenSet, T,
- };
  
  pub(crate) mod entry {
      use super::*;
@@ -4441,19 +4428,6 @@ expression: cleaned_diff
  use std::cell::Cell;
  
  use drop_bomb::DropBomb;
- 
- use crate::{
--    Edition,
--    SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
--    T, TokenSet,
-     event::Event,
-     input::Input,
-+    Edition,
-+    SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-+    TokenSet, T,
- };
- 
- /// `Parser` struct provides the low-level API for
      }
  }
  
@@ -5417,14 +5391,6 @@ expression: cleaned_diff
  pub(super) fn meta(p: &mut Parser<'_>) {
      let meta = p.start();
      let is_unsafe = p.eat(T![unsafe]);
- 
- use super::*;
- 
--pub(super) use atom::{EXPR_RECOVERY_SET, LITERAL_FIRST, literal, parse_asm_expr};
-+pub(super) use atom::{literal, parse_asm_expr, EXPR_RECOVERY_SET, LITERAL_FIRST};
- pub(crate) use atom::{block_expr, match_arm_list};
- 
- #[derive(PartialEq, Eq)]
      }
  
      // test block_items

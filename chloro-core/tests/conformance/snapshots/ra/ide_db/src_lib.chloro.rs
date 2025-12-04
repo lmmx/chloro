@@ -53,12 +53,12 @@ use salsa::Durability;
 use std::{fmt, mem::ManuallyDrop};
 
 use base_db::{
-    query_group, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce,
-    RootQueryDb, SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
+    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce, RootQueryDb,
+    SourceDatabase, SourceRoot, SourceRootId, SourceRootInput, query_group,
 };
 use hir::{
-    db::{DefDatabase, ExpandDatabase},
     FilePositionWrapper, FileRangeWrapper,
+    db::{DefDatabase, ExpandDatabase},
 };
 use triomphe::Arc;
 pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};

@@ -2,7 +2,29 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3378 bytes
-Chloro size:   3378 bytes
+Chloro size:   3379 bytes
 Rustfmt size:  3378 bytes
 
-✓ Outputs are IDENTICAL
+✗ Outputs DIFFER
+
+=== DIFF (- rustfmt, + chloro) ===
+ //! Run all tests in a project, similar to `cargo test`, but using the mir interpreter.
+ 
+-use hir::{Crate, Module};
+ use hir_ty::db::HirDatabase;
+-use ide_db::{base_db::SourceDatabase, LineIndexDatabase};
++
++use hir::{Crate, Module};
++use ide_db::{LineIndexDatabase, base_db::SourceDatabase};
+ use profile::StopWatch;
+ use project_model::{CargoConfig, RustLibSource};
+ use syntax::TextRange;
+ 
+-use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
++use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
+ 
+-use crate::cli::{flags, full_name_of_item, Result};
++use crate::cli::{Result, flags, full_name_of_item};
+ 
+ impl flags::RunTests {
+     pub fn run(self) -> Result<()> {

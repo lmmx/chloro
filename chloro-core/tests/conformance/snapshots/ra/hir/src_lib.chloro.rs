@@ -46,10 +46,15 @@ use arrayvec::ArrayVec;
 use base_db::{CrateDisplayName, CrateOrigin, LangCrateOrigin};
 use either::Either;
 use hir_def::{
+    AdtId, AssocItemId, AssocItemLoc, AttrDefId, CallableDefId, ConstId, ConstParamId,
+    CrateRootModuleId, DefWithBodyId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId,
+    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
+    LocalFieldId, Lookup, MacroExpander, MacroId, StaticId, StructId, SyntheticSyntax, TupleId,
+    TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
     expr_store::{ExpressionStoreDiagnostics, ExpressionStoreSourceMap},
     hir::{
-        generics::{LifetimeParamData, TypeOrConstParamData, TypeParamProvenance},
         BindingAnnotation, BindingId, Expr, ExprId, ExprOrPatId, LabelId, Pat,
+        generics::{LifetimeParamData, TypeOrConstParamData, TypeParamProvenance},
     },
     item_tree::ImportAlias,
     layout::{self, ReprOptions, TargetDataLayout},
@@ -59,52 +64,48 @@ use hir_def::{
     signatures::{ImplFlags, StaticFlags, StructFlags, TraitFlags, VariantFields},
     src::HasSource as _,
     visibility::visibility_from_ast,
-    AdtId, AssocItemId, AssocItemLoc, AttrDefId, CallableDefId, ConstId, ConstParamId,
-    CrateRootModuleId, DefWithBodyId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId,
-    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
-    LocalFieldId, Lookup, MacroExpander, MacroId, StaticId, StructId, SyntheticSyntax, TupleId,
-    TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
 };
 use hir_expand::{
-    attrs::collect_attrs, proc_macro::ProcMacroKind, AstId, MacroCallKind, RenderedExpandError,
-    ValueResult,
+    AstId, MacroCallKind, RenderedExpandError, ValueResult, attrs::collect_attrs,
+    proc_macro::ProcMacroKind,
 };
 use hir_ty::{
-    all_super_traits, autoderef, check_orphan_rules,
+    TraitEnvironment, TyDefId, TyLoweringDiagnostic, ValueTyDefId, all_super_traits, autoderef,
+    check_orphan_rules,
     consteval::try_const_usize,
     db::{InternedClosureId, InternedCoroutineId},
     diagnostics::BodyValidationDiagnostic,
     direct_super_traits, known_const_to_ast,
     layout::{Layout as TyLayout, RustcEnumVariantIdx, RustcFieldIdx, TagEncoding},
     method_resolution,
-    mir::{interpret_mir, MutBorrowKind},
+    mir::{MutBorrowKind, interpret_mir},
     next_solver::{
-        infer::{DbInternerInferExt, InferCtxt}, AliasTy, Canonical, ClauseKind, ConstKind,
-        DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId, Ty,
-        TyKind, TypingMode,
+        AliasTy, Canonical, ClauseKind, ConstKind, DbInterner, ErrorGuaranteed, GenericArg,
+        GenericArgs, PolyFnSig, Region, SolverDefId, Ty, TyKind, TypingMode,
+        infer::{DbInternerInferExt, InferCtxt},
     },
-    traits::{self, structurally_normalize_ty, FnTrait},
-    TraitEnvironment, TyDefId, TyLoweringDiagnostic, ValueTyDefId,
+    traits::{self, FnTrait, structurally_normalize_ty},
 };
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _},
     AliasTyKind, TypeSuperVisitable, TypeVisitable, TypeVisitor,
+    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _},
 };
 use smallvec::SmallVec;
 use span::{AstIdNode, Edition, FileId};
 use stdx::{format_to, impl_from, never};
 use syntax::{
+    AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, T, TextRange, ToSmolStr,
     ast::{self, HasAttrs as _, HasName, HasVisibility as _},
-    format_smolstr, AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr, T,
+    format_smolstr,
 };
 use triomphe::{Arc, ThinArc};
 
 use crate::db::{DefDatabase, HirDatabase};
 
 pub use crate::{
-    attrs::{resolve_doc_path_on, HasAttrs},
+    attrs::{HasAttrs, resolve_doc_path_on},
     diagnostics::*,
     has_source::HasSource,
     semantics::{
@@ -116,16 +117,17 @@ pub use crate::{
 pub use {
     cfg::{CfgAtom, CfgExpr, CfgOptions},
     hir_def::{
-        attr::{AttrSourceMap, Attrs, AttrsWithOwner}, find_path::PrefixKind, import_map,
-        lang_item::LangItem, nameres::{DefMap, ModuleSource, crate_def_map}, per_ns::Namespace,
+        Complete, FindPathConfig, attr::{AttrSourceMap, Attrs, AttrsWithOwner},
+        find_path::PrefixKind, import_map, lang_item::LangItem,
+        nameres::{DefMap, ModuleSource, crate_def_map}, per_ns::Namespace,
         type_ref::{Mutability, TypeRef}, visibility::Visibility,
         // FIXME: This is here since some queries take it as input that are used
         // outside of hir.
         {ModuleDefId, TraitId},
-        Complete, FindPathConfig,
     },
     hir_expand::{
-        attrs::{Attr, AttrId}, change::ChangeWithProcMacros,
+        EditionedFileId, ExpandResult, HirFileId, MacroCallId, MacroKind, attrs::{Attr, AttrId},
+        change::ChangeWithProcMacros,
         files::{
             FilePosition, FilePositionWrapper, FileRange, FileRangeWrapper, HirFilePosition,
             HirFileRange, InFile, InFileWrapper, InMacroFile, InRealFile, MacroFilePosition,
@@ -133,17 +135,16 @@ pub use {
         },
         inert_attr_macro::AttributeTemplate, mod_path::{ModPath, PathKind, tool_path}, name::Name,
         prettify_macro_expansion, proc_macro::{ProcMacros, ProcMacrosBuilder}, tt,
-        EditionedFileId, ExpandResult, HirFileId, MacroCallId, MacroKind,
     },
     hir_ty::{
-        attach_db, attach_db_allow_change, consteval::ConstEvalError, diagnostics::UnsafetyReason,
+        CastError, FnAbi, PointerCast, attach_db, attach_db_allow_change,
+        consteval::ConstEvalError, diagnostics::UnsafetyReason,
         display::{ClosureStyle, DisplayTarget, HirDisplay, HirDisplayError, HirWrite},
         drop::DropGlue, dyn_compatibility::{DynCompatibilityViolation, MethodViolationCode},
         layout::LayoutError, method_resolution::TyFingerprint, mir::{MirEvalError, MirLowerError},
-        next_solver::abi::Safety, next_solver::clear_tls_solver_cache, CastError, FnAbi,
-        PointerCast,
+        next_solver::abi::Safety, next_solver::clear_tls_solver_cache,
     },
-    intern::{sym, Symbol},
+    intern::{Symbol, sym},
     // FIXME: Properly encapsulate mir
     hir_ty::mir,
 };

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   69902 bytes
+Chloro size:   69906 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -17,40 +17,20 @@ Rustfmt size:  71259 bytes
 -    navigation_target::{self, ToNav},
 -};
  use hir::{
--    AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
-+    sym, AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics,
+     AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
  };
--use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
- use ide_db::{
--    RootDatabase, SymbolKind,
-     base_db::{AnchoredPath, SourceDatabase},
-     defs::{Definition, IdentClass},
-     famous_defs::FamousDefs,
-     helpers::pick_best_token,
-+    RootDatabase, SymbolKind,
- };
-+use ide_db::{ra_fixture::UpmapFromRaFixture, MiniCore};
- use itertools::Itertools;
- use span::{Edition, FileId};
- use syntax::{
--    AstNode, AstToken,
--    SyntaxKind::*,
--    SyntaxNode, SyntaxToken, T, TextRange,
-     ast::{self, HasLoopBody},
--    match_ast,
-+    match_ast, AstNode, AstToken,
-+    SyntaxKind::*,
-+    SyntaxNode, SyntaxToken, TextRange, T,
-+};
-+
-+use crate::Analysis;
-+use crate::{
-+    doc_links::token_as_doc_comment,
-+    navigation_target::{self, ToNav},
-+    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
+     match_ast,
  };
  
++use crate::Analysis;
++use crate::{
++    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
++    doc_links::token_as_doc_comment,
++    navigation_target::{self, ToNav},
++};
++
  #[derive(Debug)]
+ pub struct GotoDefinitionConfig<'a> {
      pub minicore: MiniCore<'a>,
  }
  
@@ -82,11 +62,7 @@ Rustfmt size:  71259 bytes
      // that is we are the string input of it
      if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
          .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
- 
- #[cfg(test)]
- mod tests {
--    use crate::{GotoDefinitionConfig, fixture};
-+    use crate::{fixture, GotoDefinitionConfig};
+     use crate::{GotoDefinitionConfig, fixture};
      use ide_db::{FileRange, MiniCore};
      use itertools::Itertools;
 -

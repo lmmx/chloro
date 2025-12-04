@@ -1,7 +1,7 @@
-use hir::{crate_def_map, Semantics};
+use hir::{Semantics, crate_def_map};
 use ide_db::{
-    base_db::{Crate, RootQueryDb},
     FileId, FilePosition, RootDatabase,
+    base_db::{Crate, RootQueryDb},
 };
 use itertools::Itertools;
 use syntax::{

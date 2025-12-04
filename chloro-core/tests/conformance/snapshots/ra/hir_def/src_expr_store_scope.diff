@@ -9,10 +9,21 @@ Rustfmt size:  19938 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  //! Name resolution for expressions.
+-use hir_expand::{name::Name, MacroDefId};
 +
- use hir_expand::{name::Name, MacroDefId};
++use hir_expand::{MacroDefId, name::Name};
  use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
  use triomphe::Arc;
+ 
+ use crate::{
++    BlockId, DefWithBodyId,
+     db::DefDatabase,
+     expr_store::{Body, ExpressionStore, HygieneId},
+     hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
+-    BlockId, DefWithBodyId,
+ };
+ 
+ pub type ScopeId = Idx<ScopeData>;
      }
  
      /// If `scope` refers to a macro def scope, returns the corresponding `MacroId`.
@@ -130,12 +141,20 @@ Rustfmt size:  19938 bytes
              let mut then_branch_scope = scopes.new_scope(*scope);
              compute_expr_scopes(scopes, condition, &mut then_branch_scope);
              compute_expr_scopes(scopes, then_branch, &mut then_branch_scope);
-     use syntax::{algo::find_node_at_offset, ast, AstNode};
+ #[cfg(test)]
+ mod tests {
+     use base_db::RootQueryDb;
+-    use hir_expand::{name::AsName, InFile};
++    use hir_expand::{InFile, name::AsName};
+     use span::FileId;
+-    use syntax::{algo::find_node_at_offset, ast, AstNode};
++    use syntax::{AstNode, algo::find_node_at_offset, ast};
      use test_fixture::WithFixture;
      use test_utils::{assert_eq_text, extract_offset};
 -
      use crate::{
-         db::DefDatabase, nameres::crate_def_map, test_db::TestDB, FunctionId, ModuleDefId,
+-        db::DefDatabase, nameres::crate_def_map, test_db::TestDB, FunctionId, ModuleDefId,
++        FunctionId, ModuleDefId, db::DefDatabase, nameres::crate_def_map, test_db::TestDB,
      };
 -
      fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {

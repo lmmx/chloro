@@ -7,32 +7,32 @@ use std::{iter, ops::Not};
 
 use either::Either;
 use hir::{
-    db::DefDatabase, DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem,
-    Semantics,
+    DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem, Semantics,
+    db::DefDatabase,
 };
 use ide_db::{
+    FileRange, FxIndexSet, MiniCore, Ranker, RootDatabase,
     defs::{Definition, IdentClass, NameRefClass, OperatorClass},
     famous_defs::FamousDefs,
     helpers::pick_best_token,
     ra_fixture::UpmapFromRaFixture,
-    FileRange, FxIndexSet, MiniCore, Ranker, RootDatabase,
 };
-use itertools::{multizip, Itertools};
+use itertools::{Itertools, multizip};
 use macros::UpmapFromRaFixture;
 use span::{Edition, TextRange};
 use syntax::{
-    ast, AstNode, AstToken,
+    AstNode, AstToken,
     SyntaxKind::{self, *},
-    SyntaxNode, T,
+    SyntaxNode, T, ast,
 };
 
 use crate::{
+    Analysis, FileId, FilePosition, NavigationTarget, RangeInfo, Runnable, TryToNav,
     doc_links::token_as_doc_comment,
     markdown_remove::remove_markdown,
     markup::Markup,
     navigation_target::UpmappingResult,
     runnables::{runnable_fn, runnable_mod},
-    Analysis, FileId, FilePosition, NavigationTarget, RangeInfo, Runnable, TryToNav,
 };
 
 #[derive(Clone, Debug)]

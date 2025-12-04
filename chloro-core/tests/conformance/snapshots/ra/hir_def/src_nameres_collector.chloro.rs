@@ -9,16 +9,16 @@ use base_db::{BuiltDependency, Crate, CrateOrigin, LangCrateOrigin};
 use cfg::{CfgAtom, CfgExpr, CfgOptions};
 use either::Either;
 use hir_expand::{
+    EditionedFileId, ErasedAstId, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind,
+    MacroDefId, MacroDefKind,
     attrs::{Attr, AttrId},
     builtin::{find_builtin_attr, find_builtin_derive, find_builtin_macro},
     mod_path::{ModPath, PathKind},
     name::{AsName, Name},
     proc_macro::CustomProcMacroExpander,
-    EditionedFileId, ErasedAstId, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind,
-    MacroDefId, MacroDefKind,
 };
-use intern::{sym, Interned};
-use itertools::{izip, Itertools};
+use intern::{Interned, sym};
+use itertools::{Itertools, izip};
 use la_arena::Idx;
 use rustc_hash::{FxHashMap, FxHashSet};
 use span::{Edition, FileAstId, SyntaxContext};
@@ -26,31 +26,30 @@ use syntax::ast;
 use triomphe::Arc;
 
 use crate::{
+    AdtId, AssocItemId, AstId, AstIdWithPath, ConstLoc, CrateRootModuleId, EnumLoc, ExternBlockLoc,
+    ExternCrateId, ExternCrateLoc, FunctionId, FunctionLoc, FxIndexMap, ImplLoc, Intern,
+    ItemContainerId, LocalModuleId, Lookup, MacroExpander, MacroId, MacroRulesId, MacroRulesLoc,
+    MacroRulesLocFlags, Macro2Id, Macro2Loc, ModuleDefId, ModuleId, ProcMacroId, ProcMacroLoc,
+    StaticLoc, StructLoc, TraitLoc, TypeAliasLoc, UnionLoc, UnresolvedMacro, UseId, UseLoc,
     attr::Attrs,
     db::DefDatabase,
     item_scope::{GlobId, ImportId, ImportOrExternCrate, PerNsGlobImports},
     item_tree::{
-        self, FieldsShape, ImportAlias, ImportKind, ItemTree, ItemTreeAstId, Macro2, MacroCall,
-        MacroRules, Mod, ModItemId, ModKind, TreeId,
+        self, FieldsShape, ImportAlias, ImportKind, ItemTree, ItemTreeAstId, MacroCall,
+        MacroRules, Macro2, Mod, ModItemId, ModKind, TreeId,
     },
     macro_call_as_call_id,
     nameres::{
+        BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, ModuleData, ModuleOrigin, ResolveMode,
         assoc::TraitItems, attr_resolution::{attr_macro_as_call_id, derive_macro_as_call_id},
         crate_def_map, diagnostics::DefDiagnostic, mod_resolution::ModDir,
         path_resolution::{ReachedFixedPoint, ResolvePathResult},
         proc_macro::{ProcMacroDef, ProcMacroKind, parse_macro_name_and_helper_attrs},
-        sub_namespace_match, BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, ModuleData,
-        ModuleOrigin, ResolveMode,
+        sub_namespace_match,
     },
     per_ns::{Item, PerNs},
     tt,
     visibility::{RawVisibility, Visibility},
-    AdtId, AssocItemId, AstId, AstIdWithPath, ConstLoc, CrateRootModuleId, EnumLoc, ExternBlockLoc,
-    ExternCrateId, ExternCrateLoc, FunctionId, FunctionLoc, FxIndexMap, ImplLoc, Intern,
-    ItemContainerId, LocalModuleId, Lookup, Macro2Id, Macro2Loc, MacroExpander, MacroId,
-    MacroRulesId, MacroRulesLoc, MacroRulesLocFlags, ModuleDefId, ModuleId, ProcMacroId,
-    ProcMacroLoc, StaticLoc, StructLoc, TraitLoc, TypeAliasLoc, UnionLoc, UnresolvedMacro, UseId,
-    UseLoc,
 };
 
 const GLOB_RECURSION_LIMIT: usize = 100;

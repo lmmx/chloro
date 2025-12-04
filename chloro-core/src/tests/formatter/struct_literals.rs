@@ -24,7 +24,6 @@ fn format_struct_literal_single_field_inline() {
     // Single field should stay inline
     assert!(output.contains("Point { x: 1 }"));
 }
-
 // #[test]
 // fn debug_struct_literal_ast() {
 //     let input = "fn module(&self, _db: &dyn DefDatabase) -> ModuleId { ModuleId { krate: self.krate, block: None, local_id: DefMap::ROOT } }";

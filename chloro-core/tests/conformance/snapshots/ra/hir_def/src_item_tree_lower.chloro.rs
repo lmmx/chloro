@@ -4,16 +4,16 @@ use std::{cell::OnceCell, collections::hash_map::Entry};
 
 use base_db::FxIndexSet;
 use hir_expand::{
+    HirFileId,
     mod_path::PathKind,
     name::AsName,
     span_map::{SpanMap, SpanMapRef},
-    HirFileId,
 };
 use la_arena::Arena;
 use span::{AstIdMap, FileAstId, SyntaxContext};
 use syntax::{
-    ast::{self, HasModuleItem, HasName},
     AstNode,
+    ast::{self, HasModuleItem, HasName},
 };
 use triomphe::Arc;
 
@@ -21,7 +21,7 @@ use crate::{
     db::DefDatabase,
     item_tree::{
         BigModItem, Const, Enum, ExternBlock, ExternCrate, FieldsShape, Function, Impl,
-        ImportAlias, Interned, ItemTree, ItemTreeAstId, Macro2, MacroCall, MacroRules, Mod,
+        ImportAlias, Interned, ItemTree, ItemTreeAstId, MacroCall, MacroRules, Macro2, Mod,
         ModItemId, ModKind, ModPath, RawAttrs, RawVisibility, RawVisibilityId, SmallModItem,
         Static, Struct, StructKind, Trait, TypeAlias, Union, Use, UseTree, UseTreeKind,
         VisibilityExplicitness,

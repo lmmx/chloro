@@ -2,22 +2,30 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6348 bytes
-Chloro size:   5800 bytes
+Chloro size:   5808 bytes
 Rustfmt size:  6412 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Impl specialization related things
+ 
+-use hir_def::{nameres::crate_def_map, ImplId};
++use hir_def::{ImplId, nameres::crate_def_map};
+ use intern::sym;
+ use tracing::debug;
+ 
+ use crate::{
      db::HirDatabase,
      next_solver::{
++        DbInterner, TypingMode,
          infer::{
 -            traits::{Obligation, ObligationCause},
              DbInternerInferExt,
 +            traits::{Obligation, ObligationCause},
          },
--        obligation_ctxt::ObligationCtxt,
+         obligation_ctxt::ObligationCtxt,
 -        DbInterner, TypingMode,
-+        obligation_ctxt::ObligationCtxt, DbInterner, TypingMode,
      },
  };
  

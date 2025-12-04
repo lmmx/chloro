@@ -10,15 +10,14 @@ use ide_db::{
 use syntax::Edition;
 use syntax::ast::HasGenericArgs;
 use syntax::{
-    ast,
-    ast::{make, HasArgList},
-    AstNode,
+    AstNode, ast,
+    ast::{HasArgList, make},
 };
 
 use crate::{
+    AssistId, GroupLabel,
     assist_context::{AssistContext, Assists},
     handlers::auto_import::find_importable_node,
-    AssistId, GroupLabel,
 };
 
 pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

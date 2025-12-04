@@ -2,14 +2,15 @@
 
 use either::Either;
 use hir::{
+    AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
     db::{DefDatabase, HirDatabase},
-    resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
+    resolve_doc_path_on, sym,
 };
 use itertools::Itertools;
 use span::{TextRange, TextSize};
 use syntax::{
-    ast::{self, IsString},
     AstToken,
+    ast::{self, IsString},
 };
 
 /// Holds documentation

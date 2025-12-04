@@ -3,14 +3,14 @@ use std::iter;
 use either::Either;
 use ide_db::syntax_helpers::node_ext::is_pattern_cond;
 use syntax::{
-    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, HasLoopBody},
     AstNode, T,
+    ast::{self, HasLoopBody, edit::{AstNodeEdit, IndentLevel}, make},
 };
 
 use crate::{
+    AssistId,
     assist_context::{AssistContext, Assists},
     utils::invert_boolean_expression_legacy,
-    AssistId,
 };
 
 pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

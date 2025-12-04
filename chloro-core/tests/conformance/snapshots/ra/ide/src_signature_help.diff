@@ -8,28 +8,6 @@ Rustfmt size:  62523 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     Semantics, Trait,
- };
- use ide_db::{
--    FilePosition, FxIndexMap,
-     active_parameter::{callable_for_arg_list, generic_def_for_node},
-     documentation::{Documentation, HasDocs},
-+    FilePosition, FxIndexMap,
- };
- use itertools::Itertools;
- use span::Edition;
- use stdx::format_to;
- use syntax::{
--    AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken, T, TextRange,
--    TextSize, ToSmolStr, algo,
-+    algo,
-     ast::{self, AstChildren},
--    match_ast,
-+    match_ast, AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken,
-+    TextRange, TextSize, ToSmolStr, T,
- };
- 
- use crate::RootDatabase;
      Some(signature_help_for_tuple_pat_ish(
          db,
          SignatureHelp {
@@ -53,8 +31,7 @@ Rustfmt size:  62523 bytes
  #[cfg(test)]
  mod tests {
 -
--    use expect_test::{Expect, expect};
-+    use expect_test::{expect, Expect};
+     use expect_test::{Expect, expect};
      use ide_db::FilePosition;
      use stdx::format_to;
      use test_fixture::ChangeFixture;

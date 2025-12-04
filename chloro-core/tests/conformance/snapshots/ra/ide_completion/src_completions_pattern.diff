@@ -8,15 +8,6 @@ Rustfmt size:  8413 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::ast::Pat;
- 
- use crate::{
--    CompletionContext, Completions,
-     context::{PathCompletionCtx, PatternContext, PatternRefutability, Qualified},
-+    CompletionContext, Completions,
- };
- 
- /// Completes constants and paths in unqualified patterns.
      }
  
      // FIXME: ideally, we should look at the type we are matching against and

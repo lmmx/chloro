@@ -1,20 +1,20 @@
 //! MIR lowering for patterns
 
-use hir_def::{hir::ExprId, signatures::VariantFields, AssocItemId};
+use hir_def::{AssocItemId, hir::ExprId, signatures::VariantFields};
 use rustc_type_ir::inherent::{IntoKind, SliceLike, Ty as _};
 
 use crate::next_solver::GenericArgs;
 use crate::{
+    BindingMode,
     mir::{
+        LocalId, MutBorrowKind, Operand, OperandKind,
         lower::{
             BasicBlockId, BinOp, BindingId, BorrowKind, Either, Expr, FieldId, Idx, MemoryMap,
             MirLowerCtx, MirLowerError, MirSpan, Pat, PatId, Place, PlaceElem, ProjectionElem,
             RecordFieldPat, ResolveValueResult, Result, Rvalue, SwitchTargets, TerminatorKind,
             TupleFieldId, TupleId, Ty, TyKind, ValueNs, VariantId,
         },
-        LocalId, MutBorrowKind, Operand, OperandKind,
     },
-    BindingMode,
 };
 
 macro_rules! not_supported {

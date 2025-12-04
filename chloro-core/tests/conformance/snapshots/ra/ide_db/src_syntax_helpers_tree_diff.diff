@@ -13,6 +13,11 @@ Rustfmt size:  15195 bytes
  use rustc_hash::FxHashMap;
  use syntax::{NodeOrToken, SyntaxElement, SyntaxNode};
  
+-use crate::{text_edit::TextEditBuilder, FxIndexMap};
++use crate::{FxIndexMap, text_edit::TextEditBuilder};
+ 
+ #[derive(Debug, Hash, PartialEq, Eq)]
+ enum TreeDiffInsertPos {
                  TreeDiffInsertPos::After(it) => it.text_range().end(),
                  TreeDiffInsertPos::AsFirstChild(it) => it.text_range().start(),
              };
@@ -22,6 +27,11 @@ Rustfmt size:  15195 bytes
          }
          for (from, to) in &self.replacements {
              builder.replace(from.text_range(), to.to_string());
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{expect, Expect};
++    use expect_test::{Expect, expect};
      use itertools::Itertools;
      use parser::{Edition, SyntaxKind};
      use syntax::{AstNode, SourceFile, SyntaxElement};

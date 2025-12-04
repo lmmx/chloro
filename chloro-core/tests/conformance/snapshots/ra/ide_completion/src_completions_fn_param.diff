@@ -8,23 +8,7 @@ Rustfmt size:  7434 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! See [`complete_fn_param`].
- 
- use hir::HirDisplay;
- use ide_db::FxHashMap;
- use itertools::Either;
- use syntax::{
--    AstNode, Direction, SyntaxKind, TextRange, TextSize, algo,
-+    algo,
-     ast::{self, HasModuleItem},
--    match_ast,
-+    match_ast, AstNode, Direction, SyntaxKind, TextRange, TextSize,
- };
- 
- use crate::{
--    CompletionContext, CompletionItem, CompletionItemKind, Completions,
      context::{ParamContext, ParamKind, PatternContext},
-+    CompletionContext, CompletionItem, CompletionItemKind, Completions,
  };
  
 -// FIXME: Make this a submodule of [`pattern`]

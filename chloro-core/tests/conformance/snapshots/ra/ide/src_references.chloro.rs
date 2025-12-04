@@ -19,11 +19,11 @@
 
 use hir::{PathResolution, Semantics};
 use ide_db::{
+    FileId, MiniCore, RootDatabase,
     defs::{Definition, NameClass, NameRefClass},
     helpers::pick_best_token,
     ra_fixture::UpmapFromRaFixture,
     search::{ReferenceCategory, SearchScope, UsageSearchResult},
-    FileId, MiniCore, RootDatabase,
 };
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
@@ -31,14 +31,15 @@ use nohash_hasher::IntMap;
 use span::Edition;
 use syntax::AstToken;
 use syntax::{
-    ast::{self, HasName},
-    match_ast, AstNode,
+    AstNode,
     SyntaxKind::*,
-    SyntaxNode, TextRange, TextSize, T,
+    SyntaxNode, T, TextRange, TextSize,
+    ast::{self, HasName},
+    match_ast,
 };
 
 use crate::{
-    highlight_related, Analysis, FilePosition, HighlightedRange, NavigationTarget, TryToNav,
+    Analysis, FilePosition, HighlightedRange, NavigationTarget, TryToNav, highlight_related,
 };
 
 /// Result of a reference search operation.
@@ -472,11 +473,11 @@ fn handle_control_flow_keywords(
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use hir::EditionedFileId;
     use ide_db::{FileId, MiniCore, RootDatabase};
     use stdx::format_to;
-    use crate::{fixture, references::FindAllRefsConfig, SearchScope};
+    use crate::{SearchScope, fixture, references::FindAllRefsConfig};
     #[test]
     fn exclude_tests() {
         check(

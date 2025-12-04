@@ -3,29 +3,28 @@
 use std::ops::ControlFlow;
 
 use hir_def::{
-    hir::generics::LocalTypeOrConstParamId, lang_item::LangItem, signatures::TraitFlags,
     AssocItemId, ConstId, CrateRootModuleId, FunctionId, GenericDefId, HasModule, TraitId,
-    TypeAliasId, TypeOrConstParamId, TypeParamId,
+    TypeAliasId, TypeOrConstParamId, TypeParamId, hir::generics::LocalTypeOrConstParamId,
+    lang_item::LangItem, signatures::TraitFlags,
 };
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    elaborate,
-    inherent::{IntoKind, SliceLike},
     AliasTyKind, ClauseKind, PredicatePolarity, TypeSuperVisitable as _, TypeVisitable as _,
-    Upcast,
+    Upcast, elaborate,
+    inherent::{IntoKind, SliceLike},
 };
 use smallvec::SmallVec;
 
 use crate::{
+    ImplTraitId,
     db::{HirDatabase, InternedOpaqueTyId},
     lower::associated_ty_item_bounds,
     next_solver::{
-        infer::DbInternerInferExt, mk_param, Binder, Clause, Clauses, DbInterner, EarlyBinder,
-        GenericArgs, Goal, ParamEnv, ParamTy, SolverDefId, TraitPredicate, TraitRef, Ty,
-        TypingMode,
+        Binder, Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ParamEnv, ParamTy,
+        SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, infer::DbInternerInferExt,
+        mk_param,
     },
     traits::next_trait_solve_in_ctxt,
-    ImplTraitId,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

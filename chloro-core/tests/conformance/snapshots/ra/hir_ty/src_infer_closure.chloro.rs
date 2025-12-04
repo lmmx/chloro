@@ -5,34 +5,34 @@ pub(crate) mod analysis;
 use std::{iter, mem, ops::ControlFlow};
 
 use hir_def::{
+    TraitId,
     hir::{ClosureKind, ExprId, PatId},
     lang_item::LangItem,
     type_ref::TypeRefId,
-    TraitId,
 };
 use rustc_type_ir::{
-    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
     ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
     CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
     TypeVisitor,
+    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
 };
 use tracing::debug;
 
 use crate::{
+    FnAbi,
     db::{InternedClosure, InternedCoroutine},
-    infer::{coerce::CoerceMany, BreakableKind, Diverges},
+    infer::{BreakableKind, Diverges, coerce::CoerceMany},
     next_solver::{
-        abi::Safety,
+        AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
+        ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
+        PredicateKind, SolverDefId, Ty, TyKind, abi::Safety,
         infer::{
             BoundRegionConversionTime, InferOk, InferResult,
             traits::{ObligationCause, PredicateObligations},
         },
-        util::explicit_item_bounds, AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds,
-        ClauseKind, DbInterner, ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig,
-        PolyProjectionPredicate, Predicate, PredicateKind, SolverDefId, Ty, TyKind,
+        util::explicit_item_bounds,
     },
     traits::FnTrait,
-    FnAbi,
 };
 
 use super::{Expectation, InferenceContext};

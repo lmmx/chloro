@@ -36,40 +36,40 @@
 //! ```
 
 use hir_def::{
+    CallableDefId,
     hir::{ExprId, ExprOrPatId},
     lang_item::LangItem,
     signatures::FunctionSignature,
-    CallableDefId,
 };
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
+    BoundVar, TypeAndMut,
     error::TypeError,
     inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
-    BoundVar, TypeAndMut,
 };
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 use tracing::{debug, instrument};
 use triomphe::Arc;
 
 use crate::{
+    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
     autoderef::Autoderef,
     db::{HirDatabase, InternedClosureId},
-    infer::{unify::InferenceTable, AllowTwoPhase, InferenceContext, TypeMismatch},
+    infer::{AllowTwoPhase, InferenceContext, TypeMismatch, unify::InferenceTable},
     next_solver::{
+        Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, CallableIdWrapper,
+        Canonical, ClauseKind, CoercePredicate, Const, ConstKind, DbInterner, ErrorGuaranteed,
+        GenericArgs, PolyFnSig, PredicateKind, Region, RegionKind, TraitRef, Ty, TyKind,
         infer::{
             InferCtxt, InferOk, InferResult,
             relate::RelateResult,
             select::{ImplSource, SelectionError},
             traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
         },
-        obligation_ctxt::ObligationCtxt, Binder, BoundConst, BoundRegion, BoundRegionKind,
-        BoundTy, BoundTyKind, CallableIdWrapper, Canonical, ClauseKind, CoercePredicate, Const,
-        ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, PolyFnSig, PredicateKind, Region,
-        RegionKind, TraitRef, Ty, TyKind,
+        obligation_ctxt::ObligationCtxt,
     },
     utils::TargetFeatureIsSafeInTarget,
-    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
 };
 
 struct Coerce<'a, 'b, 'db> {

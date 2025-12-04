@@ -8,7 +8,7 @@
 //! show up for normal completions, or they won't show completions other than lifetimes depending
 //! on the fixture input.
 
-use hir::{sym, Name, ScopeDef};
+use hir::{Name, ScopeDef, sym};
 
 use crate::{
     completions::Completions,

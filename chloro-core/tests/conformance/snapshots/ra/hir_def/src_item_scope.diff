@@ -8,36 +8,6 @@ Rustfmt size:  33374 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Describes items defined or visible (ie, imported) in a certain scope.
- //! This is shared between modules and blocks.
- 
- use std::sync::LazyLock;
- 
- use base_db::Crate;
--use hir_expand::{AstId, MacroCallId, attrs::AttrId, db::ExpandDatabase, name::Name};
-+use hir_expand::{attrs::AttrId, db::ExpandDatabase, name::Name, AstId, MacroCallId};
- use indexmap::map::Entry;
- use itertools::Itertools;
- use la_arena::Idx;
- use rustc_hash::{FxHashMap, FxHashSet};
--use smallvec::{SmallVec, smallvec};
-+use smallvec::{smallvec, SmallVec};
- use span::Edition;
- use stdx::format_to;
- use syntax::ast;
- use thin_vec::ThinVec;
- 
- use crate::{
--    AdtId, BuiltinType, ConstId, ExternBlockId, ExternCrateId, FxIndexMap, HasModule, ImplId,
--    LocalModuleId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, UseId,
-     db::DefDatabase,
-     per_ns::{Item, MacrosItem, PerNs, TypesItem, ValuesItem},
-     visibility::Visibility,
-+    AdtId, BuiltinType, ConstId, ExternBlockId, ExternCrateId, FxIndexMap, HasModule, ImplId,
-+    LocalModuleId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, UseId,
- };
- 
- #[derive(Debug, Default)]
      pub(crate) fn contains_type(&self, module_id: LocalModuleId, name: Name) -> bool {
          self.types.contains(&(module_id, name))
      }

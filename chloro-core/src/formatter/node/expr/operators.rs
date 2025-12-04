@@ -1,8 +1,8 @@
+use crate::formatter::printer::expr_attrs_prefix;
 use ra_ap_syntax::SyntaxNode;
 use ra_ap_syntax::ast::{self, AstNode, RangeItem};
 
 use super::try_format_expr_inner;
-use crate::formatter::printer::expr_attrs_prefix;
 
 pub fn format_bin_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let bin = ast::BinExpr::cast(node.clone())?;

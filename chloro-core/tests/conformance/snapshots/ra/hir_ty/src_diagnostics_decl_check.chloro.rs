@@ -16,20 +16,20 @@ mod case_conv;
 use std::fmt;
 
 use hir_def::{
-    db::DefDatabase, hir::Pat, item_tree::FieldsShape, signatures::StaticFlags, src::HasSource,
     AdtId, ConstId, EnumId, EnumVariantId, FunctionId, HasModule, ItemContainerId, Lookup,
-    ModuleDefId, ModuleId, StaticId, StructId, TraitId, TypeAliasId,
+    ModuleDefId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, db::DefDatabase, hir::Pat,
+    item_tree::FieldsShape, signatures::StaticFlags, src::HasSource,
 };
 use hir_expand::{
-    name::{AsName, Name},
     HirFileId,
+    name::{AsName, Name},
 };
 use intern::sym;
 use stdx::{always, never};
 use syntax::{
+    AstNode, AstPtr, ToSmolStr,
     ast::{self, HasName},
     utils::is_raw_identifier,
-    AstNode, AstPtr, ToSmolStr,
 };
 
 use crate::db::HirDatabase;

@@ -90,10 +90,11 @@ pub fn format_type_alias(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
             TypeAliasRhsKind::FunctionType => {
                 if let Some(fn_type) = ast::FnPtrType::cast(ty.syntax().clone()) {
+                    // Print keywords like `unsafe`, `extern "C"`, `fn`
+                    // Params
+                    // Return type (if any)
                     buf.push_str(" =\n");
                     write_indent(buf, indent + 4);
-
-                    // Print keywords like `unsafe`, `extern "C"`, `fn`
                     if let Some(unsafe_tok) = fn_type.unsafe_token() {
                         buf.push_str(unsafe_tok.text());
                         buf.push(' ');
@@ -105,10 +106,7 @@ pub fn format_type_alias(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     if let Some(fn_tok) = fn_type.fn_token() {
                         buf.push_str(fn_tok.text());
                     }
-
                     buf.push_str("(\n");
-
-                    // Params
                     if let Some(param_list) = fn_type.param_list() {
                         for param in param_list.params() {
                             write_indent(buf, indent + 8);
@@ -116,16 +114,12 @@ pub fn format_type_alias(node: &SyntaxNode, buf: &mut String, indent: usize) {
                             buf.push_str(",\n");
                         }
                     }
-
                     write_indent(buf, indent + 4);
                     buf.push(')');
-
-                    // Return type (if any)
                     if let Some(ret) = fn_type.ret_type() {
                         buf.push(' ');
                         buf.push_str(&ret.syntax().text().to_string());
                     }
-
                     buf.push_str(";\n");
                 } else {
                     // Fallback if somehow not an Fn pointer

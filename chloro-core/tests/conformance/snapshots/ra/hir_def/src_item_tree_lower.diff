@@ -8,27 +8,14 @@ Rustfmt size:  20372 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! AST -> `ItemTree` lowering code.
- 
- use std::{cell::OnceCell, collections::hash_map::Entry};
- 
- use base_db::FxIndexSet;
- use hir_expand::{
--    HirFileId,
-     mod_path::PathKind,
-     name::AsName,
-     span_map::{SpanMap, SpanMapRef},
-+    HirFileId,
- };
- use la_arena::Arena;
- use span::{AstIdMap, FileAstId, SyntaxContext};
- use syntax::{
--    AstNode,
-     ast::{self, HasModuleItem, HasName},
-+    AstNode,
- };
- use triomphe::Arc;
- 
+     db::DefDatabase,
+     item_tree::{
+         BigModItem, Const, Enum, ExternBlock, ExternCrate, FieldsShape, Function, Impl,
+-        ImportAlias, Interned, ItemTree, ItemTreeAstId, Macro2, MacroCall, MacroRules, Mod,
++        ImportAlias, Interned, ItemTree, ItemTreeAstId, MacroCall, MacroRules, Macro2, Mod,
+         ModItemId, ModKind, ModPath, RawAttrs, RawVisibility, RawVisibilityId, SmallModItem,
+         Static, Struct, StructKind, Trait, TypeAlias, Union, Use, UseTree, UseTreeKind,
+         VisibilityExplicitness,
                      }
                  }
              };

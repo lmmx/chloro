@@ -8,6 +8,14 @@ Rustfmt size:  976 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ use macros::{TypeFoldable, TypeVisitable};
+ 
+-use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
++use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
+ 
+ #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
+ pub struct OpaqueHiddenType<'db> {
          opaque_type_key: OpaqueTypeKey<'db>,
          hidden_ty: OpaqueHiddenType<'db>,
      ) -> Option<Ty<'db>> {

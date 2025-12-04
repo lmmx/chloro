@@ -18,18 +18,18 @@
 //! [lattices]: https://en.wikipedia.org/wiki/Lattice_(order)
 
 use rustc_type_ir::{
+    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
     inherent::{IntoKind, Span as _},
     relate::{
-        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys}, Relate,
-        StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
+        Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
+        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys},
     },
-    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
 };
 
 use crate::next_solver::{
-    infer::{relate::RelateResult, traits::{Obligation, PredicateObligations}, InferCtxt, TypeTrace},
     AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
     TyKind,
+    infer::{InferCtxt, TypeTrace, relate::RelateResult, traits::{Obligation, PredicateObligations}},
 };
 
 #[derive(Clone, Copy)]

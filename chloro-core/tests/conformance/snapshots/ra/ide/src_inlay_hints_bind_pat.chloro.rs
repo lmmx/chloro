@@ -5,7 +5,7 @@
 //! ```
 
 use hir::{DisplayTarget, Semantics};
-use ide_db::{famous_defs::FamousDefs, RootDatabase};
+use ide_db::{RootDatabase, famous_defs::FamousDefs};
 
 use itertools::Itertools;
 use syntax::{
@@ -14,8 +14,8 @@ use syntax::{
 };
 
 use crate::{
-    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
     InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
+    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
 };
 
 pub(super) fn hints(
@@ -179,9 +179,9 @@ mod tests {
     use hir::ClosureStyle;
     use syntax::{TextRange, TextSize};
     use test_utils::extract_annotations;
-    use crate::{fixture, inlay_hints::InlayHintsConfig, ClosureReturnTypeHints};
+    use crate::{ClosureReturnTypeHints, fixture, inlay_hints::InlayHintsConfig};
     use crate::inlay_hints::tests::{
-        check, check_edit, check_no_edit, check_with_config, DISABLED_CONFIG, TEST_CONFIG,
+        DISABLED_CONFIG, TEST_CONFIG, check, check_edit, check_no_edit, check_with_config,
     };
     #[track_caller]
     fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

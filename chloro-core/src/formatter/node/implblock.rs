@@ -1,11 +1,11 @@
+use crate::formatter::node::common::comments;
+use crate::formatter::write_indent;
 use ra_ap_syntax::{
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasAttrs, HasDocComments, HasGenericParams},
 };
 
 use super::format_node;
-use crate::formatter::node::common::comments;
-use crate::formatter::write_indent;
 
 pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let impl_ = match ast::Impl::cast(node.clone()) {

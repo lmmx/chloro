@@ -6,18 +6,18 @@ mod tests;
 use std::iter;
 
 use crate::expr_store::{
-    lower::{generics::ImplTraitLowerFn, ExprCollector},
+    lower::{ExprCollector, generics::ImplTraitLowerFn},
     path::NormalPath,
 };
 
 use hir_expand::{
-    mod_path::{resolve_crate_root, ModPath, PathKind},
+    mod_path::{ModPath, PathKind, resolve_crate_root},
     name::{AsName, Name},
 };
-use intern::{sym, Interned};
+use intern::{Interned, sym};
 use syntax::{
-    ast::{self, AstNode, HasGenericArgs},
     AstPtr,
+    ast::{self, AstNode, HasGenericArgs},
 };
 
 use crate::{

@@ -14,22 +14,8 @@ Rustfmt size:  32624 bytes
  //! features, such as Fn family of traits.
 +
  use hir_expand::name::Name;
--use intern::{Symbol, sym};
-+use intern::{sym, Symbol};
+ use intern::{Symbol, sym};
  use rustc_hash::FxHashMap;
- use triomphe::Arc;
- 
- use crate::{
--    AdtId, AssocItemId, AttrDefId, Crate, EnumId, EnumVariantId, FunctionId, ImplId, ModuleDefId,
--    StaticId, StructId, TraitId, TypeAliasId, UnionId,
-     db::DefDatabase,
-     expr_store::path::Path,
-     nameres::{assoc::TraitItems, crate_def_map, crate_local_def_map},
-+    AdtId, AssocItemId, AttrDefId, Crate, EnumId, EnumVariantId, FunctionId, ImplId, ModuleDefId,
-+    StaticId, StructId, TraitId, TypeAliasId, UnionId,
- };
- 
- #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
          }
      }
  

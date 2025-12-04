@@ -3,13 +3,13 @@
 use either::Either;
 use ide_db::{active_parameter::generic_def_for_node, famous_defs::FamousDefs};
 use syntax::{
-    ast::{self, AnyHasGenericArgs, HasGenericArgs, HasName},
     AstNode,
+    ast::{self, AnyHasGenericArgs, HasGenericArgs, HasName},
 };
 
 use crate::{
-    inlay_hints::{param_name, GenericParameterHints},
     InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
+    inlay_hints::{GenericParameterHints, param_name},
 };
 
 use super::param_name::is_argument_similar_to_param_name;
@@ -162,8 +162,8 @@ fn get_segment_representation(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::{tests::{DISABLED_CONFIG, check_with_config}, GenericParameterHints},
         InlayHintsConfig,
+        inlay_hints::{GenericParameterHints, tests::{DISABLED_CONFIG, check_with_config}},
     };
     #[track_caller]
     fn generic_param_name_hints_always(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
