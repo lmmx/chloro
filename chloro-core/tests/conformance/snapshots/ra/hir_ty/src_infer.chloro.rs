@@ -75,7 +75,9 @@ use crate::{
     utils::TargetFeatureIsSafeInTarget,
 };
 
+#[allow(unreachable_pub)]
 pub use coerce::could_coerce;
+#[allow(unreachable_pub)]
 pub use unify::{could_unify, could_unify_deeply};
 
 use cast::{CastCheck, CastError};

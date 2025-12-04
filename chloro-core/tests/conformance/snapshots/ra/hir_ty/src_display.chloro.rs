@@ -64,11 +64,9 @@ use crate::{
 };
 
 pub trait HirWrite {
-    fn start_location_link(&mut self, _location: ModuleDefId) {
-    }
+    fn start_location_link(&mut self, _location: ModuleDefId) {}
 
-    fn end_location_link(&mut self) {
-    }
+    fn end_location_link(&mut self) {}
 }
 
 impl HirWrite for String {

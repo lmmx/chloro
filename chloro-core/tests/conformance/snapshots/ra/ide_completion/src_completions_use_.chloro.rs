@@ -81,7 +81,7 @@ pub(crate) fn complete_use_path(
                     cov_mark::hit!(enum_plain_qualified_use_tree);
                     acc.add_enum_variants(ctx, path_ctx, *e);
                 }
-                _ => {},
+                _ => {}
             }
         }
         // fresh use tree with leading colon2, only show crate roots
@@ -120,6 +120,6 @@ pub(crate) fn complete_use_path(
             });
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {},
+        Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {}
     }
 }

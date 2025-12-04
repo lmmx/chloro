@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   226582 bytes
+Chloro size:   226614 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  227843 bytes
  
  mod attrs;
  mod from_id;
- 
- mod display;
- 
--#[doc(hidden)]
- pub use hir_def::ModuleId;
- 
- use std::{
      },
      item_tree::ImportAlias,
      layout::{self, ReprOptions, TargetDataLayout},
@@ -111,7 +104,7 @@ Rustfmt size:  227843 bytes
  
 -// These are negative re-exports: pub using these names is forbidden, they
 -// should remain private to hir internals.
--#[allow(unused)]
+ #[allow(unused)]
  use {
      hir_def::expr_store::path::Path,
 -    hir_expand::{

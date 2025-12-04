@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   73214 bytes
+Chloro size:   73266 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -23,12 +23,9 @@ Rustfmt size:  74236 bytes
 -// This lint has a false positive here. See the link below for details.
 -//
 -// https://github.com/rust-lang/rust/issues/57411
--#[allow(unreachable_pub)]
+ #[allow(unreachable_pub)]
  pub use coerce::could_coerce;
--#[allow(unreachable_pub)]
- pub use unify::{could_unify, could_unify_deeply};
- 
- use cast::{CastCheck, CastError};
+ #[allow(unreachable_pub)]
      ctx.type_inference_fallback();
  
      // Comment from rustc:

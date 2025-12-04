@@ -942,15 +942,14 @@ expression: cleaned_diff
 -fn
 +fn ();
  
--fn foo() {}
-+fn foo() {
-+}
+ fn foo() {}
  
 -extern struct Foo;
 +struct Foo;
  
- fn foo(x: i32, y) {
- }
+-fn foo(x: i32, y) {
+-}
++fn foo(x: i32, y) {}
  
  struct S {
      f: u32,
@@ -995,8 +994,7 @@ expression: cleaned_diff
  
 -unsafe async fn foo() {}
 -unsafe const fn bar() {}
-+async fn foo() {
-+}
++async fn foo() {}
  
 -let foo = bar = {
 +const ;
@@ -1020,9 +1018,7 @@ expression: cleaned_diff
 +    ();
  }
  
--fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {}
-+fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {
-+}
+ fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {}
  
  fn main() {
 -    let _: Box<(Copy) + (?Sized) + (for<'a> Trait<'a>)>;
@@ -1057,9 +1053,7 @@ expression: cleaned_diff
  fn foo()
 -    where for<'a>
 -{}
-+where for<'a>
-+{
-+}
++where for<'a> {}
  
 -let foo = |x: i32| {
 +{
@@ -1110,13 +1104,16 @@ expression: cleaned_diff
  
  fn f() {
      let _ = while true {
- fn foo() {
  }
  
+ #[foo(foo, +, 92)]
+-fn foo() {
+-}
 -
++fn foo() {}
+ 
  #[foo(
  fn foo() {
- }
      let bad = format_args! {""} else { return; };
  }
  
@@ -1124,12 +1121,11 @@ expression: cleaned_diff
  
  struct S;
  
-+
-+fn foo() {
- }
+-}
  
 -fn foo(){}
--
++fn foo() {}
+ 
 -}
  
  struct S {
@@ -1161,12 +1157,9 @@ expression: cleaned_diff
 -use
 -use crate::baz;
 -use
--fn f() {}
-+fn f() {
-+}
+ fn f() {}
  
  fn foo(a: A) {
-     a.
  }
  
  struct S(i32, i32);
@@ -1219,9 +1212,7 @@ expression: cleaned_diff
  
 -fn foo<T>() where T {}
 +fn foo<T>()
-+where T
-+{
-+}
++where T {}
  
 -fn a() { [1, 2, @, struct, let] }
 -fn b() { foo(1, 2, @, impl, let) }
@@ -1303,33 +1294,42 @@ expression: cleaned_diff
 +
  fn for_for_for<T>()
  where
-     for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy,
- fn foo() {
- }
- 
+-    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy,
++    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy, {}
++
++fn foo() {}
++
+ {
+-}
+-
+-fn foo() {
+-}
+-
 -bar() {
 -    if true {
 -        1
 -    } else {
 -        2 + 3
 -    }
+-}
+-
+-fn baz() {
+-}
+-
+-let foo = &{
+     1
+-} else {
+-    return;
+-};
++}{
++    2 + 3
++}
++fn baz() {}
+ 
 +{
 +    1
 +}{
-+    2 + 3
- }
--
- fn baz() {
- }
- 
--let foo = &{
-+{
-     1
--} else {
-+}{
-     return;
--};
--
++    return;
 +}
  fn foo() {
      (,);
@@ -1339,9 +1339,7 @@ expression: cleaned_diff
  
 -fn f<T>() where T: ?for<> Sized {}
 +fn f<T>()
-+where T: ?for<> Sized
-+{
-+}
++where T: ?for<> Sized {}
  
  type T = *();
  
@@ -1457,43 +1455,32 @@ expression: cleaned_diff
  macro_rules! []
  
  fn foo() {
-     ()
  }
  
--fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
-+fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {
-+}
+ fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
 +use b;
  
  use {a;
 -use b;
  struct T;
--fn test() {}
++
+ fn test() {}
 -use {a ,, b};
- 
--fn foo(){} unsafe { } fn bar(){}
-+fn test() {
-+}
 +use {a, b};
  
--fn foo() { pub 92; }
-+fn foo() {
-+}
-+fn bar() {
-+}
+-fn foo(){} unsafe { } fn bar(){}
++fn foo() {}
++fn bar() {}
  
--fn f() -> impl Iterator<Item = , Item = > {}
+-fn foo() { pub 92; }
 +fn foo() {
 +    pub
 +    92;
 +}
  
--fn f<T: Clone,, U:, V>() {}
-+fn f() -> impl Iterator<Item = , Item = > {
-+}
-+
-+fn f<T: Clone,, U:, V>() {
-+}
+ fn f() -> impl Iterator<Item = , Item = > {}
+ 
+ fn f<T: Clone,, U:, V>() {}
  
  fn main() {
 -    'loop: impl
@@ -1543,11 +1530,9 @@ expression: cleaned_diff
 -// 2021
 -gen fn gen_fn() {}
 -async gen fn async_gen_fn() {}
-+fn gen_fn() {
-+}
++fn gen_fn() {}
 +
-+async fn async_gen_fn() {
-+}
++async fn async_gen_fn() {}
  
  fn main() {
      S { S::default() };
@@ -1555,8 +1540,7 @@ expression: cleaned_diff
  }
  
 -fn f(x y: i32, z, t: i32) {}
-+fn f(x, y: i32, z, t: i32) {
-+}
++fn f(x, y: i32, z, t: i32) {}
  
  fn foo() {
      builtin#asm(
@@ -1564,8 +1548,7 @@ expression: cleaned_diff
  }
  
 -fn f(y: i32, ,t: i32) {}
-+fn f(y: i32, t: i32) {
-+}
++fn f(y: i32, t: i32) {}
  
 -#![]
 -#![p = ]
@@ -1589,27 +1572,18 @@ expression: cleaned_diff
  
  fn foo() {
      x.self;
-     x.0();
  }
  
--fn a() {}
--fn b(x: i32) {}
+ fn a() {}
++
+ fn b(x: i32) {}
 -fn c(x: i32, ) {}
--fn d(x: i32, y: ()) {}
-+fn a() {
-+}
 +
-+fn b(x: i32) {
-+}
++fn c(x: i32) {}
 +
-+fn c(x: i32) {
-+}
-+
-+fn d(x: i32, y: ()) {
-+}
+ fn d(x: i32, y: ()) {}
  
  fn foo() {
-     if true {};
  
  type T = S<{90 + 2}>;
  
@@ -1630,10 +1604,6 @@ expression: cleaned_diff
  
  fn main() {
      match 42 {
--        ..0 => {}
--        1..2 => {}
-+        ..0 => {},
-+        1..2 => {},
      }
  }
  
@@ -1733,15 +1703,6 @@ expression: cleaned_diff
  
  fn main() {
      let [a, b, ..] = [];
-     let [| a, ..] = [];
- }
- 
--fn foo(..., (x, y): (i32, i32)) {}
-+fn foo(..., (x, y): (i32, i32)) {
-+}
- 
- fn foo() {
-     x?;
  
  fn foo() {
      match () {
@@ -1762,25 +1723,17 @@ expression: cleaned_diff
 +}
  
  impl S {
--    fn a(self) {}
+     fn a(self) {}
 -    fn b(&self,) {}
 -    fn c(&'a self,) {}
--    fn d(&'a mut self, x: i32) {}
--    fn e(mut self) {}
-+    fn a(self) {
-+    }
 +
-+    fn b(&self) {
-+    }
++    fn b(&self) {}
 +
-+    fn c(&'a self) {
-+    }
++    fn c(&'a self) {}
 +
-+    fn d(&'a mut self, x: i32) {
-+    }
+     fn d(&'a mut self, x: i32) {}
 +
-+    fn e(mut self) {
-+    }
+     fn e(mut self) {}
  }
  
  type Foo where Foo: Copy = ();
@@ -1834,9 +1787,7 @@ expression: cleaned_diff
  
 -fn f<T>() where T: for<> ?Sized {}
 +fn f<T>()
-+where T: for<> ?Sized
-+{
-+}
++where T: for<> ?Sized {}
  
 -struct S<T>(T) where T: Clone;
 +struct S<T>(T);
@@ -1962,18 +1913,10 @@ expression: cleaned_diff
  
 -fn foo<T>() where T: Copy {}
 +fn foo<T>()
-+where T: Copy
-+{
-+}
++where T: Copy {}
  
  fn foo() {
      let _ = a;
-     builtin#naked_asm("");
- }
- 
--fn foo<T: for<'a> [const] async Trait>() {}
-+fn foo<T: for<'a> [const] async Trait>() {
-+}
  
  type A = dyn Iterator<Item=Foo<'a>> + 'a;
  
@@ -1990,19 +1933,13 @@ expression: cleaned_diff
  pub fn main() {
      gen { yield ""; };
      async gen { yield ""; };
-     async gen move { yield ""; };
  }
  
--fn foo() {}
--fn bar() -> () {}
-+fn foo() {
-+}
+ fn foo() {}
 +
-+fn bar() -> () {
-+}
+ fn bar() -> () {}
  
  fn main() {
-     S { #[cfg(test)] field: 1 }
  }
  
  pub(crate) struct S;
@@ -2051,12 +1988,8 @@ expression: cleaned_diff
 +    !(Ok(()));
 +}
  
--fn f<T: Clone>() {}
-+fn f<T: Clone>() {
-+}
+ fn f<T: Clone>() {}
  
- fn foo() {
-     let foo::Bar = ();
  
  struct A<const N: i32 = { 1 }>;
  
@@ -2094,24 +2027,22 @@ expression: cleaned_diff
  
  fn foo() {
      _ = 1;
+ where
      T::method(..): Send,
      method(..): Send,
-     method::(..): Send,
+-    method::(..): Send,
 -{}
-+{
-+}
++    method::(..): Send, {}
  
 -impl S { #![attr] }
 +impl S {
 +    #![attr]
 +}
  
--fn a() {}
+ fn a() {}
 -fn b() { let _ = 1; }
 -fn c() { 1; 2; }
 -fn d() { 1; 2 }
-+fn a() {
-+}
 +
 +fn b() {
 +    let _ = 1;
@@ -2139,8 +2070,7 @@ expression: cleaned_diff
  
  impl T for Foo {
 -    default async fn foo() {}
-+    async fn foo() {
-+    }
++    async fn foo() {}
  }
  
 -trait Z<U> = T<U>;
@@ -2148,12 +2078,12 @@ expression: cleaned_diff
  
  use std::*;
  
+    'a: 'b + 'c,
     T: Clone + Copy + 'static,
     Iterator::Item: 'a,
-    <T as Iterator>::Item: 'a
+-   <T as Iterator>::Item: 'a
 -{}
-+{
-+}
++   <T as Iterator>::Item: 'a {}
  
  macro_rules! {}
 +
@@ -2164,10 +2094,7 @@ expression: cleaned_diff
  fn main() {
      let foo = macro_rules!();
  }
- 
--fn f<T: Clone>() {}
-+fn f<T: Clone>() {
-+}
+ fn f<T: Clone>() {}
  
  struct B(pub (super::A));
 +
@@ -2179,15 +2106,11 @@ expression: cleaned_diff
  
  type A = Foo<syn::Token![_]>;
  
--fn foo<F: Foo<N=3>>() {}
-+fn foo<F: Foo<N=3>>() {
-+}
+ fn foo<F: Foo<N=3>>() {}
 +
  const TEST: usize = 3;
--fn bar<F: Foo<N={TEST}>>() {}
 +
-+fn bar<F: Foo<N={TEST}>>() {
-+}
+ fn bar<F: Foo<N={TEST}>>() {}
  
  type F = Start::(Middle) -> (Middle)::End;
 +
@@ -2200,9 +2123,7 @@ expression: cleaned_diff
 +
  type T = StreamingIterator<Item(T): Clone>;
  
--fn foo() {}
-+fn foo() {
-+}
+ fn foo() {}
 +
  macro_rules! foo {}
 +
@@ -2220,11 +2141,9 @@ expression: cleaned_diff
 +
  type Obj = for<'a> PartialEq<&'a i32>;
  
--const fn foo(_: impl [const] Trait) {}
+ const fn foo(_: impl [const] Trait) {}
 -
 -use *;
-+const fn foo(_: impl [const] Trait) {
-+}
  use std::{*};
  
 -const _: u32 = 0;
@@ -2234,8 +2153,7 @@ expression: cleaned_diff
 +const u32 = 0;
  
 -fn f() { v = {1}&2; }
-+fn foo<T: Clone + Copy>() {
-+}
++fn foo<T: Clone + Copy>() {}
 +
 +fn f() {
 +    v = {1}&2;
@@ -2258,8 +2176,7 @@ expression: cleaned_diff
 -default unsafe impl T for Foo {
 -    default unsafe fn foo() {}
 +unsafe impl T for Foo {
-+    unsafe fn foo() {
-+    }
++    unsafe fn foo() {}
  }
  
  pub(in super::A) struct S;
@@ -2276,11 +2193,7 @@ expression: cleaned_diff
  
  fn foo() {
  
- struct S;
- 
--fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {}
-+fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {
-+}
+ fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {}
  
 -enum E { X(i32) = 10 }
 +enum E {
@@ -2306,15 +2219,6 @@ expression: cleaned_diff
  }
  
  struct A<const N: i32 = i32::MAX>;
- 
- fn foo() {
-     match () {
--        _ => {}
--        () => {}
--        [] => {}
-+        _ => {},
-+        () => {},
-+        [] => {},
      }
  }
  
@@ -2333,8 +2237,7 @@ expression: cleaned_diff
  
  impl T for Foo {
 -    default async unsafe fn foo() {}
-+    async unsafe fn foo() {
-+    }
++    async unsafe fn foo() {}
  }
  
  fn foo() {
@@ -2354,21 +2257,15 @@ expression: cleaned_diff
 +    );
  
  impl S {
--    fn a(self: &Self) {}
--    fn b(mut self: Box<Self>) {}
-+    fn a(self: &Self) {
-+    }
+     fn a(self: &Self) {}
 +
-+    fn b(mut self: Box<Self>) {
-+    }
+     fn b(mut self: Box<Self>) {}
  }
  
- fn foo() {
      match () {
          _ => (),
--        _ => {}
+         _ => {}
 -        _ => ()
-+        _ => {},
 +        _ => (),
      }
  }
@@ -2496,12 +2393,8 @@ expression: cleaned_diff
  
  fn foo() {
      82 as i32;
-     0x36 as u8 <= 0x37;
- }
  
--fn f(#[attr1] pat: Type) {}
-+fn f(#[attr1] pat: Type) {
-+}
+ fn f(#[attr1] pat: Type) {}
  
 -struct S (#[attr] f32);
 +struct S(f32);
@@ -2522,10 +2415,9 @@ expression: cleaned_diff
  
  fn for_trait<F>()
  where
-    for<'a> F: Fn(&'a str)
+-   for<'a> F: Fn(&'a str)
 -{ }
-+{
-+}
++   for<'a> F: Fn(&'a str) {}
  
 -#!/usr/bin/env cargo
 +#
@@ -2535,12 +2427,8 @@ expression: cleaned_diff
 -clap = { version = "4.2", features = ["derive"] }
 ----
  
--fn main() {}
-+fn main() {
-+}
+ fn main() {}
  
- fn foo() {
-     loop {
      }
  }
  
@@ -2548,16 +2436,12 @@ expression: cleaned_diff
 -trait Z<U> = where Self: T<U>;
 +trait Z<U>
 +where U: Copy {}
- 
--const fn foo(_: impl const Trait) {}
++
 +trait Z<U>
 +where Self: T<U> {}
-+
-+const fn foo(_: impl const Trait) {
-+}
  
- fn foo() {
-     become foo();
+ const fn foo(_: impl const Trait) {}
+ 
  
  struct A<const N: i32 = -1>;
  
@@ -2598,70 +2482,22 @@ expression: cleaned_diff
 +    fn b() {}
 +}
  
--fn foo() -> Box<T + 'f> {}
--fn foo() -> Box<dyn T + 'f> {}
-+fn foo() -> Box<T + 'f> {
-+}
+ fn foo() -> Box<T + 'f> {}
 +
-+fn foo() -> Box<dyn T + 'f> {
-+}
+ fn foo() -> Box<dyn T + 'f> {}
  
  fn main() {
-     match () {
-     }
- }
- 
--fn async_foo(_: impl async Fn(&i32)) {}
-+fn async_foo(_: impl async Fn(&i32)) {
-+}
- 
--fn foo<#[lt_attr] 'a, #[t_attr] T>() {}
-+fn foo<#[lt_attr] 'a, #[t_attr] T>() {
-+}
- 
- type T = ();
  
  impl F {
      type A = i32;
 +
      const B: i32 = 92;
--    fn foo() {}
--    fn bar(&self) {}
 +
-+    fn foo() {
-+    }
+     fn foo() {}
 +
-+    fn bar(&self) {
-+    }
+     fn bar(&self) {}
  }
  
--fn f<'a: 'b>() {}
-+fn f<'a: 'b>() {
-+}
- 
--fn f(#[must_use] self) {}
-+fn f(#[must_use] self) {
-+}
- 
- fn main() {
-     let m!(x) = 0;
- 
- mod a;
- 
--fn foo() {}
-+fn foo() {
-+}
- 
- type T = S<'static>;
- 
-     --1;
- }
- 
--fn foo(x: i32) {}
-+fn foo(x: i32) {
-+}
- 
- fn main() {
      foo(loop {});
  }
  
@@ -2677,35 +2513,23 @@ expression: cleaned_diff
  
  /// Example
 -
--fn test() {}
-+fn test() {
-+}
+ fn test() {}
  
  static FOO: u32 = 1;
 +
  static mut BAR: i32 = 92;
  
--fn a() {}
--pub fn b() {}
-+fn a() {
-+}
+ fn a() {}
 +
-+pub fn b() {
-+}
+ pub fn b() {}
 +
  pub macro m($:ident) {}
--pub(crate) fn c() {}
--pub(super) fn d() {}
--pub(in foo::bar::baz) fn e() {}
 +
-+pub(crate) fn c() {
-+}
+ pub(crate) fn c() {}
 +
-+pub(super) fn d() {
-+}
+ pub(super) fn d() {}
 +
-+pub(in foo::bar::baz) fn e() {
-+}
+ pub(in foo::bar::baz) fn e() {}
 +use foo::bar::baz;
  
  use ::foo::bar::baz;
@@ -2770,16 +2594,13 @@ expression: cleaned_diff
 +    B(i8, i8),
  }
  
--fn foo(-128..=127: i8) {}
-+fn foo(-128..=127: i8) {
-+}
+ fn foo(-128..=127: i8) {}
  
  fn test_serialization<SER>()
  where
-     SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
+-    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
 -{}
-+{
-+}
++    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug, {}
  
  struct S {
 -    r#foo: u32
@@ -2842,39 +2663,48 @@ expression: cleaned_diff
      }
  }
  
-     for<'a> F: Fn(&'a str),
- {
- }
+ 
+ fn for_trait<F>()
+ where
+-    for<'a> F: Fn(&'a str),
+-{
+-}
++    for<'a> F: Fn(&'a str), {}
 +
  fn for_ref<F>()
  where
-     for<'a> &'a F: Debug,
- {
- }
+-    for<'a> &'a F: Debug,
+-{
+-}
++    for<'a> &'a F: Debug, {}
 +
  fn for_parens<F>()
  where
-     for<'a> (&'a F): Fn(&'a str),
- {
- }
+-    for<'a> (&'a F): Fn(&'a str),
+-{
+-}
++    for<'a> (&'a F): Fn(&'a str), {}
 +
  fn for_slice<F>()
  where
-     for<'a> [&'a F]: Eq,
- {
- }
+-    for<'a> [&'a F]: Eq,
+-{
+-}
++    for<'a> [&'a F]: Eq, {}
 +
  fn for_qpath<T>(_t: &T)
  where
-     for<'a> <&'a T as Baz>::Foo: Iterator,
- {
- }
+-    for<'a> <&'a T as Baz>::Foo: Iterator,
+-{
+-}
++    for<'a> <&'a T as Baz>::Foo: Iterator, {}
 +
  fn for_for_fn<T>()
  where
-     for<'a> for<'b> fn(&'a T, &'b T): Copy,
- {
- }
+-    for<'a> for<'b> fn(&'a T, &'b T): Copy,
+-{
+-}
++    for<'a> for<'b> fn(&'a T, &'b T): Copy, {}
  
 -#![attr]
 -#![attr(true)]
@@ -3011,15 +2841,11 @@ expression: cleaned_diff
 -use foo::{a as b, *, ::*, ::foo as x};
 +use foo::{a as b, *, ::foo as x, ::*};
  
--fn g1(#[attr1] #[attr2] pat: Type) {}
--fn g2(#[attr1] x: u8) {}
-+fn g1(#[attr1] #[attr2] pat: Type) {
-+}
+ fn g1(#[attr1] #[attr2] pat: Type) {}
++
+ fn g2(#[attr1] x: u8) {}
  
 -extern "C" { fn printf(format: *const i8, #[attr] ...) -> i32; }
-+fn g2(#[attr1] x: u8) {
-+}
-+
 +fn printf(format: *const i8, #[attr] ...) -> i32;
  
  trait Foo {
@@ -3035,32 +2861,27 @@ expression: cleaned_diff
 -     fn g5<'a>(#[attr] &'a mut self) {}
 -     fn c(#[attr] self: Self) {}
 -     fn d(#[attr] self: Rc<Self>) {}
-+    fn f(#[must_use] self) {
-+    }
++    fn f(#[must_use] self) {}
 +
-+    fn g1(#[attr] self) {
-+    }
++    fn g1(#[attr] self) {}
 +
-+    fn g2(#[attr] &self) {
-+    }
++    fn g2(#[attr] &self) {}
 +
-+    fn g3<'a>(#[attr] &mut self) {
-+    }
++    fn g3<'a>(#[attr] &mut self) {}
 +
-+    fn g4<'a>(#[attr] &'a self) {
-+    }
++    fn g4<'a>(#[attr] &'a self) {}
 +
-+    fn g5<'a>(#[attr] &'a mut self) {
-+    }
++    fn g5<'a>(#[attr] &'a mut self) {}
 +
-+    fn c(#[attr] self: Self) {
-+    }
++    fn c(#[attr] self: Self) {}
 +
-+    fn d(#[attr] self: Rc<Self>) {
-+    }
++    fn d(#[attr] self: Rc<Self>) {}
  }
  
- fn r#foo() {
+-fn r#foo() {
+-}
++fn r#foo() {}
+ 
  use foo;
  use ::bar;
  
@@ -3103,9 +2924,7 @@ expression: cleaned_diff
 -use foo::{};
 -use ::foo::{a, b, c};
  
--fn foo(x: impl std::future::Future<Output = i32>) {}
-+fn foo(x: impl std::future::Future<Output = i32>) {
-+}
+ fn foo(x: impl std::future::Future<Output = i32>) {}
  
  fn main() {
 -    foo(async move { 12 })
@@ -3134,47 +2953,33 @@ expression: cleaned_diff
 +
  struct K<'a: 'd, 'd: 'a + 'b, T: 'a + 'd + Clone>;
  
--async fn foo() {}
+ async fn foo() {}
 -extern fn foo() {}
--const fn foo() {}
--const unsafe fn foo() {}
++
++fn foo() {}
++
+ const fn foo() {}
++
+ const unsafe fn foo() {}
 -unsafe extern "C" fn foo() {}
--unsafe fn foo() {}
--async unsafe fn foo() {}
--const unsafe fn bar() {}
-+async fn foo() {
-+}
++
+ unsafe fn foo() {}
++
++unsafe fn foo() {}
++
+ async unsafe fn foo() {}
++
+ const unsafe fn bar() {}
  
 -unsafe trait T {}
 -auto trait T {}
 -unsafe auto trait T {}
-+fn foo() {
++trait T {
 +}
  
 -unsafe impl Foo {}
 -default impl Foo {}
 -unsafe default impl Foo {}
-+const fn foo() {
-+}
-+
-+const unsafe fn foo() {
-+}
-+
-+unsafe fn foo() {
-+}
-+
-+unsafe fn foo() {
-+}
-+
-+async unsafe fn foo() {
-+}
-+
-+const unsafe fn bar() {
-+}
-+
-+trait T {
-+}
-+
 +trait T {
 +}
 +
@@ -3218,12 +3023,14 @@ expression: cleaned_diff
  pub fn foo<S: Iterator>() -> String
  where
      <S as Iterator>::Item: Eq,
+ }
+ 
  mod c {
-     fn foo() {
+-    fn foo() {
++    fn foo() {}
++    struct S {
      }
 -    struct S {}
-+    struct S {
-+    }
  }
  
  mod d {
@@ -3232,26 +3039,11 @@ expression: cleaned_diff
  
 -fn test() where (u64, u64): Foo {}
 +fn test()
-+where (u64, u64): Foo
-+{
-+}
++where (u64, u64): Foo {}
  
--fn a() -> Foo<bar::Baz> {}
-+fn a() -> Foo<bar::Baz> {
-+}
+ fn a() -> Foo<bar::Baz> {}
  
--fn b(_: impl FnMut(x::Y)) {}
-+fn b(_: impl FnMut(x::Y)) {
-+}
- 
--fn c(_: impl FnMut(&x::Y)) {}
-+fn c(_: impl FnMut(&x::Y)) {
-+}
- 
- #[foo(a,)]
--fn foo() {}
-+fn foo() {
-+}
+ fn foo() {}
  
  type Foo<'a> = &'a (dyn Send + Sync);
 +
@@ -3349,15 +3141,6 @@ expression: cleaned_diff
  struct Foo;
  
  impl Foo {
-     }
- }
- 
--fn baz(_: bool) {}
-+fn baz(_: bool) {
-+}
- 
- fn main() {
-     baz(<Foo>::bar())
  }
  
  // https://github.com/rust-lang/rust-analyzer/pull/983
@@ -3374,47 +3157,29 @@ expression: cleaned_diff
  }
  
  trait T {
--    fn f1((a, b): (usize, usize)) {}
--    fn f2(S { a, b }: S) {}
--    fn f3(NewType(a): NewType) {}
--    fn f4(&&a: &&usize) {}
-+    fn f1((a, b): (usize, usize)) {
-+    }
+     fn f1((a, b): (usize, usize)) {}
 +
-+    fn f2(S { a, b }: S) {
-+    }
+     fn f2(S { a, b }: S) {}
 +
-+    fn f3(NewType(a): NewType) {
-+    }
+     fn f3(NewType(a): NewType) {}
 +
-+    fn f4(&&a: &&usize) {
-+    }
+     fn f4(&&a: &&usize) {}
 +
      fn bar(_: u64, mut x: i32);
  }
  
 -fn f<T>() where T: Fn() -> u8 + Send {}
 +fn f<T>()
-+where T: Fn() -> u8 + Send
-+{
-+}
++where T: Fn() -> u8 + Send {}
  
  impl U {
--    fn f1((a, b): (usize, usize)) {}
--    fn f2(S { a, b }: S) {}
--    fn f3(NewType(a): NewType) {}
--    fn f4(&&a: &&usize) {}
-+    fn f1((a, b): (usize, usize)) {
-+    }
+     fn f1((a, b): (usize, usize)) {}
 +
-+    fn f2(S { a, b }: S) {
-+    }
+     fn f2(S { a, b }: S) {}
 +
-+    fn f3(NewType(a): NewType) {
-+    }
+     fn f3(NewType(a): NewType) {}
 +
-+    fn f4(&&a: &&usize) {
-+    }
+     fn f4(&&a: &&usize) {}
  }
  
  trait T {
@@ -3426,11 +3191,9 @@ expression: cleaned_diff
 +
 +    const f: u8 = 0;
 +
-+    fn foo() {
-+    }
++    fn foo() {}
 +
-+    unsafe fn bar() {
-+    }
++    unsafe fn bar() {}
  }
  
  impl T for Foo {
@@ -3442,11 +3205,9 @@ expression: cleaned_diff
 +
 +    const f: u8 = 0;
 +
-+    fn foo() {
-+    }
++    fn foo() {}
 +
-+    unsafe fn bar() {
-+    }
++    unsafe fn bar() {}
  }
  
 -default impl T for () {}
@@ -3464,11 +3225,7 @@ expression: cleaned_diff
 +
  #[cfg(test)]
  #[Ignore]
--fn foo() {}
-+fn foo() {
-+}
- 
- #[path = "a.rs"]
+ fn foo() {}
  mod b;
  
  struct S1<T>;
@@ -3505,7 +3262,12 @@ expression: cleaned_diff
  struct S15<'a, T, U>;
  
  trait Runnable {
+     fn fn_with_expr(x: [i32; 1]);
  }
+ 
+-fn foo() {
+-}
++fn foo() {}
  
  fn foo() {
 -   for _x in 0 .. (0 .. {1 + 2}).sum::<u32>() {
@@ -4490,12 +4252,6 @@ expression: cleaned_diff
  #[rustfmt::skip]
  mod generated;
  
- use crate::Edition;
- 
--#[allow(unreachable_pub)]
- pub use self::generated::SyntaxKind;
- 
- impl From<u16> for SyntaxKind {
      #[inline]
      fn from(d: u16) -> SyntaxKind {
          assert!(d <= (SyntaxKind::__LAST as u16));
@@ -6229,13 +5985,6 @@ expression: cleaned_diff
  const TYPE_PATH_SEGMENT_RECOVERY_SET: TokenSet = types::TYPE_RECOVERY_SET;
  
  fn path_segment(p: &mut Parser<'_>, mode: Mode, first: bool) -> Option<CompletedMarker> {
- 
- fn opt_path_args(p: &mut Parser<'_>, mode: Mode) {
-     match mode {
--        Mode::Use | Mode::Attr | Mode::Vis => {}
-+        Mode::Use | Mode::Attr | Mode::Vis => {},
-         Mode::Type => opt_path_type_args(p),
-         Mode::Expr => generic_args::opt_generic_arg_list_expr(p),
      }
  }
  

@@ -385,7 +385,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
                 panic!()
             }
 
-            inspect::ProbeKind::NormalizedSelfTyAssembly | inspect::ProbeKind::UnsizeAssembly => {},
+            inspect::ProbeKind::NormalizedSelfTyAssembly | inspect::ProbeKind::UnsizeAssembly => {}
 
             // We add a candidate even for the root evaluation if there
             // is only one way to prove a given goal, e.g. for `WellFormed`.

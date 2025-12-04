@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54427 bytes
+Chloro size:   54426 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -81,14 +81,6 @@ Rustfmt size:  54481 bytes
                  for (local_id, param) in params.iter_type_or_consts() {
                      if let Some(name) = &param.name() {
                          let id = TypeOrConstParamId { parent, local_id };
-                     acc.add_local(e.name(), e.binding());
-                 });
-             }
--            Scope::MacroDefScope(_) => {}
-+            Scope::MacroDefScope(_) => {},
-         }
-     }
- }
          &self,
          db: &dyn DefDatabase,
          path: &ModPath,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5602 bytes
+Chloro size:   5601 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -17,14 +17,6 @@ Rustfmt size:  5891 bytes
  };
  
  #[derive(Default, Debug, Clone)]
-                 None => {
-                     panic!("reverted opaque type inference that was never registered: {key:?}")
-                 }
--                Some(_) => {}
-+                Some(_) => {},
-             }
-         }
-     }
      }
  
      pub(crate) fn is_empty(&self) -> bool {

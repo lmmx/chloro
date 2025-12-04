@@ -73,7 +73,7 @@ pub(crate) fn complete_type_path(
                 None::<()>
             });
         }
-        Qualified::With { resolution: None, .. } => {},
+        Qualified::With { resolution: None, .. } => {}
         Qualified::With { resolution: Some(resolution), .. } => {
             // Add associated types on type parameters and `Self`.
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {

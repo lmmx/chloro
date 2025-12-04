@@ -591,8 +591,8 @@ impl<'db> InferenceTable<'db> {
         let result = next_trait_solve_in_ctxt(&self.infer_ctxt, goal);
         tracing::debug!(?result);
         match result {
-            Ok((_, Certainty::Yes)) => {},
-            Err(rustc_type_ir::solve::NoSolution) => {},
+            Ok((_, Certainty::Yes)) => {}
+            Err(rustc_type_ir::solve::NoSolution) => {}
             Ok((_, Certainty::Maybe { .. })) => {
                 self.fulfillment_cx.register_predicate_obligation(
                     &self.infer_ctxt,

@@ -591,6 +591,6 @@ const fn f(x: i32) -> i32 {
             assert!(matches!(hir_start, Expr::Path { .. }));
             assert!(matches!(hir_end, Expr::Path { .. }));
         }
-        _ => {},
+        _ => {}
     }
 }

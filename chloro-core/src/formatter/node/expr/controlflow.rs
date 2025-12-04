@@ -1,3 +1,4 @@
+use crate::formatter::printer::Printer;
 use crate::formatter::write_indent;
 use ra_ap_syntax::SyntaxNode;
 use ra_ap_syntax::ast::{self, AstNode, HasAttrs, HasLoopBody};
@@ -197,8 +198,7 @@ pub fn format_match_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
                         // Check if it's an empty block - keep it inline as {}
                         if let ast::Expr::BlockExpr(block) = &expr {
                             if is_block_empty(block) {
-                                buf.push_str("{}");
-                                buf.push_str(",\n");
+                                buf.newline("{}");
                                 prev_was_arm = true;
                                 continue;
                             }

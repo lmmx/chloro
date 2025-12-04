@@ -7,14 +7,19 @@ pub mod grouping;
 pub mod sort;
 
 use crate::formatter::config::MAX_WIDTH;
+use crate::formatter::printer::Printer;
 use crate::formatter::write_indent;
 
 pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
-    write_indent(buf, indent);
     let use_ = match ast::Use::cast(node.clone()) {
         Some(u) => u,
         None => return,
     };
+
+    // Handle attributes (like #[cfg(...)])
+    buf.attrs(&use_, indent);
+
+    buf.indent(indent);
 
     let vis_text = if let Some(vis) = use_.visibility() {
         format!("{} ", vis.syntax().text())

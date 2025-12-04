@@ -197,6 +197,6 @@ pub(crate) fn complete_pattern_path(
             });
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {},
+        Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
     }
 }

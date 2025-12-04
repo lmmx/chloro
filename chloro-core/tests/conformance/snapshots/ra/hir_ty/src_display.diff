@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99285 bytes
+Chloro size:   99275 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -31,14 +31,10 @@ Rustfmt size:  99713 bytes
  };
  
 -pub trait HirWrite: fmt::Write {
--    fn start_location_link(&mut self, _location: ModuleDefId) {}
--    fn end_location_link(&mut self) {}
 +pub trait HirWrite {
-+    fn start_location_link(&mut self, _location: ModuleDefId) {
-+    }
+     fn start_location_link(&mut self, _location: ModuleDefId) {}
 +
-+    fn end_location_link(&mut self) {
-+    }
+     fn end_location_link(&mut self) {}
  }
  
 -// String will ignore link metadata

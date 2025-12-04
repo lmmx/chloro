@@ -1,3 +1,4 @@
+use crate::formatter::printer::Printer;
 use crate::formatter::write_indent;
 use ra_ap_syntax::{
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
@@ -192,43 +193,54 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     // Body or semicolon
     if let Some(body) = func.body() {
-        // Has a body - add opening brace
-        if func.where_clause().is_some() {
-            buf.push('\n');
-            write_indent(buf, indent);
-            buf.push_str("{\n");
+        // Check if body is empty
+        let is_empty = if let Some(stmt_list) = body.stmt_list() {
+            stmt_list.statements().next().is_none()
+                && stmt_list.tail_expr().is_none()
+                && !stmt_list
+                    .syntax()
+                    .children_with_tokens()
+                    .any(|c| matches!(&c, NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT))
         } else {
-            buf.push_str(" {\n");
-        }
+            true
+        };
 
-        // Check if the body is a single record expression (tail expression)
-        let stmt_list = body.stmt_list();
-        if let Some(stmt_list) = stmt_list {
-            // Use our block formatting which handles record expressions
-            format_stmt_list(stmt_list.syntax(), buf, indent + 4);
+        if is_empty {
+            // Empty body - keep on one line
+            buf.newline(" {}");
         } else {
-            // Fallback: Process body contents directly
-            for child in body.syntax().children_with_tokens() {
-                match child {
-                    NodeOrToken::Node(n) => {
-                        format_block_expr_contents(&n, buf, indent + 4);
-                    }
-                    NodeOrToken::Token(t) => {
-                        if t.kind() == SyntaxKind::COMMENT {
-                            write_indent(buf, indent + 4);
-                            buf.push_str(t.text());
-                            buf.push('\n');
+            // Has a body - add opening brace
+            if func.where_clause().is_some() {
+                buf.open_brace_newline(indent);
+            } else {
+                buf.open_brace();
+            }
+
+            // Check if the body is a single record expression (tail expression)
+            let stmt_list = body.stmt_list();
+            if let Some(stmt_list) = stmt_list {
+                // Use our block formatting which handles record expressions
+                format_stmt_list(stmt_list.syntax(), buf, indent + 4);
+            } else {
+                // Fallback: Process body contents directly
+                for child in body.syntax().children_with_tokens() {
+                    match child {
+                        NodeOrToken::Node(n) => {
+                            format_block_expr_contents(&n, buf, indent + 4);
+                        }
+                        NodeOrToken::Token(t) => {
+                            if t.kind() == SyntaxKind::COMMENT {
+                                buf.line(indent + 4, t.text());
+                            }
                         }
                     }
                 }
             }
-        }
 
-        write_indent(buf, indent);
-        buf.push('}');
+            buf.close_brace_ln(indent);
+        }
     } else {
         // No body - just semicolon
-        buf.push(';');
+        buf.newline(";");
     }
-    buf.push('\n');
 }

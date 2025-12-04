@@ -143,8 +143,7 @@ impl DropScopeToken {
 }
 
 impl Drop for DropScopeToken {
-    fn drop(&mut self) {
-    }
+    fn drop(&mut self) {}
 }
 
 // Uncomment this to make `DropScopeToken` a drop bomb. Unfortunately we can't do this in release, since
