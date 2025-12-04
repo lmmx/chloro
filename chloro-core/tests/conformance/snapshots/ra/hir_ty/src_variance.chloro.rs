@@ -83,19 +83,12 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
 }
 
 // pub(crate) fn variances_of_cycle_fn(
-
 //     _db: &dyn HirDatabase,
-
 //     _result: &Option<Arc<[Variance]>>,
-
 //     _count: u32,
-
 //     _def: GenericDefId,
-
 // ) -> salsa::CycleRecoveryAction<Option<Arc<[Variance]>>> {
-
 //     salsa::CycleRecoveryAction::Iterate
-
 // }
 fn glb(v1: Variance, v2: Variance) -> Variance {
     // Greatest lower bound of the variance lattice as defined in The Paper:

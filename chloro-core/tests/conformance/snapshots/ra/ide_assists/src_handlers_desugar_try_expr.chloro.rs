@@ -12,41 +12,23 @@ use syntax::{
 use crate::assist_context::{AssistContext, Assists};
 
 // Assist: desugar_try_expr_match
-
 //
-
 // Replaces a `try` expression with a `match` expression.
-
 //
-
 // ```
-
 // # //- minicore: try, option
-
 // fn handle() {
-
 //     let pat = Some(true)$0?;
-
 // }
-
 // ```
-
 // ->
-
 // ```
-
 // fn handle() {
-
 //     let pat = match Some(true) {
-
 //         Some(it) => it,
-
 //         None => return None,
-
 //     };
-
 // }
-
 // ```
 pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let question_tok = ctx.find_token_syntax_at_offset(T![?])?;

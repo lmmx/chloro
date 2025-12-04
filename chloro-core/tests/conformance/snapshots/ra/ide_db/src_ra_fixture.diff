@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18130 bytes
-Chloro size:   18070 bytes
+Chloro size:   18059 bytes
 Rustfmt size:  18477 bytes
 
 ✗ Outputs DIFFER
@@ -146,40 +146,10 @@ Rustfmt size:  18477 bytes
      }
  }
  
- // Deliberately do not implement that, as it's easy to get things misbehave and be treated with the wrong FileId:
--//
--// impl UpmapFromRaFixture for FileId {
--//     fn upmap_from_ra_fixture(
--//         self,
--//         _analysis: &RaFixtureAnalysis,
--//         _virtual_file_id: FileId,
--//         real_file_id: FileId,
--//     ) -> Result<Self, ()> {
--//         Ok(real_file_id)
--//     }
--// }
- 
-+//
-+
-+// impl UpmapFromRaFixture for FileId {
-+
-+//     fn upmap_from_ra_fixture(
-+
-+//         self,
-+
-+//         _analysis: &RaFixtureAnalysis,
-+
-+//         _virtual_file_id: FileId,
-+
-+//         real_file_id: FileId,
-+
-+//     ) -> Result<Self, ()> {
-+
-+//         Ok(real_file_id)
-+
-+//     }
-+
-+// }
+ //         Ok(real_file_id)
+ //     }
+ // }
+-
  impl UpmapFromRaFixture for FilePositionWrapper<FileId> {
      fn upmap_from_ra_fixture(
          self,

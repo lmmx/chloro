@@ -1132,29 +1132,17 @@ pub trait HasModule {
 }
 
 // In theory this impl should work out for us, but rustc thinks it collides with all the other
-
 // manual impls that do not have a ModuleId container...
-
 // impl<N, ItemId, Data> HasModule for ItemId
-
 // where
-
 //     N: ItemTreeNode,
-
 //     ItemId: for<'db> Lookup<Database<'db> = dyn DefDatabase + 'db, Data = Data> + Copy,
-
 //     Data: ItemTreeLoc<Id = N, Container = ModuleId>,
-
 // {
-
 //     #[inline]
-
 //     fn module(&self, db: &dyn DefDatabase) -> ModuleId {
-
 //         self.lookup(db).container()
-
 //     }
-
 // }
 impl<N, ItemId> HasModule for ItemId
 where
@@ -1168,27 +1156,16 @@ where
 }
 
 // Technically this does not overlap with the above, but rustc currently forbids this, hence why we
-
 // need to write the 3 impls manually instead
-
 // impl<N, ItemId> HasModule for ItemId
-
 // where
-
 //     N: ItemTreeModItemNode,
-
 //     ItemId: for<'db> Lookup<Database<'db> = dyn DefDatabase + 'db, Data = AssocItemLoc<N>> + Copy,
-
 // {
-
 //     #[inline]
-
 //     fn module(&self, db: &dyn DefDatabase) -> ModuleId {
-
 //         self.lookup(db).container.module(db)
-
 //     }
-
 // }
 #[inline]
 fn module_for_assoc_item_loc<'db>(
@@ -1431,45 +1408,25 @@ pub struct UnresolvedMacro {
 pub struct SyntheticSyntax;
 
 // Feature: Completions Attribute
-
 // Crate authors can opt their type out of completions in some cases.
-
 // This is done with the `#[rust_analyzer::completions(...)]` attribute.
-
 //
-
 // All completable things support `#[rust_analyzer::completions(ignore_flyimport)]`,
-
 // which causes the thing to get excluded from flyimport completion. It will still
-
 // be completed when in scope. This is analogous to the setting `rust-analyzer.completion.autoimport.exclude`
-
 // with `"type": "always"`.
-
 //
-
 // In addition, traits support two more modes: `#[rust_analyzer::completions(ignore_flyimport_methods)]`,
-
 // which means the trait itself may still be flyimported but its methods won't, and
-
 // `#[rust_analyzer::completions(ignore_methods)]`, which means the methods won't be completed even when
-
 // the trait is in scope (but the trait itself may still be completed). The methods will still be completed
-
 // on `dyn Trait`, `impl Trait` or where the trait is specified in bounds. These modes correspond to
-
 // the settings `rust-analyzer.completion.autoimport.exclude` with `"type": "methods"` and
-
 // `rust-analyzer.completion.excludeTraits`, respectively.
-
 //
-
 // Malformed attributes will be ignored without warnings.
-
 //
-
 // Note that users have no way to override this attribute, so be careful and only include things
-
 // users definitely do not want to be completed!
 /// `#[rust_analyzer::completions(...)]` options.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

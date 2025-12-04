@@ -7,11 +7,8 @@ use syntax::{
 };
 
 // NOTES :
-
 // We generate erroneous code if a function is declared const (E0379)
-
 // This is left to the user to correct as our only option is to remove the
-
 // function completely which we should not be doing.
 pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // Get AST Node

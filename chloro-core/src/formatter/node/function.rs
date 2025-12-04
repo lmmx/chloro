@@ -1,8 +1,7 @@
 use crate::formatter::printer::Printer;
-use crate::formatter::write_indent;
 use ra_ap_syntax::{
-    AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
-    ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
+    ast::{self, HasGenericParams, HasName, HasVisibility},
 };
 
 use super::{format_block_expr_contents, format_stmt_list};
@@ -14,26 +13,15 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
     };
 
     // Format doc comments using the HasDocComments trait
-    for doc_comment in func.doc_comments() {
-        write_indent(buf, indent);
-        buf.push_str(doc_comment.text().trim());
-        buf.push('\n');
-    }
+    buf.doc_comments(&func, indent);
 
     // Format attributes using the HasAttrs trait
-    for attr in func.attrs() {
-        write_indent(buf, indent);
-        buf.push_str(&attr.syntax().text().to_string());
-        buf.push('\n');
-    }
+    buf.attrs(&func, indent);
 
-    write_indent(buf, indent);
+    buf.indent(indent);
 
     // Visibility
-    if let Some(vis) = func.visibility() {
-        buf.push_str(&vis.syntax().text().to_string());
-        buf.push(' ');
-    }
+    buf.visibility(&func);
 
     // Modifiers
     if func.const_token().is_some() {
@@ -57,6 +45,9 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
     if let Some(generics) = func.generic_param_list() {
         buf.push_str(&generics.syntax().text().to_string());
     }
+
+    // Track if we used multi-line params
+    let mut used_multiline_params = false;
 
     // Parameters
     if let Some(params) = func.param_list() {
@@ -90,50 +81,42 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         }
 
         // Calculate the full line length if we format on single line
-        // Format: "pub fn name(params) -> ReturnType"
         let mut hypothetical_line_len = indent;
 
-        // Add visibility
         if let Some(vis) = func.visibility() {
             hypothetical_line_len += u32::from(vis.syntax().text().len()) as usize + 1;
         }
 
-        // Add modifiers
         if func.const_token().is_some() {
-            hypothetical_line_len += 6; // "const "
+            hypothetical_line_len += 6;
         }
         if func.async_token().is_some() {
-            hypothetical_line_len += 6; // "async "
+            hypothetical_line_len += 6;
         }
         if func.unsafe_token().is_some() {
-            hypothetical_line_len += 7; // "unsafe "
+            hypothetical_line_len += 7;
         }
 
         hypothetical_line_len += 3; // "fn "
 
-        // Add name
         if let Some(name) = func.name() {
             hypothetical_line_len += name.text().len();
         }
 
-        // Add generics
         if let Some(generics) = func.generic_param_list() {
             hypothetical_line_len += u32::from(generics.syntax().text().len()) as usize;
         }
 
-        // Add parameters with parens
-        hypothetical_line_len += 2 + single_line_content.len(); // "(content)"
+        hypothetical_line_len += 2 + single_line_content.len();
 
-        // Add return type
         if let Some(ret) = func.ret_type() {
-            hypothetical_line_len += 4; // " -> "
+            hypothetical_line_len += 4;
             if let Some(ty) = ret.ty() {
                 hypothetical_line_len += u32::from(ty.syntax().text().len()) as usize;
             }
         }
 
-        // Add space before opening brace or semicolon
-        hypothetical_line_len += 2; // " {" or ";"
+        hypothetical_line_len += 2;
 
         let is_single_line = hypothetical_line_len < crate::formatter::config::MAX_WIDTH;
 
@@ -154,22 +137,19 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
             }
             buf.push(')');
         } else {
+            used_multiline_params = true;
             buf.push('\n');
             let inner_indent = indent + 4;
 
             if let Some(self_param) = params.self_param() {
-                write_indent(buf, inner_indent);
-                buf.push_str(&self_param.syntax().text().to_string());
-                buf.push_str(",\n");
+                buf.line(inner_indent, &format!("{},", self_param.syntax().text()));
             }
 
             for p in params_vec {
-                write_indent(buf, inner_indent);
-                buf.push_str(&p);
-                buf.push_str(",\n");
+                buf.line(inner_indent, &format!("{},", p));
             }
 
-            write_indent(buf, indent);
+            buf.indent(indent);
             buf.push(')');
         }
     } else {
@@ -187,7 +167,7 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
     // Where clause
     if let Some(where_clause) = func.where_clause() {
         buf.push('\n');
-        write_indent(buf, indent);
+        buf.indent(indent);
         buf.push_str(&where_clause.syntax().text().to_string());
     }
 
@@ -205,9 +185,23 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
             true
         };
 
-        if is_empty {
+        // Keep empty body expanded if:
+        // - params were multi-line, OR
+        // - there's a where clause, OR
+        // - the function has certain attributes that suggest it's a stub
+        let keep_expanded = used_multiline_params || func.where_clause().is_some();
+
+        if is_empty && !keep_expanded {
             // Empty body - keep on one line
             buf.newline(" {}");
+        } else if is_empty && keep_expanded {
+            // Empty body but keep expanded
+            if func.where_clause().is_some() {
+                buf.open_brace_newline(indent);
+            } else {
+                buf.open_brace();
+            }
+            buf.close_brace_ln(indent);
         } else {
             // Has a body - add opening brace
             if func.where_clause().is_some() {

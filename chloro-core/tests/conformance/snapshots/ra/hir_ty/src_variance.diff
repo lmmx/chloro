@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30631 bytes
+Chloro size:   30624 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -59,30 +59,10 @@ Rustfmt size:  30951 bytes
      // bivariance, at least while we don't handle lifetimes anyway.
      for variance in &mut variances {
          if *variance == Variance::Bivariant {
- }
- 
- // pub(crate) fn variances_of_cycle_fn(
--//     _db: &dyn HirDatabase,
--//     _result: &Option<Arc<[Variance]>>,
--//     _count: u32,
--//     _def: GenericDefId,
--// ) -> salsa::CycleRecoveryAction<Option<Arc<[Variance]>>> {
--//     salsa::CycleRecoveryAction::Iterate
--// }
- 
-+//     _db: &dyn HirDatabase,
-+
-+//     _result: &Option<Arc<[Variance]>>,
-+
-+//     _count: u32,
-+
-+//     _def: GenericDefId,
-+
-+// ) -> salsa::CycleRecoveryAction<Option<Arc<[Variance]>>> {
-+
-+//     salsa::CycleRecoveryAction::Iterate
-+
-+// }
+ // ) -> salsa::CycleRecoveryAction<Option<Arc<[Variance]>>> {
+ //     salsa::CycleRecoveryAction::Iterate
+ // }
+-
  fn glb(v1: Variance, v2: Variance) -> Variance {
      // Greatest lower bound of the variance lattice as defined in The Paper:
      //

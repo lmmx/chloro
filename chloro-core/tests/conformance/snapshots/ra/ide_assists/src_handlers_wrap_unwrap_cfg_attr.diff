@@ -2,59 +2,16 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18779 bytes
-Chloro size:   18813 bytes
+Chloro size:   18797 bytes
 Rustfmt size:  18779 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use crate::{AssistContext, AssistId, Assists};
- 
- // Assist: wrap_unwrap_cfg_attr
-+
- //
-+
- // Wraps an attribute to a cfg_attr attribute or unwraps a cfg_attr attribute to the inner attributes.
-+
- //
--// ```
--// #[derive$0(Debug)]
--// struct S {
--//    field: i32
--// }
--// ```
--// ->
--// ```
--// #[cfg_attr($0, derive(Debug))]
--// struct S {
--//    field: i32
--// }
-+
+ //    field: i32
+ // }
  // ```
- 
-+// #[derive$0(Debug)]
-+
-+// struct S {
-+
-+//    field: i32
-+
-+// }
-+
-+// ```
-+
-+// ->
-+
-+// ```
-+
-+// #[cfg_attr($0, derive(Debug))]
-+
-+// struct S {
-+
-+//    field: i32
-+
-+// }
-+
-+// ```
+-
  enum WrapUnwrapOption {
 -    WrapDerive { derive: TextRange, attr: ast::Attr },
 +    WrapDerive {

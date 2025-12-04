@@ -33,7 +33,7 @@ use super::printer::Printer;
 
 /// Determine if a blank line should be added between two items
 fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -> bool {
-    let result = {
+    {
         let Some(prev) = prev_kind else {
             return false;
         };
@@ -78,9 +78,7 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
                 | SyntaxKind::MACRO_DEF
                 | SyntaxKind::MACRO_CALL
         )
-    };
-
-    result
+    }
 }
 
 /// An item with its associated preceding comments and whether there's a blank line before it
@@ -94,45 +92,46 @@ struct ItemWithComments {
 fn sort_use_groups(items: &mut Vec<ItemWithComments>) {
     let mut i = 0;
     while i < items.len() {
-        if let NodeOrToken::Node(n) = &items[i].node {
-            if n.kind() == SyntaxKind::USE {
-                let start = i;
-                let mut end = i + 1;
-                while end < items.len() {
-                    if let NodeOrToken::Node(n) = &items[end].node {
-                        if n.kind() == SyntaxKind::USE && !items[end].blank_line_before {
-                            end += 1;
-                            continue;
-                        }
-                    }
-                    break;
+        if let NodeOrToken::Node(n) = &items[i].node
+            && n.kind() == SyntaxKind::USE
+        {
+            let start = i;
+            let mut end = i + 1;
+            while end < items.len() {
+                if let NodeOrToken::Node(n) = &items[end].node
+                    && n.kind() == SyntaxKind::USE
+                    && !items[end].blank_line_before
+                {
+                    end += 1;
+                    continue;
                 }
-                if end > start + 1 {
-                    items[start..end].sort_by(|a, b| {
-                        let use_a = match &a.node {
-                            NodeOrToken::Node(n) => Use::cast(n.clone()),
-                            _ => None,
-                        };
-                        let use_b = match &b.node {
-                            NodeOrToken::Node(n) => Use::cast(n.clone()),
-                            _ => None,
-                        };
-                        match (use_a, use_b) {
-                            (Some(a), Some(b)) => {
-                                let (group_a, path_a) = imports::classify_import(&a);
-                                let (group_b, path_b) = imports::classify_import(&b);
-                                group_a.cmp(&group_b).then_with(|| {
-                                    useitem::sort::sort_key(&path_a)
-                                        .cmp(&useitem::sort::sort_key(&path_b))
-                                })
-                            }
-                            _ => std::cmp::Ordering::Equal,
-                        }
-                    });
-                }
-                i = end;
-                continue;
+                break;
             }
+            if end > start + 1 {
+                items[start..end].sort_by(|a, b| {
+                    let use_a = match &a.node {
+                        NodeOrToken::Node(n) => Use::cast(n.clone()),
+                        _ => None,
+                    };
+                    let use_b = match &b.node {
+                        NodeOrToken::Node(n) => Use::cast(n.clone()),
+                        _ => None,
+                    };
+                    match (use_a, use_b) {
+                        (Some(a), Some(b)) => {
+                            let (group_a, path_a) = imports::classify_import(&a);
+                            let (group_b, path_b) = imports::classify_import(&b);
+                            group_a.cmp(&group_b).then_with(|| {
+                                useitem::sort::sort_key(&path_a)
+                                    .cmp(&useitem::sort::sort_key(&path_b))
+                            })
+                        }
+                        _ => std::cmp::Ordering::Equal,
+                    }
+                });
+            }
+            i = end;
+            continue;
         }
         i += 1;
     }
@@ -187,10 +186,10 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                     pending_comments.push(comment);
                                 }
                             }
-                        } else if t.kind() == SyntaxKind::WHITESPACE {
-                            if t.text().matches('\n').count() >= 2 {
-                                pending_blank_line = true;
-                            }
+                        } else if t.kind() == SyntaxKind::WHITESPACE
+                            && t.text().matches('\n').count() >= 2
+                        {
+                            pending_blank_line = true;
                         }
                     }
                 }
@@ -224,29 +223,50 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 buf.blank();
             }
             let mut last_kind: Option<SyntaxKind> = None;
+            let mut prev_was_standalone_comment = false;
+
             for item in other_items {
-                for comment in &item.comments {
-                    if item.blank_line_before && last_kind.is_some() {
+                // Output comments attached to this item
+                for (i, comment) in item.comments.iter().enumerate() {
+                    // Add blank line before first comment if needed
+                    if i == 0
+                        && item.blank_line_before
+                        && (last_kind.is_some() || prev_was_standalone_comment)
+                    {
                         buf.blank();
                     }
                     buf.newline(comment.text());
                 }
+
                 match item.node {
                     NodeOrToken::Node(n) => {
                         let current_kind = n.kind();
+                        // Add blank line if needed (only when no comments preceded this)
                         if item.comments.is_empty() {
-                            if item.blank_line_before && last_kind.is_some() {
+                            if item.blank_line_before
+                                && (last_kind.is_some() || prev_was_standalone_comment)
+                            {
                                 buf.blank();
-                            } else if should_add_blank_line(last_kind, current_kind) {
+                            } else if !prev_was_standalone_comment
+                                && should_add_blank_line(last_kind, current_kind)
+                            {
                                 buf.blank();
                             }
                         }
                         format_node(&n, buf, indent);
                         last_kind = Some(current_kind);
+                        prev_was_standalone_comment = false;
                     }
                     NodeOrToken::Token(t) => {
                         if t.kind() == SyntaxKind::COMMENT {
+                            // Standalone comment (not attached to an item)
+                            if item.blank_line_before
+                                && (last_kind.is_some() || prev_was_standalone_comment)
+                            {
+                                buf.blank();
+                            }
                             buf.newline(t.text());
+                            prev_was_standalone_comment = true;
                         }
                     }
                 }

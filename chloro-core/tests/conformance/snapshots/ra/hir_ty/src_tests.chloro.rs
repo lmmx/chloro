@@ -46,9 +46,7 @@ use crate::{
 };
 
 // These tests compare the inference results for all expressions in a file
-
 // against snapshots of the expected results using expect. Use
-
 // `env UPDATE_EXPECT=1 cargo test -p hir_ty` to update the snapshots.
 #[track_caller]
 fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

@@ -1448,6 +1448,7 @@ impl fmt::Display for PrettyItemStats {
         )
     }
 }
+
 // FIXME(salsa-transition): bring this back whenever we implement
 // Salsa's memory usage tracking to work with tracked functions.
 // fn syntax_len(node: SyntaxNode) -> usize {

@@ -12,51 +12,28 @@ use syntax::{
 use crate::{AssistContext, AssistId, Assists};
 
 // Assist: unwrap_option_return_type
-
 //
-
 // Unwrap the function's return type.
-
 //
-
 // ```
-
 // # //- minicore: option
-
 // fn foo() -> Option<i32>$0 { Some(42i32) }
-
 // ```
-
 // ->
-
 // ```
-
 // fn foo() -> i32 { 42i32 }
-
 // ```
-
 // Assist: unwrap_result_return_type
-
 //
-
 // Unwrap the function's return type.
-
 //
-
 // ```
-
 // # //- minicore: result
-
 // fn foo() -> Result<i32>$0 { Ok(42i32) }
-
 // ```
-
 // ->
-
 // ```
-
 // fn foo() -> i32 { 42i32 }
-
 // ```
 pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;

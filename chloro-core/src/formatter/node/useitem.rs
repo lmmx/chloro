@@ -102,14 +102,14 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
                 // Sort items using standard lexicographic ordering
                 let mut sorted_items = items;
-                sorted_items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
+                sorted_items.sort_by_key(|a| sort::sort_key(a));
 
                 // Group items by their submodule prefix
                 let mut groups = grouping::group_by_submodule(sorted_items);
 
                 // Sort within each group to maintain order
                 for group in &mut groups {
-                    group.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
+                    group.sort_by_key(|a| sort::sort_key(a));
                 }
 
                 // Write out each group
@@ -302,7 +302,7 @@ fn sort_nested_items(item: &str) -> String {
             // Parse and sort the inner items
             let inner_items = parse_items_with_nested_braces(inner);
             let mut sorted_inner = inner_items;
-            sorted_inner.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
+            sorted_inner.sort_by_key(|a| sort::sort_key(a));
 
             // Reconstruct
             let sorted_inner_str = sorted_inner.join(", ");

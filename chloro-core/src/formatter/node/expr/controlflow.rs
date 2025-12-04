@@ -114,10 +114,10 @@ fn is_block_empty(block: &ast::BlockExpr) -> bool {
             return false;
         }
         for child in stmt_list.syntax().children_with_tokens() {
-            if let NodeOrToken::Token(t) = child {
-                if t.kind() == SyntaxKind::COMMENT {
-                    return false;
-                }
+            if let NodeOrToken::Token(t) = child
+                && t.kind() == SyntaxKind::COMMENT
+            {
+                return false;
             }
         }
         true
@@ -196,12 +196,12 @@ pub fn format_match_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
                     // Arm expression
                     if let Some(expr) = arm.expr() {
                         // Check if it's an empty block - keep it inline as {}
-                        if let ast::Expr::BlockExpr(block) = &expr {
-                            if is_block_empty(block) {
-                                buf.newline("{}");
-                                prev_was_arm = true;
-                                continue;
-                            }
+                        if let ast::Expr::BlockExpr(block) = &expr
+                            && is_block_empty(block)
+                        {
+                            buf.newline("{}");
+                            prev_was_arm = true;
+                            continue;
                         }
 
                         let is_block = matches!(expr, ast::Expr::BlockExpr(_));

@@ -68,41 +68,23 @@ pub struct Declaration {
 }
 
 // Feature: Find All References
-
 //
-
 // Shows all references of the item at the cursor location. This includes:
-
 // - Direct references to variables, functions, types, etc.
-
 // - Constructor/initialization references when cursor is on struct/enum definition tokens
-
 // - References in patterns and type contexts
-
 // - References through dereferencing and borrowing
-
 // - References in macro expansions
-
 //
-
 // Special handling for constructors:
-
 // - When the cursor is on `{`, `(`, or `;` in a struct/enum definition
-
 // - When the cursor is on the type name in a struct/enum definition
-
 // These cases will show only constructor/initialization usages of the type
-
 //
-
 // | Editor  | Shortcut |
-
 // |---------|----------|
-
 // | VS Code | <kbd>Shift+Alt+F12</kbd> |
-
 //
-
 // ![Find All References](https://user-images.githubusercontent.com/48062697/113020670-b7c34f00-917a-11eb-8003-370ac5f2b3cb.gif)
 #[derive(Debug)]
 pub struct FindAllRefsConfig<'a> {

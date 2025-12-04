@@ -86,9 +86,7 @@ pub(crate) struct CargoTestHandle {
 }
 
 // Example of a cargo test command:
-
 //
-
 // cargo test --package my-package --bin my_bin --no-fail-fast -- module::func -Z unstable-options --format=json
 #[derive(Debug, Clone)]
 pub(crate) struct TestTarget {

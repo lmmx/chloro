@@ -1176,7 +1176,8 @@ impl<'db> Interner for DbInterner<'db> {
         self,
         _def_id: Self::DefId,
         _args: Self::GenericArgs,
-    ) {}
+    ) {
+    }
 
     fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
     where
