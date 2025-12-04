@@ -1,3 +1,7 @@
+use crate::{
+    AssistConfig,
+    assist_context::{AssistContext, Assists},
+};
 use hir::{HasCrate, Semantics};
 use ide_db::{
     RootDatabase,
@@ -12,10 +16,6 @@ use syntax::{
         HasTypeBounds, HasVisibility, edit::AstNodeEdit, make,
     },
     syntax_editor::Position,
-};
-use crate::{
-    AssistConfig,
-    assist_context::{AssistContext, Assists},
 };
 
 pub(crate) fn generate_blanket_trait_impl(

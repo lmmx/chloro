@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43922 bytes
+Chloro size:   43921 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -13,23 +13,15 @@ Rustfmt size:  44130 bytes
  //! has a `visibility`, which defines a search scope.
  //! Note that the reference search is possible for not all of the classified items.
  
--// FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).
+ // FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).
 -
--use crate::RootDatabase;
--use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
--use crate::famous_defs::FamousDefs;
- use arrayvec::ArrayVec;
- use either::Either;
- use hir::{
+ use crate::RootDatabase;
+ use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
+ use crate::famous_defs::FamousDefs;
      match_ast,
  };
  
 -// FIXME: a more precise name would probably be `Symbol`?
-+// FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).
-+use crate::RootDatabase;
-+use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
-+use crate::famous_defs::FamousDefs;
-+
  #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
  pub enum Definition {
      Macro(Macro),

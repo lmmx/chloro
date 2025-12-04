@@ -1,4 +1,11 @@
 use std::{iter, mem::discriminant};
+
+use crate::Analysis;
+use crate::{
+    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
+    doc_links::token_as_doc_comment,
+    navigation_target::{self, ToNav},
+};
 use hir::{
     AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
 };
@@ -18,13 +25,6 @@ use syntax::{
     SyntaxNode, SyntaxToken, T, TextRange,
     ast::{self, HasLoopBody},
     match_ast,
-};
-
-use crate::Analysis;
-use crate::{
-    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
-    doc_links::token_as_doc_comment,
-    navigation_target::{self, ToNav},
 };
 
 #[derive(Debug)]

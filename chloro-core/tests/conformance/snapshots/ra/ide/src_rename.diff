@@ -2,30 +2,21 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 91697 bytes
-Chloro size:   91200 bytes
+Chloro size:   91199 bytes
 Rustfmt size:  91697 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Renaming functionality.
- //!
- //! This is mostly front-end for [`ide_db::rename`], but it also includes the
- //! tests. This module also implements a couple of magic tricks, like renaming
- //! `self` and to `self` (to switch between associated function and method).
- 
-+use std::fmt::Write;
-+
- use hir::{AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics, sym};
- use ide_db::{
-     FileId, FileRange, RootDatabase,
      source_change::SourceChangeBuilder,
  };
  use itertools::Itertools;
 -use std::fmt::Write;
  use stdx::{always, format_to, never};
++use std::fmt::Write;
  use syntax::{
      AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
+     ast::{self, HasArgList, prec::ExprPrecedence},
      }
  }
  

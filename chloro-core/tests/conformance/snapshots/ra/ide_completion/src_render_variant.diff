@@ -2,22 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4854 bytes
-Chloro size:   4855 bytes
+Chloro size:   4854 bytes
 Rustfmt size:  4854 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Code common to structs, unions, and enum variants.
- 
--use crate::context::CompletionContext;
- use hir::{HasAttrs, HasCrate, HasVisibility, HirDisplay, StructKind, sym};
- use ide_db::SnippetCap;
- use itertools::Itertools;
- use syntax::SmolStr;
- 
-+use crate::context::CompletionContext;
-+
- /// A rendered struct, union, or enum variant, split into fields for actual
- /// auto-completion (`literal`, using `field: ()`) and display in the
- /// completions menu (`detail`, using `field: type`).
+✓ Outputs are IDENTICAL

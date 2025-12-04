@@ -8,10 +8,9 @@ Rustfmt size:  18737 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-+use std::iter::successors;
  use hir::Type;
  use ide_db::FxHashMap;
--use std::iter::successors;
+ use std::iter::successors;
  use syntax::{
 +    Direction,
      algo::neighbor,

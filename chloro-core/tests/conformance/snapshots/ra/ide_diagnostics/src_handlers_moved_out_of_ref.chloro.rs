@@ -1,5 +1,5 @@
-use hir::HirDisplay;
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+use hir::HirDisplay;
 
 pub(crate) fn moved_out_of_ref(
     ctx: &DiagnosticsContext<'_>,

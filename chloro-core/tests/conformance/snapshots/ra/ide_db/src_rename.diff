@@ -11,24 +11,7 @@ Rustfmt size:  29385 bytes
  //!
  //! The correct behavior in such cases is probably to show a dialog to the user.
  //! Our current behavior is ¯\_(ツ)_/¯.
--use std::fmt::{self, Display};
- 
--use crate::{
--    source_change::ChangeAnnotation,
--    text_edit::{TextEdit, TextEditBuilder},
--};
-+use std::fmt::{self, Display};
- use base_db::AnchoredPathBuf;
- use either::Either;
- use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
-     ast::{self, HasName},
- };
- 
-+use crate::{
-+    source_change::ChangeAnnotation,
-+    text_edit::{TextEdit, TextEditBuilder},
-+};
 +
+ use std::fmt::{self, Display};
+ 
  use crate::{
-     RootDatabase,
-     defs::Definition,

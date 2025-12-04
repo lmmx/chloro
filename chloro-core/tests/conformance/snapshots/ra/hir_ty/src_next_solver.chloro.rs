@@ -30,9 +30,9 @@ pub use predicate::*;
 pub use region::*;
 pub use solver::*;
 pub use ty::*;
-pub use rustc_ast_ir::Mutability;
 
 pub use crate::lower::ImplTraitIdx;
+pub use rustc_ast_ir::Mutability;
 
 pub type Binder<'db, T> = rustc_type_ir::Binder<DbInterner<'db>, T>;
 

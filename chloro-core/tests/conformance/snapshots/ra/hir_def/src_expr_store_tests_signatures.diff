@@ -8,8 +8,6 @@ Rustfmt size:  5818 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-+use expect_test::{Expect, expect};
-+use test_fixture::WithFixture;
  use crate::{
 +    GenericDefId, ModuleDefId,
      expr_store::pretty::{print_function, print_struct},
@@ -18,7 +16,7 @@ Rustfmt size:  5818 bytes
 -    GenericDefId, ModuleDefId,
  };
 -use expect_test::{expect, Expect};
--use test_fixture::WithFixture;
++use expect_test::{Expect, expect};
+ use test_fixture::WithFixture;
  
  use super::super::*;
- 

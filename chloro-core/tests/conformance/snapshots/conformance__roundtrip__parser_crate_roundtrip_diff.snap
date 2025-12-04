@@ -1153,12 +1153,13 @@ expression: cleaned_diff
 -
 -extern "C" extern "C"
 +}
++use crate::baz;
 +use ;
 +use ;
  
  use foo::bar;
 -use
- use crate::baz;
+-use crate::baz;
 -use
 -fn f() {}
 +fn f() {
@@ -2325,14 +2326,9 @@ expression: cleaned_diff
  
  use ::std;
 -use std::collections;
-+use crate::m;
  
  use self::m;
  use super::m;
--use crate::m;
- 
- fn main() {
-     let (a, b, ..) = ();
  }
  
  impl T for Foo {

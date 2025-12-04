@@ -12,6 +12,10 @@ use rustc_type_ir::{
     TyVid, UniverseIndex, Variance,
 };
 use tracing::{debug, instrument, warn};
+
+use super::{
+    PredicateEmittingRelation, Relate, RelateResult, StructurallyRelateAliases, TypeRelation,
+};
 use crate::next_solver::infer::type_variable::TypeVariableValue;
 use crate::next_solver::infer::unify_key::ConstVariableValue;
 use crate::next_solver::infer::{InferCtxt, relate};
@@ -19,10 +23,6 @@ use crate::next_solver::util::MaxUniverse;
 use crate::next_solver::{
     AliasTy, Binder, ClauseKind, Const, ConstKind, DbInterner, GenericArgs, PredicateKind, Region,
     SolverDefId, Term, TermVid, Ty, TyKind, TypingMode, UnevaluatedConst,
-};
-
-use super::{
-    PredicateEmittingRelation, Relate, RelateResult, StructurallyRelateAliases, TypeRelation,
 };
 
 impl<'db> InferCtxt<'db> {

@@ -1,10 +1,10 @@
 mod block;
+
+use crate::{DefWithBodyId, ModuleDefId, hir::MatchArm, nameres::crate_def_map, test_db::TestDB};
 use expect_test::{Expect, expect};
 use la_arena::RawIdx;
 use test_fixture::WithFixture;
 use triomphe::Arc;
-
-use crate::{DefWithBodyId, ModuleDefId, hir::MatchArm, nameres::crate_def_map, test_db::TestDB};
 
 use super::super::*;
 

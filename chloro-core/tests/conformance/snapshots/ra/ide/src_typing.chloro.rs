@@ -14,12 +14,12 @@
 //! block user's typing and should be pretty fast for this reason!
 
 mod on_enter;
-use std::iter;
 
 use either::Either;
 use hir::EditionedFileId;
 use ide_db::{FilePosition, RootDatabase, base_db::RootQueryDb};
 use span::Edition;
+use std::iter;
 
 use syntax::{
     AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,

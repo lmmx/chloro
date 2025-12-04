@@ -1,7 +1,7 @@
-use std::ops::RangeInclusive;
 use either::Either;
 use hir::FileRangeWrapper;
 use ide_db::defs::{Definition, NameRefClass};
+use std::ops::RangeInclusive;
 use syntax::{
     SyntaxElement, SyntaxKind, SyntaxNode, T, TextSize,
     ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory},

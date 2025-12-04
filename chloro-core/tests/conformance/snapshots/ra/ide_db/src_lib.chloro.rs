@@ -61,9 +61,9 @@ use hir::{
     db::{DefDatabase, ExpandDatabase},
 };
 use triomphe::Arc;
-pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 use crate::line_index::LineIndex;
+pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 pub use ::line_index;
 

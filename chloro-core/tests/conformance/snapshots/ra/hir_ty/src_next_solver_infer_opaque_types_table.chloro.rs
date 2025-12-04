@@ -4,12 +4,12 @@ use std::ops::Deref;
 
 use ena::undo_log::UndoLogs;
 use tracing::instrument;
+
+use super::OpaqueHiddenType;
 use crate::next_solver::{
     FxIndexMap, OpaqueTypeKey, Ty,
     infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
 };
-
-use super::OpaqueHiddenType;
 
 #[derive(Default, Debug, Clone)]
 pub(crate) struct OpaqueTypeStorage<'db> {

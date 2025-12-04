@@ -3,12 +3,12 @@
 use hir_def::FunctionId;
 use intern::sym;
 use rustc_type_ir::inherent::{AdtDef, Region as _, Ty as _};
+
+use super::*;
 use crate::{
     mir::{MutBorrowKind, Operand, OperandKind},
     next_solver::Region,
 };
-
-use super::*;
 
 macro_rules! not_supported {
     ($it: expr) => {

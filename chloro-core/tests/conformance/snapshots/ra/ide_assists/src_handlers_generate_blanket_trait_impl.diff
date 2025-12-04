@@ -8,20 +8,8 @@ Rustfmt size:  31919 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use crate::{
--    AssistConfig,
--    assist_context::{AssistContext, Assists},
--};
- use hir::{HasCrate, Semantics};
- use ide_db::{
-     RootDatabase,
-     },
      syntax_editor::Position,
  };
-+use crate::{
-+    AssistConfig,
-+    assist_context::{AssistContext, Assists},
-+};
  
 -// Assist: generate_blanket_trait_impl
 -//

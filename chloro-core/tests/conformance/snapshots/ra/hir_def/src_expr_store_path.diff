@@ -8,28 +8,6 @@ Rustfmt size:  11497 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! A desugared representation of paths like `crate::foo` or `<Type as Trait>::bar`.
- 
- use std::iter;
--
--use crate::{
--    lang_item::LangItemTarget,
--    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
--};
- use hir_expand::{
-     mod_path::{ModPath, PathKind},
-     name::Name,
- };
- use intern::Interned;
- 
-+use crate::{
-+    lang_item::LangItemTarget,
-+    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
-+};
-+
- #[derive(Debug, Clone, PartialEq, Eq, Hash)]
- pub enum Path {
-     /// `BarePath` is used when the path has neither generics nor type anchor, since the vast majority of paths
      LangItem(LangItemTarget, Option<Name>),
  }
  

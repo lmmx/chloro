@@ -1,9 +1,9 @@
 //! Syntax highlighting for escape sequences
 
-use syntax::ast::{Byte, Char, IsString};
-use syntax::{AstToken, TextRange, TextSize};
 use crate::syntax_highlighting::highlights::Highlights;
 use crate::{HlRange, HlTag};
+use syntax::ast::{Byte, Char, IsString};
+use syntax::{AstToken, TextRange, TextSize};
 
 pub(super) fn highlight_escape_string<T: IsString>(stack: &mut Highlights, string: &T) {
     let text = string.text();

@@ -8,31 +8,6 @@ Rustfmt size:  13520 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! A lowering for `use`-paths (more generally, paths without angle-bracketed segments).
- 
- use std::{
-     fmt::{self, Display as _},
-     iter,
- };
-+use base_db::Crate;
-+use intern::sym;
-+use smallvec::SmallVec;
-+use span::{Edition, SyntaxContext};
-+use syntax::{AstNode, ast};
- 
- use crate::{
-     db::ExpandDatabase,
-     name::{AsName, Name},
-     tt,
- };
--use base_db::Crate;
--use intern::sym;
--use smallvec::SmallVec;
--use span::{Edition, SyntaxContext};
--use syntax::{AstNode, ast};
- 
- #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
- pub struct ModPath {
              _ => None,
          }
      }

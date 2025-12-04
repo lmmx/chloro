@@ -1,6 +1,6 @@
+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 use hir::GenericArgKind;
 use syntax::SyntaxKind;
-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 pub(crate) fn incorrect_generics_order(
     ctx: &DiagnosticsContext<'_>,

@@ -3,9 +3,8 @@
 //! Specifically, we try to find an asterism.toml, and if present we load settings from there.
 //! This provides wrapping width and file extension preferences.
 
-use std::fs;
-
 use facet::Facet;
+use std::fs;
 
 /// User preferences loaded from asterism.toml or falling back to defaults.
 #[derive(Facet, Clone)]

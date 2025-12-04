@@ -1,9 +1,9 @@
+use crate::assist_context::{AssistContext, Assists};
 use ide_db::{LineIndexDatabase, assists::AssistId, defs::Definition};
 use syntax::{
     AstNode,
     ast::{self, HasName, edit_in_place::Indent},
 };
-use crate::assist_context::{AssistContext, Assists};
 
 pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;

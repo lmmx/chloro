@@ -8,15 +8,8 @@ Rustfmt size:  1615 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- pub use region::*;
- pub use solver::*;
- pub use ty::*;
--
--pub use crate::lower::ImplTraitIdx;
  pub use rustc_ast_ir::Mutability;
  
-+pub use crate::lower::ImplTraitIdx;
-+
  pub type Binder<'db, T> = rustc_type_ir::Binder<DbInterner<'db>, T>;
 +
  pub type EarlyBinder<'db, T> = rustc_type_ir::EarlyBinder<DbInterner<'db>, T>;

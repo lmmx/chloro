@@ -1,5 +1,5 @@
-use hir::IncorrectGenericsLenKind;
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+use hir::IncorrectGenericsLenKind;
 
 pub(crate) fn incorrect_generics_len(
     ctx: &DiagnosticsContext<'_>,

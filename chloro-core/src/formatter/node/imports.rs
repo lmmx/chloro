@@ -2,9 +2,15 @@ use ra_ap_syntax::ast::{AstNode, Use};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ImportGroup {
-    Std,
-    External,
-    Internal,
+    Internal(InternalKind), // self::, super::, crate::, - sorted first
+    External,               // everything else (including std, core, alloc)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum InternalKind {
+    Self_,
+    Super,
+    Crate,
 }
 
 pub fn classify_import(use_: &Use) -> (ImportGroup, String) {
@@ -14,17 +20,15 @@ pub fn classify_import(use_: &Use) -> (ImportGroup, String) {
         return (ImportGroup::External, String::new());
     };
 
-    let group =
-        if path.starts_with("std::") || path.starts_with("core::") || path.starts_with("alloc::") {
-            ImportGroup::Std
-        } else if path.starts_with("crate::")
-            || path.starts_with("self::")
-            || path.starts_with("super::")
-        {
-            ImportGroup::Internal
-        } else {
-            ImportGroup::External
-        };
+    let group = if path.starts_with("self::") {
+        ImportGroup::Internal(InternalKind::Self_)
+    } else if path.starts_with("super::") {
+        ImportGroup::Internal(InternalKind::Super)
+    } else if path.starts_with("crate::") {
+        ImportGroup::Internal(InternalKind::Crate)
+    } else {
+        ImportGroup::External
+    };
 
     (group, path)
 }

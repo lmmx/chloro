@@ -9,13 +9,6 @@ use span::{Edition, Span, SyntaxContext};
 use stdx::never;
 use syntax_bridge::DocCommentDesugarMode;
 use tracing::debug;
-use syntax::{
-    ast::{
-        self, AstNode, FieldList, HasAttrs, HasGenericArgs, HasGenericParams, HasModuleItem,
-        HasName, HasTypeBounds, edit_in_place::GenericParamsOwnerEdit, make,
-    },
-    ted,
-};
 
 use crate::{
     ExpandError, ExpandResult, MacroCallId,
@@ -25,6 +18,13 @@ use crate::{
     name::{self, AsName, Name},
     span_map::ExpansionSpanMap,
     tt,
+};
+use syntax::{
+    ast::{
+        self, AstNode, FieldList, HasAttrs, HasGenericArgs, HasGenericParams, HasModuleItem,
+        HasName, HasTypeBounds, edit_in_place::GenericParamsOwnerEdit, make,
+    },
+    ted,
 };
 
 macro_rules! register_builtin {

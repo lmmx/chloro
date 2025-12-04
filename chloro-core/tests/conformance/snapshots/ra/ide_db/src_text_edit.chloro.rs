@@ -4,11 +4,10 @@
 //! so `TextEdit` is the ultimate representation of the work done by
 //! rust-analyzer.
 
-use std::cmp::max;
-
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
 pub use span::{TextRange, TextSize};
+use std::cmp::max;
 
 use crate::source_change::ChangeAnnotationId;
 

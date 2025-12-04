@@ -8,25 +8,15 @@ Rustfmt size:  5891 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Things related to storage opaques in the infer context of the next-trait-solver.
- 
- use std::ops::Deref;
- 
- use ena::undo_log::UndoLogs;
- use tracing::instrument;
-+use crate::next_solver::{
-+    FxIndexMap, OpaqueTypeKey, Ty,
-+    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
-+};
  
  use super::OpaqueHiddenType;
--use crate::next_solver::{
+ use crate::next_solver::{
 -    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
--    FxIndexMap, OpaqueTypeKey, Ty,
--};
+     FxIndexMap, OpaqueTypeKey, Ty,
++    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
+ };
  
  #[derive(Default, Debug, Clone)]
- pub(crate) struct OpaqueTypeStorage<'db> {
                  None => {
                      panic!("reverted opaque type inference that was never registered: {key:?}")
                  }

@@ -1,3 +1,4 @@
+use crate::{AssistContext, Assists, utils};
 use ide_db::{
     assists::{AssistId, AssistKind},
     syntax_helpers::format_string_exprs::{Arg, parse_format_exprs},
@@ -9,7 +10,6 @@ use syntax::{
     SyntaxToken, T,
     ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
 };
-use crate::{AssistContext, Assists, utils};
 
 // Assist: extract_expressions_from_format_string
 

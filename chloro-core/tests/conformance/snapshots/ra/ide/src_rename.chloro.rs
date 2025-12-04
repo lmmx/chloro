@@ -4,8 +4,6 @@
 //! tests. This module also implements a couple of magic tricks, like renaming
 //! `self` and to `self` (to switch between associated function and method).
 
-use std::fmt::Write;
-
 use hir::{AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, Semantics, sym};
 use ide_db::{
     FileId, FileRange, RootDatabase,
@@ -15,6 +13,7 @@ use ide_db::{
 };
 use itertools::Itertools;
 use stdx::{always, format_to, never};
+use std::fmt::Write;
 use syntax::{
     AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
     ast::{self, HasArgList, prec::ExprPrecedence},

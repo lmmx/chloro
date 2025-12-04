@@ -1,3 +1,5 @@
+use crate::support::{Project, Server};
+use crate::testdir::TestDir;
 use lsp_types::{
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
     TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem, Url,
@@ -5,8 +7,6 @@ use lsp_types::{
     notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
 };
 use paths::Utf8PathBuf;
-use crate::support::{Project, Server};
-use crate::testdir::TestDir;
 
 use rust_analyzer::config::Config;
 use rust_analyzer::lsp::ext::{
