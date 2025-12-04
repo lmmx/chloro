@@ -1053,7 +1053,9 @@ expression: cleaned_diff
  fn foo()
 -    where for<'a>
 -{}
-+where for<'a> {}
++where for<'a>
++{
++}
  
 -let foo = |x: i32| {
 +{
@@ -1212,7 +1214,9 @@ expression: cleaned_diff
  
 -fn foo<T>() where T {}
 +fn foo<T>()
-+where T {}
++where T
++{
++}
  
 -fn a() { [1, 2, @, struct, let] }
 -fn b() { foo(1, 2, @, impl, let) }
@@ -1294,17 +1298,14 @@ expression: cleaned_diff
 +
  fn for_for_for<T>()
  where
--    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy,
-+    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy, {}
-+
-+fn foo() {}
-+
+     for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy,
  {
--}
--
+ }
+ 
 -fn foo() {
 -}
--
++fn foo() {}
+ 
 -bar() {
 -    if true {
 -        1
@@ -1317,6 +1318,7 @@ expression: cleaned_diff
 -}
 -
 -let foo = &{
++{
      1
 -} else {
 -    return;
@@ -1339,7 +1341,9 @@ expression: cleaned_diff
  
 -fn f<T>() where T: ?for<> Sized {}
 +fn f<T>()
-+where T: ?for<> Sized {}
++where T: ?for<> Sized
++{
++}
  
  type T = *();
  
@@ -1787,7 +1791,9 @@ expression: cleaned_diff
  
 -fn f<T>() where T: for<> ?Sized {}
 +fn f<T>()
-+where T: for<> ?Sized {}
++where T: for<> ?Sized
++{
++}
  
 -struct S<T>(T) where T: Clone;
 +struct S<T>(T);
@@ -1913,7 +1919,9 @@ expression: cleaned_diff
  
 -fn foo<T>() where T: Copy {}
 +fn foo<T>()
-+where T: Copy {}
++where T: Copy
++{
++}
  
  fn foo() {
      let _ = a;
@@ -2027,12 +2035,12 @@ expression: cleaned_diff
  
  fn foo() {
      _ = 1;
- where
      T::method(..): Send,
      method(..): Send,
--    method::(..): Send,
+     method::(..): Send,
 -{}
-+    method::(..): Send, {}
++{
++}
  
 -impl S { #![attr] }
 +impl S {
@@ -2078,12 +2086,12 @@ expression: cleaned_diff
  
  use std::*;
  
-    'a: 'b + 'c,
     T: Clone + Copy + 'static,
     Iterator::Item: 'a,
--   <T as Iterator>::Item: 'a
+    <T as Iterator>::Item: 'a
 -{}
-+   <T as Iterator>::Item: 'a {}
++{
++}
  
  macro_rules! {}
 +
@@ -2415,9 +2423,10 @@ expression: cleaned_diff
  
  fn for_trait<F>()
  where
--   for<'a> F: Fn(&'a str)
+    for<'a> F: Fn(&'a str)
 -{ }
-+   for<'a> F: Fn(&'a str) {}
++{
++}
  
 -#!/usr/bin/env cargo
 +#
@@ -2595,12 +2604,12 @@ expression: cleaned_diff
  }
  
  fn foo(-128..=127: i8) {}
- 
  fn test_serialization<SER>()
  where
--    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
+     SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
 -{}
-+    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug, {}
++{
++}
  
  struct S {
 -    r#foo: u32
@@ -2663,48 +2672,39 @@ expression: cleaned_diff
      }
  }
  
- 
- fn for_trait<F>()
- where
--    for<'a> F: Fn(&'a str),
--{
--}
-+    for<'a> F: Fn(&'a str), {}
+     for<'a> F: Fn(&'a str),
+ {
+ }
 +
  fn for_ref<F>()
  where
--    for<'a> &'a F: Debug,
--{
--}
-+    for<'a> &'a F: Debug, {}
+     for<'a> &'a F: Debug,
+ {
+ }
 +
  fn for_parens<F>()
  where
--    for<'a> (&'a F): Fn(&'a str),
--{
--}
-+    for<'a> (&'a F): Fn(&'a str), {}
+     for<'a> (&'a F): Fn(&'a str),
+ {
+ }
 +
  fn for_slice<F>()
  where
--    for<'a> [&'a F]: Eq,
--{
--}
-+    for<'a> [&'a F]: Eq, {}
+     for<'a> [&'a F]: Eq,
+ {
+ }
 +
  fn for_qpath<T>(_t: &T)
  where
--    for<'a> <&'a T as Baz>::Foo: Iterator,
--{
--}
-+    for<'a> <&'a T as Baz>::Foo: Iterator, {}
+     for<'a> <&'a T as Baz>::Foo: Iterator,
+ {
+ }
 +
  fn for_for_fn<T>()
  where
--    for<'a> for<'b> fn(&'a T, &'b T): Copy,
--{
--}
-+    for<'a> for<'b> fn(&'a T, &'b T): Copy, {}
+     for<'a> for<'b> fn(&'a T, &'b T): Copy,
+ {
+ }
  
 -#![attr]
 -#![attr(true)]
@@ -3039,7 +3039,9 @@ expression: cleaned_diff
  
 -fn test() where (u64, u64): Foo {}
 +fn test()
-+where (u64, u64): Foo {}
++where (u64, u64): Foo
++{
++}
  
  fn a() -> Foo<bar::Baz> {}
  
@@ -3170,7 +3172,9 @@ expression: cleaned_diff
  
 -fn f<T>() where T: Fn() -> u8 + Send {}
 +fn f<T>()
-+where T: Fn() -> u8 + Send {}
++where T: Fn() -> u8 + Send
++{
++}
  
  impl U {
      fn f1((a, b): (usize, usize)) {}
@@ -5055,23 +5059,12 @@ expression: cleaned_diff
  fn try_block_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
      assert!(p.at(T![try]));
      let m = m.unwrap_or_else(|| p.start());
- use super::*;
- 
- // test param_list
--// fn a() {}
--// fn b(x: i32) {}
--// fn c(x: i32, ) {}
--// fn d(x: i32, y: ()) {}
- 
+ // fn b(x: i32) {}
+ // fn c(x: i32, ) {}
+ // fn d(x: i32, y: ()) {}
+-
 -// test_err empty_param_slot
 -// fn f(y: i32, ,t: i32) {}
-+// fn a() {}
-+
-+// fn b(x: i32) {}
-+
-+// fn c(x: i32, ) {}
-+
-+// fn d(x: i32, y: ()) {}
  pub(super) fn param_list_fn_def(p: &mut Parser<'_>) {
      list_(p, Flavor::FnDef);
  }
@@ -5098,16 +5091,10 @@ expression: cleaned_diff
  fn opt_self_param(p: &mut Parser<'_>, m: Marker) -> Result<(), Marker> {
      if p.at(T![self]) || p.at(T![mut]) && p.nth(1) == T![self] {
          p.eat(T![mut]);
- }
- 
- // test_err meta_recovery
--// #![]
--// #![p = ]
--// #![p::]
--// #![p:: =]
--// #![unsafe]
--// #![unsafe =]
- 
+ // #![p:: =]
+ // #![unsafe]
+ // #![unsafe =]
+-
 -// test metas
 -// #![simple_ident]
 -// #![simple::path]
@@ -5129,17 +5116,6 @@ expression: cleaned_diff
 -// #![unsafe(simple::path::tt(a b c))]
 -// #![unsafe(simple::path::tt[a b c])]
 -// #![unsafe(simple::path::tt{a b c})]
-+// #![]
-+
-+// #![p = ]
-+
-+// #![p::]
-+
-+// #![p:: =]
-+
-+// #![unsafe]
-+
-+// #![unsafe =]
  pub(super) fn meta(p: &mut Parser<'_>) {
      let meta = p.start();
      let is_unsafe = p.eat(T![unsafe]);
@@ -5445,14 +5421,12 @@ expression: cleaned_diff
  pub(super) fn const_arg(p: &mut Parser<'_>) {
      let m = p.start();
      const_arg_expr(p);
- }
  
  // test generic_param_list
--// fn f<T: Clone>() {}
- 
+ // fn f<T: Clone>() {}
+-
 -// test_err generic_param_list_recover
 -// fn f<T: Clone,, U:, V>() {}
-+// fn f<T: Clone>() {}
  pub(super) fn generic_param_list(p: &mut Parser<'_>) {
      assert!(p.at(T![<]));
      let m = p.start();

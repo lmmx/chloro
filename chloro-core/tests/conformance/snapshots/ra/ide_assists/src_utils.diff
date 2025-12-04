@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44627 bytes
+Chloro size:   44620 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -53,30 +53,10 @@ Rustfmt size:  45288 bytes
              let method = match method.text().as_str() {
                  "is_some" => "is_none",
                  "is_none" => "is_some",
- }
- 
- // Uses a syntax-driven approach to find any impl blocks for the struct that
--// exist within the module/file
--//
--// Returns `None` if we've found an existing fn
--//
--// FIXME: change the new fn checking to a more semantic approach when that's more
--// viable (e.g. we process proc macros, etc)
--// FIXME: this partially overlaps with `find_impl_block_*`
- 
-+// exist within the module/file
-+
-+//
-+
-+// Returns `None` if we've found an existing fn
-+
-+//
-+
-+// FIXME: change the new fn checking to a more semantic approach when that's more
-+
-+// viable (e.g. we process proc macros, etc)
-+
-+// FIXME: this partially overlaps with `find_impl_block_*`
+ // FIXME: change the new fn checking to a more semantic approach when that's more
+ // viable (e.g. we process proc macros, etc)
+ // FIXME: this partially overlaps with `find_impl_block_*`
+-
  /// `find_struct_impl` looks for impl of a struct, but this also has additional feature
  /// where it takes a list of function names and check if they exist inside impl_, if
  /// even one match is found, it returns None.

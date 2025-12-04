@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11413 bytes
-Chloro size:   10645 bytes
+Chloro size:   10644 bytes
 Rustfmt size:  11741 bytes
 
 ✗ Outputs DIFFER
@@ -19,8 +19,8 @@ Rustfmt size:  11741 bytes
  use crate::{AssistContext, AssistId, Assists};
  
  // FIXME: Generate proper `index_mut` method body refer to `index` method body may impossible due to the unpredictable case [#15581].
--// Here just leave the `index_mut` method body be same as `index` method body, user can modify it manually to meet their need.
- 
+ // Here just leave the `index_mut` method body be same as `index` method body, user can modify it manually to meet their need.
+-
 -// Assist: generate_mut_trait_impl
 -//
 -// Adds a IndexMut impl from the `Index` trait.
@@ -55,7 +55,6 @@ Rustfmt size:  11741 bytes
 -//     }
 -// }
 -// ```
-+// Here just leave the `index_mut` method body be same as `index` method body, user can modify it manually to meet their need.
  pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let impl_def = ctx.find_node_at_offset::<ast::Impl>()?.clone_for_update();
      let indent = impl_def.indent_level();

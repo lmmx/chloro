@@ -11,7 +11,6 @@ use crate::next_solver::{Const, DbInterner, ErrorGuaranteed, Region, Ty};
 use super::InferCtxt;
 
 ///////////////////////////////////////////////////////////////////////////
-
 // OPPORTUNISTIC VAR RESOLVER
 /// The opportunistic resolver can be used at any time. It simply replaces
 /// type/const variables that have been unified with the things they have

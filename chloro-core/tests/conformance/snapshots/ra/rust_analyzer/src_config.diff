@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166246 bytes
+Chloro size:   166241 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -46,24 +46,10 @@ Rustfmt size:  167117 bytes
  };
  
  type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
- mod patch_old_style;
- 
- // Conventions for configuration keys to preserve maximal extendability without breakage:
--//  - Toggles (be it binary true/false or with more options in-between) should almost always suffix as `_enable`
--//    This has the benefit of namespaces being extensible, and if the suffix doesn't fit later it can be changed without breakage.
--//  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
--//  - Don't use abbreviations unless really necessary
--//  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
- 
-+//  - Toggles (be it binary true/false or with more options in-between) should almost always suffix as `_enable`
-+
-+//    This has the benefit of namespaces being extensible, and if the suffix doesn't fit later it can be changed without breakage.
-+
-+//  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
-+
-+//  - Don't use abbreviations unless really necessary
-+
-+//  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
+ //  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
+ //  - Don't use abbreviations unless really necessary
+ //  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
+-
  #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
  #[serde(rename_all = "camelCase")]
  pub enum MaxSubstitutionLength {

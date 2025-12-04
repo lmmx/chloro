@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95964 bytes
+Chloro size:   95955 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -32,36 +32,10 @@ Rustfmt size:  95826 bytes
  impl DropScopeToken {
      fn pop_and_drop<'db>(
          self,
- }
- 
- // Uncomment this to make `DropScopeToken` a drop bomb. Unfortunately we can't do this in release, since
--// in cases that mir lowering fails, we don't handle (and don't need to handle) drop scopes so it will be
--// actually reached. `pop_drop_scope_assert_finished` will also detect this case, but doesn't show useful
--// stack trace.
--//
--// impl Drop for DropScopeToken {
--//     fn drop(&mut self) {
--//         never!("Drop scope doesn't popped");
--//     }
--// }
- 
-+// in cases that mir lowering fails, we don't handle (and don't need to handle) drop scopes so it will be
-+
-+// actually reached. `pop_drop_scope_assert_finished` will also detect this case, but doesn't show useful
-+
-+// stack trace.
-+
-+//
-+
-+// impl Drop for DropScopeToken {
-+
-+//     fn drop(&mut self) {
-+
-+//         never!("Drop scope doesn't popped");
-+
-+//     }
-+
-+// }
+ //         never!("Drop scope doesn't popped");
+ //     }
+ // }
+-
  impl MirLowerError<'_> {
      pub fn pretty_print(
          &self,

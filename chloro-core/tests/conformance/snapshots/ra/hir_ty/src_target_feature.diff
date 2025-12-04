@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8872 bytes
-Chloro size:   8849 bytes
+Chloro size:   8847 bytes
 Rustfmt size:  8918 bytes
 
 ✗ Outputs DIFFER
@@ -19,17 +19,12 @@ Rustfmt size:  8918 bytes
  use rustc_hash::{FxHashMap, FxHashSet};
  
  #[derive(Debug, Default, Clone)]
- }
- 
  // List of the target features each target feature implies.
--// Ideally we'd depend on rustc for this, but rustc_target doesn't compile on stable,
--// and t-compiler prefers for it to stay this way.
- 
+ // Ideally we'd depend on rustc for this, but rustc_target doesn't compile on stable,
+ // and t-compiler prefers for it to stay this way.
+-
 -static TARGET_FEATURE_IMPLICATIONS: LazyLock<FxHashMap<Symbol, Box<[Symbol]>>> =
 -    LazyLock::new(|| {
-+// Ideally we'd depend on rustc for this, but rustc_target doesn't compile on stable,
-+
-+// and t-compiler prefers for it to stay this way.
 +static TARGET_FEATURE_IMPLICATIONS: LazyLock<FxHashMap<Symbol, Box<[Symbol]>>> = LazyLock::new(|| {
          let mut result = FxHashMap::<Symbol, FxHashSet<Symbol>>::default();
          for &(feature_str, implications) in TARGET_FEATURE_IMPLICATIONS_RAW {

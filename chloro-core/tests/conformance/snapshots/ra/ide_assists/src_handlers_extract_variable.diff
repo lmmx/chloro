@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51683 bytes
+Chloro size:   51652 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -21,47 +21,21 @@ Rustfmt size:  52351 bytes
      syntax_editor::Position,
  };
  
- use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
- 
- // Assist: extract_variable
-+
- //
-+
- // Extracts subexpression into a variable.
-+
- //
-+
- // ```
-+
- // fn main() {
-+
- //     $0(1 + 2)$0 * 4;
-+
- // }
-+
- // ```
-+
- // ->
-+
- // ```
-+
- // fn main() {
-+
- //     let $0var_name = 1 + 2;
-+
  //     var_name * 4;
-+
  // }
-+
  // ```
- 
+-
  // Assist: extract_constant
-+
  //
-+
  // Extracts subexpression into a constant.
-+
- //
+ //     VAR_NAME * 4;
+ // }
+ // ```
+-
+-// Assist: extract_static
+-//
+-// Extracts subexpression into a static.
+-//
 -// ```
 -// fn main() {
 -//     $0(1 + 2)$0 * 4;
@@ -70,41 +44,13 @@ Rustfmt size:  52351 bytes
 -// ->
 -// ```
 -// fn main() {
--//     const $0VAR_NAME: i32 = 1 + 2;
+-//     static $0VAR_NAME: i32 = 1 + 2;
 -//     VAR_NAME * 4;
 -// }
-+
- // ```
- 
--// Assist: extract_static
--//
--// Extracts subexpression into a static.
--//
 -// ```
- // fn main() {
-+
- //     $0(1 + 2)$0 * 4;
-+
- // }
-+
- // ```
-+
- // ->
-+
- // ```
-+
- // fn main() {
--//     static $0VAR_NAME: i32 = 1 + 2;
-+
-+//     const $0VAR_NAME: i32 = 1 + 2;
-+
- //     VAR_NAME * 4;
-+
- // }
-+
- // ```
  pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let node = if ctx.has_empty_selection() {
+         if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
  }
  
  impl ExtractionKind {

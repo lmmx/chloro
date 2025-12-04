@@ -1,15 +1,10 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 
 // Diagnostic: macro-error
-
 //
-
 // This diagnostic is shown for macro expansion errors.
-
 // Diagnostic: attribute-expansion-disabled
-
 //
-
 // This diagnostic is shown for attribute proc macros when attribute expansions have been disabled.
 pub(crate) fn macro_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroError) -> Diagnostic {
     // Use more accurate position if available.

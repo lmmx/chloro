@@ -8,7 +8,6 @@ use syntax::{
 use crate::{AssistContext, AssistId, Assists};
 
 // FIXME: Generate proper `index_mut` method body refer to `index` method body may impossible due to the unpredictable case [#15581].
-
 // Here just leave the `index_mut` method body be same as `index` method body, user can modify it manually to meet their need.
 pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_def = ctx.find_node_at_offset::<ast::Impl>()?.clone_for_update();

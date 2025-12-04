@@ -9,55 +9,30 @@ use syntax::{
 use crate::{AssistContext, Assists};
 
 // Assist: generate_fn_type_alias_named
-
 //
-
 // Generate a type alias for the function with named parameters.
-
 //
-
 // ```
-
 // unsafe fn fo$0o(n: i32) -> i32 { 42i32 }
-
 // ```
-
 // ->
-
 // ```
-
 // type ${0:FooFn} = unsafe fn(n: i32) -> i32;
-
 //
-
 // unsafe fn foo(n: i32) -> i32 { 42i32 }
-
 // ```
-
 // Assist: generate_fn_type_alias_unnamed
-
 //
-
 // Generate a type alias for the function with unnamed parameters.
-
 //
-
 // ```
-
 // unsafe fn fo$0o(n: i32) -> i32 { 42i32 }
-
 // ```
-
 // ->
-
 // ```
-
 // type ${0:FooFn} = unsafe fn(i32) -> i32;
-
 //
-
 // unsafe fn foo(n: i32) -> i32 { 42i32 }
-
 // ```
 pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;

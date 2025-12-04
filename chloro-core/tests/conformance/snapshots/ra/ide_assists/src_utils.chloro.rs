@@ -478,19 +478,12 @@ fn check_pat_variant_nested_or_literal_with_depth(
 }
 
 // Uses a syntax-driven approach to find any impl blocks for the struct that
-
 // exist within the module/file
-
 //
-
 // Returns `None` if we've found an existing fn
-
 //
-
 // FIXME: change the new fn checking to a more semantic approach when that's more
-
 // viable (e.g. we process proc macros, etc)
-
 // FIXME: this partially overlaps with `find_impl_block_*`
 /// `find_struct_impl` looks for impl of a struct, but this also has additional feature
 /// where it takes a list of function names and check if they exist inside impl_, if

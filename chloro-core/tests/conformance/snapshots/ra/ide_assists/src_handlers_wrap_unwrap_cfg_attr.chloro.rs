@@ -8,37 +8,21 @@ use syntax::{
 use crate::{AssistContext, AssistId, Assists};
 
 // Assist: wrap_unwrap_cfg_attr
-
 //
-
 // Wraps an attribute to a cfg_attr attribute or unwraps a cfg_attr attribute to the inner attributes.
-
 //
-
 // ```
-
 // #[derive$0(Debug)]
-
 // struct S {
-
 //    field: i32
-
 // }
-
 // ```
-
 // ->
-
 // ```
-
 // #[cfg_attr($0, derive(Debug))]
-
 // struct S {
-
 //    field: i32
-
 // }
-
 // ```
 enum WrapUnwrapOption {
     WrapDerive {

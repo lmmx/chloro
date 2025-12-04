@@ -450,27 +450,16 @@ impl UpmapFromRaFixture for TextRange {
 }
 
 // Deliberately do not implement that, as it's easy to get things misbehave and be treated with the wrong FileId:
-
 //
-
 // impl UpmapFromRaFixture for FileId {
-
 //     fn upmap_from_ra_fixture(
-
 //         self,
-
 //         _analysis: &RaFixtureAnalysis,
-
 //         _virtual_file_id: FileId,
-
 //         real_file_id: FileId,
-
 //     ) -> Result<Self, ()> {
-
 //         Ok(real_file_id)
-
 //     }
-
 // }
 impl UpmapFromRaFixture for FilePositionWrapper<FileId> {
     fn upmap_from_ra_fixture(
