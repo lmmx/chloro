@@ -13,6 +13,20 @@ use syntax::{
 use crate::{AssistContext, Assists};
 
 // FIXME: This ought to be a diagnostic lint.
+// Assist: unnecessary_async
+//
+// Removes the `async` mark from functions which have no `.await` in their body.
+// Looks for calls to the functions and removes the `.await` on the call site.
+//
+// ```
+// pub asy$0nc fn foo() {}
+// pub async fn bar() { foo().await }
+// ```
+// ->
+// ```
+// pub fn foo() {}
+// pub async fn bar() { foo() }
+// ```
 pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let function: ast::Fn = ctx.find_node_at_offset()?;
 

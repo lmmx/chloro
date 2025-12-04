@@ -12,6 +12,15 @@ pub struct GotoImplementationConfig {
     pub filter_adjacent_derive_implementations: bool,
 }
 
+// Feature: Go to Implementation
+//
+// Navigates to the impl items of types.
+//
+// | Editor  | Shortcut |
+// |---------|----------|
+// | VS Code | <kbd>Ctrl+F12</kbd>
+//
+// ![Go to Implementation](https://user-images.githubusercontent.com/48062697/113065566-02f85480-91b1-11eb-9288-aaad8abd8841.gif)
 pub(crate) fn goto_implementation(
     db: &RootDatabase,
     config: &GotoImplementationConfig,
@@ -242,6 +251,7 @@ impl crate::T for crate::Foo {}
             "#,
         );
     }
+    // FIXME(next-solver): it would be nice to be able to also point to `&Foo`
     #[test]
     fn goto_implementation_all_impls() {
         check(

@@ -135,6 +135,16 @@ pub(crate) fn remove_links(markdown: &str) -> String {
     out
 }
 
+// Feature: Open Docs
+//
+// Retrieve a links to documentation for the given symbol.
+//
+// The simplest way to use this feature is via the context menu. Right-click on
+// the selected item. The context menu opens. Select **Open Docs**.
+//
+// | Editor  | Action Name |
+// |---------|-------------|
+// | VS Code | **rust-analyzer: Open Docs** |
 pub(crate) fn external_docs(
     db: &RootDatabase,
     FilePosition { file_id, offset }: FilePosition,
@@ -358,6 +368,13 @@ fn broken_link_clone_cb(link: BrokenLink<'_>) -> Option<(CowStr<'_>, CowStr<'_>)
     Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
 }
 
+// FIXME:
+// BUG: For Option::Some
+// Returns https://doc.rust-lang.org/nightly/core/prelude/v1/enum.Option.html#variant.Some
+// Instead of https://doc.rust-lang.org/nightly/core/option/enum.Option.html
+//
+// This should cease to be a problem if RFC2988 (Stable Rustdoc URLs) is implemented
+// https://github.com/rust-lang/rfcs/pull/2988
 fn get_doc_links(
     db: &RootDatabase,
     def: Definition,

@@ -2954,6 +2954,7 @@ pub struct B$0ar
     );
 }
 
+// Check that we don't rewrite links which we can't identify
 #[test]
 fn test_hover_unknown_target() {
     check(
@@ -6298,6 +6299,8 @@ const FOO$0: (&str, &str) = {
     );
 }
 
+// FIXME(next-solver): this fails to normalize the const, probably due to the solver
+// refusing to give the impl because of the error type.
 #[test]
 fn hover_const_eval_in_generic_trait() {
     // Doesn't compile, but we shouldn't crash.

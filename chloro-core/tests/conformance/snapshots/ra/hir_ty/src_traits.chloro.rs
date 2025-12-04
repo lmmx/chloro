@@ -57,6 +57,7 @@ impl<'db> TraitEnvironment<'db> {
         Arc::new(TraitEnvironment { krate, block, traits_from_clauses, env })
     }
 
+    // pub fn with_block(self: &mut Arc<Self>, block: BlockId) {
     pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
         Arc::make_mut(this).block = Some(block);
     }

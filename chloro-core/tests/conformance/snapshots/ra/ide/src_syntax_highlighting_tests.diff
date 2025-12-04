@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31331 bytes
-Chloro size:   31169 bytes
+Chloro size:   31327 bytes
 Rustfmt size:  31474 bytes
 
 ✗ Outputs DIFFER
@@ -22,14 +22,6 @@ Rustfmt size:  31474 bytes
  
  const HL_CONFIG: HighlightConfig<'_> = HighlightConfig {
      strings: true,
-     );
- }
- 
--// Rainbow highlighting uses a deterministic hash (fxhash) but the hashing does differ
--// depending on the pointer width so only runs this on 64-bit targets.
- #[cfg(target_pointer_width = "64")]
- #[test]
- fn test_rainbow_highlighting() {
      let highlights = &analysis
          .highlight_range(
              HL_CONFIG,

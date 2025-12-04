@@ -9,6 +9,21 @@ use crate::{
     utils::{required_hashes, string_prefix, string_suffix},
 };
 
+// Assist: make_raw_string
+//
+// Adds `r#` to a plain string literal.
+//
+// ```
+// fn main() {
+//     "Hello,$0 World!";
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     r#"Hello, World!"#;
+// }
+// ```
 pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if token.is_raw() {
@@ -30,6 +45,21 @@ pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     )
 }
 
+// Assist: make_usual_string
+//
+// Turns a raw string into a plain string.
+//
+// ```
+// fn main() {
+//     r#"Hello,$0 "World!""#;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     "Hello, \"World!\"";
+// }
+// ```
 pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
@@ -52,6 +82,21 @@ pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     )
 }
 
+// Assist: add_hash
+//
+// Adds a hash to a raw string literal.
+//
+// ```
+// fn main() {
+//     r#"Hello,$0 World!"#;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     r##"Hello, World!"##;
+// }
+// ```
 pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
@@ -73,6 +118,21 @@ pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()>
     )
 }
 
+// Assist: remove_hash
+//
+// Removes a hash from a raw string literal.
+//
+// ```
+// fn main() {
+//     r#"Hello,$0 World!"#;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     r"Hello, World!";
+// }
+// ```
 pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {

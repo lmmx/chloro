@@ -2,40 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30915 bytes
-Chloro size:   30405 bytes
+Chloro size:   30915 bytes
 Rustfmt size:  30915 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     },
- };
- 
--// Assist: replace_derive_with_manual_impl
--//
--// Converts a `derive` impl into a manual one.
--//
--// ```
--// # //- minicore: derive
--// # trait Debug { fn fmt(&self, f: &mut Formatter) -> Result<()>; }
--// #[derive(Deb$0ug, Display)]
--// struct S;
--// ```
--// ->
--// ```
--// # trait Debug { fn fmt(&self, f: &mut Formatter) -> Result<()>; }
--// #[derive(Display)]
--// struct S;
--//
--// impl Debug for S {
--//     $0fn fmt(&self, f: &mut Formatter) -> Result<()> {
--//         f.debug_struct("S").finish()
--//     }
--// }
--// ```
- pub(crate) fn replace_derive_with_manual_impl(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
      let annotated_name = adt.name()?;
      let label = format!("Convert to manual `impl {replace_trait_path} for {annotated_name}`");
  

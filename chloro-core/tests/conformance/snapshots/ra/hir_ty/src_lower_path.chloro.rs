@@ -163,6 +163,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         }
     }
 
+    // When calling this, the current segment is the resolved segment (we don't advance it yet).
     pub(crate) fn lower_partly_resolved_path(
         &mut self,
         resolution: TypeNs,

@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7434 bytes
-Chloro size:   7383 bytes
+Chloro size:   7430 bytes
 Rustfmt size:  7434 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     context::{ParamContext, ParamKind, PatternContext},
- };
- 
--// FIXME: Make this a submodule of [`pattern`]
- /// Complete repeated parameters, both name and type. For example, if all
- /// functions in a file have a `spam: &mut Spam` parameter, a completion with
- /// `spam: &mut Spam` insert text/label will be suggested.
          None => return,
      };
      if let Some(scope) =

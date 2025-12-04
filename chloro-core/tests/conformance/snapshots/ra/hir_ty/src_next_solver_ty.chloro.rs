@@ -556,6 +556,7 @@ impl<'db> Ty<'db> {
         Some(builtin)
     }
 
+    // FIXME: Should this be here?
     pub fn impl_trait_bounds(self, db: &'db dyn HirDatabase) -> Option<Vec<Clause<'db>>> {
         let interner = DbInterner::new_with(db, None, None);
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   32078 bytes
+Chloro size:   32218 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -258,10 +258,8 @@ Rustfmt size:  33070 bytes
          let (Expr::Break { label, .. } | Expr::Continue { label }) = body[break_or_continue] else {
              return None;
          };
-             .map(|&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids))
-     }
  
--    // FIXME: Make this more fine grained! This should be a `adt_has_derives`!
+     // FIXME: Make this more fine grained! This should be a `adt_has_derives`!
      pub(super) fn file_of_adt_has_derives(&mut self, adt: InFile<&ast::Adt>) -> bool {
 -        self.dyn_map(adt)
 -            .as_ref()
@@ -375,7 +373,7 @@ Rustfmt size:  33070 bytes
 +        )
      }
  
--    // FIXME: Remove this when we do inference in signatures
+     // FIXME: Remove this when we do inference in signatures
      fn find_pat_or_label_container(&mut self, src: InFile<&SyntaxNode>) -> Option<DefWithBodyId> {
 -        self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
 +        self.parent_ancestors_with_macros(

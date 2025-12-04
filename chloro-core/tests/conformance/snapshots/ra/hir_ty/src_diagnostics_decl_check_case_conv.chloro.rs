@@ -37,6 +37,8 @@ pub(crate) fn to_upper_snake_case(ident: &str) -> Option<String> {
     Some(stdx::to_upper_snake_case(ident))
 }
 
+// Taken from rustc.
+// Modified by replacing the use of unstable feature `array_windows`.
 fn is_camel_case(name: &str) -> bool {
     let name = name.trim_matches('_');
     if name.is_empty() {
@@ -69,6 +71,8 @@ fn is_upper_snake_case(ident: &str) -> bool {
     is_snake_case(ident, char::is_lowercase)
 }
 
+// Taken from rustc.
+// Modified to allow checking for both upper and lower snake case.
 fn is_snake_case<F: Fn(char) -> bool>(ident: &str, wrong_case: F) -> bool {
     if ident.is_empty() {
         return true;

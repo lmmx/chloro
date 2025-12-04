@@ -5,6 +5,19 @@ use syntax::{
     ast::{self, HasName, edit_in_place::Indent},
 };
 
+// Assist: bind_unused_param
+//
+// Binds unused function parameter to an underscore.
+//
+// ```
+// fn some_function(x: i32$0) {}
+// ```
+// ->
+// ```
+// fn some_function(x: i32) {
+//     let _ = x;
+// }
+// ```
 pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;
 

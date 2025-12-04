@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29451 bytes
+Chloro size:   29581 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -291,14 +291,6 @@ Rustfmt size:  30449 bytes
          }
      }
  
-         self.data.recursion_limit.unwrap_or(128)
-     }
- 
--    // FIXME: this can use some more human-readable format (ideally, an IR
--    // even), as this should be a great debugging aid.
-     pub fn dump(&self, db: &dyn DefDatabase) -> String {
-         let mut buf = String::new();
-         let mut arc;
  
              map.modules[module].scope.dump(db, buf);
  

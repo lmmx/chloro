@@ -14,6 +14,7 @@ use crate::{
     context::{ParamContext, ParamKind, PatternContext},
 };
 
+// FIXME: Make this a submodule of [`pattern`]
 /// Complete repeated parameters, both name and type. For example, if all
 /// functions in a file have a `spam: &mut Spam` parameter, a completion with
 /// `spam: &mut Spam` insert text/label will be suggested.

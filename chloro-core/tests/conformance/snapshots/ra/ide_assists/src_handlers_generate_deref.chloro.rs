@@ -13,6 +13,32 @@ use crate::{
     utils::generate_trait_impl_text_intransitive,
 };
 
+// Assist: generate_deref
+//
+// Generate `Deref` impl using the given struct field.
+//
+// ```
+// # //- minicore: deref, deref_mut
+// struct A;
+// struct B {
+//    $0a: A
+// }
+// ```
+// ->
+// ```
+// struct A;
+// struct B {
+//    a: A
+// }
+//
+// impl core::ops::Deref for B {
+//     type Target = A;
+//
+//     fn deref(&self) -> &Self::Target {
+//         &self.a
+//     }
+// }
+// ```
 pub(crate) fn generate_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_record_deref(acc, ctx).or_else(|| generate_tuple_deref(acc, ctx))
 }

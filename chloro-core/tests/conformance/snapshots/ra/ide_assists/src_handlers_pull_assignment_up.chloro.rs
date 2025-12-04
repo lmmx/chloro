@@ -11,6 +11,33 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: pull_assignment_up
+//
+// Extracts variable assignment to outside an if or match statement.
+//
+// ```
+// fn main() {
+//     let mut foo = 6;
+//
+//     if true {
+//         $0foo = 5;
+//     } else {
+//         foo = 4;
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let mut foo = 6;
+//
+//     foo = if true {
+//         5
+//     } else {
+//         4
+//     };
+// }
+// ```
 pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let assign_expr = ctx.find_node_at_offset::<ast::BinExpr>()?;
 

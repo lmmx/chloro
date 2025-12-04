@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 210028 bytes
-Chloro size:   209818 bytes
+Chloro size:   210020 bytes
 Rustfmt size:  210967 bytes
 
 ✗ Outputs DIFFER
@@ -224,13 +224,6 @@ Rustfmt size:  210967 bytes
      expect.assert_debug_eq(&hover.info.actions);
  }
  
-     );
- }
- 
--// Check that we don't rewrite links which we can't identify
- #[test]
- fn test_hover_unknown_target() {
-     check(
  
  mod type_param_sized_bounds {
      use super::*;
@@ -287,14 +280,6 @@ Rustfmt size:  210967 bytes
      #[test]
      fn mixed2() {
          check(
-     );
- }
- 
--// FIXME(next-solver): this fails to normalize the const, probably due to the solver
--// refusing to give the impl because of the error type.
- #[test]
- fn hover_const_eval_in_generic_trait() {
-     // Doesn't compile, but we shouldn't crash.
          "#]],
      );
  }

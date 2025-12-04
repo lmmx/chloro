@@ -565,6 +565,8 @@ impl Ctx<'_> {
     }
 }
 
+// FIXME: It would probably be nicer if we could get this via HIR (i.e. get the
+// trait ref, and then go from the types in the substs back to the syntax).
 fn get_syntactic_substs(impl_def: ast::Impl) -> Option<AstSubsts> {
     let target_trait = impl_def.trait_()?;
     let path_type = match target_trait {

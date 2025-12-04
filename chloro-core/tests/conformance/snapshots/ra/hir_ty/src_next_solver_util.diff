@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   28562 bytes
+Chloro size:   28598 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -112,13 +112,6 @@ Rustfmt size:  28638 bytes
      pub interner: DbInterner<'db>,
      pub ty_op: F,
      pub lt_op: G,
-     ControlFlow::Continue(())
- }
- 
--// FIXME(next-trait-solver): uplift
- pub fn sizedness_constraint_for_ty<'db>(
-     interner: DbInterner<'db>,
-     sizedness: SizedTraitKind,
                  type_alias.into(),
                  LifetimeElisionKind::AnonymousReportError,
              );

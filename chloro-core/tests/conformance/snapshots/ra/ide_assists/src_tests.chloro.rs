@@ -181,6 +181,8 @@ pub(crate) fn check_assist_import_one(
     );
 }
 
+// There is no way to choose what assist within a group you want to test against,
+// so this is here to allow you choose.
 #[track_caller]
 pub(crate) fn check_assist_by_label(
     assist: Handler,
@@ -192,6 +194,9 @@ pub(crate) fn check_assist_by_label(
     check(assist, ra_fixture_before, ExpectedResult::After(&ra_fixture_after), Some(label));
 }
 
+// FIXME: instead of having a separate function here, maybe use
+// `extract_ranges` and mark the target as `<target> </target>` in the
+// fixture?
 #[track_caller]
 pub(crate) fn check_assist_target(
     assist: Handler,

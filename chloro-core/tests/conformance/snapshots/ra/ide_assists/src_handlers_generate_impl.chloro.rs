@@ -22,6 +22,23 @@ fn insert_impl(editor: &mut SyntaxEditor, impl_: &ast::Impl, nominal: &impl Inde
     );
 }
 
+// Assist: generate_impl
+//
+// Adds a new inherent impl for a type.
+//
+// ```
+// struct Ctx$0<T: Clone> {
+//     data: T,
+// }
+// ```
+// ->
+// ```
+// struct Ctx<T: Clone> {
+//     data: T,
+// }
+//
+// impl<T: Clone> Ctx<T> {$0}
+// ```
 pub(crate) fn generate_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let nominal = ctx.find_node_at_offset::<ast::Adt>()?;
     let name = nominal.name()?;
@@ -54,6 +71,23 @@ pub(crate) fn generate_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
     )
 }
 
+// Assist: generate_trait_impl
+//
+// Adds a new trait impl for a type.
+//
+// ```
+// struct $0Ctx<T: Clone> {
+//     data: T,
+// }
+// ```
+// ->
+// ```
+// struct Ctx<T: Clone> {
+//     data: T,
+// }
+//
+// impl<T: Clone> ${1:_} for Ctx<T> {$0}
+// ```
 pub(crate) fn generate_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let nominal = ctx.find_node_at_offset::<ast::Adt>()?;
     let name = nominal.name()?;
@@ -91,6 +125,27 @@ pub(crate) fn generate_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     )
 }
 
+// Assist: generate_impl_trait
+//
+// Adds this trait impl for a type.
+//
+// ```
+// trait $0Foo {
+//     fn foo(&self) -> i32;
+// }
+// ```
+// ->
+// ```
+// trait Foo {
+//     fn foo(&self) -> i32;
+// }
+//
+// impl Foo for ${1:_} {
+//     fn foo(&self) -> i32 {
+//         $0todo!()
+//     }
+// }
+// ```
 pub(crate) fn generate_impl_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let trait_ = ast::Trait::cast(name.syntax().parent()?)?;

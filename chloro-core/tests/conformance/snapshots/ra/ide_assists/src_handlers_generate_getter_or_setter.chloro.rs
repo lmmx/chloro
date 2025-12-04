@@ -11,6 +11,27 @@ use crate::{
     utils::{convert_reference_type, find_struct_impl, generate_impl},
 };
 
+// Assist: generate_setter
+//
+// Generate a setter method.
+//
+// ```
+// struct Person {
+//     nam$0e: String,
+// }
+// ```
+// ->
+// ```
+// struct Person {
+//     name: String,
+// }
+//
+// impl Person {
+//     fn $0set_name(&mut self, name: String) {
+//         self.name = name;
+//     }
+// }
+// ```
 pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // This if condition denotes two modes this assist can work in:
     // - First is acting upon selection of record fields
@@ -49,10 +70,81 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     Some(())
 }
 
+// Assist: generate_getter
+//
+// Generate a getter method.
+//
+// ```
+// # //- minicore: as_ref, deref
+// # pub struct String;
+// # impl AsRef<str> for String {
+// #     fn as_ref(&self) -> &str {
+// #         ""
+// #     }
+// # }
+// #
+// # impl core::ops::Deref for String {
+// #     type Target = str;
+// #     fn deref(&self) -> &Self::Target {
+// #         ""
+// #     }
+// # }
+// #
+// struct Person {
+//     nam$0e: String,
+// }
+// ```
+// ->
+// ```
+// # pub struct String;
+// # impl AsRef<str> for String {
+// #     fn as_ref(&self) -> &str {
+// #         ""
+// #     }
+// # }
+// #
+// # impl core::ops::Deref for String {
+// #     type Target = str;
+// #     fn deref(&self) -> &Self::Target {
+// #         ""
+// #     }
+// # }
+// #
+// struct Person {
+//     name: String,
+// }
+//
+// impl Person {
+//     fn $0name(&self) -> &str {
+//         &self.name
+//     }
+// }
+// ```
 pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_getter_impl(acc, ctx, false)
 }
 
+// Assist: generate_getter_mut
+//
+// Generate a mut getter method.
+//
+// ```
+// struct Person {
+//     nam$0e: String,
+// }
+// ```
+// ->
+// ```
+// struct Person {
+//     name: String,
+// }
+//
+// impl Person {
+//     fn $0name_mut(&mut self) -> &mut String {
+//         &mut self.name
+//     }
+// }
+// ```
 pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_getter_impl(acc, ctx, true)
 }

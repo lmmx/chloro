@@ -31,6 +31,44 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: inline_into_callers
+//
+// Inline a function or method body into all of its callers where possible, creating a `let` statement per parameter
+// unless the parameter can be inlined. The parameter will be inlined either if it the supplied argument is a simple local
+// or if the parameter is only accessed inside the function body once.
+// If all calls can be inlined the function will be removed.
+//
+// ```
+// fn print(_: &str) {}
+// fn foo$0(word: &str) {
+//     if !word.is_empty() {
+//         print(word);
+//     }
+// }
+// fn bar() {
+//     foo("안녕하세요");
+//     foo("여러분");
+// }
+// ```
+// ->
+// ```
+// fn print(_: &str) {}
+//
+// fn bar() {
+//     {
+//         let word: &str = "안녕하세요";
+//         if !word.is_empty() {
+//             print(word);
+//         }
+//     };
+//     {
+//         let word: &str = "여러분";
+//         if !word.is_empty() {
+//             print(word);
+//         }
+//     };
+// }
+// ```
 pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let def_file = ctx.file_id();
     let vfs_def_file = ctx.vfs_file_id();
@@ -133,6 +171,27 @@ pub(super) fn split_refs_and_uses<T: ast::AstNode>(
         .partition_map(|either| either)
 }
 
+// Assist: inline_call
+//
+// Inlines a function or method body creating a `let` statement per parameter unless the parameter
+// can be inlined. The parameter will be inlined either if it the supplied argument is a simple local
+// or if the parameter is only accessed inside the function body once.
+//
+// ```
+// # //- minicore: option
+// fn foo(name: Option<&str>) {
+//     let name = name.unwrap$0();
+// }
+// ```
+// ->
+// ```
+// fn foo(name: Option<&str>) {
+//     let name = match name {
+//             Some(val) => val,
+//             None => panic!("called `Option::unwrap()` on a `None` value"),
+//         };
+// }
+// ```
 pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name_ref: ast::NameRef = ctx.find_node_at_offset()?;
     let call_info = CallInfo::from_name_ref(

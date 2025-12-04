@@ -134,6 +134,7 @@ impl DefDiagnostic {
         }
     }
 
+    // FIXME: Whats the difference between this and unresolved_proc_macro
     pub(crate) fn unresolved_macro_call(
         container: LocalModuleId,
         ast: MacroCallKind,

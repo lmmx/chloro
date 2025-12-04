@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10574 bytes
-Chloro size:   10130 bytes
+Chloro size:   10417 bytes
 Rustfmt size:  10774 bytes
 
 ✗ Outputs DIFFER
@@ -20,12 +20,8 @@ Rustfmt size:  10774 bytes
 -use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
  
--// Diagnostic: mismatched-tuple-struct-pat-arg-count
--//
--// This diagnostic is triggered if a function is invoked with an incorrect amount of arguments.
- pub(crate) fn mismatched_tuple_struct_pat_arg_count(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::MismatchedTupleStructPatArgCount,
+ // Diagnostic: mismatched-tuple-struct-pat-arg-count
+ //
          DiagnosticCode::RustcHardError("E0023"),
          message,
          invalid_args_range(ctx, d.expr_or_pat, d.expected, d.found),
@@ -34,12 +30,7 @@ Rustfmt size:  10774 bytes
 +    ).stable()
  }
  
--// Diagnostic: mismatched-arg-count
--//
--// This diagnostic is triggered if a function is invoked with an incorrect amount of arguments.
- pub(crate) fn mismatched_arg_count(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::MismatchedArgCount,
+ // Diagnostic: mismatched-arg-count
          DiagnosticCode::RustcHardError("E0107"),
          message,
          invalid_args_range(ctx, d.call_expr, d.expected, d.found),

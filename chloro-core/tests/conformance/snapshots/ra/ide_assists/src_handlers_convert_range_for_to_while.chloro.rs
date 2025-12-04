@@ -12,6 +12,27 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: convert_range_for_to_while
+//
+// Convert for each range into while loop.
+//
+// ```
+// fn foo() {
+//     $0for i in 3..7 {
+//         foo(i);
+//     }
+// }
+// ```
+// ->
+// ```
+// fn foo() {
+//     let mut i = 3;
+//     while i < 7 {
+//         foo(i);
+//         i += 1;
+//     }
+// }
+// ```
 pub(crate) fn convert_range_for_to_while(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

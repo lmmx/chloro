@@ -5,6 +5,20 @@ use syntax::{AstNode, SmolStr, SyntaxElement, ToSmolStr, ast, syntax_editor::Syn
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: reorder_fields
+//
+// Reorder the fields of record literals and record patterns in the same order as in
+// the definition.
+//
+// ```
+// struct Foo {foo: i32, bar: i32};
+// const test: Foo = $0Foo {bar: 0, foo: 1}
+// ```
+// ->
+// ```
+// struct Foo {foo: i32, bar: i32};
+// const test: Foo = Foo {foo: 1, bar: 0}
+// ```
 pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path = ctx.find_node_at_offset::<ast::Path>()?;
     let record =

@@ -230,6 +230,7 @@ struct AdtParam {
     bounds: Option<tt::TopSubtree>,
 }
 
+// FIXME: This whole thing needs a refactor. Each derive requires its special values, and the result is a mess.
 fn parse_adt(
     db: &dyn ExpandDatabase,
     tt: &tt::TopSubtree,

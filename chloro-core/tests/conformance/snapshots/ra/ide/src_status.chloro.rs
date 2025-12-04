@@ -4,6 +4,15 @@ use itertools::Itertools;
 use span::FileId;
 use stdx::format_to;
 
+// Feature: Status
+//
+// Shows internal statistic about memory usage of rust-analyzer.
+//
+// | Editor  | Action Name |
+// |---------|-------------|
+// | VS Code | **rust-analyzer: Status** |
+//
+// ![Status](https://user-images.githubusercontent.com/48062697/113065584-05f34500-91b1-11eb-98cc-5c196f76be7f.gif)
 pub(crate) fn status(db: &RootDatabase, file_id: Option<FileId>) -> String {
     let mut buf = String::new();
 

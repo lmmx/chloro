@@ -8,6 +8,40 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: reorder_impl_items
+//
+// Reorder the items of an `impl Trait`. The items will be ordered
+// in the same order as in the trait definition.
+//
+// ```
+// trait Foo {
+//     type A;
+//     const B: u8;
+//     fn c();
+// }
+//
+// struct Bar;
+// $0impl Foo for Bar$0 {
+//     const B: u8 = 17;
+//     fn c() {}
+//     type A = String;
+// }
+// ```
+// ->
+// ```
+// trait Foo {
+//     type A;
+//     const B: u8;
+//     fn c();
+// }
+//
+// struct Bar;
+// impl Foo for Bar {
+//     type A = String;
+//     const B: u8 = 17;
+//     fn c() {}
+// }
+// ```
 pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
     let items = impl_ast.assoc_item_list()?;

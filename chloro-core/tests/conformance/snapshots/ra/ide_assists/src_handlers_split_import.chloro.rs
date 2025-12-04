@@ -2,6 +2,17 @@ use syntax::{AstNode, T, ast};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: split_import
+//
+// Wraps the tail of import into braces.
+//
+// ```
+// use std::$0collections::HashMap;
+// ```
+// ->
+// ```
+// use std::{collections::HashMap};
+// ```
 pub(crate) fn split_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let colon_colon = ctx.find_token_syntax_at_offset(T![::])?;
     let path = ast::Path::cast(colon_colon.parent()?)?.qualifier()?;

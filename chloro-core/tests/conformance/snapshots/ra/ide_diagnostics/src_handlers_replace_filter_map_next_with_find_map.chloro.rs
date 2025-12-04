@@ -8,6 +8,9 @@ use syntax::{
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
+// Diagnostic: replace-filter-map-next-with-find-map
+//
+// This diagnostic is triggered when `.filter_map(..).next()` is used, rather than the more concise `.find_map(..)`.
 pub(crate) fn replace_filter_map_next_with_find_map(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::ReplaceFilterMapNextWithFindMap,

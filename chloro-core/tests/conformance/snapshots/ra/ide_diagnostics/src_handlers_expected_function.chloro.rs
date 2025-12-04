@@ -2,6 +2,9 @@ use hir::HirDisplay;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: expected-function
+//
+// This diagnostic is triggered if a call is made on something that is not callable.
 pub(crate) fn expected_function(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::ExpectedFunction<'_>,

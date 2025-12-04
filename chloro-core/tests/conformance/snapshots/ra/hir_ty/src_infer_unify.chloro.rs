@@ -294,6 +294,8 @@ impl<'db> InferenceTable<'db> {
         self.infer_ctxt.canonicalize_response(t)
     }
 
+    // FIXME: We should get rid of this method. We cannot deeply normalize during inference, only when finishing.
+    // Inference should use shallow normalization (`try_structurally_resolve_type()`) only, when needed.
     pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>> + Clone,

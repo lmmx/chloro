@@ -15,6 +15,38 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: convert_closure_to_fn
+//
+// This converts a closure to a freestanding function, changing all captures to parameters.
+//
+// ```
+// # //- minicore: copy
+// # struct String;
+// # impl String {
+// #     fn new() -> Self {}
+// #     fn push_str(&mut self, s: &str) {}
+// # }
+// fn main() {
+//     let mut s = String::new();
+//     let closure = |$0a| s.push_str(a);
+//     closure("abc");
+// }
+// ```
+// ->
+// ```
+// # struct String;
+// # impl String {
+// #     fn new() -> Self {}
+// #     fn push_str(&mut self, s: &str) {}
+// # }
+// fn main() {
+//     let mut s = String::new();
+//     fn closure(a: &str, s: &mut String) {
+//         s.push_str(a)
+//     }
+//     closure("abc", &mut s);
+// }
+// ```
 pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let closure = ctx.find_node_at_offset::<ast::ClosureExpr>()?;
     if ctx.find_node_at_offset::<ast::Expr>() != Some(ast::Expr::ClosureExpr(closure.clone())) {
@@ -620,6 +652,9 @@ fn peel_blocks_and_refs_and_parens(mut expr: ast::Expr) -> ast::Expr {
     expr
 }
 
+// FIXME:
+// Somehow handle the case of `let Struct { field, .. } = capture`.
+// Replacing `capture` with `capture_field` won't work.
 fn expr_of_pat(pat: ast::Pat) -> Option<ast::Expr> {
     'find_expr: {
         for ancestor in pat.syntax().ancestors() {

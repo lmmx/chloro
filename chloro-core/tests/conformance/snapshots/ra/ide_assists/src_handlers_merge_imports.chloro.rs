@@ -19,6 +19,18 @@ use crate::{
 
 use Edit::*;
 
+// Assist: merge_imports
+//
+// Merges neighbor imports with a common prefix.
+//
+// ```
+// use std::$0fmt::Formatter;
+// use std::io;
+// ```
+// ->
+// ```
+// use std::{fmt::Formatter, io};
+// ```
 pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (target, edits) = if ctx.has_empty_selection() {
         // Merge a neighbor

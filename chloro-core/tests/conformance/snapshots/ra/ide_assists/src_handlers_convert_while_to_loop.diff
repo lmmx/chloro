@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5355 bytes
-Chloro size:   5025 bytes
+Chloro size:   5317 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -29,31 +29,7 @@ Rustfmt size:  5418 bytes
 -    AssistId,
  };
  
--// Assist: convert_while_to_loop
--//
--// Replace a while with a loop.
--//
--// ```
--// fn main() {
--//     $0while cond {
--//         foo();
--//     }
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     loop {
--//         if !cond {
--//             break;
--//         }
--//         foo();
--//     }
--// }
--// ```
- pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let while_kw = ctx.find_token_syntax_at_offset(T![while])?;
-     let while_expr = while_kw.parent().and_then(ast::WhileExpr::cast)?;
+ // Assist: convert_while_to_loop
                  make::block_expr(stmts, None)
              } else {
                  let if_cond = invert_boolean_expression_legacy(while_cond);

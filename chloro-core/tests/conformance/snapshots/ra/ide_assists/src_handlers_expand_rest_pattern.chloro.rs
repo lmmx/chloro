@@ -8,6 +8,25 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: expand_record_rest_pattern
+//
+// Fills fields by replacing rest pattern in record patterns.
+//
+// ```
+// struct Bar { y: Y, z: Z }
+//
+// fn foo(bar: Bar) {
+//     let Bar { ..$0 } = bar;
+// }
+// ```
+// ->
+// ```
+// struct Bar { y: Y, z: Z }
+//
+// fn foo(bar: Bar) {
+//     let Bar { y, z } = bar;
+// }
+// ```
 fn expand_record_rest_pattern(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -54,6 +73,25 @@ fn expand_record_rest_pattern(
     )
 }
 
+// Assist: expand_tuple_struct_rest_pattern
+//
+// Fills fields by replacing rest pattern in tuple struct patterns.
+//
+// ```
+// struct Bar(Y, Z);
+//
+// fn foo(bar: Bar) {
+//     let Bar(..$0) = bar;
+// }
+// ```
+// ->
+// ```
+// struct Bar(Y, Z);
+//
+// fn foo(bar: Bar) {
+//     let Bar(_0, _1) = bar;
+// }
+// ```
 fn expand_tuple_struct_rest_pattern(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -120,6 +158,21 @@ fn expand_tuple_struct_rest_pattern(
     )
 }
 
+// Assist: expand_tuple_rest_pattern
+//
+// Fills fields by replacing rest pattern in tuple patterns.
+//
+// ```
+// fn foo(bar: (char, i32, i32)) {
+//     let (ch, ..$0) = bar;
+// }
+// ```
+// ->
+// ```
+// fn foo(bar: (char, i32, i32)) {
+//     let (ch, _1, _2) = bar;
+// }
+// ```
 fn expand_tuple_rest_pattern(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -170,6 +223,21 @@ fn expand_tuple_rest_pattern(
     )
 }
 
+// Assist: expand_slice_rest_pattern
+//
+// Fills fields by replacing rest pattern in slice patterns.
+//
+// ```
+// fn foo(bar: [i32; 3]) {
+//     let [first, ..$0] = bar;
+// }
+// ```
+// ->
+// ```
+// fn foo(bar: [i32; 3]) {
+//     let [first, _1, _2] = bar;
+// }
+// ```
 fn expand_slice_rest_pattern(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

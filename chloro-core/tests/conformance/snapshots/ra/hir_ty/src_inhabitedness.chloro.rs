@@ -20,6 +20,7 @@ use crate::{
     },
 };
 
+// FIXME: Turn this into a query, it can be quite slow
 /// Checks whether a type is visibly uninhabited from a particular module.
 pub(crate) fn is_ty_uninhabited_from<'db>(
     infcx: &InferCtxt<'db>,
@@ -33,6 +34,7 @@ pub(crate) fn is_ty_uninhabited_from<'db>(
     inhabitedness == BREAK_VISIBLY_UNINHABITED
 }
 
+// FIXME: Turn this into a query, it can be quite slow
 /// Checks whether a variant is visibly uninhabited from a particular module.
 pub(crate) fn is_enum_variant_uninhabited_from<'db>(
     infcx: &InferCtxt<'db>,

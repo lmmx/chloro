@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25126 bytes
-Chloro size:   24599 bytes
+Chloro size:   25043 bytes
 Rustfmt size:  25126 bytes
 
 ✗ Outputs DIFFER
@@ -67,17 +67,6 @@ Rustfmt size:  25126 bytes
          let witnesses = report.non_exhaustiveness_witnesses;
          if !witnesses.is_empty() {
              self.diagnostics.push(BodyValidationDiagnostic::MissingMatchArms {
-         }
-     }
- 
--    // [rustc's `is_known_valid_scrutinee`](https://github.com/rust-lang/rust/blob/c9bd03cb724e13cca96ad320733046cbdb16fbbe/compiler/rustc_mir_build/src/thir/pattern/check_match.rs#L288)
--    //
--    // While the above function in rustc uses thir exprs, r-a doesn't have them.
--    // So, the logic here is getting same result as "hir lowering + match with lowered thir"
--    // with "hir only"
-     fn is_known_valid_scrutinee(&self, scrutinee_expr: ExprId) -> bool {
-         let db = self.db();
- 
          let pattern_arena = Arena::new();
          let cx = MatchCheckCtx::new(self.owner.module(self.db()), &self.infcx, self.env.clone());
          for stmt in &**statements {
@@ -116,10 +105,3 @@ Rustfmt size:  25126 bytes
                      self.diagnostics
                          .push(BodyValidationDiagnostic::RemoveUnnecessaryElse { if_expr: id })
                  }
-         }
-     }
- 
--    // check for instances of .filter_map(..).next()
-     fn check(
-         &mut self,
-         current_expr_id: ExprId,

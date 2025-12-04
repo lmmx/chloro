@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16658 bytes
+Chloro size:   16759 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -239,11 +239,7 @@ Rustfmt size:  17571 bytes
      let outer_attrs = ast::AttrDocCommentIter::from_syntax_node(owner.syntax())
          .filter(|el| match el {
              Either::Left(attr) => attr.kind().is_outer(),
-     Some(attrs)
- }
- 
--// Input subtree is: `(cfg, $(attr),+)`
--// Split it up into a `cfg` subtree and the `attr` subtrees.
+ // Split it up into a `cfg` subtree and the `attr` subtrees.
  fn parse_cfg_attr_input(
      subtree: &TopSubtree,
 -) -> Option<(

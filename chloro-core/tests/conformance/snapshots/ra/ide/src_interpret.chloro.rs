@@ -4,6 +4,11 @@ use stdx::format_to;
 use std::time::{Duration, Instant};
 use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
 
+// Feature: Interpret A Function, Static Or Const.
+//
+// | Editor  | Action Name |
+// |---------|-------------|
+// | VS Code | **rust-analyzer: Interpret** |
 pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
     match find_and_interpret(db, position) {
         Some((duration, mut result)) => {

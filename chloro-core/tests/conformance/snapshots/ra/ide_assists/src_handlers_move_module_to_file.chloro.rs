@@ -12,6 +12,19 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: move_module_to_file
+//
+// Moves inline module's contents to a separate file.
+//
+// ```
+// mod $0foo {
+//     fn t() {}
+// }
+// ```
+// ->
+// ```
+// mod foo;
+// ```
 pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let module_ast = ctx.find_node_at_offset::<ast::Module>()?;
     let module_items = module_ast.item_list()?;

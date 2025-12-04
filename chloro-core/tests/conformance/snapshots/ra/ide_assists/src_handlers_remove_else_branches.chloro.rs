@@ -2,6 +2,39 @@ use syntax::{AstNode, SyntaxKind, T, TextRange, ast};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: remove_else_branches
+//
+// Removes the `else` keyword and else branches.
+//
+// ```
+// fn main() {
+//     if true {
+//         let _ = 2;
+//     } $0else {
+//         unreachable!();
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     if true {
+//         let _ = 2;
+//     }
+// }
+// ```
+// ---
+// ```
+// fn main() {
+//     let _x = 2 $0else { unreachable!() };
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let _x = 2;
+// }
+// ```
 pub(crate) fn remove_else_branches(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let else_token = ctx.find_token_syntax_at_offset(T![else])?;
     let else_branches = ctx

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18595 bytes
-Chloro size:   18329 bytes
+Chloro size:   18602 bytes
 Rustfmt size:  18641 bytes
 
 ✗ Outputs DIFFER
@@ -16,23 +16,6 @@ Rustfmt size:  18641 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
- 
--// Assist: comment_to_doc
--//
--// Converts comments to documentation.
--//
--// ```
--// // Wow what $0a nice module
--// // I sure hope this shows up when I hover over it
--// ```
--// ->
--// ```
--// //! Wow what a nice module
--// //! I sure hope this shows up when I hover over it
--// ```
- pub(crate) fn convert_comment_from_or_to_doc(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
      )
  }
  

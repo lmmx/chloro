@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45285 bytes
+Chloro size:   45529 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
@@ -41,17 +41,6 @@ Rustfmt size:  45518 bytes
      if !generic_params.is_empty() {
          w!(p, "<");
          let mut first = true;
-         }
-     }
- 
--    // Add a newline if the current line is not empty.
--    // If the current line is empty, add a space instead.
--    //
--    // Do not use [`writeln!()`] or [`wln!()`] here, which will result in
--    // infinite recursive calls to this function.
-     fn newline(&mut self) {
-         if matches!(self.line_format, LineFormat::Oneline) {
-             match self.buf.chars().last() {
                      Some(path) => self.print_path(path),
                      None => w!(self, "�"),
                  }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25096 bytes
-Chloro size:   24159 bytes
+Chloro size:   25036 bytes
 Rustfmt size:  25274 bytes
 
 ✗ Outputs DIFFER
@@ -30,33 +30,6 @@ Rustfmt size:  25274 bytes
  };
  
  use super::inline_call::split_refs_and_uses;
- 
--// Assist: inline_type_alias_uses
--//
--// Inline a type alias into all of its uses where possible.
--//
--// ```
--// type $0A = i32;
--// fn id(x: A) -> A {
--//     x
--// };
--// fn foo() {
--//     let _: A = 3;
--// }
--// ```
--// ->
--// ```
--//
--// fn id(x: i32) -> i32 {
--//     x
--// };
--// fn foo() {
--//     let _: i32 = 3;
--// }
--// ```
- pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let name = ctx.find_node_at_offset::<ast::Name>()?;
-     let ast_alias = name.syntax().parent().and_then(ast::TypeAlias::cast)?;
      }
  
      // until this is ok
@@ -76,31 +49,6 @@ Rustfmt size:  25274 bytes
                      });
                  path_type_uses
                      .iter()
-     )
- }
- 
--// Assist: inline_type_alias
--//
--// Replace a type alias with its concrete type.
--//
--// ```
--// type A<T = u32> = Vec<T>;
--//
--// fn main() {
--//     let a: $0A;
--// }
--// ```
--// ->
--// ```
--// type A<T = u32> = Vec<T>;
--//
--// fn main() {
--//     let a: Vec<u32>;
--// }
--// ```
- pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let alias_instance = ctx.find_node_at_offset::<ast::PathType>()?;
-     let concrete_type;
  impl Replacement {
      fn replace_generic(&self, concrete_type: &ast::Type) -> SyntaxNode {
          match self {
@@ -197,11 +145,9 @@ Rustfmt size:  25274 bytes
          );
      }
 -
--    // This must be supported in order to support "inline_alias_to_users" or
--    // whatever it will be called.
+     // This must be supported in order to support "inline_alias_to_users" or
+     // whatever it will be called.
      #[test]
-     fn alias_as_expression_ignored() {
-         check_assist_not_applicable(
  "#,
          );
      }
@@ -262,10 +208,9 @@ Rustfmt size:  25274 bytes
          );
      }
 -
--    // This doesn't actually cause the GenericArgsList to contain a AssocTypeArg.
+     // This doesn't actually cause the GenericArgsList to contain a AssocTypeArg.
      #[test]
      fn arg_associated_type() {
-         check_assist(
  "#,
          );
      }
@@ -291,11 +236,9 @@ Rustfmt size:  25274 bytes
          );
      }
 -
--    // Type aliases can't be used in traits, but someone might use the assist to
--    // fix the error.
+     // Type aliases can't be used in traits, but someone might use the assist to
+     // fix the error.
      #[test]
-     fn bounds() {
-         check_assist(
              r#"type A = std::io::Write; fn f<T>() where T: std::io::Write {}"#,
          );
      }

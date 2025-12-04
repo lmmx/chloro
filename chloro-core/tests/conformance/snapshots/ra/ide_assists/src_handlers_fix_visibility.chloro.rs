@@ -7,6 +7,29 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: fix_visibility
+//
+// Note that there is some duplication between this and the no_such_field diagnostic.
+//
+// Makes inaccessible item public.
+//
+// ```
+// mod m {
+//     fn frobnicate() {}
+// }
+// fn main() {
+//     m::frobnicate$0();
+// }
+// ```
+// ->
+// ```
+// mod m {
+//     $0pub(crate) fn frobnicate() {}
+// }
+// fn main() {
+//     m::frobnicate();
+// }
+// ```
 pub(crate) fn fix_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     add_vis_to_referenced_module_def(acc, ctx)
 }

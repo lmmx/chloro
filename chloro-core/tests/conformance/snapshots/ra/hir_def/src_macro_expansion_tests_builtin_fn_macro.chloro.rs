@@ -200,6 +200,7 @@ fn main() {
     );
 }
 
+// FIXME: This is the wrong expansion, see FIXME on `builtin_fn_macro::use_panic_2021`
 #[test]
 fn test_assert_expand_2015() {
     check(

@@ -5,6 +5,23 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: unwrap_block
+//
+// This assist removes if...else, for, while and loop control statements to just keep the body.
+//
+// ```
+// fn foo() {
+//     if true {$0
+//         println!("foo");
+//     }
+// }
+// ```
+// ->
+// ```
+// fn foo() {
+//     println!("foo");
+// }
+// ```
 pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let assist_id = AssistId::refactor_rewrite("unwrap_block");
     let assist_label = "Unwrap block";

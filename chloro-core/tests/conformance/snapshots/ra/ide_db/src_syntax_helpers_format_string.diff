@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11544 bytes
-Chloro size:   11420 bytes
+Chloro size:   11540 bytes
 Rustfmt size:  11544 bytes
 
 ✗ Outputs DIFFER
@@ -13,12 +13,6 @@ Rustfmt size:  11544 bytes
  use syntax::{
      AstNode, AstToken, TextRange, TextSize,
      ast::{self, IsString},
- };
- 
--// FIXME: This can probably be re-implemented via the HIR?
- pub fn is_format_string(string: &ast::String) -> bool {
-     // Check if `string` is a format string argument of a macro invocation.
-     // `string` is a string literal, mapped down into the innermost macro expansion.
          let lit = string.syntax().parent().and_then(ast::Literal::cast)?;
          let fa = lit.syntax().parent().and_then(ast::FormatArgsExpr::cast)?;
          (fa.template()? == ast::Expr::Literal(lit)).then_some(|| ())
@@ -28,10 +22,3 @@ Rustfmt size:  11544 bytes
  }
  
  #[derive(Debug)]
-     Escape,
- }
- 
--// FIXME: Remove this, we can use rustc_format_parse instead
- pub fn lex_format_specifiers(
-     string: &ast::String,
-     mut callback: &mut dyn FnMut(TextRange, FormatSpecifier),

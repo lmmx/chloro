@@ -43,6 +43,43 @@ mod param_name;
 mod ra_fixture;
 mod range_exclusive;
 
+// Feature: Inlay Hints
+//
+// rust-analyzer shows additional information inline with the source code.
+// Editors usually render this using read-only virtual text snippets interspersed with code.
+//
+// rust-analyzer by default shows hints for
+//
+// * types of local variables
+// * names of function arguments
+// * names of const generic parameters
+// * types of chained expressions
+//
+// Optionally, one can enable additional hints for
+//
+// * return types of closure expressions
+// * elided lifetimes
+// * compiler inserted reborrows
+// * names of generic type and lifetime parameters
+//
+// Note: inlay hints for function argument names are heuristically omitted to reduce noise and will not appear if
+// any of the
+// [following criteria](https://github.com/rust-lang/rust-analyzer/blob/6b8b8ff4c56118ddee6c531cde06add1aad4a6af/crates/ide/src/inlay_hints/param_name.rs#L92-L99)
+// are met:
+//
+// * the parameter name is a suffix of the function's name
+// * the argument is a qualified constructing or call expression where the qualifier is an ADT
+// * exact argument<->parameter match(ignoring leading underscore) or parameter is a prefix/suffix
+//   of argument with _ splitting it off
+// * the parameter name starts with `ra_fixture`
+// * the parameter name is a
+// [well known name](https://github.com/rust-lang/rust-analyzer/blob/6b8b8ff4c56118ddee6c531cde06add1aad4a6af/crates/ide/src/inlay_hints/param_name.rs#L200)
+// in a unary function
+// * the parameter name is a
+// [single character](https://github.com/rust-lang/rust-analyzer/blob/6b8b8ff4c56118ddee6c531cde06add1aad4a6af/crates/ide/src/inlay_hints/param_name.rs#L201)
+// in a unary function
+//
+// ![Inlay hints](https://user-images.githubusercontent.com/48062697/113020660-b5f98b80-917a-11eb-8d70-3be3fd558cdd.png)
 pub(crate) fn inlay_hints(
     db: &RootDatabase,
     file_id: FileId,
@@ -169,6 +206,8 @@ fn handle_event(ctx: &mut InlayHintCtx, node: WalkEvent<SyntaxNode>) -> Option<S
     }
 }
 
+// FIXME: At some point when our hir infra is fleshed out enough we should flip this and traverse the
+// HIR instead of the syntax tree.
 fn hints(
     hints: &mut Vec<InlayHint>,
     ctx: &mut InlayHintCtx,

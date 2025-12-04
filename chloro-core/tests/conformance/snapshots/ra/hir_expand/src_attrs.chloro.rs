@@ -498,6 +498,8 @@ fn inner_attributes(
     Some(attrs)
 }
 
+// Input subtree is: `(cfg, $(attr),+)`
+// Split it up into a `cfg` subtree and the `attr` subtrees.
 fn parse_cfg_attr_input(
     subtree: &TopSubtree,
 ) -> Option<(tt::TokenTreesView<'_>, impl Iterator<Item = tt::TokenTreesView<'_>>)> {

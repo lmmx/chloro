@@ -11,6 +11,34 @@ use crate::{
     utils::self,
 };
 
+// Assist: promote_local_to_const
+//
+// Promotes a local variable to a const item changing its name to a `SCREAMING_SNAKE_CASE` variant
+// if the local uses no non-const expressions.
+//
+// ```
+// fn main() {
+//     let foo$0 = true;
+//
+//     if foo {
+//         println!("It's true");
+//     } else {
+//         println!("It's false");
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     const $0FOO: bool = true;
+//
+//     if FOO {
+//         println!("It's true");
+//     } else {
+//         println!("It's false");
+//     }
+// }
+// ```
 pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let name = pat.name()?;

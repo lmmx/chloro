@@ -150,6 +150,8 @@ impl DefMap {
         Some(vis)
     }
 
+    // Returns Yes if we are sure that additions to `ItemMap` wouldn't change
+    // the result.
     pub(super) fn resolve_path_fp_with_macro(
         &self,
         local_def_map: &LocalDefMap,

@@ -3,6 +3,25 @@ use syntax::{AstNode, ast};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: inline_const_as_literal
+//
+// Evaluate and inline const variable as literal.
+//
+// ```
+// const STRING: &str = "Hello, World!";
+//
+// fn something() -> &'static str {
+//     STRING$0
+// }
+// ```
+// ->
+// ```
+// const STRING: &str = "Hello, World!";
+//
+// fn something() -> &'static str {
+//     "Hello, World!"
+// }
+// ```
 pub(crate) fn inline_const_as_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let variable = ctx.find_node_at_offset::<ast::PathExpr>()?;
 
@@ -101,6 +120,7 @@ mod tests {
         ("&str", "\"str\"", STR),
         ("char", "'c'", CHAR),
     ];
+    // -----------Not supported-----------
     #[test]
     fn inline_const_as_literal_const_fn_call_slice() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -397,6 +417,7 @@ mod tests {
             "#,
         );
     }
+    // FIXME: Add support for nested ref slices when using `render_eval`
     #[test]
     fn inline_const_as_literal_block_slice() {
         check_assist_not_applicable(
@@ -407,6 +428,9 @@ mod tests {
             "#,
         );
     }
+    // FIXME: Add support for unary tuple expressions when using `render_eval`.
+    // `const fn abc() -> (i32) { (1) }` will results in `1` instead of `(1)` because it's evaluated
+    // as a paren expr.
     #[test]
     fn inline_const_as_literal_block_tuple() {
         check_assist(

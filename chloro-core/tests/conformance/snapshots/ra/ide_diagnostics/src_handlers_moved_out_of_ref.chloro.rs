@@ -1,6 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 use hir::HirDisplay;
 
+// Diagnostic: moved-out-of-ref
+//
+// This diagnostic is triggered on moving non copy things out of references.
 pub(crate) fn moved_out_of_ref(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::MovedOutOfRef<'_>,

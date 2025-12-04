@@ -4,6 +4,37 @@ use syntax::ast::{self, AstNode};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: inline_macro
+//
+// Takes a macro and inlines it one step.
+//
+// ```
+// macro_rules! num {
+//     (+$($t:tt)+) => (1 + num!($($t )+));
+//     (-$($t:tt)+) => (-1 + num!($($t )+));
+//     (+) => (1);
+//     (-) => (-1);
+// }
+//
+// fn main() {
+//     let number = num$0!(+ + + - + +);
+//     println!("{number}");
+// }
+// ```
+// ->
+// ```
+// macro_rules! num {
+//     (+$($t:tt)+) => (1 + num!($($t )+));
+//     (-$($t:tt)+) => (-1 + num!($($t )+));
+//     (+) => (1);
+//     (-) => (-1);
+// }
+//
+// fn main() {
+//     let number = 1+num!(+ + - + +);
+//     println!("{number}");
+// }
+// ```
 pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let unexpanded = ctx.find_node_at_offset::<ast::MacroCall>()?;
     let macro_call = ctx.sema.to_def(&unexpanded)?;

@@ -44,6 +44,22 @@ use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
 //     VAR_NAME * 4;
 // }
 // ```
+// Assist: extract_static
+//
+// Extracts subexpression into a static.
+//
+// ```
+// fn main() {
+//     $0(1 + 2)$0 * 4;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     static $0VAR_NAME: i32 = 1 + 2;
+//     VAR_NAME * 4;
+// }
+// ```
 pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let node = if ctx.has_empty_selection() {
         if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
@@ -1709,6 +1725,7 @@ fn foo() {
 }"#,
         );
     }
+    // FIXME: This is not quite correct, but good enough(tm) for the sorting heuristic
     #[test]
     fn extract_var_target() {
         check_assist_target(extract_variable, r#"fn foo() -> u32 { $0return 2 + 2$0; }"#, "2 + 2");

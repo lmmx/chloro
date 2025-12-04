@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21030 bytes
+Chloro size:   21096 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -88,13 +88,6 @@ Rustfmt size:  22047 bytes
      }
  
      fn variant_id_for_adt(
-         }
-     }
- 
--    // This lists the fields of a variant along with their types.
-     fn list_variant_fields(
-         &self,
-         ty: Ty<'db>,
          let field_tys = self.db.field_types(variant);
          let fields_len = variant.fields(self.db).fields().len() as u32;
  

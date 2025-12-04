@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4202 bytes
-Chloro size:   3893 bytes
+Chloro size:   4196 bytes
 Rustfmt size:  4224 bytes
 
 ✗ Outputs DIFFER
@@ -16,30 +16,6 @@ Rustfmt size:  4224 bytes
  
  use crate::{AssistContext, Assists};
  
--// Assist: add_explicit_enum_discriminant
--//
--// Adds explicit discriminant to all enum variants.
--//
--// ```
--// enum TheEnum$0 {
--//     Foo,
--//     Bar,
--//     Baz = 42,
--//     Quux,
--// }
--// ```
--// ->
--// ```
--// enum TheEnum {
--//     Foo = 0,
--//     Bar = 1,
--//     Baz = 42,
--//     Quux = 43,
--// }
--// ```
- pub(crate) fn add_explicit_enum_discriminant(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
      let variant_list = enum_node.variant_list()?;
  
      // Don't offer the assist if the enum has no variants or if all variants already have an

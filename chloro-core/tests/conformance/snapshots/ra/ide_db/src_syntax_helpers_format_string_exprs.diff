@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9578 bytes
-Chloro size:   9515 bytes
+Chloro size:   9577 bytes
 Rustfmt size:  9883 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         .collect()
- }
- 
--// FIXME Remove this, we have this information in the HIR now
- /// Parser for a format-like string. It is more allowing in terms of string contents,
- /// as we expect variable placeholders to be filled with expressions.
- ///
      let mut output = String::new();
  
      // Count of open braces inside of an expression.

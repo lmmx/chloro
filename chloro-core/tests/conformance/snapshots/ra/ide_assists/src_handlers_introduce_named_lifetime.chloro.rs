@@ -11,6 +11,29 @@ static ASSIST_NAME: &str = "introduce_named_lifetime";
 
 static ASSIST_LABEL: &str = "Introduce named lifetime";
 
+// Assist: introduce_named_lifetime
+//
+// Change an anonymous lifetime to a named lifetime.
+//
+// ```
+// impl Cursor<'_$0> {
+//     fn node(self) -> &SyntaxNode {
+//         match self {
+//             Cursor::Replace(node) | Cursor::Before(node) => node,
+//         }
+//     }
+// }
+// ```
+// ->
+// ```
+// impl<'a> Cursor<'a> {
+//     fn node(self) -> &SyntaxNode {
+//         match self {
+//             Cursor::Replace(node) | Cursor::Before(node) => node,
+//         }
+//     }
+// }
+// ```
 pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // FIXME: How can we handle renaming any one of multiple anonymous lifetimes?
     // FIXME: should also add support for the case fun(f: &Foo) -> &$0Foo

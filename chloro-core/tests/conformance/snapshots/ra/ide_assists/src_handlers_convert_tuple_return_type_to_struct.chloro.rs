@@ -18,6 +18,32 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: convert_tuple_return_type_to_struct
+//
+// This converts the return type of a function from a tuple type
+// into a tuple struct and updates the body accordingly.
+//
+// ```
+// fn bar() {
+//     let (a, b, c) = foo();
+// }
+//
+// fn foo() -> ($0u32, u32, u32) {
+//     (1, 2, 3)
+// }
+// ```
+// ->
+// ```
+// fn bar() {
+//     let FooResult(a, b, c) = foo();
+// }
+//
+// struct FooResult(u32, u32, u32);
+//
+// fn foo() -> FooResult {
+//     FooResult(1, 2, 3)
+// }
+// ```
 pub(crate) fn convert_tuple_return_type_to_struct(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -198,6 +224,7 @@ fn augment_references_with_imports(
         .collect()
 }
 
+// Adds the definition of the tuple struct before the parent function.
 fn add_tuple_struct_def(
     edit: &mut SourceChangeBuilder,
     ctx: &AssistContext<'_>,

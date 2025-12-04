@@ -1824,6 +1824,7 @@ fn foo() {
     let (,);
 }
 
+// 2021
 fn gen_fn() {}
 
 async fn async_gen_fn() {}
@@ -2320,6 +2321,7 @@ fn foo() {
     let _s = S { .. };
 }
 
+// 2024
 pub fn main() {
     gen { yield ""; };
     async gen { yield ""; };
@@ -2373,6 +2375,7 @@ fn foo() {
     {p}.x = 10;
 }
 
+// 2015
 fn foo() {
     try
     !(Ok(()));
@@ -3180,8 +3183,12 @@ struct S {
 }
 
 
+// sqrt (from libm) may be called with any `f64`
 pub fn sqrt(x: f64) -> f64;
+// strlen (from libc) requires a valid pointer,
+// so we mark it as being an unsafe fn
 pub unsafe fn strlen(p: *const c_char) -> usize;
+// this function doesn't say safe or unsafe, so it defaults to unsafe
 pub fn free(p: *mut core::ffi::c_void);
 pub static mut COUNTER: i32;
 pub static IMPORTANT_BYTES: [u8; 256];
@@ -3612,6 +3619,7 @@ fn main() {
     }
 }
 
+// https://github.com/rust-lang/rust-analyzer/issues/677
 fn main() {
     #[cfg(feature = "backtrace")]
     let exit_code = panic::catch_unwind(move || main());
@@ -3633,6 +3641,7 @@ fn foo() {
     let x = 1..;
 }
 
+// format with label break value.
 fn main() {
     'empty_block: {}
 
@@ -4901,6 +4910,7 @@ pub(crate) mod entry {
             // We can set `is_in_extern=true`, because it only allows `safe fn`, and there is no ambiguity here.
             items::item_or_macro(p, true, true);
         }
+        // Parse a meta item , which excluded [], e.g : #[ MetaItem ]
         pub(crate) fn meta_item(p: &mut Parser<'_>) {
             attributes::meta(p);
         }
@@ -5194,6 +5204,8 @@ fn error_block(p: &mut Parser<'_>, message: &str) {
     m.complete(p, ERROR);
 }
 
+// test_err top_level_let
+// let ref foo: fn() = 1 + 3;
 fn error_let_stmt(p: &mut Parser<'_>, message: &str) {
     assert!(p.at(T![let]));
     let m = p.start();
@@ -5815,6 +5827,8 @@ impl SyntaxKind {
 
 use super::*;
 
+// test use_item
+// use std::collections;
 pub(super) fn use_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![use]);
     use_tree(p, true);
@@ -5822,6 +5836,8 @@ pub(super) fn use_(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, USE);
 }
 
+// test use_tree
+// use outer::tree::{inner::tree};
 fn use_tree(p: &mut Parser<'_>, top_level: bool) -> bool {
     let m = p.start();
     match p.current() {
@@ -5892,6 +5908,8 @@ pub(super) const USE_TREE_LIST_RECOVERY_SET: TokenSet = TokenSet::new(&[T![;], T
 
 pub(super) const USE_TREE_LIST_FIRST_SET: TokenSet = TokenSet::new(&[T!['{'], T![ident]]);
 
+// test use_tree_list
+// use {a, b, c};
 pub(crate) fn use_tree_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['{']));
     let m = p.start();
@@ -5922,6 +5940,8 @@ pub(crate) fn use_tree_list(p: &mut Parser<'_>) {
 
 use super::*;
 
+// test trait_item
+// trait T { fn new() -> Self; }
 pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![trait]);
     name_r(p, ITEM_RECOVERY_SET);
@@ -5964,6 +5984,8 @@ pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, TRAIT);
 }
 
+// test impl_item
+// impl S {}
 pub(super) fn impl_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![impl]);
     if p.at(T![<]) && not_a_qualified_path(p) {
@@ -5996,6 +6018,13 @@ pub(super) fn impl_(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, IMPL);
 }
 
+// test assoc_item_list
+// impl F {
+//     type A = i32;
+//     const B: i32 = 92;
+//     fn foo() {}
+//     fn bar(&self) {}
+// }
 pub(crate) fn assoc_item_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['{']));
 
@@ -6016,6 +6045,8 @@ pub(crate) fn assoc_item_list(p: &mut Parser<'_>) {
     m.complete(p, ASSOC_ITEM_LIST);
 }
 
+// test impl_type_params
+// impl<const N: u32> Bar<N> {}
 fn not_a_qualified_path(p: &Parser<'_>) -> bool {
     // There's an ambiguity between generic parameters and qualified paths in impls.
     // If we see `<` it may start both, so we have to inspect some following tokens.
@@ -6039,6 +6070,11 @@ fn not_a_qualified_path(p: &Parser<'_>) -> bool {
     ([LIFETIME_IDENT, IDENT].contains(&p.nth(1))) && ([T![>], T![,], T![:], T![=]].contains(&p.nth(2)))
 }
 
+// test_err impl_type
+// impl Type {}
+// impl Trait1 for T {}
+// impl impl NotType {}
+// impl Trait2 for impl NotType {}
 pub(crate) fn impl_type(p: &mut Parser<'_>) {
     if p.at(T![impl]) {
         p.error("expected trait or type");
@@ -6049,6 +6085,8 @@ pub(crate) fn impl_type(p: &mut Parser<'_>) {
 
 use super::*;
 
+// test const_item
+// const C: u32 = 92;
 pub(super) fn konst(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![const]);
     const_or_static(p, m, true);
@@ -6119,11 +6157,15 @@ use crate::grammar::attributes::ATTRIBUTE_FIRST;
 
 use super::*;
 
+// test struct_item
+// struct S {}
 pub(super) fn strukt(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![struct]);
     struct_or_union(p, m, true);
 }
 
+// test union_item
+// struct U { i: i32, f: f32 }
 pub(super) fn union(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at_contextual_kw(T![union]));
     p.bump_remap(T![union]);
@@ -6219,6 +6261,8 @@ pub(crate) fn variant_list(p: &mut Parser<'_>) {
     }
 }
 
+// test record_field_list
+// struct S { a: i32, b: f32, unsafe c: u8 }
 pub(crate) fn record_field_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['{']));
     let m = p.start();
@@ -6262,6 +6306,9 @@ pub(crate) fn record_field_list(p: &mut Parser<'_>) {
 
 const TUPLE_FIELD_FIRST: TokenSet = types::TYPE_FIRST.union(ATTRIBUTE_FIRST).union(VISIBILITY_FIRST);
 
+// test_err tuple_field_list_recovery
+// struct S(struct S;
+// struct S(A,,B);
 fn tuple_field_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['(']));
     let m = p.start();
@@ -6309,6 +6356,12 @@ pub(crate) use self::{
 };
 use super::*;
 
+// test mod_contents
+// fn foo() {}
+// macro_rules! foo {}
+// foo::bar!();
+// super::baz! {}
+// struct S;
 pub(super) fn mod_contents(p: &mut Parser<'_>, stop_on_r_curly: bool) {
     attributes::inner_attrs(p);
     while !(p.at(EOF) || (p.at(T!['}']) && stop_on_r_curly)) {
@@ -6586,6 +6639,9 @@ fn opt_item_without_modifiers(p: &mut Parser<'_>, m: Marker) -> Result<(), Marke
     Ok(())
 }
 
+// test extern_crate
+// extern crate foo;
+// extern crate self;
 fn extern_crate(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![extern]);
     p.bump(T![crate]);
@@ -6602,6 +6658,8 @@ fn extern_crate(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, EXTERN_CRATE);
 }
 
+// test mod_item
+// mod a;
 pub(crate) fn mod_item(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![mod]);
     name(p);
@@ -6615,6 +6673,8 @@ pub(crate) fn mod_item(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, MODULE);
 }
 
+// test type_alias
+// type Foo = Bar;
 fn type_alias(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![type]);
 
@@ -6664,6 +6724,8 @@ pub(crate) fn extern_item_list(p: &mut Parser<'_>) {
     m.complete(p, EXTERN_ITEM_LIST);
 }
 
+// test try_macro_rules 2015
+// macro_rules! try { () => {} }
 fn macro_rules(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at_contextual_kw(T![macro_rules]));
     p.bump_remap(T![macro_rules]);
@@ -6685,6 +6747,8 @@ fn macro_rules(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, MACRO_RULES);
 }
 
+// test macro_def
+// macro m($i:ident) {}
 fn macro_def(p: &mut Parser<'_>, m: Marker) {
     p.expect(T![macro]);
     name_r(p, ITEM_RECOVERY_SET);
@@ -6705,6 +6769,8 @@ fn macro_def(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, MACRO_DEF);
 }
 
+// test fn_
+// fn foo() {}
 fn fn_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![fn]);
 
@@ -6988,6 +7054,12 @@ pub(super) fn atom_expr(
     Some((done, blocklike))
 }
 
+// test tuple_expr
+// fn foo() {
+//     ();
+//     (1);
+//     (1,);
+// }
 fn tuple_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T!['(']));
     let m = p.start();
@@ -7033,6 +7105,12 @@ fn tuple_expr(p: &mut Parser<'_>) -> CompletedMarker {
     )
 }
 
+// test builtin_expr
+// fn foo() {
+//     builtin#asm("");
+//     builtin#format_args("", 0, 1, a = 2 + 3, a + b);
+//     builtin#offset_of(Foo, bar.baz.0);
+// }
 fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
     let m = p.start();
     p.bump_remap(T![builtin]);
@@ -7098,6 +7176,17 @@ fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
     }
 }
 
+// test asm_expr
+// fn foo() {
+//     builtin#asm(
+//         "mov {tmp}, {x}",
+//         "shl {tmp}, 1",
+//         "shl {x}, 2",
+//         "add {x}, {tmp}",
+//         x = inout(reg) x,
+//         tmp = out(reg) _,
+//     );
+// }
 pub(crate) fn parse_asm_expr(p: &mut Parser<'_>, m: Marker) -> Option<CompletedMarker> {
     p.expect(T!['(']);
     if expr(p).is_none() {
@@ -7274,6 +7363,13 @@ fn parse_reg(p: &mut Parser<'_>) {
     p.expect(T![')']);
 }
 
+// test array_expr
+// fn foo() {
+//     [];
+//     [1];
+//     [1, 2,];
+//     [1; 2];
+// }
 fn array_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T!['[']));
     let m = p.start();
@@ -7305,6 +7401,22 @@ fn array_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, ARRAY_EXPR)
 }
 
+// test lambda_expr
+// fn foo() {
+//     || ();
+//     || -> i32 { 92 };
+//     |x| x;
+//     move |x: i32,| x;
+//     async || {};
+//     move || {};
+//     async move || {};
+//     static || {};
+//     static move || {};
+//     static async || {};
+//     static async move || {};
+//     for<'a> || {};
+//     for<'a> move || {};
+// }
 fn closure_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(match p.current() {
         T![const] | T![static] | T![async] | T![move] | T![|] => true,
@@ -7353,6 +7465,14 @@ fn closure_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, CLOSURE_EXPR)
 }
 
+// test if_expr
+// fn foo() {
+//     if true {};
+//     if true {} else {};
+//     if true {} else if false {} else {};
+//     if S {};
+//     if { true } { } else { };
+// }
 fn if_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![if]));
     let m = p.start();
@@ -7369,6 +7489,12 @@ fn if_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, IF_EXPR)
 }
 
+// test label
+// fn foo() {
+//     'a: loop {}
+//     'b: while true {}
+//     'c: for x in () {}
+// }
 fn label(p: &mut Parser<'_>) {
     assert!(p.at(LIFETIME_IDENT) && p.nth(1) == T![:]);
     let m = p.start();
@@ -7377,6 +7503,10 @@ fn label(p: &mut Parser<'_>) {
     m.complete(p, LABEL);
 }
 
+// test loop_expr
+// fn foo() {
+//     loop {};
+// }
 fn loop_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![loop]));
     let m = m.unwrap_or_else(|| p.start());
@@ -7385,6 +7515,12 @@ fn loop_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     m.complete(p, LOOP_EXPR)
 }
 
+// test while_expr
+// fn foo() {
+//     while true {};
+//     while let Some(x) = it.next() {};
+//     while { true } {};
+// }
 fn while_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![while]));
     let m = m.unwrap_or_else(|| p.start());
@@ -7394,6 +7530,10 @@ fn while_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     m.complete(p, WHILE_EXPR)
 }
 
+// test for_expr
+// fn foo() {
+//     for x in [] {};
+// }
 fn for_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![for]));
     let m = m.unwrap_or_else(|| p.start());
@@ -7405,6 +7545,11 @@ fn for_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     m.complete(p, FOR_EXPR)
 }
 
+// test let_expr
+// fn foo() {
+//     if let Some(_) = None && true {}
+//     while 1 == 5 && (let None = None) {}
+// }
 fn let_expr(p: &mut Parser<'_>) -> CompletedMarker {
     let m = p.start();
     p.bump(T![let]);
@@ -7414,6 +7559,13 @@ fn let_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, LET_EXPR)
 }
 
+// test match_expr
+// fn foo() {
+//     match () { };
+//     match S {};
+//     match { } { _ => () };
+//     match { S {} } {};
+// }
 fn match_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![match]));
     let m = p.start();
@@ -7427,6 +7579,18 @@ fn match_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, MATCH_EXPR)
 }
 
+// test_err match_arms_recovery
+// fn foo() {
+//     match () {
+//         _ => (),,
+//         _ => ,
+//         _ => (),
+//          => (),
+//         if true => (),
+//         _ => (),
+//         () if => (),
+//     }
+// }
 pub(crate) fn match_arm_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['{']));
     let m = p.start();
@@ -7466,6 +7630,16 @@ pub(crate) fn match_arm_list(p: &mut Parser<'_>) {
     m.complete(p, MATCH_ARM_LIST);
 }
 
+// test match_arm
+// fn foo() {
+//     match () {
+//         _ => (),
+//         _ if Test > Test{field: 0} => (),
+//         X | Y if Z => (),
+//         | X | Y if Z => (),
+//         | X => (),
+//     };
+// }
 fn match_arm(p: &mut Parser<'_>) {
     let m = p.start();
     // test match_arms_outer_attributes
@@ -7511,6 +7685,13 @@ fn match_arm(p: &mut Parser<'_>) {
     m.complete(p, MATCH_ARM);
 }
 
+// test match_guard
+// fn foo() {
+//     match () {
+//         _ if foo => (),
+//         _ if let foo = bar => (),
+//     }
+// }
 fn match_guard(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![if]));
     let m = p.start();
@@ -7523,6 +7704,11 @@ fn match_guard(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, MATCH_GUARD)
 }
 
+// test block
+// fn a() {}
+// fn b() { let _ = 1; }
+// fn c() { 1; 2; }
+// fn d() { 1; 2 }
 pub(crate) fn block_expr(p: &mut Parser<'_>) {
     if !p.at(T!['{']) {
         p.error("expected a block");
@@ -7542,6 +7728,11 @@ fn stmt_list(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, STMT_LIST)
 }
 
+// test return_expr
+// fn foo() {
+//     return;
+//     return 92;
+// }
 fn return_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![return]));
     let m = p.start();
@@ -7552,6 +7743,10 @@ fn return_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, RETURN_EXPR)
 }
 
+// test become_expr
+// fn foo() {
+//     become foo();
+// }
 fn become_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![become]));
     let m = p.start();
@@ -7560,6 +7755,11 @@ fn become_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, BECOME_EXPR)
 }
 
+// test yield_expr
+// fn foo() {
+//     yield;
+//     yield 1;
+// }
 fn yield_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![yield]));
     let m = p.start();
@@ -7570,6 +7770,11 @@ fn yield_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, YIELD_EXPR)
 }
 
+// test yeet_expr
+// fn foo() {
+//     do yeet;
+//     do yeet 1
+// }
 fn yeet_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![do]));
     assert!(p.nth_at_contextual_kw(1, T![yeet]));
@@ -7582,6 +7787,13 @@ fn yeet_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, YEET_EXPR)
 }
 
+// test continue_expr
+// fn foo() {
+//     loop {
+//         continue;
+//         continue 'l;
+//     }
+// }
 fn continue_expr(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![continue]));
     let m = p.start();
@@ -7592,6 +7804,15 @@ fn continue_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, CONTINUE_EXPR)
 }
 
+// test break_expr
+// fn foo() {
+//     loop {
+//         break;
+//         break 'l;
+//         break 92;
+//         break 'l 92;
+//     }
+// }
 fn break_expr(p: &mut Parser<'_>, r: Restrictions) -> CompletedMarker {
     assert!(p.at(T![break]));
     let m = p.start();
@@ -7612,6 +7833,10 @@ fn break_expr(p: &mut Parser<'_>, r: Restrictions) -> CompletedMarker {
     m.complete(p, BREAK_EXPR)
 }
 
+// test try_block_expr
+// fn foo() {
+//     let _ = try {};
+// }
 fn try_block_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![try]));
     let m = m.unwrap_or_else(|| p.start());
@@ -7633,6 +7858,8 @@ use super::*;
 // fn b(x: i32) {}
 // fn c(x: i32, ) {}
 // fn d(x: i32, y: ()) {}
+// test_err empty_param_slot
+// fn f(y: i32, ,t: i32) {}
 pub(super) fn param_list_fn_def(p: &mut Parser<'_>) {
     list_(p, Flavor::FnDef);
 }
@@ -7780,6 +8007,14 @@ fn variadic_param(p: &mut Parser<'_>) -> bool {
     }
 }
 
+// test self_param
+// impl S {
+//     fn a(self) {}
+//     fn b(&self,) {}
+//     fn c(&'a self,) {}
+//     fn d(&'a mut self, x: i32) {}
+//     fn e(mut self) {}
+// }
 fn opt_self_param(p: &mut Parser<'_>, m: Marker) -> Result<(), Marker> {
     if p.at(T![self]) || p.at(T![mut]) && p.nth(1) == T![self] {
         p.eat(T![mut]);
@@ -7869,6 +8104,27 @@ fn attr(p: &mut Parser<'_>, inner: bool) {
 // #![p:: =]
 // #![unsafe]
 // #![unsafe =]
+// test metas
+// #![simple_ident]
+// #![simple::path]
+// #![simple_ident_expr = ""]
+// #![simple::path::Expr = ""]
+// #![simple_ident_tt(a b c)]
+// #![simple_ident_tt[a b c]]
+// #![simple_ident_tt{a b c}]
+// #![simple::path::tt(a b c)]
+// #![simple::path::tt[a b c]]
+// #![simple::path::tt{a b c}]
+// #![unsafe(simple_ident)]
+// #![unsafe(simple::path)]
+// #![unsafe(simple_ident_expr = "")]
+// #![unsafe(simple::path::Expr = "")]
+// #![unsafe(simple_ident_tt(a b c))]
+// #![unsafe(simple_ident_tt[a b c])]
+// #![unsafe(simple_ident_tt{a b c})]
+// #![unsafe(simple::path::tt(a b c))]
+// #![unsafe(simple::path::tt[a b c])]
+// #![unsafe(simple::path::tt{a b c})]
 pub(super) fn meta(p: &mut Parser<'_>) {
     let meta = p.start();
     let is_unsafe = p.eat(T![unsafe]);
@@ -8007,6 +8263,8 @@ pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
     }
 }
 
+// test let_stmt
+// fn f() { let x: i32 = 92; super let y; super::foo; }
 pub(super) fn let_stmt(p: &mut Parser<'_>, with_semi: Semicolon) {
     p.eat(T![super]);
     p.bump(T![let]);
@@ -8134,6 +8392,7 @@ fn current_op(p: &Parser<'_>) -> (u8, SyntaxKind, Associativity) {
     }
 }
 
+// Parses expression with binding power of at least bp.
 fn expr_bp(
     p: &mut Parser<'_>,
     m: Option<Marker>,
@@ -8386,6 +8645,13 @@ fn postfix_dot_expr<const FLOAT_RECOVERY: bool>(
     field_expr::<FLOAT_RECOVERY>(p, lhs)
 }
 
+// test call_expr
+// fn foo() {
+//     let _ = f();
+//     let _ = f()(1)(1, 2,);
+//     let _ = f(<Foo>::func());
+//     f(<Foo as Trait>::func());
+// }
 fn call_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T!['(']));
     let m = lhs.precede(p);
@@ -8393,6 +8659,10 @@ fn call_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     m.complete(p, CALL_EXPR)
 }
 
+// test index_expr
+// fn foo() {
+//     x[1][2];
+// }
 fn index_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T!['[']));
     let m = lhs.precede(p);
@@ -8402,6 +8672,14 @@ fn index_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     m.complete(p, INDEX_EXPR)
 }
 
+// test method_call_expr
+// fn foo() {
+//     x.foo();
+//     y.bar::<T>(1, 2,);
+//     x.0.0.call();
+//     x.0. call();
+//     x.0()
+// }
 fn method_call_expr<const FLOAT_RECOVERY: bool>(
     p: &mut Parser<'_>,
     lhs: CompletedMarker,
@@ -8443,6 +8721,16 @@ fn method_call_expr<const FLOAT_RECOVERY: bool>(
     m.complete(p, METHOD_CALL_EXPR)
 }
 
+// test field_expr
+// fn foo() {
+//     x.self;
+//     x.Self;
+//     x.foo;
+//     x.0.bar;
+//     x.0.1;
+//     x.0. bar;
+//     x.0();
+// }
 fn field_expr<const FLOAT_RECOVERY: bool>(
     p: &mut Parser<'_>,
     lhs: CompletedMarker,
@@ -8470,6 +8758,10 @@ fn field_expr<const FLOAT_RECOVERY: bool>(
     Ok(m.complete(p, FIELD_EXPR))
 }
 
+// test try_expr
+// fn foo() {
+//     x?;
+// }
 fn try_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T![?]));
     let m = lhs.precede(p);
@@ -8477,6 +8769,13 @@ fn try_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     m.complete(p, TRY_EXPR)
 }
 
+// test cast_expr
+// fn foo() {
+//     82 as i32;
+//     81 as i8 + 1;
+//     79 as i16 - 1;
+//     0x36 as u8 <= 0x37;
+// }
 fn cast_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T![as]));
     let m = lhs.precede(p);
@@ -8487,6 +8786,13 @@ fn cast_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     m.complete(p, CAST_EXPR)
 }
 
+// test_err arg_list_recovery
+// fn main() {
+//     foo(bar::);
+//     foo(bar:);
+//     foo(bar+);
+//     foo(a, , b);
+// }
 fn arg_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['(']));
     let m = p.start();
@@ -8506,6 +8812,13 @@ fn arg_list(p: &mut Parser<'_>) {
     m.complete(p, ARG_LIST);
 }
 
+// test path_expr
+// fn foo() {
+//     let _ = a;
+//     let _ = a::b;
+//     let _ = ::a::<b>;
+//     let _ = format!();
+// }
 fn path_expr(p: &mut Parser<'_>, r: Restrictions) -> (CompletedMarker, BlockLike) {
     assert!(paths::is_path_start(p));
     let m = p.start();
@@ -8523,6 +8836,17 @@ fn path_expr(p: &mut Parser<'_>, r: Restrictions) -> (CompletedMarker, BlockLike
     }
 }
 
+// test record_lit
+// fn foo() {
+//     S {};
+//     S { x };
+//     S { x, y: 32, };
+//     S { x, y: 32, ..Default::default() };
+//     S { x, y: 32, .. };
+//     S { .. };
+//     S { x: ::default() };
+//     TupleStruct { 0: 1 };
+// }
 pub(crate) fn record_expr_field_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['{']));
     let m = p.start();
@@ -8630,6 +8954,9 @@ pub(crate) fn record_expr_field_list(p: &mut Parser<'_>) {
 
 use super::*;
 
+// test_err generic_arg_list_recover_expr
+// const _: () = T::<0, ,T>;
+// const _: () = T::<0, ,T>();
 pub(super) fn opt_generic_arg_list_expr(p: &mut Parser<'_>) {
     let m;
     if p.at(T![::]) && p.nth(2) == T![<] {
@@ -8670,6 +8997,8 @@ pub(crate) const GENERIC_ARG_FIRST: TokenSet = TokenSet::new(&[
 
 const GENERIC_ARG_RECOVERY_SET: TokenSet = TokenSet::new(&[T![>], T![,]]);
 
+// test generic_arg
+// type T = S<i32, dyn T, fn()>;
 pub(crate) fn generic_arg(p: &mut Parser<'_>) -> bool {
     match p.current() {
         LIFETIME_IDENT if !p.nth_at(1, T![+]) => lifetime_arg(p),
@@ -8743,6 +9072,8 @@ pub(crate) fn generic_arg(p: &mut Parser<'_>) -> bool {
     true
 }
 
+// test lifetime_arg
+// type T = S<'static>;
 fn lifetime_arg(p: &mut Parser<'_>) {
     let m = p.start();
     lifetime(p);
@@ -8790,6 +9121,8 @@ pub(super) fn const_arg_expr(p: &mut Parser<'_>) {
     }
 }
 
+// test const_arg
+// type T = S<92>;
 pub(super) fn const_arg(p: &mut Parser<'_>) {
     let m = p.start();
     const_arg_expr(p);
@@ -8814,6 +9147,8 @@ pub(super) fn opt_generic_param_list(p: &mut Parser<'_>) {
 
 // test generic_param_list
 // fn f<T: Clone>() {}
+// test_err generic_param_list_recover
+// fn f<T: Clone,, U:, V>() {}
 pub(super) fn generic_param_list(p: &mut Parser<'_>) {
     assert!(p.at(T![<]));
     let m = p.start();
@@ -8852,6 +9187,8 @@ fn generic_param(p: &mut Parser<'_>, m: Marker) -> bool {
     true
 }
 
+// test lifetime_param
+// fn f<'a: 'b>() {}
 fn lifetime_param(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at(LIFETIME_IDENT));
     lifetime(p);
@@ -8861,6 +9198,8 @@ fn lifetime_param(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, LIFETIME_PARAM);
 }
 
+// test type_param
+// fn f<T: Clone>() {}
 fn type_param(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at(IDENT));
     name(p);
@@ -8876,6 +9215,8 @@ fn type_param(p: &mut Parser<'_>, m: Marker) {
     m.complete(p, TYPE_PARAM);
 }
 
+// test const_param
+// struct S<const N: u32>;
 fn const_param(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![const]);
     name(p);
@@ -8916,6 +9257,8 @@ fn lifetime_bounds(p: &mut Parser<'_>) {
     marker.complete(p, TYPE_BOUND_LIST);
 }
 
+// test type_param_bounds
+// struct S<T: 'a + ?Sized + (Copy) + [const] Drop>;
 pub(super) fn bounds(p: &mut Parser<'_>) {
     p.expect(T![:]);
     bounds_without_colon(p);
@@ -9032,6 +9375,14 @@ fn path_type_bound(p: &mut Parser<'_>) -> Result<(), ()> {
     }
 }
 
+// test where_clause
+// fn foo()
+// where
+//    'a: 'b + 'c,
+//    T: Clone + Copy + 'static,
+//    Iterator::Item: 'a,
+//    <T as Iterator>::Item: 'a
+// {}
 pub(super) fn opt_where_clause(p: &mut Parser<'_>) {
     if !p.at(T![where]) {
         return;
@@ -9230,6 +9581,8 @@ fn paren_or_tuple_type(p: &mut Parser<'_>) {
     m.complete(p, kind);
 }
 
+// test never_type
+// type Never = !;
 fn never_type(p: &mut Parser<'_>) {
     assert!(p.at(T![!]));
     let m = p.start();
@@ -9295,6 +9648,10 @@ fn array_or_slice_type(p: &mut Parser<'_>) {
     m.complete(p, kind);
 }
 
+// test reference_type
+// type A = &();
+// type B = &'static ();
+// type C = &mut ();
 fn ref_type(p: &mut Parser<'_>) {
     assert!(p.at(T![&]));
     let m = p.start();
@@ -9307,6 +9664,8 @@ fn ref_type(p: &mut Parser<'_>) {
     m.complete(p, REF_TYPE);
 }
 
+// test placeholder_type
+// type Placeholder = _;
 fn infer_type(p: &mut Parser<'_>) {
     assert!(p.at(T![_]));
     let m = p.start();
@@ -9314,6 +9673,11 @@ fn infer_type(p: &mut Parser<'_>) {
     m.complete(p, INFER_TYPE);
 }
 
+// test fn_pointer_type
+// type A = fn();
+// type B = unsafe fn();
+// type C = unsafe extern "C" fn();
+// type D = extern "C" fn ( u8 , ... ) -> u8;
 fn fn_ptr_type(p: &mut Parser<'_>) {
     let m = p.start();
     p.eat(T![unsafe]);
@@ -9349,6 +9713,10 @@ pub(super) fn for_binder(p: &mut Parser<'_>) {
     m.complete(p, FOR_BINDER);
 }
 
+// test for_type
+// type A = for<'a> fn() -> ();
+// type B = for<'a> unsafe extern "C" fn(&'a ()) -> ();
+// type Obj = for<'a> PartialEq<&'a i32>;
 pub(super) fn for_type(p: &mut Parser<'_>, allow_bounds: bool) {
     assert!(p.at(T![for]));
     let m = p.start();
@@ -9372,6 +9740,8 @@ pub(super) fn for_type(p: &mut Parser<'_>, allow_bounds: bool) {
     }
 }
 
+// test impl_trait_type
+// type A = impl Iterator<Item=Foo<'a>> + 'a;
 fn impl_trait_type(p: &mut Parser<'_>) {
     assert!(p.at(T![impl]));
     let m = p.start();
@@ -9380,6 +9750,8 @@ fn impl_trait_type(p: &mut Parser<'_>) {
     m.complete(p, IMPL_TRAIT_TYPE);
 }
 
+// test dyn_trait_type
+// type A = dyn Iterator<Item=Foo<'a>> + 'a;
 fn dyn_trait_type(p: &mut Parser<'_>) {
     assert!(p.at(T![dyn]));
     let m = p.start();
@@ -9388,6 +9760,15 @@ fn dyn_trait_type(p: &mut Parser<'_>) {
     m.complete(p, DYN_TRAIT_TYPE);
 }
 
+// test dyn_trait_type_weak 2015
+// type DynPlain = dyn Path;
+// type DynRef = &dyn Path;
+// type DynLt = dyn 'a + Path;
+// type DynQuestion = dyn ?Path;
+// type DynFor = dyn for<'a> Path;
+// type DynParen = dyn(Path);
+// type Path = dyn::Path;
+// type Generic = dyn<Path>;
 fn dyn_trait_type_weak(p: &mut Parser<'_>) {
     assert!(p.at_contextual_kw(T![dyn]));
     let m = p.start();
@@ -9396,12 +9777,18 @@ fn dyn_trait_type_weak(p: &mut Parser<'_>) {
     m.complete(p, DYN_TRAIT_TYPE);
 }
 
+// test bare_dyn_types_with_leading_lifetime
+// type A = 'static + Trait;
+// type B = S<'static + Trait>;
 fn bare_dyn_trait_type(p: &mut Parser<'_>) {
     let m = p.start();
     generic_params::bounds_without_colon(p);
     m.complete(p, DYN_TRAIT_TYPE);
 }
 
+// test macro_call_type
+// type A = foo!();
+// type B = crate::foo!();
 fn path_or_macro_type(p: &mut Parser<'_>, allow_bounds: bool) {
     assert!(paths::is_path_start(p));
     let r = p.start();
@@ -9425,6 +9812,11 @@ fn path_or_macro_type(p: &mut Parser<'_>, allow_bounds: bool) {
     }
 }
 
+// test path_type
+// type A = Foo;
+// type B = ::Foo;
+// type C = self::Foo;
+// type D = super::Foo;
 pub(super) fn path_type_bounds(p: &mut Parser<'_>, allow_bounds: bool) {
     assert!(paths::is_path_start(p));
     let m = p.start();
@@ -9508,6 +9900,15 @@ pub(super) fn pattern_top_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     pattern_r(p, recovery_set);
 }
 
+// test or_pattern
+// fn main() {
+//     match () {
+//         (_ | _) => (),
+//         &(_ | _) => (),
+//         (_ | _,) => (),
+//         [_ | _,] => (),
+//     }
+// }
 /// Parses a pattern list separated by pipes `|`, with no leading `|`,using the
 /// given `recovery_set`.
 fn pattern_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
@@ -9742,6 +10143,15 @@ fn is_literal_pat_start(p: &Parser<'_>) -> bool {
     p.at(T![-]) && (p.nth(1) == INT_NUMBER || p.nth(1) == FLOAT_NUMBER) || p.at_ts(expressions::LITERAL_FIRST)
 }
 
+// test literal_pattern
+// fn main() {
+//     match () {
+//         -1 => (),
+//         92 => (),
+//         'c' => (),
+//         "hello" => (),
+//     }
+// }
 fn literal_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(is_literal_pat_start(p));
     let m = p.start();
@@ -9750,6 +10160,13 @@ fn literal_pat(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, LITERAL_PAT)
 }
 
+// test path_part
+// fn foo() {
+//     let foo::Bar = ();
+//     let ::Bar = ();
+//     let Bar { .. } = ();
+//     let Bar(..) = ();
+// }
 fn path_or_macro_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(paths::is_path_start(p));
     let m = p.start();
@@ -9776,6 +10193,14 @@ fn path_or_macro_pat(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, kind)
 }
 
+// test tuple_pat_fields
+// fn foo() {
+//     let S() = ();
+//     let S(_) = ();
+//     let S(_,) = ();
+//     let S(_, .. , x) = ();
+//     let S(| a) = ();
+// }
 fn tuple_pat_fields(p: &mut Parser<'_>) {
     assert!(p.at(T!['(']));
     p.bump(T!['(']);
@@ -9783,6 +10208,12 @@ fn tuple_pat_fields(p: &mut Parser<'_>) {
     p.expect(T![')']);
 }
 
+// test record_pat_field
+// fn foo() {
+//     let S { 0: 1 } = ();
+//     let S { x: 1 } = ();
+//     let S { #[cfg(any())] x: 1 } = ();
+// }
 fn record_pat_field(p: &mut Parser<'_>) {
     match p.current() {
         IDENT | INT_NUMBER if p.nth(1) == T![:] => {
@@ -9814,6 +10245,14 @@ fn record_pat_field(p: &mut Parser<'_>) {
     }
 }
 
+// test record_pat_field_list
+// fn foo() {
+//     let S {} = ();
+//     let S { f, ref mut g } = ();
+//     let S { h: _, ..} = ();
+//     let S { h: _, } = ();
+//     let S { #[cfg(any())] .. } = ();
+// }
 fn record_pat_field_list(p: &mut Parser<'_>) {
     assert!(p.at(T!['{']));
     let m = p.start();
@@ -9845,6 +10284,8 @@ fn record_pat_field_list(p: &mut Parser<'_>) {
     m.complete(p, RECORD_PAT_FIELD_LIST);
 }
 
+// test placeholder_pat
+// fn main() { let _ = (); }
 fn wildcard_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![_]));
     let m = p.start();
@@ -9852,6 +10293,11 @@ fn wildcard_pat(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, WILDCARD_PAT)
 }
 
+// test ref_pat
+// fn main() {
+//     let &a = ();
+//     let &mut b = ();
+// }
 fn ref_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![&]));
     let m = p.start();
@@ -9861,6 +10307,14 @@ fn ref_pat(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, REF_PAT)
 }
 
+// test tuple_pat
+// fn main() {
+//     let (a, b, ..) = ();
+//     let (a,) = ();
+//     let (..) = ();
+//     let () = ();
+//     let (| a | a, | b) = ((),());
+// }
 fn tuple_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T!['(']));
     let m = p.start();
@@ -9907,6 +10361,11 @@ fn tuple_pat(p: &mut Parser<'_>) -> CompletedMarker {
     )
 }
 
+// test slice_pat
+// fn main() {
+//     let [a, b, ..] = [];
+//     let [| a, ..] = [];
+// }
 fn slice_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T!['[']));
     let m = p.start();
@@ -9929,6 +10388,15 @@ fn pat_list(p: &mut Parser<'_>, ket: SyntaxKind) {
     }
 }
 
+// test bind_pat
+// fn main() {
+//     let a = ();
+//     let mut b = ();
+//     let ref c = ();
+//     let ref mut d = ();
+//     let e @ _ = ();
+//     let ref mut f @ g @ _ = ();
+// }
 fn ident_pat(p: &mut Parser<'_>, with_at: bool) -> CompletedMarker {
     assert!(matches!(p.current(), T![ref] | T![mut] | IDENT));
     let m = p.start();
@@ -9941,6 +10409,12 @@ fn ident_pat(p: &mut Parser<'_>, with_at: bool) -> CompletedMarker {
     m.complete(p, IDENT_PAT)
 }
 
+// test box_pat
+// fn main() {
+//     let box i = ();
+//     let box Outer { box i, j: box Inner(box &x) } = ();
+//     let box ref mut i = ();
+// }
 fn box_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![box]));
     let m = p.start();
@@ -9949,6 +10423,19 @@ fn box_pat(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, BOX_PAT)
 }
 
+// test const_block_pat
+// fn main() {
+//     let const { 15 } = ();
+//     let const { foo(); bar() } = ();
+//
+//     match 42 {
+//         const { 0 } .. const { 1 } => (),
+//         .. const { 0 } => (),
+//         const { 2 } .. => (),
+//     }
+//
+//     let (const { () },) = ();
+// }
 fn const_block_pat(p: &mut Parser<'_>) -> CompletedMarker {
     assert!(p.at(T![const]));
     let m = p.start();

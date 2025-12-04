@@ -2,27 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21133 bytes
-Chloro size:   20725 bytes
+Chloro size:   21111 bytes
 Rustfmt size:  21133 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     pub expansion: String,
- }
- 
--// Feature: Expand Macro Recursively
--//
--// Shows the full macro expansion of the macro at the current caret position.
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **rust-analyzer: Expand macro recursively at caret** |
--//
--// ![Expand Macro Recursively](https://user-images.githubusercontent.com/48062697/113020648-b3973180-917a-11eb-84a9-ecb921293dc5.gif)
- pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<ExpandedMacro> {
-     let sema = Semantics::new(db);
-     let file_id = sema.attach_first_edition(position.file_id)?;
      })?;
  
      // due to how rust-analyzer works internally, we need to special case derive attributes,

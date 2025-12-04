@@ -17,6 +17,9 @@ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
 use syntax::AstNode;
 
+// Diagnostic: typed-hole
+//
+// This diagnostic is triggered when an underscore expression is used in an invalid position.
 pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
     let (message, fixes) = if d.expected.is_unknown() {
@@ -387,6 +390,7 @@ fn main() {
 }"#,
         );
     }
+    // FIXME
     #[test]
     fn local_shadow_fn() {
         check_fixes_unordered(

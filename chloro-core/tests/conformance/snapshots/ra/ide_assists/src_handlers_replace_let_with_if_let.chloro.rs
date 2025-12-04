@@ -6,6 +6,30 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: replace_let_with_if_let
+//
+// Replaces `let` with an `if let`.
+//
+// ```
+// # enum Option<T> { Some(T), None }
+//
+// fn main(action: Action) {
+//     $0let x = compute();
+// }
+//
+// fn compute() -> Option<i32> { None }
+// ```
+// ->
+// ```
+// # enum Option<T> { Some(T), None }
+//
+// fn main(action: Action) {
+//     if let Some(x) = compute() {
+//     }
+// }
+//
+// fn compute() -> Option<i32> { None }
+// ```
 pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let let_kw = ctx.find_token_syntax_at_offset(T![let])?;
     let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;

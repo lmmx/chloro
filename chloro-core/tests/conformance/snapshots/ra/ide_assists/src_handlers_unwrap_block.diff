@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16012 bytes
-Chloro size:   15855 bytes
+Chloro size:   16133 bytes
 Rustfmt size:  16309 bytes
 
 ✗ Outputs DIFFER
@@ -20,27 +20,6 @@ Rustfmt size:  16309 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
- 
--// Assist: unwrap_block
--//
--// This assist removes if...else, for, while and loop control statements to just keep the body.
--//
--// ```
--// fn foo() {
--//     if true {$0
--//         println!("foo");
--//     }
--// }
--// ```
--// ->
--// ```
--// fn foo() {
--//     println!("foo");
--// }
--// ```
- pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let assist_id = AssistId::refactor_rewrite("unwrap_block");
-     let assist_label = "Unwrap block";
      let target = block.syntax().text_range();
      let mut parent = block.syntax().parent()?;
      if ast::MatchArm::can_cast(parent.kind()) {

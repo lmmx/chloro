@@ -1055,6 +1055,7 @@ impl Config {
         Arc::ptr_eq(&self.source_root_parent_map, other)
     }
 
+    // FIXME @alibektas : Server's health uses error sink but in other places it is not used atm.
     /// Changes made to client and global configurations will partially not be reflected even after `.apply_change()` was called.
     /// The return tuple's bool component signals whether the `GlobalState` should call its `update_configuration()` method.
     fn apply_change_with_sink(&self, change: ConfigChange) -> (Config, bool) {
@@ -2570,6 +2571,8 @@ impl Config {
         self.typing_triggerChars().as_deref().unwrap_or_default()
     }
 
+    // VSCode is our reference implementation, so we allow ourselves to work around issues by
+    // special casing certain versions
     pub fn visual_studio_code_version(&self) -> Option<&Version> {
         self.client_info
             .as_ref()

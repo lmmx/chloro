@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5391 bytes
-Chloro size:   5169 bytes
+Chloro size:   5379 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -15,19 +15,6 @@ Rustfmt size:  5418 bytes
  
  use crate::{AssistContext, AssistId, Assists};
  
--// Assist: introduce_named_type_parameter
--//
--// Replaces `impl Trait` function argument with the named generic.
--//
--// ```
--// fn foo(bar: $0impl Bar) {}
--// ```
--// ->
--// ```
--// fn foo<$0B: Bar>(bar: B) {}
--// ```
- pub(crate) fn introduce_named_type_parameter(
-     acc: &mut Assists,
      ctx: &AssistContext<'_>,
  ) -> Option<()> {
      let impl_trait_type = ctx.find_node_at_offset::<ast::ImplTraitType>()?;

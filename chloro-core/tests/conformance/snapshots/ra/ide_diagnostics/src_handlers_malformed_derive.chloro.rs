@@ -1,5 +1,8 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
+// Diagnostic: malformed-derive
+//
+// This diagnostic is shown when the derive attribute has invalid input.
 pub(crate) fn malformed_derive(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::MalformedDerive,

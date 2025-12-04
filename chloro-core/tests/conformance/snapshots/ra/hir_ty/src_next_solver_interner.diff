@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81767 bytes
+Chloro size:   81813 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -133,10 +133,7 @@ Rustfmt size:  84055 bytes
 +}
  
  impl<'db> DbInterner<'db> {
--    // FIXME(next-solver): remove this method
-     pub fn conjure() -> DbInterner<'db> {
-         crate::with_attached_db(|db| DbInterner {
-             db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
+     // FIXME(next-solver): remove this method
      }
  }
  

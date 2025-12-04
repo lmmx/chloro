@@ -219,6 +219,9 @@ pub(crate) fn const_eval_discriminant_variant<'db>(
     Ok(c)
 }
 
+// FIXME: Ideally constants in const eval should have separate body (issue #7434), and this function should
+// get an `InferenceResult` instead of an `InferenceContext`. And we should remove `ctx.clone().resolve_all()` here
+// and make this function private. See the fixme comment on `InferenceContext::resolve_all`.
 pub(crate) fn eval_to_const<'db>(expr: ExprId, ctx: &mut InferenceContext<'_, 'db>) -> Const<'db> {
     let infer = ctx.fixme_resolve_all_clone();
     fn has_closure(body: &Body, expr: ExprId) -> bool {

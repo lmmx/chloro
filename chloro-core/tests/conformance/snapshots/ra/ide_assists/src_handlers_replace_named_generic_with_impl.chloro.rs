@@ -13,6 +13,17 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: replace_named_generic_with_impl
+//
+// Replaces named generic with an `impl Trait` in function argument.
+//
+// ```
+// fn new<P$0: AsRef<Path>>(location: P) -> Self {}
+// ```
+// ->
+// ```
+// fn new(location: impl AsRef<Path>) -> Self {}
+// ```
 pub(crate) fn replace_named_generic_with_impl(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

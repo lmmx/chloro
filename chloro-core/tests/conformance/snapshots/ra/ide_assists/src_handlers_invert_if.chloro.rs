@@ -10,6 +10,22 @@ use crate::{
     utils::invert_boolean_expression_legacy,
 };
 
+// Assist: invert_if
+//
+// This transforms if expressions of the form `if !x {A} else {B}` into `if x {B} else {A}`
+// This also works with `!=`. This assist can only be applied with the cursor on `if`.
+//
+// ```
+// fn main() {
+//     if$0 !y { A } else { B }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     if y { B } else { A }
+// }
+// ```
 pub(crate) fn invert_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let if_keyword = ctx
         .find_token_syntax_at_offset(T![if])

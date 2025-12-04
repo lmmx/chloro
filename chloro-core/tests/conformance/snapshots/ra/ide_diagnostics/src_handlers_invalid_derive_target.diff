@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 940 bytes
-Chloro size:   776 bytes
+Chloro size:   934 bytes
 Rustfmt size:  940 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
- 
--// Diagnostic: invalid-derive-target
--//
--// This diagnostic is shown when the derive attribute is used on an item other than a `struct`,
--// `enum` or `union`.
- pub(crate) fn invalid_derive_target(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::InvalidDeriveTarget,
          DiagnosticCode::RustcHardError("E0774"),
          "`derive` may only be applied to `struct`s, `enum`s and `union`s",
          display_range,

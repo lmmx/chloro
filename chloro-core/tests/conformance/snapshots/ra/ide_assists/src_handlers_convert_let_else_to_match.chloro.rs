@@ -7,6 +7,24 @@ use syntax::ast::{self, AstNode, HasName, LetStmt, Pat};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: convert_let_else_to_match
+//
+// Converts let-else statement to let statement and match expression.
+//
+// ```
+// fn main() {
+//     let Ok(mut x) = f() else$0 { return };
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let mut x = match f() {
+//         Ok(x) => x,
+//         _ => return,
+//     };
+// }
+// ```
 pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // Should focus on the `else` token to trigger
     let let_stmt = ctx

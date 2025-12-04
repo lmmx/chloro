@@ -9,6 +9,36 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: generate_is_empty_from_len
+//
+// Generates is_empty implementation from the len method.
+//
+// ```
+// struct MyStruct { data: Vec<String> }
+//
+// impl MyStruct {
+//     #[must_use]
+//     p$0ub fn len(&self) -> usize {
+//         self.data.len()
+//     }
+// }
+// ```
+// ->
+// ```
+// struct MyStruct { data: Vec<String> }
+//
+// impl MyStruct {
+//     #[must_use]
+//     pub fn len(&self) -> usize {
+//         self.data.len()
+//     }
+//
+//     #[must_use]
+//     pub fn is_empty(&self) -> bool {
+//         self.len() == 0
+//     }
+// }
+// ```
 pub(crate) fn generate_is_empty_from_len(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

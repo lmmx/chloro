@@ -7,6 +7,31 @@ use crate::{
     handlers::qualify_path::QualifyCandidate,
 };
 
+// Assist: qualify_method_call
+//
+// Replaces the method call with a qualified function call.
+//
+// ```
+// struct Foo;
+// impl Foo {
+//     fn foo(&self) {}
+// }
+// fn main() {
+//     let foo = Foo;
+//     foo.fo$0o();
+// }
+// ```
+// ->
+// ```
+// struct Foo;
+// impl Foo {
+//     fn foo(&self) {}
+// }
+// fn main() {
+//     let foo = Foo;
+//     Foo::foo(&foo);
+// }
+// ```
 pub(crate) fn qualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name: ast::NameRef = ctx.find_node_at_offset()?;
     let call = name.syntax().parent().and_then(ast::MethodCallExpr::cast)?;

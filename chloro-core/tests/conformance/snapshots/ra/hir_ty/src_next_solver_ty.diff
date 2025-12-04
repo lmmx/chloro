@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   51481 bytes
+Chloro size:   51516 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -214,13 +214,6 @@ Rustfmt size:  52438 bytes
 +        let TyKind::Dynamic(bounds, _) = self.kind() else { return None };
          Some(bounds.principal_def_id()?.0)
      }
- 
-         Some(builtin)
-     }
- 
--    // FIXME: Should this be here?
-     pub fn impl_trait_bounds(self, db: &'db dyn HirDatabase) -> Option<Vec<Clause<'db>>> {
-         let interner = DbInterner::new_with(db, None, None);
  
                  match db.lookup_intern_impl_trait_id(opaque_ty.def_id.expect_opaque_ty()) {
                      ImplTraitId::ReturnTypeImplTrait(func, idx) => {

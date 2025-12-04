@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14449 bytes
+Chloro size:   14489 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -81,10 +81,6 @@ Rustfmt size:  14808 bytes
      }
  }
  
--// FIXME: move this to the `rustc_abi`.
- fn layout_of_simd_ty<'db>(
-     db: &'db dyn HirDatabase,
-     id: StructId,
      // where T is a primitive scalar (integer/float/pointer).
      let fields = db.field_types(id.into());
      let mut fields = fields.iter();

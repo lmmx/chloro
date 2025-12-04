@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49452 bytes
+Chloro size:   49883 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -170,19 +170,6 @@ Rustfmt size:  49754 bytes
      }
  
      /// Returns `true` if errors have been reported since this infcx was
-         }
-     }
- 
--    // Instantiates the bound variables in a given binder with fresh inference
--    // variables in the current universe.
--    //
--    // Use this method if you'd like to find some generic parameters of the binder's
--    // variables (e.g. during a method call). If there isn't a [`BoundRegionConversionTime`]
--    // that corresponds to your use case, consider whether or not you should
--    // use [`InferCtxt::enter_forall`] instead.
-     pub fn instantiate_binder_with_fresh_vars<T>(
-         &self,
-         _lbrct: BoundRegionConversionTime,
      pub fn ty_or_const_infer_var_changed(&self, infer_var: TyOrConstInferVar) -> bool {
          match infer_var {
              TyOrConstInferVar::Ty(v) => {

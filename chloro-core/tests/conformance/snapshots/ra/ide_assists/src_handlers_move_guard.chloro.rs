@@ -5,6 +5,33 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: move_guard_to_arm_body
+//
+// Moves match guard into match arm body.
+//
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move { distance } $0if distance > 10 => foo(),
+//         _ => (),
+//     }
+// }
+// ```
+// ->
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move { distance } => if distance > 10 {
+//             foo()
+//         },
+//         _ => (),
+//     }
+// }
+// ```
 pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_arm = ctx.find_node_at_offset::<MatchArm>()?;
     let guard = match_arm.guard()?;
@@ -45,6 +72,31 @@ pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>)
     )
 }
 
+// Assist: move_arm_cond_to_match_guard
+//
+// Moves if expression from match arm body into a guard.
+//
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move { distance } => $0if distance > 10 { foo() },
+//         _ => (),
+//     }
+// }
+// ```
+// ->
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move { distance } if distance > 10 => foo(),
+//         _ => (),
+//     }
+// }
+// ```
 pub(crate) fn move_arm_cond_to_match_guard(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -144,6 +196,8 @@ pub(crate) fn move_arm_cond_to_match_guard(
     )
 }
 
+// Parses an if-else-if chain to get the conditions and the then branches until we encounter an else
+// branch or the end.
 fn parse_if_chain(if_expr: IfExpr) -> Option<(Vec<(Expr, BlockExpr)>, Option<BlockExpr>)> {
     let mut conds_blocks = Vec::new();
     let mut curr_if = if_expr;

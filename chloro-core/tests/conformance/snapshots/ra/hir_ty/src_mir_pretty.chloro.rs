@@ -78,6 +78,8 @@ impl<'db> MirBody<'db> {
         ctx.result
     }
 
+    // String with lines is rendered poorly in `dbg` macros, which I use very much, so this
+    // function exists to solve that.
     pub fn dbg(&self, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> impl Debug {
         struct StringDbg(String);
         impl Debug for StringDbg {

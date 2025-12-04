@@ -2,44 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5052 bytes
-Chloro size:   4573 bytes
+Chloro size:   5045 bytes
 Rustfmt size:  5151 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::assists::AssistId;
- use syntax::ast::{self, HasGenericParams, HasName};
- use syntax::{AstNode, SyntaxKind};
- 
- use crate::assist_context::{AssistContext, Assists};
- 
--// Assist: convert_nested_function_to_closure
--//
--// Converts a function that is defined within the body of another function into a closure.
--//
--// ```
--// fn main() {
--//     fn fo$0o(label: &str, number: u64) {
--//         println!("{}: {}", label, number);
--//     }
--//
--//     foo("Bar", 100);
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     let foo = |label: &str, number: u64| {
--//         println!("{}: {}", label, number);
--//     };
--//
--//     foo("Bar", 100);
--// }
--// ```
- pub(crate) fn convert_nested_function_to_closure(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
  
  /// Returns whether the given function is nested within the body of another function.
  fn is_nested_function(function: &ast::Fn) -> bool {

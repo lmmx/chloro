@@ -2,17 +2,21 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18403 bytes
-Chloro size:   17852 bytes
+Chloro size:   17951 bytes
 Rustfmt size:  18467 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
+ };
  
- /// Return all the assists applicable at the given position.
- ///
--// NOTE: We don't have a `Feature: ` section for assists, they are special-cased
--// in the manual.
+-/// Return all the assists applicable at the given position.
+-///
+ // NOTE: We don't have a `Feature: ` section for assists, they are special-cased
+ // in the manual.
++/// Return all the assists applicable at the given position.
++///
  pub fn assists(
      db: &RootDatabase,
      config: &AssistConfig,

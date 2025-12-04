@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18329 bytes
+Chloro size:   18504 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
@@ -22,16 +22,6 @@ Rustfmt size:  18809 bytes
  }
  
  #[derive(Debug)]
-     pub kind: FoldKind,
- }
- 
--// Feature: Folding
--//
--// Defines folding regions for curly braced blocks, runs of consecutive use, mod, const or static
--// items, and `region` / `endregion` comment markers.
- pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
-     let mut res = vec![];
-     let mut visited_comments = FxHashSet::default();
  #[cfg(test)]
  mod tests {
      use test_utils::extract_tags;

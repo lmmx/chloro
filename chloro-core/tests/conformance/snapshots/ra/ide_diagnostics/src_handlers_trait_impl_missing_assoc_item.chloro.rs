@@ -4,6 +4,9 @@ use syntax::{AstNode, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
+// Diagnostic: trait-impl-missing-assoc_item
+//
+// Diagnoses missing trait items in a trait impl.
 pub(crate) fn trait_impl_missing_assoc_item(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::TraitImplMissingAssocItems,

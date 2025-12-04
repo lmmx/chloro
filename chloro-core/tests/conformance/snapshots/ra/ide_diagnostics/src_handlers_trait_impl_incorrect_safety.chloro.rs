@@ -3,6 +3,9 @@ use syntax::ast;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range};
 
+// Diagnostic: trait-impl-incorrect-safety
+//
+// Diagnoses incorrect safety annotations of trait impls.
 pub(crate) fn trait_impl_incorrect_safety(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::TraitImplIncorrectSafety,

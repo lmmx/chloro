@@ -113,6 +113,7 @@ pub fn is_editable_crate(krate: Crate, db: &RootDatabase) -> bool {
     !db.source_root(source_root_id).source_root(db).is_library
 }
 
+// FIXME: This is a weird function
 pub fn get_definition(
     sema: &Semantics<'_, RootDatabase>,
     token: SyntaxToken,

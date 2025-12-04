@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53256 bytes
+Chloro size:   53691 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
@@ -20,38 +20,6 @@ Rustfmt size:  53759 bytes
      match_ast, ted,
  };
  
- 
- use super::remove_unused_param::range_to_remove;
- 
--// Assist: extract_module
--//
--// Extracts a selected region as separate module. All the references, visibility and imports are
--// resolved.
--//
--// ```
--// $0fn foo(name: i32) -> i32 {
--//     name + 1
--// }$0
--//
--// fn bar(name: i32) -> i32 {
--//     name + 2
--// }
--// ```
--// ->
--// ```
--// mod modname {
--//     pub(crate) fn foo(name: i32) -> i32 {
--//         name + 1
--//     }
--// }
--//
--// fn bar(name: i32) -> i32 {
--//     name + 2
--// }
--// ```
- pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     if ctx.has_empty_selection() {
-         return None;
      let old_items: Vec<_> = module.use_items.iter().chain(&module.body_items).cloned().collect();
  
      // If the selection is inside impl block, we need to place new module outside impl block,

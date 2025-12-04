@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10157 bytes
-Chloro size:   9816 bytes
+Chloro size:   10143 bytes
 Rustfmt size:  10267 bytes
 
 ✗ Outputs DIFFER
@@ -19,34 +19,6 @@ Rustfmt size:  10267 bytes
  };
  
  use crate::assist_context::{AssistContext, Assists};
- 
--// Assist: generate_enum_variant
--//
--// Adds a variant to an enum.
--//
--// ```
--// enum Countries {
--//     Ghana,
--// }
--//
--// fn main() {
--//     let country = Countries::Lesotho$0;
--// }
--// ```
--// ->
--// ```
--// enum Countries {
--//     Ghana,
--//     Lesotho,
--// }
--//
--// fn main() {
--//     let country = Countries::Lesotho;
--// }
--// ```
- pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let path: ast::Path = ctx.find_node_at_offset()?;
-     let parent = PathParent::new(&path)?;
      let target = path.syntax().text_range();
      let name_ref: &ast::NameRef = &name_ref;
      let db = ctx.db();

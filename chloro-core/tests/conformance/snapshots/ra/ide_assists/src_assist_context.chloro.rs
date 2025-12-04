@@ -99,6 +99,7 @@ impl<'a> AssistContext<'a> {
         self.sema.db
     }
 
+    // NB, this ignores active selection.
     pub(crate) fn offset(&self) -> TextSize {
         self.frange.range.start()
     }

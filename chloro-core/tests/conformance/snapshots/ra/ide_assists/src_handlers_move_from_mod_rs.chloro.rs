@@ -6,6 +6,20 @@ use crate::{
     utils::trimmed_text_range,
 };
 
+// Assist: move_from_mod_rs
+//
+// Moves xxx/mod.rs to xxx.rs.
+//
+// ```
+// //- /main.rs
+// mod a;
+// //- /a/mod.rs
+// $0fn t() {}$0
+// ```
+// ->
+// ```
+// fn t() {}
+// ```
 pub(crate) fn move_from_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let source_file = ctx.find_node_at_offset::<ast::SourceFile>()?;
     let module = ctx.sema.file_to_module_def(ctx.vfs_file_id())?;

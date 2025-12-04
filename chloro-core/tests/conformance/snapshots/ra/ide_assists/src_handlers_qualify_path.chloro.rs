@@ -20,6 +20,23 @@ use crate::{
     handlers::auto_import::find_importable_node,
 };
 
+// Assist: qualify_path
+//
+// If the name is unresolved, provides all possible qualified paths for it.
+//
+// ```
+// fn main() {
+//     let map = HashMap$0::new();
+// }
+// # pub mod std { pub mod collections { pub struct HashMap { } } }
+// ```
+// ->
+// ```
+// fn main() {
+//     let map = std::collections::HashMap::new();
+// }
+// # pub mod std { pub mod collections { pub struct HashMap { } } }
+// ```
 pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let cfg = ctx.config.import_path_config();

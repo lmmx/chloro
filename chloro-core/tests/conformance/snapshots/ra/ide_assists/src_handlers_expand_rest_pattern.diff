@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17027 bytes
-Chloro size:   15839 bytes
+Chloro size:   17017 bytes
 Rustfmt size:  17604 bytes
 
 ✗ Outputs DIFFER
@@ -18,29 +18,6 @@ Rustfmt size:  17604 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
- 
--// Assist: expand_record_rest_pattern
--//
--// Fills fields by replacing rest pattern in record patterns.
--//
--// ```
--// struct Bar { y: Y, z: Z }
--//
--// fn foo(bar: Bar) {
--//     let Bar { ..$0 } = bar;
--// }
--// ```
--// ->
--// ```
--// struct Bar { y: Y, z: Z }
--//
--// fn foo(bar: Bar) {
--//     let Bar { y, z } = bar;
--// }
--// ```
- fn expand_record_rest_pattern(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
          return None;
      }
  
@@ -80,31 +57,6 @@ Rustfmt size:  17604 bytes
              let new_field_list = make.record_pat_field_list(new_fields, None);
  
              editor.replace(old_field_list.syntax(), new_field_list.syntax());
-     )
- }
- 
--// Assist: expand_tuple_struct_rest_pattern
--//
--// Fills fields by replacing rest pattern in tuple struct patterns.
--//
--// ```
--// struct Bar(Y, Z);
--//
--// fn foo(bar: Bar) {
--//     let Bar(..$0) = bar;
--// }
--// ```
--// ->
--// ```
--// struct Bar(Y, Z);
--//
--// fn foo(bar: Bar) {
--//     let Bar(_0, _1) = bar;
--// }
--// ```
- fn expand_tuple_struct_rest_pattern(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
      rest_pat: ast::RestPat,
  ) -> Option<()> {
      let path = pat.path()?;
@@ -159,27 +111,6 @@ Rustfmt size:  17604 bytes
                      .chain(pat.fields().skip(prefix_count + 1)),
              );
  
-     )
- }
- 
--// Assist: expand_tuple_rest_pattern
--//
--// Fills fields by replacing rest pattern in tuple patterns.
--//
--// ```
--// fn foo(bar: (char, i32, i32)) {
--//     let (ch, ..$0) = bar;
--// }
--// ```
--// ->
--// ```
--// fn foo(bar: (char, i32, i32)) {
--//     let (ch, _1, _2) = bar;
--// }
--// ```
- fn expand_tuple_rest_pattern(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
      pat: ast::TuplePat,
      rest_pat: ast::RestPat,
  ) -> Option<()> {
@@ -222,27 +153,6 @@ Rustfmt size:  17604 bytes
                      .chain(pat.fields().skip(prefix_count + 1)),
              );
  
-     )
- }
- 
--// Assist: expand_slice_rest_pattern
--//
--// Fills fields by replacing rest pattern in slice patterns.
--//
--// ```
--// fn foo(bar: [i32; 3]) {
--//     let [first, ..$0] = bar;
--// }
--// ```
--// ->
--// ```
--// fn foo(bar: [i32; 3]) {
--//     let [first, _1, _2] = bar;
--// }
--// ```
- fn expand_slice_rest_pattern(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
      pat: ast::SlicePat,
      rest_pat: ast::RestPat,
  ) -> Option<()> {

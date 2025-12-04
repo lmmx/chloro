@@ -936,6 +936,7 @@ impl GlobalState {
     }
 }
 
+// FIXME: Move this into load-cargo?
 pub fn ws_to_crate_graph(
     workspaces: &[ProjectWorkspace],
     extra_env: &FxHashMap<String, Option<String>>,

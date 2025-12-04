@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3099 bytes
-Chloro size:   2927 bytes
+Chloro size:   3025 bytes
 Rustfmt size:  3144 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,8 @@ Rustfmt size:  3144 bytes
 -use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
  
--// Diagnostic: trait-impl-missing-assoc_item
--//
--// Diagnoses missing trait items in a trait impl.
- pub(crate) fn trait_impl_missing_assoc_item(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::TraitImplMissingAssocItems,
+ // Diagnostic: trait-impl-missing-assoc_item
+ //
          DiagnosticCode::RustcHardError("E0046"),
          format!("not all trait items implemented, missing: {missing}"),
          adjusted_display_range::<ast::Impl>(

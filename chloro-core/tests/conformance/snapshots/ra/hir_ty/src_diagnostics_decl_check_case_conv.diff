@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5852 bytes
-Chloro size:   5668 bytes
+Chloro size:   5847 bytes
 Rustfmt size:  6228 bytes
 
 ✗ Outputs DIFFER
@@ -17,22 +17,6 @@ Rustfmt size:  6228 bytes
  /// Converts an identifier to an UpperCamelCase form.
  /// Returns `None` if the string is already in UpperCamelCase.
  pub(crate) fn to_camel_case(ident: &str) -> Option<String> {
-     Some(stdx::to_upper_snake_case(ident))
- }
- 
--// Taken from rustc.
--// Modified by replacing the use of unstable feature `array_windows`.
- fn is_camel_case(name: &str) -> bool {
-     let name = name.trim_matches('_');
-     if name.is_empty() {
-     is_snake_case(ident, char::is_lowercase)
- }
- 
--// Taken from rustc.
--// Modified to allow checking for both upper and lower snake case.
- fn is_snake_case<F: Fn(char) -> bool>(ident: &str, wrong_case: F) -> bool {
-     if ident.is_empty() {
-         return true;
  #[cfg(test)]
  mod tests {
      use super::*;

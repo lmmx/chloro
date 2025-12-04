@@ -18,6 +18,44 @@ use syntax::{
     syntax_editor::Position,
 };
 
+// Assist: generate_blanket_trait_impl
+//
+// Generate blanket trait implementation.
+//
+// ```
+// trait $0Foo<T: Send>: ToOwned
+// where
+//     Self::Owned: Default,
+// {
+//     fn foo(&self) -> T;
+//
+//     fn print_foo(&self) {
+//         println!("{}", self.foo());
+//     }
+// }
+// ```
+// ->
+// ```
+// trait Foo<T: Send>: ToOwned
+// where
+//     Self::Owned: Default,
+// {
+//     fn foo(&self) -> T;
+//
+//     fn print_foo(&self) {
+//         println!("{}", self.foo());
+//     }
+// }
+//
+// impl<T: Send, T1: ToOwned + ?Sized> Foo<T> for $0T1
+// where
+//     Self::Owned: Default,
+// {
+//     fn foo(&self) -> T {
+//         todo!()
+//     }
+// }
+// ```
 pub(crate) fn generate_blanket_trait_impl(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

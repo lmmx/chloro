@@ -5,6 +5,10 @@ use syntax::{AstNode, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
 
+// Diagnostic: remove-trailing-return
+//
+// This diagnostic is triggered when there is a redundant `return` at the end of a function
+// or closure.
 pub(crate) fn remove_trailing_return(
     ctx: &DiagnosticsContext<'_>,
     d: &RemoveTrailingReturn,

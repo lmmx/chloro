@@ -6,6 +6,30 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: unmerge_match_arm
+//
+// Splits the current match with a `|` pattern into two arms with identical bodies.
+//
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move(..) $0| Action::Stop => foo(),
+//     }
+// }
+// ```
+// ->
+// ```
+// enum Action { Move { distance: u32 }, Stop }
+//
+// fn handle(action: Action) {
+//     match action {
+//         Action::Move(..) => foo(),
+//         Action::Stop => foo(),
+//     }
+// }
+// ```
 pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let pipe_token = ctx.find_token_syntax_at_offset(T![|])?;
     let or_pat = ast::OrPat::cast(pipe_token.parent()?)?;

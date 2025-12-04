@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11061 bytes
-Chloro size:   10703 bytes
+Chloro size:   10908 bytes
 Rustfmt size:  11278 bytes
 
 ✗ Outputs DIFFER
@@ -26,19 +26,6 @@ Rustfmt size:  11278 bytes
  impl fmt::Display for RecursiveMemoryLayout {
      fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
          fn process(
-     }
- }
- 
--// Feature: View Memory Layout
--//
--// Displays the recursive memory layout of a datatype.
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **rust-analyzer: View Memory Layout** |
- pub(crate) fn view_memory_layout(
-     db: &RootDatabase,
-     position: FilePosition,
      let sema = Semantics::new(db);
      let file = sema.parse_guess_edition(position.file_id);
      let display_target = sema.first_crate(position.file_id)?.to_display_target(db);

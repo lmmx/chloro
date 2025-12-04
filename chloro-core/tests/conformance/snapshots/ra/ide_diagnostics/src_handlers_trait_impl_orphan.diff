@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3138 bytes
-Chloro size:   3014 bytes
+Chloro size:   3133 bytes
 Rustfmt size:  3138 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::InFile;
- 
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
- 
--// Diagnostic: trait-impl-orphan
--//
--// Only traits defined in the current crate can be implemented for arbitrary types
- pub(crate) fn trait_impl_orphan(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::TraitImplOrphan,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

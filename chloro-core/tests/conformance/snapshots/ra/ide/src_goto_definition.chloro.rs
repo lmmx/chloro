@@ -32,6 +32,17 @@ pub struct GotoDefinitionConfig<'a> {
     pub minicore: MiniCore<'a>,
 }
 
+// Feature: Go to Definition
+//
+// Navigates to the definition of an identifier.
+//
+// For outline modules, this will navigate to the source file of the module.
+//
+// | Editor  | Shortcut |
+// |---------|----------|
+// | VS Code | <kbd>F12</kbd> |
+//
+// ![Go to Definition](https://user-images.githubusercontent.com/48062697/113065563-025fbe00-91b1-11eb-83e4-a5a703610b23.gif)
 pub(crate) fn goto_definition(
     db: &RootDatabase,
     FilePosition { file_id, offset }: FilePosition,
@@ -142,6 +153,7 @@ pub(crate) fn goto_definition(
     Some(RangeInfo::new(original_token.text_range(), navs))
 }
 
+// If the token is into(), try_into(), search the definition of From, TryFrom.
 fn find_definition_for_known_blanket_dual_impls(
     sema: &Semantics<'_, RootDatabase>,
     original_token: &SyntaxToken,
@@ -2109,6 +2121,7 @@ fn main() {
 "#,
         );
     }
+    // macros in this position are not yet supported
     #[test]
     #[should_panic]
     fn goto_doc_include_str() {

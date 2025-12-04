@@ -6,6 +6,21 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: replace_arith_with_checked
+//
+// Replaces arithmetic on integers with the `checked_*` equivalent.
+//
+// ```
+// fn main() {
+//   let x = 1 $0+ 2;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//   let x = 1.checked_add(2);
+// }
+// ```
 pub(crate) fn replace_arith_with_checked(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -13,6 +28,21 @@ pub(crate) fn replace_arith_with_checked(
     replace_arith(acc, ctx, ArithKind::Checked)
 }
 
+// Assist: replace_arith_with_saturating
+//
+// Replaces arithmetic on integers with the `saturating_*` equivalent.
+//
+// ```
+// fn main() {
+//   let x = 1 $0+ 2;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//   let x = 1.saturating_add(2);
+// }
+// ```
 pub(crate) fn replace_arith_with_saturating(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -20,6 +50,21 @@ pub(crate) fn replace_arith_with_saturating(
     replace_arith(acc, ctx, ArithKind::Saturating)
 }
 
+// Assist: replace_arith_with_wrapping
+//
+// Replaces arithmetic on integers with the `wrapping_*` equivalent.
+//
+// ```
+// fn main() {
+//   let x = 1 $0+ 2;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//   let x = 1.wrapping_add(2);
+// }
+// ```
 pub(crate) fn replace_arith_with_wrapping(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

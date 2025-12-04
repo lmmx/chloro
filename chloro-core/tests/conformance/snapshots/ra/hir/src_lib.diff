@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   226614 bytes
+Chloro size:   227326 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -256,13 +256,6 @@ Rustfmt size:  227843 bytes
              (
                  ast_id.with_value(SyntaxNodePtr::from(AstPtr::new(&attr))),
                  Some(attr.syntax().text_range()),
-         TypeNs::new(db, var_id, ty)
-     }
- 
--    // FIXME: Find better API to also handle const generics
-     pub fn ty_with_args<'db>(
-         &self,
-         db: &'db dyn HirDatabase,
              .map(|(id, _)| Field { parent: self.into(), id })
              .collect()
      }
@@ -344,20 +337,6 @@ Rustfmt size:  227843 bytes
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
  pub struct Function {
      pub(crate) id: FunctionId,
-         Type::new_with_resolver_inner(db, &resolver, ty)
-     }
- 
--    // FIXME: Find better API to also handle const generics
-     pub fn ret_type_with_args<'db>(
-         self,
-         db: &'db dyn HirDatabase,
-             .collect()
-     }
- 
--    // FIXME: Find better API to also handle const generics
-     pub fn params_without_self_with_args<'db>(
-         self,
-         db: &'db dyn HirDatabase,
      }
  }
  
@@ -383,20 +362,6 @@ Rustfmt size:  227843 bytes
                      Some(Local { parent, binding_id: *id })
                  } else {
                      None
-         Type { env: environment, ty }
-     }
- 
--    // FIXME: Find better API to also handle const generics
-     pub fn ty_with_args<'db>(
-         &self,
-         db: &'db dyn HirDatabase,
- }
- 
- impl BuiltinType {
--    // Constructors are added on demand, feel free to add more.
-     pub fn str() -> BuiltinType {
-         BuiltinType { inner: hir_def::builtin_type::BuiltinType::Str }
-     }
      Const(Const),
      Static(Static),
  }
@@ -494,13 +459,6 @@ Rustfmt size:  227843 bytes
      }
  
      pub fn kind(&self) -> CaptureKind {
-         Type::new(db, def, ty.instantiate(interner, args))
-     }
- 
--    // FIXME: We shouldn't leak `TyKind::Param`s.
-     fn from_def_params(db: &'db dyn HirDatabase, def: impl Into<TyDefId> + HasResolver) -> Self {
-         let ty = db.ty(def.into());
-         Type::new(db, def, ty.instantiate_identity())
  
      pub fn new_slice(ty: Self) -> Self {
          let interner = DbInterner::conjure();
@@ -522,17 +480,9 @@ Rustfmt size:  227843 bytes
      }
  
      pub fn is_unit(&self) -> bool {
-         self.derived(self.ty.strip_references())
      }
  
--    // FIXME: This is the same as `remove_ref()`, remove one of these methods.
-     pub fn strip_reference(&self) -> Self {
-         self.derived(self.ty.strip_reference())
-     }
-         traits::implements_trait_unique(self.ty, db, self.env.clone(), fnonce_trait)
-     }
- 
--    // FIXME: Find better API that also handles const generics
+     // FIXME: Find better API that also handles const generics
 -    pub fn impls_trait(&self, db: &'db dyn HirDatabase, trait_: Trait, args: &[Type<'db>]) -> bool {
 +    pub fn impls_trait(
 +        &self,
@@ -567,14 +517,6 @@ Rustfmt size:  227843 bytes
      }
  
      pub fn contains_unknown(&self) -> bool {
-         autoderef(db, self.env.clone(), canonical)
-     }
- 
--    // This would be nicer if it just returned an iterator, but that runs into
--    // lifetime problems, because we need to borrow temp `CrateImplDefs`.
-     pub fn iterate_assoc_items<T>(
-         &self,
-         db: &'db dyn HirDatabase,
          };
          for krate in def_crates {
              let impls = db.inherent_impls_in_crate(krate);
@@ -599,10 +541,7 @@ Rustfmt size:  227843 bytes
 +        }
      }
  
--    // FIXME: Find better API that also handles const generics
-     pub fn impls_trait(&self, infcx: InferCtxt<'db>, trait_: Trait, args: &[TypeNs<'db>]) -> bool {
-         let args = GenericArgs::new_from_iter(
-             infcx.interner,
+     // FIXME: Find better API that also handles const generics
      }
  }
  

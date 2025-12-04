@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3904 bytes
-Chloro size:   3812 bytes
+Chloro size:   3902 bytes
 Rustfmt size:  3961 bytes
 
 ✗ Outputs DIFFER
@@ -21,12 +21,8 @@ Rustfmt size:  3961 bytes
 -use crate::{fix, Diagnostic, DiagnosticCode};
 +use crate::{Diagnostic, DiagnosticCode, fix};
  
--// Diagnostic: unnecessary-braces
--//
--// Diagnostic for unnecessary braces in `use` items.
- pub(crate) fn useless_braces(
-     db: &RootDatabase,
-     acc: &mut Vec<Diagnostic>,
+ // Diagnostic: unnecessary-braces
+ //
              Diagnostic::new(
                  DiagnosticCode::RustcLint("unused_braces"),
                  "Unnecessary braces in use statement".to_owned(),

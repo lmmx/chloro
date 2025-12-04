@@ -5,6 +5,16 @@ use ide_db::{
     base_db::{BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase},
 };
 
+// Feature: View Crate Graph
+//
+// Renders the currently loaded crate graph as an SVG graphic. Requires the `dot` tool, which
+// is part of graphviz, to be installed.
+//
+// Only workspace crates are included, no crates.io dependencies or sysroot crates.
+//
+// | Editor  | Action Name |
+// |---------|-------------|
+// | VS Code | **rust-analyzer: View Crate Graph** |
 pub(crate) fn view_crate_graph(db: &RootDatabase, full: bool) -> Result<String, String> {
     let all_crates = db.all_crates();
     let crates_to_render = all_crates

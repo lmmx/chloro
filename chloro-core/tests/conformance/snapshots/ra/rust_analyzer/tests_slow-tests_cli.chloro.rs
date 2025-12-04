@@ -3,6 +3,9 @@ use test_utils::skip_slow_tests;
 
 use crate::support::Project;
 
+// If you choose to change the test fixture here, please inform the ferrocene/needy maintainers by
+// opening an issue at https://github.com/ferrocene/needy as the tool relies on specific token
+// mapping behavior.
 #[test]
 fn lsif_contains_generated_constant() {
     if skip_slow_tests() {

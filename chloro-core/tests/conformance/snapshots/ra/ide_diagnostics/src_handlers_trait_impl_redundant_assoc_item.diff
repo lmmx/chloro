@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6565 bytes
-Chloro size:   6388 bytes
+Chloro size:   6490 bytes
 Rustfmt size:  6901 bytes
 
 ✗ Outputs DIFFER
@@ -13,15 +13,6 @@ Rustfmt size:  6901 bytes
  use ide_db::text_edit::TextRange;
  use ide_db::{
      assists::{Assist, AssistId},
- 
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
- 
--// Diagnostic: trait-impl-redundant-assoc_item
--//
--// Diagnoses redundant trait items in a trait impl.
- pub(crate) fn trait_impl_redundant_assoc_item(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::TraitImplRedundantAssocItems,
              let function = id;
              (
                  format!("`fn {redundant_assoc_item_name}`"),

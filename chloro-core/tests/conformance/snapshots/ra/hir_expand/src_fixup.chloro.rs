@@ -470,6 +470,8 @@ mod tests {
         span_map::{RealSpanMap, SpanMap},
         tt,
     };
+    // The following three functions are only meant to check partial structural equivalence of
+    // `TokenTree`s, see the last assertion in `check()`.
     fn check_leaf_eq(a: &tt::Leaf, b: &tt::Leaf) -> bool {
         match (a, b) {
             (tt::Leaf::Literal(a), tt::Leaf::Literal(b)) => a.symbol == b.symbol,
@@ -593,6 +595,7 @@ fn foo () {for bar in qux {}}
 "#]],
         )
     }
+    // FIXME: https://github.com/rust-lang/rust-analyzer/pull/12937#discussion_r937633695
     #[test]
     fn for_no_pat() {
         check(r#"

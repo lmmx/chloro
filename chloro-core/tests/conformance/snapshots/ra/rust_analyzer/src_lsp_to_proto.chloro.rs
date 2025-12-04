@@ -3006,6 +3006,7 @@ struct ProcMacro {
         "#]],
         )
     }
+    // `Url` is not able to parse windows paths on unix machines.
     #[test]
     #[cfg(target_os = "windows")]
     fn test_lowercase_drive_letter() {

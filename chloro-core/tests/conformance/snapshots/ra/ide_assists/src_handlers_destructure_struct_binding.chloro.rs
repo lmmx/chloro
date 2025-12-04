@@ -16,6 +16,33 @@ use crate::{
     utils::ref_field_expr::determine_ref_and_parens,
 };
 
+// Assist: destructure_struct_binding
+//
+// Destructures a struct binding in place.
+//
+// ```
+// struct Foo {
+//     bar: i32,
+//     baz: i32,
+// }
+// fn main() {
+//     let $0foo = Foo { bar: 1, baz: 2 };
+//     let bar2 = foo.bar;
+//     let baz2 = &foo.baz;
+// }
+// ```
+// ->
+// ```
+// struct Foo {
+//     bar: i32,
+//     baz: i32,
+// }
+// fn main() {
+//     let Foo { bar, baz } = Foo { bar: 1, baz: 2 };
+//     let bar2 = bar;
+//     let baz2 = &baz;
+// }
+// ```
 pub(crate) fn destructure_struct_binding(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

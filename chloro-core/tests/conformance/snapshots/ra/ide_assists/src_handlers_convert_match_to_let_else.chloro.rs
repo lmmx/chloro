@@ -10,6 +10,25 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
+// Assist: convert_match_to_let_else
+//
+// Converts let statement with match initializer to let-else statement.
+//
+// ```
+// # //- minicore: option
+// fn foo(opt: Option<()>) {
+//     let val$0 = match opt {
+//         Some(it) => it,
+//         None => return,
+//     };
+// }
+// ```
+// ->
+// ```
+// fn foo(opt: Option<()>) {
+//     let Some(val) = opt else { return };
+// }
+// ```
 pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let let_stmt: ast::LetStmt = ctx.find_node_at_offset()?;
     let pat = let_stmt.pat()?;
@@ -50,6 +69,7 @@ pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'
     )
 }
 
+// Given a match expression, find extracting and diverging arms.
 fn find_arms(
     ctx: &AssistContext<'_>,
     match_expr: &ast::MatchExpr,
@@ -78,6 +98,7 @@ fn find_arms(
     }
 }
 
+// Given an extracting arm, find the extracted variable.
 fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Option<Vec<Name>> {
     match arm.expr()? {
         ast::Expr::PathExpr(path) => {
@@ -98,6 +119,7 @@ fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Opti
     }
 }
 
+// Rename `extracted` with `binding` in `pat`.
 fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> SyntaxNode {
     let syntax = pat.syntax().clone_subtree();
     let mut editor = SyntaxEditor::new(syntax.clone());

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98216 bytes
+Chloro size:   98337 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -24,13 +24,6 @@ Rustfmt size:  98473 bytes
          }
      }
  
-                 .unwrap_or(false)
-     }
- 
--    // FIXME: remove this
-     fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
-         def.docs(self.db())
-     }
  }
  
  fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
@@ -50,13 +43,6 @@ Rustfmt size:  98473 bytes
      // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
      if import_edit.item_to_import == import_edit.original_item {
          import_edit.import_path.segments().last().cloned()
-     }
- }
- 
--// FIXME: This checks types without possible coercions which some completions might want to do
- fn match_types(
-     ctx: &CompletionContext<'_>,
-     ty1: &hir::Type<'_>,
      let expected_type = ctx.expected_type.as_ref()?;
  
      // We don't ever consider unit type to be an exact type match, since

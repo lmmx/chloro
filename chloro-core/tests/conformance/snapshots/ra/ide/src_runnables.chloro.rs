@@ -128,6 +128,17 @@ impl Runnable {
     }
 }
 
+// Feature: Run
+//
+// Shows a popup suggesting to run a test/benchmark/binary **at the current cursor
+// location**. Super useful for repeatedly running just a single test. Do bind this
+// to a shortcut!
+//
+// | Editor  | Action Name |
+// |---------|-------------|
+// | VS Code | **rust-analyzer: Run** |
+//
+// ![Run](https://user-images.githubusercontent.com/48062697/113065583-055aae80-91b1-11eb-958f-d67efcaf6a2f.gif)
 pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
     let sema = Semantics::new(db);
 
@@ -190,6 +201,16 @@ pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
     res
 }
 
+// Feature: Related Tests
+//
+// Provides a sneak peek of all tests where the current item is used.
+//
+// The simplest way to use this feature is via the context menu. Right-click on
+// the selected item. The context menu opens. Select **Peek Related Tests**.
+//
+// | Editor  | Action Name |
+// |---------|-------------|
+// | VS Code | **rust-analyzer: Peek Related Tests** |
 pub(crate) fn related_tests(
     db: &RootDatabase,
     position: FilePosition,
@@ -589,6 +610,8 @@ fn has_runnable_doc_test(attrs: &hir::Attrs) -> bool {
     })
 }
 
+// We could create runnables for modules with number_of_test_submodules > 0,
+// but that bloats the runnables for no real benefit, since all tests can be run by the submodule already
 fn has_test_function_or_multiple_test_submodules(
     sema: &Semantics<'_, RootDatabase>,
     module: &hir::Module,

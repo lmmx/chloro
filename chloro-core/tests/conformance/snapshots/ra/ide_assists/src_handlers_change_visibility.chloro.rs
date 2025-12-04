@@ -10,6 +10,17 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::vis_offset};
 
+// Assist: change_visibility
+//
+// Adds or changes existing visibility specifier.
+//
+// ```
+// $0fn frobnicate() {}
+// ```
+// ->
+// ```
+// pub(crate) fn frobnicate() {}
+// ```
 pub(crate) fn change_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if let Some(vis) = ctx.find_node_at_offset::<ast::Visibility>() {
         return change_vis(acc, vis);

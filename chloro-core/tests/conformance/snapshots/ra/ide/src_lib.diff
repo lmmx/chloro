@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   33099 bytes
+Chloro size:   33306 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -122,12 +122,8 @@ Rustfmt size:  33868 bytes
 -// API, the API should in theory be usable as a library, or via a different
 -// protocol.
  impl Analysis {
--    // Creates an analysis instance for a single file, without any external
--    // dependencies, stdlib support or ability to apply changes. See
--    // `AnalysisHost` for creating a fully-featured analysis.
-     pub fn from_single_file(text: String) -> (Analysis, FileId) {
-         let mut host = AnalysisHost::default();
-         let file_id = FileId::from_raw(0);
+     // Creates an analysis instance for a single file, without any external
+     // dependencies, stdlib support or ability to apply changes. See
              cfg_options,
              None,
              Env::default(),

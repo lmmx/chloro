@@ -8,6 +8,30 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+// Assist: generate_enum_variant
+//
+// Adds a variant to an enum.
+//
+// ```
+// enum Countries {
+//     Ghana,
+// }
+//
+// fn main() {
+//     let country = Countries::Lesotho$0;
+// }
+// ```
+// ->
+// ```
+// enum Countries {
+//     Ghana,
+//     Lesotho,
+// }
+//
+// fn main() {
+//     let country = Countries::Lesotho;
+// }
+// ```
 pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path: ast::Path = ctx.find_node_at_offset()?;
     let parent = PathParent::new(&path)?;

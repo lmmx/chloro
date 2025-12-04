@@ -1167,6 +1167,7 @@ where
 //         self.lookup(db).container.module(db)
 //     }
 // }
+// region: manual-assoc-has-module-impls
 #[inline]
 fn module_for_assoc_item_loc<'db>(
     db: &(dyn 'db + DefDatabase),

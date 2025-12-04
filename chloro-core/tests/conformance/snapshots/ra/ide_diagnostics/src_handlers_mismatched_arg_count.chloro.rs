@@ -8,6 +8,9 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
+// Diagnostic: mismatched-tuple-struct-pat-arg-count
+//
+// This diagnostic is triggered if a function is invoked with an incorrect amount of arguments.
 pub(crate) fn mismatched_tuple_struct_pat_arg_count(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::MismatchedTupleStructPatArgCount,
@@ -25,6 +28,9 @@ pub(crate) fn mismatched_tuple_struct_pat_arg_count(
     ).stable()
 }
 
+// Diagnostic: mismatched-arg-count
+//
+// This diagnostic is triggered if a function is invoked with an incorrect amount of arguments.
 pub(crate) fn mismatched_arg_count(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::MismatchedArgCount,

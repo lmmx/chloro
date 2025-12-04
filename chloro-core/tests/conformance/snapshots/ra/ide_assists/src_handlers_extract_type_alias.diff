@@ -2,35 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10661 bytes
-Chloro size:   10410 bytes
+Chloro size:   10651 bytes
 Rustfmt size:  10661 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use crate::{AssistContext, AssistId, Assists};
- 
--// Assist: extract_type_alias
--//
--// Extracts the selected type as a type alias.
--//
--// ```
--// struct S {
--//     field: $0(u8, u8, u8)$0,
--// }
--// ```
--// ->
--// ```
--// type $0Type = (u8, u8, u8);
--//
--// struct S {
--//     field: Type,
--// }
--// ```
- pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     if ctx.has_empty_selection() {
-         return None;
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

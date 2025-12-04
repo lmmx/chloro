@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 91697 bytes
-Chloro size:   91199 bytes
+Chloro size:   91530 bytes
 Rustfmt size:  91697 bytes
 
 ✗ Outputs DIFFER
@@ -17,28 +17,6 @@ Rustfmt size:  91697 bytes
  use syntax::{
      AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
      ast::{self, HasArgList, prec::ExprPrecedence},
-     }
- }
- 
--// Feature: Rename
--//
--// Renames the item below the cursor and all of its references
--//
--// | Editor  | Shortcut |
--// |---------|----------|
--// | VS Code | <kbd>F2</kbd> |
--//
--// ![Rename](https://user-images.githubusercontent.com/48062697/113065582-055aae80-91b1-11eb-8ade-2b58e6d81883.gif)
- pub(crate) fn rename(
-     db: &RootDatabase,
-     position: FilePosition,
-     Some(change)
- }
- 
--// FIXME: Should support `extern crate`.
- fn alias_fallback(
-     syntax: &SyntaxNode,
-     FilePosition { file_id, offset }: FilePosition,
      syntax: &SyntaxNode,
      FilePosition { file_id, offset }: FilePosition,
      new_name: &Name,

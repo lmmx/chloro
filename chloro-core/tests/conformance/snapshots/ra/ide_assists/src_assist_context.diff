@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8527 bytes
-Chloro size:   8492 bytes
+Chloro size:   8534 bytes
 Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
@@ -43,13 +43,6 @@ Rustfmt size:  8697 bytes
          let left = left.map(|t| t.text_range().start().clamp(start, end));
          let right = right.map(|t| t.text_range().end().clamp(start, end));
  
-         self.sema.db
-     }
- 
--    // NB, this ignores active selection.
-     pub(crate) fn offset(&self) -> TextSize {
-         self.frange.range.start()
-     }
      pub(crate) fn token_at_offset(&self) -> TokenAtOffset<SyntaxToken> {
          self.token_at_offset.clone()
      }

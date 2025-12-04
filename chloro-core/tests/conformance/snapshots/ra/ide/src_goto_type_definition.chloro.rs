@@ -4,6 +4,15 @@ use syntax::{AstNode, SyntaxKind::*, SyntaxToken, T, ast, match_ast};
 
 use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
 
+// Feature: Go to Type Definition
+//
+// Navigates to the type of an identifier.
+//
+// | Editor  | Action Name |
+// |---------|-------------|
+// | VS Code | **Go to Type Definition** |
+//
+// ![Go to Type Definition](https://user-images.githubusercontent.com/48062697/113020657-b560f500-917a-11eb-9007-0f809733a338.gif)
 pub(crate) fn goto_type_definition(
     db: &RootDatabase,
     FilePosition { file_id, offset }: FilePosition,

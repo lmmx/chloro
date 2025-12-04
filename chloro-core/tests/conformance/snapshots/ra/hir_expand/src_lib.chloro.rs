@@ -821,6 +821,8 @@ impl ExpansionInfo {
         )
     }
 
+    // FIXME: Consider adding a reverse map to ExpansionInfo to get rid of the linear search which
+    // potentially results in quadratic look ups (notably this might improve semantic highlighting perf)
     /// Maps the passed in file range down into a macro expansion if it is the input to a macro call.
     ///
     /// Note this does a linear search through the entire backing vector of the spanmap.

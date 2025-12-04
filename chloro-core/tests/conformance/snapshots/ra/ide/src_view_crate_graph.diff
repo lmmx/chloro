@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3032 bytes
-Chloro size:   2649 bytes
+Chloro size:   3017 bytes
 Rustfmt size:  3074 bytes
 
 ✗ Outputs DIFFER
@@ -18,19 +18,7 @@ Rustfmt size:  3074 bytes
 +    base_db::{BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase},
  };
  
--// Feature: View Crate Graph
--//
--// Renders the currently loaded crate graph as an SVG graphic. Requires the `dot` tool, which
--// is part of graphviz, to be installed.
--//
--// Only workspace crates are included, no crates.io dependencies or sysroot crates.
--//
--// | Editor  | Action Name |
--// |---------|-------------|
--// | VS Code | **rust-analyzer: View Crate Graph** |
- pub(crate) fn view_crate_graph(db: &RootDatabase, full: bool) -> Result<String, String> {
-     let all_crates = db.all_crates();
-     let crates_to_render = all_crates
+ // Feature: View Crate Graph
                  true
              } else {
                  // Only render workspace crates

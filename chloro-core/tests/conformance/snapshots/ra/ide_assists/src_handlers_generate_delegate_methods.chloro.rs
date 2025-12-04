@@ -13,6 +13,41 @@ use crate::{
     utils::{convert_param_list_to_arg_list, find_struct_impl},
 };
 
+// Assist: generate_delegate_methods
+//
+// Generate delegate methods.
+//
+// ```
+// struct Age(u8);
+// impl Age {
+//     fn age(&self) -> u8 {
+//         self.0
+//     }
+// }
+//
+// struct Person {
+//     ag$0e: Age,
+// }
+// ```
+// ->
+// ```
+// struct Age(u8);
+// impl Age {
+//     fn age(&self) -> u8 {
+//         self.0
+//     }
+// }
+//
+// struct Person {
+//     age: Age,
+// }
+//
+// impl Person {
+//     $0fn age(&self) -> u8 {
+//         self.age.age()
+//     }
+// }
+// ```
 pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if !ctx.config.code_action_grouping {
         return None;

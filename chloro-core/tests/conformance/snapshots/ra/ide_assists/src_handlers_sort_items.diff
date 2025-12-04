@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11689 bytes
+Chloro size:   12910 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
@@ -21,81 +21,8 @@ Rustfmt size:  13263 bytes
 -use crate::{utils::get_methods, AssistContext, AssistId, Assists};
 +use crate::{AssistContext, AssistId, Assists, utils::get_methods};
  
--// Assist: sort_items
--//
--// Sorts item members alphabetically: fields, enum variants and methods.
--//
--// ```
--// struct $0Foo$0 { second: u32, first: String }
--// ```
--// ->
--// ```
--// struct Foo { first: String, second: u32 }
--// ```
--// ---
--// ```
--// trait $0Bar$0 {
--//     fn second(&self) -> u32;
--//     fn first(&self) -> String;
--// }
--// ```
--// ->
--// ```
--// trait Bar {
--//     fn first(&self) -> String;
--//     fn second(&self) -> u32;
--// }
--// ```
--// ---
--// ```
--// struct Baz;
--// impl $0Baz$0 {
--//     fn second(&self) -> u32;
--//     fn first(&self) -> String;
--// }
--// ```
--// ->
--// ```
--// struct Baz;
--// impl Baz {
--//     fn first(&self) -> String;
--//     fn second(&self) -> u32;
--// }
--// ```
--// ---
--// There is a difference between sorting enum variants:
--//
--// ```
--// enum $0Animal$0 {
--//   Dog(String, f64),
--//   Cat { weight: f64, name: String },
--// }
--// ```
--// ->
--// ```
--// enum Animal {
--//   Cat { weight: f64, name: String },
--//   Dog(String, f64),
--// }
--// ```
--// and sorting a single enum struct variant:
--//
--// ```
--// enum Animal {
--//   Dog(String, f64),
--//   Cat $0{ weight: f64, name: String }$0,
--// }
--// ```
--// ->
--// ```
--// enum Animal {
--//   Dog(String, f64),
--//   Cat { name: String, weight: f64 },
--// }
--// ```
- pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     if ctx.has_empty_selection() {
-         cov_mark::hit!(not_applicable_if_no_selection);
+ // Assist: sort_items
+ //
          add_sort_fields_assist(acc, union_ast.record_field_list()?)
      } else if let Some(variant_ast) = ctx.find_node_at_offset::<ast::Variant>() {
          add_sort_field_list_assist(acc, variant_ast.field_list())

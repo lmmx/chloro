@@ -5,6 +5,9 @@ use syntax::{AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, T, ast
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
+// Diagnostic: need-mut
+//
+// This diagnostic is triggered on mutating an immutable variable.
 pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option<Diagnostic> {
     let root = ctx.sema.db.parse_or_expand(d.span.file_id);
     let node = d.span.value.to_node(&root);
@@ -57,6 +60,9 @@ pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option
     )
 }
 
+// Diagnostic: unused-mut
+//
+// This diagnostic is triggered when a mutable variable isn't actually mutated.
 pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Option<Diagnostic> {
     let ast = d.local.primary_source(ctx.sema.db).syntax_ptr();
     let fixes = (|| {

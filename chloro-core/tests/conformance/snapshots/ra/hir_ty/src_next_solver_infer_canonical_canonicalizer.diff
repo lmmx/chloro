@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29629 bytes
+Chloro size:   29674 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -46,13 +46,6 @@ Rustfmt size:  29841 bytes
      }
  
      /// Canonicalizes a query *response* `V`. When we canonicalize a
- 
-     fn any(&self) -> bool;
- 
--    // Do we preserve universe of variables.
-     fn preserve_universes(&self) -> bool;
- }
- 
              | RegionKind::ReEarlyParam(..)
              | RegionKind::ReError(..) => r,
  

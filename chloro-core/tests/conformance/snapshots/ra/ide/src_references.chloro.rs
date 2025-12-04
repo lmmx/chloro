@@ -1963,6 +1963,7 @@ trait Trait {
             "#]],
         )
     }
+    // FIXME: import is classified as function
     #[test]
     fn attr() {
         check(
@@ -1992,6 +1993,7 @@ fn func$0() {}
             "#]],
         );
     }
+    // FIXME: import is classified as function
     #[test]
     fn proc_macro() {
         check(
@@ -2869,6 +2871,9 @@ impl Foo {
             "#]],
         );
     }
+    // Checks that we can circumvent our fast path logic using complicated type level functions.
+    // This mainly exists as a documentation. I don't believe it is fixable.
+    // Usages search is not 100% accurate anyway; we miss macros.
     #[test]
     fn goto_ref_on_short_associated_function_complicated_type_magic_can_confuse_our_logic() {
         cov_mark::check!(short_associated_function_fast_search);

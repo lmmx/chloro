@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2564 bytes
-Chloro size:   2438 bytes
+Chloro size:   2562 bytes
 Rustfmt size:  2696 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,8 @@ Rustfmt size:  2696 bytes
 -use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
  
--// Diagnostic: unresolved-module
--//
--// This diagnostic is triggered if rust-analyzer is unable to discover referred module.
- pub(crate) fn unresolved_module(
-     ctx: &DiagnosticsContext<'_>,
-     d: &hir::UnresolvedModule,
+ // Diagnostic: unresolved-module
+ //
                      &format!("Create module at `{candidate}`"),
                      FileSystemEdit::CreateFile {
                          dst: AnchoredPathBuf {

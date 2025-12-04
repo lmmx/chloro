@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18781 bytes
-Chloro size:   18543 bytes
+Chloro size:   18743 bytes
 Rustfmt size:  18858 bytes
 
 ✗ Outputs DIFFER
@@ -27,22 +27,7 @@ Rustfmt size:  18858 bytes
 +    assist_context::{AssistContext, Assists},
  };
  
--// Assist: inline_local_variable
--//
--// Inlines a local variable.
--//
--// ```
--// fn main() {
--//     let x$0 = 1 + 2;
--//     x * 4;
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     (1 + 2) * 4;
--// }
--// ```
+ // Assist: inline_local_variable
  pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let file_id = ctx.file_id();
      let range = ctx.selection_trimmed();

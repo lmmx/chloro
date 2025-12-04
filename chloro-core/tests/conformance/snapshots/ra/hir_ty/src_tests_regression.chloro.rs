@@ -784,6 +784,9 @@ fn issue_4800() {
     );
 }
 
+// FIXME(next-solver): Though `Repeat: IntoIterator` does not hold here, we
+// should be able to do better at given type hints (with Chalk, we did `IntoIterator::Item<Repeat<...>>`)
+// From what I can tell, the point of this test is to not panic though.
 #[test]
 fn issue_4966() {
     check_infer(

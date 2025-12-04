@@ -123,6 +123,31 @@ pub fn crate_symbols(db: &dyn HirDatabase, krate: Crate) -> Box<[&SymbolIndex]> 
     krate.modules(db).into_iter().map(|module| SymbolIndex::module_symbols(db, module)).collect()
 }
 
+// Feature: Workspace Symbol
+//
+// Uses fuzzy-search to find types, modules and functions by name across your
+// project and dependencies. This is **the** most useful feature, which improves code
+// navigation tremendously. It mostly works on top of the built-in LSP
+// functionality, however `#` and `*` symbols can be used to narrow down the
+// search. Specifically,
+//
+// - `Foo` searches for `Foo` type in the current workspace
+// - `foo#` searches for `foo` function in the current workspace
+// - `Foo*` searches for `Foo` type among dependencies, including `stdlib`
+// - `foo#*` searches for `foo` function among dependencies
+//
+// That is, `#` switches from "types" to all symbols, `*` switches from the current
+// workspace to dependencies.
+//
+// Note that filtering does not currently work in VSCode due to the editor never
+// sending the special symbols to the language server. Instead, you can configure
+// the filtering via the `rust-analyzer.workspace.symbol.search.scope` and
+// `rust-analyzer.workspace.symbol.search.kind` settings. Symbols prefixed
+// with `__` are hidden from the search results unless configured otherwise.
+//
+// | Editor  | Shortcut |
+// |---------|-----------|
+// | VS Code | <kbd>Ctrl+T</kbd>
 pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
     let _p = tracing::info_span!("world_symbols", query = ?query.query).entered();
 

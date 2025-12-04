@@ -210,6 +210,7 @@ impl WrapperKind {
     }
 }
 
+// Try to find an wrapper type alias in the current scope (shadowing the default).
 fn wrapper_alias<'db>(
     ctx: &AssistContext<'db>,
     make: &SyntaxFactory,

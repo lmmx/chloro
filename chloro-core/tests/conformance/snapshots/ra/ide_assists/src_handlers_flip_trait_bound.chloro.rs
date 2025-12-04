@@ -6,6 +6,17 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: flip_trait_bound
+//
+// Flips two trait bounds.
+//
+// ```
+// fn foo<T: Clone +$0 Copy>() { }
+// ```
+// ->
+// ```
+// fn foo<T: Copy + Clone>() { }
+// ```
 pub(crate) fn flip_trait_bound(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // Only flip on the `+` token
     let plus = ctx.find_token_syntax_at_offset(T![+])?;

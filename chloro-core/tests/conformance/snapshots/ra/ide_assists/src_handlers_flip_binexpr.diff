@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6220 bytes
+Chloro size:   6733 bytes
 Rustfmt size:  6902 bytes
 
 ✗ Outputs DIFFER
@@ -18,25 +18,6 @@ Rustfmt size:  6902 bytes
  
  use crate::{AssistContext, AssistId, Assists};
  
--// Assist: flip_binexpr
--//
--// Flips operands of a binary expression.
--//
--// ```
--// fn main() {
--//     let _ = 90 +$0 2;
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     let _ = 2 + 90;
--// }
--// ```
- pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let expr = ctx.find_node_at_offset::<BinExpr>()?;
-     let lhs = expr.lhs()?;
- 
      let op_token = expr.op_token()?;
      // The assist should be applied only if the cursor is on the operator
 -    let cursor_in_range = op_token
@@ -46,39 +27,6 @@ Rustfmt size:  6902 bytes
      if !cursor_in_range {
          return None;
      }
-     }
- }
- 
--// Assist: flip_range_expr
--//
--// Flips operands of a range expression.
--//
--// ```
--// fn main() {
--//     let _ = 90..$02;
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     let _ = 2..90;
--// }
--// ```
--// ---
--// ```
--// fn main() {
--//     let _ = 90..$0;
--// }
--// ```
--// ->
--// ```
--// fn main() {
--//     let _ = ..90;
--// }
--// ```
- pub(crate) fn flip_range_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let range_expr = ctx.find_node_at_offset::<ast::RangeExpr>()?;
-     let op = range_expr.op_token()?;
  #[cfg(test)]
  mod tests {
      use super::*;

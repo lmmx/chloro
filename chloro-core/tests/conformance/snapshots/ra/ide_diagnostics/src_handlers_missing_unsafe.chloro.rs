@@ -7,6 +7,9 @@ use syntax::{SyntaxNode, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
+// Diagnostic: missing-unsafe
+//
+// This diagnostic is triggered if an operation marked as `unsafe` is used outside of an `unsafe` function or block.
 pub(crate) fn missing_unsafe(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Diagnostic {
     let code = match d.lint {
         UnsafeLint::HardError => DiagnosticCode::RustcHardError("E0133"),
@@ -61,6 +64,17 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Option<Vec<Ass
     Some(vec![fix("add_unsafe", "Add unsafe block", source_change, expr.syntax().text_range())])
 }
 
+// Pick the first ancestor expression of the unsafe `expr` that is not a
+// receiver of a method call, a field access, the left-hand side of an
+// assignment, or a reference. As all of those cases would incur a forced move
+// if wrapped which might not be wanted. That is:
+// - `unsafe_expr.foo` -> `unsafe { unsafe_expr.foo }`
+// - `unsafe_expr.foo.bar` -> `unsafe { unsafe_expr.foo.bar }`
+// - `unsafe_expr.foo()` -> `unsafe { unsafe_expr.foo() }`
+// - `unsafe_expr.foo.bar()` -> `unsafe { unsafe_expr.foo.bar() }`
+// - `unsafe_expr += 1` -> `unsafe { unsafe_expr += 1 }`
+// - `&unsafe_expr` -> `unsafe { &unsafe_expr }`
+// - `&&unsafe_expr` -> `unsafe { &&unsafe_expr }`
 fn pick_best_node_to_add_unsafe_block(unsafe_expr: &ast::Expr) -> Option<SyntaxNode> {
     // The `unsafe_expr` might be:
     // - `ast::CallExpr`: call an unsafe function

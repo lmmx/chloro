@@ -7,6 +7,10 @@ use syntax::{AstNode, TextRange, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
+// Diagnostic: generic-args-prohibited
+//
+// This diagnostic is shown when generic arguments are provided for a type that does not accept
+// generic arguments.
 pub(crate) fn generic_args_prohibited(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::GenericArgsProhibited,

@@ -138,6 +138,7 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         }
     }
 
+    // This lists the fields of a variant along with their types.
     fn list_variant_fields(
         &self,
         ty: Ty<'db>,

@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3496 bytes
-Chloro size:   3434 bytes
+Chloro size:   3496 bytes
 Rustfmt size:  3496 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     )
- }
- 
--// For this test and the one below, see rust-lang/rust#86730.
- #[test]
- fn expr_dont_match_let_expr() {
-     check(
+✓ Outputs are IDENTICAL

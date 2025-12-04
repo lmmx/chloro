@@ -203,6 +203,7 @@ pub fn walk_pat<T>(
     ControlFlow::Continue(())
 }
 
+// FIXME: Make the control flow more proper
 /// Preorder walk all the type's sub types.
 pub fn walk_ty(ty: &ast::Type, cb: &mut dyn FnMut(ast::Type) -> bool) {
     let mut preorder = ty.syntax().preorder();

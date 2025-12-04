@@ -37,6 +37,33 @@ use crate::{
     utils::generate_impl,
 };
 
+// Assist: extract_function
+//
+// Extracts selected statements and comments into new function.
+//
+// ```
+// fn main() {
+//     let n = 1;
+//     $0let m = n + 2;
+//     // calculate
+//     let k = m + n;$0
+//     let g = 3;
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     let n = 1;
+//     fun_name(n);
+//     let g = 3;
+// }
+//
+// fn $0fun_name(n: i32) {
+//     let m = n + 2;
+//     // calculate
+//     let k = m + n;
+// }
+// ```
 pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let range = ctx.selection_trimmed();
     if range.is_empty() {
@@ -4881,6 +4908,7 @@ fn $0fun_name(x: &mut i32) {
 "#,
         );
     }
+    // regression test for #9822
     #[test]
     fn extract_mut_ref_param_has_no_mut_binding_in_loop() {
         check_assist(

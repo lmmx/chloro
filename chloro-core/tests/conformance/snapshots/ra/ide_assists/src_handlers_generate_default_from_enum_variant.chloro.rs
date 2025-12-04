@@ -3,6 +3,31 @@ use syntax::ast::{self, AstNode, HasName};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: generate_default_from_enum_variant
+//
+// Adds a Default impl for an enum using a variant.
+//
+// ```
+// enum Version {
+//  Undefined,
+//  Minor$0,
+//  Major,
+// }
+// ```
+// ->
+// ```
+// enum Version {
+//  Undefined,
+//  Minor,
+//  Major,
+// }
+//
+// impl Default for Version {
+//     fn default() -> Self {
+//         Self::Minor
+//     }
+// }
+// ```
 pub(crate) fn generate_default_from_enum_variant(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

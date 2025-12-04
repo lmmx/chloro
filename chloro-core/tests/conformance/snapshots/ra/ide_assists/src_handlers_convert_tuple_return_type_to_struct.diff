@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20081 bytes
-Chloro size:   19512 bytes
+Chloro size:   20059 bytes
 Rustfmt size:  20081 bytes
 
 ✗ Outputs DIFFER
@@ -16,37 +16,6 @@ Rustfmt size:  20081 bytes
      match_ast, ted,
  };
  
- use crate::assist_context::{AssistContext, Assists};
- 
--// Assist: convert_tuple_return_type_to_struct
--//
--// This converts the return type of a function from a tuple type
--// into a tuple struct and updates the body accordingly.
--//
--// ```
--// fn bar() {
--//     let (a, b, c) = foo();
--// }
--//
--// fn foo() -> ($0u32, u32, u32) {
--//     (1, 2, 3)
--// }
--// ```
--// ->
--// ```
--// fn bar() {
--//     let FooResult(a, b, c) = foo();
--// }
--//
--// struct FooResult(u32, u32, u32);
--//
--// fn foo() -> FooResult {
--//     FooResult(1, 2, 3)
--// }
--// ```
- pub(crate) fn convert_tuple_return_type_to_struct(
-     acc: &mut Assists,
-     ctx: &AssistContext<'_>,
  ) {
      for (file_id, references) in usages.iter() {
          edit.edit_file(file_id.file_id(ctx.db()));
@@ -57,13 +26,6 @@ Rustfmt size:  20081 bytes
          refs_with_imports.into_iter().rev().for_each(|(name, import_data)| {
              if let Some(fn_) = name.syntax().parent().and_then(ast::Fn::cast) {
                  cov_mark::hit!(replace_trait_impl_fns);
-         .collect()
- }
- 
--// Adds the definition of the tuple struct before the parent function.
- fn add_tuple_struct_def(
-     edit: &mut SourceChangeBuilder,
-     ctx: &AssistContext<'_>,
  #[cfg(test)]
  mod tests {
      use super::*;

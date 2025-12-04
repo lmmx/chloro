@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27122 bytes
-Chloro size:   26676 bytes
+Chloro size:   27078 bytes
 Rustfmt size:  27284 bytes
 
 ✗ Outputs DIFFER
@@ -29,24 +29,7 @@ Rustfmt size:  27284 bytes
 -    AssistId, GroupLabel,
  };
  
--// Assist: qualify_path
--//
--// If the name is unresolved, provides all possible qualified paths for it.
--//
--// ```
--// fn main() {
--//     let map = HashMap$0::new();
--// }
--// # pub mod std { pub mod collections { pub struct HashMap { } } }
--// ```
--// ->
--// ```
--// fn main() {
--//     let map = std::collections::HashMap::new();
--// }
--// # pub mod std { pub mod collections { pub struct HashMap { } } }
--// ```
- pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ // Assist: qualify_path
      let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
      let cfg = ctx.config.import_path_config();
  

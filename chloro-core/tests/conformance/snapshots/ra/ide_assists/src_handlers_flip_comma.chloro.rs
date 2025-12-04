@@ -7,6 +7,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: flip_comma
+//
+// Flips two comma-separated items.
+//
+// ```
+// fn main() {
+//     ((1, 2),$0 (3, 4));
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     ((3, 4), (1, 2));
+// }
+// ```
 pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comma = ctx.find_token_syntax_at_offset(T![,])?;
     let prev = non_trivia_sibling(comma.clone().into(), Direction::Prev)?;

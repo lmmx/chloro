@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4250 bytes
-Chloro size:   4172 bytes
+Chloro size:   4206 bytes
 Rustfmt size:  4308 bytes
 
 ✗ Outputs DIFFER
@@ -56,9 +56,3 @@ Rustfmt size:  4308 bytes
          file_id,
          rainbow,
      )
- }
- 
--//FIXME: like, real html escaping
- fn html_escape(text: &str) -> String {
-     text.replace('<', "&lt;").replace('>', "&gt;")
- }

@@ -4,6 +4,32 @@ use syntax::ast::{self, AstNode, HasGenericArgs, HasName};
 use crate::{AssistContext, AssistId, Assists};
 
 // FIXME: this should be a diagnostic
+// Assist: convert_into_to_from
+//
+// Converts an Into impl to an equivalent From impl.
+//
+// ```
+// # //- minicore: from
+// impl $0Into<Thing> for usize {
+//     fn into(self) -> Thing {
+//         Thing {
+//             b: self.to_string(),
+//             a: self
+//         }
+//     }
+// }
+// ```
+// ->
+// ```
+// impl From<usize> for Thing {
+//     fn from(val: usize) -> Self {
+//         Thing {
+//             b: val.to_string(),
+//             a: val
+//         }
+//     }
+// }
+// ```
 pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
     let src_type = impl_.self_ty()?;

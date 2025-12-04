@@ -77,6 +77,8 @@ pub use ide_db::assists::{
     Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
 };
 
+// NOTE: We don't have a `Feature: ` section for assists, they are special-cased
+// in the manual.
 /// Return all the assists applicable at the given position.
 ///
 pub fn assists(

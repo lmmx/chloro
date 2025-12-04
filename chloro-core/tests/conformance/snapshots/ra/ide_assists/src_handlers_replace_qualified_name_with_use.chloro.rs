@@ -11,6 +11,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: replace_qualified_name_with_use
+//
+// Adds a use statement for a given fully-qualified name.
+//
+// ```
+// # mod std { pub mod collections { pub struct HashMap<T, U>(T, U); } }
+// fn process(map: std::collections::$0HashMap<String, String>) {}
+// ```
+// ->
+// ```
+// use std::collections::HashMap;
+//
+// # mod std { pub mod collections { pub struct HashMap<T, U>(T, U); } }
+// fn process(map: HashMap<String, String>) {}
+// ```
 pub(crate) fn replace_qualified_name_with_use(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

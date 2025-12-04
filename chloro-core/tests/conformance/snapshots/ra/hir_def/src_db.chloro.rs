@@ -37,6 +37,7 @@ use salsa::plumbing::AsId;
 
 #[query_group::query_group(InternDatabaseStorage)]
 pub trait InternDatabase {
+    // region: items
     #[salsa::interned]
     fn intern_use(&self, loc: UseLoc) -> UseId;
 
@@ -241,12 +242,14 @@ pub trait DefDatabase {
     #[salsa::invoke(Attrs::fields_attrs_query)]
     fn fields_attrs(&self, def: VariantId) -> Arc<ArenaMap<LocalFieldId, Attrs>>;
 
+    // should this really be a query?
     #[salsa::invoke(crate::attr::fields_attrs_source_map)]
     fn fields_attrs_source_map(
         &self,
         def: VariantId,
     ) -> Arc<ArenaMap<LocalFieldId, AstPtr<Either<ast::TupleField, ast::RecordField>>>>;
 
+    // FIXME: Make this a non-interned query.
     #[salsa::invoke_interned(AttrsWithOwner::attrs_query)]
     fn attrs(&self, def: AttrDefId) -> Attrs;
 
@@ -282,6 +285,7 @@ pub trait DefDatabase {
     fn include_macro_invoc(&self, crate_id: Crate) -> Arc<[(MacroCallId, EditionedFileId)]>;
 }
 
+// return: macro call id and include file id
 fn include_macro_invoc(
     db: &dyn DefDatabase,
     krate: Crate,

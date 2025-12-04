@@ -7,6 +7,21 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::string_suffix};
 
+// Assist: replace_string_with_char
+//
+// Replace string literal with char literal.
+//
+// ```
+// fn main() {
+//     find("{$0");
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     find('{');
+// }
+// ```
 pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_syntax_at_offset(STRING).and_then(ast::String::cast)?;
     let value = token.value().ok()?;
@@ -34,6 +49,21 @@ pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_
     )
 }
 
+// Assist: replace_char_with_string
+//
+// Replace a char literal with a string literal.
+//
+// ```
+// fn main() {
+//     find('{$0');
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     find("{");
+// }
+// ```
 pub(crate) fn replace_char_with_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_syntax_at_offset(CHAR)?;
     let target = token.text_range();

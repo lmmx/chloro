@@ -5,6 +5,7 @@ use syntax::{
     ast::{self, IsString},
 };
 
+// FIXME: This can probably be re-implemented via the HIR?
 pub fn is_format_string(string: &ast::String) -> bool {
     // Check if `string` is a format string argument of a macro invocation.
     // `string` is a string literal, mapped down into the innermost macro expansion.
@@ -40,6 +41,7 @@ pub enum FormatSpecifier {
     Escape,
 }
 
+// FIXME: Remove this, we can use rustc_format_parse instead
 pub fn lex_format_specifiers(
     string: &ast::String,
     mut callback: &mut dyn FnMut(TextRange, FormatSpecifier),

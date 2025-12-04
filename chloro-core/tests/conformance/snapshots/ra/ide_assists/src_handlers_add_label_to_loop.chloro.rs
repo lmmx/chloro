@@ -9,6 +9,27 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: add_label_to_loop
+//
+// Adds a label to a loop.
+//
+// ```
+// fn main() {
+//     loop$0 {
+//         break;
+//         continue;
+//     }
+// }
+// ```
+// ->
+// ```
+// fn main() {
+//     ${1:'l}: loop {
+//         break ${2:'l};
+//         continue ${0:'l};
+//     }
+// }
+// ```
 pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let loop_kw = ctx.find_token_syntax_at_offset(T![loop])?;
     let loop_expr = loop_kw.parent().and_then(ast::LoopExpr::cast)?;

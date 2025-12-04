@@ -136,6 +136,21 @@ impl<'db> InferenceContext<'_, 'db> {
         fallback_occurred
     }
 
+    // Tries to apply a fallback to `ty` if it is an unsolved variable.
+    //
+    // - Unconstrained ints are replaced with `i32`.
+    //
+    // - Unconstrained floats are replaced with `f64`.
+    //
+    // - Non-numerics may get replaced with `()` or `!`, depending on
+    //   how they were categorized by `calculate_diverging_fallback`
+    //   (and the setting of `#![feature(never_type_fallback)]`).
+    //
+    // Fallback becomes very dubious if we have encountered
+    // type-checking errors. In that case, fallback to Error.
+    //
+    // Sets `FnCtxt::fallback_has_occurred` if fallback is performed
+    // during this call.
     fn fallback_if_possible(
         &mut self,
         ty: Ty<'db>,

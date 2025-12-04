@@ -2,29 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19114 bytes
-Chloro size:   18777 bytes
+Chloro size:   19005 bytes
 Rustfmt size:  19114 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
- 
--// Diagnostic: missing-fields
--//
--// This diagnostic is triggered if record lacks some fields that exist in the corresponding structure.
--//
--// Example:
--//
--// ```rust
--// struct A { a: u8, b: u8 }
--//
--// let a = A { a: 10 };
--// ```
- pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Diagnostic {
-     let mut message = String::from("missing structure fields:\n");
-     for field in &d.missed_fields {
      match &d.field_list_parent.to_node(&root) {
          Either::Left(field_list_parent) => {
              let missing_fields = ctx.sema.record_literal_missing_fields(field_list_parent);

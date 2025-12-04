@@ -10,6 +10,60 @@ use syntax::{
 // We generate erroneous code if a function is declared const (E0379)
 // This is left to the user to correct as our only option is to remove the
 // function completely which we should not be doing.
+// Assist: generate_trait_from_impl
+//
+// Generate trait for an already defined inherent impl and convert impl to a trait impl.
+//
+// ```
+// struct Foo<const N: usize>([i32; N]);
+//
+// macro_rules! const_maker {
+//     ($t:ty, $v:tt) => {
+//         const CONST: $t = $v;
+//     };
+// }
+//
+// impl<const N: usize> Fo$0o<N> {
+//     // Used as an associated constant.
+//     const CONST_ASSOC: usize = N * 4;
+//
+//     fn create() -> Option<()> {
+//         Some(())
+//     }
+//
+//     const_maker! {i32, 7}
+// }
+// ```
+// ->
+// ```
+// struct Foo<const N: usize>([i32; N]);
+//
+// macro_rules! const_maker {
+//     ($t:ty, $v:tt) => {
+//         const CONST: $t = $v;
+//     };
+// }
+//
+// trait ${0:NewTrait}<const N: usize> {
+//     // Used as an associated constant.
+//     const CONST_ASSOC: usize = N * 4;
+//
+//     fn create() -> Option<()>;
+//
+//     const_maker! {i32, 7}
+// }
+//
+// impl<const N: usize> ${0:NewTrait}<N> for Foo<N> {
+//     // Used as an associated constant.
+//     const CONST_ASSOC: usize = N * 4;
+//
+//     fn create() -> Option<()> {
+//         Some(())
+//     }
+//
+//     const_maker! {i32, 7}
+// }
+// ```
 pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // Get AST Node
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;

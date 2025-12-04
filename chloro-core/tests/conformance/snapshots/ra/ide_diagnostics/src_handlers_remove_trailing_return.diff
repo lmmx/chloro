@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7346 bytes
-Chloro size:   7181 bytes
+Chloro size:   7329 bytes
 Rustfmt size:  7366 bytes
 
 ✗ Outputs DIFFER
@@ -18,13 +18,8 @@ Rustfmt size:  7366 bytes
 -use crate::{adjusted_display_range, fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
  
--// Diagnostic: remove-trailing-return
--//
--// This diagnostic is triggered when there is a redundant `return` at the end of a function
--// or closure.
- pub(crate) fn remove_trailing_return(
-     ctx: &DiagnosticsContext<'_>,
-     d: &RemoveTrailingReturn,
+ // Diagnostic: remove-trailing-return
+ //
      let return_expr = d.return_expr.value.to_node(&root);
      let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);
  

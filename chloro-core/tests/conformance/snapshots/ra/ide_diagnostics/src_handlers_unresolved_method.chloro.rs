@@ -13,6 +13,9 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
+// Diagnostic: unresolved-method
+//
+// This diagnostic is triggered if a method does not exist on a given type.
 pub(crate) fn unresolved_method(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UnresolvedMethodCall<'_>,

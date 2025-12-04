@@ -2,6 +2,9 @@ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 use hir::GenericArgKind;
 use syntax::SyntaxKind;
 
+// Diagnostic: incorrect-generics-order
+//
+// This diagnostic is triggered the order of provided generic arguments does not match their declaration.
 pub(crate) fn incorrect_generics_order(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::IncorrectGenericsOrder,

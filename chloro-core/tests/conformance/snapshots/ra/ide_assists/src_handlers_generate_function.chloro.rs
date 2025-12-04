@@ -27,6 +27,31 @@ use crate::{
     utils::{convert_reference_type, find_struct_impl},
 };
 
+// Assist: generate_function
+//
+// Adds a stub function with a signature matching the function under the cursor.
+//
+// ```
+// struct Baz;
+// fn baz() -> Baz { Baz }
+// fn foo() {
+//     bar$0("", baz());
+// }
+//
+// ```
+// ->
+// ```
+// struct Baz;
+// fn baz() -> Baz { Baz }
+// fn foo() {
+//     bar("", baz());
+// }
+//
+// fn bar(arg: &'static str, baz: Baz) ${0:-> _} {
+//     todo!()
+// }
+//
+// ```
 pub(crate) fn generate_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     gen_fn(acc, ctx).or_else(|| gen_method(acc, ctx))
 }

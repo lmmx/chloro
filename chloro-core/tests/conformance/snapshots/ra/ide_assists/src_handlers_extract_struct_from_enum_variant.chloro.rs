@@ -24,6 +24,19 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
+// Assist: extract_struct_from_enum_variant
+//
+// Extracts a struct from enum variant.
+//
+// ```
+// enum A { $0One(u32, u32) }
+// ```
+// ->
+// ```
+// struct One(u32, u32);
+//
+// enum A { One(One) }
+// ```
 pub(crate) fn extract_struct_from_enum_variant(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,
@@ -328,6 +341,9 @@ fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList
     Some(())
 }
 
+// Note: this also detaches whitespace after comments,
+// since `SyntaxNode::splice_children` (and by extension `ted::insert_all_raw`)
+// detaches nodes. If we only took the comments, we'd leave behind the old whitespace.
 fn take_all_comments(node: &SyntaxNode) -> Vec<SyntaxElement> {
     let mut remove_next_ws = false;
     node.children_with_tokens()

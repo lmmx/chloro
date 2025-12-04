@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7219 bytes
-Chloro size:   6889 bytes
+Chloro size:   7137 bytes
 Rustfmt size:  7310 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,9 @@ Rustfmt size:  7310 bytes
  //
  // This diagnostic is shown for attribute proc macros when attribute expansions have been disabled.
 -
--// Diagnostic: proc-macro-disabled
--//
--// This diagnostic is shown for proc macros that have been specifically disabled via `rust-analyzer.procMacro.ignored`.
- pub(crate) fn macro_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroError) -> Diagnostic {
+ // Diagnostic: proc-macro-disabled
+ //
+ // This diagnostic is shown for proc macros that have been specifically disabled via `rust-analyzer.procMacro.ignored`.
      // Use more accurate position if available.
      let display_range = ctx.resolve_precise_location(&d.node, d.precise_location);
      Diagnostic::new(
@@ -37,15 +36,6 @@ Rustfmt size:  7310 bytes
          d.message.clone(),
          display_range,
      )
-     .stable()
- }
- 
--// Diagnostic: macro-def-error
--//
--// This diagnostic is shown for macro expansion errors.
- pub(crate) fn macro_def_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroDefError) -> Diagnostic {
-     // Use more accurate position if available.
-     let display_range =
  #[cfg(test)]
  mod tests {
      use crate::{

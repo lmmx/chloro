@@ -271,6 +271,7 @@ pub(crate) fn invert_boolean_expression(make: &SyntaxFactory, expr: ast::Expr) -
     invert_special_case(make, &expr).unwrap_or_else(|| make.expr_prefix(T![!], expr).into())
 }
 
+// FIXME: Migrate usages of this function to the above function and remove this.
 pub(crate) fn invert_boolean_expression_legacy(expr: ast::Expr) -> ast::Expr {
     invert_special_case_legacy(&expr).unwrap_or_else(|| make::expr_prefix(T![!], expr).into())
 }
@@ -543,6 +544,8 @@ fn has_any_fn(imp: &ast::Impl, names: &[String]) -> bool {
     false
 }
 
+//
+// FIXME: this partially overlaps with `find_struct_impl`
 /// Find the end of the `impl` block for the given `ast::Impl`.
 pub(crate) fn find_impl_block_end(impl_def: ast::Impl, buf: &mut String) -> Option<TextSize> {
     buf.push('\n');
@@ -555,12 +558,14 @@ pub(crate) fn find_impl_block_end(impl_def: ast::Impl, buf: &mut String) -> Opti
     Some(end)
 }
 
+// FIXME: migrate remaining uses to `generate_impl`
 /// Generates the surrounding `impl Type { <code> }` including type and lifetime
 /// parameters.
 pub(crate) fn generate_impl_text(adt: &ast::Adt, code: &str) -> String {
     generate_impl_text_inner(adt, None, true, code)
 }
 
+// FIXME: migrate remaining uses to `generate_trait_impl`
 /// Generates the surrounding `impl <trait> for Type { <code> }` including type
 /// and lifetime parameters, with `<trait>` appended to `impl`'s generic parameters' bounds.
 ///
@@ -570,6 +575,7 @@ pub(crate) fn generate_trait_impl_text(adt: &ast::Adt, trait_text: &str, code: &
     generate_impl_text_inner(adt, Some(trait_text), true, code)
 }
 
+// FIXME: migrate remaining uses to `generate_trait_impl_intransitive`
 /// Generates the surrounding `impl <trait> for Type { <code> }` including type
 /// and lifetime parameters, with `impl`'s generic parameters' bounds kept as-is.
 ///
@@ -874,6 +880,9 @@ impl<'db> ReferenceConversion<'db> {
     }
 }
 
+// FIXME: It should return a new hir::Type, but currently constructing new types is too cumbersome
+//        and all users of this function operate on string type names, so they can do the conversion
+//        itself themselves.
 pub(crate) fn convert_reference_type<'db>(
     ty: hir::Type<'db>,
     db: &'db RootDatabase,
@@ -1189,6 +1198,7 @@ pub fn is_body_const(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr) -> bo
     is_const
 }
 
+// FIXME: #20460 When hir-ty can analyze the `never` statement at the end of block, remove it
 pub(crate) fn is_never_block(
     sema: &Semantics<'_, RootDatabase>,
     block_expr: &ast::BlockExpr,

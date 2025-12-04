@@ -1870,6 +1870,9 @@ fn main() {
     );
 }
 
+// This test is actually testing the shadowing behavior within hir_def. It
+// lives here because the testing infrastructure in hir_def isn't currently
+// capable of asserting the necessary conditions.
 #[test]
 fn should_be_shadowing_imports() {
     check_types(
@@ -1950,6 +1953,8 @@ fn closure_return_inferred() {
     );
 }
 
+// FIXME(next-solver): `&'? str` in 231..262 seems suspicious.
+// Should revisit this once we fully migrated into next-solver without chalk-ir.
 #[test]
 fn coroutine_types_inferred() {
     check_infer(

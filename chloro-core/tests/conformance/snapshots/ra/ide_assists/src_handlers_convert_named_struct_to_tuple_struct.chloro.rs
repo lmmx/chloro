@@ -10,6 +10,46 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
+// Assist: convert_named_struct_to_tuple_struct
+//
+// Converts struct with named fields to tuple struct, and analogously for enum variants with named
+// fields.
+//
+// ```
+// struct Point$0 { x: f32, y: f32 }
+//
+// impl Point {
+//     pub fn new(x: f32, y: f32) -> Self {
+//         Point { x, y }
+//     }
+//
+//     pub fn x(&self) -> f32 {
+//         self.x
+//     }
+//
+//     pub fn y(&self) -> f32 {
+//         self.y
+//     }
+// }
+// ```
+// ->
+// ```
+// struct Point(f32, f32);
+//
+// impl Point {
+//     pub fn new(x: f32, y: f32) -> Self {
+//         Point(x, y)
+//     }
+//
+//     pub fn x(&self) -> f32 {
+//         self.0
+//     }
+//
+//     pub fn y(&self) -> f32 {
+//         self.1
+//     }
+// }
+// ```
 pub(crate) fn convert_named_struct_to_tuple_struct(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

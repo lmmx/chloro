@@ -5,6 +5,34 @@ use syntax::syntax_editor::{Element, Position};
 
 use crate::{AssistContext, AssistId, Assists};
 
+// Assist: convert_from_to_tryfrom
+//
+// Converts a From impl to a TryFrom impl, wrapping returns in `Ok`.
+//
+// ```
+// # //- minicore: from
+// impl $0From<usize> for Thing {
+//     fn from(val: usize) -> Self {
+//         Thing {
+//             b: val.to_string(),
+//             a: val
+//         }
+//     }
+// }
+// ```
+// ->
+// ```
+// impl TryFrom<usize> for Thing {
+//     type Error = ${0:()};
+//
+//     fn try_from(val: usize) -> Result<Self, Self::Error> {
+//         Ok(Thing {
+//             b: val.to_string(),
+//             a: val
+//         })
+//     }
+// }
+// ```
 pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
     let trait_ty = impl_.trait_()?;

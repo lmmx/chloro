@@ -447,6 +447,7 @@ pub(crate) fn for_trait_impls(
     ControlFlow::Continue(())
 }
 
+// FIXME(next-trait-solver): uplift
 pub fn sizedness_constraint_for_ty<'db>(
     interner: DbInterner<'db>,
     sizedness: SizedTraitKind,

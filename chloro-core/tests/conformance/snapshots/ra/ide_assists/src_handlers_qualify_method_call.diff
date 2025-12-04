@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10705 bytes
-Chloro size:   10317 bytes
+Chloro size:   10691 bytes
 Rustfmt size:  10723 bytes
 
 ✗ Outputs DIFFER
@@ -16,37 +16,6 @@ Rustfmt size:  10723 bytes
  
  use crate::{
      assist_context::{AssistContext, Assists},
-     handlers::qualify_path::QualifyCandidate,
- };
- 
--// Assist: qualify_method_call
--//
--// Replaces the method call with a qualified function call.
--//
--// ```
--// struct Foo;
--// impl Foo {
--//     fn foo(&self) {}
--// }
--// fn main() {
--//     let foo = Foo;
--//     foo.fo$0o();
--// }
--// ```
--// ->
--// ```
--// struct Foo;
--// impl Foo {
--//     fn foo(&self) {}
--// }
--// fn main() {
--//     let foo = Foo;
--//     Foo::foo(&foo);
--// }
--// ```
- pub(crate) fn qualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let name: ast::NameRef = ctx.find_node_at_offset()?;
-     let call = name.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
      let current_edition = current_module.krate().edition(ctx.db());
      let target_module_def = ModuleDef::from(resolved_call);
      let item_in_ns = ItemInNs::from(target_module_def);

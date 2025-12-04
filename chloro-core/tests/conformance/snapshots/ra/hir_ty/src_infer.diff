@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   73266 bytes
+Chloro size:   74136 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -158,28 +158,6 @@ Rustfmt size:  74236 bytes
      pub fn is_erroneous(&self) -> bool {
          self.has_errors && self.type_of_expr.iter().count() == 0
      }
-         self.binding_modes.get(id).copied()
-     }
- 
--    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
-     pub fn expression_types(&self) -> impl Iterator<Item = (ExprId, Ty<'db>)> {
-         self.type_of_expr.iter().map(|(k, v)| (k, *v))
-     }
- 
--    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
-     pub fn pattern_types(&self) -> impl Iterator<Item = (PatId, Ty<'db>)> {
-         self.type_of_pat.iter().map(|(k, v)| (k, *v))
-     }
- 
--    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
-     pub fn binding_types(&self) -> impl Iterator<Item = (BindingId, Ty<'db>)> {
-         self.type_of_binding.iter().map(|(k, v)| (k, *v))
-     }
- 
--    // This method is consumed by external tools to run rust-analyzer as a library. Don't remove, please.
-     pub fn return_position_impl_trait_types(
-         &self,
-         db: &'db dyn HirDatabase,
      f128: Ty<'db>,
      static_str_ref: Ty<'db>,
      error: Ty<'db>,
@@ -219,10 +197,12 @@ Rustfmt size:  74236 bytes
      diagnostics: Diagnostics<'db>,
  }
  
+         self.result.has_errors = true;
      }
  
-     /// Clones `self` and calls `resolve_all()` on it.
--    // FIXME: Remove this.
+-    /// Clones `self` and calls `resolve_all()` on it.
+     // FIXME: Remove this.
++    /// Clones `self` and calls `resolve_all()` on it.
      pub(crate) fn fixme_resolve_all_clone(&self) -> InferenceResult<'db> {
          let mut ctx = self.clone();
  
@@ -235,16 +215,6 @@ Rustfmt size:  74236 bytes
          // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
          let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
          for mut cast in cast_checks.into_iter() {
-         ctx.resolve_all()
-     }
- 
--    // FIXME: This function should be private in module. It is currently only used in the consteval, since we need
--    // `InferenceResult` in the middle of inference. See the fixme comment in `consteval::eval_to_const`. If you
--    // used this function for another workaround, mention it here. If you really need this function and believe that
--    // there is no problem in it being `pub(crate)`, remove this comment.
-     fn resolve_all(self) -> InferenceResult<'db> {
-         let InferenceContext {
-             mut table, mut result, tuple_field_accesses_rev, diagnostics, ..
          );
  
          // Check if function contains a va_list, if it does then we append it to the parameter types
