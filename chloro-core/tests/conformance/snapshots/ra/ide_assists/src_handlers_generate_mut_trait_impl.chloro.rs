@@ -25,11 +25,9 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
     let trait_new = get_trait_mut(&trait_, famous)?;
 
     // Index -> IndexMut
-
     ted::replace(trait_name.syntax(), make::name_ref(trait_new).clone_for_update().syntax());
 
     // index -> index_mut
-
     let (trait_method_name, new_trait_method_name) = impl_def
         .syntax()
         .descendants()
@@ -45,14 +43,12 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
     }
 
     // &self -> &mut self
-
     let mut_self_param = make::mut_self_param();
     let self_param: ast::SelfParam =
         impl_def.syntax().descendants().find_map(ast::SelfParam::cast)?;
     ted::replace(self_param.syntax(), mut_self_param.clone_for_update().syntax());
 
     // &Self::Output -> &mut Self::Output
-
     let ret_type = impl_def.syntax().descendants().find_map(ast::RetType::cast)?;
     let new_ret_type = process_ret_type(&ret_type)?;
     ted::replace(ret_type.syntax(), make::ret_type(new_ret_type).clone_for_update().syntax());

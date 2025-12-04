@@ -1340,13 +1340,11 @@ fn check_signatures(src: &str, kind: CompletionItemKind, reduced: Expect, full: 
     };
 
     // reduced signature
-
     let completion = do_completion_with_config(TEST_CONFIG, src, kind);
     assert!(completion[0].detail.is_some());
     reduced.assert_eq(completion[0].detail.as_ref().unwrap());
 
     // full signature
-
     let completion = do_completion_with_config(FULL_SIGNATURES_CONFIG, src, kind);
     assert!(completion[0].detail.is_some());
     full.assert_eq(completion[0].detail.as_ref().unwrap());

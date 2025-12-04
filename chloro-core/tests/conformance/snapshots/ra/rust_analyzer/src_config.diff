@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166242 bytes
+Chloro size:   166241 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -409,10 +409,8 @@ Rustfmt size:  167117 bytes
          //
 +
          // https://link[text] => [text](https://link)
-+
          let url_matches = schema.match_indices("https://");
          let mut url_offsets = url_matches.map(|(idx, _)| idx).collect::<Vec<usize>>();
-         url_offsets.reverse();
              ensure_file_contents(package_json_path.as_std_path(), &package_json)
          }
      }

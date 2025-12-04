@@ -17,7 +17,6 @@ pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_
     // Check if cursor is to the left of assoc item list's L_CURLY.
 
     // if no L_CURLY then return.
-
     let l_curly = impl_ast.assoc_item_list()?.l_curly_token()?;
 
     let cursor_offset = ctx.offset();
@@ -27,7 +26,6 @@ pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_
     }
 
     // If impl is not inherent then we don't really need to go any further.
-
     if impl_ast.for_token().is_some() {
         return None;
     }

@@ -82,7 +82,6 @@ fn try_extend_selection(
     };
 
     // if we are in single token_tree, we maybe live in macro or attr
-
     if node.kind() == TOKEN_TREE
         && let Some(macro_call) = node.ancestors().find_map(ast::MacroCall::cast)
         && let Some(range) = extend_tokens_from_range(sema, macro_call, range)
@@ -127,7 +126,6 @@ fn extend_tokens_from_range(
     }
 
     // compute original mapped token range
-
     let extended = {
         let fst_expanded = sema.descend_into_macros_single_exact(first_token.clone());
         let lst_expanded = sema.descend_into_macros_single_exact(last_token.clone());
@@ -141,7 +139,6 @@ fn extend_tokens_from_range(
     };
 
     // Compute parent node range
-
     let validate = || {
         let extended = &extended;
         move |token: &SyntaxToken| -> bool {
@@ -155,7 +152,6 @@ fn extend_tokens_from_range(
     };
 
     // Find the first and last text range under expanded parent
-
     let first = successors(Some(first_token), |token| {
         let token = token.prev_token()?;
         skip_trivia_token(token, Direction::Prev)

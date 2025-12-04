@@ -112,7 +112,6 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
     // Documentation hashing is skipped too, as it's a large blob to process,
 
     // while not really making completion properties more unique as they are already.
-
     let kind_tag = item.kind.tag();
     hasher.update(kind_tag.len().to_ne_bytes());
     hasher.update(kind_tag);

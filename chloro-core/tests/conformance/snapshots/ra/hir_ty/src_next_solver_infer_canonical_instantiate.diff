@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6139 bytes
-Chloro size:   6178 bytes
+Chloro size:   6177 bytes
 Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
@@ -49,10 +49,3 @@ Rustfmt size:  6179 bytes
      // Because we use `BoundVarIndexKind::Canonical`, we can cache
      // based only on the entire ty, not worrying about a `DebruijnIndex`
      cache: FxHashMap<Ty<'db>, Ty<'db>>,
-         }
- 
-         // FIXME: We might need cache here for perf like rustc
-+
-         c.super_fold_with(self)
-     }
- }

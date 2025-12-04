@@ -28,7 +28,6 @@ pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<Na
     let mut module = find_node_at_offset::<ast::Module>(source_file.syntax(), position.offset);
 
     // If cursor is literally on `mod foo`, go to the grandpa.
-
     if let Some(m) = &module
         && !m
             .item_list()

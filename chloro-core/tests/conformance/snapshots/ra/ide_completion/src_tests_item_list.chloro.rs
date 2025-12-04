@@ -545,7 +545,6 @@ fn inside_extern_blocks() {
     );
 
     // Should suggest `fn`, `static`, `safe`, `unsafe`
-
     check_with_base_items(
         r#"unsafe extern { $0 }"#,
         expect![[r#"

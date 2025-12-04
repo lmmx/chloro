@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23706 bytes
+Chloro size:   23705 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,8 @@ Rustfmt size:  23725 bytes
      // Chaining can be defined as an expression whose next sibling tokens are newline and dot
 +
      // Ignoring extra whitespace and comments
-+
      let next = tokens.next()?.kind();
      if next == SyntaxKind::WHITESPACE {
-         let mut next_next = tokens.next()?.kind();
  mod tests {
      use expect_test::{Expect, expect};
      use ide_db::text_edit::{TextRange, TextSize};

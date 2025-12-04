@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4277 bytes
+Chloro size:   4276 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -58,7 +58,3 @@ Rustfmt size:  4381 bytes
          }
  
          // --no-fail-fast is needed to ensure that all requested tests will run
-+
-         cmd.arg("--no-fail-fast");
-         cmd.arg("--manifest-path");
-         cmd.arg(root.join("Cargo.toml"));

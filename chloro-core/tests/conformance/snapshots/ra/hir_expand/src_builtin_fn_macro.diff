@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   32290 bytes
+Chloro size:   32285 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -42,34 +42,6 @@ Rustfmt size:  32290 bytes
          ),
      }
  }
-     let mac = if use_panic_2021(db, call_site_span) { sym::panic_2021 } else { sym::panic_2015 };
- 
-     // Pass the original arguments
-+
-     let subtree = WithDelimiter {
-         delimiter: tt::Delimiter {
-             open: call_site_span,
-     };
- 
-     // Expand to a macro call `$crate::panic::panic_{edition}`
-+
-     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
- 
-     ExpandResult::ok(call)
-     };
- 
-     // Pass the original arguments
-+
-     let mut subtree = tt.clone();
-     *subtree.top_subtree_delimiter_mut() = tt::Delimiter {
-         open: call_site_span,
-     };
- 
-     // Expand to a macro call `$crate::panic::panic_{edition}`
-+
-     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
- 
-     ExpandResult::ok(call)
      // stack that does not have #[allow_internal_unstable(edition_panic)].
      // (To avoid using the edition of e.g. the assert!() or debug_assert!() definition.)
      loop {
@@ -121,10 +93,8 @@ Rustfmt size:  32290 bytes
      // Ideally, we'd be able to offer a precise expansion if the user asks for macro
 +
      // expansion.
-+
      let file_id = match relative_file(db, arg_id, path.as_str(), true, input_span) {
          Ok(file_id) => file_id,
-         Err(_) => {
      span: Span,
  ) -> ExpandResult<tt::TopSubtree> {
      ExpandResult::new(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20503 bytes
+Chloro size:   20502 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -13,13 +13,6 @@ Rustfmt size:  20506 bytes
  #[cfg(test)]
  mod tests;
  
-     }
- 
-     // merge into existing imports if possible
-+
-     if let Some(mb) = mb {
-         let filter = |it: &_| !(cfg.skip_glob_imports && ast::Use::is_simple_glob(it));
-         for existing_use in
                  res = ImportGranularityGuess::CrateOrModule;
              }
          }

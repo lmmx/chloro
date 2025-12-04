@@ -42,7 +42,6 @@ pub(super) fn hints(
     // Chaining can be defined as an expression whose next sibling tokens are newline and dot
 
     // Ignoring extra whitespace and comments
-
     let next = tokens.next()?.kind();
     if next == SyntaxKind::WHITESPACE {
         let mut next_next = tokens.next()?.kind();

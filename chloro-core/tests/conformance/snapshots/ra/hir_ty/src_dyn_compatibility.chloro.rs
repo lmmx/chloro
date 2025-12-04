@@ -100,7 +100,6 @@ where
     }
 
     // Check if there exist bounds that referencing self
-
     if predicates_reference_self(db, trait_) {
         cb(DynCompatibilityViolation::SelfReferential)?;
     }
@@ -109,7 +108,6 @@ where
     }
 
     // rustc checks for non-lifetime binders here, but we don't support HRTB yet
-
     let trait_data = trait_.trait_items(db);
     for (_, assoc_item) in &trait_data.items {
         dyn_compatibility_violation_for_assoc_item(db, trait_, *assoc_item, cb)?;
@@ -415,7 +413,6 @@ fn receiver_is_dispatchable<'db>(
     // `self: Self` can't be dispatched on, but this is already considered dyn-compatible
 
     // See rustc's comment on https://github.com/rust-lang/rust/blob/3f121b9461cce02a703a0e7e450568849dfaa074/compiler/rustc_trait_selection/src/traits/object_safety.rs#L433-L437
-
     if sig.inputs().iter().next().is_some_and(|p| p.skip_binder() == self_param_ty) {
         return true;
     }
@@ -441,7 +438,6 @@ fn receiver_is_dispatchable<'db>(
     // Type `U`
 
     // FIXME: That seems problematic to fake a generic param like that?
-
     let unsized_self_ty = Ty::new_param(interner, self_param_id, u32::MAX);
     // `Receiver[Self => U]`
     let unsized_receiver_ty = receiver_for_self_ty(interner, func, receiver_ty, unsized_self_ty);
@@ -475,7 +471,6 @@ fn receiver_is_dispatchable<'db>(
     };
 
     // Receiver: DispatchFromDyn<Receiver[Self => U]>
-
     let predicate =
         TraitRef::new(interner, dispatch_from_dyn_did.into(), [receiver_ty, unsized_receiver_ty]);
     let goal = Goal::new(interner, param_env, predicate);
@@ -530,7 +525,6 @@ fn contains_illegal_impl_trait_in_trait<'db>(
     // Since we haven't implemented RPITIT in proper way like rustc yet,
 
     // just check whether `ret` contains RPIT for now
-
     for opaque_ty in visitor.0 {
         let impl_trait_id = db.lookup_intern_impl_trait_id(opaque_ty);
         if matches!(impl_trait_id, ImplTraitId::ReturnTypeImplTrait(..)) {

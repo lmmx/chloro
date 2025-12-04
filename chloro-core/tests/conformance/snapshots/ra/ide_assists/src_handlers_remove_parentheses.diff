@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8964 bytes
-Chloro size:   8763 bytes
+Chloro size:   8761 bytes
 Rustfmt size:  9394 bytes
 
 ✗ Outputs DIFFER
@@ -184,13 +184,6 @@ Rustfmt size:  9394 bytes
      #[test]
      fn remove_exprs_let_else_restrictions() {
          // `}` is not allowed before `else` here
-         );
- 
-         // logic operators can't directly appear in the let-else
-+
-         check_assist_not_applicable(
-             remove_parentheses,
-             r#"fn f() { let _ = $0(false || false) else { return }; }"#,
              r#"fn f() { let _ = $0(true && true) else { return }; }"#,
          );
      }
@@ -233,10 +226,3 @@ Rustfmt size:  9394 bytes
      #[test]
      fn remove_parens_indirect_calls() {
          check_assist(
-         );
- 
-         // Parentheses are necessary when calling a function-like pointer that is a member of a struct or union.
-+
-         check_assist_not_applicable(
-             remove_parentheses,
-             r#"

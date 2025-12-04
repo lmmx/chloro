@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10503 bytes
-Chloro size:   10506 bytes
+Chloro size:   10505 bytes
 Rustfmt size:  10686 bytes
 
 ✗ Outputs DIFFER
@@ -71,13 +71,6 @@ Rustfmt size:  10686 bytes
                      == Some("ra_test_fixture")
              })
              .unwrap_or(*all_crates.last().unwrap())
-         }
- 
-         // Find the innermost block expression that has a `DefMap`.
-+
-         let def_with_body = fn_def?.into();
-         let source_map = self.body_with_source_map(def_with_body).1;
-         let scopes = self.expr_scopes(def_with_body);
              });
  
          for scope in scope_iter {

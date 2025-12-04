@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58546 bytes
-Chloro size:   58596 bytes
+Chloro size:   58595 bytes
 Rustfmt size:  58546 bytes
 
 ✗ Outputs DIFFER
@@ -58,18 +58,24 @@ Rustfmt size:  58546 bytes
          // }
  
          // let mut total_macro_file_size = Bytes::default();
-+
-         // for e in hir::db::ParseMacroExpansionQuery.in_db(db).entries::<Vec<_>>() {
-+
-         //     let val = db.parse_macro_expansion(e.key).value.0;
-+
-         //     total_macro_file_size += syntax_len(val.syntax_node())
-+
-         // }
-+
-         // eprintln!("source files: {total_file_size}, macro files: {total_macro_file_size}");
+-        // for e in hir::db::ParseMacroExpansionQuery.in_db(db).entries::<Vec<_>>() {
+-        //     let val = db.parse_macro_expansion(e.key).value.0;
+-        //     total_macro_file_size += syntax_len(val.syntax_node())
+-        // }
+-        // eprintln!("source files: {total_file_size}, macro files: {total_macro_file_size}");
  
++        // for e in hir::db::ParseMacroExpansionQuery.in_db(db).entries::<Vec<_>>() {
++
++        //     let val = db.parse_macro_expansion(e.key).value.0;
++
++        //     total_macro_file_size += syntax_len(val.syntax_node())
++
++        // }
++
++        // eprintln!("source files: {total_file_size}, macro files: {total_macro_file_size}");
          eprintln!("{:<20} {}", "Item Tree Collection:", item_tree_time);
+         report_metric("item tree time", item_tree_time.time.as_millis() as u64, "ms");
+         eprintln!("  Total Statistics:");
          eprintln!("{:<20} {} ({} files)", "IDE:", ide_time, file_ids.len());
      }
  

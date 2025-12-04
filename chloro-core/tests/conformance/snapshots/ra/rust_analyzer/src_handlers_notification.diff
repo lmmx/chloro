@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22455 bytes
-Chloro size:   22456 bytes
+Chloro size:   22455 bytes
 Rustfmt size:  22455 bytes
 
 ✗ Outputs DIFFER
@@ -24,10 +24,8 @@ Rustfmt size:  22455 bytes
      // notifications for this token, as the client can't know when
 +
      // we accepted notification.
-+
      Ok(())
  }
- 
          let world = state.snapshot();
          let invocation_strategy = state.config.flycheck(None).invocation_strategy();
          let may_flycheck_workspace = state.config.flycheck_workspace(None);

@@ -338,7 +338,6 @@ fn inline(
     // because `ted::replace` will change the offset in syntax tree, which makes
 
     // `FileReference` incorrect
-
     if let Some(imp) =
         sema.ancestors_with_macros(fn_body.syntax().clone()).find_map(ast::Impl::cast)
         && !node.syntax().ancestors().any(|anc| &anc == imp.syntax())
@@ -358,7 +357,6 @@ fn inline(
     let mut func_let_vars: BTreeSet<String> = BTreeSet::new();
 
     // grab all of the local variable declarations in the function
-
     for stmt in fn_body.statements() {
         if let Some(let_stmt) = ast::LetStmt::cast(stmt.syntax().to_owned()) {
             for has_token in let_stmt.syntax().children_with_tokens() {
@@ -374,7 +372,6 @@ fn inline(
     let mut let_stmts = Vec::new();
 
     // Inline parameter expressions or generate `let` statements depending on whether inlining works or not.
-
     for ((pat, param_ty, param), usages, expr) in izip!(params, param_use_nodes, arguments) {
         // izip confuses RA due to our lack of hygiene info currently losing us type info causing incorrect errors
         let usages: &[ast::PathExpr] = &usages;

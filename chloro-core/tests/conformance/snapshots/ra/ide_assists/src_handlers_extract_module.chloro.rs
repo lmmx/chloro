@@ -57,7 +57,6 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     // If the selection is inside impl block, we need to place new module outside impl block,
 
     // as impl blocks cannot contain modules
-
     let mut impl_parent: Option<ast::Impl> = None;
     let mut impl_child_count: usize = 0;
     if let Some(parent_assoc_list) = module.body_items[0].syntax().parent()
@@ -251,7 +250,6 @@ impl Module {
         //implementing block(a struct, enum, etc), if the parent is in selected module, it will
 
         //get updated by ADT section given below or if it is not, then we dont need to do any operation
-
         for item in &self.body_items {
             match_ast! {
                 match (item.syntax()) {
@@ -472,7 +470,6 @@ impl Module {
         let file = ctx.sema.parse(file_id);
 
         // track uses which does not exists in `Use`
-
         let mut uses_exist_in_sel = false;
         let mut uses_exist_out_sel = false;
         'outside: for (_, refs) in usage_res.iter() {
@@ -500,7 +497,6 @@ impl Module {
         );
 
         // Find use stmt that use def in current file
-
         let use_stmt: Option<ast::Use> = usage_res
             .into_iter()
             .filter(|(use_file_id, _)| *use_file_id == file_id)
@@ -523,7 +519,6 @@ impl Module {
         //Exists inside selection but not outside -> Check for the import of it in original module,
 
         //get the use_tree_str, reconstruct the use stmt in new module
-
         let mut import_path_to_be_removed: Option<TextRange> = None;
         if uses_exist_in_sel && uses_exist_out_sel {
             //Changes to be made only inside new module

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31662 bytes
-Chloro size:   31601 bytes
+Chloro size:   31599 bytes
 Rustfmt size:  32318 bytes
 
 ✗ Outputs DIFFER
@@ -163,12 +163,6 @@ Rustfmt size:  32318 bytes
          // As a last step, we can do array unsizing (that's the only unsizing that rustc does for method receivers!)
          if let Some((ty, _len)) = deref_chain.last().and_then(|ty| ty.as_array(db)) {
              let slice = Type::new_slice(ty);
-     };
- 
-     // can be empty if the entire deref chain is has no valid trait impl fingerprints
-+
-     if autoderef_method_receiver.is_empty() {
-         return Default::default();
      }
  
      // in order to handle implied bounds through an associated type, keep all traits if any
@@ -176,10 +170,8 @@ Rustfmt size:  32318 bytes
      // type in the deref chain matches `TyFingerprint::Unnameable`. This fingerprint
 +
      // won't be in `TraitImpls` anyways, as `TraitImpls` only contains actual implementations.
-+
      if !autoderef_method_receiver
          .iter()
-         .any(|(_, fingerprint)| matches!(fingerprint, TyFingerprint::Unnameable))
              // this is a closure for laziness: if `definitions_exist_in_trait_crate` is true,
              // we can avoid a second db lookup.
              let definitions_exist_in_receiver_crate = || {

@@ -37,7 +37,6 @@ pub(super) fn hints(
     }
 
     // ParenExpr resolve to their contained expressions HIR so they will dupe these hints
-
     if let ast::Expr::ParenExpr(_) = expr {
         return None;
     }

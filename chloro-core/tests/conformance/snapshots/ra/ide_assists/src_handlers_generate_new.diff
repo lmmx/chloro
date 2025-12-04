@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21912 bytes
-Chloro size:   21640 bytes
+Chloro size:   21637 bytes
 Rustfmt size:  21912 bytes
 
 ✗ Outputs DIFFER
@@ -35,13 +35,6 @@ Rustfmt size:  21912 bytes
  pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
  
-     };
- 
-     // Return early if we've found an existing new fn
-+
-     let impl_def =
-         find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
- 
      let current_module = ctx.sema.scope(strukt.syntax())?.module();
  
      let target = strukt.syntax().text_range();
@@ -71,13 +64,6 @@ Rustfmt size:  21912 bytes
      #[test]
      fn test_generate_new_with_zst_fields() {
          check_assist(
-         );
- 
-         // make sure the assist only works on unit variants
-+
-         check_assist(
-             generate_new,
-             r#"
  "#,
          );
      }
@@ -143,13 +129,6 @@ Rustfmt size:  21912 bytes
      #[test]
      fn test_generate_new_with_zst_fields() {
          check_assist(
-         );
- 
-         // make sure the assist only works on unit variants
-+
-         check_assist(
-             generate_new,
-             r#"
  "#,
          );
      }

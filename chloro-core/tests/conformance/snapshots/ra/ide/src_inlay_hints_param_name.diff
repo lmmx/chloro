@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17010 bytes
-Chloro size:   16959 bytes
+Chloro size:   16958 bytes
 Rustfmt size:  17010 bytes
 
 ✗ Outputs DIFFER
@@ -18,6 +18,13 @@ Rustfmt size:  17010 bytes
  
  fn should_hide_param_name_hint(
      sema: &Semantics<'_, RootDatabase>,
+     //   parameter is a prefix/suffix of argument with _ splitting it off
+     // - param starts with `ra_fixture`
+     // - param is a well known name in a unary function
+-
+     let param_name = param_name.trim_matches('_');
+     if param_name.is_empty() {
+         return true;
          ast::Expr::MacroExpr(macro_expr) => macro_expr.macro_call()?.path().map(Either::Right),
          ast::Expr::RecordExpr(record_expr) => record_expr.path().map(Either::Right),
          ast::Expr::PathExpr(path_expr) => {

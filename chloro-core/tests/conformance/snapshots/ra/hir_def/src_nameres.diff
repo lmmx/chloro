@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29452 bytes
+Chloro size:   29451 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -343,10 +343,3 @@ Rustfmt size:  30449 bytes
      }
  
      /// Returns the range which declares this module, either a `mod foo;` or a `mod foo {}`.
-         };
- 
-         // Eager macros aren't *guaranteed* to be bang macros, but they *are* all bang macros currently.
-+
-         match expander {
-             MacroExpander::Declarative
-             | MacroExpander::BuiltIn(_)

@@ -624,11 +624,9 @@ fn generate_impl_text_inner(
     // FIXME: use syntax::make & mutable AST apis instead
 
     // `trait_text` and `code` can't be opaque blobs of text
-
     let mut buf = String::with_capacity(code.len());
 
     // Copy any cfg attrs from the original adt
-
     buf.push_str("\n\n");
     let cfg_attrs = adt
         .attrs()
@@ -636,7 +634,6 @@ fn generate_impl_text_inner(
     cfg_attrs.for_each(|attr| buf.push_str(&format!("{attr}\n")));
 
     // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
-
     buf.push_str("impl");
     if let Some(generic_params) = &generic_params {
         format_to!(buf, "{generic_params}");

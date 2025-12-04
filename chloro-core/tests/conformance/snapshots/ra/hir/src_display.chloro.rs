@@ -36,7 +36,6 @@ impl<'db> HirDisplay<'db> for Function {
         let mut module = self.module(db);
 
         // Write container (trait or impl)
-
         let container_params = match container {
             Some(AssocItemContainer::Trait(trait_)) => {
                 let (params, params_store) = f.db.generic_params_and_store(trait_.id.into());
@@ -66,7 +65,6 @@ impl<'db> HirDisplay<'db> for Function {
         // Write signature of the function
 
         // Block-local impls are "hoisted" to the nearest (non-block) module.
-
         if let Some(AssocItemContainer::Impl(_)) = container {
             module = module.nearest_non_block_module(db);
         }
@@ -106,7 +104,6 @@ impl<'db> HirDisplay<'db> for Function {
         }
 
         // FIXME: Use resolved `param.ty` once we no longer discard lifetimes
-
         let body = db.body(self.id.into());
         for (type_ref, param) in data.params.iter().zip(self.assoc_fn_params(db)).skip(skip_self) {
             if !first {
@@ -137,7 +134,6 @@ impl<'db> HirDisplay<'db> for Function {
         // Use ugly pattern match to strip the Future trait.
 
         // Better way?
-
         let ret_type = if !data.is_async() {
             data.ret_type
         } else if let Some(ret_type) = data.ret_type {
@@ -175,7 +171,6 @@ impl<'db> HirDisplay<'db> for Function {
         }
 
         // Write where clauses
-
         let has_written_where = write_where_clause(GenericDefId::FunctionId(self.id), f)?;
         if let Some((container_params, container_params_store)) = container_params {
             if !has_written_where {
@@ -661,7 +656,6 @@ fn write_where_predicates<'db>(
     use WherePredicate::*;
 
     // unnamed type targets are displayed inline with the argument itself, e.g. `f: impl Y`.
-
     let is_unnamed_type_target = |target: TypeRefId| {
         matches!(store[target],
             TypeRef::TypeParam(id) if f.db.generic_params(id.parent())[id.local_id()].name().is_none()

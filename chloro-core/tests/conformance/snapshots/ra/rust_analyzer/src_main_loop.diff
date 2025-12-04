@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58838 bytes
-Chloro size:   58782 bytes
+Chloro size:   58780 bytes
 Rustfmt size:  58838 bytes
 
 ✗ Outputs DIFFER
@@ -47,10 +47,8 @@ Rustfmt size:  58838 bytes
      // https://docs.microsoft.com/en-us/windows/win32/procthread/priority-boosts
 +
      // https://github.com/rust-lang/rust-analyzer/issues/2835
-+
      #[cfg(windows)]
      unsafe {
-         use windows_sys::Win32::System::Threading::*;
  pub(crate) enum PrimeCachesProgress {
      Begin,
      Report(ide::ParallelPrimeCachesProgress),
@@ -93,10 +91,8 @@ Rustfmt size:  58838 bytes
          // Updating tests are triggered by the user typing
 +
          // so we run them on a latency sensitive thread.
-+
          self.task_pool.handle.spawn(ThreadIntent::LatencySensitive, {
              let snapshot = self.snapshot();
-             move || {
          let status = self.current_status();
          if self.last_reported_status != status {
              self.last_reported_status = status.clone();

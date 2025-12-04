@@ -2,27 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62212 bytes
-Chloro size:   62254 bytes
+Chloro size:   62246 bytes
 Rustfmt size:  62212 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     let _p = tracing::info_span!("find_path").entered();
- 
-     // - if the item is a builtin, it's in scope
-+
-     if let ItemInNs::Types(ModuleDefId::BuiltinType(builtin)) = item {
-         return Some(ModPath::from_segments(PathKind::Plain, iter::once(builtin.as_name())));
      }
  
      // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
 +
      // default to plain paths.
-+
      let item_module = item.module(db)?;
      if item_module.is_within_block() {
-         prefix_kind = PrefixKind::Plain;
  use Stability::*;
  
  const MAX_PATH_LEN: usize = 15;
@@ -30,27 +22,6 @@ Rustfmt size:  62212 bytes
  const FIND_PATH_FUEL: usize = 10000;
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-     }
- 
-     // - if the item is in the prelude, return the name from there
-+
-     if let Some(value) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
-         return Some(value.path);
-     }
-     }
- 
-     // - if the module can be referenced as self, super or crate, do that
-+
-     if let Some(kind) = is_kw_kind_relative_to_from(ctx.from_def_map, module_id, ctx.from)
-         && (ctx.prefix != PrefixKind::ByCrate || kind == PathKind::Crate)
-     {
-     }
- 
-     // - if the module is in the prelude, return it by that path
-+
-     let item = ItemInNs::Types(module_id.into());
-     if let Some(choice) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
-         return Some(choice);
      ignore_local_imports: bool,
  ) -> Option<Name> {
      // FIXME: We could have multiple applicable names here, but we currently only return the first
@@ -68,13 +39,6 @@ Rustfmt size:  62212 bytes
  }
  
  /// Returns single-segment path (i.e. without any prefix) if `item` is found in prelude and its
-     }
- 
-     // Check if the name is in current scope and it points to the same def.
-+
-     let found_and_same_def =
-         local_def_map.with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
-             let per_ns = def_map[local_id].scope.get(name);
      } else if let Some(parent_id) = def_map[from].parent {
          if item == parent_id {
              // - if the item is the parent module, use `super` (this is not used recursively, since `super::super` is ugly)
@@ -127,10 +91,8 @@ Rustfmt size:  62212 bytes
      // Compute the initial worklist. We start with all direct child modules of `from` as well as all
 +
      // of its (recursive) parent modules.
-+
      let mut worklist = def_map[from.local_id]
          .children
-         .values()
      use stdx::format_to;
      use syntax::ast::AstNode;
      use test_fixture::WithFixture;
@@ -352,13 +314,6 @@ Rustfmt size:  62212 bytes
      #[test]
      fn prefer_core_paths_over_std() {
          check_found_path_prefer_no_std(
-         );
- 
-         // Should also work (on a best-effort basis) if `no_std` is conditional.
-+
-         check_found_path(
-             r#"
- //- /main.rs crate:main deps:core,std
              "#]],
          );
      }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25096 bytes
-Chloro size:   24163 bytes
+Chloro size:   24159 bytes
 Rustfmt size:  25274 bytes
 
 ✗ Outputs DIFFER
@@ -57,6 +57,13 @@ Rustfmt size:  25274 bytes
  pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let name = ctx.find_node_at_offset::<ast::Name>()?;
      let ast_alias = name.syntax().parent().and_then(ast::TypeAlias::cast)?;
+     }
+ 
+     // until this is ok
+-
+     acc.add(
+         AssistId::refactor_inline("inline_type_alias_uses"),
+         "Inline type alias into all uses",
  
                  let (path_types, path_type_uses) =
                      split_refs_and_uses(builder, refs, |path_type| {
@@ -124,10 +131,8 @@ Rustfmt size:  25274 bytes
          // Any declaration generics that don't have a default value must have one
 +
          // provided by the instance.
-+
          for (i, declaration_generic) in alias_generics.iter().enumerate() {
              let key = declaration_generic.replacement_key()?;
- 
      let resolved_path = ctx.sema.resolve_path(&path.path()?)?;
  
      // We need the generics in the correct order to be able to map any provided
@@ -137,10 +142,8 @@ Rustfmt size:  25274 bytes
      // keep the order, so we must get the `ast::TypeAlias` from the hir
 +
      // definition.
-+
      if let PathResolution::Def(hir::ModuleDef::TypeAlias(ta)) = resolved_path {
          Some(ctx.sema.source(ta)?.value)
-     } else {
      }
  
      fn replacement_value(&self) -> Option<SyntaxNode> {
@@ -167,10 +170,8 @@ Rustfmt size:  25274 bytes
      // It's fine for there to be no instance generics because the declaration
 +
      // might have default values or they might be inferred.
-+
      if let Some(generics) = generics {
          for arg in generics.generic_args() {
-             match arg {
  mod test {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable};

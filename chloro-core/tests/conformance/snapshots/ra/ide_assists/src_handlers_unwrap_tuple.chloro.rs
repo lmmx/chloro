@@ -14,7 +14,6 @@ pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let init = let_stmt.initializer()?;
 
     // This only applies for tuple patterns, types, and initializers.
-
     let tuple_pat = match pat {
         ast::Pat::TuplePat(pat) => pat,
         _ => return None,

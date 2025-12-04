@@ -230,7 +230,6 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // We need to add `Self: Trait` obligation when `def` is a trait assoc item.
-
         let container = match def {
             GenericDefId::FunctionId(id) => id.lookup(self.db).container,
             GenericDefId::ConstId(id) => id.lookup(self.db).container,

@@ -152,7 +152,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // not a place then it would've been UB to read from it anyways since
 
         // that constitutes a read.
-
         if !self.is_syntactic_place_expr(expr) {
             return true;
         }
@@ -168,7 +167,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // So, we pass down such readness from the parent expression through the
 
         // recursive `infer_expr*` calls in a "top-down" manner.
-
         is_read == ExprIsRead::Yes
     }
 
@@ -1110,7 +1108,6 @@ impl<'db> InferenceContext<'_, 'db> {
         let prev_ret_coercion = self.return_coercion.replace(CoerceMany::new(ret_ty));
 
         // FIXME: We should handle async blocks like we handle closures
-
         let expected = &Expectation::has_type(ret_ty);
         let (_, inner_ty) = self.with_breakable_ctx(BreakableKind::Border, None, None, |this| {
             let ty = this.infer_block(tgt_expr, *id, statements, *tail, None, expected);
@@ -1403,7 +1400,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // HACK: We can use this substitution for the function because the function itself doesn't
 
         // have its own generic parameters.
-
         let args = GenericArgs::new_from_iter(self.interner(), [lhs_ty.into(), rhs_ty.into()]);
 
         self.write_method_resolution(tgt_expr, func, args);
@@ -2053,7 +2049,6 @@ impl<'db> InferenceContext<'_, 'db> {
             .unwrap_or_default();
 
         // If there are no external expectations at the call site, just use the types from the function defn
-
         let expected_input_tys = if let Some(expected_input_tys) = &expected_input_tys {
             assert_eq!(expected_input_tys.len(), formal_input_tys.len());
             expected_input_tys
@@ -2071,7 +2066,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // and if we're c_variadic, the supplied arguments must be >= the minimum count from the function
 
         // otherwise, they need to be identical, because rust doesn't currently support variadic functions
-
         let args_count_matches = if c_variadic {
             provided_arg_count >= minimum_input_count
         } else {
@@ -2091,7 +2085,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // This is more complicated than just checking type equality, as arguments could be coerced
 
         // This version writes those types back so further type checking uses the narrowed types
-
         let demand_compatible = |this: &mut InferenceContext<'_, 'db>, idx| {
             let formal_input_ty: Ty<'db> = formal_input_tys[idx];
             let expected_input_ty: Ty<'db> = expected_input_tys[idx];
@@ -2163,7 +2156,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // that we have more information about the types of arguments when we
 
         // type-check the functions. This isn't really the right way to do this.
-
         for check_closures in [false, true] {
             // More awful hacks: before we check argument types, try to do
             // an "opportunistic" trait resolution of any trait bounds on
@@ -2396,7 +2388,6 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // only use legacy const generics if the param count matches with them
-
         if data.params.len() + legacy_const_generics_indices.len() != args.len() {
             if args.len() <= data.params.len() {
                 return Default::default();
@@ -2410,7 +2401,6 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // check legacy const parameters
-
         for arg_idx in legacy_const_generics_indices.iter().copied() {
             if arg_idx >= args.len() as u32 {
                 continue;

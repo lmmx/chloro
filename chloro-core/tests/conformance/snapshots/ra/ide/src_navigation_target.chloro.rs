@@ -919,7 +919,6 @@ pub(crate) fn orig_range_with_focus_r(
         || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).def.definition_range(db);
 
     // FIXME: Also make use of the syntax context to determine which site we are at?
-
     let value_range = InFile::new(hir_file, value).original_node_file_range_opt(db);
     let ((call_site_range, call_site_focus), def_site) =
         match InFile::new(hir_file, name).original_node_file_range_opt(db) {
@@ -1113,14 +1112,12 @@ static __FOO_CALLSITE: () = ();
         );
 
         // It doesn't show the hidden symbol
-
         let navs = analysis.symbol_search(Query::new("foo".to_owned()), !0).unwrap();
         assert_eq!(navs.len(), 2);
         let navs = analysis.symbol_search(Query::new("_foo".to_owned()), !0).unwrap();
         assert_eq!(navs.len(), 0);
 
         // Unless we explicitly search for a `__` prefix
-
         let query = Query::new("__foo".to_owned());
         let navs = analysis.symbol_search(query, !0).unwrap();
         assert_eq!(navs.len(), 1);

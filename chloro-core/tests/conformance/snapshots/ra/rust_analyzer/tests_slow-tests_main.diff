@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 38709 bytes
-Chloro size:   38520 bytes
+Chloro size:   38516 bytes
 Rustfmt size:  39488 bytes
 
 ✗ Outputs DIFFER
@@ -190,14 +190,7 @@ Rustfmt size:  39488 bytes
 +        Project::with_fixture(code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
  
      //rename same level file
-+
      server.request::<WillRenameFiles>(
-         RenameFilesParams {
-             files: vec![FileRename {
-     );
- 
-     //rename file from mod.rs to foo.rs
-+
      server.request::<WillRenameFiles>(
          RenameFilesParams {
              files: vec![FileRename {
@@ -216,10 +209,6 @@ Rustfmt size:  39488 bytes
              }],
          },
          json!(null),
-     );
- 
-     //rename file from foo.rs to mod.rs
-+
      server.request::<WillRenameFiles>(
          RenameFilesParams {
              files: vec![FileRename {
@@ -238,10 +227,3 @@ Rustfmt size:  39488 bytes
              }],
          },
          json!(null),
-     );
- 
-     //rename same level file
-+
-     server.request::<WillRenameFiles>(
-         RenameFilesParams {
-             files: vec![FileRename {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13440 bytes
-Chloro size:   13443 bytes
+Chloro size:   13439 bytes
 Rustfmt size:  13679 bytes
 
 ✗ Outputs DIFFER
@@ -32,20 +32,10 @@ Rustfmt size:  13679 bytes
  
  #[track_caller]
  fn file_id(vfs: &vfs::Vfs, path: &VfsPath) -> vfs::FileId {
-     }
+     };
  
-     // Load rust-analyzer itself.
-+
-     let workspace_to_load = project_root();
-     let file = "./crates/rust-analyzer/src/config.rs";
- 
-     }
- 
-     // Load rust-analyzer itself.
-+
-     let workspace_to_load = project_root();
-     let file = "./crates/hir/src/lib.rs";
- 
+     // kick off parsing and index population
+-
      let completion_offset = {
          let _it = stdx::timeit("change");
          let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -96,13 +86,6 @@ Rustfmt size:  13679 bytes
          analysis.completions(&config, position, None).unwrap();
      }
  }
-     }
- 
-     // Load rust-analyzer itself.
-+
-     let workspace_to_load = project_root();
-     let file = "./crates/hir/src/lib.rs";
- 
          term_search_borrowck: true,
      };
      host.analysis()

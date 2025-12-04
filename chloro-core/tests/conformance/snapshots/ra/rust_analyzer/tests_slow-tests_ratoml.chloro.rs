@@ -120,7 +120,6 @@ impl RatomlTest {
         });
 
         // See if deleting ratoml file will make the config of interest to return to its default value.
-
         self.server.notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
             text_document: TextDocumentIdentifier { uri: self.urls[file_idx].clone() },
             text: Some("".to_owned()),

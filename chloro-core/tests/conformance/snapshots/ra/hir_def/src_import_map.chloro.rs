@@ -97,7 +97,6 @@ impl ImportMap {
         importables.dedup();
 
         // Build the FST, taking care not to insert duplicate values.
-
         let mut builder = fst::MapBuilder::memory();
         let mut iter = importables
             .iter()
@@ -134,7 +133,6 @@ impl ImportMap {
         let mut map = FxIndexMap::default();
 
         // We look only into modules that are public(ly reexported), starting with the crate root.
-
         let root = def_map.module_id(DefMap::ROOT);
         let mut worklist = vec![root];
         let mut visited = FxHashSet::default();

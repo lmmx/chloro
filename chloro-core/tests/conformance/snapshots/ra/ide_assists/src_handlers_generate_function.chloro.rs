@@ -244,7 +244,6 @@ impl FunctionBuilder {
         // If generated function has the name "new" and is an associated function, we generate fn body
 
         // as a constructor and assume a "Self" return type.
-
         if let Some(body) =
             make_fn_body_as_new_function(ctx, &fn_name.text(), adt_info, target_edition)
         {
@@ -697,11 +696,9 @@ fn fn_generic_params(
     }
 
     // 1. Get generic parameters (with bounds) and where predicates in scope.
-
     let (generic_params, where_preds) = params_and_where_preds_in_scope(ctx);
 
     // 2. Extract type parameters included in each bound.
-
     let mut generic_params = generic_params
         .into_iter()
         .filter_map(|it| compute_contained_params_in_generic_param(ctx, it))
@@ -712,7 +709,6 @@ fn fn_generic_params(
         .collect();
 
     // 3. Filter out unnecessary bounds.
-
     filter_unnecessary_bounds(&mut generic_params, &mut where_preds, necessary_params);
     filter_bounds_in_scope(&mut generic_params, &mut where_preds, ctx, target);
 
@@ -772,7 +768,6 @@ fn params_and_where_preds_in_scope(
     // We handle parent first so that their generic parameters appear first in the generic
 
     // parameter list of the function we're generating.
-
     let db = ctx.db();
     if let Some(parent) = body.as_assoc_item(db).map(|it| it.container(db)) {
         match parent {
@@ -792,7 +787,6 @@ fn params_and_where_preds_in_scope(
     // Other defs with body may inherit generic parameters from its parent, but never have their
 
     // own generic parameters.
-
     if let hir::DefWithBody::Function(it) = body {
         let (params, clauses) = get_bounds_in_scope(ctx, it);
         generic_params.extend(params);
@@ -983,7 +977,6 @@ fn filter_unnecessary_bounds(
     // | param_count..generic_params_upper_bound | `ast::GenericParam`      |
 
     // | generic_params_upper_bound..node_count  | `ast::WherePred`         |
-
     let mut graph = Graph::new(node_count);
     for (pred, pred_idx) in generic_params.iter().zip(param_count..) {
         let param_idx = param_map[&pred.self_ty_param];
@@ -1011,7 +1004,6 @@ fn filter_unnecessary_bounds(
     let reachable = graph.compute_reachable_nodes(starting_nodes);
 
     // Not pretty, but effective. If only there were `Vec::retain_index()`...
-
     let mut idx = param_count;
     generic_params.retain(|_| {
         idx += 1;
@@ -1044,7 +1036,6 @@ fn filter_bounds_in_scope(
     // Now we know every element that belongs to an impl would be in scope at `target`, we can
 
     // filter them out just by looking at their parent.
-
     generic_params.retain(|it| !matches!(it.self_ty_param.parent(), hir::GenericDef::Impl(_)));
     where_preds.retain(|it| {
         it.node.syntax().parent().and_then(|it| it.parent()).and_then(ast::Impl::cast).is_none()

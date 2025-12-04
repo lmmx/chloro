@@ -1123,7 +1123,6 @@ impl<'db> SemanticsImpl<'db> {
         let span = db.span_map(file_id).span_for_range(token.text_range());
 
         // Process the expansion of a call, pushing all tokens with our span in the expansion back onto our stack
-
         let process_expansion_for_token =
             |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
                 let InMacroFile { file_id, value: mapped_tokens } = ctx
@@ -1145,7 +1144,6 @@ impl<'db> SemanticsImpl<'db> {
         // the tokens themselves aren't that interesting as the span that is being used to map
 
         // things down never changes.
-
         let mut stack: Vec<(_, SmallVec<[_; 2]>)> = vec![];
         let include = file_id
             .file_id()
@@ -1165,7 +1163,6 @@ impl<'db> SemanticsImpl<'db> {
         // Filters out all tokens that contain the given range (usually the macro call), any such
 
         // token is redundant as the corresponding macro call has already been processed
-
         let filter_duplicates = |tokens: &mut SmallVec<_>, range: TextRange| {
             tokens.retain(|(t, _): &mut (SyntaxToken, _)| !range.contains_range(t.text_range()))
         };

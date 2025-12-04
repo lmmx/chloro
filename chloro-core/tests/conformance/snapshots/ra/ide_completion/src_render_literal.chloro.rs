@@ -97,7 +97,6 @@ fn render(
     }
 
     // only show name in label if not adding parens
-
     if !should_add_parens {
         kind = StructKind::Unit;
     }

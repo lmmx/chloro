@@ -511,7 +511,6 @@ impl<'db> InferCtxt<'db> {
         // moves_by_default has a cache, which we want to use in other
 
         // cases.
-
         traits::type_known_to_meet_bound_modulo_regions(self, param_env, ty, copy_def_id)
     }
 

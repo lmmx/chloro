@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4004 bytes
-Chloro size:   3996 bytes
+Chloro size:   3995 bytes
 Rustfmt size:  4004 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  4004 bytes
  /// This returns `Vec` because a module may be included from several places.
  pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
      let sema = Semantics::new(db);
-     let mut module = find_node_at_offset::<ast::Module>(source_file.syntax(), position.offset);
- 
-     // If cursor is literally on `mod foo`, go to the grandpa.
-+
-     if let Some(m) = &module
-         && !m
-             .item_list()
  #[cfg(test)]
  mod tests {
      use ide_db::FileRange;

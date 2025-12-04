@@ -32,7 +32,6 @@ pub fn find_path(
     let _p = tracing::info_span!("find_path").entered();
 
     // - if the item is a builtin, it's in scope
-
     if let ItemInNs::Types(ModuleDefId::BuiltinType(builtin)) = item {
         return Some(ModPath::from_segments(PathKind::Plain, iter::once(builtin.as_name())));
     }
@@ -40,7 +39,6 @@ pub fn find_path(
     // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
 
     // default to plain paths.
-
     let item_module = item.module(db)?;
     if item_module.is_within_block() {
         prefix_kind = PrefixKind::Plain;
@@ -132,7 +130,6 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
     }
 
     // - if the item is in the prelude, return the name from there
-
     if let Some(value) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
         return Some(value.path);
     }
@@ -231,7 +228,6 @@ fn find_path_for_module(
     }
 
     // - if the module can be referenced as self, super or crate, do that
-
     if let Some(kind) = is_kw_kind_relative_to_from(ctx.from_def_map, module_id, ctx.from)
         && (ctx.prefix != PrefixKind::ByCrate || kind == PathKind::Crate)
     {
@@ -244,7 +240,6 @@ fn find_path_for_module(
     }
 
     // - if the module is in the prelude, return it by that path
-
     let item = ItemInNs::Types(module_id.into());
     if let Some(choice) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
         return Some(choice);
@@ -294,7 +289,6 @@ fn find_in_prelude(
     }
 
     // Check if the name is in current scope and it points to the same def.
-
     let found_and_same_def =
         local_def_map.with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
             let per_ns = def_map[local_id].scope.get(name);
@@ -592,7 +586,6 @@ fn find_local_import_locations(
     // Compute the initial worklist. We start with all direct child modules of `from` as well as all
 
     // of its (recursive) parent modules.
-
     let mut worklist = def_map[from.local_id]
         .children
         .values()
@@ -1466,7 +1459,6 @@ pub mod fmt {
         );
 
         // Should also work (on a best-effort basis) if `no_std` is conditional.
-
         check_found_path(
             r#"
 //- /main.rs crate:main deps:core,std

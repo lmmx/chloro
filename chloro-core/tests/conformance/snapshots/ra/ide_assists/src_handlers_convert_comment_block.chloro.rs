@@ -59,7 +59,6 @@ fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     let comments = relevant_line_comments(&comment);
 
     // Establish the target of our edit based on the comments we found
-
     let target = TextRange::new(
         comments[0].syntax().text_range().start(),
         comments.last()?.syntax().text_range().end(),
@@ -101,7 +100,6 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     let same_prefix = |c: &ast::Comment| c.prefix() == prefix;
 
     // These tokens are allowed to exist between comments
-
     let skippable = |not: &SyntaxElement| {
         not.clone()
             .into_token()
@@ -111,7 +109,6 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     };
 
     // Find all preceding comments (in reverse order) that have the same prefix
-
     let prev_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Prev)
@@ -121,7 +118,6 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .flatten()
         .skip(1);
     // skip the first element so we don't duplicate it in next_comments
-
     let next_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Next)
@@ -142,7 +138,6 @@ pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) ->
     let contents = contents_without_prefix.strip_prefix(' ').unwrap_or(contents_without_prefix);
 
     // Don't add the indentation if the line is empty
-
     if contents.is_empty() {
         contents.to_owned()
     } else {

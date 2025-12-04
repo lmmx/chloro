@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16467 bytes
+Chloro size:   16464 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -36,13 +36,6 @@ Rustfmt size:  16583 bytes
  }
  
  impl CastError {
-         self.cast_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.cast_ty);
- 
-         // This should always come first so that we apply the coercion, which impacts infer vars.
-+
-         if ctx
-             .coerce(
-                 self.source_expr.into(),
          }
  
          // Chalk doesn't support trait upcasting and fails to solve some obvious goals
@@ -50,10 +43,15 @@ Rustfmt size:  16583 bytes
          // when the trait environment contains some recursive traits (See issue #18047)
 +
          // We skip cast checks for such cases for now, until the next-gen solver.
-+
          if contains_dyn_trait(self.cast_ty) {
              return Ok(());
-         }
+             };
+ 
+         // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym
+-
+         match (t_from, t_cast) {
+             (_, CastTy::Int(Int::CEnum) | CastTy::FnPtr) => Err(CastError::NonScalar),
+             (_, CastTy::Int(Int::Bool)) => Err(CastError::CastToBool),
                          let src_principal = ctx.db.trait_signature(src_principal.0);
                          let dst_principal = ctx.db.trait_signature(dst_principal.0);
                          if src_principal.flags.contains(TraitFlags::AUTO)

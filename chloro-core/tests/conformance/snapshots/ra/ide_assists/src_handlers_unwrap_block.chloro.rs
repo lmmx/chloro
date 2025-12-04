@@ -130,7 +130,6 @@ fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> Str
     // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
 
     // then continue to remove trailing whitespace.
-
     let expr_str = expr_str.trim_end_matches(whitespace_pat);
     let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
 

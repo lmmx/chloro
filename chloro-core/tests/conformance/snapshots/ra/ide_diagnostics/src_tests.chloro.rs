@@ -320,7 +320,6 @@ fn minicore_smoke_test() {
     }
 
     // Checks that there is no diagnostic in minicore for each flag.
-
     for flag in MiniCore::available_flags(MiniCore::RAW_SOURCE) {
         if flag == "clone" {
             // Clone without copy has `moved-out-of-ref`, so ignoring.

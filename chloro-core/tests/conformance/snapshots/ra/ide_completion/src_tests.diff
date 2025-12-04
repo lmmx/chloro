@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11756 bytes
-Chloro size:   11733 bytes
+Chloro size:   11732 bytes
 Rustfmt size:  11841 bytes
 
 ✗ Outputs DIFFER
@@ -30,13 +30,6 @@ Rustfmt size:  11841 bytes
  };
  
  /// Lots of basic item definitions
-     let _tracing = setup_tracing();
- 
-     // filter out all but one built-in type completion for smaller test outputs
-+
-     let items = get_all_items(config, ra_fixture, trigger_character);
-     items
-         .into_iter()
      include_keywords: bool,
      trigger_character: Option<char>,
  ) -> String {

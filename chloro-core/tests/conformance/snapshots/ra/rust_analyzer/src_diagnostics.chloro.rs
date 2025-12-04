@@ -278,7 +278,6 @@ pub(crate) fn fetch_native_diagnostics(
     // the diagnostics produced may point to different files not requested by the concrete request,
 
     // put those into here and filter later
-
     let mut odd_ones = Vec::new();
     let mut diagnostics = subscriptions[slice]
         .iter()
@@ -315,7 +314,6 @@ pub(crate) fn fetch_native_diagnostics(
         .collect::<Vec<_>>();
 
     // Add back any diagnostics that point to files we are subscribed to
-
     for (file_id, group) in odd_ones
         .into_iter()
         .sorted_by_key(|it| it.range.file_id)

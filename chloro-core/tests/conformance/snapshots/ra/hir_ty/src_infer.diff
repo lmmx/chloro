@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   73269 bytes
+Chloro size:   73266 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -33,10 +33,8 @@ Rustfmt size:  74236 bytes
      // Even though coercion casts provide type hints, we check casts after fallback for
 +
      // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
-+
      let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
      for mut cast in cast_checks.into_iter() {
-         if let Err(diag) = cast.check(&mut ctx) {
  impl<'db> Adjustment<'db> {
      pub fn borrow(interner: DbInterner<'db>, m: Mutability, ty: Ty<'db>, lt: Region<'db>) -> Self {
          let ty = Ty::new_ref(interner, lt, ty, m);
@@ -235,10 +233,8 @@ Rustfmt size:  74236 bytes
          // Even though coercion casts provide type hints, we check casts after fallback for
 +
          // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
-+
          let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
          for mut cast in cast_checks.into_iter() {
-             if let Err(diag) = cast.check(&mut ctx) {
          ctx.resolve_all()
      }
  
@@ -254,10 +250,8 @@ Rustfmt size:  74236 bytes
          // Check if function contains a va_list, if it does then we append it to the parameter types
 +
          // that are collected from the function data
-+
          if data.is_varargs() {
              let va_list_ty = match self.resolve_va_list() {
-                 Some(va_list) => Ty::new_adt(
          self.result.pat_adjustments.entry(pat).or_default().extend(adjustments);
      }
  

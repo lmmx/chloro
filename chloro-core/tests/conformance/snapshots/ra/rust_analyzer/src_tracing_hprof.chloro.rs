@@ -73,7 +73,6 @@ where
         // this filter the first pass for `tracing`: these are all the "profiling" spans, but things like
 
         // span depth or duration are not filtered here: that only occurs at write time.
-
         let profile_filter = filter::filter_fn(move |metadata| {
             let allowed = match &allowed_names {
                 Some(names) => names.contains(metadata.name()),

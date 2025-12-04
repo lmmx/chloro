@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7100 bytes
-Chloro size:   6964 bytes
+Chloro size:   6963 bytes
 Rustfmt size:  7241 bytes
 
 ✗ Outputs DIFFER
@@ -86,10 +86,8 @@ Rustfmt size:  7241 bytes
          // compilation error (the name `bar` is defined multiple times).
 +
          // Therefore, the normalize_input assist must not apply here.
-+
          check_assist_not_applicable(
              normalize_import,
-             r"
  ",
          );
      }

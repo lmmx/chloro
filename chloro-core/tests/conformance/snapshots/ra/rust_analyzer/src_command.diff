@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6953 bytes
-Chloro size:   6938 bytes
+Chloro size:   6937 bytes
 Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
@@ -31,7 +31,10 @@ Rustfmt size:  7231 bytes
      }
  }
  
- 
+         // Because cargo only outputs one JSON object per line, we can
+         // simply skip a line if it doesn't parse, which just ignores any
+         // erroneous output.
+-
          let mut stdout = outfile.as_ref().and_then(|path| {
              _ = std::fs::create_dir_all(path);
 -            Some(BufWriter::new(

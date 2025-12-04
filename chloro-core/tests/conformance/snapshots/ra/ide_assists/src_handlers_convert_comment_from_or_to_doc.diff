@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18595 bytes
-Chloro size:   18334 bytes
+Chloro size:   18329 bytes
 Rustfmt size:  18641 bytes
 
 ✗ Outputs DIFFER
@@ -45,19 +45,11 @@ Rustfmt size:  18641 bytes
      let target = if comment.kind().shape.is_line() {
          line_comments_text_range(&comment)?
      } else {
-     use syntax::SyntaxKind::*;
- 
-     // if the comment is not on its own line, then we do not propose anything.
-+
-     match comment.syntax().prev_token() {
-         Some(prev) => {
-             // There was a previous token, now check if it was a newline
      }
  
      // check if comment is followed by: `struct`, `trait`, `mod`, `fn`, `type`, `extern crate`,
 +
      // `use` or `const`.
-+
      let parent = comment.syntax().parent();
      let par_kind = parent.as_ref().map(|parent| parent.kind());
 -    matches!(
@@ -70,29 +62,16 @@ Rustfmt size:  18641 bytes
  }
  
  /// The line -> block assist can  be invoked from anywhere within a sequence of line comments.
-     let same_prefix = |c: &ast::Comment| c.prefix() == prefix;
- 
-     // These tokens are allowed to exist between comments
-+
-     let skippable = |not: &SyntaxElement| {
-         not.clone()
-             .into_token()
-     };
- 
-     // Find all preceding comments (in reverse order) that have the same prefix
-+
-     let prev_comments = comment
-         .syntax()
-         .siblings_with_tokens(Direction::Prev)
          .map(|not| not.into_token().and_then(Comment::cast).filter(same_prefix))
          .take_while(|opt_com| opt_com.is_some())
          .flatten()
 -        .skip(1); // skip the first element so we don't duplicate it in next_comments
+-
 +        .skip(1);
 +    // skip the first element so we don't duplicate it in next_comments
- 
      let next_comments = comment
          .syntax()
+         .siblings_with_tokens(Direction::Next)
      let comments = relevant_line_comments(comment);
      let first = comments.first()?;
      let indentation = IndentLevel::from_token(first.syntax());

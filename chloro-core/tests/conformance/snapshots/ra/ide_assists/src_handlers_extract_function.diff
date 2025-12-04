@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 141954 bytes
-Chloro size:   141414 bytes
+Chloro size:   141408 bytes
 Rustfmt size:  141954 bytes
 
 ✗ Outputs DIFFER
@@ -51,13 +51,6 @@ Rustfmt size:  141954 bytes
  pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let range = ctx.selection_trimmed();
      if range.is_empty() {
-     }
- 
-     // Covering element returned the parent block of one or multiple statements that have been selected
-+
-     if let Some(stmt_list) = ast::StmtList::cast(node.clone()) {
-         if let Some(block_expr) = stmt_list.syntax().parent().and_then(ast::BlockExpr::cast)
-             && block_expr.syntax().text_range() == selection_range
      Method,
  }
  
@@ -88,22 +81,13 @@ Rustfmt size:  141954 bytes
  }
  
  #[derive(Debug)]
-         let full_body = parent.syntax().children_with_tokens();
- 
-         // Get all of the elements intersecting with the selection
-+
-         let mut stmts_in_selection = full_body
-             .filter(|it| ast::Stmt::can_cast(it.kind()) || it.kind() == COMMENT)
-             .filter(|it| selected.intersect(it.text_range()).filter(|it| !it.is_empty()).is_some());
          let first_element = stmts_in_selection.next();
  
          // If the tail expr is part of the selection too, make that the last element
 +
          // Otherwise use the last stmt
-+
          let last_element = if let Some(tail_expr) =
              parent.tail_expr().filter(|it| selected.intersect(it.syntax().text_range()).is_some())
-         {
                      .for_each(|expr| walk_expr(&expr, cb));
                  if let Some(expr) = parent
                      .tail_expr()
@@ -131,19 +115,6 @@ Rustfmt size:  141954 bytes
                      walk_patterns_in_expr(&expr, cb);
                  }
              }
-     // type. Something like `body.free_variables(statement_range)`.
- 
-     // we directly modify variable with set: `n = 0`, `n += 1`
-+
-     if reference.category.contains(ReferenceCategory::WRITE) {
-         return true;
-     }
- 
-     // we take `&mut` reference to variable: `&mut v`
-+
-     let path = match path_element_of_reference(node, reference) {
-         Some(path) => path,
-         None => return false,
      let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
  
      if let Some(parent_match_arm) = parent_match_arm
@@ -874,13 +845,6 @@ Rustfmt size:  141954 bytes
      #[test]
      fn extract_adds_comma_for_match_arm() {
          check_assist(
-         );
- 
-         // Makes sure no semicolon is added for unit-valued match arms
-+
-         check_assist(
-             extract_function,
-             r#"
  "#,
          )
      }

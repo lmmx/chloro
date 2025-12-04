@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19485 bytes
+Chloro size:   19484 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -372,7 +372,6 @@ Rustfmt size:  20465 bytes
 -            .parse(editioned_file_id)
 -            .syntax_node()
 -            .covering_element(range);
-+
 +        let anc = db.parse(editioned_file_id).syntax_node().covering_element(range);
          let value = anc.ancestors().find_map(N::cast)?;
          Some(InRealFile::new(editioned_file_id, value))

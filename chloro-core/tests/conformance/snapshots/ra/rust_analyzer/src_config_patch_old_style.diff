@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7242 bytes
-Chloro size:   7250 bytes
+Chloro size:   7244 bytes
 Rustfmt size:  7242 bytes
 
 ✗ Outputs DIFFER
@@ -15,43 +15,8 @@ Rustfmt size:  7242 bytes
  /// This function patches the json config to the new expected keys.
      }
  
-     // completion.snippets -> completion.snippets.custom;
-+
-     if let Some(Value::Object(obj)) = copy.pointer("/completion/snippets").cloned()
-         && (obj.len() != 1 || obj.get("custom").is_none())
-     {
-     }
- 
-     // callInfo_full -> signatureInfo_detail, signatureInfo_documentation_enable
-+
-     if let Some(Value::Bool(b)) = copy.pointer("/callInfo/full") {
-         let sig_info = match b {
-             true => json!({ "signatureInfo": {
-     }
- 
-     // cargo_allFeatures, cargo_features -> cargo_features
-+
-     if let Some(Value::Bool(true)) = copy.pointer("/cargo/allFeatures") {
-         merge(json, json!({ "cargo": { "features": "all" } }));
-     }
- 
-     // checkOnSave_allFeatures, checkOnSave_features -> check_features
-+
-     if let Some(Value::Bool(true)) = copy.pointer("/checkOnSave/allFeatures") {
-         merge(json, json!({ "check": { "features": "all" } }));
-     }
- 
-     // completion_addCallArgumentSnippets completion_addCallParenthesis -> completion_callable_snippets
-+
-     'completion: {
-         let res = match (
-             copy.pointer("/completion/addCallArgumentSnippets"),
-     }
- 
      // We need to do this due to the checkOnSave_enable -> checkOnSave change, as that key now can either be an object or a bool
 +
      // checkOnSave_* -> check_*
-+
      if let Some(Value::Object(obj)) = copy.pointer("/checkOnSave") {
          // checkOnSave_enable -> checkOnSave
-         if let Some(b @ Value::Bool(_)) = obj.get("enable") {

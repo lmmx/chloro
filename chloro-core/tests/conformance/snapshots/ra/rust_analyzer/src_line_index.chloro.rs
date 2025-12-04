@@ -34,7 +34,6 @@ impl LineEndings {
         // While we *can* call `as_mut_vec` and do surgery on the live string
         // directly, let's rather steal the contents of `src`. This makes the code
         // safe even if a panic occurs.
-
         let mut buf = src.into_bytes();
         let mut gap_len = 0;
         let mut tail = buf.as_mut_slice();
@@ -63,7 +62,6 @@ impl LineEndings {
         // Account for removed `\r`.
 
         // After `set_len`, `buf` is guaranteed to contain utf-8 again.
-
         let new_len = buf.len() - gap_len;
         let src = unsafe {
             buf.set_len(new_len);

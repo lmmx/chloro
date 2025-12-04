@@ -821,7 +821,6 @@ impl MacroSubNs {
         };
 
         // Eager macros aren't *guaranteed* to be bang macros, but they *are* all bang macros currently.
-
         match expander {
             MacroExpander::Declarative
             | MacroExpander::BuiltIn(_)

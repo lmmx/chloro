@@ -1350,7 +1350,6 @@ pub(crate) fn generic_predicates_for_param_query<'db>(
     );
 
     // we have to filter out all other predicates *first*, before attempting to lower them
-
     let predicate = |pred: &_, ctx: &mut TyLoweringContext<'_, '_>| match pred {
         WherePredicate::ForLifetime { target, bound, .. }
         | WherePredicate::TypeBound { target, bound, .. } => {
@@ -1718,7 +1717,6 @@ where
     // FIXME: rustc gathers more predicates by recursing through resulting trait predicates.
 
     // See https://github.com/rust-lang/rust/blob/76c5ed2847cdb26ef2822a3a165d710f6b772217/compiler/rustc_hir_analysis/src/collect/predicates_of.rs#L689-L715
-
     (
         GenericPredicates(predicates.is_empty().not().then(|| predicates.into())),
         create_diagnostics(ctx.diagnostics),

@@ -109,7 +109,6 @@ pub(super) fn apply_mark(
     //
 
     // See the example at `test/ui/hygiene/legacy_interaction.rs`.
-
     for (call_id, transparency) in ctxt.marks(db) {
         call_site_ctxt = apply_mark_internal(db, call_site_ctxt, call_id, transparency, edition);
     }

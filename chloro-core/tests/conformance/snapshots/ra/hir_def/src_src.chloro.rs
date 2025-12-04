@@ -96,7 +96,6 @@ impl HasChildSource<LocalTypeOrConstParamId> for GenericDefId {
         // For traits and trait aliases the first type index is `Self`, we need to add it before
 
         // the other params.
-
         match *self {
             GenericDefId::TraitId(id) => {
                 let trait_ref = id.lookup(db).source(db).value;

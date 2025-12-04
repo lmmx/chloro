@@ -179,7 +179,6 @@ impl<V, T> ProjectionElem<V, T> {
         // but error types may pop up resulting in us still attempting to build the mir
 
         // so just propagate the error type
-
         if base.is_ty_error() {
             return Ty::new_error(interner, ErrorGuaranteed);
         }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7167 bytes
-Chloro size:   6534 bytes
+Chloro size:   6533 bytes
 Rustfmt size:  7319 bytes
 
 ✗ Outputs DIFFER
@@ -90,13 +90,6 @@ Rustfmt size:  7319 bytes
  pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
      let scope = ctx.sema.scope(call.syntax())?;
-     let params = callable.params();
- 
-     // FIXME: Check that the arg is of the form `() -> T`
-+
-     if !params.first()?.ty().impls_fnonce(ctx.sema.db) {
-         return None;
-     }
  fn into_call(param: &Expr) -> Expr {
      (|| {
          if let ast::Expr::ClosureExpr(closure) = param {

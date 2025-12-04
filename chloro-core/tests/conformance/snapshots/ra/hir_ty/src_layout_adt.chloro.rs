@@ -164,7 +164,6 @@ fn repr_discr(
     };
 
     // If there are no negative values, we can use the unsigned fit.
-
     Ok(if min >= 0 {
         (cmp::max(unsigned_fit, at_least), false)
     } else {

@@ -123,7 +123,6 @@ impl CargoTestHandle {
         }
 
         // --no-fail-fast is needed to ensure that all requested tests will run
-
         cmd.arg("--no-fail-fast");
         cmd.arg("--manifest-path");
         cmd.arg(root.join("Cargo.toml"));

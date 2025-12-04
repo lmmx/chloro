@@ -195,13 +195,11 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // Now go through the argument patterns
-
         for (arg_pat, arg_ty) in args.iter().zip(bound_sig.skip_binder().inputs()) {
             self.infer_top_pat(*arg_pat, arg_ty, None);
         }
 
         // FIXME: lift these out into a struct
-
         let prev_diverges = mem::replace(&mut self.diverges, Diverges::Maybe);
         let prev_closure = mem::replace(&mut self.current_closure, id);
         let prev_ret_ty = mem::replace(&mut self.return_ty, body_ret_ty);
@@ -438,7 +436,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,
 
         // for closures and async closures, respectively.
-
         match closure_kind {
             ClosureKind::Closure if lang_item == Some(LangItem::FnOnceOutput) => {
                 self.extract_sig_from_projection(projection)
@@ -472,7 +469,6 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // Since this is a return parameter type it is safe to unwrap.
-
         let ret_param_ty = projection.skip_binder().term.expect_type();
         debug!(?ret_param_ty);
 
@@ -531,7 +527,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // concrete anonymous future types, and their futures are not coerced
 
         // into any other type within the body of the async closure.
-
         let TyKind::Infer(rustc_type_ir::TyVar(return_vid)) =
             projection.skip_binder().term.expect_type().kind()
         else {
@@ -539,7 +534,6 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // FIXME: We may want to elaborate here, though I assume this will be exceedingly rare.
-
         let mut return_ty = None;
         for bound in self.table.obligations_for_self_ty(return_vid) {
             if let PredicateKind::Clause(ClauseKind::Projection(ret_projection)) =
@@ -581,7 +575,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // FIXME: We probably should store this signature inference output in a way
 
         // that does not misuse a `FnSig` type, but that can be done separately.
-
         let return_ty = return_ty.unwrap_or_else(|| self.table.next_ty_var());
 
         let sig = projection.rebind(self.interner().mk_fn_sig(
@@ -688,7 +681,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // regions appearing free in `expected_sig` are now bound up
 
         // in this binder we are creating.
-
         assert!(!expected_sig.skip_binder().has_vars_bound_above(rustc_type_ir::INNERMOST));
         let bound_sig = expected_sig.map_bound(|sig| {
             self.interner().mk_fn_sig(
@@ -705,7 +697,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // late-bound lifetimes defined elsewhere, which we now
 
         // anonymize away, so as not to confuse the user.
-
         let bound_sig = self.interner().anonymize_bound_vars(bound_sig);
 
         let closure_sigs = self.closure_sigs(bound_sig);
@@ -719,7 +710,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // wrote into our typeck results, which are then later used by the privacy
 
         // check.
-
         match self.merge_supplied_sig_with_expectation(decl_inputs, decl_output, closure_sigs) {
             Ok(infer_ok) => self.table.register_infer_ok(infer_ok),
             Err(_) => self.sig_of_closure_no_expectation(decl_inputs, decl_output),
@@ -780,7 +770,6 @@ impl<'db> InferenceContext<'_, 'db> {
         // [c1]: https://github.com/rust-lang/rust/pull/45072#issuecomment-341089706
 
         // [c2]: https://github.com/rust-lang/rust/pull/45072#issuecomment-341096796
-
         self.table.commit_if_ok(|table| {
             let mut all_obligations = PredicateObligations::new();
             let supplied_sig = table.infer_ctxt.instantiate_binder_with_fresh_vars(

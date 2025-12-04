@@ -588,7 +588,6 @@ impl ItemScope {
         let mut changed = false;
 
         // FIXME: Document and simplify this
-
         if let Some(mut fld) = def.types {
             let existing = self.types.entry(lookup.1.clone());
             match existing {

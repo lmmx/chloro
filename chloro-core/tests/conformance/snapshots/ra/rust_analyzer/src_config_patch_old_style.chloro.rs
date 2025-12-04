@@ -74,7 +74,6 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
     }
 
     // completion.snippets -> completion.snippets.custom;
-
     if let Some(Value::Object(obj)) = copy.pointer("/completion/snippets").cloned()
         && (obj.len() != 1 || obj.get("custom").is_none())
     {
@@ -91,7 +90,6 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
     }
 
     // callInfo_full -> signatureInfo_detail, signatureInfo_documentation_enable
-
     if let Some(Value::Bool(b)) = copy.pointer("/callInfo/full") {
         let sig_info = match b {
             true => json!({ "signatureInfo": {
@@ -107,19 +105,16 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
     }
 
     // cargo_allFeatures, cargo_features -> cargo_features
-
     if let Some(Value::Bool(true)) = copy.pointer("/cargo/allFeatures") {
         merge(json, json!({ "cargo": { "features": "all" } }));
     }
 
     // checkOnSave_allFeatures, checkOnSave_features -> check_features
-
     if let Some(Value::Bool(true)) = copy.pointer("/checkOnSave/allFeatures") {
         merge(json, json!({ "check": { "features": "all" } }));
     }
 
     // completion_addCallArgumentSnippets completion_addCallParenthesis -> completion_callable_snippets
-
     'completion: {
         let res = match (
             copy.pointer("/completion/addCallArgumentSnippets"),
@@ -136,7 +131,6 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
     // We need to do this due to the checkOnSave_enable -> checkOnSave change, as that key now can either be an object or a bool
 
     // checkOnSave_* -> check_*
-
     if let Some(Value::Object(obj)) = copy.pointer("/checkOnSave") {
         // checkOnSave_enable -> checkOnSave
         if let Some(b @ Value::Bool(_)) = obj.get("enable") {

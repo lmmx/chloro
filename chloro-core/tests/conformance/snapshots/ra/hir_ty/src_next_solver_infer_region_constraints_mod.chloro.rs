@@ -318,7 +318,6 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // should think carefully about whether it needs to be cleared
 
         // or updated in some way.
-
         let RegionConstraintStorage {
             var_infos: _,
             data,
@@ -335,7 +334,6 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // LUB/GLB are not performed by the MIR type-checker, which is
 
         // the one that uses this method, but it's good to be correct.
-
         lubs.clear();
         glbs.clear();
 
@@ -348,7 +346,6 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // also insert `a <= b` and a `b <= a` edges, so the
 
         // `RegionConstraintData` contains the relationship here.
-
         if *any_unifications {
             *any_unifications = false;
             // Manually inlined `self.unification_table_mut()` as `self` is used in the closure.
@@ -435,7 +432,6 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     #[instrument(skip(self), level = "debug")]
     pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
         // cannot add constraints once regions are resolved
-
         match (sub.kind(), sup.kind()) {
             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");

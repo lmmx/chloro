@@ -262,7 +262,6 @@ fn extraction_target(node: &SyntaxNode, selection_range: TextRange) -> Option<Fu
     }
 
     // Covering element returned the parent block of one or multiple statements that have been selected
-
     if let Some(stmt_list) = ast::StmtList::cast(node.clone()) {
         if let Some(block_expr) = stmt_list.syntax().parent().and_then(ast::BlockExpr::cast)
             && block_expr.syntax().text_range() == selection_range
@@ -617,7 +616,6 @@ impl FunctionBody {
         let full_body = parent.syntax().children_with_tokens();
 
         // Get all of the elements intersecting with the selection
-
         let mut stmts_in_selection = full_body
             .filter(|it| ast::Stmt::can_cast(it.kind()) || it.kind() == COMMENT)
             .filter(|it| selected.intersect(it.text_range()).filter(|it| !it.is_empty()).is_some());
@@ -627,7 +625,6 @@ impl FunctionBody {
         // If the tail expr is part of the selection too, make that the last element
 
         // Otherwise use the last stmt
-
         let last_element = if let Some(tail_expr) =
             parent.tail_expr().filter(|it| selected.intersect(it.syntax().text_range()).is_some())
         {
@@ -1192,13 +1189,11 @@ fn reference_is_exclusive(
     // type. Something like `body.free_variables(statement_range)`.
 
     // we directly modify variable with set: `n = 0`, `n += 1`
-
     if reference.category.contains(ReferenceCategory::WRITE) {
         return true;
     }
 
     // we take `&mut` reference to variable: `&mut v`
-
     let path = match path_element_of_reference(node, reference) {
         Some(path) => path,
         None => return false,
@@ -4679,7 +4674,6 @@ fn $0fun_name() -> i32 {
         );
 
         // Makes sure no semicolon is added for unit-valued match arms
-
         check_assist(
             extract_function,
             r#"

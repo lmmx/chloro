@@ -134,7 +134,6 @@ fn primary_location(
     }
 
     // Fall back to the outermost macro invocation if no suitable span comes up.
-
     let last_span = span_stack.last().unwrap();
     location(config, workspace_root, last_span, snap)
 }
@@ -221,7 +220,6 @@ fn map_rust_child_diagnostic(
     // rustc renders suggestion diagnostics by appending the suggested replacement, so do the same
 
     // here, otherwise the diagnostic text is missing useful information.
-
     let mut message = rd.message.clone();
     if !suggested_replacements.is_empty() {
         message.push_str(": ");

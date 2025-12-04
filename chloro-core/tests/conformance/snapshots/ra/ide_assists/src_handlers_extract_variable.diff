@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51653 bytes
+Chloro size:   51652 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -60,13 +60,6 @@ Rustfmt size:  52351 bytes
  
      fn assist_id(&self) -> AssistId {
          let s = match self {
-     };
- 
-     // Entirely arbitrary
-+
-     if inner.len() > 32 {
-         return None;
-     }
  
  #[cfg(test)]
  mod tests {

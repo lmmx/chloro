@@ -717,7 +717,6 @@ impl<'db> CompletionContext<'db> {
         // to determine context, though the original_file will be used for
 
         // actual completion.
-
         let file_with_fake_ident = {
             let (_, edition) = editioned_file_id.unpack(db);
             let parse = db.parse(editioned_file_id);
@@ -727,13 +726,11 @@ impl<'db> CompletionContext<'db> {
         // always pick the token to the immediate left of the cursor, as that is what we are actually
 
         // completing on
-
         let original_token = original_file.syntax().token_at_offset(offset).left_biased()?;
 
         // try to skip completions on path with invalid colons
 
         // this approach works in normal path and inside token tree
-
         if original_token.kind() == T![:] {
             // return if no prev token before colon
             let prev_token = original_token.prev_token()?;
@@ -770,7 +767,6 @@ impl<'db> CompletionContext<'db> {
         )?;
 
         // adjust for macro input, this still fails if there is no token written yet
-
         let scope = sema.scope_at_offset(&token.parent()?, original_offset)?;
 
         let krate = scope.krate();
@@ -827,7 +823,6 @@ impl<'db> CompletionContext<'db> {
             .extend(exclude_traits.iter().map(|&t| (t.into(), AutoImportExclusionType::Always)));
 
         // FIXME: This should be part of `CompletionAnalysis` / `expand_and_analyze`
-
         let complete_semicolon = if config.add_semicolon_to_unit {
             let inside_closure_ret = token.parent_ancestors().try_for_each(|ancestor| {
                 match_ast! {

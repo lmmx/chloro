@@ -898,7 +898,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Method generic params
-
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -950,7 +949,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Associated type generic params
-
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1003,7 +1001,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Type generic params
-
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1026,7 +1023,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Type alias generic params
-
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1050,7 +1046,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Enum variant params
-
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1073,7 +1068,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Trait params
-
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1094,7 +1088,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Trait alias params
-
     check_with_base_items(
         r#"
     #![feature(trait_alias)]
@@ -1117,7 +1110,6 @@ fn completes_const_and_type_generics_separately() {
     );
 
     // Omitted lifetime params
-
     check_with_base_items(
         r#"
 struct S<'a, 'b, const C: usize, T>(core::marker::PhantomData<&'a &'b T>);

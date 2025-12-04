@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10383 bytes
-Chloro size:   10379 bytes
+Chloro size:   10378 bytes
 Rustfmt size:  10823 bytes
 
 ✗ Outputs DIFFER
@@ -56,10 +56,8 @@ Rustfmt size:  10823 bytes
          // variable of the appropriate kind. We can't do this during
 +
          // the probe because they would just get popped then too. =)
-+
          Ok(self.fudge_inference(snapshot_vars, value))
      }
- 
          if snapshot_vars.is_empty() {
              value
          } else {

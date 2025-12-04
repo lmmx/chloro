@@ -40,7 +40,6 @@ fn integrated_highlighting_benchmark() {
     }
 
     // Load rust-analyzer itself.
-
     let workspace_to_load = project_root();
     let file = "./crates/rust-analyzer/src/config.rs";
 
@@ -109,7 +108,6 @@ fn integrated_completion_benchmark() {
     }
 
     // Load rust-analyzer itself.
-
     let workspace_to_load = project_root();
     let file = "./crates/hir/src/lib.rs";
 
@@ -144,7 +142,6 @@ fn integrated_completion_benchmark() {
     };
 
     // kick off parsing and index population
-
     let completion_offset = {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -311,7 +308,6 @@ fn integrated_diagnostics_benchmark() {
     }
 
     // Load rust-analyzer itself.
-
     let workspace_to_load = project_root();
     let file = "./crates/hir/src/lib.rs";
 

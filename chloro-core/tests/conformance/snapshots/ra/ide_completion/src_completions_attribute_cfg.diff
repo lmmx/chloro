@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3900 bytes
-Chloro size:   3893 bytes
+Chloro size:   3892 bytes
 Rustfmt size:  3900 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     };
- 
-     // FIXME: Move this into context/analysis.rs
-+
-     let previous = ctx
-         .original_token
-         .prev_token()
      }
  }
  

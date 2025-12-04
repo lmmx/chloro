@@ -44,7 +44,6 @@ pub(crate) fn opaque_types_defined_by(
     };
 
     // Collect opaques from assoc items.
-
     let extend_with_atpit_from_assoc_items = |assoc_items: &[(Name, AssocItemId)]| {
         assoc_items
             .iter()
@@ -72,7 +71,6 @@ pub(crate) fn opaque_types_defined_by(
     }
 
     // FIXME: Collect opaques from `#[define_opaque]`.
-
     fn extend_with_opaques<'db>(
         db: &'db dyn HirDatabase,
         opaques: Option<Arc<EarlyBinder<'db, ImplTraits<'db>>>>,
@@ -149,7 +147,6 @@ pub(crate) fn tait_hidden_types<'db>(
     _ = ocx.try_evaluate_obligations();
 
     // Fill missing entries.
-
     for idx in 0..taits_count {
         let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(idx as u32));
         match result.entry(idx) {
@@ -195,6 +192,5 @@ fn tait_defining_bodies(
     }
 
     // FIXME: Support general TAITs, or decisively decide not to.
-
     Vec::new()
 }

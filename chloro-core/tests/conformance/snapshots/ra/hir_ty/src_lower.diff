@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86744 bytes
+Chloro size:   86742 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -136,20 +136,15 @@ Rustfmt size:  87058 bytes
  pub(crate) fn const_param_ty_with_diagnostics_query<'db>(
      db: &'db dyn HirDatabase,
      def: ConstParamId,
-     );
- 
-     // we have to filter out all other predicates *first*, before attempting to lower them
-+
-     let predicate = |pred: &_, ctx: &mut TyLoweringContext<'_, '_>| match pred {
-         WherePredicate::ForLifetime { target, bound, .. }
-         | WherePredicate::TypeBound { target, bound, .. } => {
      }
  
      // FIXME: rustc gathers more predicates by recursing through resulting trait predicates.
-+
-     // See https://github.com/rust-lang/rust/blob/76c5ed2847cdb26ef2822a3a165d710f6b772217/compiler/rustc_hir_analysis/src/collect/predicates_of.rs#L689-L715
+-    // See https://github.com/rust-lang/rust/blob/76c5ed2847cdb26ef2822a3a165d710f6b772217/compiler/rustc_hir_analysis/src/collect/predicates_of.rs#L689-L715
  
++    // See https://github.com/rust-lang/rust/blob/76c5ed2847cdb26ef2822a3a165d710f6b772217/compiler/rustc_hir_analysis/src/collect/predicates_of.rs#L689-L715
      (
+         GenericPredicates(predicates.is_empty().not().then(|| predicates.into())),
+         create_diagnostics(ctx.diagnostics),
              result
          })
          .collect::<Vec<_>>();

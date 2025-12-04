@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7219 bytes
-Chloro size:   6890 bytes
+Chloro size:   6889 bytes
 Rustfmt size:  7310 bytes
 
 ✗ Outputs DIFFER
@@ -75,10 +75,8 @@ Rustfmt size:  7310 bytes
          // FIXME: This is a false-positive, the file is actually linked in via
 +
          // `include!` macro
-+
          config.disabled.insert("unlinked-file".to_owned());
  
-         check_diagnostics_with_config(
  "#,
          );
      }

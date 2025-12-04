@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45712 bytes
-Chloro size:   45591 bytes
+Chloro size:   45589 bytes
 Rustfmt size:  45712 bytes
 
 ✗ Outputs DIFFER
@@ -45,13 +45,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_option_return_type_unit_type() {
          check_assist_by_label(
-         );
- 
-         // Unformatted return type
-+
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Option return type",
          );
      }
@@ -269,13 +262,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_result_return_type_unit_type() {
          check_assist_by_label(
-         );
- 
-         // Unformatted return type
-+
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Result return type",
          );
      }

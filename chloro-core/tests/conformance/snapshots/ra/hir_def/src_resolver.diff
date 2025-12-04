@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54428 bytes
+Chloro size:   54426 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -62,17 +62,8 @@ Rustfmt size:  54481 bytes
          // to resolving to the primitive type, to allow this to still work in the presence of
 +
          // `use core::u16;`.
-+
          if path.kind == PathKind::Plain
              && n_segments > 1
-             && let Some(builtin) = BuiltinType::by_name(first_name)
-         }
- 
-         // Fill in the prelude traits
-+
-         if let Some((prelude, _use)) = self.module_scope.def_map.prelude() {
-             let prelude_def_map = prelude.def_map(db);
-             traits.extend(prelude_def_map[prelude.local_id].scope.traits());
      hygiene_info: &mut Option<(SyntaxContext, MacroDefId)>,
      macro_id: &MacroDefId,
  ) {

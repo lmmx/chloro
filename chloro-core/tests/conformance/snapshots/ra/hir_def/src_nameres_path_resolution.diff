@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32349 bytes
+Chloro size:   32348 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -159,10 +159,6 @@ Rustfmt size:  32996 bytes
      }
  
      fn resolve_name_in_crate_root_or_extern_prelude(
-     stdx::always!(def_map.module_id(local_id).is_block_module());
- 
-     // This needs to be a local variable due to our mighty lifetime.
-+
      let mut def_map = def_map;
      loop {
          let BlockInfo { parent, .. } = def_map.block.expect("block module without parent module");

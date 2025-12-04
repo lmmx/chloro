@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10666 bytes
-Chloro size:   10216 bytes
+Chloro size:   10214 bytes
 Rustfmt size:  10666 bytes
 
 ✗ Outputs DIFFER
@@ -29,20 +29,6 @@ Rustfmt size:  10666 bytes
  pub(crate) fn replace_qualified_name_with_use(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
-     }
- 
-     // only offer replacement for non assoc items
-+
-     match ctx.sema.resolve_path(&original_path)? {
-         hir::PathResolution::Def(def) if def.as_assoc_item(ctx.sema.db).is_none() => (),
-         _ => return None,
-     }
- 
-     // Shorten `path`, leaving only its last segment.
-+
-     if let Some(parent) = path.qualifier() {
-         ted::remove(parent.syntax());
-     }
                          .is_some_and(|(lhs, rhs)| lhs.text() == rhs.text()) => {}
              _ => return false,
          }

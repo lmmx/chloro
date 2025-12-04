@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44623 bytes
+Chloro size:   44620 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -94,21 +94,8 @@ Rustfmt size:  45288 bytes
      // FIXME: use syntax::make & mutable AST apis instead
 +
      // `trait_text` and `code` can't be opaque blobs of text
-+
      let mut buf = String::with_capacity(code.len());
  
-     // Copy any cfg attrs from the original adt
-+
-     buf.push_str("\n\n");
-     let cfg_attrs = adt
-         .attrs()
-     cfg_attrs.for_each(|attr| buf.push_str(&format!("{attr}\n")));
- 
-     // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
-+
-     buf.push_str("impl");
-     if let Some(generic_params) = &generic_params {
-         format_to!(buf, "{generic_params}");
  /// and lifetime parameters, with `<trait>` appended to `impl`'s generic parameters' bounds.
  ///
  /// This is useful for traits like `PartialEq`, since `impl<T> PartialEq for U<T>` often requires `T: PartialEq`.

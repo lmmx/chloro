@@ -136,7 +136,6 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
         }
 
         // If we have reached the recursion limit, error gracefully.
-
         if self.state.steps.len() >= AUTODEREF_RECURSION_LIMIT {
             self.state.reached_recursion_limit = true;
             return None;
@@ -155,7 +154,6 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
         // and &mut T implement Receiver. But built-in derefs apply equally to Receiver
 
         // and Deref, and this has benefits for const and the emitted MIR.
-
         let (kind, new_ty) = if let Some(ty) =
             self.state.cur_ty.builtin_deref(self.table.db, self.include_raw_pointers)
         {
@@ -258,7 +256,6 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
         let interner = self.table.interner();
 
         // <ty as Deref>, or whatever the equivalent trait is that we've been asked to walk.
-
         let AutoderefTraits { trait_, trait_target } = self.autoderef_traits()?;
 
         let trait_ref = TraitRef::new(interner, trait_.into(), [ty]);

@@ -41,7 +41,6 @@ impl<'db> At<'_, 'db> {
         // normalizing the LHS of the projection until it is a rigid projection
 
         // (or a not-yet-defined opaque in scope).
-
         let obligation = Obligation::new(
             self.infcx.interner,
             self.cause.clone(),

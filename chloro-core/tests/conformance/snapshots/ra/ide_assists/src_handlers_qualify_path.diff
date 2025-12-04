@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27122 bytes
-Chloro size:   26677 bytes
+Chloro size:   26676 bytes
 Rustfmt size:  27284 bytes
 
 ✗ Outputs DIFFER
@@ -68,10 +68,6 @@ Rustfmt size:  27284 bytes
  
      let candidate = import_assets.import_candidate();
      let qualify_candidate = match candidate {
-     };
- 
-     // we aren't interested in different namespaces
-+
      proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
      proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
  

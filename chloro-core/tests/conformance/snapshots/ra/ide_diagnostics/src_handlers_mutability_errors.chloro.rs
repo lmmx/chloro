@@ -408,7 +408,6 @@ fn main() {
         // special casing it is not trivial, we emit it.
 
         // Update: now MIR based `unused-variable` is taking over `unused-mut` for the same reason.
-
         check_diagnostics(
             r#"
 fn main() {

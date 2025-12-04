@@ -582,7 +582,6 @@ impl<N: AstNode> InFile<N> {
         )?;
 
         // FIXME: This heuristic is brittle and with the right macro may select completely unrelated nodes?
-
         let anc = db.parse(editioned_file_id).syntax_node().covering_element(range);
         let value = anc.ancestors().find_map(N::cast)?;
         Some(InRealFile::new(editioned_file_id, value))

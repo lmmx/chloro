@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   144474 bytes
+Chloro size:   144465 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -18,6 +18,13 @@ Rustfmt size:  144317 bytes
          path::{AssociatedTypeBinding, GenericArg, GenericArgs, GenericArgsParentheses, Path},
      },
      hir::{
+     // with the inner macro, and that will cause confusion because they won't be the same as `ROOT`
+     // even though they should be the same. Also, when the body comes from multiple expansions, their
+     // hygiene is different.
+-
+     let mut self_param = None;
+     let mut source_map_self_param = None;
+     let mut params = vec![];
      local_def_map: &'db LocalDefMap,
      module: ModuleId,
      pub store: ExpressionStoreBuilder,
@@ -59,10 +66,6 @@ Rustfmt size:  144317 bytes
      }
  
      fn type_bounds_from_ast(
-         }
- 
-         // FIXME: Move some of these arms out into separate methods for clarity
-+
          Some(match expr {
              ast::Expr::IfExpr(e) => {
                  let then_branch = self.collect_block_opt(e.then_branch());
@@ -238,10 +241,8 @@ Rustfmt size:  144317 bytes
          // }
 +
          // ```
-+
          let condition = match label {
              Some((label_hygiene, label)) => self.with_labeled_rib(label, label_hygiene, |this| {
-                 this.collect_expr_opt(e.condition())
              Expr::If { condition, then_branch: body, else_branch: Some(break_expr) },
              syntax_ptr,
          );
@@ -273,6 +274,13 @@ Rustfmt size:  144317 bytes
              syntax_ptr,
          )
      }
+             }
+         };
+         // No need to push macro and parsing errors as they'll be recreated from `macro_calls()`.
+-
+         match res.value {
+             Some((mark, expansion)) => {
+                 // Keep collecting even with expansion errors so we can provide completions and
                  if let Some(macro_file) = self.expander.current_file_id().macro_file() {
                      self.store.expansions.insert(macro_call_ptr, macro_file);
                  }
@@ -311,13 +319,6 @@ Rustfmt size:  144317 bytes
      }
  
      fn collect_block_(
-         let ellipsis = args.iter().position(|p| p.is_right()).map(|it| it as u32);
- 
-         // We want to skip the `..` pattern here, since we account for it above.
-+
-         let mut args: Vec<_> = args.into_iter().filter_map(Either::left).collect();
-         // if there is a leading comma, the user is most likely to type out a leading pattern
-         // so we insert a missing pattern at the beginning for IDE features
          (args.into_boxed_slice(), ellipsis)
      }
  
@@ -338,36 +339,39 @@ Rustfmt size:  144317 bytes
          // Create a list of all _unique_ (argument, format trait) combinations.
 +
          // E.g. "{0} {0:x} {0} {1}" -> [(0, Display), (0, LowerHex), (1, Display)]
-+
          let mut argmap = FxIndexSet::default();
          for piece in fmt.template.iter() {
-             let FormatArgsPiece::Placeholder(placeholder) = piece else { continue };
          };
  
          // Assume that rustc version >= 1.89.0 iff lang item `format_arguments` exists
 +
          // but `format_unsafe_arg` does not
-+
          let fmt_args =
              || crate::lang_item::lang_item(self.db, self.module.krate(), LangItem::FormatArguments);
-         let fmt_unsafe_arg =
          };
  
          // Generate:
-+
-         //     <core::fmt::Arguments>::new_v1_formatted(
-+
-         //         lit_pieces,
-+
-         //         args,
-+
-         //         format_options,
-+
-         //         unsafe { ::core::fmt::UnsafeArg::new() }
-+
-         //     )
+-        //     <core::fmt::Arguments>::new_v1_formatted(
+-        //         lit_pieces,
+-        //         args,
+-        //         format_options,
+-        //         unsafe { ::core::fmt::UnsafeArg::new() }
+-        //     )
  
++        //     <core::fmt::Arguments>::new_v1_formatted(
++
++        //         lit_pieces,
++
++        //         args,
++
++        //         format_options,
++
++        //         unsafe { ::core::fmt::UnsafeArg::new() }
++
++        //     )
          let new_v1_formatted = LangItem::FormatArguments.ty_rel_path(
+             self.db,
+             self.module.krate(),
  
          self.alloc_expr(
              Expr::Call {
@@ -385,10 +389,8 @@ Rustfmt size:  144317 bytes
          // Generate:
 +
          //     &args
-+
          let args = self.alloc_expr_desugared(Expr::Ref {
              expr: args,
-             rawness: Rawness::Ref,
              let call = self.alloc_expr_desugared(call_block);
              self.alloc_expr(
                  Expr::Block {

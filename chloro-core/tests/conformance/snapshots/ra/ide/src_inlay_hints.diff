@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34282 bytes
+Chloro size:   34281 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
@@ -80,13 +80,6 @@ Rustfmt size:  36233 bytes
              LazyProperty::Lazy
          } else {
              let tooltip = finish();
-     let iter_mod = famous_defs.core_iter()?;
- 
-     // Assert that this struct comes from `core::iter`.
-+
-     if !(strukt.visibility(db) == hir::Visibility::Public
-         && strukt.module(db).path_to_root(db).contains(&iter_mod))
-     {
  
  #[cfg(test)]
  mod tests {

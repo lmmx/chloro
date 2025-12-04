@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29406 bytes
-Chloro size:   29212 bytes
+Chloro size:   29210 bytes
 Rustfmt size:  29702 bytes
 
 ✗ Outputs DIFFER
@@ -100,17 +100,3 @@ Rustfmt size:  29702 bytes
      #[test]
      fn view_syntax_tree_inside_string() {
          check(
-         );
- 
-         // With a raw string
-+
-         check(
-             r###"fn test() {
-     assert!(r#"
-         );
- 
-         // With a raw string
-+
-         check(
-             r###"fn test() {
-     assert!(r$0#"

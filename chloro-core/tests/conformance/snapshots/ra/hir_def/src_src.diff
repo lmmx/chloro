@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6779 bytes
+Chloro size:   6778 bytes
 Rustfmt size:  6876 bytes
 
 ✗ Outputs DIFFER
@@ -98,10 +98,8 @@ Rustfmt size:  6876 bytes
          // For traits and trait aliases the first type index is `Self`, we need to add it before
 +
          // the other params.
-+
          match *self {
              GenericDefId::TraitId(id) => {
-                 let trait_ref = id.lookup(db).source(db).value;
  
  impl HasChildSource<LocalLifetimeParamId> for GenericDefId {
      type Value = ast::LifetimeParam;

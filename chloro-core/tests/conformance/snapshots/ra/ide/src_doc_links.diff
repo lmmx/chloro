@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30825 bytes
+Chloro size:   30823 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -96,19 +96,15 @@ Rustfmt size:  31554 bytes
      // We want to strip the keyword prefix from the title, but only if the target is implicitly the same
 +
      // as the title.
-+
      let title = match link_type {
          LinkType::Email
-         | LinkType::Autolink
          .as_str();
  
      // special case base url of `BuiltinType` to core
 +
      // https://github.com/rust-lang/rust-analyzer/issues/12250
-+
      if let Definition::BuiltinType(..) = def {
          let web_link = Url::parse(&format!("https://doc.rust-lang.org/{channel}/core/")).ok();
-         let system_link = system_doc.and_then(|it| it.join("core/").ok());
  fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
      Some(match assoc_item {
          AssocItem::Function(function) => {

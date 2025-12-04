@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30628 bytes
+Chloro size:   30624 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -57,10 +57,8 @@ Rustfmt size:  30951 bytes
      // (therefore, less room for mistakes) and that IMO incorrect covariance can be more problematic that incorrect
 +
      // bivariance, at least while we don't handle lifetimes anyway.
-+
      for variance in &mut variances {
          if *variance == Variance::Bivariant {
-             *variance = Variance::Invariant;
  // ) -> salsa::CycleRecoveryAction<Option<Arc<[Variance]>>> {
  //     salsa::CycleRecoveryAction::Iterate
  // }
@@ -68,13 +66,6 @@ Rustfmt size:  30951 bytes
  fn glb(v1: Variance, v2: Variance) -> Variance {
      // Greatest lower bound of the variance lattice as defined in The Paper:
      //
-     let count = generics.len();
- 
-     // FIXME(next-solver): Returns `Invariance` and not `Bivariance` here, see the comment in the main query.
-+
-     VariancesOf::new_from_iter(interner, std::iter::repeat_n(Variance::Invariant, count))
- }
- 
                      AdtId::StructId(s) => add_constraints_from_variant(VariantId::StructId(s)),
                      AdtId::UnionId(u) => add_constraints_from_variant(VariantId::UnionId(u)),
                      AdtId::EnumId(e) => {
@@ -106,17 +97,8 @@ Rustfmt size:  30951 bytes
          // Const parameters are always invariant.
 +
          // Make all const parameters invariant.
-+
          for (idx, param) in self.generics.iter_id().enumerate() {
              if let GenericParamId::ConstParamId(_) = param {
-                 variances[idx] = Variance::Invariant;
-         }
- 
-         // Functions are permitted to have unused generic parameters: make those invariant.
-+
-         if let GenericDefId::FunctionId(_) = self.generics.def() {
-             variances
-                 .iter_mut()
      /// in a context with the generics defined in `generics` and
      /// ambient variance `variance`
      fn add_constraints_from_ty(&mut self, ty: Ty<'db>, variance: Variance) {

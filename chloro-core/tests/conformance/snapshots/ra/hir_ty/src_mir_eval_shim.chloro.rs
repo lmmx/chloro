@@ -1429,13 +1429,11 @@ impl<'db> Evaluator<'db> {
     ) -> Result<'db, ()> {
         // We are a single threaded runtime with no UB checking and no optimization, so
         // we can implement atomic intrinsics as normal functions.
-
         if name.starts_with("singlethreadfence_") || name.starts_with("fence_") {
             return Ok(());
         }
 
         // The rest of atomic intrinsics have exactly one generic arg
-
         let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
             return Err(MirEvalError::InternalError(
                 "atomic intrinsic generic arg is not provided".into(),

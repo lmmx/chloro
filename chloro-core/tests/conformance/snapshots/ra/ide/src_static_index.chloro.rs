@@ -402,7 +402,6 @@ mod tests {
         // Make sure that all references have at least one range. We use a HashMap instead of a
 
         // a HashSet so that we can have more than one reference at the same range.
-
         for (_, t) in s.tokens.iter() {
             for r in &t.references {
                 if r.is_definition {

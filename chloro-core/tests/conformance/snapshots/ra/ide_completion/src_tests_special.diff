@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27148 bytes
-Chloro size:   27127 bytes
+Chloro size:   27125 bytes
 Rustfmt size:  27179 bytes
 
 ✗ Outputs DIFFER
@@ -41,19 +41,6 @@ Rustfmt size:  27179 bytes
  }
  
  #[test]
-     };
- 
-     // reduced signature
-+
-     let completion = do_completion_with_config(TEST_CONFIG, src, kind);
-     assert!(completion[0].detail.is_some());
-     reduced.assert_eq(completion[0].detail.as_ref().unwrap());
- 
-     // full signature
-+
-     let completion = do_completion_with_config(FULL_SIGNATURES_CONFIG, src, kind);
-     assert!(completion[0].detail.is_some());
-     full.assert_eq(completion[0].detail.as_ref().unwrap());
  #[test]
  fn fn_generic_params_const_param_snippet() {
      check_edit("const", "fn foo<c$0>() {}", "fn foo<const $1: $0>() {}");

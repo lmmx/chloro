@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   23128 bytes
+Chloro size:   23118 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -13,24 +13,8 @@ Rustfmt size:  23115 bytes
          // Check the function name.
 +
          // Skipped if function is an associated item of a trait implementation.
-+
          if !self.is_trait_impl_container(container) {
              let data = self.db.function_signature(func);
- 
-         }
- 
-         // Check the patterns inside the function body.
-+
-         self.validate_func_body(func);
-     }
- 
-             .peekable();
- 
-         // XXX: only look at source_map if we do have missing fields
-+
-         if pats_replacements.peek().is_none() {
-             return;
-         }
              let Some(parent) = ident_pat.syntax().parent() else {
                  continue;
              };
@@ -48,20 +32,6 @@ Rustfmt size:  23115 bytes
              self.create_incorrect_case_diagnostic_for_ast_node(
                  replacement,
                  source_ptr.file_id,
-         );
- 
-         // Check the field names.
-+
-         self.validate_struct_fields(struct_id);
-     }
- 
-             .peekable();
- 
-         // XXX: Only look at sources if we do have incorrect names.
-+
-         if struct_fields_replacements.peek().is_none() {
-             return;
-         }
                      return;
                  }
              };
@@ -69,27 +39,6 @@ Rustfmt size:  23115 bytes
              self.create_incorrect_case_diagnostic_for_ast_node(
                  field_replacement,
                  struct_src.file_id,
-         let data = self.db.enum_signature(enum_id);
- 
-         // Check the enum name.
-+
-         self.create_incorrect_case_diagnostic_for_item_name(
-             enum_id,
-             &data.name,
-         );
- 
-         // Check the variant names.
-+
-         self.validate_enum_variants(enum_id)
-     }
- 
-             .peekable();
- 
-         // XXX: only look at sources if we do have incorrect names
-+
-         if enum_variants_replacements.peek().is_none() {
-             return;
-         }
                      return;
                  }
              };
@@ -97,13 +46,6 @@ Rustfmt size:  23115 bytes
              self.create_incorrect_case_diagnostic_for_ast_node(
                  variant_replacement,
                  enum_src.file_id,
-             .peekable();
- 
-         // XXX: only look at sources if we do have incorrect names
-+
-         if variant_field_replacements.peek().is_none() {
-             return;
-         }
                      return;
                  }
              };
@@ -111,13 +53,6 @@ Rustfmt size:  23115 bytes
              self.create_incorrect_case_diagnostic_for_ast_node(
                  field_replacement,
                  variant_src.file_id,
-         }
- 
-         // Check the type alias name.
-+
-         let data = self.db.type_alias_signature(type_alias_id);
-         self.create_incorrect_case_diagnostic_for_item_name(
-             type_alias_id,
          name: &Name,
          expected_case: CaseType,
          ident_type: IdentType,

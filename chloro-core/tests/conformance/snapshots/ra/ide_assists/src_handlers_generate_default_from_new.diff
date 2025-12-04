@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13010 bytes
-Chloro size:   12419 bytes
+Chloro size:   12418 bytes
 Rustfmt size:  13024 bytes
 
 ✗ Outputs DIFFER
@@ -73,13 +73,6 @@ Rustfmt size:  13024 bytes
          let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
              // remove defaults since they can't be specified in impls
              let param = match param {
-     buf.push_str("\n\n");
- 
-     // `impl{generic_params} {trait_text} for {impl_.self_ty()}`
-+
-     buf.push_str("impl");
-     if let Some(generic_params) = &generic_params {
-         format_to!(buf, "{generic_params}")
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

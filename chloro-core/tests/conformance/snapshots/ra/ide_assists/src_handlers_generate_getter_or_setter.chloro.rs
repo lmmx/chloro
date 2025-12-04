@@ -18,25 +18,20 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     //
     // This is the only part where implementation diverges a bit,
     // subsequent code is generic for both of these modes
-
     let (strukt, info_of_record_fields, mut fn_names) = extract_and_parse(ctx, AssistType::Set)?;
 
     // No record fields to do work on :(
-
     if info_of_record_fields.is_empty() {
         return None;
     }
 
     // Prepend set_ to fn names.
-
     fn_names.iter_mut().for_each(|name| *name = format!("set_{name}"));
 
     // Return early if we've found an existing fn
-
     let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &fn_names)?;
 
     // Computing collective text range of all record fields in selected region
-
     let target: TextRange = info_of_record_fields
         .iter()
         .map(|record_field_info| record_field_info.target)
@@ -103,7 +98,6 @@ pub(crate) fn generate_getter_impl(
     };
 
     // Computing collective text range of all record fields in selected region
-
     let target: TextRange = info_of_record_fields
         .iter()
         .map(|record_field_info| record_field_info.target)
@@ -200,7 +194,6 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
     // Make the param list
 
     // `(&mut self, $field_name: $field_ty)`
-
     let field_param =
         make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
     let params = make::param_list(Some(make::mut_self_param()), [field_param]);
@@ -208,7 +201,6 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
     // Make the assignment body
 
     // `self.$field_name = $field_name`
-
     let self_expr = make::ext::expr_self();
     let lhs = make::expr_field(self_expr, field_name);
     let rhs = make::expr_path(make::ext::ident_path(field_name));
@@ -216,7 +208,6 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
     let body = make::block_expr([assign_stmt.into()], None);
 
     // Make the setter fn
-
     make::fn_(
         None,
         strukt.visibility(),
@@ -258,7 +249,6 @@ fn extract_and_parse(
     }
 
     // Single Record Field mode
-
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::RecordField>()?;
     let record_field_info = parse_record_field(field, &assist_type)?;
@@ -622,7 +612,6 @@ impl S {
         cov_mark::check_count!(convert_reference_type, 6);
 
         // Copy
-
         check_assist(
             generate_getter,
             r#"
@@ -641,7 +630,6 @@ impl S {
         );
 
         // AsRef<str>
-
         check_assist(
             generate_getter,
             r#"
@@ -674,7 +662,6 @@ impl S {
         );
 
         // AsRef<T>
-
         check_assist(
             generate_getter,
             r#"
@@ -711,7 +698,6 @@ impl S {
         );
 
         // AsRef<[T]>
-
         check_assist(
             generate_getter,
             r#"
@@ -744,7 +730,6 @@ impl S {
         );
 
         // Option
-
         check_assist(
             generate_getter,
             r#"
@@ -767,7 +752,6 @@ impl S {
         );
 
         // Result
-
         check_assist(
             generate_getter,
             r#"

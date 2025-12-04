@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36630 bytes
-Chloro size:   36488 bytes
+Chloro size:   36486 bytes
 Rustfmt size:  36630 bytes
 
 ✗ Outputs DIFFER
@@ -74,13 +74,6 @@ Rustfmt size:  36630 bytes
      #[test]
      fn no_completion_inside_fn() {
          check_no_kw(
-         );
- 
-         // https://github.com/rust-lang/rust-analyzer/pull/5976#issuecomment-692332191
-+
-         check_no_kw(
-             r"
- trait Test { fn test(); fn test2(); }
              "#]],
          );
      }
@@ -144,10 +137,7 @@ Rustfmt size:  36630 bytes
      #[test]
      fn complete_without_name() {
          let test = |completion: &str, hint: &str, completed: &str, next_sibling: &str| {
-         };
- 
          // Enumerate some possible next siblings.
-+
          for next_sibling in [
              "",
 -            "fn other_fn() {}", // `const $0 fn` -> `const fn`

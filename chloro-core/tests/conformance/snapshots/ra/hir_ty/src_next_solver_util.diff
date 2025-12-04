@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   28563 bytes
+Chloro size:   28562 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -73,13 +73,6 @@ Rustfmt size:  28638 bytes
      fn from_uint_ty<C: HasDataLayout>(cx: &C, ity: UintTy) -> Integer {
          use Integer::*;
          match ity {
-         };
- 
-         // If there are no negative values, we can use the unsigned fit.
-+
-         if min >= 0 {
-             (std::cmp::max(unsigned_fit, at_least), false)
-         } else {
  
  pub trait FloatExt {
      fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;

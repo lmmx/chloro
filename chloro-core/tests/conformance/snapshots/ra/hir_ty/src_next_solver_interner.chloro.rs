@@ -1276,7 +1276,6 @@ impl<'db> Interner for DbInterner<'db> {
         let sized_def_id = sized_id.into();
 
         // Search for a predicate like `Self : Sized` amongst the trait bounds.
-
         let predicates = self.predicates_of(def_id);
         elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
             ClauseKind::Trait(ref trait_pred) => {
@@ -1836,7 +1835,6 @@ impl<'db> Interner for DbInterner<'db> {
         };
 
         // The last field of the structure has to exist and contain type/const parameters.
-
         let variant = def.non_enum_variant();
         let fields = variant.fields(self.db());
         let Some((tail_field, prefix_fields)) = fields.split_last() else {
@@ -1855,7 +1853,6 @@ impl<'db> Interner for DbInterner<'db> {
         // Ensure none of the other fields mention the parameters used
 
         // in unsizing.
-
         for field in prefix_fields {
             for arg in field_types[field.0].instantiate_identity().walk() {
                 if let Some(i) = maybe_unsizing_param_idx(arg) {
@@ -1932,7 +1929,6 @@ impl<'db> Interner for DbInterner<'db> {
         crate::opaques::opaque_types_defined_by(self.db, def_id, &mut result);
 
         // Collect coroutines.
-
         let body = self.db.body(def_id);
         body.exprs().for_each(|(expr_id, expr)| {
             if matches!(
@@ -2287,7 +2283,6 @@ mod tls_db {
             let db = self.database.get().expect("Try to use attached db, but not db is attached");
 
             // SAFETY: The db is attached, so it must be valid.
-
             op(unsafe {
                 db.as_ref()
             })

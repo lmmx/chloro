@@ -440,7 +440,6 @@ fn panic_expand(
     let mac = if use_panic_2021(db, call_site_span) { sym::panic_2021 } else { sym::panic_2015 };
 
     // Pass the original arguments
-
     let subtree = WithDelimiter {
         delimiter: tt::Delimiter {
             open: call_site_span,
@@ -451,7 +450,6 @@ fn panic_expand(
     };
 
     // Expand to a macro call `$crate::panic::panic_{edition}`
-
     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
 
     ExpandResult::ok(call)
@@ -473,7 +471,6 @@ fn unreachable_expand(
     };
 
     // Pass the original arguments
-
     let mut subtree = tt.clone();
     *subtree.top_subtree_delimiter_mut() = tt::Delimiter {
         open: call_site_span,
@@ -482,7 +479,6 @@ fn unreachable_expand(
     };
 
     // Expand to a macro call `$crate::panic::panic_{edition}`
-
     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
 
     ExpandResult::ok(call)
@@ -887,7 +883,6 @@ fn include_str_expand(
     // Ideally, we'd be able to offer a precise expansion if the user asks for macro
 
     // expansion.
-
     let file_id = match relative_file(db, arg_id, path.as_str(), true, input_span) {
         Ok(file_id) => file_id,
         Err(_) => {

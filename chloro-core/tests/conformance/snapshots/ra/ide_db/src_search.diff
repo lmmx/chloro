@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57734 bytes
+Chloro size:   57728 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
@@ -57,13 +57,6 @@ Rustfmt size:  58275 bytes
      type IntoIter = std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
  
      fn into_iter(self) -> Self::IntoIter {
-         }
- 
-         // def is crate root
-+
-         if let &Definition::Module(module) = self
-             && module.is_crate_root()
-         {
          self
      }
  
@@ -85,31 +78,8 @@ Rustfmt size:  58275 bytes
          // FIXME: If Rust ever gains the ability to `use Struct::method` we'll also need to account for free
 +
          // functions.
-+
          let finder = Finder::new(name.as_bytes());
          // The search for `Self` may return duplicate results with `ContainerName`, so deduplicate them.
-         let mut self_positions = FxHashSet::default();
-         };
- 
-         // FIXME: This should probably depend on the number of the results (specifically, the number of false results).
-+
-         if name.len() <= 7 && self.short_associated_function_fast_search(sink, &search_scope, name)
-         {
-             return;
-         }
- 
-         // Search for `super` and `crate` resolving to our module
-+
-         if let Definition::Module(module) = self.def {
-             let scope =
-                 search_scope.intersection(&SearchScope::module_and_children(self.sema.db, module));
-         }
- 
-         // search for module `self` references in our module's definition source
-+
-         match self.def {
-             Definition::Module(module) if self.search_self_mod => {
-                 let src = module.definition_source(sema.db);
                      ModuleSource::BlockExpr(b) => (file_id, Some(b.syntax().text_range())),
                      ModuleSource::SourceFile(_) => (file_id, None),
                  };
@@ -207,10 +177,3 @@ Rustfmt size:  58275 bytes
      match def {
          Definition::Adt(adt) => Some(adt.ty(sema.db)),
          Definition::TypeAlias(it) => Some(it.ty(sema.db)),
-         }
- 
-         // Only Locals and Fields have accesses for now.
-+
-         if !matches!(def, Definition::Local(_) | Definition::Field(_)) {
-             if is_name_ref_in_import(r) {
-                 result |= ReferenceCategory::IMPORT;

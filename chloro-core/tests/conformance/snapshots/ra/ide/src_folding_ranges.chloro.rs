@@ -45,7 +45,6 @@ pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
     let mut visited_nodes = FxHashSet::default();
 
     // regions can be nested, here is a LIFO buffer
-
     let mut region_starts: Vec<TextSize> = vec![];
 
     for element in file.syntax().descendants_with_tokens() {
@@ -250,7 +249,6 @@ fn contiguous_range_for_comment(
     visited.insert(first.clone());
 
     // Only fold comments of the same flavor
-
     let group_kind = first.kind();
     if !group_kind.shape.is_line() {
         return None;

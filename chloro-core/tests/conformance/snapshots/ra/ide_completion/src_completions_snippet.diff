@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4757 bytes
-Chloro size:   4755 bytes
+Chloro size:   4754 bytes
 Rustfmt size:  4729 bytes
 
 ✗ Outputs DIFFER
@@ -21,13 +21,6 @@ Rustfmt size:  4729 bytes
  };
  
  pub(crate) fn complete_expr_snippet(
-     }
- 
-     // Test-related snippets shouldn't be shown in blocks.
-+
-     if let ItemListKind::SourceFile | ItemListKind::Module = kind {
-         let mut item = snippet(
-             ctx,
          );
          item.lookup_by("tmod");
          item.add_to(acc, ctx.db);

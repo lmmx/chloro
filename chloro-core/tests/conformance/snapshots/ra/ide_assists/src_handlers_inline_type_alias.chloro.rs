@@ -35,7 +35,6 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
     }
 
     // until this is ok
-
     acc.add(
         AssistId::refactor_inline("inline_type_alias_uses"),
         "Inline type alias into all uses",
@@ -220,7 +219,6 @@ impl ConstAndTypeMap {
         // Any declaration generics that don't have a default value must have one
 
         // provided by the instance.
-
         for (i, declaration_generic) in alias_generics.iter().enumerate() {
             let key = declaration_generic.replacement_key()?;
 
@@ -327,7 +325,6 @@ fn get_type_alias(ctx: &AssistContext<'_>, path: &ast::PathType) -> Option<ast::
     // keep the order, so we must get the `ast::TypeAlias` from the hir
 
     // definition.
-
     if let PathResolution::Def(hir::ModuleDef::TypeAlias(ta)) = resolved_path {
         Some(ctx.sema.source(ta)?.value)
     } else {
@@ -388,7 +385,6 @@ fn generic_args_to_const_and_type_generics(
     // It's fine for there to be no instance generics because the declaration
 
     // might have default values or they might be inferred.
-
     if let Some(generics) = generics {
         for arg in generics.generic_args() {
             match arg {

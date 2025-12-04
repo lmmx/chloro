@@ -277,7 +277,6 @@ fn foo() {}
         );
 
         // Unformatted return type
-
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1304,7 +1303,6 @@ fn foo() {}
         );
 
         // Unformatted return type
-
         check_assist_by_label(
             unwrap_return_type,
             r#"

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16114 bytes
-Chloro size:   16107 bytes
+Chloro size:   16106 bytes
 Rustfmt size:  16341 bytes
 
 ✗ Outputs DIFFER
@@ -85,13 +85,6 @@ Rustfmt size:  16341 bytes
          } else {
              let hygiene = self.body.expr_or_pat_path_hygiene(id);
              // FIXME: report error, unresolved first path segment
-         }
- 
-         // We need to add `Self: Trait` obligation when `def` is a trait assoc item.
-+
-         let container = match def {
-             GenericDefId::FunctionId(id) => id.lookup(self.db).container,
-             GenericDefId::ConstId(id) => id.lookup(self.db).container,
          };
  
          if let ItemContainerId::TraitId(trait_) = container {

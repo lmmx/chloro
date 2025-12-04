@@ -200,7 +200,6 @@ fn edit_tuple_usages(
     // We also defer editing usages in the current file first since
     // tree mutation in the same file breaks when `builder.edit_file`
     // is called
-
     let edits = data
         .usages
         .as_ref()?
@@ -288,7 +287,6 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
     //     PATH_EXPR
     //      PAREN_EXRP*
     //       FIELD_EXPR
-
     let node = usage
         .name
         .syntax()
@@ -297,7 +295,6 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
         .skip(1) // PATH_EXPR
         .find(|s| !ast::ParenExpr::can_cast(s.kind()))?;
     // skip parentheses
-
     if let Some(field_expr) = ast::FieldExpr::cast(node) {
         let idx = field_expr.name_ref()?.as_tuple_field()?;
         if idx < data.field_names.len() {

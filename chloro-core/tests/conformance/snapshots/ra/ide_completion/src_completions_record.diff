@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11037 bytes
-Chloro size:   11030 bytes
+Chloro size:   11029 bytes
 Rustfmt size:  11348 bytes
 
 ✗ Outputs DIFFER
@@ -144,13 +144,6 @@ Rustfmt size:  11348 bytes
          // tuple variant
          check_edit_with_config(
              conf.clone(),
-         );
- 
-         // record variant
-+
-         check_edit_with_config(
-             conf,
-             "Variant{}",
  "#,
          )
      }

@@ -371,7 +371,6 @@ fn parse_adt_from_syntax(
     // `SyntaxNode` that contains fields and look for descendant `ast::PathType`s. Of note is that
 
     // we should not inspect `ast::PathType`s in parameter bounds and where clauses.
-
     let field_list = match adt {
         ast::Adt::Enum(it) => it.variant_list().map(|list| list.syntax().clone()),
         ast::Adt::Struct(it) => it.field_list().map(|list| list.syntax().clone()),

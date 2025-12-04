@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81772 bytes
+Chloro size:   81767 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -431,13 +431,6 @@ Rustfmt size:  84055 bytes
      }
  
      fn check_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) -> bool {
-         let sized_def_id = sized_id.into();
- 
-         // Search for a predicate like `Self : Sized` amongst the trait bounds.
-+
-         let predicates = self.predicates_of(def_id);
-         elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
-             ClauseKind::Trait(ref trait_pred) => {
          explicit_item_bounds(self, def_id).map_bound(|bounds| {
              Clauses::new_from_iter(
                  self,
@@ -562,22 +555,13 @@ Rustfmt size:  84055 bytes
          )
      }
  
-         };
- 
-         // The last field of the structure has to exist and contain type/const parameters.
-+
-         let variant = def.non_enum_variant();
-         let fields = variant.fields(self.db());
-         let Some((tail_field, prefix_fields)) = fields.split_last() else {
          }
  
          // Ensure none of the other fields mention the parameters used
 +
          // in unsizing.
-+
          for field in prefix_fields {
              for arg in field_types[field.0].instantiate_identity().walk() {
-                 if let Some(i) = maybe_unsizing_param_idx(arg) {
          }
  
          let mut map = Default::default();
@@ -600,13 +584,6 @@ Rustfmt size:  84055 bytes
          let Ok(def_id) = DefWithBodyId::try_from(def_id) else {
              return SolverDefIds::default();
          };
-         crate::opaques::opaque_types_defined_by(self.db, def_id, &mut result);
- 
-         // Collect coroutines.
-+
-         let body = self.db.body(def_id);
-         body.exprs().for_each(|(expr_id, expr)| {
-             if matches!(
              CallableDefId::FunctionId(id) => id,
              _ => return false,
          };
@@ -753,7 +730,6 @@ Rustfmt size:  84055 bytes
  
              // SAFETY: The db is attached, so it must be valid.
 -            op(unsafe { db.as_ref() })
-+
 +            op(unsafe {
 +                db.as_ref()
 +            })

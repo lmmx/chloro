@@ -156,7 +156,6 @@ impl ParamConst {
         // items. It's advised to fix the underlying issue rather than trying
 
         // to modify this function.
-
         let ty = candidates.next().unwrap_or_else(|| {
             panic!("cannot find `{self:?}` in param-env: {env:#?}");
         });

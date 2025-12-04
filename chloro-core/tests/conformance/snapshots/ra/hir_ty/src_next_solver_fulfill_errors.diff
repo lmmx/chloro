@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50815 bytes
+Chloro size:   50811 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -114,10 +114,8 @@ Rustfmt size:  50684 bytes
          // FIXME: Also, what about considering >1 layer up the stack? May be necessary
 +
          // for normalizes-to.
-+
          let child_mode = match pred.kind().skip_binder() {
              PredicateKind::Clause(ClauseKind::Trait(trait_pred)) => {
-                 ChildMode::Trait(pred.kind().rebind(trait_pred))
          let nested_goals = candidate.instantiate_nested_goals();
  
          // If the candidate requires some `T: FnPtr` bound which does not hold should not be treated as
@@ -133,19 +131,15 @@ Rustfmt size:  50684 bytes
          // We do this as a separate loop so that we do not choose to tell the user about some nested
 +
          // goal before we encounter a `T: FnPtr` nested goal.
-+
          for nested_goal in &nested_goals {
              if let Some(poly_trait_pred) = nested_goal.goal().predicate.as_trait_clause()
-                 && interner
          }
  
          // alias-relate may fail because the lhs or rhs can't be normalized,
 +
          // and therefore is treated as rigid.
-+
          if let Some(PredicateKind::AliasRelate(lhs, rhs, _)) = pred.kind().no_bound_vars() {
              goal.infcx().visit_proof_tree_at_depth(
-                 goal.goal().with(interner, ClauseKind::WellFormed(lhs)),
          Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
      };
      use tracing::{debug, instrument};
@@ -167,10 +161,8 @@ Rustfmt size:  50684 bytes
          // because we are not able to make any progress at all. This is to prevent
 +
          // cycles where we say "?0 is WF if ?0 is WF".
-+
          if term.is_infer() {
              return None;
-         }
          wf.add_wf_preds_for_term(term);
          Some(wf.out)
      }

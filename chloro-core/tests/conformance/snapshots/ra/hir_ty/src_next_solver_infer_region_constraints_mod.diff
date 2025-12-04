@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24418 bytes
-Chloro size:   24464 bytes
+Chloro size:   24460 bytes
 Rustfmt size:  24577 bytes
 
 ✗ Outputs DIFFER
@@ -80,10 +80,8 @@ Rustfmt size:  24577 bytes
          // should think carefully about whether it needs to be cleared
 +
          // or updated in some way.
-+
          let RegionConstraintStorage {
              var_infos: _,
-             data,
          } = self.storage;
  
          // Clear the tables of (lubs, glbs), so that we will create
@@ -93,10 +91,8 @@ Rustfmt size:  24577 bytes
          // LUB/GLB are not performed by the MIR type-checker, which is
 +
          // the one that uses this method, but it's good to be correct.
-+
          lubs.clear();
          glbs.clear();
- 
          let data = mem::take(data);
  
          // Clear all unifications and recreate the variables a "now
@@ -106,10 +102,8 @@ Rustfmt size:  24577 bytes
          // also insert `a <= b` and a `b <= a` edges, so the
 +
          // `RegionConstraintData` contains the relationship here.
-+
          if *any_unifications {
              *any_unifications = false;
-             // Manually inlined `self.unification_table_mut()` as `self` is used in the closure.
  
      pub(super) fn start_snapshot(&self) -> RegionSnapshot {
          debug!("RegionConstraintCollector: start_snapshot");
@@ -148,6 +142,13 @@ Rustfmt size:  24577 bytes
              match (a.kind(), b.kind()) {
                  (RegionKind::ReVar(a), RegionKind::ReVar(b)) => {
                      debug!("make_eqregion: unifying {:?} with {:?}", a, b);
+     #[instrument(skip(self), level = "debug")]
+     pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
+         // cannot add constraints once regions are resolved
+-
+         match (sub.kind(), sup.kind()) {
+             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
+                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");
      ) -> Region<'db> {
          // cannot add constraints once regions are resolved
          debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);

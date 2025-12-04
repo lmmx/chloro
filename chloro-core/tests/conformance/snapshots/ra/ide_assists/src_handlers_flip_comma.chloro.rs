@@ -15,7 +15,6 @@ pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     // Don't apply a "flip" in case of a last comma
 
     // that typically comes before punctuation
-
     if next.kind().is_punct() {
         return None;
     }
@@ -23,7 +22,6 @@ pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     // Don't apply a "flip" inside the macro call
 
     // since macro input are just mere tokens
-
     if comma.parent_ancestors().any(|it| it.kind() == SyntaxKind::MACRO_CALL) {
         return None;
     }

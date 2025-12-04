@@ -209,7 +209,6 @@ fn insert_use_with_alias_option(
     }
 
     // merge into existing imports if possible
-
     if let Some(mb) = mb {
         let filter = |it: &_| !(cfg.skip_glob_imports && ast::Use::is_simple_glob(it));
         for existing_use in

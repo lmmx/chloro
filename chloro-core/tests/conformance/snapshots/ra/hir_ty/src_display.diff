@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99278 bytes
+Chloro size:   99275 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -90,13 +90,6 @@ Rustfmt size:  99713 bytes
                  self.bounds_formatting_ctx = BoundsFormattingCtx::Exited;
                  res
              }
-         self.curr_size += self.buf.len();
- 
-         // Then we write to the internal formatter from the buffer
-+
-         self.fmt.write_str(&self.buf).map_err(HirDisplayError::from)
-     }
- 
      Diagnostics,
      /// Display types for inserting them in source files.
      /// The generated code should compile, so paths need to be qualified.
@@ -122,10 +115,8 @@ Rustfmt size:  99713 bytes
      // itself, if so, we render them directly as `impl Bound` instead of the less useful
 +
      // `<Param as Trait>::Assoc`
-+
      if !f.display_kind.is_source_code()
          && let TyKind::Param(param) = self_ty.kind()
-         && !f.bounds_formatting_ctx.contains(alias)
  #[derive(Clone, Copy, PartialEq, Eq)]
  pub enum SizedByDefault {
      NotSized,
@@ -189,7 +180,5 @@ Rustfmt size:  99713 bytes
          // =>
 +
          // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
-+
          let trait_self_ty = self.segments().iter().find_map(|seg| {
              let generic_args = seg.args_and_bindings?;
-             generic_args.has_self_type.then(|| &generic_args.args[0])

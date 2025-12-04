@@ -566,7 +566,6 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         };
 
         // Fast path: nothing that needs to be canonicalized.
-
         if !value.has_type_flags(needs_canonical_flags) {
             return base.unchecked_map(|b| (b, value));
         }
@@ -598,7 +597,6 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         // contain anything that ties it to this inference context
 
         // anymore.
-
         debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
 
         let canonical_variables =
@@ -644,7 +642,6 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         // determine if a kind has been seen before until the limit of 8 has
 
         // been exceeded, to also avoid allocations for `indices`.
-
         if !var_values.spilled() {
             // `var_values` is stack-allocated. `indices` isn't used yet. Do a
             // direct linear search of `var_values`.

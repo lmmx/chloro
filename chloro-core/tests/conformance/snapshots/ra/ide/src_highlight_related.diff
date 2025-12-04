@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58223 bytes
-Chloro size:   56947 bytes
+Chloro size:   56946 bytes
 Rustfmt size:  58223 bytes
 
 ✗ Outputs DIFFER
@@ -43,10 +43,8 @@ Rustfmt size:  58223 bytes
      // We should handle `return` separately, because when it is used in a `try` block,
 +
      // it will exit the outside function instead of the block itself.
-+
      WalkExpandedExprCtx::new(sema)
          .with_check_ctx(&WalkExpandedExprCtx::is_async_const_block_or_closure)
-         .walk(&body, &mut |_, expr| {
      Some(highlights)
  }
  

@@ -341,7 +341,6 @@ fn compute_closure_type_params(
     // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
 
     // by checking if it is mentioned by another parameter we need to include.
-
     let mut reached_fixpoint = false;
     let mut container_where_bounds_indices = Vec::new();
     let mut impl_where_bounds_indices = Vec::new();
@@ -393,7 +392,6 @@ fn compute_closure_type_params(
     }
 
     // Order matters here (for beauty). First the outer impl parameters, then the direct container's.
-
     let include_params = containing_impl
         .iter()
         .flat_map(|(impl_params, _)| {
@@ -428,7 +426,6 @@ fn compute_closure_type_params(
     // FIXME: Consider generic parameters that do not appear in params/return type/captures but
 
     // written explicitly inside the closure.
-
     (Some(make::generic_param_list(include_params)), where_clause)
 }
 

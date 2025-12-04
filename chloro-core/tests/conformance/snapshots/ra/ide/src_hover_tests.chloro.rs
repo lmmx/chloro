@@ -600,7 +600,6 @@ fn main() { let foo_test = fo$0o(); }
     );
 
     // Use literal `crate` in path
-
     check(
         r#"
 pub struct X;
@@ -623,7 +622,6 @@ fn main() { f$0oo(); }
     );
 
     // Check `super` in path
-
     check(
         r#"
 pub struct X;
@@ -849,7 +847,6 @@ fn main() {
     );
 
     // Hovering over the field in the definition
-
     check(
         r#"
 struct Foo { pub field_a$0: u32 }
@@ -1117,7 +1114,6 @@ fn hover_record_struct_limit() {
     );
 
     // No extra spaces within `{}` when there are no fields
-
     check_hover_fields_limit(
         5,
         r#"
@@ -5680,7 +5676,6 @@ fn main() {
     );
 
     // show hex for <10
-
     check(
         r#"
 /// This is a doc
@@ -7720,7 +7715,6 @@ pub struct Foo;
 #[test]
 fn hover_dollar_crate() {
     // $crate should be resolved to the right crate name.
-
     check(
         r#"
 //- /main.rs crate:main deps:dep
@@ -9541,7 +9535,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with tuple pattern and mutable parameters
-
     check(
         r#"fn test_2$0((mut x, y): (i32, i32)) {}"#,
         expect![[r#"
@@ -9558,7 +9551,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with a pattern in a reference type
-
     check(
         r#"fn test_3$0(&(a, b): &(i32, i32)) {}"#,
         expect![[r#"
@@ -9575,7 +9567,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with complex pattern (struct destructuring)
-
     check(
         r#"struct Point { x: i32, y: i32 } fn test_4$0(Point { x, y }: Point) {}"#,
         expect![[r#"
@@ -9592,7 +9583,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with a nested pattern
-
     check(
         r#"fn test_5$0(((a, b), c): ((i32, i32), i32)) {}"#,
         expect![[r#"
@@ -9609,7 +9599,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with an unused variable in the pattern
-
     check(
         r#"fn test_6$0((_, y): (i32, i64)) {}"#,
         expect![[r#"
@@ -9626,7 +9615,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with a complex pattern involving both tuple and struct
-
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_7$0((x, Foo { a, b }): (i32, Foo)) {}"#,
         expect![[r#"
@@ -9643,7 +9631,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with Enum and Or pattern
-
     check(
         r#"enum MyEnum { A(i32), B(i32) } fn test_8$0((MyEnum::A(x) | MyEnum::B(x)): MyEnum) {}"#,
         expect![[r#"
@@ -9660,7 +9647,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with a pattern as a function parameter
-
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_9$0(Foo { a, b }: Foo) {}"#,
         expect![[r#"
@@ -9677,7 +9663,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with a pattern as a function parameter with a different name
-
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_10$0(Foo { a, b: b1 }: Foo) {}"#,
         expect![[r#"
@@ -9694,7 +9679,6 @@ fn test_hover_function_with_pat_param() {
     );
 
     // Test case with a pattern as a function parameter with annotations
-
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_10$0(Foo { a, b: mut b }: Foo) {}"#,
         expect![[r#"
@@ -9801,7 +9785,6 @@ type A$0 = B;
     );
 
     // Nested.
-
     check(
         r#"
 /// Docs for C
@@ -9835,7 +9818,6 @@ type A$0 = B;
     );
 
     // Showing the docs for aliased struct instead of intermediate type.
-
     check(
         r#"
 /// Docs for C
@@ -9870,7 +9852,6 @@ type A$0 = B;
     );
 
     // No docs found.
-
     check(
         r#"
 struct C;
@@ -9897,7 +9878,6 @@ type A$0 = B;
     );
 
     // Multiple nested crate.
-
     check(
         r#"
 //- /lib.rs crate:c

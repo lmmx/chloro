@@ -86,7 +86,6 @@ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     let scope = ImportScope::find_insert_use_container(&syntax_under_caret, &ctx.sema)?;
 
     // we aren't interested in different namespaces
-
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
 
@@ -286,20 +285,16 @@ fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Modu
     let mut item_path = item.path_to_root(db);
 
     // we want paths going from the root to the item
-
     current_path.reverse();
     item_path.reverse();
 
     // length of the common prefix of the two paths
-
     let prefix_length = current_path.iter().zip(&item_path).take_while(|(a, b)| a == b).count();
 
     // how many modules differ between the two paths (all modules, removing any duplicates)
-
     let distinct_length = current_path.len() + item_path.len() - 2 * prefix_length;
 
     // cost of importing from another crate
-
     let crate_boundary_cost = if current.krate() == item.krate() {
         0
     } else if item.krate().origin(db).is_local() {

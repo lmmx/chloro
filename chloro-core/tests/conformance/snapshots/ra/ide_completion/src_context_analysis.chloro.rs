@@ -86,7 +86,6 @@ pub(super) fn expand_and_analyze<'db>(
     });
 
     // add the relative offset back, so that left_biased finds the proper token
-
     let original_offset = expansion.original_offset + relative_offset;
     let token = expansion.original_file.token_at_offset(original_offset).left_biased()?;
 
@@ -155,7 +154,6 @@ fn expand_maybe_stop(
     // We can't check whether the fake expansion is inside macro call, because that requires semantic info.
 
     // But hopefully checking just the real one should be enough.
-
     if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset).is_some_and(|original_token| {
             !sema.is_inside_macro_call(original_file.with_value(&original_token))
         }) {
@@ -199,7 +197,6 @@ fn expand(
     );
 
     // first try to expand attributes as these are always the outermost macro calls
-
     'ancestors: for (actual_item, item_with_fake_ident) in ancestor_items {
         match (
             sema.expand_attr_macro(&actual_item),
@@ -259,7 +256,6 @@ fn expand(
     }
 
     // No attributes have been expanded, so look for macro_call! token trees or derive token trees
-
     let orig_tt = ancestors_at_offset(&original_file.value, original_offset)
         .map_while(Either::<ast::TokenTree, ast::Meta>::cast)
         .last()?;
@@ -290,7 +286,6 @@ fn expand(
     };
 
     // Expand pseudo-derive expansion aka `derive(Debug$0)`
-
     if let Some((orig_attr, spec_attr)) = attrs {
         if let (Some(actual_expansion), Some((fake_expansion, fake_mapped_tokens))) = (
             sema.expand_derive_as_pseudo_attr_macro(&orig_attr),
@@ -381,7 +376,6 @@ fn expand(
     }
 
     // Expand fn-like macro calls
-
     let (orig_tt, spec_tt) = tts?;
     let (actual_macro_call, macro_call_with_fake_ident) = (
         orig_tt.syntax().parent().and_then(ast::MacroCall::cast)?,
@@ -391,7 +385,6 @@ fn expand(
     let mac_call_path1 = macro_call_with_fake_ident.path().as_ref().map(|s| s.syntax().text());
 
     // inconsistent state, stop expanding
-
     if mac_call_path0 != mac_call_path1 {
         return None;
     }
@@ -471,7 +464,6 @@ fn analyze<'db>(
     }
 
     // Overwrite the path kind for derives
-
     if let Some((original_file, file_with_fake_ident, offset, origin_attr)) = derive_ctx {
         if let Some(ast::NameLike::NameRef(name_ref)) =
             find_node_at_offset(&file_with_fake_ident, offset)
@@ -1050,7 +1042,6 @@ fn classify_name_ref<'db>(
     // The following code checks if the body is missing, if it is we either cut off the body
 
     // from the item or it was missing in the first place
-
     let inbetween_body_and_decl_check = |node: SyntaxNode| {
         if let Some(NodeOrToken::Node(n)) =
             syntax::algo::non_trivia_sibling(node.into(), syntax::Direction::Prev)
@@ -1451,7 +1442,6 @@ fn classify_name_ref<'db>(
     };
 
     // Infer the path kind
-
     let parent = path.syntax().parent()?;
     let kind = 'find_kind: {
         if parent.kind() == SyntaxKind::ERROR {
@@ -1552,7 +1542,6 @@ fn classify_name_ref<'db>(
     path_ctx.has_type_args = segment.generic_arg_list().is_some();
 
     // calculate the qualifier context
-
     if let Some((qualifier, use_tree_parent)) = path_or_use_tree_qualifier(&path) {
         path_ctx.use_tree_parent = use_tree_parent;
         if !use_tree_parent && segment.coloncolon_token().is_some() {
@@ -1777,7 +1766,6 @@ fn pattern_context_for(
     };
 
     // Only suggest name in let-stmt or fn param
-
     let should_suggest_name = matches!(
             &pat,
             ast::Pat::IdentPat(it)

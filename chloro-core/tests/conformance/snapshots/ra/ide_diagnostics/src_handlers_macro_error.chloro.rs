@@ -97,7 +97,6 @@ pub macro panic {
         // FIXME: This is a false-positive, the file is actually linked in via
 
         // `include!` macro
-
         config.disabled.insert("unlinked-file".to_owned());
 
         check_diagnostics_with_config(

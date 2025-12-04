@@ -77,7 +77,6 @@ impl<'db> InferCtxt<'db> {
     pub fn fork_with_typing_mode(&self, typing_mode: TypingMode<DbInterner<'db>>) -> Self {
         // Unlike `fork`, this invalidates all cache entries as they may depend on the
         // typing mode.
-
         Self {
             interner: self.interner,
             typing_mode,
