@@ -33,7 +33,7 @@ fn collect_inner_comments(node: &SyntaxNode) -> Vec<String> {
     comments
 }
 
-/// Get a trailing comment on the same line as a node (before any comma)
+/// Get a trailing comment on the same line as a variant (after the comma)
 fn get_trailing_comment(node: &SyntaxNode) -> Option<String> {
     let mut next = node.next_sibling_or_token();
     while let Some(item) = next {
@@ -42,16 +42,15 @@ fn get_trailing_comment(node: &SyntaxNode) -> Option<String> {
                 if t.kind() == SyntaxKind::COMMENT {
                     return Some(t.text().to_string());
                 } else if t.kind() == SyntaxKind::WHITESPACE {
-                    // Only continue if no newline (trailing comment must be same line)
                     if t.text().contains('\n') {
                         return None;
                     }
-                    next = t.next_sibling_or_token();
-                    continue;
+                } else if t.kind() == SyntaxKind::COMMA {
+                    // Continue past the comma to look for trailing comment
                 } else {
-                    // Hit comma or something else
                     return None;
                 }
+                next = t.next_sibling_or_token();
             }
             NodeOrToken::Node(_) => return None,
         }

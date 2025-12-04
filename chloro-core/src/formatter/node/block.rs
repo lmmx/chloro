@@ -24,7 +24,9 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
             NodeOrToken::Node(n) => {
                 // Check for blank line before this node
                 let is_last_node = Some(idx) == last_node_idx;
-                if prev_was_item && should_have_blank_line_before(&children, idx) {
+                if (prev_was_item || prev_was_comment)
+                    && should_have_blank_line_before(&children, idx)
+                {
                     buf.push('\n');
                 }
                 match n.kind() {

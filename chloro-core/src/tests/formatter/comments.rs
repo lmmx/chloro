@@ -51,6 +51,18 @@ fn preserve_comments_before_enum_variant() {
 }
 
 #[test]
+fn preserve_comments_before_mod() {
+    let input = r#"// src/formatter/node/common.rs
+// Shared helpers used by node formatters.
+pub mod comments;
+pub mod fields;
+"#;
+    let output = format_source(input);
+    assert!(output.contains("// src/formatter/node/common.rs"));
+    assert!(output.contains("// Shared helpers used by node formatters."));
+}
+
+#[test]
 fn no_spurious_blank_line_after_comment() {
     let input = r#"fn foo() {
     // Comment from rustc:
