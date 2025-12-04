@@ -16,7 +16,11 @@ pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
         match &child {
             NodeOrToken::Token(t) => {
                 if t.kind() == SyntaxKind::COMMENT {
-                    buf.line(indent, t.text());
+                    let text = t.text();
+                    // Skip doc comments - they're handled by item_preamble via HasDocComments
+                    if !text.starts_with("///") && !text.starts_with("//!") {
+                        buf.line(indent, text);
+                    }
                 } else if t.kind() != SyntaxKind::WHITESPACE {
                     // Hit a non-comment, non-whitespace token - stop collecting comments
                     break;

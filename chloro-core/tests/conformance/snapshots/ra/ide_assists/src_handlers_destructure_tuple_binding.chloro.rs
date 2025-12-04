@@ -1133,8 +1133,6 @@ fn main {
     }
     /// Tests for destructure of tuple in sub-pattern:
     /// `let $0t = (1,2);` -> `let t @ (_0, _1) = (1,2);`
-    /// Tests for destructure of tuple in sub-pattern:
-    /// `let $0t = (1,2);` -> `let t @ (_0, _1) = (1,2);`
     mod sub_pattern {
         use super::assist::*;
         use super::*;
@@ -1320,8 +1318,6 @@ fn main() {
             )
         }
     }
-    /// Tests for tuple usage in macro call:
-    /// `println!("{}", t.0)`
     /// Tests for tuple usage in macro call:
     /// `println!("{}", t.0)`
     mod in_macro_call {
