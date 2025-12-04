@@ -1,7 +1,7 @@
 mod block;
 pub mod common;
 mod const_static;
-mod debug;
+pub(crate) mod debug;
 mod enumdef;
 mod expr;
 mod function;

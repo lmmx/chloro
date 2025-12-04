@@ -730,6 +730,8 @@ fn remove_subtree_if_only_self(use_tree: &ast::UseTree) {
     }
 }
 
+// Taken from rustfmt
+// https://github.com/rust-lang/rustfmt/blob/0332da01486508710f2a542111e40513bfb215aa/src/sort.rs
 mod version_sort {
     // Original rustfmt code contains some clippy lints.
     // Suppress them to minimize changes from upstream.

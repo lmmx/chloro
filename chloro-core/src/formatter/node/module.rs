@@ -11,6 +11,24 @@ pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
         return;
     };
 
+    // Collect and output regular comments that appear before the visibility/mod keyword
+    for child in node.children_with_tokens() {
+        match &child {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::COMMENT {
+                    buf.line(indent, t.text());
+                } else if t.kind() != SyntaxKind::WHITESPACE {
+                    // Hit a non-comment, non-whitespace token - stop collecting comments
+                    break;
+                }
+            }
+            NodeOrToken::Node(_) => {
+                // Hit a node (like VISIBILITY) - stop collecting comments
+                break;
+            }
+        }
+    }
+
     buf.item_preamble(&module, indent);
     buf.push_str("mod ");
     if let Some(name) = module.name() {

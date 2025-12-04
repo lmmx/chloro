@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35928 bytes
-Chloro size:   35860 bytes
+Chloro size:   35980 bytes
 Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
@@ -80,12 +80,6 @@ Rustfmt size:  36357 bytes
      match (use_tree.path(), single_subtree.path()) {
          (Some(_), Some(inner)) if path_is_self(&inner) => {
              ted::remove_all_iter(single_subtree.syntax().children_with_tokens());
-     }
- }
- 
--// Taken from rustfmt
--// https://github.com/rust-lang/rustfmt/blob/0332da01486508710f2a542111e40513bfb215aa/src/sort.rs
- mod version_sort {
      // Original rustfmt code contains some clippy lints.
      // Suppress them to minimize changes from upstream.
      #![allow(clippy::all)]
