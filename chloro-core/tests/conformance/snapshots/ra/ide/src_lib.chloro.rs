@@ -62,6 +62,7 @@ use std::panic::{AssertUnwindSafe, UnwindSafe};
 use cfg::CfgOptions;
 use fetch_crates::CrateInfo;
 use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
+use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 use ide_db::{
     FxHashMap, FxIndexSet, LineIndexDatabase,
     base_db::{
@@ -70,7 +71,6 @@ use ide_db::{
     },
     prime_caches, symbol_index,
 };
-use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 use macros::UpmapFromRaFixture;
 use syntax::{SourceFile, ast};
 use triomphe::Arc;

@@ -19,7 +19,6 @@ use ra_ap_syntax::{AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, Synta
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
 pub use const_static::format_const_or_static;
-pub use debug::{debug_children_with_tokens, debug_node_siblings};
 pub use enumdef::format_enum;
 pub use function::format_function;
 pub use implblock::format_impl;

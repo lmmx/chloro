@@ -13,7 +13,8 @@ Rustfmt size:  32996 bytes
  use crate::{
 +    AdtId, LocalModuleId, ModuleDefId,
      db::DefDatabase,
-     item_scope::{ImportOrExternCrate, BUILTIN_SCOPE},
+-    item_scope::{ImportOrExternCrate, BUILTIN_SCOPE},
++    item_scope::{BUILTIN_SCOPE, ImportOrExternCrate},
      item_tree::FieldsShape,
      nameres::{
 -        assoc::TraitItems, crate_def_map, sub_namespace_match, BlockInfo, BuiltinShadowMode,

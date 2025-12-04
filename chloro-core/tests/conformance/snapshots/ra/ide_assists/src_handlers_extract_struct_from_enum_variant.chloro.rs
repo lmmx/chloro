@@ -14,12 +14,12 @@ use itertools::Itertools;
 use syntax::{
     Edition, SyntaxElement,
     SyntaxKind::*,
-    SyntaxNode,
+    SyntaxNode, T,
     ast::{
         self, AstNode, HasAttrs, HasGenericParams, HasName, HasVisibility,
         edit::{AstNodeEdit, IndentLevel}, make,
     },
-    match_ast, ted, T,
+    match_ast, ted,
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

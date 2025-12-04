@@ -8,17 +8,6 @@ Rustfmt size:  32377 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use stdx::never;
- use syntax::{
-     SyntaxKind::{EXPR_STMT, STMT_LIST},
--    T, TextRange, TextSize,
-+    TextRange, TextSize,
-     ast::{self, AstNode, AstToken},
--    match_ast,
-+    match_ast, T,
- };
- 
- use crate::{
      postfix_snippet("deref", "*expr", &format!("*{receiver_text}")).add_to(acc, ctx.db);
  
      // The rest of the postfix completions create an expression that moves an argument,
@@ -50,8 +39,7 @@ Rustfmt size:  32377 bytes
 -
      use crate::{
          CompletionConfig, Snippet,
--        tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
-+        tests::{check, check_edit, check_edit_with_config, TEST_CONFIG},
+         tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
      };
 -
      #[test]

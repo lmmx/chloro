@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3407 bytes
-Chloro size:   2988 bytes
+Chloro size:   2984 bytes
 Rustfmt size:  3410 bytes
 
 ✗ Outputs DIFFER
@@ -10,10 +10,9 @@ Rustfmt size:  3410 bytes
 === DIFF (- rustfmt, + chloro) ===
  use ide_db::ty_filter::TryEnum;
  use syntax::{
-+    AstNode,
-     ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
--    AstNode, T,
-+    T,
+-    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
+     AstNode, T,
++    ast::{self, edit_in_place::Indent, edit::IndentLevel, syntax_factory::SyntaxFactory},
  };
  
  use crate::{AssistContext, AssistId, Assists};

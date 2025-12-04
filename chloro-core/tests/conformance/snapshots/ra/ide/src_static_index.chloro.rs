@@ -11,7 +11,7 @@ use ide_db::{
     famous_defs::FamousDefs,
 };
 use span::Edition;
-use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, TextRange, T};
+use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, T, TextRange};
 
 use crate::navigation_target::UpmappingResult;
 use crate::{

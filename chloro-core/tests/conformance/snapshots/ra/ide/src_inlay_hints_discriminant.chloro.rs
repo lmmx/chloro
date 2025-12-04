@@ -107,7 +107,7 @@ mod tests {
     use expect_test::expect;
     use crate::inlay_hints::{
         DiscriminantHints, InlayHintsConfig,
-        tests::{check_edit, check_with_config, DISABLED_CONFIG},
+        tests::{DISABLED_CONFIG, check_edit, check_with_config},
     };
     #[track_caller]
     fn check_discriminants(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

@@ -2,6 +2,7 @@ use std::{iter, mem::discriminant};
 use hir::{
     AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
 };
+use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
 use ide_db::{
     RootDatabase, SymbolKind,
     base_db::{AnchoredPath, SourceDatabase},
@@ -9,15 +10,14 @@ use ide_db::{
     famous_defs::FamousDefs,
     helpers::pick_best_token,
 };
-use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
 use itertools::Itertools;
 use span::{Edition, FileId};
 use syntax::{
     AstNode, AstToken,
     SyntaxKind::*,
-    SyntaxNode, SyntaxToken, TextRange,
+    SyntaxNode, SyntaxToken, T, TextRange,
     ast::{self, HasLoopBody},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::Analysis;

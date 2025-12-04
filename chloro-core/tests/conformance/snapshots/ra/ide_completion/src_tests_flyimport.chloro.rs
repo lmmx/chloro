@@ -3,7 +3,7 @@ use expect_test::{Expect, expect};
 use crate::{
     CompletionConfig,
     context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
-    tests::{check_edit, check_edit_with_config, TEST_CONFIG},
+    tests::{TEST_CONFIG, check_edit, check_edit_with_config},
 };
 
 fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

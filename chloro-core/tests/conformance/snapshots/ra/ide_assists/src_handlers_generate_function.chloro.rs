@@ -14,12 +14,12 @@ use ide_db::{
 use itertools::Itertools;
 use stdx::to_lower_snake_case;
 use syntax::{
-    Edition, SyntaxKind, SyntaxNode, TextRange,
+    Edition, SyntaxKind, SyntaxNode, T, TextRange,
     ast::{
         self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
-        HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
+        HasTypeBounds, edit_in_place::Indent, edit::IndentLevel, make,
     },
-    ted, T,
+    ted,
 };
 
 use crate::{

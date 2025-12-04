@@ -75,7 +75,7 @@ Rustfmt size:  4729 bytes
      use crate::{
 -        tests::{check_edit_with_config, TEST_CONFIG},
          CompletionConfig, Snippet,
-+        tests::{check_edit_with_config, TEST_CONFIG},
++        tests::{TEST_CONFIG, check_edit_with_config},
      };
 -
      #[test]

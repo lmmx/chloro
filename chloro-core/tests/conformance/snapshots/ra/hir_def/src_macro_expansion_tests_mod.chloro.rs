@@ -27,16 +27,15 @@ use hir_expand::{
 };
 use intern::{Symbol, sym};
 use itertools::Itertools;
-use span::{Edition, Span, SpanAnchor, SyntaxContext, ROOT_ERASED_FILE_AST_ID};
+use span::{Edition, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor, SyntaxContext};
 use stdx::{format_to, format_to_acc};
+use syntax_bridge::token_tree_to_syntax_node;
 use syntax::{
     AstNode, AstPtr,
     SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
-    SyntaxNode,
+    SyntaxNode, T,
     ast::{self, edit::IndentLevel},
-    T,
 };
-use syntax_bridge::token_tree_to_syntax_node;
 use test_fixture::WithFixture;
 use tt::{TextRange, TextSize};
 

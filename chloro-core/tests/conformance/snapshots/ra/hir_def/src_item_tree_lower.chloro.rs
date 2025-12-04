@@ -21,7 +21,7 @@ use crate::{
     db::DefDatabase,
     item_tree::{
         BigModItem, Const, Enum, ExternBlock, ExternCrate, FieldsShape, Function, Impl,
-        ImportAlias, Interned, ItemTree, ItemTreeAstId, Macro2, MacroCall, MacroRules, Mod,
+        ImportAlias, Interned, ItemTree, ItemTreeAstId, MacroCall, MacroRules, Macro2, Mod,
         ModItemId, ModKind, ModPath, RawAttrs, RawVisibility, RawVisibilityId, SmallModItem,
         Static, Struct, StructKind, Trait, TypeAlias, Union, Use, UseTree, UseTreeKind,
         VisibilityExplicitness,

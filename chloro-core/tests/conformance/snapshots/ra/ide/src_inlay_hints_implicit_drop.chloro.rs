@@ -145,7 +145,7 @@ fn nearest_token_after_node(
 mod tests {
     use crate::{
         InlayHintsConfig,
-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
     const ONLY_DROP_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig { implicit_drop_hints: true, ..DISABLED_CONFIG };
     #[test]

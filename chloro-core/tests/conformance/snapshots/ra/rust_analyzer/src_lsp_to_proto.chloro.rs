@@ -8,6 +8,9 @@ use std::{
 };
 
 use base64::{Engine, prelude::BASE64_STANDARD};
+use ide_db::{
+    FxHasher, MiniCore, assists, rust_doc::format_docs, source_change::ChangeAnnotationId,
+};
 use ide::{
     Annotation, AnnotationKind, Assist, AssistKind, Cancellable, CompletionFieldsToResolve,
     CompletionItem, CompletionItemKind, CompletionRelevance, Documentation, FileId, FileRange,
@@ -16,9 +19,6 @@ use ide::{
     Markup, NavigationTarget, ReferenceCategory, RenameError, Runnable, Severity, SignatureHelp,
     SnippetEdit, SourceChange, StructureNodeKind, SymbolKind, TextEdit, TextRange, TextSize,
     UpdateTest,
-};
-use ide_db::{
-    FxHasher, MiniCore, assists, rust_doc::format_docs, source_change::ChangeAnnotationId,
 };
 use itertools::Itertools;
 use paths::{Utf8Component, Utf8Prefix};
@@ -30,11 +30,11 @@ use crate::{
     config::{CallInfoConfig, ClientCommandsConfig, Config},
     global_state::GlobalStateSnapshot,
     line_index::{LineEndings, LineIndex, PositionEncoding},
+    lsp_ext::{self, SnippetTextEdit},
     lsp::{
         LspError, completion_item_hash, ext::ShellRunnableArgs,
         semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error,
     },
-    lsp_ext::{self, SnippetTextEdit},
     target_spec::{CargoTargetSpec, TargetSpec},
 };
 
@@ -1839,8 +1839,8 @@ pub(crate) mod command {
     use serde_json::to_value;
     use crate::{
         global_state::GlobalStateSnapshot,
-        lsp::to_proto::{location, location_link},
         lsp_ext,
+        lsp::to_proto::{location, location_link},
     };
     pub(crate) fn show_references(
         title: String,

@@ -96,9 +96,9 @@ use smallvec::SmallVec;
 use span::{AstIdNode, Edition, FileId};
 use stdx::{format_to, impl_from, never};
 use syntax::{
-    AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr,
+    AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, T, TextRange, ToSmolStr,
     ast::{self, HasAttrs as _, HasName, HasVisibility as _},
-    format_smolstr, T,
+    format_smolstr,
 };
 use triomphe::{Arc, ThinArc};
 
@@ -115,17 +115,15 @@ pub use crate::{
 };
 
 pub use {
-    // FIXME: Properly encapsulate mir
-    hir_ty::mir,
     cfg::{CfgAtom, CfgExpr, CfgOptions},
     hir_def::{
-        // FIXME: This is here since some queries take it as input that are used
-        // outside of hir.
-        {ModuleDefId, TraitId},
         Complete, FindPathConfig, attr::{AttrSourceMap, Attrs, AttrsWithOwner},
         find_path::PrefixKind, import_map, lang_item::LangItem,
         nameres::{DefMap, ModuleSource, crate_def_map}, per_ns::Namespace,
         type_ref::{Mutability, TypeRef}, visibility::Visibility,
+        // FIXME: This is here since some queries take it as input that are used
+        // outside of hir.
+        {ModuleDefId, TraitId},
     },
     hir_expand::{
         EditionedFileId, ExpandResult, HirFileId, MacroCallId, MacroKind, attrs::{Attr, AttrId},
@@ -147,6 +145,8 @@ pub use {
         next_solver::abi::Safety, next_solver::clear_tls_solver_cache,
     },
     intern::{Symbol, sym},
+    // FIXME: Properly encapsulate mir
+    hir_ty::mir,
 };
 
 use {

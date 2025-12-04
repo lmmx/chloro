@@ -399,7 +399,7 @@ impl Query {
 mod tests {
     use expect_test::expect_file;
     use salsa::Setter;
-    use test_fixture::{WithFixture, WORKSPACE};
+    use test_fixture::{WORKSPACE, WithFixture};
     use super::*;
     #[test]
     fn test_symbol_index_collection() {

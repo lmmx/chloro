@@ -8,13 +8,21 @@ Rustfmt size:  13679 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! which you can use to paste the command in terminal and add `--release` manually.
+ 
+ use hir::ChangeWithProcMacros;
++use ide_db::{
++    MiniCore, SnippetCap,
++    imports::insert_use::{ImportGranularity, InsertUseConfig},
++};
+ use ide::{
+     AnalysisHost, CallableSnippets, CompletionConfig, CompletionFieldsToResolve, DiagnosticsConfig,
      FilePosition, TextSize,
  };
- use ide_db::{
+-use ide_db::{
 -    imports::insert_use::{ImportGranularity, InsertUseConfig},
-     MiniCore, SnippetCap,
-+    imports::insert_use::{ImportGranularity, InsertUseConfig},
- };
+-    MiniCore, SnippetCap,
+-};
  use project_model::CargoConfig;
  use test_utils::project_root;
  use vfs::{AbsPathBuf, VfsPath};

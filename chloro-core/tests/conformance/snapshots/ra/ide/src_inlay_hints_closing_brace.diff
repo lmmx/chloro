@@ -17,19 +17,8 @@ Rustfmt size:  6951 bytes
  use hir::{DisplayTarget, HirDisplay, InRealFile, Semantics};
  use ide_db::{FileRange, RootDatabase};
  use syntax::{
--    SyntaxKind, SyntaxNode, T,
-+    SyntaxKind, SyntaxNode,
-     ast::{self, AstNode, HasLoopBody, HasName},
--    match_ast,
-+    match_ast, T,
- };
- 
- use crate::{
- mod tests {
-     use crate::{
          InlayHintsConfig,
--        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
-+        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
      };
 -
      #[test]

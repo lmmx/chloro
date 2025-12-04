@@ -14,7 +14,7 @@ use stdx::hash_once;
 use syntax::{
     AstNode, AstPtr, AstToken, NodeOrToken,
     SyntaxKind::{self, *},
-    SyntaxNode, SyntaxNodePtr, SyntaxToken, ast, match_ast, T,
+    SyntaxNode, SyntaxNodePtr, SyntaxToken, T, ast, match_ast,
 };
 
 use crate::{

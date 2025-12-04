@@ -5,9 +5,8 @@
 //! based on the parent of the existing expression.
 
 use syntax::{
-    AstNode,
+    AstNode, T,
     ast::{self, FieldExpr, MethodCallExpr, make},
-    T,
 };
 
 use crate::AssistContext;

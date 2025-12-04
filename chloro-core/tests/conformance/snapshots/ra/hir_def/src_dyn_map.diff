@@ -21,7 +21,8 @@ Rustfmt size:  6980 bytes
      use crate::{
 -        dyn_map::{DynMap, Policy},
          BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,
-         ImplId, LifetimeParamId, Macro2Id, MacroRulesId, ProcMacroId, StaticId, StructId, TraitId,
+-        ImplId, LifetimeParamId, Macro2Id, MacroRulesId, ProcMacroId, StaticId, StructId, TraitId,
++        ImplId, LifetimeParamId, MacroRulesId, Macro2Id, ProcMacroId, StaticId, StructId, TraitId,
          TypeAliasId, TypeOrConstParamId, UnionId, UseId,
 +        dyn_map::{DynMap, Policy},
      };

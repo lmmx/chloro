@@ -33,17 +33,6 @@ Rustfmt size:  227843 bytes
      per_ns::PerNs,
      resolver::{HasResolver, Resolver},
      signatures::{ImplFlags, StaticFlags, StructFlags, TraitFlags, VariantFields},
- use span::{AstIdNode, Edition, FileId};
- use stdx::{format_to, impl_from, never};
- use syntax::{
--    AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, T, TextRange, ToSmolStr,
-+    AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr,
-     ast::{self, HasAttrs as _, HasName, HasVisibility as _},
--    format_smolstr,
-+    format_smolstr, T,
- };
- use triomphe::{Arc, ThinArc};
- 
      },
  };
  
@@ -57,8 +46,6 @@ Rustfmt size:  227843 bytes
 -// Generally, a refactoring which *removes* a name from this list is a good
 -// idea!
  pub use {
-+    // FIXME: Properly encapsulate mir
-+    hir_ty::mir,
      cfg::{CfgAtom, CfgExpr, CfgOptions},
      hir_def::{
 -        Complete,
@@ -71,13 +58,13 @@ Rustfmt size:  227843 bytes
 -        per_ns::Namespace,
 -        type_ref::{Mutability, TypeRef},
 -        visibility::Visibility,
-         // FIXME: This is here since some queries take it as input that are used
-         // outside of hir.
-         {ModuleDefId, TraitId},
 +        Complete, FindPathConfig, attr::{AttrSourceMap, Attrs, AttrsWithOwner},
 +        find_path::PrefixKind, import_map, lang_item::LangItem,
 +        nameres::{DefMap, ModuleSource, crate_def_map}, per_ns::Namespace,
 +        type_ref::{Mutability, TypeRef}, visibility::Visibility,
+         // FIXME: This is here since some queries take it as input that are used
+         // outside of hir.
+         {ModuleDefId, TraitId},
      },
      hir_expand::{
 -        EditionedFileId, ExpandResult, HirFileId, MacroCallId, MacroKind,
@@ -118,6 +105,8 @@ Rustfmt size:  227843 bytes
 +        next_solver::abi::Safety, next_solver::clear_tls_solver_cache,
      },
      intern::{Symbol, sym},
++    // FIXME: Properly encapsulate mir
++    hir_ty::mir,
  };
  
 -// These are negative re-exports: pub using these names is forbidden, they

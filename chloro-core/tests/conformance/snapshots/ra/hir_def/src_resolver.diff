@@ -13,6 +13,11 @@ Rustfmt size:  54481 bytes
  use std::{fmt, mem};
  
  use base_db::Crate;
+     AdtId, AstIdLoc, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId,
+     EnumVariantId, ExternBlockId, ExternCrateId, FunctionId, FxIndexMap, GenericDefId,
+     GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId, LocalModuleId, Lookup,
+-    Macro2Id, MacroId, MacroRulesId, ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId,
++    MacroId, MacroRulesId, Macro2Id, ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId,
      TraitId, TypeAliasId, TypeOrConstParamId, TypeParamId, UseId, VariantId,
      builtin_type::BuiltinType,
      db::DefDatabase,
@@ -25,13 +30,11 @@ Rustfmt size:  54481 bytes
 -        BindingId, ExprId, LabelId,
 -        generics::{GenericParams, TypeOrConstParamData},
 -    },
--    item_scope::{BUILTIN_SCOPE, BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope},
 +    expr_store::{HygieneId, path::Path, scope::{ExprScopes, ScopeId}},
 +    hir::{BindingId, ExprId, LabelId, generics::{GenericParams, TypeOrConstParamData}},
-+    item_scope::{BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope, BUILTIN_SCOPE},
+     item_scope::{BUILTIN_SCOPE, BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope},
      lang_item::LangItemTarget,
      nameres::{DefMap, LocalDefMap, MacroSubNs, ResolvePathResultPrefixInfo, block_def_map},
-     per_ns::PerNs,
      BlockScope(ModuleItemMap<'db>),
      /// Brings the generic parameters of an item into scope as well as the `Self` type alias /
      /// generic for ADTs and impls.

@@ -3,9 +3,9 @@ use ide_db::{helpers::mod_path_to_ast, imports::import_assets::NameToImport, ite
 use itertools::Itertools;
 use syntax::{
     SyntaxKind::WHITESPACE,
+    T,
     ast::{self, AstNode, HasName, make},
     syntax_editor::{Position, SyntaxEditor},
-    T,
 };
 
 use crate::{

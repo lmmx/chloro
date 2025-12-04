@@ -41,7 +41,7 @@ Rustfmt size:  4344 bytes
      use crate::{
 -        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
          InlayHintsConfig,
-+        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
++        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
      };
 -
      #[test]

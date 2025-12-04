@@ -1,7 +1,7 @@
 use ide_db::syntax_helpers::node_ext::is_pattern_cond;
 use syntax::{
-    ast::{self, AstNode},
     T,
+    ast::{self, AstNode},
 };
 
 use crate::{

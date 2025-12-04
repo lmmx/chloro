@@ -6,11 +6,11 @@ use ide_db::{
 };
 use stdx::format_to;
 use syntax::{
-    AstNode, Direction, SyntaxKind, SyntaxNode, TextSize, ToSmolStr,
+    AstNode, Direction, SyntaxKind, SyntaxNode, T, TextSize, ToSmolStr,
     algo::{skip_trivia_token, skip_whitespace_token},
     ast::{self, HasArgList, HasGenericParams, HasName, edit::{AstNodeEdit, IndentLevel}, make},
     hacks::parse_expr_from_str,
-    ted, T,
+    ted,
 };
 
 use crate::assist_context::{AssistContext, Assists};

@@ -36,8 +36,11 @@ Rustfmt size:  12665 bytes
  impl<T: ToTokenTree + Clone> ToTokenTree for &T {
      fn to_tokens(self, span: Span, builder: &mut TopSubtreeBuilder) {
          self.clone().to_tokens(span, builder);
+     use ::tt::IdentIsRaw;
+     use expect_test::expect;
      use intern::Symbol;
-     use span::{Edition, SpanAnchor, SyntaxContext, ROOT_ERASED_FILE_AST_ID};
+-    use span::{Edition, SpanAnchor, SyntaxContext, ROOT_ERASED_FILE_AST_ID};
++    use span::{Edition, ROOT_ERASED_FILE_AST_ID, SpanAnchor, SyntaxContext};
      use syntax::{TextRange, TextSize};
 -
      const DUMMY: tt::Span = tt::Span {

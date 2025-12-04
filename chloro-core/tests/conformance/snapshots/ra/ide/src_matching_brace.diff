@@ -2,17 +2,16 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2739 bytes
-Chloro size:   2250 bytes
+Chloro size:   2246 bytes
 Rustfmt size:  2888 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
  use syntax::{
-+    SourceFile, SyntaxKind, TextSize,
++    SourceFile, SyntaxKind, T, TextSize,
      ast::{self, AstNode},
 -    SourceFile, SyntaxKind, TextSize, T,
-+    T,
  };
  
 -// Feature: Matching Brace

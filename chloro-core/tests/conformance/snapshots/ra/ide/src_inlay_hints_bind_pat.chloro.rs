@@ -181,7 +181,7 @@ mod tests {
     use test_utils::extract_annotations;
     use crate::{ClosureReturnTypeHints, fixture, inlay_hints::InlayHintsConfig};
     use crate::inlay_hints::tests::{
-        check, check_edit, check_no_edit, check_with_config, DISABLED_CONFIG, TEST_CONFIG,
+        DISABLED_CONFIG, TEST_CONFIG, check, check_edit, check_no_edit, check_with_config,
     };
     #[track_caller]
     fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

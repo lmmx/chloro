@@ -6,11 +6,11 @@ use rustc_hash::FxHashMap;
 use rustc_type_ir::error::TypeError;
 use rustc_type_ir::inherent::{Const as _, IntoKind, Ty as _};
 use rustc_type_ir::relate::VarianceDiagInfo;
+use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
 use rustc_type_ir::{
     AliasRelationDirection, ConstVid, InferConst, InferCtxtLike, InferTy, RegionKind, TermKind,
     TyVid, UniverseIndex, Variance,
 };
-use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
 use tracing::{debug, instrument, warn};
 use crate::next_solver::infer::type_variable::TypeVariableValue;
 use crate::next_solver::infer::unify_key::ConstVariableValue;

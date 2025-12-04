@@ -8,8 +8,15 @@ Rustfmt size:  31849 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use rustc_type_ir::error::TypeError;
+ use rustc_type_ir::inherent::{Const as _, IntoKind, Ty as _};
+ use rustc_type_ir::relate::VarianceDiagInfo;
++use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
+ use rustc_type_ir::{
+     AliasRelationDirection, ConstVid, InferConst, InferCtxtLike, InferTy, RegionKind, TermKind,
+     TyVid, UniverseIndex, Variance,
  };
- use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
+-use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
  use tracing::{debug, instrument, warn};
 -
 -use super::{

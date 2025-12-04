@@ -1,8 +1,7 @@
 use syntax::{
-    Direction, SyntaxKind,
+    Direction, SyntaxKind, T,
     ast::{self, AstNode, edit::IndentLevel, syntax_factory::SyntaxFactory},
     syntax_editor::{Element, Position},
-    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

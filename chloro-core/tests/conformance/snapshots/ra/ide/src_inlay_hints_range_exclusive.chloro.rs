@@ -5,7 +5,7 @@
 //! ```
 
 use ide_db::famous_defs::FamousDefs;
-use syntax::{SyntaxToken, ast, T};
+use syntax::{SyntaxToken, T, ast};
 
 use crate::{InlayHint, InlayHintsConfig};
 
@@ -41,7 +41,7 @@ fn inlay_hint(token: SyntaxToken) -> InlayHint {
 mod tests {
     use crate::{
         InlayHintsConfig,
-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
     #[test]
     fn range_exclusive_expression_bounded_above_hints() {

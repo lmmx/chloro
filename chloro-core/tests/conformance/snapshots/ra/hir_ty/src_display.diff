@@ -8,6 +8,14 @@ Rustfmt size:  99713 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use rustc_type_ir::{
+     AliasTyKind, BoundVarIndexKind, CoroutineArgsParts, CoroutineClosureArgsParts, RegionKind,
+     Upcast,
+-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _, Tys as _},
++    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Tys as _, Ty as _},
+ };
+ use smallvec::SmallVec;
+ use span::Edition;
      mir::pad16,
      next_solver::{
          AliasTy, Clause, ClauseKind, Const, ConstKind, DbInterner, EarlyBinder,

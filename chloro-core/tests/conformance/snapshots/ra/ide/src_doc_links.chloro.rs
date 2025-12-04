@@ -6,9 +6,9 @@ mod tests;
 mod intra_doc_links;
 
 use std::ops::Range;
+use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
 
 use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
-use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
 use stdx::format_to;
 use url::Url;
 
@@ -26,9 +26,9 @@ use ide_db::{
 use syntax::{
     AstNode, AstToken,
     SyntaxKind::*,
-    SyntaxNode, SyntaxToken, TextRange, TextSize,
+    SyntaxNode, SyntaxToken, T, TextRange, TextSize,
     ast::{self, IsString},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::{

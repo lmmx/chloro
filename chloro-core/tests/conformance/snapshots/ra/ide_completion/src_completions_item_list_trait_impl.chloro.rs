@@ -39,9 +39,9 @@ use ide_db::{
 };
 use syntax::ast::HasGenericParams;
 use syntax::{
-    AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr,
+    AstNode, SmolStr, SyntaxElement, SyntaxKind, T, TextRange, ToSmolStr,
     ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
-    format_smolstr, ted, T,
+    format_smolstr, ted,
 };
 
 use crate::{

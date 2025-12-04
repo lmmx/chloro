@@ -15,8 +15,8 @@ use itertools::Itertools;
 use paths::{AbsPath, AbsPathBuf, Utf8Path, Utf8PathBuf};
 use project_model::TargetDirectoryConfig;
 use rustc_hash::FxHashMap;
-use serde::Deserialize as _;
 use serde_derive::Deserialize;
+use serde::Deserialize as _;
 
 pub(crate) use cargo_metadata::diagnostic::{
     Applicability, Diagnostic, DiagnosticCode, DiagnosticLevel, DiagnosticSpan,

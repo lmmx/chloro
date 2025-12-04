@@ -1,7 +1,7 @@
 use syntax::T;
 use syntax::ast::RangeItem;
-use syntax::ast::edit::IndentLevel;
 use syntax::ast::edit_in_place::Indent;
+use syntax::ast::edit::IndentLevel;
 use syntax::ast::syntax_factory::SyntaxFactory;
 use syntax::ast::{self, AstNode, HasName, LetStmt, Pat};
 

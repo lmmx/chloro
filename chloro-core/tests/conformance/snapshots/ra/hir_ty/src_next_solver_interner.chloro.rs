@@ -30,7 +30,7 @@ use rustc_type_ir::{
 use crate::{
     FnAbi,
     db::{HirDatabase, InternedCoroutine, InternedCoroutineId},
-    method_resolution::{TyFingerprint, ALL_FLOAT_FPS, ALL_INT_FPS},
+    method_resolution::{ALL_FLOAT_FPS, ALL_INT_FPS, TyFingerprint},
     next_solver::{
         AdtIdWrapper, BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper,
         CoroutineIdWrapper, Ctor, FnSig, FxIndexMap, ImplIdWrapper, OpaqueTypeKey,

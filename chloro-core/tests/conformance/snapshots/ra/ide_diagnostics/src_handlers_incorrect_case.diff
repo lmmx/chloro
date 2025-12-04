@@ -14,9 +14,9 @@ Rustfmt size:  27018 bytes
  use syntax::AstNode;
  
  use crate::{
--    // references::rename::rename_with_semantics,
-+    // references::rename::rename_with_semantics, Diagnostic, DiagnosticCode, DiagnosticsContext,
-     unresolved_fix,
++    Diagnostic, DiagnosticCode, DiagnosticsContext, unresolved_fix,
+     // references::rename::rename_with_semantics,
+-    unresolved_fix,
 -    Diagnostic,
 -    DiagnosticCode,
 -    DiagnosticsContext,

@@ -6,9 +6,8 @@ use itertools::Itertools;
 use syntax::{
     AstNode, AstToken, NodeOrToken,
     SyntaxKind::WHITESPACE,
-    SyntaxToken,
+    SyntaxToken, T,
     ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
-    T,
 };
 use crate::{AssistContext, Assists, utils};
 

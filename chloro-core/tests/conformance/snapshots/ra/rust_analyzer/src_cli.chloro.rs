@@ -21,8 +21,8 @@ mod progress_report;
 use std::io::Read;
 
 use anyhow::Result;
-use hir::{Module, Name};
 use hir_ty::db::HirDatabase;
+use hir::{Module, Name};
 use ide::{AnalysisHost, Edition};
 use itertools::Itertools;
 use vfs::Vfs;

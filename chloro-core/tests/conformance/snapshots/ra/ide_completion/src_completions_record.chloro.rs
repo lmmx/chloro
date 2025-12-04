@@ -150,7 +150,7 @@ mod tests {
     use ide_db::SnippetCap;
     use crate::{
         CompletionConfig,
-        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
+        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
     };
     #[test]
     fn literal_struct_completion_edit() {

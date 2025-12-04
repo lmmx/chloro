@@ -11,6 +11,8 @@ use hir_expand::{Lookup, mod_path::PathKind};
 use itertools::Itertools;
 use span::Edition;
 use syntax::ast::HasName;
+use crate::{LifetimeParamId, signatures::StructFlags};
+use crate::{item_tree::FieldsShape, signatures::FieldData};
 
 use crate::{
     AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
@@ -24,8 +26,6 @@ use crate::{
     src::HasSource,
     type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef},
 };
-use crate::{LifetimeParamId, signatures::StructFlags};
-use crate::{item_tree::FieldsShape, signatures::FieldData};
 
 use super::*;
 

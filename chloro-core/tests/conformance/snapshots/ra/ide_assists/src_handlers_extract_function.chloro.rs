@@ -23,12 +23,12 @@ use itertools::Itertools;
 use syntax::{
     Edition, SyntaxElement,
     SyntaxKind::{self, COMMENT},
-    SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset, WalkEvent,
+    SyntaxNode, SyntaxToken, T, TextRange, TextSize, TokenAtOffset, WalkEvent,
     ast::{
-        self, AstNode, AstToken, HasGenericParams, HasName, edit::IndentLevel,
-        edit_in_place::Indent,
+        self, AstNode, AstToken, HasGenericParams, HasName, edit_in_place::Indent,
+        edit::IndentLevel,
     },
-    match_ast, ted, T,
+    match_ast, ted,
 };
 
 use crate::{

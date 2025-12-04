@@ -11,6 +11,7 @@ Rustfmt size:  52438 bytes
  //! Things related to tys in the next-trait-solver.
  
  use std::ops::ControlFlow;
++use hir_def::{TraitId, type_ref::Rawness};
  
  use hir_def::{
 +    AdtId, HasModule, TypeParamId,
@@ -19,7 +20,6 @@ Rustfmt size:  52438 bytes
 -    AdtId, HasModule, TypeParamId,
  };
 -use hir_def::{type_ref::Rawness, TraitId};
-+use hir_def::{TraitId, type_ref::Rawness};
  use rustc_abi::{Float, Integer, Size};
 -use rustc_ast_ir::{try_visit, visit::VisitorResult, Mutability};
 +use rustc_ast_ir::{Mutability, try_visit, visit::VisitorResult};

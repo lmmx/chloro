@@ -20,6 +20,7 @@ Rustfmt size:  33868 bytes
  use fetch_crates::CrateInfo;
 -use hir::{crate_def_map, sym, ChangeWithProcMacros, EditionedFileId};
 +use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
++use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
  use ide_db::{
 +    FxHashMap, FxIndexSet, LineIndexDatabase,
      base_db::{
@@ -32,7 +33,6 @@ Rustfmt size:  33868 bytes
 +    prime_caches, symbol_index,
  };
 -use ide_db::{ra_fixture::RaFixtureAnalysis, MiniCore};
-+use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
  use macros::UpmapFromRaFixture;
 -use syntax::{ast, SourceFile};
 +use syntax::{SourceFile, ast};

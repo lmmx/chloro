@@ -152,7 +152,7 @@ fn add_custom_completions(
 mod tests {
     use crate::{
         CompletionConfig, Snippet,
-        tests::{check_edit_with_config, TEST_CONFIG},
+        tests::{TEST_CONFIG, check_edit_with_config},
     };
     #[test]
     fn custom_snippet_completion() {

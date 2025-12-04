@@ -8,20 +8,14 @@ Rustfmt size:  75023 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use itertools::Itertools;
- use stdx::to_lower_snake_case;
- use syntax::{
--    Edition, SyntaxKind, SyntaxNode, T, TextRange,
-+    Edition, SyntaxKind, SyntaxNode, TextRange,
+     Edition, SyntaxKind, SyntaxNode, T, TextRange,
      ast::{
          self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
-         HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
+-        HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
++        HasTypeBounds, edit_in_place::Indent, edit::IndentLevel, make,
      },
--    ted,
-+    ted, T,
+     ted,
  };
- 
- use crate::{
      utils::{convert_reference_type, find_struct_impl},
  };
  

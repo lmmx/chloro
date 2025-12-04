@@ -13,14 +13,6 @@ Rustfmt size:  53876 bytes
  use std::{env, mem, ops::Not};
  
  use either::Either;
- };
- use span::{Edition, TextSize};
- use stdx::format_to;
--use syntax::{AstNode, AstToken, Direction, SyntaxToken, T, algo, ast, match_ast};
-+use syntax::{AstNode, AstToken, Direction, SyntaxToken, algo, ast, match_ast, T};
- 
- use crate::{
-     HoverAction, HoverConfig, HoverResult, Markup, MemoryLayoutHoverConfig,
      //         ast::TypeArg(_it) => (),
  
      //         ast::CastExpr(_it) => (),

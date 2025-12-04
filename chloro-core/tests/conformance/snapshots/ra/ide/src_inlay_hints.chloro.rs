@@ -8,10 +8,10 @@ use hir::{
     ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
     HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics, sym,
 };
+use ide_db::{FxHashSet, text_edit::TextEdit};
 use ide_db::{
     FileRange, MiniCore, RootDatabase, famous_defs::FamousDefs, text_edit::TextEditBuilder,
 };
-use ide_db::{FxHashSet, text_edit::TextEdit};
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
 use smallvec::{SmallVec, smallvec};

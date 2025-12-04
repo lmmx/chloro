@@ -24,7 +24,7 @@ Rustfmt size:  2269 bytes
  use crate::{
 -    syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
      HlRange, HlTag,
-+    syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
++    syntax_highlighting::{highlights::Highlights, highlight::highlight_def},
  };
  
  pub(super) fn highlight_format_string(

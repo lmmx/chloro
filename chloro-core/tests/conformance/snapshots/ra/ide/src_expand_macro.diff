@@ -8,14 +8,6 @@ Rustfmt size:  21133 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- use span::{SpanMap, SyntaxContext, TextRange, TextSize};
- use stdx::format_to;
--use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast, ted};
-+use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, ast, ted, T};
- 
- use crate::FilePosition;
- 
      pub expansion: String,
  }
  

@@ -6,13 +6,13 @@ use std::{fs, io::Write as _, ops::Not, process::Stdio};
 use anyhow::Context;
 
 use base64::{Engine, prelude::BASE64_STANDARD};
+use ide_db::{FxHashMap, SymbolKind};
 use ide::{
     AssistKind, AssistResolveStrategy, Cancellable, CompletionFieldsToResolve, FilePosition,
     FileRange, FileStructureConfig, FindAllRefsConfig, HoverAction, HoverGotoTypeData,
     InlayFieldsToResolve, Query, RangeInfo, ReferenceCategory, Runnable, RunnableKind,
     SingleResolve, SourceChange, TextEdit,
 };
-use ide_db::{FxHashMap, SymbolKind};
 use itertools::Itertools;
 use lsp_server::ErrorCode;
 use lsp_types::{
@@ -39,6 +39,10 @@ use crate::{
     diagnostics::convert_diagnostic,
     global_state::{FetchWorkspaceRequest, GlobalState, GlobalStateSnapshot},
     line_index::LineEndings,
+    lsp_ext::{
+        self, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
+        FetchDependencyListResult, PositionOrRange, ViewCrateGraphParams, WorkspaceSymbolParams,
+    },
     lsp::{
         LspError, completion_item_hash,
         ext::{
@@ -46,10 +50,6 @@ use crate::{
             InternalTestingFetchConfigResponse,
         },
         from_proto, to_proto, utils::{all_edits_are_disjoint, invalid_params_error},
-    },
-    lsp_ext::{
-        self, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
-        FetchDependencyListResult, PositionOrRange, ViewCrateGraphParams, WorkspaceSymbolParams,
     },
     target_spec::{CargoTargetSpec, TargetSpec},
     test_runner::{CargoTestHandle, TestTarget},

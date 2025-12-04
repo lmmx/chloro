@@ -21,7 +21,7 @@ use stdx::TupleExt;
 use crate::{
     AdtId, LocalModuleId, ModuleDefId,
     db::DefDatabase,
-    item_scope::{ImportOrExternCrate, BUILTIN_SCOPE},
+    item_scope::{BUILTIN_SCOPE, ImportOrExternCrate},
     item_tree::FieldsShape,
     nameres::{
         BlockInfo, BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, assoc::TraitItems,

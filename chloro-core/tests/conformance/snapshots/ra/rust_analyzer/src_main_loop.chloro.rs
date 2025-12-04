@@ -28,8 +28,8 @@ use crate::{
     handlers::{
         dispatch::{NotificationDispatcher, RequestDispatcher}, request::empty_diagnostic_report,
     },
-    lsp::{from_proto, to_proto, utils::{Progress, notification_is}},
     lsp_ext,
+    lsp::{from_proto, to_proto, utils::{Progress, notification_is}},
     reload::{BuildDataProgress, ProcMacroProgress, ProjectWorkspaceProgress},
     test_runner::{CargoTestMessage, CargoTestOutput, TestState},
 };

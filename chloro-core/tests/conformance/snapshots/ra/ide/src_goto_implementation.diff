@@ -16,7 +16,7 @@ Rustfmt size:  10803 bytes
 -    RootDatabase,
  };
 -use syntax::{ast, AstNode, SyntaxKind::*, T};
-+use syntax::{AstNode, SyntaxKind::*, ast, T};
++use syntax::{AstNode, SyntaxKind::*, T, ast};
  
  use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
  

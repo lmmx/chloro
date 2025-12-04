@@ -11,13 +11,13 @@
 //! which you can use to paste the command in terminal and add `--release` manually.
 
 use hir::ChangeWithProcMacros;
-use ide::{
-    AnalysisHost, CallableSnippets, CompletionConfig, CompletionFieldsToResolve, DiagnosticsConfig,
-    FilePosition, TextSize,
-};
 use ide_db::{
     MiniCore, SnippetCap,
     imports::insert_use::{ImportGranularity, InsertUseConfig},
+};
+use ide::{
+    AnalysisHost, CallableSnippets, CompletionConfig, CompletionFieldsToResolve, DiagnosticsConfig,
+    FilePosition, TextSize,
 };
 use project_model::CargoConfig;
 use test_utils::project_root;

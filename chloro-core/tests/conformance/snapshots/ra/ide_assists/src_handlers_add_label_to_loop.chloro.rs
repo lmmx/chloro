@@ -2,10 +2,9 @@ use ide_db::{
     source_change::SourceChangeBuilder, syntax_helpers::node_ext::for_each_break_and_continue_expr,
 };
 use syntax::{
-    SyntaxToken,
+    SyntaxToken, T,
     ast::{self, AstNode, HasLoopBody, make::{self, tokens}, syntax_factory::SyntaxFactory},
     syntax_editor::{Position, SyntaxEditor},
-    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

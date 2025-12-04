@@ -2,12 +2,31 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 108302 bytes
-Chloro size:   107956 bytes
+Chloro size:   107952 bytes
 Rustfmt size:  108302 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use crate::{
+     AdtId, AssocItemId, AstId, AstIdWithPath, ConstLoc, CrateRootModuleId, EnumLoc, ExternBlockLoc,
+     ExternCrateId, ExternCrateLoc, FunctionId, FunctionLoc, FxIndexMap, ImplLoc, Intern,
+-    ItemContainerId, LocalModuleId, Lookup, Macro2Id, Macro2Loc, MacroExpander, MacroId,
+-    MacroRulesId, MacroRulesLoc, MacroRulesLocFlags, ModuleDefId, ModuleId, ProcMacroId,
+-    ProcMacroLoc, StaticLoc, StructLoc, TraitLoc, TypeAliasLoc, UnionLoc, UnresolvedMacro, UseId,
+-    UseLoc,
++    ItemContainerId, LocalModuleId, Lookup, MacroExpander, MacroId, MacroRulesId, MacroRulesLoc,
++    MacroRulesLocFlags, Macro2Id, Macro2Loc, ModuleDefId, ModuleId, ProcMacroId, ProcMacroLoc,
++    StaticLoc, StructLoc, TraitLoc, TypeAliasLoc, UnionLoc, UnresolvedMacro, UseId, UseLoc,
+     attr::Attrs,
+     db::DefDatabase,
+     item_scope::{GlobId, ImportId, ImportOrExternCrate, PerNsGlobImports},
+     item_tree::{
+-        self, FieldsShape, ImportAlias, ImportKind, ItemTree, ItemTreeAstId, Macro2, MacroCall,
+-        MacroRules, Mod, ModItemId, ModKind, TreeId,
++        self, FieldsShape, ImportAlias, ImportKind, ItemTree, ItemTreeAstId, MacroCall,
++        MacroRules, Macro2, Mod, ModItemId, ModKind, TreeId,
+     },
      macro_call_as_call_id,
      nameres::{
          BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, ModuleData, ModuleOrigin, ResolveMode,

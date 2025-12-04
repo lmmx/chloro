@@ -12,7 +12,7 @@ use ide_db::{
 };
 use syntax::{
     AstNode, SyntaxNode,
-    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
+    ast::{self, HasName, edit_in_place::Indent, edit::IndentLevel, make},
     match_ast, ted,
 };
 

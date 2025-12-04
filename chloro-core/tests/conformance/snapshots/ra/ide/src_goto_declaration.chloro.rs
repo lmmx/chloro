@@ -3,7 +3,7 @@ use ide_db::{
     RootDatabase,
     defs::{Definition, NameClass, NameRefClass},
 };
-use syntax::{AstNode, SyntaxKind::*, ast, match_ast, T};
+use syntax::{AstNode, SyntaxKind::*, T, ast, match_ast};
 
 use crate::{
     FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo,

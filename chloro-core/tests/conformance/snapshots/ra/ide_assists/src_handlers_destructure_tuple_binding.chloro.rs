@@ -7,8 +7,9 @@ use ide_db::{
 };
 use itertools::Itertools;
 use syntax::{
+    T,
     ast::{self, AstNode, FieldExpr, HasName, IdentPat, make},
-    ted, T,
+    ted,
 };
 
 use crate::{

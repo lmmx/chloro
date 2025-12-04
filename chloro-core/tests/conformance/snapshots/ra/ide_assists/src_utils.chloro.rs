@@ -19,14 +19,13 @@ use stdx::format_to;
 use syntax::{
     AstNode, AstToken, Direction, NodeOrToken, SourceFile,
     SyntaxKind::*,
-    SyntaxNode, SyntaxToken, TextRange, TextSize, WalkEvent,
+    SyntaxNode, SyntaxToken, T, TextRange, TextSize, WalkEvent,
     ast::{
         self, HasArgList, HasAttrs, HasGenericParams, HasName, HasTypeBounds, Whitespace,
-        edit::{AstNodeEdit, IndentLevel}, edit_in_place::AttrsOwnerEdit, make,
+        edit_in_place::AttrsOwnerEdit, edit::{AstNodeEdit, IndentLevel}, make,
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Removable, SyntaxEditor},
-    T,
 };
 
 use crate::{

@@ -4,8 +4,8 @@ use base_db::Crate;
 use intern::sym;
 use span::{Edition, Span, SyntaxContext};
 use stdx::TupleExt;
-use syntax::{AstNode, ast};
 use syntax_bridge::DocCommentDesugarMode;
+use syntax::{AstNode, ast};
 use triomphe::Arc;
 
 use crate::{

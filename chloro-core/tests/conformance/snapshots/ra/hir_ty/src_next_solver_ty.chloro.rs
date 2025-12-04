@@ -1,13 +1,13 @@
 //! Things related to tys in the next-trait-solver.
 
 use std::ops::ControlFlow;
+use hir_def::{TraitId, type_ref::Rawness};
 
 use hir_def::{
     AdtId, HasModule, TypeParamId,
     hir::generics::{TypeOrConstParamData, TypeParamProvenance},
     lang_item::LangItem,
 };
-use hir_def::{TraitId, type_ref::Rawness};
 use rustc_abi::{Float, Integer, Size};
 use rustc_ast_ir::{Mutability, try_visit, visit::VisitorResult};
 use rustc_type_ir::{

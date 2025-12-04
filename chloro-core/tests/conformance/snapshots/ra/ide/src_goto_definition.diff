@@ -19,34 +19,18 @@ Rustfmt size:  71259 bytes
  use hir::{
      AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
  };
--use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
- use ide_db::{
-     RootDatabase, SymbolKind,
-     base_db::{AnchoredPath, SourceDatabase},
-     famous_defs::FamousDefs,
-     helpers::pick_best_token,
+     match_ast,
  };
-+use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
- use itertools::Itertools;
- use span::{Edition, FileId};
- use syntax::{
-     AstNode, AstToken,
-     SyntaxKind::*,
--    SyntaxNode, SyntaxToken, T, TextRange,
-+    SyntaxNode, SyntaxToken, TextRange,
-     ast::{self, HasLoopBody},
--    match_ast,
-+    match_ast, T,
-+};
-+
+ 
 +use crate::Analysis;
 +use crate::{
 +    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
 +    doc_links::token_as_doc_comment,
 +    navigation_target::{self, ToNav},
- };
- 
++};
++
  #[derive(Debug)]
+ pub struct GotoDefinitionConfig<'a> {
      pub minicore: MiniCore<'a>,
  }
  

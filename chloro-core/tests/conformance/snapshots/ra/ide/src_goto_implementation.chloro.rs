@@ -4,7 +4,7 @@ use ide_db::{
     defs::{Definition, NameClass, NameRefClass},
     helpers::pick_best_token,
 };
-use syntax::{AstNode, SyntaxKind::*, ast, T};
+use syntax::{AstNode, SyntaxKind::*, T, ast};
 
 use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
 

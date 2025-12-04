@@ -8,17 +8,6 @@ Rustfmt size:  58223 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{
-     AstNode,
-     SyntaxKind::{self, IDENT, INT_NUMBER},
--    SyntaxToken, T, TextRange, WalkEvent,
-+    SyntaxToken, TextRange, WalkEvent,
-     ast::{self, HasLoopBody},
--    match_ast,
-+    match_ast, T,
- };
- 
- use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};
  
  type HighlightMap = FxHashMap<EditionedFileId, FxHashSet<HighlightedRange>>;
  

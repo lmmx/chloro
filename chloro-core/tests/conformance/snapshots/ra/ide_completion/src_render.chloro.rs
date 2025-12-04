@@ -674,7 +674,7 @@ mod tests {
     use crate::{
         CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
         item::CompletionRelevanceTypeMatch,
-        tests::{check_edit, do_completion, get_all_items, TEST_CONFIG},
+        tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
     };
     #[track_caller]
     fn check(

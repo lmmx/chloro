@@ -45,7 +45,7 @@ use rustc_type_ir::{
     ExistentialProjection, ExistentialTraitRef, FnSig, OutlivesPredicate,
     TyKind::self,
     TypeVisitableExt,
-    inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
+    inherent::{GenericArgs as _, GenericArg as _, IntoKind as _, Region as _, SliceLike, Ty as _},
 };
 use salsa::plumbing::AsId;
 use smallvec::{SmallVec, smallvec};

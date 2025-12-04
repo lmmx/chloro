@@ -16,11 +16,8 @@ Rustfmt size:  2153 bytes
  use either::Either;
  use ide_db::famous_defs::FamousDefs;
  use ide_db::text_edit::TextEdit;
- mod tests {
-     use crate::{
          InlayHintsConfig, LifetimeElisionHints,
--        inlay_hints::tests::{TEST_CONFIG, check_with_config},
-+        inlay_hints::tests::{check_with_config, TEST_CONFIG},
+         inlay_hints::tests::{TEST_CONFIG, check_with_config},
      };
 -
      #[test]

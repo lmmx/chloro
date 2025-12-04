@@ -8,8 +8,13 @@ Rustfmt size:  4820 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Simple logger that logs either to stderr or to a file, using `tracing_subscriber`
+ //! filter syntax and `tracing_appender` for non blocking output.
+ 
+ use std::io::{self};
+ 
  use anyhow::Context;
- use tracing::level_filters::LevelFilter;
+-use tracing::level_filters::LevelFilter;
  use tracing_subscriber::{
 -    filter::{filter_fn, Targets},
 -    fmt::{time, MakeWriter},
@@ -20,7 +25,10 @@ Rustfmt size:  4820 bytes
 +    layer::SubscriberExt,
  };
  use tracing_tree::HierarchicalLayer;
++use tracing::level_filters::LevelFilter;
  
+ use crate::tracing::hprof;
+ use crate::tracing::json;
      /// env RA_PROFILE=*@3>10        // dump everything, up to depth 3, if it takes more than 10
      /// ```
      pub profile_filter: Option<String>,

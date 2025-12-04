@@ -4,7 +4,6 @@
 use std::io::{self};
 
 use anyhow::Context;
-use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
     Layer, Registry,
     filter::{Targets, filter_fn},
@@ -12,6 +11,7 @@ use tracing_subscriber::{
     layer::SubscriberExt,
 };
 use tracing_tree::HierarchicalLayer;
+use tracing::level_filters::LevelFilter;
 
 use crate::tracing::hprof;
 use crate::tracing::json;

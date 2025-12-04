@@ -15,8 +15,8 @@ Rustfmt size:  6864 bytes
  use span::{Edition, Span, SyntaxContext};
  use stdx::TupleExt;
 -use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
  use syntax_bridge::DocCommentDesugarMode;
++use syntax::{AstNode, ast};
  use triomphe::Arc;
  
  use crate::{

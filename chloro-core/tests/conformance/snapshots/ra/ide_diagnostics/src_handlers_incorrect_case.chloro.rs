@@ -3,8 +3,8 @@ use ide_db::{assists::Assist, defs::NameClass, rename::RenameDefinition};
 use syntax::AstNode;
 
 use crate::{
-    // references::rename::rename_with_semantics, Diagnostic, DiagnosticCode, DiagnosticsContext,
-    unresolved_fix,
+    Diagnostic, DiagnosticCode, DiagnosticsContext, unresolved_fix,
+    // references::rename::rename_with_semantics,
 };
 
 pub(crate) fn incorrect_case(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Diagnostic {

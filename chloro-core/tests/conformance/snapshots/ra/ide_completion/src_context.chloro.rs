@@ -19,9 +19,9 @@ use itertools::Either;
 use syntax::{
     AstNode, Edition, SmolStr,
     SyntaxKind::{self, *},
-    SyntaxToken, TextRange, TextSize,
+    SyntaxToken, T, TextRange, TextSize,
     ast::{self, AttrKind, NameOrNameRef},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::{

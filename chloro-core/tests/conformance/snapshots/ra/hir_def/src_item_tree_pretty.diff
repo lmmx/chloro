@@ -8,6 +8,14 @@ Rustfmt size:  12861 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use crate::{
+     item_tree::{
+         Const, DefDatabase, Enum, ExternBlock, ExternCrate, FieldsShape, Function, Impl, ItemTree,
+-        Macro2, MacroCall, MacroRules, Mod, ModItemId, ModKind, RawAttrs, RawVisibilityId, Static,
++        MacroCall, MacroRules, Macro2, Mod, ModItemId, ModKind, RawAttrs, RawVisibilityId, Static,
+         Struct, Trait, TypeAlias, Union, Use, UseTree, UseTreeKind,
+     },
+     visibility::RawVisibility,
  };
  
  pub(super) fn print_item_tree(db: &dyn DefDatabase, tree: &ItemTree, edition: Edition) -> String {

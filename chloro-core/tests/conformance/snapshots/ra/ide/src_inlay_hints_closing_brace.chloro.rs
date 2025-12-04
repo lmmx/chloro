@@ -7,9 +7,9 @@
 use hir::{DisplayTarget, HirDisplay, InRealFile, Semantics};
 use ide_db::{FileRange, RootDatabase};
 use syntax::{
-    SyntaxKind, SyntaxNode,
+    SyntaxKind, SyntaxNode, T,
     ast::{self, AstNode, HasLoopBody, HasName},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::{
@@ -159,7 +159,7 @@ pub(super) fn hints(
 mod tests {
     use crate::{
         InlayHintsConfig,
-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
     #[test]
     fn hints_closing_brace() {

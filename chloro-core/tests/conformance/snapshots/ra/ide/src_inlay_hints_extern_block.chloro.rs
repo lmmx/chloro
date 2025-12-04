@@ -95,7 +95,7 @@ fn item_hint(
 
 #[cfg(test)]
 mod tests {
-    use crate::inlay_hints::tests::{check_with_config, DISABLED_CONFIG};
+    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
     #[test]
     fn unadorned() {
         check_with_config(

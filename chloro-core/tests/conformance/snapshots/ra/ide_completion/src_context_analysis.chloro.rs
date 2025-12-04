@@ -8,7 +8,7 @@ use itertools::Either;
 use stdx::always;
 use syntax::{
     AstNode, AstToken, Direction, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, SyntaxToken,
-    TextRange, TextSize,
+    T, TextRange, TextSize,
     algo::{
         self, ancestors_at_offset, find_node_at_offset, non_trivia_sibling,
         previous_non_trivia_token,
@@ -17,17 +17,17 @@ use syntax::{
         self, AttrKind, HasArgList, HasGenericArgs, HasGenericParams, HasLoopBody, HasName,
         NameOrNameRef,
     },
-    match_ast, T,
+    match_ast,
 };
 
 use crate::{
     completions::postfix::is_in_condition,
     context::{
-        AttrCtx, BreakableKind, CompletionAnalysis, DotAccess, DotAccessExprCtx, DotAccessKind,
-        ItemListKind, LifetimeContext, LifetimeKind, NameContext, NameKind, NameRefContext,
-        NameRefKind, ParamContext, ParamKind, PathCompletionCtx, PathExprCtx, PathKind,
-        PatternContext, PatternRefutability, Qualified, QualifierCtx, TypeAscriptionTarget,
-        TypeLocation, COMPLETION_MARKER,
+        AttrCtx, BreakableKind, COMPLETION_MARKER, CompletionAnalysis, DotAccess,
+        DotAccessExprCtx, DotAccessKind, ItemListKind, LifetimeContext, LifetimeKind, NameContext,
+        NameKind, NameRefContext, NameRefKind, ParamContext, ParamKind, PathCompletionCtx,
+        PathExprCtx, PathKind, PatternContext, PatternRefutability, Qualified, QualifierCtx,
+        TypeAscriptionTarget, TypeLocation,
     },
 };
 

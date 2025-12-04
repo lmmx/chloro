@@ -6,13 +6,12 @@ use ide_db::{
     syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
 };
 use syntax::{
-    NodeOrToken, SyntaxKind,
+    NodeOrToken, SyntaxKind, T,
     ast::{
         self, AstNode, Expr::BinExpr, HasArgList, prec::{ExprPrecedence, precedence},
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Position, SyntaxEditor},
-    T,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};

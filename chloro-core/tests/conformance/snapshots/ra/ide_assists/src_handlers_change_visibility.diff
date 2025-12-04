@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9744 bytes
-Chloro size:   9556 bytes
+Chloro size:   9552 bytes
 Rustfmt size:  10260 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,8 @@ Rustfmt size:  10260 bytes
          self, ASSOC_ITEM_LIST, CONST, ENUM, FN, MACRO_DEF, MODULE, SOURCE_FILE, STATIC, STRUCT,
          TRAIT, TYPE_ALIAS, USE, VISIBILITY,
      },
--    SyntaxNode, T,
-+    SyntaxNode,
+     SyntaxNode, T,
 +    ast::{self, HasName, HasVisibility},
-+    T,
  };
  
 -use crate::{utils::vis_offset, AssistContext, AssistId, Assists};

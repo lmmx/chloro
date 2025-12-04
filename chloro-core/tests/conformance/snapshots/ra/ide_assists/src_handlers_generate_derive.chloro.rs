@@ -1,8 +1,8 @@
 use syntax::{
     SyntaxKind::{ATTR, COMMENT, WHITESPACE},
+    T,
     ast::{self, AstNode, HasAttrs, edit::IndentLevel, make},
     syntax_editor::{Element, Position},
-    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

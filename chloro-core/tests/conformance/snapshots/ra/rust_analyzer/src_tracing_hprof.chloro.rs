@@ -40,15 +40,15 @@ use std::{
 };
 
 use rustc_hash::FxHashSet;
-use tracing::{
-    Event, Id, Level, Subscriber,
-    field::{Field, Visit},
-    span::Attributes,
-};
 use tracing_subscriber::{
     Layer, Registry, filter,
     layer::{Context, SubscriberExt},
     registry::LookupSpan,
+};
+use tracing::{
+    Event, Id, Level, Subscriber,
+    field::{Field, Visit},
+    span::Attributes,
 };
 
 pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {

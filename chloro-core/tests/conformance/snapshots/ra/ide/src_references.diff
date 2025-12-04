@@ -8,17 +8,6 @@ Rustfmt size:  66636 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{
-     AstNode,
-     SyntaxKind::*,
--    SyntaxNode, T, TextRange, TextSize,
-+    SyntaxNode, TextRange, TextSize,
-     ast::{self, HasName},
--    match_ast,
-+    match_ast, T,
- };
- 
- use crate::{
  }
  
  // Feature: Find All References

@@ -9,24 +9,24 @@ use std::{
 };
 
 use cfg::{CfgAtom, CfgDiff};
+use hir_def::{
+    SyntheticSyntax,
+    expr_store::BodySourceMap,
+    hir::{ExprId, PatId},
+};
 use hir::{
     Adt, AssocItem, Crate, DefWithBody, FindPathConfig, HasCrate, HasSource, HirDisplay, ModuleDef,
     Name,
     db::{DefDatabase, ExpandDatabase, HirDatabase},
     next_solver::{DbInterner, GenericArgs},
 };
-use hir_def::{
-    SyntheticSyntax,
-    expr_store::BodySourceMap,
-    hir::{ExprId, PatId},
+use ide_db::{
+    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
+    base_db::{SourceDatabase, salsa::Database},
 };
 use ide::{
     Analysis, AnalysisHost, AnnotationConfig, DiagnosticsConfig, Edition, InlayFieldsToResolve,
     InlayHintsConfig, LineCol, RootDatabase,
-};
-use ide_db::{
-    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
-    base_db::{SourceDatabase, salsa::Database},
 };
 use itertools::Itertools;
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};

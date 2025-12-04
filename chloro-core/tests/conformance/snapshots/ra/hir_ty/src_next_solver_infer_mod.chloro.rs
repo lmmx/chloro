@@ -19,7 +19,7 @@ use rustc_type_ir::{
     TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
     error::{ExpectedFound, TypeError},
     inherent::{
-        Const as _, GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _,
+        Const as _, GenericArgs as _, GenericArg as _, IntoKind, SliceLike, Term as _, Ty as _,
     },
 };
 use snapshot::undo_log::InferCtxtUndoLogs;

@@ -21,7 +21,7 @@ use itertools::{Itertools, izip};
 use syntax::{
     AstNode, NodeOrToken, SyntaxKind,
     ast::{
-        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
+        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit_in_place::Indent, edit::IndentLevel,
     },
     ted,
 };

@@ -8,17 +8,6 @@ Rustfmt size:  36630 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- use syntax::ast::HasGenericParams;
- use syntax::{
--    AstNode, SmolStr, SyntaxElement, SyntaxKind, T, TextRange, ToSmolStr,
-+    AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr,
-     ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
--    format_smolstr, ted,
-+    format_smolstr, ted, T,
- };
- 
- use crate::{
  
      if let Some(source) = ctx.sema.source(func)
          && let Some(transformed_fn) =

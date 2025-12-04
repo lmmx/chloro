@@ -6,7 +6,7 @@ use either::Either;
 use hir_def::hir::ClosureKind;
 use hir_def::{
     BlockId, FieldId, GenericDefId, GenericParamId, ItemContainerId, Lookup, TupleFieldId, TupleId,
-    expr_store::path::{GenericArg as HirGenericArg, GenericArgs as HirGenericArgs, Path},
+    expr_store::path::{GenericArgs as HirGenericArgs, GenericArg as HirGenericArg, Path},
     hir::{
         ArithOp, Array, AsmOperand, AsmOptions, BinaryOp, Expr, ExprId, ExprOrPatId, LabelId,
         Literal, Pat, PatId, Statement, UnaryOp, generics::GenericParamDataRef,

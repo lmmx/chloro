@@ -3,11 +3,10 @@
 use hir_def::LifetimeParamId;
 use intern::Symbol;
 use rustc_type_ir::{
-    BoundVar, BoundVarIndexKind, DebruijnIndex, Flags, RegionVid, TypeFlags, TypeFoldable,
-    TypeVisitable,
+    BoundVar, BoundVarIndexKind, DebruijnIndex, Flags, INNERMOST, RegionVid, TypeFlags,
+    TypeFoldable, TypeVisitable,
     inherent::{IntoKind, PlaceholderLike, SliceLike},
     relate::Relate,
-    INNERMOST,
 };
 
 use crate::next_solver::{GenericArg, OutlivesPredicate};

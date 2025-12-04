@@ -4,9 +4,8 @@ use hir_expand::name::Name;
 use intern::Symbol;
 use rustc_hash::{FxHashMap, FxHashSet};
 use syntax::{
-    AstNode, AstPtr, AstToken,
+    AstNode, AstPtr, AstToken, T,
     ast::{self, HasName, IsString},
-    T,
 };
 use tt::TextRange;
 

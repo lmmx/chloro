@@ -5,10 +5,9 @@ use ide_db::RootDatabase;
 use syntax::{
     Direction, NodeOrToken,
     SyntaxKind::{self, *},
-    SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset,
+    SyntaxNode, SyntaxToken, T, TextRange, TextSize, TokenAtOffset,
     algo::{self, skip_trivia_token},
     ast::{self, AstNode, AstToken},
-    T,
 };
 
 use crate::FileRange;

@@ -2,10 +2,9 @@ use std::iter::successors;
 
 use ide_db::{RootDatabase, defs::NameClass, ty_filter::TryEnum};
 use syntax::{
-    AstNode, Edition, SyntaxKind, TextRange,
-    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
+    AstNode, Edition, SyntaxKind, T, TextRange,
+    ast::{self, HasName, edit_in_place::Indent, edit::IndentLevel, syntax_factory::SyntaxFactory},
     syntax_editor::SyntaxEditor,
-    T,
 };
 
 use crate::{

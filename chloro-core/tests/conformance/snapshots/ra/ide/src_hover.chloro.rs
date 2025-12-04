@@ -23,7 +23,7 @@ use span::{Edition, TextRange};
 use syntax::{
     AstNode, AstToken,
     SyntaxKind::{self, *},
-    SyntaxNode, ast, T,
+    SyntaxNode, T, ast,
 };
 
 use crate::{

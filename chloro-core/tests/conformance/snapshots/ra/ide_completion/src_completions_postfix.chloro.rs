@@ -14,9 +14,9 @@ use ide_db::{
 use stdx::never;
 use syntax::{
     SyntaxKind::{EXPR_STMT, STMT_LIST},
-    TextRange, TextSize,
+    T, TextRange, TextSize,
     ast::{self, AstNode, AstToken},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::{
@@ -472,7 +472,7 @@ mod tests {
     use expect_test::expect;
     use crate::{
         CompletionConfig, Snippet,
-        tests::{check, check_edit, check_edit_with_config, TEST_CONFIG},
+        tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
     };
     #[test]
     fn postfix_completion_works_for_trivial_path_expression() {

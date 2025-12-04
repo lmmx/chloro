@@ -12,11 +12,11 @@ use std::{
 use cargo_metadata::PackageId;
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use hir::ChangeWithProcMacros;
-use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
 use ide_db::{
     MiniCore,
     base_db::{Crate, ProcMacroPaths, SourceDatabase},
 };
+use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
 use itertools::Itertools;
 use load_cargo::SourceRootConfig;
 use lsp_types::{SemanticTokens, Url};
@@ -38,8 +38,8 @@ use crate::{
     discover,
     flycheck::{FlycheckHandle, FlycheckMessage},
     line_index::{LineEndings, LineIndex},
-    lsp::{from_proto, to_proto::url_from_abs_path},
     lsp_ext,
+    lsp::{from_proto, to_proto::url_from_abs_path},
     main_loop::Task,
     mem_docs::MemDocs,
     op_queue::{Cause, OpQueue},

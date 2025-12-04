@@ -28,9 +28,8 @@ use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
 use span::{Edition, FileId, SyntaxContext};
 use stdx::{TupleExt, never};
 use syntax::{
-    AstNode, SyntaxKind, TextRange,
+    AstNode, SyntaxKind, T, TextRange,
     ast::{self, HasName},
-    T,
 };
 
 use crate::{

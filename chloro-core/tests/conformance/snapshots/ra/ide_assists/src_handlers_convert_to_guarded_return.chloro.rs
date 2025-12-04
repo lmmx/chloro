@@ -6,9 +6,8 @@ use ide_db::{RootDatabase, ty_filter::TryEnum};
 use syntax::{
     AstNode,
     SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
-    SyntaxNode,
+    SyntaxNode, T,
     ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
-    T,
 };
 
 use crate::{

@@ -8,14 +8,6 @@ Rustfmt size:  25435 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{
-     AstNode, AstToken,
-     SyntaxKind::{self, *},
--    SyntaxNode, T, ast,
-+    SyntaxNode, ast, T,
- };
- 
- use crate::{
      pub actions: Vec<HoverAction>,
  }
  

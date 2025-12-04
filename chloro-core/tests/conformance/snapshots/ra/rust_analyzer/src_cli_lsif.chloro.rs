@@ -2,13 +2,13 @@
 
 use std::env;
 use std::time::Instant;
+use ide_db::{LineIndexDatabase, line_index::WideEncoding};
 
 use ide::{
     Analysis, AnalysisHost, FileId, FileRange, MonikerKind, MonikerResult, PackageInformation,
     RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
     VendoredLibrariesConfig,
 };
-use ide_db::{LineIndexDatabase, line_index::WideEncoding};
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
 use lsp_types::lsif;
 use project_model::{CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource};

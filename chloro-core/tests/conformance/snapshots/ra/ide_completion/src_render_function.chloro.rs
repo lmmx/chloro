@@ -397,7 +397,7 @@ fn params<'db>(
 mod tests {
     use crate::{
         CallableSnippets, CompletionConfig,
-        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
+        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
     };
     #[test]
     fn inserts_parens_for_function_calls() {

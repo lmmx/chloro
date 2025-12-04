@@ -75,9 +75,8 @@ Rustfmt size:  17943 bytes
 -
      use expect_test::expect_file;
      use salsa::Setter;
--    use test_fixture::{WORKSPACE, WithFixture};
+     use test_fixture::{WORKSPACE, WithFixture};
 -
-+    use test_fixture::{WithFixture, WORKSPACE};
      use super::*;
 -
      #[test]

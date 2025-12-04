@@ -1,4 +1,4 @@
-use syntax::{AstNode, ast, T};
+use syntax::{AstNode, T, ast};
 
 use crate::{AssistContext, AssistId, Assists};
 

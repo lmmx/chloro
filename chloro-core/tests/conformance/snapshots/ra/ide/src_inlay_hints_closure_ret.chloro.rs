@@ -87,7 +87,7 @@ pub(super) fn hints(
 
 #[cfg(test)]
 mod tests {
-    use crate::inlay_hints::tests::{check_with_config, DISABLED_CONFIG};
+    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
     use super::*;
     #[test]
     fn return_type_hints_for_closure_without_block() {

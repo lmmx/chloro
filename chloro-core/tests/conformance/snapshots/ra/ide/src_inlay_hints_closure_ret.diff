@@ -15,12 +15,10 @@ Rustfmt size:  3222 bytes
  use hir::DisplayTarget;
  use ide_db::{famous_defs::FamousDefs, text_edit::TextEditBuilder};
  use syntax::ast::{self, AstNode};
- 
  #[cfg(test)]
  mod tests {
--    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
+     use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
 -
-+    use crate::inlay_hints::tests::{check_with_config, DISABLED_CONFIG};
      use super::*;
 -
      #[test]

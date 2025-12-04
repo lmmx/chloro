@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26763 bytes
-Chloro size:   25994 bytes
+Chloro size:   25990 bytes
 Rustfmt size:  26763 bytes
 
 ✗ Outputs DIFFER
@@ -14,15 +14,13 @@ Rustfmt size:  26763 bytes
  use ide_db::defs::{Definition, NameRefClass};
 -use std::ops::RangeInclusive;
  use syntax::{
--    SyntaxElement, SyntaxKind, SyntaxNode, T, TextSize,
+     SyntaxElement, SyntaxKind, SyntaxNode, T, TextSize,
 -    ast::{
 -        self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory,
 -    },
-+    SyntaxElement, SyntaxKind, SyntaxNode, TextSize,
 +    ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory},
      match_ast,
      syntax_editor::{Element, Position, SyntaxEditor},
-+    T,
  };
  
  use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

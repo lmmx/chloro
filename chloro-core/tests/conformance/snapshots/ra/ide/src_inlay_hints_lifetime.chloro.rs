@@ -7,11 +7,11 @@ use std::iter;
 
 use ide_db::{FxHashMap, famous_defs::FamousDefs, syntax_helpers::node_ext::walk_ty};
 use itertools::Itertools;
+use syntax::{SmolStr, format_smolstr};
 use syntax::{
     SyntaxKind, SyntaxToken,
     ast::{self, AstNode, HasGenericParams, HasName},
 };
-use syntax::{SmolStr, format_smolstr};
 
 use crate::{
     InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints,
@@ -404,7 +404,7 @@ fn hints_(
 mod tests {
     use crate::{
         InlayHintsConfig, LifetimeElisionHints,
-        inlay_hints::tests::{check, check_with_config, TEST_CONFIG},
+        inlay_hints::tests::{TEST_CONFIG, check, check_with_config},
     };
     #[test]
     fn hints_lifetimes() {

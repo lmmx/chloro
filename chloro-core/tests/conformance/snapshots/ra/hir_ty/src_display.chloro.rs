@@ -40,7 +40,7 @@ use rustc_hash::FxHashSet;
 use rustc_type_ir::{
     AliasTyKind, BoundVarIndexKind, CoroutineArgsParts, CoroutineClosureArgsParts, RegionKind,
     Upcast,
-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _, Tys as _},
+    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Tys as _, Ty as _},
 };
 use smallvec::SmallVec;
 use span::Edition;

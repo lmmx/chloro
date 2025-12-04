@@ -31,8 +31,11 @@ Rustfmt size:  87058 bytes
 -    TyKind::{self},
 +    TyKind::self,
      TypeVisitableExt,
-     inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
+-    inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
++    inherent::{GenericArgs as _, GenericArg as _, IntoKind as _, Region as _, SliceLike, Ty as _},
  };
+ use salsa::plumbing::AsId;
+ use smallvec::{SmallVec, smallvec};
      /// struct Foo<'a> { x: &'a () }
      /// async fn foo(Foo { x: _ }: Foo<'_>) {}
      /// ```

@@ -12,9 +12,8 @@ use ide_db::{
 };
 use itertools::Itertools;
 use syntax::{
-    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
-    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
-    T,
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T,
+    ast::{self, HasName, edit_in_place::Indent, edit::IndentLevel, make},
 };
 
 use crate::{

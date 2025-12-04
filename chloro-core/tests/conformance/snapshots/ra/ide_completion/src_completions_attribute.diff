@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   16211 bytes
+Chloro size:   16207 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
@@ -13,17 +13,17 @@ Rustfmt size:  16896 bytes
  use ide_db::{
 +    FxHashMap, SymbolKind,
      generated::lints::{
-         Lint, CLIPPY_LINTS, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, FEATURES, RUSTDOC_LINTS,
+-        Lint, CLIPPY_LINTS, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, FEATURES, RUSTDOC_LINTS,
++        CLIPPY_LINT_GROUPS, CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, Lint, RUSTDOC_LINTS,
      },
      syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
 -    FxHashMap, SymbolKind,
  };
  use itertools::Itertools;
  use syntax::{
-+    AstNode, Edition, SyntaxKind,
-     ast::{self, AttrKind},
--    AstNode, Edition, SyntaxKind, T,
-+    T,
+-    ast::{self, AttrKind},
+     AstNode, Edition, SyntaxKind, T,
++    ast::{self, AttrKind},
  };
  
  use crate::{

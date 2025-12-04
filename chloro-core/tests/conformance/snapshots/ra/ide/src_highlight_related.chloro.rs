@@ -14,9 +14,9 @@ use ide_db::{
 use syntax::{
     AstNode,
     SyntaxKind::{self, IDENT, INT_NUMBER},
-    SyntaxToken, TextRange, WalkEvent,
+    SyntaxToken, T, TextRange, WalkEvent,
     ast::{self, HasLoopBody},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};

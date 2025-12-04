@@ -9,7 +9,7 @@ use hir_def::{
 };
 use hir_expand::name::Name;
 use rustc_ast_ir::Mutability;
-use rustc_type_ir::inherent::{GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Ty as _};
+use rustc_type_ir::inherent::{GenericArgs as _, GenericArg as _, IntoKind, SliceLike, Ty as _};
 use stdx::TupleExt;
 
 use crate::{

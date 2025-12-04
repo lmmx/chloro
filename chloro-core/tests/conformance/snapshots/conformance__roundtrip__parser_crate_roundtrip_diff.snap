@@ -1153,11 +1153,11 @@ expression: cleaned_diff
 -
 -extern "C" extern "C"
 +}
++use ;
++use ;
  
  use foo::bar;
 -use
-+use ;
-+use ;
  use crate::baz;
 -use
 -fn f() {}
@@ -1462,9 +1462,10 @@ expression: cleaned_diff
 -fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
 +fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {
 +}
++use b;
  
  use {a;
- use b;
+-use b;
  struct T;
 -fn test() {}
 -use {a ,, b};
@@ -2709,9 +2710,13 @@ expression: cleaned_diff
 +
 +pub(in foo::bar::baz) fn e() {
 +}
++use foo::bar::baz;
  
  use ::foo::bar::baz;
- use foo::bar::baz;
+-use foo::bar::baz;
+ 
+ struct S<T: Copy> {
+     f: T,
  }
  
  enum E3 {
@@ -3008,7 +3013,7 @@ expression: cleaned_diff
  
  use foo as bar;
 -use foo::{a as b, *, ::*, ::foo as x};
-+use foo::{::foo as x, a as b, *, ::*};
++use foo::{a as b, *, ::foo as x, ::*};
  
 -fn g1(#[attr1] #[attr2] pat: Type) {}
 -fn g2(#[attr1] x: u8) {}
@@ -3060,13 +3065,10 @@ expression: cleaned_diff
  }
  
  fn r#foo() {
- }
--
--use foo;
+ use foo;
  use ::bar;
  
-+use foo;
- 
+-
  struct S {
 -    foo: u32
 +    foo: u32,
@@ -3093,11 +3095,11 @@ expression: cleaned_diff
  fn main() {
      let ():::X = ();
  }
-+use ::foo::{a, b, c};
 +use foo::*;
 +use foo::{};
  
  use *;
++use ::foo::{a, b, c};
  use ::*;
  use ::{};
  use {};
@@ -4307,14 +4309,6 @@ expression: cleaned_diff
  mod expressions;
  mod generic_args;
  
- use crate::{
-     SyntaxKind::{self, *},
--    T, TokenSet,
-+    TokenSet,
-     parser::{CompletedMarker, Marker, Parser},
-+    T,
- };
- 
  pub(crate) mod entry {
      use super::*;
 -
@@ -4434,17 +4428,6 @@ expression: cleaned_diff
  use std::cell::Cell;
  
  use drop_bomb::DropBomb;
- use crate::{
-     Edition,
-     SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
--    T, TokenSet,
-+    TokenSet,
-     event::Event,
-     input::Input,
-+    T,
- };
- 
- /// `Parser` struct provides the low-level API for
      }
  }
  
@@ -5408,14 +5391,6 @@ expression: cleaned_diff
  pub(super) fn meta(p: &mut Parser<'_>) {
      let meta = p.start();
      let is_unsafe = p.eat(T![unsafe]);
- 
- use super::*;
- 
--pub(super) use atom::{EXPR_RECOVERY_SET, LITERAL_FIRST, literal, parse_asm_expr};
-+pub(super) use atom::{literal, parse_asm_expr, EXPR_RECOVERY_SET, LITERAL_FIRST};
- pub(crate) use atom::{block_expr, match_arm_list};
- 
- #[derive(PartialEq, Eq)]
      }
  
      // test block_items

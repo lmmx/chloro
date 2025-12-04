@@ -4,9 +4,8 @@ use itertools::Itertools;
 use syntax::{
     NodeOrToken, SourceFile, SyntaxElement,
     SyntaxKind::{self, USE_TREE, WHITESPACE},
-    SyntaxToken, TextRange, TextSize,
+    SyntaxToken, T, TextRange, TextSize,
     ast::{self, AstNode, AstToken, IsString},
-    T,
 };
 
 use ide_db::text_edit::{TextEdit, TextEditBuilder};

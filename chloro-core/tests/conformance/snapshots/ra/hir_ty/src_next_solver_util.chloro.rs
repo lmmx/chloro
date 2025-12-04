@@ -10,15 +10,14 @@ use hir_def::{BlockId, HasModule, lang_item::LangItem};
 use la_arena::Idx;
 use rustc_abi::{Float, HasDataLayout, Integer, IntegerType, Primitive, ReprOptions};
 use rustc_type_ir::{
-    ConstKind, CoroutineArgs, DebruijnIndex, FloatTy, IntTy, Interner, PredicatePolarity,
-    RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable, TypeVisitableExt,
-    TypeVisitor, UintTy, UniverseIndex,
+    ConstKind, CoroutineArgs, DebruijnIndex, FloatTy, INNERMOST, IntTy, Interner,
+    PredicatePolarity, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable,
+    TypeVisitableExt, TypeVisitor, UintTy, UniverseIndex,
     inherent::{
-        AdtDef, GenericArg as _, GenericArgs as _, IntoKind, ParamEnv as _, SliceLike, Ty as _,
+        AdtDef, GenericArgs as _, GenericArg as _, IntoKind, ParamEnv as _, SliceLike, Ty as _,
     },
     lang_items::SolverTraitLangItem,
     solve::SizedTraitKind,
-    INNERMOST,
 };
 
 use crate::{

@@ -8,6 +8,14 @@ Rustfmt size:  31554 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ mod intra_doc_links;
+ 
+ use std::ops::Range;
++use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
+ 
+ use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
+-use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
+ use stdx::format_to;
  use url::Url;
  
  use hir::{
@@ -17,17 +25,6 @@ Rustfmt size:  31554 bytes
  };
  use ide_db::{
      RootDatabase,
- use syntax::{
-     AstNode, AstToken,
-     SyntaxKind::*,
--    SyntaxNode, SyntaxToken, T, TextRange, TextSize,
-+    SyntaxNode, SyntaxToken, TextRange, TextSize,
-     ast::{self, IsString},
--    match_ast,
-+    match_ast, T,
- };
- 
- use crate::{
      pub local_url: Option<String>,
  }
  

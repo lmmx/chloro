@@ -5,8 +5,8 @@ use either::Either;
 use mbe::MatchedArmIndex;
 use rustc_hash::FxHashSet;
 use span::{AstIdMap, Edition, Span, SyntaxContext};
-use syntax::{AstNode, Parse, SyntaxElement, SyntaxError, SyntaxNode, SyntaxToken, ast, T};
 use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
+use syntax::{AstNode, Parse, SyntaxElement, SyntaxError, SyntaxNode, SyntaxToken, T, ast};
 use triomphe::Arc;
 
 use crate::{

@@ -19,9 +19,8 @@ use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
 use syntax::{
     AstNode, AstToken, NodeOrToken,
     SyntaxKind::*,
-    SyntaxNode, SyntaxToken, TextRange, WalkEvent,
+    SyntaxNode, SyntaxToken, T, TextRange, WalkEvent,
     ast::{self, IsString},
-    T,
 };
 
 use crate::{

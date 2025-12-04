@@ -1,7 +1,8 @@
 //! Run all tests in a project, similar to `cargo test`, but using the mir interpreter.
 
-use hir::{Crate, Module};
 use hir_ty::db::HirDatabase;
+
+use hir::{Crate, Module};
 use ide_db::{LineIndexDatabase, base_db::SourceDatabase};
 use profile::StopWatch;
 use project_model::{CargoConfig, RustLibSource};

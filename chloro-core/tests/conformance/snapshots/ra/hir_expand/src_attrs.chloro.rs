@@ -11,9 +11,9 @@ use intern::{Interned, Symbol, sym};
 use mbe::{DelimiterKind, Punct};
 use smallvec::{SmallVec, smallvec};
 use span::{Span, SyntaxContext};
+use syntax_bridge::{DocCommentDesugarMode, desugar_doc_comment_text, syntax_node_to_token_tree};
 use syntax::unescape;
 use syntax::{AstNode, AstToken, SyntaxNode, ast, match_ast};
-use syntax_bridge::{DocCommentDesugarMode, desugar_doc_comment_text, syntax_node_to_token_tree};
 use triomphe::ThinArc;
 
 use crate::{

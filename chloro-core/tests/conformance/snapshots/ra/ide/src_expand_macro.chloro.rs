@@ -6,7 +6,7 @@ use ide_db::{
 };
 use span::{SpanMap, SyntaxContext, TextRange, TextSize};
 use stdx::format_to;
-use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, ast, ted, T};
+use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast, ted};
 
 use crate::FilePosition;
 

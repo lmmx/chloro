@@ -118,7 +118,7 @@ fn test_format_use_with_nested_braces() {
     assert_snapshot!(formatted, @r"
     use crate::{
         Edition,
-        SyntaxKind::{self, TokenSet, EOF, ERROR, T, TOMBSTONE},
+        SyntaxKind::{self, EOF, ERROR, T, TOMBSTONE, TokenSet},
         event::Event,
         input::Input,
     };

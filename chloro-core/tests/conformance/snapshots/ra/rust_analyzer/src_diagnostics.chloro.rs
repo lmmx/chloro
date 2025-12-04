@@ -5,8 +5,8 @@ pub(crate) mod flycheck_to_proto;
 use std::mem;
 
 use cargo_metadata::PackageId;
-use ide::FileId;
 use ide_db::{FxHashMap, base_db::DbPanicContext};
+use ide::FileId;
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 use smallvec::SmallVec;

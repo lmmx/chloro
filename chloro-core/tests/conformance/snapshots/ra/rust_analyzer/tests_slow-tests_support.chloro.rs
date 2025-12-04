@@ -16,8 +16,8 @@ use rust_analyzer::{
     config::{Config, ConfigChange, ConfigErrors},
     lsp, main_loop,
 };
-use serde::Serialize;
 use serde_json::{Value, json, to_string_pretty};
+use serde::Serialize;
 use test_utils::FixtureWithProjectMeta;
 use tracing_subscriber::fmt::TestWriter;
 use vfs::AbsPathBuf;

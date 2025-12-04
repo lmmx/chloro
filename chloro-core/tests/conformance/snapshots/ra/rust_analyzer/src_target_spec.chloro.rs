@@ -269,7 +269,7 @@ mod tests {
     };
     use syntax_bridge::{
         DocCommentDesugarMode,
-        dummy_test_span_utils::{DummyTestSpanMap, DUMMY},
+        dummy_test_span_utils::{DUMMY, DummyTestSpanMap},
         syntax_node_to_token_tree,
     };
     fn check(cfg: &str, expected_features: &[&str]) {

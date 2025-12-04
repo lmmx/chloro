@@ -3,9 +3,8 @@
 use hir::DisplayTarget;
 use ide_db::famous_defs::FamousDefs;
 use syntax::{
-    Direction, NodeOrToken, SyntaxKind,
+    Direction, NodeOrToken, SyntaxKind, T,
     ast::{self, AstNode},
-    T,
 };
 
 use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};

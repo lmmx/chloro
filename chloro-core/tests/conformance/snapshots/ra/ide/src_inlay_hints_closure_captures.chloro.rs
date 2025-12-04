@@ -98,7 +98,7 @@ pub(super) fn hints(
 mod tests {
     use crate::{
         InlayHintsConfig,
-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
     #[test]
     fn all_capture_kinds() {

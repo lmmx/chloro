@@ -2,30 +2,22 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44631 bytes
+Chloro size:   44627 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{
-     AstNode, AstToken, Direction, NodeOrToken, SourceFile,
-     SyntaxKind::*,
--    SyntaxNode, SyntaxToken, T, TextRange, TextSize, WalkEvent,
-+    SyntaxNode, SyntaxToken, TextRange, TextSize, WalkEvent,
+     SyntaxNode, SyntaxToken, T, TextRange, TextSize, WalkEvent,
      ast::{
          self, HasArgList, HasAttrs, HasGenericParams, HasName, HasTypeBounds, Whitespace,
 -        edit::{AstNodeEdit, IndentLevel},
 -        edit_in_place::AttrsOwnerEdit,
 -        make,
-+        edit::{AstNodeEdit, IndentLevel}, edit_in_place::AttrsOwnerEdit, make,
++        edit_in_place::AttrsOwnerEdit, edit::{AstNodeEdit, IndentLevel}, make,
          syntax_factory::SyntaxFactory,
      },
      syntax_editor::{Removable, SyntaxEditor},
-+    T,
- };
- 
- use crate::{
      invert_special_case(make, &expr).unwrap_or_else(|| make.expr_prefix(T![!], expr).into())
  }
  

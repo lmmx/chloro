@@ -1,13 +1,13 @@
 //! SCIP generator
 
 use std::{path::PathBuf, time::Instant};
+use ide_db::LineIndexDatabase;
 
 use ide::{
     AnalysisHost, LineCol, Moniker, MonikerDescriptorKind, MonikerIdentifier, MonikerResult,
     RootDatabase, StaticIndex, StaticIndexedFile, SymbolInformationKind, TextRange, TokenId,
     TokenStaticData, VendoredLibrariesConfig,
 };
-use ide_db::LineIndexDatabase;
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use rustc_hash::{FxHashMap, FxHashSet};
 use scip::types::{SymbolInformation, self as scip_types};

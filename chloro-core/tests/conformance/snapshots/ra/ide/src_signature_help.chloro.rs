@@ -17,10 +17,10 @@ use itertools::Itertools;
 use span::Edition;
 use stdx::format_to;
 use syntax::{
-    AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken, TextRange,
+    AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken, T, TextRange,
     TextSize, ToSmolStr, algo,
     ast::{self, AstChildren},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::RootDatabase;

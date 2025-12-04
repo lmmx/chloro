@@ -10,7 +10,7 @@ use syntax::{AstToken, ast};
 
 use crate::{
     HlRange, HlTag,
-    syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
+    syntax_highlighting::{highlights::Highlights, highlight::highlight_def},
 };
 
 pub(super) fn highlight_format_string(

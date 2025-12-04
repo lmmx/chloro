@@ -12,9 +12,8 @@ use intern::{Symbol, sym};
 use la_arena::{Arena, Idx};
 use rustc_abi::{IntegerType, ReprOptions};
 use syntax::{
-    NodeOrToken, SyntaxNodePtr,
+    NodeOrToken, SyntaxNodePtr, T,
     ast::{self, HasGenericParams, HasName, HasVisibility, IsString},
-    T,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;

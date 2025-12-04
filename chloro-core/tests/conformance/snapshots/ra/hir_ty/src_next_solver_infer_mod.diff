@@ -8,6 +8,14 @@ Rustfmt size:  49754 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
+     error::{ExpectedFound, TypeError},
+     inherent::{
+-        Const as _, GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _,
++        Const as _, GenericArgs as _, GenericArg as _, IntoKind, SliceLike, Term as _, Ty as _,
+     },
+ };
+ use snapshot::undo_log::InferCtxtUndoLogs;
      pub value: T,
      pub obligations: PredicateObligations<'db>,
  }

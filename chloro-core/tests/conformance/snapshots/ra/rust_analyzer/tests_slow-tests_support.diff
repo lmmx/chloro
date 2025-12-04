@@ -20,11 +20,12 @@ Rustfmt size:  21158 bytes
  use parking_lot::{Mutex, MutexGuard};
  use paths::{Utf8Path, Utf8PathBuf};
  use rust_analyzer::{
+     config::{Config, ConfigChange, ConfigErrors},
      lsp, main_loop,
  };
++use serde_json::{Value, json, to_string_pretty};
  use serde::Serialize;
 -use serde_json::{json, to_string_pretty, Value};
-+use serde_json::{Value, json, to_string_pretty};
  use test_utils::FixtureWithProjectMeta;
  use tracing_subscriber::fmt::TestWriter;
  use vfs::AbsPathBuf;

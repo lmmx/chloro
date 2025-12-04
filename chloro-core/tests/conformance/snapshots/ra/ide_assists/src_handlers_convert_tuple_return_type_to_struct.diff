@@ -8,6 +8,13 @@ Rustfmt size:  20081 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ };
+ use syntax::{
+     AstNode, SyntaxNode,
+-    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
++    ast::{self, HasName, edit_in_place::Indent, edit::IndentLevel, make},
+     match_ast, ted,
+ };
  
  use crate::assist_context::{AssistContext, Assists};
  

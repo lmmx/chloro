@@ -371,8 +371,8 @@ mod tests {
     use ide_db::{RootDatabase, assists::AssistResolveStrategy};
     use test_fixture::WithFixture;
     use crate::tests::{
-        check_assist, check_assist_by_label, check_assist_not_applicable, check_assist_target,
-        TEST_CONFIG,
+        TEST_CONFIG, check_assist, check_assist_by_label, check_assist_not_applicable,
+        check_assist_target,
     };
     fn check_auto_import_order(before: &str, order: &[&str]) {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(before);

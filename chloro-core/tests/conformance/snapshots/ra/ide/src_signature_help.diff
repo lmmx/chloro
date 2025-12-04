@@ -8,18 +8,6 @@ Rustfmt size:  62523 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use span::Edition;
- use stdx::format_to;
- use syntax::{
--    AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken, T, TextRange,
-+    AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken, TextRange,
-     TextSize, ToSmolStr, algo,
-     ast::{self, AstChildren},
--    match_ast,
-+    match_ast, T,
- };
- 
- use crate::RootDatabase;
      Some(signature_help_for_tuple_pat_ish(
          db,
          SignatureHelp {

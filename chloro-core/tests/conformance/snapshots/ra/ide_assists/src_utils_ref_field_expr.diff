@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5111 bytes
-Chloro size:   5116 bytes
+Chloro size:   5112 bytes
 Rustfmt size:  5132 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,8 @@ Rustfmt size:  5132 bytes
 +
  use syntax::{
 -    ast::{self, make, FieldExpr, MethodCallExpr},
--    AstNode, T,
-+    AstNode,
+     AstNode, T,
 +    ast::{self, FieldExpr, MethodCallExpr, make},
-+    T,
  };
  
  use crate::AssistContext;

@@ -31,7 +31,7 @@ pub mod keys {
     use syntax::{AstNode, AstPtr, ast};
     use crate::{
         BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,
-        ImplId, LifetimeParamId, Macro2Id, MacroRulesId, ProcMacroId, StaticId, StructId, TraitId,
+        ImplId, LifetimeParamId, MacroRulesId, Macro2Id, ProcMacroId, StaticId, StructId, TraitId,
         TypeAliasId, TypeOrConstParamId, UnionId, UseId,
         dyn_map::{DynMap, Policy},
     };

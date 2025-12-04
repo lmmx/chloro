@@ -33,9 +33,9 @@ use syntax::AstToken;
 use syntax::{
     AstNode,
     SyntaxKind::*,
-    SyntaxNode, TextRange, TextSize,
+    SyntaxNode, T, TextRange, TextSize,
     ast::{self, HasName},
-    match_ast, T,
+    match_ast,
 };
 
 use crate::{

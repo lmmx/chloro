@@ -1450,10 +1450,10 @@ fn foo();
 }{
     return;
 }
+use ;
+use ;
 
 use foo::bar;
-use ;
-use ;
 use crate::baz;
 fn f() {
 }
@@ -1778,9 +1778,9 @@ fn foo() {
 
 fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {
 }
+use b;
 
 use {a;
-use b;
 struct T;
 
 fn test() {
@@ -3142,9 +3142,9 @@ pub(super) fn d() {
 
 pub(in foo::bar::baz) fn e() {
 }
+use foo::bar::baz;
 
 use ::foo::bar::baz;
-use foo::bar::baz;
 
 struct S<T: Copy> {
     f: T,
@@ -3542,7 +3542,7 @@ pub fn main() {
 }
 
 use foo as bar;
-use foo::{::foo as x, a as b, *, ::*};
+use foo::{a as b, *, ::foo as x, ::*};
 
 fn g1(#[attr1] #[attr2] pat: Type) {
 }
@@ -3584,9 +3584,9 @@ impl S {
 
 fn r#foo() {
 }
-use ::bar;
 
 use foo;
+use ::bar;
 
 struct S {
     foo: u32,
@@ -3609,11 +3609,11 @@ type X = ();
 fn main() {
     let ():::X = ();
 }
-use ::foo::{a, b, c};
 use foo::*;
 use foo::{};
 
 use *;
+use ::foo::{a, b, c};
 use ::*;
 use ::{};
 use {};
@@ -4970,9 +4970,8 @@ mod types;
 
 use crate::{
     SyntaxKind::{self, *},
-    TokenSet,
+    T, TokenSet,
     parser::{CompletedMarker, Marker, Parser},
-    T,
 };
 
 pub(crate) mod entry {
@@ -5356,10 +5355,9 @@ use drop_bomb::DropBomb;
 use crate::{
     Edition,
     SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-    TokenSet,
+    T, TokenSet,
     event::Event,
     input::Input,
-    T,
 };
 
 /// `Parser` struct provides the low-level API for
@@ -8016,7 +8014,7 @@ use crate::grammar::attributes::ATTRIBUTE_FIRST;
 
 use super::*;
 
-pub(super) use atom::{literal, parse_asm_expr, EXPR_RECOVERY_SET, LITERAL_FIRST};
+pub(super) use atom::{EXPR_RECOVERY_SET, LITERAL_FIRST, literal, parse_asm_expr};
 pub(crate) use atom::{block_expr, match_arm_list};
 
 #[derive(PartialEq, Eq)]
