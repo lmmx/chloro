@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24418 bytes
-Chloro size:   24453 bytes
+Chloro size:   24393 bytes
 Rustfmt size:  24577 bytes
 
 ✗ Outputs DIFFER
@@ -116,37 +116,19 @@ Rustfmt size:  24577 bytes
          debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);
 -        #[expect(clippy::if_same_then_else)]
 -        if a.is_static() || b.is_static() {
--            a // nothing lives longer than static
 +        #[expect(clippy::if_same_then_else)] if a.is_static() || b.is_static() {
-+            a
-+            // nothing lives longer than static
+             a // nothing lives longer than static
          } else if a == b {
--            a // LUB(a,a) = a
-+            a
-+            // LUB(a,a) = a
-         } else {
-             self.combine_vars(db, Lub, a, b)
-         }
+             a // LUB(a,a) = a
      ) -> Region<'db> {
          // cannot add constraints once regions are resolved
          debug!("RegionConstraintCollector: glb_regions({:?}, {:?})", a, b);
 -        #[expect(clippy::if_same_then_else)]
 -        if a.is_static() {
--            b // static lives longer than everything else
 +        #[expect(clippy::if_same_then_else)] if a.is_static() {
-+            b
-+            // static lives longer than everything else
+             b // static lives longer than everything else
          } else if b.is_static() {
--            a // static lives longer than everything else
-+            a
-+            // static lives longer than everything else
-         } else if a == b {
--            a // GLB(a,a) = a
-+            a
-+            // GLB(a,a) = a
-         } else {
-             self.combine_vars(db, Glb, a, b)
-         }
+             a // static lives longer than everything else
      /// Returns `true` if this region constraint data contains no constraints, and `false`
      /// otherwise.
      pub fn is_empty(&self) -> bool {

@@ -3165,8 +3165,7 @@ impl ExprCollector<'_> {
                 | (width.is_some() as u32) << 27
                 | (precision.is_some() as u32) << 28
                 | align << 29
-                | 1 << 31;
-            // Highest bit always set.
+                | 1 << 31; // Highest bit always set.
             let flags = self.alloc_expr_desugared(Expr::Literal(Literal::Uint(
                 flags as u128,
                 Some(BuiltinUint::U32),

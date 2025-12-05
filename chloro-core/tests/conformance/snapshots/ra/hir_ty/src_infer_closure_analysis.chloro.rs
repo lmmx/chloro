@@ -422,8 +422,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 place,
                 CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
             );
-            self.current_capture_span_stack.pop();
-            // Remove the pattern span.
+            self.current_capture_span_stack.pop(); // Remove the pattern span.
         }
     }
 

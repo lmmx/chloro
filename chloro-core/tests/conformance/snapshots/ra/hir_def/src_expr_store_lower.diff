@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   144986 bytes
+Chloro size:   144974 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -255,15 +255,6 @@ Rustfmt size:  144317 bytes
                  syntax_ptr,
              )
          } else {
-                 | (width.is_some() as u32) << 27
-                 | (precision.is_some() as u32) << 28
-                 | align << 29
--                | 1 << 31; // Highest bit always set.
-+                | 1 << 31;
-+            // Highest bit always set.
-             let flags = self.alloc_expr_desugared(Expr::Literal(Literal::Uint(
-                 flags as u128,
-                 Some(BuiltinUint::U32),
                      Some(count_is) => self.alloc_expr_desugared(Expr::Path(count_is)),
                      None => self.missing_expr(),
                  };
