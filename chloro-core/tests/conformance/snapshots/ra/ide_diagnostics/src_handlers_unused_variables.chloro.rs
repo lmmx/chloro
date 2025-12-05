@@ -45,7 +45,8 @@ pub(crate) fn unused_variables(
         DiagnosticCode::RustcLint("unused_variables"),
         "unused variable",
         ast,
-    ).with_fixes(name_range.and_then(|it| {
+    )
+    .with_fixes(name_range.and_then(|it| {
             fixes(
                 ctx.sema.db,
                 var_name,

@@ -3710,12 +3710,7 @@ expression: cleaned_diff
  }
  
  fn err_to_msg(error: EscapeError, mode: Mode) -> String {
-         EscapeError::NulInCStr => "null character in C string literal",
-         EscapeError::UnskippedWhitespaceWarning => "",
-         EscapeError::MultipleSkippedLinesWarning => "",
--    }
--    .into()
-+    }.into()
+     .into()
  }
  
 -//! See [`Input`].
@@ -4126,10 +4121,10 @@ expression: cleaned_diff
 +    m.complete(
 +        p,
 +        if saw_expr && !saw_comma {
-+        PAREN_EXPR
-+    } else {
-+        TUPLE_EXPR
-+    },
++            PAREN_EXPR
++        } else {
++            TUPLE_EXPR
++        },
 +    )
  }
  
@@ -4306,10 +4301,10 @@ expression: cleaned_diff
 +    m.complete(
 +        p,
 +        if !has_comma && !has_rest && has_pat {
-+        PAREN_PAT
-+    } else {
-+        TUPLE_PAT
-+    },
++            PAREN_PAT
++        } else {
++            TUPLE_PAT
++        },
 +    )
  }
  

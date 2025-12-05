@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53881 bytes
+Chloro size:   53886 bytes
 Rustfmt size:  55233 bytes
 
 ✗ Outputs DIFFER
@@ -186,12 +186,11 @@ Rustfmt size:  55233 bytes
                  match container {
                      Some(name) => {
                          return Some(format!(
-                 return d.as_extern_assoc_item(db).map(|_| "<extern>".to_owned());
              }
          }
--    }
+     }
 -    .map(|name| name.display(db, edition).to_string())
-+    }.map(
++    .map(
 +        |name| name.display(db, edition).to_string(),
 +    )
  }

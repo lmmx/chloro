@@ -189,7 +189,8 @@ fn bool_expr_to_enum_expr(expr: ast::Expr) -> ast::Expr {
             expr,
             make::tail_only_block_expr(true_expr),
             Some(ast::ElseBranch::Block(make::tail_only_block_expr(false_expr))),
-        ).into()
+        )
+        .into()
     }
 }
 
@@ -529,7 +530,8 @@ fn make_bool_enum(make_pub: bool) -> ast::Enum {
             make::variant(None, make::name("True"), None, None),
             make::variant(None, make::name("False"), None, None),
         ]),
-    ).clone_for_update()
+    )
+    .clone_for_update()
 }
 
 #[cfg(test)]

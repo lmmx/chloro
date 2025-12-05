@@ -103,7 +103,8 @@ fn on_char_typed_(
         '|' => on_pipe_typed(&file.tree(), offset),
         '+' => on_plus_typed(&file.tree(), offset),
         _ => None,
-    }.map(
+    }
+    .map(
         conv,
     )
 }

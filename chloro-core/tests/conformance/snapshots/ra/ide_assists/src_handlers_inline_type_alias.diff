@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25096 bytes
-Chloro size:   25032 bytes
+Chloro size:   25041 bytes
 Rustfmt size:  25274 bytes
 
 ✗ Outputs DIFFER
@@ -69,7 +69,8 @@ Rustfmt size:  25274 bytes
 +            ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
 +            ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
 +            ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
-+        }.clone_for_update())
++        }
++        .clone_for_update())
      }
  }
  

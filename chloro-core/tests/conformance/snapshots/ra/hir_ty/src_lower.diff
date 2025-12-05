@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86857 bytes
+Chloro size:   86866 bytes
 Rustfmt size:  88828 bytes
 
 ✗ Outputs DIFFER
@@ -269,12 +269,7 @@ Rustfmt size:  88828 bytes
 +                ))),
                  ))))
              }
--        }
--        .into_iter()
-+        }.into_iter()
-     }
- 
-     pub(crate) fn lower_type_bound<'b>(
+         }
              // bounds. We shouldn't have repeated elements besides auto traits at this point.
              lowered_bounds.dedup();
  

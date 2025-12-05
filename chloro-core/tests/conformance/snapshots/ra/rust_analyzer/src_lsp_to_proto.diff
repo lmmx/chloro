@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111466 bytes
+Chloro size:   111475 bytes
 Rustfmt size:  113521 bytes
 
 ✗ Outputs DIFFER
@@ -59,15 +59,6 @@ Rustfmt size:  113521 bytes
      lsp_types::Documentation::MarkupContent(markup_content)
  }
  
-                 end: cursor_pos,
-             },
-             replace: text_edit.range,
--        }
--        .into(),
-+        }.into(),
-         None => text_edit.into(),
-     }
- }
      annotation: Option<ChangeAnnotationId>,
      client_supports_annotations: bool,
  ) -> lsp_ext::SnippetTextEdit {

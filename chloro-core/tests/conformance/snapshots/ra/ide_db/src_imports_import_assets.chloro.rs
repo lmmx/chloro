@@ -349,7 +349,8 @@ impl<'db> ImportAssets<'db> {
                         .contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
                 },
             ),
-        }.into_iter()
+        }
+        .into_iter()
     }
 
     fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {

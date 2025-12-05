@@ -155,7 +155,8 @@ fn punctuation(
             match prefix_expr {
                 Some(ast::Expr::Literal(_)) => HlTag::NumericLiteral,
                 _ => HlTag::Operator(HlOperator::Other),
-            }.into()
+            }
+            .into()
         }
         (T![+] | T![-] | T![*] | T![/] | T![%], BIN_EXPR) => HlOperator::Arithmetic.into(),
         (T![+=] | T![-=] | T![*=] | T![/=] | T![%=], BIN_EXPR) => {
@@ -239,7 +240,8 @@ fn punctuation(
             T![;] => HlPunct::Semi,
             T![.] => HlPunct::Dot,
             _ => HlPunct::Other,
-        }.into(),
+        }
+        .into(),
     }
 }
 
@@ -848,7 +850,8 @@ fn highlight_name_ref_by_syntax(
                     SymbolKind::Struct
                 } else {
                     SymbolKind::Const
-                }.into(),
+                }
+                .into(),
             }
         }
         ASSOC_TYPE_ARG => SymbolKind::TypeAlias.into(),

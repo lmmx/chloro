@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29671 bytes
+Chloro size:   29693 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -37,12 +37,11 @@ Rustfmt size:  29841 bytes
      }
  
      /// Canonicalizes a query *response* `V`. When we canonicalize a
-             | RegionKind::ReEarlyParam(..)
              | RegionKind::ReError(..) => r,
  
--            RegionKind::RePlaceholder(placeholder) => canonicalizer
+             RegionKind::RePlaceholder(placeholder) => canonicalizer
 -                .canonical_var_for_region(CanonicalVarKind::PlaceholderRegion(placeholder), r),
-+            RegionKind::RePlaceholder(placeholder) => canonicalizer.canonical_var_for_region(
++            .canonical_var_for_region(
 +                CanonicalVarKind::PlaceholderRegion(placeholder),
 +                r,
 +            ),
@@ -56,13 +55,13 @@ Rustfmt size:  29841 bytes
      binder_index: DebruijnIndex,
  }
  
-             tcx,
              canonicalize_region_mode,
              query_state,
-+        ).unchecked_map(
-+            |((), val)| val,
          )
 -        .unchecked_map(|((), val)| val)
++        .unchecked_map(
++            |((), val)| val,
++        )
      }
  
      fn canonicalize_with_base<U, V>(

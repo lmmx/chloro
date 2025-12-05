@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2097 bytes
-Chloro size:   2087 bytes
+Chloro size:   2092 bytes
 Rustfmt size:  2131 bytes
 
 ✗ Outputs DIFFER
@@ -17,11 +17,8 @@ Rustfmt size:  2131 bytes
 -        ),
 +        format!("`await` is used inside {}, which is not an `async` context", d.location),
          display_range,
--    )
--    .stable()
-+    ).stable()
- }
- 
+     )
+     .stable()
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

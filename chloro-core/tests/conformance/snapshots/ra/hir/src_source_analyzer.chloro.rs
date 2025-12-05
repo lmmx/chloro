@@ -1758,7 +1758,8 @@ fn resolve_hir_path_qualifier(
                 .map(PathResolution::Def),
             None => Some(res),
         }
-    })().or_else(|| {
+    })()
+    .or_else(|| {
         resolver
             .resolve_module_path_in_items(db, path.mod_path()?)
             .take_types()

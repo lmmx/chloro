@@ -280,7 +280,8 @@ impl HasDocs for hir::ExternCrateDecl {
                 decl_docs += &crate_docs;
                 Some(decl_docs)
             }
-        }.map(
+        }
+        .map(
             Documentation::new,
         )
     }

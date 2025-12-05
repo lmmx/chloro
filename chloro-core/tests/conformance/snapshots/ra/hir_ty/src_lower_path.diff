@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55327 bytes
+Chloro size:   55336 bytes
 Rustfmt size:  57812 bytes
 
 ✗ Outputs DIFFER
@@ -189,13 +189,13 @@ Rustfmt size:  57812 bytes
          {
              self.on_diagnostic(PathLoweringDiagnostic::GenericArgsProhibited {
                  segment: (enum_segment + 1) as u32,
-             res,
              Some(assoc_name.clone()),
              check_alias,
-+        ).unwrap_or_else(
-+            || Ty::new_error(interner, ErrorGuaranteed),
          )
 -        .unwrap_or_else(|| Ty::new_error(interner, ErrorGuaranteed))
++        .unwrap_or_else(
++            || Ty::new_error(interner, ErrorGuaranteed),
++        )
      }
  
      fn lower_path_inner(&mut self, typeable: TyDefId, infer_args: bool) -> Ty<'db> {

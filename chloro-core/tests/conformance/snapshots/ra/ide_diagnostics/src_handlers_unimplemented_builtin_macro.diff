@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 573 bytes
-Chloro size:   568 bytes
+Chloro size:   573 bytes
 Rustfmt size:  573 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-         DiagnosticCode::Ra("unimplemented-builtin-macro", Severity::WeakWarning),
-         "unimplemented built-in macro".to_owned(),
-         d.node,
--    )
--    .stable()
-+    ).stable()
- }
+✓ Outputs are IDENTICAL

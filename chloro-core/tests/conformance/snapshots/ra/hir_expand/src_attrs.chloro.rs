@@ -114,7 +114,8 @@ impl RawAttrs {
         span_map: SpanMapRef<'_>,
         cfg_options: &CfgOptions,
     ) -> impl Iterator<Item = Attr> {
-        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map).flat_map(
+        Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map)
+        .flat_map(
             |attr| attr.expand_cfg_attr(db, cfg_options),
         )
     }

@@ -1,9 +1,54 @@
 use crate::formatter::config::MAX_WIDTH;
 use crate::formatter::write_indent;
-use ra_ap_syntax::SyntaxNode;
 use ra_ap_syntax::ast::{self, AstNode, HasArgList, HasGenericArgs};
+use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode};
 
 use super::try_format_expr_inner;
+
+/// Check if there's a newline after the opening paren in an argument list
+fn has_newline_after_open_paren(arg_list: &ast::ArgList) -> bool {
+    let mut after_lparen = false;
+    for child in arg_list.syntax().children_with_tokens() {
+        match &child {
+            NodeOrToken::Token(t) if t.kind() == SyntaxKind::L_PAREN => {
+                after_lparen = true;
+            }
+            NodeOrToken::Token(t) if after_lparen && t.kind() == SyntaxKind::WHITESPACE => {
+                return t.text().contains('\n');
+            }
+            NodeOrToken::Token(_) if after_lparen => {
+                return false;
+            }
+            NodeOrToken::Node(_) if after_lparen => {
+                return false;
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
+/// Check if there's a newline between the receiver and the dot in a method call
+fn has_newline_before_dot(node: &SyntaxNode) -> bool {
+    let mut found_receiver = false;
+    for child in node.children_with_tokens() {
+        match &child {
+            NodeOrToken::Node(_) if !found_receiver => {
+                found_receiver = true;
+            }
+            NodeOrToken::Token(t) if found_receiver && t.kind() == SyntaxKind::WHITESPACE => {
+                if t.text().contains('\n') {
+                    return true;
+                }
+            }
+            NodeOrToken::Token(t) if t.kind() == SyntaxKind::DOT => {
+                return false;
+            }
+            _ => {}
+        }
+    }
+    false
+}
 
 pub fn format_array_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let array = ast::ArrayExpr::cast(node.clone())?;
@@ -89,17 +134,12 @@ pub fn format_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
 pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     let method = ast::MethodCallExpr::cast(node.clone())?;
 
-    // Check if this is part of a method chain - if so, don't format it here,
-    // let the parent handle the whole chain, or fall back to verbatim.
-    //
-    // A method chain is when the receiver is also a method call or field access.
     let receiver = method.receiver()?;
     let is_chain = matches!(
         receiver,
         ast::Expr::MethodCallExpr(_) | ast::Expr::FieldExpr(_) | ast::Expr::AwaitExpr(_)
     );
 
-    // If we're in a chain, preserve verbatim - proper chain formatting is complex
     if is_chain {
         return None;
     }
@@ -110,59 +150,70 @@ pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<Strin
 
     let receiver_str = try_format_expr_inner(receiver.syntax(), indent)?;
 
-    // Preserve generic args (turbofish)
     let generic_args = method
         .generic_arg_list()
         .map(|g| g.syntax().text().to_string())
         .unwrap_or_default();
 
-    // No args - always single line for this call
+    // Check if there's a newline before the dot
+    let newline_before_dot = has_newline_before_dot(node);
+
+    // Check if args were originally on separate lines
+    let multiline_args = has_newline_after_open_paren(&arg_list);
+
+    // Build the dot and method part
+    let dot_method = if newline_before_dot {
+        format!("\n{}.{}{}", " ".repeat(indent), name.text(), generic_args)
+    } else {
+        format!(".{}{}", name.text(), generic_args)
+    };
+
+    // No args
     if args.is_empty() {
-        return Some(format!(
-            "{}.{}{}()",
-            receiver_str,
-            name.text(),
-            generic_args
-        ));
+        return Some(format!("{}{}()", receiver_str, dot_method));
     }
 
     // Format args
     let args_formatted: Option<Vec<_>> = args
         .iter()
-        .map(|a| try_format_expr_inner(a.syntax(), indent))
+        .map(|a| try_format_expr_inner(a.syntax(), indent + 4))
         .collect();
 
     let args_vec = args_formatted?;
 
+    // If original had multiline args, preserve that
+    if multiline_args {
+        let mut buf = String::new();
+        buf.push_str(&receiver_str);
+        buf.push_str(&dot_method);
+        buf.push_str("(\n");
+
+        for arg_str in &args_vec {
+            write_indent(&mut buf, indent + 4);
+            buf.push_str(arg_str);
+            buf.push_str(",\n");
+        }
+
+        write_indent(&mut buf, indent);
+        buf.push(')');
+        return Some(buf);
+    }
+
     // Try single-line
-    let single_line = format!(
-        "{}.{}{}({})",
-        receiver_str,
-        name.text(),
-        generic_args,
-        args_vec.join(", ")
-    );
-    if indent + single_line.len() <= MAX_WIDTH {
+    let single_line = format!("{}{}({})", receiver_str, dot_method, args_vec.join(", "));
+    if indent + single_line.len() <= MAX_WIDTH && !newline_before_dot {
         return Some(single_line);
     }
 
     // Single argument that's already multi-line: snug wrap
     if args.len() == 1 && args_vec[0].contains('\n') {
-        return Some(format!(
-            "{}.{}{}({})",
-            receiver_str,
-            name.text(),
-            generic_args,
-            args_vec[0]
-        ));
+        return Some(format!("{}{}({})", receiver_str, dot_method, args_vec[0]));
     }
 
     // Multi-line args
     let mut buf = String::new();
     buf.push_str(&receiver_str);
-    buf.push('.');
-    buf.push_str(&name.text());
-    buf.push_str(&generic_args);
+    buf.push_str(&dot_method);
     buf.push_str("(\n");
 
     for arg_str in &args_vec {

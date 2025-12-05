@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81813 bytes
+Chloro size:   81852 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -560,11 +560,6 @@ Rustfmt size:  84055 bytes
      }
  
      fn is_sizedness_trait(self, def_id: Self::TraitId) -> bool {
-         self.replace_escaping_bound_vars_uncached(
-             value,
-             FnMutDelegate {
--                regions: &mut |r: BoundRegion| {
-+            regions: &mut |r: BoundRegion| {
                      Region::new_bound(
                          self,
                          DebruijnIndex::ZERO,
@@ -575,8 +570,7 @@ Rustfmt size:  84055 bytes
 +                        BoundRegion { var: shift_bv(r.var), kind: r.kind },
                      )
                  },
--                types: &mut |t: BoundTy| {
-+            types: &mut |t: BoundTy| {
+                 types: &mut |t: BoundTy| {
                      Ty::new_bound(
                          self,
                          DebruijnIndex::ZERO,
@@ -587,7 +581,7 @@ Rustfmt size:  84055 bytes
 +                        BoundTy { var: shift_bv(t.var), kind: t.kind },
                      )
                  },
--                consts: &mut |c| {
+                 consts: &mut |c| {
 -                    Const::new_bound(
 -                        self,
 -                        DebruijnIndex::ZERO,
@@ -595,14 +589,10 @@ Rustfmt size:  84055 bytes
 -                            var: shift_bv(c.var),
 -                        },
 -                    )
-+            consts: &mut |c| {
 +                    Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
                  },
--            },
-+        },
+             },
          )
-     }
- 
  
  mod tls_db {
      use std::{cell::Cell, ptr::NonNull};
@@ -670,11 +660,11 @@ Rustfmt size:  84055 bytes
 -
      #[inline]
      pub fn with_attached_db<R>(op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
--        GLOBAL_DB.with(
+         GLOBAL_DB.with(
 -            #[inline]
 -            |a| a.with(op),
--        )
-+        GLOBAL_DB.with(#[inline] |a| a.with(op))
++            #[inline] |a| a.with(op),
+         )
      }
  }
  

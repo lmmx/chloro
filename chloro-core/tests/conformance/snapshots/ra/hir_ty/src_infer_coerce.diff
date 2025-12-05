@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 68687 bytes
-Chloro size:   68675 bytes
+Chloro size:   68695 bytes
 Rustfmt size:  71040 bytes
 
 ✗ Outputs DIFFER
@@ -279,15 +279,13 @@ Rustfmt size:  71040 bytes
                  a_raw,
                  b,
 -                [Adjustment {
--                    kind: Adjust::Deref(None),
--                    target: mt_a.ty,
--                }],
 +                [
-+                Adjustment {
-+                kind: Adjust::Deref(None),
-+                target: mt_a.ty,
-+            },
-+            ],
++                    Adjustment {
+                     kind: Adjust::Deref(None),
+                     target: mt_a.ty,
+-                }],
++                },
++                ],
                  Adjust::Borrow(AutoBorrow::RawPtr(mutbl_b)),
              )
          } else if mt_a.mutbl != mutbl_b {

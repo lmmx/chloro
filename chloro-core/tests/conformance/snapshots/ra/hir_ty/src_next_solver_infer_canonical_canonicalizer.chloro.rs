@@ -197,7 +197,8 @@ impl CanonicalizeMode for CanonicalizeQueryResponse {
             | RegionKind::ReEarlyParam(..)
             | RegionKind::ReError(..) => r,
 
-            RegionKind::RePlaceholder(placeholder) => canonicalizer.canonical_var_for_region(
+            RegionKind::RePlaceholder(placeholder) => canonicalizer
+            .canonical_var_for_region(
                 CanonicalVarKind::PlaceholderRegion(placeholder),
                 r,
             ),
@@ -546,7 +547,8 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
             tcx,
             canonicalize_region_mode,
             query_state,
-        ).unchecked_map(
+        )
+        .unchecked_map(
             |((), val)| val,
         )
     }

@@ -14,7 +14,8 @@ pub(crate) fn invalid_derive_target(
         DiagnosticCode::RustcHardError("E0774"),
         "`derive` may only be applied to `struct`s, `enum`s and `union`s",
         display_range,
-    ).stable()
+    )
+    .stable()
 }
 
 #[cfg(test)]

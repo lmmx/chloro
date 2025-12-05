@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43868 bytes
+Chloro size:   43881 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -419,12 +419,11 @@ Rustfmt size:  45085 bytes
      /// Returns the crate this thing is defined within.
      #[inline]
      #[doc(alias = "crate")]
-                 GenericParamId::TypeParamId(it) => it.parent(),
                  GenericParamId::ConstParamId(it) => it.parent(),
                  GenericParamId::LifetimeParamId(it) => it.parent,
--            }
+             }
 -            .module(db),
-+            }.module(
++            .module(
 +                db,
 +            ),
              AttrDefId::MacroId(it) => it.module(db),

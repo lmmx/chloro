@@ -52,7 +52,8 @@ pub(crate) fn unresolved_field(
             )
         },
     ),
-    ).with_fixes(
+    )
+    .with_fixes(
         fixes(ctx, d),
     )
 }

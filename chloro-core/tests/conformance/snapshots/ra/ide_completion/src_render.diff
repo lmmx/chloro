@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98342 bytes
+Chloro size:   98347 bytes
 Rustfmt size:  99223 bytes
 
 ✗ Outputs DIFFER
@@ -60,6 +60,15 @@ Rustfmt size:  99223 bytes
  
          if !expected_fn_type
              && let Some(receiver) = &dot_access.receiver
+ }
+ 
+ fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
+-    receiver.map_or_else(
++    receiver
++    .map_or_else(
+         || field_name.into(),
+         |receiver| format_smolstr!("{}.{field_name}", receiver),
+     )
          field_with_receiver(receiver.as_deref(), &field.to_string()),
          ctx.completion.edition,
      );

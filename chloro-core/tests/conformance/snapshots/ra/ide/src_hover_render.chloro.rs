@@ -453,7 +453,8 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
                 return d.as_extern_assoc_item(db).map(|_| "<extern>".to_owned());
             }
         }
-    }.map(
+    }
+    .map(
         |name| name.display(db, edition).to_string(),
     )
 }

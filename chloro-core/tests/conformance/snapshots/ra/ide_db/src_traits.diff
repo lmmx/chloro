@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8057 bytes
-Chloro size:   8084 bytes
+Chloro size:   8089 bytes
 Rustfmt size:  8222 bytes
 
 ✗ Outputs DIFFER
@@ -40,12 +40,11 @@ Rustfmt size:  8222 bytes
  }
  
  /// Converts associated trait impl items to their trait definition counterpart
-         let assoc = def.as_assoc_item(db)?;
          let trait_ = assoc.implemented_trait(db)?;
          assoc_item_of_trait(db, assoc, trait_)
--    })()
+     })()
 -    .unwrap_or(def)
-+    })().unwrap_or(
++    .unwrap_or(
 +        def,
 +    )
  }

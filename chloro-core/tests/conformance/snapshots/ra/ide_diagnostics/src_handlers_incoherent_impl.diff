@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2085 bytes
-Chloro size:   2088 bytes
+Chloro size:   2093 bytes
 Rustfmt size:  2085 bytes
 
 ✗ Outputs DIFFER
@@ -19,14 +19,6 @@ Rustfmt size:  2085 bytes
      let display_range = adjusted_display_range(ctx, InFile::new(d.file_id, d.impl_), &|node| {
          Some(TextRange::new(
              node.syntax().text_range().start(),
-         DiagnosticCode::RustcHardError("E0210"),
-         "cannot define inherent `impl` for foreign type".to_owned(),
-         display_range,
--    )
--    .stable()
-+    ).stable()
- }
- 
  #[cfg(test)]
  mod change_case {
      use crate::tests::check_diagnostics;

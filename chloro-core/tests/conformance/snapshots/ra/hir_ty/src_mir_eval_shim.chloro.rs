@@ -1100,7 +1100,8 @@ impl<'db> Evaluator<'db> {
                     return Err(MirEvalError::InternalError("ctpop arg is not provided".into()));
                 };
                 let result = u128::from_le_bytes(pad16(arg.get(self)?, false)).count_ones();
-                destination.write_from_bytes(
+                destination
+                .write_from_bytes(
                     self,
                     &(result as u128).to_le_bytes()[0..destination.size],
                 )
@@ -1112,7 +1113,8 @@ impl<'db> Evaluator<'db> {
                 let result =
                     u128::from_le_bytes(pad16(arg.get(self)?, false)).leading_zeros() as usize;
                 let result = result - (128 - arg.interval.size * 8);
-                destination.write_from_bytes(
+                destination
+                .write_from_bytes(
                     self,
                     &(result as u128).to_le_bytes()[0..destination.size],
                 )
@@ -1122,7 +1124,8 @@ impl<'db> Evaluator<'db> {
                     return Err(MirEvalError::InternalError("cttz arg is not provided".into()));
                 };
                 let result = u128::from_le_bytes(pad16(arg.get(self)?, false)).trailing_zeros();
-                destination.write_from_bytes(
+                destination
+                .write_from_bytes(
                     self,
                     &(result as u128).to_le_bytes()[0..destination.size],
                 )
@@ -1361,7 +1364,8 @@ impl<'db> Evaluator<'db> {
             }
             _ if needs_override => not_supported!("intrinsic {name} is not implemented"),
             _ => return Ok(false),
-        }.map(
+        }
+        .map(
             |()| true,
         )
     }

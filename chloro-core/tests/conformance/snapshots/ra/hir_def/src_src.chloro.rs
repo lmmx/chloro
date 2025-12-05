@@ -62,7 +62,8 @@ fn use_tree_source_map(db: &dyn DefDatabase, use_ast_id: AstId<ast::Use>) -> Are
         &mut |range| {
         span_map.get_or_insert_with(|| db.span_map(use_ast_id.file_id)).span_for_range(range).ctx
     },
-    ).expect(
+    )
+    .expect(
         "failed to lower use tree",
     ).1
 }

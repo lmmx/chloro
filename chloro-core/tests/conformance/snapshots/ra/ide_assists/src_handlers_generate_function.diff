@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74557 bytes
+Chloro size:   74567 bytes
 Rustfmt size:  76560 bytes
 
 ✗ Outputs DIFFER
@@ -154,11 +154,11 @@ Rustfmt size:  76560 bytes
 -    let adt_source = ctx
 -        .sema
 -        .find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
--    find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()])
--        .map(|impl_| (impl_, range.file_id.file_id(ctx.db())))
 +    let adt_source =
 +        ctx.sema.find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
-+    find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()]).map(
+     find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()])
+-        .map(|impl_| (impl_, range.file_id.file_id(ctx.db())))
++    .map(
 +        |impl_| (impl_, range.file_id.file_id(ctx.db())),
 +    )
  }
@@ -433,9 +433,9 @@ Rustfmt size:  76560 bytes
          }
      }
  
--    maybe_displayed_type(ctx, target_module, fn_arg, generic_params)
+     maybe_displayed_type(ctx, target_module, fn_arg, generic_params)
 -        .unwrap_or_else(|| String::from("_"))
-+    maybe_displayed_type(ctx, target_module, fn_arg, generic_params).unwrap_or_else(
++    .unwrap_or_else(
 +        || String::from("_"),
 +    )
  }

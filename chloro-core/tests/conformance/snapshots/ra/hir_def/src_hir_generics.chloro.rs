@@ -389,7 +389,8 @@ impl GenericParams {
                 provenance: TypeParamProvenance::TraitSelf,
                 ..
             })
-        ).then(
+        )
+        .then(
             || Self::SELF_PARAM_ID_IN_SELF,
         )
     }

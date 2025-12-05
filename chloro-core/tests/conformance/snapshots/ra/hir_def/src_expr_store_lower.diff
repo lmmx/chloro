@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   144974 bytes
+Chloro size:   145140 bytes
 Rustfmt size:  151577 bytes
 
 ✗ Outputs DIFFER
@@ -366,9 +366,9 @@ Rustfmt size:  151577 bytes
                  Some(ast::BlockModifier::AsyncGen(_)) => {
                      self.with_awaitable_block(Awaitable::Yes, |this| this.collect_block(e))
                  }
--                Some(ast::BlockModifier::Gen(_)) => self
+                 Some(ast::BlockModifier::Gen(_)) => self
 -                    .with_awaitable_block(Awaitable::No("non-async gen block"), |this| {
-+                Some(ast::BlockModifier::Gen(_)) => self.with_awaitable_block(
++                .with_awaitable_block(
 +                    Awaitable::No("non-async gen block"),
 +                    |this| {
                          this.collect_block(e)
@@ -759,16 +759,6 @@ Rustfmt size:  151577 bytes
              syntax_ptr,
          );
          self.alloc_expr(
-             Expr::Loop {
--                body: if_expr,
--                label: label.map(|it| it.1),
--            },
-+            body: if_expr,
-+            label: label.map(|it| it.1),
-+        },
-             syntax_ptr,
-         )
-     }
          let into_iter_fn_expr =
              self.alloc_expr(into_iter_fn.map_or(Expr::Missing, Expr::Path), syntax_ptr);
          let iterator = self.alloc_expr(
@@ -856,24 +846,19 @@ Rustfmt size:  151577 bytes
          self.add_definition_to_binding(iter_binding, iter_pat);
          self.alloc_expr(
              Expr::Match {
--                expr: iterator,
+                 expr: iterator,
 -                arms: Box::new([MatchArm {
--                    pat: iter_pat,
--                    guard: None,
--                    expr: loop_outer,
++                arms: Box::new([
++                    MatchArm {
+                     pat: iter_pat,
+                     guard: None,
+                     expr: loop_outer,
 -                }]),
-+            expr: iterator,
-+            arms: Box::new([
-+                MatchArm {
-+                pat: iter_pat,
-+                guard: None,
-+                expr: loop_outer,
++                },
++                ]),
              },
-+            ]),
-+        },
              syntax_ptr,
          )
-     }
          let try_from_residual = self.lang_path(LangItem::TryTraitFromResidual);
          let operand = self.collect_expr_opt(e.expr());
          let try_branch = self.alloc_expr(try_branch.map_or(Expr::Missing, Expr::Path), syntax_ptr);
@@ -1358,18 +1343,6 @@ Rustfmt size:  151577 bytes
                      .collect(),
                  tail: Some(unsafe_arg_new),
                  label: None,
- 
-         self.alloc_expr(
-             Expr::Call {
--                callee: new_v1_formatted,
--                args: Box::new([lit_pieces, args, format_options, unsafe_arg_new]),
--            },
-+            callee: new_v1_formatted,
-+            args: Box::new([lit_pieces, args, format_options, unsafe_arg_new]),
-+        },
-             syntax_ptr,
-         )
-     }
                  BindingAnnotation::Unannotated,
                  HygieneId::ROOT,
              );
@@ -1444,22 +1417,6 @@ Rustfmt size:  151577 bytes
          };
  
          if !let_stmts.is_empty() {
-             let call = self.alloc_expr_desugared(call_block);
-             self.alloc_expr(
-                 Expr::Block {
--                    id: None,
--                    statements: let_stmts.into(),
--                    tail: Some(call),
--                    label: None,
--                },
-+                id: None,
-+                statements: let_stmts.into(),
-+                tail: Some(call),
-+                label: None,
-+            },
-                 syntax_ptr,
-             )
-         } else {
                  Some(BuiltinUint::U32),
              )));
  
@@ -1488,10 +1445,64 @@ Rustfmt size:  151577 bytes
 -                path: LangItem::FormatPlaceholder
 -                    .path(self.db, self.module.krate())
 -                    .map(Box::new),
-+                path: LangItem::FormatPlaceholder.path(self.db, self.module.krate()).map(Box::new),
-                 fields: Box::new([position, flags, precision, width]),
-                 spread: None,
-             })
+-                fields: Box::new([position, flags, precision, width]),
+-                spread: None,
+-            })
++                    path: LangItem::FormatPlaceholder.path(self.db, self.module.krate()).map(Box::new),
++                    fields: Box::new([position, flags, precision, width]),
++                    spread: None,
++                })
+         } else {
+             let format_placeholder_new = {
+                 let format_placeholder_new = LangItem::FormatPlaceholder.ty_rel_path(
+                 }
+             };
+             self.alloc_expr_desugared(Expr::Call {
+-                callee: format_placeholder_new,
+-                args: Box::new([position, fill, align, flags, precision_expr, width_expr]),
+-            })
++                    callee: format_placeholder_new,
++                    args: Box::new([position, fill, align, flags, precision_expr, width_expr]),
++                })
+         }
+     }
+ 
+                     None => self.missing_expr(),
+                 };
+                 self.alloc_expr_desugared(Expr::Call {
+-                    callee: count_is,
+-                    args: Box::new([args]),
+-                })
++                        callee: count_is,
++                        args: Box::new([args]),
++                    })
+             }
+             Some(FormatCount::Argument(arg)) => {
+                 if let Ok(arg_index) = arg.index {
+                         None => self.missing_expr(),
+                     };
+                     self.alloc_expr_desugared(Expr::Call {
+-                        callee: count_param,
+-                        args: Box::new([args]),
+-                    })
++                            callee: count_param,
++                            args: Box::new([args]),
++                        })
+                 } else {
+                     // FIXME: This drops arg causing it to potentially not be resolved/type checked
+                     // when typing?
+             None => self.missing_expr(),
+         };
+         self.alloc_expr_desugared(Expr::Call {
+-            callee: new_fn,
+-            args: Box::new([arg]),
+-        })
++                callee: new_fn,
++                args: Box::new([arg]),
++            })
+     }
+ 
+     // endregion: format
      fn alloc_expr(&mut self, expr: Expr, ptr: ExprPtr) -> ExprId {
          let src = self.expander.in_file(ptr);
          let id = self.store.exprs.alloc(expr);
@@ -1593,12 +1604,11 @@ Rustfmt size:  151577 bytes
      }
  
      fn with_awaitable_block<T>(
- }
  
  fn comma_follows_token(t: Option<syntax::SyntaxToken>) -> bool {
--    (|| syntax::algo::skip_trivia_token(t?.next_token()?, syntax::Direction::Next))()
+     (|| syntax::algo::skip_trivia_token(t?.next_token()?, syntax::Direction::Next))()
 -        .is_some_and(|it| it.kind() == syntax::T![,])
-+    (|| syntax::algo::skip_trivia_token(t?.next_token()?, syntax::Direction::Next))().is_some_and(
++    .is_some_and(
 +        |it| it.kind() == syntax::T![,],
 +    )
  }

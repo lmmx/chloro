@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31662 bytes
-Chloro size:   31597 bytes
+Chloro size:   31606 bytes
 Rustfmt size:  32318 bytes
 
 ✗ Outputs DIFFER
@@ -66,15 +66,6 @@ Rustfmt size:  32318 bytes
              let (name, case_sensitive) = match to_import {
                  NameToImport::Fuzzy(name, case_sensitive) => {
                      (std::mem::take(name), *case_sensitive)
-                         .contains(&ScopeDef::ModuleDef(ModuleDef::Trait(trait_to_import)))
-                 },
-             ),
--        }
--        .into_iter()
-+        }.into_iter()
-     }
- 
-     fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {
              _ => None,
          }
      })();

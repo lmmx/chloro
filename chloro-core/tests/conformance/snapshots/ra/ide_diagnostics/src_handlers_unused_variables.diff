@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7192 bytes
-Chloro size:   7139 bytes
+Chloro size:   7144 bytes
 Rustfmt size:  7216 bytes
 
 ✗ Outputs DIFFER
@@ -24,7 +24,8 @@ Rustfmt size:  7216 bytes
 +        DiagnosticCode::RustcLint("unused_variables"),
 +        "unused variable",
 +        ast,
-+    ).with_fixes(name_range.and_then(|it| {
++    )
++    .with_fixes(name_range.and_then(|it| {
              fixes(
                  ctx.sema.db,
                  var_name,

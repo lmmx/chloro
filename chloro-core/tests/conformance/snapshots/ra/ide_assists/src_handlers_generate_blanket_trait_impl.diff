@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31919 bytes
-Chloro size:   31917 bytes
+Chloro size:   31933 bytes
 Rustfmt size:  32022 bytes
 
 ✗ Outputs DIFFER
@@ -71,10 +71,10 @@ Rustfmt size:  32022 bytes
  
 -    make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
 +    make::name(&name_gen.suggest_name(if has_iter {
-+        "I"
-+    } else {
-+        "T"
-+    }))
++            "I"
++        } else {
++            "T"
++        }))
  }
  
  fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {

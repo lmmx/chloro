@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34201 bytes
-Chloro size:   34253 bytes
+Chloro size:   34292 bytes
 Rustfmt size:  34820 bytes
 
 ✗ Outputs DIFFER
@@ -28,12 +28,6 @@ Rustfmt size:  34820 bytes
              match prefix_expr {
                  Some(ast::Expr::Literal(_)) => HlTag::NumericLiteral,
                  _ => HlTag::Operator(HlOperator::Other),
--            }
--            .into()
-+            }.into()
-         }
-         (T![+] | T![-] | T![*] | T![/] | T![%], BIN_EXPR) => HlOperator::Arithmetic.into(),
-         (T![+=] | T![-=] | T![*=] | T![/=] | T![%=], BIN_EXPR) => {
              HlOperator::Comparison.into()
          }
          (_, ATTR) => HlTag::AttributeBracket.into(),
@@ -60,15 +54,6 @@ Rustfmt size:  34820 bytes
                          })
                          .and_then(|it| AstPtr::try_from_raw(SyntaxNodePtr::new(&it)))
                          .is_some_and(is_unsafe_node);
-             T![;] => HlPunct::Semi,
-             T![.] => HlPunct::Dot,
-             _ => HlPunct::Other,
--        }
--        .into(),
-+        }.into(),
-     }
- }
- 
          NameRefClass::FieldShorthand { field_ref, .. } => {
              highlight_def(sema, krate, field_ref.into(), edition, true)
          }
@@ -132,12 +117,6 @@ Rustfmt size:  34820 bytes
                      SymbolKind::Struct
                  } else {
                      SymbolKind::Const
--                }
--                .into(),
-+                }.into(),
-             }
-         }
-         ASSOC_TYPE_ARG => SymbolKind::TypeAlias.into(),
  
  fn is_consumed_lvalue(node: &SyntaxNode, local: &hir::Local, db: &RootDatabase) -> bool {
      // When lvalues are passed as arguments and they're not Copy, then mark them as Consuming.

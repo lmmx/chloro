@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   44065 bytes
+Chloro size:   44074 bytes
 Rustfmt size:  44682 bytes
 
 ✗ Outputs DIFFER
@@ -144,9 +144,9 @@ Rustfmt size:  44682 bytes
              sema.to_def(&it).map(Definition::Label)
          } else {
              None
--        }
+         }
 -        .map(NameClass::Definition)
-+        }.map(
++        .map(
 +            NameClass::Definition,
 +        )
      }

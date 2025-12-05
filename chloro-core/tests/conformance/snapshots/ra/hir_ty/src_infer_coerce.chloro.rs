@@ -956,11 +956,11 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                 a_raw,
                 b,
                 [
-                Adjustment {
-                kind: Adjust::Deref(None),
-                target: mt_a.ty,
-            },
-            ],
+                    Adjustment {
+                    kind: Adjust::Deref(None),
+                    target: mt_a.ty,
+                },
+                ],
                 Adjust::Borrow(AutoBorrow::RawPtr(mutbl_b)),
             )
         } else if mt_a.mutbl != mutbl_b {

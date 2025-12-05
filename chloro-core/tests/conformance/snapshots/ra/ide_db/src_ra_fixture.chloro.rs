@@ -39,7 +39,8 @@ impl RootDatabase {
                 .map(|(file_id, range)| (file_id.file_id(&db), range))
                 .collect();
             (db, files, fixture.sysroot_files)
-        }).map_err(|error| {
+        })
+        .map_err(|error| {
             tracing::error!(
                 "cannot crate the crate graph: {}\nCrate graph:\n{}\n",
                 if let Some(&s) = error.downcast_ref::<&'static str>() {

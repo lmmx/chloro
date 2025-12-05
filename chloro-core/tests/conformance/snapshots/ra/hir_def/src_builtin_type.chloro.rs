@@ -203,36 +203,36 @@ impl BuiltinFloat {
 impl fmt::Display for BuiltinInt {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            BuiltinInt::Isize => "isize",
-            BuiltinInt::I8 => "i8",
-            BuiltinInt::I16 => "i16",
-            BuiltinInt::I32 => "i32",
-            BuiltinInt::I64 => "i64",
-            BuiltinInt::I128 => "i128",
-        })
+                BuiltinInt::Isize => "isize",
+                BuiltinInt::I8 => "i8",
+                BuiltinInt::I16 => "i16",
+                BuiltinInt::I32 => "i32",
+                BuiltinInt::I64 => "i64",
+                BuiltinInt::I128 => "i128",
+            })
     }
 }
 
 impl fmt::Display for BuiltinUint {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            BuiltinUint::Usize => "usize",
-            BuiltinUint::U8 => "u8",
-            BuiltinUint::U16 => "u16",
-            BuiltinUint::U32 => "u32",
-            BuiltinUint::U64 => "u64",
-            BuiltinUint::U128 => "u128",
-        })
+                BuiltinUint::Usize => "usize",
+                BuiltinUint::U8 => "u8",
+                BuiltinUint::U16 => "u16",
+                BuiltinUint::U32 => "u32",
+                BuiltinUint::U64 => "u64",
+                BuiltinUint::U128 => "u128",
+            })
     }
 }
 
 impl fmt::Display for BuiltinFloat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            BuiltinFloat::F16 => "f16",
-            BuiltinFloat::F32 => "f32",
-            BuiltinFloat::F64 => "f64",
-            BuiltinFloat::F128 => "f128",
-        })
+                BuiltinFloat::F16 => "f16",
+                BuiltinFloat::F32 => "f32",
+                BuiltinFloat::F64 => "f64",
+                BuiltinFloat::F128 => "f128",
+            })
     }
 }

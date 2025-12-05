@@ -264,7 +264,8 @@ impl HasSource for Param<'_> {
                     }
                 } else {
                     params.params().nth(self.idx).map(Either::Right)
-                }.map(
+                }
+                .map(
                     |value| InFile { file_id, value },
                 )
             }

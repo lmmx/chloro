@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   45275 bytes
+Chloro size:   45301 bytes
 Rustfmt size:  46860 bytes
 
 ✗ Outputs DIFFER
@@ -394,13 +394,10 @@ Rustfmt size:  46860 bytes
 -            adt.where_clause(),
 -            body,
 -        ),
--    }
--    .clone_for_update()
 +        None => make::impl_(cfg_attrs, generic_params, generic_args, ty, adt.where_clause(), body),
-+    }.clone_for_update()
+     }
+     .clone_for_update()
  }
- 
- pub(crate) fn add_method_to_adt(
              }
              ReferenceConversionType::Result => {
                  let mut type_arguments = self.ty.type_arguments();
@@ -421,12 +418,11 @@ Rustfmt size:  46860 bytes
                  format!("Result<&{first_type_argument_name}, &{second_type_argument_name}>")
              }
          };
-                 if self.impls_deref {
                      make::expr_ref(expr, false)
                  } else {
--                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([]))
+                     make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([]))
 -                        .into()
-+                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([])).into()
++                    .into()
                  }
              }
          }
