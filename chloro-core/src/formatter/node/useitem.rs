@@ -1,5 +1,5 @@
 use ra_ap_syntax::{
-    AstNode, SyntaxNode,
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasVisibility},
 };
 
@@ -15,6 +15,28 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
         Some(u) => u,
         None => return,
     };
+
+    // Output leading non-doc comments (// style) that appear before visibility/keywords
+    for child in node.children_with_tokens() {
+        match child {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::COMMENT {
+                    let text = t.text();
+                    // Skip doc comments - they're handled by doc_comments() below
+                    if !text.starts_with("///") && !text.starts_with("//!") {
+                        buf.line(indent, text);
+                    }
+                } else if t.kind() != SyntaxKind::WHITESPACE {
+                    // Hit a non-comment, non-whitespace token - stop
+                    break;
+                }
+            }
+            NodeOrToken::Node(_) => {
+                // Hit a node (like VISIBILITY) - stop
+                break;
+            }
+        }
+    }
 
     // Handle attributes (like #[cfg(...)])
     buf.attrs(&use_, indent);
