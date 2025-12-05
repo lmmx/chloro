@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32319 bytes
+Chloro size:   32329 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -160,18 +160,6 @@ Rustfmt size:  32663 bytes
      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
          write!(f, "Binder<")?;
          match self.0.internee.skip_binder() {
- }
- 
- #[salsa::interned(constructor = new_)]
--pub struct Clauses<'db> {
--    #[returns(ref)]
--    inner_: InternedClausesWrapper<'db>,
--}
-+pub struct Clauses<'db> { #[returns(ref)]
-+    inner_: InternedClausesWrapper<'db> }
- 
- impl<'db> Clauses<'db> {
-     pub fn new_from_iter(
  
  impl<'db> IntoIterator for Clauses<'db> {
      type Item = Clause<'db>;
@@ -203,10 +191,8 @@ Rustfmt size:  32663 bytes
  
 -// We could cram the reveal into the clauses like rustc does, probably
  #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, TypeVisitable, TypeFoldable)]
--pub struct ParamEnv<'db> {
--    pub(crate) clauses: Clauses<'db>,
--}
-+pub struct ParamEnv<'db> { pub(crate) clauses: Clauses<'db> }
+ pub struct ParamEnv<'db> {
+     pub(crate) clauses: Clauses<'db>,
  
  impl<'db> ParamEnv<'db> {
      pub fn empty() -> Self {

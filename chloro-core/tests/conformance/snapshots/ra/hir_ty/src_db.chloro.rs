@@ -322,22 +322,30 @@ pub struct InternedLifetimeParamId {
 
 #[salsa_macros::interned(no_lifetime, debug, revisions = usize::MAX)]
 #[derive(PartialOrd, Ord)]
-pub struct InternedConstParamId { pub loc: ConstParamId }
+pub struct InternedConstParamId {
+    pub loc: ConstParamId,
+}
 
 #[salsa_macros::interned(no_lifetime, debug, revisions = usize::MAX)]
 #[derive(PartialOrd, Ord)]
-pub struct InternedOpaqueTyId { pub loc: ImplTraitId<'db> }
+pub struct InternedOpaqueTyId {
+    pub loc: ImplTraitId<'db>,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct InternedClosure(pub DefWithBodyId, pub ExprId);
 
 #[salsa_macros::interned(no_lifetime, debug, revisions = usize::MAX)]
 #[derive(PartialOrd, Ord)]
-pub struct InternedClosureId { pub loc: InternedClosure }
+pub struct InternedClosureId {
+    pub loc: InternedClosure,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct InternedCoroutine(pub DefWithBodyId, pub ExprId);
 
 #[salsa_macros::interned(no_lifetime, debug, revisions = usize::MAX)]
 #[derive(PartialOrd, Ord)]
-pub struct InternedCoroutineId { pub loc: InternedCoroutine }
+pub struct InternedCoroutineId {
+    pub loc: InternedCoroutine,
+}

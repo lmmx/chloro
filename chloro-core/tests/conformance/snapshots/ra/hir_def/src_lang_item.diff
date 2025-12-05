@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32624 bytes
-Chloro size:   32711 bytes
+Chloro size:   32716 bytes
 Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
@@ -28,16 +28,6 @@ Rustfmt size:  32624 bytes
  }
  
  /// Salsa query. Look for a lang item, starting from the specified crate and recursively
- }
- 
- #[derive(Default, Debug, Clone, PartialEq, Eq)]
--pub struct LangItems {
--    items: FxHashMap<LangItem, LangItemTarget>,
--}
-+pub struct LangItems { items: FxHashMap<LangItem, LangItemTarget> }
- 
- impl LangItems {
-     pub fn target(&self, item: LangItem) -> Option<LangItemTarget> {
          db: &dyn DefDatabase,
          item: T,
          constructor: fn(T) -> LangItemTarget,

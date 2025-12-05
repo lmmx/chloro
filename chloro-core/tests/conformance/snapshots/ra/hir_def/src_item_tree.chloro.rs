@@ -261,7 +261,9 @@ impl ItemTree {
 }
 
 #[derive(Default, Debug, Eq, PartialEq)]
-struct ItemVisibilities { arena: ThinVec<RawVisibility> }
+struct ItemVisibilities {
+    arena: ThinVec<RawVisibility>,
+}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 enum SmallModItem {
@@ -434,7 +436,9 @@ pub struct Use {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct UseTree { kind: UseTreeKind }
+pub struct UseTree {
+    kind: UseTreeKind,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImportAlias {
@@ -501,7 +505,9 @@ pub struct ExternCrate {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct ExternBlock { pub(crate) children: Box<[ModItemId]> }
+pub struct ExternBlock {
+    pub(crate) children: Box<[ModItemId]>,
+}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Function {

@@ -150,7 +150,9 @@ pub trait ExpandDatabase {
 }
 
 #[salsa_macros::interned(no_lifetime, id = span::SyntaxContext, revisions = usize::MAX)]
-pub struct SyntaxContextWrapper { pub data: SyntaxContext }
+pub struct SyntaxContextWrapper {
+    pub data: SyntaxContext,
+}
 
 fn syntax_context(db: &dyn ExpandDatabase, file: HirFileId, edition: Edition) -> SyntaxContext {
     match file {

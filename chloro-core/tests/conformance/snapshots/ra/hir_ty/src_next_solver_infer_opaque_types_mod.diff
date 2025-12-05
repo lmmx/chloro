@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 937 bytes
-Chloro size:   932 bytes
+Chloro size:   937 bytes
 Rustfmt size:  976 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,7 @@ Rustfmt size:  976 bytes
 +use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
  
  #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
--pub struct OpaqueHiddenType<'db> {
--    pub ty: Ty<'db>,
--}
-+pub struct OpaqueHiddenType<'db> { pub ty: Ty<'db> }
- 
- impl<'db> InferCtxt<'db> {
-     /// Insert a hidden type into the opaque type storage, making sure
+ pub struct OpaqueHiddenType<'db> {
          opaque_type_key: OpaqueTypeKey<'db>,
          hidden_ty: OpaqueHiddenType<'db>,
      ) -> Option<Ty<'db>> {

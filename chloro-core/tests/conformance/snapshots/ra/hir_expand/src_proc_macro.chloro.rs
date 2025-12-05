@@ -192,7 +192,9 @@ impl PartialEq for ProcMacro {
 
 /// A custom proc-macro expander handle. This handle together with its crate resolves to a [`ProcMacro`]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub struct CustomProcMacroExpander { proc_macro_id: u32 }
+pub struct CustomProcMacroExpander {
+    proc_macro_id: u32,
+}
 
 impl CustomProcMacroExpander {
     const MISSING_EXPANDER: u32 = !0;

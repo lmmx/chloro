@@ -301,7 +301,9 @@ pub(crate) struct ParamContext {
 
 /// The state of the lifetime we are completing.
 #[derive(Debug)]
-pub(crate) struct LifetimeContext { pub(crate) kind: LifetimeKind }
+pub(crate) struct LifetimeContext {
+    pub(crate) kind: LifetimeKind,
+}
 
 /// The kind of lifetime we are completing.
 #[derive(Debug)]

@@ -157,7 +157,9 @@ pub(crate) fn outgoing_calls(
 }
 
 #[derive(Default)]
-struct CallLocations { funcs: FxIndexMap<NavigationTarget, Vec<FileRange>> }
+struct CallLocations {
+    funcs: FxIndexMap<NavigationTarget, Vec<FileRange>>,
+}
 
 impl CallLocations {
     fn add(&mut self, target: NavigationTarget, range: FileRange) {

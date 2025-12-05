@@ -8,7 +8,9 @@ use syntax::{AstNode, SyntaxKind::*, T, ast};
 
 use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
 
-pub struct GotoImplementationConfig { pub filter_adjacent_derive_implementations: bool }
+pub struct GotoImplementationConfig {
+    pub filter_adjacent_derive_implementations: bool,
+}
 
 // Feature: Go to Implementation
 //

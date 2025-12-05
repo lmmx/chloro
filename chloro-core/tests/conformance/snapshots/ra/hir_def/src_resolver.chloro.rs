@@ -1215,7 +1215,9 @@ fn to_type_ns(per_ns: PerNs) -> Option<(TypeNs, Option<ImportOrExternCrate>)> {
 }
 
 #[derive(Default)]
-struct ScopeNames { map: FxIndexMap<Name, SmallVec<[ScopeDef; 1]>> }
+struct ScopeNames {
+    map: FxIndexMap<Name, SmallVec<[ScopeDef; 1]>>,
+}
 
 impl ScopeNames {
     fn add(&mut self, name: &Name, def: ScopeDef) {

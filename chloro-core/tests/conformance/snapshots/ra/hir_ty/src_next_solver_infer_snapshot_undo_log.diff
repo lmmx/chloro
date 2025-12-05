@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6956 bytes
-Chloro size:   6881 bytes
+Chloro size:   6886 bytes
 Rustfmt size:  7094 bytes
 
 ✗ Outputs DIFFER
@@ -19,13 +19,8 @@ Rustfmt size:  7094 bytes
 -use crate::next_solver::OpaqueTypeKey;
 +use crate::next_solver::infer::{InferCtxtInner, region_constraints, type_variable};
  
--pub struct Snapshot {
--    pub(crate) undo_len: usize,
--}
-+pub struct Snapshot { pub(crate) undo_len: usize }
- 
- /// Records the "undo" data for a single operation that affects some form of inference variable.
- #[derive(Clone)]
+ pub struct Snapshot {
+     pub(crate) undo_len: usize,
      }
  }
  

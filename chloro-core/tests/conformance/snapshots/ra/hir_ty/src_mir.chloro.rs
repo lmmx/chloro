@@ -58,7 +58,9 @@ fn return_slot<'db>() -> LocalId<'db> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Local<'db> { pub ty: Ty<'db> }
+pub struct Local<'db> {
+    pub ty: Ty<'db>,
+}
 
 /// An operand in MIR represents a "value" in Rust, the definition of which is undecided and part of
 /// the memory model. One proposal for a definition of values can be found [on UCG][value-def].

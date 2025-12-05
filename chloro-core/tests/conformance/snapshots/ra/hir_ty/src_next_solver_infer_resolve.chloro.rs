@@ -63,7 +63,9 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for OpportunisticVarResolver<'a, 'db> 
     }
 }
 
-pub struct ReplaceInferWithError<'db> { interner: DbInterner<'db> }
+pub struct ReplaceInferWithError<'db> {
+    interner: DbInterner<'db>,
+}
 
 impl<'db> ReplaceInferWithError<'db> {
     #[inline]

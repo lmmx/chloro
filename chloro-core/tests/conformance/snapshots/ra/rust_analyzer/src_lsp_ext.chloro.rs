@@ -61,7 +61,9 @@ impl Request for AnalyzerStatus {
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct AnalyzerStatusParams { pub text_document: Option<TextDocumentIdentifier> }
+pub struct AnalyzerStatusParams {
+    pub text_document: Option<TextDocumentIdentifier>,
+}
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -89,7 +91,9 @@ pub struct FetchDependencyListParams {
 
 #[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct FetchDependencyListResult { pub crates: Vec<CrateInfoResult> }
+pub struct FetchDependencyListResult {
+    pub crates: Vec<CrateInfoResult>,
+}
 
 pub enum MemoryUsage {
 }
@@ -137,7 +141,9 @@ impl Request for ViewSyntaxTree {
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ViewSyntaxTreeParams { pub text_document: TextDocumentIdentifier }
+pub struct ViewSyntaxTreeParams {
+    pub text_document: TextDocumentIdentifier,
+}
 
 pub enum ViewHir {
 }
@@ -203,7 +209,9 @@ impl Request for ViewCrateGraph {
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ViewItemTreeParams { pub text_document: TextDocumentIdentifier }
+pub struct ViewItemTreeParams {
+    pub text_document: TextDocumentIdentifier,
+}
 
 pub enum ViewItemTree {
 }
@@ -218,7 +226,9 @@ impl Request for ViewItemTree {
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct DiscoverTestParams { pub test_id: Option<String> }
+pub struct DiscoverTestParams {
+    pub test_id: Option<String>,
+}
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -380,7 +390,9 @@ impl Request for ViewRecursiveMemoryLayout {
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct RecursiveMemoryLayout { pub nodes: Vec<MemoryLayoutNode> }
+pub struct RecursiveMemoryLayout {
+    pub nodes: Vec<MemoryLayoutNode>,
+}
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -433,7 +445,9 @@ impl Notification for OpenServerLogs {
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct RunFlycheckParams { pub text_document: Option<TextDocumentIdentifier> }
+pub struct RunFlycheckParams {
+    pub text_document: Option<TextDocumentIdentifier>,
+}
 
 pub enum MatchingBrace {
 }
@@ -585,7 +599,9 @@ impl Request for RelatedTests {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct TestInfo { pub runnable: Runnable }
+pub struct TestInfo {
+    pub runnable: Runnable,
+}
 
 pub enum Ssr {
 }
@@ -830,7 +846,9 @@ impl Request for OpenCargoToml {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct OpenCargoTomlParams { pub text_document: TextDocumentIdentifier }
+pub struct OpenCargoTomlParams {
+    pub text_document: TextDocumentIdentifier,
+}
 
 /// Information about CodeLens, that is to be resolved.
 #[derive(Debug, Serialize, Deserialize)]
@@ -952,7 +970,11 @@ pub struct InlayHintResolveData {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CompletionImport { pub full_import_path: String }
+pub struct CompletionImport {
+    pub full_import_path: String,
+}
 
 #[derive(Debug, Deserialize, Default)]
-pub struct ClientCommandOptions { pub commands: Vec<String> }
+pub struct ClientCommandOptions {
+    pub commands: Vec<String>,
+}

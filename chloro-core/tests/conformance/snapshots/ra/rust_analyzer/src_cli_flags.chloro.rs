@@ -228,13 +228,17 @@ pub struct LspServer {
 }
 
 #[derive(Debug)]
-pub struct Parse { pub no_dump: bool }
+pub struct Parse {
+    pub no_dump: bool,
+}
 
 #[derive(Debug)]
 pub struct Symbols;
 
 #[derive(Debug)]
-pub struct Highlight { pub rainbow: bool }
+pub struct Highlight {
+    pub rainbow: bool,
+}
 
 #[derive(Debug)]
 pub struct AnalysisStats {
@@ -260,7 +264,9 @@ pub struct AnalysisStats {
 }
 
 #[derive(Debug)]
-pub struct RunTests { pub path: PathBuf }
+pub struct RunTests {
+    pub path: PathBuf,
+}
 
 #[derive(Debug)]
 pub struct RustcTests {
@@ -295,7 +301,9 @@ pub struct PrimeCaches {
 }
 
 #[derive(Debug)]
-pub struct Ssr { pub rule: Vec<SsrRule> }
+pub struct Ssr {
+    pub rule: Vec<SsrRule>,
+}
 
 #[derive(Debug)]
 pub struct Search {

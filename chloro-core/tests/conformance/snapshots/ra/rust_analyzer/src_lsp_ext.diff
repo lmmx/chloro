@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   23986 bytes
+Chloro size:   24041 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
@@ -65,15 +65,6 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "rust-analyzer/analyzerStatus";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
--pub struct AnalyzerStatusParams {
--    pub text_document: Option<TextDocumentIdentifier>,
--}
-+pub struct AnalyzerStatusParams { pub text_document: Option<TextDocumentIdentifier> }
- 
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
      pub version: Option<String>,
      pub path: Url,
  }
@@ -98,10 +89,8 @@ Rustfmt size:  24042 bytes
  
  #[derive(Deserialize, Serialize, Debug, Default)]
  #[serde(rename_all = "camelCase")]
--pub struct FetchDependencyListResult {
--    pub crates: Vec<CrateInfoResult>,
--}
-+pub struct FetchDependencyListResult { pub crates: Vec<CrateInfoResult> }
+     pub crates: Vec<CrateInfoResult>,
+ }
  
 -pub enum MemoryUsage {}
 +pub enum MemoryUsage {
@@ -151,12 +140,8 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "rust-analyzer/viewSyntaxTree";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
--pub struct ViewSyntaxTreeParams {
--    pub text_document: TextDocumentIdentifier,
--}
-+pub struct ViewSyntaxTreeParams { pub text_document: TextDocumentIdentifier }
+     pub text_document: TextDocumentIdentifier,
+ }
  
 -pub enum ViewHir {}
 +pub enum ViewHir {
@@ -221,12 +206,8 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "rust-analyzer/viewCrateGraph";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
--pub struct ViewItemTreeParams {
--    pub text_document: TextDocumentIdentifier,
--}
-+pub struct ViewItemTreeParams { pub text_document: TextDocumentIdentifier }
+     pub text_document: TextDocumentIdentifier,
+ }
  
 -pub enum ViewItemTree {}
 +pub enum ViewItemTree {
@@ -240,15 +221,6 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "rust-analyzer/viewItemTree";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
--pub struct DiscoverTestParams {
--    pub test_id: Option<String>,
--}
-+pub struct DiscoverTestParams { pub test_id: Option<String> }
- 
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
      pub scope_file: Option<Vec<TextDocumentIdentifier>>,
  }
  
@@ -369,15 +341,6 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "rust-analyzer/viewRecursiveMemoryLayout";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
--pub struct RecursiveMemoryLayout {
--    pub nodes: Vec<MemoryLayoutNode>,
--}
-+pub struct RecursiveMemoryLayout { pub nodes: Vec<MemoryLayoutNode> }
- 
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
      pub children_len: u64,
  }
  
@@ -421,12 +384,8 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "rust-analyzer/openServerLogs";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
- #[serde(rename_all = "camelCase")]
--pub struct RunFlycheckParams {
--    pub text_document: Option<TextDocumentIdentifier>,
--}
-+pub struct RunFlycheckParams { pub text_document: Option<TextDocumentIdentifier> }
+     pub text_document: Option<TextDocumentIdentifier>,
+ }
  
 -pub enum MatchingBrace {}
 +pub enum MatchingBrace {
@@ -521,11 +480,8 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "rust-analyzer/relatedTests";
  }
  
- #[derive(Debug, Deserialize, Serialize)]
--pub struct TestInfo {
--    pub runnable: Runnable,
--}
-+pub struct TestInfo { pub runnable: Runnable }
+     pub runnable: Runnable,
+ }
  
 -pub enum Ssr {}
 +pub enum Ssr {
@@ -655,15 +611,6 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "experimental/openCargoToml";
  }
  
- #[derive(Serialize, Deserialize, Debug)]
- #[serde(rename_all = "camelCase")]
--pub struct OpenCargoTomlParams {
--    pub text_document: TextDocumentIdentifier,
--}
-+pub struct OpenCargoTomlParams { pub text_document: TextDocumentIdentifier }
- 
- /// Information about CodeLens, that is to be resolved.
- #[derive(Debug, Serialize, Deserialize)]
      References(lsp_types::TextDocumentPositionParams),
  }
  
@@ -724,16 +671,3 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "textDocument/onTypeFormatting";
  }
  
- }
- 
- #[derive(Debug, Serialize, Deserialize)]
--pub struct CompletionImport {
--    pub full_import_path: String,
--}
-+pub struct CompletionImport { pub full_import_path: String }
- 
- #[derive(Debug, Deserialize, Default)]
--pub struct ClientCommandOptions {
--    pub commands: Vec<String>,
--}
-+pub struct ClientCommandOptions { pub commands: Vec<String> }

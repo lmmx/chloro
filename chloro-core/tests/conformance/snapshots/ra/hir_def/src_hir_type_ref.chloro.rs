@@ -99,7 +99,9 @@ impl PathId {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct TraitRef { pub path: PathId }
+pub struct TraitRef {
+    pub path: PathId,
+}
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct FnType {
@@ -271,7 +273,9 @@ impl TypeBound {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub struct ConstRef { pub expr: ExprId }
+pub struct ConstRef {
+    pub expr: ExprId,
+}
 
 /// A literal constant value
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

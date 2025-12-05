@@ -24,7 +24,9 @@ pub enum StructureNodeKind {
 }
 
 #[derive(Debug, Clone)]
-pub struct FileStructureConfig { pub exclude_locals: bool }
+pub struct FileStructureConfig {
+    pub exclude_locals: bool,
+}
 
 // Feature: File Structure
 //

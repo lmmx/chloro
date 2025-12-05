@@ -275,7 +275,9 @@ pub struct RegionVariableInfo {
     pub universe: UniverseIndex,
 }
 
-pub(crate) struct RegionSnapshot { any_unifications: bool }
+pub(crate) struct RegionSnapshot {
+    any_unifications: bool,
+}
 
 impl<'db> RegionConstraintStorage<'db> {
     #[inline]

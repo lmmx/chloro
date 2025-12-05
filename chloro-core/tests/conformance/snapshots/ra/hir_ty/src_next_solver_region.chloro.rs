@@ -19,8 +19,10 @@ use super::{
 pub type RegionKind<'db> = rustc_type_ir::RegionKind<DbInterner<'db>>;
 
 #[salsa::interned(constructor = new_)]
-pub struct Region<'db> { #[returns(ref)]
-    kind_: RegionKind<'db> }
+pub struct Region<'db> {
+    #[returns(ref)]
+    kind_: RegionKind<'db>,
+}
 
 impl std::fmt::Debug for Region<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

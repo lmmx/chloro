@@ -722,7 +722,9 @@ pub struct FunctionBody {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct SimpleBody { pub store: Arc<ExpressionStore> }
+pub struct SimpleBody {
+    pub store: Arc<ExpressionStore>,
+}
 
 pub type StaticBody = SimpleBody;
 
@@ -922,7 +924,9 @@ pub struct InactiveEnumVariantCode {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumVariants { pub variants: Box<[(EnumVariantId, Name, FieldsShape)]> }
+pub struct EnumVariants {
+    pub variants: Box<[(EnumVariantId, Name, FieldsShape)]>,
+}
 
 #[salsa::tracked]
 impl EnumVariants {

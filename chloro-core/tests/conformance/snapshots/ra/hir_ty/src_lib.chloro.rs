@@ -532,7 +532,9 @@ pub fn callable_sig_from_fn_trait<'db>(
     }
 }
 
-struct ParamCollector { params: FxHashSet<TypeOrConstParamId> }
+struct ParamCollector {
+    params: FxHashSet<TypeOrConstParamId>,
+}
 
 impl<'db> rustc_type_ir::TypeVisitor<DbInterner<'db>> for ParamCollector {
     type Result = ();
@@ -585,7 +587,9 @@ pub(crate) enum DeclOrigin {
 /// allows us to infer array types if the pattern is irrefutable and allows us to infer
 /// the size of the array. See issue rust-lang/rust#76342.
 #[derive(Debug, Copy, Clone)]
-pub(crate) struct DeclContext { pub(crate) origin: DeclOrigin }
+pub(crate) struct DeclContext {
+    pub(crate) origin: DeclOrigin,
+}
 
 pub fn setup_tracing() -> Option<tracing::subscriber::DefaultGuard> {
     use std::env;

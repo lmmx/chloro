@@ -460,7 +460,9 @@ impl_intern!(BlockId, BlockLoc, intern_block, lookup_intern_block);
 
 /// A `ModuleId` that is always a crate's root module.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct CrateRootModuleId { krate: Crate }
+pub struct CrateRootModuleId {
+    krate: Crate,
+}
 
 impl CrateRootModuleId {
     pub fn def_map(self, db: &dyn DefDatabase) -> &DefMap {
@@ -1397,7 +1399,9 @@ pub fn macro_call_as_call_id(
 }
 
 #[derive(Debug)]
-pub struct UnresolvedMacro { pub path: ModPath }
+pub struct UnresolvedMacro {
+    pub path: ModPath,
+}
 
 #[derive(Default, Debug, Eq, PartialEq, Clone, Copy)]
 pub struct SyntheticSyntax;

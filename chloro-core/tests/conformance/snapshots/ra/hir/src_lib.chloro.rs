@@ -160,7 +160,9 @@ use {
 /// a crate's dependencies interact. Mostly, it should be just a proxy for the
 /// root module.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Crate { pub(crate) id: base_db::Crate }
+pub struct Crate {
+    pub(crate) id: base_db::Crate,
+}
 
 #[derive(Debug)]
 pub struct CrateDependency {
@@ -290,7 +292,9 @@ impl Crate {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Module { pub(crate) id: ModuleId }
+pub struct Module {
+    pub(crate) id: ModuleId,
+}
 
 /// The defs which can be visible in the module.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -1365,7 +1369,9 @@ impl HasVisibility for Field {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Struct { pub(crate) id: StructId }
+pub struct Struct {
+    pub(crate) id: StructId,
+}
 
 impl Struct {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -1461,7 +1467,9 @@ impl<'db> InstantiatedStruct<'db> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Union { pub(crate) id: UnionId }
+pub struct Union {
+    pub(crate) id: UnionId,
+}
 
 impl Union {
     pub fn name(self, db: &dyn HirDatabase) -> Name {
@@ -1515,7 +1523,9 @@ impl HasVisibility for Union {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Enum { pub(crate) id: EnumId }
+pub struct Enum {
+    pub(crate) id: EnumId,
+}
 
 impl Enum {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -1627,7 +1637,9 @@ impl From<&Variant> for DefWithBodyId {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Variant { pub(crate) id: EnumVariantId }
+pub struct Variant {
+    pub(crate) id: EnumVariantId,
+}
 
 impl Variant {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -2212,7 +2224,9 @@ fn expr_store_diagnostics<'db>(
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Function { pub(crate) id: FunctionId }
+pub struct Function {
+    pub(crate) id: FunctionId,
+}
 
 impl Function {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -2617,7 +2631,9 @@ impl<'db> Param<'db> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct SelfParam { func: FunctionId }
+pub struct SelfParam {
+    func: FunctionId,
+}
 
 impl SelfParam {
     pub fn access(self, db: &dyn HirDatabase) -> Access {
@@ -2671,7 +2687,9 @@ impl HasVisibility for Function {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ExternCrateDecl { pub(crate) id: ExternCrateId }
+pub struct ExternCrateDecl {
+    pub(crate) id: ExternCrateId,
+}
 
 impl ExternCrateDecl {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -2729,7 +2747,9 @@ impl HasVisibility for ExternCrateDecl {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Const { pub(crate) id: ConstId }
+pub struct Const {
+    pub(crate) id: ConstId,
+}
 
 impl Const {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -2797,7 +2817,9 @@ impl<'db> EvaluatedConst<'db> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Static { pub(crate) id: StaticId }
+pub struct Static {
+    pub(crate) id: StaticId,
+}
 
 impl Static {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -2845,7 +2867,9 @@ impl HasVisibility for Static {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Trait { pub(crate) id: TraitId }
+pub struct Trait {
+    pub(crate) id: TraitId,
+}
 
 impl Trait {
     pub fn lang(db: &dyn HirDatabase, krate: Crate, name: &Name) -> Option<Trait> {
@@ -2945,7 +2969,9 @@ impl HasVisibility for Trait {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TypeAlias { pub(crate) id: TypeAliasId }
+pub struct TypeAlias {
+    pub(crate) id: TypeAliasId,
+}
 
 impl TypeAlias {
     pub fn has_non_default_type_params(self, db: &dyn HirDatabase) -> bool {
@@ -2976,7 +3002,9 @@ impl HasVisibility for TypeAlias {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ExternBlock { pub(crate) id: ExternBlockId }
+pub struct ExternBlock {
+    pub(crate) id: ExternBlockId,
+}
 
 impl ExternBlock {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -2994,7 +3022,9 @@ impl StaticLifetime {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct BuiltinType { pub(crate) inner: hir_def::builtin_type::BuiltinType }
+pub struct BuiltinType {
+    pub(crate) inner: hir_def::builtin_type::BuiltinType,
+}
 
 impl BuiltinType {
     // Constructors are added on demand, feel free to add more.
@@ -3072,7 +3102,9 @@ impl BuiltinType {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Macro { pub(crate) id: MacroId }
+pub struct Macro {
+    pub(crate) id: MacroId,
+}
 
 impl Macro {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
@@ -3947,7 +3979,9 @@ impl DeriveHelper {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct BuiltinAttr { idx: u32 }
+pub struct BuiltinAttr {
+    idx: u32,
+}
 
 impl BuiltinAttr {
     fn builtin(name: &str) -> Option<Self> {
@@ -4098,7 +4132,9 @@ impl fmt::Display for Variance {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct TypeParam { pub(crate) id: TypeParamId }
+pub struct TypeParam {
+    pub(crate) id: TypeParamId,
+}
 
 impl TypeParam {
     pub fn merge(self) -> TypeOrConstParam {
@@ -4166,7 +4202,9 @@ impl TypeParam {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct LifetimeParam { pub(crate) id: LifetimeParamId }
+pub struct LifetimeParam {
+    pub(crate) id: LifetimeParamId,
+}
 
 impl LifetimeParam {
     pub fn name(self, db: &dyn HirDatabase) -> Name {
@@ -4184,7 +4222,9 @@ impl LifetimeParam {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct ConstParam { pub(crate) id: ConstParamId }
+pub struct ConstParam {
+    pub(crate) id: ConstParamId,
+}
 
 impl ConstParam {
     pub fn merge(self) -> TypeOrConstParam {
@@ -4233,7 +4273,9 @@ fn generic_arg_from_param(db: &dyn HirDatabase, id: TypeOrConstParamId) -> Optio
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct TypeOrConstParam { pub(crate) id: TypeOrConstParamId }
+pub struct TypeOrConstParam {
+    pub(crate) id: TypeOrConstParamId,
+}
 
 impl TypeOrConstParam {
     pub fn name(self, db: &dyn HirDatabase) -> Name {
@@ -4293,7 +4335,9 @@ impl TypeOrConstParam {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Impl { pub(crate) id: ImplId }
+pub struct Impl {
+    pub(crate) id: ImplId,
+}
 
 impl Impl {
     pub fn all_in_crate(db: &dyn HirDatabase, krate: Crate) -> Vec<Impl> {

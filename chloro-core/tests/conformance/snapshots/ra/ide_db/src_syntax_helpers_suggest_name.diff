@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26483 bytes
+Chloro size:   26488 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -28,16 +28,6 @@ Rustfmt size:  26702 bytes
  
  const USELESS_NAME_PREFIXES: &[&str] = &["from_", "with_", "into_"];
  
- /// assert_eq!(generator.suggest_name("b"), "b3");
- /// ```
- #[derive(Debug, Default)]
--pub struct NameGenerator {
--    pool: FxHashMap<SmolStr, usize>,
--}
-+pub struct NameGenerator { pool: FxHashMap<SmolStr, usize> }
- 
- impl NameGenerator {
-     /// Create a new generator with existing names. When suggesting a name, it will
      /// # Examples
      /// `a1b2c3` -> `a1b2c`
      fn split_numeric_suffix(name: &str) -> (&str, Option<usize>) {

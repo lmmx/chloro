@@ -8,7 +8,9 @@ use intern::{Symbol, sym};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 #[derive(Debug, Default, Clone)]
-pub struct TargetFeatures { pub(crate) enabled: FxHashSet<Symbol> }
+pub struct TargetFeatures {
+    pub(crate) enabled: FxHashSet<Symbol>,
+}
 
 impl TargetFeatures {
     pub fn from_attrs(attrs: &Attrs) -> Self {

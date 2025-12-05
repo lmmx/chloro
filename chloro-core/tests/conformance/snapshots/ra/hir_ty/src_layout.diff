@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14483 bytes
+Chloro size:   14488 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -68,13 +68,6 @@ Rustfmt size:  14808 bytes
              }
          }
      }
-     }
- }
- 
--struct LayoutCx<'a> {
--    calc: LayoutCalculator<&'a TargetDataLayout>,
--}
-+struct LayoutCx<'a> { calc: LayoutCalculator<&'a TargetDataLayout> }
  
  impl<'a> LayoutCx<'a> {
      fn new(target: &'a TargetDataLayout) -> Self {

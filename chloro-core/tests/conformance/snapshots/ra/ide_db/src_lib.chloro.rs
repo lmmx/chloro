@@ -320,7 +320,9 @@ impl From<hir::ModuleDef> for SymbolKind {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct SnippetCap { _private: () }
+pub struct SnippetCap {
+    _private: (),
+}
 
 impl SnippetCap {
     pub const fn new(allow_snippets: bool) -> Option<SnippetCap> {

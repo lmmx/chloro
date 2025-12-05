@@ -444,8 +444,10 @@ impl std::hash::Hash for AdtDefInner {
 }
 
 #[salsa::interned(no_lifetime, constructor = new_)]
-pub struct AdtDef { #[returns(ref)]
-    data_: AdtDefInner }
+pub struct AdtDef {
+    #[returns(ref)]
+    data_: AdtDefInner,
+}
 
 impl AdtDef {
     pub fn new<'db>(def_id: AdtId, interner: DbInterner<'db>) -> Self {
@@ -726,8 +728,10 @@ impl std::ops::Deref for UnsizingParams {
 pub type PatternKind<'db> = rustc_type_ir::PatternKind<DbInterner<'db>>;
 
 #[salsa::interned(constructor = new_, debug)]
-pub struct Pattern<'db> { #[returns(ref)]
-    kind_: InternedWrapperNoDebug<PatternKind<'db>> }
+pub struct Pattern<'db> {
+    #[returns(ref)]
+    kind_: InternedWrapperNoDebug<PatternKind<'db>>,
+}
 
 impl<'db> std::fmt::Debug for InternedWrapperNoDebug<PatternKind<'db>> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -2202,7 +2206,9 @@ TrivialTypeTraversalImpls! {
 mod tls_db {
     use std::{cell::Cell, ptr::NonNull};
     use crate::db::HirDatabase;
-    struct Attached { database: Cell<Option<NonNull<dyn HirDatabase>>> }
+    struct Attached {
+        database: Cell<Option<NonNull<dyn HirDatabase>>>,
+    }
     impl Attached {
         #[inline]
         fn attach<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {

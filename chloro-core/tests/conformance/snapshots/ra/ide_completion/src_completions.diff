@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25726 bytes
-Chloro size:   25617 bytes
+Chloro size:   25622 bytes
 Rustfmt size:  25726 bytes
 
 ✗ Outputs DIFFER
@@ -26,16 +26,6 @@ Rustfmt size:  25726 bytes
          type_alias::{render_type_alias, render_type_alias_with_eq},
          union_literal::render_union_literal,
      },
- 
- /// Represents an in-progress set of completions being built.
- #[derive(Debug, Default)]
--pub struct Completions {
--    buf: Vec<CompletionItem>,
--}
-+pub struct Completions { buf: Vec<CompletionItem> }
- 
- impl From<Completions> for Vec<CompletionItem> {
-     fn from(val: Completions) -> Self {
          ctx: &CompletionContext<'_>,
          super_chain_len: Option<usize>,
      ) {

@@ -117,7 +117,9 @@ impl<F> From<LayoutCalculatorError<F>> for LayoutError {
     }
 }
 
-struct LayoutCx<'a> { calc: LayoutCalculator<&'a TargetDataLayout> }
+struct LayoutCx<'a> {
+    calc: LayoutCalculator<&'a TargetDataLayout>,
+}
 
 impl<'a> LayoutCx<'a> {
     fn new(target: &'a TargetDataLayout) -> Self {

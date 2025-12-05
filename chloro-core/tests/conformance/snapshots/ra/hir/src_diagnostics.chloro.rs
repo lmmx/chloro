@@ -143,10 +143,14 @@ pub struct UnresolvedModule {
 }
 
 #[derive(Debug)]
-pub struct UnresolvedExternCrate { pub decl: InFile<AstPtr<ast::ExternCrate>> }
+pub struct UnresolvedExternCrate {
+    pub decl: InFile<AstPtr<ast::ExternCrate>>,
+}
 
 #[derive(Debug)]
-pub struct UnresolvedImport { pub decl: InFile<AstPtr<ast::UseTree>> }
+pub struct UnresolvedImport {
+    pub decl: InFile<AstPtr<ast::UseTree>>,
+}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct UnresolvedMacroCall {
@@ -205,13 +209,19 @@ pub struct MacroDefError {
 }
 
 #[derive(Debug)]
-pub struct UnimplementedBuiltinMacro { pub node: InFile<SyntaxNodePtr> }
+pub struct UnimplementedBuiltinMacro {
+    pub node: InFile<SyntaxNodePtr>,
+}
 
 #[derive(Debug)]
-pub struct InvalidDeriveTarget { pub node: InFile<SyntaxNodePtr> }
+pub struct InvalidDeriveTarget {
+    pub node: InFile<SyntaxNodePtr>,
+}
 
 #[derive(Debug)]
-pub struct MalformedDerive { pub node: InFile<SyntaxNodePtr> }
+pub struct MalformedDerive {
+    pub node: InFile<SyntaxNodePtr>,
+}
 
 #[derive(Debug)]
 pub struct NoSuchField {
@@ -257,10 +267,14 @@ pub struct UnresolvedMethodCall<'db> {
 }
 
 #[derive(Debug)]
-pub struct UnresolvedAssocItem { pub expr_or_pat: InFile<ExprOrPatPtr> }
+pub struct UnresolvedAssocItem {
+    pub expr_or_pat: InFile<ExprOrPatPtr>,
+}
 
 #[derive(Debug)]
-pub struct UnresolvedIdent { pub node: InFile<(ExprOrPatPtr, Option<TextRange>)> }
+pub struct UnresolvedIdent {
+    pub node: InFile<(ExprOrPatPtr, Option<TextRange>)>,
+}
 
 #[derive(Debug)]
 pub struct PrivateField {
@@ -330,10 +344,14 @@ pub struct NeedMut {
 }
 
 #[derive(Debug)]
-pub struct UnusedMut { pub local: Local }
+pub struct UnusedMut {
+    pub local: Local,
+}
 
 #[derive(Debug)]
-pub struct UnusedVariable { pub local: Local }
+pub struct UnusedVariable {
+    pub local: Local,
+}
 
 #[derive(Debug)]
 pub struct MovedOutOfRef<'db> {
@@ -376,10 +394,14 @@ pub struct TraitImplRedundantAssocItems {
 }
 
 #[derive(Debug)]
-pub struct RemoveTrailingReturn { pub return_expr: InFile<AstPtr<ast::ReturnExpr>> }
+pub struct RemoveTrailingReturn {
+    pub return_expr: InFile<AstPtr<ast::ReturnExpr>>,
+}
 
 #[derive(Debug)]
-pub struct RemoveUnnecessaryElse { pub if_expr: InFile<AstPtr<ast::IfExpr>> }
+pub struct RemoveUnnecessaryElse {
+    pub if_expr: InFile<AstPtr<ast::IfExpr>>,
+}
 
 #[derive(Debug)]
 pub struct CastToUnsized<'db> {
@@ -407,7 +429,9 @@ pub struct ParenthesizedGenericArgsWithoutFnTrait {
 }
 
 #[derive(Debug)]
-pub struct BadRtn { pub rtn: InFile<AstPtr<ast::ReturnTypeSyntax>> }
+pub struct BadRtn {
+    pub rtn: InFile<AstPtr<ast::ReturnTypeSyntax>>,
+}
 
 #[derive(Debug)]
 pub struct IncorrectGenericsLen {

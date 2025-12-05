@@ -9,7 +9,9 @@ use macros::{TypeFoldable, TypeVisitable};
 use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
 
 #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
-pub struct OpaqueHiddenType<'db> { pub ty: Ty<'db> }
+pub struct OpaqueHiddenType<'db> {
+    pub ty: Ty<'db>,
+}
 
 impl<'db> InferCtxt<'db> {
     /// Insert a hidden type into the opaque type storage, making sure

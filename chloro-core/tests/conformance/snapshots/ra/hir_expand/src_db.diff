@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   32177 bytes
+Chloro size:   32182 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -69,16 +69,6 @@ Rustfmt size:  33429 bytes
      /// Retrieves the span to be used for a proc-macro expansions spans.
      /// This is a firewall query as it requires parsing the file, which we don't want proc-macros to
      /// directly depend on as that would cause to frequent invalidations, mainly because of the
- }
- 
- #[salsa_macros::interned(no_lifetime, id = span::SyntaxContext, revisions = usize::MAX)]
--pub struct SyntaxContextWrapper {
--    pub data: SyntaxContext,
--}
-+pub struct SyntaxContextWrapper { pub data: SyntaxContext }
- 
- fn syntax_context(db: &dyn ExpandDatabase, file: HirFileId, edition: Edition) -> SyntaxContext {
-     match file {
              ),
              SyntaxFixupUndoInfo::NONE,
          ),

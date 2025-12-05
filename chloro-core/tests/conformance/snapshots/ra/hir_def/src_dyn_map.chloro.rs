@@ -74,7 +74,9 @@ pub mod keys {
     /// In general, we do not guarantee that we have exactly one instance of a
     /// syntax tree for each file. We probably should add such guarantee, but, for
     /// the time being, we will use identity-less AstPtr comparison.
-    pub struct AstPtrPolicy<AST, ID> { _phantom: PhantomData<(AST, ID)> }
+    pub struct AstPtrPolicy<AST, ID> {
+        _phantom: PhantomData<(AST, ID)>,
+    }
     impl<AST: AstNode + 'static, ID: 'static> Policy for AstPtrPolicy<AST, ID> {
         type K = AstPtr<AST>;
 
@@ -106,7 +108,9 @@ use std::{
 use rustc_hash::FxHashMap;
 use stdx::anymap::Map;
 
-pub struct Key<K, V, P = (K, V)> { _phantom: PhantomData<(K, V, P)> }
+pub struct Key<K, V, P = (K, V)> {
+    _phantom: PhantomData<(K, V, P)>,
+}
 
 impl<K, V, P> Key<K, V, P> {
     #[allow(
@@ -157,7 +161,9 @@ impl<K: Hash + Eq + 'static, V: 'static> Policy for (K, V) {
 }
 
 #[derive(Default)]
-pub struct DynMap { pub(crate) map: Map }
+pub struct DynMap {
+    pub(crate) map: Map,
+}
 
 #[repr(transparent)]
 pub struct KeyMap<KEY> {

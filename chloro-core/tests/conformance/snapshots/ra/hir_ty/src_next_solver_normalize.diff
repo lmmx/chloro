@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9788 bytes
+Chloro size:   9793 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -80,13 +80,3 @@ Rustfmt size:  9886 bytes
  
          if ct.has_escaping_bound_vars() {
              let (ct, mapped_regions, mapped_types, mapped_consts) =
-     })
- }
- 
--struct DeeplyNormalizeForDiagnosticsFolder<'a, 'tcx> {
--    at: At<'a, 'tcx>,
--}
-+struct DeeplyNormalizeForDiagnosticsFolder<'a, 'tcx> { at: At<'a, 'tcx> }
- 
- impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_, 'db> {
-     fn cx(&self) -> DbInterner<'db> {

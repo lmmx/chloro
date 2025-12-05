@@ -170,7 +170,9 @@ impl RawAttrs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AttrId { id: u32 }
+pub struct AttrId {
+    id: u32,
+}
 
 impl AttrId {
     const INNER_ATTR_SET_BIT: u32 = 1 << 31;

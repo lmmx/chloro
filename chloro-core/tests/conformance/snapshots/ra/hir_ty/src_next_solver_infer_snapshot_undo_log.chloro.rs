@@ -13,7 +13,9 @@ use crate::next_solver::infer::unify_key::ConstVidKey;
 use crate::next_solver::infer::unify_key::RegionVidKey;
 use crate::next_solver::infer::{InferCtxtInner, region_constraints, type_variable};
 
-pub struct Snapshot { pub(crate) undo_len: usize }
+pub struct Snapshot {
+    pub(crate) undo_len: usize,
+}
 
 /// Records the "undo" data for a single operation that affects some form of inference variable.
 #[derive(Clone)]

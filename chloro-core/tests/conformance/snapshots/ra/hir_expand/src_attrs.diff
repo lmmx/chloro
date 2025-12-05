@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16755 bytes
+Chloro size:   16760 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -95,13 +95,8 @@ Rustfmt size:  17571 bytes
          if !has_cfg_attrs {
              return self;
          }
+     id: u32,
  }
- 
- #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
--pub struct AttrId {
--    id: u32,
--}
-+pub struct AttrId { id: u32 }
  
 -// FIXME: This only handles a single level of cfg_attr nesting
 -// that is `#[cfg_attr(all(), cfg_attr(all(), cfg(any())))]` breaks again

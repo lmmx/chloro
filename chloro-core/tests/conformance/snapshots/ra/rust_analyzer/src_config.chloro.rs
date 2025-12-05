@@ -1512,7 +1512,9 @@ pub struct DocumentSymbolConfig {
 }
 
 #[derive(Debug, Clone)]
-pub struct NotificationsConfig { pub cargo_toml_not_found: bool }
+pub struct NotificationsConfig {
+    pub cargo_toml_not_found: bool,
+}
 
 #[derive(Debug, Clone)]
 pub enum RustfmtConfig {

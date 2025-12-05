@@ -313,7 +313,9 @@ impl<'db> CoroutineArgsExt<'db> for CoroutineArgs<DbInterner<'db>> {
 }
 
 /// Finds the max universe present
-pub struct MaxUniverse { max_universe: UniverseIndex }
+pub struct MaxUniverse {
+    max_universe: UniverseIndex,
+}
 
 impl Default for MaxUniverse {
     fn default() -> Self {

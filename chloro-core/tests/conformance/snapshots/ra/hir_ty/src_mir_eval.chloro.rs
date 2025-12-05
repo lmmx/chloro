@@ -125,7 +125,9 @@ impl<'db> VTableMap<'db> {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
-struct TlsData { keys: Vec<u128> }
+struct TlsData {
+    keys: Vec<u128>,
+}
 
 impl TlsData {
     fn create_key(&mut self) -> usize {
@@ -538,7 +540,9 @@ impl std::fmt::Debug for MirEvalError<'_> {
 type Result<'db, T> = std::result::Result<T, MirEvalError<'db>>;
 
 #[derive(Debug, Default)]
-struct DropFlags<'db> { need_drop: FxHashSet<Place<'db>> }
+struct DropFlags<'db> {
+    need_drop: FxHashSet<Place<'db>>,
+}
 
 impl<'db> DropFlags<'db> {
     fn add_place(&mut self, p: Place<'db>, store: &ProjectionStore<'db>) {

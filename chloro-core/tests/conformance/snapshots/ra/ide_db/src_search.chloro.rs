@@ -32,7 +32,9 @@ use crate::{
 };
 
 #[derive(Debug, Default, Clone)]
-pub struct UsageSearchResult { pub references: FxHashMap<EditionedFileId, Vec<FileReference>> }
+pub struct UsageSearchResult {
+    pub references: FxHashMap<EditionedFileId, Vec<FileReference>>,
+}
 
 impl UsageSearchResult {
     pub fn is_empty(&self) -> bool {
@@ -152,7 +154,9 @@ bitflags::bitflags! {
 /// In some cases, the location of the references is known to within a `TextRange`,
 /// e.g. for things like local variables.
 #[derive(Clone, Debug)]
-pub struct SearchScope { entries: FxHashMap<EditionedFileId, Option<TextRange>> }
+pub struct SearchScope {
+    entries: FxHashMap<EditionedFileId, Option<TextRange>>,
+}
 
 impl SearchScope {
     fn new(entries: FxHashMap<EditionedFileId, Option<TextRange>>) -> SearchScope {

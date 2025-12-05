@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11613 bytes
-Chloro size:   11458 bytes
+Chloro size:   11478 bytes
 Rustfmt size:  11613 bytes
 
 ✗ Outputs DIFFER
@@ -24,23 +24,6 @@ Rustfmt size:  11613 bytes
  #[derive(Debug)]
  pub struct RustAnalyzer {
      pub verbose: u32,
- }
- 
- #[derive(Debug)]
--pub struct Parse {
--    pub no_dump: bool,
--}
-+pub struct Parse { pub no_dump: bool }
- 
- #[derive(Debug)]
- pub struct Symbols;
- 
- #[derive(Debug)]
--pub struct Highlight {
--    pub rainbow: bool,
--}
-+pub struct Highlight { pub rainbow: bool }
- 
  #[derive(Debug)]
  pub struct AnalysisStats {
      pub path: PathBuf,
@@ -48,14 +31,6 @@ Rustfmt size:  11613 bytes
      pub output: Option<OutputFormat>,
      pub randomize: bool,
      pub parallel: bool,
- }
- 
- #[derive(Debug)]
--pub struct RunTests {
--    pub path: PathBuf,
--}
-+pub struct RunTests { pub path: PathBuf }
- 
  #[derive(Debug)]
  pub struct RustcTests {
      pub rustc_repo: PathBuf,
@@ -84,14 +59,6 @@ Rustfmt size:  11613 bytes
      pub disable_build_scripts: bool,
      pub disable_proc_macros: bool,
      pub proc_macro_srv: Option<PathBuf>,
- }
- 
- #[derive(Debug)]
--pub struct Ssr {
--    pub rule: Vec<SsrRule>,
--}
-+pub struct Ssr { pub rule: Vec<SsrRule> }
- 
  #[derive(Debug)]
  pub struct Search {
      pub pattern: Vec<SsrPattern>,

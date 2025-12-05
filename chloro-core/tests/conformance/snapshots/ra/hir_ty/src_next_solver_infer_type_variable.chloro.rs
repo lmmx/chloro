@@ -102,7 +102,9 @@ pub struct TypeVariableOrigin {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct TypeVariableData { origin: TypeVariableOrigin }
+pub(crate) struct TypeVariableData {
+    origin: TypeVariableOrigin,
+}
 
 #[derive(Clone, Debug)]
 pub(crate) enum TypeVariableValue<'db> {
@@ -342,7 +344,9 @@ impl<'db> ut::UnifyKey for TyVidEqKey<'db> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) struct TyVidSubKey { vid: TyVid }
+pub(crate) struct TyVidSubKey {
+    vid: TyVid,
+}
 
 impl From<TyVid> for TyVidSubKey {
     #[inline]

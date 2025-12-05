@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37899 bytes
-Chloro size:   37845 bytes
+Chloro size:   37850 bytes
 Rustfmt size:  37899 bytes
 
 ✗ Outputs DIFFER
@@ -126,13 +126,8 @@ Rustfmt size:  37899 bytes
  
 -// FIXME: This should move to the VFS once the rewrite is done.
  #[derive(Debug, Clone, Default)]
--pub(crate) struct MiniCoreRustAnalyzerInternalOnly {
--    pub(crate) minicore_text: Option<String>,
--}
-+pub(crate) struct MiniCoreRustAnalyzerInternalOnly { pub(crate) minicore_text: Option<String> }
- 
- /// An immutable snapshot of the world's state at a point in time.
- pub(crate) struct GlobalStateSnapshot {
+ pub(crate) struct MiniCoreRustAnalyzerInternalOnly {
+     pub(crate) minicore_text: Option<String>,
      }
  
      /// Returns `None` if the file was excluded.
