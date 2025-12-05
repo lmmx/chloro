@@ -4,15 +4,15 @@ use std::iter;
 
 use hir::Semantics;
 use ide_db::{
+    FileRange, FxIndexMap, MiniCore, RootDatabase,
     defs::{Definition, NameClass, NameRefClass},
     helpers::pick_best_token,
     search::FileReference,
-    FileRange, FxIndexMap, MiniCore, RootDatabase,
 };
-use syntax::{ast, AstNode, SyntaxKind::IDENT};
+use syntax::{AstNode, SyntaxKind::IDENT, ast};
 
 use crate::{
-    goto_definition, FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav,
+    FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav, goto_definition,
 };
 
 #[derive(Debug, Clone)]
@@ -181,7 +181,7 @@ impl CallLocations {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use ide_db::{FilePosition, MiniCore};
     use itertools::Itertools;
 

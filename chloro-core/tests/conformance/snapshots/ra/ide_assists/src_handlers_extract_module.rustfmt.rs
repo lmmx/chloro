@@ -82,7 +82,12 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     }
 
     let mut old_item_indent = module.body_items[0].indent_level();
-    let old_items: Vec<_> = module.use_items.iter().chain(&module.body_items).cloned().collect();
+    let old_items: Vec<_> = module
+        .use_items
+        .iter()
+        .chain(&module.body_items)
+        .cloned()
+        .collect();
 
     // If the selection is inside impl block, we need to place new module outside impl block,
     // as impl blocks cannot contain modules
@@ -122,9 +127,11 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                 module.get_usages_and_record_fields(ctx, module_text_range);
 
             builder.edit_file(ctx.vfs_file_id());
-            use_stmts_to_be_inserted.into_iter().for_each(|(_, use_stmt)| {
-                builder.insert(ctx.selection_trimmed().end(), format!("\n{use_stmt}"));
-            });
+            use_stmts_to_be_inserted
+                .into_iter()
+                .for_each(|(_, use_stmt)| {
+                    builder.insert(ctx.selection_trimmed().end(), format!("\n{use_stmt}"));
+                });
 
             let import_items = module.resolve_imports(curr_parent_module, ctx);
             module.change_visibility(record_fields);
@@ -184,7 +191,11 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 
 fn generate_module_def(
     parent_impl: &Option<ast::Impl>,
-    Module { name, body_items, use_items }: &Module,
+    Module {
+        name,
+        body_items,
+        use_items,
+    }: &Module,
 ) -> ast::Module {
     let items: Vec<_> = if let Some(impl_) = parent_impl.as_ref()
         && let Some(self_ty) = impl_.self_ty()
@@ -197,7 +208,10 @@ fn generate_module_def(
             .collect_vec();
         let assoc_item_list = make::assoc_item_list(Some(assoc_items)).clone_for_update();
         let impl_ = impl_.reset_indent();
-        ted::replace(impl_.get_or_create_assoc_item_list().syntax(), assoc_item_list.syntax());
+        ted::replace(
+            impl_.get_or_create_assoc_item_list().syntax(),
+            assoc_item_list.syntax(),
+        );
         // Add the import for enum/struct corresponding to given impl block
         let use_impl = make_use_stmt_of_node_with_super(self_ty.syntax());
         once(use_impl)
@@ -208,7 +222,10 @@ fn generate_module_def(
         use_items.iter().chain(body_items).cloned().collect()
     };
 
-    let items = items.into_iter().map(|it| it.reset_indent().indent(IndentLevel(1))).collect_vec();
+    let items = items
+        .into_iter()
+        .map(|it| it.reset_indent().indent(IndentLevel(1)))
+        .collect_vec();
     let module_body = make::item_list(Some(items));
 
     let module_name = make::name(name);
@@ -221,7 +238,12 @@ fn make_use_stmt_of_node_with_super(node_syntax: &SyntaxNode) -> ast::Item {
     let use_ = make::use_(
         None,
         None,
-        make::use_tree(make::join_paths(vec![super_path, node_path]), None, None, false),
+        make::use_tree(
+            make::join_paths(vec![super_path, node_path]),
+            None,
+            None,
+            false,
+        ),
     );
 
     ast::Item::from(use_)
@@ -245,7 +267,11 @@ fn extract_single_target(node: &ast::Item) -> Module {
         (vec![node.clone()], Vec::new())
     };
     let name = "modname";
-    Module { name, body_items, use_items }
+    Module {
+        name,
+        body_items,
+        use_items,
+    }
 }
 
 fn extract_child_target(
@@ -259,9 +285,17 @@ fn extract_child_target(
         .collect_vec();
     let start = selected_nodes.first()?.syntax().clone();
     let end = selected_nodes.last()?.syntax().clone();
-    let (use_items, body_items): (Vec<ast::Item>, Vec<ast::Item>) =
-        selected_nodes.into_iter().partition(|item| matches!(item, ast::Item::Use(..)));
-    Some((Module { name: "modname", body_items, use_items }, start..=end))
+    let (use_items, body_items): (Vec<ast::Item>, Vec<ast::Item>) = selected_nodes
+        .into_iter()
+        .partition(|item| matches!(item, ast::Item::Use(..)));
+    Some((
+        Module {
+            name: "modname",
+            body_items,
+            use_items,
+        },
+        start..=end,
+    ))
 }
 
 impl Module {
@@ -269,8 +303,11 @@ impl Module {
         &self,
         ctx: &AssistContext<'_>,
         replace_range: TextRange,
-    ) -> (FxHashMap<FileId, Vec<(TextRange, String)>>, Vec<SyntaxNode>, FxHashMap<TextSize, ast::Use>)
-    {
+    ) -> (
+        FxHashMap<FileId, Vec<(TextRange, String)>>,
+        Vec<SyntaxNode>,
+        FxHashMap<TextSize, ast::Use>,
+    ) {
         let mut adt_fields = Vec::new();
         let mut refs: FxHashMap<FileId, Vec<(TextRange, String)>> = FxHashMap::default();
         // use `TextSize` as key to avoid repeated use stmts
@@ -382,7 +419,10 @@ impl Module {
                 } else if let Some(use_) = name_ref.syntax().ancestors().find_map(ast::Use::cast) {
                     // handle usages in use_stmts which is in_sel
                     // check if `use` is top stmt in selection
-                    if use_.syntax().parent().is_some_and(|parent| parent == covering_node)
+                    if use_
+                        .syntax()
+                        .parent()
+                        .is_some_and(|parent| parent == covering_node)
                         && use_stmts_set.insert(use_.syntax().text_range().start())
                     {
                         let use_ = use_stmts_to_be_inserted
@@ -403,7 +443,10 @@ impl Module {
 
                 None
             });
-            refs_in_files.entry(file_id.file_id(ctx.db())).or_default().extend(usages);
+            refs_in_files
+                .entry(file_id.file_id(ctx.db()))
+                .or_default()
+                .extend(usages);
         }
     }
 
@@ -424,8 +467,10 @@ impl Module {
 
         for (_, field_owner) in record_field_parents {
             for desc in field_owner.descendants().filter_map(ast::RecordField::cast) {
-                let is_record_field_present =
-                    record_fields.clone().into_iter().any(|x| x.to_string() == desc.to_string());
+                let is_record_field_present = record_fields
+                    .clone()
+                    .into_iter()
+                    .any(|x| x.to_string() == desc.to_string());
                 if is_record_field_present {
                     replacements.push((desc.visibility(), desc.syntax().clone()));
                 }
@@ -496,7 +541,10 @@ impl Module {
         //We only need to find in the current file
         let selection_range = ctx.selection_trimmed();
         let file_id = ctx.file_id();
-        let usage_res = def.usages(&ctx.sema).in_scope(&SearchScope::single_file(file_id)).all();
+        let usage_res = def
+            .usages(&ctx.sema)
+            .in_scope(&SearchScope::single_file(file_id))
+            .all();
 
         let file = ctx.sema.parse(file_id);
 
@@ -643,7 +691,11 @@ impl Module {
         node_syntax: &SyntaxNode,
     ) -> Option<(Vec<ast::Path>, Option<TextRange>)> {
         let use_stmt = use_stmt?;
-        for path_seg in use_stmt.syntax().descendants().filter_map(ast::PathSegment::cast) {
+        for path_seg in use_stmt
+            .syntax()
+            .descendants()
+            .filter_map(ast::PathSegment::cast)
+        {
             if path_seg.syntax().to_string() == node_syntax.to_string() {
                 let mut use_tree_str = vec![path_seg.parent_path()];
                 get_use_tree_paths_from_path(path_seg.parent_path(), &mut use_tree_str);
@@ -698,7 +750,9 @@ fn check_def_in_mod_and_out_sel(
         ($x:ident) => {
             if let Some(source) = $x.source(ctx.db()) {
                 let have_same_parent = if let Some(ast_module) = &curr_parent_module {
-                    ctx.sema.to_module_def(ast_module).is_some_and(|it| it == $x.module(ctx.db()))
+                    ctx.sema
+                        .to_module_def(ast_module)
+                        .is_some_and(|it| it == $x.module(ctx.db()))
                 } else {
                     source.file_id.original_file(ctx.db()).file_id(ctx.db()) == curr_file_id
                 };
@@ -713,9 +767,10 @@ fn check_def_in_mod_and_out_sel(
         Definition::Module(x) => {
             let source = x.definition_source(ctx.db());
             let have_same_parent = match (&curr_parent_module, x.parent(ctx.db())) {
-                (Some(ast_module), Some(hir_module)) => {
-                    ctx.sema.to_module_def(ast_module).is_some_and(|it| it == hir_module)
-                }
+                (Some(ast_module), Some(hir_module)) => ctx
+                    .sema
+                    .to_module_def(ast_module)
+                    .is_some_and(|it| it == hir_module),
                 _ => source.file_id.original_file(ctx.db()).file_id(ctx.db()) == curr_file_id,
             };
 

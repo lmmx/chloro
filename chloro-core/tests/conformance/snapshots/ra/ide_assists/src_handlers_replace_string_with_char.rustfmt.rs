@@ -1,12 +1,11 @@
 use syntax::{
-    ast,
-    ast::IsString,
     AstToken,
     SyntaxKind::{CHAR, STRING},
-    TextRange, TextSize,
+    TextRange, TextSize, ast,
+    ast::IsString,
 };
 
-use crate::{utils::string_suffix, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, utils::string_suffix};
 
 // Assist: replace_string_with_char
 //

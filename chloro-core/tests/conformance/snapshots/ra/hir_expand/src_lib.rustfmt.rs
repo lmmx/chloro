@@ -134,10 +134,14 @@ pub struct ExpandError {
 
 impl ExpandError {
     pub fn new(span: Span, kind: ExpandErrorKind) -> Self {
-        ExpandError { inner: Arc::new((kind, span)) }
+        ExpandError {
+            inner: Arc::new((kind, span)),
+        }
     }
     pub fn other(span: Span, msg: impl Into<Box<str>>) -> Self {
-        ExpandError { inner: Arc::new((ExpandErrorKind::Other(msg.into()), span)) }
+        ExpandError {
+            inner: Arc::new((ExpandErrorKind::Other(msg.into()), span)),
+        }
     }
     pub fn kind(&self) -> &ExpandErrorKind {
         &self.inner.0
@@ -198,7 +202,11 @@ impl ExpandErrorKind {
                 kind: RenderedExpandError::DISABLED,
             },
             &ExpandErrorKind::MissingProcMacroExpander(def_crate) => {
-                match db.proc_macros_for_crate(def_crate).as_ref().and_then(|it| it.get_error()) {
+                match db
+                    .proc_macros_for_crate(def_crate)
+                    .as_ref()
+                    .and_then(|it| it.get_error())
+                {
                     Some(e) => RenderedExpandError {
                         message: e.to_string(),
                         error: e.is_hard_error(),
@@ -244,7 +252,9 @@ impl ExpandErrorKind {
 
 impl From<mbe::ExpandError> for ExpandError {
     fn from(mbe: mbe::ExpandError) -> Self {
-        ExpandError { inner: Arc::new((ExpandErrorKind::Mbe(mbe.inner.1.clone()), mbe.inner.0)) }
+        ExpandError {
+            inner: Arc::new((ExpandErrorKind::Mbe(mbe.inner.1.clone()), mbe.inner.0)),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -366,7 +376,9 @@ impl HirFileId {
                 HirFileId::MacroFile(file) => {
                     let loc = db.lookup_intern_macro_call(file);
                     if loc.def.is_include()
-                        && let MacroCallKind::FnLike { eager: Some(eager), .. } = &loc.kind
+                        && let MacroCallKind::FnLike {
+                            eager: Some(eager), ..
+                        } = &loc.kind
                         && let Ok(it) = include_input_to_file_id(db, file, &eager.arg)
                     {
                         break it;
@@ -382,7 +394,10 @@ impl HirFileId {
         loop {
             match call.file_id {
                 HirFileId::FileId(file_id) => {
-                    break Some(InRealFile { file_id, value: call.value });
+                    break Some(InRealFile {
+                        file_id,
+                        value: call.value,
+                    });
                 }
                 HirFileId::MacroFile(macro_call_id) => {
                     call = db.lookup_intern_macro_call(macro_call_id).to_node(db);
@@ -506,7 +521,12 @@ impl MacroDefId {
         kind: MacroCallKind,
         ctxt: SyntaxContext,
     ) -> MacroCallId {
-        db.intern_macro_call(MacroCallLoc { def: self, krate, kind, ctxt })
+        db.intern_macro_call(MacroCallLoc {
+            def: self,
+            krate,
+            kind,
+            ctxt,
+        })
     }
 
     pub fn definition_range(&self, db: &dyn ExpandDatabase) -> InFile<TextRange> {
@@ -587,7 +607,11 @@ impl MacroCallLoc {
             MacroCallKind::FnLike { ast_id, .. } => {
                 ast_id.with_value(ast_id.to_node(db).syntax().clone())
             }
-            MacroCallKind::Derive { ast_id, derive_attr_index, .. } => {
+            MacroCallKind::Derive {
+                ast_id,
+                derive_attr_index,
+                ..
+            } => {
                 // FIXME: handle `cfg_attr`
                 ast_id.with_value(ast_id.to_node(db)).map(|it| {
                     collect_attrs(&it)
@@ -599,7 +623,11 @@ impl MacroCallLoc {
                         .unwrap_or_else(|| it.syntax().clone())
                 })
             }
-            MacroCallKind::Attr { ast_id, invoc_attr_index, .. } => {
+            MacroCallKind::Attr {
+                ast_id,
+                invoc_attr_index,
+                ..
+            } => {
                 if self.def.is_attribute_derive() {
                     // FIXME: handle `cfg_attr`
                     ast_id.with_value(ast_id.to_node(db)).map(|it| {
@@ -648,7 +676,9 @@ impl MacroCallLoc {
         macro_call_id: MacroCallId,
     ) -> Option<EditionedFileId> {
         if self.def.is_include()
-            && let MacroCallKind::FnLike { eager: Some(eager), .. } = &self.kind
+            && let MacroCallKind::FnLike {
+                eager: Some(eager), ..
+            } = &self.kind
             && let Ok(it) = include_input_to_file_id(db, macro_call_id, &eager.arg)
         {
             return Some(it);
@@ -670,17 +700,35 @@ impl MacroCallKind {
     /// Returns the file containing the macro invocation.
     pub fn file_id(&self) -> HirFileId {
         match *self {
-            MacroCallKind::FnLike { ast_id: InFile { file_id, .. }, .. }
-            | MacroCallKind::Derive { ast_id: InFile { file_id, .. }, .. }
-            | MacroCallKind::Attr { ast_id: InFile { file_id, .. }, .. } => file_id,
+            MacroCallKind::FnLike {
+                ast_id: InFile { file_id, .. },
+                ..
+            }
+            | MacroCallKind::Derive {
+                ast_id: InFile { file_id, .. },
+                ..
+            }
+            | MacroCallKind::Attr {
+                ast_id: InFile { file_id, .. },
+                ..
+            } => file_id,
         }
     }
 
     pub fn erased_ast_id(&self) -> ErasedFileAstId {
         match *self {
-            MacroCallKind::FnLike { ast_id: InFile { value, .. }, .. } => value.erase(),
-            MacroCallKind::Derive { ast_id: InFile { value, .. }, .. } => value.erase(),
-            MacroCallKind::Attr { ast_id: InFile { value, .. }, .. } => value.erase(),
+            MacroCallKind::FnLike {
+                ast_id: InFile { value, .. },
+                ..
+            } => value.erase(),
+            MacroCallKind::Derive {
+                ast_id: InFile { value, .. },
+                ..
+            } => value.erase(),
+            MacroCallKind::Attr {
+                ast_id: InFile { value, .. },
+                ..
+            } => value.erase(),
         }
     }
 
@@ -735,7 +783,11 @@ impl MacroCallKind {
                     .text_range()
                     .cover(node.excl_token().unwrap().text_range())
             }
-            MacroCallKind::Derive { ast_id, derive_attr_index, .. } => {
+            MacroCallKind::Derive {
+                ast_id,
+                derive_attr_index,
+                ..
+            } => {
                 // FIXME: should be the range of the macro name, not the whole derive
                 // FIXME: handle `cfg_attr`
                 collect_attrs(&ast_id.to_node(db))
@@ -747,15 +799,17 @@ impl MacroCallKind {
                     .text_range()
             }
             // FIXME: handle `cfg_attr`
-            MacroCallKind::Attr { ast_id, invoc_attr_index, .. } => {
-                collect_attrs(&ast_id.to_node(db))
-                    .nth(invoc_attr_index.ast_index())
-                    .expect("missing attribute")
-                    .1
-                    .expect_left("attribute macro is a doc comment?")
-                    .syntax()
-                    .text_range()
-            }
+            MacroCallKind::Attr {
+                ast_id,
+                invoc_attr_index,
+                ..
+            } => collect_attrs(&ast_id.to_node(db))
+                .nth(invoc_attr_index.ast_index())
+                .expect("missing attribute")
+                .1
+                .expect_left("attribute macro is a doc comment?")
+                .syntax()
+                .text_range(),
         };
 
         FileRange { range, file_id }
@@ -763,9 +817,9 @@ impl MacroCallKind {
 
     fn arg(&self, db: &dyn ExpandDatabase) -> InFile<Option<SyntaxNode>> {
         match self {
-            MacroCallKind::FnLike { ast_id, .. } => {
-                ast_id.to_in_file_node(db).map(|it| Some(it.token_tree()?.syntax().clone()))
-            }
+            MacroCallKind::FnLike { ast_id, .. } => ast_id
+                .to_in_file_node(db)
+                .map(|it| Some(it.token_tree()?.syntax().clone())),
             MacroCallKind::Derive { ast_id, .. } => {
                 ast_id.to_in_file_node(db).syntax().cloned().map(Some)
             }
@@ -818,9 +872,16 @@ impl ExpansionInfo {
         &self,
         span: Span,
     ) -> Option<InMacroFile<impl Iterator<Item = (SyntaxToken, SyntaxContext)> + '_>> {
-        let tokens = self.exp_map.ranges_with_span_exact(span).flat_map(move |(range, ctx)| {
-            self.expanded.value.covering_element(range).into_token().zip(Some(ctx))
-        });
+        let tokens = self
+            .exp_map
+            .ranges_with_span_exact(span)
+            .flat_map(move |(range, ctx)| {
+                self.expanded
+                    .value
+                    .covering_element(range)
+                    .into_token()
+                    .zip(Some(ctx))
+            });
 
         Some(InMacroFile::new(self.expanded.file_id, tokens))
     }
@@ -833,9 +894,16 @@ impl ExpansionInfo {
         &self,
         span: Span,
     ) -> Option<InMacroFile<impl Iterator<Item = (SyntaxToken, SyntaxContext)> + '_>> {
-        let tokens = self.exp_map.ranges_with_span(span).flat_map(move |(range, ctx)| {
-            self.expanded.value.covering_element(range).into_token().zip(Some(ctx))
-        });
+        let tokens = self
+            .exp_map
+            .ranges_with_span(span)
+            .flat_map(move |(range, ctx)| {
+                self.expanded
+                    .value
+                    .covering_element(range)
+                    .into_token()
+                    .zip(Some(ctx))
+            });
 
         Some(InMacroFile::new(self.expanded.file_id, tokens))
     }
@@ -874,9 +942,15 @@ impl ExpansionInfo {
         match &self.arg_map {
             SpanMap::RealSpanMap(_) => {
                 let file_id = EditionedFileId::from_span(db, span.anchor.file_id).into();
-                let anchor_offset =
-                    db.ast_id_map(file_id).get_erased(span.anchor.ast_id).text_range().start();
-                InFile { file_id, value: smallvec::smallvec![span.range + anchor_offset] }
+                let anchor_offset = db
+                    .ast_id_map(file_id)
+                    .get_erased(span.anchor.ast_id)
+                    .text_range()
+                    .start();
+                InFile {
+                    file_id,
+                    value: smallvec::smallvec![span.range + anchor_offset],
+                }
             }
             SpanMap::ExpansionSpanMap(arg_map) => {
                 let Some(arg_node) = &self.arg.value else {
@@ -903,9 +977,18 @@ impl ExpansionInfo {
         let arg_map = db.span_map(arg_tt.file_id);
 
         let (parse, exp_map) = db.parse_macro_expansion(macro_file).value;
-        let expanded = InMacroFile { file_id: macro_file, value: parse.syntax_node() };
+        let expanded = InMacroFile {
+            file_id: macro_file,
+            value: parse.syntax_node(),
+        };
 
-        ExpansionInfo { expanded, loc, arg: arg_tt, exp_map, arg_map }
+        ExpansionInfo {
+            expanded,
+            loc,
+            arg: arg_tt,
+            exp_map,
+            arg_map,
+        }
     }
 }
 
@@ -917,8 +1000,14 @@ pub fn map_node_range_up_rooted(
     exp_map: &ExpansionSpanMap,
     range: TextRange,
 ) -> Option<FileRange> {
-    let mut spans = exp_map.spans_for_range(range).filter(|span| span.ctx.is_root());
-    let Span { range, anchor, ctx: _ } = spans.next()?;
+    let mut spans = exp_map
+        .spans_for_range(range)
+        .filter(|span| span.ctx.is_root());
+    let Span {
+        range,
+        anchor,
+        ctx: _,
+    } = spans.next()?;
     let mut start = range.start();
     let mut end = range.end();
 
@@ -930,9 +1019,15 @@ pub fn map_node_range_up_rooted(
         end = end.max(span.range.end());
     }
     let file_id = EditionedFileId::from_span(db, anchor.file_id);
-    let anchor_offset =
-        db.ast_id_map(file_id.into()).get_erased(anchor.ast_id).text_range().start();
-    Some(FileRange { file_id, range: TextRange::new(start, end) + anchor_offset })
+    let anchor_offset = db
+        .ast_id_map(file_id.into())
+        .get_erased(anchor.ast_id)
+        .text_range()
+        .start();
+    Some(FileRange {
+        file_id,
+        range: TextRange::new(start, end) + anchor_offset,
+    })
 }
 
 /// Maps up the text range out of the expansion hierarchy back into the original file its from.
@@ -956,9 +1051,18 @@ pub fn map_node_range_up(
         end = end.max(span.range.end());
     }
     let file_id = EditionedFileId::from_span(db, anchor.file_id);
-    let anchor_offset =
-        db.ast_id_map(file_id.into()).get_erased(anchor.ast_id).text_range().start();
-    Some((FileRange { file_id, range: TextRange::new(start, end) + anchor_offset }, ctx))
+    let anchor_offset = db
+        .ast_id_map(file_id.into())
+        .get_erased(anchor.ast_id)
+        .text_range()
+        .start();
+    Some((
+        FileRange {
+            file_id,
+            range: TextRange::new(start, end) + anchor_offset,
+        },
+        ctx,
+    ))
 }
 
 /// Maps up the text range out of the expansion hierarchy back into the original file its from.
@@ -970,7 +1074,9 @@ pub fn map_node_range_up_aggregated(
 ) -> FxHashMap<(SpanAnchor, SyntaxContext), TextRange> {
     let mut map = FxHashMap::default();
     for span in exp_map.spans_for_range(range) {
-        let range = map.entry((span.anchor, span.ctx)).or_insert_with(|| span.range);
+        let range = map
+            .entry((span.anchor, span.ctx))
+            .or_insert_with(|| span.range);
         *range = TextRange::new(
             range.start().min(span.range.start()),
             range.end().max(span.range.end()),
@@ -978,8 +1084,11 @@ pub fn map_node_range_up_aggregated(
     }
     for ((anchor, _), range) in &mut map {
         let file_id = EditionedFileId::from_span(db, anchor.file_id);
-        let anchor_offset =
-            db.ast_id_map(file_id.into()).get_erased(anchor.ast_id).text_range().start();
+        let anchor_offset = db
+            .ast_id_map(file_id.into())
+            .get_erased(anchor.ast_id)
+            .text_range()
+            .start();
         *range += anchor_offset;
     }
     map
@@ -993,9 +1102,18 @@ pub fn span_for_offset(
 ) -> (FileRange, SyntaxContext) {
     let span = exp_map.span_at(offset);
     let file_id = EditionedFileId::from_span(db, span.anchor.file_id);
-    let anchor_offset =
-        db.ast_id_map(file_id.into()).get_erased(span.anchor.ast_id).text_range().start();
-    (FileRange { file_id, range: span.range + anchor_offset }, span.ctx)
+    let anchor_offset = db
+        .ast_id_map(file_id.into())
+        .get_erased(span.anchor.ast_id)
+        .text_range()
+        .start();
+    (
+        FileRange {
+            file_id,
+            range: span.range + anchor_offset,
+        },
+        span.ctx,
+    )
 }
 
 /// In Rust, macros expand token trees to token trees. When we want to turn a

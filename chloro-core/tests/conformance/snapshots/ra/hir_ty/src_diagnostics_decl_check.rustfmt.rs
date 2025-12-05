@@ -126,7 +126,10 @@ struct Replacement {
 
 impl<'a> DeclValidator<'a> {
     pub(super) fn new(db: &'a dyn HirDatabase) -> DeclValidator<'a> {
-        DeclValidator { db, sink: Vec::new() }
+        DeclValidator {
+            db,
+            sink: Vec::new(),
+        }
     }
 
     pub(super) fn validate_item(&mut self, item: ModuleDefId) {
@@ -154,7 +157,9 @@ impl<'a> DeclValidator<'a> {
 
     fn validate_module(&mut self, module_id: ModuleId) {
         // Check the module name.
-        let Some(module_name) = module_id.name(self.db) else { return };
+        let Some(module_name) = module_id.name(self.db) else {
+            return;
+        };
         let Some(module_name_replacement) =
             to_lower_snake_case(module_name.as_str()).map(|new_name| Replacement {
                 current_name: module_name,
@@ -274,7 +279,11 @@ impl<'a> DeclValidator<'a> {
             }
 
             let is_param = ast::Param::can_cast(parent.kind());
-            let ident_type = if is_param { IdentType::Parameter } else { IdentType::Variable };
+            let ident_type = if is_param {
+                IdentType::Parameter
+            } else {
+                IdentType::Variable
+            };
 
             self.create_incorrect_case_diagnostic_for_ast_node(
                 replacement,
@@ -606,9 +615,11 @@ impl<'a> DeclValidator<'a> {
             CaseType::UpperCamelCase => to_camel_case,
         };
         let edition = self.edition(item_id);
-        let Some(replacement) =
-            to_expected_case_type(&name.display(self.db, edition).to_smolstr()).map(|new_name| {
-                Replacement { current_name: name.clone(), suggested_text: new_name, expected_case }
+        let Some(replacement) = to_expected_case_type(&name.display(self.db, edition).to_smolstr())
+            .map(|new_name| Replacement {
+                current_name: name.clone(),
+                suggested_text: new_name,
+                expected_case,
             })
         else {
             return;
@@ -649,7 +660,10 @@ impl<'a> DeclValidator<'a> {
             ident_type,
             ident: AstPtr::new(&name_ast),
             expected_case: replacement.expected_case,
-            ident_text: replacement.current_name.display(self.db, edition).to_string(),
+            ident_text: replacement
+                .current_name
+                .display(self.db, edition)
+                .to_string(),
             suggested_text: replacement.suggested_text,
         };
 

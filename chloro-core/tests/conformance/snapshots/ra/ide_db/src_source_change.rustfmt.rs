@@ -7,7 +7,7 @@ use std::{collections::hash_map::Entry, fmt, iter, mem};
 
 use crate::imports::insert_use::{ImportScope, ImportScopeKind};
 use crate::text_edit::{TextEdit, TextEditBuilder};
-use crate::{assists::Command, syntax_helpers::tree_diff::diff, SnippetCap};
+use crate::{SnippetCap, assists::Command, syntax_helpers::tree_diff::diff};
 use base_db::AnchoredPathBuf;
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
@@ -16,8 +16,8 @@ use rustc_hash::FxHashMap;
 use span::FileId;
 use stdx::never;
 use syntax::{
-    syntax_editor::{SyntaxAnnotation, SyntaxEditor},
     AstNode, SyntaxElement, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
+    syntax_editor::{SyntaxAnnotation, SyntaxEditor},
 };
 
 /// An annotation ID associated with an indel, to describe changes.
@@ -530,13 +530,14 @@ impl SourceChangeBuilder {
         self.commit();
 
         // Only one file can have snippet edits
-        stdx::never!(self
-            .source_change
-            .source_file_edits
-            .iter()
-            .filter(|(_, (_, snippet_edit))| snippet_edit.is_some())
-            .at_most_one()
-            .is_err());
+        stdx::never!(
+            self.source_change
+                .source_file_edits
+                .iter()
+                .filter(|(_, (_, snippet_edit))| snippet_edit.is_some())
+                .at_most_one()
+                .is_err()
+        );
 
         mem::take(&mut self.source_change)
     }

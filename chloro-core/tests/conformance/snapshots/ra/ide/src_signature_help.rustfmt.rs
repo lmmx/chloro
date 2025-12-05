@@ -84,8 +84,10 @@ pub(crate) fn signature_help(
         // this prevents us from leaving the CallExpression
         .and_then(|tok| algo::skip_trivia_token(tok, Direction::Prev))?;
     let token = sema.descend_into_macros_single_exact(token);
-    let edition =
-        sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
+    let edition = sema
+        .attach_first_edition(file_id)
+        .map(|it| it.edition(db))
+        .unwrap_or(Edition::CURRENT);
     let display_target = sema.first_crate(file_id)?.to_display_target(db);
 
     for node in token.parent_ancestors() {
@@ -167,8 +169,12 @@ fn signature_help_for_call(
     let (callable, active_parameter) =
         callable_for_arg_list(sema, arg_list, token.text_range().start())?;
 
-    let mut res =
-        SignatureHelp { doc: None, signature: String::new(), parameters: vec![], active_parameter };
+    let mut res = SignatureHelp {
+        doc: None,
+        signature: String::new(),
+        parameters: vec![],
+        active_parameter,
+    };
 
     let db = sema.db;
     let mut fn_params = None;
@@ -200,7 +206,11 @@ fn signature_help_for_call(
         }
         hir::CallableKind::TupleStruct(strukt) => {
             res.doc = strukt.docs(db);
-            format_to!(res.signature, "struct {}", strukt.name(db).display(db, edition));
+            format_to!(
+                res.signature,
+                "struct {}",
+                strukt.name(db).display(db, edition)
+            );
 
             let generic_params = GenericDef::Adt(strukt.into())
                 .params(db)
@@ -269,11 +279,13 @@ fn signature_help_for_call(
             // In that case, fall back to render definitions of the respective parameters.
             // This is overly conservative: we do not substitute known type vars
             // (see FIXME in tests::impl_trait) and falling back on any unknowns.
-            hir::attach_db(db, || match (p.ty().contains_unknown(), fn_params.as_deref()) {
-                (true, Some(fn_params)) => {
-                    format_to!(buf, "{}", fn_params[idx].ty().display(db, display_target))
+            hir::attach_db(db, || {
+                match (p.ty().contains_unknown(), fn_params.as_deref()) {
+                    (true, Some(fn_params)) => {
+                        format_to!(buf, "{}", fn_params[idx].ty().display(db, display_target))
+                    }
+                    _ => format_to!(buf, "{}", p.ty().display(db, display_target)),
                 }
-                _ => format_to!(buf, "{}", p.ty().display(db, display_target)),
             });
             res.push_call_param(&buf);
         }
@@ -282,7 +294,11 @@ fn signature_help_for_call(
 
     let mut render = |ret_type: hir::Type<'_>| {
         if !ret_type.is_unit() {
-            format_to!(res.signature, " -> {}", ret_type.display(db, display_target));
+            format_to!(
+                res.signature,
+                " -> {}",
+                ret_type.display(db, display_target)
+            );
         }
     };
     match callable.kind() {
@@ -356,8 +372,10 @@ fn signature_help_for_generics(
     }
 
     let params = generics_def.params(sema.db);
-    let num_lifetime_params =
-        params.iter().take_while(|param| matches!(param, GenericParam::LifetimeParam(_))).count();
+    let num_lifetime_params = params
+        .iter()
+        .take_while(|param| matches!(param, GenericParam::LifetimeParam(_)))
+        .count();
     if first_arg_is_non_lifetime {
         // Lifetime parameters were omitted.
         active_parameter += num_lifetime_params;
@@ -382,7 +400,9 @@ fn signature_help_for_generics(
                 }
             }
             GenericParam::ConstParam(param) => {
-                if let Some(expr) = param.default(db, display_target).and_then(|konst| konst.expr())
+                if let Some(expr) = param
+                    .default(db, display_target)
+                    .and_then(|konst| konst.expr())
                 {
                     format_to!(buf, " = {}", expr);
                 }
@@ -406,7 +426,12 @@ fn add_assoc_type_bindings(
     args: ast::GenericArgList,
     edition: Edition,
 ) {
-    if args.syntax().ancestors().find_map(ast::TypeBound::cast).is_none() {
+    if args
+        .syntax()
+        .ancestors()
+        .find_map(ast::TypeBound::cast)
+        .is_none()
+    {
         // Assoc type bindings are only valid in type bound position.
         return;
     }
@@ -447,7 +472,10 @@ fn signature_help_for_record_lit(
 ) -> Option<SignatureHelp> {
     signature_help_for_record_(
         sema,
-        record.record_expr_field_list()?.syntax().children_with_tokens(),
+        record
+            .record_expr_field_list()?
+            .syntax()
+            .children_with_tokens(),
         &record.path()?,
         record
             .record_expr_field_list()?
@@ -469,7 +497,10 @@ fn signature_help_for_record_pat(
 ) -> Option<SignatureHelp> {
     signature_help_for_record_(
         sema,
-        record.record_pat_field_list()?.syntax().children_with_tokens(),
+        record
+            .record_pat_field_list()?
+            .syntax()
+            .children_with_tokens(),
         &record.path()?,
         record
             .record_pat_field_list()?
@@ -519,7 +550,11 @@ fn signature_help_for_tuple_struct_pat(
         match adt {
             hir::Adt::Struct(it) => {
                 res.doc = it.docs(db);
-                format_to!(res.signature, "struct {} (", it.name(db).display(db, edition));
+                format_to!(
+                    res.signature,
+                    "struct {} (",
+                    it.name(db).display(db, edition)
+                );
                 it.fields(db)
             }
             _ => return None,
@@ -590,7 +625,11 @@ fn signature_help_for_tuple_expr(
     let fields = expr.original.tuple_fields(db);
     let mut buf = String::new();
     for ty in fields {
-        format_to!(buf, "{}", ty.display_truncated(db, Some(20), display_target));
+        format_to!(
+            buf,
+            "{}",
+            ty.display_truncated(db, Some(20), display_target)
+        );
         res.push_call_param(&buf);
         buf.clear();
     }
@@ -646,19 +685,29 @@ fn signature_help_for_record_<'db>(
             hir::Adt::Struct(it) => {
                 fields = it.fields(db);
                 res.doc = it.docs(db);
-                format_to!(res.signature, "struct {} {{ ", it.name(db).display(db, edition));
+                format_to!(
+                    res.signature,
+                    "struct {} {{ ",
+                    it.name(db).display(db, edition)
+                );
             }
             hir::Adt::Union(it) => {
                 fields = it.fields(db);
                 res.doc = it.docs(db);
-                format_to!(res.signature, "union {} {{ ", it.name(db).display(db, edition));
+                format_to!(
+                    res.signature,
+                    "union {} {{ ",
+                    it.name(db).display(db, edition)
+                );
             }
             _ => return None,
         }
     }
 
-    let mut fields =
-        fields.into_iter().map(|field| (field.name(db), Some(field))).collect::<FxIndexMap<_, _>>();
+    let mut fields = fields
+        .into_iter()
+        .map(|field| (field.name(db), Some(field)))
+        .collect::<FxIndexMap<_, _>>();
     let mut buf = String::new();
     for (field, ty) in fields2 {
         let name = field.name(db);
@@ -710,7 +759,9 @@ fn signature_help_for_tuple_pat_ish<'db>(
 
     res.active_parameter = {
         Some(if is_left_of_rest_pat {
-            commas.take_while(|t| t.text_range().start() <= token.text_range().start()).count()
+            commas
+                .take_while(|t| t.text_range().start() <= token.text_range().start())
+                .count()
         } else {
             let n_commas = commas
                 .collect::<Vec<_>>()
@@ -724,7 +775,11 @@ fn signature_help_for_tuple_pat_ish<'db>(
 
     let mut buf = String::new();
     for ty in fields {
-        format_to!(buf, "{}", ty.display_truncated(db, Some(20), display_target));
+        format_to!(
+            buf,
+            "{}",
+            ty.display_truncated(db, Some(20), display_target)
+        );
         res.push_call_param(&buf);
         buf.clear();
     }
@@ -748,10 +803,14 @@ mod tests {
         let mut database = RootDatabase::default();
         let change_fixture = ChangeFixture::parse(&database, ra_fixture);
         database.apply_change(change_fixture.change);
-        let (file_id, range_or_offset) =
-            change_fixture.file_position.expect("expected a marker ($0)");
+        let (file_id, range_or_offset) = change_fixture
+            .file_position
+            .expect("expected a marker ($0)");
         let offset = range_or_offset.expect_offset();
-        let position = FilePosition { file_id: file_id.file_id(&database), offset };
+        let position = FilePosition {
+            file_id: file_id.file_id(&database),
+            offset,
+        };
         (database, position)
     }
 
@@ -772,7 +831,10 @@ mod tests {
 
                     let start = u32::from(range.start());
                     let gap = start.checked_sub(offset).unwrap_or_else(|| {
-                        panic!("parameter ranges out of order: {:?}", sig_help.parameter_ranges())
+                        panic!(
+                            "parameter ranges out of order: {:?}",
+                            sig_help.parameter_ranges()
+                        )
                     });
                     rendered.extend(std::iter::repeat_n(' ', gap as usize));
                     let param_text = &sig_help.signature[*range];

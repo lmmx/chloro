@@ -31,7 +31,9 @@ pub(super) fn fn_hints(
     let param_list = func.param_list()?;
     let generic_param_list = func.generic_param_list();
     let ret_type = func.ret_type();
-    let self_param = param_list.self_param().filter(|it| it.amp_token().is_some());
+    let self_param = param_list
+        .self_param()
+        .filter(|it| it.amp_token().is_some());
     let gpl_append_range = func.name()?.syntax().text_range();
     hints_(
         acc,
@@ -86,7 +88,9 @@ pub(super) fn fn_ptr_hints(
         .and_then(|it| it.for_binder());
 
     let param_list = func.param_list()?;
-    let generic_param_list = parent_for_binder.as_ref().and_then(|it| it.generic_param_list());
+    let generic_param_list = parent_for_binder
+        .as_ref()
+        .and_then(|it| it.generic_param_list());
     let ret_type = func.ret_type();
     let for_kw = parent_for_binder.as_ref().and_then(|it| it.for_token());
     hints_(
@@ -152,14 +156,18 @@ pub(super) fn fn_path_hints(
         .find_map(ast::ForType::cast)
         .and_then(|it| it.for_binder());
 
-    let generic_param_list = parent_for_binder.as_ref().and_then(|it| it.generic_param_list());
+    let generic_param_list = parent_for_binder
+        .as_ref()
+        .and_then(|it| it.generic_param_list());
     let for_kw = parent_for_binder.as_ref().and_then(|it| it.for_token());
     hints_(
         acc,
         ctx,
         fd,
         config,
-        param_list.type_args().filter_map(|it| Some((None, it.ty()?))),
+        param_list
+            .type_args()
+            .filter_map(|it| Some((None, it.ty()?))),
         generic_param_list,
         ret_type,
         None,
@@ -189,7 +197,8 @@ pub(super) fn fn_path_hints(
 }
 
 fn path_as_fn(path: &ast::Path) -> Option<(ast::ParenthesizedArgList, Option<ast::RetType>)> {
-    path.segment().and_then(|it| it.parenthesized_arg_list().zip(Some(it.ret_type())))
+    path.segment()
+        .and_then(|it| it.parenthesized_arg_list().zip(Some(it.ret_type())))
 }
 
 fn hints_(
@@ -258,8 +267,13 @@ fn hints_(
         acc
     };
 
-    let mut used_names: FxHashMap<SmolStr, usize> =
-        ctx.lifetime_stacks.iter().flat_map(|it| it.iter()).cloned().zip(iter::repeat(0)).collect();
+    let mut used_names: FxHashMap<SmolStr, usize> = ctx
+        .lifetime_stacks
+        .iter()
+        .flat_map(|it| it.iter())
+        .cloned()
+        .zip(iter::repeat(0))
+        .collect();
     // allocate names
     let mut gen_idx_name = {
         let mut generic = (0u8..).map(|idx| match idx {
@@ -270,14 +284,21 @@ fn hints_(
         move || {
             generic
                 .by_ref()
-                .find(|s| ctx.lifetime_stacks.iter().flat_map(|it| it.iter()).all(|n| n != s))
+                .find(|s| {
+                    ctx.lifetime_stacks
+                        .iter()
+                        .flat_map(|it| it.iter())
+                        .all(|n| n != s)
+                })
                 .unwrap_or_default()
         }
     };
     let mut allocated_lifetimes = vec![];
 
     {
-        let mut potential_lt_refs = potential_lt_refs.iter().filter(|&&(.., is_elided)| is_elided);
+        let mut potential_lt_refs = potential_lt_refs
+            .iter()
+            .filter(|&&(.., is_elided)| is_elided);
         if self_param.is_some() && potential_lt_refs.next().is_some() {
             allocated_lifetimes.push(if config.param_names_for_lifetime_elision_hints {
                 // self can't be used as a lifetime, so no need to check for collisions
@@ -456,7 +477,10 @@ impl () {
     #[test]
     fn hints_lifetimes_named() {
         check_with_config(
-            InlayHintsConfig { param_names_for_lifetime_elision_hints: true, ..TEST_CONFIG },
+            InlayHintsConfig {
+                param_names_for_lifetime_elision_hints: true,
+                ..TEST_CONFIG
+            },
             r#"
 fn nested_in<'named>(named: &        &X<      &()>) {}
 //          ^'named1, 'named2, 'named3, $

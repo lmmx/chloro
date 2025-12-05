@@ -1,20 +1,20 @@
 use either::Either;
 use ide_db::imports::{
     insert_use::{ImportGranularity, InsertUseConfig},
-    merge_imports::{try_merge_imports, try_merge_trees, MergeBehavior},
+    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
 };
 use syntax::{
+    AstNode, SyntaxElement, SyntaxNode,
     algo::neighbor,
     ast::{self, syntax_factory::SyntaxFactory},
     match_ast,
     syntax_editor::Removable,
-    AstNode, SyntaxElement, SyntaxNode,
 };
 
 use crate::{
+    AssistId,
     assist_context::{AssistContext, Assists},
     utils::next_prev,
-    AssistId,
 };
 
 use Edit::*;

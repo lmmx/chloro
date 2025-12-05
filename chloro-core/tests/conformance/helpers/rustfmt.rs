@@ -3,7 +3,7 @@ use std::process::Command;
 pub fn format_with_rustfmt(code: &str) -> Result<String, String> {
     let mut child = Command::new("rustfmt")
         .arg("--edition")
-        .arg("2021")
+        .arg("2024")
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())

@@ -22,13 +22,13 @@
 //! [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html
 
 use crate::next_solver::{
-    infer::InferCtxt, Canonical, CanonicalVarValues, Const, DbInterner, GenericArg,
-    PlaceholderConst, PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
+    Canonical, CanonicalVarValues, Const, DbInterner, GenericArg, PlaceholderConst,
+    PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind, infer::InferCtxt,
 };
 use instantiate::CanonicalExt;
 use rustc_index::IndexVec;
 use rustc_type_ir::inherent::IntoKind;
-use rustc_type_ir::{inherent::Ty as _, CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex};
+use rustc_type_ir::{CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex, inherent::Ty as _};
 
 pub mod canonicalizer;
 pub mod instantiate;

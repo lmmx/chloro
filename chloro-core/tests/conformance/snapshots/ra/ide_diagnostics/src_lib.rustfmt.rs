@@ -330,7 +330,10 @@ pub fn syntax_diagnostics(
             Diagnostic::new(
                 DiagnosticCode::SyntaxError,
                 format!("Syntax Error: {err}"),
-                FileRange { file_id, range: err.range() },
+                FileRange {
+                    file_id,
+                    range: err.range(),
+                },
             )
         })
         .collect()
@@ -389,14 +392,24 @@ pub fn semantic_diagnostics(
         }
     };
     let display_target = krate.to_display_target(db);
-    let ctx = DiagnosticsContext { config, sema, resolve, edition, is_nightly, display_target };
+    let ctx = DiagnosticsContext {
+        config,
+        sema,
+        resolve,
+        edition,
+        is_nightly,
+        display_target,
+    };
 
     let mut diags = Vec::new();
     match module {
         // A bunch of parse errors in a file indicate some bigger structural parse changes in the
         // file, so we skip semantic diagnostics so we can show these faster.
         Some(m) => {
-            if db.parse_errors(editioned_file_id).is_none_or(|es| es.len() < 16) {
+            if db
+                .parse_errors(editioned_file_id)
+                .is_none_or(|es| es.len() < 16)
+            {
                 m.diagnostics(db, &mut diags, config.style_lints);
             }
         }
@@ -499,7 +512,12 @@ pub fn semantic_diagnostics(
 
     let mut lints = res
         .iter_mut()
-        .filter(|it| matches!(it.code, DiagnosticCode::Clippy(_) | DiagnosticCode::RustcLint(_)))
+        .filter(|it| {
+            matches!(
+                it.code,
+                DiagnosticCode::Clippy(_) | DiagnosticCode::RustcLint(_)
+            )
+        })
         .filter_map(|it| {
             Some((
                 it.main_node.map(|ptr| {
@@ -549,7 +567,9 @@ fn handle_diag_from_macros(
     diag: &mut Diagnostic,
     node: &InFile<SyntaxNode>,
 ) -> bool {
-    let Some(macro_file) = node.file_id.macro_file() else { return true };
+    let Some(macro_file) = node.file_id.macro_file() else {
+        return true;
+    };
     let span_map = sema.db.expansion_span_map(macro_file);
     let mut spans = span_map.spans_for_range(node.text_range());
     if spans.any(|span| {
@@ -586,7 +606,11 @@ static RUSTC_LINTS: LazyLock<FxHashMap<&str, BuiltLint>> =
     LazyLock::new(|| build_lints_map(DEFAULT_LINTS, DEFAULT_LINT_GROUPS, ""));
 
 static CLIPPY_LINTS: LazyLock<FxHashMap<&str, BuiltLint>> = LazyLock::new(|| {
-    build_lints_map(ide_db::generated::lints::CLIPPY_LINTS, CLIPPY_LINT_GROUPS, "clippy::")
+    build_lints_map(
+        ide_db::generated::lints::CLIPPY_LINTS,
+        CLIPPY_LINT_GROUPS,
+        "clippy::",
+    )
 });
 
 // FIXME: Autogenerate this instead of enumerating by hand.
@@ -600,7 +624,15 @@ fn build_lints_map(
 ) -> FxHashMap<&'static str, BuiltLint> {
     let mut map_with_prefixes: FxHashMap<_, _> = lints
         .iter()
-        .map(|lint| (lint.label, BuiltLint { lint, groups: vec![lint.label, "__RA_EVERY_LINT"] }))
+        .map(|lint| {
+            (
+                lint.label,
+                BuiltLint {
+                    lint,
+                    groups: vec![lint.label, "__RA_EVERY_LINT"],
+                },
+            )
+        })
         .collect();
     for g in lint_group {
         let mut add_children = |label: &'static str| {
@@ -615,7 +647,10 @@ fn build_lints_map(
             add_children("bad_style");
         }
     }
-    map_with_prefixes.into_iter().map(|(k, v)| (k.strip_prefix(prefix).unwrap(), v)).collect()
+    map_with_prefixes
+        .into_iter()
+        .map(|(k, v)| (k.strip_prefix(prefix).unwrap(), v))
+        .collect()
 }
 
 fn handle_lints(
@@ -702,7 +737,12 @@ fn lint_severity_at(
                 .find_map(|(lint, severity)| lint_groups.contains(&lint).then_some(severity))
         })
         .or_else(|| {
-            lint_severity_at(sema, &sema.find_parent_file(node.file_id)?, lint_groups, edition)
+            lint_severity_at(
+                sema,
+                &sema.find_parent_file(node.file_id)?,
+                lint_groups,
+                edition,
+            )
         })
 }
 
@@ -714,29 +754,35 @@ fn lint_attrs<'a>(
     ancestor
         .attrs_including_inner()
         .filter_map(|attr| {
-            attr.as_simple_call().and_then(|(name, value)| match &*name {
-                "allow" | "expect" => Some(Either::Left(iter::once((Severity::Allow, value)))),
-                "warn" => Some(Either::Left(iter::once((Severity::Warning, value)))),
-                "forbid" | "deny" => Some(Either::Left(iter::once((Severity::Error, value)))),
-                "cfg_attr" => {
-                    let mut lint_attrs = Vec::new();
-                    cfg_attr_lint_attrs(sema, &value, &mut lint_attrs);
-                    Some(Either::Right(lint_attrs.into_iter()))
-                }
-                _ => None,
-            })
+            attr.as_simple_call()
+                .and_then(|(name, value)| match &*name {
+                    "allow" | "expect" => Some(Either::Left(iter::once((Severity::Allow, value)))),
+                    "warn" => Some(Either::Left(iter::once((Severity::Warning, value)))),
+                    "forbid" | "deny" => Some(Either::Left(iter::once((Severity::Error, value)))),
+                    "cfg_attr" => {
+                        let mut lint_attrs = Vec::new();
+                        cfg_attr_lint_attrs(sema, &value, &mut lint_attrs);
+                        Some(Either::Right(lint_attrs.into_iter()))
+                    }
+                    _ => None,
+                })
         })
         .flatten()
         .flat_map(move |(severity, lints)| {
-            parse_tt_as_comma_sep_paths(lints, edition).into_iter().flat_map(move |lints| {
-                // Rejoin the idents with `::`, so we have no spaces in between.
-                lints.into_iter().map(move |lint| {
-                    (
-                        lint.segments().filter_map(|segment| segment.name_ref()).join("::").into(),
-                        severity,
-                    )
+            parse_tt_as_comma_sep_paths(lints, edition)
+                .into_iter()
+                .flat_map(move |lints| {
+                    // Rejoin the idents with `::`, so we have no spaces in between.
+                    lints.into_iter().map(move |lint| {
+                        (
+                            lint.segments()
+                                .filter_map(|segment| segment.name_ref())
+                                .join("::")
+                                .into(),
+                            severity,
+                        )
+                    })
                 })
-            })
         })
 }
 
@@ -818,7 +864,10 @@ fn lint_groups(lint: &DiagnosticCode, edition: Edition) -> LintGroups {
         }
         _ => panic!("non-lint passed to `handle_lints()`"),
     };
-    LintGroups { groups, inside_warnings }
+    LintGroups {
+        groups,
+        inside_warnings,
+    }
 }
 
 fn fix(id: &'static str, label: &str, source_change: SourceChange, target: TextRange) -> Assist {
@@ -849,5 +898,8 @@ fn adjusted_display_range<N: AstNode>(
     let hir::FileRange { file_id, range } = diag_ptr
         .with_value(adj(node).unwrap_or_else(|| diag_ptr.value.text_range()))
         .original_node_file_range_rooted(ctx.sema.db);
-    ide_db::FileRange { file_id: file_id.file_id(ctx.sema.db), range }
+    ide_db::FileRange {
+        file_id: file_id.file_id(ctx.sema.db),
+        range,
+    }
 }

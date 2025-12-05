@@ -8,14 +8,14 @@ use ena::snapshot_vec as sv;
 use ena::undo_log::Rollback;
 use ena::unify as ut;
 use rustc_index::IndexVec;
-use rustc_type_ir::inherent::Ty as _;
 use rustc_type_ir::TyVid;
 use rustc_type_ir::UniverseIndex;
+use rustc_type_ir::inherent::Ty as _;
 use tracing::debug;
 
-use crate::next_solver::infer::{iter_idx_range, InferCtxtUndoLogs};
 use crate::next_solver::SolverDefId;
 use crate::next_solver::Ty;
+use crate::next_solver::infer::{InferCtxtUndoLogs, iter_idx_range};
 
 /// Represents a single undo-able action that affects a type inference variable.
 #[derive(Clone)]

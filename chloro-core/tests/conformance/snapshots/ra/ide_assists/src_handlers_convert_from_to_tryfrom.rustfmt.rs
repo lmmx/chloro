@@ -40,9 +40,12 @@ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>
     let module = ctx.sema.scope(impl_.syntax())?.module();
 
     let from_type = match &trait_ty {
-        ast::Type::PathType(path) => {
-            path.path()?.segment()?.generic_arg_list()?.generic_args().next()?
-        }
+        ast::Type::PathType(path) => path
+            .path()?
+            .segment()?
+            .generic_arg_list()?
+            .generic_args()
+            .next()?,
         _ => return None,
     };
 
@@ -60,7 +63,11 @@ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>
     let from_fn_name = from_fn.name()?;
     let from_fn_return_type = from_fn.ret_type()?.ty()?;
 
-    let return_exprs = from_fn.body()?.syntax().descendants().filter_map(ast::ReturnExpr::cast);
+    let return_exprs = from_fn
+        .body()?
+        .syntax()
+        .descendants()
+        .filter_map(ast::ReturnExpr::cast);
     let tail_expr = from_fn.body()?.tail_expr()?;
 
     if resolve_target_trait(&ctx.sema, &impl_)?
@@ -77,14 +84,20 @@ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>
             let mut editor = builder.make_editor(impl_.syntax());
             editor.replace(
                 trait_ty.syntax(),
-                make::ty(&format!("TryFrom<{from_type}>")).syntax().clone_for_update(),
+                make::ty(&format!("TryFrom<{from_type}>"))
+                    .syntax()
+                    .clone_for_update(),
             );
             editor.replace(
                 from_fn_return_type.syntax(),
-                make::ty("Result<Self, Self::Error>").syntax().clone_for_update(),
+                make::ty("Result<Self, Self::Error>")
+                    .syntax()
+                    .clone_for_update(),
             );
-            editor
-                .replace(from_fn_name.syntax(), make::name("try_from").syntax().clone_for_update());
+            editor.replace(
+                from_fn_name.syntax(),
+                make::name("try_from").syntax().clone_for_update(),
+            );
             editor.replace(
                 tail_expr.syntax(),
                 wrap_ok(tail_expr.clone()).syntax().clone_for_update(),

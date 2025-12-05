@@ -1,18 +1,18 @@
 use std::iter::{self, Peekable};
 
 use either::Either;
-use hir::{sym, Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics};
+use hir::{Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics, sym};
+use ide_db::RootDatabase;
 use ide_db::assists::ExprFillDefaultMode;
 use ide_db::syntax_helpers::suggest_name;
-use ide_db::RootDatabase;
 use ide_db::{famous_defs::FamousDefs, helpers::mod_path_to_ast};
 use itertools::Itertools;
+use syntax::ToSmolStr;
 use syntax::ast::edit::{AstNodeEdit, IndentLevel};
 use syntax::ast::syntax_factory::SyntaxFactory;
-use syntax::ast::{self, make, AstNode, MatchArmList, MatchExpr, Pat};
-use syntax::ToSmolStr;
+use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
 
-use crate::{utils, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, utils};
 
 // Assist: add_missing_match_arms
 //
@@ -577,11 +577,11 @@ fn build_pat(
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::{
-        check_assist, check_assist_not_applicable, check_assist_target, check_assist_unresolved,
-        check_assist_with_config, TEST_CONFIG,
-    };
     use crate::AssistConfig;
+    use crate::tests::{
+        TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_target,
+        check_assist_unresolved, check_assist_with_config,
+    };
 
     use super::add_missing_match_arms;
 

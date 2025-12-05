@@ -8,17 +8,6 @@ Rustfmt size:  18737 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::Type;
- use ide_db::FxHashMap;
- use std::iter::successors;
- use syntax::{
-+    Direction,
-     algo::neighbor,
-     ast::{self, AstNode, HasName},
--    Direction,
- };
- 
- use crate::{AssistContext, AssistId, Assists, TextRange};
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

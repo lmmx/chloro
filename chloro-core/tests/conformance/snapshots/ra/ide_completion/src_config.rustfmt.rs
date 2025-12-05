@@ -6,11 +6,11 @@
 
 use hir::FindPathConfig;
 use ide_db::{
-    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig},
     MiniCore, SnippetCap,
+    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig},
 };
 
-use crate::{snippet::Snippet, CompletionFieldsToResolve};
+use crate::{CompletionFieldsToResolve, snippet::Snippet};
 
 #[derive(Clone, Debug)]
 pub struct CompletionConfig<'a> {

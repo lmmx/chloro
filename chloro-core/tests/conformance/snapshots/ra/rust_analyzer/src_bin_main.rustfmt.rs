@@ -82,9 +82,10 @@ fn actual_main() -> anyhow::Result<ExitCode> {
         flags::RustAnalyzerCmd::UnresolvedReferences(cmd) => cmd.run()?,
         flags::RustAnalyzerCmd::Ssr(cmd) => cmd.run()?,
         flags::RustAnalyzerCmd::Search(cmd) => cmd.run()?,
-        flags::RustAnalyzerCmd::Lsif(cmd) => {
-            cmd.run(&mut std::io::stdout(), Some(project_model::RustLibSource::Discover))?
-        }
+        flags::RustAnalyzerCmd::Lsif(cmd) => cmd.run(
+            &mut std::io::stdout(),
+            Some(project_model::RustLibSource::Discover),
+        )?,
         flags::RustAnalyzerCmd::Scip(cmd) => cmd.run()?,
         flags::RustAnalyzerCmd::RunTests(cmd) => cmd.run()?,
         flags::RustAnalyzerCmd::RustcTests(cmd) => cmd.run()?,
@@ -139,7 +140,10 @@ fn setup_logging(log_file_flag: Option<PathBuf>) -> anyhow::Result<()> {
         }
     }
 
-    let log_file = env::var("RA_LOG_FILE").ok().map(PathBuf::from).or(log_file_flag);
+    let log_file = env::var("RA_LOG_FILE")
+        .ok()
+        .map(PathBuf::from)
+        .or(log_file_flag);
     let log_file = match log_file {
         Some(path) => {
             if let Some(parent) = path.parent() {
@@ -182,8 +186,9 @@ fn with_extra_thread(
     thread_intent: stdx::thread::ThreadIntent,
     f: impl FnOnce() -> anyhow::Result<()> + Send + 'static,
 ) -> anyhow::Result<()> {
-    let handle =
-        stdx::thread::Builder::new(thread_intent, thread_name).stack_size(STACK_SIZE).spawn(f)?;
+    let handle = stdx::thread::Builder::new(thread_intent, thread_name)
+        .stack_size(STACK_SIZE)
+        .spawn(f)?;
 
     handle.join()?;
 
@@ -223,7 +228,11 @@ fn run_server() -> anyhow::Result<()> {
         )
     {
         tracing::info!("Patching lsp-types workspace diagnostics capabilities: {diag_caps:#?}");
-        capabilities.workspace.get_or_insert_default().diagnostic.get_or_insert(diag_caps);
+        capabilities
+            .workspace
+            .get_or_insert_default()
+            .diagnostic
+            .get_or_insert(diag_caps);
     }
 
     let root_path = match root_uri
@@ -274,9 +283,15 @@ fn run_server() -> anyhow::Result<()> {
             };
             let not = lsp_server::Notification::new(
                 ShowMessage::METHOD.to_owned(),
-                ShowMessageParams { typ: MessageType::WARNING, message: error_sink.to_string() },
+                ShowMessageParams {
+                    typ: MessageType::WARNING,
+                    message: error_sink.to_string(),
+                },
             );
-            connection.sender.send(lsp_server::Message::Notification(not)).unwrap();
+            connection
+                .sender
+                .send(lsp_server::Message::Notification(not))
+                .unwrap();
         }
     }
 
@@ -309,7 +324,10 @@ fn run_server() -> anyhow::Result<()> {
 
     // If the io_threads have an error, there's usually an error on the main
     // loop too because the channels are closed. Ensure we report both errors.
-    match (rust_analyzer::main_loop(config, connection), io_threads.join()) {
+    match (
+        rust_analyzer::main_loop(config, connection),
+        io_threads.join(),
+    ) {
         (Err(loop_e), Err(join_e)) => anyhow::bail!("{loop_e}\n{join_e}"),
         (Ok(_), Err(join_e)) => anyhow::bail!("{join_e}"),
         (Err(loop_e), Ok(_)) => anyhow::bail!("{loop_e}"),
@@ -355,6 +373,12 @@ fn patch_path_prefix(path: PathBuf) -> PathBuf {
 #[test]
 #[cfg(windows)]
 fn patch_path_prefix_works() {
-    assert_eq!(patch_path_prefix(r"c:\foo\bar".into()), PathBuf::from(r"C:\foo\bar"));
-    assert_eq!(patch_path_prefix(r"\\?\c:\foo\bar".into()), PathBuf::from(r"\\?\C:\foo\bar"));
+    assert_eq!(
+        patch_path_prefix(r"c:\foo\bar".into()),
+        PathBuf::from(r"C:\foo\bar")
+    );
+    assert_eq!(
+        patch_path_prefix(r"\\?\c:\foo\bar".into()),
+        PathBuf::from(r"\\?\C:\foo\bar")
+    );
 }

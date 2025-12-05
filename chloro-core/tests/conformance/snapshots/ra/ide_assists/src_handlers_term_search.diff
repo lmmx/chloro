@@ -13,14 +13,6 @@ Rustfmt size:  9410 bytes
  use hir::term_search::{TermSearchConfig, TermSearchCtx};
  use ide_db::{
      assists::{AssistId, GroupLabel},
- };
- 
- use itertools::Itertools;
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
- 
- use crate::assist_context::{AssistContext, Assists};
- 
          return None;
      }
  

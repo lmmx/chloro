@@ -5,13 +5,4 @@ Original size: 1047 bytes
 Chloro size:   1047 bytes
 Rustfmt size:  1047 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- use hir::{DefWithBody, Semantics};
- use ide_db::{FilePosition, RootDatabase};
--use syntax::{algo::ancestors_at_offset, ast, AstNode};
-+use syntax::{AstNode, algo::ancestors_at_offset, ast};
- 
- // Feature: View Mir
- //
+✓ Outputs are IDENTICAL

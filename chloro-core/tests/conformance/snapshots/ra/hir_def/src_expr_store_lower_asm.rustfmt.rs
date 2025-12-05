@@ -92,7 +92,11 @@ impl ExprCollector<'_> {
                                         .and_then(|it| it.in_expr())
                                         .filter(|it| !matches!(it, ast::Expr::UnderscoreExpr(_)))
                                         .map(|expr| self.collect_expr(expr));
-                                    AsmOperand::Out { reg, expr, late: false }
+                                    AsmOperand::Out {
+                                        reg,
+                                        expr,
+                                        late: false,
+                                    }
                                 } else if dir_spec.lateout_token().is_some() {
                                     let expr = op
                                         .asm_operand_expr()
@@ -100,9 +104,15 @@ impl ExprCollector<'_> {
                                         .filter(|it| !matches!(it, ast::Expr::UnderscoreExpr(_)))
                                         .map(|expr| self.collect_expr(expr));
 
-                                    AsmOperand::Out { reg, expr, late: true }
+                                    AsmOperand::Out {
+                                        reg,
+                                        expr,
+                                        late: true,
+                                    }
                                 } else if dir_spec.inout_token().is_some() {
-                                    let Some(op_expr) = op.asm_operand_expr() else { continue };
+                                    let Some(op_expr) = op.asm_operand_expr() else {
+                                        continue;
+                                    };
                                     let in_expr = self.collect_expr_opt(op_expr.in_expr());
                                     match op_expr.fat_arrow_token().is_some() {
                                         true => {
@@ -120,12 +130,16 @@ impl ExprCollector<'_> {
                                                 late: false,
                                             }
                                         }
-                                        false => {
-                                            AsmOperand::InOut { reg, expr: in_expr, late: false }
-                                        }
+                                        false => AsmOperand::InOut {
+                                            reg,
+                                            expr: in_expr,
+                                            late: false,
+                                        },
                                     }
                                 } else if dir_spec.inlateout_token().is_some() {
-                                    let Some(op_expr) = op.asm_operand_expr() else { continue };
+                                    let Some(op_expr) = op.asm_operand_expr() else {
+                                        continue;
+                                    };
                                     let in_expr = self.collect_expr_opt(op_expr.in_expr());
                                     match op_expr.fat_arrow_token().is_some() {
                                         true => {
@@ -143,9 +157,11 @@ impl ExprCollector<'_> {
                                                 late: true,
                                             }
                                         }
-                                        false => {
-                                            AsmOperand::InOut { reg, expr: in_expr, late: true }
-                                        }
+                                        false => AsmOperand::InOut {
+                                            reg,
+                                            expr: in_expr,
+                                            late: true,
+                                        },
                                     }
                                 } else {
                                     continue;
@@ -279,7 +295,11 @@ impl ExprCollector<'_> {
         };
 
         let idx = self.alloc_expr(
-            Expr::InlineAsm(InlineAsm { operands: operands.into_boxed_slice(), options, kind }),
+            Expr::InlineAsm(InlineAsm {
+                operands: operands.into_boxed_slice(),
+                options,
+                kind,
+            }),
             syntax_ptr,
         );
         self.store

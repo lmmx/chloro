@@ -376,7 +376,10 @@ impl GlobalState {
                             .config
                             .discover_workspace_config()
                             .map(|cfg| {
-                                cfg.files_to_watch.iter().map(String::as_str).collect::<Vec<&str>>()
+                                cfg.files_to_watch
+                                    .iter()
+                                    .map(String::as_str)
+                                    .collect::<Vec<&str>>()
                             })
                             .unwrap_or_default();
 
@@ -435,7 +438,9 @@ impl GlobalState {
 
         self.analysis_host.apply_change(change);
         if !modified_ratoml_files.is_empty()
-            || !self.config.same_source_root_parent_map(&self.local_roots_parent_map)
+            || !self
+                .config
+                .same_source_root_parent_map(&self.local_roots_parent_map)
         {
             let config_change = {
                 let _p = span!(Level::INFO, "GlobalState::process_changes/config_change").entered();
@@ -540,17 +545,19 @@ impl GlobalState {
         // didn't find anything (to make up for the lack of precision).
         {
             if !matches!(&workspace_structure_change, Some((.., true))) {
-                _ = self
-                    .deferred_task_queue
-                    .sender
-                    .send(crate::main_loop::QueuedTask::CheckProcMacroSources(modified_rust_files));
+                _ = self.deferred_task_queue.sender.send(
+                    crate::main_loop::QueuedTask::CheckProcMacroSources(modified_rust_files),
+                );
             }
             // FIXME: ideally we should only trigger a workspace fetch for non-library changes
             // but something's going wrong with the source root business when we add a new local
             // crate see https://github.com/rust-lang/rust-analyzer/issues/13029
             if let Some((path, force_crate_graph_reload)) = workspace_structure_change {
-                let _p = span!(Level::INFO, "GlobalState::process_changes/ws_structure_change")
-                    .entered();
+                let _p = span!(
+                    Level::INFO,
+                    "GlobalState::process_changes/ws_structure_change"
+                )
+                .entered();
                 self.enqueue_workspace_fetch(path, force_crate_graph_reload);
             }
         }
@@ -569,7 +576,11 @@ impl GlobalState {
             mem_docs: self.mem_docs.clone(),
             semantic_tokens_cache: Arc::clone(&self.semantic_tokens_cache),
             proc_macros_loaded: !self.config.expand_proc_macros()
-                || self.fetch_proc_macros_queue.last_op_result().copied().unwrap_or(false),
+                || self
+                    .fetch_proc_macros_queue
+                    .last_op_result()
+                    .copied()
+                    .unwrap_or(false),
             flycheck: self.flycheck.clone(),
         }
     }
@@ -579,7 +590,10 @@ impl GlobalState {
         params: R::Params,
         handler: ReqHandler,
     ) {
-        let request = self.req_queue.outgoing.register(R::METHOD.to_owned(), params, handler);
+        let request = self
+            .req_queue
+            .outgoing
+            .register(R::METHOD.to_owned(), params, handler);
         self.send(request.into());
     }
 
@@ -605,9 +619,10 @@ impl GlobalState {
         request: &lsp_server::Request,
         request_received: Instant,
     ) {
-        self.req_queue
-            .incoming
-            .register(request.id.clone(), (request.method.clone(), request_received));
+        self.req_queue.incoming.register(
+            request.id.clone(),
+            (request.method.clone(), request_received),
+        );
     }
 
     pub(crate) fn respond(&mut self, response: lsp_server::Response) {
@@ -715,7 +730,10 @@ impl GlobalState {
 
         self.fetch_ws_receiver = Some((
             crossbeam_channel::after(Duration::from_millis(100)),
-            FetchWorkspaceRequest { path: Some(path), force_crate_graph_reload },
+            FetchWorkspaceRequest {
+                path: Some(path),
+                force_crate_graph_reload,
+            },
         ));
     }
 
@@ -754,12 +772,20 @@ impl GlobalStateSnapshot {
     pub(crate) fn file_line_index(&self, file_id: FileId) -> Cancellable<LineIndex> {
         let endings = self.vfs.read().1[&file_id];
         let index = self.analysis.file_line_index(file_id)?;
-        let res = LineIndex { index, endings, encoding: self.config.caps().negotiated_encoding() };
+        let res = LineIndex {
+            index,
+            endings,
+            encoding: self.config.caps().negotiated_encoding(),
+        };
         Ok(res)
     }
 
     pub(crate) fn file_version(&self, file_id: FileId) -> Option<i32> {
-        Some(self.mem_docs.get(self.vfs_read().file_path(file_id))?.version)
+        Some(
+            self.mem_docs
+                .get(self.vfs_read().file_path(file_id))?
+                .version,
+        )
     }
 
     pub(crate) fn url_file_version(&self, url: &Url) -> Option<i32> {
@@ -787,7 +813,10 @@ impl GlobalStateSnapshot {
         for workspace in self.workspaces.iter() {
             match &workspace.kind {
                 ProjectWorkspaceKind::Cargo { cargo, .. }
-                | ProjectWorkspaceKind::DetachedFile { cargo: Some((cargo, _, _)), .. } => {
+                | ProjectWorkspaceKind::DetachedFile {
+                    cargo: Some((cargo, _, _)),
+                    ..
+                } => {
                     let Some(target_idx) = cargo.target_by_root(path) else {
                         continue;
                     };
@@ -836,7 +865,10 @@ impl GlobalStateSnapshot {
         for workspace in self.workspaces.iter() {
             match &workspace.kind {
                 ProjectWorkspaceKind::Cargo { cargo, .. }
-                | ProjectWorkspaceKind::DetachedFile { cargo: Some((cargo, _, _)), .. } => {
+                | ProjectWorkspaceKind::DetachedFile {
+                    cargo: Some((cargo, _, _)),
+                    ..
+                } => {
                     let package = cargo.packages().find(|p| cargo[*p].id == *package)?;
 
                     return cargo[package]
@@ -880,8 +912,9 @@ pub(crate) fn vfs_path_to_file_id(
     vfs: &vfs::Vfs,
     vfs_path: &VfsPath,
 ) -> anyhow::Result<Option<FileId>> {
-    let (file_id, excluded) =
-        vfs.file_id(vfs_path).ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
+    let (file_id, excluded) = vfs
+        .file_id(vfs_path)
+        .ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
     match excluded {
         vfs::FileExcluded::Yes => Ok(None),
         vfs::FileExcluded::No => Ok(Some(file_id)),

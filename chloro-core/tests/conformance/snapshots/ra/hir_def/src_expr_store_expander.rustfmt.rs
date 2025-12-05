@@ -5,15 +5,15 @@ use std::mem;
 use base_db::Crate;
 use cfg::CfgOptions;
 use drop_bomb::DropBomb;
-use hir_expand::span_map::SpanMapRef;
 use hir_expand::AstId;
+use hir_expand::span_map::SpanMapRef;
 use hir_expand::{
-    eager::EagerCallBackFn, mod_path::ModPath, span_map::SpanMap, ExpandError, ExpandErrorKind,
-    ExpandResult, HirFileId, InFile, Lookup, MacroCallId,
+    ExpandError, ExpandErrorKind, ExpandResult, HirFileId, InFile, Lookup, MacroCallId,
+    eager::EagerCallBackFn, mod_path::ModPath, span_map::SpanMap,
 };
 use span::{AstIdMap, Edition, SyntaxContext};
 use syntax::ast::HasAttrs;
-use syntax::{ast, AstNode, Parse};
+use syntax::{AstNode, Parse, ast};
 use triomphe::Arc;
 use tt::TextRange;
 
@@ -21,7 +21,7 @@ use crate::attr::Attrs;
 use crate::expr_store::HygieneId;
 use crate::macro_call_as_call_id;
 use crate::nameres::DefMap;
-use crate::{db::DefDatabase, MacroId, UnresolvedMacro};
+use crate::{MacroId, UnresolvedMacro, db::DefDatabase};
 
 #[derive(Debug)]
 pub(super) struct Expander {

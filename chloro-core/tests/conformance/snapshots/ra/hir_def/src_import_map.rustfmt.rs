@@ -3,7 +3,7 @@
 use std::fmt;
 
 use base_db::Crate;
-use fst::{raw::IndexedValue, Automaton, Streamer};
+use fst::{Automaton, Streamer, raw::IndexedValue};
 use hir_expand::name::Name;
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
@@ -13,11 +13,11 @@ use stdx::format_to;
 use triomphe::Arc;
 
 use crate::{
+    AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
     db::DefDatabase,
     item_scope::{ImportOrExternCrate, ItemInNs},
-    nameres::{assoc::TraitItems, crate_def_map, DefMap},
+    nameres::{DefMap, assoc::TraitItems, crate_def_map},
     visibility::Visibility,
-    AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
 };
 
 /// Item import details stored in the `ImportMap`.
@@ -531,10 +531,10 @@ fn search_maps(
 #[cfg(test)]
 mod tests {
     use base_db::RootQueryDb;
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use test_fixture::WithFixture;
 
-    use crate::{nameres::assoc::TraitItems, test_db::TestDB, ItemContainerId, Lookup};
+    use crate::{ItemContainerId, Lookup, nameres::assoc::TraitItems, test_db::TestDB};
 
     use super::*;
 

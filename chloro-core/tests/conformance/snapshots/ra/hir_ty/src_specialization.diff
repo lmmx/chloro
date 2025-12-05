@@ -8,27 +8,6 @@ Rustfmt size:  6412 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Impl specialization related things
- 
--use hir_def::{nameres::crate_def_map, ImplId};
-+use hir_def::{ImplId, nameres::crate_def_map};
- use intern::sym;
- use tracing::debug;
- 
- use crate::{
-     db::HirDatabase,
-     next_solver::{
-+        DbInterner, TypingMode,
-         infer::{
--            traits::{Obligation, ObligationCause},
-             DbInternerInferExt,
-+            traits::{Obligation, ObligationCause},
-         },
-         obligation_ctxt::ObligationCtxt,
--        DbInterner, TypingMode,
-     },
- };
- 
      // The last three steps are encapsulated in `fulfill_implication`.
      //
      // See RFC 1210 for more details and justification.

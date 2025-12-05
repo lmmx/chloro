@@ -50,8 +50,10 @@ pub(crate) fn goto_definition(
 ) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     let sema = &Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
-    let edition =
-        sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
+    let edition = sema
+        .attach_first_edition(file_id)
+        .map(|it| it.edition(db))
+        .unwrap_or(Edition::CURRENT);
     let original_token = pick_best_token(file.token_at_offset(offset), |kind| match kind {
         IDENT
         | INT_NUMBER
@@ -108,12 +110,16 @@ pub(crate) fn goto_definition(
             return hir::attach_db_allow_change(&analysis.db, || {
                 goto_definition(
                     &analysis.db,
-                    FilePosition { file_id: virtual_file_id, offset: file_offset },
+                    FilePosition {
+                        file_id: virtual_file_id,
+                        offset: file_offset,
+                    },
                     config,
                 )
             })
             .and_then(|navs| {
-                navs.upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, file_id).ok()
+                navs.upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, file_id)
+                    .ok()
             });
         }
 
@@ -135,7 +141,9 @@ pub(crate) fn goto_definition(
             continue;
         }
 
-        let Some(ident_class) = IdentClass::classify_node(sema, &parent) else { continue };
+        let Some(ident_class) = IdentClass::classify_node(sema, &parent) else {
+            continue;
+        };
         navs.extend(ident_class.definitions().into_iter().flat_map(|(def, _)| {
             if let Definition::ExternCrateDecl(crate_def) = def {
                 return crate_def
@@ -160,7 +168,9 @@ fn find_definition_for_known_blanket_dual_impls(
 ) -> Option<Vec<NavigationTarget>> {
     let method_call = ast::MethodCallExpr::cast(original_token.parent()?.parent()?)?;
     let callable = sema.resolve_method_call_as_callable(&method_call)?;
-    let CallableKind::Function(f) = callable.kind() else { return None };
+    let CallableKind::Function(f) = callable.kind() else {
+        return None;
+    };
     let assoc = f.as_assoc_item(sema.db)?;
 
     let return_type = callable.return_type();
@@ -203,7 +213,10 @@ fn find_definition_for_known_blanket_dual_impls(
             dual,
             dual_f,
             // Extract the `T` from `Result<T, ..>`
-            [return_type.type_arguments().next()?, callable.receiver_param(sema.db)?.1],
+            [
+                return_type.type_arguments().next()?,
+                callable.receiver_param(sema.db)?.1,
+            ],
         )?
     } else if fn_name == sym::to_string && fd.alloc_string_ToString() == Some(t) {
         let dual = fd.core_fmt_Display()?;
@@ -240,8 +253,17 @@ fn try_lookup_include_path(
     }
     let path = token.value.value().ok()?;
 
-    let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
-    let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
+    let file_id = sema.db.resolve_path(AnchoredPath {
+        anchor: file_id,
+        path: &path,
+    })?;
+    let size = sema
+        .db
+        .file_text(file_id)
+        .text(sema.db)
+        .len()
+        .try_into()
+        .ok()?;
     Some(NavigationTarget {
         file_id,
         full_range: TextRange::new(0.into(), size),
@@ -259,7 +281,10 @@ fn try_lookup_macro_def_in_macro_use(
     sema: &Semantics<'_, RootDatabase>,
     token: SyntaxToken,
 ) -> Option<NavigationTarget> {
-    let extern_crate = token.parent()?.ancestors().find_map(ast::ExternCrate::cast)?;
+    let extern_crate = token
+        .parent()?
+        .ancestors()
+        .find_map(ast::ExternCrate::cast)?;
     let extern_crate = sema.to_def(&extern_crate)?;
     let krate = extern_crate.resolved_crate(sema.db)?;
 
@@ -298,7 +323,11 @@ fn try_filter_trait_item_definition(
                 .items(db)
                 .iter()
                 .filter(|itm| discriminant(*itm) == discriminant_value)
-                .find_map(|itm| (itm.name(db)? == name).then(|| itm.try_to_nav(sema)).flatten())
+                .find_map(|itm| {
+                    (itm.name(db)? == name)
+                        .then(|| itm.try_to_nav(sema))
+                        .flatten()
+                })
                 .map(|it| it.collect())
         }
     }
@@ -349,7 +378,10 @@ pub(crate) fn find_fn_or_blocks(
         None
     };
 
-    sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec()
+    sema.descend_into_macros(token.clone())
+        .into_iter()
+        .filter_map(find_ancestors)
+        .collect_vec()
 }
 
 fn nav_for_exit_points(
@@ -531,7 +563,10 @@ pub(crate) fn find_loops(
         };
 
     let find_ancestors = |token: SyntaxToken| {
-        for anc in sema.token_ancestors_with_macros(token).filter_map(ast::Expr::cast) {
+        for anc in sema
+            .token_ancestors_with_macros(token)
+            .filter_map(ast::Expr::cast)
+        {
             let node = match &anc {
                 ast::Expr::LoopExpr(loop_) if label_matches(loop_.label()) => anc,
                 ast::Expr::WhileExpr(while_) if label_matches(while_.label()) => anc,
@@ -585,7 +620,9 @@ fn nav_for_break_points(
 }
 
 fn def_to_nav(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Vec<NavigationTarget> {
-    def.try_to_nav(sema).map(|it| it.collect()).unwrap_or_default()
+    def.try_to_nav(sema)
+        .map(|it| it.collect())
+        .unwrap_or_default()
 }
 
 fn expr_to_nav(
@@ -614,8 +651,9 @@ mod tests {
     use ide_db::{FileRange, MiniCore};
     use itertools::Itertools;
 
-    const TEST_CONFIG: GotoDefinitionConfig<'_> =
-        GotoDefinitionConfig { minicore: MiniCore::default() };
+    const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig {
+        minicore: MiniCore::default(),
+    };
 
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
@@ -629,7 +667,10 @@ mod tests {
         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
         let navs = navs
             .into_iter()
-            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+            .map(|nav| FileRange {
+                file_id: nav.file_id,
+                range: nav.focus_or_full_range(),
+            })
             .sorted_by_key(cmp)
             .collect::<Vec<_>>();
         let expected = expected
@@ -649,7 +690,10 @@ mod tests {
             .expect("no definition found")
             .info;
 
-        assert!(navs.is_empty(), "didn't expect this to resolve anywhere: {navs:?}")
+        assert!(
+            navs.is_empty(),
+            "didn't expect this to resolve anywhere: {navs:?}"
+        )
     }
 
     fn check_name(expected_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
@@ -659,7 +703,11 @@ mod tests {
             .unwrap()
             .expect("no definition found")
             .info;
-        assert!(navs.len() < 2, "expected single navigation target but encountered {}", navs.len());
+        assert!(
+            navs.len() < 2,
+            "expected single navigation target but encountered {}",
+            navs.len()
+        );
         let Some(target) = navs.into_iter().next() else {
             panic!("expected single navigation target but encountered none");
         };

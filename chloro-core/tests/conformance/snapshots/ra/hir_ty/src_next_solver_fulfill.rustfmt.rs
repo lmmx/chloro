@@ -24,8 +24,10 @@ use crate::next_solver::{
     inspect::ProofTreeVisitor,
 };
 
-type PendingObligations<'db> =
-    Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
+type PendingObligations<'db> = Vec<(
+    PredicateObligation<'db>,
+    Option<GoalStalledOn<DbInterner<'db>>>,
+)>;
 
 /// A trait engine using the new trait solver.
 ///
@@ -81,8 +83,9 @@ impl<'db> ObligationStorage<'db> {
         &mut self,
         cond: impl Fn(&PredicateObligation<'db>) -> bool,
     ) -> PendingObligations<'db> {
-        let (not_stalled, pending) =
-            mem::take(&mut self.pending).into_iter().partition(|(o, _)| cond(o));
+        let (not_stalled, pending) = mem::take(&mut self.pending)
+            .into_iter()
+            .partition(|(o, _)| cond(o));
         self.pending = pending;
         not_stalled
     }
@@ -104,7 +107,13 @@ impl<'db> ObligationStorage<'db> {
                             Span::dummy(),
                             stalled_on.take(),
                         );
-                        matches!(result, Ok(GoalEvaluation { has_changed: HasChanged::Yes, .. }))
+                        matches!(
+                            result,
+                            Ok(GoalEvaluation {
+                                has_changed: HasChanged::Yes,
+                                ..
+                            })
+                        )
                     })
                     .map(|(o, _)| o),
             );
@@ -140,7 +149,9 @@ impl<'db> FulfillmentCtxt<'db> {
     ) {
         // FIXME: See the comment in `try_evaluate_obligations()`.
         // assert_eq!(self.usable_in_snapshot, infcx.num_open_snapshots());
-        obligations.into_iter().for_each(|obligation| self.obligations.register(obligation, None));
+        obligations
+            .into_iter()
+            .for_each(|obligation| self.obligations.register(obligation, None));
     }
 
     pub(crate) fn collect_remaining_errors(
@@ -151,7 +162,12 @@ impl<'db> FulfillmentCtxt<'db> {
             .pending
             .drain(..)
             .map(|(obligation, _)| NextSolverError::Ambiguity(obligation))
-            .chain(self.obligations.overflowed.drain(..).map(NextSolverError::Overflow))
+            .chain(
+                self.obligations
+                    .overflowed
+                    .drain(..)
+                    .map(NextSolverError::Overflow),
+            )
             .collect()
     }
 
@@ -187,7 +203,12 @@ impl<'db> FulfillmentCtxt<'db> {
                 }
 
                 let result = delegate.evaluate_root_goal(goal, Span::dummy(), stalled_on);
-                let GoalEvaluation { goal: _, certainty, has_changed, stalled_on } = match result {
+                let GoalEvaluation {
+                    goal: _,
+                    certainty,
+                    has_changed,
+                    stalled_on,
+                } = match result {
                     Ok(result) => result,
                     Err(NoSolution) => {
                         errors.push(NextSolverError::TrueError(obligation));
@@ -241,12 +262,16 @@ impl<'db> FulfillmentCtxt<'db> {
         infcx: &InferCtxt<'db>,
     ) -> PredicateObligations<'db> {
         let stalled_coroutines = match infcx.typing_mode() {
-            TypingMode::Analysis { defining_opaque_types_and_generators } => {
-                defining_opaque_types_and_generators
-            }
+            TypingMode::Analysis {
+                defining_opaque_types_and_generators,
+            } => defining_opaque_types_and_generators,
             TypingMode::Coherence
-            | TypingMode::Borrowck { defining_opaque_types: _ }
-            | TypingMode::PostBorrowckAnalysis { defined_opaque_types: _ }
+            | TypingMode::Borrowck {
+                defining_opaque_types: _,
+            }
+            | TypingMode::PostBorrowckAnalysis {
+                defined_opaque_types: _,
+            }
             | TypingMode::PostAnalysis => return Default::default(),
         };
         let stalled_coroutines = stalled_coroutines.inner();

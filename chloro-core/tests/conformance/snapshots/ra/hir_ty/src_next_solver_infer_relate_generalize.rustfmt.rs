@@ -18,7 +18,7 @@ use super::{
 };
 use crate::next_solver::infer::type_variable::TypeVariableValue;
 use crate::next_solver::infer::unify_key::ConstVariableValue;
-use crate::next_solver::infer::{relate, InferCtxt};
+use crate::next_solver::infer::{InferCtxt, relate};
 use crate::next_solver::util::MaxUniverse;
 use crate::next_solver::{
     AliasTy, Binder, ClauseKind, Const, ConstKind, DbInterner, GenericArgs, PredicateKind, Region,
@@ -47,12 +47,13 @@ impl<'db> InferCtxt<'db> {
         instantiation_variance: Variance,
         source_ty: Ty<'db>,
     ) -> RelateResult<'db, ()> {
-        debug_assert!(self
-            .inner
-            .borrow_mut()
-            .type_variables()
-            .probe(target_vid)
-            .is_unknown());
+        debug_assert!(
+            self.inner
+                .borrow_mut()
+                .type_variables()
+                .probe(target_vid)
+                .is_unknown()
+        );
 
         // Generalize `source_ty` depending on the current variance. As an example, assume
         // `?target <: &'x ?1`, where `'x` is some free region and `?1` is an inference

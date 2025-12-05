@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 19253 bytes
 Chloro size:   19577 bytes
-Rustfmt size:  20465 bytes
+Rustfmt size:  20393 bytes
 
 ✗ Outputs DIFFER
 
@@ -13,17 +13,6 @@ Rustfmt size:  20465 bytes
  use std::borrow::Borrow;
  
  use either::Either;
- use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize};
- 
- use crate::{
-+    EditionedFileId, HirFileId, MacroCallId, MacroKind,
-     db::{self, ExpandDatabase},
--    map_node_range_up, map_node_range_up_rooted, span_for_offset, EditionedFileId, HirFileId,
--    MacroCallId, MacroKind,
-+    map_node_range_up, map_node_range_up_rooted, span_for_offset,
- };
- 
- /// `InFile<T>` stores a value of `T` inside a particular file/syntax tree.
      pub file_id: FileKind,
      pub value: T,
  }
@@ -233,6 +222,18 @@ Rustfmt size:  20465 bytes
              HirFileId::MacroFile(mac_file) => {
                  let (range, ctxt) = span_for_offset(
                      db,
+ 
+                 // FIXME: Figure out an API that makes proper use of ctx, this only exists to
+                 // keep pre-token map rewrite behaviour.
+-                if ctxt.is_root() { Some(range) } else { None }
++                if ctxt.is_root() {
++                    Some(range)
++                } else {
++                    None
++                }
+             }
+         }
+     }
          db: &dyn db::ExpandDatabase,
      ) -> (FileRange, SyntaxContext) {
          match self.file_id {

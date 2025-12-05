@@ -58,7 +58,10 @@ pub(super) fn hints(
         .map(|(param, param_name, _, hir::FileRange { range, .. })| {
             let colon = if config.render_colons { ":" } else { "" };
             let label = InlayHintLabel::simple(
-                format!("{}{colon}", param_name.display(sema.db, krate.edition(sema.db))),
+                format!(
+                    "{}{colon}",
+                    param_name.display(sema.db, krate.edition(sema.db))
+                ),
                 None,
                 config.lazy_location_opt(|| {
                     let source = sema.source(param)?;
@@ -69,10 +72,11 @@ pub(super) fn hints(
                             _ => None,
                         },
                     }?;
-                    sema.original_range_opt(name_syntax.syntax()).map(|frange| ide_db::FileRange {
-                        file_id: frange.file_id.file_id(sema.db),
-                        range: frange.range,
-                    })
+                    sema.original_range_opt(name_syntax.syntax())
+                        .map(|frange| ide_db::FileRange {
+                            file_id: frange.file_id.file_id(sema.db),
+                            range: frange.range,
+                        })
                 }),
             );
             InlayHint {
@@ -99,12 +103,16 @@ fn get_callable<'db>(
         ast::Expr::CallExpr(expr) => {
             let descended = sema.descend_node_into_attributes(expr.clone()).pop();
             let expr = descended.as_ref().unwrap_or(expr);
-            sema.type_of_expr(&expr.expr()?)?.original.as_callable(sema.db).zip(expr.arg_list())
+            sema.type_of_expr(&expr.expr()?)?
+                .original
+                .as_callable(sema.db)
+                .zip(expr.arg_list())
         }
         ast::Expr::MethodCallExpr(expr) => {
             let descended = sema.descend_node_into_attributes(expr.clone()).pop();
             let expr = descended.as_ref().unwrap_or(expr);
-            sema.resolve_method_call_as_callable(expr).zip(expr.arg_list())
+            sema.resolve_method_call_as_callable(expr)
+                .zip(expr.arg_list())
         }
         _ => None,
     }
@@ -194,7 +202,9 @@ pub(super) fn is_argument_similar_to_param_name(
     debug_assert!(!argument.is_empty());
     debug_assert!(!param_name.is_empty());
     let param_name = param_name.split('_');
-    let argument = argument.iter().flat_map(|it| it.text_non_mutable().split('_'));
+    let argument = argument
+        .iter()
+        .flat_map(|it| it.text_non_mutable().split('_'));
 
     let prefix_match = zip(argument.clone(), param_name.clone())
         .all(|(arg, param)| arg.eq_ignore_ascii_case(param));
@@ -209,8 +219,9 @@ pub(super) fn get_segment_representation(
 ) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
     match expr {
         ast::Expr::MethodCallExpr(method_call_expr) => {
-            let receiver =
-                method_call_expr.receiver().and_then(|expr| get_segment_representation(&expr));
+            let receiver = method_call_expr
+                .receiver()
+                .and_then(|expr| get_segment_representation(&expr));
             let name_ref = method_call_expr.name_ref()?;
             if INSIGNIFICANT_METHOD_NAMES.contains(&name_ref.text().as_str()) {
                 return receiver;
@@ -224,7 +235,9 @@ pub(super) fn get_segment_representation(
             }))
         }
         ast::Expr::FieldExpr(field_expr) => {
-            let expr = field_expr.expr().and_then(|expr| get_segment_representation(&expr));
+            let expr = field_expr
+                .expr()
+                .and_then(|expr| get_segment_representation(&expr));
             let name_ref = field_expr.name_ref()?;
             let res = match expr {
                 Some(Either::Left(mut left)) => {
@@ -303,7 +316,10 @@ mod tests {
     #[track_caller]
     fn check_params(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(
-            InlayHintsConfig { parameter_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                parameter_hints: true,
+                ..DISABLED_CONFIG
+            },
             ra_fixture,
         );
     }

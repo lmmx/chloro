@@ -54,8 +54,11 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     // NOTE: We can technically provide this assist for default methods in trait definitions, but
     // it's somewhat complex to handle it correctly when the const's name conflicts with
     // supertrait's item. We may want to consider implementing it in the future.
-    let AssocItemContainer::Impl(impl_) =
-        ctx.sema.to_def(&parent_fn)?.as_assoc_item(db)?.container(db)
+    let AssocItemContainer::Impl(impl_) = ctx
+        .sema
+        .to_def(&parent_fn)?
+        .as_assoc_item(db)?
+        .container(db)
     else {
         return None;
     };
@@ -116,8 +119,10 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
             // Heuristically inserting the extracted const after the consecutive existing consts
             // from the beginning of assoc items. We assume there are no inherent assoc type as
             // above.
-            let last_const =
-                items.assoc_items().take_while(|it| matches!(it, ast::AssocItem::Const(_))).last();
+            let last_const = items
+                .assoc_items()
+                .take_while(|it| matches!(it, ast::AssocItem::Const(_)))
+                .last();
             let insert_offset = match &last_const {
                 Some(it) => it.syntax().text_range().end(),
                 None => match items.l_curly_token() {

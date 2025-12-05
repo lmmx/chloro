@@ -58,10 +58,18 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Option<Vec<Ass
     }
     let edit = TextEdit::replace(node_to_add_unsafe_block.text_range(), replacement);
     let source_change = SourceChange::from_text_edit(
-        d.node.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+        d.node
+            .file_id
+            .original_file(ctx.sema.db)
+            .file_id(ctx.sema.db),
         edit,
     );
-    Some(vec![fix("add_unsafe", "Add unsafe block", source_change, expr.syntax().text_range())])
+    Some(vec![fix(
+        "add_unsafe",
+        "Add unsafe block",
+        source_change,
+        expr.syntax().text_range(),
+    )])
 }
 
 // Pick the first ancestor expression of the unsafe `expr` that is not a
@@ -81,8 +89,10 @@ fn pick_best_node_to_add_unsafe_block(unsafe_expr: &ast::Expr) -> Option<SyntaxN
     // - `ast::MethodCallExpr`: call an unsafe method
     // - `ast::PrefixExpr`: dereference a raw pointer
     // - `ast::PathExpr`: access a static mut variable
-    for (node, parent) in
-        unsafe_expr.syntax().ancestors().zip(unsafe_expr.syntax().ancestors().skip(1))
+    for (node, parent) in unsafe_expr
+        .syntax()
+        .ancestors()
+        .zip(unsafe_expr.syntax().ancestors().skip(1))
     {
         match_ast! {
             match parent {

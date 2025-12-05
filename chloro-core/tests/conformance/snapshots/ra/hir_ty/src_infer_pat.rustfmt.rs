@@ -43,7 +43,11 @@ impl<'db> InferenceContext<'_, 'db> {
             self.write_variant_resolution(id.into(), variant);
         }
         if let Some(var) = &var_data {
-            let cmp = if ellipsis.is_some() { usize::gt } else { usize::ne };
+            let cmp = if ellipsis.is_some() {
+                usize::gt
+            } else {
+                usize::ne
+            };
 
             if cmp(&subs.len(), &var.fields().len()) {
                 self.push_diagnostic(InferenceDiagnostic::MismatchedTupleStructPatArgCount {
@@ -197,17 +201,23 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         let ((pre, post), n_uncovered_patterns) = match ellipsis {
-            Some(idx) => {
-                (subs.split_at(idx as usize), expectations.len().saturating_sub(subs.len()))
-            }
+            Some(idx) => (
+                subs.split_at(idx as usize),
+                expectations.len().saturating_sub(subs.len()),
+            ),
             None => ((subs, &[][..]), 0),
         };
-        let mut expectations_iter =
-            expectations.iter().chain(repeat_with(|| self.table.next_ty_var()));
+        let mut expectations_iter = expectations
+            .iter()
+            .chain(repeat_with(|| self.table.next_ty_var()));
 
         let mut inner_tys = Vec::with_capacity(n_uncovered_patterns + subs.len());
 
-        inner_tys.extend(expectations_iter.by_ref().take(n_uncovered_patterns + subs.len()));
+        inner_tys.extend(
+            expectations_iter
+                .by_ref()
+                .take(n_uncovered_patterns + subs.len()),
+        );
 
         // Process pre
         for (ty, pat) in inner_tys.iter_mut().zip(pre) {
@@ -215,7 +225,11 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // Process post
-        for (ty, pat) in inner_tys.iter_mut().skip(pre.len() + n_uncovered_patterns).zip(post) {
+        for (ty, pat) in inner_tys
+            .iter_mut()
+            .skip(pre.len() + n_uncovered_patterns)
+            .zip(post)
+        {
             *ty = self.infer_pat(*pat, *ty, default_bm, decl);
         }
 
@@ -281,25 +295,38 @@ impl<'db> InferenceContext<'_, 'db> {
                 }
                 expected
             }
-            &Pat::Ref { pat, mutability } => {
-                self.infer_ref_pat(pat, lower_mutability(mutability), expected, default_bm, decl)
-            }
-            Pat::TupleStruct { path: p, args: subpats, ellipsis } => self
-                .infer_tuple_struct_pat_like(
-                    p.as_deref(),
-                    expected,
-                    default_bm,
-                    pat,
-                    *ellipsis,
-                    subpats,
-                    decl,
-                ),
-            Pat::Record { path: p, args: fields, ellipsis: _ } => {
+            &Pat::Ref { pat, mutability } => self.infer_ref_pat(
+                pat,
+                lower_mutability(mutability),
+                expected,
+                default_bm,
+                decl,
+            ),
+            Pat::TupleStruct {
+                path: p,
+                args: subpats,
+                ellipsis,
+            } => self.infer_tuple_struct_pat_like(
+                p.as_deref(),
+                expected,
+                default_bm,
+                pat,
+                *ellipsis,
+                subpats,
+                decl,
+            ),
+            Pat::Record {
+                path: p,
+                args: fields,
+                ellipsis: _,
+            } => {
                 let subs = fields.iter().map(|f| (f.name.clone(), f.pat));
                 self.infer_record_pat_like(p.as_deref(), expected, default_bm, pat, subs, decl)
             }
             Pat::Path(path) => {
-                let ty = self.infer_path(path, pat.into()).unwrap_or_else(|| self.err_ty());
+                let ty = self
+                    .infer_path(path, pat.into())
+                    .unwrap_or_else(|| self.err_ty());
                 let ty_inserted_vars = self.insert_type_vars_shallow(ty);
                 match self.coerce(
                     pat.into(),
@@ -315,7 +342,10 @@ impl<'db> InferenceContext<'_, 'db> {
                     Err(_) => {
                         self.result.type_mismatches.insert(
                             pat.into(),
-                            TypeMismatch { expected, actual: ty_inserted_vars },
+                            TypeMismatch {
+                                expected,
+                                actual: ty_inserted_vars,
+                            },
                         );
                         self.write_pat_ty(pat, ty);
                         // We return `expected` to prevent cascading errors. I guess an alternative is to
@@ -327,9 +357,11 @@ impl<'db> InferenceContext<'_, 'db> {
             Pat::Bind { id, subpat } => {
                 return self.infer_bind_pat(pat, *id, default_bm, *subpat, expected, decl);
             }
-            Pat::Slice { prefix, slice, suffix } => {
-                self.infer_slice_pat(expected, prefix, *slice, suffix, default_bm, decl)
-            }
+            Pat::Slice {
+                prefix,
+                slice,
+                suffix,
+            } => self.infer_slice_pat(expected, prefix, *slice, suffix, default_bm, decl),
             Pat::Wild => expected,
             Pat::Range { .. } => {
                 // FIXME: do some checks here.
@@ -344,9 +376,10 @@ impl<'db> InferenceContext<'_, 'db> {
             Pat::Box { inner } => match self.resolve_boxed_box() {
                 Some(box_adt) => {
                     let (inner_ty, alloc_ty) = match expected.as_adt() {
-                        Some((adt, subst)) if adt == box_adt => {
-                            (subst.type_at(0), subst.as_slice().get(1).and_then(|a| a.as_type()))
-                        }
+                        Some((adt, subst)) if adt == box_adt => (
+                            subst.type_at(0),
+                            subst.as_slice().get(1).and_then(|a| a.as_type()),
+                        ),
                         _ => (self.types.error, None),
                     };
 
@@ -387,9 +420,13 @@ impl<'db> InferenceContext<'_, 'db> {
                 ) {
                     Ok(ty) => ty,
                     Err(_) => {
-                        self.result
-                            .type_mismatches
-                            .insert(pat.into(), TypeMismatch { expected, actual: lhs_ty });
+                        self.result.type_mismatches.insert(
+                            pat.into(),
+                            TypeMismatch {
+                                expected,
+                                actual: lhs_ty,
+                            },
+                        );
                         // `rhs_ty` is returned so no further type mismatches are
                         // reported because of this mismatch.
                         expected
@@ -405,7 +442,13 @@ impl<'db> InferenceContext<'_, 'db> {
         let ty = self.insert_type_vars_shallow(ty);
         // FIXME: This never check is odd, but required with out we do inference right now
         if !expected.is_never() && !self.unify(ty, expected) {
-            self.result.type_mismatches.insert(pat.into(), TypeMismatch { expected, actual: ty });
+            self.result.type_mismatches.insert(
+                pat.into(),
+                TypeMismatch {
+                    expected,
+                    actual: ty,
+                },
+            );
         }
         self.write_pat_ty(pat, ty);
         self.pat_ty_after_adjustment(pat)
@@ -543,8 +586,12 @@ impl<'db> InferenceContext<'_, 'db> {
             if matches!(inner.kind(), TyKind::Slice(_)) {
                 let elem_ty = self.types.u8;
                 let slice_ty = Ty::new_slice(self.interner(), elem_ty);
-                let ty =
-                    Ty::new_ref(self.interner(), self.types.re_static, slice_ty, Mutability::Not);
+                let ty = Ty::new_ref(
+                    self.interner(),
+                    self.types.re_static,
+                    slice_ty,
+                    Mutability::Not,
+                );
                 self.write_expr_ty(expr, ty);
                 return ty;
             }
@@ -629,7 +676,12 @@ impl<'db> InferenceContext<'_, 'db> {
     /// If we're in an irrefutable pattern we prefer the array impl candidate given that
     /// the slice impl candidate would be rejected anyway (if no ambiguity existed).
     fn pat_is_irrefutable(&self, decl_ctxt: Option<DeclContext>) -> bool {
-        matches!(decl_ctxt, Some(DeclContext { origin: DeclOrigin::LocalDecl { has_else: false } }))
+        matches!(
+            decl_ctxt,
+            Some(DeclContext {
+                origin: DeclOrigin::LocalDecl { has_else: false }
+            })
+        )
     }
 }
 

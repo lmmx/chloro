@@ -8,12 +8,6 @@ Rustfmt size:  3367 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use ide_db::base_db::{BuiltCrateData, ExtraCrateData};
- use ide_db::RootDatabase;
-+use ide_db::base_db::{BuiltCrateData, ExtraCrateData};
- use itertools::Itertools;
- use span::FileId;
- use stdx::format_to;
      // format_to!(buf, "{}\n", collect_query(LibrarySymbolsQuery.in_db(db)));
      // format_to!(buf, "{}\n", collect_query(ModuleSymbolsQuery.in_db(db)));
      // format_to!(buf, "{} in total\n", memory_usage());

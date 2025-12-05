@@ -77,7 +77,9 @@ fn all_mir_bodies<'db>(
         match db.mir_body_for_closure(c) {
             Ok(body) => {
                 cb(body.clone());
-                body.closures.iter().try_for_each(|&it| for_closure(db, it, cb))
+                body.closures
+                    .iter()
+                    .try_for_each(|&it| for_closure(db, it, cb))
             }
             Err(e) => Err(e),
         }
@@ -85,7 +87,9 @@ fn all_mir_bodies<'db>(
     match db.mir_body(def) {
         Ok(body) => {
             cb(body.clone());
-            body.closures.iter().try_for_each(|&it| for_closure(db, it, &mut cb))
+            body.closures
+                .iter()
+                .try_for_each(|&it| for_closure(db, it, &mut cb))
         }
         Err(e) => Err(e),
     }
@@ -125,7 +129,11 @@ fn make_fetch_closure_field<'db>(
         let (captures, _) = infer.closure_info(c);
         let parent_subst = subst.split_closure_args_untupled().parent_args;
         let interner = DbInterner::new_with(db, None, None);
-        captures.get(f).expect("broken closure field").ty.instantiate(interner, parent_subst)
+        captures
+            .get(f)
+            .expect("broken closure field")
+            .ty
+            .instantiate(interner, parent_subst)
     }
 }
 
@@ -155,7 +163,10 @@ fn moved_out_of_ref<'db>(
                 && !infcx.type_is_copy_modulo_regions(env.env, ty)
                 && !ty.references_non_lt_error()
             {
-                result.push(MovedOutOfRef { span: op.span.unwrap_or(span), ty });
+                result.push(MovedOutOfRef {
+                    span: op.span.unwrap_or(span),
+                    ty,
+                });
             }
         }
         OperandKind::Constant { .. } | OperandKind::Static(_) => (),
@@ -248,7 +259,11 @@ fn partially_moved<'db>(
                 );
             }
             if !infcx.type_is_copy_modulo_regions(env.env, ty) && !ty.references_non_lt_error() {
-                result.push(PartiallyMoved { span, ty, local: p.local });
+                result.push(PartiallyMoved {
+                    span,
+                    ty,
+                    local: p.local,
+                });
             }
         }
         OperandKind::Constant { .. } | OperandKind::Static(_) => (),
@@ -400,7 +415,11 @@ fn place_case<'db>(
             body.owner.module(db).krate(),
         );
     }
-    if is_part_of { ProjectionCase::DirectPart } else { ProjectionCase::Direct }
+    if is_part_of {
+        ProjectionCase::DirectPart
+    } else {
+        ProjectionCase::Direct
+    }
 }
 
 /// Returns a map from basic blocks to the set of locals that might be ever initialized before
@@ -410,8 +429,11 @@ fn ever_initialized_map<'db>(
     db: &'db dyn HirDatabase,
     body: &MirBody<'db>,
 ) -> ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> {
-    let mut result: ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> =
-        body.basic_blocks.iter().map(|it| (it.0, ArenaMap::default())).collect();
+    let mut result: ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> = body
+        .basic_blocks
+        .iter()
+        .map(|it| (it.0, ArenaMap::default()))
+        .collect();
     fn dfs<'db>(
         db: &'db dyn HirDatabase,
         body: &MirBody<'db>,
@@ -456,21 +478,39 @@ fn ever_initialized_map<'db>(
             match &terminator.kind {
                 TerminatorKind::Goto { target } => process(*target, is_ever_initialized),
                 TerminatorKind::SwitchInt { targets, .. } => {
-                    targets.all_targets().iter().for_each(|&it| process(it, is_ever_initialized));
+                    targets
+                        .all_targets()
+                        .iter()
+                        .for_each(|&it| process(it, is_ever_initialized));
                 }
                 TerminatorKind::UnwindResume
                 | TerminatorKind::Abort
                 | TerminatorKind::Return
                 | TerminatorKind::Unreachable => (),
-                TerminatorKind::Call { target, cleanup, destination, .. } => {
-                    if destination.projection.lookup(&body.projection_store).is_empty()
+                TerminatorKind::Call {
+                    target,
+                    cleanup,
+                    destination,
+                    ..
+                } => {
+                    if destination
+                        .projection
+                        .lookup(&body.projection_store)
+                        .is_empty()
                         && destination.local == l
                     {
                         is_ever_initialized = true;
                     }
-                    target.iter().chain(cleanup).for_each(|&it| process(it, is_ever_initialized));
+                    target
+                        .iter()
+                        .chain(cleanup)
+                        .for_each(|&it| process(it, is_ever_initialized));
                 }
-                TerminatorKind::Drop { target, unwind, place: _ } => {
+                TerminatorKind::Drop {
+                    target,
+                    unwind,
+                    place: _,
+                } => {
                     iter::once(target)
                         .chain(unwind)
                         .for_each(|&it| process(it, is_ever_initialized));
@@ -538,8 +578,11 @@ fn mutability_of_locals<'db>(
     body: &MirBody<'db>,
 ) -> ArenaMap<LocalId<'db>, MutabilityReason> {
     let db = infcx.interner.db;
-    let mut result: ArenaMap<LocalId<'db>, MutabilityReason> =
-        body.locals.iter().map(|it| (it.0, MutabilityReason::Unused)).collect();
+    let mut result: ArenaMap<LocalId<'db>, MutabilityReason> = body
+        .locals
+        .iter()
+        .map(|it| (it.0, MutabilityReason::Unused))
+        .collect();
 
     let ever_init_maps = ever_initialized_map(db, body);
     for (block_id, mut ever_init_map) in ever_init_maps.into_iter() {
@@ -630,13 +673,26 @@ fn mutability_of_locals<'db>(
             TerminatorKind::SwitchInt { discr, targets: _ } => {
                 record_usage_for_operand(discr, &mut result);
             }
-            TerminatorKind::Call { destination, args, func, .. } => {
+            TerminatorKind::Call {
+                destination,
+                args,
+                func,
+                ..
+            } => {
                 record_usage_for_operand(func, &mut result);
                 for arg in args.iter() {
                     record_usage_for_operand(arg, &mut result);
                 }
-                if destination.projection.lookup(&body.projection_store).is_empty() {
-                    if ever_init_map.get(destination.local).copied().unwrap_or_default() {
+                if destination
+                    .projection
+                    .lookup(&body.projection_store)
+                    .is_empty()
+                {
+                    if ever_init_map
+                        .get(destination.local)
+                        .copied()
+                        .unwrap_or_default()
+                    {
                         push_mut_span(destination.local, terminator.span, &mut result);
                     } else {
                         ever_init_map.insert(destination.local, true);

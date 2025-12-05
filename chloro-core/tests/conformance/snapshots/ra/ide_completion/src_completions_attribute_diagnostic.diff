@@ -8,16 +8,6 @@ Rustfmt size:  2157 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion for diagnostic attributes.
- 
- use ide_db::SymbolKind;
- use syntax::ast;
- 
--use crate::{context::CompletionContext, CompletionItem, Completions};
-+use crate::{CompletionItem, Completions, context::CompletionContext};
- 
- use super::AttrCompletion;
- 
  }
  
  const ATTRIBUTE_ARGS: &[AttrCompletion] = &[

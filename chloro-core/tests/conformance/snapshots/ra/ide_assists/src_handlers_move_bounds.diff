@@ -11,14 +11,12 @@ Rustfmt size:  4748 bytes
  use either::Either;
  use syntax::{
      ast::{
--        self,
+-        self, AstNode, HasName, HasTypeBounds,
 -        edit_in_place::{GenericParamsOwnerEdit, Removable},
--        make, AstNode, HasName, HasTypeBounds,
 +        self, AstNode, HasName, HasTypeBounds, edit_in_place::{GenericParamsOwnerEdit, Removable},
-+        make,
+         make,
      },
      match_ast,
- };
  #[cfg(test)]
  mod tests {
      use super::*;

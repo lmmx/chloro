@@ -107,12 +107,16 @@ fn fixes(
         let crate_def_map = crate_def_map(ctx.sema.db, krate);
 
         let root_module = &crate_def_map[DefMap::ROOT];
-        let Some(root_file_id) = root_module.origin.file_id() else { continue };
+        let Some(root_file_id) = root_module.origin.file_id() else {
+            continue;
+        };
         let Some(crate_root_path) = source_root.path_for_file(&root_file_id.file_id(ctx.sema.db))
         else {
             continue;
         };
-        let Some(rel) = parent.strip_prefix(&crate_root_path.parent()?) else { continue };
+        let Some(rel) = parent.strip_prefix(&crate_root_path.parent()?) else {
+            continue;
+        };
 
         // try resolving the relative difference of the paths as inline modules
         let mut current = root_module;
@@ -123,7 +127,11 @@ fn fixes(
                 // shouldn't occur
                 _ => continue 'crates,
             };
-            match current.children.iter().find(|(name, _)| name.as_str() == seg) {
+            match current
+                .children
+                .iter()
+                .find(|(name, _)| name.as_str() == seg)
+            {
                 Some((_, &child)) => current = &crate_def_map[child],
                 None => continue 'crates,
             }
@@ -132,8 +140,10 @@ fn fixes(
             }
         }
 
-        let InFile { file_id: parent_file_id, value: source } =
-            current.definition_source(ctx.sema.db);
+        let InFile {
+            file_id: parent_file_id,
+            value: source,
+        } = current.definition_source(ctx.sema.db);
         let parent_file_id = parent_file_id.file_id()?;
         return make_fixes(
             parent_file_id.file_id(ctx.sema.db),
@@ -149,19 +159,29 @@ fn fixes(
     let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
         let parent = path.parent()?;
         let (name, _) = path.name_and_extension()?;
-        Some(([parent.join(&format!("{name}.rs"))?, path.join("mod.rs")?], name.to_owned()))
+        Some((
+            [parent.join(&format!("{name}.rs"))?, path.join("mod.rs")?],
+            name.to_owned(),
+        ))
     });
     let mut stack = vec![];
-    let &parent_id =
-        paths.inspect(|(_, name)| stack.push(name.clone())).find_map(|(paths, _)| {
-            paths.into_iter().find_map(|path| source_root.file_for_path(&path))
+    let &parent_id = paths
+        .inspect(|(_, name)| stack.push(name.clone()))
+        .find_map(|(paths, _)| {
+            paths
+                .into_iter()
+                .find_map(|path| source_root.file_for_path(&path))
         })?;
     stack.pop();
     let relevant_crates = db.relevant_crates(parent_id);
     'crates: for &krate in relevant_crates.iter() {
         let crate_def_map = crate_def_map(ctx.sema.db, krate);
         let Some((_, module)) = crate_def_map.modules().find(|(_, module)| {
-            module.origin.file_id().map(|file_id| file_id.file_id(ctx.sema.db)) == Some(parent_id)
+            module
+                .origin
+                .file_id()
+                .map(|file_id| file_id.file_id(ctx.sema.db))
+                == Some(parent_id)
                 && !module.origin.is_inline()
         }) else {
             continue;
@@ -189,8 +209,10 @@ fn fixes(
                     continue 'crates;
                 }
             }
-            let InFile { file_id: parent_file_id, value: source } =
-                current.definition_source(ctx.sema.db);
+            let InFile {
+                file_id: parent_file_id,
+                value: source,
+            } = current.definition_source(ctx.sema.db);
             let parent_file_id = parent_file_id.file_id()?;
             return make_fixes(
                 parent_file_id.file_id(ctx.sema.db),
@@ -242,7 +264,12 @@ fn make_fixes(
     }
 
     // If there are existing `mod m;` items, append after them (after the first group of them, rather).
-    match items.clone().skip_while(|item| !is_outline_mod(item)).take_while(is_outline_mod).last() {
+    match items
+        .clone()
+        .skip_while(|item| !is_outline_mod(item))
+        .take_while(is_outline_mod)
+        .last()
+    {
         Some(last) => {
             cov_mark::hit!(unlinked_file_append_to_existing_mods);
             let offset = last.syntax().text_range().end();

@@ -1,12 +1,12 @@
 use syntax::{
-    ast::{self, edit::IndentLevel, make, syntax_factory::SyntaxFactory, HasAttrs, HasVisibility},
-    syntax_editor::{Element, Position, Removable},
     AstNode, SyntaxKind,
+    ast::{self, HasAttrs, HasVisibility, edit::IndentLevel, make, syntax_factory::SyntaxFactory},
+    syntax_editor::{Element, Position, Removable},
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistId,
+    assist_context::{AssistContext, Assists},
 };
 
 // Assist: unmerge_imports

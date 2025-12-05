@@ -64,12 +64,10 @@ Rustfmt size:  2723 bytes
              }) {
                  Some(&s[prefix.len() + 1..])
              } else {
- 
  #[cfg(test)]
  mod tests {
--    use expect_test::{expect, Expect};
+     use expect_test::{Expect, expect};
 -
-+    use expect_test::{Expect, expect};
      use super::*;
 -
      fn check(link: &str, expected: Expect) {

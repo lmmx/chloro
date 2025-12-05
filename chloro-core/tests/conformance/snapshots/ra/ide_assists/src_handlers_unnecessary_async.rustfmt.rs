@@ -37,11 +37,21 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         return None;
     }
     // Do nothing if the function has an `await` expression in its body.
-    if function.body()?.syntax().descendants().find_map(ast::AwaitExpr::cast).is_some() {
+    if function
+        .body()?
+        .syntax()
+        .descendants()
+        .find_map(ast::AwaitExpr::cast)
+        .is_some()
+    {
         return None;
     }
     // Do nothing if the method is a member of trait.
-    if let Some(impl_) = function.syntax().ancestors().nth(2).and_then(ast::Impl::cast)
+    if let Some(impl_) = function
+        .syntax()
+        .ancestors()
+        .nth(2)
+        .and_then(ast::Impl::cast)
         && impl_.trait_().is_some()
     {
         return None;
@@ -52,7 +62,10 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         let async_token = function.async_token()?;
         let next_token = async_token.next_token()?;
         if matches!(next_token.kind(), SyntaxKind::WHITESPACE) {
-            TextRange::new(async_token.text_range().start(), next_token.text_range().end())
+            TextRange::new(
+                async_token.text_range().start(),
+                next_token.text_range().end(),
+            )
         } else {
             async_token.text_range()
         }
@@ -94,9 +107,14 @@ fn find_all_references(
     ctx: &AssistContext<'_>,
     def: &Definition,
 ) -> impl Iterator<Item = (EditionedFileId, FileReference)> {
-    def.usages(&ctx.sema).all().into_iter().flat_map(|(file_id, references)| {
-        references.into_iter().map(move |reference| (file_id, reference))
-    })
+    def.usages(&ctx.sema)
+        .all()
+        .into_iter()
+        .flat_map(|(file_id, references)| {
+            references
+                .into_iter()
+                .map(move |reference| (file_id, reference))
+        })
 }
 
 /// Finds the await expression for the given `NameRef`.
@@ -141,12 +159,20 @@ mod tests {
 
     #[test]
     fn applies_and_removes_whitespace() {
-        check_assist(unnecessary_async, "pub async$0       fn f() {}", "pub fn f() {}")
+        check_assist(
+            unnecessary_async,
+            "pub async$0       fn f() {}",
+            "pub fn f() {}",
+        )
     }
 
     #[test]
     fn applies_on_function_with_a_non_await_expr() {
-        check_assist(unnecessary_async, "pub asy$0nc fn f() { f2() }", "pub fn f() { f2() }")
+        check_assist(
+            unnecessary_async,
+            "pub asy$0nc fn f() { f2() }",
+            "pub fn f() { f2() }",
+        )
     }
 
     #[test]

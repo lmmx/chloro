@@ -8,14 +8,6 @@ Rustfmt size:  3122 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::InFile;
- use syntax::ast;
- 
--use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range};
- 
- // Diagnostic: trait-impl-incorrect-safety
- //
      Diagnostic::new(
          DiagnosticCode::Ra("trait-impl-incorrect-safety", Severity::Error),
          if d.should_be_safe {

@@ -1,13 +1,13 @@
 use hir::{AsAssocItem, Semantics};
 use ide_db::{
-    defs::{Definition, NameClass, NameRefClass},
     RootDatabase,
+    defs::{Definition, NameClass, NameRefClass},
 };
-use syntax::{ast, match_ast, AstNode, SyntaxKind::*, T};
+use syntax::{AstNode, SyntaxKind::*, T, ast, match_ast};
 
 use crate::{
-    goto_definition::goto_definition, navigation_target::TryToNav, FilePosition,
-    GotoDefinitionConfig, NavigationTarget, RangeInfo,
+    FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo,
+    goto_definition::goto_definition, navigation_target::TryToNav,
 };
 
 // Feature: Go to Declaration
@@ -88,7 +88,7 @@ mod tests {
     use ide_db::{FileRange, MiniCore};
     use itertools::Itertools;
 
-    use crate::{fixture, GotoDefinitionConfig};
+    use crate::{GotoDefinitionConfig, fixture};
 
     const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig {
         minicore: MiniCore::default(),

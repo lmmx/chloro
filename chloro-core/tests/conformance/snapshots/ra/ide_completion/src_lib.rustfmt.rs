@@ -195,7 +195,10 @@ pub fn completions(
         if let CompletionAnalysis::NameRef(NameRefContext {
             kind:
                 NameRefKind::Path(
-                    path_ctx @ PathCompletionCtx { kind: PathKind::Vis { has_in_token }, .. },
+                    path_ctx @ PathCompletionCtx {
+                        kind: PathKind::Vis { has_in_token },
+                        ..
+                    },
                 ),
             ..
         }) = analysis
@@ -237,7 +240,10 @@ pub fn completions(
                 completions::lifetime::complete_label(acc, ctx, lifetime_ctx);
                 completions::lifetime::complete_lifetime(acc, ctx, lifetime_ctx);
             }
-            CompletionAnalysis::String { original, expanded: Some(expanded) } => {
+            CompletionAnalysis::String {
+                original,
+                expanded: Some(expanded),
+            } => {
                 completions::extern_abi::complete_extern_abi(acc, ctx, expanded);
                 completions::format_string::format_string(acc, ctx, original, expanded);
                 completions::env_vars::complete_cargo_env_vars(acc, ctx, original, expanded);
@@ -277,8 +283,9 @@ pub fn resolve_completion_edits(
     let editioned_file_id = sema.attach_first_edition(file_id)?;
 
     let original_file = sema.parse(editioned_file_id);
-    let original_token =
-        syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
+    let original_token = syntax::AstNode::syntax(&original_file)
+        .token_at_offset(offset)
+        .left_biased()?;
     let position_for_import = &original_token.parent()?;
     let scope = ImportScope::find_insert_use_container(position_for_import, &sema)?;
 

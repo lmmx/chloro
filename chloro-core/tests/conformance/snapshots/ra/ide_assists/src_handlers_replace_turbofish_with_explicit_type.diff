@@ -8,20 +8,6 @@ Rustfmt size:  8981 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::HirDisplay;
- use syntax::{
--    ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType},
-     AstNode, TextRange,
-+    ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType},
- };
- 
- use crate::{
--    assist_context::{AssistContext, Assists},
-     AssistId,
-+    assist_context::{AssistContext, Assists},
- };
- 
- // Assist: replace_turbofish_with_explicit_type
      let returned_type = match ctx.sema.type_of_expr(&initializer) {
          Some(returned_type) if !returned_type.original.contains_unknown() => {
              let module = ctx.sema.scope(let_stmt.syntax())?.module();

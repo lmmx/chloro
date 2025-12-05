@@ -8,18 +8,6 @@ Rustfmt size:  4239 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Snapshotting in the infer ctxt of the next-trait-solver.
- 
- use ena::undo_log::UndoLogs;
- use rustc_type_ir::UniverseIndex;
- use tracing::{debug, instrument};
- 
--use super::region_constraints::RegionSnapshot;
- use super::InferCtxt;
-+use super::region_constraints::RegionSnapshot;
- 
- mod fudge;
- pub(crate) mod undo_log;
  
      #[instrument(skip(self, snapshot), level = "debug")]
      pub(crate) fn rollback_to(&self, snapshot: CombinedSnapshot) {

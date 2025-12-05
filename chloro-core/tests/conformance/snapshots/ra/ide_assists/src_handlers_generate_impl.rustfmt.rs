@@ -219,8 +219,9 @@ pub(crate) fn generate_impl_trait(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                     editor.add_annotation(ty.syntax(), placeholder);
                 }
 
-                if let Some(expr) =
-                    impl_.assoc_item_list().and_then(|it| it.assoc_items().find_map(extract_expr))
+                if let Some(expr) = impl_
+                    .assoc_item_list()
+                    .and_then(|it| it.assoc_items().find_map(extract_expr))
                 {
                     let tabstop = edit.make_tabstop_before(cap);
                     editor.add_annotation(expr.syntax(), tabstop);

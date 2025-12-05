@@ -71,7 +71,11 @@ pub enum Expr<'db> {
     /// Well known type (such as `true` for bool)
     FamousType { ty: Type<'db>, value: &'static str },
     /// Function call (does not take self param)
-    Function { func: Function, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
+    Function {
+        func: Function,
+        generics: Vec<Type<'db>>,
+        params: Vec<Expr<'db>>,
+    },
     /// Method call (has self param)
     Method {
         func: Function,
@@ -80,11 +84,22 @@ pub enum Expr<'db> {
         params: Vec<Expr<'db>>,
     },
     /// Enum variant construction
-    Variant { variant: Variant, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
+    Variant {
+        variant: Variant,
+        generics: Vec<Type<'db>>,
+        params: Vec<Expr<'db>>,
+    },
     /// Struct construction
-    Struct { strukt: Struct, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
+    Struct {
+        strukt: Struct,
+        generics: Vec<Type<'db>>,
+        params: Vec<Expr<'db>>,
+    },
     /// Tuple construction
-    Tuple { ty: Type<'db>, params: Vec<Expr<'db>> },
+    Tuple {
+        ty: Type<'db>,
+        params: Vec<Expr<'db>>,
+    },
     /// Struct field access
     Field { expr: Box<Expr<'db>>, field: Field },
     /// Passing type as reference (with `&`)
@@ -147,7 +162,12 @@ impl<'db> Expr<'db> {
                     }
                 }
             }
-            Expr::Method { func, target, params, .. } => {
+            Expr::Method {
+                func,
+                target,
+                params,
+                ..
+            } => {
                 if self.contains_many_in_illegal_pos(db) {
                     return Ok(many_formatter(&target.ty(db)));
                 }
@@ -163,7 +183,10 @@ impl<'db> Expr<'db> {
                     .into_iter()
                     .join(", ");
 
-                match func.as_assoc_item(db).and_then(|it| it.container_or_implemented_trait(db)) {
+                match func
+                    .as_assoc_item(db)
+                    .and_then(|it| it.container_or_implemented_trait(db))
+                {
                     Some(trait_) => {
                         let trait_name = mod_item_path_str(sema_scope, &ModuleDef::Trait(trait_))?;
                         let target = match self_param.access(db) {
@@ -183,7 +206,9 @@ impl<'db> Expr<'db> {
                     None => Ok(format!("{target_str}.{func_name}({args})")),
                 }
             }
-            Expr::Variant { variant, params, .. } => {
+            Expr::Variant {
+                variant, params, ..
+            } => {
                 let inner = match variant.kind(db) {
                     StructKind::Tuple => {
                         let args = params
@@ -313,16 +338,24 @@ impl<'db> Expr<'db> {
             Expr::Function { func, generics, .. } => {
                 func.ret_type_with_args(db, generics.iter().cloned())
             }
-            Expr::Method { func, generics, target, .. } => func.ret_type_with_args(
+            Expr::Method {
+                func,
+                generics,
+                target,
+                ..
+            } => func.ret_type_with_args(
                 db,
-                target.ty(db).type_arguments().chain(generics.iter().cloned()),
+                target
+                    .ty(db)
+                    .type_arguments()
+                    .chain(generics.iter().cloned()),
             ),
-            Expr::Variant { variant, generics, .. } => {
-                Adt::from(variant.parent_enum(db)).ty_with_args(db, generics.iter().cloned())
-            }
-            Expr::Struct { strukt, generics, .. } => {
-                Adt::from(*strukt).ty_with_args(db, generics.iter().cloned())
-            }
+            Expr::Variant {
+                variant, generics, ..
+            } => Adt::from(variant.parent_enum(db)).ty_with_args(db, generics.iter().cloned()),
+            Expr::Struct {
+                strukt, generics, ..
+            } => Adt::from(*strukt).ty_with_args(db, generics.iter().cloned()),
             Expr::Tuple { ty, .. } => ty.clone(),
             Expr::Field { expr, field } => field.ty_with_args(db, expr.ty(db).type_arguments()),
             Expr::Reference(it) => it.ty(db),
@@ -358,7 +391,10 @@ impl<'db> Expr<'db> {
     fn contains_many_in_illegal_pos(&self, db: &dyn HirDatabase) -> bool {
         match self {
             Expr::Method { target, func, .. } => {
-                match func.as_assoc_item(db).and_then(|it| it.container_or_implemented_trait(db)) {
+                match func
+                    .as_assoc_item(db)
+                    .and_then(|it| it.container_or_implemented_trait(db))
+                {
                     Some(_) => false,
                     None => target.is_many(),
                 }
@@ -391,7 +427,10 @@ fn container_name(
         crate::AssocItemContainer::Impl(imp) => {
             let self_ty = imp.self_ty(sema_scope.db);
             // Should it be guaranteed that `mod_item_path` always exists?
-            match self_ty.as_adt().and_then(|adt| mod_item_path(sema_scope, &adt.into(), cfg)) {
+            match self_ty
+                .as_adt()
+                .and_then(|adt| mod_item_path(sema_scope, &adt.into(), cfg))
+            {
                 Some(path) => path.display(sema_scope.db, edition).to_string(),
                 None => self_ty.display(sema_scope.db, display_target).to_string(),
             }

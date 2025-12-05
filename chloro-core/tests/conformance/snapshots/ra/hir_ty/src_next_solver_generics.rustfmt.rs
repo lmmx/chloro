@@ -1,8 +1,8 @@
 //! Things related to generics in the next-trait-solver.
 
 use hir_def::{
-    hir::generics::{GenericParams, TypeOrConstParamData},
     ConstParamId, GenericDefId, GenericParamId, LifetimeParamId, TypeOrConstParamId, TypeParamId,
+    hir::generics::{GenericParams, TypeOrConstParamData},
 };
 
 use crate::{db::HirDatabase, generics::parent_generic_def};

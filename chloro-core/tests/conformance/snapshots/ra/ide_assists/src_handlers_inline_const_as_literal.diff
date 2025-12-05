@@ -8,12 +8,6 @@ Rustfmt size:  19179 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::HasCrate;
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
- 
- use crate::{AssistContext, AssistId, Assists};
- 
          // FIXME: Add support to handle type aliases for builtin scalar types.
          validate_type_recursively(ctx, Some(&konst_ty), false, fuel)?;
  

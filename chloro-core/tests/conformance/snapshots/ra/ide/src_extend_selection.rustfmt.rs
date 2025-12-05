@@ -105,7 +105,9 @@ fn try_extend_selection(
 
     let node = shallowest_node(&node);
 
-    if node.parent().is_some_and(|n| list_kinds.contains(&n.kind()))
+    if node
+        .parent()
+        .is_some_and(|n| list_kinds.contains(&n.kind()))
         && let Some(range) = extend_list_item(&node)
     {
         return Some(range);
@@ -177,12 +179,19 @@ fn extend_tokens_from_range(
     .last()?;
 
     let range = first.text_range().cover(last.text_range());
-    if range.contains_range(original_range) && original_range != range { Some(range) } else { None }
+    if range.contains_range(original_range) && original_range != range {
+        Some(range)
+    } else {
+        None
+    }
 }
 
 /// Find the shallowest node with same range, which allows us to traverse siblings.
 fn shallowest_node(node: &SyntaxNode) -> SyntaxNode {
-    node.ancestors().take_while(|n| n.text_range() == node.text_range()).last().unwrap()
+    node.ancestors()
+        .take_while(|n| n.text_range() == node.text_range())
+        .last()
+        .unwrap()
 }
 
 fn extend_single_word_in_comment_or_string(
@@ -204,14 +213,20 @@ fn extend_single_word_in_comment_or_string(
     // FIXME: use `ceil_char_boundary` from `std::str` when it gets stable
     // https://github.com/rust-lang/rust/issues/93743
     fn ceil_char_boundary(text: &str, index: u32) -> u32 {
-        (index..).find(|&index| text.is_char_boundary(index as usize)).unwrap_or(text.len() as u32)
+        (index..)
+            .find(|&index| text.is_char_boundary(index as usize))
+            .unwrap_or(text.len() as u32)
     }
 
     let from: TextSize = ceil_char_boundary(text, start_idx + 1).into();
     let to: TextSize = (cursor_position + end_idx).into();
 
     let range = TextRange::new(from, to);
-    if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
+    if range.is_empty() {
+        None
+    } else {
+        Some(range + leaf.text_range().start())
+    }
 }
 
 fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange {
@@ -283,10 +298,16 @@ fn extend_list_item(node: &SyntaxNode) -> Option<TextRange> {
             .filter(is_single_line_ws)
             .unwrap_or(delimiter_node);
 
-        return Some(TextRange::new(node.text_range().start(), final_node.text_range().end()));
+        return Some(TextRange::new(
+            node.text_range().start(),
+            final_node.text_range().end(),
+        ));
     }
     if let Some(delimiter_node) = nearby_delimiter(delimiter, node, Direction::Prev) {
-        return Some(TextRange::new(delimiter_node.text_range().start(), node.text_range().end()));
+        return Some(TextRange::new(
+            delimiter_node.text_range().start(),
+            node.text_range().end(),
+        ));
     }
 
     None
@@ -296,7 +317,10 @@ fn extend_comments(comment: ast::Comment) -> Option<TextRange> {
     let prev = adj_comments(&comment, Direction::Prev);
     let next = adj_comments(&comment, Direction::Next);
     if prev != next {
-        Some(TextRange::new(prev.syntax().text_range().start(), next.syntax().text_range().end()))
+        Some(TextRange::new(
+            prev.syntax().text_range().start(),
+            next.syntax().text_range().end(),
+        ))
     } else {
         None
     }
@@ -328,7 +352,10 @@ mod tests {
         let (analysis, position) = fixture::position(before);
         let before = analysis.file_text(position.file_id).unwrap();
         let range = TextRange::empty(position.offset);
-        let mut frange = FileRange { file_id: position.file_id, range };
+        let mut frange = FileRange {
+            file_id: position.file_id,
+            range,
+        };
 
         for &after in afters {
             frange.range = analysis.extend_selection(frange).unwrap();
@@ -345,15 +372,30 @@ mod tests {
     #[test]
     fn test_extend_selection_list() {
         do_check(r#"fn foo($0x: i32) {}"#, &["x", "x: i32"]);
-        do_check(r#"fn foo($0x: i32, y: i32) {}"#, &["x", "x: i32", "x: i32, "]);
-        do_check(r#"fn foo($0x: i32,y: i32) {}"#, &["x", "x: i32", "x: i32,", "(x: i32,y: i32)"]);
-        do_check(r#"fn foo(x: i32, $0y: i32) {}"#, &["y", "y: i32", ", y: i32"]);
-        do_check(r#"fn foo(x: i32, $0y: i32, ) {}"#, &["y", "y: i32", "y: i32, "]);
+        do_check(
+            r#"fn foo($0x: i32, y: i32) {}"#,
+            &["x", "x: i32", "x: i32, "],
+        );
+        do_check(
+            r#"fn foo($0x: i32,y: i32) {}"#,
+            &["x", "x: i32", "x: i32,", "(x: i32,y: i32)"],
+        );
+        do_check(
+            r#"fn foo(x: i32, $0y: i32) {}"#,
+            &["y", "y: i32", ", y: i32"],
+        );
+        do_check(
+            r#"fn foo(x: i32, $0y: i32, ) {}"#,
+            &["y", "y: i32", "y: i32, "],
+        );
         do_check(r#"fn foo(x: i32,$0y: i32) {}"#, &["y", "y: i32", ",y: i32"]);
 
         do_check(r#"const FOO: [usize; 2] = [ 22$0 , 33];"#, &["22", "22 , "]);
         do_check(r#"const FOO: [usize; 2] = [ 22 , 33$0];"#, &["33", ", 33"]);
-        do_check(r#"const FOO: [usize; 2] = [ 22 , 33$0 ,];"#, &["33", "33 ,", "[ 22 , 33 ,]"]);
+        do_check(
+            r#"const FOO: [usize; 2] = [ 22 , 33$0 ,];"#,
+            &["33", "33 ,", "[ 22 , 33 ,]"],
+        );
 
         do_check(r#"fn main() { (1, 2$0) }"#, &["2", ", 2", "(1, 2)"]);
 
@@ -401,7 +443,11 @@ struct B {
     $0
 }
             "#,
-            &["\n    \n", "{\n    \n}", "/// bla\n/// bla\nstruct B {\n    \n}"],
+            &[
+                "\n    \n",
+                "{\n    \n}",
+                "/// bla\n/// bla\nstruct B {\n    \n}",
+            ],
         )
     }
 
@@ -516,12 +562,27 @@ fn foo<R>()
             ],
         );
         do_check(r#"fn foo<T>() where T: $0Copy"#, &["Copy"]);
-        do_check(r#"fn foo<T>() where T: $0Copy + Display"#, &["Copy", "Copy + "]);
-        do_check(r#"fn foo<T>() where T: $0Copy +Display"#, &["Copy", "Copy +"]);
+        do_check(
+            r#"fn foo<T>() where T: $0Copy + Display"#,
+            &["Copy", "Copy + "],
+        );
+        do_check(
+            r#"fn foo<T>() where T: $0Copy +Display"#,
+            &["Copy", "Copy +"],
+        );
         do_check(r#"fn foo<T>() where T: $0Copy+Display"#, &["Copy", "Copy+"]);
-        do_check(r#"fn foo<T>() where T: Copy + $0Display"#, &["Display", "+ Display"]);
-        do_check(r#"fn foo<T>() where T: Copy + $0Display + Sync"#, &["Display", "Display + "]);
-        do_check(r#"fn foo<T>() where T: Copy +$0Display"#, &["Display", "+Display"]);
+        do_check(
+            r#"fn foo<T>() where T: Copy + $0Display"#,
+            &["Display", "+ Display"],
+        );
+        do_check(
+            r#"fn foo<T>() where T: Copy + $0Display + Sync"#,
+            &["Display", "Display + "],
+        );
+        do_check(
+            r#"fn foo<T>() where T: Copy +$0Display"#,
+            &["Display", "+Display"],
+        );
     }
 
     #[test]
@@ -530,9 +591,18 @@ fn foo<R>()
         do_check(r#"fn foo<T: $0Copy + Display>() {}"#, &["Copy", "Copy + "]);
         do_check(r#"fn foo<T: $0Copy +Display>() {}"#, &["Copy", "Copy +"]);
         do_check(r#"fn foo<T: $0Copy+Display>() {}"#, &["Copy", "Copy+"]);
-        do_check(r#"fn foo<T: Copy + $0Display>() {}"#, &["Display", "+ Display"]);
-        do_check(r#"fn foo<T: Copy + $0Display + Sync>() {}"#, &["Display", "Display + "]);
-        do_check(r#"fn foo<T: Copy +$0Display>() {}"#, &["Display", "+Display"]);
+        do_check(
+            r#"fn foo<T: Copy + $0Display>() {}"#,
+            &["Display", "+ Display"],
+        );
+        do_check(
+            r#"fn foo<T: Copy + $0Display + Sync>() {}"#,
+            &["Display", "Display + "],
+        );
+        do_check(
+            r#"fn foo<T: Copy +$0Display>() {}"#,
+            &["Display", "+Display"],
+        );
         do_check(
             r#"fn foo<T: Copy$0 + Display, U: Copy>() {}"#,
             &[
@@ -550,12 +620,20 @@ fn foo<R>()
     fn test_extend_selection_on_tuple_in_type() {
         do_check(
             r#"fn main() { let _: (krate, $0_crate_def_map, module_id) = (); }"#,
-            &["_crate_def_map", "_crate_def_map, ", "(krate, _crate_def_map, module_id)"],
+            &[
+                "_crate_def_map",
+                "_crate_def_map, ",
+                "(krate, _crate_def_map, module_id)",
+            ],
         );
         // white space variations
         do_check(
             r#"fn main() { let _: (krate,$0_crate_def_map,module_id) = (); }"#,
-            &["_crate_def_map", "_crate_def_map,", "(krate,_crate_def_map,module_id)"],
+            &[
+                "_crate_def_map",
+                "_crate_def_map,",
+                "(krate,_crate_def_map,module_id)",
+            ],
         );
         do_check(
             r#"
@@ -576,12 +654,20 @@ fn main() { let _: (
     fn test_extend_selection_on_tuple_in_rvalue() {
         do_check(
             r#"fn main() { let var = (krate, _crate_def_map$0, module_id); }"#,
-            &["_crate_def_map", "_crate_def_map, ", "(krate, _crate_def_map, module_id)"],
+            &[
+                "_crate_def_map",
+                "_crate_def_map, ",
+                "(krate, _crate_def_map, module_id)",
+            ],
         );
         // white space variations
         do_check(
             r#"fn main() { let var = (krate,_crate$0_def_map,module_id); }"#,
-            &["_crate_def_map", "_crate_def_map,", "(krate,_crate_def_map,module_id)"],
+            &[
+                "_crate_def_map",
+                "_crate_def_map,",
+                "(krate,_crate_def_map,module_id)",
+            ],
         );
         do_check(
             r#"
@@ -602,12 +688,20 @@ fn main() { let var = (
     fn test_extend_selection_on_tuple_pat() {
         do_check(
             r#"fn main() { let (krate, _crate_def_map$0, module_id) = var; }"#,
-            &["_crate_def_map", "_crate_def_map, ", "(krate, _crate_def_map, module_id)"],
+            &[
+                "_crate_def_map",
+                "_crate_def_map, ",
+                "(krate, _crate_def_map, module_id)",
+            ],
         );
         // white space variations
         do_check(
             r#"fn main() { let (krate,_crate$0_def_map,module_id) = var; }"#,
-            &["_crate_def_map", "_crate_def_map,", "(krate,_crate_def_map,module_id)"],
+            &[
+                "_crate_def_map",
+                "_crate_def_map,",
+                "(krate,_crate_def_map,module_id)",
+            ],
         );
         do_check(
             r#"

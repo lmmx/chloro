@@ -16,13 +16,14 @@ use triomphe::Arc;
 
 use crate::next_solver::{Const, ConstKind, Region, RegionKind};
 use crate::{
+    TraitEnvironment,
     db::{HirDatabase, InternedClosureId},
     next_solver::{
-        infer::{traits::ObligationCause, DbInternerInferExt, InferCtxt},
+        DbInterner, GenericArgs, Ty, TyKind, TypingMode,
+        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
         obligation_ctxt::ObligationCtxt,
-        references_non_lt_error, DbInterner, GenericArgs, Ty, TyKind, TypingMode,
+        references_non_lt_error,
     },
-    TraitEnvironment,
 };
 
 use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};

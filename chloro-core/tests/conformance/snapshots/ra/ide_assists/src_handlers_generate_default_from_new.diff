@@ -8,21 +8,6 @@ Rustfmt size:  13024 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::famous_defs::FamousDefs;
- use stdx::format_to;
- use syntax::{
--    ast::{self, make, HasGenericParams, HasName, HasTypeBounds, Impl},
-     AstNode,
-+    ast::{self, HasGenericParams, HasName, HasTypeBounds, Impl, make},
- };
- 
- use crate::{
--    assist_context::{AssistContext, Assists},
-     AssistId,
-+    assist_context::{AssistContext, Assists},
- };
- 
- // Assist: generate_default_from_new
      code: &str,
  ) -> String {
      let generic_params = impl_.generic_param_list().map(|generic_params| {

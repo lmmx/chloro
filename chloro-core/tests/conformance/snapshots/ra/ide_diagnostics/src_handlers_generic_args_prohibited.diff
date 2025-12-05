@@ -8,19 +8,6 @@ Rustfmt size:  16831 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use either::Either;
- use hir::GenericArgsProhibitedReason;
- use ide_db::assists::Assist;
- use ide_db::source_change::SourceChange;
- use ide_db::text_edit::TextEdit;
--use syntax::{ast, AstNode, TextRange};
-+use syntax::{AstNode, TextRange, ast};
- 
--use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
- 
- // Diagnostic: generic-args-prohibited
- //
  mod tests {
      // This diagnostic was the first to be emitted in ty lowering, so the tests here also test
      // diagnostics in ty lowering in general (which is why there are so many of them).

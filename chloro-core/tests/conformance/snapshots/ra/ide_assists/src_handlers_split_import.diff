@@ -8,11 +8,6 @@ Rustfmt size:  2254 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use syntax::{ast, AstNode, T};
-+use syntax::{AstNode, T, ast};
- 
- use crate::{AssistContext, AssistId, Assists};
- 
      let colon_colon = ctx.find_token_syntax_at_offset(T![::])?;
      let path = ast::Path::cast(colon_colon.parent()?)?.qualifier()?;
  

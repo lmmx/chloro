@@ -42,7 +42,10 @@ pub(super) fn fn_hints(
         return None;
     }
     let fn_token = fn_.fn_token()?;
-    if sema.to_def(fn_).is_some_and(|def| def.extern_block(sema.db).is_some()) {
+    if sema
+        .to_def(fn_)
+        .is_some_and(|def| def.extern_block(sema.db).is_some())
+    {
         acc.push(item_hint(config, extern_block, fn_token));
     }
     Some(())
@@ -60,7 +63,10 @@ pub(super) fn static_hints(
         return None;
     }
     let static_token = static_.static_token()?;
-    if sema.to_def(static_).is_some_and(|def| def.extern_block(sema.db).is_some()) {
+    if sema
+        .to_def(static_)
+        .is_some_and(|def| def.extern_block(sema.db).is_some())
+    {
         acc.push(item_hint(config, extern_block, static_token));
     }
     Some(())

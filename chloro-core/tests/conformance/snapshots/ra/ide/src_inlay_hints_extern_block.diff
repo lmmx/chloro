@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 3948 bytes
 Chloro size:   3947 bytes
-Rustfmt size:  3948 bytes
+Rustfmt size:  3992 bytes
 
 ✗ Outputs DIFFER
 
@@ -13,6 +13,28 @@ Rustfmt size:  3948 bytes
  use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
  use syntax::{AstNode, SyntaxToken, ast};
  
+         return None;
+     }
+     let fn_token = fn_.fn_token()?;
+-    if sema
+-        .to_def(fn_)
+-        .is_some_and(|def| def.extern_block(sema.db).is_some())
+-    {
++    if sema.to_def(fn_).is_some_and(|def| def.extern_block(sema.db).is_some()) {
+         acc.push(item_hint(config, extern_block, fn_token));
+     }
+     Some(())
+         return None;
+     }
+     let static_token = static_.static_token()?;
+-    if sema
+-        .to_def(static_)
+-        .is_some_and(|def| def.extern_block(sema.db).is_some())
+-    {
++    if sema.to_def(static_).is_some_and(|def| def.extern_block(sema.db).is_some()) {
+         acc.push(item_hint(config, extern_block, static_token));
+     }
+     Some(())
  #[cfg(test)]
  mod tests {
      use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};

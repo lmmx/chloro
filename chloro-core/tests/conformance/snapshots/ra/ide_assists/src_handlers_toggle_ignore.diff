@@ -8,17 +8,6 @@ Rustfmt size:  2432 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{
--    ast::{self, HasAttrs},
-     AstNode, AstToken,
-+    ast::{self, HasAttrs},
- };
- 
--use crate::{utils::test_related_attribute_syn, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, utils::test_related_attribute_syn};
- 
- // Assist: toggle_ignore
- //
  }
  
  fn has_ignore_attribute(fn_def: &ast::Fn) -> Option<ast::Attr> {

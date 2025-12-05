@@ -174,7 +174,9 @@ impl<'db> InferCtxtInner<'db> {
     ) -> Option<&type_variable::TypeVariableValue<'db>> {
         // Uses a read-only view of the unification table, this way we don't
         // need an undo log.
-        self.type_variable_storage.eq_relations_ref().try_probe_value(vid)
+        self.type_variable_storage
+            .eq_relations_ref()
+            .try_probe_value(vid)
     }
 
     #[inline]
@@ -417,7 +419,11 @@ impl<'db> InferCtxt<'db> {
                     return ty;
                 }
 
-                if ty.is_ty_error() { self.infcx.next_ty_var() } else { ty.super_fold_with(self) }
+                if ty.is_ty_error() {
+                    self.infcx.next_ty_var()
+                } else {
+                    ty.super_fold_with(self)
+                }
             }
 
             fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
@@ -433,7 +439,11 @@ impl<'db> InferCtxt<'db> {
             }
 
             fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
-                if r.is_error() { self.infcx.next_region_var() } else { r }
+                if r.is_error() {
+                    self.infcx.next_region_var()
+                } else {
+                    r
+                }
             }
         }
 
@@ -472,7 +482,8 @@ impl<'db> InferCtxt<'db> {
         &self,
         obligation: &PredicateObligation<'db>,
     ) -> bool {
-        self.evaluate_obligation(obligation).must_apply_considering_regions()
+        self.evaluate_obligation(obligation)
+            .must_apply_considering_regions()
     }
 
     /// Evaluates whether the predicate can be satisfied in the given
@@ -482,7 +493,8 @@ impl<'db> InferCtxt<'db> {
     /// This version ignores all outlives constraints.
     #[expect(dead_code, reason = "this is used in rustc")]
     fn predicate_must_hold_modulo_regions(&self, obligation: &PredicateObligation<'db>) -> bool {
-        self.evaluate_obligation(obligation).must_apply_modulo_regions()
+        self.evaluate_obligation(obligation)
+            .must_apply_modulo_regions()
     }
 
     /// Evaluate a given predicate, capturing overflow and propagating it back.
@@ -540,7 +552,12 @@ impl<'db> InferCtxt<'db> {
         vars.extend(
             (0..inner.float_unification_table().len())
                 .map(FloatVid::from_usize)
-                .filter(|&vid| inner.float_unification_table().probe_value(vid).is_unknown())
+                .filter(|&vid| {
+                    inner
+                        .float_unification_table()
+                        .probe_value(vid)
+                        .is_unknown()
+                })
                 .map(|v| Ty::new_float_var(self.interner, v)),
         );
         vars
@@ -548,7 +565,10 @@ impl<'db> InferCtxt<'db> {
 
     #[instrument(skip(self), level = "debug")]
     pub fn sub_regions(&self, a: Region<'db>, b: Region<'db>) {
-        self.inner.borrow_mut().unwrap_region_constraints().make_subregion(a, b);
+        self.inner
+            .borrow_mut()
+            .unwrap_region_constraints()
+            .make_subregion(a, b);
     }
 
     /// Processes a `Coerce` predicate from the fulfillment context.
@@ -608,13 +628,20 @@ impl<'db> InferCtxt<'db> {
             _ => {}
         }
 
-        self.enter_forall(predicate, |SubtypePredicate { a_is_expected, a, b }| {
-            if a_is_expected {
-                Ok(self.at(cause, param_env).sub(a, b))
-            } else {
-                Ok(self.at(cause, param_env).sup(b, a))
-            }
-        })
+        self.enter_forall(
+            predicate,
+            |SubtypePredicate {
+                 a_is_expected,
+                 a,
+                 b,
+             }| {
+                if a_is_expected {
+                    Ok(self.at(cause, param_env).sub(a, b))
+                } else {
+                    Ok(self.at(cause, param_env).sup(b, a))
+                }
+            },
+        )
     }
 
     pub fn region_outlives_predicate(
@@ -644,13 +671,20 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_ty_var_with_origin(&self, origin: TypeVariableOrigin) -> Ty<'db> {
-        let vid = self.inner.borrow_mut().type_variables().new_var(self.universe(), origin);
+        let vid = self
+            .inner
+            .borrow_mut()
+            .type_variables()
+            .new_var(self.universe(), origin);
         Ty::new_var(self.interner, vid)
     }
 
     pub fn next_ty_var_id_in_universe(&self, universe: UniverseIndex) -> TyVid {
         let origin = TypeVariableOrigin { param_def_id: None };
-        self.inner.borrow_mut().type_variables().new_var(universe, origin)
+        self.inner
+            .borrow_mut()
+            .type_variables()
+            .new_var(universe, origin)
     }
 
     pub fn next_ty_var_in_universe(&self, universe: UniverseIndex) -> Ty<'db> {
@@ -678,7 +712,10 @@ impl<'db> InferCtxt<'db> {
             .inner
             .borrow_mut()
             .const_unification_table()
-            .new_key(ConstVariableValue::Unknown { origin, universe: self.universe() })
+            .new_key(ConstVariableValue::Unknown {
+                origin,
+                universe: self.universe(),
+            })
             .vid;
         Const::new_var(self.interner, vid)
     }
@@ -695,13 +732,19 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_int_var(&self) -> Ty<'db> {
-        let next_int_var_id =
-            self.inner.borrow_mut().int_unification_table().new_key(IntVarValue::Unknown);
+        let next_int_var_id = self
+            .inner
+            .borrow_mut()
+            .int_unification_table()
+            .new_key(IntVarValue::Unknown);
         Ty::new_int_var(self.interner, next_int_var_id)
     }
 
     pub fn next_int_vid(&self) -> IntVid {
-        self.inner.borrow_mut().int_unification_table().new_key(IntVarValue::Unknown)
+        self.inner
+            .borrow_mut()
+            .int_unification_table()
+            .new_key(IntVarValue::Unknown)
     }
 
     pub fn next_float_var(&self) -> Ty<'db> {
@@ -709,7 +752,10 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_float_vid(&self) -> FloatVid {
-        self.inner.borrow_mut().float_unification_table().new_key(FloatVarValue::Unknown)
+        self.inner
+            .borrow_mut()
+            .float_unification_table()
+            .new_key(FloatVarValue::Unknown)
     }
 
     /// Creates a fresh region variable with the next available index.
@@ -720,15 +766,21 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn next_region_vid(&self) -> RegionVid {
-        self.inner.borrow_mut().unwrap_region_constraints().new_region_var(self.universe())
+        self.inner
+            .borrow_mut()
+            .unwrap_region_constraints()
+            .new_region_var(self.universe())
     }
 
     /// Creates a fresh region variable with the next available index
     /// in the given universe; typically, you can use
     /// `next_region_var` and just use the maximal universe.
     pub fn next_region_var_in_universe(&self, universe: UniverseIndex) -> Region<'db> {
-        let region_var =
-            self.inner.borrow_mut().unwrap_region_constraints().new_region_var(universe);
+        let region_var = self
+            .inner
+            .borrow_mut()
+            .unwrap_region_constraints()
+            .new_region_var(universe);
         Region::new_var(self.interner, region_var)
     }
 
@@ -745,12 +797,18 @@ impl<'db> InferCtxt<'db> {
     /// placeholders, however, it will return the universe which they
     /// are associated.
     pub fn universe_of_region(&self, r: Region<'db>) -> UniverseIndex {
-        self.inner.borrow_mut().unwrap_region_constraints().universe(r)
+        self.inner
+            .borrow_mut()
+            .unwrap_region_constraints()
+            .universe(r)
     }
 
     /// Number of region variables created so far.
     pub fn num_region_vars(&self) -> usize {
-        self.inner.borrow_mut().unwrap_region_constraints().num_region_vars()
+        self.inner
+            .borrow_mut()
+            .unwrap_region_constraints()
+            .num_region_vars()
     }
 
     /// Just a convenient wrapper of `next_region_var` for using during NLL.
@@ -795,7 +853,10 @@ impl<'db> InferCtxt<'db> {
                     .inner
                     .borrow_mut()
                     .const_unification_table()
-                    .new_key(ConstVariableValue::Unknown { origin, universe: self.universe() })
+                    .new_key(ConstVariableValue::Unknown {
+                        origin,
+                        universe: self.universe(),
+                    })
                     .vid;
                 Const::new_var(self.interner, const_var_id).into()
             }
@@ -805,7 +866,9 @@ impl<'db> InferCtxt<'db> {
     /// Given a set of generics defined on a type or impl, returns the generic parameters mapping
     /// each type/region parameter to a fresh inference variable.
     pub fn fresh_args_for_item(&self, def_id: SolverDefId) -> GenericArgs<'db> {
-        GenericArgs::for_item(self.interner, def_id, |_index, kind, _| self.var_for_def(kind))
+        GenericArgs::for_item(self.interner, def_id, |_index, kind, _| {
+            self.var_for_def(kind)
+        })
     }
 
     /// Like `fresh_args_for_item()`, but first uses the args from `first`.
@@ -838,23 +901,35 @@ impl<'db> InferCtxt<'db> {
 
     #[instrument(level = "debug", skip(self), ret)]
     pub fn take_opaque_types(&self) -> Vec<(OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-        self.inner.borrow_mut().opaque_type_storage.take_opaque_types().collect()
+        self.inner
+            .borrow_mut()
+            .opaque_type_storage
+            .take_opaque_types()
+            .collect()
     }
 
     #[instrument(level = "debug", skip(self), ret)]
     pub fn clone_opaque_types(&self) -> Vec<(OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-        self.inner.borrow_mut().opaque_type_storage.iter_opaque_types().collect()
+        self.inner
+            .borrow_mut()
+            .opaque_type_storage
+            .iter_opaque_types()
+            .collect()
     }
 
     #[inline(always)]
     pub fn can_define_opaque_ty(&self, id: impl Into<SolverDefId>) -> bool {
         match self.typing_mode_unchecked() {
-            TypingMode::Analysis { defining_opaque_types_and_generators } => {
-                defining_opaque_types_and_generators.contains(&id.into())
-            }
+            TypingMode::Analysis {
+                defining_opaque_types_and_generators,
+            } => defining_opaque_types_and_generators.contains(&id.into()),
             TypingMode::Coherence | TypingMode::PostAnalysis => false,
-            TypingMode::Borrowck { defining_opaque_types: _ } => unimplemented!(),
-            TypingMode::PostBorrowckAnalysis { defined_opaque_types: _ } => unimplemented!(),
+            TypingMode::Borrowck {
+                defining_opaque_types: _,
+            } => unimplemented!(),
+            TypingMode::PostBorrowckAnalysis {
+                defined_opaque_types: _,
+            } => unimplemented!(),
         }
     }
 
@@ -890,7 +965,12 @@ impl<'db> InferCtxt<'db> {
                 }
 
                 InferTy::IntVar(v) => {
-                    match self.inner.borrow_mut().int_unification_table().probe_value(v) {
+                    match self
+                        .inner
+                        .borrow_mut()
+                        .int_unification_table()
+                        .probe_value(v)
+                    {
                         IntVarValue::IntType(ty) => Ty::new_int(self.interner, ty),
                         IntVarValue::UintType(ty) => Ty::new_uint(self.interner, ty),
                         IntVarValue::Unknown => ty,
@@ -898,7 +978,12 @@ impl<'db> InferCtxt<'db> {
                 }
 
                 InferTy::FloatVar(v) => {
-                    match self.inner.borrow_mut().float_unification_table().probe_value(v) {
+                    match self
+                        .inner
+                        .borrow_mut()
+                        .float_unification_table()
+                        .probe_value(v)
+                    {
                         FloatVarValue::Known(ty) => Ty::new_float(self.interner, ty),
                         FloatVarValue::Unknown => ty,
                     }
@@ -938,7 +1023,11 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn root_const_var(&self, var: ConstVid) -> ConstVid {
-        self.inner.borrow_mut().const_unification_table().find(var).vid
+        self.inner
+            .borrow_mut()
+            .const_unification_table()
+            .find(var)
+            .vid
     }
 
     /// Resolves an int var to a rigid int type, if it was constrained to one,
@@ -1008,9 +1097,17 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn probe_const_var(&self, vid: ConstVid) -> Result<Const<'db>, UniverseIndex> {
-        match self.inner.borrow_mut().const_unification_table().probe_value(vid) {
+        match self
+            .inner
+            .borrow_mut()
+            .const_unification_table()
+            .probe_value(vid)
+        {
             ConstVariableValue::Known { value } => Ok(value),
-            ConstVariableValue::Unknown { origin: _, universe } => Err(universe),
+            ConstVariableValue::Unknown {
+                origin: _,
+                universe,
+            } => Err(universe),
         }
     }
 
@@ -1139,7 +1236,11 @@ impl<'db> InferCtxt<'db> {
                 // If `inlined_probe_value` returns a value it's always a
                 // `Int(_)` or `UInt(_)`, which never matches a
                 // `Infer(_)`.
-                self.inner.borrow_mut().int_unification_table().inlined_probe_value(v).is_known()
+                self.inner
+                    .borrow_mut()
+                    .int_unification_table()
+                    .inlined_probe_value(v)
+                    .is_known()
             }
 
             TyOrConstInferVar::TyFloat(v) => {
@@ -1147,7 +1248,11 @@ impl<'db> InferCtxt<'db> {
                 // `Float(_)`, which never matches a `Infer(_)`.
                 //
                 // Not `inlined_probe_value(v)` because this call site is colder.
-                self.inner.borrow_mut().float_unification_table().probe_value(v).is_known()
+                self.inner
+                    .borrow_mut()
+                    .float_unification_table()
+                    .probe_value(v)
+                    .is_known()
             }
 
             TyOrConstInferVar::Const(v) => {
@@ -1155,7 +1260,12 @@ impl<'db> InferCtxt<'db> {
                 // `ConstKind::Infer(InferConst::Var(v))`.
                 //
                 // Not `inlined_probe_value(v)` because this call site is colder.
-                match self.inner.borrow_mut().const_unification_table().probe_value(v) {
+                match self
+                    .inner
+                    .borrow_mut()
+                    .const_unification_table()
+                    .probe_value(v)
+                {
                     ConstVariableValue::Unknown { .. } => false,
                     ConstVariableValue::Known { .. } => true,
                 }
@@ -1164,7 +1274,10 @@ impl<'db> InferCtxt<'db> {
     }
 
     fn sub_unification_table_root_var(&self, var: rustc_type_ir::TyVid) -> rustc_type_ir::TyVid {
-        self.inner.borrow_mut().type_variables().sub_unification_table_root_var(var)
+        self.inner
+            .borrow_mut()
+            .type_variables()
+            .sub_unification_table_root_var(var)
     }
 
     fn sub_unify_ty_vids_raw(&self, a: rustc_type_ir::TyVid, b: rustc_type_ir::TyVid) {
@@ -1233,7 +1346,10 @@ impl<'db> TypeTrace<'db> {
         a: TraitRef<'db>,
         b: TraitRef<'db>,
     ) -> TypeTrace<'db> {
-        TypeTrace { cause: cause.clone(), values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)) }
+        TypeTrace {
+            cause: cause.clone(),
+            values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)),
+        }
     }
 
     pub fn consts(cause: &ObligationCause, a: Const<'db>, b: Const<'db>) -> TypeTrace<'db> {

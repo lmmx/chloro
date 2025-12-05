@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 6595 bytes
 Chloro size:   6732 bytes
-Rustfmt size:  6864 bytes
+Rustfmt size:  6868 bytes
 
 ✗ Outputs DIFFER
 
@@ -14,22 +14,12 @@ Rustfmt size:  6864 bytes
  use intern::sym;
  use span::{Edition, Span, SyntaxContext};
  use stdx::TupleExt;
--use syntax::{ast, AstNode};
+-use syntax::{AstNode, ast};
  use syntax_bridge::DocCommentDesugarMode;
 +use syntax::{AstNode, ast};
  use triomphe::Arc;
  
  use crate::{
-+    AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
-     attrs::RawAttrs,
-     db::ExpandDatabase,
--    hygiene::{apply_mark, Transparency},
--    tt, AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
-+    hygiene::{Transparency, apply_mark},
-+    tt,
- };
- 
- /// Old-style `macro_rules` or the new macros 2.0
          match self.mac.err() {
              Some(_) => ExpandResult::new(
                  (

@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 33665 bytes
 Chloro size:   33307 bytes
-Rustfmt size:  33868 bytes
+Rustfmt size:  33872 bytes
 
 ✗ Outputs DIFFER
 
@@ -21,33 +21,20 @@ Rustfmt size:  33868 bytes
  #[cfg(test)]
  mod fixture;
  
- 
  use cfg::CfgOptions;
  use fetch_crates::CrateInfo;
--use hir::{crate_def_map, sym, ChangeWithProcMacros, EditionedFileId};
-+use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
+ use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
 +use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
  use ide_db::{
-+    FxHashMap, FxIndexSet, LineIndexDatabase,
+     FxHashMap, FxIndexSet, LineIndexDatabase,
      base_db::{
--        salsa::Cancelled, CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb,
--        SourceDatabase, VfsPath,
-+        CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb, SourceDatabase, VfsPath,
-+        salsa::Cancelled,
      },
--    prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
-+    prime_caches, symbol_index,
+     prime_caches, symbol_index,
  };
--use ide_db::{ra_fixture::RaFixtureAnalysis, MiniCore};
+-use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
  use macros::UpmapFromRaFixture;
--use syntax::{ast, SourceFile};
-+use syntax::{SourceFile, ast};
+ use syntax::{SourceFile, ast};
  use triomphe::Arc;
--use view_memory_layout::{view_memory_layout, RecursiveMemoryLayout};
-+use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
- 
- use crate::navigation_target::ToNav;
- 
      },
      inlay_hints::{
          AdjustmentHints, AdjustmentHintsMode, ClosureReturnTypeHints, DiscriminantHints,
@@ -63,26 +50,12 @@ Rustfmt size:  33868 bytes
          StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
      },
      syntax_highlighting::{
--        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
 -        HighlightConfig, HlRange,
+-        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
 +        HighlightConfig, HlRange, tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
      },
      test_explorer::{TestItem, TestItemKind},
  };
-     CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
- };
- pub use ide_db::{
-+    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
-     assists::ExprFillDefaultMode,
-     base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
-     documentation::Documentation,
-     source_change::{FileSystemEdit, SnippetEdit, SourceChange},
-     symbol_index::Query,
-     text_edit::{Indel, TextEdit},
--    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
- };
- pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
- pub use ide_ssr::SsrError;
  
  impl AnalysisHost {
      pub fn new(lru_capacity: Option<u16>) -> AnalysisHost {

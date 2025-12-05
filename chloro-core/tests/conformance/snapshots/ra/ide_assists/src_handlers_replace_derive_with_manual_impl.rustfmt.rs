@@ -71,7 +71,9 @@ pub(crate) fn replace_derive_with_manual_impl(
     let current_module = ctx.sema.scope(adt.syntax())?.module();
     let current_crate = current_module.krate();
     let current_edition = current_crate.edition(ctx.db());
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(current_crate));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(current_crate));
 
     let found_traits = items_locator::items_with_name(
         ctx.db(),
@@ -106,7 +108,17 @@ pub(crate) fn replace_derive_with_manual_impl(
         )?;
     }
     if no_traits_found {
-        add_assist(acc, ctx, &attr, &current_derives, &args, &path, &path, None, &adt)?;
+        add_assist(
+            acc,
+            ctx,
+            &attr,
+            &current_derives,
+            &args,
+            &path,
+            &path,
+            None,
+            &adt,
+        )?;
     }
     Some(())
 }
@@ -126,58 +138,68 @@ fn add_assist(
     let annotated_name = adt.name()?;
     let label = format!("Convert to manual `impl {replace_trait_path} for {annotated_name}`");
 
-    acc.add(AssistId::refactor("replace_derive_with_manual_impl"), label, target, |builder| {
-        let insert_after = Position::after(adt.syntax());
-        let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
-        let impl_def = impl_def_from_trait(
-            &ctx.sema,
-            ctx.config,
-            adt,
-            &annotated_name,
-            trait_,
-            replace_trait_path,
-            impl_is_unsafe,
-        );
+    acc.add(
+        AssistId::refactor("replace_derive_with_manual_impl"),
+        label,
+        target,
+        |builder| {
+            let insert_after = Position::after(adt.syntax());
+            let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
+            let impl_def = impl_def_from_trait(
+                &ctx.sema,
+                ctx.config,
+                adt,
+                &annotated_name,
+                trait_,
+                replace_trait_path,
+                impl_is_unsafe,
+            );
 
-        let mut editor = builder.make_editor(attr.syntax());
-        update_attribute(&mut editor, old_derives, old_tree, old_trait_path, attr);
+            let mut editor = builder.make_editor(attr.syntax());
+            update_attribute(&mut editor, old_derives, old_tree, old_trait_path, attr);
 
-        let trait_path = make::ty_path(replace_trait_path.clone());
+            let trait_path = make::ty_path(replace_trait_path.clone());
 
-        let (impl_def, first_assoc_item) = if let Some(impl_def) = impl_def {
-            (
-                impl_def.clone(),
-                impl_def.assoc_item_list().and_then(|list| list.assoc_items().next()),
-            )
-        } else {
-            (generate_trait_impl(impl_is_unsafe, adt, trait_path), None)
-        };
+            let (impl_def, first_assoc_item) = if let Some(impl_def) = impl_def {
+                (
+                    impl_def.clone(),
+                    impl_def
+                        .assoc_item_list()
+                        .and_then(|list| list.assoc_items().next()),
+                )
+            } else {
+                (generate_trait_impl(impl_is_unsafe, adt, trait_path), None)
+            };
 
-        if let Some(cap) = ctx.config.snippet_cap {
-            if let Some(first_assoc_item) = first_assoc_item {
-                if let ast::AssocItem::Fn(ref func) = first_assoc_item
-                    && let Some(m) = func.syntax().descendants().find_map(ast::MacroCall::cast)
-                    && m.syntax().text() == "todo!()"
+            if let Some(cap) = ctx.config.snippet_cap {
+                if let Some(first_assoc_item) = first_assoc_item {
+                    if let ast::AssocItem::Fn(ref func) = first_assoc_item
+                        && let Some(m) = func.syntax().descendants().find_map(ast::MacroCall::cast)
+                        && m.syntax().text() == "todo!()"
+                    {
+                        // Make the `todo!()` a placeholder
+                        builder.add_placeholder_snippet(cap, m);
+                    } else {
+                        // If we haven't already added a snippet, add a tabstop before the generated function
+                        builder.add_tabstop_before(cap, first_assoc_item);
+                    }
+                } else if let Some(l_curly) =
+                    impl_def.assoc_item_list().and_then(|it| it.l_curly_token())
                 {
-                    // Make the `todo!()` a placeholder
-                    builder.add_placeholder_snippet(cap, m);
-                } else {
-                    // If we haven't already added a snippet, add a tabstop before the generated function
-                    builder.add_tabstop_before(cap, first_assoc_item);
+                    builder.add_tabstop_after_token(cap, l_curly);
                 }
-            } else if let Some(l_curly) =
-                impl_def.assoc_item_list().and_then(|it| it.l_curly_token())
-            {
-                builder.add_tabstop_after_token(cap, l_curly);
             }
-        }
 
-        editor.insert_all(
-            insert_after,
-            vec![make::tokens::blank_line().into(), impl_def.syntax().clone().into()],
-        );
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+            editor.insert_all(
+                insert_after,
+                vec![
+                    make::tokens::blank_line().into(),
+                    impl_def.syntax().clone().into(),
+                ],
+            );
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
+    )
 }
 
 fn impl_def_from_trait(
@@ -199,8 +221,12 @@ fn impl_def_from_trait(
         IgnoreAssocItems::DocHiddenAttrPresent
     };
 
-    let trait_items =
-        filter_assoc_items(sema, &trait_.items(sema.db), DefaultMethods::No, ignore_items);
+    let trait_items = filter_assoc_items(
+        sema,
+        &trait_.items(sema.db),
+        DefaultMethods::No,
+        ignore_items,
+    );
 
     if trait_items.is_empty() {
         return None;
@@ -209,8 +235,9 @@ fn impl_def_from_trait(
 
     let assoc_items =
         add_trait_assoc_items_to_impl(sema, config, &trait_items, trait_, &impl_def, &target_scope);
-    let assoc_item_list = if let Some((first, other)) =
-        assoc_items.split_first().map(|(first, other)| (first.clone_subtree(), other))
+    let assoc_item_list = if let Some((first, other)) = assoc_items
+        .split_first()
+        .map(|(first, other)| (first.clone_subtree(), other))
     {
         let first_item = if let ast::AssocItem::Fn(ref func) = first
             && let Some(body) = gen_trait_fn_body(func, trait_path, adt, None)
@@ -222,7 +249,10 @@ fn impl_def_from_trait(
         } else {
             Some(first.clone())
         };
-        let items = first_item.into_iter().chain(other.iter().cloned()).collect();
+        let items = first_item
+            .into_iter()
+            .chain(other.iter().cloned())
+            .collect();
         make::assoc_item_list(Some(items))
     } else {
         make::assoc_item_list(None)
@@ -231,7 +261,10 @@ fn impl_def_from_trait(
 
     let impl_def = impl_def.clone_subtree();
     let mut editor = SyntaxEditor::new(impl_def.syntax().clone());
-    editor.replace(impl_def.assoc_item_list()?.syntax(), assoc_item_list.syntax());
+    editor.replace(
+        impl_def.assoc_item_list()?.syntax(),
+        assoc_item_list.syntax(),
+    );
     let impl_def = ast::Impl::cast(editor.finish().new_root().clone())?;
     Some(impl_def)
 }
@@ -251,11 +284,14 @@ fn update_attribute(
 
     if has_more_derives {
         // Make the paths into flat lists of tokens in a vec
-        let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
-            node.descendants_with_tokens()
-                .filter_map(|element| element.into_token())
-                .collect::<Vec<_>>()
-        });
+        let tt = new_derives
+            .iter()
+            .map(|path| path.syntax().clone())
+            .map(|node| {
+                node.descendants_with_tokens()
+                    .filter_map(|element| element.into_token())
+                    .collect::<Vec<_>>()
+            });
         // ...which are interspersed with ", "
         let tt = Itertools::intersperse(tt, vec![make::token(T![,]), make::tokens::single_space()]);
         // ...wrap them into the appropriate `NodeOrToken` variant
@@ -268,8 +304,10 @@ fn update_attribute(
     } else {
         // Remove the attr and any trailing whitespace
 
-        if let Some(line_break) =
-            attr.syntax().next_sibling_or_token().filter(|t| t.kind() == WHITESPACE)
+        if let Some(line_break) = attr
+            .syntax()
+            .next_sibling_or_token()
+            .filter(|t| t.kind() == WHITESPACE)
         {
             editor.delete(line_break)
         }

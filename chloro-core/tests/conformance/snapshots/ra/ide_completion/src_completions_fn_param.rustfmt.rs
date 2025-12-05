@@ -25,8 +25,17 @@ pub(crate) fn complete_fn_param(
     ctx: &CompletionContext<'_>,
     pattern_ctx: &PatternContext,
 ) -> Option<()> {
-    let (ParamContext { param_list, kind, .. }, impl_or_trait) = match pattern_ctx {
-        PatternContext { param_ctx: Some(kind), impl_or_trait, .. } => (kind, impl_or_trait),
+    let (
+        ParamContext {
+            param_list, kind, ..
+        },
+        impl_or_trait,
+    ) = match pattern_ctx {
+        PatternContext {
+            param_ctx: Some(kind),
+            impl_or_trait,
+            ..
+        } => (kind, impl_or_trait),
         _ => return None,
     };
 
@@ -46,7 +55,13 @@ pub(crate) fn complete_fn_param(
 
     match kind {
         ParamKind::Function(function) => {
-            fill_fn_params(ctx, function, param_list, impl_or_trait, add_new_item_to_acc);
+            fill_fn_params(
+                ctx,
+                function,
+                param_list,
+                impl_or_trait,
+                add_new_item_to_acc,
+            );
         }
         ParamKind::Closure(closure) => {
             let stmt_list = closure.syntax().ancestors().find_map(ast::StmtList::cast)?;
@@ -69,14 +84,17 @@ fn fill_fn_params(
     let mut file_params = FxHashMap::default();
 
     let mut extract_params = |f: ast::Fn| {
-        f.param_list().into_iter().flat_map(|it| it.params()).for_each(|param| {
-            if let Some(pat) = param.pat() {
-                // FIXME: We should be able to turn these into SmolStr without having to allocate a String
-                let whole_param = param.syntax().text().to_string();
-                let binding = pat.syntax().text().to_string();
-                file_params.entry(whole_param).or_insert(binding);
-            }
-        });
+        f.param_list()
+            .into_iter()
+            .flat_map(|it| it.params())
+            .for_each(|param| {
+                if let Some(pat) = param.pat() {
+                    // FIXME: We should be able to turn these into SmolStr without having to allocate a String
+                    let whole_param = param.syntax().text().to_string();
+                    let binding = pat.syntax().text().to_string();
+                    file_params.entry(whole_param).or_insert(binding);
+                }
+            });
     };
 
     for node in ctx.token.parent_ancestors() {
@@ -109,10 +127,14 @@ fn fill_fn_params(
     remove_duplicated(&mut file_params, param_list.params());
     let self_completion_items = ["self", "&self", "mut self", "&mut self"];
     if should_add_self_completions(ctx.token.text_range().start(), param_list, impl_or_trait) {
-        self_completion_items.into_iter().for_each(&mut add_new_item_to_acc);
+        self_completion_items
+            .into_iter()
+            .for_each(&mut add_new_item_to_acc);
     }
 
-    file_params.keys().for_each(|whole_param| add_new_item_to_acc(whole_param));
+    file_params
+        .keys()
+        .for_each(|whole_param| add_new_item_to_acc(whole_param));
 }
 
 fn params_from_stmt_list_scope(
@@ -124,8 +146,9 @@ fn params_from_stmt_list_scope(
         Some(it) => it,
         None => return,
     };
-    if let Some(scope) =
-        ctx.sema.scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end())
+    if let Some(scope) = ctx
+        .sema
+        .scope_at_offset(stmt_list.syntax(), syntax_node.text_range().end())
     {
         let module = scope.module().into();
         scope.process_all_names(&mut |name, def| {
@@ -168,14 +191,18 @@ fn should_add_self_completions(
         return false;
     }
     match param_list.params().next() {
-        Some(first) => first.pat().is_some_and(|pat| pat.syntax().text_range().contains(cursor)),
+        Some(first) => first
+            .pat()
+            .is_some_and(|pat| pat.syntax().text_range().contains(cursor)),
         None => true,
     }
 }
 
 fn comma_wrapper(ctx: &CompletionContext<'_>) -> Option<(impl Fn(&str) -> String, TextRange)> {
-    let param =
-        ctx.original_token.parent_ancestors().find(|node| node.kind() == SyntaxKind::PARAM)?;
+    let param = ctx
+        .original_token
+        .parent_ancestors()
+        .find(|node| node.kind() == SyntaxKind::PARAM)?;
 
     let next_token_kind = {
         let t = param.last_token()?.next_token()?;
@@ -188,13 +215,20 @@ fn comma_wrapper(ctx: &CompletionContext<'_>) -> Option<(impl Fn(&str) -> String
         t.kind()
     };
 
-    let has_trailing_comma =
-        matches!(next_token_kind, SyntaxKind::COMMA | SyntaxKind::R_PAREN | SyntaxKind::PIPE);
+    let has_trailing_comma = matches!(
+        next_token_kind,
+        SyntaxKind::COMMA | SyntaxKind::R_PAREN | SyntaxKind::PIPE
+    );
     let trailing = if has_trailing_comma { "" } else { "," };
 
-    let has_leading_comma =
-        matches!(prev_token_kind, SyntaxKind::COMMA | SyntaxKind::L_PAREN | SyntaxKind::PIPE);
+    let has_leading_comma = matches!(
+        prev_token_kind,
+        SyntaxKind::COMMA | SyntaxKind::L_PAREN | SyntaxKind::PIPE
+    );
     let leading = if has_leading_comma { "" } else { ", " };
 
-    Some((move |label: &_| format!("{leading}{label}{trailing}"), param.text_range()))
+    Some((
+        move |label: &_| format!("{leading}{label}{trailing}"),
+        param.text_range(),
+    ))
 }

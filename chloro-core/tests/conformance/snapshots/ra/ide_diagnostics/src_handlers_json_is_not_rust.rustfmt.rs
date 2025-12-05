@@ -4,19 +4,19 @@
 use hir::{FindPathConfig, PathResolution, Semantics};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    helpers::mod_path_to_ast,
-    imports::insert_use::{insert_use, ImportScope},
-    source_change::SourceChangeBuilder,
     EditionedFileId, FileRange, FxHashMap, RootDatabase,
+    helpers::mod_path_to_ast,
+    imports::insert_use::{ImportScope, insert_use},
+    source_change::SourceChangeBuilder,
 };
 use itertools::Itertools;
 use stdx::{format_to, never};
 use syntax::{
-    ast::{self, make},
     Edition, SyntaxKind, SyntaxNode,
+    ast::{self, make},
 };
 
-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity};
+use crate::{Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity, fix};
 
 #[derive(Default)]
 struct State {
@@ -175,7 +175,12 @@ pub(crate) fn json_in_items(
                         }
                         let mut sc = scb.finish();
                         sc.insert_source_edit(vfs_file_id, edit.finish());
-                        fix("convert_json_to_struct", "Convert JSON to struct", sc, range)
+                        fix(
+                            "convert_json_to_struct",
+                            "Convert JSON to struct",
+                            sc,
+                            range,
+                        )
                     }])),
                 );
             }
@@ -187,8 +192,8 @@ pub(crate) fn json_in_items(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{check_diagnostics_with_config, check_fix, check_no_fix},
         DiagnosticsConfig,
+        tests::{check_diagnostics_with_config, check_fix, check_no_fix},
     };
 
     #[test]

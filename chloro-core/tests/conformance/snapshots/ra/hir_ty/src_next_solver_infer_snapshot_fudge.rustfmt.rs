@@ -5,19 +5,18 @@ use ena::{
     unify::{self as ut, UnifyKey},
 };
 use rustc_type_ir::{
-    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
-    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
+    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
+    TypeSuperFoldable, TypeVisitableExt, inherent::IntoKind,
 };
 
 use crate::next_solver::{
+    Const, ConstKind, DbInterner, Region, Ty, TyKind,
     infer::{
-        iter_idx_range,
+        InferCtxt, UnificationTable, iter_idx_range,
         snapshot::VariableLengths,
         type_variable::TypeVariableOrigin,
         unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
-        InferCtxt, UnificationTable,
     },
-    Const, ConstKind, DbInterner, Region, Ty, TyKind,
 };
 
 fn vars_since_snapshot<'db, T>(
@@ -215,13 +214,14 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
                         // variables to their binding anyhow, we know
                         // that it is unbound, so we can just return
                         // it.
-                        debug_assert!(self
-                            .infcx
-                            .inner
-                            .borrow_mut()
-                            .type_variables()
-                            .probe(vid)
-                            .is_unknown());
+                        debug_assert!(
+                            self.infcx
+                                .inner
+                                .borrow_mut()
+                                .type_variables()
+                                .probe(vid)
+                                .is_unknown()
+                        );
                         ty
                     }
                 }

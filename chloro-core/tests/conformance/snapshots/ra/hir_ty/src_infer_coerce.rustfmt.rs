@@ -97,7 +97,11 @@ type CoerceResult<'db> = InferResult<'db, (Vec<Adjustment<'db>>, Ty<'db>)>;
 /// Coercing a mutable reference to an immutable works, while
 /// coercing `&T` to `&mut T` should be forbidden.
 fn coerce_mutbls<'db>(from_mutbl: Mutability, to_mutbl: Mutability) -> RelateResult<'db, ()> {
-    if from_mutbl >= to_mutbl { Ok(()) } else { Err(TypeError::Mutability) }
+    if from_mutbl >= to_mutbl {
+        Ok(())
+    } else {
+        Err(TypeError::Mutability)
+    }
 }
 
 /// This always returns `Ok(...)`.
@@ -106,7 +110,10 @@ fn success<'db>(
     target: Ty<'db>,
     obligations: PredicateObligations<'db>,
 ) -> CoerceResult<'db> {
-    Ok(InferOk { value: (adj, target), obligations })
+    Ok(InferOk {
+        value: (adj, target),
+        obligations,
+    })
 }
 
 impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
@@ -148,8 +155,15 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
             let res = if this.use_lub {
                 at.lub(b, a)
             } else {
-                at.sup(b, a)
-                    .map(|InferOk { value: (), obligations }| InferOk { value: b, obligations })
+                at.sup(b, a).map(
+                    |InferOk {
+                         value: (),
+                         obligations,
+                     }| InferOk {
+                        value: b,
+                        obligations,
+                    },
+                )
             };
 
             // In the new solver, lazy norm may allow us to shallowly equate
@@ -160,7 +174,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                     let mut ocx = ObligationCtxt::new(this.infer_ctxt());
                     ocx.register_obligations(obligations);
                     if ocx.try_evaluate_obligations().is_empty() {
-                        Ok(InferOk { value, obligations: ocx.into_pending_obligations() })
+                        Ok(InferOk {
+                            value,
+                            obligations: ocx.into_pending_obligations(),
+                        })
                     } else {
                         Err(TypeError::Mismatch)
                     }
@@ -172,8 +189,12 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
 
     /// Unify two types (using sub or lub).
     fn unify(&mut self, a: Ty<'db>, b: Ty<'db>) -> CoerceResult<'db> {
-        self.unify_raw(a, b)
-            .and_then(|InferOk { value: ty, obligations }| success(vec![], ty, obligations))
+        self.unify_raw(a, b).and_then(
+            |InferOk {
+                 value: ty,
+                 obligations,
+             }| success(vec![], ty, obligations),
+        )
     }
 
     /// Unify two types (using sub or lub) and produce a specific coercion.
@@ -184,16 +205,24 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         adjustments: impl IntoIterator<Item = Adjustment<'db>>,
         final_adjustment: Adjust<'db>,
     ) -> CoerceResult<'db> {
-        self.unify_raw(a, b).and_then(|InferOk { value: ty, obligations }| {
-            success(
-                adjustments
-                    .into_iter()
-                    .chain(std::iter::once(Adjustment { target: ty, kind: final_adjustment }))
-                    .collect(),
-                ty,
-                obligations,
-            )
-        })
+        self.unify_raw(a, b).and_then(
+            |InferOk {
+                 value: ty,
+                 obligations,
+             }| {
+                success(
+                    adjustments
+                        .into_iter()
+                        .chain(std::iter::once(Adjustment {
+                            target: ty,
+                            kind: final_adjustment,
+                        }))
+                        .collect(),
+                    ty,
+                    obligations,
+                )
+            },
+        )
     }
 
     #[instrument(skip(self))]
@@ -212,7 +241,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
 
             if self.coerce_never {
                 return success(
-                    vec![Adjustment { kind: Adjust::NeverToAny, target: b }],
+                    vec![Adjustment {
+                        kind: Adjust::NeverToAny,
+                        target: b,
+                    }],
                     b,
                     PredicateObligations::new(),
                 );
@@ -295,7 +327,11 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
 
         if b.is_infer() {
             // Two unresolved type variables: create a `Coerce` predicate.
-            let target_ty = if self.use_lub { self.table.next_ty_var() } else { b };
+            let target_ty = if self.use_lub {
+                self.table.next_ty_var()
+            } else {
+                b
+            };
 
             let mut obligations = PredicateObligations::with_capacity(2);
             for &source_ty in &[a, b] {
@@ -481,9 +517,16 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         // (e.g., in example above, the failure from relating `Vec<T>`
         // to the target type), since that should be the least
         // confusing.
-        let Some(InferOk { value: ty, mut obligations }) = found else {
+        let Some(InferOk {
+            value: ty,
+            mut obligations,
+        }) = found
+        else {
             if let Some(first_error) = first_error {
-                debug!("coerce_borrowed_pointer: failed with err = {:?}", first_error);
+                debug!(
+                    "coerce_borrowed_pointer: failed with err = {:?}",
+                    first_error
+                );
                 return Err(first_error);
             } else {
                 // This may happen in the new trait solver since autoderef requires
@@ -511,8 +554,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
             return success(vec![], ty, obligations);
         }
 
-        let InferOk { value: mut adjustments, obligations: o } =
-            autoderef.adjust_steps_as_infer_ok();
+        let InferOk {
+            value: mut adjustments,
+            obligations: o,
+        } = autoderef.adjust_steps_as_infer_ok();
         obligations.extend(o);
 
         // Now apply the autoref. We have to extract the region out of
@@ -525,7 +570,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
             target: ty,
         });
 
-        debug!("coerce_borrowed_pointer: succeeded ty={:?} adjustments={:?}", ty, adjustments);
+        debug!(
+            "coerce_borrowed_pointer: succeeded ty={:?} adjustments={:?}",
+            ty, adjustments
+        );
 
         success(adjustments, ty, obligations)
     }
@@ -629,7 +677,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                 let mutbl = mutbl_b;
 
                 Some((
-                    Adjustment { kind: Adjust::Deref(None), target: ty_a },
+                    Adjustment {
+                        kind: Adjust::Deref(None),
+                        target: ty_a,
+                    },
                     Adjustment {
                         kind: Adjust::Borrow(AutoBorrow::Ref(r_borrow, mutbl)),
                         target: Ty::new_ref(self.interner(), r_borrow, ty_a, mutbl_b),
@@ -640,7 +691,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                 coerce_mutbls(mt_a, mt_b)?;
 
                 Some((
-                    Adjustment { kind: Adjust::Deref(None), target: ty_a },
+                    Adjustment {
+                        kind: Adjust::Deref(None),
+                        target: ty_a,
+                    },
                     Adjustment {
                         kind: Adjust::Borrow(AutoBorrow::RawPtr(mt_b)),
                         target: Ty::new_ptr(self.interner(), ty_a, mt_b),
@@ -660,7 +714,9 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         let mut coercion = self.unify_and(
             coerce_target,
             target,
-            reborrow.into_iter().flat_map(|(deref, autoref)| [deref, autoref]),
+            reborrow
+                .into_iter()
+                .flat_map(|(deref, autoref)| [deref, autoref]),
             Adjust::Pointer(PointerCast::Unsize),
         )?;
 
@@ -715,7 +771,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                 }
             };
             debug!("coerce_unsized resolve step: {:?}", trait_pred);
-            match self.infer_ctxt().select(&obligation.with(self.interner(), trait_pred)) {
+            match self
+                .infer_ctxt()
+                .select(&obligation.with(self.interner(), trait_pred))
+            {
                 // Uncertain or unimplemented.
                 Ok(None) => {
                     if trait_pred.def_id().0 == unsize_did {
@@ -858,7 +917,9 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                             let (target_features, target_feature_is_safe) =
                                 (self.target_features)();
                             if target_feature_is_safe == TargetFeatureIsSafeInTarget::No
-                                && !target_features.enabled.is_superset(&fn_target_features.enabled)
+                                && !target_features
+                                    .enabled
+                                    .is_superset(&fn_target_features.enabled)
                             {
                                 return Err(TypeError::TargetFeatureCast(
                                     CallableIdWrapper(def_id.into()).into(),
@@ -916,7 +977,10 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                     sig
                 });
                 let pointer_ty = Ty::new_fn_ptr(self.interner(), closure_sig);
-                debug!("coerce_closure_to_fn(a={:?}, b={:?}, pty={:?})", a, b, pointer_ty);
+                debug!(
+                    "coerce_closure_to_fn(a={:?}, b={:?}, pty={:?})",
+                    a, b, pointer_ty
+                );
                 self.unify_and(
                     pointer_ty,
                     b,
@@ -949,11 +1013,19 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
             self.unify_and(
                 a_raw,
                 b,
-                [Adjustment { kind: Adjust::Deref(None), target: mt_a.ty }],
+                [Adjustment {
+                    kind: Adjust::Deref(None),
+                    target: mt_a.ty,
+                }],
                 Adjust::Borrow(AutoBorrow::RawPtr(mutbl_b)),
             )
         } else if mt_a.mutbl != mutbl_b {
-            self.unify_and(a_raw, b, [], Adjust::Pointer(PointerCast::MutToConstPointer))
+            self.unify_and(
+                a_raw,
+                b,
+                [],
+                Adjust::Pointer(PointerCast::MutToConstPointer),
+            )
         } else {
             self.unify(a_raw, b)
         }
@@ -1001,8 +1073,13 @@ impl<'db> InferenceContext<'_, 'db> {
         let (adjustments, _) = self.table.register_infer_ok(ok);
         match expr {
             ExprOrPatId::ExprId(expr) => self.write_expr_adj(expr, adjustments.into_boxed_slice()),
-            ExprOrPatId::PatId(pat) => self
-                .write_pat_adj(pat, adjustments.into_iter().map(|adjust| adjust.target).collect()),
+            ExprOrPatId::PatId(pat) => self.write_pat_adj(
+                pat,
+                adjustments
+                    .into_iter()
+                    .map(|adjust| adjust.target)
+                    .collect(),
+            ),
         }
         Ok(target)
     }
@@ -1037,7 +1114,10 @@ impl<'db> InferenceContext<'_, 'db> {
 
         let is_force_inline = |ty: Ty<'db>| {
             if let TyKind::FnDef(CallableIdWrapper(CallableDefId::FunctionId(did)), _) = ty.kind() {
-                self.db.attrs(did.into()).by_key(sym::rustc_force_inline).exists()
+                self.db
+                    .attrs(did.into())
+                    .by_key(sym::rustc_force_inline)
+                    .exists()
             } else {
                 false
             }
@@ -1075,7 +1155,10 @@ impl<'db> InferenceContext<'_, 'db> {
                                 new_ty,
                             )?;
                             if ocx.try_evaluate_obligations().is_empty() {
-                                Ok(InferOk { value, obligations: ocx.into_pending_obligations() })
+                                Ok(InferOk {
+                                    value,
+                                    obligations: ocx.into_pending_obligations(),
+                                })
                             } else {
                                 Err(TypeError::Mismatch)
                             }
@@ -1104,9 +1187,10 @@ impl<'db> InferenceContext<'_, 'db> {
                         });
                         (Some(a_sig), Some(b_sig))
                     }
-                    (TyKind::Closure(_, args_a), TyKind::Closure(_, args_b)) => {
-                        (Some(args_a.closure_sig_untupled()), Some(args_b.closure_sig_untupled()))
-                    }
+                    (TyKind::Closure(_, args_a), TyKind::Closure(_, args_b)) => (
+                        Some(args_a.closure_sig_untupled()),
+                        Some(args_b.closure_sig_untupled()),
+                    ),
                     _ => (None, None),
                 }
             }
@@ -1139,12 +1223,18 @@ impl<'db> InferenceContext<'_, 'db> {
             for &expr in exprs {
                 self.write_expr_adj(
                     expr,
-                    Box::new([Adjustment { kind: prev_adjustment.clone(), target: fn_ptr }]),
+                    Box::new([Adjustment {
+                        kind: prev_adjustment.clone(),
+                        target: fn_ptr,
+                    }]),
                 );
             }
             self.write_expr_adj(
                 new,
-                Box::new([Adjustment { kind: next_adjustment, target: fn_ptr }]),
+                Box::new([Adjustment {
+                    kind: next_adjustment,
+                    target: fn_ptr,
+                }]),
             );
             return Ok(fn_ptr);
         }
@@ -1301,7 +1391,12 @@ impl<'db, 'exprs> CoerceMany<'db, 'exprs> {
     }
 
     fn make(expected_ty: Ty<'db>, expressions: Expressions<'exprs>) -> Self {
-        CoerceMany { expected_ty, final_ty: None, expressions, pushed: 0 }
+        CoerceMany {
+            expected_ty,
+            final_ty: None,
+            expressions,
+            pushed: 0,
+        }
     }
 
     /// Returns the "expected type" with which this coercion was
@@ -1358,7 +1453,14 @@ impl<'db, 'exprs> CoerceMany<'db, 'exprs> {
         cause: &ObligationCause,
         label_unit_as_expected: bool,
     ) {
-        self.coerce_inner(icx, cause, expr, icx.types.unit, true, label_unit_as_expected)
+        self.coerce_inner(
+            icx,
+            cause,
+            expr,
+            icx.types.unit,
+            true,
+            label_unit_as_expected,
+        )
     }
 
     /// The inner coercion "engine". If `expression` is `None`, this
@@ -1441,12 +1543,14 @@ impl<'db, 'exprs> CoerceMany<'db, 'exprs> {
             //
             // Another example is `break` with no argument expression.
             assert!(expression_ty.is_unit(), "if let hack without unit type");
-            icx.table.infer_ctxt.at(cause, icx.table.trait_env.env).eq(expected, found).map(
-                |infer_ok| {
+            icx.table
+                .infer_ctxt
+                .at(cause, icx.table.trait_env.env)
+                .eq(expected, found)
+                .map(|infer_ok| {
                     icx.table.register_infer_ok(infer_ok);
                     expression_ty
-                },
-            )
+                })
         };
 
         debug!(?result);
@@ -1473,9 +1577,15 @@ impl<'db, 'exprs> CoerceMany<'db, 'exprs> {
                 icx.result.type_mismatches.insert(
                     expression.into(),
                     if label_expression_as_expected {
-                        TypeMismatch { expected: found, actual: expected }
+                        TypeMismatch {
+                            expected: found,
+                            actual: expected,
+                        }
                     } else {
-                        TypeMismatch { expected, actual: found }
+                        TypeMismatch {
+                            expected,
+                            actual: found,
+                        }
                     },
                 );
             }
@@ -1525,8 +1635,10 @@ fn coerce<'db>(
         use_lub: false,
         target_features: &mut || (&target_features, TargetFeatureIsSafeInTarget::No),
     };
-    let InferOk { value: (adjustments, ty), obligations } =
-        coerce.coerce(ty1_with_vars, ty2_with_vars)?;
+    let InferOk {
+        value: (adjustments, ty),
+        obligations,
+    } = coerce.coerce(ty1_with_vars, ty2_with_vars)?;
     table.register_predicates(obligations);
 
     // default any type vars that weren't unified back to their original bound vars
@@ -1544,7 +1656,10 @@ fn coerce<'db>(
                 Ty::new_bound(
                     interner,
                     debruijn,
-                    BoundTy { kind: BoundTyKind::Anon, var: BoundVar::from_usize(i) },
+                    BoundTy {
+                        kind: BoundTyKind::Anon,
+                        var: BoundVar::from_usize(i),
+                    },
                 )
             },
         )
@@ -1558,7 +1673,15 @@ fn coerce<'db>(
         });
         var.map_or_else(
             || Const::new_error(interner, ErrorGuaranteed),
-            |i| Const::new_bound(interner, debruijn, BoundConst { var: BoundVar::from_usize(i) }),
+            |i| {
+                Const::new_bound(
+                    interner,
+                    debruijn,
+                    BoundConst {
+                        var: BoundVar::from_usize(i),
+                    },
+                )
+            },
         )
     };
     let mut fallback_region = |debruijn, infer| {
@@ -1574,7 +1697,10 @@ fn coerce<'db>(
                 Region::new_bound(
                     interner,
                     debruijn,
-                    BoundRegion { kind: BoundRegionKind::Anon, var: BoundVar::from_usize(i) },
+                    BoundRegion {
+                        kind: BoundRegionKind::Anon,
+                        var: BoundVar::from_usize(i),
+                    },
                 )
             },
         )

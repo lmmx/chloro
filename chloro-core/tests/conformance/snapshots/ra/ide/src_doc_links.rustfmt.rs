@@ -46,8 +46,9 @@ pub struct DocumentationLinks {
     pub local_url: Option<String>,
 }
 
-const MARKDOWN_OPTIONS: Options =
-    Options::ENABLE_FOOTNOTES.union(Options::ENABLE_TABLES).union(Options::ENABLE_TASKLISTS);
+const MARKDOWN_OPTIONS: Options = Options::ENABLE_FOOTNOTES
+    .union(Options::ENABLE_TABLES)
+    .union(Options::ENABLE_TASKLISTS);
 
 /// Rewrite documentation links in markdown to point to an online host (e.g. docs.rs)
 pub(crate) fn rewrite_links(
@@ -70,8 +71,10 @@ pub(crate) fn rewrite_links(
             // Two possibilities:
             // * path-based links: `../../module/struct.MyStruct.html`
             // * module-based links (AKA intra-doc links): `super::super::module::MyStruct`
-            let text_range =
-                TextRange::new(range.start.try_into().unwrap(), range.end.try_into().unwrap());
+            let text_range = TextRange::new(
+                range.start.try_into().unwrap(),
+                range.end.try_into().unwrap(),
+            );
             let is_inner_doc = range_map
                 .as_ref()
                 .and_then(|range_map| range_map.map(text_range))
@@ -93,7 +96,10 @@ pub(crate) fn rewrite_links(
         doc,
         &mut out,
         None,
-        CMarkOptions { code_block_token_count: 3, ..Default::default() },
+        CMarkOptions {
+            code_block_token_count: 3,
+            ..Default::default()
+        },
     )
     .ok();
     out
@@ -129,7 +135,10 @@ pub(crate) fn remove_links(markdown: &str) -> String {
         doc,
         &mut out,
         None,
-        CMarkOptions { code_block_token_count: 3, ..Default::default() },
+        CMarkOptions {
+            code_block_token_count: 3,
+            ..Default::default()
+        },
     )
     .ok();
     out
@@ -302,7 +311,10 @@ impl DocCommentToken {
         // Definition, CommentOwner, range of intra doc link in original file
         mut cb: impl FnMut(Definition, SyntaxNode, TextRange) -> Option<T>,
     ) -> Option<T> {
-        let DocCommentToken { prefix_len, doc_token } = self;
+        let DocCommentToken {
+            prefix_len,
+            doc_token,
+        } = self;
         // offset relative to the comments contents
         let original_start = doc_token.text_range().start();
         let relative_comment_offset = offset - original_start - prefix_len;
@@ -363,7 +375,10 @@ impl DocCommentToken {
 }
 
 fn broken_link_clone_cb(link: BrokenLink<'_>) -> Option<(CowStr<'_>, CowStr<'_>)> {
-    Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
+    Some((
+        /*url*/ link.reference.clone(),
+        /*title*/ link.reference,
+    ))
 }
 
 // FIXME:
@@ -477,7 +492,8 @@ fn rewrite_url_link(db: &RootDatabase, def: Definition, target: &str) -> Option<
 fn mod_path_of_def(db: &RootDatabase, def: Definition) -> Option<String> {
     def.canonical_module_path(db).map(|it| {
         let mut path = String::new();
-        it.flat_map(|it| it.name(db)).for_each(|name| format_to!(path, "{}/", name.as_str()));
+        it.flat_map(|it| it.name(db))
+            .for_each(|name| format_to!(path, "{}/", name.as_str()));
         path
     })
 }
@@ -511,8 +527,12 @@ fn map_links<'e>(
             ))
         }
         Event::Text(s) if in_link => {
-            let (link_type, link_target_s, link_name) =
-                callback(&end_link_target.take().unwrap(), &s, range, end_link_type.unwrap());
+            let (link_type, link_target_s, link_name) = callback(
+                &end_link_target.take().unwrap(),
+                &s,
+                range,
+                end_link_type.unwrap(),
+            );
             end_link_target = Some(CowStr::Boxed(link_target_s.into()));
             if !matches!(end_link_type, Some(LinkType::Autolink)) && link_type.is_some() {
                 end_link_type = link_type;
@@ -520,8 +540,12 @@ fn map_links<'e>(
             Event::Text(CowStr::Boxed(link_name.into()))
         }
         Event::Code(s) if in_link => {
-            let (link_type, link_target_s, link_name) =
-                callback(&end_link_target.take().unwrap(), &s, range, end_link_type.unwrap());
+            let (link_type, link_target_s, link_name) = callback(
+                &end_link_target.take().unwrap(),
+                &s,
+                range,
+                end_link_type.unwrap(),
+            );
             end_link_target = Some(CowStr::Boxed(link_target_s.into()));
             if !matches!(end_link_type, Some(LinkType::Autolink)) && link_type.is_some() {
                 end_link_type = link_type;
@@ -566,8 +590,12 @@ fn get_doc_base_urls(
         return (web_link, system_link);
     };
 
-    let Some(krate) = krate else { return Default::default() };
-    let Some(display_name) = krate.display_name(db) else { return Default::default() };
+    let Some(krate) = krate else {
+        return Default::default();
+    };
+    let Some(display_name) = krate.display_name(db) else {
+        return Default::default();
+    };
     let (web_base, local_base) = match krate.origin(db) {
         // std and co do not specify `html_root_url` any longer so we gotta handwrite this ourself.
         // FIXME: Use the toolchains channel instead of nightly
@@ -583,9 +611,12 @@ fn get_doc_base_urls(
             (Some(web_url), system_url)
         }
         CrateOrigin::Lang(_) => return (None, None),
-        CrateOrigin::Rustc { name: _ } => {
-            (Some(format!("https://doc.rust-lang.org/{channel}/nightly-rustc/")), None)
-        }
+        CrateOrigin::Rustc { name: _ } => (
+            Some(format!(
+                "https://doc.rust-lang.org/{channel}/nightly-rustc/"
+            )),
+            None,
+        ),
         CrateOrigin::Local { repo: _, name: _ } => {
             // FIXME: These should not attempt to link to docs.rs!
             let weblink = krate.get_html_root_url(db).or_else(|| {
@@ -660,7 +691,11 @@ fn filename_and_frag_for_def(
         Definition::Module(m) => match m.name(db) {
             // `#[doc(keyword = "...")]` is internal used only by rust compiler
             Some(name) => {
-                match m.attrs(db).by_key(sym::doc).find_string_value_in_tt(sym::keyword) {
+                match m
+                    .attrs(db)
+                    .by_key(sym::doc)
+                    .find_string_value_in_tt(sym::keyword)
+                {
                     Some(kw) => {
                         format!("keyword.{kw}.html")
                     }
@@ -712,7 +747,11 @@ fn filename_and_frag_for_def(
                 hir::VariantDef::Variant(it) => Definition::Variant(it),
             };
             let (_, file, _) = filename_and_frag_for_def(db, def)?;
-            return Some((def, file, Some(format!("structfield.{}", field.name(db).as_str()))));
+            return Some((
+                def,
+                file,
+                Some(format!("structfield.{}", field.name(db).as_str())),
+            ));
         }
         Definition::SelfType(impl_) => {
             let adt = impl_.self_ty(db).as_adt()?.into();
@@ -747,8 +786,10 @@ fn filename_and_frag_for_def(
 fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
     Some(match assoc_item {
         AssocItem::Function(function) => {
-            let is_trait_method =
-                function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
+            let is_trait_method = function
+                .as_assoc_item(db)
+                .and_then(|assoc| assoc.container_trait(db))
+                .is_some();
             // This distinction may get more complicated when specialization is available.
             // Rustdoc makes this decision based on whether a method 'has defaultness'.
             // Currently this is only the case for provided trait methods.

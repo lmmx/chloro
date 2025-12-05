@@ -4,24 +4,24 @@ use core::fmt;
 use std::hash::Hash;
 
 use base_db::Crate;
-use hir_def::{lang_item::LangItem, BlockId, TraitId};
+use hir_def::{BlockId, TraitId, lang_item::LangItem};
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_next_trait_solver::solve::{HasChanged, SolverDelegateEvalExt};
 use rustc_type_ir::{
+    TypingMode,
     inherent::{IntoKind, Span as _},
     solve::Certainty,
-    TypingMode,
 };
 use triomphe::Arc;
 
 use crate::{
     db::HirDatabase,
     next_solver::{
-        infer::{traits::ObligationCause, DbInternerInferExt, InferCtxt},
-        obligation_ctxt::ObligationCtxt,
         Canonical, DbInterner, GenericArgs, Goal, ParamEnv, Predicate, SolverContext, Span, Ty,
         TyKind,
+        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
     },
 };
 

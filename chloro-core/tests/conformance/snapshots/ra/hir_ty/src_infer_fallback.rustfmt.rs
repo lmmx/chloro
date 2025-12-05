@@ -2,13 +2,13 @@
 
 use intern::sym;
 use petgraph::{
-    visit::{Dfs, Walker},
     Graph,
+    visit::{Dfs, Walker},
 };
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{IntoKind, Ty as _},
     TyVid,
+    inherent::{IntoKind, Ty as _},
 };
 use tracing::debug;
 

@@ -8,11 +8,6 @@ Rustfmt size:  2131 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use crate::{adjusted_display_range, Diagnostic, DiagnosticsContext};
-+use crate::{Diagnostic, DiagnosticsContext, adjusted_display_range};
- 
- // Diagnostic: await-outside-of-async
- //
          adjusted_display_range(ctx, d.node, &|node| Some(node.await_token()?.text_range()));
      Diagnostic::new(
          crate::DiagnosticCode::RustcHardError("E0728"),

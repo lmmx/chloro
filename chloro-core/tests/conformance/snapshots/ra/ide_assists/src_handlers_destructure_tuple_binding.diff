@@ -3,22 +3,11 @@ COMPARISON DIFF
 
 Original size: 44220 bytes
 Chloro size:   43344 bytes
-Rustfmt size:  44616 bytes
+Rustfmt size:  44620 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- use itertools::Itertools;
- use syntax::{
--    ast::{self, make, AstNode, FieldExpr, HasName, IdentPat},
--    ted, T,
-+    T,
-+    ast::{self, AstNode, FieldExpr, HasName, IdentPat, make},
-+    ted,
- };
- 
- use crate::{
  
      acc.add(
          AssistId::refactor_rewrite("destructure_tuple_binding"),

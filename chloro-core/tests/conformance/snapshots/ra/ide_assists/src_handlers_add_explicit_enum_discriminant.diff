@@ -8,14 +8,6 @@ Rustfmt size:  4224 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::Semantics;
--use ide_db::{assists::AssistId, source_change::SourceChangeBuilder, RootDatabase};
--use syntax::{ast, AstNode};
-+use ide_db::{RootDatabase, assists::AssistId, source_change::SourceChangeBuilder};
-+use syntax::{AstNode, ast};
- 
- use crate::{AssistContext, Assists};
- 
  
      // Don't offer the assist if the enum has no variants or if all variants already have an
      // explicit discriminant.

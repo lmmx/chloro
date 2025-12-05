@@ -8,16 +8,6 @@ Rustfmt size:  3979 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::{
-     assists::AssistId,
-     defs::{Definition, NameClass, NameRefClass},
-     rename::RenameDefinition,
- };
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
- 
- use crate::{AssistContext, Assists};
- 
          "Remove underscore from a used variable",
          text_range,
          |builder| {

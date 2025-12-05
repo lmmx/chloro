@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 111479 bytes
 Chloro size:   111466 bytes
-Rustfmt size:  113494 bytes
+Rustfmt size:  113521 bytes
 
 ✗ Outputs DIFFER
 
@@ -13,11 +13,9 @@ Rustfmt size:  113494 bytes
  use std::{
      iter::once,
      mem,
-     sync::atomic::{AtomicU32, Ordering},
  };
  
--use base64::{prelude::BASE64_STANDARD, Engine};
-+use base64::{Engine, prelude::BASE64_STANDARD};
+ use base64::{Engine, prelude::BASE64_STANDARD};
 +use ide_db::{
 +    FxHasher, MiniCore, assists, rust_doc::format_docs, source_change::ChangeAnnotationId,
 +};
@@ -28,7 +26,7 @@ Rustfmt size:  113494 bytes
      UpdateTest,
  };
 -use ide_db::{
--    assists, rust_doc::format_docs, source_change::ChangeAnnotationId, FxHasher, MiniCore,
+-    FxHasher, MiniCore, assists, rust_doc::format_docs, source_change::ChangeAnnotationId,
 -};
  use itertools::Itertools;
  use paths::{Utf8Component, Utf8Prefix};
@@ -37,11 +35,10 @@ Rustfmt size:  113494 bytes
      global_state::GlobalStateSnapshot,
      line_index::{LineEndings, LineIndex, PositionEncoding},
 -    lsp::{
--        completion_item_hash,
+-        LspError, completion_item_hash,
 -        ext::ShellRunnableArgs,
 -        semantic_tokens::{self, standard_fallback_type},
 -        utils::invalid_params_error,
--        LspError,
 -    },
      lsp_ext::{self, SnippetTextEdit},
 +    lsp::{
@@ -210,10 +207,12 @@ Rustfmt size:  113494 bytes
 -)> {
 +) -> Cancellable<(lsp_types::InlayHintLabel, Option<lsp_types::InlayHintTooltip>)> {
      let (label, tooltip) = match &*label.parts {
--        [InlayHintLabelPart {
--            linked_location: None,
--            ..
--        }] => {
+-        [
+-            InlayHintLabelPart {
+-                linked_location: None,
+-                ..
+-            },
+-        ] => {
 +        [InlayHintLabelPart { linked_location: None, .. }] => {
              let InlayHintLabelPart { text, tooltip, .. } = label.parts.pop().unwrap();
              let tooltip = tooltip.and_then(|it| match it {
@@ -644,12 +643,6 @@ Rustfmt size:  113494 bytes
  
      if update_test.insta {
          r.cargo_args.insert(0, "insta".to_owned());
- 
- #[cfg(test)]
- mod tests {
--    use expect_test::{expect, Expect};
-+    use expect_test::{Expect, expect};
-     use ide::{Analysis, FilePosition};
      use ide_db::source_change::Snippet;
      use test_utils::extract_offset;
      use triomphe::Arc;

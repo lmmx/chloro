@@ -7,8 +7,8 @@ use tracing::instrument;
 
 use super::OpaqueHiddenType;
 use crate::next_solver::{
-    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
     FxIndexMap, OpaqueTypeKey, Ty,
+    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
 };
 
 #[derive(Default, Debug, Clone)]

@@ -1,13 +1,13 @@
 use crate::assist_context::{AssistContext, Assists};
 use hir::{HasVisibility, HirDisplay, Module};
 use ide_db::{
+    FileId,
     assists::AssistId,
     defs::{Definition, NameRefClass},
-    FileId,
 };
 use syntax::{
-    ast::{self, edit::IndentLevel, NameRef},
     AstNode, Direction, SyntaxKind, TextSize,
+    ast::{self, NameRef, edit::IndentLevel},
 };
 
 // Assist: generate_constant

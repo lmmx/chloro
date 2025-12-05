@@ -3,11 +3,90 @@ COMPARISON DIFF
 
 Original size: 35861 bytes
 Chloro size:   35785 bytes
-Rustfmt size:  35861 bytes
+Rustfmt size:  36179 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     dot_access: &DotAccess<'_>,
+ ) {
+     let receiver_ty = match dot_access {
+-        DotAccess {
+-            receiver_ty: Some(receiver_ty),
+-            ..
+-        } => &receiver_ty.original,
++        DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
+         _ => return,
+     };
+ 
+         if ctx.config.enable_auto_await {
+             // Completions that skip `.await`, e.g. `.await.foo()`.
+             let dot_access_kind = match &dot_access.kind {
+-                DotAccessKind::Field {
+-                    receiver_is_ambiguous_float_literal: _,
+-                } => DotAccessKind::Field {
+-                    receiver_is_ambiguous_float_literal: false,
+-                },
++                DotAccessKind::Field { receiver_is_ambiguous_float_literal: _ } => {
++                    DotAccessKind::Field { receiver_is_ambiguous_float_literal: false }
++                }
+                 it @ DotAccessKind::Method => *it,
+             };
+             let dot_access = DotAccess {
+         if let Some((iter, iter_sym)) = iter.or_else(into_iter) {
+             // Skip iterators, e.g. complete `.iter().filter_map()`.
+             let dot_access_kind = match &dot_access.kind {
+-                DotAccessKind::Field {
+-                    receiver_is_ambiguous_float_literal: _,
+-                } => DotAccessKind::Field {
+-                    receiver_is_ambiguous_float_literal: false,
+-                },
++                DotAccessKind::Field { receiver_is_ambiguous_float_literal: _ } => {
++                    DotAccessKind::Field { receiver_is_ambiguous_float_literal: false }
++                }
+                 it @ DotAccessKind::Method => *it,
+             };
+             let dot_access = DotAccess {
+                 receiver: dot_access.receiver.clone(),
+-                receiver_ty: Some(hir::TypeInfo {
+-                    original: iter.clone(),
+-                    adjusted: None,
+-                }),
++                receiver_ty: Some(hir::TypeInfo { original: iter.clone(), adjusted: None }),
+                 kind: dot_access_kind,
+                 ctx: dot_access.ctx,
+             };
+         return;
+     }
+     let self_param = match expr_ctx {
+-        PathExprCtx {
+-            self_param: Some(self_param),
+-            ..
+-        } => self_param,
++        PathExprCtx { self_param: Some(self_param), .. } => self_param,
+         _ => return,
+     };
+ 
+                 &DotAccess {
+                     receiver: None,
+                     receiver_ty: None,
+-                    kind: DotAccessKind::Field {
+-                        receiver_is_ambiguous_float_literal: false,
+-                    },
++                    kind: DotAccessKind::Field { receiver_is_ambiguous_float_literal: false },
+                     ctx: DotAccessExprCtx {
+                         in_block_expr: expr_ctx.in_block_expr,
+                         in_breakable: expr_ctx.in_breakable,
+             &DotAccess {
+                 receiver: None,
+                 receiver_ty: None,
+-                kind: DotAccessKind::Field {
+-                    receiver_is_ambiguous_float_literal: false,
+-                },
++                kind: DotAccessKind::Field { receiver_is_ambiguous_float_literal: false },
+                 ctx: DotAccessExprCtx {
+                     in_block_expr: expr_ctx.in_block_expr,
+                     in_breakable: expr_ctx.in_breakable,
          for (i, ty) in receiver.tuple_fields(ctx.db).into_iter().enumerate() {
              // Tuples are always the last type in a deref chain, so just check if the name is
              // already seen without inserting into the hashset.
@@ -18,6 +97,18 @@ Rustfmt size:  35861 bytes
                  // Tuple fields are always public (tuple struct fields are handled above).
                  tuple_index(acc, i, ty);
              }
+         traits_in_scope,
+         Some(ctx.module),
+         None,
+-        Callback {
+-            ctx,
+-            f,
+-            seen_methods: FxHashSet::default(),
+-        },
++        Callback { ctx, f, seen_methods: FxHashSet::default() },
+     );
+ }
+ 
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

@@ -21,8 +21,8 @@ use rustc_type_ir::inherent::Ty as _;
 use span::Edition;
 
 use crate::{
-    term_search::Expr, Adt, AssocItem, GenericDef, GenericParam, HasAttrs, HasVisibility, Impl,
-    ModuleDef, ScopeDef, Type, TypeParam,
+    Adt, AssocItem, GenericDef, GenericParam, HasAttrs, HasVisibility, Impl, ModuleDef, ScopeDef,
+    Type, TypeParam, term_search::Expr,
 };
 
 use super::{LookupTable, NewTypesKey, TermSearchCtx};

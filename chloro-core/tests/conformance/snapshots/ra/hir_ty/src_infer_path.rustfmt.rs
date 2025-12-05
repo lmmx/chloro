@@ -1,24 +1,24 @@
 //! Path expression resolution.
 
 use hir_def::{
+    AdtId, AssocItemId, GenericDefId, ItemContainerId, Lookup,
     expr_store::path::{Path, PathSegment},
     resolver::{ResolveValueResult, TypeNs, ValueNs},
-    AdtId, AssocItemId, GenericDefId, ItemContainerId, Lookup,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::inherent::{SliceLike, Ty as _};
 use stdx::never;
 
 use crate::{
+    InferenceDiagnostic, ValueTyDefId,
     generics::generics,
     infer::diagnostics::InferenceTyLoweringContext as TyLoweringContext,
     lower::LifetimeElisionKind,
     method_resolution::{self, VisibleFromModule},
     next_solver::{
-        infer::traits::{Obligation, ObligationCause},
         GenericArg, GenericArgs, TraitRef, Ty,
+        infer::traits::{Obligation, ObligationCause},
     },
-    InferenceDiagnostic, ValueTyDefId,
 };
 
 use super::{ExprOrPatId, InferenceContext, InferenceTyDiagnosticSource};

@@ -4,23 +4,23 @@ use rustc_ast_ir::try_visit;
 use rustc_next_trait_solver::{
     canonical::instantiate_canonical_state,
     resolve::eager_resolve_vars,
-    solve::{inspect, SolverDelegateEvalExt},
+    solve::{SolverDelegateEvalExt, inspect},
 };
 use rustc_type_ir::{
+    VisitorResult,
     inherent::{IntoKind, Span as _},
     solve::{Certainty, GoalSource, MaybeCause, NoSolution},
-    VisitorResult,
 };
 
 use crate::next_solver::{
-    fulfill::NextSolverError,
-    infer::{
-        traits::{Obligation, ObligationCause},
-        InferCtxt,
-    },
-    obligation_ctxt::ObligationCtxt,
     DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ParamEnv, Predicate, PredicateKind,
     QueryResult, SolverContext, Span, Term,
+    fulfill::NextSolverError,
+    infer::{
+        InferCtxt,
+        traits::{Obligation, ObligationCause},
+    },
+    obligation_ctxt::ObligationCtxt,
 };
 
 pub(crate) struct InspectConfig {

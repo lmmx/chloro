@@ -8,16 +8,6 @@ Rustfmt size:  5644 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Fold impls for the next-trait-solver.
- 
- use rustc_type_ir::{
--    inherent::IntoKind, BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder,
--    TypeSuperFoldable, TypeVisitableExt,
-+    BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable,
-+    TypeVisitableExt, inherent::IntoKind,
- };
- 
- use crate::next_solver::BoundConst;
  /// a `DelayedMap` which does not cache the first few types it encounters.
  pub trait BoundVarReplacerDelegate<'db> {
      fn replace_region(&mut self, br: BoundRegion) -> Region<'db>;

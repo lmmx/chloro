@@ -8,15 +8,6 @@ Rustfmt size:  5891 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use super::OpaqueHiddenType;
- use crate::next_solver::{
--    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
-     FxIndexMap, OpaqueTypeKey, Ty,
-+    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
- };
- 
- #[derive(Default, Debug, Clone)]
      }
  
      pub(crate) fn is_empty(&self) -> bool {

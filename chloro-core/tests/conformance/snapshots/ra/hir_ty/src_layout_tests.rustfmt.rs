@@ -1,7 +1,7 @@
 use base_db::target::TargetData;
 use either::Either;
 use hir_def::db::DefDatabase;
-use project_model::{toolchain_info::QueryConfig, Sysroot};
+use project_model::{Sysroot, toolchain_info::QueryConfig};
 use rustc_hash::FxHashMap;
 use rustc_type_ir::inherent::GenericArgs as _;
 use syntax::ToSmolStr;

@@ -8,14 +8,6 @@ Rustfmt size:  9057 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::GenericParam;
--use ide_db::{defs::Definition, helpers::pick_best_token, RootDatabase};
--use syntax::{ast, match_ast, AstNode, SyntaxKind::*, SyntaxToken, T};
-+use ide_db::{RootDatabase, defs::Definition, helpers::pick_best_token};
-+use syntax::{AstNode, SyntaxKind::*, SyntaxToken, T, ast, match_ast};
- 
- use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
- 
  mod tests {
      use ide_db::FileRange;
      use itertools::Itertools;

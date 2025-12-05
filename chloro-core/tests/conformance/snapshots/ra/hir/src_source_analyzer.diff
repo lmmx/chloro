@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 72179 bytes
 Chloro size:   72140 bytes
-Rustfmt size:  72179 bytes
+Rustfmt size:  74746 bytes
 
 ✗ Outputs DIFFER
 
@@ -41,18 +41,106 @@ Rustfmt size:  72179 bytes
      },
  }
  
- 
-     fn binding_id_of_pat(&self, pat: &ast::IdentPat) -> Option<BindingId> {
-         let pat_id = self.pat_id(&pat.clone().into())?;
--        if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] { Some(id) } else { None }
-+        if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] {
-+            Some(id)
-+        } else {
-+            None
-+        }
+         let resolver = resolver_for_scope(db, def, scope);
+         SourceAnalyzer {
+             resolver,
+-            body_or_sig: Some(BodyOrSig::Body {
+-                def,
+-                body,
+-                source_map,
+-                infer,
+-            }),
++            body_or_sig: Some(BodyOrSig::Body { def, body, source_map, infer }),
+             file_id,
+         }
+     }
+         let resolver = def.resolver(db);
+         SourceAnalyzer {
+             resolver,
+-            body_or_sig: Some(BodyOrSig::Sig {
+-                def,
+-                store,
+-                source_map,
+-            }),
++            body_or_sig: Some(BodyOrSig::Sig { def, store, source_map }),
+             file_id,
+         }
+     }
+         resolver: Resolver<'db>,
+         node: InFile<&SyntaxNode>,
+     ) -> SourceAnalyzer<'db> {
+-        SourceAnalyzer {
+-            resolver,
+-            body_or_sig: None,
+-            file_id: node.file_id,
+-        }
++        SourceAnalyzer { resolver, body_or_sig: None, file_id: node.file_id }
      }
  
-     pub(crate) fn expr_adjustments(&self, expr: &ast::Expr) -> Option<&[Adjustment<'db>]> {
+     // FIXME: Remove this
+     fn body_(
+         &self,
+-    ) -> Option<(
+-        DefWithBodyId,
+-        &Body,
+-        &BodySourceMap,
+-        Option<&InferenceResult<'db>>,
+-    )> {
++    ) -> Option<(DefWithBodyId, &Body, &BodySourceMap, Option<&InferenceResult<'db>>)> {
+         self.body_or_sig.as_ref().and_then(|it| match it {
+-            BodyOrSig::Body {
+-                def,
+-                body,
+-                source_map,
+-                infer,
+-            } => Some((*def, &**body, &**source_map, infer.as_deref())),
++            BodyOrSig::Body { def, body, source_map, infer } => {
++                Some((*def, &**body, &**source_map, infer.as_deref()))
++            }
+             _ => None,
+         })
+     }
+     }
+ 
+     fn expr_id(&self, expr: ast::Expr) -> Option<ExprOrPatId> {
+-        let src = InFile {
+-            file_id: self.file_id,
+-            value: expr,
+-        };
++        let src = InFile { file_id: self.file_id, value: expr };
+         self.store_sm()?.node_expr(src.as_ref())
+     }
+ 
+     fn pat_id(&self, pat: &ast::Pat) -> Option<ExprOrPatId> {
+-        let src = InFile {
+-            file_id: self.file_id,
+-            value: pat,
+-        };
++        let src = InFile { file_id: self.file_id, value: pat };
+         self.store_sm()?.node_pat(src)
+     }
+ 
+     fn type_id(&self, pat: &ast::Type) -> Option<TypeRefId> {
+-        let src = InFile {
+-            file_id: self.file_id,
+-            value: pat,
+-        };
++        let src = InFile { file_id: self.file_id, value: pat };
+         self.store_sm()?.node_type(src)
+     }
+ 
+                 .expr_adjustment(idx)
+                 .and_then(|adjusts| adjusts.last().cloned())
+                 .map(|adjust| adjust.target),
+-            ExprOrPatId::PatId(idx) => infer
+-                .pat_adjustment(idx)
+-                .and_then(|adjusts| adjusts.last().cloned()),
++            ExprOrPatId::PatId(idx) => {
++                infer.pat_adjustment(idx).and_then(|adjusts| adjusts.last().cloned())
++            }
+         };
+ 
+         let ty = infer[expr_or_pat_id];
              }
          })
      }
@@ -60,11 +148,83 @@ Rustfmt size:  72179 bytes
      pub(crate) fn pattern_adjustments(
          &self,
          db: &'db dyn HirDatabase,
+         let expr_id = self.expr_id(call.clone().into())?.as_expr()?;
+         let (f_in_trait, substs) = self.infer()?.method_resolution(expr_id)?;
+ 
+-        Some(
+-            self.resolve_impl_method_or_trait_def(db, f_in_trait, substs)
+-                .into(),
+-        )
++        Some(self.resolve_impl_method_or_trait_def(db, f_in_trait, substs).into())
+     }
+ 
+     pub(crate) fn resolve_method_call_fallback(
+                     self.resolve_impl_method_or_trait_def_with_subst(db, f_in_trait, substs);
+                 Some((
+                     Either::Left(fn_.into()),
+-                    Some(GenericSubstitution::new(
+-                        fn_.into(),
+-                        subst,
+-                        self.trait_environment(db),
+-                    )),
++                    Some(GenericSubstitution::new(fn_.into(), subst, self.trait_environment(db))),
+                 ))
+             }
+-            None => inference_result
+-                .field_resolution(expr_id)
+-                .and_then(Either::left)
+-                .map(|field| {
+-                    (
+-                        Either::Right(field.into()),
+-                        self.field_subst(expr_id, inference_result, db),
+-                    )
+-                }),
++            None => {
++                inference_result.field_resolution(expr_id).and_then(Either::left).map(|field| {
++                    (Either::Right(field.into()), self.field_subst(expr_id, inference_result, db))
++                })
++            }
+         }
+     }
+ 
+         let (def, ..) = self.body_()?;
+         let expr_id = self.expr_id(field.clone().into())?.as_expr()?;
+         self.infer()?.field_resolution(expr_id).map(|it| {
+-            it.map_either(Into::into, |f| TupleField {
+-                owner: def,
+-                tuple: f.tuple,
+-                index: f.index,
+-            })
++            it.map_either(Into::into, |f| TupleField { owner: def, tuple: f.tuple, index: f.index })
+         })
+     }
+ 
+         db: &'db dyn HirDatabase,
+     ) -> Option<GenericSubstitution<'db>> {
+         let body = self.store()?;
+-        if let Expr::Field {
+-            expr: object_expr,
+-            name: _,
+-        } = body[field_expr]
+-        {
++        if let Expr::Field { expr: object_expr, name: _ } = body[field_expr] {
+             let (adt, subst) = infer.type_of_expr_with_adjust(object_expr)?.as_adt()?;
+-            return Some(GenericSubstitution::new(
+-                adt.into(),
+-                subst,
+-                self.trait_environment(db),
+-            ));
++            return Some(GenericSubstitution::new(adt.into(), subst, self.trait_environment(db)));
+         }
+         None
+     }
          &self,
          db: &'db dyn HirDatabase,
          field: &ast::FieldExpr,
--    ) -> Option<(Either<Either<Field, TupleField>, Function>, Option<GenericSubstitution<'db>>)>
--    {
+-    ) -> Option<(
+-        Either<Either<Field, TupleField>, Function>,
+-        Option<GenericSubstitution<'db>>,
+-    )> {
 +    ) -> Option<(Either<Either<Field, TupleField>, Function>, Option<GenericSubstitution<'db>>)> {
          let (def, ..) = self.body_()?;
          let expr_id = self.expr_id(field.clone().into())?.as_expr()?;
@@ -83,6 +243,366 @@ Rustfmt size:  72179 bytes
                      None,
                  )),
              },
+-            None => inference_result
+-                .method_resolution(expr_id)
+-                .map(|(f, substs)| {
+-                    let (f, subst) =
+-                        self.resolve_impl_method_or_trait_def_with_subst(db, f, substs);
+-                    (
+-                        Either::Right(f.into()),
+-                        Some(GenericSubstitution::new(
+-                            f.into(),
+-                            subst,
+-                            self.trait_environment(db),
+-                        )),
+-                    )
+-                }),
++            None => inference_result.method_resolution(expr_id).map(|(f, substs)| {
++                let (f, subst) = self.resolve_impl_method_or_trait_def_with_subst(db, f, substs);
++                (
++                    Either::Right(f.into()),
++                    Some(GenericSubstitution::new(f.into(), subst, self.trait_environment(db))),
++                )
++            }),
+         }
+     }
+ 
+                             LangItem::DerefMut,
+                             &Name::new_symbol_root(sym::deref_mut),
+                         )?;
+-                        if func == deref_mut {
+-                            Some((deref_mut_trait, deref_mut))
+-                        } else {
+-                            None
+-                        }
++                        if func == deref_mut { Some((deref_mut_trait, deref_mut)) } else { None }
+                     })
+                     .unwrap_or((deref_trait, deref))
+             }
+                     LangItem::IndexMut,
+                     &Name::new_symbol_root(sym::index_mut),
+                 )?;
+-                if func == index_mut_fn {
+-                    Some(index_mut_fn)
+-                } else {
+-                    None
+-                }
++                if func == index_mut_fn { Some(index_mut_fn) } else { None }
+             })
+             .unwrap_or(index_fn);
+         // HACK: subst for all methods coincides with that for their trait because the methods
+     ) -> Option<(Field, Option<Local>, Type<'db>, GenericSubstitution<'db>)> {
+         let record_expr = ast::RecordExpr::cast(field.syntax().parent().and_then(|p| p.parent())?)?;
+         let expr = ast::Expr::from(record_expr);
+-        let expr_id = self
+-            .store_sm()?
+-            .node_expr(InFile::new(self.file_id, &expr))?;
++        let expr_id = self.store_sm()?.node_expr(InFile::new(self.file_id, &expr))?;
+         let interner = DbInterner::new_with(db, None, None);
+ 
+         let ast_name = field.field_name()?;
+                 &path,
+                 name_hygiene(db, InFile::new(self.file_id, ast_name.syntax())),
+             ) {
+-                Some(ValueNs::LocalBinding(binding_id)) => Some(Local {
+-                    binding_id,
+-                    parent: self.resolver.body_owner()?,
+-                }),
++                Some(ValueNs::LocalBinding(binding_id)) => {
++                    Some(Local { binding_id, parent: self.resolver.body_owner()? })
++                }
+                 _ => None,
+             }
+         };
+         let (adt, subst) = self.infer()?.type_of_expr_or_pat(expr_id)?.as_adt()?;
+         let variant = self.infer()?.variant_resolution_for_expr_or_pat(expr_id)?;
+         let variant_data = variant.fields(db);
+-        let field = FieldId {
+-            parent: variant,
+-            local_id: variant_data.field(&local_name)?,
+-        };
++        let field = FieldId { parent: variant, local_id: variant_data.field(&local_name)? };
+         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
+         Some((
+             field.into(),
+         let pat_id = self.pat_id(&record_pat.into())?;
+         let variant = self.infer()?.variant_resolution_for_pat(pat_id.as_pat()?)?;
+         let variant_data = variant.fields(db);
+-        let field = FieldId {
+-            parent: variant,
+-            local_id: variant_data.field(&field_name)?,
+-        };
++        let field = FieldId { parent: variant, local_id: variant_data.field(&field_name)? };
+         let (adt, subst) = self.infer()?[pat_id.as_pat()?].as_adt()?;
+         let field_ty = (*db.field_types(variant).get(field.local_id)?).instantiate(interner, subst);
+         Some((
+         &self,
+         db: &'db dyn HirDatabase,
+         name_ref: &ast::NameRef,
+-    ) -> Option<(
+-        Either<crate::Variant, crate::Field>,
+-        GenericSubstitution<'db>,
+-    )> {
++    ) -> Option<(Either<crate::Variant, crate::Field>, GenericSubstitution<'db>)> {
+         let offset_of_expr = ast::OffsetOfExpr::cast(name_ref.syntax().parent()?)?;
+         let container = offset_of_expr.ty()?;
+         let container = self.type_of_type(db, &container)?;
+                         VariantId::UnionId(it) => it.into(),
+                     };
+                     Some((
+-                        Either::Right(Field {
+-                            parent: variant.into(),
+-                            id: field,
+-                        }),
++                        Either::Right(Field { parent: variant.into(), id: field }),
+                         generic_def,
+                         subst,
+                     ))
+                 };
+ 
+             if field_name.syntax().text_range() == name_ref.syntax().text_range() {
+-                return Some((
+-                    field_def,
+-                    GenericSubstitution::new(generic_def, subst, trait_env),
+-                ));
++                return Some((field_def, GenericSubstitution::new(generic_def, subst, trait_env)));
+             }
+         }
+         never!("the `NameRef` is a child of the `OffsetOfExpr`, we should've visited it");
+                         ),
+                     };
+ 
+-                    return Some((
+-                        PathResolution::Def(AssocItem::from(assoc).into()),
+-                        Some(subst),
+-                    ));
++                    return Some((PathResolution::Def(AssocItem::from(assoc).into()), Some(subst)));
+                 }
+                 if let Some(VariantId::EnumVariantId(variant)) =
+                     infer.variant_resolution_for_expr_or_pat(expr_id)
+                 {
+-                    return Some((
+-                        PathResolution::Def(ModuleDef::Variant(variant.into())),
+-                        None,
+-                    ));
++                    return Some((PathResolution::Def(ModuleDef::Variant(variant.into())), None));
+                 }
+                 prefer_value_ns = true;
+             } else if let Some(path_pat) = parent().and_then(ast::PathPat::cast) {
+                             ),
+                         ),
+                     };
+-                    return Some((
+-                        PathResolution::Def(AssocItem::from(assoc).into()),
+-                        Some(subst),
+-                    ));
++                    return Some((PathResolution::Def(AssocItem::from(assoc).into()), Some(subst)));
+                 }
+                 if let Some(VariantId::EnumVariantId(variant)) =
+                     infer.variant_resolution_for_expr_or_pat(expr_or_pat_id)
+                 {
+-                    return Some((
+-                        PathResolution::Def(ModuleDef::Variant(variant.into())),
+-                        None,
+-                    ));
++                    return Some((PathResolution::Def(ModuleDef::Variant(variant.into())), None));
+                 }
+             } else if let Some(rec_lit) = parent().and_then(ast::RecordExpr::cast) {
+                 let expr_id = self.expr_id(rec_lit.into())?;
+                 if let Some(VariantId::EnumVariantId(variant)) =
+                     infer.variant_resolution_for_expr_or_pat(expr_id)
+                 {
+-                    return Some((
+-                        PathResolution::Def(ModuleDef::Variant(variant.into())),
+-                        None,
+-                    ));
++                    return Some((PathResolution::Def(ModuleDef::Variant(variant.into())), None));
+                 }
+             } else {
+                 let record_pat = parent().and_then(ast::RecordPat::cast).map(ast::Pat::from);
+-                let tuple_struct_pat = || {
+-                    parent()
+-                        .and_then(ast::TupleStructPat::cast)
+-                        .map(ast::Pat::from)
+-                };
++                let tuple_struct_pat =
++                    || parent().and_then(ast::TupleStructPat::cast).map(ast::Pat::from);
+                 if let Some(pat) = record_pat.or_else(tuple_struct_pat) {
+                     let pat_id = self.pat_id(&pat)?;
+                     let variant_res_for_pat = infer.variant_resolution_for_pat(pat_id.as_pat()?);
+                 // ```
+                 Some(it) if matches!(it, PathResolution::Def(ModuleDef::BuiltinType(_))) => {
+                     if let Some(mod_path) = hir_path.mod_path()
+-                        && let Some(ModuleDefId::ModuleId(id)) = self
+-                            .resolver
+-                            .resolve_module_path_in_items(db, mod_path)
+-                            .take_types()
++                        && let Some(ModuleDefId::ModuleId(id)) =
++                            self.resolver.resolve_module_path_in_items(db, mod_path).take_types()
+                     {
+                         let parent_hir_name = parent_hir_path.segments().get(1).map(|it| it.name);
+                         let module = crate::Module { id };
+                         {
+                             // FIXME: Multiple derives can have the same helper
+                             let name_ref = name_ref.as_name();
+-                            for (macro_id, mut helpers) in helpers
+-                                .iter()
+-                                .chunk_by(|(_, macro_id, ..)| macro_id)
+-                                .into_iter()
++                            for (macro_id, mut helpers) in
++                                helpers.iter().chunk_by(|(_, macro_id, ..)| macro_id).into_iter()
+                             {
+                                 if let Some(idx) = helpers.position(|(name, ..)| *name == name_ref)
+                                 {
+         missing_fields
+             .into_iter()
+             .map(|local_id| {
+-                let field = FieldId {
+-                    parent: variant,
+-                    local_id,
+-                };
++                let field = FieldId { parent: variant, local_id };
+                 let ty = field_types[local_id].instantiate(interner, substs);
+-                (
+-                    field.into(),
+-                    Type::new_with_resolver_inner(db, &self.resolver, ty),
+-                )
++                (field.into(), Type::new_with_resolver_inner(db, &self.resolver, ty))
+             })
+             .collect()
+     }
+         {
+             let mut is_unsafe = false;
+             let mut walk_expr = |expr_id| {
+-                unsafe_operations(
+-                    db,
+-                    infer,
+-                    def,
+-                    body,
+-                    expr_id,
+-                    &mut |_, inside_unsafe_block| {
+-                        is_unsafe |= inside_unsafe_block == InsideUnsafeBlock::No
+-                    },
+-                )
++                unsafe_operations(db, infer, def, body, expr_id, &mut |_, inside_unsafe_block| {
++                    is_unsafe |= inside_unsafe_block == InsideUnsafeBlock::No
++                })
+             };
+             match expanded_expr {
+                 ExprOrPatId::ExprId(expanded_expr) => walk_expr(expanded_expr),
+         offset: TextSize,
+     ) -> Option<(TextRange, Option<PathResolution>)> {
+         let (hygiene, implicits) = self.store_sm()?.implicit_format_args(format_args)?;
+-        implicits
+-            .iter()
+-            .find(|(range, _)| range.contains_inclusive(offset))
+-            .map(|(range, name)| {
+-                (
+-                    *range,
+-                    resolve_hir_value_path(
+-                        db,
+-                        &self.resolver,
+-                        self.resolver.body_owner(),
+-                        &Path::from_known_path_with_no_generic(ModPath::from_segments(
+-                            PathKind::Plain,
+-                            Some(name.clone()),
+-                        )),
+-                        hygiene,
+-                    ),
+-                )
+-            })
++        implicits.iter().find(|(range, _)| range.contains_inclusive(offset)).map(|(range, name)| {
++            (
++                *range,
++                resolve_hir_value_path(
++                    db,
++                    &self.resolver,
++                    self.resolver.body_owner(),
++                    &Path::from_known_path_with_no_generic(ModPath::from_segments(
++                        PathKind::Plain,
++                        Some(name.clone()),
++                    )),
++                    hygiene,
++                ),
++            )
++        })
+     }
+ 
+     pub(crate) fn resolve_offset_in_asm_template(
+         func: FunctionId,
+         substs: GenericArgs<'db>,
+     ) -> FunctionId {
+-        self.resolve_impl_method_or_trait_def_with_subst(db, func, substs)
+-            .0
++        self.resolve_impl_method_or_trait_def_with_subst(db, func, substs).0
+     }
+ 
+     fn resolve_impl_method_or_trait_def_with_subst(
+         // If we are in a TypeNs for a Trait, and we have an unresolved name, try to resolve it as a type
+         // within the trait's associated types.
+         if let (Some(unresolved), &TypeNs::TraitId(trait_id)) = (&unresolved, &ty)
+-            && let Some(type_alias_id) = trait_id
+-                .trait_items(db)
+-                .associated_type_by_name(unresolved.name)
++            && let Some(type_alias_id) =
++                trait_id.trait_items(db).associated_type_by_name(unresolved.name)
+         {
+             return Some(PathResolution::Def(ModuleDefId::from(type_alias_id).into()));
+         }
+     path: &Path,
+     hygiene: HygieneId,
+ ) -> Option<PathResolution> {
+-    resolver
+-        .resolve_path_in_value_ns_fully(db, path, hygiene)
+-        .and_then(|val| {
+-            let res = match val {
+-                ValueNs::LocalBinding(binding_id) => {
+-                    let var = Local {
+-                        parent: body_owner?,
+-                        binding_id,
+-                    };
+-                    PathResolution::Local(var)
+-                }
+-                ValueNs::FunctionId(it) => PathResolution::Def(Function::from(it).into()),
+-                ValueNs::ConstId(it) => PathResolution::Def(Const::from(it).into()),
+-                ValueNs::StaticId(it) => PathResolution::Def(Static::from(it).into()),
+-                ValueNs::StructId(it) => PathResolution::Def(Struct::from(it).into()),
+-                ValueNs::EnumVariantId(it) => PathResolution::Def(Variant::from(it).into()),
+-                ValueNs::ImplSelf(impl_id) => PathResolution::SelfType(impl_id.into()),
+-                ValueNs::GenericParam(id) => PathResolution::ConstParam(id.into()),
+-            };
+-            Some(res)
+-        })
++    resolver.resolve_path_in_value_ns_fully(db, path, hygiene).and_then(|val| {
++        let res = match val {
++            ValueNs::LocalBinding(binding_id) => {
++                let var = Local { parent: body_owner?, binding_id };
++                PathResolution::Local(var)
++            }
++            ValueNs::FunctionId(it) => PathResolution::Def(Function::from(it).into()),
++            ValueNs::ConstId(it) => PathResolution::Def(Const::from(it).into()),
++            ValueNs::StaticId(it) => PathResolution::Def(Static::from(it).into()),
++            ValueNs::StructId(it) => PathResolution::Def(Struct::from(it).into()),
++            ValueNs::EnumVariantId(it) => PathResolution::Def(Variant::from(it).into()),
++            ValueNs::ImplSelf(impl_id) => PathResolution::SelfType(impl_id.into()),
++            ValueNs::GenericParam(id) => PathResolution::ConstParam(id.into()),
++        };
++        Some(res)
++    })
+ }
+ 
+ /// Resolves a path where we know it is a qualifier of another path.
+         // If we are in a TypeNs for a Trait, and we have an unresolved name, try to resolve it as a type
+         // within the trait's associated types.
+         if let (Some(unresolved), &TypeNs::TraitId(trait_id)) = (&unresolved, &ty)
+-            && let Some(type_alias_id) = trait_id
+-                .trait_items(db)
+-                .associated_type_by_name(unresolved.name)
++            && let Some(type_alias_id) =
++                trait_id.trait_items(db).associated_type_by_name(unresolved.name)
+         {
+             return Some(PathResolution::Def(ModuleDefId::from(type_alias_id).into()));
+         }
                  .map(PathResolution::Def),
              None => Some(res),
          }

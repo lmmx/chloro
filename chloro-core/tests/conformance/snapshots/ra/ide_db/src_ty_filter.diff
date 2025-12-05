@@ -8,14 +8,6 @@ Rustfmt size:  2543 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::iter;
- 
- use hir::Semantics;
--use syntax::ast::{self, make, Pat};
-+use syntax::ast::{self, Pat, make};
- 
- use crate::RootDatabase;
- 
              TryEnum::Result => make::tuple_struct_pat(
                  make::ext::ident_path("Err"),
                  iter::once(make::wildcard_pat().into()),

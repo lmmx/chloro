@@ -8,18 +8,17 @@ Rustfmt size:  27018 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use hir::{db::ExpandDatabase, CaseType, InFile};
-+use hir::{CaseType, InFile, db::ExpandDatabase};
+ use hir::{CaseType, InFile, db::ExpandDatabase};
  use ide_db::{assists::Assist, defs::NameClass, rename::RenameDefinition};
  use syntax::AstNode;
  
  use crate::{
-+    Diagnostic, DiagnosticCode, DiagnosticsContext, unresolved_fix,
-     // references::rename::rename_with_semantics,
--    unresolved_fix,
 -    Diagnostic,
 -    DiagnosticCode,
 -    DiagnosticsContext,
++    Diagnostic, DiagnosticCode, DiagnosticsContext, unresolved_fix,
+     // references::rename::rename_with_semantics,
+-    unresolved_fix,
  };
  
  // Diagnostic: incorrect-ident-case

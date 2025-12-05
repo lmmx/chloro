@@ -120,7 +120,11 @@ pub struct LocalRoots {
 /// The symbol indices of modules that make up a given crate.
 pub fn crate_symbols(db: &dyn HirDatabase, krate: Crate) -> Box<[&SymbolIndex]> {
     let _p = tracing::info_span!("crate_symbols").entered();
-    krate.modules(db).into_iter().map(|module| SymbolIndex::module_symbols(db, module)).collect()
+    krate
+        .modules(db)
+        .into_iter()
+        .map(|module| SymbolIndex::module_symbols(db, module))
+        .collect()
 }
 
 // Feature: Workspace Symbol
@@ -155,7 +159,9 @@ pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
         LibraryRoots::get(db)
             .roots(db)
             .par_iter()
-            .for_each_with(db.clone(), |snap, &root| _ = SymbolIndex::library_symbols(snap, root));
+            .for_each_with(db.clone(), |snap, &root| {
+                _ = SymbolIndex::library_symbols(snap, root)
+            });
         LibraryRoots::get(db)
             .roots(db)
             .iter()
@@ -167,12 +173,17 @@ pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
         for &root in LocalRoots::get(db).roots(db).iter() {
             crates.extend(db.source_root_crates(root).iter().copied())
         }
-        crates
-            .par_iter()
-            .for_each_with(db.clone(), |snap, &krate| _ = crate_symbols(snap, krate.into()));
-        let indices: Vec<_> =
-            crates.into_iter().map(|krate| crate_symbols(db, krate.into())).collect();
-        indices.iter().flat_map(|indices| indices.iter().cloned()).collect()
+        crates.par_iter().for_each_with(db.clone(), |snap, &krate| {
+            _ = crate_symbols(snap, krate.into())
+        });
+        let indices: Vec<_> = crates
+            .into_iter()
+            .map(|krate| crate_symbols(db, krate.into()))
+            .collect();
+        indices
+            .iter()
+            .flat_map(|indices| indices.iter().cloned())
+            .collect()
     };
 
     let mut res = vec![];
@@ -252,7 +263,9 @@ impl SymbolIndex {
 
 impl fmt::Debug for SymbolIndex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("SymbolIndex").field("n_symbols", &self.symbols.len()).finish()
+        f.debug_struct("SymbolIndex")
+            .field("n_symbols", &self.symbols.len())
+            .finish()
     }
 }
 
@@ -403,7 +416,9 @@ impl Query {
                     if self.exclude_imports && symbol.is_import {
                         continue;
                     }
-                    if self.mode.check(&self.query, self.case_sensitive, symbol_name)
+                    if self
+                        .mode
+                        .check(&self.query, self.case_sensitive, symbol_name)
                         && let Some(b) = cb(symbol).break_value()
                     {
                         return Some(b);

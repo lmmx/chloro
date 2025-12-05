@@ -80,7 +80,10 @@ impl TokenStore {
     }
 
     pub fn iter(self) -> impl Iterator<Item = (TokenId, TokenStaticData)> {
-        self.0.into_iter().enumerate().map(|(id, data)| (TokenId(id), data))
+        self.0
+            .into_iter()
+            .enumerate()
+            .map(|(id, data)| (TokenId(id), data))
     }
 }
 
@@ -93,8 +96,10 @@ pub struct StaticIndexedFile {
 }
 
 fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
-    let mut worklist: Vec<_> =
-        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+    let mut worklist: Vec<_> = Crate::all(db)
+        .into_iter()
+        .map(|krate| krate.root_module())
+        .collect();
     let mut modules = Vec::new();
 
     while let Some(module) = worklist.pop() {
@@ -224,7 +229,12 @@ impl StaticIndex<'_> {
                 IDENT | INT_NUMBER | LIFETIME_IDENT | T![self] | T![super] | T![crate] | T![Self]
             )
         });
-        let mut result = StaticIndexedFile { file_id, inlay_hints, folds, tokens: vec![] };
+        let mut result = StaticIndexedFile {
+            file_id,
+            inlay_hints,
+            folds,
+            tokens: vec![],
+        };
 
         let mut add_token = |def: Definition, range: TextRange, scope_node: &SyntaxNode| {
             let id = if let Some(it) = self.def_map.get(&def) {
@@ -244,9 +254,13 @@ impl StaticIndex<'_> {
                         edition,
                         display_target,
                     )),
-                    definition: def.try_to_nav(&sema).map(UpmappingResult::call_site).map(|it| {
-                        FileRange { file_id: it.file_id, range: it.focus_or_full_range() }
-                    }),
+                    definition: def
+                        .try_to_nav(&sema)
+                        .map(UpmappingResult::call_site)
+                        .map(|it| FileRange {
+                            file_id: it.file_id,
+                            range: it.focus_or_full_range(),
+                        }),
                     references: vec![],
                     moniker: current_crate.and_then(|cc| def_to_moniker(self.db, def, cc)),
                     display_name: def
@@ -298,8 +312,9 @@ impl StaticIndex<'_> {
         hir::attach_db(db, || {
             let work = all_modules(db).into_iter().filter(|module| {
                 let file_id = module.definition_source_file_id(db).original_file(db);
-                let source_root =
-                    db.file_source_root(file_id.file_id(&analysis.db)).source_root_id(db);
+                let source_root = db
+                    .file_source_root(file_id.file_id(&analysis.db))
+                    .source_root_id(db);
                 let source_root = db.source_root(source_root).source_root(db);
                 let is_vendored = match vendored_libs_config {
                     VendoredLibrariesConfig::Included { workspace_root } => source_root
@@ -353,7 +368,10 @@ mod tests {
                     // ignore whole file range corresponding to module definition
                     continue;
                 }
-                let it = FileRange { file_id: f.file_id, range };
+                let it = FileRange {
+                    file_id: f.file_id,
+                    range,
+                };
                 if !range_set.contains(&it) {
                     panic!("additional range {it:?}");
                 }

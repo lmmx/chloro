@@ -5,18 +5,4 @@ Original size: 5818 bytes
 Chloro size:   5818 bytes
 Rustfmt size:  5818 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- use crate::{
-+    GenericDefId, ModuleDefId,
-     expr_store::pretty::{print_function, print_struct},
-     nameres::crate_def_map,
-     test_db::TestDB,
--    GenericDefId, ModuleDefId,
- };
--use expect_test::{expect, Expect};
-+use expect_test::{Expect, expect};
- use test_fixture::WithFixture;
- 
- use super::super::*;
+✓ Outputs are IDENTICAL

@@ -31,8 +31,11 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 
     let ty = ctx.find_node_at_range::<ast::Type>()?;
     let item = ty.syntax().ancestors().find_map(ast::Item::cast)?;
-    let assoc_owner =
-        item.syntax().ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
+    let assoc_owner = item
+        .syntax()
+        .ancestors()
+        .nth(2)
+        .and_then(Either::<ast::Trait, ast::Impl>::cast);
     let node = assoc_owner.as_ref().map_or_else(
         || item.syntax(),
         |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
@@ -61,7 +64,9 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
                 generics.map(|it| make::generic_param_list(it.into_iter().cloned()));
 
             // Replace original type with the alias
-            let ty_args = generic_params.as_ref().map(|it| it.to_generic_args().generic_args());
+            let ty_args = generic_params
+                .as_ref()
+                .map(|it| it.to_generic_args().generic_args());
             let new_ty = if let Some(ty_args) = ty_args {
                 make::generic_ty_path_segment(make::name_ref("Type"), ty_args)
             } else {

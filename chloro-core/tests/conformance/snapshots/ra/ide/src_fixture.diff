@@ -11,10 +11,7 @@ Rustfmt size:  5051 bytes
  //! Utilities for creating `Analysis` instances for tests.
 +
  use test_fixture::ChangeFixture;
--use test_utils::{extract_annotations, RangeOrOffset};
-+use test_utils::{RangeOrOffset, extract_annotations};
- 
- use crate::{Analysis, AnalysisHost, FileId, FilePosition, FileRange};
+ use test_utils::{RangeOrOffset, extract_annotations};
  
      let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
      host.db.enable_proc_attr_macros();

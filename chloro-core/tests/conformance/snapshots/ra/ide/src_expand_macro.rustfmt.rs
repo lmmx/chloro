@@ -30,10 +30,13 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     let file = sema.parse(file_id);
     let krate = sema.file_to_module_def(file_id.file_id(db))?.krate().into();
 
-    let tok = pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
-        SyntaxKind::IDENT => 1,
-        _ => 0,
-    })?;
+    let tok = pick_best_token(
+        file.syntax().token_at_offset(position.offset),
+        |kind| match kind {
+            SyntaxKind::IDENT => 1,
+            _ => 0,
+        },
+    )?;
 
     // due to how rust-analyzer works internally, we need to special case derive attributes,
     // otherwise they might not get found, e.g. here with the cursor at $0 `#[attr]` would expand:
@@ -43,45 +46,63 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     // struct Bar;
     // ```
 
-    let derive = sema.descend_into_macros_exact(tok.clone()).into_iter().find_map(|descended| {
-        let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
-        if !macro_file.is_derive_attr_pseudo_expansion(db) {
-            return None;
-        }
+    let derive = sema
+        .descend_into_macros_exact(tok.clone())
+        .into_iter()
+        .find_map(|descended| {
+            let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
+            if !macro_file.is_derive_attr_pseudo_expansion(db) {
+                return None;
+            }
 
-        let name = descended.parent_ancestors().filter_map(ast::Path::cast).last()?.to_string();
-        // up map out of the #[derive] expansion
-        let InFile { file_id, value: tokens } =
-            hir::InMacroFile::new(macro_file, descended).upmap_once(db);
-        let token = sema.parse_or_expand(file_id).covering_element(tokens[0]).into_token()?;
-        let attr = token.parent_ancestors().find_map(ast::Attr::cast)?;
-        let expansions = sema.expand_derive_macro(&attr)?;
-        let idx = attr
-            .token_tree()?
-            .token_trees_and_tokens()
-            .filter_map(NodeOrToken::into_token)
-            .take_while(|it| it != &token)
-            .filter(|it| it.kind() == T![,])
-            .count();
-        let ExpandResult { err, value: expansion } = expansions.get(idx)?.clone();
-        let expansion_file_id = sema.hir_file_for(&expansion).macro_file()?;
-        let expansion_span_map = db.expansion_span_map(expansion_file_id);
-        let mut expansion = format(
-            db,
-            SyntaxKind::MACRO_ITEMS,
-            position.file_id,
-            expansion,
-            &expansion_span_map,
-            krate,
-        );
-        if let Some(err) = err {
-            expansion.insert_str(
-                0,
-                &format!("Expansion had errors: {}\n\n", err.render_to_string(sema.db)),
+            let name = descended
+                .parent_ancestors()
+                .filter_map(ast::Path::cast)
+                .last()?
+                .to_string();
+            // up map out of the #[derive] expansion
+            let InFile {
+                file_id,
+                value: tokens,
+            } = hir::InMacroFile::new(macro_file, descended).upmap_once(db);
+            let token = sema
+                .parse_or_expand(file_id)
+                .covering_element(tokens[0])
+                .into_token()?;
+            let attr = token.parent_ancestors().find_map(ast::Attr::cast)?;
+            let expansions = sema.expand_derive_macro(&attr)?;
+            let idx = attr
+                .token_tree()?
+                .token_trees_and_tokens()
+                .filter_map(NodeOrToken::into_token)
+                .take_while(|it| it != &token)
+                .filter(|it| it.kind() == T![,])
+                .count();
+            let ExpandResult {
+                err,
+                value: expansion,
+            } = expansions.get(idx)?.clone();
+            let expansion_file_id = sema.hir_file_for(&expansion).macro_file()?;
+            let expansion_span_map = db.expansion_span_map(expansion_file_id);
+            let mut expansion = format(
+                db,
+                SyntaxKind::MACRO_ITEMS,
+                position.file_id,
+                expansion,
+                &expansion_span_map,
+                krate,
             );
-        }
-        Some(ExpandedMacro { name, expansion })
-    });
+            if let Some(err) = err {
+                expansion.insert_str(
+                    0,
+                    &format!(
+                        "Expansion had errors: {}\n\n",
+                        err.render_to_string(sema.db)
+                    ),
+                );
+            }
+            Some(ExpandedMacro { name, expansion })
+        });
 
     if derive.is_some() {
         return derive;
@@ -109,8 +130,11 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
             if let Some(mac) = ast::MacroCall::cast(node) {
                 let mut name = mac.path()?.segment()?.name_ref()?.to_string();
                 name.push('!');
-                let syntax_kind =
-                    mac.syntax().parent().map(|it| it.kind()).unwrap_or(SyntaxKind::MACRO_ITEMS);
+                let syntax_kind = mac
+                    .syntax()
+                    .parent()
+                    .map(|it| it.kind())
+                    .unwrap_or(SyntaxKind::MACRO_ITEMS);
                 break (
                     name,
                     expand_macro_recur(
@@ -145,7 +169,10 @@ fn expand_macro_recur(
     result_span_map: &mut SpanMap<SyntaxContext>,
     offset_in_original_node: TextSize,
 ) -> Option<SyntaxNode> {
-    let ExpandResult { value: expanded, err } = match macro_call {
+    let ExpandResult {
+        value: expanded,
+        err,
+    } = match macro_call {
         item @ ast::Item::MacroCall(macro_call) => sema
             .expand_attr_macro(item)
             .map(|it| it.map(|it| it.value))
@@ -156,15 +183,26 @@ fn expand_macro_recur(
     if let Some(err) = err {
         format_to!(error, "\n{}", err.render_to_string(sema.db));
     }
-    let file_id =
-        sema.hir_file_for(&expanded).macro_file().expect("expansion must produce a macro file");
+    let file_id = sema
+        .hir_file_for(&expanded)
+        .macro_file()
+        .expect("expansion must produce a macro file");
     let expansion_span_map = sema.db.expansion_span_map(file_id);
     result_span_map.merge(
-        TextRange::at(offset_in_original_node, macro_call.syntax().text_range().len()),
+        TextRange::at(
+            offset_in_original_node,
+            macro_call.syntax().text_range().len(),
+        ),
         expanded.text_range().len(),
         &expansion_span_map,
     );
-    Some(expand(sema, expanded, error, result_span_map, u32::from(offset_in_original_node) as i32))
+    Some(expand(
+        sema,
+        expanded,
+        error,
+        result_span_map,
+        u32::from(offset_in_original_node) as i32,
+    ))
 }
 
 fn expand(
@@ -199,7 +237,10 @@ fn expand(
         }
     }
 
-    replacements.into_iter().rev().for_each(|(old, new)| ted::replace(old.syntax(), new));
+    replacements
+        .into_iter()
+        .rev()
+        .for_each(|(old, new)| ted::replace(old.syntax(), new));
     expanded
 }
 
@@ -240,8 +281,9 @@ fn _format(
     // hack until we get hygiene working (same character amount to preserve formatting as much as possible)
     const DOLLAR_CRATE_REPLACE: &str = "__r_a_";
     const BUILTIN_REPLACE: &str = "builtin__POUND";
-    let expansion =
-        expansion.replace("$crate", DOLLAR_CRATE_REPLACE).replace("builtin #", BUILTIN_REPLACE);
+    let expansion = expansion
+        .replace("$crate", DOLLAR_CRATE_REPLACE)
+        .replace("builtin #", BUILTIN_REPLACE);
     let (prefix, suffix) = match kind {
         SyntaxKind::MACRO_PAT => ("fn __(", ": u32);"),
         SyntaxKind::MACRO_EXPR | SyntaxKind::MACRO_STMTS => ("fn __() {", "}"),
@@ -276,9 +318,9 @@ fn _format(
             .replace(BUILTIN_REPLACE, "builtin #");
         let output = output.trim().strip_prefix(prefix)?;
         let output = match kind {
-            SyntaxKind::MACRO_PAT => {
-                output.strip_suffix(suffix).or_else(|| output.strip_suffix(": u32,\n);"))?
-            }
+            SyntaxKind::MACRO_PAT => output
+                .strip_suffix(suffix)
+                .or_else(|| output.strip_suffix(": u32,\n);"))?,
             _ => output.strip_suffix(suffix)?,
         };
         let trim_indent = stdx::trim_indent(output);

@@ -40,16 +40,26 @@ pub fn missing_unsafe(db: &dyn HirDatabase, def: DefWithBodyId) -> MissingUnsafe
         }
     };
 
-    let mut res = MissingUnsafeResult { fn_is_unsafe: is_unsafe, ..MissingUnsafeResult::default() };
+    let mut res = MissingUnsafeResult {
+        fn_is_unsafe: is_unsafe,
+        ..MissingUnsafeResult::default()
+    };
     let body = db.body(def);
     let infer = db.infer(def);
     let mut callback = |diag| match diag {
-        UnsafeDiagnostic::UnsafeOperation { node, inside_unsafe_block, reason } => {
+        UnsafeDiagnostic::UnsafeOperation {
+            node,
+            inside_unsafe_block,
+            reason,
+        } => {
             if inside_unsafe_block == InsideUnsafeBlock::No {
                 res.unsafe_exprs.push((node, reason));
             }
         }
-        UnsafeDiagnostic::DeprecatedSafe2024 { node, inside_unsafe_block } => {
+        UnsafeDiagnostic::DeprecatedSafe2024 {
+            node,
+            inside_unsafe_block,
+        } => {
             if inside_unsafe_block == InsideUnsafeBlock::No {
                 res.deprecated_safe_calls.push(node)
             }
@@ -94,7 +104,10 @@ enum UnsafeDiagnostic {
         reason: UnsafetyReason,
     },
     /// A lint.
-    DeprecatedSafe2024 { node: ExprId, inside_unsafe_block: InsideUnsafeBlock },
+    DeprecatedSafe2024 {
+        node: ExprId,
+        inside_unsafe_block: InsideUnsafeBlock,
+    },
 }
 
 pub fn unsafe_operations_for_body<'db>(
@@ -125,7 +138,12 @@ pub fn unsafe_operations<'db>(
     callback: &mut dyn FnMut(ExprOrPatId, InsideUnsafeBlock),
 ) {
     let mut visitor_callback = |diag| {
-        if let UnsafeDiagnostic::UnsafeOperation { inside_unsafe_block, node, .. } = diag {
+        if let UnsafeDiagnostic::UnsafeOperation {
+            inside_unsafe_block,
+            node,
+            ..
+        } = diag
+        {
             callback(node, inside_unsafe_block);
         }
     };
@@ -229,7 +247,9 @@ impl<'db> UnsafeVisitor<'db> {
     }
 
     fn walk_pats_top(&mut self, pats: impl Iterator<Item = PatId>, parent_expr: ExprId) {
-        let guard = self.resolver.update_to_inner_scope(self.db, self.def, parent_expr);
+        let guard = self
+            .resolver
+            .update_to_inner_scope(self.db, self.def, parent_expr);
         pats.for_each(|pat| self.walk_pat(pat));
         self.resolver.reset_to_guard(guard);
     }
@@ -263,7 +283,8 @@ impl<'db> UnsafeVisitor<'db> {
                 if let Some((AdtId::UnionId(_), _)) = self.infer[current].as_adt() {
                     let old_inside_union_destructure =
                         mem::replace(&mut self.inside_union_destructure, true);
-                    self.body.walk_pats_shallow(current, |pat| self.walk_pat(pat));
+                    self.body
+                        .walk_pats_shallow(current, |pat| self.walk_pat(pat));
                     self.inside_union_destructure = old_inside_union_destructure;
                     return;
                 }
@@ -278,7 +299,8 @@ impl<'db> UnsafeVisitor<'db> {
             _ => {}
         }
 
-        self.body.walk_pats_shallow(current, |pat| self.walk_pat(pat));
+        self.body
+            .walk_pats_shallow(current, |pat| self.walk_pat(pat));
     }
 
     fn walk_expr(&mut self, current: ExprId) {
@@ -299,18 +321,27 @@ impl<'db> UnsafeVisitor<'db> {
                 }
             }
             Expr::Path(path) => {
-                let guard = self.resolver.update_to_inner_scope(self.db, self.def, current);
+                let guard = self
+                    .resolver
+                    .update_to_inner_scope(self.db, self.def, current);
                 self.mark_unsafe_path(current.into(), path);
                 self.resolver.reset_to_guard(guard);
             }
-            Expr::Ref { expr, rawness: Rawness::RawPtr, mutability: _ } => {
+            Expr::Ref {
+                expr,
+                rawness: Rawness::RawPtr,
+                mutability: _,
+            } => {
                 match self.body[*expr] {
                     // Do not report unsafe for `addr_of[_mut]!(EXTERN_OR_MUT_STATIC)`,
                     // see https://github.com/rust-lang/rust/pull/125834.
                     Expr::Path(_) => return,
                     // https://github.com/rust-lang/rust/pull/129248
                     // Taking a raw ref to a deref place expr is always safe.
-                    Expr::UnaryOp { expr, op: UnaryOp::Deref } => {
+                    Expr::UnaryOp {
+                        expr,
+                        op: UnaryOp::Deref,
+                    } => {
                         self.body
                             .walk_child_exprs_without_pats(expr, |child| self.walk_expr(child));
 
@@ -321,8 +352,10 @@ impl<'db> UnsafeVisitor<'db> {
 
                 let mut peeled = *expr;
                 while let Expr::Field { expr: lhs, .. } = &self.body[peeled] {
-                    if let Some(Either::Left(FieldId { parent: VariantId::UnionId(_), .. })) =
-                        self.infer.field_resolution(peeled)
+                    if let Some(Either::Left(FieldId {
+                        parent: VariantId::UnionId(_),
+                        ..
+                    })) = self.infer.field_resolution(peeled)
                     {
                         peeled = *lhs;
                     } else {
@@ -340,7 +373,10 @@ impl<'db> UnsafeVisitor<'db> {
                     self.check_call(current, func);
                 }
             }
-            Expr::UnaryOp { expr, op: UnaryOp::Deref } => {
+            Expr::UnaryOp {
+                expr,
+                op: UnaryOp::Deref,
+            } => {
                 if let TyKind::RawPtr(..) = self.infer[*expr].kind() {
                     self.on_unsafe_op(current.into(), UnsafetyReason::RawPtrDeref);
                 }
@@ -359,10 +395,14 @@ impl<'db> UnsafeVisitor<'db> {
 
                 asm.operands.iter().for_each(|(_, op)| match op {
                     AsmOperand::In { expr, .. }
-                    | AsmOperand::Out { expr: Some(expr), .. }
+                    | AsmOperand::Out {
+                        expr: Some(expr), ..
+                    }
                     | AsmOperand::InOut { expr, .. }
                     | AsmOperand::Const(expr) => self.walk_expr(*expr),
-                    AsmOperand::SplitInOut { in_expr, out_expr, .. } => {
+                    AsmOperand::SplitInOut {
+                        in_expr, out_expr, ..
+                    } => {
                         self.walk_expr(*in_expr);
                         if let Some(out_expr) = out_expr {
                             self.walk_expr(*out_expr);
@@ -383,8 +423,10 @@ impl<'db> UnsafeVisitor<'db> {
             Expr::Field { .. } => {
                 self.inside_assignment = inside_assignment;
                 if !inside_assignment
-                    && let Some(Either::Left(FieldId { parent: VariantId::UnionId(_), .. })) =
-                        self.infer.field_resolution(current)
+                    && let Some(Either::Left(FieldId {
+                        parent: VariantId::UnionId(_),
+                        ..
+                    })) = self.infer.field_resolution(current)
                 {
                     self.on_unsafe_op(current.into(), UnsafetyReason::UnionField);
                 }
@@ -398,7 +440,8 @@ impl<'db> UnsafeVisitor<'db> {
                         }),
                         current,
                     );
-                    this.body.walk_child_exprs_without_pats(current, |child| this.walk_expr(child));
+                    this.body
+                        .walk_child_exprs_without_pats(current, |child| this.walk_expr(child));
                 });
                 return;
             }
@@ -424,12 +467,15 @@ impl<'db> UnsafeVisitor<'db> {
             _ => {}
         }
 
-        self.body.walk_child_exprs_without_pats(current, |child| self.walk_expr(child));
+        self.body
+            .walk_child_exprs_without_pats(current, |child| self.walk_expr(child));
     }
 
     fn mark_unsafe_path(&mut self, node: ExprOrPatId, path: &Path) {
         let hygiene = self.body.expr_or_pat_path_hygiene(node);
-        let value_or_partial = self.resolver.resolve_path_in_value_ns(self.db, path, hygiene);
+        let value_or_partial = self
+            .resolver
+            .resolve_path_in_value_ns(self.db, path, hygiene);
         if let Some(ResolveValueResult::ValueNs(ValueNs::StaticId(id), _)) = value_or_partial {
             let static_data = self.db.static_signature(id);
             if static_data.flags.contains(StaticFlags::MUTABLE) {

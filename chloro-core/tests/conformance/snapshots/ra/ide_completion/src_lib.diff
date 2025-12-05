@@ -3,6 +3,41 @@ COMPARISON DIFF
 
 Original size: 11494 bytes
 Chloro size:   11494 bytes
-Rustfmt size:  11494 bytes
+Rustfmt size:  11617 bytes
 
-✓ Outputs are IDENTICAL
+✗ Outputs DIFFER
+
+=== DIFF (- rustfmt, + chloro) ===
+         if let CompletionAnalysis::NameRef(NameRefContext {
+             kind:
+                 NameRefKind::Path(
+-                    path_ctx @ PathCompletionCtx {
+-                        kind: PathKind::Vis { has_in_token },
+-                        ..
+-                    },
++                    path_ctx @ PathCompletionCtx { kind: PathKind::Vis { has_in_token }, .. },
+                 ),
+             ..
+         }) = analysis
+                 completions::lifetime::complete_label(acc, ctx, lifetime_ctx);
+                 completions::lifetime::complete_lifetime(acc, ctx, lifetime_ctx);
+             }
+-            CompletionAnalysis::String {
+-                original,
+-                expanded: Some(expanded),
+-            } => {
++            CompletionAnalysis::String { original, expanded: Some(expanded) } => {
+                 completions::extern_abi::complete_extern_abi(acc, ctx, expanded);
+                 completions::format_string::format_string(acc, ctx, original, expanded);
+                 completions::env_vars::complete_cargo_env_vars(acc, ctx, original, expanded);
+     let editioned_file_id = sema.attach_first_edition(file_id)?;
+ 
+     let original_file = sema.parse(editioned_file_id);
+-    let original_token = syntax::AstNode::syntax(&original_file)
+-        .token_at_offset(offset)
+-        .left_biased()?;
++    let original_token =
++        syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
+     let position_for_import = &original_token.parent()?;
+     let scope = ImportScope::find_insert_use_container(position_for_import, &sema)?;
+ 

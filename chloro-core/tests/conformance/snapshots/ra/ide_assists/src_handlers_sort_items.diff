@@ -8,21 +8,6 @@ Rustfmt size:  13263 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::cmp::Ordering;
- 
- use itertools::Itertools;
- 
- use syntax::{
--    ast::{self, HasName},
-     AstNode, SyntaxNode,
-+    ast::{self, HasName},
- };
- 
--use crate::{utils::get_methods, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, utils::get_methods};
- 
- // Assist: sort_items
- //
          add_sort_fields_assist(acc, union_ast.record_field_list()?)
      } else if let Some(variant_ast) = ctx.find_node_at_offset::<ast::Variant>() {
          add_sort_field_list_assist(acc, variant_ast.field_list())

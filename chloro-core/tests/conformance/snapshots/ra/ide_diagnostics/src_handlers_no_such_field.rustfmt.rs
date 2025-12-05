@@ -1,15 +1,15 @@
 use either::Either;
-use hir::{db::ExpandDatabase, HasSource, HirDisplay, Semantics, VariantId};
+use hir::{HasSource, HirDisplay, Semantics, VariantId, db::ExpandDatabase};
 use ide_db::text_edit::TextEdit;
-use ide_db::{source_change::SourceChange, EditionedFileId, RootDatabase};
+use ide_db::{EditionedFileId, RootDatabase, source_change::SourceChange};
 use syntax::{
-    ast::{self, edit::IndentLevel, make},
     AstNode,
+    ast::{self, edit::IndentLevel, make},
 };
 
 use crate::{
-    fix, handlers::private_field::field_is_private_fixes, Assist, Diagnostic, DiagnosticCode,
-    DiagnosticsContext,
+    Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix,
+    handlers::private_field::field_is_private_fixes,
 };
 
 // Diagnostic: no-such-field

@@ -115,8 +115,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     #[inline]
     fn update_current_segment(&mut self) {
-        self.current_or_prev_segment =
-            self.segments.get(self.current_segment_idx).unwrap_or(self.current_or_prev_segment);
+        self.current_or_prev_segment = self
+            .segments
+            .get(self.current_segment_idx)
+            .unwrap_or(self.current_or_prev_segment);
     }
 
     #[inline]
@@ -191,8 +193,9 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                         self.skip_resolved_segment();
                         let segment = self.current_or_prev_segment;
                         let trait_id = trait_ref.def_id.0;
-                        let found =
-                            trait_id.trait_items(self.ctx.db).associated_type_by_name(segment.name);
+                        let found = trait_id
+                            .trait_items(self.ctx.db)
+                            .associated_type_by_name(segment.name);
 
                         tracing::debug!(?found);
                         match found {
@@ -333,8 +336,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     #[tracing::instrument(skip(self), ret)]
     pub(crate) fn resolve_path_in_type_ns(&mut self) -> Option<(TypeNs, Option<usize>)> {
-        let (resolution, remaining_index, _, prefix_info) =
-            self.ctx.resolver.resolve_path_in_type_ns_with_prefix_info(self.ctx.db, self.path)?;
+        let (resolution, remaining_index, _, prefix_info) = self
+            .ctx
+            .resolver
+            .resolve_path_in_type_ns_with_prefix_info(self.ctx.db, self.path)?;
 
         let segments = self.segments;
         if segments.is_empty() || matches!(self.path, Path::LangItem(..)) {
@@ -343,16 +348,19 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         }
 
         let (module_segments, resolved_segment_idx, enum_segment) = match remaining_index {
-            None if prefix_info.enum_variant => {
-                (segments.strip_last_two(), segments.len() - 1, Some(segments.len() - 2))
-            }
+            None if prefix_info.enum_variant => (
+                segments.strip_last_two(),
+                segments.len() - 1,
+                Some(segments.len() - 2),
+            ),
             None => (segments.strip_last(), segments.len() - 1, None),
             Some(i) => (segments.take(i - 1), i - 1, None),
         };
 
         self.current_segment_idx = resolved_segment_idx;
-        self.current_or_prev_segment =
-            segments.get(resolved_segment_idx).expect("should have resolved segment");
+        self.current_or_prev_segment = segments
+            .get(resolved_segment_idx)
+            .expect("should have resolved segment");
 
         for (i, mod_segment) in module_segments.iter().enumerate() {
             if mod_segment.args_and_bindings.is_some() {
@@ -364,8 +372,12 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         }
 
         if let Some(enum_segment) = enum_segment
-            && segments.get(enum_segment).is_some_and(|it| it.args_and_bindings.is_some())
-            && segments.get(enum_segment + 1).is_some_and(|it| it.args_and_bindings.is_some())
+            && segments
+                .get(enum_segment)
+                .is_some_and(|it| it.args_and_bindings.is_some())
+            && segments
+                .get(enum_segment + 1)
+                .is_some_and(|it| it.args_and_bindings.is_some())
         {
             self.on_diagnostic(PathLoweringDiagnostic::GenericArgsProhibited {
                 segment: (enum_segment + 1) as u32,
@@ -384,11 +396,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         &mut self,
         hygiene_id: HygieneId,
     ) -> Option<ResolveValueResult> {
-        let (res, prefix_info) = self.ctx.resolver.resolve_path_in_value_ns_with_prefix_info(
-            self.ctx.db,
-            self.path,
-            hygiene_id,
-        )?;
+        let (res, prefix_info) = self
+            .ctx
+            .resolver
+            .resolve_path_in_value_ns_with_prefix_info(self.ctx.db, self.path, hygiene_id)?;
 
         let segments = self.segments;
         if segments.is_empty() || matches!(self.path, Path::LangItem(..)) {
@@ -397,20 +408,27 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         }
 
         let (mod_segments, enum_segment, resolved_segment_idx) = match res {
-            ResolveValueResult::Partial(_, unresolved_segment, _) => {
-                (segments.take(unresolved_segment - 1), None, unresolved_segment - 1)
-            }
+            ResolveValueResult::Partial(_, unresolved_segment, _) => (
+                segments.take(unresolved_segment - 1),
+                None,
+                unresolved_segment - 1,
+            ),
             ResolveValueResult::ValueNs(ValueNs::EnumVariantId(_), _)
                 if prefix_info.enum_variant =>
             {
-                (segments.strip_last_two(), segments.len().checked_sub(2), segments.len() - 1)
+                (
+                    segments.strip_last_two(),
+                    segments.len().checked_sub(2),
+                    segments.len() - 1,
+                )
             }
             ResolveValueResult::ValueNs(..) => (segments.strip_last(), None, segments.len() - 1),
         };
 
         self.current_segment_idx = resolved_segment_idx;
-        self.current_or_prev_segment =
-            segments.get(resolved_segment_idx).expect("should have resolved segment");
+        self.current_or_prev_segment = segments
+            .get(resolved_segment_idx)
+            .expect("should have resolved segment");
 
         for (i, mod_segment) in mod_segments.iter().enumerate() {
             if mod_segment.args_and_bindings.is_some() {
@@ -422,8 +440,12 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         }
 
         if let Some(enum_segment) = enum_segment
-            && segments.get(enum_segment).is_some_and(|it| it.args_and_bindings.is_some())
-            && segments.get(enum_segment + 1).is_some_and(|it| it.args_and_bindings.is_some())
+            && segments
+                .get(enum_segment)
+                .is_some_and(|it| it.args_and_bindings.is_some())
+            && segments
+                .get(enum_segment + 1)
+                .is_some_and(|it| it.args_and_bindings.is_some())
         {
             self.on_diagnostic(PathLoweringDiagnostic::GenericArgsProhibited {
                 segment: (enum_segment + 1) as u32,
@@ -630,8 +652,9 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             }
 
             // `Fn()`-style generics are treated like functions for the purpose of lifetime elision.
-            self.ctx.lifetime_elision =
-                LifetimeElisionKind::AnonymousCreateParameter { report_in_path: false };
+            self.ctx.lifetime_elision = LifetimeElisionKind::AnonymousCreateParameter {
+                report_in_path: false,
+            };
         }
 
         let result = self.substs_from_args_and_bindings(
@@ -670,13 +693,14 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 expected_count: u32,
                 kind: IncorrectGenericsLenKind,
             ) {
-                self.ctx.on_diagnostic(PathLoweringDiagnostic::IncorrectGenericsLen {
-                    generics_source: self.generics_source,
-                    provided_count,
-                    expected_count,
-                    kind,
-                    def,
-                });
+                self.ctx
+                    .on_diagnostic(PathLoweringDiagnostic::IncorrectGenericsLen {
+                        generics_source: self.generics_source,
+                        provided_count,
+                        expected_count,
+                        kind,
+                        def,
+                    });
             }
 
             fn report_arg_mismatch(
@@ -685,12 +709,13 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 arg_idx: u32,
                 has_self_arg: bool,
             ) {
-                self.ctx.on_diagnostic(PathLoweringDiagnostic::IncorrectGenericsOrder {
-                    generics_source: self.generics_source,
-                    param_id,
-                    arg_idx,
-                    has_self_arg,
-                });
+                self.ctx
+                    .on_diagnostic(PathLoweringDiagnostic::IncorrectGenericsOrder {
+                        generics_source: self.generics_source,
+                        param_id,
+                        arg_idx,
+                        has_self_arg,
+                    });
             }
 
             fn provided_kind(
@@ -739,17 +764,20 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 infer_args: bool,
                 preceding_args: &[GenericArg<'db>],
             ) -> GenericArg<'db> {
-                let default =
-                    || {
-                        self.ctx.ctx.db.generic_defaults(def).get(preceding_args.len()).map(
-                            |default| default.instantiate(self.ctx.ctx.interner, preceding_args),
-                        )
-                    };
+                let default = || {
+                    self.ctx
+                        .ctx
+                        .db
+                        .generic_defaults(def)
+                        .get(preceding_args.len())
+                        .map(|default| default.instantiate(self.ctx.ctx.interner, preceding_args))
+                };
                 match param {
-                    GenericParamDataRef::LifetimeParamData(_) => {
-                        Region::new(self.ctx.ctx.interner, rustc_type_ir::ReError(ErrorGuaranteed))
-                            .into()
-                    }
+                    GenericParamDataRef::LifetimeParamData(_) => Region::new(
+                        self.ctx.ctx.interner,
+                        rustc_type_ir::ReError(ErrorGuaranteed),
+                    )
+                    .into(),
                     GenericParamDataRef::TypeParamData(param) => {
                         if !infer_args
                             && param.default.is_some()
@@ -782,10 +810,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                     GenericParamId::ConstParamId(const_id) => {
                         unknown_const_as_generic(const_param_ty_query(self.ctx.ctx.db, const_id))
                     }
-                    GenericParamId::LifetimeParamId(_) => {
-                        Region::new(self.ctx.ctx.interner, rustc_type_ir::ReError(ErrorGuaranteed))
-                            .into()
-                    }
+                    GenericParamId::LifetimeParamId(_) => Region::new(
+                        self.ctx.ctx.interner,
+                        rustc_type_ir::ReError(ErrorGuaranteed),
+                    )
+                    .into(),
                 }
             }
 
@@ -795,28 +824,31 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 expected_count: u32,
                 hard_error: bool,
             ) {
-                self.ctx.on_diagnostic(PathLoweringDiagnostic::ElidedLifetimesInPath {
-                    generics_source: self.generics_source,
-                    def,
-                    expected_count,
-                    hard_error,
-                });
+                self.ctx
+                    .on_diagnostic(PathLoweringDiagnostic::ElidedLifetimesInPath {
+                        generics_source: self.generics_source,
+                        def,
+                        expected_count,
+                        hard_error,
+                    });
             }
 
             fn report_elision_failure(&mut self, def: GenericDefId, expected_count: u32) {
-                self.ctx.on_diagnostic(PathLoweringDiagnostic::ElisionFailure {
-                    generics_source: self.generics_source,
-                    def,
-                    expected_count,
-                });
+                self.ctx
+                    .on_diagnostic(PathLoweringDiagnostic::ElisionFailure {
+                        generics_source: self.generics_source,
+                        def,
+                        expected_count,
+                    });
             }
 
             fn report_missing_lifetime(&mut self, def: GenericDefId, expected_count: u32) {
-                self.ctx.on_diagnostic(PathLoweringDiagnostic::MissingLifetime {
-                    generics_source: self.generics_source,
-                    def,
-                    expected_count,
-                });
+                self.ctx
+                    .on_diagnostic(PathLoweringDiagnostic::MissingLifetime {
+                        generics_source: self.generics_source,
+                        def,
+                        expected_count,
+                    });
             }
         }
 
@@ -829,7 +861,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             lifetime_elision,
             lowering_assoc_type_generics,
             explicit_self_ty,
-            &mut LowererCtx { ctx: self, generics_source },
+            &mut LowererCtx {
+                ctx: self,
+                generics_source,
+            },
         )
     }
 
@@ -857,91 +892,108 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         trait_ref: TraitRef<'db>,
     ) -> Option<impl Iterator<Item = Clause<'db>> + use<'a, 'b, 'c, 'db>> {
         let interner = self.ctx.interner;
-        self.current_or_prev_segment.args_and_bindings.map(|args_and_bindings| {
-            args_and_bindings.bindings.iter().enumerate().flat_map(move |(binding_idx, binding)| {
-                let found = associated_type_by_name_including_super_traits(
-                    self.ctx.db,
-                    trait_ref,
-                    &binding.name,
-                );
-                let (super_trait_ref, associated_ty) = match found {
-                    None => return SmallVec::new(),
-                    Some(t) => t,
-                };
-                let args =
-                    self.with_lifetime_elision(LifetimeElisionKind::AnonymousReportError, |this| {
-                        // FIXME: `substs_from_path_segment()` pushes `TyKind::Error` for every parent
-                        // generic params. It's inefficient to splice the `Substitution`s, so we may want
-                        // that method to optionally take parent `Substitution` as we already know them at
-                        // this point (`super_trait_ref.substitution`).
-                        this.substs_from_args_and_bindings(
-                            binding.args.as_ref(),
-                            associated_ty.into(),
-                            false, // this is not relevant
-                            Some(super_trait_ref.self_ty()),
-                            PathGenericsSource::AssocType {
-                                segment: this.current_segment_u32(),
-                                assoc_type: binding_idx as u32,
-                            },
-                            false,
-                            this.ctx.lifetime_elision.clone(),
-                        )
-                    });
-                let args = GenericArgs::new_from_iter(
-                    interner,
-                    super_trait_ref.args.iter().chain(args.iter().skip(super_trait_ref.args.len())),
-                );
-                let projection_term =
-                    AliasTerm::new_from_args(interner, associated_ty.into(), args);
-                let mut predicates: SmallVec<[_; 1]> = SmallVec::with_capacity(
-                    binding.type_ref.as_ref().map_or(0, |_| 1) + binding.bounds.len(),
-                );
-                if let Some(type_ref) = binding.type_ref {
-                    let lifetime_elision =
-                        if args_and_bindings.parenthesized == GenericArgsParentheses::ParenSugar {
-                            // `Fn()`-style generics are elided like functions. This is `Output` (we lower to it in hir-def).
-                            LifetimeElisionKind::for_fn_ret(self.ctx.interner)
-                        } else {
-                            self.ctx.lifetime_elision.clone()
+        self.current_or_prev_segment
+            .args_and_bindings
+            .map(|args_and_bindings| {
+                args_and_bindings.bindings.iter().enumerate().flat_map(
+                    move |(binding_idx, binding)| {
+                        let found = associated_type_by_name_including_super_traits(
+                            self.ctx.db,
+                            trait_ref,
+                            &binding.name,
+                        );
+                        let (super_trait_ref, associated_ty) = match found {
+                            None => return SmallVec::new(),
+                            Some(t) => t,
                         };
-                    self.with_lifetime_elision(lifetime_elision, |this| {
-                        match (&this.ctx.store[type_ref], this.ctx.impl_trait_mode.mode) {
-                            (TypeRef::ImplTrait(_), ImplTraitLoweringMode::Disallowed) => (),
-                            (
-                                _,
-                                ImplTraitLoweringMode::Disallowed | ImplTraitLoweringMode::Opaque,
-                            ) => {
-                                let ty = this.ctx.lower_ty(type_ref);
-                                let pred = Clause(Predicate::new(
-                                    interner,
-                                    Binder::dummy(rustc_type_ir::PredicateKind::Clause(
-                                        rustc_type_ir::ClauseKind::Projection(
-                                            ProjectionPredicate {
-                                                projection_term,
-                                                term: ty.into(),
-                                            },
-                                        ),
-                                    )),
-                                ));
-                                predicates.push(pred);
-                            }
+                        let args = self.with_lifetime_elision(
+                            LifetimeElisionKind::AnonymousReportError,
+                            |this| {
+                                // FIXME: `substs_from_path_segment()` pushes `TyKind::Error` for every parent
+                                // generic params. It's inefficient to splice the `Substitution`s, so we may want
+                                // that method to optionally take parent `Substitution` as we already know them at
+                                // this point (`super_trait_ref.substitution`).
+                                this.substs_from_args_and_bindings(
+                                    binding.args.as_ref(),
+                                    associated_ty.into(),
+                                    false, // this is not relevant
+                                    Some(super_trait_ref.self_ty()),
+                                    PathGenericsSource::AssocType {
+                                        segment: this.current_segment_u32(),
+                                        assoc_type: binding_idx as u32,
+                                    },
+                                    false,
+                                    this.ctx.lifetime_elision.clone(),
+                                )
+                            },
+                        );
+                        let args = GenericArgs::new_from_iter(
+                            interner,
+                            super_trait_ref
+                                .args
+                                .iter()
+                                .chain(args.iter().skip(super_trait_ref.args.len())),
+                        );
+                        let projection_term =
+                            AliasTerm::new_from_args(interner, associated_ty.into(), args);
+                        let mut predicates: SmallVec<[_; 1]> = SmallVec::with_capacity(
+                            binding.type_ref.as_ref().map_or(0, |_| 1) + binding.bounds.len(),
+                        );
+                        if let Some(type_ref) = binding.type_ref {
+                            let lifetime_elision = if args_and_bindings.parenthesized
+                                == GenericArgsParentheses::ParenSugar
+                            {
+                                // `Fn()`-style generics are elided like functions. This is `Output` (we lower to it in hir-def).
+                                LifetimeElisionKind::for_fn_ret(self.ctx.interner)
+                            } else {
+                                self.ctx.lifetime_elision.clone()
+                            };
+                            self.with_lifetime_elision(lifetime_elision, |this| {
+                                match (&this.ctx.store[type_ref], this.ctx.impl_trait_mode.mode) {
+                                    (TypeRef::ImplTrait(_), ImplTraitLoweringMode::Disallowed) => {
+                                        ()
+                                    }
+                                    (
+                                        _,
+                                        ImplTraitLoweringMode::Disallowed
+                                        | ImplTraitLoweringMode::Opaque,
+                                    ) => {
+                                        let ty = this.ctx.lower_ty(type_ref);
+                                        let pred = Clause(Predicate::new(
+                                            interner,
+                                            Binder::dummy(rustc_type_ir::PredicateKind::Clause(
+                                                rustc_type_ir::ClauseKind::Projection(
+                                                    ProjectionPredicate {
+                                                        projection_term,
+                                                        term: ty.into(),
+                                                    },
+                                                ),
+                                            )),
+                                        ));
+                                        predicates.push(pred);
+                                    }
+                                }
+                            })
                         }
-                    })
-                }
-                for bound in binding.bounds.iter() {
-                    predicates.extend(self.ctx.lower_type_bound(
-                        bound,
-                        Ty::new_alias(
-                            self.ctx.interner,
-                            AliasTyKind::Projection,
-                            AliasTy::new_from_args(self.ctx.interner, associated_ty.into(), args),
-                        ),
-                        false,
-                    ));
-                }
-                predicates
+                        for bound in binding.bounds.iter() {
+                            predicates.extend(self.ctx.lower_type_bound(
+                                bound,
+                                Ty::new_alias(
+                                    self.ctx.interner,
+                                    AliasTyKind::Projection,
+                                    AliasTy::new_from_args(
+                                        self.ctx.interner,
+                                        associated_ty.into(),
+                                        args,
+                                    ),
+                                ),
+                                false,
+                            ));
+                        }
+                        predicates
+                    },
+                )
             })
-        })
     }
 }
 
@@ -1060,8 +1112,10 @@ fn check_generic_args_len<'db>(
         had_error = true;
     }
 
-    let defaults_count =
-        def_generics.iter_self_type_or_consts().filter(|(_, param)| param.has_default()).count();
+    let defaults_count = def_generics
+        .iter_self_type_or_consts()
+        .filter(|(_, param)| param.has_default())
+        .count();
     let named_type_and_const_params_count = def_generics
         .iter_self_type_or_consts()
         .filter(|(_, param)| match param {
@@ -1072,8 +1126,11 @@ fn check_generic_args_len<'db>(
         })
         .count();
     let expected_max = named_type_and_const_params_count;
-    let expected_min =
-        if infer_args { 0 } else { named_type_and_const_params_count - defaults_count };
+    let expected_min = if infer_args {
+        0
+    } else {
+        named_type_and_const_params_count - defaults_count
+    };
     if provided_types_and_consts_count < expected_min
         || expected_max < provided_types_and_consts_count
     {
@@ -1113,8 +1170,9 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
     let args_slice = args_and_bindings.map(|it| &*it.args).unwrap_or_default();
 
     // We do not allow inference if there are specified args, i.e. we do not allow partial inference.
-    let has_non_lifetime_args =
-        args_slice.iter().any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
+    let has_non_lifetime_args = args_slice
+        .iter()
+        .any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
     infer_args &= !has_non_lifetime_args;
 
     let had_count_error = check_generic_args_len(
@@ -1152,7 +1210,9 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
     )) = params.peek()
     {
         let self_ty = if has_self_arg {
-            let (_, self_ty) = args.next().expect("has_self_type=true, should have Self type");
+            let (_, self_ty) = args
+                .next()
+                .expect("has_self_type=true, should have Self type");
             ctx.provided_kind(self_param_id, self_param, self_ty)
         } else {
             explicit_self_ty.map(|it| it.into()).unwrap_or_else(|| {
@@ -1256,7 +1316,9 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
                 let param = if let GenericParamId::LifetimeParamId(_) = param_id {
                     match &lifetime_elision {
                         LifetimeElisionKind::ElisionFailure
-                        | LifetimeElisionKind::AnonymousCreateParameter { report_in_path: true }
+                        | LifetimeElisionKind::AnonymousCreateParameter {
+                            report_in_path: true,
+                        }
                         | LifetimeElisionKind::AnonymousReportError => {
                             assert!(had_count_error);
                             ctx.inferred_kind(def, param_id, param, infer_args, &substs)
@@ -1265,7 +1327,9 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
                             Region::new_static(interner).into()
                         }
                         LifetimeElisionKind::Elided(lifetime) => (*lifetime).into(),
-                        LifetimeElisionKind::AnonymousCreateParameter { report_in_path: false }
+                        LifetimeElisionKind::AnonymousCreateParameter {
+                            report_in_path: false,
+                        }
                         | LifetimeElisionKind::Infer => {
                             // FIXME: With `AnonymousCreateParameter`, we need to create a new lifetime parameter here
                             // (but this will probably be done in hir-def lowering instead).

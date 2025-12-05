@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 37056 bytes
 Chloro size:   36810 bytes
-Rustfmt size:  37056 bytes
+Rustfmt size:  37849 bytes
 
 ✗ Outputs DIFFER
 
@@ -20,22 +20,139 @@ Rustfmt size:  37056 bytes
  #[derive(Debug, Hash, PartialEq, Eq)]
  pub struct Annotation {
      pub range: TextRange,
- #[derive(Debug, Hash, PartialEq, Eq)]
- pub enum AnnotationKind {
-     Runnable(Runnable),
--    HasImpls { pos: FilePosition, data: Option<Vec<NavigationTarget>> },
--    HasReferences { pos: FilePosition, data: Option<Vec<FileRange>> },
-+    HasImpls {
-+        pos: FilePosition,
-+        data: Option<Vec<NavigationTarget>>,
-+    },
-+    HasReferences {
-+        pos: FilePosition,
-+        data: Option<Vec<FileRange>>,
-+    },
- }
  
- pub struct AnnotationConfig<'a> {
+             let range = runnable.nav.focus_or_full_range();
+ 
+-            annotations.insert(Annotation {
+-                range,
+-                kind: AnnotationKind::Runnable(runnable),
+-            });
++            annotations.insert(Annotation { range, kind: AnnotationKind::Runnable(runnable) });
+         }
+     }
+ 
+             AnnotationLocation::AboveName => cmd_target,
+             AnnotationLocation::AboveWholeItem => range,
+         };
+-        let target_pos = FilePosition {
+-            file_id,
+-            offset: cmd_target.start(),
+-        };
++        let target_pos = FilePosition { file_id, offset: cmd_target.start() };
+         (annotation_range, target_pos)
+     };
+ 
+     visit_file_defs(&Semantics::new(db), file_id, &mut |def| {
+         let range = match def {
+-            Definition::Const(konst) if config.annotate_references => konst
+-                .source(db)
+-                .and_then(|node| name_range(db, node, file_id)),
++            Definition::Const(konst) if config.annotate_references => {
++                konst.source(db).and_then(|node| name_range(db, node, file_id))
++            }
+             Definition::Trait(trait_) if config.annotate_references || config.annotate_impls => {
+-                trait_
+-                    .source(db)
+-                    .and_then(|node| name_range(db, node, file_id))
++                trait_.source(db).and_then(|node| name_range(db, node, file_id))
+             }
+             Definition::Adt(adt) => match adt {
+                 hir::Adt::Enum(enum_) => {
+                             .variants(db)
+                             .into_iter()
+                             .filter_map(|variant| {
+-                                variant
+-                                    .source(db)
+-                                    .and_then(|node| name_range(db, node, file_id))
++                                variant.source(db).and_then(|node| name_range(db, node, file_id))
+                             })
+                             .for_each(|range| {
+                                 let (annotation_range, target_position) = mk_ranges(range);
+                             })
+                     }
+                     if config.annotate_references || config.annotate_impls {
+-                        enum_
+-                            .source(db)
+-                            .and_then(|node| name_range(db, node, file_id))
++                        enum_.source(db).and_then(|node| name_range(db, node, file_id))
+                     } else {
+                         None
+                     }
+                 }
+                 _ => {
+                     if config.annotate_references || config.annotate_impls {
+-                        adt.source(db)
+-                            .and_then(|node| name_range(db, node, file_id))
++                        adt.source(db).and_then(|node| name_range(db, node, file_id))
+                     } else {
+                         None
+                     }
+         if config.annotate_impls && !matches!(def, Definition::Const(_)) {
+             annotations.insert(Annotation {
+                 range: annotation_range,
+-                kind: AnnotationKind::HasImpls {
+-                    pos: target_pos,
+-                    data: None,
+-                },
++                kind: AnnotationKind::HasImpls { pos: target_pos, data: None },
+             });
+         }
+ 
+         if config.annotate_references {
+             annotations.insert(Annotation {
+                 range: annotation_range,
+-                kind: AnnotationKind::HasReferences {
+-                    pos: target_pos,
+-                    data: None,
+-                },
++                kind: AnnotationKind::HasReferences { pos: target_pos, data: None },
+             });
+         }
+ 
+             let (annotation_range, target_range) = mk_ranges(range);
+             Annotation {
+                 range: annotation_range,
+-                kind: AnnotationKind::HasReferences {
+-                    pos: target_range,
+-                    data: None,
+-                },
++                kind: AnnotationKind::HasReferences { pos: target_range, data: None },
+             }
+         }));
+     }
+     annotations
+         .into_iter()
+         .sorted_by_key(|a| {
+-            (
+-                a.range.start(),
+-                a.range.end(),
+-                matches!(a.kind, AnnotationKind::Runnable(..)),
+-            )
++            (a.range.start(), a.range.end(), matches!(a.kind, AnnotationKind::Runnable(..)))
+         })
+         .collect()
+ }
+             *data = find_all_refs(
+                 &Semantics::new(db),
+                 pos,
+-                &FindAllRefsConfig {
+-                    search_scope: None,
+-                    minicore: config.minicore,
+-                },
++                &FindAllRefsConfig { search_scope: None, minicore: config.minicore },
+             )
+             .map(|result| {
+                 result
+                     .into_iter()
+                     .flat_map(|res| res.references)
+                     .flat_map(|(file_id, access)| {
+-                        access
+-                            .into_iter()
+-                            .map(move |(range, _)| FileRange { file_id, range })
++                        access.into_iter().map(move |(range, _)| FileRange { file_id, range })
+                     })
+                     .collect()
+             });
  mod tests {
      use expect_test::{Expect, expect};
      use ide_db::MiniCore;
@@ -54,6 +171,16 @@ Rustfmt size:  37056 bytes
      fn check_with_config(
          #[rust_analyzer::rust_fixture] ra_fixture: &str,
          expect: Expect,
+             .annotations(config, file_id)
+             .unwrap()
+             .into_iter()
+-            .map(|annotation| {
+-                analysis
+-                    .resolve_annotation(&DEFAULT_CONFIG, annotation)
+-                    .unwrap()
+-            })
++            .map(|annotation| analysis.resolve_annotation(&DEFAULT_CONFIG, annotation).unwrap())
+             .collect();
  
          expect.assert_debug_eq(&annotations);
      }
@@ -128,3 +255,14 @@ Rustfmt size:  37056 bytes
      #[test]
      fn test_annotations_appear_above_whole_item_when_configured_to_do_so() {
          check_with_config(
+                     },
+                 ]
+             "#]],
+-            &AnnotationConfig {
+-                location: AnnotationLocation::AboveWholeItem,
+-                ..DEFAULT_CONFIG
+-            },
++            &AnnotationConfig { location: AnnotationLocation::AboveWholeItem, ..DEFAULT_CONFIG },
+         );
+     }
+ }

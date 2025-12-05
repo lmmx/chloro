@@ -50,7 +50,7 @@ impl LineEndings {
                     return (
                         unsafe { String::from_utf8_unchecked(buf) },
                         LineEndings::Unix,
-                    )
+                    );
                 }
                 Some(idx) => {
                     crlf_seen = true;

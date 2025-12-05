@@ -82,9 +82,10 @@ pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                 let alias = wrapper_alias(ctx, &make, core_wrapper, type_ref, &ty, kind.symbol());
                 let (ast_new_return_ty, semantic_new_return_ty) = alias.unwrap_or_else(|| {
                     let (ast_ty, ty_constructor) = match kind {
-                        WrapperKind::Option => {
-                            (make.ty_option(type_ref.clone()), famous_defs.core_option_Option())
-                        }
+                        WrapperKind::Option => (
+                            make.ty_option(type_ref.clone()),
+                            famous_defs.core_option_Option(),
+                        ),
                         WrapperKind::Result => (
                             make.ty_result(type_ref.clone(), make.ty_infer().into()),
                             famous_defs.core_result_Result(),
@@ -111,7 +112,9 @@ pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 
                 for ret_expr_arg in exprs_to_wrap {
                     if let Some(ty) = ctx.sema.type_of_expr(&ret_expr_arg)
-                        && ty.adjusted().could_unify_with(ctx.db(), &semantic_new_return_ty)
+                        && ty
+                            .adjusted()
+                            .could_unify_with(ctx.db(), &semantic_new_return_ty)
                     {
                         // The type is already correct, don't wrap it.
                         // We deliberately don't use `could_unify_with_deeply()`, because as long as the outer
@@ -226,43 +229,49 @@ fn wrapper_alias<'db>(
         iter::once(hir::Name::new_symbol_root(wrapper)),
     );
 
-    ctx.sema.resolve_mod_path(ast_ret_type.syntax(), &wrapper_path).and_then(|def| {
-        def.filter_map(|def| match def.into_module_def() {
-            hir::ModuleDef::TypeAlias(alias) => {
-                let enum_ty = alias.ty(ctx.db()).as_adt()?.as_enum()?;
-                (enum_ty == core_wrapper).then_some((alias, enum_ty))
-            }
-            _ => None,
-        })
-        .find_map(|(alias, enum_ty)| {
-            let mut inserted_ret_type = false;
-            let generic_args =
-                alias.source(ctx.db())?.value.generic_param_list()?.generic_params().map(|param| {
-                    match param {
-                        // Replace the very first type parameter with the function's return type.
-                        ast::GenericParam::TypeParam(_) if !inserted_ret_type => {
-                            inserted_ret_type = true;
-                            make.type_arg(ast_ret_type.clone()).into()
+    ctx.sema
+        .resolve_mod_path(ast_ret_type.syntax(), &wrapper_path)
+        .and_then(|def| {
+            def.filter_map(|def| match def.into_module_def() {
+                hir::ModuleDef::TypeAlias(alias) => {
+                    let enum_ty = alias.ty(ctx.db()).as_adt()?.as_enum()?;
+                    (enum_ty == core_wrapper).then_some((alias, enum_ty))
+                }
+                _ => None,
+            })
+            .find_map(|(alias, enum_ty)| {
+                let mut inserted_ret_type = false;
+                let generic_args = alias
+                    .source(ctx.db())?
+                    .value
+                    .generic_param_list()?
+                    .generic_params()
+                    .map(|param| {
+                        match param {
+                            // Replace the very first type parameter with the function's return type.
+                            ast::GenericParam::TypeParam(_) if !inserted_ret_type => {
+                                inserted_ret_type = true;
+                                make.type_arg(ast_ret_type.clone()).into()
+                            }
+                            ast::GenericParam::LifetimeParam(_) => {
+                                make.lifetime_arg(make.lifetime("'_")).into()
+                            }
+                            _ => make.type_arg(make.ty_infer().into()).into(),
                         }
-                        ast::GenericParam::LifetimeParam(_) => {
-                            make.lifetime_arg(make.lifetime("'_")).into()
-                        }
-                        _ => make.type_arg(make.ty_infer().into()).into(),
-                    }
-                });
+                    });
 
-            let name = alias.name(ctx.db());
-            let generic_arg_list = make.generic_arg_list(generic_args, false);
-            let path = make.path_unqualified(
-                make.path_segment_generics(make.name_ref(name.as_str()), generic_arg_list),
-            );
+                let name = alias.name(ctx.db());
+                let generic_arg_list = make.generic_arg_list(generic_args, false);
+                let path = make.path_unqualified(
+                    make.path_segment_generics(make.name_ref(name.as_str()), generic_arg_list),
+                );
 
-            let new_ty =
-                hir::Adt::from(enum_ty).ty_with_args(ctx.db(), [semantic_ret_type.clone()]);
+                let new_ty =
+                    hir::Adt::from(enum_ty).ty_with_args(ctx.db(), [semantic_ret_type.clone()]);
 
-            Some((make.ty_path(path), new_ty))
+                Some((make.ty_path(path), new_ty))
+            })
         })
-    })
 }
 
 fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {

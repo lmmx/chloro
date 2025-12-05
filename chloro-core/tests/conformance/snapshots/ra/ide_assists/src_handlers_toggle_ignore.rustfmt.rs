@@ -1,9 +1,9 @@
 use syntax::{
-    ast::{self, HasAttrs},
     AstNode, AstToken,
+    ast::{self, HasAttrs},
 };
 
-use crate::{utils::test_related_attribute_syn, AssistContext, AssistId, Assists};
+use crate::{AssistContext, AssistId, Assists, utils::test_related_attribute_syn};
 
 // Assist: toggle_ignore
 //

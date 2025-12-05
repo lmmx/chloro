@@ -137,7 +137,11 @@ fn remove_tokens_within_cfg_attr(meta: Meta) -> Option<FxHashSet<SyntaxElement>>
 }
 /// Removes a possible comma after the [AstNode]
 fn remove_possible_comma(item: &impl AstNode, res: &mut FxHashSet<SyntaxElement>) {
-    if let Some(comma) = item.syntax().next_sibling_or_token().filter(|it| it.kind() == T![,]) {
+    if let Some(comma) = item
+        .syntax()
+        .next_sibling_or_token()
+        .filter(|it| it.kind() == T![,])
+    {
         res.insert(comma);
     }
 }

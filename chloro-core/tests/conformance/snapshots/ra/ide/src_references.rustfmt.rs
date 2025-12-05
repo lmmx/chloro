@@ -127,8 +127,11 @@ pub(crate) fn find_all_refs(
     let syntax = sema.parse_guess_edition(position.file_id).syntax().clone();
     let make_searcher = |literal_search: bool| {
         move |def: Definition| {
-            let mut usages =
-                def.usages(sema).set_scope(config.search_scope.as_ref()).include_self_refs().all();
+            let mut usages = def
+                .usages(sema)
+                .set_scope(config.search_scope.as_ref())
+                .include_self_refs()
+                .all();
             if literal_search {
                 retain_adt_literal_usages(&mut usages, def, sema);
             }
@@ -167,7 +170,10 @@ pub(crate) fn find_all_refs(
                     nav,
                 }
             });
-            ReferenceSearchResult { declaration, references }
+            ReferenceSearchResult {
+                declaration,
+                references,
+            }
         }
     };
 
@@ -184,7 +190,13 @@ pub(crate) fn find_all_refs(
             fixture_analysis.map_offset_down(position.offset)
     {
         return analysis
-            .find_all_refs(FilePosition { file_id: virtual_file_id, offset: file_offset }, config)
+            .find_all_refs(
+                FilePosition {
+                    file_id: virtual_file_id,
+                    offset: file_offset,
+                },
+                config,
+            )
             .ok()??
             .upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, position.file_id)
             .ok();
@@ -194,15 +206,22 @@ pub(crate) fn find_all_refs(
         Some(name) => {
             let def = match NameClass::classify(sema, &name)? {
                 NameClass::Definition(it) | NameClass::ConstReference(it) => it,
-                NameClass::PatFieldShorthand { local_def: _, field_ref, adt_subst: _ } => {
-                    Definition::Field(field_ref)
-                }
+                NameClass::PatFieldShorthand {
+                    local_def: _,
+                    field_ref,
+                    adt_subst: _,
+                } => Definition::Field(field_ref),
             };
             Some(vec![make_searcher(true)(def)])
         }
         None => {
             let search = make_searcher(false);
-            Some(find_defs(sema, &syntax, position.offset)?.into_iter().map(search).collect())
+            Some(
+                find_defs(sema, &syntax, position.offset)?
+                    .into_iter()
+                    .map(search)
+                    .collect(),
+            )
         }
     }
 }
@@ -251,9 +270,11 @@ pub(crate) fn find_defs(
                     }
                     ast::NameLike::Name(name) => match NameClass::classify(sema, &name)? {
                         NameClass::Definition(it) | NameClass::ConstReference(it) => it,
-                        NameClass::PatFieldShorthand { local_def, field_ref: _, adt_subst: _ } => {
-                            Definition::Local(local_def)
-                        }
+                        NameClass::PatFieldShorthand {
+                            local_def,
+                            field_ref: _,
+                            adt_subst: _,
+                        } => Definition::Local(local_def),
                     },
                     ast::NameLike::Lifetime(lifetime) => {
                         NameRefClass::classify_lifetime(sema, &lifetime)
@@ -451,7 +472,10 @@ fn handle_control_flow_keywords(
     })
     .collect();
 
-    Some(ReferenceSearchResult { declaration: None, references })
+    Some(ReferenceSearchResult {
+        declaration: None,
+        references,
+    })
 }
 
 #[cfg(test)]

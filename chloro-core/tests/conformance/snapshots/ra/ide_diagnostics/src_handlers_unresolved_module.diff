@@ -8,16 +8,6 @@ Rustfmt size:  2696 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::db::ExpandDatabase;
- use ide_db::{assists::Assist, base_db::AnchoredPathBuf, source_change::FileSystemEdit};
- use itertools::Itertools;
- use syntax::AstNode;
- 
--use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
- 
- // Diagnostic: unresolved-module
- //
                      &format!("Create module at `{candidate}`"),
                      FileSystemEdit::CreateFile {
                          dst: AnchoredPathBuf {

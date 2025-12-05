@@ -5,23 +5,23 @@
 //! node for a *child*, and get its hir.
 
 use either::Either;
-use hir_expand::{attrs::collect_attrs, HirFileId};
+use hir_expand::{HirFileId, attrs::collect_attrs};
 use span::AstIdNode;
-use syntax::{ast, AstPtr};
+use syntax::{AstPtr, ast};
 
 use hir_def::{
+    AdtId, AssocItemId, AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, ImplId,
+    LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
+    VariantId,
     db::DefDatabase,
     dyn_map::{
-        keys::{self, Key},
         DynMap,
+        keys::{self, Key},
     },
     hir::generics::GenericParams,
     item_scope::ItemScope,
     nameres::DefMap,
     src::{HasChildSource, HasSource},
-    AdtId, AssocItemId, AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, ImplId,
-    LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
-    VariantId,
 };
 
 pub(crate) trait ChildBySource {

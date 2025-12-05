@@ -1,13 +1,13 @@
 use ide_db::famous_defs::FamousDefs;
 use stdx::format_to;
 use syntax::{
-    ast::{self, make, HasGenericParams, HasName, HasTypeBounds, Impl},
     AstNode,
+    ast::{self, HasGenericParams, HasName, HasTypeBounds, Impl, make},
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
     AssistId,
+    assist_context::{AssistContext, Assists},
 };
 
 // Assist: generate_default_from_new

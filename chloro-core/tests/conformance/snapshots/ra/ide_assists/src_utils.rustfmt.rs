@@ -51,10 +51,13 @@ pub fn extract_trivial_expression(block_expr: &ast::BlockExpr) -> Option<ast::Ex
     let stmt_list = block_expr.stmt_list()?;
     let has_anything_else = |thing: &SyntaxNode| -> bool {
         let mut non_trivial_children =
-            stmt_list.syntax().children_with_tokens().filter(|it| match it.kind() {
-                WHITESPACE | T!['{'] | T!['}'] => false,
-                _ => it.as_node() != Some(thing),
-            });
+            stmt_list
+                .syntax()
+                .children_with_tokens()
+                .filter(|it| match it.kind() {
+                    WHITESPACE | T!['{'] | T!['}'] => false,
+                    _ => it.as_node() != Some(thing),
+                });
         non_trivial_children.next().is_some()
     };
     if stmt_list
@@ -79,7 +82,10 @@ pub fn extract_trivial_expression(block_expr: &ast::BlockExpr) -> Option<ast::Ex
             return None;
         }
         let expr = expr_stmt.expr()?;
-        if matches!(expr.syntax().kind(), CONTINUE_EXPR | BREAK_EXPR | RETURN_EXPR) {
+        if matches!(
+            expr.syntax().kind(),
+            CONTINUE_EXPR | BREAK_EXPR | RETURN_EXPR
+        ) {
             return Some(expr);
         }
     }
@@ -96,7 +102,11 @@ pub fn test_related_attribute_syn(fn_def: &ast::Fn) -> Option<ast::Attr> {
     fn_def.attrs().find_map(|attr| {
         let path = attr.path()?;
         let text = path.syntax().text().to_string();
-        if text.starts_with("test") || text.ends_with("test") { Some(attr) } else { None }
+        if text.starts_with("test") || text.ends_with("test") {
+            Some(attr)
+        } else {
+            None
+        }
     })
 }
 
@@ -198,36 +208,48 @@ pub fn add_trait_assoc_items_to_impl(
     let new_indent_level = IndentLevel::from_node(impl_.syntax()) + 1;
     original_items
         .iter()
-        .map(|InFile { file_id, value: original_item }| {
-            let mut cloned_item = {
-                if let Some(macro_file) = file_id.macro_file() {
-                    let span_map = sema.db.expansion_span_map(macro_file);
-                    let item_prettified = prettify_macro_expansion(
-                        sema.db,
-                        original_item.syntax().clone(),
-                        &span_map,
-                        target_scope.krate().into(),
-                    );
-                    if let Some(formatted) = ast::AssocItem::cast(item_prettified) {
-                        return formatted;
-                    } else {
-                        stdx::never!("formatted `AssocItem` could not be cast back to `AssocItem`");
+        .map(
+            |InFile {
+                 file_id,
+                 value: original_item,
+             }| {
+                let mut cloned_item = {
+                    if let Some(macro_file) = file_id.macro_file() {
+                        let span_map = sema.db.expansion_span_map(macro_file);
+                        let item_prettified = prettify_macro_expansion(
+                            sema.db,
+                            original_item.syntax().clone(),
+                            &span_map,
+                            target_scope.krate().into(),
+                        );
+                        if let Some(formatted) = ast::AssocItem::cast(item_prettified) {
+                            return formatted;
+                        } else {
+                            stdx::never!(
+                                "formatted `AssocItem` could not be cast back to `AssocItem`"
+                            );
+                        }
                     }
+                    original_item
                 }
-                original_item
-            }
-            .reset_indent();
+                .reset_indent();
 
-            if let Some(source_scope) = sema.scope(original_item.syntax()) {
-                // FIXME: Paths in nested macros are not handled well. See
-                // `add_missing_impl_members::paths_in_nested_macro_should_get_transformed` test.
-                let transform =
-                    PathTransform::trait_impl(target_scope, &source_scope, trait_, impl_.clone());
-                cloned_item = ast::AssocItem::cast(transform.apply(cloned_item.syntax())).unwrap();
-            }
-            cloned_item.remove_attrs_and_docs();
-            cloned_item
-        })
+                if let Some(source_scope) = sema.scope(original_item.syntax()) {
+                    // FIXME: Paths in nested macros are not handled well. See
+                    // `add_missing_impl_members::paths_in_nested_macro_should_get_transformed` test.
+                    let transform = PathTransform::trait_impl(
+                        target_scope,
+                        &source_scope,
+                        trait_,
+                        impl_.clone(),
+                    );
+                    cloned_item =
+                        ast::AssocItem::cast(transform.apply(cloned_item.syntax())).unwrap();
+                }
+                cloned_item.remove_attrs_and_docs();
+                cloned_item
+            },
+        )
         .filter_map(|item| match item {
             ast::AssocItem::Fn(fn_) if fn_.body().is_none() => {
                 let fn_ = fn_.clone_subtree();
@@ -286,12 +308,13 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 ast::BinaryOp::CmpOp(ast::CmpOp::Eq { negated }) => {
                     ast::BinaryOp::CmpOp(ast::CmpOp::Eq { negated: !negated })
                 }
-                ast::BinaryOp::CmpOp(ast::CmpOp::Ord { ordering: ast::Ordering::Less, strict }) => {
-                    ast::BinaryOp::CmpOp(ast::CmpOp::Ord {
-                        ordering: ast::Ordering::Greater,
-                        strict: !strict,
-                    })
-                }
+                ast::BinaryOp::CmpOp(ast::CmpOp::Ord {
+                    ordering: ast::Ordering::Less,
+                    strict,
+                }) => ast::BinaryOp::CmpOp(ast::CmpOp::Ord {
+                    ordering: ast::Ordering::Greater,
+                    strict: !strict,
+                }),
                 ast::BinaryOp::CmpOp(ast::CmpOp::Ord {
                     ordering: ast::Ordering::Greater,
                     strict,
@@ -302,7 +325,8 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 // Parenthesize other expressions before prefixing `!`
                 _ => {
                     return Some(
-                        make.expr_prefix(T![!], make.expr_paren(expr.clone()).into()).into(),
+                        make.expr_prefix(T![!], make.expr_paren(expr.clone()).into())
+                            .into(),
                     );
                 }
             };
@@ -322,7 +346,10 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 _ => return None,
             };
 
-            Some(make.expr_method_call(receiver, make.name_ref(method), arg_list).into())
+            Some(
+                make.expr_method_call(receiver, make.name_ref(method), arg_list)
+                    .into(),
+            )
         }
         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
             ast::Expr::ParenExpr(parexpr) => {
@@ -418,9 +445,13 @@ pub(crate) fn does_pat_variant_nested_or_literal(ctx: &AssistContext<'_>, pat: &
 }
 
 fn check_pat_variant_from_enum(ctx: &AssistContext<'_>, pat: &ast::Pat) -> bool {
-    ctx.sema.type_of_pat(pat).is_none_or(|ty: hir::TypeInfo<'_>| {
-        ty.adjusted().as_adt().is_some_and(|adt| matches!(adt, hir::Adt::Enum(_)))
-    })
+    ctx.sema
+        .type_of_pat(pat)
+        .is_none_or(|ty: hir::TypeInfo<'_>| {
+            ty.adjusted()
+                .as_adt()
+                .is_some_and(|adt| matches!(adt, hir::Adt::Enum(_)))
+        })
 }
 
 fn check_pat_variant_nested_or_literal_with_depth(
@@ -452,8 +483,12 @@ fn check_pat_variant_nested_or_literal_with_depth(
             check_pat_variant_nested_or_literal_with_depth(ctx, &pat, depth_after_refutable)
         }),
         ast::Pat::RecordPat(record_pat) => {
-            let adjusted_next_depth =
-                depth_after_refutable + if check_pat_variant_from_enum(ctx, pat) { 1 } else { 0 };
+            let adjusted_next_depth = depth_after_refutable
+                + if check_pat_variant_from_enum(ctx, pat) {
+                    1
+                } else {
+                    0
+                };
             record_pat.record_pat_field_list().is_none_or(|pat| {
                 pat.fields().any(|pat| {
                     pat.pat().is_none_or(|pat| {
@@ -470,8 +505,12 @@ fn check_pat_variant_nested_or_literal_with_depth(
             check_pat_variant_nested_or_literal_with_depth(ctx, &pat, depth_after_refutable)
         }),
         ast::Pat::TupleStructPat(tuple_struct_pat) => {
-            let adjusted_next_depth =
-                depth_after_refutable + if check_pat_variant_from_enum(ctx, pat) { 1 } else { 0 };
+            let adjusted_next_depth = depth_after_refutable
+                + if check_pat_variant_from_enum(ctx, pat) {
+                    1
+                } else {
+                    0
+                };
             tuple_struct_pat.fields().any(|pat| {
                 check_pat_variant_nested_or_literal_with_depth(ctx, &pat, adjusted_next_depth)
             })
@@ -511,21 +550,28 @@ pub(crate) fn find_struct_impl(
 
     let struct_def = ctx.sema.to_def(adt)?;
 
-    let block = module.descendants().filter_map(ast::Impl::cast).find_map(|impl_blk| {
-        let blk = ctx.sema.to_def(&impl_blk)?;
+    let block = module
+        .descendants()
+        .filter_map(ast::Impl::cast)
+        .find_map(|impl_blk| {
+            let blk = ctx.sema.to_def(&impl_blk)?;
 
-        // FIXME: handle e.g. `struct S<T>; impl<U> S<U> {}`
-        // (we currently use the wrong type parameter)
-        // also we wouldn't want to use e.g. `impl S<u32>`
+            // FIXME: handle e.g. `struct S<T>; impl<U> S<U> {}`
+            // (we currently use the wrong type parameter)
+            // also we wouldn't want to use e.g. `impl S<u32>`
 
-        let same_ty = match blk.self_ty(db).as_adt() {
-            Some(def) => def == struct_def,
-            None => false,
-        };
-        let not_trait_impl = blk.trait_(db).is_none();
+            let same_ty = match blk.self_ty(db).as_adt() {
+                Some(def) => def == struct_def,
+                None => false,
+            };
+            let not_trait_impl = blk.trait_(db).is_none();
 
-        if !(same_ty && not_trait_impl) { None } else { Some(impl_blk) }
-    });
+            if !(same_ty && not_trait_impl) {
+                None
+            } else {
+                Some(impl_blk)
+            }
+        });
 
     if let Some(ref impl_blk) = block
         && has_any_fn(impl_blk, names)
@@ -603,14 +649,16 @@ fn generate_impl_text_inner(
 ) -> String {
     // Ensure lifetime params are before type & const params
     let generic_params = adt.generic_param_list().map(|generic_params| {
-        let lifetime_params =
-            generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
+        let lifetime_params = generic_params
+            .lifetime_params()
+            .map(ast::GenericParam::LifetimeParam);
         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
             let param = match param {
                 ast::TypeOrConstParam::Type(param) => {
                     // remove defaults since they can't be specified in impls
-                    let mut bounds =
-                        param.type_bound_list().map_or_else(Vec::new, |it| it.bounds().collect());
+                    let mut bounds = param
+                        .type_bound_list()
+                        .map_or_else(Vec::new, |it| it.bounds().collect());
                     if let Some(trait_) = trait_text {
                         // Add the current trait to `bounds` if the trait is transitive,
                         // meaning `impl<T> Trait for U<T>` requires `T: Trait`.
@@ -640,9 +688,11 @@ fn generate_impl_text_inner(
 
     // Copy any cfg attrs from the original adt
     buf.push_str("\n\n");
-    let cfg_attrs = adt
-        .attrs()
-        .filter(|attr| attr.as_simple_call().map(|(name, _arg)| name == "cfg").unwrap_or(false));
+    let cfg_attrs = adt.attrs().filter(|attr| {
+        attr.as_simple_call()
+            .map(|(name, _arg)| name == "cfg")
+            .unwrap_or(false)
+    });
     cfg_attrs.for_each(|attr| buf.push_str(&format!("{attr}\n")));
 
     // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
@@ -710,14 +760,16 @@ fn generate_impl_inner(
 ) -> ast::Impl {
     // Ensure lifetime params are before type & const params
     let generic_params = adt.generic_param_list().map(|generic_params| {
-        let lifetime_params =
-            generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
+        let lifetime_params = generic_params
+            .lifetime_params()
+            .map(ast::GenericParam::LifetimeParam);
         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
             let param = match param {
                 ast::TypeOrConstParam::Type(param) => {
                     // remove defaults since they can't be specified in impls
-                    let mut bounds =
-                        param.type_bound_list().map_or_else(Vec::new, |it| it.bounds().collect());
+                    let mut bounds = param
+                        .type_bound_list()
+                        .map_or_else(Vec::new, |it| it.bounds().collect());
                     if let Some(trait_) = &trait_ {
                         // Add the current trait to `bounds` if the trait is transitive,
                         // meaning `impl<T> Trait for U<T>` requires `T: Trait`.
@@ -740,12 +792,15 @@ fn generate_impl_inner(
 
         make::generic_param_list(itertools::chain(lifetime_params, ty_or_const_params))
     });
-    let generic_args =
-        generic_params.as_ref().map(|params| params.to_generic_args().clone_for_update());
+    let generic_args = generic_params
+        .as_ref()
+        .map(|params| params.to_generic_args().clone_for_update());
     let ty = make::ty_path(make::ext::ident_path(&adt.name().unwrap().text()));
 
-    let cfg_attrs =
-        adt.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
+    let cfg_attrs = adt.attrs().filter(|attr| {
+        attr.as_simple_call()
+            .is_some_and(|(name, _arg)| name == "cfg")
+    });
     match trait_ {
         Some(trait_) => make::impl_trait(
             cfg_attrs,
@@ -761,7 +816,14 @@ fn generate_impl_inner(
             adt.where_clause(),
             body,
         ),
-        None => make::impl_(cfg_attrs, generic_params, generic_args, ty, adt.where_clause(), body),
+        None => make::impl_(
+            cfg_attrs,
+            generic_params,
+            generic_args,
+            ty,
+            adt.where_clause(),
+            body,
+        ),
     }
     .clone_for_update()
 }
@@ -852,10 +914,16 @@ impl<'db> ReferenceConversion<'db> {
             }
             ReferenceConversionType::Result => {
                 let mut type_arguments = self.ty.type_arguments();
-                let first_type_argument_name =
-                    type_arguments.next().unwrap().display(db, display_target).to_string();
-                let second_type_argument_name =
-                    type_arguments.next().unwrap().display(db, display_target).to_string();
+                let first_type_argument_name = type_arguments
+                    .next()
+                    .unwrap()
+                    .display(db, display_target)
+                    .to_string();
+                let second_type_argument_name = type_arguments
+                    .next()
+                    .unwrap()
+                    .display(db, display_target)
+                    .to_string();
                 format!("Result<&{first_type_argument_name}, &{second_type_argument_name}>")
             }
         };
@@ -898,7 +966,11 @@ pub(crate) fn convert_reference_type<'db>(
         .or_else(|| handle_dereferenced(&ty, db, famous_defs))
         .or_else(|| handle_option_as_ref(&ty, db, famous_defs))
         .or_else(|| handle_result_as_ref(&ty, db, famous_defs))
-        .map(|(conversion, impls_deref)| ReferenceConversion { ty, conversion, impls_deref })
+        .map(|(conversion, impls_deref)| ReferenceConversion {
+            ty,
+            conversion,
+            impls_deref,
+        })
 }
 
 fn could_deref_to_target(ty: &hir::Type<'_>, target: &hir::Type<'_>, db: &dyn HirDatabase) -> bool {
@@ -911,7 +983,8 @@ fn handle_copy(
     ty: &hir::Type<'_>,
     db: &dyn HirDatabase,
 ) -> Option<(ReferenceConversionType, bool)> {
-    ty.is_copy(db).then_some((ReferenceConversionType::Copy, true))
+    ty.is_copy(db)
+        .then_some((ReferenceConversionType::Copy, true))
 }
 
 fn handle_as_ref_str(
@@ -921,8 +994,15 @@ fn handle_as_ref_str(
 ) -> Option<(ReferenceConversionType, bool)> {
     let str_type = hir::BuiltinType::str().ty(db);
 
-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type))
-        .then_some((ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)))
+    ty.impls_trait(
+        db,
+        famous_defs.core_convert_AsRef()?,
+        slice::from_ref(&str_type),
+    )
+    .then_some((
+        ReferenceConversionType::AsRefStr,
+        could_deref_to_target(ty, &str_type, db),
+    ))
 }
 
 fn handle_as_ref_slice(
@@ -933,7 +1013,12 @@ fn handle_as_ref_slice(
     let type_argument = ty.type_arguments().next()?;
     let slice_type = hir::Type::new_slice(type_argument);
 
-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some((
+    ty.impls_trait(
+        db,
+        famous_defs.core_convert_AsRef()?,
+        slice::from_ref(&slice_type),
+    )
+    .then_some((
         ReferenceConversionType::AsRefSlice,
         could_deref_to_target(ty, &slice_type, db),
     ))
@@ -946,11 +1031,15 @@ fn handle_dereferenced(
 ) -> Option<(ReferenceConversionType, bool)> {
     let type_argument = ty.type_arguments().next()?;
 
-    ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument))
-        .then_some((
-            ReferenceConversionType::Dereferenced,
-            could_deref_to_target(ty, &type_argument, db),
-        ))
+    ty.impls_trait(
+        db,
+        famous_defs.core_convert_AsRef()?,
+        slice::from_ref(&type_argument),
+    )
+    .then_some((
+        ReferenceConversionType::Dereferenced,
+        could_deref_to_target(ty, &type_argument, db),
+    ))
 }
 
 fn handle_option_as_ref(
@@ -1090,7 +1179,10 @@ pub(crate) fn replace_record_field_expr(
     if let Some(ast::Expr::PathExpr(path_expr)) = record_field.expr() {
         // replace field shorthand
         let file_range = ctx.sema.original_range(path_expr.syntax());
-        edit.insert(file_range.range.end(), format!(": {}", initializer.syntax().text()))
+        edit.insert(
+            file_range.range.end(),
+            format!(": {}", initializer.syntax().text()),
+        )
     } else if let Some(expr) = record_field.expr() {
         // just replace expr
         let file_range = ctx.sema.original_range(expr.syntax());
@@ -1104,7 +1196,9 @@ pub(crate) fn tt_from_syntax(node: SyntaxNode) -> Vec<NodeOrToken<ast::TokenTree
     let mut tt_stack = vec![(None, vec![])];
 
     for element in node.descendants_with_tokens() {
-        let NodeOrToken::Token(token) = element else { continue };
+        let NodeOrToken::Token(token) = element else {
+            continue;
+        };
 
         match token.kind() {
             T!['('] | T!['{'] | T!['['] => {
@@ -1138,7 +1232,10 @@ pub(crate) fn tt_from_syntax(node: SyntaxNode) -> Vec<NodeOrToken<ast::TokenTree
         }
     }
 
-    tt_stack.pop().expect("parent token tree was closed before it was completed").1
+    tt_stack
+        .pop()
+        .expect("parent token tree was closed before it was completed")
+        .1
 }
 
 pub(crate) fn cover_let_chain(mut expr: ast::Expr, range: TextRange) -> Option<ast::Expr> {
@@ -1181,8 +1278,10 @@ pub fn is_body_const(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr) -> bo
                 }
             }
             ast::Expr::MethodCallExpr(call) => {
-                is_const &=
-                    sema.resolve_method_call(&call).map(|it| it.is_const(sema.db)).unwrap_or(true)
+                is_const &= sema
+                    .resolve_method_call(&call)
+                    .map(|it| it.is_const(sema.db))
+                    .unwrap_or(true)
             }
             ast::Expr::ForExpr(_)
             | ast::Expr::ReturnExpr(_)
@@ -1202,11 +1301,13 @@ pub(crate) fn is_never_block(
     block_expr: &ast::BlockExpr,
 ) -> bool {
     if let Some(tail_expr) = block_expr.tail_expr() {
-        sema.type_of_expr(&tail_expr).is_some_and(|ty| ty.original.is_never())
+        sema.type_of_expr(&tail_expr)
+            .is_some_and(|ty| ty.original.is_never())
     } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last()
         && let Some(expr) = expr_stmt.expr()
     {
-        sema.type_of_expr(&expr).is_some_and(|ty| ty.original.is_never())
+        sema.type_of_expr(&expr)
+            .is_some_and(|ty| ty.original.is_never())
     } else {
         false
     }

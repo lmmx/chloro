@@ -9,20 +9,13 @@ Rustfmt size:  10229 bytes
 
 === DIFF (- rustfmt, + chloro) ===
 -use hir::{
--    sym::{self},
 -    Name,
+-    sym::{self},
 -};
 +use hir::{Name, sym::self};
  use ide_db::{famous_defs::FamousDefs, syntax_helpers::suggest_name};
  use syntax::{
--    ast::{self, edit::IndentLevel, make, syntax_factory::SyntaxFactory, HasLoopBody},
--    syntax_editor::Position,
      AstNode,
-+    ast::{self, HasLoopBody, edit::IndentLevel, make, syntax_factory::SyntaxFactory},
-+    syntax_editor::Position,
- };
- 
- use crate::{AssistContext, AssistId, Assists};
              {
                  (expr, Some(make.name_ref(method.as_str())))
              } else if let ast::Expr::RefExpr(_) = iterable {

@@ -61,7 +61,10 @@ impl ModPath {
 
     /// Creates a `ModPath` from a `PathKind`, with no extra path segments.
     pub const fn from_kind(kind: PathKind) -> ModPath {
-        ModPath { kind, segments: SmallVec::new_const() }
+        ModPath {
+            kind,
+            segments: SmallVec::new_const(),
+        }
     }
 
     pub fn segments(&self) -> &[Name] {
@@ -98,7 +101,10 @@ impl ModPath {
             PathKind::Abs => 0,
             PathKind::DollarCrate(_) => "$crate".len(),
         };
-        self.segments().iter().map(|segment| segment.as_str().len()).fold(base, core::ops::Add::add)
+        self.segments()
+            .iter()
+            .map(|segment| segment.as_str().len())
+            .fold(base, core::ops::Add::add)
     }
 
     pub fn is_ident(&self) -> bool {
@@ -129,7 +135,11 @@ impl ModPath {
         &'a self,
         db: &'a dyn crate::db::ExpandDatabase,
     ) -> impl fmt::Display + 'a {
-        Display { db, path: self, edition: None }
+        Display {
+            db,
+            path: self,
+            edition: None,
+        }
     }
 
     pub fn display<'a>(
@@ -137,7 +147,11 @@ impl ModPath {
         db: &'a dyn crate::db::ExpandDatabase,
         edition: Edition,
     ) -> impl fmt::Display + 'a {
-        Display { db, path: self, edition: Some(edition) }
+        Display {
+            db,
+            path: self,
+            edition: Some(edition),
+        }
     }
 }
 
@@ -243,7 +257,9 @@ fn convert_path(
                 )
             } else {
                 let mut res = ModPath::from_kind(
-                    segment.coloncolon_token().map_or(PathKind::Plain, |_| PathKind::Abs),
+                    segment
+                        .coloncolon_token()
+                        .map_or(PathKind::Plain, |_| PathKind::Abs),
                 );
                 res.segments.push(name_ref.as_name());
                 res
@@ -279,7 +295,10 @@ fn convert_path(
     {
         let syn_ctx = span_for_range(segment.syntax().text_range());
         if let Some(macro_call_id) = syn_ctx.outer_expn(db)
-            && db.lookup_intern_macro_call(macro_call_id.into()).def.local_inner
+            && db
+                .lookup_intern_macro_call(macro_call_id.into())
+                .def
+                .local_inner
         {
             mod_path.kind = match resolve_crate_root(db, syn_ctx) {
                 Some(crate_root) => PathKind::DollarCrate(crate_root),
@@ -302,14 +321,19 @@ fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Optio
             tt::Leaf::Punct(tt::Punct { char: ':', .. }) => PathKind::Abs,
             _ => return None,
         },
-        tt::Leaf::Ident(tt::Ident { sym: text, span, .. }) if *text == sym::dollar_crate => {
-            resolve_crate_root(db, span.ctx).map(PathKind::DollarCrate).unwrap_or(PathKind::Crate)
-        }
+        tt::Leaf::Ident(tt::Ident {
+            sym: text, span, ..
+        }) if *text == sym::dollar_crate => resolve_crate_root(db, span.ctx)
+            .map(PathKind::DollarCrate)
+            .unwrap_or(PathKind::Crate),
         tt::Leaf::Ident(tt::Ident { sym: text, .. }) if *text == sym::self_ => PathKind::SELF,
         tt::Leaf::Ident(tt::Ident { sym: text, .. }) if *text == sym::super_ => {
             let mut deg = 1;
-            while let Some(tt::Leaf::Ident(tt::Ident { sym: text, span, is_raw: _ })) =
-                leaves.next()
+            while let Some(tt::Leaf::Ident(tt::Ident {
+                sym: text,
+                span,
+                is_raw: _,
+            })) = leaves.next()
             {
                 if *text != sym::super_ {
                     segments.push(Name::new_symbol(text.clone(), span.ctx));

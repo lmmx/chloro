@@ -8,21 +8,6 @@ Rustfmt size:  5400 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use hir::{db::ExpandDatabase, InFile};
-+use hir::{InFile, db::ExpandDatabase};
- use ide_db::source_change::SourceChange;
- use ide_db::text_edit::TextEdit;
- use syntax::{
--    ast::{self, HasArgList},
-     AstNode, TextRange,
-+    ast::{self, HasArgList},
- };
- 
--use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
- 
- // Diagnostic: replace-filter-map-next-with-find-map
- //
      let filter_map_name_range = filter_map_call.name_ref()?.ident_token()?.text_range();
      let filter_map_args = filter_map_call.arg_list()?;
  
@@ -35,12 +20,8 @@ Rustfmt size:  5400 bytes
      let replacement = format!("find_map{}", filter_map_args.syntax().text());
      let trigger_range = next_expr.syntax().text_range();
  
- #[cfg(test)]
- mod tests {
-     use crate::{
--        tests::{check_diagnostics_with_config, check_fix},
          DiagnosticsConfig,
-+        tests::{check_diagnostics_with_config, check_fix},
+         tests::{check_diagnostics_with_config, check_fix},
      };
 -
      #[track_caller]
