@@ -2404,9 +2404,7 @@ fn foo() {
 
 use crate::foo;
 
-struct S {
-    f: f32 = 0.0,
-}
+struct S { f: f32 = 0.0 }
 
 fn foo() {
     _ = 1;

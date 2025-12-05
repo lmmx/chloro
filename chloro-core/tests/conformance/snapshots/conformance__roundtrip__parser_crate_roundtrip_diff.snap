@@ -1994,14 +1994,6 @@ expression: cleaned_diff
  }
  
  use crate::foo;
- 
--struct S { f: f32 = 0.0 }
-+struct S {
-+    f: f32 = 0.0,
-+}
- 
- fn foo() {
-     _ = 1;
      T::method(..): Send,
      method(..): Send,
      method::(..): Send,

@@ -1,10 +1,10 @@
 use ra_ap_syntax::{
-    AstNode, SyntaxNode,
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
     ast::{self, HasVisibility},
 };
 
 use crate::formatter::node::common::{fields, header};
-use crate::formatter::write_indent;
+use crate::formatter::printer::Printer;
 
 pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let strukt = match ast::Struct::cast(node.clone()) {
@@ -18,10 +18,41 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
     if let Some(field_list) = strukt.field_list() {
         match field_list {
             ast::FieldList::RecordFieldList(record_fields) => {
-                buf.push_str(" {\n");
+                let fields_vec: Vec<_> = record_fields.fields().collect();
+
+                // Check if any field has a default initializer
+                let has_default_initializer = fields_vec.iter().any(|field| field.expr().is_some());
+
+                // Check if there are any comments in the field list or inside fields
+                let has_comments_in_list = record_fields
+                    .syntax()
+                    .children_with_tokens()
+                    .any(|child| matches!(child, NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT));
+
+                let has_comments_in_fields = fields_vec.iter().any(|field| {
+                    field
+                        .syntax()
+                        .descendants_with_tokens()
+                        .any(|child| matches!(child, NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT))
+                });
+
+                let has_comments = has_comments_in_list || has_comments_in_fields;
+
+                // Single-line if has default initializers and no comments
+                if has_default_initializer && !has_comments {
+                    let fields_str: Vec<_> = fields_vec
+                        .iter()
+                        .map(|f| f.syntax().text().to_string())
+                        .collect();
+                    buf.push_str(&format!(" {{ {} }}", fields_str.join(", ")));
+                    buf.push('\n');
+                    return;
+                }
+
+                // Multi-line format
+                buf.open_brace();
                 fields::format_record_fields(&record_fields, buf, indent + 4);
-                write_indent(buf, indent);
-                buf.push('}');
+                buf.close_brace_ln(indent);
             }
             ast::FieldList::TupleFieldList(tuple_fields) => {
                 buf.push('(');
@@ -37,11 +68,10 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         buf.push_str(&ty.syntax().text().to_string());
                     }
                 }
-                buf.push_str(");");
+                buf.newline(");");
             }
         }
     } else {
-        buf.push(';');
+        buf.newline(";");
     }
-    buf.push('\n');
 }

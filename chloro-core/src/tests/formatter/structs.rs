@@ -5,11 +5,7 @@ use insta::assert_snapshot;
 fn preserve_struct_field_default_initializer() {
     let input = r#"struct S { f: f32 = 0.0 }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r"
-    struct S {
-        f: f32 = 0.0,
-    }
-    ");
+    assert_snapshot!(output, @"struct S { f: f32 = 0.0 }");
 }
 
 #[test]
@@ -20,12 +16,7 @@ fn preserve_struct_field_default_initializer_multiline() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"
-    struct S {
-        f: f32 = 0.0,
-        g: i32 = 42,
-    }
-    "#);
+    assert_snapshot!(output, @"struct S { f: f32 = 0.0, g: i32 = 42 }");
 }
 
 #[test]
