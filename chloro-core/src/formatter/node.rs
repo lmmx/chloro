@@ -89,7 +89,7 @@ struct ItemWithComments {
     blank_line_before: bool,
 }
 
-fn sort_use_groups(items: &mut Vec<ItemWithComments>) {
+fn sort_use_groups(items: &mut [ItemWithComments]) {
     let mut i = 0;
     while i < items.len() {
         if let NodeOrToken::Node(n) = &items[i].node
@@ -243,13 +243,12 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         let current_kind = n.kind();
                         // Add blank line if needed (only when no comments preceded this)
                         if item.comments.is_empty() {
-                            if item.blank_line_before
+                            let needs_blank = item.blank_line_before
                                 && (last_kind.is_some() || prev_was_standalone_comment)
-                            {
-                                buf.blank();
-                            } else if !prev_was_standalone_comment
-                                && should_add_blank_line(last_kind, current_kind)
-                            {
+                                || (!prev_was_standalone_comment
+                                    && should_add_blank_line(last_kind, current_kind));
+
+                            if needs_blank {
                                 buf.blank();
                             }
                         }
