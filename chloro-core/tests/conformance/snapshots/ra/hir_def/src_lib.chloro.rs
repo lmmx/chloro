@@ -1318,7 +1318,8 @@ impl HasModule for AttrDefId {
                 GenericParamId::TypeParamId(it) => it.parent(),
                 GenericParamId::ConstParamId(it) => it.parent(),
                 GenericParamId::LifetimeParamId(it) => it.parent,
-            }.module(
+            }
+            .module(
                 db,
             ),
             AttrDefId::MacroId(it) => it.module(db),

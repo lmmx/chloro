@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22465 bytes
-Chloro size:   22440 bytes
+Chloro size:   22435 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -60,9 +60,10 @@ Rustfmt size:  23115 bytes
  
          let spl = path[1..].split('/');
          let mut path = self.tmp_path.clone();
+             path = path.join(piece);
          }
  
-         Url::parse(
+-        Url::parse(
 -            format!(
 -                "file://{}",
 -                path.into_string()
@@ -71,9 +72,9 @@ Rustfmt size:  23115 bytes
 -            )
 -            .as_str(),
 -        )
--        .unwrap()
-+            format!("file://{}", path.into_string().replace("C:\\", "/c:/").replace('\\', "/")).as_str(),
-+        ).unwrap()
++        Url::parse(format!("file://{}", path.into_string().replace("C:\\", "/c:/").replace('\\', "/"))
++        .as_str())
+         .unwrap()
      }
  
      fn create(&mut self, fixture_path: &str, text: String) {

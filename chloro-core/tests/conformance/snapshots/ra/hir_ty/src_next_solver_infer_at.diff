@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11269 bytes
+Chloro size:   11296 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -35,33 +35,33 @@ Rustfmt size:  11331 bytes
      fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db>;
  }
  
-             Variance::Contravariant,
              actual,
              Span::dummy(),
-+        ).map(
-+            |goals| self.goals_to_obligations(goals),
          )
 -        .map(|goals| self.goals_to_obligations(goals))
++        .map(
++            |goals| self.goals_to_obligations(goals),
++        )
      }
  
      /// Makes `expected <: actual`.
-             Variance::Covariant,
              actual,
              Span::dummy(),
-+        ).map(
-+            |goals| self.goals_to_obligations(goals),
          )
 -        .map(|goals| self.goals_to_obligations(goals))
++        .map(
++            |goals| self.goals_to_obligations(goals),
++        )
      }
  
      /// Makes `expected == actual`.
-             Variance::Invariant,
              actual,
              Span::dummy(),
-+        ).map(
-+            |goals| self.goals_to_obligations(goals),
          )
 -        .map(|goals| self.goals_to_obligations(goals))
++        .map(
++            |goals| self.goals_to_obligations(goals),
++        )
      }
  
      pub fn relate<T>(self, expected: T, variance: Variance, actual: T) -> InferResult<'db, ()>

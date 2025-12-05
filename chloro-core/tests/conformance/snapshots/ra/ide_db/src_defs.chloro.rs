@@ -644,7 +644,8 @@ impl<'db> NameClass<'db> {
             sema.to_def(&it).map(Definition::Label)
         } else {
             None
-        }.map(
+        }
+        .map(
             NameClass::Definition,
         )
     }

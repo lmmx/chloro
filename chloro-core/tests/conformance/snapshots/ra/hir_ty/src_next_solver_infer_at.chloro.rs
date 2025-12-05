@@ -107,7 +107,8 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Contravariant,
             actual,
             Span::dummy(),
-        ).map(
+        )
+        .map(
             |goals| self.goals_to_obligations(goals),
         )
     }
@@ -124,7 +125,8 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Covariant,
             actual,
             Span::dummy(),
-        ).map(
+        )
+        .map(
             |goals| self.goals_to_obligations(goals),
         )
     }
@@ -141,7 +143,8 @@ impl<'a, 'db> At<'a, 'db> {
             Variance::Invariant,
             actual,
             Span::dummy(),
-        ).map(
+        )
+        .map(
             |goals| self.goals_to_obligations(goals),
         )
     }

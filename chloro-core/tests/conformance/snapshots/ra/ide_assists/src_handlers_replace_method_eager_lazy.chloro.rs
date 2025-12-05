@@ -78,7 +78,8 @@ fn into_closure(param: &Expr) -> Expr {
         } else {
             None
         }
-    })().unwrap_or_else(
+    })()
+    .unwrap_or_else(
         || make::expr_closure(None, param.clone()).into(),
     )
 }
@@ -155,7 +156,8 @@ fn into_call(param: &Expr) -> Expr {
         } else {
             None
         }
-    })().unwrap_or_else(
+    })()
+    .unwrap_or_else(
         || make::expr_call(param.clone(), make::arg_list(Vec::new())).into(),
     )
 }

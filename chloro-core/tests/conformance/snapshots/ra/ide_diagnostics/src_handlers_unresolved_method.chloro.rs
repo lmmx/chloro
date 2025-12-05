@@ -49,7 +49,8 @@ pub(crate) fn unresolved_method(
             )
         },
     ),
-    ).with_fixes(
+    )
+    .with_fixes(
         fixes(ctx, d),
     )
 }

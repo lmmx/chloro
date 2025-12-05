@@ -653,7 +653,8 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
                 ))),
                 ))))
             }
-        }.into_iter()
+        }
+        .into_iter()
     }
 
     pub(crate) fn lower_type_bound<'b>(

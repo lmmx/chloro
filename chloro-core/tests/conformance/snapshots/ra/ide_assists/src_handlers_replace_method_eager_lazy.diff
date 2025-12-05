@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7167 bytes
-Chloro size:   7180 bytes
+Chloro size:   7190 bytes
 Rustfmt size:  7319 bytes
 
 ✗ Outputs DIFFER
@@ -32,9 +32,9 @@ Rustfmt size:  7319 bytes
          } else {
              None
          }
--    })()
+     })()
 -    .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
-+    })().unwrap_or_else(
++    .unwrap_or_else(
 +        || make::expr_closure(None, param.clone()).into(),
 +    )
  }
@@ -52,9 +52,9 @@ Rustfmt size:  7319 bytes
          } else {
              None
          }
--    })()
+     })()
 -    .unwrap_or_else(|| make::expr_call(param.clone(), make::arg_list(Vec::new())).into())
-+    })().unwrap_or_else(
++    .unwrap_or_else(
 +        || make::expr_call(param.clone(), make::arg_list(Vec::new())).into(),
 +    )
  }

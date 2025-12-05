@@ -23,7 +23,8 @@ fn current_machine_target_data() -> TargetData {
         QueryConfig::Rustc(&Sysroot::empty(), &std::env::current_dir().unwrap()),
         None,
         &FxHashMap::default(),
-    ).unwrap()
+    )
+    .unwrap()
 }
 
 fn eval_goal(

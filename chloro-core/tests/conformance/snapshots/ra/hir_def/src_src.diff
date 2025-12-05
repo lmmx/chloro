@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6777 bytes
+Chloro size:   6782 bytes
 Rustfmt size:  6876 bytes
 
 ✗ Outputs DIFFER
@@ -53,7 +53,8 @@ Rustfmt size:  6876 bytes
 +        &mut |range| {
 +        span_map.get_or_insert_with(|| db.span_map(use_ast_id.file_id)).span_for_range(range).ctx
 +    },
-+    ).expect(
++    )
++    .expect(
 +        "failed to lower use tree",
 +    ).1
  }

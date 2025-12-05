@@ -1073,7 +1073,8 @@ impl ExprCollector<'_> {
                 Some(ast::BlockModifier::AsyncGen(_)) => {
                     self.with_awaitable_block(Awaitable::Yes, |this| this.collect_block(e))
                 }
-                Some(ast::BlockModifier::Gen(_)) => self.with_awaitable_block(
+                Some(ast::BlockModifier::Gen(_)) => self
+                .with_awaitable_block(
                     Awaitable::No("non-async gen block"),
                     |this| {
                         this.collect_block(e)
@@ -1750,9 +1751,9 @@ impl ExprCollector<'_> {
         );
         self.alloc_expr(
             Expr::Loop {
-            body: if_expr,
-            label: label.map(|it| it.1),
-        },
+                body: if_expr,
+                label: label.map(|it| it.1),
+            },
             syntax_ptr,
         )
     }
@@ -1835,15 +1836,15 @@ impl ExprCollector<'_> {
         self.add_definition_to_binding(iter_binding, iter_pat);
         self.alloc_expr(
             Expr::Match {
-            expr: iterator,
-            arms: Box::new([
-                MatchArm {
-                pat: iter_pat,
-                guard: None,
-                expr: loop_outer,
+                expr: iterator,
+                arms: Box::new([
+                    MatchArm {
+                    pat: iter_pat,
+                    guard: None,
+                    expr: loop_outer,
+                },
+                ]),
             },
-            ]),
-        },
             syntax_ptr,
         )
     }
@@ -2919,9 +2920,9 @@ impl ExprCollector<'_> {
 
         self.alloc_expr(
             Expr::Call {
-            callee: new_v1_formatted,
-            args: Box::new([lit_pieces, args, format_options, unsafe_arg_new]),
-        },
+                callee: new_v1_formatted,
+                args: Box::new([lit_pieces, args, format_options, unsafe_arg_new]),
+            },
             syntax_ptr,
         )
     }
@@ -3090,11 +3091,11 @@ impl ExprCollector<'_> {
             let call = self.alloc_expr_desugared(call_block);
             self.alloc_expr(
                 Expr::Block {
-                id: None,
-                statements: let_stmts.into(),
-                tail: Some(call),
-                label: None,
-            },
+                    id: None,
+                    statements: let_stmts.into(),
+                    tail: Some(call),
+                    label: None,
+                },
                 syntax_ptr,
             )
         } else {
@@ -3181,10 +3182,10 @@ impl ExprCollector<'_> {
             let width =
                 RecordLitField { name: Name::new_symbol_root(sym::width), expr: width_expr };
             self.alloc_expr_desugared(Expr::RecordLit {
-                path: LangItem::FormatPlaceholder.path(self.db, self.module.krate()).map(Box::new),
-                fields: Box::new([position, flags, precision, width]),
-                spread: None,
-            })
+                    path: LangItem::FormatPlaceholder.path(self.db, self.module.krate()).map(Box::new),
+                    fields: Box::new([position, flags, precision, width]),
+                    spread: None,
+                })
         } else {
             let format_placeholder_new = {
                 let format_placeholder_new = LangItem::FormatPlaceholder.ty_rel_path(
@@ -3226,9 +3227,9 @@ impl ExprCollector<'_> {
                 }
             };
             self.alloc_expr_desugared(Expr::Call {
-                callee: format_placeholder_new,
-                args: Box::new([position, fill, align, flags, precision_expr, width_expr]),
-            })
+                    callee: format_placeholder_new,
+                    args: Box::new([position, fill, align, flags, precision_expr, width_expr]),
+                })
         }
     }
 
@@ -3272,9 +3273,9 @@ impl ExprCollector<'_> {
                     None => self.missing_expr(),
                 };
                 self.alloc_expr_desugared(Expr::Call {
-                    callee: count_is,
-                    args: Box::new([args]),
-                })
+                        callee: count_is,
+                        args: Box::new([args]),
+                    })
             }
             Some(FormatCount::Argument(arg)) => {
                 if let Ok(arg_index) = arg.index {
@@ -3293,9 +3294,9 @@ impl ExprCollector<'_> {
                         None => self.missing_expr(),
                     };
                     self.alloc_expr_desugared(Expr::Call {
-                        callee: count_param,
-                        args: Box::new([args]),
-                    })
+                            callee: count_param,
+                            args: Box::new([args]),
+                        })
                 } else {
                     // FIXME: This drops arg causing it to potentially not be resolved/type checked
                     // when typing?
@@ -3344,9 +3345,9 @@ impl ExprCollector<'_> {
             None => self.missing_expr(),
         };
         self.alloc_expr_desugared(Expr::Call {
-            callee: new_fn,
-            args: Box::new([arg]),
-        })
+                callee: new_fn,
+                args: Box::new([arg]),
+            })
     }
 
     // endregion: format
@@ -3473,7 +3474,8 @@ impl ExprCollector<'_> {
 }
 
 fn comma_follows_token(t: Option<syntax::SyntaxToken>) -> bool {
-    (|| syntax::algo::skip_trivia_token(t?.next_token()?, syntax::Direction::Next))().is_some_and(
+    (|| syntax::algo::skip_trivia_token(t?.next_token()?, syntax::Direction::Next))()
+    .is_some_and(
         |it| it.kind() == syntax::T![,],
     )
 }

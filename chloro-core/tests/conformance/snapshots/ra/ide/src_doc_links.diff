@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   31501 bytes
+Chloro size:   31506 bytes
 Rustfmt size:  32095 bytes
 
 ✗ Outputs DIFFER
@@ -69,12 +69,11 @@ Rustfmt size:  32095 bytes
      )
      .ok();
      out
-         | Definition::DeriveHelper(_)
          | Definition::InlineAsmRegOrRegClass(_)
          | Definition::InlineAsmOperand(_) => None,
--    }
+     }
 -    .map(Definition::from)
-+    }.map(
++    .map(
 +        Definition::from,
 +    )
  }

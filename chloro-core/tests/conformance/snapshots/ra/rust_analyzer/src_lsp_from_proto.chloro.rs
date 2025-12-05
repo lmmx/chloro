@@ -151,7 +151,8 @@ pub(crate) fn annotation(
                 kind: AnnotationKind::HasReferences { pos, data: None },
             })
         }
-    }.map(
+    }
+    .map(
         Some,
     )
 }

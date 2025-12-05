@@ -141,7 +141,8 @@ fn generate_unique_lifetime_param_name(
             ('a'..='z').map(|it| format!("'{it}")).find(|it| !used_lifetime_params.contains(it))
         }
         None => Some("'a".to_owned()),
-    }.map(
+    }
+    .map(
         |it| make::lifetime(&it),
     )
 }

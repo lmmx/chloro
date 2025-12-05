@@ -4233,7 +4233,8 @@ fn err_to_msg(error: EscapeError, mode: Mode) -> String {
         EscapeError::NulInCStr => "null character in C string literal",
         EscapeError::UnskippedWhitespaceWarning => "",
         EscapeError::MultipleSkippedLinesWarning => "",
-    }.into()
+    }
+    .into()
 }
 
 use crate::SyntaxKind;
@@ -7053,10 +7054,10 @@ fn tuple_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(
         p,
         if saw_expr && !saw_comma {
-        PAREN_EXPR
-    } else {
-        TUPLE_EXPR
-    },
+            PAREN_EXPR
+        } else {
+            TUPLE_EXPR
+        },
     )
 }
 
@@ -10259,10 +10260,10 @@ fn tuple_pat(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(
         p,
         if !has_comma && !has_rest && has_pat {
-        PAREN_PAT
-    } else {
-        TUPLE_PAT
-    },
+            PAREN_PAT
+        } else {
+            TUPLE_PAT
+        },
     )
 }
 

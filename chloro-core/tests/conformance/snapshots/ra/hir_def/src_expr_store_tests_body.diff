@@ -2,62 +2,57 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16167 bytes
-Chloro size:   16226 bytes
+Chloro size:   16256 bytes
 Rustfmt size:  16197 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-                     }
                  },
              }
--        }"#]]
+         }"#]]
 -    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
-+        }"#]].assert_eq(
++    .assert_eq(
 +        &body.pretty_print(&db, def, Edition::CURRENT),
 +    )
  }
  
  #[test]
-                     }
                  },
              );
--        }"#]]
+         }"#]]
 -    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
-+        }"#]].assert_eq(
++    .assert_eq(
 +        &body.pretty_print(&db, def, Edition::CURRENT),
 +    )
  }
  
  #[test]
-                     )
                  }
              };
--        }"#]]
+         }"#]]
 -    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
-+        }"#]].assert_eq(
++    .assert_eq(
 +        &body.pretty_print(&db, def, Edition::CURRENT),
 +    )
  }
  
  #[test]
-                     }
                  },
              );
--        }"#]]
+         }"#]]
 -    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
-+        }"#]].assert_eq(
++    .assert_eq(
 +        &body.pretty_print(&db, def, Edition::CURRENT),
 +    )
  }
  
  #[test]
-                     ),
                  );
              };
--        }"#]]
+         }"#]]
 -    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
-+        }"#]].assert_eq(
++    .assert_eq(
 +        &body.pretty_print(&db, def, Edition::CURRENT),
 +    )
  }
@@ -70,12 +65,11 @@ Rustfmt size:  16197 bytes
      let (db, body, def) = lower(
          r#"
  struct Bar();
-     expect![[r#"
          fn foo() {
              Bar() = Bar();
--        }"#]]
+         }"#]]
 -    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
-+        }"#]].assert_eq(
++    .assert_eq(
 +        &body.pretty_print(&db, def, Edition::CURRENT),
 +    )
  }

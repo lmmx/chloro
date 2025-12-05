@@ -288,7 +288,8 @@ fn is_adt_constructor_similar_to_param_name(
             }
         }
         _ => None,
-    })().unwrap_or(
+    })()
+    .unwrap_or(
         false,
     )
 }

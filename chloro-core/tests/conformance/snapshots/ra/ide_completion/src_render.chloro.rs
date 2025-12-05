@@ -191,7 +191,8 @@ pub(crate) fn render_field(
 }
 
 fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
-    receiver.map_or_else(
+    receiver
+    .map_or_else(
         || field_name.into(),
         |receiver| format_smolstr!("{}.{field_name}", receiver),
     )

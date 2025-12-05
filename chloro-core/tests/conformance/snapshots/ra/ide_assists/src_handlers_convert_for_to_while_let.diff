@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10170 bytes
-Chloro size:   10157 bytes
+Chloro size:   10162 bytes
 Rustfmt size:  10229 bytes
 
 ✗ Outputs DIFFER
@@ -27,12 +27,11 @@ Rustfmt size:  10229 bytes
              } else {
                  (iterable, Some(make.name_ref("into_iter")))
              };
-         let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
          cov_mark::hit!(test_already_impls_iterator);
          Some(it_typ.impls_trait(sema.db, iter_trait, &[]))
--    })()
+     })()
 -    .unwrap_or(false)
-+    })().unwrap_or(
++    .unwrap_or(
 +        false,
 +    )
  }

@@ -2678,7 +2678,15 @@ impl<'db> Evaluator<'db> {
                     span,
                 )
             }
-            MirOrDynIndex::Mir(body) => self.exec_looked_up_function(body, locals, def, arg_bytes, span, destination, target_bb),
+            MirOrDynIndex::Mir(body) => self.exec_looked_up_function(
+                body,
+                locals,
+                def,
+                arg_bytes,
+                span,
+                destination,
+                target_bb,
+            ),
         }
     }
 

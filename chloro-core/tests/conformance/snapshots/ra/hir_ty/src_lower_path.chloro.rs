@@ -513,7 +513,8 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             res,
             Some(assoc_name.clone()),
             check_alias,
-        ).unwrap_or_else(
+        )
+        .unwrap_or_else(
             || Ty::new_error(interner, ErrorGuaranteed),
         )
     }

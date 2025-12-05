@@ -89,13 +89,15 @@ pub(super) fn expand_and_analyze<'db>(
     let original_offset = expansion.original_offset + relative_offset;
     let token = expansion.original_file.token_at_offset(original_offset).left_biased()?;
 
-    hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(|(analysis, expected, qualifier_ctx)| AnalysisResult {
+    hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(
+        |(analysis, expected, qualifier_ctx)| AnalysisResult {
             analysis,
             expected,
             qualifier_ctx,
             token,
             original_offset,
-        })
+        },
+    )
 }
 
 fn token_at_offset_ignore_whitespace(file: &SyntaxNode, offset: TextSize) -> Option<SyntaxToken> {
@@ -153,7 +155,8 @@ fn expand_maybe_stop(
 
     // We can't check whether the fake expansion is inside macro call, because that requires semantic info.
     // But hopefully checking just the real one should be enough.
-    if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset).is_some_and(|original_token| {
+    if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset)
+    .is_some_and(|original_token| {
             !sema.is_inside_macro_call(original_file.with_value(&original_token))
         }) {
         // Recursion base case.
@@ -1891,7 +1894,8 @@ fn is_in_token_of_for_loop(path: &ast::Path) -> bool {
                 t.text_range().start() == path.syntax().text_range().start()
             }
         })
-    })().unwrap_or(
+    })()
+    .unwrap_or(
         false,
     )
 }

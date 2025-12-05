@@ -2082,24 +2082,24 @@ impl<'db> DbInterner<'db> {
         self.replace_escaping_bound_vars_uncached(
             value,
             FnMutDelegate {
-            regions: &mut |r: BoundRegion| {
+                regions: &mut |r: BoundRegion| {
                     Region::new_bound(
                         self,
                         DebruijnIndex::ZERO,
                         BoundRegion { var: shift_bv(r.var), kind: r.kind },
                     )
                 },
-            types: &mut |t: BoundTy| {
+                types: &mut |t: BoundTy| {
                     Ty::new_bound(
                         self,
                         DebruijnIndex::ZERO,
                         BoundTy { var: shift_bv(t.var), kind: t.kind },
                     )
                 },
-            consts: &mut |c| {
+                consts: &mut |c| {
                     Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
                 },
-        },
+            },
         )
     }
 
@@ -2302,7 +2302,9 @@ mod tls_db {
     }
     #[inline]
     pub fn with_attached_db<R>(op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
-        GLOBAL_DB.with(#[inline] |a| a.with(op))
+        GLOBAL_DB.with(
+            #[inline] |a| a.with(op),
+        )
     }
 }
 

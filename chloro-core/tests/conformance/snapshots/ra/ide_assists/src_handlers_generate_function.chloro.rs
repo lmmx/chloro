@@ -215,7 +215,8 @@ fn get_adt_source(
     let file = ctx.sema.parse(range.file_id);
     let adt_source =
         ctx.sema.find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
-    find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()]).map(
+    find_struct_impl(ctx, &adt_source, &[fn_name.to_owned()])
+    .map(
         |impl_| (impl_, range.file_id.file_id(ctx.db())),
     )
 }
@@ -1164,7 +1165,8 @@ fn fn_arg_type(
         }
     }
 
-    maybe_displayed_type(ctx, target_module, fn_arg, generic_params).unwrap_or_else(
+    maybe_displayed_type(ctx, target_module, fn_arg, generic_params)
+    .unwrap_or_else(
         || String::from("_"),
     )
 }

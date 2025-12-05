@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   58018 bytes
+Chloro size:   58039 bytes
 Rustfmt size:  58802 bytes
 
 ✗ Outputs DIFFER
@@ -177,13 +177,12 @@ Rustfmt size:  58802 bytes
          for (text, file_id, search_range) in Self::scope_files(sema.db, &search_scope) {
              let tree = LazyCell::new(move || sema.parse(file_id).syntax().clone());
  
-                 let finder = &Finder::new("self");
  
                  for offset in Self::match_indices(text, finder, search_range) {
--                    for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset)
+                     for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset)
 -                        .filter_map(ast::NameRef::cast)
 -                    {
-+                    for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset).filter_map(
++                    .filter_map(
 +                        ast::NameRef::cast,
 +                    ) {
                          if self.found_self_module_name_ref(&name_ref, sink) {

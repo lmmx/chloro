@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5855 bytes
-Chloro size:   5866 bytes
+Chloro size:   5871 bytes
 Rustfmt size:  5985 bytes
 
 ✗ Outputs DIFFER
@@ -55,12 +55,11 @@ Rustfmt size:  5985 bytes
      })?;
      let col = TextSize::from(line_col.col);
      let clamped_len = col.min(line_range.len());
-                 kind: AnnotationKind::HasReferences { pos, data: None },
              })
          }
--    }
+     }
 -    .map(Some)
-+    }.map(
++    .map(
 +        Some,
 +    )
  }

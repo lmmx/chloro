@@ -241,7 +241,8 @@ pub(crate) fn resolve_doc_path_for_def(
         | Definition::DeriveHelper(_)
         | Definition::InlineAsmRegOrRegClass(_)
         | Definition::InlineAsmOperand(_) => None,
-    }.map(
+    }
+    .map(
         Definition::from,
     )
 }

@@ -19,7 +19,8 @@ pub fn is_format_string(string: &ast::String) -> bool {
         let lit = string.syntax().parent().and_then(ast::Literal::cast)?;
         let fa = lit.syntax().parent().and_then(ast::FormatArgsExpr::cast)?;
         (fa.template()? == ast::Expr::Literal(lit)).then_some(|| ())
-    })().is_some()
+    })()
+    .is_some()
 }
 
 #[derive(Debug)]

@@ -114,10 +114,10 @@ pub(super) fn attr_macro_as_call_id(
         db,
         krate,
         MacroCallKind::Attr {
-        ast_id: item_attr.ast_id,
-        attr_args: arg.map(Arc::new),
-        invoc_attr_index: macro_attr.id,
-    },
+            ast_id: item_attr.ast_id,
+            attr_args: arg.map(Arc::new),
+            invoc_attr_index: macro_attr.id,
+        },
         macro_attr.ctxt,
     )
 }

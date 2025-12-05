@@ -53,7 +53,8 @@ pub(crate) fn type_mismatch(
                 .with_closure_style(ClosureStyle::ClosureWithId),
         ),
         display_range,
-    ).with_fixes(
+    )
+    .with_fixes(
         fixes(ctx, d),
     )
 }

@@ -297,7 +297,8 @@ impl GlobalState {
             recv(self.fetch_ws_receiver.as_ref().map_or(&never(), |(chan, _)| chan)) -> _instant => {
                 Ok(Event::FetchWorkspaces(self.fetch_ws_receiver.take().unwrap().1))
             },
-        }.map(
+        }
+        .map(
             Some,
         )
     }

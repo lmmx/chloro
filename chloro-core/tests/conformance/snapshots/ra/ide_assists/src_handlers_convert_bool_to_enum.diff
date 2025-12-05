@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40489 bytes
-Chloro size:   40418 bytes
+Chloro size:   40432 bytes
 Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
@@ -70,13 +70,10 @@ Rustfmt size:  41249 bytes
 -            Some(ast::ElseBranch::Block(make::tail_only_block_expr(
 -                false_expr,
 -            ))),
--        )
--        .into()
 +            Some(ast::ElseBranch::Block(make::tail_only_block_expr(false_expr))),
-+        ).into()
+         )
+         .into()
      }
- }
- 
          let refs_with_imports = augment_references_with_imports(ctx, references, target_module);
  
          refs_with_imports.into_iter().rev().for_each(
@@ -205,14 +202,6 @@ Rustfmt size:  41249 bytes
          make::name("Bool"),
          None,
          None,
-             make::variant(None, make::name("True"), None, None),
-             make::variant(None, make::name("False"), None, None),
-         ]),
--    )
--    .clone_for_update()
-+    ).clone_for_update()
- }
- 
  #[cfg(test)]
  mod tests {
      use super::*;

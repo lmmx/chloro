@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   227898 bytes
+Chloro size:   227976 bytes
 Rustfmt size:  236066 bytes
 
 ✗ Outputs DIFFER
@@ -462,17 +462,8 @@ Rustfmt size:  236066 bytes
 -        } => {
 +        DefDiagnosticKind::UnresolvedModule { ast: declaration, candidates } => {
              let decl = declaration.to_ptr(db);
--            acc.push(
--                UnresolvedModule {
--                    decl: InFile::new(declaration.file_id, decl),
--                    candidates: candidates.clone(),
--                }
--                .into(),
--            )
-+            acc.push(UnresolvedModule {
-+                decl: InFile::new(declaration.file_id, decl),
-+                candidates: candidates.clone(),
-+            }.into())
+             acc.push(
+                 UnresolvedModule {
          }
          DefDiagnosticKind::UnresolvedExternCrate { ast } => {
              let item = ast.to_ptr(db);
@@ -1422,23 +1413,21 @@ Rustfmt size:  236066 bytes
      }
  
      pub fn parent(self, _db: &dyn HirDatabase) -> DefWithBody {
-                 .attrs(makro.into())
                  .parse_proc_macro_derive()
                  .and_then(|(_, helpers)| helpers.get(self.idx as usize).cloned()),
--        }
+         }
 -        .unwrap_or_else(Name::missing)
-+        }.unwrap_or_else(
++        .unwrap_or_else(
 +            Name::missing,
 +        )
      }
  }
  
- 
  impl BuiltinAttr {
      fn builtin(name: &str) -> Option<Self> {
--        hir_expand::inert_attr_macro::find_builtin_attr_idx(&Symbol::intern(name))
+         hir_expand::inert_attr_macro::find_builtin_attr_idx(&Symbol::intern(name))
 -            .map(|idx| BuiltinAttr { idx: idx as u32 })
-+        hir_expand::inert_attr_macro::find_builtin_attr_idx(&Symbol::intern(name)).map(
++        .map(
 +            |idx| BuiltinAttr { idx: idx as u32 },
 +        )
      }

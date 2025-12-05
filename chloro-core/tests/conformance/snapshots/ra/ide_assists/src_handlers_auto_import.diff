@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   45919 bytes
+Chloro size:   45937 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -76,25 +76,25 @@ Rustfmt size:  46663 bytes
 -            .parent()
 -            .and_then(Either::cast)
 -            .and_then(expected);
--        ImportAssets::for_exact_path(&path_under_caret, &ctx.sema)
++        let expected =
++            path_under_caret.top_path().syntax().parent().and_then(Either::cast).and_then(expected);
+         ImportAssets::for_exact_path(&path_under_caret, &ctx.sema)
 -            .map(|it| (it, path_under_caret.syntax().clone(), expected))
 -    } else if let Some(method_under_caret) =
 -        ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>()
 -    {
-+        let expected =
-+            path_under_caret.top_path().syntax().parent().and_then(Either::cast).and_then(expected);
-+        ImportAssets::for_exact_path(&path_under_caret, &ctx.sema).map(
++        .map(
 +            |it| (it, path_under_caret.syntax().clone(), expected),
 +        )
 +    } else if let Some(method_under_caret) = ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>() {
          let expected = expected(Either::Left(method_under_caret.clone().into()));
--        ImportAssets::for_method_call(&method_under_caret, &ctx.sema)
+         ImportAssets::for_method_call(&method_under_caret, &ctx.sema)
 -            .map(|it| (it, method_under_caret.syntax().clone(), expected))
 -    } else if ctx
 -        .find_node_at_offset_with_descend::<ast::Param>()
 -        .is_some()
 -    {
-+        ImportAssets::for_method_call(&method_under_caret, &ctx.sema).map(
++        .map(
 +            |it| (it, method_under_caret.syntax().clone(), expected),
 +        )
 +    } else if ctx.find_node_at_offset_with_descend::<ast::Param>().is_some() {

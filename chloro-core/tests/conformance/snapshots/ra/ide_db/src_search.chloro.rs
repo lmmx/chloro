@@ -1074,7 +1074,8 @@ impl<'a> FindUsages<'a> {
                 let finder = &Finder::new("self");
 
                 for offset in Self::match_indices(text, finder, search_range) {
-                    for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset).filter_map(
+                    for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset)
+                    .filter_map(
                         ast::NameRef::cast,
                     ) {
                         if self.found_self_module_name_ref(&name_ref, sink) {

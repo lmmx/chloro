@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11810 bytes
-Chloro size:   11843 bytes
+Chloro size:   11852 bytes
 Rustfmt size:  12378 bytes
 
 ✗ Outputs DIFFER
@@ -138,12 +138,11 @@ Rustfmt size:  12378 bytes
  }
  
  macro_rules! impl_has_docs {
-                 decl_docs += &crate_docs;
                  Some(decl_docs)
              }
--        }
+         }
 -        .map(Documentation::new)
-+        }.map(
++        .map(
 +            Documentation::new,
 +        )
      }

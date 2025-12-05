@@ -7,6 +7,7 @@ mod externcrate;
 mod functions;
 mod impl_blocks;
 mod macros;
+mod method_chains;
 mod self_format;
 mod struct_literals;
 mod structs;

@@ -43,7 +43,8 @@ impl RangeMapper {
                 TextRange::ordering(r, range)
             }
         },
-        ).filter_map(move |i| {
+        )
+        .filter_map(move |i| {
             let (target_range, source_range) = self.ranges[i];
             let intersection = target_range.intersect(range).unwrap();
             let source_range = source_range?;

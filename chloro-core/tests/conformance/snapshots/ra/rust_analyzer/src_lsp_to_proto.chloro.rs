@@ -192,7 +192,8 @@ pub(crate) fn completion_text_edit(
                 end: cursor_pos,
             },
             replace: text_edit.range,
-        }.into(),
+        }
+        .into(),
         None => text_edit.into(),
     }
 }

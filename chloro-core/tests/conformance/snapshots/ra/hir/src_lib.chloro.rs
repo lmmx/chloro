@@ -1050,10 +1050,13 @@ fn emit_def_diagnostic_<'db>(
     match diag {
         DefDiagnosticKind::UnresolvedModule { ast: declaration, candidates } => {
             let decl = declaration.to_ptr(db);
-            acc.push(UnresolvedModule {
-                decl: InFile::new(declaration.file_id, decl),
-                candidates: candidates.clone(),
-            }.into())
+            acc.push(
+                UnresolvedModule {
+                    decl: InFile::new(declaration.file_id, decl),
+                    candidates: candidates.clone(),
+                }
+                .into(),
+            )
         }
         DefDiagnosticKind::UnresolvedExternCrate { ast } => {
             let item = ast.to_ptr(db);
@@ -3985,7 +3988,8 @@ impl DeriveHelper {
                 .attrs(makro.into())
                 .parse_proc_macro_derive()
                 .and_then(|(_, helpers)| helpers.get(self.idx as usize).cloned()),
-        }.unwrap_or_else(
+        }
+        .unwrap_or_else(
             Name::missing,
         )
     }
@@ -3998,7 +4002,8 @@ pub struct BuiltinAttr {
 
 impl BuiltinAttr {
     fn builtin(name: &str) -> Option<Self> {
-        hir_expand::inert_attr_macro::find_builtin_attr_idx(&Symbol::intern(name)).map(
+        hir_expand::inert_attr_macro::find_builtin_attr_idx(&Symbol::intern(name))
+        .map(
             |idx| BuiltinAttr { idx: idx as u32 },
         )
     }

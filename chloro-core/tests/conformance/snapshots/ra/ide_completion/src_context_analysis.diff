@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 89146 bytes
-Chloro size:   89129 bytes
+Chloro size:   89154 bytes
 Rustfmt size:  90848 bytes
 
 ✗ Outputs DIFFER
@@ -36,26 +36,13 @@ Rustfmt size:  90848 bytes
 -        .left_biased()?;
 +    let token = expansion.original_file.token_at_offset(original_offset).left_biased()?;
  
--    hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(
--        |(analysis, expected, qualifier_ctx)| AnalysisResult {
-+    hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(|(analysis, expected, qualifier_ctx)| AnalysisResult {
-             analysis,
-             expected,
-             qualifier_ctx,
-             token,
-             original_offset,
--        },
--    )
-+        })
- }
- 
- fn token_at_offset_ignore_whitespace(file: &SyntaxNode, offset: TextSize) -> Option<SyntaxToken> {
- 
+     hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(
+         |(analysis, expected, qualifier_ctx)| AnalysisResult {
      // We can't check whether the fake expansion is inside macro call, because that requires semantic info.
      // But hopefully checking just the real one should be enough.
--    if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset)
+     if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset)
 -        .is_some_and(|original_token| {
-+    if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset).is_some_and(|original_token| {
++    .is_some_and(|original_token| {
              !sema.is_inside_macro_call(original_file.with_value(&original_token))
 -        })
 -    {
@@ -439,12 +426,11 @@ Rustfmt size:  90848 bytes
      Some((use_tree.path()?, true))
  }
  
-                 t.text_range().start() == path.syntax().text_range().start()
              }
          })
--    })()
+     })()
 -    .unwrap_or(false)
-+    })().unwrap_or(
++    .unwrap_or(
 +        false,
 +    )
  }

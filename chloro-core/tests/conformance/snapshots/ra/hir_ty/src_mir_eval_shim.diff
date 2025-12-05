@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 69401 bytes
-Chloro size:   69528 bytes
+Chloro size:   69588 bytes
 Rustfmt size:  70983 bytes
 
 ✗ Outputs DIFFER
@@ -240,9 +240,9 @@ Rustfmt size:  70983 bytes
 +                    return Err(MirEvalError::InternalError("ctpop arg is not provided".into()));
                  };
                  let result = u128::from_le_bytes(pad16(arg.get(self)?, false)).count_ones();
--                destination
+                 destination
 -                    .write_from_bytes(self, &(result as u128).to_le_bytes()[0..destination.size])
-+                destination.write_from_bytes(
++                .write_from_bytes(
 +                    self,
 +                    &(result as u128).to_le_bytes()[0..destination.size],
 +                )
@@ -257,9 +257,9 @@ Rustfmt size:  70983 bytes
                  let result =
                      u128::from_le_bytes(pad16(arg.get(self)?, false)).leading_zeros() as usize;
                  let result = result - (128 - arg.interval.size * 8);
--                destination
+                 destination
 -                    .write_from_bytes(self, &(result as u128).to_le_bytes()[0..destination.size])
-+                destination.write_from_bytes(
++                .write_from_bytes(
 +                    self,
 +                    &(result as u128).to_le_bytes()[0..destination.size],
 +                )
@@ -272,9 +272,9 @@ Rustfmt size:  70983 bytes
 +                    return Err(MirEvalError::InternalError("cttz arg is not provided".into()));
                  };
                  let result = u128::from_le_bytes(pad16(arg.get(self)?, false)).trailing_zeros();
--                destination
+                 destination
 -                    .write_from_bytes(self, &(result as u128).to_le_bytes()[0..destination.size])
-+                destination.write_from_bytes(
++                .write_from_bytes(
 +                    self,
 +                    &(result as u128).to_le_bytes()[0..destination.size],
 +                )
@@ -305,12 +305,11 @@ Rustfmt size:  70983 bytes
                  }
              }
              "aggregate_raw_ptr" => {
-             }
              _ if needs_override => not_supported!("intrinsic {name} is not implemented"),
              _ => return Ok(false),
--        }
+         }
 -        .map(|()| true)
-+        }.map(
++        .map(
 +            |()| true,
 +        )
      }

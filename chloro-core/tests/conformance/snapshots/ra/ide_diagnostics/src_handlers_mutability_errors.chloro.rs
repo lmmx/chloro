@@ -93,7 +93,8 @@ pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Op
         DiagnosticCode::RustcLint("unused_mut"),
         "variable does not need to be mutable",
         ast,
-    ).with_fixes(
+    )
+    .with_fixes(
         fixes,
     ))
 }

@@ -2341,7 +2341,8 @@ impl Config {
                 "description": "Put the expression into an `Rc`",
                 "scope": "expr"
             }
-        }"#).unwrap()
+        }"#)
+        .unwrap()
     }
 
     pub fn rustfmt(&self, source_root_id: Option<SourceRootId>) -> RustfmtConfig {
@@ -2497,7 +2498,8 @@ impl Config {
             refs_trait: *self.lens_enable() && *self.lens_references_trait_enable(),
             enum_variant_refs: *self.lens_enable() && *self.lens_references_enumVariant_enable(),
             location: *self.lens_location(),
-            filter_adjacent_derive_implementations: *self.gotoImplementations_filterAdjacentDerives(),
+            filter_adjacent_derive_implementations: *self
+            .gotoImplementations_filterAdjacentDerives(),
         }
     }
 
@@ -2758,7 +2760,8 @@ where
 {
     let path = String::deserialize(de)?;
 
-    AbsPathBuf::try_from(path.as_ref()).map_err(
+    AbsPathBuf::try_from(path.as_ref())
+    .map_err(
         |err| serde::de::Error::custom(format!("invalid path name: {err:?}")),
     )
 }

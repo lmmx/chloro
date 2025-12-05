@@ -764,7 +764,8 @@ fn generate_impl_inner(
             body,
         ),
         None => make::impl_(cfg_attrs, generic_params, generic_args, ty, adt.where_clause(), body),
-    }.clone_for_update()
+    }
+    .clone_for_update()
 }
 
 pub(crate) fn add_method_to_adt(
@@ -877,7 +878,8 @@ impl<'db> ReferenceConversion<'db> {
                 if self.impls_deref {
                     make::expr_ref(expr, false)
                 } else {
-                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([])).into()
+                    make::expr_method_call(expr, make::name_ref("as_ref"), make::arg_list([]))
+                    .into()
                 }
             }
         }
