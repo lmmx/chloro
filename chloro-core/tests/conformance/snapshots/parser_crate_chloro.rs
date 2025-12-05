@@ -2203,6 +2203,8 @@ type A = for<'a> Test<'a> + Send;
 
 impl ! {}
 
+extern crate foo;
+extern crate self;
 
 type Result<T> = ();
 
@@ -2972,6 +2974,8 @@ fn foo() {
     match a.b()..S { _ => () };
 }
 
+extern crate foo as bar;
+extern crate self as bar;
 
 fn foo() {
     some_expr();
@@ -3173,6 +3177,9 @@ struct S {
     r#foo: u32,
 }
 
+extern crate foo;
+extern crate foo as bar;
+extern crate self as baz;
 
 unsafe extern {
     // sqrt (from libm) may be called with any `f64`
@@ -4531,7 +4538,9 @@ fn run_and_expect_errors_with_edition(path: &str, edition: Edition) {
 #
 
 #[cfg(not(feature = "in-rust-tree"))]
+extern crate ra_ap_rustc_lexer as rustc_lexer;
 #[cfg(feature = "in-rust-tree")]
+extern crate rustc_lexer;
 
 mod event;
 mod frontmatter;

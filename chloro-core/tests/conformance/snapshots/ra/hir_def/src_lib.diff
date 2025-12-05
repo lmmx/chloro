@@ -2,24 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43731 bytes
+Chloro size:   43868 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
- 
- #[cfg(feature = "in-rust-tree")]
--extern crate rustc_parse_format;
- 
- #[cfg(not(feature = "in-rust-tree"))]
--extern crate ra_ap_rustc_parse_format as rustc_parse_format;
- 
--extern crate ra_ap_rustc_abi as rustc_abi;
- 
- pub mod db;
- 
      expr_store::ExpressionStoreSourceMap,
      hir::generics::{LocalLifetimeParamId, LocalTypeOrConstParamId},
      nameres::{

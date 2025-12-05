@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   12247 bytes
+Chloro size:   12276 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! This crate defines the core data structure representing IDE state -- `RootDatabase`.
- //!
- //! It is mainly a `HirDatabase` for semantic analysis, plus a `SymbolsDatabase`, for fuzzy search.
- 
--extern crate self as ide_db;
- 
- mod apply_change;
- 
      pub use hir::prettify_macro_expansion;
      pub mod node_ext;
      pub mod suggest_name;

@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   227342 bytes
+Chloro size:   227393 bytes
 Rustfmt size:  236066 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
- #![recursion_limit = "512"]
- 
--extern crate ra_ap_rustc_type_ir as rustc_type_ir;
- 
- mod attrs;
- mod from_id;
      },
      item_tree::ImportAlias,
      layout::{self, ReprOptions, TargetDataLayout},
