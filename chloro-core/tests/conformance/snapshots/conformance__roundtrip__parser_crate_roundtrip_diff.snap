@@ -971,9 +971,7 @@ expression: cleaned_diff
  }
  
 -struct X {a: i32}
-+struct X {
-+    a: i32,
-+}
++struct X { a: i32 }
 +
  fn f() {
      let foo = X {
@@ -1682,14 +1680,7 @@ expression: cleaned_diff
 +    struct S {}
  }
  
--struct S { #[attr] f: f32 }
-+struct S {
-+    #[attr]
-+    f: f32,
-+}
- 
- fn main() {
-     let [a, b, ..] = [];
+ struct S { #[attr] f: f32 }
  
  fn foo() {
      match () {
@@ -1994,14 +1985,6 @@ expression: cleaned_diff
  }
  
  use crate::foo;
- 
--struct S { f: f32 = 0.0 }
-+struct S {
-+    f: f32 = 0.0,
-+}
- 
- fn foo() {
-     _ = 1;
      T::method(..): Send,
      method(..): Send,
      method::(..): Send,
@@ -2487,23 +2470,33 @@ expression: cleaned_diff
  static mut BAR: i32 = 92;
  
  fn a() {}
-+
- pub fn b() {}
-+
- pub macro m($:ident) {}
-+
- pub(crate) fn c() {}
-+
- pub(super) fn d() {}
-+
- pub(in foo::bar::baz) fn e() {}
-+use foo::bar::baz;
+-pub fn b() {}
+-pub macro m($:ident) {}
+-pub(crate) fn c() {}
+-pub(super) fn d() {}
+-pub(in foo::bar::baz) fn e() {}
  
- use ::foo::bar::baz;
--use foo::bar::baz;
+-use ::foo::bar::baz;
++pub fn b() {}
++
++pub macro m($:ident) {}
++
++pub(crate) fn c() {}
++
++pub(super) fn d() {}
++
++pub(in foo::bar::baz) fn e() {}
+ use foo::bar::baz;
  
- struct S<T: Copy> {
-     f: T,
+-struct S<T: Copy> {
+-    f: T,
+-}
++use ::foo::bar::baz;
++
++struct S<T: Copy> { f: T }
+ 
+ enum E1 {
+ }
  }
  
  enum E3 {
@@ -2523,15 +2516,6 @@ expression: cleaned_diff
      E(),
  }
  
- // https://github.com/rust-lang/rust-analyzer/issues/674
- 
--struct Repr { raw: [u8; 1] }
-+struct Repr {
-+    raw: [u8; 1],
-+}
- 
- fn abc() {
-     Repr { raw: [0] }.raw[0] = 0;
  }
  
  fn main() {
@@ -2557,15 +2541,13 @@ expression: cleaned_diff
 -struct S {
 -    r#foo: u32
 +{
-+}
-+
-+struct S {
-+    r#foo: u32,
  }
  
 -extern crate foo;
 -extern crate foo as bar;
 -extern crate self as baz;
++struct S { r#foo: u32 }
++
  
  unsafe extern {
      // sqrt (from libm) may be called with any `f64`
@@ -2807,12 +2789,13 @@ expression: cleaned_diff
  use ::bar;
  
 -
- struct S {
+-struct S {
 -    foo: u32
-+    foo: u32,
- }
+-}
++struct S { foo: u32 }
  
  fn foo() {
+     async {};
      async move {};
  }
  
@@ -3041,11 +3024,8 @@ expression: cleaned_diff
  struct S1<T>;
 +
  struct S2<T>(u32);
--struct S3<T> { u: u32 }
 +
-+struct S3<T> {
-+    u: u32,
-+}
+ struct S3<T> { u: u32 }
  
  struct S4<>;
 +

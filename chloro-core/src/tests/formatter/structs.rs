@@ -5,11 +5,7 @@ use insta::assert_snapshot;
 fn preserve_struct_field_default_initializer() {
     let input = r#"struct S { f: f32 = 0.0 }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r"
-    struct S {
-        f: f32 = 0.0,
-    }
-    ");
+    assert_snapshot!(output, @"struct S { f: f32 = 0.0 }");
 }
 
 #[test]
