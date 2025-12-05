@@ -1660,8 +1660,7 @@ impl<'db> Evaluator<'db> {
             }
             Variants::Multiple { tag, tag_encoding, variants, .. } => {
                 let size = tag.size(&*self.target_data_layout).bytes_usize();
-                let offset = layout.fields.offset(0).bytes_usize();
-                // The only field on enum variants is the tag field
+                let offset = layout.fields.offset(0).bytes_usize(); // The only field on enum variants is the tag field
                 let is_signed = tag.is_signed();
                 match tag_encoding {
                     TagEncoding::Direct => {

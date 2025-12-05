@@ -6,6 +6,73 @@ use insta::assert_snapshot;
 use super::*;
 
 #[test]
+fn debug_confirm_controlflow_block_contents_bug() {
+    // The issue is format_block_contents in controlflow.rs doesn't handle trailing comments
+    // Let's verify by checking if/while/for also have this issue when inside a function
+
+    let cases = [
+        (
+            "if inside fn",
+            r#"fn foo() {
+    if true {
+        let x = 1; // trailing
+        let y = 2;
+    }
+}
+"#,
+        ),
+        (
+            "while inside fn",
+            r#"fn foo() {
+    while true {
+        let x = 1; // trailing
+        let y = 2;
+    }
+}
+"#,
+        ),
+        (
+            "for inside fn",
+            r#"fn foo() {
+    for i in items {
+        let x = 1; // trailing
+        let y = 2;
+    }
+}
+"#,
+        ),
+        (
+            "loop inside fn",
+            r#"fn foo() {
+    loop {
+        let x = 1; // trailing
+        let y = 2;
+    }
+}
+"#,
+        ),
+    ];
+
+    eprintln!("=== Control flow blocks inside functions ===");
+    for (name, input) in cases {
+        let output = format_source(input);
+        let has_trailing = output.contains("1; // trailing");
+        eprintln!("{}: {}", name, if has_trailing { "✅" } else { "❌" });
+        if !has_trailing {
+            eprintln!(
+                "  Output: {}",
+                output
+                    .lines()
+                    .find(|l| l.contains("let x"))
+                    .unwrap_or("???")
+            );
+        }
+    }
+}
+
+// ...
+
+#[test]
 fn preserve_comments_with_their_statements_in_block() {
     // Comments should stay with the statement they precede, not all move to top
     let input = r#"fn foo() {

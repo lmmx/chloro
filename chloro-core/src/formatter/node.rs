@@ -144,7 +144,8 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
             let mut module_inner_docs = Vec::new();
-            let mut inner_attrs: Vec<(Vec<Comment>, Attr, bool)> = Vec::new(); // (comments, attr, blank_line_before)
+            let mut inner_attrs: Vec<(Vec<Comment>, Attr, bool)> = Vec::new();
+            // (comments, attr, blank_line_before)
             let mut other_items: Vec<ItemWithComments> = Vec::new();
             let mut pending_comments: Vec<Comment> = Vec::new();
             let mut pending_blank_line = false;

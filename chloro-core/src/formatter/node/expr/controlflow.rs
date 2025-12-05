@@ -34,13 +34,24 @@ fn format_block_contents(block: &ast::BlockExpr, indent: usize) -> String {
                 NodeOrToken::Token(t) => {
                     match t.kind() {
                         SyntaxKind::COMMENT => {
-                            // Check for blank line before this comment
-                            if prev_was_item && has_blank_line_before(&children, idx) {
+                            // Check if there's a newline before this comment
+                            let has_newline_before = idx > 0
+                                && matches!(
+                                    &children[idx - 1],
+                                    NodeOrToken::Token(prev) if prev.kind() == SyntaxKind::WHITESPACE && prev.text().contains('\n')
+                                );
+
+                            // Only output if it's a leading comment (has newline before)
+                            // Trailing comments are handled when outputting the node
+                            if has_newline_before {
+                                // Check for blank line before this comment
+                                if prev_was_item && has_blank_line_before(&children, idx) {
+                                    buf.push('\n');
+                                }
+                                write_indent(&mut buf, indent);
+                                buf.push_str(t.text());
                                 buf.push('\n');
                             }
-                            write_indent(&mut buf, indent);
-                            buf.push_str(t.text());
-                            buf.push('\n');
                             prev_was_item = false;
                         }
                         SyntaxKind::L_CURLY | SyntaxKind::R_CURLY | SyntaxKind::WHITESPACE => {
@@ -70,6 +81,13 @@ fn format_block_contents(block: &ast::BlockExpr, indent: usize) -> String {
                             buf.push_str(&n.text().to_string());
                         }
                     }
+
+                    // Check for trailing comment on same line
+                    if let Some((whitespace, comment)) = get_trailing_comment(&children, idx) {
+                        buf.push_str(&whitespace);
+                        buf.push_str(&comment);
+                    }
+
                     buf.push('\n');
                     prev_was_item = true;
                 }
@@ -78,6 +96,38 @@ fn format_block_contents(block: &ast::BlockExpr, indent: usize) -> String {
     }
 
     buf
+}
+
+/// Get trailing comment for node at given index in children list
+fn get_trailing_comment(
+    children: &[NodeOrToken<SyntaxNode, ra_ap_syntax::SyntaxToken>],
+    node_idx: usize,
+) -> Option<(String, String)> {
+    // Look for: WHITESPACE (no newline) followed by COMMENT
+    let mut i = node_idx + 1;
+    let mut whitespace = String::new();
+
+    while i < children.len() {
+        match &children[i] {
+            NodeOrToken::Token(t) => {
+                match t.kind() {
+                    SyntaxKind::WHITESPACE => {
+                        if t.text().contains('\n') {
+                            return None; // Newline means no trailing comment
+                        }
+                        whitespace = t.text().to_string();
+                    }
+                    SyntaxKind::COMMENT => {
+                        return Some((whitespace, t.text().to_string()));
+                    }
+                    _ => return None,
+                }
+            }
+            NodeOrToken::Node(_) => return None,
+        }
+        i += 1;
+    }
+    None
 }
 
 /// Format a block expression including braces.

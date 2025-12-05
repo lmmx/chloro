@@ -456,11 +456,9 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);
         #[expect(clippy::if_same_then_else)] if a.is_static() || b.is_static() {
-            a
-            // nothing lives longer than static
+            a // nothing lives longer than static
         } else if a == b {
-            a
-            // LUB(a,a) = a
+            a // LUB(a,a) = a
         } else {
             self.combine_vars(db, Lub, a, b)
         }
@@ -475,14 +473,11 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: glb_regions({:?}, {:?})", a, b);
         #[expect(clippy::if_same_then_else)] if a.is_static() {
-            b
-            // static lives longer than everything else
+            b // static lives longer than everything else
         } else if b.is_static() {
-            a
-            // static lives longer than everything else
+            a // static lives longer than everything else
         } else if a == b {
-            a
-            // GLB(a,a) = a
+            a // GLB(a,a) = a
         } else {
             self.combine_vars(db, Glb, a, b)
         }
