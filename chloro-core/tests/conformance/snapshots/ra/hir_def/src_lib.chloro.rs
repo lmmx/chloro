@@ -118,8 +118,7 @@ impl<N: AstIdNode> Clone for ItemLoc<N> {
     }
 }
 
-impl<N: AstIdNode> Copy for ItemLoc<N> {
-}
+impl<N: AstIdNode> Copy for ItemLoc<N> {}
 
 impl<N: AstIdNode> PartialEq for ItemLoc<N> {
     fn eq(&self, other: &Self) -> bool {
@@ -127,8 +126,7 @@ impl<N: AstIdNode> PartialEq for ItemLoc<N> {
     }
 }
 
-impl<N: AstIdNode> Eq for ItemLoc<N> {
-}
+impl<N: AstIdNode> Eq for ItemLoc<N> {}
 
 impl<N: AstIdNode> Hash for ItemLoc<N> {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -157,8 +155,7 @@ impl<N: AstIdNode> Clone for AssocItemLoc<N> {
     }
 }
 
-impl<N: AstIdNode> Copy for AssocItemLoc<N> {
-}
+impl<N: AstIdNode> Copy for AssocItemLoc<N> {}
 
 impl<N: AstIdNode> PartialEq for AssocItemLoc<N> {
     fn eq(&self, other: &Self) -> bool {
@@ -166,8 +163,7 @@ impl<N: AstIdNode> PartialEq for AssocItemLoc<N> {
     }
 }
 
-impl<N: AstIdNode> Eq for AssocItemLoc<N> {
-}
+impl<N: AstIdNode> Eq for AssocItemLoc<N> {}
 
 impl<N: AstIdNode> Hash for AssocItemLoc<N> {
     fn hash<H: Hasher>(&self, state: &mut H) {

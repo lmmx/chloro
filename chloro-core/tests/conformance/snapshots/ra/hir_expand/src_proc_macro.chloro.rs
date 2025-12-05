@@ -43,8 +43,7 @@ impl PartialEq for dyn ProcMacroExpander {
     }
 }
 
-impl Eq for dyn ProcMacroExpander {
-}
+impl Eq for dyn ProcMacroExpander {}
 
 #[derive(Debug)]
 pub enum ProcMacroExpansionError {

@@ -88,12 +88,10 @@ pub struct RootDatabase {
     nonce: Nonce,
 }
 
-impl std::panic::RefUnwindSafe for RootDatabase {
-}
+impl std::panic::RefUnwindSafe for RootDatabase {}
 
 #[salsa_macros::db]
-impl salsa::Database for RootDatabase {
-}
+impl salsa::Database for RootDatabase {}
 
 impl Drop for RootDatabase {
     fn drop(&mut self) {

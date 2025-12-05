@@ -259,8 +259,7 @@ impl ImportMap {
     }
 }
 
-impl Eq for ImportMap {
-}
+impl Eq for ImportMap {}
 
 impl PartialEq for ImportMap {
     fn eq(&self, other: &Self) -> bool {

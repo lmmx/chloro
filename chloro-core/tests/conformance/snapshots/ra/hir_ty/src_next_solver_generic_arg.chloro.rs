@@ -178,8 +178,7 @@ impl<'db> Relate<DbInterner<'db>> for GenericArg<'db> {
 
 interned_vec_db!(GenericArgs, GenericArg);
 
-impl<'db> rustc_type_ir::inherent::GenericArg<DbInterner<'db>> for GenericArg<'db> {
-}
+impl<'db> rustc_type_ir::inherent::GenericArg<DbInterner<'db>> for GenericArg<'db> {}
 
 impl<'db> GenericArgs<'db> {
     /// Creates an `GenericArgs` for generic parameter definitions,
@@ -584,8 +583,7 @@ impl<'db> Relate<DbInterner<'db>> for Term<'db> {
     }
 }
 
-impl<'db> rustc_type_ir::inherent::Term<DbInterner<'db>> for Term<'db> {
-}
+impl<'db> rustc_type_ir::inherent::Term<DbInterner<'db>> for Term<'db> {}
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum TermVid {

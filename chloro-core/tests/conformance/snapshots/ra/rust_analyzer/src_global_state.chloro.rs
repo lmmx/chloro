@@ -208,8 +208,7 @@ pub(crate) struct GlobalStateSnapshot {
     minicore: MiniCoreRustAnalyzerInternalOnly,
 }
 
-impl std::panic::UnwindSafe for GlobalStateSnapshot {
-}
+impl std::panic::UnwindSafe for GlobalStateSnapshot {}
 
 impl GlobalState {
     pub(crate) fn new(sender: Sender<lsp_server::Message>, config: Config) -> GlobalState {

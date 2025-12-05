@@ -32,11 +32,11 @@ as tested on rust-analyzer's [crates][ra-crates]:
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
 
 <!-- just: conf-md -->
-**Summary:** +84,861 / -12,711
+**Summary:** +84,744 / -12,711
 
 | **Top 5 <del>Removed</del> Lines** | **Top 5 <ins>Added</ins> Lines** |
 |---|---|
-| `- )` × 219<br>`- r#"` × 140<br>`- },` × 108<br>`- check(` × 90<br>`- );` × 87<br> | `+ },` × 131<br>`+"#)` × 104<br>`+ check(r#"` × 79<br>`+}` × 75<br>`+ }` × 68<br> |
+| `- )` × 219<br>`- r#"` × 140<br>`- },` × 108<br>`- check(` × 90<br>`- );` × 87<br> | `+ },` × 131<br>`+"#)` × 104<br>`+ check(r#"` × 79<br>`+ }` × 68<br>`+ }` × 64<br> |
 
 ### Top 20 Most Impacted Files
 
@@ -58,9 +58,9 @@ as tested on rust-analyzer's [crates][ra-crates]:
 | 14 | 13 | 50 | 3.6% | 113 | 3,116 | [`ide_assists/src_handlers_generate_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_function.diff) |
 | 15 | 11 | 61 | 3.1% | 101 | 3,269 | [`ide_completion/src_render`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_completion/src_render.diff) |
 | 16 | 114 | 6 | 25.6% | 259 | 1,010 | [`hir_def/src_expr_store`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_expr_store.diff) |
-| 17 | 61 | 12 | 14.2% | 212 | 1,489 | [`hir_def/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_lib.diff) |
-| 18 | 37 | 21 | 8.2% | 168 | 2,052 | [`ide_assists/src_handlers_destructure_tuple_binding`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_destructure_tuple_binding.diff) |
-| 19 | 4 | 198 | 0.8% | 42 | 5,039 | [`hir_ty/src_tests_traits`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_tests_traits.diff) |
+| 17 | 37 | 21 | 8.2% | 168 | 2,052 | [`ide_assists/src_handlers_destructure_tuple_binding`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_destructure_tuple_binding.diff) |
+| 18 | 4 | 198 | 0.8% | 42 | 5,039 | [`hir_ty/src_tests_traits`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_tests_traits.diff) |
+| 19 | 62 | 13 | 13.5% | 200 | 1,485 | [`hir_def/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_lib.diff) |
 | 20 | 14 | 60 | 3.3% | 102 | 3,055 | [`ide/src_references`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_references.diff) |
 <!-- /just: conf-md -->
 

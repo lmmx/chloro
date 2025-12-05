@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12654 bytes
-Chloro size:   12567 bytes
+Chloro size:   12566 bytes
 Rustfmt size:  13004 bytes
 
 ✗ Outputs DIFFER
@@ -24,15 +24,6 @@ Rustfmt size:  13004 bytes
      /// Run the expander with the given input subtree, optional attribute input subtree (for
      /// [`ProcMacroKind::Attr`]), environment variables, and span information.
      fn expand(
-     }
- }
- 
--impl Eq for dyn ProcMacroExpander {}
-+impl Eq for dyn ProcMacroExpander {
-+}
- 
- #[derive(Debug)]
- pub enum ProcMacroExpansionError {
  }
  
  pub type ProcMacroLoadResult = Result<Vec<ProcMacro>, ProcMacroLoadingError>;

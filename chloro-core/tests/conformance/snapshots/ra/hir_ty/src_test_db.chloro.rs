@@ -129,11 +129,9 @@ impl SourceDatabase for TestDB {
 }
 
 #[salsa_macros::db]
-impl salsa::Database for TestDB {
-}
+impl salsa::Database for TestDB {}
 
-impl panic::RefUnwindSafe for TestDB {
-}
+impl panic::RefUnwindSafe for TestDB {}
 
 impl TestDB {
     pub(crate) fn module_for_file_opt(&self, file_id: impl Into<FileId>) -> Option<ModuleId> {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37899 bytes
-Chloro size:   37851 bytes
+Chloro size:   37850 bytes
 Rustfmt size:  37899 bytes
 
 ✗ Outputs DIFFER
@@ -128,15 +128,6 @@ Rustfmt size:  37899 bytes
  #[derive(Debug, Clone, Default)]
  pub(crate) struct MiniCoreRustAnalyzerInternalOnly {
      pub(crate) minicore_text: Option<String>,
-     minicore: MiniCoreRustAnalyzerInternalOnly,
- }
- 
--impl std::panic::UnwindSafe for GlobalStateSnapshot {}
-+impl std::panic::UnwindSafe for GlobalStateSnapshot {
-+}
- 
- impl GlobalState {
-     pub(crate) fn new(sender: Sender<lsp_server::Message>, config: Config) -> GlobalState {
      }
  
      /// Returns `None` if the file was excluded.
