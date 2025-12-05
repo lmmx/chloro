@@ -3,11 +3,22 @@ COMPARISON DIFF
 
 Original size: 4004 bytes
 Chloro size:   3996 bytes
-Rustfmt size:  4004 bytes
+Rustfmt size:  4134 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+         .iter()
+         .copied()
+         .filter(|&crate_id| {
+-            crate_def_map(db, crate_id)
+-                .modules_for_file(db, file_id)
+-                .next()
+-                .is_some()
++            crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
+         })
+         .sorted()
+         .collect()
  #[cfg(test)]
  mod tests {
      use ide_db::FileRange;
@@ -17,8 +28,19 @@ Rustfmt size:  4004 bytes
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position, expected) = fixture::annotations(ra_fixture);
          let navs = analysis.parent_module(position).unwrap();
+         let navs = navs
+             .iter()
+-            .map(|nav| FileRange {
+-                file_id: nav.file_id,
+-                range: nav.focus_or_full_range(),
+-            })
++            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
              .collect::<Vec<_>>();
-         assert_eq!(expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(), navs);
+-        assert_eq!(
+-            expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(),
+-            navs
+-        );
++        assert_eq!(expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(), navs);
      }
 -
      #[test]

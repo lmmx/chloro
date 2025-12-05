@@ -1,18 +1,19 @@
 use std::iter;
 
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 use hir::Semantics;
 use ide_db::{
+    FilePosition, FileRange, RootDatabase,
     defs::Definition,
     documentation::{DocsRangeMap, Documentation, HasDocs},
-    FilePosition, FileRange, RootDatabase,
 };
 use itertools::Itertools;
-use syntax::{ast, match_ast, AstNode, SyntaxNode};
+use syntax::{AstNode, SyntaxNode, ast, match_ast};
 
 use crate::{
+    TryToNav,
     doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links},
-    fixture, TryToNav,
+    fixture,
 };
 
 fn check_external_docs(

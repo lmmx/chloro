@@ -8,11 +8,6 @@ Rustfmt size:  4581 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use ide_db::{famous_defs::FamousDefs, RootDatabase};
-+use ide_db::{RootDatabase, famous_defs::FamousDefs};
- use syntax::ast::{self, AstNode, HasName};
- 
- use crate::{AssistContext, AssistId, Assists};
          cov_mark::hit!(test_gen_default_on_non_unit_variant_not_implemented);
          return None;
      }

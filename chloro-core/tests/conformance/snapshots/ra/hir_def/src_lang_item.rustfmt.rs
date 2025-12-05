@@ -124,8 +124,10 @@ pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangIt
             match def {
                 ModuleDefId::TraitId(trait_) => {
                     lang_items.collect_lang_item(db, trait_, LangItemTarget::Trait);
-                    TraitItems::query(db, trait_).items.iter().for_each(|&(_, assoc_id)| {
-                        match assoc_id {
+                    TraitItems::query(db, trait_)
+                        .items
+                        .iter()
+                        .for_each(|&(_, assoc_id)| match assoc_id {
                             AssocItemId::FunctionId(f) => {
                                 lang_items.collect_lang_item(db, f, LangItemTarget::Function);
                             }
@@ -133,8 +135,7 @@ pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangIt
                                 lang_items.collect_lang_item(db, alias, LangItemTarget::TypeAlias)
                             }
                             AssocItemId::ConstId(_) => {}
-                        }
-                    });
+                        });
                 }
                 ModuleDefId::AdtId(AdtId::EnumId(e)) => {
                     lang_items.collect_lang_item(db, e, LangItemTarget::EnumId);
@@ -162,7 +163,11 @@ pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangIt
         }
     }
 
-    if lang_items.items.is_empty() { None } else { Some(Box::new(lang_items)) }
+    if lang_items.items.is_empty() {
+        None
+    } else {
+        Some(Box::new(lang_items))
+    }
 }
 
 /// Salsa query. Look for a lang item, starting from the specified crate and recursively
@@ -174,8 +179,9 @@ pub fn lang_item(
     item: LangItem,
 ) -> Option<LangItemTarget> {
     let _p = tracing::info_span!("lang_item_query").entered();
-    if let Some(target) =
-        crate_lang_items(db, start_crate).as_ref().and_then(|it| it.items.get(&item).copied())
+    if let Some(target) = crate_lang_items(db, start_crate)
+        .as_ref()
+        .and_then(|it| it.items.get(&item).copied())
     {
         return Some(target);
     }
@@ -187,11 +193,18 @@ pub fn lang_item(
     // while nameres.
     //
     // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
-    crate_local_def_map(db, start_crate).local(db).extern_prelude().find_map(|(_, (krate, _))| {
-        // Some crates declares themselves as extern crate like `extern crate self as core`.
-        // Ignore these to prevent cycles.
-        if krate.krate == start_crate { None } else { lang_item(db, krate.krate, item) }
-    })
+    crate_local_def_map(db, start_crate)
+        .local(db)
+        .extern_prelude()
+        .find_map(|(_, (krate, _))| {
+            // Some crates declares themselves as extern crate like `extern crate self as core`.
+            // Ignore these to prevent cycles.
+            if krate.krate == start_crate {
+                None
+            } else {
+                lang_item(db, krate.krate, item)
+            }
+        })
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
@@ -214,7 +227,9 @@ impl LangItems {
     {
         let _p = tracing::info_span!("collect_lang_item").entered();
         if let Some(lang_item) = lang_attr(db, item.into()) {
-            self.items.entry(lang_item).or_insert_with(|| constructor(item));
+            self.items
+                .entry(lang_item)
+                .or_insert_with(|| constructor(item));
         }
     }
 }
@@ -226,7 +241,9 @@ pub(crate) fn lang_attr(db: &dyn DefDatabase, item: AttrDefId) -> Option<LangIte
 pub(crate) fn notable_traits_in_deps(db: &dyn DefDatabase, krate: Crate) -> Arc<[Arc<[TraitId]>]> {
     let _p = tracing::info_span!("notable_traits_in_deps", ?krate).entered();
     Arc::from_iter(
-        db.transitive_deps(krate).into_iter().filter_map(|krate| db.crate_notable_traits(krate)),
+        db.transitive_deps(krate)
+            .into_iter()
+            .filter_map(|krate| db.crate_notable_traits(krate)),
     )
 }
 
@@ -247,7 +264,11 @@ pub(crate) fn crate_notable_traits(db: &dyn DefDatabase, krate: Crate) -> Option
         }
     }
 
-    if traits.is_empty() { None } else { Some(traits.into_iter().collect()) }
+    if traits.is_empty() {
+        None
+    } else {
+        Some(traits.into_iter().collect())
+    }
 }
 
 pub enum GenericRequirement {

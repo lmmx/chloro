@@ -80,8 +80,9 @@ impl BodyValidationDiagnostic {
         let body = db.body(owner);
         let env = db.trait_environment_for_body(owner);
         let interner = DbInterner::new_with(db, Some(env.krate), env.block);
-        let infcx =
-            interner.infer_ctxt().build(TypingMode::typeck_for_body(interner, owner.into()));
+        let infcx = interner
+            .infer_ctxt()
+            .build(TypingMode::typeck_for_body(interner, owner.into()));
         let mut validator = ExprValidator {
             owner,
             body,
@@ -126,11 +127,12 @@ impl<'db> ExprValidator<'db> {
             if let Some((variant, missed_fields, true)) =
                 record_literal_missing_fields(db, &self.infer, id, expr)
             {
-                self.diagnostics.push(BodyValidationDiagnostic::RecordMissingFields {
-                    record: Either::Left(id),
-                    variant,
-                    missed_fields,
-                });
+                self.diagnostics
+                    .push(BodyValidationDiagnostic::RecordMissingFields {
+                        record: Either::Left(id),
+                        variant,
+                        missed_fields,
+                    });
             }
 
             match expr {
@@ -140,7 +142,9 @@ impl<'db> ExprValidator<'db> {
                 Expr::Call { .. } | Expr::MethodCall { .. } => {
                     self.validate_call(id, expr, &mut filter_map_next_checker);
                 }
-                Expr::Closure { body: body_expr, .. } => {
+                Expr::Closure {
+                    body: body_expr, ..
+                } => {
                     self.check_for_trailing_return(*body_expr, &body);
                 }
                 Expr::If { .. } => {
@@ -157,11 +161,12 @@ impl<'db> ExprValidator<'db> {
             if let Some((variant, missed_fields, true)) =
                 record_pattern_missing_fields(db, &self.infer, id, pat)
             {
-                self.diagnostics.push(BodyValidationDiagnostic::RecordMissingFields {
-                    record: Either::Right(id),
-                    variant,
-                    missed_fields,
-                });
+                self.diagnostics
+                    .push(BodyValidationDiagnostic::RecordMissingFields {
+                        record: Either::Right(id),
+                        variant,
+                        missed_fields,
+                    });
             }
         }
     }
@@ -191,9 +196,10 @@ impl<'db> ExprValidator<'db> {
             });
 
             if checker.check(call_id, receiver, &callee).is_some() {
-                self.diagnostics.push(BodyValidationDiagnostic::ReplaceFilterMapNextWithFindMap {
-                    method_call_expr: call_id,
-                });
+                self.diagnostics
+                    .push(BodyValidationDiagnostic::ReplaceFilterMapNextWithFindMap {
+                        method_call_expr: call_id,
+                    });
             }
 
             if let Some(receiver_ty) = self.infer.type_of_expr_with_adjust(*receiver) {
@@ -273,16 +279,17 @@ impl<'db> ExprValidator<'db> {
 
         let witnesses = report.non_exhaustiveness_witnesses;
         if !witnesses.is_empty() {
-            self.diagnostics.push(BodyValidationDiagnostic::MissingMatchArms {
-                match_expr,
-                uncovered_patterns: missing_match_arms(
-                    &cx,
-                    scrut_ty,
-                    witnesses,
-                    m_arms.is_empty(),
-                    self.owner.krate(self.db()),
-                ),
-            });
+            self.diagnostics
+                .push(BodyValidationDiagnostic::MissingMatchArms {
+                    match_expr,
+                    uncovered_patterns: missing_match_arms(
+                        &cx,
+                        scrut_ty,
+                        witnesses,
+                        m_arms.is_empty(),
+                        self.owner.krate(self.db()),
+                    ),
+                });
         }
     }
 
@@ -304,7 +311,9 @@ impl<'db> ExprValidator<'db> {
         }
 
         match &self.body[scrutinee_expr] {
-            Expr::UnaryOp { op: UnaryOp::Deref, .. } => false,
+            Expr::UnaryOp {
+                op: UnaryOp::Deref, ..
+            } => false,
             Expr::Path(path) => {
                 let value_or_partial = self.owner.resolver(db).resolve_path_in_value_ns_fully(
                     db,
@@ -334,14 +343,24 @@ impl<'db> ExprValidator<'db> {
         let pattern_arena = Arena::new();
         let cx = MatchCheckCtx::new(self.owner.module(self.db()), &self.infcx, self.env.clone());
         for stmt in &**statements {
-            let &Statement::Let { pat, initializer, else_branch: None, .. } = stmt else {
+            let &Statement::Let {
+                pat,
+                initializer,
+                else_branch: None,
+                ..
+            } = stmt
+            else {
                 continue;
             };
             if self.infer.type_mismatch_for_pat(pat).is_some() {
                 continue;
             }
-            let Some(initializer) = initializer else { continue };
-            let Some(ty) = self.infer.type_of_expr_with_adjust(initializer) else { continue };
+            let Some(initializer) = initializer else {
+                continue;
+            };
+            let Some(ty) = self.infer.type_of_expr_with_adjust(initializer) else {
+                continue;
+            };
             if ty.references_non_lt_error() {
                 continue;
             }
@@ -368,16 +387,17 @@ impl<'db> ExprValidator<'db> {
             };
             let witnesses = report.non_exhaustiveness_witnesses;
             if !witnesses.is_empty() {
-                self.diagnostics.push(BodyValidationDiagnostic::NonExhaustiveLet {
-                    pat,
-                    uncovered_patterns: missing_match_arms(
-                        &cx,
-                        ty,
-                        witnesses,
-                        false,
-                        self.owner.krate(self.db()),
-                    ),
-                });
+                self.diagnostics
+                    .push(BodyValidationDiagnostic::NonExhaustiveLet {
+                        pat,
+                        uncovered_patterns: missing_match_arms(
+                            &cx,
+                            ty,
+                            witnesses,
+                            false,
+                            self.owner.krate(self.db()),
+                        ),
+                    });
             }
         }
     }
@@ -402,7 +422,9 @@ impl<'db> ExprValidator<'db> {
             return;
         }
         match &body[body_expr] {
-            Expr::Block { statements, tail, .. } => {
+            Expr::Block {
+                statements, tail, ..
+            } => {
                 let last_stmt = tail.or_else(|| match statements.last()? {
                     Statement::Expr { expr, .. } => Some(*expr),
                     _ => None,
@@ -411,7 +433,11 @@ impl<'db> ExprValidator<'db> {
                     self.check_for_trailing_return(last_stmt, body);
                 }
             }
-            Expr::If { then_branch, else_branch, .. } => {
+            Expr::If {
+                then_branch,
+                else_branch,
+                ..
+            } => {
                 self.check_for_trailing_return(*then_branch, body);
                 if let Some(else_branch) = else_branch {
                     self.check_for_trailing_return(*else_branch, body);
@@ -424,9 +450,10 @@ impl<'db> ExprValidator<'db> {
                 }
             }
             Expr::Return { .. } => {
-                self.diagnostics.push(BodyValidationDiagnostic::RemoveTrailingReturn {
-                    return_expr: body_expr,
-                });
+                self.diagnostics
+                    .push(BodyValidationDiagnostic::RemoveTrailingReturn {
+                        return_expr: body_expr,
+                    });
             }
             _ => (),
         }
@@ -436,11 +463,19 @@ impl<'db> ExprValidator<'db> {
         if !self.validate_lints {
             return;
         }
-        if let Expr::If { condition: _, then_branch, else_branch } = expr {
+        if let Expr::If {
+            condition: _,
+            then_branch,
+            else_branch,
+        } = expr
+        {
             if else_branch.is_none() {
                 return;
             }
-            if let Expr::Block { statements, tail, .. } = &self.body[*then_branch] {
+            if let Expr::Block {
+                statements, tail, ..
+            } = &self.body[*then_branch]
+            {
                 let last_then_expr = tail.or_else(|| match statements.last()? {
                     Statement::Expr { expr, .. } => Some(*expr),
                     _ => None,
@@ -576,7 +611,13 @@ pub fn record_literal_missing_fields(
     let missed_fields: Vec<LocalFieldId> = variant_data
         .fields()
         .iter()
-        .filter_map(|(f, d)| if specified_fields.contains(&d.name) { None } else { Some(f) })
+        .filter_map(|(f, d)| {
+            if specified_fields.contains(&d.name) {
+                None
+            } else {
+                Some(f)
+            }
+        })
         .collect();
     if missed_fields.is_empty() {
         return None;
@@ -591,7 +632,11 @@ pub fn record_pattern_missing_fields(
     pat: &Pat,
 ) -> Option<(VariantId, Vec<LocalFieldId>, /*exhaustive*/ bool)> {
     let (fields, exhaustive) = match pat {
-        Pat::Record { path: _, args, ellipsis } => (args, !ellipsis),
+        Pat::Record {
+            path: _,
+            args,
+            ellipsis,
+        } => (args, !ellipsis),
         _ => return None,
     };
 
@@ -606,7 +651,13 @@ pub fn record_pattern_missing_fields(
     let missed_fields: Vec<LocalFieldId> = variant_data
         .fields()
         .iter()
-        .filter_map(|(f, d)| if specified_fields.contains(&d.name) { None } else { Some(f) })
+        .filter_map(|(f, d)| {
+            if specified_fields.contains(&d.name) {
+                None
+            } else {
+                Some(f)
+            }
+        })
         .collect();
     if missed_fields.is_empty() {
         return None;
@@ -663,7 +714,10 @@ fn missing_match_arms<'a, 'db>(
     };
     let display_target = DisplayTarget::from_crate(cx.db, krate);
     if arms_is_empty && !non_empty_enum {
-        format!("type `{}` is non-empty", scrut_ty.display(cx.db, display_target))
+        format!(
+            "type `{}` is non-empty",
+            scrut_ty.display(cx.db, display_target)
+        )
     } else {
         let pat_display = |witness| DisplayWitness(witness, cx, display_target);
         const LIMIT: usize = 3;
@@ -671,12 +725,20 @@ fn missing_match_arms<'a, 'db>(
             [witness] => format!("`{}` not covered", pat_display(witness)),
             [head @ .., tail] if head.len() < LIMIT => {
                 let head = head.iter().map(pat_display);
-                format!("`{}` and `{}` not covered", head.format("`, `"), pat_display(tail))
+                format!(
+                    "`{}` and `{}` not covered",
+                    head.format("`, `"),
+                    pat_display(tail)
+                )
             }
             _ => {
                 let (head, tail) = witnesses.split_at(LIMIT);
                 let head = head.iter().map(pat_display);
-                format!("`{}` and {} more not covered", head.format("`, `"), tail.len())
+                format!(
+                    "`{}` and {} more not covered",
+                    head.format("`, `"),
+                    tail.len()
+                )
             }
         }
     }

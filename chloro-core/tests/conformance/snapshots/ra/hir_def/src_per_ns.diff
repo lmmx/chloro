@@ -3,21 +3,11 @@ COMPARISON DIFF
 
 Original size: 5172 bytes
 Chloro size:   5345 bytes
-Rustfmt size:  5492 bytes
+Rustfmt size:  5452 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use bitflags::bitflags;
- 
- use crate::{
-+    MacroId, ModuleDefId,
-     item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob, ItemInNs},
-     visibility::Visibility,
--    MacroId, ModuleDefId,
- };
- 
- #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
  }
  
  pub type TypesItem = Item<ModuleDefId, ImportOrExternCrate>;
@@ -40,6 +30,18 @@ Rustfmt size:  5492 bytes
              values: Some(Item {
                  def: values,
                  vis,
+     }
+ 
+     pub fn or_else(self, f: impl FnOnce() -> PerNs) -> PerNs {
+-        if self.is_full() { self } else { self.or(f()) }
++        if self.is_full() {
++            self
++        } else {
++            self.or(f())
++        }
+     }
+ 
+     pub fn iter_items(self) -> impl Iterator<Item = (ItemInNs, Option<ImportOrExternCrate>)> {
          self.types
              .map(|it| (ItemInNs::Types(it.def), it.import))
              .into_iter()

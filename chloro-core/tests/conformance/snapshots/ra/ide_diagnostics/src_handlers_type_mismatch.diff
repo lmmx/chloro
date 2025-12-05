@@ -3,37 +3,20 @@ COMPARISON DIFF
 
 Original size: 27673 bytes
 Chloro size:   27663 bytes
-Rustfmt size:  28292 bytes
+Rustfmt size:  28260 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use either::Either;
--use hir::{db::ExpandDatabase, CallableKind, ClosureStyle, HirDisplay, InFile};
-+use hir::{CallableKind, ClosureStyle, HirDisplay, InFile, db::ExpandDatabase};
- use ide_db::{
-     famous_defs::FamousDefs,
-     source_change::{SourceChange, SourceChangeBuilder},
-     text_edit::TextEdit,
- };
  use syntax::{
--    ast::{
--        self,
--        edit::{AstNodeEdit, IndentLevel},
--        syntax_factory::SyntaxFactory,
--        BlockExpr, Expr, ExprStmt, HasArgList,
--    },
      AstNode, AstPtr, TextSize,
-+    ast::{
+     ast::{
+-        self, BlockExpr, Expr, ExprStmt, HasArgList,
+-        edit::{AstNodeEdit, IndentLevel},
 +        self, BlockExpr, Expr, ExprStmt, HasArgList, edit::{AstNodeEdit, IndentLevel},
-+        syntax_factory::SyntaxFactory,
-+    },
+         syntax_factory::SyntaxFactory,
+     },
  };
- 
--use crate::{adjusted_display_range, fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};
-+use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
- 
- // Diagnostic: type-mismatch
  //
  // This diagnostic is triggered when the type of an expression or pattern does not match
  // the expected type.
@@ -71,6 +54,18 @@ Rustfmt size:  28292 bytes
          add_reference(ctx, d, expr_ptr, &mut fixes);
          add_missing_ok_or_some(ctx, d, expr_ptr, &mut fixes);
          remove_unnecessary_wrapper(ctx, d, expr_ptr, &mut fixes);
+         str_ref_to_owned(ctx, d, expr_ptr, &mut fixes);
+     }
+ 
+-    if fixes.is_empty() { None } else { Some(fixes) }
++    if fixes.is_empty() {
++        None
++    } else {
++        Some(fixes)
++    }
+ }
+ 
+ fn add_reference(
      expr_ptr: &InFile<AstPtr<ast::Expr>>,
      acc: &mut Vec<Assist>,
  ) -> Option<()> {

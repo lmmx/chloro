@@ -75,7 +75,11 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             .next()
             .and_then(ast::Expr::cast)
         {
-            expr.syntax().ancestors().find_map(valid_target_expr)?.syntax().clone()
+            expr.syntax()
+                .ancestors()
+                .find_map(valid_target_expr)?
+                .syntax()
+                .clone()
         } else {
             return None;
         }
@@ -90,7 +94,10 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         }
     };
 
-    let node = node.ancestors().take_while(|anc| anc.text_range() == node.text_range()).last()?;
+    let node = node
+        .ancestors()
+        .take_while(|anc| anc.text_range() == node.text_range())
+        .last()?;
     let range = node.text_range();
 
     let to_extract = node
@@ -196,7 +203,8 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                 let new_stmt: ast::Stmt = match kind {
                     ExtractionKind::Variable => {
                         let ident_pat = make.ident_pat(false, needs_mut, pat_name);
-                        make.let_stmt(ident_pat.into(), None, Some(initializer)).into()
+                        make.let_stmt(ident_pat.into(), None, Some(initializer))
+                            .into()
                     }
                     ExtractionKind::Constant => {
                         let ast_ty = make.ty(&ty_string);
@@ -275,7 +283,9 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 
 fn peel_parens(mut expr: ast::Expr) -> ast::Expr {
     while let ast::Expr::ParenExpr(parens) = &expr {
-        let Some(expr_inside) = parens.expr() else { break };
+        let Some(expr_inside) = parens.expr() else {
+            break;
+        };
         expr = expr_inside;
     }
     expr
@@ -288,9 +298,9 @@ fn valid_target_expr(node: SyntaxNode) -> Option<ast::Expr> {
         SyntaxKind::PATH_EXPR | SyntaxKind::LOOP_EXPR | SyntaxKind::LET_EXPR => None,
         SyntaxKind::BREAK_EXPR => ast::BreakExpr::cast(node).and_then(|e| e.expr()),
         SyntaxKind::RETURN_EXPR => ast::ReturnExpr::cast(node).and_then(|e| e.expr()),
-        SyntaxKind::BLOCK_EXPR => {
-            ast::BlockExpr::cast(node).filter(|it| it.is_standalone()).map(ast::Expr::from)
-        }
+        SyntaxKind::BLOCK_EXPR => ast::BlockExpr::cast(node)
+            .filter(|it| it.is_standalone())
+            .map(ast::Expr::from),
         _ => ast::Expr::cast(node),
     }
 }
@@ -302,8 +312,11 @@ enum ExtractionKind {
 }
 
 impl ExtractionKind {
-    const ALL: &'static [ExtractionKind] =
-        &[ExtractionKind::Variable, ExtractionKind::Constant, ExtractionKind::Static];
+    const ALL: &'static [ExtractionKind] = &[
+        ExtractionKind::Variable,
+        ExtractionKind::Constant,
+        ExtractionKind::Static,
+    ];
 
     fn assist_id(&self) -> AssistId {
         let s = match self {
@@ -402,8 +415,10 @@ impl Anchor {
                 if ast::MacroCall::can_cast(node.kind()) {
                     return None;
                 }
-                if let Some(expr) =
-                    node.parent().and_then(ast::StmtList::cast).and_then(|it| it.tail_expr())
+                if let Some(expr) = node
+                    .parent()
+                    .and_then(ast::StmtList::cast)
+                    .and_then(|it| it.tail_expr())
                     && expr.syntax() == &node
                 {
                     cov_mark::hit!(test_extract_var_last_expr);
@@ -849,7 +864,10 @@ fn foo() {
     #[test]
     fn dont_extract_in_comment() {
         cov_mark::check!(extract_var_in_comment_is_not_applicable);
-        check_assist_not_applicable(extract_variable, r#"fn main() { 1 + /* $0comment$0 */ 1; }"#);
+        check_assist_not_applicable(
+            extract_variable,
+            r#"fn main() { 1 + /* $0comment$0 */ 1; }"#,
+        );
     }
 
     #[test]
@@ -1784,7 +1802,11 @@ fn foo() {
     // FIXME: This is not quite correct, but good enough(tm) for the sorting heuristic
     #[test]
     fn extract_var_target() {
-        check_assist_target(extract_variable, r#"fn foo() -> u32 { $0return 2 + 2$0; }"#, "2 + 2");
+        check_assist_target(
+            extract_variable,
+            r#"fn foo() -> u32 { $0return 2 + 2$0; }"#,
+            "2 + 2",
+        );
 
         check_assist_target(
             extract_variable,

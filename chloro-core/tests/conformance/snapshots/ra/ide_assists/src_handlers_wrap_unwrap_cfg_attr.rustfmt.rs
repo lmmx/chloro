@@ -63,7 +63,10 @@ fn attempt_get_derive(attr: ast::Attr, ident: SyntaxToken) -> WrapUnwrapOption {
                     derive = derive.cover(prev.text_range());
                 }
 
-                Some(WrapUnwrapOption::WrapDerive { derive, attr: attr.clone() })
+                Some(WrapUnwrapOption::WrapDerive {
+                    derive,
+                    attr: attr.clone(),
+                })
             } else {
                 let mut consumed_comma = false;
                 // Collect the path
@@ -95,12 +98,18 @@ fn attempt_get_derive(attr: ast::Attr, ident: SyntaxToken) -> WrapUnwrapOption {
                     }
                     following = next_token.next_sibling_or_token()?.into_token()?;
                 }
-                Some(WrapUnwrapOption::WrapDerive { derive, attr: attr.clone() })
+                Some(WrapUnwrapOption::WrapDerive {
+                    derive,
+                    attr: attr.clone(),
+                })
             }
         }
     };
     if ident.parent().and_then(ast::TokenTree::cast).is_none()
-        || !attr.simple_name().map(|v| v.eq("derive")).unwrap_or_default()
+        || !attr
+            .simple_name()
+            .map(|v| v.eq("derive"))
+            .unwrap_or_default()
     {
         WrapUnwrapOption::WrapAttr(attr)
     } else {
@@ -113,7 +122,10 @@ pub(crate) fn wrap_unwrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>) -
         let attr = ctx.find_node_at_offset::<ast::Attr>();
         match (attr, ident) {
             (Some(attr), Some(ident))
-                if attr.simple_name().map(|v| v.eq("derive")).unwrap_or_default() =>
+                if attr
+                    .simple_name()
+                    .map(|v| v.eq("derive"))
+                    .unwrap_or_default() =>
             {
                 Some(attempt_get_derive(attr, ident))
             }
@@ -174,9 +186,10 @@ fn wrap_derive(
     let handle_source_change = |edit: &mut SourceChangeBuilder| {
         let make = SyntaxFactory::with_mappings();
         let mut editor = edit.make_editor(attr.syntax());
-        let new_derive = make.attr_outer(
-            make.meta_token_tree(make.ident_path("derive"), make.token_tree(T!['('], new_derive)),
-        );
+        let new_derive = make.attr_outer(make.meta_token_tree(
+            make.ident_path("derive"),
+            make.token_tree(T!['('], new_derive),
+        ));
         let meta = make.meta_token_tree(
             make.ident_path("cfg_attr"),
             make.token_tree(
@@ -201,8 +214,10 @@ fn wrap_derive(
         );
 
         if let Some(snippet_cap) = ctx.config.snippet_cap
-            && let Some(first_meta) =
-                cfg_attr.meta().and_then(|meta| meta.token_tree()).and_then(|tt| tt.l_paren_token())
+            && let Some(first_meta) = cfg_attr
+                .meta()
+                .and_then(|meta| meta.token_tree())
+                .and_then(|tt| tt.l_paren_token())
         {
             let tabstop = edit.make_tabstop_after(snippet_cap);
             editor.add_annotation(first_meta, tabstop);
@@ -226,8 +241,10 @@ fn wrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>, attr: ast::Attr) ->
     let handle_source_change = |edit: &mut SourceChangeBuilder| {
         let make = SyntaxFactory::with_mappings();
         let mut editor = edit.make_editor(attr.syntax());
-        let mut raw_tokens =
-            vec![NodeOrToken::Token(make.token(T![,])), NodeOrToken::Token(make.whitespace(" "))];
+        let mut raw_tokens = vec![
+            NodeOrToken::Token(make.token(T![,])),
+            NodeOrToken::Token(make.whitespace(" ")),
+        ];
         path.syntax().descendants_with_tokens().for_each(|it| {
             if let NodeOrToken::Token(token) = it {
                 raw_tokens.push(NodeOrToken::Token(token));
@@ -248,16 +265,23 @@ fn wrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>, attr: ast::Attr) ->
                 raw_tokens.extend(tt.token_trees_and_tokens());
             }
         }
-        let meta =
-            make.meta_token_tree(make.ident_path("cfg_attr"), make.token_tree(T!['('], raw_tokens));
-        let cfg_attr =
-            if attr.excl_token().is_some() { make.attr_inner(meta) } else { make.attr_outer(meta) };
+        let meta = make.meta_token_tree(
+            make.ident_path("cfg_attr"),
+            make.token_tree(T!['('], raw_tokens),
+        );
+        let cfg_attr = if attr.excl_token().is_some() {
+            make.attr_inner(meta)
+        } else {
+            make.attr_outer(meta)
+        };
 
         editor.replace(attr.syntax(), cfg_attr.syntax());
 
         if let Some(snippet_cap) = ctx.config.snippet_cap
-            && let Some(first_meta) =
-                cfg_attr.meta().and_then(|meta| meta.token_tree()).and_then(|tt| tt.l_paren_token())
+            && let Some(first_meta) = cfg_attr
+                .meta()
+                .and_then(|meta| meta.token_tree())
+                .and_then(|tt| tt.l_paren_token())
         {
             let tabstop = edit.make_tabstop_after(snippet_cap);
             editor.add_annotation(first_meta, tabstop);
@@ -295,7 +319,11 @@ fn unwrap_cfg_attr(acc: &mut Assists, attr: ast::Attr) -> Option<()> {
             continue;
         }
         let Some(attr_name) = tt.into_token().and_then(|token| {
-            if token.kind() == T![ident] { Some(make::ext::ident_path(token.text())) } else { None }
+            if token.kind() == T![ident] {
+                Some(make::ext::ident_path(token.text()))
+            } else {
+                None
+            }
         }) else {
             continue;
         };

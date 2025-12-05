@@ -8,8 +8,8 @@ use ide_db::{
 use syntax::ast;
 
 use crate::{
-    completions::Completions, context::CompletionContext, item::CompletionItemLabel,
-    CompletionItemKind, CompletionItemRefMode, CompletionRelevance,
+    CompletionItemKind, CompletionItemRefMode, CompletionRelevance, completions::Completions,
+    context::CompletionContext, item::CompletionItemLabel,
 };
 
 pub(crate) fn complete_ra_fixture(

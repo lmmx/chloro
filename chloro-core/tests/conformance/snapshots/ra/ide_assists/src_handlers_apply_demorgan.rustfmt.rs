@@ -138,7 +138,10 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                 bin_expr.syntax().parent().and_then(ast::ParenExpr::cast)
             {
                 cov_mark::hit!(demorgan_double_parens);
-                (paren_expr.syntax().clone(), add_bang_paren(&make, demorganed))
+                (
+                    paren_expr.syntax().clone(),
+                    add_bang_paren(&make, demorganed),
+                )
             } else {
                 (bin_expr.syntax().clone(), add_bang_paren(&make, demorganed))
             };
@@ -192,11 +195,16 @@ pub(crate) fn apply_demorgan_iterator(acc: &mut Assists, ctx: &AssistContext<'_>
     let method_call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let (name, arg_expr) = validate_method_call_expr(ctx, &method_call)?;
 
-    let ast::Expr::ClosureExpr(closure_expr) = arg_expr else { return None };
+    let ast::Expr::ClosureExpr(closure_expr) = arg_expr else {
+        return None;
+    };
     let closure_body = closure_expr.body()?.clone_for_update();
 
     let op_range = method_call.syntax().text_range();
-    let label = format!("Apply De Morgan's law to `Iterator::{}`", name.text().as_str());
+    let label = format!(
+        "Apply De Morgan's law to `Iterator::{}`",
+        name.text().as_str()
+    );
     acc.add_group(
         &GroupLabel("Apply De Morgan's law".to_owned()),
         AssistId::refactor_rewrite("apply_demorgan_iterator"),
@@ -232,10 +240,15 @@ pub(crate) fn apply_demorgan_iterator(acc: &mut Assists, ctx: &AssistContext<'_>
                 .filter(|prefix_expr| matches!(prefix_expr.op_kind(), Some(ast::UnaryOp::Not)))
             {
                 editor.delete(
-                    prefix_expr.op_token().expect("prefix expression always has an operator"),
+                    prefix_expr
+                        .op_token()
+                        .expect("prefix expression always has an operator"),
                 );
             } else {
-                editor.insert(Position::before(method_call.syntax()), make.token(SyntaxKind::BANG));
+                editor.insert(
+                    Position::before(method_call.syntax()),
+                    make.token(SyntaxKind::BANG),
+                );
             }
 
             editor.add_mappings(make.finish_with_mappings());
@@ -263,7 +276,9 @@ fn validate_method_call_expr(
     let krate = module.krate();
 
     let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
-    it_type.impls_trait(sema.db, iter_trait, &[]).then_some((name_ref, arg_expr))
+    it_type
+        .impls_trait(sema.db, iter_trait, &[])
+        .then_some((name_ref, arg_expr))
 }
 
 fn tail_cb_impl(editor: &mut SyntaxEditor, make: &SyntaxFactory, e: &ast::Expr) {
@@ -325,28 +340,52 @@ fn f() { !(S <= S || S < S) }
 
     #[test]
     fn demorgan_turns_and_into_or() {
-        check_assist(apply_demorgan, "fn f() { !x &&$0 !x }", "fn f() { !(x || x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { !x &&$0 !x }",
+            "fn f() { !(x || x) }",
+        )
     }
 
     #[test]
     fn demorgan_turns_or_into_and() {
-        check_assist(apply_demorgan, "fn f() { !x ||$0 !x }", "fn f() { !(x && x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { !x ||$0 !x }",
+            "fn f() { !(x && x) }",
+        )
     }
 
     #[test]
     fn demorgan_removes_inequality() {
-        check_assist(apply_demorgan, "fn f() { x != x ||$0 !x }", "fn f() { !(x == x && x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { x != x ||$0 !x }",
+            "fn f() { !(x == x && x) }",
+        )
     }
 
     #[test]
     fn demorgan_general_case() {
-        check_assist(apply_demorgan, "fn f() { x ||$0 x }", "fn f() { !(!x && !x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { x ||$0 x }",
+            "fn f() { !(!x && !x) }",
+        )
     }
 
     #[test]
     fn demorgan_multiple_terms() {
-        check_assist(apply_demorgan, "fn f() { x ||$0 y || z }", "fn f() { !(!x && !y && !z) }");
-        check_assist(apply_demorgan, "fn f() { x || y ||$0 z }", "fn f() { !(!x && !y && !z) }");
+        check_assist(
+            apply_demorgan,
+            "fn f() { x ||$0 y || z }",
+            "fn f() { !(!x && !y && !z) }",
+        );
+        check_assist(
+            apply_demorgan,
+            "fn f() { x || y ||$0 z }",
+            "fn f() { !(!x && !y && !z) }",
+        );
     }
 
     #[test]
@@ -357,13 +396,21 @@ fn f() { !(S <= S || S < S) }
     #[test]
     fn demorgan_doesnt_double_negation() {
         cov_mark::check!(demorgan_double_negation);
-        check_assist(apply_demorgan, "fn f() { !(x ||$0 x) }", "fn f() { !x && !x }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { !(x ||$0 x) }",
+            "fn f() { !x && !x }",
+        )
     }
 
     #[test]
     fn demorgan_doesnt_double_parens() {
         cov_mark::check!(demorgan_double_parens);
-        check_assist(apply_demorgan, "fn f() { (x ||$0 x) }", "fn f() { !(!x && !x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { (x ||$0 x) }",
+            "fn f() { !(!x && !x) }",
+        )
     }
 
     #[test]
@@ -429,7 +476,11 @@ fn f() { !(S <= S || S < S) }
 
     #[test]
     fn demorgan_removes_pars_for_op_precedence2() {
-        check_assist(apply_demorgan, "fn f() { (a || !(b ||$0 c); }", "fn f() { (a || !b && !c; }");
+        check_assist(
+            apply_demorgan,
+            "fn f() { (a || !(b ||$0 c); }",
+            "fn f() { (a || !b && !c; }",
+        );
     }
 
     #[test]

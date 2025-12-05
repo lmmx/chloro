@@ -29,7 +29,10 @@ use crate::{
 use super::mir::{interpret_mir, lower_to_mir, pad16};
 
 pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {
-    Const::new(DbInterner::conjure(), rustc_type_ir::ConstKind::Error(ErrorGuaranteed))
+    Const::new(
+        DbInterner::conjure(),
+        rustc_type_ir::ConstKind::Error(ErrorGuaranteed),
+    )
 }
 
 pub fn unknown_const_as_generic<'db>(ty: Ty<'db>) -> GenericArg<'db> {
@@ -109,7 +112,10 @@ pub fn intern_const_ref<'a>(
         }
         LiteralConstRef::Bool(b) => rustc_type_ir::ConstKind::Value(ValueConst::new(
             ty,
-            ConstBytes { memory: Box::new([*b as u8]), memory_map: MemoryMap::default() },
+            ConstBytes {
+                memory: Box::new([*b as u8]),
+                memory_map: MemoryMap::default(),
+            },
         )),
         LiteralConstRef::Char(c) => rustc_type_ir::ConstKind::Value(ValueConst::new(
             ty,
@@ -128,7 +134,10 @@ pub fn usize_const<'db>(db: &'db dyn HirDatabase, value: Option<u128>, krate: Cr
     intern_const_ref(
         db,
         &value.map_or(LiteralConstRef::Unknown, LiteralConstRef::UInt),
-        Ty::new_uint(DbInterner::new_with(db, Some(krate), None), rustc_type_ir::UintTy::Usize),
+        Ty::new_uint(
+            DbInterner::new_with(db, Some(krate), None),
+            rustc_type_ir::UintTy::Usize,
+        ),
         krate,
     )
 }
@@ -199,7 +208,9 @@ pub(crate) fn const_eval_discriminant_variant<'db>(
     }
 
     let repr = db.enum_signature(loc.parent).repr;
-    let is_signed = repr.and_then(|repr| repr.int).is_none_or(|int| int.is_signed());
+    let is_signed = repr
+        .and_then(|repr| repr.int)
+        .is_none_or(|int| int.is_signed());
 
     let mir_body = db.monomorphized_mir_body(
         def,

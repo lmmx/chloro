@@ -74,11 +74,17 @@ pub fn visit_file_defs(
             && submodule.is_inline(db)
         {
             defs.extend(submodule.declarations(db));
-            submodule.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
+            submodule
+                .impl_defs(db)
+                .into_iter()
+                .for_each(|impl_| cb(impl_.into()));
         }
         cb(def.into());
     }
-    module.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
+    module
+        .impl_defs(db)
+        .into_iter()
+        .for_each(|impl_| cb(impl_.into()));
 
     let is_root = module.is_crate_root();
     module

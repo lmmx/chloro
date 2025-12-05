@@ -39,25 +39,35 @@ pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
             .collect()
     };
 
-    let replacements =
-        macro_calls.into_iter().filter_map(compute_dbg_replacement).collect::<Vec<_>>();
+    let replacements = macro_calls
+        .into_iter()
+        .filter_map(compute_dbg_replacement)
+        .collect::<Vec<_>>();
     let target = replacements
         .iter()
         .flat_map(|(node_or_token, _)| node_or_token.iter())
         .map(|t| t.text_range())
         .reduce(|acc, range| acc.cover(range))?;
-    acc.add(AssistId::quick_fix("remove_dbg"), "Remove dbg!()", target, |builder| {
-        let mut editor = builder.make_editor(ctx.source_file().syntax());
-        for (range, expr) in replacements {
-            if let Some(expr) = expr {
-                editor.insert(Position::before(range[0].clone()), expr.syntax().clone_for_update());
+    acc.add(
+        AssistId::quick_fix("remove_dbg"),
+        "Remove dbg!()",
+        target,
+        |builder| {
+            let mut editor = builder.make_editor(ctx.source_file().syntax());
+            for (range, expr) in replacements {
+                if let Some(expr) = expr {
+                    editor.insert(
+                        Position::before(range[0].clone()),
+                        expr.syntax().clone_for_update(),
+                    );
+                }
+                for node_or_token in range {
+                    editor.delete(node_or_token);
+                }
             }
-            for node_or_token in range {
-                editor.delete(node_or_token);
-            }
-        }
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
+    )
 }
 
 /// Returns `None` when either
@@ -78,7 +88,11 @@ fn compute_dbg_replacement(
         return None;
     }
 
-    let mac_input = tt.syntax().children_with_tokens().skip(1).take_while(|it| *it != r_delim);
+    let mac_input = tt
+        .syntax()
+        .children_with_tokens()
+        .skip(1)
+        .take_while(|it| *it != r_delim);
     let input_expressions = mac_input.chunk_by(|tok| tok.kind() == T![,]);
     let input_expressions = input_expressions
         .into_iter()
@@ -163,7 +177,11 @@ fn compute_dbg_replacement(
                 None => false,
             };
             let expr = replace_nested_dbgs(expr.clone());
-            let expr = if wrap { make::expr_paren(expr).into() } else { expr.clone_subtree() };
+            let expr = if wrap {
+                make::expr_paren(expr).into()
+            } else {
+                expr.clone_subtree()
+            };
             (vec![macro_call.syntax().clone().into()], Some(expr))
         }
         // dbg!(expr0, expr1, ...)
@@ -212,8 +230,11 @@ fn replace_nested_dbgs(expanded: ast::Expr) -> ast::Expr {
     let expanded = expanded.clone_subtree();
     let mut editor = SyntaxEditor::new(expanded.syntax().clone());
     // We need to collect to avoid mutation during traversal.
-    let macro_exprs: Vec<_> =
-        expanded.syntax().descendants().filter_map(ast::MacroExpr::cast).collect();
+    let macro_exprs: Vec<_> = expanded
+        .syntax()
+        .descendants()
+        .filter_map(ast::MacroExpr::cast)
+        .collect();
 
     for mac in macro_exprs {
         let expr_opt = match compute_dbg_replacement(mac.clone()) {
@@ -310,7 +331,10 @@ fn foo() {
             r#"let res = $0dbg!(1 * 20); // needless comment"#,
             r#"let res = 1 * 20; // needless comment"#,
         );
-        check(r#"let res = $0dbg!(); // needless comment"#, r#"let res = (); // needless comment"#);
+        check(
+            r#"let res = $0dbg!(); // needless comment"#,
+            r#"let res = (); // needless comment"#,
+        );
         check(
             r#"let res = $0dbg!(1, 2); // needless comment"#,
             r#"let res = (1, 2); // needless comment"#,
@@ -319,29 +343,59 @@ fn foo() {
 
     #[test]
     fn test_remove_dbg_cast_cast() {
-        check(r#"let res = $0dbg!(x as u32) as u32;"#, r#"let res = x as u32 as u32;"#);
+        check(
+            r#"let res = $0dbg!(x as u32) as u32;"#,
+            r#"let res = x as u32 as u32;"#,
+        );
     }
 
     #[test]
     fn test_remove_dbg_prefix() {
-        check(r#"let res = $0dbg!(&result).foo();"#, r#"let res = (&result).foo();"#);
+        check(
+            r#"let res = $0dbg!(&result).foo();"#,
+            r#"let res = (&result).foo();"#,
+        );
         check(r#"let res = &$0dbg!(&result);"#, r#"let res = &&result;"#);
-        check(r#"let res = $0dbg!(!result) && true;"#, r#"let res = !result && true;"#);
+        check(
+            r#"let res = $0dbg!(!result) && true;"#,
+            r#"let res = !result && true;"#,
+        );
     }
 
     #[test]
     fn test_remove_dbg_post_expr() {
-        check(r#"let res = $0dbg!(fut.await).foo();"#, r#"let res = fut.await.foo();"#);
-        check(r#"let res = $0dbg!(result?).foo();"#, r#"let res = result?.foo();"#);
-        check(r#"let res = $0dbg!(foo as u32).foo();"#, r#"let res = (foo as u32).foo();"#);
-        check(r#"let res = $0dbg!(array[3]).foo();"#, r#"let res = array[3].foo();"#);
-        check(r#"let res = $0dbg!(tuple.3).foo();"#, r#"let res = tuple.3.foo();"#);
+        check(
+            r#"let res = $0dbg!(fut.await).foo();"#,
+            r#"let res = fut.await.foo();"#,
+        );
+        check(
+            r#"let res = $0dbg!(result?).foo();"#,
+            r#"let res = result?.foo();"#,
+        );
+        check(
+            r#"let res = $0dbg!(foo as u32).foo();"#,
+            r#"let res = (foo as u32).foo();"#,
+        );
+        check(
+            r#"let res = $0dbg!(array[3]).foo();"#,
+            r#"let res = array[3].foo();"#,
+        );
+        check(
+            r#"let res = $0dbg!(tuple.3).foo();"#,
+            r#"let res = tuple.3.foo();"#,
+        );
     }
 
     #[test]
     fn test_remove_dbg_range_expr() {
-        check(r#"let res = $0dbg!(foo..bar).foo();"#, r#"let res = (foo..bar).foo();"#);
-        check(r#"let res = $0dbg!(foo..=bar).foo();"#, r#"let res = (foo..=bar).foo();"#);
+        check(
+            r#"let res = $0dbg!(foo..bar).foo();"#,
+            r#"let res = (foo..bar).foo();"#,
+        );
+        check(
+            r#"let res = $0dbg!(foo..=bar).foo();"#,
+            r#"let res = (foo..=bar).foo();"#,
+        );
     }
 
     #[test]
@@ -424,7 +478,10 @@ fn f() {
             r#"$0let x = dbg!(dbg!(dbg!(dbg!(0 + 1)) * 2) + dbg!(3));$0"#,
             r#"let x = ((0 + 1) * 2) + 3;"#,
         );
-        check(r#"$0dbg!(10, dbg!(), dbg!(20, 30))$0"#, r#"(10, (), (20, 30))"#);
+        check(
+            r#"$0dbg!(10, dbg!(), dbg!(20, 30))$0"#,
+            r#"(10, (), (20, 30))"#,
+        );
     }
 
     #[test]

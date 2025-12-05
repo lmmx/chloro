@@ -105,7 +105,15 @@ pub(crate) fn inlay_hints(
     let ctx = &mut InlayHintCtx::default();
     let mut hints = |event| {
         if let Some(node) = handle_event(ctx, event) {
-            hints(&mut acc, ctx, &famous_defs, config, file_id, display_target, node);
+            hints(
+                &mut acc,
+                ctx,
+                &famous_defs,
+                config,
+                file_id,
+                display_target,
+                node,
+            );
         }
     };
     let mut preorder = file.preorder();
@@ -156,7 +164,15 @@ pub(crate) fn inlay_hints_resolve(
     let ctx = &mut InlayHintCtx::default();
     let mut hints = |event| {
         if let Some(node) = handle_event(ctx, event) {
-            hints(&mut acc, ctx, &famous_defs, config, file_id, display_target, node);
+            hints(
+                &mut acc,
+                ctx,
+                &famous_defs,
+                config,
+                file_id,
+                display_target,
+                node,
+            );
         }
     };
 
@@ -182,7 +198,8 @@ fn handle_event(ctx: &mut InlayHintCtx, node: WalkEvent<SyntaxNode>) -> Option<S
                     .map(|it| {
                         it.lifetime_params()
                             .filter_map(|it| {
-                                it.lifetime().map(|it| format_smolstr!("{}", &it.text()[1..]))
+                                it.lifetime()
+                                    .map(|it| format_smolstr!("{}", &it.text()[1..]))
                             })
                             .collect()
                     })
@@ -222,7 +239,10 @@ fn hints(
         sema,
         config,
         display_target,
-        InRealFile { file_id, value: node.clone() },
+        InRealFile {
+            file_id,
+            value: node.clone(),
+        },
     );
     if let Some(any_has_generic_args) = ast::AnyHasGenericArgs::cast(node.clone()) {
         generic_param::hints(hints, famous_defs, config, any_has_generic_args);
@@ -556,27 +576,45 @@ impl InlayHintLabel {
         linked_location: Option<LazyProperty<FileRange>>,
     ) -> InlayHintLabel {
         InlayHintLabel {
-            parts: smallvec![InlayHintLabelPart { text: s.into(), linked_location, tooltip }],
+            parts: smallvec![InlayHintLabelPart {
+                text: s.into(),
+                linked_location,
+                tooltip
+            }],
         }
     }
 
     pub fn prepend_str(&mut self, s: &str) {
         match &mut *self.parts {
-            [InlayHintLabelPart { text, linked_location: None, tooltip: None }, ..] => {
-                text.insert_str(0, s)
-            }
+            [
+                InlayHintLabelPart {
+                    text,
+                    linked_location: None,
+                    tooltip: None,
+                },
+                ..,
+            ] => text.insert_str(0, s),
             _ => self.parts.insert(
                 0,
-                InlayHintLabelPart { text: s.into(), linked_location: None, tooltip: None },
+                InlayHintLabelPart {
+                    text: s.into(),
+                    linked_location: None,
+                    tooltip: None,
+                },
             ),
         }
     }
 
     pub fn append_str(&mut self, s: &str) {
         match &mut *self.parts {
-            [.., InlayHintLabelPart { text, linked_location: None, tooltip: None }] => {
-                text.push_str(s)
-            }
+            [
+                ..,
+                InlayHintLabelPart {
+                    text,
+                    linked_location: None,
+                    tooltip: None,
+                },
+            ] => text.push_str(s),
             _ => self.parts.push(InlayHintLabelPart {
                 text: s.into(),
                 linked_location: None,
@@ -588,8 +626,11 @@ impl InlayHintLabel {
     pub fn append_part(&mut self, part: InlayHintLabelPart) {
         if part.linked_location.is_none()
             && part.tooltip.is_none()
-            && let Some(InlayHintLabelPart { text, linked_location: None, tooltip: None }) =
-                self.parts.last_mut()
+            && let Some(InlayHintLabelPart {
+                text,
+                linked_location: None,
+                tooltip: None,
+            }) = self.parts.last_mut()
         {
             text.push_str(&part.text);
             return;
@@ -601,7 +642,11 @@ impl InlayHintLabel {
 impl From<String> for InlayHintLabel {
     fn from(s: String) -> Self {
         Self {
-            parts: smallvec![InlayHintLabelPart { text: s, linked_location: None, tooltip: None }],
+            parts: smallvec![InlayHintLabelPart {
+                text: s,
+                linked_location: None,
+                tooltip: None
+            }],
         }
     }
 }
@@ -655,10 +700,16 @@ impl std::hash::Hash for InlayHintLabelPart {
 impl fmt::Debug for InlayHintLabelPart {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self { text, linked_location: None, tooltip: None | Some(LazyProperty::Lazy) } => {
-                text.fmt(f)
-            }
-            Self { text, linked_location, tooltip } => f
+            Self {
+                text,
+                linked_location: None,
+                tooltip: None | Some(LazyProperty::Lazy),
+            } => text.fmt(f),
+            Self {
+                text,
+                linked_location,
+                tooltip,
+            } => f
                 .debug_struct("InlayHintLabelPart")
                 .field("text", text)
                 .field("linked_location", linked_location)
@@ -700,9 +751,14 @@ impl HirWrite for InlayHintLabelBuilder<'_> {
             LazyProperty::Lazy
         } else {
             LazyProperty::Computed({
-                let Some(location) = ModuleDef::from(def).try_to_nav(self.sema) else { return };
+                let Some(location) = ModuleDef::from(def).try_to_nav(self.sema) else {
+                    return;
+                };
                 let location = location.call_site();
-                FileRange { file_id: location.file_id, range: location.focus_or_full_range() }
+                FileRange {
+                    file_id: location.file_id,
+                    range: location.focus_or_full_range(),
+                }
             })
         });
     }
@@ -775,7 +831,15 @@ fn label_of_ty(
                     label_builder.write_str(LABEL_ITEM)?;
                     label_builder.end_location_link();
                     label_builder.write_str(LABEL_MIDDLE2)?;
-                    rec(sema, famous_defs, max_length, &ty, label_builder, config, display_target)?;
+                    rec(
+                        sema,
+                        famous_defs,
+                        max_length,
+                        &ty,
+                        label_builder,
+                        config,
+                        display_target,
+                    )?;
                     label_builder.write_str(LABEL_END)?;
                     Ok(())
                 }
@@ -794,8 +858,15 @@ fn label_of_ty(
         result: InlayHintLabel::default(),
         resolve: config.fields_to_resolve.resolve_label_location,
     };
-    let _ =
-        rec(sema, famous_defs, config.max_length, ty, &mut label_builder, config, display_target);
+    let _ = rec(
+        sema,
+        famous_defs,
+        config.max_length,
+        ty,
+        &mut label_builder,
+        config,
+        display_target,
+    );
     let r = label_builder.finish();
     Some(r)
 }
@@ -823,10 +894,13 @@ fn hint_iterator<'db>(
     }
 
     if ty.impls_trait(db, iter_trait, &[]) {
-        let assoc_type_item = iter_trait.items(db).into_iter().find_map(|item| match item {
-            hir::AssocItem::TypeAlias(alias) if alias.name(db) == sym::Item => Some(alias),
-            _ => None,
-        })?;
+        let assoc_type_item = iter_trait
+            .items(db)
+            .into_iter()
+            .find_map(|item| match item {
+                hir::AssocItem::TypeAlias(alias) if alias.name(db) == sym::Item => Some(alias),
+                _ => None,
+            })?;
         if let Some(ty) = ty.normalize_trait_assoc_type(db, &[], assoc_type_item) {
             return Some((iter_trait, assoc_type_item, ty));
         }
@@ -845,9 +919,10 @@ fn ty_to_text_edit(
     prefix: impl Into<String>,
 ) -> Option<LazyProperty<TextEdit>> {
     // FIXME: Limit the length and bail out on excess somehow?
-    let rendered = sema
-        .scope(node_for_hint)
-        .and_then(|scope| ty.display_source_code(scope.db, scope.module().into(), false).ok())?;
+    let rendered = sema.scope(node_for_hint).and_then(|scope| {
+        ty.display_source_code(scope.db, scope.module().into(), false)
+            .ok()
+    })?;
     Some(config.lazy_text_edit(|| {
         let mut builder = TextEdit::builder();
         builder.insert(offset_to_insert_ty, prefix.into());
@@ -941,7 +1016,10 @@ mod tests {
             .collect::<Vec<_>>();
         expected.sort_by_key(|(range, _)| range.start());
 
-        assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
+        assert_eq!(
+            expected, actual,
+            "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}"
+        );
     }
 
     #[track_caller]
@@ -952,8 +1030,10 @@ mod tests {
     ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
-        let filtered =
-            inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect::<Vec<_>>();
+        let filtered = inlay_hints
+            .into_iter()
+            .map(|hint| (hint.range, hint.label))
+            .collect::<Vec<_>>();
         expect.assert_debug_eq(&filtered)
     }
 
@@ -990,8 +1070,10 @@ mod tests {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
 
-        let edits: Vec<_> =
-            inlay_hints.into_iter().filter_map(|hint| hint.text_edit?.computed()).collect();
+        let edits: Vec<_> = inlay_hints
+            .into_iter()
+            .filter_map(|hint| hint.text_edit?.computed())
+            .collect();
 
         assert!(edits.is_empty(), "unexpected edits: {edits:?}");
     }
@@ -999,7 +1081,10 @@ mod tests {
     #[test]
     fn hints_disabled() {
         check_with_config(
-            InlayHintsConfig { render_colons: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                render_colons: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn foo(a: i32, b: i32) -> i32 { a + b }
 fn main() {
@@ -1085,7 +1170,11 @@ fn bar() {
     #[test]
     fn regression_20239() {
         check_with_config(
-            InlayHintsConfig { parameter_hints: true, type_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                parameter_hints: true,
+                type_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: fn
 trait Iterator {

@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 27860 bytes
 Chloro size:   27788 bytes
-Rustfmt size:  27860 bytes
+Rustfmt size:  28291 bytes
 
 ✗ Outputs DIFFER
 
@@ -74,6 +74,18 @@ Rustfmt size:  27860 bytes
  #[derive(Debug, Clone, Copy, Eq, PartialEq)]
  pub struct CompletionRelevanceTraitInfo {
      /// The trait this item is from is a `#[doc(notable_trait)]`
+                 CompletionItemRefMode::Dereference => "*",
+             };
+             let label = format!("{prefix}{}", self.label.primary);
+-            (
+-                label,
+-                ide_db::text_edit::Indel::insert(offset, String::from(prefix)),
+-                relevance,
+-            )
++            (label, ide_db::text_edit::Indel::insert(offset, String::from(prefix)), relevance)
+         })
+     }
+ }
              import_to_add,
          }
      }
@@ -189,3 +201,57 @@ Rustfmt size:  27860 bytes
      #[test]
      fn relevance_score() {
          use CompletionRelevance as Cr;
+                 }),
+                 ..default
+             }],
+-            vec![Cr {
+-                postfix_match: Some(CompletionRelevancePostfixMatch::NonExact),
+-                ..default
+-            }],
+-            vec![Cr {
+-                is_private_editable: true,
+-                ..default
+-            }],
++            vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::NonExact), ..default }],
++            vec![Cr { is_private_editable: true, ..default }],
+             vec![default],
+-            vec![Cr {
+-                is_local: true,
+-                ..default
+-            }],
+-            vec![Cr {
+-                type_match: Some(CompletionRelevanceTypeMatch::CouldUnify),
+-                ..default
+-            }],
+-            vec![Cr {
+-                type_match: Some(CompletionRelevanceTypeMatch::Exact),
+-                ..default
+-            }],
+-            vec![Cr {
+-                exact_name_match: true,
+-                ..default
+-            }],
+-            vec![Cr {
+-                exact_name_match: true,
+-                is_local: true,
+-                ..default
+-            }],
++            vec![Cr { is_local: true, ..default }],
++            vec![Cr { type_match: Some(CompletionRelevanceTypeMatch::CouldUnify), ..default }],
++            vec![Cr { type_match: Some(CompletionRelevanceTypeMatch::Exact), ..default }],
++            vec![Cr { exact_name_match: true, ..default }],
++            vec![Cr { exact_name_match: true, is_local: true, ..default }],
+             vec![Cr {
+                 exact_name_match: true,
+                 type_match: Some(CompletionRelevanceTypeMatch::Exact),
+                 is_local: true,
+                 ..default
+             }],
+-            vec![Cr {
+-                postfix_match: Some(CompletionRelevancePostfixMatch::Exact),
+-                ..default
+-            }],
++            vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::Exact), ..default }],
+         ];
+ 
+         check_relevance_score_ordered(expected_relevance_order);

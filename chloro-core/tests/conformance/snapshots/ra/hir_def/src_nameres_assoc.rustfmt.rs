@@ -4,31 +4,31 @@ use std::mem;
 
 use cfg::CfgOptions;
 use hir_expand::{
+    AstId, ExpandTo, HirFileId, InFile, Intern, Lookup, MacroCallKind, MacroDefKind,
     mod_path::ModPath,
     name::{AsName, Name},
     span_map::SpanMap,
-    AstId, ExpandTo, HirFileId, InFile, Intern, Lookup, MacroCallKind, MacroDefKind,
 };
 use intern::Interned;
 use span::AstIdMap;
 use syntax::{
-    ast::{self, HasModuleItem, HasName},
     AstNode,
+    ast::{self, HasModuleItem, HasName},
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
 
 use crate::{
+    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId,
+    ItemLoc, MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
     attr::Attrs,
     db::DefDatabase,
     macro_call_as_call_id,
     nameres::{
+        DefMap, LocalDefMap, MacroSubNs,
         attr_resolution::ResolvedAttr,
         diagnostics::{DefDiagnostic, DefDiagnostics},
-        DefMap, LocalDefMap, MacroSubNs,
     },
-    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId,
-    ItemLoc, MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

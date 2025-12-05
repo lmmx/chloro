@@ -8,19 +8,6 @@ Rustfmt size:  15742 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- mod primitives;
- 
- use base_db::RootQueryDb;
--use expect_test::{expect, Expect};
-+use expect_test::{Expect, expect};
- use test_fixture::WithFixture;
- 
- use crate::{
--    nameres::{crate_def_map, DefMap},
-+    nameres::{DefMap, crate_def_map},
-     test_db::TestDB,
- };
- 
  fn edition_specific_preludes() {
      // We can't test the 2015 prelude here since you can't reexport its contents with 2015's
      // absolute paths.

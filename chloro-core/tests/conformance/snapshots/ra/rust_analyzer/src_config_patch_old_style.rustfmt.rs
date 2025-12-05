@@ -124,7 +124,10 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
             (Some(Value::Bool(false)), Some(Value::Bool(false))) => json!("none"),
             (_, _) => break 'completion,
         };
-        merge(json, json!({ "completion": { "callable": {"snippets": res }} }));
+        merge(
+            json,
+            json!({ "completion": { "callable": {"snippets": res }} }),
+        );
     }
 
     // We need to do this due to the checkOnSave_enable -> checkOnSave change, as that key now can either be an object or a bool

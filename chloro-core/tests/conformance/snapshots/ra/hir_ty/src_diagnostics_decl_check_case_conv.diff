@@ -8,12 +8,10 @@ Rustfmt size:  6228 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
  mod tests {
      use super::*;
--    use expect_test::{expect, Expect};
+     use expect_test::{Expect, expect};
 -
-+    use expect_test::{Expect, expect};
      fn check<F: Fn(&str) -> Option<String>>(fun: F, input: &str, expect: Expect) {
          // `None` is translated to empty string, meaning that there is nothing to fix.
          let output = fun(input).unwrap_or_default();

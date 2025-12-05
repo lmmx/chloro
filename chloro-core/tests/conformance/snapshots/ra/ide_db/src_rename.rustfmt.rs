@@ -109,9 +109,13 @@ impl Definition {
                 bail!("Cannot rename a builtin attr.")
             }
             Definition::SelfType(_) => bail!("Cannot rename `Self`"),
-            Definition::Macro(mac) => {
-                rename_reference(sema, Definition::Macro(mac), new_name, rename_definition, edition)
-            }
+            Definition::Macro(mac) => rename_reference(
+                sema,
+                Definition::Macro(mac),
+                new_name,
+                rename_definition,
+                edition,
+            ),
             def => rename_reference(sema, def, new_name, rename_definition, edition),
         }
     }
@@ -234,7 +238,8 @@ impl Definition {
         {
             let src = sema.source(def)?;
             let name = src.value.name()?;
-            src.with_value(name.syntax()).original_file_range_opt(sema.db)
+            src.with_value(name.syntax())
+                .original_file_range_opt(sema.db)
         }
     }
 }
@@ -250,7 +255,10 @@ fn rename_mod(
         return Ok(source_change);
     }
 
-    let InFile { file_id, value: def_source } = module.definition_source(sema.db);
+    let InFile {
+        file_id,
+        value: def_source,
+    } = module.definition_source(sema.db);
     let edition = file_id.edition(sema.db);
     let (new_name, kind) = IdentifierKind::classify(edition, new_name)?;
     if kind != IdentifierKind::Ident {
@@ -263,7 +271,9 @@ fn rename_mod(
         let anchor = file_id.original_file(sema.db).file_id(sema.db);
 
         let is_mod_rs = module.is_mod_rs(sema.db);
-        let has_detached_child = module.children(sema.db).any(|child| !child.is_inline(sema.db));
+        let has_detached_child = module
+            .children(sema.db)
+            .any(|child| !child.is_inline(sema.db));
 
         // Module exists in a named file
         if !is_mod_rs {
@@ -277,9 +287,10 @@ fn rename_mod(
         //  - Module has submodules defined in separate files
         let dir_paths = match (is_mod_rs, has_detached_child, module.name(sema.db)) {
             // Go up one level since the anchor is inside the dir we're trying to rename
-            (true, _, Some(mod_name)) => {
-                Some((format!("../{}", mod_name.as_str()), format!("../{}", new_name.as_str())))
-            }
+            (true, _, Some(mod_name)) => Some((
+                format!("../{}", mod_name.as_str()),
+                format!("../{}", new_name.as_str()),
+            )),
             // The anchor is on the same level as target dir
             (false, true, Some(mod_name)) => {
                 Some((mod_name.as_str().to_owned(), new_name.as_str().to_owned()))
@@ -365,7 +376,10 @@ fn rename_reference(
         match ident_kind {
             IdentifierKind::Lifetime => {
                 cov_mark::hit!(rename_not_an_ident_ref);
-                bail!("Invalid name `{}`: not an identifier", new_name.display(sema.db, edition));
+                bail!(
+                    "Invalid name `{}`: not an identifier",
+                    new_name.display(sema.db, edition)
+                );
             }
             IdentifierKind::Ident => cov_mark::hit!(rename_non_local),
             IdentifierKind::Underscore => (),
@@ -413,7 +427,10 @@ pub fn source_edit_from_references(
     let mut edit = TextEdit::builder();
     // macros can cause multiple refs to occur for the same text range, so keep track of what we have edited so far
     let mut edited_ranges = Vec::new();
-    for &FileReference { range, ref name, .. } in references {
+    for &FileReference {
+        range, ref name, ..
+    } in references
+    {
         let name_range = name.text_range();
         let has_emitted_edit = match name {
             // if the ranges differ then the node is inside a macro call, we can't really attempt
@@ -450,7 +467,10 @@ fn source_edit_from_name(
 
         // FIXME: instead of splitting the shorthand, recursively trigger a rename of the
         // other name https://github.com/rust-lang/rust-analyzer/issues/6547
-        edit.insert(ident_pat.syntax().text_range().start(), format!("{new_name}: "));
+        edit.insert(
+            ident_pat.syntax().text_range().start(),
+            format!("{new_name}: "),
+        );
         return true;
     }
 
@@ -587,11 +607,16 @@ fn source_edit_from_def(
                     .original_file_range_opt(sema.db)
                     .map(TupleExt::head)
                 {
-                    Some(FileRange { file_id: file_id2, range }) => {
+                    Some(FileRange {
+                        file_id: file_id2,
+                        range,
+                    }) => {
                         file_id = Some(file_id2);
                         edit.replace(
                             range,
-                            new_name.display(sema.db, file_id2.edition(sema.db)).to_string(),
+                            new_name
+                                .display(sema.db, file_id2.edition(sema.db))
+                                .to_string(),
                         );
                         continue;
                     }
@@ -641,13 +666,17 @@ fn source_edit_from_def(
                         );
                         edit.replace(
                             name_range,
-                            new_name.display(sema.db, source.file_id.edition(sema.db)).to_string(),
+                            new_name
+                                .display(sema.db, source.file_id.edition(sema.db))
+                                .to_string(),
                         );
                     }
                 } else {
                     edit.replace(
                         name_range,
-                        new_name.display(sema.db, source.file_id.edition(sema.db)).to_string(),
+                        new_name
+                            .display(sema.db, source.file_id.edition(sema.db))
+                            .to_string(),
                     );
                 }
             }
@@ -659,7 +688,9 @@ fn source_edit_from_def(
         }
         edit.set_annotation(conflict_annotation);
 
-        let Some(file_id) = file_id else { bail!("No file available to rename") };
+        let Some(file_id) = file_id else {
+            bail!("No file available to rename")
+        };
         return Ok((file_id.file_id(sema.db), edit));
     }
     let FileRange { file_id, range } = def
@@ -668,9 +699,17 @@ fn source_edit_from_def(
     let (range, new_name) = match def {
         Definition::ExternCrateDecl(decl) if decl.alias(sema.db).is_none() => (
             TextRange::empty(range.end()),
-            format!(" as {}", new_name.display(sema.db, file_id.edition(sema.db)),),
+            format!(
+                " as {}",
+                new_name.display(sema.db, file_id.edition(sema.db)),
+            ),
         ),
-        _ => (range, new_name.display(sema.db, file_id.edition(sema.db)).to_string()),
+        _ => (
+            range,
+            new_name
+                .display(sema.db, file_id.edition(sema.db))
+                .to_string(),
+        ),
     };
     edit.replace(range, new_name);
     Ok((file_id.file_id(sema.db), edit.finish()))
@@ -689,9 +728,10 @@ impl IdentifierKind {
         match parser::LexedStr::single_token(edition, new_name) {
             Some(res) => match res {
                 (SyntaxKind::IDENT, _) => Ok((Name::new_root(new_name), IdentifierKind::Ident)),
-                (T![_], _) => {
-                    Ok((Name::new_symbol_root(sym::underscore), IdentifierKind::Underscore))
-                }
+                (T![_], _) => Ok((
+                    Name::new_symbol_root(sym::underscore),
+                    IdentifierKind::Underscore,
+                )),
                 (SyntaxKind::LIFETIME_IDENT, _) if new_name != "'static" && new_name != "'_" => {
                     Ok((Name::new_lifetime(new_name), IdentifierKind::Lifetime))
                 }

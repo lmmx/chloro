@@ -3,11 +3,26 @@ COMPARISON DIFF
 
 Original size: 11162 bytes
 Chloro size:   11238 bytes
-Rustfmt size:  11162 bytes
+Rustfmt size:  11730 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ impl<'db> LookupTable<'db> {
+     /// Initialize lookup table
+     fn new(many_threshold: usize, goal: Type<'db>) -> Self {
+-        let mut res = Self {
+-            many_threshold,
+-            ..Default::default()
+-        };
++        let mut res = Self { many_threshold, ..Default::default() };
+         res.new_types.insert(NewTypesKey::ImplMethod, Vec::new());
+-        res.new_types
+-            .insert(NewTypesKey::StructProjection, Vec::new());
++        res.new_types.insert(NewTypesKey::StructProjection, Vec::new());
+         res.types_wishlist.insert(goal);
+         res
+     }
      ///
      /// For example if we have type `i32` in data and we query for `&i32` it map all the type
      /// trees we have for `i32` with `Expr::Reference` and returns them.
@@ -20,15 +35,77 @@ Rustfmt size:  11162 bytes
          let res = self
              .data
              .iter()
+                 self.data
+                     .iter()
+                     .find(|(t, _)| {
+-                        t.add_reference(Mutability::Shared)
+-                            .could_unify_with_deeply(db, ty)
++                        t.add_reference(Mutability::Shared).could_unify_with_deeply(db, ty)
+                     })
+                     .map(|(t, it)| {
+                         it.exprs(t)
+                 }
+             }
+             None => {
+-                self.data.insert(
+-                    ty.clone(),
+-                    AlternativeExprs::new(self.many_threshold, exprs),
+-                );
++                self.data.insert(ty.clone(), AlternativeExprs::new(self.many_threshold, exprs));
+                 for it in self.new_types.values_mut() {
+                     it.push(ty.clone());
+                 }
+     solutions.extend(tactics::assoc_const(ctx, &defs, &mut lookup));
  
- impl Default for TermSearchConfig {
-     fn default() -> Self {
--        Self { enable_borrowcheck: true, many_alternatives_threshold: 1, fuel: 1200 }
-+        Self {
-+            enable_borrowcheck: true,
-+            many_alternatives_threshold: 1,
-+            fuel: 1200,
-+        }
+     while should_continue() {
+-        solutions.extend(tactics::data_constructor(
+-            ctx,
+-            &defs,
+-            &mut lookup,
+-            should_continue,
+-        ));
+-        solutions.extend(tactics::free_function(
+-            ctx,
+-            &defs,
+-            &mut lookup,
+-            should_continue,
+-        ));
+-        solutions.extend(tactics::impl_method(
+-            ctx,
+-            &defs,
+-            &mut lookup,
+-            should_continue,
+-        ));
+-        solutions.extend(tactics::struct_projection(
+-            ctx,
+-            &defs,
+-            &mut lookup,
+-            should_continue,
+-        ));
+-        solutions.extend(tactics::impl_static_method(
+-            ctx,
+-            &defs,
+-            &mut lookup,
+-            should_continue,
+-        ));
+-        solutions.extend(tactics::make_tuple(
+-            ctx,
+-            &defs,
+-            &mut lookup,
+-            should_continue,
+-        ));
++        solutions.extend(tactics::data_constructor(ctx, &defs, &mut lookup, should_continue));
++        solutions.extend(tactics::free_function(ctx, &defs, &mut lookup, should_continue));
++        solutions.extend(tactics::impl_method(ctx, &defs, &mut lookup, should_continue));
++        solutions.extend(tactics::struct_projection(ctx, &defs, &mut lookup, should_continue));
++        solutions.extend(tactics::impl_static_method(ctx, &defs, &mut lookup, should_continue));
++        solutions.extend(tactics::make_tuple(ctx, &defs, &mut lookup, should_continue));
      }
- }
  
+-    solutions
+-        .into_iter()
+-        .filter(|it| !it.is_many())
+-        .unique()
+-        .collect()
++    solutions.into_iter().filter(|it| !it.is_many()).unique().collect()
+ }

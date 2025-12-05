@@ -6,9 +6,9 @@ use span::{AstIdNode, ErasedFileAstId, FileAstId, FileId, SyntaxContext};
 use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize};
 
 use crate::{
+    EditionedFileId, HirFileId, MacroCallId, MacroKind,
     db::{self, ExpandDatabase},
-    map_node_range_up, map_node_range_up_rooted, span_for_offset, EditionedFileId, HirFileId,
-    MacroCallId, MacroKind,
+    map_node_range_up, map_node_range_up_rooted, span_for_offset,
 };
 
 /// `InFile<T>` stores a value of `T` inside a particular file/syntax tree.
@@ -478,11 +478,7 @@ impl InFile<SyntaxToken> {
 
                 // FIXME: Figure out an API that makes proper use of ctx, this only exists to
                 // keep pre-token map rewrite behaviour.
-                if ctxt.is_root() {
-                    Some(range)
-                } else {
-                    None
-                }
+                if ctxt.is_root() { Some(range) } else { None }
             }
         }
     }

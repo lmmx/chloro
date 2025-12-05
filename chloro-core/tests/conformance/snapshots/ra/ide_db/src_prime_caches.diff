@@ -15,19 +15,7 @@ Rustfmt size:  12243 bytes
 +
  use std::panic::AssertUnwindSafe;
  
--use hir::{db::DefDatabase, Symbol};
-+use hir::{Symbol, db::DefDatabase};
- use rustc_hash::FxHashMap;
- use salsa::{Cancelled, Database};
- 
- use crate::{
-+    FxIndexMap, RootDatabase,
-     base_db::{Crate, RootQueryDb},
-     symbol_index::SymbolIndex,
--    FxIndexMap, RootDatabase,
- };
- 
- /// We're indexing many crates.
+ use hir::{Symbol, db::DefDatabase};
      // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
      // Such def map will just block on the dependency, which is just wasted time. So better
      // to compute the symbols/import map of an already computed def map in that time.

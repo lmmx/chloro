@@ -3,28 +3,20 @@ COMPARISON DIFF
 
 Original size: 9213 bytes
 Chloro size:   9205 bytes
-Rustfmt size:  9281 bytes
+Rustfmt size:  9289 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use crate::next_solver::{Const, ConstKind, Region, RegionKind};
- use crate::{
-+    TraitEnvironment,
-     db::{HirDatabase, InternedClosureId},
      next_solver::{
--        infer::{traits::ObligationCause, DbInternerInferExt, InferCtxt},
+         DbInterner, GenericArgs, Ty, TyKind, TypingMode,
+         infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
 -        obligation_ctxt::ObligationCtxt,
--        references_non_lt_error, DbInterner, GenericArgs, Ty, TyKind, TypingMode,
-+        DbInterner, GenericArgs, Ty, TyKind, TypingMode,
-+        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
+-        references_non_lt_error,
 +        obligation_ctxt::ObligationCtxt, references_non_lt_error,
      },
--    TraitEnvironment,
  };
  
- use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};
      ) -> Self {
          let interner = DbInterner::new_with(db, Some(env.krate), env.block);
          let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);

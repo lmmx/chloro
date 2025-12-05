@@ -84,7 +84,10 @@ impl ImportScope {
         // or FIXME: annotate inserted imports with the same cfg
         for syntax in sema.ancestors_with_macros(position.clone()) {
             if let Some(file) = ast::SourceFile::cast(syntax.clone()) {
-                return Some(ImportScope { kind: ImportScopeKind::File(file), required_cfgs });
+                return Some(ImportScope {
+                    kind: ImportScopeKind::File(file),
+                    required_cfgs,
+                });
             } else if let Some(module) = ast::Module::cast(syntax.clone()) {
                 // early return is important here, if we can't find the original module
                 // in the input there is no way for us to insert an import anywhere.
@@ -92,7 +95,10 @@ impl ImportScope {
                     .original_ast_node(module)?
                     .item_list()
                     .map(ImportScopeKind::Module)
-                    .map(|kind| ImportScope { kind, required_cfgs });
+                    .map(|kind| ImportScope {
+                        kind,
+                        required_cfgs,
+                    });
             } else if let Some(has_attrs) = ast::AnyHasAttrs::cast(syntax) {
                 if block.is_none()
                     && let Some(b) = ast::BlockExpr::cast(has_attrs.syntax().clone())
@@ -100,10 +106,10 @@ impl ImportScope {
                 {
                     block = b.stmt_list();
                 }
-                if has_attrs
-                    .attrs()
-                    .any(|attr| attr.as_simple_call().is_some_and(|(ident, _)| ident == "cfg"))
-                {
+                if has_attrs.attrs().any(|attr| {
+                    attr.as_simple_call()
+                        .is_some_and(|(ident, _)| ident == "cfg")
+                }) {
                     if let Some(b) = block {
                         return Some(ImportScope {
                             kind: ImportScopeKind::Block(b),
@@ -111,7 +117,8 @@ impl ImportScope {
                         });
                     }
                     required_cfgs.extend(has_attrs.attrs().filter(|attr| {
-                        attr.as_simple_call().is_some_and(|(ident, _)| ident == "cfg")
+                        attr.as_simple_call()
+                            .is_some_and(|(ident, _)| ident == "cfg")
                     }));
                 }
             }
@@ -136,7 +143,11 @@ impl ImportScope {
                 }
                 ImportScopeKind::Block(block) => ImportScopeKind::Block(block.clone_for_update()),
             },
-            required_cfgs: self.required_cfgs.iter().map(|attr| attr.clone_for_update()).collect(),
+            required_cfgs: self
+                .required_cfgs
+                .iter()
+                .map(|attr| attr.clone_for_update())
+                .collect(),
         }
     }
 }
@@ -201,8 +212,10 @@ fn insert_use_with_alias_option(
         use_tree.wrap_in_tree_list();
     }
     let use_item = make::use_(None, None, use_tree).clone_for_update();
-    for attr in
-        scope.required_cfgs.iter().map(|attr| attr.syntax().clone_subtree().clone_for_update())
+    for attr in scope
+        .required_cfgs
+        .iter()
+        .map(|attr| attr.syntax().clone_subtree().clone_for_update())
     {
         ted::insert(ted::Position::first_child_of(use_item.syntax()), attr);
     }
@@ -210,8 +223,11 @@ fn insert_use_with_alias_option(
     // merge into existing imports if possible
     if let Some(mb) = mb {
         let filter = |it: &_| !(cfg.skip_glob_imports && ast::Use::is_simple_glob(it));
-        for existing_use in
-            scope.as_syntax_node().children().filter_map(ast::Use::cast).filter(filter)
+        for existing_use in scope
+            .as_syntax_node()
+            .children()
+            .filter_map(ast::Use::cast)
+            .filter(filter)
         {
             if let Some(merged) = try_merge_imports(&existing_use, &use_item, mb) {
                 ted::replace(existing_use.syntax(), merged.syntax());
@@ -312,7 +328,9 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
     }
     .filter_map(use_stmt);
     let mut res = ImportGranularityGuess::Unknown;
-    let Some((mut prev, mut prev_vis, mut prev_attrs)) = use_stmts.next() else { return res };
+    let Some((mut prev, mut prev_vis, mut prev_attrs)) = use_stmts.next() else {
+        return res;
+    };
 
     let is_tree_one_style =
         |use_tree: &ast::UseTree| use_tree.path().is_none() && use_tree.use_tree_list().is_some();
@@ -330,7 +348,10 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
                 seen_one_style_groups.push((prev_vis.clone(), prev_attrs.clone()));
             }
         } else if let Some(use_tree_list) = prev.use_tree_list() {
-            if use_tree_list.use_trees().any(|tree| tree.use_tree_list().is_some()) {
+            if use_tree_list
+                .use_trees()
+                .any(|tree| tree.use_tree_list().is_some())
+            {
                 // Nested tree lists can only occur in crate style, or with no proper style being enforced in the file.
                 break ImportGranularityGuess::Crate;
             } else {
@@ -339,7 +360,9 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
             }
         }
 
-        let Some((curr, curr_vis, curr_attrs)) = use_stmts.next() else { break res };
+        let Some((curr, curr_vis, curr_attrs)) = use_stmts.next() else {
+            break res;
+        };
         if is_tree_one_style(&curr) {
             if res != ImportGranularityGuess::One
                 || seen_one_style_groups.iter().any(|(prev_vis, prev_attrs)| {
@@ -382,8 +405,9 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
 
 fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
     let scope_syntax = scope.as_syntax_node();
-    let insert_use_tree =
-        use_item.use_tree().expect("`use_item` should have a use tree for `insert_path`");
+    let insert_use_tree = use_item
+        .use_tree()
+        .expect("`use_item` should have a use tree for `insert_path`");
     let group = ImportGroup::new(&insert_use_tree);
     let path_node_iter = scope_syntax
         .children()
@@ -465,17 +489,26 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
         .skip(l_curly.is_some() as usize)
         .take_while(|child| match child {
             NodeOrToken::Node(node) => is_inner_attribute(node.clone()),
-            NodeOrToken::Token(token) => {
-                [SyntaxKind::WHITESPACE, SyntaxKind::COMMENT, SyntaxKind::SHEBANG]
-                    .contains(&token.kind())
-            }
+            NodeOrToken::Token(token) => [
+                SyntaxKind::WHITESPACE,
+                SyntaxKind::COMMENT,
+                SyntaxKind::SHEBANG,
+            ]
+            .contains(&token.kind()),
         })
-        .filter(|child| child.as_token().is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE))
+        .filter(|child| {
+            child
+                .as_token()
+                .is_none_or(|t| t.kind() != SyntaxKind::WHITESPACE)
+        })
         .last()
     {
         cov_mark::hit!(insert_empty_inner_attr);
         ted::insert(ted::Position::after(&last_inner_element), use_item.syntax());
-        ted::insert(ted::Position::after(last_inner_element), make::tokens::single_newline());
+        ted::insert(
+            ted::Position::after(last_inner_element),
+            make::tokens::single_newline(),
+        );
     } else {
         match l_curly {
             Some(b) => {
@@ -489,7 +522,10 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
                     ted::Position::first_child_of(scope_syntax),
                     make::tokens::blank_line(),
                 );
-                ted::insert(ted::Position::first_child_of(scope_syntax), use_item.syntax());
+                ted::insert(
+                    ted::Position::first_child_of(scope_syntax),
+                    use_item.syntax(),
+                );
             }
         }
     }

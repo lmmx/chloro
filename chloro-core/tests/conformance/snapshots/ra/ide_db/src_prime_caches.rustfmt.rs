@@ -4,14 +4,14 @@
 //! various caches, it's not really advanced at the moment.
 use std::panic::AssertUnwindSafe;
 
-use hir::{db::DefDatabase, Symbol};
+use hir::{Symbol, db::DefDatabase};
 use rustc_hash::FxHashMap;
 use salsa::{Cancelled, Database};
 
 use crate::{
+    FxIndexMap, RootDatabase,
     base_db::{Crate, RootQueryDb},
     symbol_index::SymbolIndex,
-    FxIndexMap, RootDatabase,
 };
 
 /// We're indexing many crates.

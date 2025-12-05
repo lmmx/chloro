@@ -1,9 +1,9 @@
 //! This module resolves `mod foo;` declaration to file.
 use arrayvec::ArrayVec;
 use base_db::AnchoredPath;
-use hir_expand::{name::Name, EditionedFileId};
+use hir_expand::{EditionedFileId, name::Name};
 
-use crate::{db::DefDatabase, HirFileId};
+use crate::{HirFileId, db::DefDatabase};
 
 const MOD_DEPTH_LIMIT: usize = 32;
 

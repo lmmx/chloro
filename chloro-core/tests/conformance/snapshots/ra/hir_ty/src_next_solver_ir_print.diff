@@ -16,12 +16,8 @@ Rustfmt size:  8070 bytes
 -use rustc_type_ir::{self as ty, ir_print::IrPrint};
 +use rustc_type_ir::{ir_print::IrPrint, self as ty};
  
--use super::interner::DbInterner;
  use super::SolverDefId;
-+use super::interner::DbInterner;
- 
- impl<'db> IrPrint<ty::AliasTy<Self>> for DbInterner<'db> {
-     fn print(t: &ty::AliasTy<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+ use super::interner::DbInterner;
          Self::print_debug(t, fmt)
      }
  

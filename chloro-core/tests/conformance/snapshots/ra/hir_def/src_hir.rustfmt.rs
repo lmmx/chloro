@@ -18,7 +18,7 @@ pub mod type_ref;
 
 use std::fmt;
 
-use hir_expand::{name::Name, MacroDefId};
+use hir_expand::{MacroDefId, name::Name};
 use intern::Symbol;
 use la_arena::Idx;
 use rustc_apfloat::ieee::{Half as f16, Quad as f128};
@@ -26,13 +26,13 @@ use syntax::ast;
 use type_ref::TypeRefId;
 
 use crate::{
+    BlockId,
     builtin_type::{BuiltinFloat, BuiltinInt, BuiltinUint},
     expr_store::{
-        path::{GenericArgs, Path},
         HygieneId,
+        path::{GenericArgs, Path},
     },
     type_ref::{Mutability, Rawness},
-    BlockId,
 };
 
 pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};

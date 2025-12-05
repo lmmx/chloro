@@ -3,11 +3,224 @@ COMPARISON DIFF
 
 Original size: 52289 bytes
 Chloro size:   52253 bytes
-Rustfmt size:  52289 bytes
+Rustfmt size:  54930 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+         }) = current_capture
+             && self.projections[len..].contains(&ProjectionElem::Deref)
+         {
+-            current_capture = CaptureKind::ByRef(BorrowKind::Mut {
+-                kind: MutBorrowKind::ClosureCapture,
+-            });
++            current_capture =
++                CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::ClosureCapture });
+         }
+         current_capture
+     }
+ 
+     /// Returns whether this place has any field (aka. non-deref) projections.
+     pub fn has_field_projections(&self) -> bool {
+-        self.place
+-            .projections
+-            .iter()
+-            .any(|it| !matches!(it, ProjectionElem::Deref))
++        self.place.projections.iter().any(|it| !matches!(it, ProjectionElem::Deref))
+     }
+ 
+     pub fn ty(&self, db: &'db dyn HirDatabase, subst: GenericArgs<'db>) -> Ty<'db> {
+         let interner = DbInterner::new_with(db, None, None);
+-        self.ty
+-            .instantiate(interner, subst.split_closure_args_untupled().parent_args)
++        self.ty.instantiate(interner, subst.split_closure_args_untupled().parent_args)
+     }
+ 
+     pub fn kind(&self) -> CaptureKind {
+     }
+ 
+     pub fn spans(&self) -> SmallVec<[MirSpan; 3]> {
+-        self.span_stacks
+-            .iter()
+-            .map(|stack| *stack.last().expect("empty span stack"))
+-            .collect()
++        self.span_stacks.iter().map(|stack| *stack.last().expect("empty span stack")).collect()
+     }
+ 
+     /// Converts the place to a name that can be inserted into source code.
+                             result.push_str(variant_data.fields()[f.local_id].name.as_str())
+                         }
+                         FieldsShape::Tuple => {
+-                            let index = variant_data
+-                                .fields()
+-                                .iter()
+-                                .position(|it| it.0 == f.local_id);
++                            let index =
++                                variant_data.fields().iter().position(|it| it.0 == f.local_id);
+                             if let Some(index) = index {
+                                 format_to!(result, "_{index}");
+                             }
+ impl<'db> InferenceContext<'_, 'db> {
+     fn place_of_expr(&mut self, tgt_expr: ExprId) -> Option<HirPlace<'db>> {
+         let r = self.place_of_expr_without_adjust(tgt_expr)?;
+-        let adjustments = self
+-            .result
+-            .expr_adjustments
+-            .get(&tgt_expr)
+-            .map(|it| &**it)
+-            .unwrap_or_default();
++        let adjustments =
++            self.result.expr_adjustments.get(&tgt_expr).map(|it| &**it).unwrap_or_default();
+         apply_adjusts_to_place(&mut self.current_capture_span_stack, r, adjustments)
+     }
+ 
+             return None;
+         }
+         let hygiene = self.body.expr_or_pat_path_hygiene(id);
+-        self.resolver
+-            .resolve_path_in_value_ns_fully(self.db, path, hygiene)
+-            .and_then(|result| match result {
++        self.resolver.resolve_path_in_value_ns_fully(self.db, path, hygiene).and_then(|result| {
++            match result {
+                 ValueNs::LocalBinding(binding) => {
+                     let mir_span = match id {
+                         ExprOrPatId::ExprId(id) => MirSpan::ExprId(id),
+                         ExprOrPatId::PatId(id) => MirSpan::PatId(id),
+                     };
+                     self.current_capture_span_stack.push(mir_span);
+-                    Some(HirPlace {
+-                        local: binding,
+-                        projections: Vec::new(),
+-                    })
++                    Some(HirPlace { local: binding, projections: Vec::new() })
+                 }
+                 _ => None,
+-            })
++            }
++        })
+     }
+ 
+     /// Changes `current_capture_span_stack` to contain the stack of spans for this expr.
+         self.current_capture_span_stack.clear();
+         match &self.body[tgt_expr] {
+             Expr::Path(p) => {
+-                let resolver_guard = self
+-                    .resolver
+-                    .update_to_inner_scope(self.db, self.owner, tgt_expr);
++                let resolver_guard =
++                    self.resolver.update_to_inner_scope(self.db, self.owner, tgt_expr);
+                 let result = self.path_place(p, tgt_expr.into());
+                 self.resolver.reset_to_guard(resolver_guard);
+                 return result;
+             Expr::Field { expr, name: _ } => {
+                 let mut place = self.place_of_expr(*expr)?;
+                 let field = self.result.field_resolution(tgt_expr)?;
+-                self.current_capture_span_stack
+-                    .push(MirSpan::ExprId(tgt_expr));
++                self.current_capture_span_stack.push(MirSpan::ExprId(tgt_expr));
+                 place.projections.push(ProjectionElem::Field(field));
+                 return Some(place);
+             }
+-            Expr::UnaryOp {
+-                expr,
+-                op: UnaryOp::Deref,
+-            } => {
++            Expr::UnaryOp { expr, op: UnaryOp::Deref } => {
+                 if matches!(
+                     self.expr_ty_after_adjustments(*expr).kind(),
+                     TyKind::Ref(..) | TyKind::RawPtr(..)
+                 ) {
+                     let mut place = self.place_of_expr(*expr)?;
+-                    self.current_capture_span_stack
+-                        .push(MirSpan::ExprId(tgt_expr));
++                    self.current_capture_span_stack.push(MirSpan::ExprId(tgt_expr));
+                     place.projections.push(ProjectionElem::Deref);
+                     return Some(place);
+                 }
+         if let Some(place) = self.path_place(path, id.into()) {
+             self.add_capture(
+                 place,
+-                CaptureKind::ByRef(BorrowKind::Mut {
+-                    kind: MutBorrowKind::Default,
+-                }),
++                CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
+             );
+             self.current_capture_span_stack.pop(); // Remove the pattern span.
+         }
+         if let Some(place) = place {
+             self.add_capture(
+                 place,
+-                CaptureKind::ByRef(BorrowKind::Mut {
+-                    kind: MutBorrowKind::Default,
+-                }),
++                CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
+             );
+         }
+         self.walk_expr(expr);
+         rest: &[Adjustment<'db>],
+     ) {
+         let capture_kind = match m {
+-            Mutability::Mut => CaptureKind::ByRef(BorrowKind::Mut {
+-                kind: MutBorrowKind::Default,
+-            }),
++            Mutability::Mut => CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
+             Mutability::Not => CaptureKind::ByRef(BorrowKind::Shared),
+         };
+         if let Some(place) = self.place_of_expr_without_adjust(tgt_expr)
+             Expr::OffsetOf(_) => (),
+             Expr::InlineAsm(e) => e.operands.iter().for_each(|(_, op)| match op {
+                 AsmOperand::In { expr, .. }
+-                | AsmOperand::Out {
+-                    expr: Some(expr), ..
+-                }
++                | AsmOperand::Out { expr: Some(expr), .. }
+                 | AsmOperand::InOut { expr, .. } => self.walk_expr_without_adjust(*expr),
+-                AsmOperand::SplitInOut {
+-                    in_expr, out_expr, ..
+-                } => {
++                AsmOperand::SplitInOut { in_expr, out_expr, .. } => {
+                     self.walk_expr_without_adjust(*in_expr);
+                     if let Some(out_expr) = out_expr {
+                         self.walk_expr_without_adjust(*out_expr);
+                 | AsmOperand::Label(_)
+                 | AsmOperand::Sym(_) => (),
+             }),
+-            Expr::If {
+-                condition,
+-                then_branch,
+-                else_branch,
+-            } => {
++            Expr::If { condition, then_branch, else_branch } => {
+                 self.consume_expr(*condition);
+                 self.consume_expr(*then_branch);
+                 if let &Some(expr) = else_branch {
+                     self.consume_expr(expr);
+                 }
+             }
+-            Expr::Async {
+-                statements, tail, ..
+-            }
+-            | Expr::Unsafe {
+-                statements, tail, ..
+-            }
+-            | Expr::Block {
+-                statements, tail, ..
+-            } => {
++            Expr::Async { statements, tail, .. }
++            | Expr::Unsafe { statements, tail, .. }
++            | Expr::Block { statements, tail, .. } => {
+                 for s in statements.iter() {
+                     match s {
+-                        Statement::Let {
+-                            pat,
+-                            type_ref: _,
+-                            initializer,
+-                            else_branch,
+-                        } => {
++                        Statement::Let { pat, type_ref: _, initializer, else_branch } => {
+                             if let Some(else_branch) = else_branch {
+                                 self.consume_expr(*else_branch);
+                             }
                      }
                  }
                  self.walk_expr(*expr);
@@ -18,3 +231,440 @@ Rustfmt size:  52289 bytes
                      let mut capture_mode = None;
                      for arm in arms.iter() {
                          self.walk_pat(&mut capture_mode, arm.pat);
+                 self.consume_exprs(fields.iter().map(|it| it.expr));
+             }
+             Expr::Field { expr, name: _ } => self.select_from_expr(*expr),
+-            Expr::UnaryOp {
+-                expr,
+-                op: UnaryOp::Deref,
+-            } => {
++            Expr::UnaryOp { expr, op: UnaryOp::Deref } => {
+                 if matches!(
+                     self.expr_ty_after_adjustments(*expr).kind(),
+                     TyKind::Ref(..) | TyKind::RawPtr(..)
+                     self.select_from_expr(*expr);
+                 } else if let Some((f, _)) = self.result.method_resolution(tgt_expr) {
+                     let mutability = 'b: {
+-                        if let Some(deref_trait) = self
+-                            .resolve_lang_item(LangItem::DerefMut)
+-                            .and_then(|it| it.as_trait())
++                        if let Some(deref_trait) =
++                            self.resolve_lang_item(LangItem::DerefMut).and_then(|it| it.as_trait())
+                             && let Some(deref_fn) = deref_trait
+                                 .trait_items(self.db)
+                                 .method_by_name(&Name::new_symbol_root(sym::deref_mut))
+                 }
+             }
+             Expr::UnaryOp { expr, op: _ }
+-            | Expr::Array(Array::Repeat {
+-                initializer: expr,
+-                repeat: _,
+-            })
++            | Expr::Array(Array::Repeat { initializer: expr, repeat: _ })
+             | Expr::Await { expr }
+-            | Expr::Loop {
+-                body: expr,
+-                label: _,
+-            }
++            | Expr::Loop { body: expr, label: _ }
+             | Expr::Box { expr }
+             | Expr::Cast { expr, type_ref: _ } => {
+                 self.consume_expr(*expr);
+             }
+-            Expr::Ref {
+-                expr,
+-                rawness: _,
+-                mutability,
+-            } => {
++            Expr::Ref { expr, rawness: _, mutability } => {
+                 // We need to do this before we push the span so the order will be correct.
+                 let place = self.place_of_expr(*expr);
+-                self.current_capture_span_stack
+-                    .push(MirSpan::ExprId(tgt_expr));
++                self.current_capture_span_stack.push(MirSpan::ExprId(tgt_expr));
+                 match mutability {
+                     hir_def::type_ref::Mutability::Shared => self.ref_expr(*expr, place),
+                     hir_def::type_ref::Mutability::Mut => self.mutate_expr(*expr, place),
+                 self.consume_expr(*lhs);
+                 self.consume_expr(*rhs);
+             }
+-            Expr::Range {
+-                lhs,
+-                rhs,
+-                range_type: _,
+-            } => {
++            Expr::Range { lhs, rhs, range_type: _ } => {
+                 if let &Some(expr) = lhs {
+                     self.consume_expr(expr);
+                 }
+                         "We sort closures, so we should always have data for inner closures",
+                     );
+                 let mut cc = mem::take(&mut self.current_captures);
+-                cc.extend(
+-                    captures
+-                        .iter()
+-                        .filter(|it| self.is_upvar(&it.place))
+-                        .map(|it| CapturedItemWithoutTy {
+-                            place: it.place.clone(),
+-                            kind: it.kind,
+-                            span_stacks: it.span_stacks.clone(),
+-                        }),
+-                );
++                cc.extend(captures.iter().filter(|it| self.is_upvar(&it.place)).map(|it| {
++                    CapturedItemWithoutTy {
++                        place: it.place.clone(),
++                        kind: it.kind,
++                        span_stacks: it.span_stacks.clone(),
++                    }
++                }));
+                 self.current_captures = cc;
+             }
+             Expr::Array(Array::ElementList { elements: exprs }) | Expr::Tuple { exprs } => {
+             }
+             &Expr::Assignment { target, value } => {
+                 self.walk_expr(value);
+-                let resolver_guard = self
+-                    .resolver
+-                    .update_to_inner_scope(self.db, self.owner, tgt_expr);
++                let resolver_guard =
++                    self.resolver.update_to_inner_scope(self.db, self.owner, tgt_expr);
+                 match self.place_of_expr(value) {
+                     Some(rhs_place) => {
+                         self.inside_assignment = true;
+                         self.consume_with_pat(rhs_place, target);
+                         self.inside_assignment = false;
+                     }
+-                    None => self
+-                        .body
+-                        .walk_pats(target, &mut |pat| match &self.body[pat] {
+-                            Pat::Path(path) => self.mutate_path_pat(path, pat),
+-                            &Pat::Expr(expr) => {
+-                                let place = self.place_of_expr(expr);
+-                                self.mutate_expr(expr, place);
+-                            }
+-                            _ => {}
+-                        }),
++                    None => self.body.walk_pats(target, &mut |pat| match &self.body[pat] {
++                        Pat::Path(path) => self.mutate_path_pat(path, pat),
++                        &Pat::Expr(expr) => {
++                            let place = self.place_of_expr(expr);
++                            self.mutate_expr(expr, place);
++                        }
++                        _ => {}
++                    }),
+                 }
+                 self.resolver.reset_to_guard(resolver_guard);
+             }
+         self.walk_pat_inner(
+             pat,
+             &mut update_result,
+-            BorrowKind::Mut {
+-                kind: MutBorrowKind::Default,
+-            },
++            BorrowKind::Mut { kind: MutBorrowKind::Default },
+         );
+     }
+ 
+                 },
+             },
+         }
+-        if self
+-            .result
+-            .pat_adjustments
+-            .get(&p)
+-            .is_some_and(|it| !it.is_empty())
+-        {
+-            for_mut = BorrowKind::Mut {
+-                kind: MutBorrowKind::ClosureCapture,
+-            };
++        if self.result.pat_adjustments.get(&p).is_some_and(|it| !it.is_empty()) {
++            for_mut = BorrowKind::Mut { kind: MutBorrowKind::ClosureCapture };
+         }
+-        self.body
+-            .walk_pats_shallow(p, |p| self.walk_pat_inner(p, update_result, for_mut));
++        self.body.walk_pats_shallow(p, |p| self.walk_pat_inner(p, update_result, for_mut));
+     }
+ 
+     fn expr_ty(&self, expr: ExprId) -> Ty<'db> {
+         // FIXME: Borrow checker problems without this.
+         let mut current_captures = std::mem::take(&mut self.current_captures);
+         for capture in &mut current_captures {
+-            let mut ty = self
+-                .table
+-                .resolve_completely(self.result[capture.place.local]);
++            let mut ty = self.table.resolve_completely(self.result[capture.place.local]);
+             if ty.is_raw_ptr() || ty.is_union() {
+                 capture.kind = CaptureKind::ByRef(BorrowKind::Shared);
+                 self.truncate_capture_spans(capture, 0);
+         // FIXME: Borrow checker won't allow without this.
+         let mut current_captures = std::mem::take(&mut self.current_captures);
+         for capture in &mut current_captures {
+-            if let Some(first_deref) = capture
+-                .place
+-                .projections
+-                .iter()
+-                .position(|proj| *proj == ProjectionElem::Deref)
++            if let Some(first_deref) =
++                capture.place.projections.iter().position(|proj| *proj == ProjectionElem::Deref)
+             {
+                 self.truncate_capture_spans(capture, first_deref);
+                 capture.place.projections.truncate(first_deref);
+     }
+ 
+     fn minimize_captures(&mut self) {
+-        self.current_captures
+-            .sort_unstable_by_key(|it| it.place.projections.len());
++        self.current_captures.sort_unstable_by_key(|it| it.place.projections.len());
+         let mut hash_map = FxHashMap::<HirPlace<'db>, usize>::default();
+         let result = mem::take(&mut self.current_captures);
+         for mut item in result {
+-            let mut lookup_place = HirPlace {
+-                local: item.place.local,
+-                projections: vec![],
+-            };
++            let mut lookup_place = HirPlace { local: item.place.local, projections: vec![] };
+             let mut it = item.place.projections.iter();
+             let prev_index = loop {
+                 if let Some(k) = hash_map.get(&lookup_place) {
+                 Some(p) => {
+                     let prev_projections_len = self.current_captures[p].place.projections.len();
+                     self.truncate_capture_spans(&mut item, prev_projections_len);
+-                    self.current_captures[p]
+-                        .span_stacks
+-                        .extend(item.span_stacks);
++                    self.current_captures[p].span_stacks.extend(item.span_stacks);
+                     let len = self.current_captures[p].place.projections.len();
+                     let kind_after_truncate =
+                         item.place.capture_kind_of_truncated_place(item.kind, len);
+     }
+ 
+     fn consume_with_pat(&mut self, mut place: HirPlace<'db>, tgt_pat: PatId) {
+-        let adjustments_count = self
+-            .result
+-            .pat_adjustments
+-            .get(&tgt_pat)
+-            .map(|it| it.len())
+-            .unwrap_or_default();
+-        place
+-            .projections
+-            .extend((0..adjustments_count).map(|_| ProjectionElem::Deref));
++        let adjustments_count =
++            self.result.pat_adjustments.get(&tgt_pat).map(|it| it.len()).unwrap_or_default();
++        place.projections.extend((0..adjustments_count).map(|_| ProjectionElem::Deref));
+         self.current_capture_span_stack
+             .extend((0..adjustments_count).map(|_| MirSpan::PatId(tgt_pat)));
+         'reset_span_stack: {
+                         _ => break 'reset_span_stack,
+                     };
+                     let fields = 0..field_count;
+-                    let it = al
+-                        .iter()
+-                        .zip(fields.clone())
+-                        .chain(ar.iter().rev().zip(fields.rev()));
++                    let it = al.iter().zip(fields.clone()).chain(ar.iter().rev().zip(fields.rev()));
+                     for (&arg, i) in it {
+                         let mut p = place.clone();
+                         self.current_capture_span_stack.push(MirSpan::PatId(arg));
+-                        p.projections
+-                            .push(ProjectionElem::Field(Either::Right(TupleFieldId {
+-                                tuple: TupleId(!0), // dummy this, as its unused anyways
+-                                index: i as u32,
+-                            })));
++                        p.projections.push(ProjectionElem::Field(Either::Right(TupleFieldId {
++                            tuple: TupleId(!0), // dummy this, as its unused anyways
++                            index: i as u32,
++                        })));
+                         self.consume_with_pat(p, arg);
+                         self.current_capture_span_stack.pop();
+                     }
+                                 };
+                                 let mut p = place.clone();
+                                 self.current_capture_span_stack.push(MirSpan::PatId(arg));
+-                                p.projections
+-                                    .push(ProjectionElem::Field(Either::Left(FieldId {
+-                                        parent: variant,
+-                                        local_id,
+-                                    })));
++                                p.projections.push(ProjectionElem::Field(Either::Left(FieldId {
++                                    parent: variant,
++                                    local_id,
++                                })));
+                                 self.consume_with_pat(p, arg);
+                                 self.current_capture_span_stack.pop();
+                             }
+                             break 'reset_span_stack;
+                         }
+                         BindingMode::Ref(Mutability::Not) => BorrowKind::Shared,
+-                        BindingMode::Ref(Mutability::Mut) => BorrowKind::Mut {
+-                            kind: MutBorrowKind::Default,
+-                        },
++                        BindingMode::Ref(Mutability::Mut) => {
++                            BorrowKind::Mut { kind: MutBorrowKind::Default }
++                        }
+                     };
+                     self.current_capture_span_stack.push(MirSpan::BindingId(id));
+                     self.add_capture(place, CaptureKind::ByRef(capture_kind));
+                     self.current_capture_span_stack.pop();
+                 }
+-                Pat::TupleStruct {
+-                    path: _,
+-                    args,
+-                    ellipsis,
+-                } => {
++                Pat::TupleStruct { path: _, args, ellipsis } => {
+                     let Some(variant) = self.result.variant_resolution_for_pat(tgt_pat) else {
+                         break 'reset_span_stack;
+                     };
+                             for (&arg, (i, _)) in it {
+                                 let mut p = place.clone();
+                                 self.current_capture_span_stack.push(MirSpan::PatId(arg));
+-                                p.projections
+-                                    .push(ProjectionElem::Field(Either::Left(FieldId {
+-                                        parent: variant,
+-                                        local_id: i,
+-                                    })));
++                                p.projections.push(ProjectionElem::Field(Either::Left(FieldId {
++                                    parent: variant,
++                                    local_id: i,
++                                })));
+                                 self.consume_with_pat(p, arg);
+                                 self.current_capture_span_stack.pop();
+                             }
+                     }
+                 }
+                 Pat::Ref { pat, mutability: _ } => {
+-                    self.current_capture_span_stack
+-                        .push(MirSpan::PatId(tgt_pat));
++                    self.current_capture_span_stack.push(MirSpan::PatId(tgt_pat));
+                     place.projections.push(ProjectionElem::Deref);
+                     self.consume_with_pat(place, *pat);
+                     self.current_capture_span_stack.pop();
+     fn analyze_closure(&mut self, closure: InternedClosureId) -> FnTrait {
+         let InternedClosure(_, root) = self.db.lookup_intern_closure(closure);
+         self.current_closure = Some(closure);
+-        let Expr::Closure {
+-            body, capture_by, ..
+-        } = &self.body[root]
+-        else {
++        let Expr::Closure { body, capture_by, .. } = &self.body[root] else {
+             unreachable!("Closure expression id is always closure");
+         };
+         self.consume_expr(*body);
+             {
+                 // FIXME: remove the `mutated_bindings_in_closure` completely and add proper fake reads in
+                 // MIR. I didn't do that due duplicate diagnostics.
+-                self.result
+-                    .mutated_bindings_in_closure
+-                    .insert(item.place.local);
++                self.result.mutated_bindings_in_closure.insert(item.place.local);
+             }
+         }
+         self.restrict_precision_for_unsafe();
+         self.minimize_captures();
+         self.strip_captures_ref_span();
+         let result = mem::take(&mut self.current_captures);
+-        let captures = result
+-            .into_iter()
+-            .map(|it| it.with_ty(self))
+-            .collect::<Vec<_>>();
+-        self.result
+-            .closure_info
+-            .insert(closure, (captures, closure_kind));
++        let captures = result.into_iter().map(|it| it.with_ty(self)).collect::<Vec<_>>();
++        self.result.closure_info.insert(closure, (captures, closure_kind));
+         closure_kind
+     }
+ 
+ 
+             for (derefed_callee, callee_ty, params, expr) in exprs {
+                 if let &Expr::Call { callee, .. } = &self.body[expr] {
+-                    let mut adjustments = self
+-                        .result
+-                        .expr_adjustments
+-                        .remove(&callee)
+-                        .unwrap_or_default()
+-                        .into_vec();
++                    let mut adjustments =
++                        self.result.expr_adjustments.remove(&callee).unwrap_or_default().into_vec();
+                     self.write_fn_trait_method_resolution(
+                         kind,
+                         derefed_callee,
+                         &params,
+                         expr,
+                     );
+-                    self.result
+-                        .expr_adjustments
+-                        .insert(callee, adjustments.into_boxed_slice());
++                    self.result.expr_adjustments.insert(callee, adjustments.into_boxed_slice());
+                 }
+             }
+         }
+     /// will consume the `deferred_closures` field and return its content in a sorted vector.
+     fn sort_closures(
+         &mut self,
+-    ) -> Vec<(
+-        InternedClosureId,
+-        Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>,
+-    )> {
++    ) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
+         let mut deferred_closures = mem::take(&mut self.deferred_closures);
+         let mut dependents_count: FxHashMap<InternedClosureId, usize> =
+             deferred_closures.keys().map(|it| (*it, 0)).collect();
+                 *dependents_count.entry(*dep).or_default() += 1;
+             }
+         }
+-        let mut queue: Vec<_> = deferred_closures
+-            .keys()
+-            .copied()
+-            .filter(|&it| dependents_count[&it] == 0)
+-            .collect();
++        let mut queue: Vec<_> =
++            deferred_closures.keys().copied().filter(|&it| dependents_count[&it] == 0).collect();
+         let mut result = vec![];
+         while let Some(it) = queue.pop() {
+             if let Some(d) = deferred_closures.remove(&it) {
+                 result.push((it, d));
+             }
+-            for &dep in self
+-                .closure_dependencies
+-                .get(&it)
+-                .into_iter()
+-                .flat_map(|it| it.iter())
+-            {
++            for &dep in self.closure_dependencies.get(&it).into_iter().flat_map(|it| it.iter()) {
+                 let cnt = dependents_count.get_mut(&dep).unwrap();
+                 *cnt -= 1;
+                 if *cnt == 0 {
+                 }
+             }
+         }
+-        assert!(
+-            deferred_closures.is_empty(),
+-            "we should have analyzed all closures"
+-        );
++        assert!(deferred_closures.is_empty(), "we should have analyzed all closures");
+         result
+     }
+ 
+     pub(crate) fn add_current_closure_dependency(&mut self, dep: InternedClosureId) {
+         if let Some(c) = self.current_closure
+-            && !dep_creates_cycle(
+-                &self.closure_dependencies,
+-                &mut FxHashSet::default(),
+-                c,
+-                dep,
+-            )
++            && !dep_creates_cycle(&self.closure_dependencies, &mut FxHashSet::default(), c, dep)
+         {
+             self.closure_dependencies.entry(c).or_default().push(dep);
+         }
+     mut r: HirPlace<'db>,
+     adjustments: &[Adjustment<'db>],
+ ) -> Option<HirPlace<'db>> {
+-    let span = *current_capture_span_stack
+-        .last()
+-        .expect("empty capture span stack");
++    let span = *current_capture_span_stack.last().expect("empty capture span stack");
+     for adj in adjustments {
+         match &adj.kind {
+             Adjust::Deref(None) => {

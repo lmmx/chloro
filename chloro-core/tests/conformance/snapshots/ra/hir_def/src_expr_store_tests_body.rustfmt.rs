@@ -1,7 +1,7 @@
 mod block;
 
-use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};
-use expect_test::{expect, Expect};
+use crate::{DefWithBodyId, ModuleDefId, hir::MatchArm, nameres::crate_def_map, test_db::TestDB};
+use expect_test::{Expect, expect};
 use la_arena::RawIdx;
 use test_fixture::WithFixture;
 use triomphe::Arc;

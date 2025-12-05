@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 14552 bytes
 Chloro size:   14556 bytes
-Rustfmt size:  14552 bytes
+Rustfmt size:  14583 bytes
 
 ✗ Outputs DIFFER
 
@@ -29,7 +29,12 @@ Rustfmt size:  14552 bytes
 +
  /// Removes a possible comma after the [AstNode]
  fn remove_possible_comma(item: &impl AstNode, res: &mut FxHashSet<SyntaxElement>) {
-     if let Some(comma) = item.syntax().next_sibling_or_token().filter(|it| it.kind() == T![,]) {
+-    if let Some(comma) = item
+-        .syntax()
+-        .next_sibling_or_token()
+-        .filter(|it| it.kind() == T![,])
+-    {
++    if let Some(comma) = item.syntax().next_sibling_or_token().filter(|it| it.kind() == T![,]) {
          res.insert(comma);
      }
  }

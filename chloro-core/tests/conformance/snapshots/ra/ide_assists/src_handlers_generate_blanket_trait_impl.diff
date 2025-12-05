@@ -3,11 +3,22 @@ COMPARISON DIFF
 
 Original size: 31919 bytes
 Chloro size:   31917 bytes
-Rustfmt size:  31919 bytes
+Rustfmt size:  32022 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+                 apply_sized(has_sized(&traitd, &ctx.sema), bounds),
+             ))]);
+ 
+-            let trait_gen_args = traitd
+-                .generic_param_list()
+-                .map(|param_list| param_list.to_generic_args());
++            let trait_gen_args =
++                traitd.generic_param_list().map(|param_list| param_list.to_generic_args());
+ 
+             let impl_ = make::impl_trait(
+                 cfg_attrs(&traitd),
      Some(())
  }
  
@@ -36,6 +47,25 @@ Rustfmt size:  31919 bytes
      let traitd = sema.to_def(traitd)?;
      let sized = FamousDefs(sema, traitd.krate(sema.db)).core_marker_Sized()?;
  
+ }
+ 
+ fn contained_owned_self_method(item_list: Option<ast::AssocItemList>) -> bool {
+-    item_list
+-        .into_iter()
+-        .flat_map(|assoc_item_list| assoc_item_list.assoc_items())
+-        .any(|item| match item {
++    item_list.into_iter().flat_map(|assoc_item_list| assoc_item_list.assoc_items()).any(|item| {
++        match item {
+             AssocItem::Fn(f) => {
+                 has_owned_self(&f) && where_clause_sized(f.where_clause()).is_none()
+             }
+             _ => false,
+-        })
++        }
++    })
+ }
+ 
+ fn has_owned_self(f: &ast::Fn) -> bool {
      let mut name_gen =
          suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
  
@@ -48,6 +78,33 @@ Rustfmt size:  31919 bytes
  }
  
  fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {
+-    bounds
+-        .into_iter()
+-        .flat_map(|bounds| bounds.bounds())
+-        .find(|bound| ty_bound_is(bound, s))
++    bounds.into_iter().flat_map(|bounds| bounds.bounds()).find(|bound| ty_bound_is(bound, s))
+ }
+ 
+ fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
+ }
+ 
+ fn todo_fn(f: &ast::Fn, config: &AssistConfig) -> ast::Fn {
+-    let params = f
+-        .param_list()
+-        .unwrap_or_else(|| make::param_list(None, None));
++    let params = f.param_list().unwrap_or_else(|| make::param_list(None, None));
+     make::fn_(
+         cfg_attrs(f),
+         f.visibility(),
+ }
+ 
+ fn cfg_attrs(node: &impl HasAttrs) -> impl Iterator<Item = ast::Attr> {
+-    node.attrs().filter(|attr| {
+-        attr.as_simple_call()
+-            .is_some_and(|(name, _arg)| name == "cfg")
+-    })
++    node.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"))
+ }
  
  #[cfg(test)]
  mod test {

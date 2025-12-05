@@ -3,11 +3,22 @@ COMPARISON DIFF
 
 Original size: 12272 bytes
 Chloro size:   12223 bytes
-Rustfmt size:  12272 bytes
+Rustfmt size:  12344 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     };
+ 
+     if let Some(parent) = tgt.syntax().parent()
+-        && matches!(
+-            parent.kind(),
+-            syntax::SyntaxKind::BIN_EXPR | syntax::SyntaxKind::LET_STMT
+-        )
++        && matches!(parent.kind(), syntax::SyntaxKind::BIN_EXPR | syntax::SyntaxKind::LET_STMT)
+     {
+         return None;
+     }
  
          Some(())
      }
@@ -20,8 +31,19 @@ Rustfmt size:  12272 bytes
      }
 +
      fn collect_block(&mut self, block: &ast::BlockExpr) -> Option<()> {
-         let last_expr = block.tail_expr().or_else(|| match block.statements().last()? {
-             ast::Stmt::ExprStmt(stmt) => stmt.expr(),
+-        let last_expr = block
+-            .tail_expr()
+-            .or_else(|| match block.statements().last()? {
+-                ast::Stmt::ExprStmt(stmt) => stmt.expr(),
+-                ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
+-            })?;
++        let last_expr = block.tail_expr().or_else(|| match block.statements().last()? {
++            ast::Stmt::ExprStmt(stmt) => stmt.expr(),
++            ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
++        })?;
+ 
+         if let ast::Expr::BinExpr(expr) = last_expr {
+             return self.collect_expr(&expr);
                  false
              }
          }

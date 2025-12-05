@@ -18,8 +18,12 @@ pub(crate) fn complete_vis_path(
             ..
         } => {
             // Try completing next child module of the path that is still a parent of the current module
-            let next_towards_current =
-                ctx.module.path_to_root(ctx.db).into_iter().take_while(|it| it != module).last();
+            let next_towards_current = ctx
+                .module
+                .path_to_root(ctx.db)
+                .into_iter()
+                .take_while(|it| it != module)
+                .last();
             if let Some(next) = next_towards_current
                 && let Some(name) = next.name(ctx.db)
             {

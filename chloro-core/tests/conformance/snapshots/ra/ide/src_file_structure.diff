@@ -8,16 +8,6 @@ Rustfmt size:  34938 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::SymbolKind;
- use syntax::{
-+    AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange, WalkEvent,
-     ast::{self, HasAttrs, HasGenericParams, HasName},
--    match_ast, AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange,
--    WalkEvent,
-+    match_ast,
- };
- 
- #[derive(Debug, Clone)]
              node_range: node.syntax().text_range(),
              kind,
              detail,
@@ -41,12 +31,10 @@ Rustfmt size:  34938 bytes
          {
              return Some(StructureNode {
                  parent: None,
- 
  #[cfg(test)]
  mod tests {
--    use expect_test::{expect, Expect};
+     use expect_test::{Expect, expect};
 -
-+    use expect_test::{Expect, expect};
      use super::*;
 -
 -    const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig {

@@ -6,7 +6,7 @@ pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
 
 use macros::{TypeFoldable, TypeVisitable};
 
-use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
+use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
 
 #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
 pub struct OpaqueHiddenType<'db> {

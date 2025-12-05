@@ -2,14 +2,13 @@ use ide_db::{
     source_change::SourceChangeBuilder, syntax_helpers::node_ext::for_each_break_and_continue_expr,
 };
 use syntax::{
+    SyntaxToken, T,
     ast::{
-        self,
+        self, AstNode, HasLoopBody,
         make::{self, tokens},
         syntax_factory::SyntaxFactory,
-        AstNode, HasLoopBody,
     },
     syntax_editor::{Position, SyntaxEditor},
-    SyntaxToken, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

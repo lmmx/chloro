@@ -8,17 +8,6 @@ Rustfmt size:  23115 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use crate::support::{Project, Server};
- use crate::testdir::TestDir;
- use lsp_types::{
--    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
-     DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-     TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem, Url,
-     VersionedTextDocumentIdentifier,
-+    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
- };
- use paths::Utf8PathBuf;
- 
  
  impl RatomlTest {
      const EMIT_MUST_USE: &'static str = r#"assist.emitMustUse = true"#;

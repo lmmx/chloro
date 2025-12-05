@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 10383 bytes
 Chloro size:   10375 bytes
-Rustfmt size:  10823 bytes
+Rustfmt size:  10860 bytes
 
 ✗ Outputs DIFFER
 
@@ -16,26 +16,16 @@ Rustfmt size:  10823 bytes
 +    unify::{UnifyKey, self as ut},
  };
  use rustc_type_ir::{
--    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
--    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
-+    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
-+    TypeSuperFoldable, TypeVisitableExt, inherent::IntoKind,
- };
- 
+     ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
  use crate::next_solver::{
-+    Const, ConstKind, DbInterner, Region, Ty, TyKind,
+     Const, ConstKind, DbInterner, Region, Ty, TyKind,
      infer::{
--        iter_idx_range,
+-        InferCtxt, UnificationTable, iter_idx_range,
 -        snapshot::VariableLengths,
 +        InferCtxt, UnificationTable, iter_idx_range, snapshot::VariableLengths,
          type_variable::TypeVariableOrigin,
          unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
--        InferCtxt, UnificationTable,
      },
--    Const, ConstKind, DbInterner, Region, Ty, TyKind,
- };
- 
- fn vars_since_snapshot<'db, T>(
          iter_idx_range(range)
              .map(|index| match table.probe_value(index) {
                  ConstVariableValue::Known { value: _ } => ConstVariableOrigin {},
@@ -104,19 +94,16 @@ Rustfmt size:  10823 bytes
          region_vars.is_empty()
              && type_vars.0.is_empty()
              && int_vars.is_empty()
-                         // variables to their binding anyhow, we know
                          // that it is unbound, so we can just return
                          // it.
--                        debug_assert!(self
--                            .infcx
--                            .inner
--                            .borrow_mut()
--                            .type_variables()
--                            .probe(vid)
--                            .is_unknown());
-+                        debug_assert!(
+                         debug_assert!(
+-                            self.infcx
+-                                .inner
+-                                .borrow_mut()
+-                                .type_variables()
+-                                .probe(vid)
+-                                .is_unknown()
 +                            self.infcx.inner.borrow_mut().type_variables().probe(vid).is_unknown()
-+                        );
+                         );
                          ty
                      }
-                 }

@@ -8,39 +8,6 @@ Rustfmt size:  14808 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Compute the binary representation of a type
- 
- use std::fmt;
- 
- use hir_def::{
--    layout::{LayoutCalculatorError, LayoutData},
-     AdtId, LocalFieldId, StructId,
-+    layout::{LayoutCalculatorError, LayoutData},
- };
- use la_arena::{Idx, RawIdx};
- 
- };
- use rustc_index::IndexVec;
- use rustc_type_ir::{
--    inherent::{IntoKind, SliceLike},
-     FloatTy, IntTy, UintTy,
-+    inherent::{IntoKind, SliceLike},
- };
- use triomphe::Arc;
- 
- use crate::{
-+    TraitEnvironment,
-     consteval::try_const_usize,
-     db::HirDatabase,
-     next_solver::{
--        infer::{traits::ObligationCause, DbInternerInferExt},
-         DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
-+        infer::{DbInternerInferExt, traits::ObligationCause},
-     },
--    TraitEnvironment,
- };
- 
- pub(crate) use self::adt::layout_of_adt_cycle_result;
  }
  
  pub type Layout = LayoutData<RustcFieldIdx, RustcEnumVariantIdx>;

@@ -6,7 +6,7 @@ use std::{
     sync::atomic::{AtomicU32, Ordering},
 };
 
-use base64::{prelude::BASE64_STANDARD, Engine};
+use base64::{Engine, prelude::BASE64_STANDARD};
 use ide::{
     Annotation, AnnotationKind, Assist, AssistKind, Cancellable, CompletionFieldsToResolve,
     CompletionItem, CompletionItemKind, CompletionRelevance, Documentation, FileId, FileRange,
@@ -17,7 +17,7 @@ use ide::{
     UpdateTest,
 };
 use ide_db::{
-    assists, rust_doc::format_docs, source_change::ChangeAnnotationId, FxHasher, MiniCore,
+    FxHasher, MiniCore, assists, rust_doc::format_docs, source_change::ChangeAnnotationId,
 };
 use itertools::Itertools;
 use paths::{Utf8Component, Utf8Prefix};
@@ -30,11 +30,10 @@ use crate::{
     global_state::GlobalStateSnapshot,
     line_index::{LineEndings, LineIndex, PositionEncoding},
     lsp::{
-        completion_item_hash,
+        LspError, completion_item_hash,
         ext::ShellRunnableArgs,
         semantic_tokens::{self, standard_fallback_type},
         utils::invalid_params_error,
-        LspError,
     },
     lsp_ext::{self, SnippetTextEdit},
     target_spec::{CargoTargetSpec, TargetSpec},
@@ -692,10 +691,12 @@ fn inlay_hint_label(
     Option<lsp_types::InlayHintTooltip>,
 )> {
     let (label, tooltip) = match &*label.parts {
-        [InlayHintLabelPart {
-            linked_location: None,
-            ..
-        }] => {
+        [
+            InlayHintLabelPart {
+                linked_location: None,
+                ..
+            },
+        ] => {
             let InlayHintLabelPart { text, tooltip, .. } = label.parts.pop().unwrap();
             let tooltip = tooltip.and_then(|it| match it {
                 LazyProperty::Computed(it) => Some(it),
@@ -2116,7 +2117,7 @@ pub(crate) fn rename_error(err: RenameError) -> LspError {
 
 #[cfg(test)]
 mod tests {
-    use expect_test::{expect, Expect};
+    use expect_test::{Expect, expect};
     use ide::{Analysis, FilePosition};
     use ide_db::source_change::Snippet;
     use test_utils::extract_offset;

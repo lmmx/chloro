@@ -125,7 +125,8 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         var_values: &[GenericArg<'db>],
         universe_map: impl Fn(rustc_type_ir::UniverseIndex) -> rustc_type_ir::UniverseIndex,
     ) -> GenericArg<'db> {
-        self.0.instantiate_canonical_var(kind, var_values, universe_map)
+        self.0
+            .instantiate_canonical_var(kind, var_values, universe_map)
     }
 
     fn add_item_bounds_for_hidden_type(
@@ -149,7 +150,11 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         // type during MIR borrowck, causing us to infer the wrong
         // lifetime for its member constraints which then results in
         // unexpected region errors.
-        goals.push(Goal::new(interner, param_env, ClauseKind::WellFormed(hidden_ty.into())));
+        goals.push(Goal::new(
+            interner,
+            param_env,
+            ClauseKind::WellFormed(hidden_ty.into()),
+        ));
 
         let replace_opaques_in = |clause: Clause<'db>| {
             fold_tys(interner, clause, |ty| match ty.kind() {
@@ -157,7 +162,11 @@ impl<'db> SolverDelegate for SolverContext<'db> {
                 // as the bounds must hold on the hidden type after all.
                 TyKind::Alias(
                     AliasTyKind::Opaque,
-                    AliasTy { def_id: def_id2, args: args2, .. },
+                    AliasTy {
+                        def_id: def_id2,
+                        args: args2,
+                        ..
+                    },
                 ) if def_id == def_id2 && args == args2 => hidden_ty,
                 _ => ty,
             })

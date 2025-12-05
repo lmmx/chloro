@@ -5,11 +5,11 @@ mod mod_resolution;
 mod primitives;
 
 use base_db::RootQueryDb;
-use expect_test::{expect, Expect};
+use expect_test::{Expect, expect};
 use test_fixture::WithFixture;
 
 use crate::{
-    nameres::{crate_def_map, DefMap},
+    nameres::{DefMap, crate_def_map},
     test_db::TestDB,
 };
 

@@ -37,9 +37,10 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
 
     let field_list = match strukt.kind() {
-        StructKind::Record(named) => {
-            named.fields().filter_map(|f| Some((f.name()?, f.ty()?))).collect::<Vec<_>>()
-        }
+        StructKind::Record(named) => named
+            .fields()
+            .filter_map(|f| Some((f.name()?, f.ty()?)))
+            .collect::<Vec<_>>(),
         StructKind::Tuple(tuple) => {
             let mut name_generator = NameGenerator::default();
             tuple
@@ -63,177 +64,198 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     };
 
     // Return early if we've found an existing new fn
-    let impl_def =
-        find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
+    let impl_def = find_struct_impl(
+        ctx,
+        &ast::Adt::Struct(strukt.clone()),
+        &[String::from("new")],
+    )?;
 
     let current_module = ctx.sema.scope(strukt.syntax())?.module();
 
     let target = strukt.syntax().text_range();
-    acc.add(AssistId::generate("generate_new"), "Generate `new`", target, |builder| {
-        let trivial_constructors = field_list
-            .iter()
-            .map(|(name, ty)| {
-                let ty = ctx.sema.resolve_type(ty)?;
+    acc.add(
+        AssistId::generate("generate_new"),
+        "Generate `new`",
+        target,
+        |builder| {
+            let trivial_constructors = field_list
+                .iter()
+                .map(|(name, ty)| {
+                    let ty = ctx.sema.resolve_type(ty)?;
 
-                let item_in_ns = hir::ItemInNs::from(hir::ModuleDef::from(ty.as_adt()?));
+                    let item_in_ns = hir::ItemInNs::from(hir::ModuleDef::from(ty.as_adt()?));
 
-                let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(current_module.krate()));
-                let type_path = current_module.find_path(
-                    ctx.sema.db,
-                    item_for_path_search(ctx.sema.db, item_in_ns)?,
-                    cfg,
-                )?;
+                    let cfg = ctx
+                        .config
+                        .find_path_config(ctx.sema.is_nightly(current_module.krate()));
+                    let type_path = current_module.find_path(
+                        ctx.sema.db,
+                        item_for_path_search(ctx.sema.db, item_in_ns)?,
+                        cfg,
+                    )?;
 
-                let edition = current_module.krate().edition(ctx.db());
+                    let edition = current_module.krate().edition(ctx.db());
 
-                let expr = use_trivial_constructor(
-                    ctx.sema.db,
-                    ide_db::helpers::mod_path_to_ast(&type_path, edition),
-                    &ty,
-                    edition,
-                )?;
+                    let expr = use_trivial_constructor(
+                        ctx.sema.db,
+                        ide_db::helpers::mod_path_to_ast(&type_path, edition),
+                        &ty,
+                        edition,
+                    )?;
 
-                Some((make::name_ref(&name.text()), Some(expr)))
-            })
-            .collect::<Vec<_>>();
+                    Some((make::name_ref(&name.text()), Some(expr)))
+                })
+                .collect::<Vec<_>>();
 
-        let params = field_list.iter().enumerate().filter_map(|(i, (name, ty))| {
-            if trivial_constructors[i].is_none() {
-                Some(make::param(make::ident_pat(false, false, name.clone()).into(), ty.clone()))
+            let params = field_list.iter().enumerate().filter_map(|(i, (name, ty))| {
+                if trivial_constructors[i].is_none() {
+                    Some(make::param(
+                        make::ident_pat(false, false, name.clone()).into(),
+                        ty.clone(),
+                    ))
+                } else {
+                    None
+                }
+            });
+            let params = make::param_list(None, params);
+
+            let fields = field_list.iter().enumerate().map(|(i, (name, _))| {
+                if let Some(constructor) = trivial_constructors[i].clone() {
+                    constructor
+                } else {
+                    (make::name_ref(&name.text()), None)
+                }
+            });
+
+            let tail_expr: ast::Expr = match strukt.kind() {
+                StructKind::Record(_) => {
+                    let fields = fields.map(|(name, expr)| make::record_expr_field(name, expr));
+                    let fields = make::record_expr_field_list(fields);
+                    make::record_expr(make::ext::ident_path("Self"), fields).into()
+                }
+                StructKind::Tuple(_) => {
+                    let args = fields.map(|(arg, expr)| {
+                        let arg =
+                            || make::expr_path(make::path_unqualified(make::path_segment(arg)));
+                        expr.unwrap_or_else(arg)
+                    });
+                    let arg_list = make::arg_list(args);
+                    make::expr_call(make::expr_path(make::ext::ident_path("Self")), arg_list).into()
+                }
+                StructKind::Unit => unreachable!(),
+            };
+            let body = make::block_expr(None, tail_expr.into());
+
+            let ret_type = make::ret_type(make::ty_path(make::ext::ident_path("Self")));
+
+            let fn_ = make::fn_(
+                None,
+                strukt.visibility(),
+                make::name("new"),
+                None,
+                None,
+                params,
+                body,
+                Some(ret_type),
+                false,
+                false,
+                false,
+                false,
+            )
+            .clone_for_update();
+            fn_.indent(1.into());
+
+            let mut editor = builder.make_editor(strukt.syntax());
+
+            // Get the node for set annotation
+            let contain_fn = if let Some(impl_def) = impl_def {
+                fn_.indent(impl_def.indent_level());
+
+                if let Some(l_curly) = impl_def
+                    .assoc_item_list()
+                    .and_then(|list| list.l_curly_token())
+                {
+                    editor.insert_all(
+                        Position::after(l_curly),
+                        vec![
+                            make::tokens::whitespace(&format!("\n{}", impl_def.indent_level() + 1))
+                                .into(),
+                            fn_.syntax().clone().into(),
+                            make::tokens::whitespace("\n").into(),
+                        ],
+                    );
+                    fn_.syntax().clone()
+                } else {
+                    let items = vec![ast::AssocItem::Fn(fn_)];
+                    let list = make::assoc_item_list(Some(items));
+                    editor.insert(Position::after(impl_def.syntax()), list.syntax());
+                    list.syntax().clone()
+                }
             } else {
-                None
-            }
-        });
-        let params = make::param_list(None, params);
+                // Generate a new impl to add the method to
+                let indent_level = strukt.indent_level();
+                let body = vec![ast::AssocItem::Fn(fn_)];
+                let list = make::assoc_item_list(Some(body));
+                let impl_def =
+                    generate_impl_with_item(&ast::Adt::Struct(strukt.clone()), Some(list));
 
-        let fields = field_list.iter().enumerate().map(|(i, (name, _))| {
-            if let Some(constructor) = trivial_constructors[i].clone() {
-                constructor
-            } else {
-                (make::name_ref(&name.text()), None)
-            }
-        });
+                impl_def.indent(strukt.indent_level());
 
-        let tail_expr: ast::Expr = match strukt.kind() {
-            StructKind::Record(_) => {
-                let fields = fields.map(|(name, expr)| make::record_expr_field(name, expr));
-                let fields = make::record_expr_field_list(fields);
-                make::record_expr(make::ext::ident_path("Self"), fields).into()
-            }
-            StructKind::Tuple(_) => {
-                let args = fields.map(|(arg, expr)| {
-                    let arg = || make::expr_path(make::path_unqualified(make::path_segment(arg)));
-                    expr.unwrap_or_else(arg)
-                });
-                let arg_list = make::arg_list(args);
-                make::expr_call(make::expr_path(make::ext::ident_path("Self")), arg_list).into()
-            }
-            StructKind::Unit => unreachable!(),
-        };
-        let body = make::block_expr(None, tail_expr.into());
-
-        let ret_type = make::ret_type(make::ty_path(make::ext::ident_path("Self")));
-
-        let fn_ = make::fn_(
-            None,
-            strukt.visibility(),
-            make::name("new"),
-            None,
-            None,
-            params,
-            body,
-            Some(ret_type),
-            false,
-            false,
-            false,
-            false,
-        )
-        .clone_for_update();
-        fn_.indent(1.into());
-
-        let mut editor = builder.make_editor(strukt.syntax());
-
-        // Get the node for set annotation
-        let contain_fn = if let Some(impl_def) = impl_def {
-            fn_.indent(impl_def.indent_level());
-
-            if let Some(l_curly) = impl_def.assoc_item_list().and_then(|list| list.l_curly_token())
-            {
+                // Insert it after the adt
                 editor.insert_all(
-                    Position::after(l_curly),
+                    Position::after(strukt.syntax()),
                     vec![
-                        make::tokens::whitespace(&format!("\n{}", impl_def.indent_level() + 1))
-                            .into(),
-                        fn_.syntax().clone().into(),
-                        make::tokens::whitespace("\n").into(),
+                        make::tokens::whitespace(&format!("\n\n{indent_level}")).into(),
+                        impl_def.syntax().clone().into(),
                     ],
                 );
-                fn_.syntax().clone()
-            } else {
-                let items = vec![ast::AssocItem::Fn(fn_)];
-                let list = make::assoc_item_list(Some(items));
-                editor.insert(Position::after(impl_def.syntax()), list.syntax());
-                list.syntax().clone()
-            }
-        } else {
-            // Generate a new impl to add the method to
-            let indent_level = strukt.indent_level();
-            let body = vec![ast::AssocItem::Fn(fn_)];
-            let list = make::assoc_item_list(Some(body));
-            let impl_def = generate_impl_with_item(&ast::Adt::Struct(strukt.clone()), Some(list));
+                impl_def.syntax().clone()
+            };
 
-            impl_def.indent(strukt.indent_level());
-
-            // Insert it after the adt
-            editor.insert_all(
-                Position::after(strukt.syntax()),
-                vec![
-                    make::tokens::whitespace(&format!("\n\n{indent_level}")).into(),
-                    impl_def.syntax().clone().into(),
-                ],
-            );
-            impl_def.syntax().clone()
-        };
-
-        if let Some(fn_) = contain_fn.descendants().find_map(ast::Fn::cast)
-            && let Some(cap) = ctx.config.snippet_cap
-        {
-            match strukt.kind() {
-                StructKind::Tuple(_) => {
-                    let struct_args = fn_
-                        .body()
-                        .unwrap()
-                        .syntax()
-                        .descendants()
-                        .filter(|it| syntax::ast::ArgList::can_cast(it.kind()))
-                        .flat_map(|args| args.children())
-                        .filter(|it| syntax::ast::PathExpr::can_cast(it.kind()))
-                        .enumerate()
-                        .filter_map(|(i, node)| {
-                            if trivial_constructors[i].is_none() { Some(node) } else { None }
-                        });
-                    if let Some(fn_params) = fn_.param_list() {
-                        for (struct_arg, fn_param) in struct_args.zip(fn_params.params()) {
-                            if let Some(fn_pat) = fn_param.pat() {
-                                let fn_pat = fn_pat.syntax().clone();
-                                let placeholder = builder.make_placeholder_snippet(cap);
-                                editor.add_annotation_all(vec![struct_arg, fn_pat], placeholder)
+            if let Some(fn_) = contain_fn.descendants().find_map(ast::Fn::cast)
+                && let Some(cap) = ctx.config.snippet_cap
+            {
+                match strukt.kind() {
+                    StructKind::Tuple(_) => {
+                        let struct_args = fn_
+                            .body()
+                            .unwrap()
+                            .syntax()
+                            .descendants()
+                            .filter(|it| syntax::ast::ArgList::can_cast(it.kind()))
+                            .flat_map(|args| args.children())
+                            .filter(|it| syntax::ast::PathExpr::can_cast(it.kind()))
+                            .enumerate()
+                            .filter_map(|(i, node)| {
+                                if trivial_constructors[i].is_none() {
+                                    Some(node)
+                                } else {
+                                    None
+                                }
+                            });
+                        if let Some(fn_params) = fn_.param_list() {
+                            for (struct_arg, fn_param) in struct_args.zip(fn_params.params()) {
+                                if let Some(fn_pat) = fn_param.pat() {
+                                    let fn_pat = fn_pat.syntax().clone();
+                                    let placeholder = builder.make_placeholder_snippet(cap);
+                                    editor.add_annotation_all(vec![struct_arg, fn_pat], placeholder)
+                                }
                             }
                         }
                     }
+                    _ => {}
                 }
-                _ => {}
+
+                // Add a tabstop before the name
+                if let Some(name) = fn_.name() {
+                    let tabstop_before = builder.make_tabstop_before(cap);
+                    editor.add_annotation(name.syntax(), tabstop_before);
+                }
             }
 
-            // Add a tabstop before the name
-            if let Some(name) = fn_.name() {
-                let tabstop_before = builder.make_tabstop_before(cap);
-                editor.add_annotation(name.syntax(), tabstop_before);
-            }
-        }
-
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
+    )
 }
 
 #[cfg(test)]

@@ -3,13 +3,20 @@ COMPARISON DIFF
 
 Original size: 101650 bytes
 Chloro size:   101230 bytes
-Rustfmt size:  101650 bytes
+Rustfmt size:  105416 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+         value_ns: Option<PathResolution>,
+         macro_ns: Option<PathResolution>,
      ) -> Self {
-         PathResolutionPerNs { type_ns, value_ns, macro_ns }
+-        PathResolutionPerNs {
+-            type_ns,
+-            value_ns,
+-            macro_ns,
+-        }
++        PathResolutionPerNs { type_ns, value_ns, macro_ns }
      }
 +
      pub fn any(&self) -> Option<PathResolution> {
@@ -32,7 +39,24 @@ Rustfmt size:  101650 bytes
  impl<DB: HirDatabase + ?Sized> Semantics<'_, DB> {
      pub fn hir_file_for(&self, syntax_node: &SyntaxNode) -> HirFileId {
          self.imp.find_file(syntax_node).file_id
-         self.imp.ancestors_at_offset_with_macros(node, offset).find_map(N::cast)
+         &self,
+         token: SyntaxToken,
+     ) -> impl Iterator<Item = SyntaxNode> + '_ {
+-        token
+-            .parent()
+-            .into_iter()
+-            .flat_map(move |it| self.ancestors_with_macros(it))
++        token.parent().into_iter().flat_map(move |it| self.ancestors_with_macros(it))
+     }
+ 
+     /// Find an AstNode by offset inside SyntaxNode, if it is inside *Macrofile*,
+         node: &SyntaxNode,
+         offset: TextSize,
+     ) -> Option<N> {
+-        self.imp
+-            .ancestors_at_offset_with_macros(node, offset)
+-            .find_map(N::cast)
++        self.imp.ancestors_at_offset_with_macros(node, offset).find_map(N::cast)
      }
  
 +    // FIXME: Rethink this API
@@ -42,7 +66,13 @@ Rustfmt size:  101650 bytes
      pub fn find_node_at_offset_with_descend<N: AstNode>(
          &self,
          node: &SyntaxNode,
-         self.imp.descend_node_at_offset(node, offset).flatten().find_map(N::cast)
+         offset: TextSize,
+     ) -> Option<N> {
+-        self.imp
+-            .descend_node_at_offset(node, offset)
+-            .flatten()
+-            .find_map(N::cast)
++        self.imp.descend_node_at_offset(node, offset).flatten().find_map(N::cast)
      }
  
 +    // FIXME: Rethink this API
@@ -52,6 +82,216 @@ Rustfmt size:  101650 bytes
      pub fn find_nodes_at_offset_with_descend<'slf, N: AstNode + 'slf>(
          &'slf self,
          node: &SyntaxNode,
+         offset: TextSize,
+     ) -> impl Iterator<Item = N> + 'slf {
+-        self.imp
+-            .descend_node_at_offset(node, offset)
+-            .filter_map(|mut it| it.find_map(N::cast))
++        self.imp.descend_node_at_offset(node, offset).filter_map(|mut it| it.find_map(N::cast))
+     }
+ 
+     // FIXME: Rethink this API
+     ) -> impl Iterator<Item = ast::NameLike> + 'slf {
+         node.token_at_offset(offset)
+             .map(move |token| self.descend_into_macros_no_opaque(token, true))
+-            .map(|descendants| {
+-                descendants
+-                    .into_iter()
+-                    .filter_map(move |it| it.value.parent())
+-            })
++            .map(|descendants| descendants.into_iter().filter_map(move |it| it.value.parent()))
+             // re-order the tokens from token_at_offset by returning the ancestors with the smaller first nodes first
+             // See algo::ancestors_at_offset, which uses the same approach
+             .kmerge_by(|left, right| left.text_range().len().lt(&right.text_range().len()))
+     }
+ 
+     pub fn resolve_await_to_poll(&self, await_expr: &ast::AwaitExpr) -> Option<Function> {
+-        self.imp
+-            .resolve_await_to_poll(await_expr)
+-            .map(Function::from)
++        self.imp.resolve_await_to_poll(await_expr).map(Function::from)
+     }
+ 
+     pub fn resolve_prefix_expr(&self, prefix_expr: &ast::PrefixExpr) -> Option<Function> {
+-        self.imp
+-            .resolve_prefix_expr(prefix_expr)
+-            .map(Function::from)
++        self.imp.resolve_prefix_expr(prefix_expr).map(Function::from)
+     }
+ 
+     pub fn resolve_index_expr(&self, index_expr: &ast::IndexExpr) -> Option<Function> {
+ 
+ impl<'db> SemanticsImpl<'db> {
+     fn new(db: &'db dyn HirDatabase) -> Self {
+-        SemanticsImpl {
+-            db,
+-            s2d_cache: Default::default(),
+-            macro_call_cache: Default::default(),
+-        }
++        SemanticsImpl { db, s2d_cache: Default::default(), macro_call_cache: Default::default() }
+     }
+ 
+     pub fn parse(&self, file_id: EditionedFileId) -> ast::SourceFile {
+         Some(EditionedFileId::new(
+             self.db,
+             file,
+-            self.file_to_module_defs(file)
+-                .next()?
+-                .krate()
+-                .edition(self.db),
++            self.file_to_module_defs(file).next()?.krate().edition(self.db),
+         ))
+     }
+ 
+                 let def_map = crate_def_map(self.db, module.krate().id);
+                 match def_map[module.id.local_id].origin {
+                     ModuleOrigin::CrateRoot { .. } => None,
+-                    ModuleOrigin::File {
+-                        declaration,
+-                        declaration_tree_id,
+-                        ..
+-                    } => {
++                    ModuleOrigin::File { declaration, declaration_tree_id, .. } => {
+                         let file_id = declaration_tree_id.file_id();
+                         let in_file = InFile::new(file_id, declaration);
+                         let node = in_file.to_node(self.db);
+                 }
+             }
+             HirFileId::MacroFile(macro_file) => {
+-                let node = self
+-                    .db
+-                    .lookup_intern_macro_call(macro_file)
+-                    .to_node(self.db);
++                let node = self.db.lookup_intern_macro_call(macro_file).to_node(self.db);
+                 let root = find_root(&node.value);
+                 self.cache(root, node.file_id);
+                 Some(node)
+     /// the `SyntaxNode` of the *definition* file, not of the *declaration*.
+     pub fn module_definition_node(&self, module: Module) -> InFile<SyntaxNode> {
+         let def_map = module.id.def_map(self.db);
+-        let definition = def_map[module.id.local_id]
+-            .origin
+-            .definition_source(self.db);
++        let definition = def_map[module.id.local_id].origin.definition_source(self.db);
+         let definition = definition.map(|it| it.node());
+         let root_node = find_root(&definition.value);
+         self.cache(root_node, definition.file_id);
+     }
+ 
+     pub fn expand(&self, file_id: MacroCallId) -> ExpandResult<SyntaxNode> {
+-        let res = self
+-            .db
+-            .parse_macro_expansion(file_id)
+-            .map(|it| it.0.syntax_node());
++        let res = self.db.parse_macro_expansion(file_id).map(|it| it.0.syntax_node());
+         self.cache(res.value.clone(), file_id.into());
+         res
+     }
+         let file_id = self.find_file(attr.syntax()).file_id;
+         let krate = match file_id {
+             HirFileId::FileId(file_id) => {
+-                self.file_to_module_defs(file_id.file_id(self.db))
+-                    .next()?
+-                    .krate()
+-                    .id
++                self.file_to_module_defs(file_id.file_id(self.db)).next()?.krate().id
+             }
+             HirFileId::MacroFile(macro_file) => self.db.lookup_intern_macro_call(macro_file).krate,
+         };
+     pub fn expand_attr_macro(&self, item: &ast::Item) -> Option<ExpandResult<InFile<SyntaxNode>>> {
+         let src = self.wrap_node_infile(item.clone());
+         let macro_call_id = self.with_ctx(|ctx| ctx.item_to_macro_call(src.as_ref()))?;
+-        Some(
+-            self.expand(macro_call_id)
+-                .map(|it| InFile::new(macro_call_id.into(), it)),
+-        )
++        Some(self.expand(macro_call_id).map(|it| InFile::new(macro_call_id.into(), it)))
+     }
+ 
+     pub fn expand_derive_as_pseudo_attr_macro(&self, attr: &ast::Attr) -> Option<SyntaxNode> {
+         let adt = attr.syntax().parent().and_then(ast::Adt::cast)?;
+         let src = self.wrap_node_infile(attr.clone());
+         let call_id = self.with_ctx(|ctx| {
+-            ctx.attr_to_derive_macro_call(src.with_value(&adt), src)
+-                .map(|(_, it, _)| it)
++            ctx.attr_to_derive_macro_call(src.with_value(&adt), src).map(|(_, it, _)| it)
+         })?;
+         Some(self.parse_or_expand(call_id.into()))
+     }
+                 let ExpandResult { value, err } = self.db.parse_macro_expansion(file_id);
+                 let root_node = value.0.syntax_node();
+                 self.cache(root_node.clone(), file_id.into());
+-                Some(ExpandResult {
+-                    value: root_node,
+-                    err,
+-                })
++                Some(ExpandResult { value: root_node, err })
+             })
+             .collect();
+         Some(res)
+     }
+ 
+     pub fn derive_helper(&self, attr: &ast::Attr) -> Option<Vec<(Macro, MacroCallId)>> {
+-        let adt = attr
+-            .syntax()
+-            .ancestors()
+-            .find_map(ast::Item::cast)
+-            .and_then(|it| match it {
+-                ast::Item::Struct(it) => Some(ast::Adt::Struct(it)),
+-                ast::Item::Enum(it) => Some(ast::Adt::Enum(it)),
+-                ast::Item::Union(it) => Some(ast::Adt::Union(it)),
+-                _ => None,
+-            })?;
+-        let attr_name = attr
+-            .path()
+-            .and_then(|it| it.as_single_name_ref())?
+-            .as_name();
++        let adt = attr.syntax().ancestors().find_map(ast::Item::cast).and_then(|it| match it {
++            ast::Item::Struct(it) => Some(ast::Adt::Struct(it)),
++            ast::Item::Enum(it) => Some(ast::Adt::Enum(it)),
++            ast::Item::Union(it) => Some(ast::Adt::Union(it)),
++            _ => None,
++        })?;
++        let attr_name = attr.path().and_then(|it| it.as_single_name_ref())?.as_name();
+         let sa = self.analyze_no_infer(adt.syntax())?;
+         let id = self.db.ast_id_map(sa.file_id).ast_id(&adt);
+         let res: Vec<_> = sa
+         token_to_map: SyntaxToken,
+     ) -> Option<(SyntaxNode, Vec<(SyntaxToken, u8)>)> {
+         let attr = self.wrap_node_infile(actual_macro_call.clone());
+-        let adt = actual_macro_call
+-            .syntax()
+-            .parent()
+-            .and_then(ast::Adt::cast)?;
++        let adt = actual_macro_call.syntax().parent().and_then(ast::Adt::cast)?;
+         let macro_call_id = self.with_ctx(|ctx| {
+-            ctx.attr_to_derive_macro_call(attr.with_value(&adt), attr)
+-                .map(|(_, it, _)| it)
++            ctx.attr_to_derive_macro_call(attr.with_value(&adt), attr).map(|(_, it, _)| it)
+         })?;
+         hir_expand::db::expand_speculative(
+             self.db,
+     pub fn rename_conflicts(&self, to_be_renamed: &Local, new_name: &Name) -> Vec<Local> {
+         let body = self.db.body(to_be_renamed.parent);
+         let resolver = to_be_renamed.parent.resolver(self.db);
+-        let starting_expr = body
+-            .binding_owner(to_be_renamed.binding_id)
+-            .unwrap_or(body.body_expr);
++        let starting_expr = body.binding_owner(to_be_renamed.binding_id).unwrap_or(body.body_expr);
+         let mut visitor = RenameConflictsVisitor {
+             body: &body,
+             conflicts: FxHashSet::default(),
+         visitor
+             .conflicts
+             .into_iter()
+-            .map(|binding_id| Local {
+-                parent: to_be_renamed.parent,
+-                binding_id,
+-            })
++            .map(|binding_id| Local { parent: to_be_renamed.parent, binding_id })
+             .collect()
+     }
+ 
      ) -> Option<Vec<(TextRange, Option<Either<PathResolution, InlineAsmOperand>>)>> {
          let string_start = string.syntax().text_range().start();
          let token = self.wrap_token_infile(string.syntax().clone());
@@ -62,6 +302,15 @@ Rustfmt size:  101650 bytes
              (|| {
                  let token = token.value;
                  let string = ast::String::cast(token)?;
+-                let literal = string
+-                    .syntax()
+-                    .parent()
+-                    .filter(|it| it.kind() == SyntaxKind::LITERAL)?;
++                let literal =
++                    string.syntax().parent().filter(|it| it.kind() == SyntaxKind::LITERAL)?;
+                 let parent = literal.parent()?;
+                 if let Some(format_args) = ast::FormatArgsExpr::cast(parent.clone()) {
+                     let source_analyzer = self.analyze_no_infer(format_args.syntax())?;
                  }
              })()
              .map_or(ControlFlow::Continue(()), ControlFlow::Break)
@@ -83,6 +332,15 @@ Rustfmt size:  101650 bytes
      pub fn check_for_format_args_template(
          &self,
          original_token: SyntaxToken,
+         ast::String,
+         Option<Either<PathResolution, InlineAsmOperand>>,
+     )> {
+-        let original_token = self
+-            .wrap_token_infile(original_token)
+-            .map(ast::String::cast)
+-            .transpose()?;
++        let original_token =
++            self.wrap_token_infile(original_token).map(ast::String::cast).transpose()?;
          self.check_for_format_args_template_with_file(original_token, offset)
      }
  
@@ -93,6 +351,113 @@ Rustfmt size:  101650 bytes
      /// Returns the range (pre-expansion) in the string literal corresponding to the resolution,
      /// absolute file range (post-expansion)
      /// of the part in the format string, the corresponding string token and the resolution if it
+             |token, _| {
+                 (|| {
+                     let token = token.map(ast::String::cast).transpose()?;
+-                    self.resolve_offset_in_format_args(token.as_ref(), relative_offset)
+-                        .map(|(range, res)| {
++                    self.resolve_offset_in_format_args(token.as_ref(), relative_offset).map(
++                        |(range, res)| {
+                             (
+                                 range + original_token.value.syntax().text_range().start(),
+                                 HirFileRange {
+                                 token.value,
+                                 res,
+                             )
+-                        })
++                        },
++                    )
+                 })()
+                 .map_or(ControlFlow::Continue(()), ControlFlow::Break)
+             },
+ 
+     fn resolve_offset_in_format_args(
+         &self,
+-        InFile {
+-            value: string,
+-            file_id,
+-        }: InFile<&ast::String>,
++        InFile { value: string, file_id }: InFile<&ast::String>,
+         offset: TextSize,
+     ) -> Option<(TextRange, Option<Either<PathResolution, InlineAsmOperand>>)> {
+         debug_assert!(offset <= string.syntax().text_range().len());
+-        let literal = string
+-            .syntax()
+-            .parent()
+-            .filter(|it| it.kind() == SyntaxKind::LITERAL)?;
++        let literal = string.syntax().parent().filter(|it| it.kind() == SyntaxKind::LITERAL)?;
+         let parent = literal.parent()?;
+         if let Some(format_args) = ast::FormatArgsExpr::cast(parent.clone()) {
+             let source_analyzer =
+             source_analyzer
+                 .resolve_offset_in_asm_template(InFile::new(file_id, &asm), line, offset)
+                 .map(|(owner, (expr, range, index))| {
+-                    (
+-                        range,
+-                        Some(Either::Right(InlineAsmOperand { owner, expr, index })),
+-                    )
++                    (range, Some(Either::Right(InlineAsmOperand { owner, expr, index })))
+                 })
+         }
+     }
+         &self,
+         tok: InRealFile<SyntaxToken>,
+     ) -> InFile<SyntaxToken> {
+-        let Some(include) = self
+-            .s2d_cache
+-            .borrow_mut()
+-            .get_or_insert_include_for(self.db, tok.file_id)
++        let Some(include) =
++            self.s2d_cache.borrow_mut().get_or_insert_include_for(self.db, tok.file_id)
+         else {
+             return tok.into();
+         };
+-        let span = self
+-            .db
+-            .real_span_map(tok.file_id)
+-            .span_for_range(tok.value.text_range());
+-        let Some(InMacroFile {
+-            file_id,
+-            value: mut mapped_tokens,
+-        }) = self.with_ctx(|ctx| {
++        let span = self.db.real_span_map(tok.file_id).span_for_range(tok.value.text_range());
++        let Some(InMacroFile { file_id, value: mut mapped_tokens }) = self.with_ctx(|ctx| {
+             Some(
+                 ctx.cache
+                     .get_or_insert_expansion(ctx.db, include)
+                     .map_range_down(span)?
+                     .map(SmallVec::<[_; 2]>::from_iter),
+             )
+-        })
+-        else {
++        }) else {
+             return tok.into();
+         };
+         // We should only get one result at most
+-        mapped_tokens
+-            .pop()
+-            .map_or_else(|| tok.into(), |(tok, _)| InFile::new(file_id.into(), tok))
++        mapped_tokens.pop().map_or_else(|| tok.into(), |(tok, _)| InFile::new(file_id.into(), tok))
+     }
+ 
+     /// Maps a node down by mapping its first and last token down.
+             self.descend_into_macros_all(
+                 InFile::new(file.file_id, last),
+                 false,
+-                &mut |InFile {
+-                          value: last,
+-                          file_id: last_fid,
+-                      },
+-                      _ctx| {
+-                    if let Some(InFile {
+-                        value: first,
+-                        file_id: first_fid,
+-                    }) = scratch.next()
++                &mut |InFile { value: last, file_id: last_fid }, _ctx| {
++                    if let Some(InFile { value: first, file_id: first_fid }) = scratch.next()
+                         && first_fid == last_fid
+                         && let Some(p) = first.parent()
+                     {
      ///
      /// Note that if this token itself is within the context of a macro expansion does not matter.
      /// That is, we strictly check if it lies inside the input of a macro call.
@@ -104,7 +469,151 @@ Rustfmt size:  101650 bytes
          value.parent_ancestors().any(|ancestor| {
              if ast::MacroCall::can_cast(ancestor.kind()) {
                  return true;
-         token.parent().into_iter().flat_map(move |parent| self.ancestors_with_macros(parent))
+                 let any_ident_match =
+                     || kind.is_any_identifier() && value.kind().is_any_identifier();
+                 let matches = (kind == mapped_kind || any_ident_match()) && text == value.text();
+-                if matches {
+-                    ControlFlow::Break(value)
+-                } else {
+-                    ControlFlow::Continue(())
+-                }
++                if matches { ControlFlow::Break(value) } else { ControlFlow::Continue(()) }
+             },
+         )
+         .unwrap_or(token)
+ 
+     fn descend_into_macros_impl<T>(
+         &self,
+-        InFile {
+-            value: token,
+-            file_id,
+-        }: InFile<SyntaxToken>,
++        InFile { value: token, file_id }: InFile<SyntaxToken>,
+         always_descend_into_derives: bool,
+         f: &mut dyn FnMut(InFile<SyntaxToken>, SyntaxContext) -> ControlFlow<T>,
+     ) -> Option<T> {
+         // Process the expansion of a call, pushing all tokens with our span in the expansion back onto our stack
+         let process_expansion_for_token =
+             |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
+-                let InMacroFile {
+-                    file_id,
+-                    value: mapped_tokens,
+-                } = ctx
++                let InMacroFile { file_id, value: mapped_tokens } = ctx
+                     .cache
+                     .get_or_insert_expansion(ctx.db, macro_file)
+                     .map_range_down(span)?
+         // the tokens themselves aren't that interesting as the span that is being used to map
+         // things down never changes.
+         let mut stack: Vec<(_, SmallVec<[_; 2]>)> = vec![];
+-        let include = file_id.file_id().and_then(|file_id| {
+-            self.s2d_cache
+-                .borrow_mut()
+-                .get_or_insert_include_for(db, file_id)
+-        });
++        let include = file_id
++            .file_id()
++            .and_then(|file_id| self.s2d_cache.borrow_mut().get_or_insert_include_for(db, file_id));
+         match include {
+             Some(include) => {
+                 // include! inputs are always from real files, so they only need to be handled once upfront
+                                 }
+                                 None => {
+                                     // Otherwise this could be a derive helper on a variant or field
+-                                    attr.syntax()
+-                                        .ancestors()
+-                                        .find_map(ast::Item::cast)
+-                                        .and_then(|it| match it {
++                                    attr.syntax().ancestors().find_map(ast::Item::cast).and_then(
++                                        |it| match it {
+                                             ast::Item::Struct(it) => Some(ast::Adt::Struct(it)),
+                                             ast::Item::Enum(it) => Some(ast::Adt::Enum(it)),
+                                             ast::Item::Union(it) => Some(ast::Adt::Union(it)),
+                                             _ => None,
+-                                        })
++                                        },
++                                    )
+                                 }
+                             }?;
+-                            let attr_name = attr
+-                                .path()
+-                                .and_then(|it| it.as_single_name_ref())?
+-                                .as_name();
++                            let attr_name =
++                                attr.path().and_then(|it| it.as_single_name_ref())?.as_name();
+                             // Not an attribute, nor a derive, so it's either an inert attribute or a derive helper
+                             // Try to resolve to a derive helper and downmap
+                             let resolver = &token
+         node.token_at_offset(offset)
+             .map(move |token| self.descend_into_macros_exact(token))
+             .map(|descendants| {
+-                descendants
+-                    .into_iter()
+-                    .map(move |it| self.token_ancestors_with_macros(it))
++                descendants.into_iter().map(move |it| self.token_ancestors_with_macros(it))
+             })
+             // re-order the tokens from token_at_offset by returning the ancestors with the smaller first nodes first
+             // See algo::ancestors_at_offset, which uses the same approach
+     /// Attempts to map the node out of macro expanded files returning the original file range.
+     pub fn original_range_opt(&self, node: &SyntaxNode) -> Option<FileRange> {
+         let node = self.find_file(node);
+-        node.original_file_range_opt(self.db)
+-            .filter(|(_, ctx)| ctx.is_root())
+-            .map(TupleExt::head)
++        node.original_file_range_opt(self.db).filter(|(_, ctx)| ctx.is_root()).map(TupleExt::head)
+     }
+ 
+     /// Attempts to map the node out of macro expanded files.
+     /// This only work for attribute expansions, as other ones do not have nodes as input.
+     pub fn original_ast_node<N: AstNode>(&self, node: N) -> Option<N> {
+-        self.wrap_node_infile(node)
+-            .original_ast_node_rooted(self.db)
+-            .map(|InRealFile { file_id, value }| {
++        self.wrap_node_infile(node).original_ast_node_rooted(self.db).map(
++            |InRealFile { file_id, value }| {
+                 self.cache(find_root(value.syntax()), file_id.into());
+                 value
+-            })
++            },
++        )
+     }
+ 
+     /// Attempts to map the node out of macro expanded files.
+     /// This only work for attribute expansions, as other ones do not have nodes as input.
+     pub fn original_syntax_node_rooted(&self, node: &SyntaxNode) -> Option<SyntaxNode> {
+         let InFile { file_id, .. } = self.find_file(node);
+-        InFile::new(file_id, node)
+-            .original_syntax_node_rooted(self.db)
+-            .map(|InRealFile { file_id, value }| {
++        InFile::new(file_id, node).original_syntax_node_rooted(self.db).map(
++            |InRealFile { file_id, value }| {
+                 self.cache(find_root(&value), file_id.into());
+                 value
+-            })
++            },
++        )
+     }
+ 
+     pub fn diagnostics_display_range(
+         let root = self.parse_or_expand(src.file_id);
+         let node = src.map(|it| it.to_node(&root));
+         let FileRange { file_id, range } = node.as_ref().original_file_range_rooted(self.db);
+-        FileRangeWrapper {
+-            file_id: file_id.file_id(self.db),
+-            range,
+-        }
++        FileRangeWrapper { file_id: file_id.file_id(self.db), range }
+     }
+ 
+     fn token_ancestors_with_macros(
+         &self,
+         token: SyntaxToken,
+     ) -> impl Iterator<Item = SyntaxNode> + Clone + '_ {
+-        token
+-            .parent()
+-            .into_iter()
+-            .flat_map(move |parent| self.ancestors_with_macros(parent))
++        token.parent().into_iter().flat_map(move |parent| self.ancestors_with_macros(parent))
      }
  
 -    /// Iterates the ancestors of the given node, climbing up macro expansions while doing so.
@@ -113,26 +622,127 @@ Rustfmt size:  101650 bytes
      pub fn ancestors_with_macros(
          &self,
          node: SyntaxNode,
-         &self,
-         node: InFile<SyntaxNode>,
-     ) -> impl Iterator<Item = InFile<SyntaxNode>> + Clone + '_ {
--        iter::successors(Some(node), move |&InFile { file_id, ref value }| match value.parent() {
-+        iter::successors(
-+            Some(node),
-+            move |&InFile { file_id, ref value }| match value.parent() {
-             Some(parent) => Some(InFile::new(file_id, parent)),
-             None => {
-                 let macro_file = file_id.macro_file()?;
-                     expansion_info.arg().map(|node| node?.parent()).transpose()
-                 })
-             }
--        })
-+        },
-+        )
+     ) -> impl Iterator<Item = SyntaxNode> + Clone + '_ {
+         let node = self.find_file(&node);
+-        self.ancestors_with_macros_file(node.cloned())
+-            .map(|it| it.value)
++        self.ancestors_with_macros_file(node.cloned()).map(|it| it.value)
      }
  
-     pub fn ancestors_at_offset_with_macros(
-         self.analyze(call.syntax())?.resolve_method_call_fallback(self.db, call)
+     /// Iterates the ancestors of the given node, climbing up macro expansions while doing so.
+         iter::successors(
+             Some(node),
+             move |&InFile { file_id, ref value }| match value.parent() {
+-                Some(parent) => Some(InFile::new(file_id, parent)),
+-                None => {
+-                    let macro_file = file_id.macro_file()?;
++            Some(parent) => Some(InFile::new(file_id, parent)),
++            None => {
++                let macro_file = file_id.macro_file()?;
+ 
+-                    self.with_ctx(|ctx| {
+-                        let expansion_info = ctx.cache.get_or_insert_expansion(ctx.db, macro_file);
+-                        expansion_info.arg().map(|node| node?.parent()).transpose()
+-                    })
+-                }
+-            },
++                self.with_ctx(|ctx| {
++                    let expansion_info = ctx.cache.get_or_insert_expansion(ctx.db, macro_file);
++                    expansion_info.arg().map(|node| node?.parent()).transpose()
++                })
++            }
++        },
+         )
+     }
+ 
+     pub fn resolve_trait(&self, path: &ast::Path) -> Option<Trait> {
+         let parent_ty = path.syntax().parent().and_then(ast::Type::cast)?;
+         let analyze = self.analyze(path.syntax())?;
+-        let ty = analyze
+-            .store_sm()?
+-            .node_type(InFile::new(analyze.file_id, &parent_ty))?;
++        let ty = analyze.store_sm()?.node_type(InFile::new(analyze.file_id, &parent_ty))?;
+         let path = match &analyze.store()?.types[ty] {
+             hir_def::type_ref::TypeRef::Path(path) => path,
+             _ => return None,
+         };
+-        match analyze
+-            .resolver
+-            .resolve_path_in_type_ns_fully(self.db, path)?
+-        {
++        match analyze.resolver.resolve_path_in_type_ns_fully(self.db, path)? {
+             TypeNs::TraitId(trait_id) => Some(trait_id.into()),
+             _ => None,
+         }
+                     // Update `source_ty` for the next adjustment
+                     let source = mem::replace(&mut source_ty, target.clone());
+ 
+-                    Adjustment {
+-                        source,
+-                        target,
+-                        kind,
+-                    }
++                    Adjustment { source, target, kind }
+                 })
+                 .collect()
+         })
+     pub fn type_of_expr(&self, expr: &ast::Expr) -> Option<TypeInfo<'db>> {
+         self.analyze(expr.syntax())?
+             .type_of_expr(self.db, expr)
+-            .map(|(ty, coerced)| TypeInfo {
+-                original: ty,
+-                adjusted: coerced,
+-            })
++            .map(|(ty, coerced)| TypeInfo { original: ty, adjusted: coerced })
+     }
+ 
+     pub fn type_of_pat(&self, pat: &ast::Pat) -> Option<TypeInfo<'db>> {
+         self.analyze(pat.syntax())?
+             .type_of_pat(self.db, pat)
+-            .map(|(ty, coerced)| TypeInfo {
+-                original: ty,
+-                adjusted: coerced,
+-            })
++            .map(|(ty, coerced)| TypeInfo { original: ty, adjusted: coerced })
+     }
+ 
+     /// It also includes the changes that binding mode makes in the type. For example in
+     /// `let ref x @ Some(_) = None` the result of `type_of_pat` is `Option<T>` but the result
+     /// of this function is `&mut Option<T>`
+     pub fn type_of_binding_in_pat(&self, pat: &ast::IdentPat) -> Option<Type<'db>> {
+-        self.analyze(pat.syntax())?
+-            .type_of_binding_in_pat(self.db, pat)
++        self.analyze(pat.syntax())?.type_of_binding_in_pat(self.db, pat)
+     }
+ 
+     pub fn type_of_self(&self, param: &ast::SelfParam) -> Option<Type<'db>> {
+     }
+ 
+     pub fn binding_mode_of_pat(&self, pat: &ast::IdentPat) -> Option<BindingMode> {
+-        self.analyze(pat.syntax())?
+-            .binding_mode_of_pat(self.db, pat)
++        self.analyze(pat.syntax())?.binding_mode_of_pat(self.db, pat)
+     }
+ 
+     pub fn resolve_expr_as_callable(&self, call: &ast::Expr) -> Option<Callable<'db>> {
+-        self.analyze(call.syntax())?
+-            .resolve_expr_as_callable(self.db, call)
++        self.analyze(call.syntax())?.resolve_expr_as_callable(self.db, call)
+     }
+ 
+     pub fn resolve_method_call(&self, call: &ast::MethodCallExpr) -> Option<Function> {
+-        self.analyze(call.syntax())?
+-            .resolve_method_call(self.db, call)
++        self.analyze(call.syntax())?.resolve_method_call(self.db, call)
+     }
+ 
+     /// Attempts to resolve this call expression as a method call falling back to resolving it as a field.
+         &self,
+         call: &ast::MethodCallExpr,
+     ) -> Option<(Either<Function, Field>, Option<GenericSubstitution<'db>>)> {
+-        self.analyze(call.syntax())?
+-            .resolve_method_call_fallback(self.db, call)
++        self.analyze(call.syntax())?.resolve_method_call_fallback(self.db, call)
      }
  
 -    /// Env is used to derive the trait environment
@@ -141,15 +751,243 @@ Rustfmt size:  101650 bytes
      pub fn resolve_trait_impl_method(
          &self,
          env: Type<'db>,
+         let mut subst = subst.into_iter();
+         let substs =
+             hir_ty::next_solver::GenericArgs::for_item(interner, trait_.id.into(), |_, id, _| {
+-                assert!(
+-                    matches!(id, hir_def::GenericParamId::TypeParamId(_)),
+-                    "expected a type"
+-                );
++                assert!(matches!(id, hir_def::GenericParamId::TypeParamId(_)), "expected a type");
+                 subst.next().expect("too few subst").ty.into()
+             });
+         assert!(subst.next().is_none(), "too many subst");
+-        Some(
+-            self.db
+-                .lookup_impl_method(env.env, func.into(), substs)
+-                .0
+-                .into(),
+-        )
++        Some(self.db.lookup_impl_method(env.env, func.into(), substs).0.into())
+     }
+ 
+     fn resolve_range_pat(&self, range_pat: &ast::RangePat) -> Option<StructId> {
+-        self.analyze(range_pat.syntax())?
+-            .resolve_range_pat(self.db, range_pat)
++        self.analyze(range_pat.syntax())?.resolve_range_pat(self.db, range_pat)
+     }
+ 
+     fn resolve_range_expr(&self, range_expr: &ast::RangeExpr) -> Option<StructId> {
+-        self.analyze(range_expr.syntax())?
+-            .resolve_range_expr(self.db, range_expr)
++        self.analyze(range_expr.syntax())?.resolve_range_expr(self.db, range_expr)
+     }
+ 
+     fn resolve_await_to_poll(&self, await_expr: &ast::AwaitExpr) -> Option<FunctionId> {
+-        self.analyze(await_expr.syntax())?
+-            .resolve_await_to_poll(self.db, await_expr)
++        self.analyze(await_expr.syntax())?.resolve_await_to_poll(self.db, await_expr)
+     }
+ 
+     fn resolve_prefix_expr(&self, prefix_expr: &ast::PrefixExpr) -> Option<FunctionId> {
+-        self.analyze(prefix_expr.syntax())?
+-            .resolve_prefix_expr(self.db, prefix_expr)
++        self.analyze(prefix_expr.syntax())?.resolve_prefix_expr(self.db, prefix_expr)
+     }
+ 
+     fn resolve_index_expr(&self, index_expr: &ast::IndexExpr) -> Option<FunctionId> {
+-        self.analyze(index_expr.syntax())?
+-            .resolve_index_expr(self.db, index_expr)
++        self.analyze(index_expr.syntax())?.resolve_index_expr(self.db, index_expr)
+     }
+ 
+     fn resolve_bin_expr(&self, bin_expr: &ast::BinExpr) -> Option<FunctionId> {
+-        self.analyze(bin_expr.syntax())?
+-            .resolve_bin_expr(self.db, bin_expr)
++        self.analyze(bin_expr.syntax())?.resolve_bin_expr(self.db, bin_expr)
+     }
+ 
+     fn resolve_try_expr(&self, try_expr: &ast::TryExpr) -> Option<FunctionId> {
+-        self.analyze(try_expr.syntax())?
+-            .resolve_try_expr(self.db, try_expr)
++        self.analyze(try_expr.syntax())?.resolve_try_expr(self.db, try_expr)
+     }
+ 
+     // This does not resolve the method call to the correct trait impl!
+         &self,
+         call: &ast::MethodCallExpr,
+     ) -> Option<Callable<'db>> {
+-        self.analyze(call.syntax())?
+-            .resolve_method_call_as_callable(self.db, call)
++        self.analyze(call.syntax())?.resolve_method_call_as_callable(self.db, call)
+     }
+ 
+     pub fn resolve_field(&self, field: &ast::FieldExpr) -> Option<Either<Field, TupleField>> {
      pub fn resolve_field_fallback(
          &self,
          field: &ast::FieldExpr,
--    ) -> Option<(Either<Either<Field, TupleField>, Function>, Option<GenericSubstitution<'db>>)>
--    {
+-    ) -> Option<(
+-        Either<Either<Field, TupleField>, Function>,
+-        Option<GenericSubstitution<'db>>,
+-    )> {
+-        self.analyze(field.syntax())?
+-            .resolve_field_fallback(self.db, field)
 +    ) -> Option<(Either<Either<Field, TupleField>, Function>, Option<GenericSubstitution<'db>>)> {
-         self.analyze(field.syntax())?.resolve_field_fallback(self.db, field)
++        self.analyze(field.syntax())?.resolve_field_fallback(self.db, field)
      }
  
+     pub fn resolve_record_field(
+         &self,
+         field: &ast::RecordExprField,
+     ) -> Option<(Field, Option<Local>, Type<'db>, GenericSubstitution<'db>)> {
+-        self.analyze(field.syntax())?
+-            .resolve_record_field(self.db, field)
++        self.analyze(field.syntax())?.resolve_record_field(self.db, field)
+     }
+ 
+     pub fn resolve_record_pat_field(
+         &self,
+         field: &ast::RecordPatField,
+     ) -> Option<(Field, Type<'db>)> {
+-        self.resolve_record_pat_field_with_subst(field)
+-            .map(|(field, ty, _)| (field, ty))
++        self.resolve_record_pat_field_with_subst(field).map(|(field, ty, _)| (field, ty))
+     }
+ 
+     pub fn resolve_record_pat_field_with_subst(
+         &self,
+         field: &ast::RecordPatField,
+     ) -> Option<(Field, Type<'db>, GenericSubstitution<'db>)> {
+-        self.analyze(field.syntax())?
+-            .resolve_record_pat_field(self.db, field)
++        self.analyze(field.syntax())?.resolve_record_pat_field(self.db, field)
+     }
+ 
+     // FIXME: Replace this with `resolve_macro_call2`
+     pub fn get_unsafe_ops_for_unsafe_block(&self, block: ast::BlockExpr) -> Vec<ExprOrPatSource> {
+         always!(block.unsafe_token().is_some());
+         let block = self.wrap_node_infile(ast::Expr::from(block));
+-        let Some(def) = self.body_for(block.syntax()) else {
+-            return Vec::new();
+-        };
++        let Some(def) = self.body_for(block.syntax()) else { return Vec::new() };
+         let def = def.into();
+         let (body, source_map) = self.db.body_with_source_map(def);
+         let infer = self.db.infer(def);
+     }
+ 
+     pub fn is_unsafe_macro_call(&self, macro_call: &ast::MacroCall) -> bool {
+-        let Some(mac) = self.resolve_macro_call(macro_call) else {
+-            return false;
+-        };
++        let Some(mac) = self.resolve_macro_call(macro_call) else { return false };
+         if mac.is_asm_like(self.db) {
+             return true;
+         }
+ 
+-        let Some(sa) = self.analyze(macro_call.syntax()) else {
+-            return false;
+-        };
++        let Some(sa) = self.analyze(macro_call.syntax()) else { return false };
+         let macro_call = self.find_file(macro_call.syntax()).with_value(macro_call);
+-        match macro_call
+-            .map(|it| it.syntax().parent().and_then(ast::MacroExpr::cast))
+-            .transpose()
+-        {
++        match macro_call.map(|it| it.syntax().parent().and_then(ast::MacroExpr::cast)).transpose() {
+             Some(it) => sa.is_unsafe_macro_call_expr(self.db, it.as_ref()),
+             None => false,
+         }
+     }
+ 
+     pub fn resolve_path_per_ns(&self, path: &ast::Path) -> Option<PathResolutionPerNs> {
+-        self.analyze(path.syntax())?
+-            .resolve_hir_path_per_ns(self.db, path)
++        self.analyze(path.syntax())?.resolve_hir_path_per_ns(self.db, path)
+     }
+ 
+     pub fn resolve_path_with_subst(
+         &self,
+         name_ref: &ast::NameRef,
+     ) -> Option<(Either<Variant, Field>, GenericSubstitution<'db>)> {
+-        self.analyze_no_infer(name_ref.syntax())?
+-            .resolve_offset_of_field(self.db, name_ref)
++        self.analyze_no_infer(name_ref.syntax())?.resolve_offset_of_field(self.db, name_ref)
+     }
+ 
+     pub fn resolve_mod_path(
+     }
+ 
+     fn resolve_variant(&self, record_lit: ast::RecordExpr) -> Option<VariantId> {
+-        self.analyze(record_lit.syntax())?
+-            .resolve_variant(record_lit)
++        self.analyze(record_lit.syntax())?.resolve_variant(record_lit)
+     }
+ 
+     pub fn resolve_bind_pat_to_const(&self, pat: &ast::IdentPat) -> Option<ModuleDef> {
+-        self.analyze(pat.syntax())?
+-            .resolve_bind_pat_to_const(self.db, pat)
++        self.analyze(pat.syntax())?.resolve_bind_pat_to_const(self.db, pat)
+     }
+ 
+     pub fn record_literal_missing_fields(
+     }
+ 
+     fn with_ctx<F: FnOnce(&mut SourceToDefCtx<'_, '_>) -> T, T>(&self, f: F) -> T {
+-        let mut ctx = SourceToDefCtx {
+-            db: self.db,
+-            cache: &mut self.s2d_cache.borrow_mut(),
+-        };
++        let mut ctx = SourceToDefCtx { db: self.db, cache: &mut self.s2d_cache.borrow_mut() };
+         f(&mut ctx)
+     }
+ 
+     }
+ 
+     fn file_to_module_defs(&self, file: FileId) -> impl Iterator<Item = Module> {
+-        self.with_ctx(|ctx| ctx.file_to_def(file).to_owned())
+-            .into_iter()
+-            .map(Module::from)
++        self.with_ctx(|ctx| ctx.file_to_def(file).to_owned()).into_iter().map(Module::from)
+     }
+ 
+     fn hir_file_to_module_defs(&self, file: HirFileId) -> impl Iterator<Item = Module> {
+         // FIXME: Do we need to care about inline modules for macro expansions?
+-        self.file_to_module_defs(
+-            file.original_file_respecting_includes(self.db)
+-                .file_id(self.db),
+-        )
++        self.file_to_module_defs(file.original_file_respecting_includes(self.db).file_id(self.db))
+     }
+ 
+     pub fn scope(&self, node: &SyntaxNode) -> Option<SemanticsScope<'db>> {
+-        self.analyze_no_infer(node).map(
+-            |SourceAnalyzer {
+-                 file_id, resolver, ..
+-             }| SemanticsScope {
+-                db: self.db,
+-                file_id,
+-                resolver,
+-            },
+-        )
++        self.analyze_no_infer(node).map(|SourceAnalyzer { file_id, resolver, .. }| SemanticsScope {
++            db: self.db,
++            file_id,
++            resolver,
++        })
+     }
+ 
+     pub fn scope_at_offset(
+         offset: TextSize,
+     ) -> Option<SemanticsScope<'db>> {
+         self.analyze_with_offset_no_infer(node, offset).map(
+-            |SourceAnalyzer {
+-                 file_id, resolver, ..
+-             }| SemanticsScope {
++            |SourceAnalyzer { file_id, resolver, .. }| SemanticsScope {
+                 db: self.db,
+                 file_id,
+                 resolver,
          &self,
          node: InFile<&SyntaxNode>,
          offset: Option<TextSize>,
@@ -157,6 +995,113 @@ Rustfmt size:  101650 bytes
          infer_body: bool,
      ) -> Option<SourceAnalyzer<'db>> {
          let _p = tracing::info_span!("SemanticsImpl::analyze_impl").entered();
+                 return Some(SourceAnalyzer::new_variant_body(self.db, def, node, offset));
+             }
+             ChildContainer::TraitId(it) => {
+-                return Some(SourceAnalyzer::new_generic_def(
+-                    self.db,
+-                    it.into(),
+-                    node,
+-                    offset,
+-                ));
++                return Some(SourceAnalyzer::new_generic_def(self.db, it.into(), node, offset));
+             }
+             ChildContainer::ImplId(it) => {
+-                return Some(SourceAnalyzer::new_generic_def(
+-                    self.db,
+-                    it.into(),
+-                    node,
+-                    offset,
+-                ));
++                return Some(SourceAnalyzer::new_generic_def(self.db, it.into(), node, offset));
+             }
+             ChildContainer::EnumId(it) => {
+-                return Some(SourceAnalyzer::new_generic_def(
+-                    self.db,
+-                    it.into(),
+-                    node,
+-                    offset,
+-                ));
++                return Some(SourceAnalyzer::new_generic_def(self.db, it.into(), node, offset));
+             }
+             ChildContainer::GenericDefId(it) => {
+                 return Some(SourceAnalyzer::new_generic_def(self.db, it, node, offset));
+ 
+     /// Returns `true` if the `node` is inside an `unsafe` context.
+     pub fn is_inside_unsafe(&self, expr: &ast::Expr) -> bool {
+-        let Some(enclosing_item) = expr
+-            .syntax()
+-            .ancestors()
+-            .find_map(Either::<ast::Item, ast::Variant>::cast)
++        let Some(enclosing_item) =
++            expr.syntax().ancestors().find_map(Either::<ast::Item, ast::Variant>::cast)
+         else {
+             return false;
+         };
+ 
+         let def = match &enclosing_item {
+             Either::Left(ast::Item::Fn(it)) if it.unsafe_token().is_some() => return true,
+-            Either::Left(ast::Item::Fn(it)) => self
+-                .to_def(it)
+-                .map(<_>::into)
+-                .map(DefWithBodyId::FunctionId),
++            Either::Left(ast::Item::Fn(it)) => {
++                self.to_def(it).map(<_>::into).map(DefWithBodyId::FunctionId)
++            }
+             Either::Left(ast::Item::Const(it)) => {
+                 self.to_def(it).map(<_>::into).map(DefWithBodyId::ConstId)
+             }
+             Either::Right(it) => self.to_def(it).map(<_>::into).map(DefWithBodyId::VariantId),
+         };
+         let Some(def) = def else { return false };
+-        let enclosing_node = enclosing_item
+-            .as_ref()
+-            .either(|i| i.syntax(), |v| v.syntax());
++        let enclosing_node = enclosing_item.as_ref().either(|i| i.syntax(), |v| v.syntax());
+ 
+         let (body, source_map) = self.db.body_with_source_map(def);
+ 
+         let file_id = self.find_file(expr.syntax()).file_id;
+ 
+-        let Some(mut parent) = expr.syntax().parent() else {
+-            return false;
+-        };
++        let Some(mut parent) = expr.syntax().parent() else { return false };
+         loop {
+             if &parent == enclosing_node {
+                 break false;
+             }
+ 
+             if let Some(parent) = ast::Expr::cast(parent.clone())
+-                && let Some(ExprOrPatId::ExprId(expr_id)) = source_map.node_expr(InFile {
+-                    file_id,
+-                    value: &parent,
+-                })
++                && let Some(ExprOrPatId::ExprId(expr_id)) =
++                    source_map.node_expr(InFile { file_id, value: &parent })
+                 && let Expr::Unsafe { .. } = body[expr_id]
+             {
+                 break true;
+             }
+ 
+-            let Some(parent_) = parent.parent() else {
+-                break false;
+-            };
++            let Some(parent_) = parent.parent() else { break false };
+             parent = parent_;
+         }
+     }
+             }
+         };
+         let adt_source = adt_ast_id.to_in_file_node(self.db);
+-        self.cache(
+-            adt_source.value.syntax().ancestors().last().unwrap(),
+-            adt_source.file_id,
+-        );
++        self.cache(adt_source.value.syntax().ancestors().last().unwrap(), adt_source.file_id);
+         ToDef::to_def(self, adt_source.as_ref())
+     }
+ }
      }
  }
  
@@ -167,6 +1112,63 @@ Rustfmt size:  101650 bytes
      fn to_def(sema: &SemanticsImpl<'_>, src: InFile<&Self>) -> Option<Self::Def>;
  }
  
+     (crate::Field, ast::TupleField, tuple_field_to_def),
+     (crate::Variant, ast::Variant, enum_variant_to_def),
+     (crate::TypeParam, ast::TypeParam, type_param_to_def),
+-    (
+-        crate::LifetimeParam,
+-        ast::LifetimeParam,
+-        lifetime_param_to_def
+-    ),
++    (crate::LifetimeParam, ast::LifetimeParam, lifetime_param_to_def),
+     (crate::ConstParam, ast::ConstParam, const_param_to_def),
+     (crate::GenericParam, ast::GenericParam, generic_param_to_def),
+     (crate::Macro, ast::Macro, macro_to_def),
+     (crate::Local, ast::SelfParam, self_param_to_def),
+     (crate::Label, ast::Label, label_to_def),
+     (crate::Adt, ast::Adt, adt_to_def),
+-    (
+-        crate::ExternCrateDecl,
+-        ast::ExternCrate,
+-        extern_crate_to_def
+-    ),
+-    (
+-        crate::InlineAsmOperand,
+-        ast::AsmOperandNamed,
+-        asm_operand_to_def
+-    ),
++    (crate::ExternCrateDecl, ast::ExternCrate, extern_crate_to_def),
++    (crate::InlineAsmOperand, ast::AsmOperandNamed, asm_operand_to_def),
+     (crate::ExternBlock, ast::ExternBlock, extern_block_to_def),
+     (MacroCallId, ast::MacroCall, macro_call_to_macro_call),
+ ];
+     }
+ 
+     pub fn module(&self) -> Module {
+-        Module {
+-            id: self.resolver.module(),
+-        }
++        Module { id: self.resolver.module() }
+     }
+ 
+     pub fn krate(&self) -> Crate {
+-        Crate {
+-            id: self.resolver.krate(),
+-        }
++        Crate { id: self.resolver.krate() }
+     }
+ 
+     pub fn containing_function(&self) -> Option<Function> {
+     }
+ 
+     pub fn extern_crates(&self) -> impl Iterator<Item = (Name, Module)> + '_ {
+-        self.resolver
+-            .extern_crates_in_scope()
+-            .map(|(name, id)| (name, Module { id }))
++        self.resolver.extern_crates_in_scope().map(|(name, id)| (name, Module { id }))
+     }
+ 
+     pub fn extern_crate_decls(&self) -> impl Iterator<Item = Name> + '_ {
  
  impl RenameConflictsVisitor<'_> {
      fn resolve_path(&mut self, node: ExprOrPatId, path: &Path) {
@@ -186,3 +1188,29 @@ Rustfmt size:  101650 bytes
                  self.conflicts.insert(conflicting);
              }
          }
+     fn rename_conflicts(&mut self, expr: ExprId) {
+         match &self.body[expr] {
+             Expr::Path(path) => {
+-                let guard = self
+-                    .resolver
+-                    .update_to_inner_scope(self.db, self.owner, expr);
++                let guard = self.resolver.update_to_inner_scope(self.db, self.owner, expr);
+                 self.resolve_path(expr.into(), path);
+                 self.resolver.reset_to_guard(guard);
+             }
+             &Expr::Assignment { target, .. } => {
+-                let guard = self
+-                    .resolver
+-                    .update_to_inner_scope(self.db, self.owner, expr);
++                let guard = self.resolver.update_to_inner_scope(self.db, self.owner, expr);
+                 self.body.walk_pats(target, &mut |pat| {
+                     if let Pat::Path(path) = &self.body[pat] {
+                         self.resolve_path(pat.into(), path);
+             _ => {}
+         }
+ 
+-        self.body
+-            .walk_child_exprs(expr, |expr| self.rename_conflicts(expr));
++        self.body.walk_child_exprs(expr, |expr| self.rename_conflicts(expr));
+     }
+ }

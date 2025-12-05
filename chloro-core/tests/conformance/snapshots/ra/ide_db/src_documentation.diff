@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 11810 bytes
 Chloro size:   11843 bytes
-Rustfmt size:  12398 bytes
+Rustfmt size:  12378 bytes
 
 ✗ Outputs DIFFER
 
@@ -12,20 +12,7 @@ Rustfmt size:  12398 bytes
 +
  use either::Either;
  use hir::{
-+    AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
-     db::{DefDatabase, HirDatabase},
--    resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
-+    resolve_doc_path_on, sym,
- };
- use itertools::Itertools;
- use span::{TextRange, TextSize};
- use syntax::{
--    ast::{self, IsString},
-     AstToken,
-+    ast::{self, IsString},
- };
- 
- /// Holds documentation
+     AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
      }
  }
  
@@ -139,6 +126,18 @@ Rustfmt size:  12398 bytes
              });
  
              buf.extend(Itertools::intersperse(lines, "\n"));
+         buf.push('\n');
+     }
+     buf.pop();
+-    if buf.is_empty() { None } else { Some(buf) }
++    if buf.is_empty() {
++        None
++    } else {
++        Some(buf)
++    }
+ }
+ 
+ macro_rules! impl_has_docs {
                  decl_docs += &crate_docs;
                  Some(decl_docs)
              }

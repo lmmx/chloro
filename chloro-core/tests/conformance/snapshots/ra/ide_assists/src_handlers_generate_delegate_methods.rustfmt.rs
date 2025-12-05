@@ -63,14 +63,22 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
         Some(field) => {
             let field_name = field.name()?;
             let field_ty = field.ty()?;
-            (field_name.to_string(), field_ty, field.syntax().text_range())
+            (
+                field_name.to_string(),
+                field_ty,
+                field.syntax().text_range(),
+            )
         }
         None => {
             let field = ctx.find_node_at_offset::<ast::TupleField>()?;
             let field_list = ctx.find_node_at_offset::<ast::TupleFieldList>()?;
             let field_list_index = field_list.fields().position(|it| it == field)?;
             let field_ty = field.ty()?;
-            (field_list_index.to_string(), field_ty, field.syntax().text_range())
+            (
+                field_list_index.to_string(),
+                field_ty,
+                field.syntax().text_range(),
+            )
         }
     };
 
@@ -105,7 +113,11 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
 
         acc.add_group(
             &GroupLabel("Generate delegate methods…".to_owned()),
-            AssistId("generate_delegate_methods", AssistKind::Generate, Some(index)),
+            AssistId(
+                "generate_delegate_methods",
+                AssistKind::Generate,
+                Some(index),
+            ),
             format!("Generate delegate for `{field_name}.{name}()`",),
             target,
             |edit| {
@@ -137,8 +149,9 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
 
                 let type_params = method_source.generic_param_list();
                 let where_clause = method_source.where_clause();
-                let params =
-                    method_source.param_list().unwrap_or_else(|| make::param_list(None, []));
+                let params = method_source
+                    .param_list()
+                    .unwrap_or_else(|| make::param_list(None, []));
 
                 // compute the `body`
                 let arg_list = method_source
@@ -148,8 +161,11 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
 
                 let tail_expr =
                     make::expr_method_call(field, make::name_ref(&name), arg_list).into();
-                let tail_expr_finished =
-                    if is_async { make::expr_await(tail_expr) } else { tail_expr };
+                let tail_expr_finished = if is_async {
+                    make::expr_await(tail_expr)
+                } else {
+                    tail_expr
+                };
                 let body = make::block_expr([], Some(tail_expr_finished));
 
                 let ret_type = method_source.ret_type();
@@ -218,7 +234,9 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
                                 impl_def.syntax().clone().into(),
                             ],
                         );
-                        impl_def.assoc_item_list().and_then(|list| list.assoc_items().next())
+                        impl_def
+                            .assoc_item_list()
+                            .and_then(|list| list.assoc_items().next())
                     }
                 };
 

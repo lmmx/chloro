@@ -81,7 +81,9 @@ pub(super) fn lower_path(
                     }
                     break kind = resolve_crate_root(
                         collector.db,
-                        collector.expander.ctx_for_range(name_ref.syntax().text_range()),
+                        collector
+                            .expander
+                            .ctx_for_range(name_ref.syntax().text_range()),
                     )
                     .map(PathKind::DollarCrate)
                     .unwrap_or(PathKind::Crate);
@@ -98,7 +100,9 @@ pub(super) fn lower_path(
                         )
                     })
                     .or_else(|| {
-                        segment.return_type_syntax().map(|_| GenericArgs::return_type_notation())
+                        segment
+                            .return_type_syntax()
+                            .map(|_| GenericArgs::return_type_notation())
                     });
                 if args.is_some() {
                     generic_args.resize(segments.len(), None);
@@ -109,7 +113,10 @@ pub(super) fn lower_path(
             ast::PathSegmentKind::SelfTypeKw => {
                 push_segment(&segment, &mut segments, Name::new_symbol_root(sym::Self_));
             }
-            ast::PathSegmentKind::Type { type_ref, trait_ref } => {
+            ast::PathSegmentKind::Type {
+                type_ref,
+                trait_ref,
+            } => {
                 debug_assert!(path.qualifier().is_none()); // this can only occur at the first segment
 
                 let self_type = collector.lower_type_ref(type_ref?, impl_trait_lower_fn);
@@ -215,9 +222,15 @@ pub(super) fn lower_path(
         && kind == PathKind::Plain
         && let Some(_macro_call) = path.syntax().parent().and_then(ast::MacroCall::cast)
     {
-        let syn_ctxt = collector.expander.ctx_for_range(path.segment()?.syntax().text_range());
+        let syn_ctxt = collector
+            .expander
+            .ctx_for_range(path.segment()?.syntax().text_range());
         if let Some(macro_call_id) = syn_ctxt.outer_expn(collector.db)
-            && collector.db.lookup_intern_macro_call(macro_call_id.into()).def.local_inner
+            && collector
+                .db
+                .lookup_intern_macro_call(macro_call_id.into())
+                .def
+                .local_inner
         {
             kind = match resolve_crate_root(collector.db, syn_ctxt) {
                 Some(crate_root) => PathKind::DollarCrate(crate_root),
@@ -233,8 +246,12 @@ pub(super) fn lower_path(
             .with_borrow_mut(|map| map.extend(ast_segments.into_iter().zip(ast_segments_offset..)));
     }
 
-    if let Some(last_segment_args @ Some(GenericArgs { has_self_type: true, .. })) =
-        generic_args.last_mut()
+    if let Some(
+        last_segment_args @ Some(GenericArgs {
+            has_self_type: true,
+            ..
+        }),
+    ) = generic_args.last_mut()
     {
         // Well-formed code cannot have `<T as Trait>` without an associated item after,
         // and this causes panics in hir-ty lowering.
@@ -271,8 +288,10 @@ pub fn hir_segment_to_ast_segment(path: &ast::Path, segment_idx: u32) -> Option<
     // as keeping source maps for all paths segments will have a severe impact on memory usage.
 
     let mut segments = path.segments();
-    if let Some(ast::PathSegmentKind::Type { trait_ref: Some(trait_ref), .. }) =
-        segments.clone().next().and_then(|it| it.kind())
+    if let Some(ast::PathSegmentKind::Type {
+        trait_ref: Some(trait_ref),
+        ..
+    }) = segments.clone().next().and_then(|it| it.kind())
     {
         segments.next();
         return find_segment(trait_ref.path()?.segments().chain(segments), segment_idx);

@@ -71,7 +71,9 @@ pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Op
         let use_range = ast.value.text_range();
         for source in d.local.sources(ctx.sema.db) {
             let ast = source.syntax();
-            let Some(mut_token) = token(ast, T![mut]) else { continue };
+            let Some(mut_token) = token(ast, T![mut]) else {
+                continue;
+            };
             edit_builder.delete(mut_token.text_range());
             if let Some(token) = mut_token.next_token()
                 && token.kind() == SyntaxKind::WHITESPACE
@@ -101,7 +103,10 @@ pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Op
 }
 
 pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
-    parent.children_with_tokens().filter_map(|it| it.into_token()).find(|it| it.kind() == kind)
+    parent
+        .children_with_tokens()
+        .filter_map(|it| it.into_token())
+        .find(|it| it.kind() == kind)
 }
 
 #[cfg(test)]

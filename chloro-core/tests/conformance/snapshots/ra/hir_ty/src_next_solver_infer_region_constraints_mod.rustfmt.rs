@@ -13,8 +13,8 @@ use tracing::{debug, instrument};
 
 use self::CombineMapType::*;
 use self::UndoLog::*;
-use super::unify_key::RegionVidKey;
 use super::MemberConstraint;
+use super::unify_key::RegionVidKey;
 use crate::next_solver::infer::snapshot::undo_log::{InferCtxtUndoLogs, Snapshot};
 use crate::next_solver::infer::unify_key::RegionVariableValue;
 use crate::next_solver::{AliasTy, Binder, DbInterner, ParamTy, PlaceholderTy, Region, Ty};

@@ -45,21 +45,21 @@ use std::{
 use ast::{AstNode, StructKind};
 use base_db::Crate;
 use hir_expand::{
+    ExpandTo, HirFileId,
     attrs::RawAttrs,
     mod_path::{ModPath, PathKind},
     name::Name,
-    ExpandTo, HirFileId,
 };
 use intern::Interned;
 use la_arena::{Idx, RawIdx};
 use rustc_hash::FxHashMap;
 use span::{AstIdNode, Edition, FileAstId, SyntaxContext};
 use stdx::never;
-use syntax::{ast, match_ast, SyntaxKind};
+use syntax::{SyntaxKind, ast, match_ast};
 use thin_vec::ThinVec;
 use triomphe::Arc;
 
-use crate::{attr::Attrs, db::DefDatabase, BlockId, Lookup};
+use crate::{BlockId, Lookup, attr::Attrs, db::DefDatabase};
 
 pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
 

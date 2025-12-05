@@ -6,15 +6,16 @@
 //! }
 //! ```
 use hir::{
+    DefWithBody,
     db::{DefDatabase as _, HirDatabase as _},
     mir::{MirSpan, TerminatorKind},
-    DefWithBody,
 };
-use ide_db::{famous_defs::FamousDefs, FileRange};
+use ide_db::{FileRange, famous_defs::FamousDefs};
 
 use syntax::{
+    ToSmolStr,
     ast::{self, AstNode},
-    match_ast, ToSmolStr,
+    match_ast,
 };
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
@@ -145,8 +146,8 @@ fn nearest_token_after_node(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
         InlayHintsConfig,
+        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
 
     const ONLY_DROP_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {

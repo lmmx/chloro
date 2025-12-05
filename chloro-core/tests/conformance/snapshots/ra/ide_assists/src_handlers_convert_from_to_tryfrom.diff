@@ -3,11 +3,62 @@ COMPARISON DIFF
 
 Original size: 6719 bytes
 Chloro size:   6709 bytes
-Rustfmt size:  6719 bytes
+Rustfmt size:  6911 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     let module = ctx.sema.scope(impl_.syntax())?.module();
+ 
+     let from_type = match &trait_ty {
+-        ast::Type::PathType(path) => path
+-            .path()?
+-            .segment()?
+-            .generic_arg_list()?
+-            .generic_args()
+-            .next()?,
++        ast::Type::PathType(path) => {
++            path.path()?.segment()?.generic_arg_list()?.generic_args().next()?
++        }
+         _ => return None,
+     };
+ 
+     let from_fn_name = from_fn.name()?;
+     let from_fn_return_type = from_fn.ret_type()?.ty()?;
+ 
+-    let return_exprs = from_fn
+-        .body()?
+-        .syntax()
+-        .descendants()
+-        .filter_map(ast::ReturnExpr::cast);
++    let return_exprs = from_fn.body()?.syntax().descendants().filter_map(ast::ReturnExpr::cast);
+     let tail_expr = from_fn.body()?.tail_expr()?;
+ 
+     if resolve_target_trait(&ctx.sema, &impl_)?
+             let mut editor = builder.make_editor(impl_.syntax());
+             editor.replace(
+                 trait_ty.syntax(),
+-                make::ty(&format!("TryFrom<{from_type}>"))
+-                    .syntax()
+-                    .clone_for_update(),
++                make::ty(&format!("TryFrom<{from_type}>")).syntax().clone_for_update(),
+             );
+             editor.replace(
+                 from_fn_return_type.syntax(),
+-                make::ty("Result<Self, Self::Error>")
+-                    .syntax()
+-                    .clone_for_update(),
+-            );
+-            editor.replace(
+-                from_fn_name.syntax(),
+-                make::name("try_from").syntax().clone_for_update(),
++                make::ty("Result<Self, Self::Error>").syntax().clone_for_update(),
+             );
++            editor
++                .replace(from_fn_name.syntax(), make::name("try_from").syntax().clone_for_update());
+             editor.replace(
+                 tail_expr.syntax(),
+                 wrap_ok(tail_expr.clone()).syntax().clone_for_update(),
      make::expr_call(
          make::expr_path(make::ext::ident_path("Ok")),
          make::arg_list(std::iter::once(expr)),

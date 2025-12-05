@@ -8,11 +8,6 @@ Rustfmt size:  6901 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use hir::{db::ExpandDatabase, HasSource, HirDisplay};
-+use hir::{HasSource, HirDisplay, db::ExpandDatabase};
- use ide_db::text_edit::TextRange;
- use ide_db::{
-     assists::{Assist, AssistId},
              let function = id;
              (
                  format!("`fn {redundant_assoc_item_name}`"),

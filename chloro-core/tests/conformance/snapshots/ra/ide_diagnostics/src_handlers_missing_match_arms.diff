@@ -8,13 +8,12 @@ Rustfmt size:  27822 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
  mod tests {
      use crate::{
+         DiagnosticsConfig,
 -        tests::{
 -            check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
 -        },
-         DiagnosticsConfig,
 +        tests::{check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled},
      };
      use test_utils::skip_slow_tests;

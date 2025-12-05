@@ -9,13 +9,10 @@ Rustfmt size:  3508 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
--use ide_db::{base_db::SourceDatabase, FilePosition, LineIndexDatabase, RootDatabase};
+ use ide_db::{FilePosition, LineIndexDatabase, RootDatabase, base_db::SourceDatabase};
 -use std::time::{Duration, Instant};
-+use ide_db::{FilePosition, LineIndexDatabase, RootDatabase, base_db::SourceDatabase};
  use stdx::format_to;
--use syntax::{algo::ancestors_at_offset, ast, AstNode, TextRange};
 +use std::time::{Duration, Instant};
-+use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
+ use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
  
  // Feature: Interpret A Function, Static Or Const.
- //

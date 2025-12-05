@@ -8,15 +8,6 @@ Rustfmt size:  10358 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use salsa::{Database as _, Durability, Setter as _};
- 
- use crate::{
--    symbol_index::{LibraryRoots, LocalRoots},
-     ChangeWithProcMacros, RootDatabase,
-+    symbol_index::{LibraryRoots, LocalRoots},
- };
- 
- impl RootDatabase {
      }
  
      // Feature: Memory Usage

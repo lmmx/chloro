@@ -27,69 +27,18 @@ Rustfmt size:  22967 bytes
  
  mod infer;
  mod inhabitedness;
- 
- use std::hash::Hash;
- 
--use hir_def::{type_ref::Rawness, CallableDefId, TypeOrConstParamId};
-+use hir_def::{CallableDefId, TypeOrConstParamId, type_ref::Rawness};
- use hir_expand::name::Name;
--use indexmap::{map::Entry, IndexMap};
--use intern::{sym, Symbol};
-+use indexmap::{IndexMap, map::Entry};
-+use intern::{Symbol, sym};
- use mir::{MirEvalError, VTableMap};
- use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
- use rustc_type_ir::{
--    inherent::{IntoKind, SliceLike, Ty as _},
-     BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
-+    inherent::{IntoKind, SliceLike, Ty as _},
- };
--use syntax::ast::{make, ConstArg};
-+use syntax::ast::{ConstArg, make};
- use traits::FnTrait;
- use triomphe::Arc;
- 
      display::{DisplayTarget, HirDisplay},
      infer::unify::InferenceTable,
      next_solver::{
--        abi, AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
--        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig,
--        Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys,
+-        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
+-        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
+-        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
 +        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
 +        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
 +        PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
      },
  };
  
- pub use autoderef::autoderef;
- pub use infer::{
-+    Adjust, Adjustment, AutoBorrow, BindingMode, InferenceDiagnostic, InferenceResult,
-+    InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
-     cast::CastError,
-     closure::analysis::{CaptureKind, CapturedItem},
--    could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
--    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref,
--    PointerCast,
-+    could_coerce, could_unify, could_unify_deeply,
- };
- pub use lower::{
--    associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
--    TyLoweringContext, ValueTyDefId,
-+    LifetimeElisionKind, TyDefId, TyLoweringContext, ValueTyDefId,
-+    associated_type_shorthand_candidates, diagnostics::*,
- };
- pub use method_resolution::check_orphan_rules;
- pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
- pub use target_feature::TargetFeatures;
- pub use traits::TraitEnvironment;
- pub use utils::{
--    all_super_traits, direct_super_traits, is_fn_unsafe_to_call, target_feature_is_safe_in_target,
--    TargetFeatureIsSafeInTarget, Unsafety,
-+    TargetFeatureIsSafeInTarget, Unsafety, all_super_traits, direct_super_traits,
-+    is_fn_unsafe_to_call, target_feature_is_safe_in_target,
- };
- 
- /// A constant can have reference to other things. Memory map job is holding
      ) -> Result<FxHashMap<usize, usize>, MirEvalError<'db>> {
          let mut transform = |(addr, val): (&usize, &[u8])| {
              let addr = *addr;
@@ -216,14 +165,6 @@ Rustfmt size:  22967 bytes
  }
  
  #[derive(Debug, Copy, Clone)]
- pub fn setup_tracing() -> Option<tracing::subscriber::DefaultGuard> {
-     use std::env;
-     use std::sync::LazyLock;
--    use tracing_subscriber::{layer::SubscriberExt, Registry};
-+    use tracing_subscriber::{Registry, layer::SubscriberExt};
-     use tracing_tree::HierarchicalLayer;
- 
-     static ENABLE: LazyLock<bool> = LazyLock::new(|| env::var("CHALK_DEBUG").is_ok());
          return None;
      }
  

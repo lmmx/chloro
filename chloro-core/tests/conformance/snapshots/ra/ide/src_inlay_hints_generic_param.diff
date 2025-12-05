@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 9092 bytes
 Chloro size:   8840 bytes
-Rustfmt size:  9092 bytes
+Rustfmt size:  9159 bytes
 
 ✗ Outputs DIFFER
 
@@ -13,6 +13,30 @@ Rustfmt size:  9092 bytes
  use either::Either;
  use ide_db::{active_parameter::generic_def_for_node, famous_defs::FamousDefs};
  use syntax::{
+     config: &InlayHintsConfig<'_>,
+     node: AnyHasGenericArgs,
+ ) -> Option<()> {
+-    let GenericParameterHints {
+-        type_hints,
+-        lifetime_hints,
+-        const_hints,
+-    } = config.generic_parameter_hints;
++    let GenericParameterHints { type_hints, lifetime_hints, const_hints } =
++        config.generic_parameter_hints;
+     if !(type_hints || lifetime_hints || const_hints) {
+         return None;
+     }
+ 
+         let colon = if config.render_colons { ":" } else { "" };
+         let label = InlayHintLabel::simple(
+-            format!(
+-                "{}{colon}",
+-                param_name.display(sema.db, krate.edition(sema.db))
+-            ),
++            format!("{}{colon}", param_name.display(sema.db, krate.edition(sema.db))),
+             None,
+             config.lazy_location_opt(|| {
+                 let source_syntax = match param {
  mod tests {
      use crate::{
          InlayHintsConfig,

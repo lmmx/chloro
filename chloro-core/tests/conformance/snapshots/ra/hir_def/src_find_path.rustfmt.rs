@@ -33,7 +33,10 @@ pub fn find_path(
 
     // - if the item is a builtin, it's in scope
     if let ItemInNs::Types(ModuleDefId::BuiltinType(builtin)) = item {
-        return Some(ModPath::from_segments(PathKind::Plain, iter::once(builtin.as_name())));
+        return Some(ModPath::from_segments(
+            PathKind::Plain,
+            iter::once(builtin.as_name()),
+        ));
     }
 
     // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
@@ -120,10 +123,18 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
     };
     if may_be_in_scope {
         // - if the item is already in scope, return the name under which it is
-        let scope_name =
-            find_in_scope(ctx.db, ctx.from_def_map, ctx.from, item, ctx.ignore_local_imports);
+        let scope_name = find_in_scope(
+            ctx.db,
+            ctx.from_def_map,
+            ctx.from,
+            item,
+            ctx.ignore_local_imports,
+        );
         if let Some(scope_name) = scope_name {
-            return Some(ModPath::from_segments(ctx.prefix.path_kind(), iter::once(scope_name)));
+            return Some(ModPath::from_segments(
+                ctx.prefix.path_kind(),
+                iter::once(scope_name),
+            ));
         }
     }
 
@@ -137,7 +148,9 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
         let loc = variant.lookup(ctx.db);
         if let Some(mut path) = find_path_inner(ctx, ItemInNs::Types(loc.parent.into()), max_len) {
             path.push_segment(
-                loc.parent.enum_variants(ctx.db).variants[loc.index as usize].1.clone(),
+                loc.parent.enum_variants(ctx.db).variants[loc.index as usize]
+                    .1
+                    .clone(),
             );
             return Some(path);
         }
@@ -147,7 +160,13 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
     }
 
     let mut best_choice = None;
-    calculate_best_path(ctx, &mut FxHashSet::default(), item, max_len, &mut best_choice);
+    calculate_best_path(
+        ctx,
+        &mut FxHashSet::default(),
+        item,
+        max_len,
+        &mut best_choice,
+    );
     best_choice.map(|choice| choice.path)
 }
 
@@ -198,7 +217,12 @@ fn find_path_for_module(
             } else {
                 PathKind::Plain
             };
-            return Some(Choice::new(ctx.cfg.prefer_prelude, kind, name.clone(), Stable));
+            return Some(Choice::new(
+                ctx.cfg.prefer_prelude,
+                kind,
+                name.clone(),
+                Stable,
+            ));
         }
     }
 
@@ -317,7 +341,11 @@ fn is_kw_kind_relative_to_from(
     } else if let Some(parent_id) = def_map[from].parent {
         if item == parent_id {
             // - if the item is the parent module, use `super` (this is not used recursively, since `super::super` is ugly)
-            Some(if parent_id == DefMap::ROOT { PathKind::Crate } else { PathKind::Super(1) })
+            Some(if parent_id == DefMap::ROOT {
+                PathKind::Crate
+            } else {
+                PathKind::Super(1)
+            })
         } else {
             None
         }
@@ -361,9 +389,21 @@ fn calculate_best_path(
         // too (unless we can't name it at all). It could *also* be (re)exported by the same crate
         // that wants to import it here, but we always prefer to use the external path here.
 
-        ctx.from.krate.data(ctx.db).dependencies.iter().for_each(|dep| {
-            find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id)
-        });
+        ctx.from
+            .krate
+            .data(ctx.db)
+            .dependencies
+            .iter()
+            .for_each(|dep| {
+                find_in_dep(
+                    ctx,
+                    visited_modules,
+                    item,
+                    max_len,
+                    best_choice,
+                    dep.crate_id,
+                )
+            });
     }
 }
 
@@ -376,31 +416,64 @@ fn find_in_sysroot(
 ) {
     let dependencies = &ctx.from.krate.data(ctx.db).dependencies;
     let mut search = |lang, best_choice: &mut _| {
-        if let Some(dep) = dependencies.iter().filter(|it| it.is_sysroot()).find(|dep| {
-            match dep.crate_id.data(ctx.db).origin {
+        if let Some(dep) = dependencies
+            .iter()
+            .filter(|it| it.is_sysroot())
+            .find(|dep| match dep.crate_id.data(ctx.db).origin {
                 CrateOrigin::Lang(l) => l == lang,
                 _ => false,
-            }
-        }) {
-            find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id);
+            })
+        {
+            find_in_dep(
+                ctx,
+                visited_modules,
+                item,
+                max_len,
+                best_choice,
+                dep.crate_id,
+            );
         }
     };
     if ctx.cfg.prefer_no_std {
         search(LangCrateOrigin::Core, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
         search(LangCrateOrigin::Std, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
     } else {
         search(LangCrateOrigin::Std, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
         search(LangCrateOrigin::Core, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
     }
@@ -409,7 +482,14 @@ fn find_in_sysroot(
         .filter(|it| it.is_sysroot())
         .chain(dependencies.iter().filter(|it| !it.is_sysroot()))
         .for_each(|dep| {
-            find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id);
+            find_in_dep(
+                ctx,
+                visited_modules,
+                item,
+                max_len,
+                best_choice,
+                dep.crate_id,
+            );
         });
 }
 
@@ -452,7 +532,12 @@ fn find_in_dep(
             choice.stability = Unstable;
         }
 
-        Choice::try_select(best_choice, choice, ctx.cfg.prefer_prelude, info.name.clone());
+        Choice::try_select(
+            best_choice,
+            choice,
+            ctx.cfg.prefer_prelude,
+            info.name.clone(),
+        );
     }
 }
 
@@ -527,7 +612,11 @@ impl Choice {
         match other
             .stability
             .cmp(&current.stability)
-            .then_with(|| other.prefer_due_to_prelude.cmp(&current.prefer_due_to_prelude))
+            .then_with(|| {
+                other
+                    .prefer_due_to_prelude
+                    .cmp(&current.prefer_due_to_prelude)
+            })
             .then_with(|| (current.path.len()).cmp(&(other.path.len() + 1)))
         {
             Ordering::Less => return,
@@ -580,7 +669,9 @@ fn find_local_import_locations(
         .children
         .values()
         .map(|&child| def_map.module_id(child))
-        .chain(iter::successors(from.containing_module(db), |m| m.containing_module(db)))
+        .chain(iter::successors(from.containing_module(db), |m| {
+            m.containing_module(db)
+        }))
         .zip(iter::repeat(false))
         .collect::<Vec<_>>();
 
@@ -646,9 +737,12 @@ fn find_local_import_locations(
             }
         }
     }
-    worklist.into_iter().filter(|&(_, processed)| processed).for_each(|(module, _)| {
-        visited_modules.remove(&(item, module));
-    });
+    worklist
+        .into_iter()
+        .filter(|&(_, processed)| processed)
+        .for_each(|(module, _)| {
+            visited_modules.remove(&(item, module));
+        });
 }
 
 #[cfg(test)]
@@ -682,10 +776,16 @@ mod tests {
         let module = db.module_at_position(pos);
         let parsed_path_file =
             syntax::SourceFile::parse(&format!("use {path};"), span::Edition::CURRENT);
-        let ast_path =
-            parsed_path_file.syntax_node().descendants().find_map(syntax::ast::Path::cast).unwrap();
+        let ast_path = parsed_path_file
+            .syntax_node()
+            .descendants()
+            .find_map(syntax::ast::Path::cast)
+            .unwrap();
         let mod_path = ModPath::from_src(&db, ast_path, &mut |range| {
-            db.span_map(pos.file_id.into()).as_ref().span_for_range(range).ctx
+            db.span_map(pos.file_id.into())
+                .as_ref()
+                .span_for_range(range)
+                .ctx
         })
         .unwrap();
 
@@ -718,7 +818,12 @@ mod tests {
                 module,
                 prefix,
                 ignore_local_imports,
-                FindPathConfig { prefer_no_std, prefer_prelude, prefer_absolute, allow_unstable },
+                FindPathConfig {
+                    prefer_no_std,
+                    prefer_prelude,
+                    prefer_absolute,
+                    allow_unstable,
+                },
             );
             format_to!(
                 res,

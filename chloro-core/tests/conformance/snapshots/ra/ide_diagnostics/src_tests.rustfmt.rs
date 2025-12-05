@@ -4,14 +4,14 @@ mod overly_long_real_world_cases;
 
 use hir::setup_tracing;
 use ide_db::{
+    LineIndexDatabase, RootDatabase,
     assists::{AssistResolveStrategy, ExprFillDefaultMode},
     base_db::SourceDatabase,
-    LineIndexDatabase, RootDatabase,
 };
 use itertools::Itertools;
 use stdx::trim_indent;
 use test_fixture::WithFixture;
-use test_utils::{assert_eq_text, extract_annotations, MiniCore};
+use test_utils::{MiniCore, assert_eq_text, extract_annotations};
 
 use crate::{DiagnosticsConfig, Severity};
 

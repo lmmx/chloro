@@ -27,10 +27,15 @@ use crate::{AssistContext, AssistId, Assists};
 // ```
 pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call = ctx.find_node_at_offset::<ast::CallExpr>()?;
-    let ast::Expr::PathExpr(path_expr) = call.expr()? else { return None };
+    let ast::Expr::PathExpr(path_expr) = call.expr()? else {
+        return None;
+    };
     let path = path_expr.path()?;
 
-    let cursor_in_range = path.syntax().text_range().contains_range(ctx.selection_trimmed());
+    let cursor_in_range = path
+        .syntax()
+        .text_range()
+        .contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
@@ -46,20 +51,27 @@ pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) 
 
     let scope = ctx.sema.scope(path.syntax())?;
     let res = ctx.sema.resolve_path(&path)?;
-    let hir::PathResolution::Def(hir::ModuleDef::Function(fun)) = res else { return None };
+    let hir::PathResolution::Def(hir::ModuleDef::Function(fun)) = res else {
+        return None;
+    };
     if !fun.has_self_param(ctx.sema.db) {
         return None;
     }
 
     // `core::ops::Add::add(` -> ``
-    let delete_path =
-        TextRange::new(path.syntax().text_range().start(), l_paren.text_range().end());
+    let delete_path = TextRange::new(
+        path.syntax().text_range().start(),
+        l_paren.text_range().end(),
+    );
 
     // Parens around `expr` if needed
-    let parens = first_arg.precedence().needs_parentheses_in(ExprPrecedence::Postfix).then(|| {
-        let range = first_arg.syntax().text_range();
-        (range.start(), range.end())
-    });
+    let parens = first_arg
+        .precedence()
+        .needs_parentheses_in(ExprPrecedence::Postfix)
+        .then(|| {
+            let range = first_arg.syntax().text_range();
+            (range.start(), range.end())
+        });
 
     // `, ` -> `.add(`
     let replace_comma = TextRange::new(

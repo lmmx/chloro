@@ -47,13 +47,17 @@ pub(super) fn hints(
 
     let descended = sema.descend_node_into_attributes(expr.clone()).pop();
     let desc_expr = descended.as_ref().unwrap_or(expr);
-    let mut adjustments = sema.expr_adjustments(desc_expr).filter(|it| !it.is_empty())?;
+    let mut adjustments = sema
+        .expr_adjustments(desc_expr)
+        .filter(|it| !it.is_empty())?;
 
     if config.adjustment_hints_disable_reborrows {
         // Remove consecutive deref-ref, i.e. reborrows.
         let mut i = 0;
         while i < adjustments.len().saturating_sub(1) {
-            let [current, next, ..] = &adjustments[i..] else { unreachable!() };
+            let [current, next, ..] = &adjustments[i..] else {
+                unreachable!()
+            };
             if matches!(current.kind, Adjust::Deref(None))
                 && matches!(next.kind, Adjust::Borrow(AutoBorrow::Ref(_)))
             {
@@ -117,7 +121,12 @@ pub(super) fn hints(
 
     let mut has_adjustments = false;
     let mut allow_edit = !postfix;
-    for Adjustment { source, target, kind } in iter {
+    for Adjustment {
+        source,
+        target,
+        kind,
+    } in iter
+    {
         if source == target {
             cov_mark::hit!(same_type_adjustment);
             continue;
@@ -213,7 +222,11 @@ pub(super) fn hints(
             _ => continue,
         };
         let label = InlayHintLabelPart {
-            text: if postfix { format!(".{}", text.trim_end()) } else { text.to_owned() },
+            text: if postfix {
+                format!(".{}", text.trim_end())
+            } else {
+                text.to_owned()
+            },
             linked_location: None,
             tooltip: Some(config.lazy_tooltip(|| {
                 hir::attach_db(sema.db, || {
@@ -227,7 +240,9 @@ pub(super) fn hints(
                 })
             })),
         };
-        if postfix { &mut post } else { &mut pre }.label.append_part(label);
+        if postfix { &mut post } else { &mut pre }
+            .label
+            .append_part(label);
     }
     if !has_adjustments {
         return None;
@@ -251,13 +266,21 @@ pub(super) fn hints(
             if let Some(pre) = &pre {
                 b.insert(
                     pre.range.start(),
-                    pre.label.parts.iter().map(|part| &*part.text).collect::<String>(),
+                    pre.label
+                        .parts
+                        .iter()
+                        .map(|part| &*part.text)
+                        .collect::<String>(),
                 );
             }
             if let Some(post) = &post {
                 b.insert(
                     post.range.end(),
-                    post.label.parts.iter().map(|part| &*part.text).collect::<String>(),
+                    post.label
+                        .parts
+                        .iter()
+                        .map(|part| &*part.text)
+                        .collect::<String>(),
                 );
             }
             b.finish()
@@ -350,7 +373,10 @@ mod tests {
     #[test]
     fn adjustment_hints_prefix() {
         check_with_config(
-            InlayHintsConfig { adjustment_hints: AdjustmentHints::Always, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                adjustment_hints: AdjustmentHints::Always,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: coerce_unsized, fn, eq, index, dispatch_from_dyn
 fn main() {
@@ -608,7 +634,10 @@ fn main() {
     fn never_to_never_is_never_shown() {
         cov_mark::check!(same_type_adjustment);
         check_with_config(
-            InlayHintsConfig { adjustment_hints: AdjustmentHints::Always, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                adjustment_hints: AdjustmentHints::Always,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn never() -> ! {
     return loop {};
@@ -705,7 +734,10 @@ fn a() {
     #[test]
     fn let_stmt_explicit_ty() {
         check_with_config(
-            InlayHintsConfig { adjustment_hints: AdjustmentHints::Always, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                adjustment_hints: AdjustmentHints::Always,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     let () = return;
@@ -721,7 +753,10 @@ fn main() {
     #[test]
     fn adjustment_hints_method_call_on_impl_trait_self() {
         check_with_config(
-            InlayHintsConfig { adjustment_hints: AdjustmentHints::Always, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                adjustment_hints: AdjustmentHints::Always,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: slice, coerce_unsized
 trait T<RHS = Self> {}

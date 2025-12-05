@@ -32,7 +32,12 @@ pub(crate) fn replace_qualified_name_with_use(
 ) -> Option<()> {
     let mut original_path: ast::Path = ctx.find_node_at_offset()?;
     // We don't want to mess with use statements
-    if original_path.syntax().ancestors().find_map(ast::UseTree::cast).is_some() {
+    if original_path
+        .syntax()
+        .ancestors()
+        .find_map(ast::UseTree::cast)
+        .is_some()
+    {
         cov_mark::hit!(not_applicable_in_use);
         return None;
     }
@@ -48,7 +53,10 @@ pub(crate) fn replace_qualified_name_with_use(
     }
     // then search for an import for the first path segment of what we want to replace
     // that way it is less likely that we import the item from a different location due re-exports
-    let module = match ctx.sema.resolve_path(&original_path.first_qualifier_or_self())? {
+    let module = match ctx
+        .sema
+        .resolve_path(&original_path.first_qualifier_or_self())?
+    {
         hir::PathResolution::Def(module @ hir::ModuleDef::Module(_)) => module,
         _ => return None,
     };
@@ -64,7 +72,9 @@ pub(crate) fn replace_qualified_name_with_use(
     let path_to_qualifier = starts_with_name_ref
         .then(|| {
             let mod_ = ctx.sema.scope(original_path.syntax())?.module();
-            let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(mod_.krate()));
+            let cfg = ctx
+                .config
+                .find_path_config(ctx.sema.is_nightly(mod_.krate()));
             mod_.find_use_path(ctx.sema.db, module, ctx.config.insert_use.prefix_kind, cfg)
         })
         .flatten();

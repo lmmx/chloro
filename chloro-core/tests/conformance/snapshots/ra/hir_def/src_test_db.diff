@@ -8,28 +8,6 @@ Rustfmt size:  10686 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     Crate, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
-     SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
- };
--use hir_expand::{files::FilePosition, InFile};
-+use hir_expand::{InFile, files::FilePosition};
- use salsa::Durability;
- use span::FileId;
--use syntax::{algo, ast, AstNode};
-+use syntax::{AstNode, algo, ast};
- use triomphe::Arc;
- 
- use crate::{
--    db::DefDatabase,
--    nameres::{block_def_map, crate_def_map, DefMap, ModuleSource},
--    src::HasSource,
-     LocalModuleId, Lookup, ModuleDefId, ModuleId,
-+    db::DefDatabase,
-+    nameres::{DefMap, ModuleSource, block_def_map, crate_def_map},
-+    src::HasSource,
- };
- 
- #[salsa_macros::db]
      }
  
      fn nonce_and_revision(&self) -> (Nonce, salsa::Revision) {

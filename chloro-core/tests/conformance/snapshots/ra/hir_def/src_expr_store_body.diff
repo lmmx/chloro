@@ -14,21 +14,6 @@ Rustfmt size:  4752 bytes
  use std::ops;
  
  use hir_expand::{InFile, Lookup};
- use triomphe::Arc;
- 
- use crate::{
-+    DefWithBodyId, HasModule,
-     db::DefDatabase,
-     expr_store::{
--        lower::lower_body, pretty, ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr,
-+        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
-     },
-     hir::{BindingId, ExprId, PatId},
-     src::HasSource,
--    DefWithBodyId, HasModule,
- };
- 
- /// The body of an item (function, const etc.).
          let mut params = None;
  
          let mut is_async_fn = false;

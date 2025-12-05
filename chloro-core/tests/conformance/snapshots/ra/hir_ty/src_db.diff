@@ -3,38 +3,11 @@ COMPARISON DIFF
 
 Original size: 13362 bytes
 Chloro size:   13392 bytes
-Rustfmt size:  13389 bytes
+Rustfmt size:  13385 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! The home of `HirDatabase`, which is the Salsa database containing all the
- //! type inference-related queries.
- 
--use base_db::{target::TargetLoadError, Crate};
-+use base_db::{Crate, target::TargetLoadError};
- use hir_def::{
--    db::DefDatabase, hir::ExprId, layout::TargetDataLayout, AdtId, BlockId, CallableDefId,
--    ConstParamId, DefWithBodyId, EnumVariantId, FunctionId, GeneralConstId, GenericDefId, ImplId,
--    LifetimeParamId, LocalFieldId, StaticId, TraitId, TypeAliasId, TypeOrConstParamId, VariantId,
-+    AdtId, BlockId, CallableDefId, ConstParamId, DefWithBodyId, EnumVariantId, FunctionId,
-+    GeneralConstId, GenericDefId, ImplId, LifetimeParamId, LocalFieldId, StaticId, TraitId,
-+    TypeAliasId, TypeOrConstParamId, VariantId, db::DefDatabase, hir::ExprId,
-+    layout::TargetDataLayout,
- };
- use hir_expand::name::Name;
- use la_arena::ArenaMap;
- use triomphe::Arc;
- 
- use crate::{
-+    ImplTraitId, InferenceResult, TraitEnvironment, TyDefId, ValueTyDefId,
-     consteval::ConstEvalError,
-     dyn_compatibility::DynCompatibilityViolation,
-     layout::{Layout, LayoutError},
-     method_resolution::{InherentImpls, TraitImpls, TyFingerprint},
-     mir::{BorrowckResult, MirBody, MirLowerError},
-     next_solver::{Const, EarlyBinder, GenericArgs, PolyFnSig, TraitRef, Ty, VariancesOf},
--    ImplTraitId, InferenceResult, TraitEnvironment, TyDefId, ValueTyDefId,
  };
  
  #[query_group::query_group]
@@ -58,7 +31,7 @@ Rustfmt size:  13389 bytes
      #[salsa::invoke_interned(crate::lower::const_param_ty_with_diagnostics_query)]
      #[salsa::cycle(cycle_result = crate::lower::const_param_ty_with_diagnostics_cycle_result)]
 -    fn const_param_ty_with_diagnostics<'db>(&'db self, def: ConstParamId)
--        -> (Ty<'db>, Diagnostics);
+-    -> (Ty<'db>, Diagnostics);
 +    fn const_param_ty_with_diagnostics<'db>(
 +        &'db self,
 +        def: ConstParamId,
@@ -81,7 +54,7 @@ Rustfmt size:  13389 bytes
      #[salsa::invoke(crate::lower::trait_environment_for_body_query)]
      #[salsa::transparent]
 -    fn trait_environment_for_body<'db>(&'db self, def: DefWithBodyId)
--        -> Arc<TraitEnvironment<'db>>;
+-    -> Arc<TraitEnvironment<'db>>;
 +    fn trait_environment_for_body<'db>(
 +        &'db self,
 +        def: DefWithBodyId,

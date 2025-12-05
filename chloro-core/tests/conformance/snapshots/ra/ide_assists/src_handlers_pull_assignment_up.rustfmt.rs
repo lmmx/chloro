@@ -69,7 +69,10 @@ pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     };
 
     if let Some(parent) = tgt.syntax().parent()
-        && matches!(parent.kind(), syntax::SyntaxKind::BIN_EXPR | syntax::SyntaxKind::LET_STMT)
+        && matches!(
+            parent.kind(),
+            syntax::SyntaxKind::BIN_EXPR | syntax::SyntaxKind::LET_STMT
+        )
     {
         return None;
     }
@@ -153,10 +156,12 @@ impl AssignmentsCollector<'_> {
         }
     }
     fn collect_block(&mut self, block: &ast::BlockExpr) -> Option<()> {
-        let last_expr = block.tail_expr().or_else(|| match block.statements().last()? {
-            ast::Stmt::ExprStmt(stmt) => stmt.expr(),
-            ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
-        })?;
+        let last_expr = block
+            .tail_expr()
+            .or_else(|| match block.statements().last()? {
+                ast::Stmt::ExprStmt(stmt) => stmt.expr(),
+                ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
+            })?;
 
         if let ast::Expr::BinExpr(expr) = last_expr {
             return self.collect_expr(&expr);

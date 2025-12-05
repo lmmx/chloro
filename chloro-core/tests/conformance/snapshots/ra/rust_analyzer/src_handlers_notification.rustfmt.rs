@@ -77,7 +77,10 @@ pub(crate) fn handle_did_open_text_document(
         }
 
         if let Some(abs_path) = path.as_path()
-            && state.config.excluded().any(|excluded| abs_path.starts_with(&excluded))
+            && state
+                .config
+                .excluded()
+                .any(|excluded| abs_path.starts_with(&excluded))
         {
             tracing::trace!("opened excluded file {abs_path}");
             state.vfs.write().0.insert_excluded_file(path);
@@ -88,10 +91,9 @@ pub(crate) fn handle_did_open_text_document(
         state.vfs.write().0.set_file_contents(path, Some(contents));
         if state.config.discover_workspace_config().is_some() {
             tracing::debug!("queuing task");
-            let _ = state
-                .deferred_task_queue
-                .sender
-                .send(crate::main_loop::QueuedTask::CheckIfIndexed(params.text_document.uri));
+            let _ = state.deferred_task_queue.sender.send(
+                crate::main_loop::QueuedTask::CheckIfIndexed(params.text_document.uri),
+            );
         }
     }
     Ok(())
@@ -120,7 +122,11 @@ pub(crate) fn handle_did_change_text_document(
         .into_bytes();
         if *data != new_contents {
             data.clone_from(&new_contents);
-            state.vfs.write().0.set_file_contents(path, Some(new_contents));
+            state
+                .vfs
+                .write()
+                .0
+                .set_file_contents(path, Some(new_contents));
         }
     }
     Ok(())
@@ -142,7 +148,10 @@ pub(crate) fn handle_did_close_text_document(
             state.diagnostics.clear_native_for(file_id);
         }
 
-        state.semantic_tokens_cache.lock().remove(&params.text_document.uri);
+        state
+            .semantic_tokens_cache
+            .lock()
+            .remove(&params.text_document.uri);
 
         if let Some(path) = path.as_path() {
             state.loader.handle.invalidate(path.to_path_buf());
@@ -172,7 +181,12 @@ pub(crate) fn handle_did_save_text_document(
             let additional_files = &state
                 .config
                 .discover_workspace_config()
-                .map(|cfg| cfg.files_to_watch.iter().map(String::as_str).collect::<Vec<&str>>())
+                .map(|cfg| {
+                    cfg.files_to_watch
+                        .iter()
+                        .map(String::as_str)
+                        .collect::<Vec<&str>>()
+                })
                 .unwrap_or_default();
 
             // FIXME: We should move this check into a QueuedTask and do semantic resolution of
@@ -260,9 +274,15 @@ pub(crate) fn handle_did_change_workspace_folders(
     let config = Arc::make_mut(&mut state.config);
 
     for workspace in params.event.removed {
-        let Ok(path) = workspace.uri.to_file_path() else { continue };
-        let Ok(path) = Utf8PathBuf::from_path_buf(path) else { continue };
-        let Ok(path) = AbsPathBuf::try_from(path) else { continue };
+        let Ok(path) = workspace.uri.to_file_path() else {
+            continue;
+        };
+        let Ok(path) = Utf8PathBuf::from_path_buf(path) else {
+            continue;
+        };
+        let Ok(path) = AbsPathBuf::try_from(path) else {
+            continue;
+        };
         config.remove_workspace(&path);
     }
 
@@ -278,8 +298,13 @@ pub(crate) fn handle_did_change_workspace_folders(
     if !config.has_linked_projects() && config.detached_files().is_empty() {
         config.rediscover_workspaces();
 
-        let req = FetchWorkspaceRequest { path: None, force_crate_graph_reload: false };
-        state.fetch_workspaces_queue.request_op("client workspaces changed".to_owned(), req);
+        let req = FetchWorkspaceRequest {
+            path: None,
+            force_crate_graph_reload: false,
+        };
+        state
+            .fetch_workspaces_queue
+            .request_op("client workspaces changed".to_owned(), req);
     }
 
     Ok(())
@@ -468,11 +493,14 @@ fn run_flycheck(state: &mut GlobalState, vfs_path: VfsPath) -> bool {
                 }
             };
 
-        state.task_pool.handle.spawn_with_sender(stdx::thread::ThreadIntent::Worker, move |_| {
-            if let Err(e) = std::panic::catch_unwind(task) {
-                tracing::error!("flycheck task panicked: {e:?}")
-            }
-        });
+        state
+            .task_pool
+            .handle
+            .spawn_with_sender(stdx::thread::ThreadIntent::Worker, move |_| {
+                if let Err(e) = std::panic::catch_unwind(task) {
+                    tracing::error!("flycheck task panicked: {e:?}")
+                }
+            });
         true
     } else {
         false

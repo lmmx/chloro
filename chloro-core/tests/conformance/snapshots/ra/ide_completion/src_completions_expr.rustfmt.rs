@@ -2,14 +2,14 @@
 
 use std::ops::ControlFlow;
 
-use hir::{sym, Complete, Name, PathCandidateCallback, ScopeDef};
+use hir::{Complete, Name, PathCandidateCallback, ScopeDef, sym};
 use ide_db::FxHashSet;
 use syntax::ast;
 
 use crate::{
+    CompletionContext, Completions,
     completions::record::add_default_update,
     context::{PathCompletionCtx, PathExprCtx, Qualified},
-    CompletionContext, Completions,
 };
 
 struct PathCallback<'a, F> {

@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 10203 bytes
 Chloro size:   10190 bytes
-Rustfmt size:  10203 bytes
+Rustfmt size:  10266 bytes
 
 ✗ Outputs DIFFER
 
@@ -17,6 +17,31 @@ Rustfmt size:  10203 bytes
  };
  
  use crate::assist_context::{AssistContext, Assists};
+     // NOTE: We can technically provide this assist for default methods in trait definitions, but
+     // it's somewhat complex to handle it correctly when the const's name conflicts with
+     // supertrait's item. We may want to consider implementing it in the future.
+-    let AssocItemContainer::Impl(impl_) = ctx
+-        .sema
+-        .to_def(&parent_fn)?
+-        .as_assoc_item(db)?
+-        .container(db)
++    let AssocItemContainer::Impl(impl_) =
++        ctx.sema.to_def(&parent_fn)?.as_assoc_item(db)?.container(db)
+     else {
+         return None;
+     };
+             // Heuristically inserting the extracted const after the consecutive existing consts
+             // from the beginning of assoc items. We assume there are no inherent assoc type as
+             // above.
+-            let last_const = items
+-                .assoc_items()
+-                .take_while(|it| matches!(it, ast::AssocItem::Const(_)))
+-                .last();
++            let last_const =
++                items.assoc_items().take_while(|it| matches!(it, ast::AssocItem::Const(_))).last();
+             let insert_offset = match &last_const {
+                 Some(it) => it.syntax().text_range().end(),
+                 None => match items.l_curly_token() {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

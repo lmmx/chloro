@@ -144,11 +144,16 @@ fn punctuation(
             let ptr = operator_parent
                 .as_ref()
                 .and_then(|it| AstPtr::try_from_raw(SyntaxNodePtr::new(it)));
-            if ptr.is_some_and(is_unsafe_node) { h | HlMod::Unsafe } else { h }
+            if ptr.is_some_and(is_unsafe_node) {
+                h | HlMod::Unsafe
+            } else {
+                h
+            }
         }
         (T![-], PREFIX_EXPR) => {
-            let prefix_expr =
-                operator_parent.and_then(ast::PrefixExpr::cast).and_then(|e| e.expr());
+            let prefix_expr = operator_parent
+                .and_then(ast::PrefixExpr::cast)
+                .and_then(|e| e.expr());
             match prefix_expr {
                 Some(ast::Expr::Literal(_)) => HlTag::NumericLiteral,
                 _ => HlTag::Operator(HlOperator::Other),
@@ -220,7 +225,11 @@ fn punctuation(
                 let is_unsafe = is_unsafe_macro
                     || operator_parent
                         .and_then(|it| {
-                            if ast::ArgList::can_cast(it.kind()) { it.parent() } else { Some(it) }
+                            if ast::ArgList::can_cast(it.kind()) {
+                                it.parent()
+                            } else {
+                                Some(it)
+                            }
                         })
                         .and_then(|it| AstPtr::try_from_raw(SyntaxNodePtr::new(&it)))
                         .is_some_and(is_unsafe_node);
@@ -398,7 +407,10 @@ fn highlight_name_ref(
         NameRefClass::FieldShorthand { field_ref, .. } => {
             highlight_def(sema, krate, field_ref.into(), edition, true)
         }
-        NameRefClass::ExternCrateShorthand { decl, krate: resolved_krate } => {
+        NameRefClass::ExternCrateShorthand {
+            decl,
+            krate: resolved_krate,
+        } => {
             let mut h = HlTag::Symbol(SymbolKind::Module).into();
 
             if krate.as_ref().is_some_and(|krate| resolved_krate != *krate) {
@@ -458,8 +470,11 @@ fn highlight_name(
         Some(NameClass::ConstReference(def)) => highlight_def(sema, krate, def, edition, true),
         Some(NameClass::PatFieldShorthand { .. }) => {
             let mut h = HlTag::Symbol(SymbolKind::Field).into();
-            let is_unsafe =
-                name.syntax().parent().and_then(ast::IdentPat::cast).is_some_and(|it| {
+            let is_unsafe = name
+                .syntax()
+                .parent()
+                .and_then(ast::IdentPat::cast)
+                .is_some_and(|it| {
                     is_unsafe_node(AstPtr::new(&ast::Pat::IdentPat(it)).wrap_right())
                 });
             if is_unsafe {
@@ -685,7 +700,10 @@ fn highlight_method_call_by_name_ref(
     name_ref: &ast::NameRef,
     is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
 ) -> Option<Highlight> {
-    let mc = name_ref.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
+    let mc = name_ref
+        .syntax()
+        .parent()
+        .and_then(ast::MethodCallExpr::cast)?;
     highlight_method_call(sema, krate, &mc, is_unsafe_node)
 }
 
@@ -808,12 +826,22 @@ fn highlight_name_ref_by_syntax(
             let h = HlTag::Symbol(SymbolKind::Field);
             let is_unsafe = ast::Expr::cast(parent)
                 .is_some_and(|it| is_unsafe_node(AstPtr::new(&it).wrap_left()));
-            if is_unsafe { h | HlMod::Unsafe } else { h.into() }
+            if is_unsafe {
+                h | HlMod::Unsafe
+            } else {
+                h.into()
+            }
         }
         RECORD_EXPR_FIELD | RECORD_PAT_FIELD => HlTag::Symbol(SymbolKind::Field).into(),
         PATH_SEGMENT => {
             let name_based_fallback = || {
-                if name.text().chars().next().unwrap_or_default().is_uppercase() {
+                if name
+                    .text()
+                    .chars()
+                    .next()
+                    .unwrap_or_default()
+                    .is_uppercase()
+                {
                     SymbolKind::Struct.into()
                 } else {
                     SymbolKind::Module.into()
@@ -841,7 +869,13 @@ fn highlight_name_ref_by_syntax(
 
             match parent.kind() {
                 CALL_EXPR => SymbolKind::Function.into(),
-                _ => if name.text().chars().next().unwrap_or_default().is_uppercase() {
+                _ => if name
+                    .text()
+                    .chars()
+                    .next()
+                    .unwrap_or_default()
+                    .is_uppercase()
+                {
                     SymbolKind::Struct
                 } else {
                     SymbolKind::Const
@@ -857,8 +891,10 @@ fn highlight_name_ref_by_syntax(
 
 fn is_consumed_lvalue(node: &SyntaxNode, local: &hir::Local, db: &RootDatabase) -> bool {
     // When lvalues are passed as arguments and they're not Copy, then mark them as Consuming.
-    parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST])
-        && !local.ty(db).is_copy(db)
+    parents_match(
+        node.clone().into(),
+        &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST],
+    ) && !local.ty(db).is_copy(db)
 }
 
 /// Returns true if the parent nodes of `node` all match the `SyntaxKind`s in `kinds` exactly.

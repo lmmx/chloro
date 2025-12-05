@@ -8,15 +8,6 @@ Rustfmt size:  8281 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use hir_def::TraitId;
- use macros::{TypeFoldable, TypeVisitable};
--use rustc_type_ir::elaborate::Elaboratable;
- use rustc_type_ir::Upcast;
-+use rustc_type_ir::elaborate::Elaboratable;
- use tracing::debug;
- 
- use crate::next_solver::{
  /// scope. The eventual result is usually a `Selection` (defined below).
  #[derive(Clone, Debug, TypeVisitable, TypeFoldable)]
  pub struct Obligation<'db, T> {

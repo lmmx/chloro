@@ -50,7 +50,10 @@ use crate::cli::{
 impl flags::AnalysisStats {
     pub fn run(self, verbosity: Verbosity) -> anyhow::Result<()> {
         let mut rng = {
-            let seed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
+            let seed = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64;
             Rand32::new(seed)
         };
 
@@ -101,8 +104,11 @@ impl flags::AnalysisStats {
             Some(build_scripts_sw.elapsed())
         };
 
-        let (db, vfs, _proc_macro) =
-            load_workspace(workspace.clone(), &cargo_config.extra_env, &load_cargo_config)?;
+        let (db, vfs, _proc_macro) = load_workspace(
+            workspace.clone(),
+            &cargo_config.extra_env,
+            &load_cargo_config,
+        )?;
         eprint!("{:<20} {}", "Database loaded:", db_load_sw.elapsed());
         eprint!(" (metadata {metadata_time}");
         if let Some(build_scripts_time) = build_scripts_time {
@@ -193,7 +199,11 @@ impl flags::AnalysisStats {
         // eprintln!("source files: {total_file_size}, macro files: {total_macro_file_size}");
 
         eprintln!("{:<20} {}", "Item Tree Collection:", item_tree_time);
-        report_metric("item tree time", item_tree_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "item tree time",
+            item_tree_time.time.as_millis() as u64,
+            "ms",
+        );
         eprintln!("  Total Statistics:");
 
         let mut crate_def_map_sw = self.stop_watch();
@@ -306,7 +316,11 @@ impl flags::AnalysisStats {
 
         let crate_def_map_time = crate_def_map_sw.elapsed();
         eprintln!("{:<20} {}", "Item Collection:", crate_def_map_time);
-        report_metric("crate def map time", crate_def_map_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "crate def map time",
+            crate_def_map_time.time.as_millis() as u64,
+            "ms",
+        );
 
         if self.randomize {
             shuffle(&mut rng, &mut bodies);
@@ -356,7 +370,11 @@ impl flags::AnalysisStats {
         if let Some(instructions) = total_span.instructions {
             report_metric("total instructions", instructions, "#instr");
         }
-        report_metric("total memory", total_span.memory.allocated.megabytes() as u64, "MB");
+        report_metric(
+            "total memory",
+            total_span.memory.allocated.megabytes() as u64,
+            "MB",
+        );
 
         if verbosity.is_verbose() {
             print_memory_usage(host, vfs);
@@ -396,7 +414,11 @@ impl flags::AnalysisStats {
         eprintln!("{:<20} {}", "Data layouts:", data_layout_time);
         eprintln!("Failed data layouts: {fail} ({}%)", percentage(fail, all));
         report_metric("failed data layouts", fail, "#");
-        report_metric("data layout time", data_layout_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "data layout time",
+            data_layout_time.time.as_millis() as u64,
+            "ms",
+        );
     }
 
     fn run_const_eval(&self, db: &RootDatabase, bodies: &[DefWithBody], verbosity: Verbosity) {
@@ -437,7 +459,11 @@ impl flags::AnalysisStats {
         eprintln!("{:<20} {}", "Const evaluation:", const_eval_time);
         eprintln!("Failed const evals: {fail} ({}%)", percentage(fail, all));
         report_metric("failed const evals", fail, "#");
-        report_metric("const eval time", const_eval_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "const eval time",
+            const_eval_time.time.as_millis() as u64,
+            "ms",
+        );
     }
 
     /// Invariant: `file_ids` must be sorted and deduped before passing into here
@@ -646,7 +672,10 @@ impl flags::AnalysisStats {
             "Tail Exprs found: {}/{} ({}%)",
             acc.total_tail_exprs - acc.tail_expr_no_term,
             acc.total_tail_exprs,
-            percentage(acc.total_tail_exprs - acc.tail_expr_no_term, acc.total_tail_exprs)
+            percentage(
+                acc.total_tail_exprs - acc.tail_expr_no_term,
+                acc.total_tail_exprs
+            )
         ));
         if self.validate_term_search {
             bar.println(format!(
@@ -665,7 +694,11 @@ impl flags::AnalysisStats {
             term_search_time.time.as_millis() as u64 / acc.total_tail_exprs
         ));
         bar.println(format!("{:<20} {}", "Term search:", term_search_time));
-        report_metric("term search time", term_search_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "term search time",
+            term_search_time.time.as_millis() as u64,
+            "ms",
+        );
 
         bar.finish_and_clear();
     }
@@ -681,7 +714,10 @@ impl flags::AnalysisStats {
         let mut fail = 0;
         for &body_id in bodies {
             bar.set_message(move || {
-                format!("mir lowering: {}", full_name(db, body_id, body_id.module(db)))
+                format!(
+                    "mir lowering: {}",
+                    full_name(db, body_id, body_id.module(db))
+                )
             });
             bar.inc(1);
             if matches!(body_id, DefWithBody::Variant(_)) {
@@ -715,7 +751,11 @@ impl flags::AnalysisStats {
         eprintln!("{:<20} {}", "MIR lowering:", mir_lowering_time);
         eprintln!("Mir failed bodies: {fail} ({}%)", percentage(fail, all));
         report_metric("mir failed bodies", fail, "#");
-        report_metric("mir lowering time", mir_lowering_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "mir lowering time",
+            mir_lowering_time.time.as_millis() as u64,
+            "ms",
+        );
     }
 
     fn run_inference(
@@ -799,9 +839,17 @@ impl flags::AnalysisStats {
                 Ok(inference_result) => inference_result,
                 Err(p) => {
                     if let Some(s) = p.downcast_ref::<&str>() {
-                        eprintln!("infer panicked for {}: {}", full_name(db, body_id, module), s);
+                        eprintln!(
+                            "infer panicked for {}: {}",
+                            full_name(db, body_id, module),
+                            s
+                        );
                     } else if let Some(s) = p.downcast_ref::<String>() {
-                        eprintln!("infer panicked for {}: {}", full_name(db, body_id, module), s);
+                        eprintln!(
+                            "infer panicked for {}: {}",
+                            full_name(db, body_id, module),
+                            s
+                        );
                     } else {
                         eprintln!("infer panicked for {}", full_name(db, body_id, module));
                     }
@@ -1047,7 +1095,11 @@ impl flags::AnalysisStats {
         report_metric("type mismatches", num_expr_type_mismatches, "#");
         report_metric("pattern unknown type", num_pats_unknown, "#");
         report_metric("pattern type mismatches", num_pat_type_mismatches, "#");
-        report_metric("inference time", inference_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "inference time",
+            inference_time.time.as_millis() as u64,
+            "ms",
+        );
     }
 
     fn run_body_lowering(
@@ -1106,7 +1158,11 @@ impl flags::AnalysisStats {
         bar.finish_and_clear();
         let body_lowering_time = sw.elapsed();
         eprintln!("{:<20} {}", "Body lowering:", body_lowering_time);
-        report_metric("body lowering time", body_lowering_time.time.as_millis() as u64, "ms");
+        report_metric(
+            "body lowering time",
+            body_lowering_time.time.as_millis() as u64,
+            "ms",
+        );
     }
 
     /// Invariant: `file_ids` must be sorted and deduped before passing into here
@@ -1221,7 +1277,10 @@ impl flags::AnalysisStats {
             let msg = format!("annotations: {}", vfs.file_path(file_id.file_id(db)));
             bar.set_message(move || msg.clone());
             analysis
-                .annotations(&annotation_config, analysis.editioned_file_id_to_vfs(file_id))
+                .annotations(
+                    &annotation_config,
+                    analysis.editioned_file_id_to_vfs(file_id),
+                )
                 .unwrap()
                 .into_iter()
                 .for_each(|annotation| {
@@ -1282,9 +1341,17 @@ fn location_csv_expr(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, expr_id: 
     let path = vfs.file_path(original_range.file_id.file_id(db));
     let line_index = db.line_index(original_range.file_id.file_id(db));
     let text_range = original_range.range;
-    let (start, end) =
-        (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
-    format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
+    let (start, end) = (
+        line_index.line_col(text_range.start()),
+        line_index.line_col(text_range.end()),
+    );
+    format!(
+        "{path},{}:{},{}:{}",
+        start.line + 1,
+        start.col,
+        end.line + 1,
+        end.col
+    )
 }
 
 fn location_csv_pat(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, pat_id: PatId) -> String {
@@ -1298,9 +1365,17 @@ fn location_csv_pat(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, pat_id: Pa
     let path = vfs.file_path(original_range.file_id.file_id(db));
     let line_index = db.line_index(original_range.file_id.file_id(db));
     let text_range = original_range.range;
-    let (start, end) =
-        (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
-    format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
+    let (start, end) = (
+        line_index.line_col(text_range.start()),
+        line_index.line_col(text_range.end()),
+    );
+    format!(
+        "{path},{}:{},{}:{}",
+        start.line + 1,
+        start.col,
+        end.line + 1,
+        end.col
+    )
 }
 
 fn expr_syntax_range<'a>(
@@ -1317,8 +1392,10 @@ fn expr_syntax_range<'a>(
         let path = vfs.file_path(original_range.file_id.file_id(db));
         let line_index = db.line_index(original_range.file_id.file_id(db));
         let text_range = original_range.range;
-        let (start, end) =
-            (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
+        let (start, end) = (
+            line_index.line_col(text_range.start()),
+            line_index.line_col(text_range.end()),
+        );
         Some((path, start, end))
     } else {
         None
@@ -1338,8 +1415,10 @@ fn pat_syntax_range<'a>(
         let path = vfs.file_path(original_range.file_id.file_id(db));
         let line_index = db.line_index(original_range.file_id.file_id(db));
         let text_range = original_range.range;
-        let (start, end) =
-            (line_index.line_col(text_range.start()), line_index.line_col(text_range.end()));
+        let (start, end) = (
+            line_index.line_col(text_range.start()),
+            line_index.line_col(text_range.end()),
+        );
         Some((path, start, end))
     } else {
         None

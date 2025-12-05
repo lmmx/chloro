@@ -1,7 +1,7 @@
 //! A simplified version of quote-crate like quasi quote macro
 #![allow(clippy::crate_in_macro_def)]
 
-use intern::{sym, Symbol};
+use intern::{Symbol, sym};
 use span::Span;
 use syntax::ToSmolStr;
 use tt::IdentIsRaw;
@@ -230,7 +230,7 @@ mod tests {
     use ::tt::IdentIsRaw;
     use expect_test::expect;
     use intern::Symbol;
-    use span::{Edition, SpanAnchor, SyntaxContext, ROOT_ERASED_FILE_AST_ID};
+    use span::{Edition, ROOT_ERASED_FILE_AST_ID, SpanAnchor, SyntaxContext};
     use syntax::{TextRange, TextSize};
 
     const DUMMY: tt::Span = tt::Span {

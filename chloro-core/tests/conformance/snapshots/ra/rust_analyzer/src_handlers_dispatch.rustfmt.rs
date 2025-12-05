@@ -116,7 +116,8 @@ impl RequestDispatcher<'_> {
             if let Some(lsp_server::Request { id, .. }) =
                 self.req.take_if(|it| it.method == R::METHOD)
             {
-                self.global_state.respond(lsp_server::Response::new_ok(id, R::Result::default()));
+                self.global_state
+                    .respond(lsp_server::Response::new_ok(id, R::Result::default()));
             }
             return self;
         }
@@ -145,7 +146,8 @@ impl RequestDispatcher<'_> {
             if let Some(lsp_server::Request { id, .. }) =
                 self.req.take_if(|it| it.method == R::METHOD)
             {
-                self.global_state.respond(lsp_server::Response::new_ok(id, default()));
+                self.global_state
+                    .respond(lsp_server::Response::new_ok(id, default()));
             }
             return self;
         }
@@ -164,7 +166,8 @@ impl RequestDispatcher<'_> {
     {
         if !self.global_state.vfs_done {
             if let Some((request, params, _)) = self.parse::<R>() {
-                self.global_state.respond(lsp_server::Response::new_ok(request.id, &params))
+                self.global_state
+                    .respond(lsp_server::Response::new_ok(request.id, &params))
             }
             return self;
         }
@@ -191,7 +194,8 @@ impl RequestDispatcher<'_> {
             if let Some(lsp_server::Request { id, .. }) =
                 self.req.take_if(|it| it.method == R::METHOD)
             {
-                self.global_state.respond(lsp_server::Response::new_ok(id, R::Result::default()));
+                self.global_state
+                    .respond(lsp_server::Response::new_ok(id, R::Result::default()));
             }
             return self;
         }
@@ -268,7 +272,11 @@ impl RequestDispatcher<'_> {
                 Err(_cancelled) if ALLOW_RETRYING => Task::Retry(req),
                 Err(_cancelled) => {
                     let error = on_cancelled();
-                    Task::Response(Response { id: req.id, result: None, error: Some(error) })
+                    Task::Response(Response {
+                        id: req.id,
+                        result: None,
+                        error: Some(error),
+                    })
                 }
             }
         });
@@ -285,8 +293,11 @@ impl RequestDispatcher<'_> {
         let res = crate::from_json(R::METHOD, &req.params);
         match res {
             Ok(params) => {
-                let panic_context =
-                    format!("\nversion: {}\nrequest: {} {params:#?}", version(), R::METHOD);
+                let panic_context = format!(
+                    "\nversion: {}\nrequest: {} {params:#?}",
+                    version(),
+                    R::METHOD
+                );
                 Some((req, params, panic_context))
             }
             Err(err) => {
@@ -424,8 +435,11 @@ impl NotificationDispatcher<'_> {
 
         tracing::debug!(?params);
 
-        let _pctx =
-            DbPanicContext::enter(format!("\nversion: {}\nnotification: {}", version(), N::METHOD));
+        let _pctx = DbPanicContext::enter(format!(
+            "\nversion: {}\nnotification: {}",
+            version(),
+            N::METHOD
+        ));
         if let Err(e) = f(self.global_state, params) {
             tracing::error!(handler = %N::METHOD, error = %e, "notification handler failed");
         }

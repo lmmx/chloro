@@ -58,7 +58,11 @@ impl<'db> Discr<'db> {
             assert!(n < (i128::MAX as u128));
             let n = n as i128;
             let oflo = val > max - n;
-            let val = if oflo { min + (n - (max - val) - 1) } else { val + n };
+            let val = if oflo {
+                min + (n - (max - val) - 1)
+            } else {
+                val + n
+            };
             // zero the upper bits
             let val = val as u128;
             let val = size.truncate(val);
@@ -94,7 +98,10 @@ impl IntegerTypeExt for IntegerType {
     }
 
     fn initial_discriminant<'db>(&self, interner: DbInterner<'db>) -> Discr<'db> {
-        Discr { val: 0, ty: self.to_ty(interner) }
+        Discr {
+            val: 0,
+            ty: self.to_ty(interner),
+        }
     }
 
     fn disr_incr<'db>(
@@ -186,7 +193,11 @@ impl IntegerExt for Integer {
 
         if let Some(ity) = repr.int {
             let discr = Integer::from_attr(&interner, ity);
-            let fit = if ity.is_signed() { signed_fit } else { unsigned_fit };
+            let fit = if ity.is_signed() {
+                signed_fit
+            } else {
+                unsigned_fit
+            };
             if discr < fit {
                 panic!(
                     "Integer::repr_discr: `#[repr]` hint too small for \
@@ -271,7 +282,10 @@ impl PrimitiveExt for Primitive {
             Primitive::Int(i, signed) => i.to_ty(interner, signed),
             Primitive::Pointer(_) => {
                 let signed = false;
-                interner.data_layout().ptr_sized_integer().to_ty(interner, signed)
+                interner
+                    .data_layout()
+                    .ptr_sized_integer()
+                    .to_ty(interner, signed)
             }
             Primitive::Float(_) => panic!("floats do not have an int type"),
         }
@@ -309,7 +323,9 @@ impl Default for MaxUniverse {
 
 impl MaxUniverse {
     pub fn new() -> Self {
-        MaxUniverse { max_universe: UniverseIndex::ROOT }
+        MaxUniverse {
+            max_universe: UniverseIndex::ROOT,
+        }
     }
 
     pub fn max_universe(self) -> UniverseIndex {
@@ -323,7 +339,9 @@ impl<'db> TypeVisitor<DbInterner<'db>> for MaxUniverse {
     fn visit_ty(&mut self, t: Ty<'db>) {
         if let TyKind::Placeholder(placeholder) = t.kind() {
             self.max_universe = UniverseIndex::from_u32(
-                self.max_universe.as_u32().max(placeholder.universe.as_u32()),
+                self.max_universe
+                    .as_u32()
+                    .max(placeholder.universe.as_u32()),
             );
         }
 
@@ -333,7 +351,9 @@ impl<'db> TypeVisitor<DbInterner<'db>> for MaxUniverse {
     fn visit_const(&mut self, c: Const<'db>) {
         if let ConstKind::Placeholder(placeholder) = c.kind() {
             self.max_universe = UniverseIndex::from_u32(
-                self.max_universe.as_u32().max(placeholder.universe.as_u32()),
+                self.max_universe
+                    .as_u32()
+                    .max(placeholder.universe.as_u32()),
             );
         }
 
@@ -343,7 +363,9 @@ impl<'db> TypeVisitor<DbInterner<'db>> for MaxUniverse {
     fn visit_region(&mut self, r: Region<'db>) {
         if let RegionKind::RePlaceholder(placeholder) = r.kind() {
             self.max_universe = UniverseIndex::from_u32(
-                self.max_universe.as_u32().max(placeholder.universe.as_u32()),
+                self.max_universe
+                    .as_u32()
+                    .max(placeholder.universe.as_u32()),
             );
         }
     }
@@ -408,8 +430,10 @@ pub(crate) fn for_trait_impls(
         _ => None,
     };
 
-    let mut def_blocks =
-        [trait_module.containing_block(), type_module.and_then(|it| it.containing_block())];
+    let mut def_blocks = [
+        trait_module.containing_block(),
+        type_module.and_then(|it| it.containing_block()),
+    ];
 
     let block_impls = iter::successors(block, |&block_id| {
         cov_mark::hit!(block_local_impls);
@@ -430,7 +454,11 @@ pub(crate) fn for_trait_impls(
     for it in block_impls {
         f(&it)?;
     }
-    for it in def_blocks.into_iter().flatten().filter_map(|it| db.trait_impls_in_block(it)) {
+    for it in def_blocks
+        .into_iter()
+        .flatten()
+        .filter_map(|it| db.trait_impls_in_block(it))
+    {
         f(&it)?;
     }
     ControlFlow::Continue(())
@@ -480,9 +508,13 @@ pub fn sizedness_constraint_for_ty<'db>(
             .and_then(|ty| sizedness_constraint_for_ty(interner, sizedness, ty)),
 
         Adt(adt, args) => {
-            let tail_ty =
-                EarlyBinder::bind(adt.all_field_tys(interner).skip_binder().into_iter().last()?)
-                    .instantiate(interner, args);
+            let tail_ty = EarlyBinder::bind(
+                adt.all_field_tys(interner)
+                    .skip_binder()
+                    .into_iter()
+                    .last()?,
+            )
+            .instantiate(interner, args);
             sizedness_constraint_for_ty(interner, sizedness, tail_ty)
         }
 
@@ -500,7 +532,14 @@ pub fn apply_args_to_binder<'db, T: TypeFoldable<DbInterner<'db>>>(
     let types = &mut |ty: BoundTy| args.as_slice()[ty.var.index()].expect_ty();
     let regions = &mut |region: BoundRegion| args.as_slice()[region.var.index()].expect_region();
     let consts = &mut |const_: BoundConst| args.as_slice()[const_.var.index()].expect_const();
-    let mut instantiate = BoundVarReplacer::new(interner, FnMutDelegate { types, regions, consts });
+    let mut instantiate = BoundVarReplacer::new(
+        interner,
+        FnMutDelegate {
+            types,
+            regions,
+            consts,
+        },
+    );
     b.skip_binder().fold_with(&mut instantiate)
 }
 
@@ -527,9 +566,10 @@ pub fn explicit_item_bounds<'db>(
 
             let mut bounds = Vec::new();
             for bound in &type_alias_data.bounds {
-                ctx.lower_type_bound(bound, interner_ty, false).for_each(|pred| {
-                    bounds.push(pred);
-                });
+                ctx.lower_type_bound(bound, interner_ty, false)
+                    .for_each(|pred| {
+                        bounds.push(pred);
+                    });
             }
 
             if !ctx.unsized_types.contains(&interner_ty) {
@@ -772,7 +812,10 @@ pub fn sizedness_fast_path<'db>(
             return true;
         }
 
-        if matches!(trait_pred.self_ty().kind(), TyKind::Param(_) | TyKind::Placeholder(_)) {
+        if matches!(
+            trait_pred.self_ty().kind(),
+            TyKind::Param(_) | TyKind::Placeholder(_)
+        ) {
             for clause in param_env.caller_bounds().iter() {
                 if let ClauseKind::Trait(clause_pred) = clause.kind().skip_binder()
                     && clause_pred.polarity == PredicatePolarity::Positive

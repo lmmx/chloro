@@ -3,11 +3,30 @@ COMPARISON DIFF
 
 Original size: 6668 bytes
 Chloro size:   6660 bytes
-Rustfmt size:  6668 bytes
+Rustfmt size:  6826 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+             };
+ 
+             let (assist_id, message, text) = if name_ref.text() == "is_some" {
+-                (
+-                    "replace_is_some_with_if_let_some",
+-                    "Replace `is_some` with `let Some`",
+-                    "Some",
+-                )
++                ("replace_is_some_with_if_let_some", "Replace `is_some` with `let Some`", "Some")
+             } else {
+-                (
+-                    "replace_is_ok_with_if_let_ok",
+-                    "Replace `is_ok` with `let Ok`",
+-                    "Ok",
+-                )
++                ("replace_is_ok_with_if_let_ok", "Replace `is_ok` with `let Ok`", "Ok")
+             };
+ 
+             acc.add(
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

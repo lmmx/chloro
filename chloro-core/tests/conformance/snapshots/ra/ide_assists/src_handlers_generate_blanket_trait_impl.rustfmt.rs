@@ -87,8 +87,9 @@ pub(crate) fn generate_blanket_trait_impl(
                 apply_sized(has_sized(&traitd, &ctx.sema), bounds),
             ))]);
 
-            let trait_gen_args =
-                traitd.generic_param_list().map(|param_list| param_list.to_generic_args());
+            let trait_gen_args = traitd
+                .generic_param_list()
+                .map(|param_list| param_list.to_generic_args());
 
             let impl_ = make::impl_trait(
                 cfg_attrs(&traitd),
@@ -172,14 +173,15 @@ fn super_traits_has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase
 }
 
 fn contained_owned_self_method(item_list: Option<ast::AssocItemList>) -> bool {
-    item_list.into_iter().flat_map(|assoc_item_list| assoc_item_list.assoc_items()).any(|item| {
-        match item {
+    item_list
+        .into_iter()
+        .flat_map(|assoc_item_list| assoc_item_list.assoc_items())
+        .any(|item| match item {
             AssocItem::Fn(f) => {
                 has_owned_self(&f) && where_clause_sized(f.where_clause()).is_none()
             }
             _ => false,
-        }
-    })
+        })
 }
 
 fn has_owned_self(f: &ast::Fn) -> bool {
@@ -249,7 +251,10 @@ fn this_name(traitd: &ast::Trait) -> ast::Name {
 }
 
 fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {
-    bounds.into_iter().flat_map(|bounds| bounds.bounds()).find(|bound| ty_bound_is(bound, s))
+    bounds
+        .into_iter()
+        .flat_map(|bounds| bounds.bounds())
+        .find(|bound| ty_bound_is(bound, s))
 }
 
 fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
@@ -261,7 +266,9 @@ fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
 }
 
 fn todo_fn(f: &ast::Fn, config: &AssistConfig) -> ast::Fn {
-    let params = f.param_list().unwrap_or_else(|| make::param_list(None, None));
+    let params = f
+        .param_list()
+        .unwrap_or_else(|| make::param_list(None, None));
     make::fn_(
         cfg_attrs(f),
         f.visibility(),
@@ -288,7 +295,10 @@ fn default_block(config: &AssistConfig) -> BlockExpr {
 }
 
 fn cfg_attrs(node: &impl HasAttrs) -> impl Iterator<Item = ast::Attr> {
-    node.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"))
+    node.attrs().filter(|attr| {
+        attr.as_simple_call()
+            .is_some_and(|(name, _arg)| name == "cfg")
+    })
 }
 
 #[cfg(test)]

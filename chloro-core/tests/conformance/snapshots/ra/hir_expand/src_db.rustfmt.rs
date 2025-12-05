@@ -5,12 +5,15 @@ use either::Either;
 use mbe::MatchedArmIndex;
 use rustc_hash::FxHashSet;
 use span::{AstIdMap, Edition, Span, SyntaxContext};
-use syntax::{ast, AstNode, Parse, SyntaxElement, SyntaxError, SyntaxNode, SyntaxToken, T};
-use syntax_bridge::{syntax_node_to_token_tree, DocCommentDesugarMode};
+use syntax::{AstNode, Parse, SyntaxElement, SyntaxError, SyntaxNode, SyntaxToken, T, ast};
+use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
 use triomphe::Arc;
 
 use crate::{
-    attrs::{collect_attrs, AttrId, AttrInput, RawAttrs},
+    AstId, BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerCallInfo,
+    EagerExpander, EditionedFileId, ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId,
+    MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
+    attrs::{AttrId, AttrInput, RawAttrs, collect_attrs},
     builtin::pseudo_derive_attr_expansion,
     cfg_process,
     declarative::DeclarativeMacroExpander,
@@ -18,9 +21,7 @@ use crate::{
     hygiene::{span_with_call_site_ctxt, span_with_def_site_ctxt, span_with_mixed_site_ctxt},
     proc_macro::{CrateProcMacros, CustomProcMacroExpander, ProcMacros},
     span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef},
-    tt, AstId, BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerCallInfo,
-    EagerExpander, EditionedFileId, ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId,
-    MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
+    tt,
 };
 /// This is just to ensure the types of smart_macro_arg and macro_arg are the same
 type MacroArgResult = (Arc<tt::TopSubtree>, SyntaxFixupUndoInfo, Span);

@@ -49,7 +49,11 @@ impl<'db> CastTy<'db> {
                     return None;
                 };
                 let enum_data = id.enum_variants(db);
-                if enum_data.is_payload_free(db) { Some(Self::Int(Int::CEnum)) } else { None }
+                if enum_data.is_payload_free(db) {
+                    Some(Self::Int(Int::CEnum))
+                } else {
+                    None
+                }
             }
             TyKind::RawPtr(ty, m) => Some(Self::Ptr(ty, m)),
             TyKind::FnPtr(..) => Some(Self::FnPtr),
@@ -84,7 +88,12 @@ impl CastError {
         expr_ty: Ty<'db>,
         cast_ty: Ty<'db>,
     ) -> InferenceDiagnostic<'db> {
-        InferenceDiagnostic::InvalidCast { expr, error: self, expr_ty, cast_ty }
+        InferenceDiagnostic::InvalidCast {
+            expr,
+            error: self,
+            expr_ty,
+            cast_ty,
+        }
     }
 }
 
@@ -103,15 +112,24 @@ impl<'db> CastCheck<'db> {
         expr_ty: Ty<'db>,
         cast_ty: Ty<'db>,
     ) -> Self {
-        Self { expr, source_expr, expr_ty, cast_ty }
+        Self {
+            expr,
+            source_expr,
+            expr_ty,
+            cast_ty,
+        }
     }
 
     pub(super) fn check(
         &mut self,
         ctx: &mut InferenceContext<'_, 'db>,
     ) -> Result<(), InferenceDiagnostic<'db>> {
-        self.expr_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.expr_ty);
-        self.cast_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.cast_ty);
+        self.expr_ty = ctx
+            .table
+            .eagerly_normalize_and_resolve_shallow_in(self.expr_ty);
+        self.cast_ty = ctx
+            .table
+            .eagerly_normalize_and_resolve_shallow_in(self.cast_ty);
 
         // This should always come first so that we apply the coercion, which impacts infer vars.
         if ctx
@@ -148,62 +166,67 @@ impl<'db> CastCheck<'db> {
             return Ok(());
         }
 
-        self.do_check(ctx).map_err(|e| e.into_diagnostic(self.expr, self.expr_ty, self.cast_ty))
+        self.do_check(ctx)
+            .map_err(|e| e.into_diagnostic(self.expr, self.expr_ty, self.cast_ty))
     }
 
     fn do_check(&self, ctx: &mut InferenceContext<'_, 'db>) -> Result<(), CastError> {
-        let (t_from, t_cast) =
-            match (CastTy::from_ty(ctx.db, self.expr_ty), CastTy::from_ty(ctx.db, self.cast_ty)) {
-                (Some(t_from), Some(t_cast)) => (t_from, t_cast),
-                (None, Some(t_cast)) => match self.expr_ty.kind() {
-                    TyKind::FnDef(..) => {
-                        let sig =
-                            self.expr_ty.callable_sig(ctx.interner()).expect("FnDef had no sig");
-                        let sig = ctx.table.eagerly_normalize_and_resolve_shallow_in(sig);
-                        let fn_ptr = Ty::new_fn_ptr(ctx.interner(), sig);
-                        if ctx
-                            .coerce(
-                                self.source_expr.into(),
-                                self.expr_ty,
-                                fn_ptr,
-                                AllowTwoPhase::No,
-                                CoerceNever::Yes,
-                            )
-                            .is_ok()
-                        {
-                        } else {
-                            return Err(CastError::IllegalCast);
-                        }
-
-                        (CastTy::FnPtr, t_cast)
+        let (t_from, t_cast) = match (
+            CastTy::from_ty(ctx.db, self.expr_ty),
+            CastTy::from_ty(ctx.db, self.cast_ty),
+        ) {
+            (Some(t_from), Some(t_cast)) => (t_from, t_cast),
+            (None, Some(t_cast)) => match self.expr_ty.kind() {
+                TyKind::FnDef(..) => {
+                    let sig = self
+                        .expr_ty
+                        .callable_sig(ctx.interner())
+                        .expect("FnDef had no sig");
+                    let sig = ctx.table.eagerly_normalize_and_resolve_shallow_in(sig);
+                    let fn_ptr = Ty::new_fn_ptr(ctx.interner(), sig);
+                    if ctx
+                        .coerce(
+                            self.source_expr.into(),
+                            self.expr_ty,
+                            fn_ptr,
+                            AllowTwoPhase::No,
+                            CoerceNever::Yes,
+                        )
+                        .is_ok()
+                    {
+                    } else {
+                        return Err(CastError::IllegalCast);
                     }
-                    TyKind::Ref(_, inner_ty, mutbl) => {
-                        return match t_cast {
-                            CastTy::Int(_) | CastTy::Float => match inner_ty.kind() {
-                                TyKind::Int(_)
-                                | TyKind::Uint(_)
-                                | TyKind::Float(_)
-                                | TyKind::Infer(InferTy::IntVar(_) | InferTy::FloatVar(_)) => {
-                                    Err(CastError::NeedDeref)
-                                }
 
-                                _ => Err(CastError::NeedViaPtr),
-                            },
-                            // array-ptr-cast
-                            CastTy::Ptr(t, m) => {
-                                let t = ctx.table.eagerly_normalize_and_resolve_shallow_in(t);
-                                if !ctx.table.is_sized(t) {
-                                    return Err(CastError::IllegalCast);
-                                }
-                                self.check_ref_cast(ctx, inner_ty, mutbl, t, m)
+                    (CastTy::FnPtr, t_cast)
+                }
+                TyKind::Ref(_, inner_ty, mutbl) => {
+                    return match t_cast {
+                        CastTy::Int(_) | CastTy::Float => match inner_ty.kind() {
+                            TyKind::Int(_)
+                            | TyKind::Uint(_)
+                            | TyKind::Float(_)
+                            | TyKind::Infer(InferTy::IntVar(_) | InferTy::FloatVar(_)) => {
+                                Err(CastError::NeedDeref)
                             }
-                            _ => Err(CastError::NonScalar),
-                        };
-                    }
-                    _ => return Err(CastError::NonScalar),
-                },
+
+                            _ => Err(CastError::NeedViaPtr),
+                        },
+                        // array-ptr-cast
+                        CastTy::Ptr(t, m) => {
+                            let t = ctx.table.eagerly_normalize_and_resolve_shallow_in(t);
+                            if !ctx.table.is_sized(t) {
+                                return Err(CastError::IllegalCast);
+                            }
+                            self.check_ref_cast(ctx, inner_ty, mutbl, t, m)
+                        }
+                        _ => Err(CastError::NonScalar),
+                    };
+                }
                 _ => return Err(CastError::NonScalar),
-            };
+            },
+            _ => return Err(CastError::NonScalar),
+        };
 
         // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym
 
@@ -263,7 +286,13 @@ impl<'db> CastCheck<'db> {
             // This is a less strict condition than rustc's `demand_eqtype`,
             // but false negative is better than false positive
             if ctx
-                .coerce(self.source_expr.into(), ety, t_cast, AllowTwoPhase::No, CoerceNever::Yes)
+                .coerce(
+                    self.source_expr.into(),
+                    ety,
+                    t_cast,
+                    AllowTwoPhase::No,
+                    CoerceNever::Yes,
+                )
                 .is_ok()
             {
                 return Ok(());

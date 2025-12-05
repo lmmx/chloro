@@ -1,16 +1,16 @@
 use std::cmp::Reverse;
 
 use either::Either;
-use hir::{db::HirDatabase, Module, Type};
+use hir::{Module, Type, db::HirDatabase};
 use ide_db::{
     active_parameter::ActiveParameter,
     helpers::mod_path_to_ast,
     imports::{
         import_assets::{ImportAssets, ImportCandidate, LocatedImport},
-        insert_use::{insert_use, insert_use_as_alias, ImportScope},
+        insert_use::{ImportScope, insert_use, insert_use_as_alias},
     },
 };
-use syntax::{ast, match_ast, AstNode, Edition, SyntaxNode};
+use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
@@ -369,12 +369,12 @@ mod tests {
     use super::*;
 
     use hir::{FileRange, Semantics};
-    use ide_db::{assists::AssistResolveStrategy, RootDatabase};
+    use ide_db::{RootDatabase, assists::AssistResolveStrategy};
     use test_fixture::WithFixture;
 
     use crate::tests::{
-        check_assist, check_assist_by_label, check_assist_not_applicable, check_assist_target,
-        TEST_CONFIG,
+        TEST_CONFIG, check_assist, check_assist_by_label, check_assist_not_applicable,
+        check_assist_target,
     };
 
     fn check_auto_import_order(before: &str, order: &[&str]) {

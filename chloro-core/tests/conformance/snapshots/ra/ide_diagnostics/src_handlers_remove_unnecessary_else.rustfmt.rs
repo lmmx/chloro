@@ -3,15 +3,15 @@ use ide_db::text_edit::TextEdit;
 use ide_db::{assists::Assist, source_change::SourceChange};
 use itertools::Itertools;
 use syntax::{
+    AstNode, SyntaxToken, TextRange,
     ast::{
         self,
         edit::{AstNodeEdit, IndentLevel},
     },
-    AstNode, SyntaxToken, TextRange,
 };
 
 use crate::{
-    adjusted_display_range, fix, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity,
+    Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range, fix,
 };
 
 // Diagnostic: remove-unnecessary-else

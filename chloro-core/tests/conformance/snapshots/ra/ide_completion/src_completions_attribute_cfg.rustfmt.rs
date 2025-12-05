@@ -8,8 +8,12 @@ use crate::{CompletionItem, completions::Completions, context::CompletionContext
 
 pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
     let add_completion = |item: &str| {
-        let mut completion =
-            CompletionItem::new(SymbolKind::BuiltinAttr, ctx.source_range(), item, ctx.edition);
+        let mut completion = CompletionItem::new(
+            SymbolKind::BuiltinAttr,
+            ctx.source_range(),
+            item,
+            ctx.edition,
+        );
         completion.insert_text(format!(r#""{item}""#));
         acc.add(completion.build(ctx.db));
     };
@@ -39,19 +43,23 @@ pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
             "target_os" => KNOWN_OS.iter().copied().for_each(add_completion),
             "target_vendor" => KNOWN_VENDOR.iter().copied().for_each(add_completion),
             "target_endian" => ["little", "big"].into_iter().for_each(add_completion),
-            name => ctx.krate.potential_cfg(ctx.db).get_cfg_values(name).for_each(|s| {
-                let s = s.as_str();
-                let insert_text = format!(r#""{s}""#);
-                let mut item = CompletionItem::new(
-                    SymbolKind::BuiltinAttr,
-                    ctx.source_range(),
-                    s,
-                    ctx.edition,
-                );
-                item.insert_text(insert_text);
+            name => ctx
+                .krate
+                .potential_cfg(ctx.db)
+                .get_cfg_values(name)
+                .for_each(|s| {
+                    let s = s.as_str();
+                    let insert_text = format!(r#""{s}""#);
+                    let mut item = CompletionItem::new(
+                        SymbolKind::BuiltinAttr,
+                        ctx.source_range(),
+                        s,
+                        ctx.edition,
+                    );
+                    item.insert_text(insert_text);
 
-                acc.add(item.build(ctx.db));
-            }),
+                    acc.add(item.build(ctx.db));
+                }),
         },
         None => ctx
             .krate
@@ -103,7 +111,15 @@ const KNOWN_ARCH: [&str; 20] = [
     "x86_64",
 ];
 
-const KNOWN_ENV: [&str; 7] = ["eabihf", "gnu", "gnueabihf", "msvc", "relibc", "sgx", "uclibc"];
+const KNOWN_ENV: [&str; 7] = [
+    "eabihf",
+    "gnu",
+    "gnueabihf",
+    "msvc",
+    "relibc",
+    "sgx",
+    "uclibc",
+];
 
 const KNOWN_OS: [&str; 20] = [
     "cuda",
@@ -128,5 +144,6 @@ const KNOWN_OS: [&str; 20] = [
     "windows",
 ];
 
-const KNOWN_VENDOR: [&str; 8] =
-    ["apple", "fortanix", "nvidia", "pc", "sony", "unknown", "wrs", "uwp"];
+const KNOWN_VENDOR: [&str; 8] = [
+    "apple", "fortanix", "nvidia", "pc", "sony", "unknown", "wrs", "uwp",
+];

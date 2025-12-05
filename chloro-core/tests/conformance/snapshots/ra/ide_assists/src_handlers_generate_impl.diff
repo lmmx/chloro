@@ -3,11 +3,22 @@ COMPARISON DIFF
 
 Original size: 21468 bytes
 Chloro size:   21440 bytes
-Rustfmt size:  21468 bytes
+Rustfmt size:  21490 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+                     editor.add_annotation(ty.syntax(), placeholder);
+                 }
+ 
+-                if let Some(expr) = impl_
+-                    .assoc_item_list()
+-                    .and_then(|it| it.assoc_items().find_map(extract_expr))
++                if let Some(expr) =
++                    impl_.assoc_item_list().and_then(|it| it.assoc_items().find_map(extract_expr))
+                 {
+                     let tabstop = edit.make_tabstop_before(cap);
+                     editor.add_annotation(expr.syntax(), tabstop);
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_target};

@@ -192,7 +192,10 @@ fn add_missing_impl_members_inner(
             let assoc_item_list = make::assoc_item_list(Some(new_assoc_items)).clone_for_update();
             editor.insert_all(
                 Position::after(impl_def.syntax()),
-                vec![make::tokens::whitespace(" ").into(), assoc_item_list.syntax().clone().into()],
+                vec![
+                    make::tokens::whitespace(" ").into(),
+                    assoc_item_list.syntax().clone().into(),
+                ],
             );
             first_new_item = assoc_item_list.assoc_items().next();
         }
@@ -227,7 +230,11 @@ fn try_gen_trait_body(
     edition: Edition,
 ) -> Option<ast::BlockExpr> {
     let trait_path = make::ext::ident_path(
-        &trait_ref.trait_().name(ctx.db()).display(ctx.db(), edition).to_string(),
+        &trait_ref
+            .trait_()
+            .name(ctx.db())
+            .display(ctx.db(), edition)
+            .to_string(),
     );
     let hir_ty = ctx.sema.resolve_type(&impl_def.self_ty()?)?;
     let adt = hir_ty.as_adt()?.source(ctx.db())?;

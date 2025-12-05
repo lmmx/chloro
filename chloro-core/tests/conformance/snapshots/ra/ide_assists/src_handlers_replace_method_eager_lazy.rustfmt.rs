@@ -1,7 +1,7 @@
 use ide_db::assists::AssistId;
 use syntax::{
-    ast::{self, make, Expr, HasArgList},
     AstNode,
+    ast::{self, Expr, HasArgList, make},
 };
 
 use crate::{AssistContext, Assists};

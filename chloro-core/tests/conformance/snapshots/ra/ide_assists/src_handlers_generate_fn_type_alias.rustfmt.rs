@@ -42,11 +42,15 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
     let func_node = ast::Fn::cast(func.clone())?;
     let param_list = func_node.param_list()?;
 
-    let assoc_owner = func.ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
+    let assoc_owner = func
+        .ancestors()
+        .nth(2)
+        .and_then(Either::<ast::Trait, ast::Impl>::cast);
     // This is where we'll insert the type alias, since type aliases in `impl`s or `trait`s are not supported
-    let insertion_node = assoc_owner
-        .as_ref()
-        .map_or_else(|| func, |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax));
+    let insertion_node = assoc_owner.as_ref().map_or_else(
+        || func,
+        |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
+    );
 
     for style in ParamStyle::ALL {
         acc.add_group(
@@ -61,8 +65,9 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
 
                 let mut fn_params_vec = Vec::new();
 
-                if let Some(self_ty) =
-                    param_list.self_param().and_then(|p| ctx.sema.type_of_self(&p))
+                if let Some(self_ty) = param_list
+                    .self_param()
+                    .and_then(|p| ctx.sema.type_of_self(&p))
                 {
                     let is_ref = self_ty.is_reference();
                     let is_mut = self_ty.is_mutable_reference();
@@ -70,8 +75,11 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
                     if let Some(adt) = self_ty.strip_references().as_adt() {
                         let inner_type = make::ty(adt.name(ctx.db()).as_str());
 
-                        let ast_self_ty =
-                            if is_ref { make::ty_ref(inner_type, is_mut) } else { inner_type };
+                        let ast_self_ty = if is_ref {
+                            make::ty_ref(inner_type, is_mut)
+                        } else {
+                            inner_type
+                        };
 
                         fn_params_vec.push(make::unnamed_param(ast_self_ty));
                     }

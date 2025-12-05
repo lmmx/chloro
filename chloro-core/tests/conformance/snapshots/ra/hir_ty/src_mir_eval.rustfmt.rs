@@ -248,7 +248,10 @@ impl Interval {
     }
 
     fn slice(self, range: Range<usize>) -> Interval {
-        Interval { addr: self.addr.offset(range.start), size: range.len() }
+        Interval {
+            addr: self.addr.offset(range.start),
+            size: range.len(),
+        }
     }
 }
 
@@ -264,7 +267,10 @@ impl<'db> IntervalAndTy<'db> {
         locals: &Locals<'db>,
     ) -> Result<'db, IntervalAndTy<'db>> {
         let size = evaluator.size_of_sized(ty, locals, "type of interval")?;
-        Ok(IntervalAndTy { interval: Interval { addr, size }, ty })
+        Ok(IntervalAndTy {
+            interval: Interval { addr, size },
+            ty,
+        })
     }
 }
 
@@ -356,7 +362,11 @@ pub enum MirEvalError<'db> {
     InvalidConst(Const<'db>),
     InFunction(
         Box<MirEvalError<'db>>,
-        Vec<(Either<FunctionId, InternedClosureId>, MirSpan, DefWithBodyId)>,
+        Vec<(
+            Either<FunctionId, InternedClosureId>,
+            MirSpan,
+            DefWithBodyId,
+        )>,
     ),
     ExecutionLimitExceeded,
     StackOverflow,
@@ -432,7 +442,8 @@ impl MirEvalError<'_> {
                 write!(
                     f,
                     "Layout for type `{}` is not available due {err:?}",
-                    ty.display(db, display_target).with_closure_style(ClosureStyle::ClosureWithId)
+                    ty.display(db, display_target)
+                        .with_closure_style(ClosureStyle::ClosureWithId)
                 )?;
             }
             MirEvalError::MirLowerError(func, err) => {
@@ -445,7 +456,10 @@ impl MirEvalError<'_> {
                             .to_string()
                     }),
                     ItemContainerId::TraitId(it) => Some(
-                        db.trait_signature(it).name.display(db, display_target.edition).to_string(),
+                        db.trait_signature(it)
+                            .name
+                            .display(db, display_target.edition)
+                            .to_string(),
                     ),
                     _ => None,
                 };
@@ -498,28 +512,37 @@ impl MirEvalError<'_> {
 impl std::fmt::Debug for MirEvalError<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::ConstEvalError(arg0, arg1) => {
-                f.debug_tuple("ConstEvalError").field(arg0).field(arg1).finish()
-            }
-            Self::LayoutError(arg0, arg1) => {
-                f.debug_tuple("LayoutError").field(arg0).field(arg1).finish()
-            }
+            Self::ConstEvalError(arg0, arg1) => f
+                .debug_tuple("ConstEvalError")
+                .field(arg0)
+                .field(arg1)
+                .finish(),
+            Self::LayoutError(arg0, arg1) => f
+                .debug_tuple("LayoutError")
+                .field(arg0)
+                .field(arg1)
+                .finish(),
             Self::UndefinedBehavior(arg0) => {
                 f.debug_tuple("UndefinedBehavior").field(arg0).finish()
             }
             Self::Panic(msg) => write!(f, "Panic with message:\n{msg:?}"),
-            Self::TargetDataLayoutNotAvailable(arg0) => {
-                f.debug_tuple("TargetDataLayoutNotAvailable").field(arg0).finish()
-            }
+            Self::TargetDataLayoutNotAvailable(arg0) => f
+                .debug_tuple("TargetDataLayoutNotAvailable")
+                .field(arg0)
+                .finish(),
             Self::TypeIsUnsized(ty, it) => write!(f, "{ty:?} is unsized. {it} should be sized."),
             Self::ExecutionLimitExceeded => write!(f, "execution limit exceeded"),
             Self::StackOverflow => write!(f, "stack overflow"),
-            Self::MirLowerError(arg0, arg1) => {
-                f.debug_tuple("MirLowerError").field(arg0).field(arg1).finish()
-            }
-            Self::MirLowerErrorForClosure(arg0, arg1) => {
-                f.debug_tuple("MirLowerError").field(arg0).field(arg1).finish()
-            }
+            Self::MirLowerError(arg0, arg1) => f
+                .debug_tuple("MirLowerError")
+                .field(arg0)
+                .field(arg1)
+                .finish(),
+            Self::MirLowerErrorForClosure(arg0, arg1) => f
+                .debug_tuple("MirLowerError")
+                .field(arg0)
+                .field(arg1)
+                .finish(),
             Self::CoerceUnsizedError(arg0) => {
                 f.debug_tuple("CoerceUnsizedError").field(arg0).finish()
             }
@@ -527,9 +550,11 @@ impl std::fmt::Debug for MirEvalError<'_> {
             Self::InvalidVTableId(arg0) => f.debug_tuple("InvalidVTableId").field(arg0).finish(),
             Self::NotSupported(arg0) => f.debug_tuple("NotSupported").field(arg0).finish(),
             Self::InvalidConst(arg0) => f.debug_tuple("InvalidConst").field(&arg0).finish(),
-            Self::InFunction(e, stack) => {
-                f.debug_struct("WithStack").field("error", e).field("stack", &stack).finish()
-            }
+            Self::InFunction(e, stack) => f
+                .debug_struct("WithStack")
+                .field("error", e)
+                .field("stack", &stack)
+                .finish(),
         }
     }
 }
@@ -543,7 +568,9 @@ struct DropFlags<'db> {
 
 impl<'db> DropFlags<'db> {
     fn add_place(&mut self, p: Place<'db>, store: &ProjectionStore<'db>) {
-        if p.iterate_over_parents(store).any(|it| self.need_drop.contains(&it)) {
+        if p.iterate_over_parents(store)
+            .any(|it| self.need_drop.contains(&it))
+        {
             return;
         }
         self.need_drop.retain(|it| !p.is_parent(it, store));
@@ -552,7 +579,10 @@ impl<'db> DropFlags<'db> {
 
     fn remove_place(&mut self, p: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
         // FIXME: replace parents with parts
-        if let Some(parent) = p.iterate_over_parents(store).find(|it| self.need_drop.contains(it)) {
+        if let Some(parent) = p
+            .iterate_over_parents(store)
+            .find(|it| self.need_drop.contains(it))
+        {
             self.need_drop.remove(&parent);
             return true;
         }
@@ -607,7 +637,11 @@ pub fn interpret_mir<'db>(
         let mut memory_map = evaluator.create_memory_map(
             bytes,
             ty,
-            &Locals { ptr: ArenaMap::new(), body, drop_flags: DropFlags::default() },
+            &Locals {
+                ptr: ArenaMap::new(),
+                body,
+                drop_flags: DropFlags::default(),
+            },
         )?;
         let bytes = bytes.into();
         let memory_map = if memory_map.memory.is_empty() && evaluator.vtable_map.is_empty() {
@@ -617,9 +651,20 @@ pub fn interpret_mir<'db>(
             memory_map.vtable.shrink_to_fit();
             MemoryMap::Complex(Box::new(memory_map))
         };
-        Ok(Const::new_valtree(evaluator.interner(), ty, bytes, memory_map))
+        Ok(Const::new_valtree(
+            evaluator.interner(),
+            ty,
+            bytes,
+            memory_map,
+        ))
     })();
-    Ok((it, MirOutput { stdout: evaluator.stdout, stderr: evaluator.stderr }))
+    Ok((
+        it,
+        MirOutput {
+            stdout: evaluator.stdout,
+            stderr: evaluator.stderr,
+        },
+    ))
 }
 
 #[cfg(test)]
@@ -667,14 +712,17 @@ impl<'db> Evaluator<'db> {
             mir_or_dyn_index_cache: RefCell::new(Default::default()),
             unused_locals_store: RefCell::new(Default::default()),
             cached_ptr_size,
-            cached_fn_trait_func: LangItem::Fn
-                .resolve_trait(db, crate_id)
-                .and_then(|x| x.trait_items(db).method_by_name(&Name::new_symbol_root(sym::call))),
+            cached_fn_trait_func: LangItem::Fn.resolve_trait(db, crate_id).and_then(|x| {
+                x.trait_items(db)
+                    .method_by_name(&Name::new_symbol_root(sym::call))
+            }),
             cached_fn_mut_trait_func: LangItem::FnMut.resolve_trait(db, crate_id).and_then(|x| {
-                x.trait_items(db).method_by_name(&Name::new_symbol_root(sym::call_mut))
+                x.trait_items(db)
+                    .method_by_name(&Name::new_symbol_root(sym::call_mut))
             }),
             cached_fn_once_trait_func: LangItem::FnOnce.resolve_trait(db, crate_id).and_then(|x| {
-                x.trait_items(db).method_by_name(&Name::new_symbol_root(sym::call_once))
+                x.trait_items(db)
+                    .method_by_name(&Name::new_symbol_root(sym::call_once))
             }),
             infcx,
         })
@@ -746,8 +794,11 @@ impl<'db> Evaluator<'db> {
                 ProjectionElem::Deref => {
                     metadata = if self.size_align_of(ty, locals)?.is_none() {
                         Some(
-                            Interval { addr: addr.offset(self.ptr_size()), size: self.ptr_size() }
-                                .into(),
+                            Interval {
+                                addr: addr.offset(self.ptr_size()),
+                                size: self.ptr_size(),
+                            }
+                            .into(),
                         )
                     } else {
                         None
@@ -914,7 +965,12 @@ impl<'db> Evaluator<'db> {
         self.fill_locals_for_body(&body, &mut locals, args)?;
         let prev_code_stack = mem::take(&mut self.code_stack);
         let span = (MirSpan::Unknown, body.owner);
-        self.code_stack.push(StackFrame { locals, destination: None, prev_stack_ptr, span });
+        self.code_stack.push(StackFrame {
+            locals,
+            destination: None,
+            prev_stack_ptr,
+            span,
+        });
         'stack: loop {
             let Some(mut my_stack_frame) = self.code_stack.pop() else {
                 not_supported!("missing stack frame");
@@ -935,7 +991,9 @@ impl<'db> Evaluator<'db> {
                                 let addr = self.place_addr(l, locals)?;
                                 let result = self.eval_rvalue(r, locals)?;
                                 self.copy_from_interval_or_owned(addr, result)?;
-                                locals.drop_flags.add_place(*l, &locals.body.projection_store);
+                                locals
+                                    .drop_flags
+                                    .add_place(*l, &locals.body.projection_store);
                             }
                             StatementKind::Deinit(_) => not_supported!("de-init statement"),
                             StatementKind::StorageLive(_)
@@ -1018,7 +1076,11 @@ impl<'db> Evaluator<'db> {
                                 "unreachable executed".to_owned(),
                             ));
                         }
-                        TerminatorKind::Drop { place, target, unwind: _ } => {
+                        TerminatorKind::Drop {
+                            place,
+                            target,
+                            unwind: _,
+                        } => {
                             self.drop_place(place, locals, terminator.span)?;
                             current_block_idx = *target;
                         }
@@ -1071,7 +1133,9 @@ impl<'db> Evaluator<'db> {
     ) -> Result<'db, ()> {
         let mut remain_args = body.param_locals.len();
         for ((l, interval), value) in locals.ptr.iter().skip(1).zip(args) {
-            locals.drop_flags.add_place(l.into(), &locals.body.projection_store);
+            locals
+                .drop_flags
+                .add_place(l.into(), &locals.body.projection_store);
             match value {
                 IntervalOrOwned::Owned(value) => interval.write_from_bytes(self, &value)?,
                 IntervalOrOwned::Borrowed(value) => interval.write_from_interval(self, value)?,
@@ -1092,19 +1156,24 @@ impl<'db> Evaluator<'db> {
         body: &Arc<MirBody<'db>>,
         destination: Option<Interval>,
     ) -> Result<'db, (Locals<'db>, usize)> {
-        let mut locals =
-            match self.unused_locals_store.borrow_mut().entry(body.owner).or_default().pop() {
-                None => Locals {
-                    ptr: ArenaMap::new(),
-                    body: body.clone(),
-                    drop_flags: DropFlags::default(),
-                },
-                Some(mut l) => {
-                    l.drop_flags.clear();
-                    l.body = body.clone();
-                    l
-                }
-            };
+        let mut locals = match self
+            .unused_locals_store
+            .borrow_mut()
+            .entry(body.owner)
+            .or_default()
+            .pop()
+        {
+            None => Locals {
+                ptr: ArenaMap::new(),
+                body: body.clone(),
+                drop_flags: DropFlags::default(),
+            },
+            Some(mut l) => {
+                l.drop_flags.clear();
+                l.body = body.clone();
+                l
+            }
+        };
         let stack_size = {
             let mut stack_ptr = self.stack.len();
             for (id, it) in body.locals.iter() {
@@ -1124,7 +1193,13 @@ impl<'db> Evaluator<'db> {
                 }
                 let my_ptr = stack_ptr;
                 stack_ptr += size;
-                locals.ptr.insert(id, Interval { addr: Stack(my_ptr), size });
+                locals.ptr.insert(
+                    id,
+                    Interval {
+                        addr: Stack(my_ptr),
+                        size,
+                    },
+                );
             }
             stack_ptr - self.stack.len()
         };
@@ -1534,7 +1609,10 @@ impl<'db> Evaluator<'db> {
                     }
                     PointerCast::ArrayToPointer => {
                         // We should remove the metadata part if the current type is slice
-                        Borrowed(self.eval_operand(operand, locals)?.slice(0..self.ptr_size()))
+                        Borrowed(
+                            self.eval_operand(operand, locals)?
+                                .slice(0..self.ptr_size()),
+                        )
                     }
                 },
                 CastKind::DynStar => not_supported!("dyn star cast"),
@@ -1654,7 +1732,12 @@ impl<'db> Evaluator<'db> {
                     self.const_eval_discriminant(e.enum_variants(self.db).variants[index.0].0)?;
                 Ok(r)
             }
-            Variants::Multiple { tag, tag_encoding, variants, .. } => {
+            Variants::Multiple {
+                tag,
+                tag_encoding,
+                variants,
+                ..
+            } => {
                 let size = tag.size(&*self.target_data_layout).bytes_usize();
                 let offset = layout.fields.offset(0).bytes_usize(); // The only field on enum variants is the tag field
                 let is_signed = tag.is_signed();
@@ -1663,7 +1746,11 @@ impl<'db> Evaluator<'db> {
                         let tag = &bytes[offset..offset + size];
                         Ok(i128::from_le_bytes(pad16(tag, is_signed)))
                     }
-                    TagEncoding::Niche { untagged_variant, niche_start, .. } => {
+                    TagEncoding::Niche {
+                        untagged_variant,
+                        niche_start,
+                        ..
+                    } => {
                         let tag = &bytes[offset..offset + size];
                         let candidate_tag = i128::from_le_bytes(pad16(tag, is_signed))
                             .wrapping_sub(*niche_start as i128)
@@ -1697,8 +1784,10 @@ impl<'db> Evaluator<'db> {
             && let AdtId::StructId(struct_id) = adt_ef.def_id().0
         {
             let field_types = self.db.field_types(struct_id.into());
-            if let Some(ty) =
-                field_types.iter().last().map(|it| it.1.instantiate(self.interner(), subst))
+            if let Some(ty) = field_types
+                .iter()
+                .last()
+                .map(|it| it.1.instantiate(self.interner(), subst))
             {
                 return self.coerce_unsized_look_through_fields(ty, goal);
             }
@@ -1806,12 +1895,21 @@ impl<'db> Evaluator<'db> {
             // Computing the exact size of enums require resolving the enum discriminants. In order to prevent loops (and
             // infinite sized type errors) we use a dummy layout
             let i = self.const_eval_discriminant(it)?;
-            return Ok((16, self.layout(Ty::new_empty_tuple(self.interner()))?, Some((0, 16, i))));
+            return Ok((
+                16,
+                self.layout(Ty::new_empty_tuple(self.interner()))?,
+                Some((0, 16, i)),
+            ));
         }
         let layout = self.layout_adt(adt, subst)?;
         Ok(match &layout.variants {
             Variants::Single { .. } | Variants::Empty => (layout.size.bytes_usize(), layout, None),
-            Variants::Multiple { variants, tag, tag_encoding, .. } => {
+            Variants::Multiple {
+                variants,
+                tag,
+                tag_encoding,
+                ..
+            } => {
                 let enum_variant_id = match it {
                     VariantId::EnumVariantId(it) => it,
                     _ => not_supported!("multi variant layout for non-enums"),
@@ -1822,7 +1920,11 @@ impl<'db> Evaluator<'db> {
                 let variant_layout = variants[rustc_enum_variant_idx].clone();
                 let have_tag = match tag_encoding {
                     TagEncoding::Direct => true,
-                    TagEncoding::Niche { untagged_variant, niche_variants: _, niche_start } => {
+                    TagEncoding::Niche {
+                        untagged_variant,
+                        niche_variants: _,
+                        niche_start,
+                    } => {
                         if *untagged_variant == rustc_enum_variant_idx {
                             false
                         } else {
@@ -1896,7 +1998,9 @@ impl<'db> Evaluator<'db> {
     ) -> Result<'db, Interval> {
         Ok(match &it.kind {
             OperandKind::Copy(p) | OperandKind::Move(p) => {
-                locals.drop_flags.remove_place(p, &locals.body.projection_store);
+                locals
+                    .drop_flags
+                    .remove_place(p, &locals.body.projection_store);
                 self.eval_place(p, locals)?
             }
             OperandKind::Static(st) => {
@@ -1916,7 +2020,10 @@ impl<'db> Evaluator<'db> {
         let result_owner;
         let value = match konst.kind() {
             ConstKind::Value(value) => value,
-            ConstKind::Unevaluated(UnevaluatedConst { def: const_id, args: subst }) => 'b: {
+            ConstKind::Unevaluated(UnevaluatedConst {
+                def: const_id,
+                args: subst,
+            }) => 'b: {
                 let mut const_id = match const_id {
                     SolverDefId::ConstId(it) => GeneralConstId::from(it),
                     SolverDefId::StaticId(it) => it.into(),
@@ -1943,7 +2050,10 @@ impl<'db> Evaluator<'db> {
             _ => not_supported!("evaluating unknown const"),
         };
         let ValueConst { ty, value } = value;
-        let ConstBytes { memory: v, memory_map } = value.inner();
+        let ConstBytes {
+            memory: v,
+            memory_map,
+        } = value.inner();
         let patch_map = memory_map.transform_addresses(|b, align| {
             let addr = self.heap_allocate(b.len(), align)?;
             self.write_memory(addr, b)?;
@@ -2022,7 +2132,8 @@ impl<'db> Evaluator<'db> {
         if r.is_empty() {
             return Ok(());
         }
-        self.write_memory_using_ref(addr, r.len())?.copy_from_slice(r);
+        self.write_memory_using_ref(addr, r.len())?
+            .copy_from_slice(r);
         Ok(())
     }
 
@@ -2099,12 +2210,17 @@ impl<'db> Evaluator<'db> {
         }
         let layout = self.layout(ty);
         if self.assert_placeholder_ty_is_unused
-            && matches!(layout, Err(MirEvalError::LayoutError(LayoutError::HasPlaceholder, _)))
+            && matches!(
+                layout,
+                Err(MirEvalError::LayoutError(LayoutError::HasPlaceholder, _))
+            )
         {
             return Ok(Some((0, 1)));
         }
         let layout = layout?;
-        Ok(layout.is_sized().then(|| (layout.size.bytes_usize(), layout.align.bytes() as usize)))
+        Ok(layout
+            .is_sized()
+            .then(|| (layout.size.bytes_usize(), layout.align.bytes() as usize)))
     }
 
     /// A version of `self.size_of` which returns error if the type is unsized. `what` argument should
@@ -2137,13 +2253,20 @@ impl<'db> Evaluator<'db> {
 
     fn heap_allocate(&mut self, size: usize, align: usize) -> Result<'db, Address> {
         if !align.is_power_of_two() || align > 10000 {
-            return Err(MirEvalError::UndefinedBehavior(format!("Alignment {align} is invalid")));
+            return Err(MirEvalError::UndefinedBehavior(format!(
+                "Alignment {align} is invalid"
+            )));
         }
         while !self.heap.len().is_multiple_of(align) {
             self.heap.push(0);
         }
-        if size.checked_add(self.heap.len()).is_none_or(|x| x > self.memory_limit) {
-            return Err(MirEvalError::Panic(format!("Memory allocation of {size} bytes failed")));
+        if size
+            .checked_add(self.heap.len())
+            .is_none_or(|x| x > self.memory_limit)
+        {
+            return Err(MirEvalError::Panic(format!(
+                "Memory allocation of {size} bytes failed"
+            )));
         }
         let pos = self.heap.len();
         self.heap.extend(std::iter::repeat_n(0, size));
@@ -2188,7 +2311,8 @@ impl<'db> Evaluator<'db> {
                             let addr_usize = from_bytes!(usize, bytes);
                             mm.insert(
                                 addr_usize,
-                                this.read_memory(Address::from_usize(addr_usize), size)?.into(),
+                                this.read_memory(Address::from_usize(addr_usize), size)?
+                                    .into(),
                             )
                         }
                         None => {
@@ -2298,8 +2422,10 @@ impl<'db> Evaluator<'db> {
                             let data = v.fields(this.db);
                             let field_types = this.db.field_types(v.into());
                             for (f, _) in data.fields().iter() {
-                                let offset =
-                                    l.fields.offset(u32::from(f.into_raw()) as usize).bytes_usize();
+                                let offset = l
+                                    .fields
+                                    .offset(u32::from(f.into_raw()) as usize)
+                                    .bytes_usize();
                                 let ty = field_types[f].instantiate(this.interner(), subst);
                                 let size = this.layout(ty)?.size.bytes_usize();
                                 rec(
@@ -2471,9 +2597,15 @@ impl<'db> Evaluator<'db> {
         let next_ty = self.vtable_map.ty(id)?;
         use rustc_type_ir::TyKind;
         match next_ty.kind() {
-            TyKind::FnDef(def, generic_args) => {
-                self.exec_fn_def(def.0, generic_args, destination, args, locals, target_bb, span)
-            }
+            TyKind::FnDef(def, generic_args) => self.exec_fn_def(
+                def.0,
+                generic_args,
+                destination,
+                args,
+                locals,
+                target_bb,
+                span,
+            ),
             TyKind::Closure(id, generic_args) => self.exec_closure(
                 id.0,
                 bytes.slice(0..0),
@@ -2483,7 +2615,9 @@ impl<'db> Evaluator<'db> {
                 locals,
                 span,
             ),
-            _ => Err(MirEvalError::InternalError("function pointer to non function".into())),
+            _ => Err(MirEvalError::InternalError(
+                "function pointer to non function".into(),
+            )),
         }
     }
 
@@ -2501,7 +2635,10 @@ impl<'db> Evaluator<'db> {
             .db
             .monomorphized_mir_body_for_closure(closure, generic_args, self.trait_env.clone())
             .map_err(|it| MirEvalError::MirLowerErrorForClosure(closure, it))?;
-        let closure_data = if mir_body.locals[mir_body.param_locals[0]].ty.as_reference().is_some()
+        let closure_data = if mir_body.locals[mir_body.param_locals[0]]
+            .ty
+            .as_reference()
+            .is_some()
         {
             closure_data.addr.to_bytes().to_vec()
         } else {
@@ -2600,7 +2737,8 @@ impl<'db> Evaluator<'db> {
             MirOrDynIndex::Dyn(self_ty_idx)
         } else {
             let (imp, generic_args) =
-                self.db.lookup_impl_method(self.trait_env.clone(), def, generic_args);
+                self.db
+                    .lookup_impl_method(self.trait_env.clone(), def, generic_args);
 
             let mir_body = self
                 .db
@@ -2613,7 +2751,9 @@ impl<'db> Evaluator<'db> {
                 })?;
             MirOrDynIndex::Mir(mir_body)
         };
-        self.mir_or_dyn_index_cache.borrow_mut().insert((def, generic_args), r.clone());
+        self.mir_or_dyn_index_cache
+            .borrow_mut()
+            .insert((def, generic_args), r.clone());
         Ok(r)
     }
 
@@ -2701,7 +2841,12 @@ impl<'db> Evaluator<'db> {
                 self.create_locals_for_body(&mir_body, Some(destination))?;
             self.fill_locals_for_body(&mir_body, &mut locals, arg_bytes.into_iter())?;
             let span = (span, locals.body.owner);
-            Some(StackFrame { locals, destination: Some(target_bb), prev_stack_ptr, span })
+            Some(StackFrame {
+                locals,
+                destination: Some(target_bb),
+                prev_stack_ptr,
+                span,
+            })
         } else {
             let result = self.interpret_mir(mir_body, arg_bytes).map_err(|e| {
                 MirEvalError::InFunction(
@@ -2732,18 +2877,29 @@ impl<'db> Evaluator<'db> {
         while let TyKind::Ref(_, z, _) = func_ty.kind() {
             func_ty = z;
             if matches!(func_ty.kind(), TyKind::Dynamic(..)) {
-                let id =
-                    from_bytes!(usize, &func_data.get(self)?[self.ptr_size()..self.ptr_size() * 2]);
+                let id = from_bytes!(
+                    usize,
+                    &func_data.get(self)?[self.ptr_size()..self.ptr_size() * 2]
+                );
                 func_data = func_data.slice(0..self.ptr_size());
                 func_ty = self.vtable_map.ty(id)?;
             }
             let size = self.size_of_sized(func_ty, locals, "self type of fn trait")?;
-            func_data = Interval { addr: Address::from_bytes(func_data.get(self)?)?, size };
+            func_data = Interval {
+                addr: Address::from_bytes(func_data.get(self)?)?,
+                size,
+            };
         }
         match func_ty.kind() {
-            TyKind::FnDef(def, subst) => {
-                self.exec_fn_def(def.0, subst, destination, &args[1..], locals, target_bb, span)
-            }
+            TyKind::FnDef(def, subst) => self.exec_fn_def(
+                def.0,
+                subst,
+                destination,
+                &args[1..],
+                locals,
+                target_bb,
+                span,
+            ),
             TyKind::FnPtr(..) => {
                 self.exec_fn_pointer(func_data, destination, &args[1..], locals, target_bb, span)
             }
@@ -2773,7 +2929,10 @@ impl<'db> Evaluator<'db> {
                     let size = layout.size.bytes_usize();
                     let addr = self.heap_allocate(size, layout.align.bytes() as usize)?;
                     self.write_memory(addr, &result)?;
-                    IntervalAndTy { interval: Interval { addr, size }, ty }
+                    IntervalAndTy {
+                        interval: Interval { addr, size },
+                        ty,
+                    }
                 };
                 self.exec_fn_with_args(
                     def,
@@ -2841,7 +3000,10 @@ impl<'db> Evaluator<'db> {
         span: MirSpan,
     ) -> Result<'db, ()> {
         let (addr, ty, metadata) = self.place_addr_and_ty_and_metadata(place, locals)?;
-        if !locals.drop_flags.remove_place(place, &locals.body.projection_store) {
+        if !locals
+            .drop_flags
+            .remove_place(place, &locals.body.projection_store)
+        {
             return Ok(());
         }
         let metadata = match metadata {
@@ -2861,7 +3023,9 @@ impl<'db> Evaluator<'db> {
     ) -> Result<'db, ()> {
         let Some(drop_fn) = (|| {
             let drop_trait = LangItem::Drop.resolve_trait(self.db, self.crate_id)?;
-            drop_trait.trait_items(self.db).method_by_name(&Name::new_symbol_root(sym::drop))
+            drop_trait
+                .trait_items(self.db)
+                .method_by_name(&Name::new_symbol_root(sym::drop))
         })() else {
             // in some tests we don't have drop trait in minicore, and
             // we can ignore drop in them.
@@ -2878,7 +3042,10 @@ impl<'db> Evaluator<'db> {
                 drop_fn,
                 iter::once(IntervalOrOwned::Owned(addr.to_bytes().to_vec())),
                 span,
-                Interval { addr: Address::Invalid(0), size: 0 },
+                Interval {
+                    addr: Address::Invalid(0),
+                    size: 0,
+                },
                 None,
             )?;
         }
@@ -2978,8 +3145,9 @@ pub fn render_const_using_debug_impl<'db>(
     ) else {
         not_supported!("core::fmt::Debug not found");
     };
-    let Some(debug_fmt_fn) =
-        debug_trait.trait_items(db).method_by_name(&Name::new_symbol_root(sym::fmt))
+    let Some(debug_fmt_fn) = debug_trait
+        .trait_items(db)
+        .method_by_name(&Name::new_symbol_root(sym::fmt))
     else {
         not_supported!("core::fmt::Debug::fmt not found");
     };
@@ -2995,7 +3163,10 @@ pub fn render_const_using_debug_impl<'db>(
         CallableDefId::FunctionId(debug_fmt_fn).into(),
         GenericArgs::new_from_iter(evaluator.interner(), [ty.into()]),
     ));
-    evaluator.write_memory(a2.offset(evaluator.ptr_size()), &debug_fmt_fn_ptr.to_le_bytes())?;
+    evaluator.write_memory(
+        a2.offset(evaluator.ptr_size()),
+        &debug_fmt_fn_ptr.to_le_bytes(),
+    )?;
     // a3 = ::core::fmt::Arguments::new_v1(a1, a2)
     // FIXME: similarly, we should call function here, not directly working with memory.
     let a3 = evaluator.heap_allocate(evaluator.ptr_size() * 6, evaluator.ptr_size())?;
@@ -3011,9 +3182,13 @@ pub fn render_const_using_debug_impl<'db>(
         not_supported!("std::fmt::format not found");
     };
     let interval = evaluator.interpret_mir(
-        db.mir_body(format_fn.into()).map_err(|e| MirEvalError::MirLowerError(format_fn, e))?,
-        [IntervalOrOwned::Borrowed(Interval { addr: a3, size: evaluator.ptr_size() * 6 })]
-            .into_iter(),
+        db.mir_body(format_fn.into())
+            .map_err(|e| MirEvalError::MirLowerError(format_fn, e))?,
+        [IntervalOrOwned::Borrowed(Interval {
+            addr: a3,
+            size: evaluator.ptr_size() * 6,
+        })]
+        .into_iter(),
     )?;
     let message_string = interval.get(&evaluator)?;
     let addr =

@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 31093 bytes
 Chloro size:   31084 bytes
-Rustfmt size:  31849 bytes
+Rustfmt size:  31874 bytes
 
 ✗ Outputs DIFFER
 
@@ -20,23 +20,16 @@ Rustfmt size:  31849 bytes
  use tracing::{debug, instrument, warn};
  
  use super::{
- };
- use crate::next_solver::infer::type_variable::TypeVariableValue;
- use crate::next_solver::infer::unify_key::ConstVariableValue;
--use crate::next_solver::infer::{relate, InferCtxt};
-+use crate::next_solver::infer::{InferCtxt, relate};
- use crate::next_solver::util::MaxUniverse;
- use crate::next_solver::{
-     AliasTy, Binder, ClauseKind, Const, ConstKind, DbInterner, GenericArgs, PredicateKind, Region,
          instantiation_variance: Variance,
          source_ty: Ty<'db>,
      ) -> RelateResult<'db, ()> {
--        debug_assert!(self
--            .inner
--            .borrow_mut()
--            .type_variables()
--            .probe(target_vid)
--            .is_unknown());
+-        debug_assert!(
+-            self.inner
+-                .borrow_mut()
+-                .type_variables()
+-                .probe(target_vid)
+-                .is_unknown()
+-        );
 +        debug_assert!(self.inner.borrow_mut().type_variables().probe(target_vid).is_unknown());
  
          // Generalize `source_ty` depending on the current variance. As an example, assume

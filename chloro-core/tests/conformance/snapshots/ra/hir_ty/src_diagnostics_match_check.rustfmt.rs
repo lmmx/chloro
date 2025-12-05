@@ -107,7 +107,12 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
         infer: &'a InferenceResult<'db>,
         body: &'a Body,
     ) -> Self {
-        Self { db, infer, body, errors: Vec::new() }
+        Self {
+            db,
+            infer,
+            body,
+            errors: Vec::new(),
+        }
     }
 
     pub(crate) fn lower_pattern(&mut self, pat: PatId) -> Pat<'db> {
@@ -117,10 +122,17 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
         // Pattern adjustment is part of RFC 2005-match-ergonomics.
         // More info https://github.com/rust-lang/rust/issues/42640#issuecomment-313535089
         let unadjusted_pat = self.lower_pattern_unadjusted(pat);
-        self.infer.pat_adjustments.get(&pat).map(|it| &**it).unwrap_or_default().iter().rev().fold(
-            unadjusted_pat,
-            |subpattern, ref_ty| Pat { ty: *ref_ty, kind: Box::new(PatKind::Deref { subpattern }) },
-        )
+        self.infer
+            .pat_adjustments
+            .get(&pat)
+            .map(|it| &**it)
+            .unwrap_or_default()
+            .iter()
+            .rev()
+            .fold(unadjusted_pat, |subpattern, ref_ty| Pat {
+                ty: *ref_ty,
+                kind: Box::new(PatKind::Deref { subpattern }),
+            })
     }
 
     fn lower_pattern_unadjusted(&mut self, pat: PatId) -> Pat<'db> {
@@ -142,7 +154,10 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
                     _ => {
                         never!("unexpected type for tuple pattern: {:?}", ty);
                         self.errors.push(PatternError::UnexpectedType);
-                        return Pat { ty, kind: PatKind::Wild.into() };
+                        return Pat {
+                            ty,
+                            kind: PatKind::Wild.into(),
+                        };
                     }
                 };
                 let subpatterns = self.lower_tuple_subpats(args, arity, ellipsis);
@@ -162,14 +177,22 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
                             ty
                         );
                         self.errors.push(PatternError::UnexpectedType);
-                        return Pat { ty, kind: PatKind::Wild.into() };
+                        return Pat {
+                            ty,
+                            kind: PatKind::Wild.into(),
+                        };
                     }
                     _ => (),
                 }
-                PatKind::Binding { name: name.clone(), subpattern: self.lower_opt_pattern(subpat) }
+                PatKind::Binding {
+                    name: name.clone(),
+                    subpattern: self.lower_opt_pattern(subpat),
+                }
             }
 
-            hir_def::hir::Pat::TupleStruct { ref args, ellipsis, .. } if variant.is_some() => {
+            hir_def::hir::Pat::TupleStruct {
+                ref args, ellipsis, ..
+            } if variant.is_some() => {
                 let expected_len = variant.unwrap().fields(self.db).fields().len();
                 let subpatterns = self.lower_tuple_subpats(args, expected_len, ellipsis);
                 self.lower_variant_or_leaf(pat, ty, subpatterns)
@@ -200,7 +223,9 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
                 PatKind::Wild
             }
 
-            hir_def::hir::Pat::Or(ref pats) => PatKind::Or { pats: self.lower_patterns(pats) },
+            hir_def::hir::Pat::Or(ref pats) => PatKind::Or {
+                pats: self.lower_patterns(pats),
+            },
 
             _ => {
                 self.errors.push(PatternError::Unimplemented);
@@ -208,7 +233,10 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
             }
         };
 
-        Pat { ty, kind: Box::new(kind) }
+        Pat {
+            ty,
+            kind: Box::new(kind),
+        }
     }
 
     fn lower_tuple_subpats(
@@ -260,7 +288,11 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
                             return PatKind::Wild;
                         }
                     };
-                    PatKind::Variant { substs, enum_variant, subpatterns }
+                    PatKind::Variant {
+                        substs,
+                        enum_variant,
+                        subpatterns,
+                    }
                 } else {
                     PatKind::Leaf { subpatterns }
                 }
@@ -275,7 +307,10 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
     fn lower_path(&mut self, pat: PatId, _path: &Path) -> Pat<'db> {
         let ty = self.infer[pat];
 
-        let pat_from_kind = |kind| Pat { ty, kind: Box::new(kind) };
+        let pat_from_kind = |kind| Pat {
+            ty,
+            kind: Box::new(kind),
+        };
 
         match self.infer.variant_resolution_for_pat(pat) {
             Some(_) => pat_from_kind(self.lower_variant_or_leaf(pat, ty, Vec::new())),

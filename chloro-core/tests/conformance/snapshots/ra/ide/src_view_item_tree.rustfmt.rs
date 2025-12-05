@@ -1,4 +1,4 @@
-use hir::{db::DefDatabase, EditionedFileId, Semantics};
+use hir::{EditionedFileId, Semantics, db::DefDatabase};
 use ide_db::{FileId, RootDatabase};
 
 // Feature: Debug ItemTree

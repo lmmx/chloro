@@ -108,11 +108,15 @@ pub(crate) fn extract_struct_from_enum_variant(
             let generic_params = enum_ast
                 .generic_param_list()
                 .and_then(|known_generics| extract_generic_params(&known_generics, &field_list));
-            let generics = generic_params.as_ref().map(|generics| generics.clone_for_update());
+            let generics = generic_params
+                .as_ref()
+                .map(|generics| generics.clone_for_update());
 
             // resolve GenericArg in field_list to actual type
-            let field_list = if let Some((target_scope, source_scope)) =
-                ctx.sema.scope(enum_ast.syntax()).zip(ctx.sema.scope(field_list.syntax()))
+            let field_list = if let Some((target_scope, source_scope)) = ctx
+                .sema
+                .scope(enum_ast.syntax())
+                .zip(ctx.sema.scope(field_list.syntax()))
             {
                 let field_list = field_list.reset_indent();
                 let field_list =
@@ -129,8 +133,13 @@ pub(crate) fn extract_struct_from_enum_variant(
                 field_list.clone_for_update()
             };
 
-            let def =
-                create_struct_def(variant_name.clone(), &variant, &field_list, generics, &enum_ast);
+            let def = create_struct_def(
+                variant_name.clone(),
+                &variant,
+                &field_list,
+                generics,
+                &enum_ast,
+            );
 
             let enum_ast = variant.parent_enum();
             let indent = enum_ast.indent_level();
@@ -189,27 +198,40 @@ fn extract_generic_params(
     known_generics: &ast::GenericParamList,
     field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>,
 ) -> Option<ast::GenericParamList> {
-    let mut generics = known_generics.generic_params().map(|param| (param, false)).collect_vec();
+    let mut generics = known_generics
+        .generic_params()
+        .map(|param| (param, false))
+        .collect_vec();
 
     let tagged_one = match field_list {
         Either::Left(field_list) => field_list
             .fields()
             .filter_map(|f| f.ty())
-            .fold(false, |tagged, ty| tag_generics_in_variant(&ty, &mut generics) || tagged),
+            .fold(false, |tagged, ty| {
+                tag_generics_in_variant(&ty, &mut generics) || tagged
+            }),
         Either::Right(field_list) => field_list
             .fields()
             .filter_map(|f| f.ty())
-            .fold(false, |tagged, ty| tag_generics_in_variant(&ty, &mut generics) || tagged),
+            .fold(false, |tagged, ty| {
+                tag_generics_in_variant(&ty, &mut generics) || tagged
+            }),
     };
 
-    let generics = generics.into_iter().filter_map(|(param, tag)| tag.then_some(param));
+    let generics = generics
+        .into_iter()
+        .filter_map(|(param, tag)| tag.then_some(param));
     tagged_one.then(|| make::generic_param_list(generics))
 }
 
 fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, bool)]) -> bool {
     let mut tagged_one = false;
 
-    for token in ty.syntax().descendants_with_tokens().filter_map(SyntaxElement::into_token) {
+    for token in ty
+        .syntax()
+        .descendants_with_tokens()
+        .filter_map(SyntaxElement::into_token)
+    {
         for (param, tag) in generics.iter_mut().filter(|(_, tag)| !tag) {
             match param {
                 ast::GenericParam::LifetimeParam(lt)
@@ -306,7 +328,10 @@ fn create_struct_def(
         enum_
             .attrs()
             .flat_map(|it| {
-                vec![it.syntax().clone_for_update().into(), make::tokens::single_newline().into()]
+                vec![
+                    it.syntax().clone_for_update().into(),
+                    make::tokens::single_newline().into(),
+                ]
             })
             .collect(),
     );
@@ -379,8 +404,14 @@ fn apply_references(
     }
     // deep clone to prevent cycle
     let path = make::path_from_segments(iter::once(segment.clone_subtree()), false);
-    ted::insert_raw(ted::Position::before(segment.syntax()), path.clone_for_update().syntax());
-    ted::insert_raw(ted::Position::before(segment.syntax()), make::token(T!['(']));
+    ted::insert_raw(
+        ted::Position::before(segment.syntax()),
+        path.clone_for_update().syntax(),
+    );
+    ted::insert_raw(
+        ted::Position::before(segment.syntax()),
+        make::token(T!['(']),
+    );
     ted::insert_raw(ted::Position::after(&node), make::token(T![')']));
 }
 
@@ -391,7 +422,11 @@ fn process_references(
     enum_module_def: &ModuleDef,
     variant_hir_name: &Name,
     refs: Vec<FileReference>,
-) -> Vec<(ast::PathSegment, SyntaxNode, Option<(ImportScope, hir::ModPath)>)> {
+) -> Vec<(
+    ast::PathSegment,
+    SyntaxNode,
+    Option<(ImportScope, hir::ModPath)>,
+)> {
     // we have to recollect here eagerly as we are about to edit the tree we need to calculate the changes
     // and corresponding nodes up front
     refs.into_iter()
@@ -400,7 +435,9 @@ fn process_references(
             let segment = builder.make_mut(segment);
             let scope_node = builder.make_syntax_mut(scope_node);
             if !visited_modules.contains(&module) {
-                let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+                let cfg = ctx
+                    .config
+                    .find_path_config(ctx.sema.is_nightly(module.krate()));
                 let mod_path = module.find_use_path(
                     ctx.sema.db,
                     *enum_module_def,
@@ -424,8 +461,12 @@ fn reference_to_node(
     sema: &hir::Semantics<'_, RootDatabase>,
     reference: FileReference,
 ) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
-    let segment =
-        reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
+    let segment = reference
+        .name
+        .as_name_ref()?
+        .syntax()
+        .parent()
+        .and_then(ast::PathSegment::cast)?;
 
     // filter out the reference in marco
     let segment_range = segment.syntax().text_range();

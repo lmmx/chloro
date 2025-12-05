@@ -1,21 +1,20 @@
 //! Utilities for computing drop info about types.
 
-use hir_def::{lang_item::LangItem, signatures::StructFlags, AdtId};
+use hir_def::{AdtId, lang_item::LangItem, signatures::StructFlags};
 use rustc_hash::FxHashSet;
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    consteval,
+    TraitEnvironment, consteval,
     db::HirDatabase,
     method_resolution::TyFingerprint,
     next_solver::{
-        infer::{traits::ObligationCause, InferCtxt},
-        obligation_ctxt::ObligationCtxt,
         Ty, TyKind,
+        infer::{InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
     },
-    TraitEnvironment,
 };
 
 fn has_destructor(db: &dyn HirDatabase, adt: AdtId) -> bool {

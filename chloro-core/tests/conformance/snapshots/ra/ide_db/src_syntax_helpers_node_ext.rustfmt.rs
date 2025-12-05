@@ -21,12 +21,22 @@ pub fn expr_as_name_ref(expr: &ast::Expr) -> Option<ast::NameRef> {
 pub fn full_path_of_name_ref(name_ref: &ast::NameRef) -> Option<ast::Path> {
     let mut ancestors = name_ref.syntax().ancestors();
     let _ = ancestors.next()?; // skip self
-    let _ = ancestors.next().filter(|it| ast::PathSegment::can_cast(it.kind()))?; // skip self
-    ancestors.take_while(|it| ast::Path::can_cast(it.kind())).last().and_then(ast::Path::cast)
+    let _ = ancestors
+        .next()
+        .filter(|it| ast::PathSegment::can_cast(it.kind()))?; // skip self
+    ancestors
+        .take_while(|it| ast::Path::can_cast(it.kind()))
+        .last()
+        .and_then(ast::Path::cast)
 }
 
 pub fn block_as_lone_tail(block: &ast::BlockExpr) -> Option<ast::Expr> {
-    block.statements().next().is_none().then(|| block.tail_expr()).flatten()
+    block
+        .statements()
+        .next()
+        .is_none()
+        .then(|| block.tail_expr())
+        .flatten()
 }
 
 /// Preorder walk all the expression's child expressions.
@@ -80,8 +90,14 @@ pub fn preorder_expr_with_ctx_checker(
             }
         };
         if let Some(let_stmt) = node.parent().and_then(ast::LetStmt::cast)
-            && let_stmt.initializer().map(|it| it.syntax() != &node).unwrap_or(true)
-            && let_stmt.let_else().map(|it| it.syntax() != &node).unwrap_or(true)
+            && let_stmt
+                .initializer()
+                .map(|it| it.syntax() != &node)
+                .unwrap_or(true)
+            && let_stmt
+                .let_else()
+                .map(|it| it.syntax() != &node)
+                .unwrap_or(true)
         {
             // skipping potential const pat expressions in  let statements
             preorder.skip_subtree();
@@ -329,7 +345,9 @@ pub fn for_each_tail_expr(expr: &ast::Expr, cb: &mut dyn FnMut(&ast::Expr)) {
         ast::Expr::ForExpr(f) => walk_loop(cb, f.label(), f.loop_body()),
         ast::Expr::MatchExpr(m) => {
             if let Some(arms) = m.match_arm_list() {
-                arms.arms().filter_map(|arm| arm.expr()).for_each(|e| for_each_tail_expr(&e, cb));
+                arms.arms()
+                    .filter_map(|arm| arm.expr())
+                    .for_each(|e| for_each_tail_expr(&e, cb));
             }
         }
         ast::Expr::ArrayExpr(_)
@@ -416,7 +434,9 @@ fn for_each_break_expr(
 }
 
 pub fn eq_label_lt(lt1: &Option<ast::Lifetime>, lt2: &Option<ast::Lifetime>) -> bool {
-    lt1.as_ref().zip(lt2.as_ref()).is_some_and(|(lt, lbl)| lt.text() == lbl.text())
+    lt1.as_ref()
+        .zip(lt2.as_ref())
+        .is_some_and(|(lt, lbl)| lt.text() == lbl.text())
 }
 
 struct TreeWithDepthIterator {
@@ -470,8 +490,11 @@ pub fn parse_tt_as_comma_sep_paths(
     edition: Edition,
 ) -> Option<Vec<ast::Path>> {
     let r_paren = input.r_paren_token();
-    let tokens =
-        input.syntax().children_with_tokens().skip(1).map_while(|it| match it.into_token() {
+    let tokens = input
+        .syntax()
+        .children_with_tokens()
+        .skip(1)
+        .map_while(|it| match it.into_token() {
             // seeing a keyword means the attribute is unclosed so stop parsing here
             Some(tok) if tok.kind().is_keyword(edition) => None,
             // don't include the right token tree parenthesis if it exists
@@ -497,6 +520,9 @@ pub fn parse_tt_as_comma_sep_paths(
 }
 
 pub fn macro_call_for_string_token(string: &ast::String) -> Option<MacroCall> {
-    let macro_call = string.syntax().parent_ancestors().find_map(ast::MacroCall::cast)?;
+    let macro_call = string
+        .syntax()
+        .parent_ancestors()
+        .find_map(ast::MacroCall::cast)?;
     Some(macro_call)
 }

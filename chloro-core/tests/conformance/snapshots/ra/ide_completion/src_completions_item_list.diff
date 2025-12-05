@@ -8,15 +8,6 @@ Rustfmt size:  6074 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Completion of paths and keywords at item list position.
- 
- use crate::{
--    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
-     CompletionContext, Completions,
-+    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
- };
- 
- pub(crate) mod trait_impl;
  fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
  

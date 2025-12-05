@@ -3,11 +3,34 @@ COMPARISON DIFF
 
 Original size: 19028 bytes
 Chloro size:   19066 bytes
-Rustfmt size:  19028 bytes
+Rustfmt size:  19330 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     }
+ 
+     pub fn iter(self) -> impl Iterator<Item = (TokenId, TokenStaticData)> {
+-        self.0
+-            .into_iter()
+-            .enumerate()
+-            .map(|(id, data)| (TokenId(id), data))
++        self.0.into_iter().enumerate().map(|(id, data)| (TokenId(id), data))
+     }
+ }
+ 
+ }
+ 
+ fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
+-    let mut worklist: Vec<_> = Crate::all(db)
+-        .into_iter()
+-        .map(|krate| krate.root_module())
+-        .collect();
++    let mut worklist: Vec<_> =
++        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+     let mut modules = Vec::new();
+ 
+     while let Some(module) = worklist.pop() {
  }
  
  pub enum VendoredLibrariesConfig<'a> {
@@ -18,6 +41,35 @@ Rustfmt size:  19028 bytes
      Excluded,
  }
  
+                 IDENT | INT_NUMBER | LIFETIME_IDENT | T![self] | T![super] | T![crate] | T![Self]
+             )
+         });
+-        let mut result = StaticIndexedFile {
+-            file_id,
+-            inlay_hints,
+-            folds,
+-            tokens: vec![],
+-        };
++        let mut result = StaticIndexedFile { file_id, inlay_hints, folds, tokens: vec![] };
+ 
+         let mut add_token = |def: Definition, range: TextRange, scope_node: &SyntaxNode| {
+             let id = if let Some(it) = self.def_map.get(&def) {
+                         edition,
+                         display_target,
+                     )),
+-                    definition: def
+-                        .try_to_nav(&sema)
+-                        .map(UpmappingResult::call_site)
+-                        .map(|it| FileRange {
+-                            file_id: it.file_id,
+-                            range: it.focus_or_full_range(),
+-                        }),
++                    definition: def.try_to_nav(&sema).map(UpmappingResult::call_site).map(|it| {
++                        FileRange { file_id: it.file_id, range: it.focus_or_full_range() }
++                    }),
+                     references: vec![],
+                     moniker: current_crate.and_then(|cc| def_to_moniker(self.db, def, cc)),
+                     display_name: def
          vendored_libs_config: VendoredLibrariesConfig<'_>,
      ) -> StaticIndex<'a> {
          let db = &analysis.db;
@@ -27,7 +79,14 @@ Rustfmt size:  19028 bytes
 +            || {
              let work = all_modules(db).into_iter().filter(|module| {
                  let file_id = module.definition_source_file_id(db).original_file(db);
-                 let source_root =
+-                let source_root = db
+-                    .file_source_root(file_id.file_id(&analysis.db))
+-                    .source_root_id(db);
++                let source_root =
++                    db.file_source_root(file_id.file_id(&analysis.db)).source_root_id(db);
+                 let source_root = db.source_root(source_root).source_root(db);
+                 let is_vendored = match vendored_libs_config {
+                     VendoredLibrariesConfig::Included { workspace_root } => source_root
                  visited_files.insert(file_id);
              }
              this
@@ -46,6 +105,17 @@ Rustfmt size:  19028 bytes
      fn check_all_ranges(
          #[rust_analyzer::rust_fixture] ra_fixture: &str,
          vendored_libs_config: VendoredLibrariesConfig<'_>,
+                     // ignore whole file range corresponding to module definition
+                     continue;
+                 }
+-                let it = FileRange {
+-                    file_id: f.file_id,
+-                    range,
+-                };
++                let it = FileRange { file_id: f.file_id, range };
+                 if !range_set.contains(&it) {
+                     panic!("additional range {it:?}");
+                 }
              panic!("unfound ranges {range_set:?}");
          }
      }

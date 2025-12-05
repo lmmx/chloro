@@ -1,13 +1,13 @@
 mod generated;
 
 use expect_test::expect;
-use hir::{db::HirDatabase, setup_tracing, Semantics};
+use hir::{Semantics, db::HirDatabase, setup_tracing};
 use ide_db::{
+    EditionedFileId, FileRange, RootDatabase, SnippetCap,
     assists::ExprFillDefaultMode,
     base_db::SourceDatabase,
     imports::insert_use::{ImportGranularity, InsertUseConfig},
     source_change::FileSystemEdit,
-    EditionedFileId, FileRange, RootDatabase, SnippetCap,
 };
 use stdx::{format_to, trim_indent};
 use syntax::TextRange;
@@ -15,8 +15,8 @@ use test_fixture::WithFixture;
 use test_utils::{assert_eq_text, extract_offset};
 
 use crate::{
-    handlers::Handler, Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy,
-    Assists, SingleResolve,
+    Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy, Assists, SingleResolve,
+    handlers::Handler,
 };
 
 pub(crate) const TEST_CONFIG: AssistConfig = AssistConfig {

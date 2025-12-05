@@ -57,7 +57,8 @@ pub enum Definition {
 
 impl Definition {
     pub fn canonical_module_path(&self, db: &RootDatabase) -> Option<impl Iterator<Item = Module>> {
-        self.module(db).map(|it| it.path_to_root(db).into_iter().rev())
+        self.module(db)
+            .map(|it| it.path_to_root(db).into_iter().rev())
     }
 
     pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
@@ -205,7 +206,8 @@ impl Definition {
         famous_defs: Option<&FamousDefs<'_, '_>>,
         display_target: DisplayTarget,
     ) -> Option<Documentation> {
-        self.docs_with_rangemap(db, famous_defs, display_target).map(|(docs, _)| docs)
+        self.docs_with_rangemap(db, famous_defs, display_target)
+            .map(|(docs, _)| docs)
     }
 
     pub fn docs_with_rangemap(
@@ -243,27 +245,38 @@ impl Definition {
             Definition::BuiltinType(it) => {
                 famous_defs.and_then(|fd| {
                     // std exposes prim_{} modules with docstrings on the root to document the builtins
-                    let primitive_mod =
-                        format!("prim_{}", it.name().display(fd.0.db, display_target.edition));
+                    let primitive_mod = format!(
+                        "prim_{}",
+                        it.name().display(fd.0.db, display_target.edition)
+                    );
                     let doc_owner = find_std_module(fd, &primitive_mod, display_target.edition)?;
                     doc_owner.docs_with_rangemap(fd.0.db)
                 })
             }
             Definition::BuiltinLifetime(StaticLifetime) => None,
             Definition::Local(_) => None,
-            Definition::SelfType(impl_def) => {
-                impl_def.self_ty(db).as_adt().map(|adt| adt.docs_with_rangemap(db))?
-            }
+            Definition::SelfType(impl_def) => impl_def
+                .self_ty(db)
+                .as_adt()
+                .map(|adt| adt.docs_with_rangemap(db))?,
             Definition::GenericParam(_) => None,
             Definition::Label(_) => None,
             Definition::ExternCrateDecl(it) => it.docs_with_rangemap(db),
 
             Definition::BuiltinAttr(it) => {
                 let name = it.name();
-                let AttributeTemplate { word, list, name_value_str } = it.template()?;
+                let AttributeTemplate {
+                    word,
+                    list,
+                    name_value_str,
+                } = it.template()?;
                 let mut docs = "Valid forms are:".to_owned();
                 if word {
-                    format_to!(docs, "\n - #\\[{}]", name.display(db, display_target.edition));
+                    format_to!(
+                        docs,
+                        "\n - #\\[{}]",
+                        name.display(db, display_target.edition)
+                    );
                 }
                 if let Some(list) = list {
                     format_to!(
@@ -296,7 +309,10 @@ impl Definition {
             let assoc = self.as_assoc_item(db)?;
             let trait_ = assoc.implemented_trait(db)?;
             let name = Some(assoc.name(db)?);
-            let item = trait_.items(db).into_iter().find(|it| it.name(db) == name)?;
+            let item = trait_
+                .items(db)
+                .into_iter()
+                .find(|it| it.name(db) == name)?;
             item.docs_with_rangemap(db)
         })
         .map(|(docs, range_map)| (docs, Some(range_map)))
@@ -354,7 +370,10 @@ impl Definition {
                 it.name(db).display(db, display_target.edition).to_string()
             }
             Definition::DeriveHelper(it) => {
-                format!("derive_helper {}", it.name(db).display(db, display_target.edition))
+                format!(
+                    "derive_helper {}",
+                    it.name(db).display(db, display_target.edition)
+                )
             }
             // FIXME
             Definition::InlineAsmRegOrRegClass(_) => "inline_asm_reg_or_reg_class".to_owned(),
@@ -372,7 +391,9 @@ pub fn find_std_module(
     let std_crate = famous_defs.std()?;
     let std_root_module = std_crate.root_module();
     std_root_module.children(db).find(|module| {
-        module.name(db).is_some_and(|module| module.display(db, edition).to_string() == name)
+        module
+            .name(db)
+            .is_some_and(|module| module.display(db, edition).to_string() == name)
     })
 }
 
@@ -531,9 +552,11 @@ impl<'db> NameClass<'db> {
         let res = match self {
             NameClass::Definition(it) => it,
             NameClass::ConstReference(_) => return None,
-            NameClass::PatFieldShorthand { local_def, field_ref: _, adt_subst: _ } => {
-                Definition::Local(local_def)
-            }
+            NameClass::PatFieldShorthand {
+                local_def,
+                field_ref: _,
+                adt_subst: _,
+            } => Definition::Local(local_def),
         };
         Some(res)
     }
@@ -638,7 +661,9 @@ impl<'db> NameClass<'db> {
         let parent = lifetime.syntax().parent()?;
 
         if let Some(it) = ast::LifetimeParam::cast(parent.clone()) {
-            sema.to_def(&it).map(Into::into).map(Definition::GenericParam)
+            sema.to_def(&it)
+                .map(Into::into)
+                .map(Definition::GenericParam)
         } else if let Some(it) = ast::Label::cast(parent) {
             sema.to_def(&it).map(Definition::Label)
         } else {
@@ -670,21 +695,24 @@ impl OperatorClass {
         sema: &Semantics<'_, RootDatabase>,
         range_expr: &ast::RangeExpr,
     ) -> Option<OperatorClass> {
-        sema.resolve_range_expr(range_expr).map(OperatorClass::Range)
+        sema.resolve_range_expr(range_expr)
+            .map(OperatorClass::Range)
     }
 
     pub fn classify_await(
         sema: &Semantics<'_, RootDatabase>,
         await_expr: &ast::AwaitExpr,
     ) -> Option<OperatorClass> {
-        sema.resolve_await_to_poll(await_expr).map(OperatorClass::Await)
+        sema.resolve_await_to_poll(await_expr)
+            .map(OperatorClass::Await)
     }
 
     pub fn classify_prefix(
         sema: &Semantics<'_, RootDatabase>,
         prefix_expr: &ast::PrefixExpr,
     ) -> Option<OperatorClass> {
-        sema.resolve_prefix_expr(prefix_expr).map(OperatorClass::Prefix)
+        sema.resolve_prefix_expr(prefix_expr)
+            .map(OperatorClass::Prefix)
     }
 
     pub fn classify_try(
@@ -698,7 +726,8 @@ impl OperatorClass {
         sema: &Semantics<'_, RootDatabase>,
         index_expr: &ast::IndexExpr,
     ) -> Option<OperatorClass> {
-        sema.resolve_index_expr(index_expr).map(OperatorClass::Index)
+        sema.resolve_index_expr(index_expr)
+            .map(OperatorClass::Index)
     }
 
     pub fn classify_bin(
@@ -751,9 +780,11 @@ impl<'db> NameRefClass<'db> {
         {
             let res = match local {
                 None => NameRefClass::Definition(Definition::Field(field), Some(adt_subst)),
-                Some(local) => {
-                    NameRefClass::FieldShorthand { field_ref: field, local_ref: local, adt_subst }
-                }
+                Some(local) => NameRefClass::FieldShorthand {
+                    field_ref: field,
+                    local_ref: local,
+                    adt_subst,
+                },
             };
             return Some(res);
         }

@@ -148,7 +148,10 @@ pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
                     _ => None,
                 };
                 if let Some(file_id) = file_id.filter(|file| file.macro_file().is_some()) {
-                    in_macro_expansion.entry(file_id).or_default().push(runnable);
+                    in_macro_expansion
+                        .entry(file_id)
+                        .or_default()
+                        .push(runnable);
                     return;
                 }
             }
@@ -162,7 +165,10 @@ pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
             Definition::SelfType(impl_) => runnable_impl(&sema, &impl_),
             _ => None,
         };
-        add_opt(runnable.or_else(|| module_def_doctest(&sema, def)), Some(def));
+        add_opt(
+            runnable.or_else(|| module_def_doctest(&sema, def)),
+            Some(def),
+        );
         if let Definition::SelfType(impl_) = def {
             impl_.items(db).into_iter().for_each(|assoc| {
                 let runnable = match assoc {
@@ -218,7 +224,11 @@ pub(crate) fn related_tests(
 
 fn cmp_runnables(
     Runnable { nav, kind, .. }: &Runnable,
-    Runnable { nav: nav_b, kind: kind_b, .. }: &Runnable,
+    Runnable {
+        nav: nav_b,
+        kind: kind_b,
+        ..
+    }: &Runnable,
 ) -> std::cmp::Ordering {
     // full_range.start < focus_range.start < name, should give us a decent unique ordering
     nav.full_range
@@ -259,8 +269,9 @@ fn find_related_tests(
                 FileReferenceNode::NameRef(name_ref) => name_ref,
                 _ => continue,
             };
-            if let Some(fn_def) =
-                sema.ancestors_with_macros(name_ref.syntax().clone()).find_map(ast::Fn::cast)
+            if let Some(fn_def) = sema
+                .ancestors_with_macros(name_ref.syntax().clone())
+                .find_map(ast::Fn::cast)
             {
                 if let Some(runnable) = as_test_runnable(sema, &fn_def) {
                     // direct test
@@ -288,7 +299,10 @@ fn find_related_tests_in_module(
     let mod_source = parent_module.definition_source_range(sema.db);
 
     let file_id = mod_source.file_id.original_file(sema.db);
-    let mod_scope = SearchScope::file_range(hir::FileRange { file_id, range: mod_source.value });
+    let mod_scope = SearchScope::file_range(hir::FileRange {
+        file_id,
+        range: mod_source.value,
+    });
     let fn_pos = FilePosition {
         file_id: file_id.file_id(sema.db),
         offset: fn_name.syntax().text_range().start(),
@@ -332,14 +346,17 @@ pub(crate) fn runnable_fn(
                 let def: hir::ModuleDef = def.into();
                 def.canonical_path(sema.db, edition)
             };
-            canonical_path
-                .map(TestId::Path)
-                .unwrap_or(TestId::Name(def.name(sema.db).display_no_db(edition).to_smolstr()))
+            canonical_path.map(TestId::Path).unwrap_or(TestId::Name(
+                def.name(sema.db).display_no_db(edition).to_smolstr(),
+            ))
         };
 
         if def.is_test(sema.db) {
             let attr = TestAttr::from_fn(sema.db, def);
-            RunnableKind::Test { test_id: test_id(), attr }
+            RunnableKind::Test {
+                test_id: test_id(),
+                attr,
+            }
         } else if def.is_bench(sema.db) {
             RunnableKind::Bench { test_id: test_id() }
         } else {
@@ -355,11 +372,19 @@ pub(crate) fn runnable_fn(
     )
     .call_site();
 
-    let file_range = fn_source.syntax().original_file_range_with_macro_call_input(sema.db);
+    let file_range = fn_source
+        .syntax()
+        .original_file_range_with_macro_call_input(sema.db);
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
 
     let cfg = def.attrs(sema.db).cfg();
-    Some(Runnable { use_name_in_title: false, nav, kind, cfg, update_test })
+    Some(Runnable {
+        use_name_in_title: false,
+        nav,
+        kind,
+        cfg,
+        update_test,
+    })
 }
 
 pub(crate) fn runnable_mod(
@@ -376,7 +401,9 @@ pub(crate) fn runnable_mod(
         .rev()
         .filter_map(|module| {
             module.name(sema.db).map(|mod_name| {
-                mod_name.display(sema.db, module.krate().edition(sema.db)).to_string()
+                mod_name
+                    .display(sema.db, module.krate().edition(sema.db))
+                    .to_string()
             })
         })
         .join("::");
@@ -443,7 +470,9 @@ pub(crate) fn runnable_impl(
 }
 
 fn has_cfg_test(attrs: AttrsWithOwner) -> bool {
-    attrs.cfgs().any(|cfg| matches!(&cfg, CfgExpr::Atom(CfgAtom::Flag(s)) if *s == sym::test))
+    attrs
+        .cfgs()
+        .any(|cfg| matches!(&cfg, CfgExpr::Atom(CfgAtom::Flag(s)) if *s == sym::test))
 }
 
 /// Creates a test mod runnable for outline modules at the top of their definition.
@@ -463,7 +492,9 @@ fn runnable_mod_outline_definition(
         .rev()
         .filter_map(|module| {
             module.name(sema.db).map(|mod_name| {
-                mod_name.display(sema.db, module.krate().edition(sema.db)).to_string()
+                mod_name
+                    .display(sema.db, module.krate().edition(sema.db))
+                    .to_string()
             })
         })
         .join("::");
@@ -538,8 +569,10 @@ fn module_def_doctest(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Op
         Some(path)
     })();
 
-    let test_id = path
-        .map_or_else(|| TestId::Name(def_name.display_no_db(edition).to_smolstr()), TestId::Path);
+    let test_id = path.map_or_else(
+        || TestId::Name(def_name.display_no_db(edition).to_smolstr()),
+        TestId::Path,
+    );
 
     let mut nav = match def {
         Definition::Module(def) => NavigationTarget::from_module_to_decl(db, def),
@@ -567,21 +600,30 @@ pub struct TestAttr {
 
 impl TestAttr {
     fn from_fn(db: &dyn HirDatabase, fn_def: hir::Function) -> TestAttr {
-        TestAttr { ignore: fn_def.is_ignore(db) }
+        TestAttr {
+            ignore: fn_def.is_ignore(db),
+        }
     }
 }
 
 fn has_runnable_doc_test(attrs: &hir::Attrs) -> bool {
     const RUSTDOC_FENCES: [&str; 2] = ["```", "~~~"];
-    const RUSTDOC_CODE_BLOCK_ATTRIBUTES_RUNNABLE: &[&str] =
-        &["", "rust", "should_panic", "edition2015", "edition2018", "edition2021"];
+    const RUSTDOC_CODE_BLOCK_ATTRIBUTES_RUNNABLE: &[&str] = &[
+        "",
+        "rust",
+        "should_panic",
+        "edition2015",
+        "edition2018",
+        "edition2021",
+    ];
 
     docs_from_attrs(attrs).is_some_and(|doc| {
         let mut in_code_block = false;
 
         for line in doc.lines() {
-            if let Some(header) =
-                RUSTDOC_FENCES.into_iter().find_map(|fence| line.strip_prefix(fence))
+            if let Some(header) = RUSTDOC_FENCES
+                .into_iter()
+                .find_map(|fence| line.strip_prefix(fence))
             {
                 in_code_block = !in_code_block;
 
@@ -780,7 +822,10 @@ mod tests {
     fn check_tests(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);
         let tests = analysis.related_tests(position, None).unwrap();
-        let navigation_targets = tests.into_iter().map(|runnable| runnable.nav).collect::<Vec<_>>();
+        let navigation_targets = tests
+            .into_iter()
+            .map(|runnable| runnable.nav)
+            .collect::<Vec<_>>();
         expect.assert_debug_eq(&navigation_targets);
     }
 

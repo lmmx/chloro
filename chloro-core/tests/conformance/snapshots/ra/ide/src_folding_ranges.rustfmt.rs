@@ -85,7 +85,10 @@ pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
                         continue;
                     }
                 }
-                res.push(Fold { range: element.text_range(), kind });
+                res.push(Fold {
+                    range: element.text_range(),
+                    kind,
+                });
                 continue;
             }
         }
@@ -110,7 +113,10 @@ pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
                     } else if let Some(range) =
                         contiguous_range_for_comment(comment, &mut visited_comments)
                     {
-                        res.push(Fold { range, kind: FoldKind::Comment })
+                        res.push(Fold {
+                            range,
+                            kind: FoldKind::Comment,
+                        })
                     }
                 }
             }
@@ -231,7 +237,10 @@ where
     }
 
     if first != last {
-        Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
+        Some(TextRange::new(
+            first.syntax().text_range().start(),
+            last.syntax().text_range().end(),
+        ))
     } else {
         // The group consists of only one element, therefore it cannot be folded
         None
@@ -289,7 +298,10 @@ fn contiguous_range_for_comment(
     }
 
     if first != last {
-        Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
+        Some(TextRange::new(
+            first.syntax().text_range().start(),
+            last.syntax().text_range().end(),
+        ))
     } else {
         // The group consists of only one element, therefore it cannot be folded
         None
@@ -327,8 +339,16 @@ mod tests {
         );
 
         for (fold, (range, attr)) in folds.iter().zip(ranges.into_iter()) {
-            assert_eq!(fold.range.start(), range.start(), "mismatched start of folding ranges");
-            assert_eq!(fold.range.end(), range.end(), "mismatched end of folding ranges");
+            assert_eq!(
+                fold.range.start(),
+                range.start(),
+                "mismatched start of folding ranges"
+            );
+            assert_eq!(
+                fold.range.end(),
+                range.end(),
+                "mismatched end of folding ranges"
+            );
 
             let kind = match fold.kind {
                 FoldKind::Comment => "comment",

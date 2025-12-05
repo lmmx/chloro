@@ -57,7 +57,9 @@ impl<'db> Evaluator<'db> {
                     )),
                 }
             }
-            _ => Err(MirEvalError::InternalError("simd type which is not a struct".into())),
+            _ => Err(MirEvalError::InternalError(
+                "simd type which is not a struct".into(),
+            )),
         }
     }
 
@@ -92,14 +94,19 @@ impl<'db> Evaluator<'db> {
             }
             "eq" | "ne" | "lt" | "le" | "gt" | "ge" => {
                 let [left, right] = args else {
-                    return Err(MirEvalError::InternalError("simd args are not provided".into()));
+                    return Err(MirEvalError::InternalError(
+                        "simd args are not provided".into(),
+                    ));
                 };
                 let (len, ty) = self.detect_simd_ty(left.ty)?;
                 let is_signed = matches!(ty.kind(), TyKind::Int(_));
                 let size = left.interval.size / len;
                 let dest_size = destination.size / len;
                 let mut destination_bytes = vec![];
-                let vector = left.get(self)?.chunks(size).zip(right.get(self)?.chunks(size));
+                let vector = left
+                    .get(self)?
+                    .chunks(size)
+                    .zip(right.get(self)?.chunks(size));
                 for (l, r) in vector {
                     let mut result = Ordering::Equal;
                     for (l, r) in l.iter().zip(r).rev() {
@@ -163,8 +170,10 @@ impl<'db> Evaluator<'db> {
                 };
                 let (left_len, _) = self.detect_simd_ty(left.ty)?;
                 let left_size = left.interval.size / left_len;
-                let vector =
-                    left.get(self)?.chunks(left_size).chain(right.get(self)?.chunks(left_size));
+                let vector = left
+                    .get(self)?
+                    .chunks(left_size)
+                    .chain(right.get(self)?.chunks(left_size));
                 let mut result = vec![];
                 for index in index.get(self)?.chunks(index.interval.size / index_len) {
                     let index = from_bytes!(u32, index) as usize;

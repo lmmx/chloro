@@ -21,7 +21,10 @@ pub(crate) fn complete_dot(
     dot_access: &DotAccess<'_>,
 ) {
     let receiver_ty = match dot_access {
-        DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
+        DotAccess {
+            receiver_ty: Some(receiver_ty),
+            ..
+        } => &receiver_ty.original,
         _ => return,
     };
 
@@ -43,9 +46,11 @@ pub(crate) fn complete_dot(
         if ctx.config.enable_auto_await {
             // Completions that skip `.await`, e.g. `.await.foo()`.
             let dot_access_kind = match &dot_access.kind {
-                DotAccessKind::Field { receiver_is_ambiguous_float_literal: _ } => {
-                    DotAccessKind::Field { receiver_is_ambiguous_float_literal: false }
-                }
+                DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: _,
+                } => DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: false,
+                },
                 it @ DotAccessKind::Method => *it,
             };
             let dot_access = DotAccess {
@@ -105,14 +110,19 @@ pub(crate) fn complete_dot(
         if let Some((iter, iter_sym)) = iter.or_else(into_iter) {
             // Skip iterators, e.g. complete `.iter().filter_map()`.
             let dot_access_kind = match &dot_access.kind {
-                DotAccessKind::Field { receiver_is_ambiguous_float_literal: _ } => {
-                    DotAccessKind::Field { receiver_is_ambiguous_float_literal: false }
-                }
+                DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: _,
+                } => DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: false,
+                },
                 it @ DotAccessKind::Method => *it,
             };
             let dot_access = DotAccess {
                 receiver: dot_access.receiver.clone(),
-                receiver_ty: Some(hir::TypeInfo { original: iter.clone(), adjusted: None }),
+                receiver_ty: Some(hir::TypeInfo {
+                    original: iter.clone(),
+                    adjusted: None,
+                }),
                 kind: dot_access_kind,
                 ctx: dot_access.ctx,
             };
@@ -142,7 +152,10 @@ pub(crate) fn complete_undotted_self(
         return;
     }
     let self_param = match expr_ctx {
-        PathExprCtx { self_param: Some(self_param), .. } => self_param,
+        PathExprCtx {
+            self_param: Some(self_param),
+            ..
+        } => self_param,
         _ => return,
     };
 
@@ -157,7 +170,9 @@ pub(crate) fn complete_undotted_self(
                 &DotAccess {
                     receiver: None,
                     receiver_ty: None,
-                    kind: DotAccessKind::Field { receiver_is_ambiguous_float_literal: false },
+                    kind: DotAccessKind::Field {
+                        receiver_is_ambiguous_float_literal: false,
+                    },
                     ctx: DotAccessExprCtx {
                         in_block_expr: expr_ctx.in_block_expr,
                         in_breakable: expr_ctx.in_breakable,
@@ -177,7 +192,9 @@ pub(crate) fn complete_undotted_self(
             &DotAccess {
                 receiver: None,
                 receiver_ty: None,
-                kind: DotAccessKind::Field { receiver_is_ambiguous_float_literal: false },
+                kind: DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: false,
+                },
                 ctx: DotAccessExprCtx {
                     in_block_expr: expr_ctx.in_block_expr,
                     in_breakable: expr_ctx.in_breakable,
@@ -272,7 +289,11 @@ fn complete_methods(
         traits_in_scope,
         Some(ctx.module),
         None,
-        Callback { ctx, f, seen_methods: FxHashSet::default() },
+        Callback {
+            ctx,
+            f,
+            seen_methods: FxHashSet::default(),
+        },
     );
 }
 

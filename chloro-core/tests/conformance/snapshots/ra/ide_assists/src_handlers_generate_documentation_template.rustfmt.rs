@@ -69,7 +69,10 @@ pub(crate) fn generate_documentation_template(
                     doc_lines.append(&mut lines);
                 }
             }
-            builder.insert(text_range.start(), documentation_from_lines(doc_lines, indent_level));
+            builder.insert(
+                text_range.start(),
+                documentation_from_lines(doc_lines, indent_level),
+            );
         },
     )
 }
@@ -98,8 +101,11 @@ pub(crate) fn generate_documentation_template(
 pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let tok: ast::Comment = ctx.find_token_at_offset()?;
     let node = tok.syntax().parent()?;
-    let last_doc_token =
-        ast::AnyHasDocComments::cast(node.clone())?.doc_comments().last()?.syntax().clone();
+    let last_doc_token = ast::AnyHasDocComments::cast(node.clone())?
+        .doc_comments()
+        .last()?
+        .syntax()
+        .clone();
     let next_token = skip_whitespace_token(last_doc_token.next_token()?, syntax::Direction::Next)?;
 
     let example = match_ast! {
@@ -223,7 +229,9 @@ fn introduction_builder(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<S
                 };
 
                 let self_ty = linkable_self_ty?;
-                Some(format!("Returns{reference} the {what} of this [`{self_ty}`]."))
+                Some(format!(
+                    "Returns{reference} the {what} of this [`{self_ty}`]."
+                ))
             }
             _ => None,
         };
@@ -266,7 +274,11 @@ fn panics_builder(ast_func: &ast::Fn) -> Option<Vec<String>> {
 /// Builds an optional `# Errors` section
 fn errors_builder(ast_func: &ast::Fn) -> Option<Vec<String>> {
     match return_type(ast_func)?.to_string().contains("Result") {
-        true => Some(string_vec_from(&["# Errors", "", "This function will return an error if ."])),
+        true => Some(string_vec_from(&[
+            "# Errors",
+            "",
+            "This function will return an error if .",
+        ])),
         false => None,
     }
 }
@@ -315,7 +327,9 @@ fn can_panic(ast_func: &ast::Fn) -> Option<bool> {
     let body = ast_func.body()?.to_string();
     let mut iter = body.chars();
     let assert_postfix = |s| {
-        ["!(", "_eq!(", "_ne!(", "_matches!("].iter().any(|postfix| str::starts_with(s, postfix))
+        ["!(", "_eq!(", "_ne!(", "_matches!("]
+            .iter()
+            .any(|postfix| str::starts_with(s, postfix))
     };
 
     while !iter.as_str().is_empty() {
@@ -344,7 +358,11 @@ fn self_name(ast_func: &ast::Fn) -> Option<String> {
 
 /// Helper function to get the name of the type of `self`
 fn self_type(ast_func: &ast::Fn) -> Option<ast::Type> {
-    ast_func.syntax().ancestors().find_map(ast::Impl::cast).and_then(|i| i.self_ty())
+    ast_func
+        .syntax()
+        .ancestors()
+        .find_map(ast::Impl::cast)
+        .and_then(|i| i.self_ty())
 }
 
 /// Output the real name of `Self` like `MyType<T>`, without the lifetimes.
@@ -354,11 +372,14 @@ fn self_type_without_lifetimes(ast_func: &ast::Fn) -> Option<String> {
         _ => return None,
     };
     let mut name = path_segment.name_ref()?.to_string();
-    let generics = path_segment.generic_arg_list().into_iter().flat_map(|list| {
-        list.generic_args()
-            .filter(|generic| matches!(generic, ast::GenericArg::TypeArg(_)))
-            .map(|generic| generic.to_string())
-    });
+    let generics = path_segment
+        .generic_arg_list()
+        .into_iter()
+        .flat_map(|list| {
+            list.generic_args()
+                .filter(|generic| matches!(generic, ast::GenericArg::TypeArg(_)))
+                .map(|generic| generic.to_string())
+        });
     let generics: String = generics.format(", ").to_string();
     if !generics.is_empty() {
         name.push('<');
@@ -466,7 +487,12 @@ fn function_call(
 
 /// Helper function to count the parameters including `self`
 fn count_parameters(param_list: &ast::ParamList) -> usize {
-    param_list.params().count() + if param_list.self_param().is_some() { 1 } else { 0 }
+    param_list.params().count()
+        + if param_list.self_param().is_some() {
+            1
+        } else {
+            0
+        }
 }
 
 /// Helper function to transform lines of documentation into a Rust code documentation

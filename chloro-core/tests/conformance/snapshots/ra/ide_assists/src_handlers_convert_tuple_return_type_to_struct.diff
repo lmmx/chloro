@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 20081 bytes
 Chloro size:   20061 bytes
-Rustfmt size:  20081 bytes
+Rustfmt size:  20738 bytes
 
 ✗ Outputs DIFFER
 
@@ -16,6 +16,216 @@ Rustfmt size:  20081 bytes
      match_ast, ted,
  };
  
+     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
+     let type_ref = ret_type.ty()?;
+ 
+-    let ast::Type::TupleType(tuple_ty) = &type_ref else {
+-        return None;
+-    };
+-    if tuple_ty
+-        .fields()
+-        .any(|field| matches!(field, ast::Type::ImplTraitType(_)))
+-    {
++    let ast::Type::TupleType(tuple_ty) = &type_ref else { return None };
++    if tuple_ty.fields().any(|field| matches!(field, ast::Type::ImplTraitType(_))) {
+         return None;
+     }
+ 
+     let fn_ = ret_type.syntax().parent().and_then(ast::Fn::cast)?;
+     let fn_def = ctx.sema.to_def(&fn_)?;
+     let fn_name = fn_.name()?;
+-    let target_module = ctx
+-        .sema
+-        .scope(fn_.syntax())?
+-        .module()
+-        .nearest_non_block_module(ctx.db());
++    let target_module = ctx.sema.scope(fn_.syntax())?.module().nearest_non_block_module(ctx.db());
+ 
+     let target = type_ref.syntax().text_range();
+     acc.add(
+ 
+             let usages = Definition::Function(fn_def).usages(&ctx.sema).all();
+             let struct_name = format!("{}Result", stdx::to_camel_case(&fn_name.to_string()));
+-            let parent = fn_
+-                .syntax()
+-                .ancestors()
+-                .find_map(<Either<ast::Impl, ast::Trait>>::cast);
++            let parent = fn_.syntax().ancestors().find_map(<Either<ast::Impl, ast::Trait>>::cast);
+             add_tuple_struct_def(
+                 edit,
+                 ctx,
+                 &usages,
+-                parent
+-                    .as_ref()
+-                    .map(|it| it.syntax())
+-                    .unwrap_or(fn_.syntax()),
++                parent.as_ref().map(|it| it.syntax()).unwrap_or(fn_.syntax()),
+                 tuple_ty,
+                 &struct_name,
+                 &target_module,
+ 
+             ted::replace(
+                 ret_type.syntax(),
+-                make::ret_type(make::ty(&struct_name))
+-                    .syntax()
+-                    .clone_for_update(),
++                make::ret_type(make::ty(&struct_name)).syntax().clone_for_update(),
+             );
+ 
+             if let Some(fn_body) = fn_.body() {
+         let refs_with_imports =
+             augment_references_with_imports(edit, ctx, references, struct_name, target_module);
+ 
+-        refs_with_imports
+-            .into_iter()
+-            .rev()
+-            .for_each(|(name, import_data)| {
+-                if let Some(fn_) = name.syntax().parent().and_then(ast::Fn::cast) {
+-                    cov_mark::hit!(replace_trait_impl_fns);
++        refs_with_imports.into_iter().rev().for_each(|(name, import_data)| {
++            if let Some(fn_) = name.syntax().parent().and_then(ast::Fn::cast) {
++                cov_mark::hit!(replace_trait_impl_fns);
+ 
+-                    if let Some(ret_type) = fn_.ret_type() {
+-                        ted::replace(
+-                            ret_type.syntax(),
+-                            make::ret_type(make::ty(struct_name))
+-                                .syntax()
+-                                .clone_for_update(),
+-                        );
+-                    }
+-
+-                    if let Some(fn_body) = fn_.body() {
+-                        replace_body_return_values(ast::Expr::BlockExpr(fn_body), struct_name);
+-                    }
+-                } else {
+-                    // replace tuple patterns
+-                    let pats = name
+-                        .syntax()
+-                        .ancestors()
+-                        .find(|node| {
+-                            ast::CallExpr::can_cast(node.kind())
+-                                || ast::MethodCallExpr::can_cast(node.kind())
+-                        })
+-                        .and_then(|node| node.parent())
+-                        .and_then(node_to_pats)
+-                        .unwrap_or(Vec::new());
+-
+-                    let tuple_pats = pats.iter().filter_map(|pat| match pat {
+-                        ast::Pat::TuplePat(tuple_pat) => Some(tuple_pat),
+-                        _ => None,
+-                    });
+-                    for tuple_pat in tuple_pats {
+-                        ted::replace(
+-                            tuple_pat.syntax(),
+-                            make::tuple_struct_pat(
+-                                make::path_from_text(struct_name),
+-                                tuple_pat.fields(),
+-                            )
+-                            .clone_for_update()
+-                            .syntax(),
+-                        );
+-                    }
++                if let Some(ret_type) = fn_.ret_type() {
++                    ted::replace(
++                        ret_type.syntax(),
++                        make::ret_type(make::ty(struct_name)).syntax().clone_for_update(),
++                    );
+                 }
+-                // add imports across modules where needed
+-                if let Some((import_scope, path)) = import_data {
+-                    insert_use(&import_scope, path, &ctx.config.insert_use);
++
++                if let Some(fn_body) = fn_.body() {
++                    replace_body_return_values(ast::Expr::BlockExpr(fn_body), struct_name);
+                 }
+-            })
++            } else {
++                // replace tuple patterns
++                let pats = name
++                    .syntax()
++                    .ancestors()
++                    .find(|node| {
++                        ast::CallExpr::can_cast(node.kind())
++                            || ast::MethodCallExpr::can_cast(node.kind())
++                    })
++                    .and_then(|node| node.parent())
++                    .and_then(node_to_pats)
++                    .unwrap_or(Vec::new());
++
++                let tuple_pats = pats.iter().filter_map(|pat| match pat {
++                    ast::Pat::TuplePat(tuple_pat) => Some(tuple_pat),
++                    _ => None,
++                });
++                for tuple_pat in tuple_pats {
++                    ted::replace(
++                        tuple_pat.syntax(),
++                        make::tuple_struct_pat(
++                            make::path_from_text(struct_name),
++                            tuple_pat.fields(),
++                        )
++                        .clone_for_update()
++                        .syntax(),
++                    );
++                }
++            }
++            // add imports across modules where needed
++            if let Some((import_scope, path)) = import_data {
++                insert_use(&import_scope, path, &ctx.config.insert_use);
++            }
++        })
+     }
+ }
+ 
+         .iter()
+         .filter_map(|FileReference { name, .. }| {
+             let name = name.clone().into_name_like()?;
+-            ctx.sema
+-                .scope(name.syntax())
+-                .map(|scope| (name, scope.module()))
++            ctx.sema.scope(name.syntax()).map(|scope| (name, scope.module()))
+         })
+         .map(|(name, ref_module)| {
+             let new_name = edit.make_mut(name);
+             {
+                 visited_modules.insert(ref_module);
+ 
+-                let cfg = ctx
+-                    .config
+-                    .find_path_config(ctx.sema.is_nightly(ref_module.krate()));
++                let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(ref_module.krate()));
+                 let import_scope =
+                     ImportScope::find_insert_use_container(new_name.syntax(), &ctx.sema);
+                 let path = ref_module
+             ctx.sema.scope(name.syntax()).map(|scope| scope.module())
+         })
+         .any(|module| module.nearest_non_block_module(ctx.db()) != *target_module);
+-    let visibility = if make_struct_pub {
+-        Some(make::visibility_pub())
+-    } else {
+-        None
+-    };
++    let visibility = if make_struct_pub { Some(make::visibility_pub()) } else { None };
+ 
+     let field_list = ast::FieldList::TupleFieldList(make::tuple_field_list(
+-        tuple_ty
+-            .fields()
+-            .map(|ty| make::tuple_field(visibility.clone(), ty)),
++        tuple_ty.fields().map(|ty| make::tuple_field(visibility.clone(), ty)),
+     ));
+     let struct_name = make::name(struct_name);
+     let struct_def = make::struct_(visibility, struct_name, None, field_list).clone_for_update();
+     let indent = IndentLevel::from_node(parent);
+     struct_def.reindent_to(indent);
+ 
+-    edit.insert(
+-        parent.text_range().start(),
+-        format!("{struct_def}\n\n{indent}"),
+-    );
++    edit.insert(parent.text_range().start(), format!("{struct_def}\n\n{indent}"));
+ }
+ 
+ /// Replaces each returned tuple in `body` with the constructor of the tuple struct named `struct_name`.
  #[cfg(test)]
  mod tests {
      use super::*;

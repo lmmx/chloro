@@ -19,8 +19,11 @@ pub(crate) fn hints(
     config: &InlayHintsConfig<'_>,
     node: AnyHasGenericArgs,
 ) -> Option<()> {
-    let GenericParameterHints { type_hints, lifetime_hints, const_hints } =
-        config.generic_parameter_hints;
+    let GenericParameterHints {
+        type_hints,
+        lifetime_hints,
+        const_hints,
+    } = config.generic_parameter_hints;
     if !(type_hints || lifetime_hints || const_hints) {
         return None;
     }
@@ -85,7 +88,10 @@ pub(crate) fn hints(
 
         let colon = if config.render_colons { ":" } else { "" };
         let label = InlayHintLabel::simple(
-            format!("{}{colon}", param_name.display(sema.db, krate.edition(sema.db))),
+            format!(
+                "{}{colon}",
+                param_name.display(sema.db, krate.edition(sema.db))
+            ),
             None,
             config.lazy_location_opt(|| {
                 let source_syntax = match param {

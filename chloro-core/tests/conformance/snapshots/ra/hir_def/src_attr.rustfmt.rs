@@ -123,7 +123,10 @@ impl Attrs {
                 let krate = loc.container.krate;
                 let source = loc.source(db);
                 (
-                    source.value.record_field_list().map(ast::FieldList::RecordFieldList),
+                    source
+                        .value
+                        .record_field_list()
+                        .map(ast::FieldList::RecordFieldList),
                     source.file_id,
                     krate,
                 )
@@ -140,8 +143,12 @@ impl Attrs {
             ast::FieldList::RecordFieldList(fields) => {
                 let mut idx = 0;
                 for field in fields.fields() {
-                    let attrs =
-                        Attrs(RawAttrs::new_expanded(db, &field, span_map.as_ref(), cfg_options));
+                    let attrs = Attrs(RawAttrs::new_expanded(
+                        db,
+                        &field,
+                        span_map.as_ref(),
+                        cfg_options,
+                    ));
                     if attrs.is_cfg_enabled(cfg_options).is_ok() {
                         res.insert(Idx::from_raw(RawIdx::from(idx)), attrs);
                         idx += 1;
@@ -151,8 +158,12 @@ impl Attrs {
             ast::FieldList::TupleFieldList(fields) => {
                 let mut idx = 0;
                 for field in fields.fields() {
-                    let attrs =
-                        Attrs(RawAttrs::new_expanded(db, &field, span_map.as_ref(), cfg_options));
+                    let attrs = Attrs(RawAttrs::new_expanded(
+                        db,
+                        &field,
+                        span_map.as_ref(),
+                        cfg_options,
+                    ));
                     if attrs.is_cfg_enabled(cfg_options).is_ok() {
                         res.insert(Idx::from_raw(RawIdx::from(idx)), attrs);
                         idx += 1;
@@ -174,8 +185,12 @@ impl Attrs {
 
     #[inline]
     pub fn rust_analyzer_tool(&self) -> impl Iterator<Item = &Attr> {
-        self.iter()
-            .filter(|&attr| attr.path.segments().first().is_some_and(|s| *s == sym::rust_analyzer))
+        self.iter().filter(|&attr| {
+            attr.path
+                .segments()
+                .first()
+                .is_some_and(|s| *s == sym::rust_analyzer)
+        })
     }
 
     #[inline]
@@ -199,7 +214,11 @@ impl Attrs {
     #[inline]
     pub(crate) fn is_cfg_enabled(&self, cfg_options: &CfgOptions) -> Result<(), CfgExpr> {
         self.cfgs().try_for_each(|cfg| {
-            if cfg_options.check(&cfg) != Some(false) { Ok(()) } else { Err(cfg) }
+            if cfg_options.check(&cfg) != Some(false) {
+                Ok(())
+            } else {
+                Err(cfg)
+            }
         })
     }
 
@@ -210,7 +229,9 @@ impl Attrs {
 
     #[inline]
     pub fn lang_item(&self) -> Option<LangItem> {
-        self.by_key(sym::lang).string_value().and_then(LangItem::from_symbol)
+        self.by_key(sym::lang)
+            .string_value()
+            .and_then(LangItem::from_symbol)
     }
 
     #[inline]
@@ -236,7 +257,8 @@ impl Attrs {
 
     #[inline]
     pub fn doc_aliases(&self) -> impl Iterator<Item = Symbol> + '_ {
-        self.doc_exprs().flat_map(|doc_expr| doc_expr.aliases().to_vec())
+        self.doc_exprs()
+            .flat_map(|doc_expr| doc_expr.aliases().to_vec())
     }
 
     #[inline]
@@ -298,12 +320,15 @@ impl Attrs {
 
     #[inline]
     pub fn repr(&self) -> Option<ReprOptions> {
-        self.by_key(sym::repr).tt_values().filter_map(parse_repr_tt).fold(None, |acc, repr| {
-            acc.map_or(Some(repr), |mut acc| {
-                merge_repr(&mut acc, repr);
-                Some(acc)
+        self.by_key(sym::repr)
+            .tt_values()
+            .filter_map(parse_repr_tt)
+            .fold(None, |acc, repr| {
+                acc.map_or(Some(repr), |mut acc| {
+                    merge_repr(&mut acc, repr);
+                    Some(acc)
+                })
             })
-        })
     }
 }
 
@@ -331,7 +356,13 @@ fn parse_rustc_legacy_const_generics(tt: &crate::tt::TopSubtree) -> Box<[u32]> {
 }
 
 fn merge_repr(this: &mut ReprOptions, other: ReprOptions) {
-    let ReprOptions { int, align, pack, flags, field_shuffle_seed: _ } = this;
+    let ReprOptions {
+        int,
+        align,
+        pack,
+        flags,
+        field_shuffle_seed: _,
+    } = this;
     flags.insert(other.flags);
     *align = (*align).max(other.align);
     *pack = match (*pack, other.pack) {
@@ -348,7 +379,10 @@ fn parse_repr_tt(tt: &crate::tt::TopSubtree) -> Option<ReprOptions> {
     use rustc_abi::{Align, Integer, IntegerType, ReprFlags, ReprOptions};
 
     match tt.top_subtree().delimiter {
-        tt::Delimiter { kind: DelimiterKind::Parenthesis, .. } => {}
+        tt::Delimiter {
+            kind: DelimiterKind::Parenthesis,
+            ..
+        } => {}
         _ => return None,
     }
 
@@ -371,7 +405,10 @@ fn parse_repr_tt(tt: &crate::tt::TopSubtree) -> Option<ReprOptions> {
                     0
                 };
                 let pack = Some(Align::from_bytes(pack).unwrap_or(Align::ONE));
-                ReprOptions { pack, ..Default::default() }
+                ReprOptions {
+                    pack,
+                    ..Default::default()
+                }
             }
             s if *s == sym::align => {
                 let mut align = None;
@@ -383,13 +420,23 @@ fn parse_repr_tt(tt: &crate::tt::TopSubtree) -> Option<ReprOptions> {
                         align = Align::from_bytes(a).ok();
                     }
                 }
-                ReprOptions { align, ..Default::default() }
+                ReprOptions {
+                    align,
+                    ..Default::default()
+                }
             }
-            s if *s == sym::C => ReprOptions { flags: ReprFlags::IS_C, ..Default::default() },
-            s if *s == sym::transparent => {
-                ReprOptions { flags: ReprFlags::IS_TRANSPARENT, ..Default::default() }
-            }
-            s if *s == sym::simd => ReprOptions { flags: ReprFlags::IS_SIMD, ..Default::default() },
+            s if *s == sym::C => ReprOptions {
+                flags: ReprFlags::IS_C,
+                ..Default::default()
+            },
+            s if *s == sym::transparent => ReprOptions {
+                flags: ReprFlags::IS_TRANSPARENT,
+                ..Default::default()
+            },
+            s if *s == sym::simd => ReprOptions {
+                flags: ReprFlags::IS_SIMD,
+                ..Default::default()
+            },
             repr => {
                 let mut int = None;
                 if let Some(builtin) = BuiltinInt::from_suffix_sym(repr)
@@ -415,7 +462,10 @@ fn parse_repr_tt(tt: &crate::tt::TopSubtree) -> Option<ReprOptions> {
                         },
                     });
                 }
-                ReprOptions { int, ..Default::default() }
+                ReprOptions {
+                    int,
+                    ..Default::default()
+                }
             }
         };
         merge_repr(&mut acc, repr);
@@ -482,7 +532,11 @@ fn next_doc_expr<S: Copy>(mut it: TtIter<'_, S>) -> Option<DocExpr> {
                     symbol: text,
                     kind: tt::LitKind::Str,
                     ..
-                }))) => DocAtom::KeyValue { key: name, value: text.clone() }.into(),
+                }))) => DocAtom::KeyValue {
+                    key: name,
+                    value: text.clone(),
+                }
+                .into(),
                 _ => return Some(DocExpr::Invalid),
             }
         }
@@ -502,7 +556,9 @@ fn next_doc_expr<S: Copy>(mut it: TtIter<'_, S>) -> Option<DocExpr> {
 fn parse_comma_sep<S>(iter: TtIter<'_, S>) -> Vec<Symbol> {
     iter.filter_map(|tt| match tt {
         TtElement::Leaf(tt::Leaf::Literal(tt::Literal {
-            kind: tt::LitKind::Str, symbol, ..
+            kind: tt::LitKind::Str,
+            symbol,
+            ..
         })) => Some(symbol.clone()),
         _ => None,
     })
@@ -511,7 +567,10 @@ fn parse_comma_sep<S>(iter: TtIter<'_, S>) -> Vec<Symbol> {
 
 impl AttrsWithOwner {
     pub fn new(db: &dyn DefDatabase, owner: AttrDefId) -> Self {
-        Self { attrs: db.attrs(owner), owner }
+        Self {
+            attrs: db.attrs(owner),
+            owner,
+        }
     }
 
     pub(crate) fn attrs_query(db: &dyn DefDatabase, def: AttrDefId) -> Attrs {
@@ -523,7 +582,12 @@ impl AttrsWithOwner {
                 let mod_data = &def_map[module.local_id];
 
                 let raw_attrs = match mod_data.origin {
-                    ModuleOrigin::File { definition, declaration_tree_id, declaration, .. } => {
+                    ModuleOrigin::File {
+                        definition,
+                        declaration_tree_id,
+                        declaration,
+                        ..
+                    } => {
                         let decl_attrs = declaration_tree_id
                             .item_tree(db)
                             .raw_attrs(declaration.upcast())
@@ -536,9 +600,13 @@ impl AttrsWithOwner {
                         let tree = db.file_item_tree(definition.into());
                         tree.top_level_raw_attrs().clone()
                     }
-                    ModuleOrigin::Inline { definition_tree_id, definition } => {
-                        definition_tree_id.item_tree(db).raw_attrs(definition.upcast()).clone()
-                    }
+                    ModuleOrigin::Inline {
+                        definition_tree_id,
+                        definition,
+                    } => definition_tree_id
+                        .item_tree(db)
+                        .raw_attrs(definition.upcast())
+                        .clone(),
                     ModuleOrigin::BlockExpr { id, .. } => {
                         let tree = block_item_tree_query(db, id);
                         tree.top_level_raw_attrs().clone()
@@ -621,8 +689,10 @@ impl AttrsWithOwner {
                 match mod_data.declaration_source(db) {
                     Some(it) => {
                         let mut map = AttrSourceMap::new(InFile::new(it.file_id, &it.value));
-                        if let InFile { file_id, value: ModuleSource::SourceFile(file) } =
-                            mod_data.definition_source(db)
+                        if let InFile {
+                            file_id,
+                            value: ModuleSource::SourceFile(file),
+                        } = mod_data.definition_source(db)
                         {
                             map.append_module_inline_attrs(AttrSourceMap::new(InFile::new(
                                 file_id, &file,
@@ -778,7 +848,9 @@ impl<'attr> AttrQuery<'attr> {
     #[inline]
     pub fn attrs(self) -> impl Iterator<Item = &'attr Attr> + Clone {
         let key = self.key;
-        self.attrs.iter().filter(move |attr| attr.path.as_ident().is_some_and(|s| *s == key))
+        self.attrs
+            .iter()
+            .filter(move |attr| attr.path.as_ident().is_some_and(|s| *s == key))
     }
 
     /// Find string value for a specific key inside token tree
@@ -817,7 +889,12 @@ fn attrs_from_ast_id_loc<'db, N: AstIdNode + HasAttrs>(
     let source = loc.source(db);
     let span_map = db.span_map(source.file_id);
     let cfg_options = loc.krate(db).cfg_options(db);
-    Attrs(RawAttrs::new_expanded(db, &source.value, span_map.as_ref(), cfg_options))
+    Attrs(RawAttrs::new_expanded(
+        db,
+        &source.value,
+        span_map.as_ref(),
+        cfg_options,
+    ))
 }
 
 pub(crate) fn fields_attrs_source_map(
@@ -830,9 +907,10 @@ pub(crate) fn fields_attrs_source_map(
     for (idx, variant) in child_source.value.iter() {
         res.insert(
             idx,
-            variant
-                .as_ref()
-                .either(|l| AstPtr::new(l).wrap_left(), |r| AstPtr::new(r).wrap_right()),
+            variant.as_ref().either(
+                |l| AstPtr::new(l).wrap_left(),
+                |r| AstPtr::new(r).wrap_right(),
+            ),
         );
     }
 
@@ -856,8 +934,14 @@ mod tests {
     use crate::attr::{DocAtom, DocExpr};
 
     fn assert_parse_result(input: &str, expected: DocExpr) {
-        let source_file = ast::SourceFile::parse(input, span::Edition::CURRENT).ok().unwrap();
-        let tt = source_file.syntax().descendants().find_map(ast::TokenTree::cast).unwrap();
+        let source_file = ast::SourceFile::parse(input, span::Edition::CURRENT)
+            .ok()
+            .unwrap();
+        let tt = source_file
+            .syntax()
+            .descendants()
+            .find_map(ast::TokenTree::cast)
+            .unwrap();
         let map = SpanMap::RealSpanMap(Arc::new(RealSpanMap::absolute(
             EditionedFileId::current_edition(FileId::from_raw(0)),
         )));
@@ -873,11 +957,18 @@ mod tests {
 
     #[test]
     fn test_doc_expr_parser() {
-        assert_parse_result("#![doc(hidden)]", DocAtom::Flag(Symbol::intern("hidden")).into());
+        assert_parse_result(
+            "#![doc(hidden)]",
+            DocAtom::Flag(Symbol::intern("hidden")).into(),
+        );
 
         assert_parse_result(
             r#"#![doc(alias = "foo")]"#,
-            DocAtom::KeyValue { key: Symbol::intern("alias"), value: Symbol::intern("foo") }.into(),
+            DocAtom::KeyValue {
+                key: Symbol::intern("alias"),
+                value: Symbol::intern("foo"),
+            }
+            .into(),
         );
 
         assert_parse_result(
@@ -887,7 +978,12 @@ mod tests {
         assert_parse_result(
             r#"#![doc(alias("foo", "bar", "baz"))]"#,
             DocExpr::Alias(
-                [Symbol::intern("foo"), Symbol::intern("bar"), Symbol::intern("baz")].into(),
+                [
+                    Symbol::intern("foo"),
+                    Symbol::intern("bar"),
+                    Symbol::intern("baz"),
+                ]
+                .into(),
             ),
         );
 

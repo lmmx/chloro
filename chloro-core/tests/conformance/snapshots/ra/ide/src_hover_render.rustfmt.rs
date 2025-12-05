@@ -55,7 +55,16 @@ pub(super) fn closure_expr(
     display_target: DisplayTarget,
 ) -> Option<HoverResult> {
     let TypeInfo { original, .. } = sema.type_of_expr(&c.into())?;
-    closure_ty(sema, config, &TypeInfo { original, adjusted: None }, edition, display_target)
+    closure_ty(
+        sema,
+        config,
+        &TypeInfo {
+            original,
+            adjusted: None,
+        },
+        edition,
+        display_target,
+    )
 }
 
 pub(super) fn try_expr(
@@ -108,8 +117,10 @@ pub(super) fn try_expr(
             && inner == result_enum
             && body == result_enum
         {
-            let error_type_args =
-                inner_ty.type_arguments().nth(1).zip(body_ty.type_arguments().nth(1));
+            let error_type_args = inner_ty
+                .type_arguments()
+                .nth(1)
+                .zip(body_ty.type_arguments().nth(1));
             if let Some((inner, body)) = error_type_args {
                 inner_ty = inner;
                 body_ty = body;
@@ -274,14 +285,29 @@ pub(super) fn keyword(
     let parent = token.parent()?;
     let famous_defs = FamousDefs(sema, sema.scope(&parent)?.krate());
 
-    let KeywordHint { description, keyword_mod, actions } =
-        keyword_hints(sema, token, parent, edition, display_target);
+    let KeywordHint {
+        description,
+        keyword_mod,
+        actions,
+    } = keyword_hints(sema, token, parent, edition, display_target);
 
     let doc_owner = find_std_module(&famous_defs, &keyword_mod, edition)?;
     let (docs, range_map) = doc_owner.docs_with_rangemap(sema.db)?;
-    let (markup, range_map) =
-        markup(Some(docs.into()), Some(range_map), description, None, None, String::new());
-    let markup = process_markup(sema.db, Definition::Module(doc_owner), &markup, range_map, config);
+    let (markup, range_map) = markup(
+        Some(docs.into()),
+        Some(range_map),
+        description,
+        None,
+        None,
+        String::new(),
+    );
+    let markup = process_markup(
+        sema.db,
+        Definition::Module(doc_owner),
+        &markup,
+        range_map,
+        config,
+    );
     Some(HoverResult { markup, actions })
 }
 
@@ -331,7 +357,11 @@ pub(super) fn struct_rest_pat(
 
 pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<HoverResult> {
     let (path, tt) = attr.as_simple_call()?;
-    if !tt.syntax().text_range().contains(token.text_range().start()) {
+    if !tt
+        .syntax()
+        .text_range()
+        .contains(token.text_range().start())
+    {
         return None;
     }
     let (is_clippy, lints) = match &*path {
@@ -345,7 +375,11 @@ pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<Hove
                 .is_some_and(|t| {
                     t.kind() == T![ident] && t.into_token().is_some_and(|t| t.text() == "clippy")
                 });
-            if is_clippy { (true, CLIPPY_LINTS) } else { (false, DEFAULT_LINTS) }
+            if is_clippy {
+                (true, CLIPPY_LINTS)
+            } else {
+                (false, DEFAULT_LINTS)
+            }
         }
         _ => return None,
     };
@@ -358,10 +392,15 @@ pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<Hove
         token.text()
     };
 
-    let lint =
-        lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
+    let lint = lints
+        .binary_search_by_key(&needle, |lint| lint.label)
+        .ok()
+        .map(|idx| &lints[idx])?;
     Some(HoverResult {
-        markup: Markup::from(format!("```\n{}\n```\n---\n\n{}", lint.label, lint.description)),
+        markup: Markup::from(format!(
+            "```\n{}\n```\n---\n\n{}",
+            lint.label, lint.description
+        )),
         ..Default::default()
     })
 }
@@ -404,12 +443,14 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
 
             hir::GenericDef::Impl(i) => i.self_ty(db).as_adt().map(|adt| adt.name(db)),
             hir::GenericDef::Function(it) => {
-                let container = it.as_assoc_item(db).and_then(|assoc| match assoc.container(db) {
-                    hir::AssocItemContainer::Trait(t) => Some(t.name(db)),
-                    hir::AssocItemContainer::Impl(i) => {
-                        i.self_ty(db).as_adt().map(|adt| adt.name(db))
-                    }
-                });
+                let container = it
+                    .as_assoc_item(db)
+                    .and_then(|assoc| match assoc.container(db) {
+                        hir::AssocItemContainer::Trait(t) => Some(t.name(db)),
+                        hir::AssocItemContainer::Impl(i) => {
+                            i.self_ty(db).as_adt().map(|adt| adt.name(db))
+                        }
+                    });
                 match container {
                     Some(name) => {
                         return Some(format!(
@@ -422,12 +463,14 @@ fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -
                 }
             }
             hir::GenericDef::Const(it) => {
-                let container = it.as_assoc_item(db).and_then(|assoc| match assoc.container(db) {
-                    hir::AssocItemContainer::Trait(t) => Some(t.name(db)),
-                    hir::AssocItemContainer::Impl(i) => {
-                        i.self_ty(db).as_adt().map(|adt| adt.name(db))
-                    }
-                });
+                let container = it
+                    .as_assoc_item(db)
+                    .and_then(|assoc| match assoc.container(db) {
+                        hir::AssocItemContainer::Trait(t) => Some(t.name(db)),
+                        hir::AssocItemContainer::Impl(i) => {
+                            i.self_ty(db).as_adt().map(|adt| adt.name(db))
+                        }
+                    });
                 match container {
                     Some(name) => {
                         return Some(format!(
@@ -464,13 +507,20 @@ pub(super) fn path(
     item_name: Option<String>,
     edition: Edition,
 ) -> String {
-    let crate_name = module.krate().display_name(db).as_ref().map(|it| it.to_string());
-    let module_path = module
-        .path_to_root(db)
+    let crate_name = module
+        .krate()
+        .display_name(db)
+        .as_ref()
+        .map(|it| it.to_string());
+    let module_path = module.path_to_root(db).into_iter().rev().flat_map(|it| {
+        it.name(db)
+            .map(|name| name.display(db, edition).to_string())
+    });
+    crate_name
         .into_iter()
-        .rev()
-        .flat_map(|it| it.name(db).map(|name| name.display(db, edition).to_string()));
-    crate_name.into_iter().chain(module_path).chain(item_name).join("::")
+        .chain(module_path)
+        .chain(item_name)
+        .join("::")
 }
 
 pub(super) fn definition(
@@ -490,21 +540,21 @@ pub(super) fn definition(
         Definition::Trait(trait_) => trait_
             .display_limited(db, config.max_trait_assoc_items_count, display_target)
             .to_string(),
-        Definition::Adt(adt @ (Adt::Struct(_) | Adt::Union(_))) => {
-            adt.display_limited(db, config.max_fields_count, display_target).to_string()
-        }
-        Definition::Variant(variant) => {
-            variant.display_limited(db, config.max_fields_count, display_target).to_string()
-        }
-        Definition::Adt(adt @ Adt::Enum(_)) => {
-            adt.display_limited(db, config.max_enum_variants_count, display_target).to_string()
-        }
+        Definition::Adt(adt @ (Adt::Struct(_) | Adt::Union(_))) => adt
+            .display_limited(db, config.max_fields_count, display_target)
+            .to_string(),
+        Definition::Variant(variant) => variant
+            .display_limited(db, config.max_fields_count, display_target)
+            .to_string(),
+        Definition::Adt(adt @ Adt::Enum(_)) => adt
+            .display_limited(db, config.max_enum_variants_count, display_target)
+            .to_string(),
         Definition::SelfType(impl_def) => {
             let self_ty = &impl_def.self_ty(db);
             match self_ty.as_adt() {
-                Some(adt) => {
-                    adt.display_limited(db, config.max_fields_count, display_target).to_string()
-                }
+                Some(adt) => adt
+                    .display_limited(db, config.max_fields_count, display_target)
+                    .to_string(),
                 None => self_ty.display(db, display_target).to_string(),
             }
         }
@@ -515,9 +565,9 @@ pub(super) fn definition(
             }
             label
         }
-        Definition::Function(fn_) => {
-            fn_.display_with_container_bounds(db, true, display_target).to_string()
-        }
+        Definition::Function(fn_) => fn_
+            .display_with_container_bounds(db, true, display_target)
+            .to_string(),
         _ => def.label(db, display_target),
     };
     let (docs, range_map) =
@@ -530,9 +580,11 @@ pub(super) fn definition(
         Definition::Variant(it) => {
             if !it.parent_enum(db).is_data_carrying(db) {
                 match it.eval(db) {
-                    Ok(it) => {
-                        Some(if it >= 10 { format!("{it} ({it:#X})") } else { format!("{it}") })
-                    }
+                    Ok(it) => Some(if it >= 10 {
+                        format!("{it} ({it:#X})")
+                    } else {
+                        format!("{it}")
+                    }),
                     Err(err) => {
                         let res = it.value(db).map(|it| format!("{it:?}"));
                         if env::var_os("RA_DEV").is_some() {
@@ -575,7 +627,10 @@ pub(super) fn definition(
                         body = prettify_macro_expansion(db, body, &span_map, it.krate(db).into());
                     }
                     if env::var_os("RA_DEV").is_some() {
-                        format!("{body}\n{}", render_const_eval_error(db, err, display_target))
+                        format!(
+                            "{body}\n{}",
+                            render_const_eval_error(db, err, display_target)
+                        )
                     } else {
                         body.to_string()
                     }
@@ -607,7 +662,10 @@ pub(super) fn definition(
                         body = prettify_macro_expansion(db, body, &span_map, it.krate(db).into());
                     }
                     if env::var_os("RA_DEV").is_some() {
-                        format!("{body}\n{}", render_const_eval_error(db, err, display_target))
+                        format!(
+                            "{body}\n{}",
+                            render_const_eval_error(db, err, display_target)
+                        )
                     } else {
                         body.to_string()
                     }
@@ -624,9 +682,10 @@ pub(super) fn definition(
             |_| {
                 let var_def = it.parent_def(db);
                 match var_def {
-                    hir::VariantDef::Struct(s) => {
-                        Adt::from(s).layout(db).ok().and_then(|layout| layout.field_offset(it))
-                    }
+                    hir::VariantDef::Struct(s) => Adt::from(s)
+                        .layout(db)
+                        .ok()
+                        .and_then(|layout| layout.field_offset(it)),
                     _ => None,
                 }
             },
@@ -640,7 +699,10 @@ pub(super) fn definition(
             |layout| {
                 let mut field_size =
                     |i: usize| Some(strukt.fields(db).get(i)?.layout(db).ok()?.size());
-                if strukt.repr(db).is_some_and(|it| it.inhibit_struct_field_reordering()) {
+                if strukt
+                    .repr(db)
+                    .is_some_and(|it| it.inhibit_struct_field_reordering())
+                {
                     Some(("tail padding", layout.tail_padding(&mut field_size)?))
                 } else {
                     Some(("largest padding", layout.largest_padding(&mut field_size)?))
@@ -691,9 +753,10 @@ pub(super) fn definition(
             return None;
         }
         let drop_info = match def {
-            Definition::Field(field) => {
-                DropInfo { drop_glue: field.ty(db).to_type(db).drop_glue(db), has_dtor: None }
-            }
+            Definition::Field(field) => DropInfo {
+                drop_glue: field.ty(db).to_type(db).drop_glue(db),
+                has_dtor: None,
+            },
             Definition::Adt(Adt::Struct(strukt)) => {
                 let struct_drop_glue = strukt.ty_params(db).drop_glue(db);
                 let mut fields_drop_glue = strukt
@@ -711,7 +774,10 @@ pub(super) fn definition(
                     }
                     (_, _) => struct_drop_glue > fields_drop_glue,
                 };
-                DropInfo { drop_glue: fields_drop_glue, has_dtor: Some(has_dtor) }
+                DropInfo {
+                    drop_glue: fields_drop_glue,
+                    has_dtor: Some(has_dtor),
+                }
             }
             // Unions cannot have fields with drop glue.
             Definition::Adt(Adt::Union(union)) => DropInfo {
@@ -745,14 +811,19 @@ pub(super) fn definition(
                     .map(|field| field.ty(db).to_type(db).drop_glue(db))
                     .max()
                     .unwrap_or(DropGlue::None);
-                DropInfo { drop_glue: fields_drop_glue, has_dtor: None }
+                DropInfo {
+                    drop_glue: fields_drop_glue,
+                    has_dtor: None,
+                }
             }
-            Definition::TypeAlias(type_alias) => {
-                DropInfo { drop_glue: type_alias.ty_params(db).drop_glue(db), has_dtor: None }
-            }
-            Definition::Local(local) => {
-                DropInfo { drop_glue: local.ty(db).drop_glue(db), has_dtor: None }
-            }
+            Definition::TypeAlias(type_alias) => DropInfo {
+                drop_glue: type_alias.ty_params(db).drop_glue(db),
+                has_dtor: None,
+            },
+            Definition::Local(local) => DropInfo {
+                drop_glue: local.ty(db).drop_glue(db),
+                has_dtor: None,
+            },
             _ => return None,
         };
         let rendered_drop_glue = if drop_info.has_dtor == Some(true) {
@@ -1081,9 +1152,15 @@ fn closure_ty(
     } else {
         String::new()
     };
-    let mut markup = format!("```rust\n{}\n```", c.display_with_impl(sema.db, display_target));
+    let mut markup = format!(
+        "```rust\n{}\n```",
+        c.display_with_impl(sema.db, display_target)
+    );
 
-    if let Some(trait_) = c.fn_trait(sema.db).get_id(sema.db, original.krate(sema.db).into()) {
+    if let Some(trait_) = c
+        .fn_trait(sema.db)
+        .get_id(sema.db, original.krate(sema.db).into())
+    {
         push_new_def(hir::Trait::from(trait_).into())
     }
     if let Some(layout) = render_memory_layout(
@@ -1120,7 +1197,8 @@ fn definition_path(db: &RootDatabase, &def: &Definition, edition: Edition) -> Op
         return None;
     }
     let rendered_parent = definition_owner_name(db, def, edition);
-    def.module(db).map(|module| path(db, module, rendered_parent, edition))
+    def.module(db)
+        .map(|module| path(db, module, rendered_parent, edition))
 }
 
 fn markup(
@@ -1269,7 +1347,11 @@ struct KeywordHint {
 
 impl KeywordHint {
     fn new(description: String, keyword_mod: String) -> Self {
-        Self { description, keyword_mod, actions: Vec::default() }
+        Self {
+            description,
+            keyword_mod,
+            actions: Vec::default(),
+        }
     }
 }
 
@@ -1346,7 +1428,11 @@ fn render_dyn_compatibility(
         }
         DynCompatibilityViolation::Method(func, mvc) => {
             let name = hir::Function::from(func).name(db);
-            format_to!(buf, "having a method `{}` that is not dispatchable due to ", name.as_str());
+            format_to!(
+                buf,
+                "having a method `{}` that is not dispatchable due to ",
+                name.as_str()
+            );
             let desc = match mvc {
                 MethodViolationCode::StaticMethod => "missing a receiver",
                 MethodViolationCode::ReferencesSelfInput => "having a parameter referencing `Self`",
@@ -1379,7 +1465,11 @@ fn render_dyn_compatibility(
         }
         DynCompatibilityViolation::HasNonCompatibleSuperTrait(super_trait) => {
             let name = hir::Trait::from(super_trait).name(db);
-            format_to!(buf, "having a dyn-incompatible supertrait `{}`", name.as_str());
+            format_to!(
+                buf,
+                "having a dyn-incompatible supertrait `{}`",
+                name.as_str()
+            );
         }
     }
 }
@@ -1413,21 +1503,29 @@ mod tests {
 
     #[test]
     fn test_is_pwr2minus1() {
-        const OUTCOMES: [bool; 10] =
-            [true, true, false, true, false, true, false, false, false, true];
+        const OUTCOMES: [bool; 10] = [
+            true, true, false, true, false, true, false, false, false, true,
+        ];
         for (test, expected) in TESTERS.iter().zip(OUTCOMES) {
             let actual = is_pwr2minus1(*test);
-            assert_eq!(actual, expected, "is_pwr2minu1({test}) gave {actual}, expected {expected}");
+            assert_eq!(
+                actual, expected,
+                "is_pwr2minu1({test}) gave {actual}, expected {expected}"
+            );
         }
     }
 
     #[test]
     fn test_is_pwr2plus1() {
-        const OUTCOMES: [bool; 10] =
-            [false, false, true, true, false, false, false, true, false, false];
+        const OUTCOMES: [bool; 10] = [
+            false, false, true, true, false, false, false, true, false, false,
+        ];
         for (test, expected) in TESTERS.iter().zip(OUTCOMES) {
             let actual = is_pwr2plus1(*test);
-            assert_eq!(actual, expected, "is_pwr2plus1({test}) gave {actual}, expected {expected}");
+            assert_eq!(
+                actual, expected,
+                "is_pwr2plus1({test}) gave {actual}, expected {expected}"
+            );
         }
     }
 

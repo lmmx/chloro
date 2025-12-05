@@ -10,8 +10,8 @@ Rustfmt size:  3410 bytes
 === DIFF (- rustfmt, + chloro) ===
  use ide_db::ty_filter::TryEnum;
  use syntax::{
--    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
      AstNode, T,
+-    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
 +    ast::{self, edit_in_place::Indent, edit::IndentLevel, syntax_factory::SyntaxFactory},
  };
  

@@ -110,7 +110,10 @@ fn highlight_closure_captures(
     token: SyntaxToken,
     file_id: EditionedFileId,
 ) -> Option<Vec<HighlightedRange>> {
-    let closure = token.parent_ancestors().take(2).find_map(ast::ClosureExpr::cast)?;
+    let closure = token
+        .parent_ancestors()
+        .take(2)
+        .find_map(ast::ClosureExpr::cast)?;
     let search_range = closure.body()?.syntax().text_range();
     let ty = &sema.type_of_expr(&closure.into())?.original;
     let c = ty.as_closure()?;
@@ -121,17 +124,21 @@ fn highlight_closure_captures(
             .flat_map(|local| {
                 let usages = Definition::Local(local)
                     .usages(sema)
-                    .in_scope(&SearchScope::file_range(FileRange { file_id, range: search_range }))
+                    .in_scope(&SearchScope::file_range(FileRange {
+                        file_id,
+                        range: search_range,
+                    }))
                     .include_self_refs()
                     .all()
                     .references
                     .remove(&file_id)
                     .into_iter()
                     .flatten()
-                    .map(|FileReference { category, range, .. }| HighlightedRange {
-                        range,
-                        category,
-                    });
+                    .map(
+                        |FileReference {
+                             category, range, ..
+                         }| HighlightedRange { range, category },
+                    );
                 let category = if local.is_mut(sema.db) {
                     ReferenceCategory::WRITE
                 } else {
@@ -181,7 +188,11 @@ fn highlight_references(
                 .remove(&file_id)
         })
         .flatten()
-        .map(|FileReference { category, range, .. }| HighlightedRange { range, category });
+        .map(
+            |FileReference {
+                 category, range, ..
+             }| HighlightedRange { range, category },
+        );
     let mut res = FxHashSet::default();
     for &def in &defs {
         // highlight trait usages
@@ -213,25 +224,30 @@ fn highlight_references(
             })();
             if let Some((trait_item_use_scope, use_tree)) = trait_item_use_scope {
                 res.extend(
-                    if use_tree { t.items(sema.db) } else { t.items_with_supertraits(sema.db) }
-                        .into_iter()
-                        .filter_map(|item| {
-                            Definition::from(item)
-                                .usages(sema)
-                                .set_scope(Some(&SearchScope::file_range(FileRange {
-                                    file_id,
-                                    range: trait_item_use_scope.text_range(),
-                                })))
-                                .include_self_refs()
-                                .all()
-                                .references
-                                .remove(&file_id)
-                        })
-                        .flatten()
-                        .map(|FileReference { category, range, .. }| HighlightedRange {
-                            range,
-                            category,
-                        }),
+                    if use_tree {
+                        t.items(sema.db)
+                    } else {
+                        t.items_with_supertraits(sema.db)
+                    }
+                    .into_iter()
+                    .filter_map(|item| {
+                        Definition::from(item)
+                            .usages(sema)
+                            .set_scope(Some(&SearchScope::file_range(FileRange {
+                                file_id,
+                                range: trait_item_use_scope.text_range(),
+                            })))
+                            .include_self_refs()
+                            .all()
+                            .references
+                            .remove(&file_id)
+                    })
+                    .flatten()
+                    .map(
+                        |FileReference {
+                             category, range, ..
+                         }| HighlightedRange { range, category },
+                    ),
                 );
             }
         }
@@ -239,8 +255,9 @@ fn highlight_references(
         // highlight the tail expr of the labelled block
         if matches!(def, Definition::Label(_)) {
             let label = token.parent_ancestors().nth(1).and_then(ast::Label::cast);
-            if let Some(block) =
-                label.and_then(|label| label.syntax().parent()).and_then(ast::BlockExpr::cast)
+            if let Some(block) = label
+                .and_then(|label| label.syntax().parent())
+                .and_then(ast::BlockExpr::cast)
             {
                 for_each_tail_expr(&block.into(), &mut |tail| {
                     if !matches!(tail, ast::Expr::BreakExpr(_)) {
@@ -303,7 +320,11 @@ fn highlight_references(
     }
 
     res.extend(usages);
-    if res.is_empty() { None } else { Some(res.into_iter().collect()) }
+    if res.is_empty() {
+        None
+    } else {
+        Some(res.into_iter().collect())
+    }
 }
 
 pub(crate) fn highlight_branch_exit_points(
@@ -314,7 +335,10 @@ pub(crate) fn highlight_branch_exit_points(
 
     let push_to_highlights = |file_id, range, highlights: &mut HighlightMap| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-            let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+            let hrange = HighlightedRange {
+                category: ReferenceCategory::empty(),
+                range,
+            };
             highlights.entry(file_id).or_default().insert(hrange);
         }
     };
@@ -397,7 +421,10 @@ fn hl_exit_points(
 
     let mut push_to_highlights = |file_id, range| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-            let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+            let hrange = HighlightedRange {
+                category: ReferenceCategory::empty(),
+                range,
+            };
             highlights.entry(file_id).or_default().insert(hrange);
         }
     };
@@ -414,7 +441,9 @@ fn hl_exit_points(
         let range = match &expr {
             ast::Expr::TryExpr(try_) => try_.question_mark_token().map(|token| token.text_range()),
             ast::Expr::MethodCallExpr(_) | ast::Expr::CallExpr(_) | ast::Expr::MacroExpr(_)
-                if sema.type_of_expr(&expr).is_some_and(|ty| ty.original.is_never()) =>
+                if sema
+                    .type_of_expr(&expr)
+                    .is_some_and(|ty| ty.original.is_never()) =>
             {
                 Some(expr.syntax().text_range())
             }
@@ -486,7 +515,9 @@ pub(crate) fn highlight_exit_points(
         merge_map(&mut res, new_map);
     }
 
-    res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+    res.into_iter()
+        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+        .collect()
 }
 
 pub(crate) fn highlight_break_points(
@@ -504,7 +535,10 @@ pub(crate) fn highlight_break_points(
 
         let mut push_to_highlights = |file_id, range| {
             if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-                let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+                let hrange = HighlightedRange {
+                    category: ReferenceCategory::empty(),
+                    range,
+                };
                 highlights.entry(file_id).or_default().insert(hrange);
             }
         };
@@ -581,7 +615,9 @@ pub(crate) fn highlight_break_points(
         merge_map(&mut res, new_map);
     }
 
-    res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+    res.into_iter()
+        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+        .collect()
 }
 
 pub(crate) fn highlight_yield_points(
@@ -597,7 +633,10 @@ pub(crate) fn highlight_yield_points(
 
         let mut push_to_highlights = |file_id, range| {
             if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-                let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+                let hrange = HighlightedRange {
+                    category: ReferenceCategory::empty(),
+                    range,
+                };
                 highlights.entry(file_id).or_default().insert(hrange);
             }
         };
@@ -657,7 +696,9 @@ pub(crate) fn highlight_yield_points(
         merge_map(&mut res, new_map);
     }
 
-    res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+    res.into_iter()
+        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+        .collect()
 }
 
 fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange> {
@@ -682,7 +723,9 @@ fn original_frange(
     file_id: HirFileId,
     text_range: Option<TextRange>,
 ) -> Option<FileRange> {
-    InFile::new(file_id, text_range?).original_node_file_range_opt(db).map(|(frange, _)| frange)
+    InFile::new(file_id, text_range?)
+        .original_node_file_range_opt(db)
+        .map(|(frange, _)| frange)
 }
 
 fn merge_map(res: &mut HighlightMap, new: Option<HighlightMap>) {
@@ -705,7 +748,11 @@ struct WalkExpandedExprCtx<'a> {
 
 impl<'a> WalkExpandedExprCtx<'a> {
     fn new(sema: &'a Semantics<'a, RootDatabase>) -> Self {
-        Self { sema, depth: 0, check_ctx: &is_closure_or_blk_with_modif }
+        Self {
+            sema,
+            depth: 0,
+            check_ctx: &is_closure_or_blk_with_modif,
+        }
     }
 
     fn with_check_ctx(&self, check_ctx: &'static dyn Fn(&ast::Expr) -> bool) -> Self {
@@ -723,8 +770,9 @@ impl<'a> WalkExpandedExprCtx<'a> {
                     }
 
                     if let ast::Expr::MacroExpr(expr) = expr
-                        && let Some(expanded) =
-                            expr.macro_call().and_then(|call| self.sema.expand_macro_call(&call))
+                        && let Some(expanded) = expr
+                            .macro_call()
+                            .and_then(|call| self.sema.expand_macro_call(&call))
                     {
                         match_ast! {
                             match (expanded.value) {
@@ -795,7 +843,10 @@ pub(crate) fn highlight_unsafe_points(
 
         let mut push_to_highlights = |file_id, range| {
             if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-                let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+                let hrange = HighlightedRange {
+                    category: ReferenceCategory::empty(),
+                    range,
+                };
                 highlights.entry(file_id).or_default().push(hrange);
             }
         };
@@ -847,17 +898,25 @@ mod tests {
     ) {
         let (analysis, pos, annotations) = fixture::annotations(ra_fixture);
 
-        let hls = analysis.highlight_related(config, pos).unwrap().unwrap_or_default();
+        let hls = analysis
+            .highlight_related(config, pos)
+            .unwrap()
+            .unwrap_or_default();
 
-        let mut expected =
-            annotations.into_iter().map(|(r, access)| (r.range, access)).collect::<Vec<_>>();
+        let mut expected = annotations
+            .into_iter()
+            .map(|(r, access)| (r.range, access))
+            .collect::<Vec<_>>();
 
         let mut actual: Vec<(TextRange, String)> = hls
             .into_iter()
             .map(|hl| {
                 (
                     hl.range,
-                    hl.category.iter_names().map(|(name, _flag)| name.to_lowercase()).join(","),
+                    hl.category
+                        .iter_names()
+                        .map(|(name, _flag)| name.to_lowercase())
+                        .join(","),
                 )
             })
             .collect();
@@ -1652,7 +1711,10 @@ fn function(field: u32) {
 
     #[test]
     fn test_hl_disabled_ref_local() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1667,7 +1729,10 @@ fn foo() {
 
     #[test]
     fn test_hl_disabled_ref_local_preserved_break() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1702,7 +1767,10 @@ fn foo() {
 
     #[test]
     fn test_hl_disabled_ref_local_preserved_yield() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1733,7 +1801,10 @@ async fn foo() {
 
     #[test]
     fn test_hl_disabled_ref_local_preserved_exit() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1772,7 +1843,10 @@ fn foo() -> i32 {
 
     #[test]
     fn test_hl_disabled_break() {
-        let config = HighlightRelatedConfig { break_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            break_points: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1788,7 +1862,10 @@ fn foo() {
 
     #[test]
     fn test_hl_disabled_yield() {
-        let config = HighlightRelatedConfig { yield_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            yield_points: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1802,7 +1879,10 @@ async$0 fn foo() {
 
     #[test]
     fn test_hl_disabled_exit() {
-        let config = HighlightRelatedConfig { exit_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            exit_points: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -2259,7 +2339,10 @@ fn main() {
 
     #[test]
     fn no_branches_when_disabled() {
-        let config = HighlightRelatedConfig { branch_exit_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            branch_exit_points: false,
+            ..ENABLED_CONFIG
+        };
         check_with_config(
             r#"
 fn main() {

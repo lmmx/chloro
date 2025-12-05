@@ -71,7 +71,10 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
     }
 
     let node = ctx.covering_element();
-    if matches!(node.kind(), T!['{'] | T!['}'] | T!['('] | T![')'] | T!['['] | T![']']) {
+    if matches!(
+        node.kind(),
+        T!['{'] | T!['}'] | T!['('] | T![')'] | T!['['] | T![']']
+    ) {
         cov_mark::hit!(extract_function_in_braces_is_not_applicable);
         return None;
     }
@@ -90,7 +93,11 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 
     let (locals_used, self_param) = body.analyze(&ctx.sema);
 
-    let anchor = if self_param.is_some() { Anchor::Method } else { Anchor::Freestanding };
+    let anchor = if self_param.is_some() {
+        Anchor::Method
+    } else {
+        Anchor::Freestanding
+    };
     let insert_after = node_to_insert_after(&body, anchor)?;
     let semantics_scope = ctx.sema.scope(&insert_after)?;
     let module = semantics_scope.module();
@@ -150,7 +157,9 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 
                     node.clone()..=node
                 }
-                FunctionBody::Span { parent, elements, .. } => {
+                FunctionBody::Span {
+                    parent, elements, ..
+                } => {
                     // Map the element range into the mutable versions
                     let parent = builder.make_mut(parent.clone());
 
@@ -170,8 +179,9 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                 }
             };
 
-            let has_impl_wrapper =
-                insert_after.ancestors().any(|a| a.kind() == SyntaxKind::IMPL && a != insert_after);
+            let has_impl_wrapper = insert_after
+                .ancestors()
+                .any(|a| a.kind() == SyntaxKind::IMPL && a != insert_after);
 
             let fn_def = format_function(ctx, module, &fun, old_indent).clone_for_update();
 
@@ -187,7 +197,9 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 
                     let impl_ = generate_impl(&adt);
                     impl_.indent(new_indent);
-                    impl_.get_or_create_assoc_item_list().add_item(fn_def.into());
+                    impl_
+                        .get_or_create_assoc_item_list()
+                        .add_item(fn_def.into());
 
                     impl_.syntax().clone()
                 }
@@ -209,7 +221,9 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                     FamousDefs(&ctx.sema, module.krate()).core_ops_ControlFlow();
 
                 if let Some(control_flow_enum) = control_flow_enum {
-                    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+                    let cfg = ctx
+                        .config
+                        .find_path_config(ctx.sema.is_nightly(module.krate()));
                     let mod_path = module.find_use_path(
                         ctx.sema.db,
                         ModuleDef::from(control_flow_enum),
@@ -234,7 +248,10 @@ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             // Insert the newly extracted function (or impl)
             ted::insert_all_raw(
                 ted::Position::after(insert_after),
-                vec![make::tokens::whitespace(&format!("\n\n{new_indent}")).into(), fn_def.into()],
+                vec![
+                    make::tokens::whitespace(&format!("\n\n{new_indent}")).into(),
+                    fn_def.into(),
+                ],
             );
         },
     )
@@ -244,8 +261,11 @@ fn make_function_name(semantics_scope: &hir::SemanticsScope<'_>) -> ast::NameRef
     let mut names_in_scope = vec![];
     semantics_scope.process_all_names(&mut |name, _| {
         names_in_scope.push(
-            name.display(semantics_scope.db, semantics_scope.krate().edition(semantics_scope.db))
-                .to_string(),
+            name.display(
+                semantics_scope.db,
+                semantics_scope.krate().edition(semantics_scope.db),
+            )
+            .to_string(),
         )
     });
 
@@ -306,7 +326,9 @@ fn extraction_target(node: &SyntaxNode, selection_range: TextRange) -> Option<Fu
         return FunctionBody::from_expr(expr);
     }
 
-    node.ancestors().find_map(ast::Expr::cast).and_then(FunctionBody::from_expr)
+    node.ancestors()
+        .find_map(ast::Expr::cast)
+        .and_then(FunctionBody::from_expr)
 }
 
 #[derive(Debug)]
@@ -428,7 +450,11 @@ impl RetType<'_> {
 #[derive(Debug)]
 enum FunctionBody {
     Expr(ast::Expr),
-    Span { parent: ast::StmtList, elements: RangeInclusive<SyntaxElement>, text_range: TextRange },
+    Span {
+        parent: ast::StmtList,
+        elements: RangeInclusive<SyntaxElement>,
+        text_range: TextRange,
+    },
 }
 
 #[derive(Debug)]
@@ -513,7 +539,11 @@ impl<'db> Param<'db> {
         module: hir::Module,
         edition: Edition,
     ) -> ast::Param {
-        let var = self.var.name(ctx.db()).display(ctx.db(), edition).to_string();
+        let var = self
+            .var
+            .name(ctx.db())
+            .display(ctx.db(), edition)
+            .to_string();
         let var_name = make::name(&var);
         let pat = match self.kind() {
             ParamKind::MutValue => make::ident_pat(false, true, var_name),
@@ -641,14 +671,20 @@ impl FunctionBody {
         // Get all of the elements intersecting with the selection
         let mut stmts_in_selection = full_body
             .filter(|it| ast::Stmt::can_cast(it.kind()) || it.kind() == COMMENT)
-            .filter(|it| selected.intersect(it.text_range()).filter(|it| !it.is_empty()).is_some());
+            .filter(|it| {
+                selected
+                    .intersect(it.text_range())
+                    .filter(|it| !it.is_empty())
+                    .is_some()
+            });
 
         let first_element = stmts_in_selection.next();
 
         // If the tail expr is part of the selection too, make that the last element
         // Otherwise use the last stmt
-        let last_element = if let Some(tail_expr) =
-            parent.tail_expr().filter(|it| selected.intersect(it.syntax().text_range()).is_some())
+        let last_element = if let Some(tail_expr) = parent
+            .tail_expr()
+            .filter(|it| selected.intersect(it.syntax().text_range()).is_some())
         {
             Some(tail_expr.syntax().clone().into())
         } else {
@@ -664,9 +700,16 @@ impl FunctionBody {
             (Some(first), Some(last)) => first..=last,
         };
 
-        let text_range = elements.start().text_range().cover(elements.end().text_range());
+        let text_range = elements
+            .start()
+            .text_range()
+            .cover(elements.end().text_range());
 
-        Some(Self::Span { parent, elements, text_range })
+        Some(Self::Span {
+            parent,
+            elements,
+            text_range,
+        })
     }
 
     fn indent_level(&self) -> IndentLevel {
@@ -679,9 +722,13 @@ impl FunctionBody {
     fn tail_expr(&self) -> Option<ast::Expr> {
         match &self {
             FunctionBody::Expr(expr) => Some(expr.clone()),
-            FunctionBody::Span { parent, text_range, .. } => {
+            FunctionBody::Span {
+                parent, text_range, ..
+            } => {
                 let tail_expr = parent.tail_expr()?;
-                text_range.contains_range(tail_expr.syntax().text_range()).then_some(tail_expr)
+                text_range
+                    .contains_range(tail_expr.syntax().text_range())
+                    .then_some(tail_expr)
             }
         }
     }
@@ -689,7 +736,9 @@ impl FunctionBody {
     fn walk_expr(&self, cb: &mut dyn FnMut(ast::Expr)) {
         match self {
             FunctionBody::Expr(expr) => walk_expr(expr, cb),
-            FunctionBody::Span { parent, text_range, .. } => {
+            FunctionBody::Span {
+                parent, text_range, ..
+            } => {
                 parent
                     .statements()
                     .filter(|stmt| text_range.contains_range(stmt.syntax().text_range()))
@@ -712,7 +761,9 @@ impl FunctionBody {
     fn preorder_expr(&self, cb: &mut dyn FnMut(WalkEvent<ast::Expr>) -> bool) {
         match self {
             FunctionBody::Expr(expr) => preorder_expr(expr, cb),
-            FunctionBody::Span { parent, text_range, .. } => {
+            FunctionBody::Span {
+                parent, text_range, ..
+            } => {
                 parent
                     .statements()
                     .filter(|stmt| text_range.contains_range(stmt.syntax().text_range()))
@@ -735,7 +786,9 @@ impl FunctionBody {
     fn walk_pat(&self, cb: &mut dyn FnMut(ast::Pat)) {
         match self {
             FunctionBody::Expr(expr) => walk_patterns_in_expr(expr, cb),
-            FunctionBody::Span { parent, text_range, .. } => {
+            FunctionBody::Span {
+                parent, text_range, ..
+            } => {
                 parent
                     .statements()
                     .filter(|stmt| text_range.contains_range(stmt.syntax().text_range()))
@@ -805,7 +858,11 @@ impl FunctionBody {
             match NameRefClass::classify(sema, &name_ref) {
                 Some(
                     NameRefClass::Definition(Definition::Local(local_ref), _)
-                    | NameRefClass::FieldShorthand { local_ref, field_ref: _, adt_subst: _ },
+                    | NameRefClass::FieldShorthand {
+                        local_ref,
+                        field_ref: _,
+                        adt_subst: _,
+                    },
                 ) => Some(local_ref),
                 _ => None,
             }
@@ -973,7 +1030,10 @@ impl FunctionBody {
 
         let parent = self.parent()?;
         let parents = generic_parents(&parent);
-        let generic_param_lists = parents.iter().filter_map(|it| it.generic_param_list()).collect();
+        let generic_param_lists = parents
+            .iter()
+            .filter_map(|it| it.generic_param_list())
+            .collect();
         let where_clauses = parents.iter().filter_map(|it| it.where_clause()).collect();
 
         Some((
@@ -991,7 +1051,11 @@ impl FunctionBody {
 
     fn return_ty<'db>(&self, ctx: &AssistContext<'db>) -> Option<RetType<'db>> {
         match self.tail_expr() {
-            Some(expr) => ctx.sema.type_of_expr(&expr).map(TypeInfo::original).map(RetType::Expr),
+            Some(expr) => ctx
+                .sema
+                .type_of_expr(&expr)
+                .map(TypeInfo::original)
+                .map(RetType::Expr),
             None => Some(RetType::Stmt),
         }
     }
@@ -1094,7 +1158,11 @@ impl FunctionBody {
             (None, None, None, None) => None,
         };
 
-        Some(ControlFlow { kind, is_async, is_unsafe: _is_unsafe })
+        Some(ControlFlow {
+            kind,
+            is_async,
+            is_unsafe: _is_unsafe,
+        })
     }
 
     /// find variables that should be extracted as params
@@ -1114,7 +1182,10 @@ impl FunctionBody {
             .filter_map(|(local, src)| match src.into_ident_pat() {
                 Some(src) => Some((local, src)),
                 None => {
-                    stdx::never!(false, "Local::is_self returned false, but source is SelfParam");
+                    stdx::never!(
+                        false,
+                        "Local::is_self returned false, but source is SelfParam"
+                    );
                     None
                 }
             })
@@ -1135,13 +1206,21 @@ impl FunctionBody {
                 // if the var is not used but defined outside a loop we are extracting from we can't move it either
                 // as the function will reuse it in the next iteration.
                 let move_local = (!has_usages && defined_outside_parent_loop) || ty.is_reference();
-                Param { var, ty, move_local, requires_mut, is_copy }
+                Param {
+                    var,
+                    ty,
+                    move_local,
+                    requires_mut,
+                    is_copy,
+                }
             })
             .collect()
     }
 
     fn has_usages_after_body(&self, usages: &LocalUsages) -> bool {
-        usages.iter().any(|reference| self.precedes_range(reference.range))
+        usages
+            .iter()
+            .any(|reference| self.precedes_range(reference.range))
     }
 }
 
@@ -1175,8 +1254,11 @@ fn generic_parents(parent: &SyntaxNode) -> Vec<GenericParent> {
     if let Some(parent_item) = parent.ancestors().find_map(ast::Item::cast)
         && let ast::Item::Fn(ref fn_) = parent_item
     {
-        if let Some(parent_parent) =
-            parent_item.syntax().parent().and_then(|it| it.parent()).and_then(ast::Item::cast)
+        if let Some(parent_parent) = parent_item
+            .syntax()
+            .parent()
+            .and_then(|it| it.parent())
+            .and_then(ast::Item::cast)
         {
             match parent_parent {
                 ast::Item::Impl(impl_) => list.push(GenericParent::Impl(impl_)),
@@ -1276,29 +1358,29 @@ impl HasTokenAtOffset for FunctionBody {
     fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken> {
         match self {
             FunctionBody::Expr(expr) => expr.syntax().token_at_offset(offset),
-            FunctionBody::Span { parent, text_range, .. } => {
-                match parent.syntax().token_at_offset(offset) {
-                    TokenAtOffset::None => TokenAtOffset::None,
-                    TokenAtOffset::Single(t) => {
-                        if text_range.contains_range(t.text_range()) {
-                            TokenAtOffset::Single(t)
-                        } else {
-                            TokenAtOffset::None
-                        }
-                    }
-                    TokenAtOffset::Between(a, b) => {
-                        match (
-                            text_range.contains_range(a.text_range()),
-                            text_range.contains_range(b.text_range()),
-                        ) {
-                            (true, true) => TokenAtOffset::Between(a, b),
-                            (true, false) => TokenAtOffset::Single(a),
-                            (false, true) => TokenAtOffset::Single(b),
-                            (false, false) => TokenAtOffset::None,
-                        }
+            FunctionBody::Span {
+                parent, text_range, ..
+            } => match parent.syntax().token_at_offset(offset) {
+                TokenAtOffset::None => TokenAtOffset::None,
+                TokenAtOffset::Single(t) => {
+                    if text_range.contains_range(t.text_range()) {
+                        TokenAtOffset::Single(t)
+                    } else {
+                        TokenAtOffset::None
                     }
                 }
-            }
+                TokenAtOffset::Between(a, b) => {
+                    match (
+                        text_range.contains_range(a.text_range()),
+                        text_range.contains_range(b.text_range()),
+                    ) {
+                        (true, true) => TokenAtOffset::Between(a, b),
+                        (true, false) => TokenAtOffset::Single(a),
+                        (false, true) => TokenAtOffset::Single(b),
+                        (false, false) => TokenAtOffset::None,
+                    }
+                }
+            },
         }
     }
 }
@@ -1312,14 +1394,28 @@ fn path_element_of_reference(
     node: &dyn HasTokenAtOffset,
     reference: &FileReference,
 ) -> Option<ast::Expr> {
-    let token = node.token_at_offset(reference.range.start()).right_biased().or_else(|| {
-        stdx::never!(false, "cannot find token at variable usage: {:?}", reference);
-        None
-    })?;
-    let path = token.parent_ancestors().find_map(ast::Expr::cast).or_else(|| {
-        stdx::never!(false, "cannot find path parent of variable usage: {:?}", token);
-        None
-    })?;
+    let token = node
+        .token_at_offset(reference.range.start())
+        .right_biased()
+        .or_else(|| {
+            stdx::never!(
+                false,
+                "cannot find token at variable usage: {:?}",
+                reference
+            );
+            None
+        })?;
+    let path = token
+        .parent_ancestors()
+        .find_map(ast::Expr::cast)
+        .or_else(|| {
+            stdx::never!(
+                false,
+                "cannot find path parent of variable usage: {:?}",
+                token
+            );
+            None
+        })?;
     stdx::always!(
         matches!(path, ast::Expr::PathExpr(_) | ast::Expr::MacroExpr(_)),
         "unexpected expression type for variable usage: {:?}",
@@ -1368,7 +1464,10 @@ fn local_outlives_body(
     if !any_outlives {
         return None;
     }
-    Some(OutlivedLocal { local, mut_usage_outside_body: has_mut_usages })
+    Some(OutlivedLocal {
+        local,
+        mut_usage_outside_body: has_mut_usages,
+    })
 }
 
 /// checks if the relevant local was defined before(outside of) body
@@ -1456,7 +1555,11 @@ fn fixup_call_site(builder: &mut SourceChangeBuilder, body: &FunctionBody) {
 fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -> SyntaxNode {
     let ret_ty = fun.return_type(ctx);
 
-    let args = make::arg_list(fun.params.iter().map(|param| param.to_arg(ctx, fun.mods.edition)));
+    let args = make::arg_list(
+        fun.params
+            .iter()
+            .map(|param| param.to_arg(ctx, fun.mods.edition)),
+    );
     let name = fun.name.clone();
     let mut call_expr = if fun.self_param.is_some() {
         let self_arg = make::expr_path(make::ext::ident_path("self"));
@@ -1480,7 +1583,11 @@ fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -
         [var] => {
             let name = var.local.name(ctx.db());
             let name = make::name(&name.display(ctx.db(), fun.mods.edition).to_string());
-            Some(ast::Pat::IdentPat(make::ident_pat(false, var.mut_usage_outside_body, name)))
+            Some(ast::Pat::IdentPat(make::ident_pat(
+                false,
+                var.mut_usage_outside_body,
+                name,
+            )))
         }
         vars => {
             let binding_pats = vars.iter().map(|var| {
@@ -1496,7 +1603,9 @@ fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -
 
     if let Some(bindings) = outliving_bindings {
         // with bindings that outlive it
-        make::let_stmt(bindings, None, Some(expr)).syntax().clone_for_update()
+        make::let_stmt(bindings, None, Some(expr))
+            .syntax()
+            .clone_for_update()
     } else if parent_match_arm.as_ref().is_some() {
         // as a tail expr for a match arm
         expr.syntax().clone()
@@ -1722,7 +1831,11 @@ fn make_where_clause(
         })
         .peekable();
 
-    if predicates.peek().is_some() { Some(make::where_clause(predicates)) } else { None }
+    if predicates.peek().is_some() {
+        Some(make::where_clause(predicates))
+    } else {
+        None
+    }
 }
 
 fn pred_is_required(
@@ -1752,12 +1865,19 @@ impl<'db> Function<'db> {
     /// Collect all the `TypeParam`s used in the `body` and `params`.
     fn type_params(&self, ctx: &AssistContext<'db>) -> Vec<TypeParam> {
         let type_params_in_descendant_paths =
-            self.body.descendant_paths().filter_map(|it| match ctx.sema.resolve_path(&it) {
-                Some(PathResolution::TypeParam(type_param)) => Some(type_param),
-                _ => None,
-            });
-        let type_params_in_params = self.params.iter().filter_map(|p| p.ty.as_type_param(ctx.db()));
-        type_params_in_descendant_paths.chain(type_params_in_params).collect()
+            self.body
+                .descendant_paths()
+                .filter_map(|it| match ctx.sema.resolve_path(&it) {
+                    Some(PathResolution::TypeParam(type_param)) => Some(type_param),
+                    _ => None,
+                });
+        let type_params_in_params = self
+            .params
+            .iter()
+            .filter_map(|p| p.ty.as_type_param(ctx.db()));
+        type_params_in_descendant_paths
+            .chain(type_params_in_params)
+            .collect()
     }
 
     fn make_param_list(
@@ -1767,7 +1887,10 @@ impl<'db> Function<'db> {
         edition: Edition,
     ) -> ast::ParamList {
         let self_param = self.self_param.clone();
-        let params = self.params.iter().map(|param| param.to_param(ctx, module, edition));
+        let params = self
+            .params
+            .iter()
+            .map(|param| param.to_param(ctx, module, edition));
         make::param_list(self_param, params)
     }
 
@@ -1781,10 +1904,12 @@ impl<'db> Function<'db> {
                 }
                 fun_ty.make_ty(ctx, module)
             }
-            FlowHandler::Try { kind: TryKind::Option } => {
-                make::ext::ty_option(fun_ty.make_ty(ctx, module))
-            }
-            FlowHandler::Try { kind: TryKind::Result { ty: parent_ret_ty } } => {
+            FlowHandler::Try {
+                kind: TryKind::Option,
+            } => make::ext::ty_option(fun_ty.make_ty(ctx, module)),
+            FlowHandler::Try {
+                kind: TryKind::Result { ty: parent_ret_ty },
+            } => {
                 let handler_ty = parent_ret_ty
                     .type_arguments()
                     .nth(1)
@@ -1877,7 +2002,9 @@ fn make_body(
                 }
             }
         }
-        FunctionBody::Span { parent, text_range, .. } => {
+        FunctionBody::Span {
+            parent, text_range, ..
+        } => {
             let mut elements: Vec<_> = parent
                 .syntax()
                 .children_with_tokens()
@@ -2004,11 +2131,14 @@ fn with_tail_expr(block: ast::BlockExpr, tail_expr: ast::Expr) -> ast::BlockExpr
     });
 
     if let Some(stmt_list) = block.stmt_list() {
-        stmt_list.syntax().children_with_tokens().for_each(|node_or_token| {
-            if let syntax::NodeOrToken::Token(_) = &node_or_token {
-                elements.push(node_or_token)
-            };
-        });
+        stmt_list
+            .syntax()
+            .children_with_tokens()
+            .for_each(|node_or_token| {
+                if let syntax::NodeOrToken::Token(_) = &node_or_token {
+                    elements.push(node_or_token)
+                };
+            });
     }
 
     if let Some(stmt_tail) = stmt_tail_opt {
@@ -2019,7 +2149,9 @@ fn with_tail_expr(block: ast::BlockExpr, tail_expr: ast::Expr) -> ast::BlockExpr
 }
 
 fn format_type(ty: &hir::Type<'_>, ctx: &AssistContext<'_>, module: hir::Module) -> String {
-    ty.display_source_code(ctx.db(), module.into(), true).ok().unwrap_or_else(|| "_".to_owned())
+    ty.display_source_code(ctx.db(), module.into(), true)
+        .ok()
+        .unwrap_or_else(|| "_".to_owned())
 }
 
 fn make_ty(ty: &hir::Type<'_>, ctx: &AssistContext<'_>, module: hir::Module) -> ast::Type {
@@ -2076,7 +2208,9 @@ fn fix_param_usages(
                 {
                     ted::replace(
                         node.syntax(),
-                        node.expr().expect("RefExpr::expr() cannot be None").syntax(),
+                        node.expr()
+                            .expect("RefExpr::expr() cannot be None")
+                            .syntax(),
                     );
                 }
                 Some(ast::Expr::RefExpr(node))
@@ -2084,7 +2218,9 @@ fn fix_param_usages(
                 {
                     ted::replace(
                         node.syntax(),
-                        node.expr().expect("RefExpr::expr() cannot be None").syntax(),
+                        node.expr()
+                            .expect("RefExpr::expr() cannot be None")
+                            .syntax(),
                     );
                 }
                 Some(_) | None => {

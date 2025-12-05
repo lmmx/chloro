@@ -44,7 +44,11 @@ impl<'db> FulfillmentError<'db> {
         code: FulfillmentErrorCode<'db>,
         root_obligation: PredicateObligation<'db>,
     ) -> FulfillmentError<'db> {
-        FulfillmentError { obligation, code, root_obligation }
+        FulfillmentError {
+            obligation,
+            code,
+            root_obligation,
+        }
     }
 
     pub fn is_true_error(&self) -> bool {
@@ -92,14 +96,17 @@ pub(super) fn fulfillment_error_for_no_solution<'db>(
         PredicateKind::Clause(ClauseKind::Projection(_)) => {
             FulfillmentErrorCode::Project(
                 // FIXME: This could be a `Sorts` if the term is a type
-                MismatchedProjectionTypes { err: TypeError::Mismatch },
+                MismatchedProjectionTypes {
+                    err: TypeError::Mismatch,
+                },
             )
         }
         PredicateKind::Clause(ClauseKind::ConstArgHasType(ct, expected_ty)) => {
             let ct_ty = match ct.kind() {
-                ConstKind::Unevaluated(uv) => {
-                    infcx.interner.type_of(uv.def).instantiate(infcx.interner, uv.args)
-                }
+                ConstKind::Unevaluated(uv) => infcx
+                    .interner
+                    .type_of(uv.def)
+                    .instantiate(infcx.interner, uv.args),
                 ConstKind::Param(param_ct) => param_ct.find_const_ty_from_env(obligation.param_env),
                 ConstKind::Value(cv) => cv.ty,
                 kind => panic!(
@@ -113,10 +120,14 @@ pub(super) fn fulfillment_error_for_no_solution<'db>(
             })
         }
         PredicateKind::NormalizesTo(..) => {
-            FulfillmentErrorCode::Project(MismatchedProjectionTypes { err: TypeError::Mismatch })
+            FulfillmentErrorCode::Project(MismatchedProjectionTypes {
+                err: TypeError::Mismatch,
+            })
         }
         PredicateKind::AliasRelate(_, _, _) => {
-            FulfillmentErrorCode::Project(MismatchedProjectionTypes { err: TypeError::Mismatch })
+            FulfillmentErrorCode::Project(MismatchedProjectionTypes {
+                err: TypeError::Mismatch,
+            })
         }
         PredicateKind::Subtype(pred) => {
             let (a, b) = infcx.enter_forall_and_leak_universe(
@@ -140,7 +151,11 @@ pub(super) fn fulfillment_error_for_no_solution<'db>(
         }
     };
 
-    FulfillmentError { obligation, code, root_obligation }
+    FulfillmentError {
+        obligation,
+        code,
+        root_obligation,
+    }
 }
 
 pub(super) fn fulfillment_error_for_stalled<'db>(
@@ -154,19 +169,28 @@ pub(super) fn fulfillment_error_for_stalled<'db>(
             None,
         ) {
             Ok(GoalEvaluation {
-                certainty: Certainty::Maybe { cause: MaybeCause::Ambiguity, .. },
+                certainty:
+                    Certainty::Maybe {
+                        cause: MaybeCause::Ambiguity,
+                        ..
+                    },
                 ..
             }) => (FulfillmentErrorCode::Ambiguity { overflow: None }, true),
             Ok(GoalEvaluation {
                 certainty:
                     Certainty::Maybe {
                         cause:
-                            MaybeCause::Overflow { suggest_increasing_limit, keep_constraints: _ },
+                            MaybeCause::Overflow {
+                                suggest_increasing_limit,
+                                keep_constraints: _,
+                            },
                         ..
                     },
                 ..
             }) => (
-                FulfillmentErrorCode::Ambiguity { overflow: Some(suggest_increasing_limit) },
+                FulfillmentErrorCode::Ambiguity {
+                    overflow: Some(suggest_increasing_limit),
+                },
                 // Don't look into overflows because we treat overflows weirdly anyways.
                 // We discard the inference constraints from overflowing goals, so
                 // recomputing the goal again during `find_best_leaf_obligation` may apply
@@ -175,7 +199,10 @@ pub(super) fn fulfillment_error_for_stalled<'db>(
                 // FIXME: We should probably just look into overflows here.
                 false,
             ),
-            Ok(GoalEvaluation { certainty: Certainty::Yes, .. }) => {
+            Ok(GoalEvaluation {
+                certainty: Certainty::Yes,
+                ..
+            }) => {
                 panic!(
                     "did not expect successful goal when collecting ambiguity errors for `{:?}`",
                     infcx.resolve_vars_if_possible(root_obligation.predicate),
@@ -207,7 +234,9 @@ pub(super) fn fulfillment_error_for_overflow<'db>(
 ) -> FulfillmentError<'db> {
     FulfillmentError {
         obligation: find_best_leaf_obligation(infcx, &root_obligation, true),
-        code: FulfillmentErrorCode::Ambiguity { overflow: Some(true) },
+        code: FulfillmentErrorCode::Ambiguity {
+            overflow: Some(true),
+        },
         root_obligation,
     }
 }
@@ -229,7 +258,10 @@ fn find_best_leaf_obligation<'db>(
             infcx
                 .visit_proof_tree(
                     obligation.as_goal(),
-                    &mut BestObligation { obligation: obligation.clone(), consider_ambiguities },
+                    &mut BestObligation {
+                        obligation: obligation.clone(),
+                        consider_ambiguities,
+                    },
                 )
                 .break_value()
                 .ok_or(())
@@ -281,15 +313,18 @@ impl<'db> BestObligation<'db> {
                 if candidates.len() > 1 {
                     candidates.retain(|candidate| {
                         goal.infcx().probe(|_| {
-                            candidate.instantiate_nested_goals().iter().any(|nested_goal| {
-                                matches!(
-                                    nested_goal.source(),
-                                    GoalSource::ImplWhereBound
-                                        | GoalSource::AliasBoundConstCondition
-                                        | GoalSource::InstantiateHigherRanked
-                                        | GoalSource::AliasWellFormed
-                                ) && nested_goal.result().is_err()
-                            })
+                            candidate
+                                .instantiate_nested_goals()
+                                .iter()
+                                .any(|nested_goal| {
+                                    matches!(
+                                        nested_goal.source(),
+                                        GoalSource::ImplWhereBound
+                                            | GoalSource::AliasBoundConstCondition
+                                            | GoalSource::InstantiateHigherRanked
+                                            | GoalSource::AliasWellFormed
+                                    ) && nested_goal.result().is_err()
+                                })
                         })
                     });
                 }
@@ -310,13 +345,21 @@ impl<'db> BestObligation<'db> {
         let infcx = candidate.goal().infcx();
         let param_env = candidate.goal().goal().param_env;
 
-        for obligation in wf::unnormalized_obligations(infcx, param_env, term).into_iter().flatten()
+        for obligation in wf::unnormalized_obligations(infcx, param_env, term)
+            .into_iter()
+            .flatten()
         {
             let nested_goal = candidate
                 .instantiate_proof_tree_for_nested_goal(GoalSource::Misc, obligation.as_goal());
             // Skip nested goals that aren't the *reason* for our goal's failure.
             match (self.consider_ambiguities, nested_goal.result()) {
-                (true, Ok(Certainty::Maybe { cause: MaybeCause::Ambiguity, .. }))
+                (
+                    true,
+                    Ok(Certainty::Maybe {
+                        cause: MaybeCause::Ambiguity,
+                        ..
+                    }),
+                )
                 | (false, Err(_)) => {}
                 _ => continue,
             }
@@ -459,8 +502,14 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
         let interner = goal.infcx().interner;
         // Skip goals that aren't the *reason* for our goal's failure.
         match (self.consider_ambiguities, goal.result()) {
-            (true, Ok(Certainty::Maybe { cause: MaybeCause::Ambiguity, .. })) | (false, Err(_)) => {
-            }
+            (
+                true,
+                Ok(Certainty::Maybe {
+                    cause: MaybeCause::Ambiguity,
+                    ..
+                }),
+            )
+            | (false, Err(_)) => {}
             _ => return ControlFlow::Continue(()),
         }
 
@@ -656,8 +705,12 @@ mod wf {
             return None;
         }
 
-        let mut wf =
-            WfPredicates { infcx, param_env, out: PredicateObligations::new(), recursion_depth: 0 };
+        let mut wf = WfPredicates {
+            infcx,
+            param_env,
+            out: PredicateObligations::new(),
+            recursion_depth: 0,
+        };
         wf.add_wf_preds_for_term(term);
         Some(wf.out)
     }
@@ -679,7 +732,8 @@ mod wf {
                 let cause = ObligationCause::new();
                 let trait_ref = TraitRef::new(
                     self.interner(),
-                    self.interner().require_trait_lang_item(SolverTraitLangItem::Sized),
+                    self.interner()
+                        .require_trait_lang_item(SolverTraitLangItem::Sized),
                     [subty],
                 );
                 self.out.push(Obligation::with_depth(
@@ -710,7 +764,9 @@ mod wf {
             // the nominal obligations of `Sized` would in-effect just elaborate `MetaSized` and make
             // the compiler do a bunch of work needlessly.
             if let SolverDefId::TraitId(def_id) = def_id
-                && self.interner().is_trait_lang_item(def_id.into(), SolverTraitLangItem::Sized)
+                && self
+                    .interner()
+                    .is_trait_lang_item(def_id.into(), SolverTraitLangItem::Sized)
             {
                 return Default::default();
             }
@@ -1057,7 +1113,12 @@ mod wf {
                         if let SolverDefId::ConstId(uv_def) = uv.def
                             && let ItemContainerId::ImplId(impl_) =
                                 uv_def.loc(self.interner().db).container
-                            && self.interner().db.impl_signature(impl_).target_trait.is_none()
+                            && self
+                                .interner()
+                                .db
+                                .impl_signature(impl_)
+                                .target_trait
+                                .is_none()
                         {
                             return; // Subtree is handled by above function
                         } else {

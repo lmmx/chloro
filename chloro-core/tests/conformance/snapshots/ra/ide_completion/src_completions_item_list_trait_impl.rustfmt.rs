@@ -192,7 +192,15 @@ fn add_function_impl(
         &[AsyncSugaring::Plain]
     };
     for &sugaring in sugar {
-        add_function_impl_(acc, ctx, replacement_range, func, impl_def, fn_name, sugaring);
+        add_function_impl_(
+            acc,
+            ctx,
+            replacement_range,
+            func,
+            impl_def,
+            fn_name,
+            sugaring,
+        );
     }
 }
 
@@ -214,7 +222,11 @@ fn add_function_impl_(
         "{}fn {}({})",
         async_,
         fn_name.display(ctx.db, ctx.edition),
-        if func.assoc_fn_params(ctx.db).is_empty() { "" } else { ".." }
+        if func.assoc_fn_params(ctx.db).is_empty() {
+            ""
+        } else {
+            ".."
+        }
     );
 
     let completion_kind = CompletionItemKind::SymbolKind(if func.has_self_param(ctx.db) {
@@ -224,9 +236,16 @@ fn add_function_impl_(
     });
 
     let mut item = CompletionItem::new(completion_kind, replacement_range, label, ctx.edition);
-    item.lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
-        .set_documentation(func.docs(ctx.db))
-        .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+    item.lookup_by(format!(
+        "{}fn {}",
+        async_,
+        fn_name.display(ctx.db, ctx.edition)
+    ))
+    .set_documentation(func.docs(ctx.db))
+    .set_relevance(CompletionRelevance {
+        exact_name_match: true,
+        ..Default::default()
+    });
 
     if let Some(source) = ctx.sema.source(func)
         && let Some(transformed_fn) =
@@ -370,7 +389,10 @@ fn add_type_alias_impl(
         CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
     item.lookup_by(format!("type {alias_name}"))
         .set_documentation(type_alias.docs(ctx.db))
-        .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+        .set_relevance(CompletionRelevance {
+            exact_name_match: true,
+            ..Default::default()
+        });
 
     if let Some(source) = ctx.sema.source(type_alias) {
         let assoc_item = ast::AssocItem::TypeAlias(source.value);
@@ -382,11 +404,14 @@ fn add_type_alias_impl(
 
             let start = transformed_ty.syntax().text_range().start();
 
-            let end = if let Some(end) =
-                transformed_ty.colon_token().map(|tok| tok.text_range().start())
+            let end = if let Some(end) = transformed_ty
+                .colon_token()
+                .map(|tok| tok.text_range().start())
             {
                 end
-            } else if let Some(end) = transformed_ty.eq_token().map(|tok| tok.text_range().start())
+            } else if let Some(end) = transformed_ty
+                .eq_token()
+                .map(|tok| tok.text_range().start())
             {
                 end
             } else if let Some(end) = transformed_ty
@@ -395,8 +420,9 @@ fn add_type_alias_impl(
                 .map(|tok| tok.text_range().start())
             {
                 end
-            } else if let Some(end) =
-                transformed_ty.semicolon_token().map(|tok| tok.text_range().start())
+            } else if let Some(end) = transformed_ty
+                .semicolon_token()
+                .map(|tok| tok.text_range().start())
             {
                 end
             } else {
@@ -443,7 +469,9 @@ fn add_const_impl(
     const_: hir::Const,
     impl_def: hir::Impl,
 ) {
-    let const_name = const_.name(ctx.db).map(|n| n.display_no_db(ctx.edition).to_smolstr());
+    let const_name = const_
+        .name(ctx.db)
+        .map(|n| n.display_no_db(ctx.edition).to_smolstr());
 
     if let Some(const_name) = const_name
         && let Some(source) = ctx.sema.source(const_)
@@ -1050,7 +1078,12 @@ impl Test for T {{
         ] {
             test("fn bar", "fn $0", "fn bar() {\n    $0\n}", next_sibling);
             test("type Foo", "type $0", "type Foo = $0;", next_sibling);
-            test("const CONST", "const $0", "const CONST: u16 = $0;", next_sibling);
+            test(
+                "const CONST",
+                "const $0",
+                "const CONST: u16 = $0;",
+                next_sibling,
+            );
         }
     }
 

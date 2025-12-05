@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 15554 bytes
 Chloro size:   15376 bytes
-Rustfmt size:  15554 bytes
+Rustfmt size:  16073 bytes
 
 ✗ Outputs DIFFER
 
@@ -22,6 +22,122 @@ Rustfmt size:  15554 bytes
  use test_fixture::WithFixture;
  use tt::{TextRange, TextSize};
  
+                 MacroCallKind::Attr { ast_id, .. } => ast_id.map(|it| it.erase()),
+             };
+ 
+-            let editioned_file_id = ast_id
+-                .file_id
+-                .file_id()
+-                .expect("macros inside macros are not supported");
++            let editioned_file_id =
++                ast_id.file_id.file_id().expect("macros inside macros are not supported");
+ 
+             let ast = db.parse(editioned_file_id).syntax_node();
+             let ast_id_map = db.ast_id_map(ast_id.file_id);
+             Some((node.text_range(), errors))
+         })
+         .sorted_unstable_by_key(|(range, _)| range.start())
+-        .format_with("\n", |(range, err), format| {
+-            format(&format_args!("{range:?}: {err}"))
+-        })
++        .format_with("\n", |(range, err), format| format(&format_args!("{range:?}: {err}")))
+         .to_string();
+     expect.assert_eq(&errors);
+ }
+         ast_ptr: InFile<AstPtr<ast::MacroCall>>,
+     ) -> Option<MacroCallId> {
+         def_map.modules().find_map(|module| {
+-            for decl in module
+-                .1
+-                .scope
+-                .declarations()
+-                .chain(module.1.scope.unnamed_consts().map(Into::into))
++            for decl in
++                module.1.scope.declarations().chain(module.1.scope.unnamed_consts().map(Into::into))
+             {
+                 let body = match decl {
+                     ModuleDefId::FunctionId(it) => it.into(),
+                 };
+ 
+                 let (body, sm) = db.body_with_source_map(body);
+-                if let Some(it) = body
+-                    .blocks(db)
+-                    .find_map(|block| resolve(db, block.1, ast_id, ast_ptr))
++                if let Some(it) =
++                    body.blocks(db).find_map(|block| resolve(db, block.1, ast_id, ast_ptr))
+                 {
+                     return Some(it);
+                 }
+     let mut text_edits = Vec::new();
+     let mut expansions = Vec::new();
+ 
+-    for macro_call_node in source_file
+-        .syntax()
+-        .descendants()
+-        .filter_map(ast::MacroCall::cast)
+-    {
++    for macro_call_node in source_file.syntax().descendants().filter_map(ast::MacroCall::cast) {
+         let ast_id = db.ast_id_map(source.file_id).ast_id(&macro_call_node);
+         let ast_id = InFile::new(source.file_id, ast_id);
+         let ptr = InFile::new(source.file_id, AstPtr::new(&macro_call_node));
+         let mut expect_errors = false;
+         let mut show_spans = false;
+         let mut show_ctxt = false;
+-        for comment in call
+-            .syntax()
+-            .children_with_tokens()
+-            .filter(|it| it.kind() == COMMENT)
+-        {
++        for comment in call.syntax().children_with_tokens().filter(|it| it.kind() == COMMENT) {
+             tree |= comment.to_string().contains("+tree");
+             expect_errors |= comment.to_string().contains("+errors");
+             show_spans |= comment.to_string().contains("+spans");
+ 
+         let mut expn_text = String::new();
+         if let Some(err) = exp.err {
+-            format_to!(
+-                expn_text,
+-                "/* error: {} */",
+-                err.render_to_string(&db).message
+-            );
++            format_to!(expn_text, "/* error: {} */", err.render_to_string(&db).message);
+         }
+         let (parse, token_map) = exp.value;
+         if expect_errors {
+         if tree {
+             let tree = format!("{:#?}", parse.syntax_node())
+                 .split_inclusive('\n')
+-                .fold(String::new(), |mut acc, line| {
+-                    format_to_acc!(acc, "// {line}")
+-                });
++                .fold(String::new(), |mut acc, line| format_to_acc!(acc, "// {line}"));
+             format_to!(expn_text, "\n{}", tree)
+         }
+         let range = call.syntax().text_range();
+             let call = file_id.call_node(&db);
+             let mut show_spans = false;
+             let mut show_ctxt = false;
+-            for comment in call
+-                .value
+-                .children_with_tokens()
+-                .filter(|it| it.kind() == COMMENT)
+-            {
++            for comment in call.value.children_with_tokens().filter(|it| it.kind() == COMMENT) {
+                 show_spans |= comment.to_string().contains("+spans");
+                 show_ctxt |= comment.to_string().contains("+syntaxctxt");
+             }
+ 
+         res.push_str(space);
+         if space == "\n" {
+-            let level = if curr_kind == T!['}'] {
+-                indent_level - 1
+-            } else {
+-                indent_level
+-            };
++            let level = if curr_kind == T!['}'] { indent_level - 1 } else { indent_level };
+             res.push_str(&"    ".repeat(level));
+         }
+         prev_kind = curr_kind;
      res
  }
  
@@ -34,3 +150,27 @@ Rustfmt size:  15554 bytes
  impl ProcMacroExpander for IdentityWhenValidProcMacroExpander {
      fn expand(
          &self,
+         },
+         ctx: SyntaxContext::root(Edition::CURRENT),
+     };
+-    let close_brace = tt::Punct {
+-        char: '}',
+-        spacing: tt::Spacing::Alone,
+-        span,
+-    };
+-    let dotdot1 = tt::Punct {
+-        char: '.',
+-        spacing: tt::Spacing::Joint,
+-        span,
+-    };
+-    let dotdot2 = tt::Punct {
+-        char: '.',
+-        spacing: tt::Spacing::Alone,
+-        span,
+-    };
++    let close_brace = tt::Punct { char: '}', spacing: tt::Spacing::Alone, span };
++    let dotdot1 = tt::Punct { char: '.', spacing: tt::Spacing::Joint, span };
++    let dotdot2 = tt::Punct { char: '.', spacing: tt::Spacing::Alone, span };
+     let dollar_crate = sym::dollar_crate;
+     let tt = quote! {
+             span => {

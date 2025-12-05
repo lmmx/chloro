@@ -128,8 +128,9 @@ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                 let replaced = call_infos
                     .into_iter()
                     .map(|(call_info, mut_node)| {
-                        let replacement =
-                            inline(&ctx.sema, def_file, function, &func_body, &params, &call_info);
+                        let replacement = inline(
+                            &ctx.sema, def_file, function, &func_body, &params, &call_info,
+                        );
                         ted::replace(mut_node, replacement.syntax());
                     })
                     .count();
@@ -164,10 +165,12 @@ pub(super) fn split_refs_and_uses<T: ast::AstNode>(
             FileReferenceNode::NameRef(name_ref) => Some(name_ref),
             _ => None,
         })
-        .filter_map(|name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
-            Some(use_tree) => builder.make_mut(use_tree).path().map(Either::Right),
-            None => map_ref(name_ref).map(Either::Left),
-        })
+        .filter_map(
+            |name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
+                Some(use_tree) => builder.make_mut(use_tree).path().map(Either::Right),
+                None => map_ref(name_ref).map(Either::Left),
+            },
+        )
         .partition_map(|either| either)
 }
 
@@ -196,7 +199,10 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     let name_ref: ast::NameRef = ctx.find_node_at_offset()?;
     let call_info = CallInfo::from_name_ref(
         name_ref.clone(),
-        ctx.sema.file_to_module_def(ctx.vfs_file_id())?.krate().into(),
+        ctx.sema
+            .file_to_module_def(ctx.vfs_file_id())?
+            .krate()
+            .into(),
     )?;
     let (function, label) = match &call_info.node {
         ast::CallableExpr::Call(call) => {
@@ -210,9 +216,10 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             };
             (function, format!("Inline `{path}`"))
         }
-        ast::CallableExpr::MethodCall(call) => {
-            (ctx.sema.resolve_method_call(call)?, format!("Inline `{name_ref}`"))
-        }
+        ast::CallableExpr::MethodCall(call) => (
+            ctx.sema.resolve_method_call(call)?,
+            format!("Inline `{name_ref}`"),
+        ),
     };
 
     let fn_source = ctx.sema.source(function)?;
@@ -234,16 +241,21 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     }
 
     let syntax = call_info.node.syntax().clone();
-    acc.add(AssistId::refactor_inline("inline_call"), label, syntax.text_range(), |builder| {
-        let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
-        builder.replace_ast(
-            match call_info.node {
-                ast::CallableExpr::Call(it) => ast::Expr::CallExpr(it),
-                ast::CallableExpr::MethodCall(it) => ast::Expr::MethodCallExpr(it),
-            },
-            replacement,
-        );
-    })
+    acc.add(
+        AssistId::refactor_inline("inline_call"),
+        label,
+        syntax.text_range(),
+        |builder| {
+            let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
+            builder.replace_ast(
+                match call_info.node {
+                    ast::CallableExpr::Call(it) => ast::Expr::CallExpr(it),
+                    ast::CallableExpr::MethodCall(it) => ast::Expr::MethodCallExpr(it),
+                },
+                replacement,
+            );
+        },
+    )
 }
 
 struct CallInfo {
@@ -317,7 +329,12 @@ fn inline(
     function: hir::Function,
     fn_body: &ast::BlockExpr,
     params: &[(ast::Pat, Option<ast::Type>, hir::Param<'_>)],
-    CallInfo { node, arguments, generic_arg_list, krate }: &CallInfo,
+    CallInfo {
+        node,
+        arguments,
+        generic_arg_list,
+        krate,
+    }: &CallInfo,
 ) -> ast::Expr {
     let file_id = sema.hir_file_for(fn_body.syntax());
     let mut body = if let Some(macro_file) = file_id.macro_file() {
@@ -391,8 +408,9 @@ fn inline(
     // We should place the following code after last usage of `usages_for_locals`
     // because `ted::replace` will change the offset in syntax tree, which makes
     // `FileReference` incorrect
-    if let Some(imp) =
-        sema.ancestors_with_macros(fn_body.syntax().clone()).find_map(ast::Impl::cast)
+    if let Some(imp) = sema
+        .ancestors_with_macros(fn_body.syntax().clone())
+        .find_map(ast::Impl::cast)
         && !node.syntax().ancestors().any(|anc| &anc == imp.syntax())
         && let Some(t) = imp.self_ty()
     {
@@ -447,7 +465,10 @@ fn inline(
                 }
             });
 
-            let ty = sema.type_of_expr(expr).filter(TypeInfo::has_adjustment).and(param_ty);
+            let ty = sema
+                .type_of_expr(expr)
+                .filter(TypeInfo::has_adjustment)
+                .and(param_ty);
 
             let is_self = param.name(sema.db).is_some_and(|name| name == sym::self_);
 
@@ -480,11 +501,16 @@ fn inline(
                         }
                     }
                 };
-                let_stmts
-                    .push(make::let_stmt(this_pat.into(), ty, Some(expr)).clone_for_update().into())
+                let_stmts.push(
+                    make::let_stmt(this_pat.into(), ty, Some(expr))
+                        .clone_for_update()
+                        .into(),
+                )
             } else {
                 let_stmts.push(
-                    make::let_stmt(pat.clone(), ty, Some(expr.clone())).clone_for_update().into(),
+                    make::let_stmt(pat.clone(), ty, Some(expr.clone()))
+                        .clone_for_update()
+                        .into(),
                 );
             }
         };
@@ -556,9 +582,14 @@ fn inline(
             body = make::block_expr(let_stmts, Some(body.into())).clone_for_update();
         }
     } else if let Some(stmt_list) = body.stmt_list() {
-        let position = stmt_list.l_curly_token().expect("L_CURLY for StatementList is missing.");
+        let position = stmt_list
+            .l_curly_token()
+            .expect("L_CURLY for StatementList is missing.");
         let_stmts.into_iter().rev().for_each(|let_stmt| {
-            ted::insert(ted::Position::after(position.clone()), let_stmt.syntax().clone());
+            ted::insert(
+                ted::Position::after(position.clone()),
+                let_stmt.syntax().clone(),
+            );
         });
     }
 
@@ -581,7 +612,9 @@ fn inline(
             .and_then(|bin_expr| bin_expr.lhs())
         {
             Some(lhs) if lhs.syntax() == node.syntax() => {
-                make::expr_paren(ast::Expr::BlockExpr(body)).clone_for_update().into()
+                make::expr_paren(ast::Expr::BlockExpr(body))
+                    .clone_for_update()
+                    .into()
             }
             _ => ast::Expr::BlockExpr(body),
         },

@@ -3,26 +3,11 @@ COMPARISON DIFF
 
 Original size: 7509 bytes
 Chloro size:   7487 bytes
-Rustfmt size:  7531 bytes
+Rustfmt size:  7527 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::{
--    ast,
--    ast::IsString,
-     AstToken,
-     SyntaxKind::{CHAR, STRING},
--    TextRange, TextSize,
-+    TextRange, TextSize, ast,
-+    ast::IsString,
- };
- 
--use crate::{utils::string_suffix, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, utils::string_suffix};
- 
- // Assist: replace_string_with_char
- //
  // }
  // ```
  pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

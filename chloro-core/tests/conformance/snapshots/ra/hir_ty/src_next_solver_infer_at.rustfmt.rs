@@ -26,23 +26,23 @@
 //! things. (That system should probably be refactored.)
 
 use rustc_type_ir::{
+    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
     error::ExpectedFound,
     inherent::{IntoKind, Span as _},
-    relate::{solver_relating::RelateExt, Relate, TypeRelation},
-    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
+    relate::{Relate, TypeRelation, solver_relating::RelateExt},
 };
 
 use crate::next_solver::{
-    fulfill::NextSolverError,
-    infer::relate::lattice::{LatticeOp, LatticeOpKind},
     AliasTerm, AliasTy, Binder, Const, DbInterner, GenericArg, Goal, ParamEnv,
     PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
     TraitRef, Ty,
+    fulfill::NextSolverError,
+    infer::relate::lattice::{LatticeOp, LatticeOpKind},
 };
 
 use super::{
-    traits::{Obligation, ObligationCause},
     InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
+    traits::{Obligation, ObligationCause},
 };
 
 #[derive(Clone, Copy)]

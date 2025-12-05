@@ -5,19 +5,4 @@ Original size: 9973 bytes
 Chloro size:   10039 bytes
 Rustfmt size:  10039 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Utility module for converting between hir_def ids and code_model wrappers.
- //!
- //! It's unclear if we need this long-term, but it's definitely useful while we
- //! are splitting the hir.
- 
- use hir_def::{
--    hir::{BindingId, LabelId},
-     AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId, GenericDefId, GenericParamId,
-     ModuleDefId, VariantId,
-+    hir::{BindingId, LabelId},
- };
- 
- use crate::{
+✓ Outputs are IDENTICAL

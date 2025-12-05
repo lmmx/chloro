@@ -2,12 +2,12 @@
 
 use span::{Span, SyntaxContext};
 use stdx::TupleExt;
-use syntax::{ast, AstNode, TextRange};
+use syntax::{AstNode, TextRange, ast};
 use triomphe::Arc;
 
 pub use span::RealSpanMap;
 
-use crate::{attrs::collect_attrs, db::ExpandDatabase, HirFileId, MacroCallId};
+use crate::{HirFileId, MacroCallId, attrs::collect_attrs, db::ExpandDatabase};
 
 pub type ExpansionSpanMap = span::SpanMap<SyntaxContext>;
 

@@ -48,7 +48,9 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     }
 
     // Prepend set_ to fn names.
-    fn_names.iter_mut().for_each(|name| *name = format!("set_{name}"));
+    fn_names
+        .iter_mut()
+        .for_each(|name| *name = format!("set_{name}"));
 
     // Return early if we've found an existing fn
     let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &fn_names)?;
@@ -59,7 +61,11 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         .map(|record_field_info| record_field_info.target)
         .reduce(|acc, target| acc.cover(target))?;
 
-    let setter_info = AssistInfo { impl_def, strukt, assist_type: AssistType::Set };
+    let setter_info = AssistInfo {
+        impl_def,
+        strukt,
+        assist_type: AssistType::Set,
+    };
 
     acc.add_group(
         &GroupLabel("Generate getter/setter".to_owned()),
@@ -175,8 +181,14 @@ pub(crate) fn generate_getter_impl(
     ctx: &AssistContext<'_>,
     mutable: bool,
 ) -> Option<()> {
-    let (strukt, info_of_record_fields, fn_names) =
-        extract_and_parse(ctx, if mutable { AssistType::MutGet } else { AssistType::Get })?;
+    let (strukt, info_of_record_fields, fn_names) = extract_and_parse(
+        ctx,
+        if mutable {
+            AssistType::MutGet
+        } else {
+            AssistType::Get
+        },
+    )?;
     // No record fields to do work on :(
     if info_of_record_fields.is_empty() {
         return None;
@@ -199,7 +211,11 @@ pub(crate) fn generate_getter_impl(
     let getter_info = AssistInfo {
         impl_def,
         strukt,
-        assist_type: if mutable { AssistType::MutGet } else { AssistType::Get },
+        assist_type: if mutable {
+            AssistType::MutGet
+        } else {
+            AssistType::Get
+        },
     };
 
     acc.add_group(
@@ -286,8 +302,10 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
 
     // Make the param list
     // `(&mut self, $field_name: $field_ty)`
-    let field_param =
-        make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
+    let field_param = make::param(
+        make::ident_pat(false, false, make::name(field_name)).into(),
+        field_ty.clone(),
+    );
     let params = make::param_list(Some(make::mut_self_param()), [field_param]);
 
     // Make the assignment body
@@ -394,7 +412,12 @@ fn parse_record_field(
 
     let target = record_field.syntax().text_range();
 
-    Some(RecordFieldInfo { field_name, field_ty, fn_name, target })
+    Some(RecordFieldInfo {
+        field_name,
+        field_ty,
+        fn_name,
+        target,
+    })
 }
 
 fn build_source_change(
@@ -417,7 +440,10 @@ fn build_source_change(
 
         ted::insert_all_raw(
             ted::Position::after(strukt.syntax()),
-            vec![make::tokens::blank_line().into(), impl_def.syntax().clone().into()],
+            vec![
+                make::tokens::blank_line().into(),
+                impl_def.syntax().clone().into(),
+            ],
         );
 
         impl_def

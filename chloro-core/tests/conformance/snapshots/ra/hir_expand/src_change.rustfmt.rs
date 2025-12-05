@@ -1,6 +1,6 @@
 //! Defines a unit of change that can applied to the database to get the next
 //! state. Changes are transactional.
-use base_db::{salsa::Durability, CrateGraphBuilder, FileChange, SourceRoot};
+use base_db::{CrateGraphBuilder, FileChange, SourceRoot, salsa::Durability};
 use span::FileId;
 use triomphe::Arc;
 

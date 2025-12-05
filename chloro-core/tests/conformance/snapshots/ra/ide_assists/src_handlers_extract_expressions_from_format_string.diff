@@ -3,28 +3,11 @@ COMPARISON DIFF
 
 Original size: 9816 bytes
 Chloro size:   9806 bytes
-Rustfmt size:  9843 bytes
+Rustfmt size:  9922 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use crate::{utils, AssistContext, Assists};
-+use crate::{AssistContext, Assists, utils};
- use ide_db::{
-     assists::{AssistId, AssistKind},
--    syntax_helpers::format_string_exprs::{parse_format_exprs, Arg},
-+    syntax_helpers::format_string_exprs::{Arg, parse_format_exprs},
- };
- use itertools::Itertools;
- use syntax::{
--    ast::{self, make, syntax_factory::SyntaxFactory, TokenTree},
-     AstNode, AstToken, NodeOrToken,
-     SyntaxKind::WHITESPACE,
-     SyntaxToken, T,
-+    ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
- };
- 
- // Assist: extract_expressions_from_format_string
      ctx: &AssistContext<'_>,
  ) -> Option<()> {
      let fmt_string = ctx.find_token_at_offset::<ast::String>()?;
@@ -36,6 +19,19 @@ Rustfmt size:  9843 bytes
      let tt_delimiter = tt.left_delimiter_token()?.kind();
  
      let _ = ctx.sema.as_format_args_parts(&fmt_string)?;
+         AssistId(
+             "extract_expressions_from_format_string",
+             // if there aren't any expressions, then make the assist a RefactorExtract
+-            if extracted_args
+-                .iter()
+-                .filter(|f| matches!(f, Arg::Expr(_)))
+-                .count()
+-                == 0
+-            {
++            if extracted_args.iter().filter(|f| matches!(f, Arg::Expr(_))).count() == 0 {
+                 AssistKind::RefactorExtract
+             } else {
+                 AssistKind::QuickFix
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_no_snippet_cap};

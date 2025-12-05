@@ -8,16 +8,6 @@ Rustfmt size:  7244 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::next_solver::{DbInterner, TypingMode};
--use ide_db::{famous_defs::FamousDefs, RootDatabase};
-+use ide_db::{RootDatabase, famous_defs::FamousDefs};
- use syntax::ast::{self, AstNode, HasName};
- 
--use crate::{utils::generate_trait_impl_text_intransitive, AssistContext, AssistId, Assists};
-+use crate::{AssistContext, AssistId, Assists, utils::generate_trait_impl_text_intransitive};
- 
- // Assist: generate_from_impl_for_enum
- //
      let field_ty = variant.fields(sema.db).first()?.ty(sema.db);
      let enum_ty = enum_.ty(sema.db);
      tracing::debug!(?enum_, ?field_ty, ?enum_ty);

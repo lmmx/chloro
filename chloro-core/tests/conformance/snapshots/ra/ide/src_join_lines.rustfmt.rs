@@ -48,7 +48,10 @@ pub(crate) fn join_lines(
     let mut edit = TextEdit::builder();
     match file.syntax().covering_element(range) {
         NodeOrToken::Node(node) => {
-            for token in node.descendants_with_tokens().filter_map(|it| it.into_token()) {
+            for token in node
+                .descendants_with_tokens()
+                .filter_map(|it| it.into_token())
+            {
                 remove_newlines(config, &mut edit, &token, range)
             }
         }
@@ -125,7 +128,10 @@ fn remove_newline(
         match next.kind() {
             T![')'] | T![']'] => {
                 // Removes: trailing comma, newline (incl. surrounding whitespace)
-                edit.delete(TextRange::new(prev.text_range().start(), token.text_range().end()));
+                edit.delete(TextRange::new(
+                    prev.text_range().start(),
+                    token.text_range().end(),
+                ));
                 return;
             }
             T!['}'] => {
@@ -199,7 +205,10 @@ fn remove_newline(
     }
 
     // Remove newline but add a computed amount of whitespace characters
-    edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
+    edit.replace(
+        token.text_range(),
+        compute_ws(prev.kind(), next.kind()).to_owned(),
+    );
 }
 
 fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
@@ -227,7 +236,10 @@ fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Op
 fn join_single_use_tree(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
     let use_tree_list = ast::UseTreeList::cast(token.parent()?)?;
     let (tree,) = use_tree_list.use_trees().collect_tuple()?;
-    edit.replace(use_tree_list.syntax().text_range(), tree.syntax().text().to_string());
+    edit.replace(
+        use_tree_list.syntax().text_range(),
+        tree.syntax().text().to_string(),
+    );
     Some(())
 }
 
@@ -262,7 +274,12 @@ fn join_assignments(
         return None;
     }
 
-    edit.delete(let_stmt.semicolon_token()?.text_range().cover(lhs.syntax().text_range()));
+    edit.delete(
+        let_stmt
+            .semicolon_token()?
+            .text_range()
+            .cover(lhs.syntax().text_range()),
+    );
     Some(())
 }
 
@@ -315,7 +332,9 @@ mod tests {
         };
 
         let (before_cursor_pos, before) = extract_offset(ra_fixture_before);
-        let file = SourceFile::parse(&before, span::Edition::CURRENT).ok().unwrap();
+        let file = SourceFile::parse(&before, span::Edition::CURRENT)
+            .ok()
+            .unwrap();
 
         let range = TextRange::empty(before_cursor_pos);
         let result = join_lines(&config, &file, range);

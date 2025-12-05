@@ -52,11 +52,16 @@ impl<'a> Ctx<'a> {
     }
 
     pub(super) fn span_map(&self) -> SpanMapRef<'_> {
-        self.span_map.get_or_init(|| self.db.span_map(self.file)).as_ref()
+        self.span_map
+            .get_or_init(|| self.db.span_map(self.file))
+            .as_ref()
     }
 
     pub(super) fn lower_module_items(mut self, item_owner: &dyn HasModuleItem) -> ItemTree {
-        self.top_level = item_owner.items().flat_map(|item| self.lower_mod_item(&item)).collect();
+        self.top_level = item_owner
+            .items()
+            .flat_map(|item| self.lower_mod_item(&item))
+            .collect();
         self.tree.vis.arena = self.visibilities.into_iter().collect();
         self.tree.top_level = self.top_level.into_boxed_slice();
         self.tree
@@ -168,8 +173,14 @@ impl<'a> Ctx<'a> {
         let name = strukt.name()?.as_name();
         let ast_id = self.source_ast_id_map.ast_id(strukt);
         let shape = adt_shape(strukt.kind());
-        let res = Struct { name, visibility, shape };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Struct(res));
+        let res = Struct {
+            name,
+            visibility,
+            shape,
+        };
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Struct(res));
 
         Some(ast_id)
     }
@@ -179,7 +190,9 @@ impl<'a> Ctx<'a> {
         let name = union.name()?.as_name();
         let ast_id = self.source_ast_id_map.ast_id(union);
         let res = Union { name, visibility };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Union(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Union(res));
         Some(ast_id)
     }
 
@@ -188,7 +201,9 @@ impl<'a> Ctx<'a> {
         let name = enum_.name()?.as_name();
         let ast_id = self.source_ast_id_map.ast_id(enum_);
         let res = Enum { name, visibility };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Enum(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Enum(res));
         Some(ast_id)
     }
 
@@ -200,7 +215,9 @@ impl<'a> Ctx<'a> {
 
         let res = Function { name, visibility };
 
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Function(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Function(res));
         Some(ast_id)
     }
 
@@ -212,7 +229,9 @@ impl<'a> Ctx<'a> {
         let visibility = self.lower_visibility(type_alias);
         let ast_id = self.source_ast_id_map.ast_id(type_alias);
         let res = TypeAlias { name, visibility };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::TypeAlias(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::TypeAlias(res));
         Some(ast_id)
     }
 
@@ -221,7 +240,9 @@ impl<'a> Ctx<'a> {
         let visibility = self.lower_visibility(static_);
         let ast_id = self.source_ast_id_map.ast_id(static_);
         let res = Static { name, visibility };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Static(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Static(res));
         Some(ast_id)
     }
 
@@ -230,7 +251,9 @@ impl<'a> Ctx<'a> {
         let visibility = self.lower_visibility(konst);
         let ast_id = self.source_ast_id_map.ast_id(konst);
         let res = Const { name, visibility };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Const(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Const(res));
         ast_id
     }
 
@@ -243,7 +266,11 @@ impl<'a> Ctx<'a> {
             ModKind::Inline {
                 items: module
                     .item_list()
-                    .map(|list| list.items().flat_map(|item| self.lower_mod_item(&item)).collect())
+                    .map(|list| {
+                        list.items()
+                            .flat_map(|item| self.lower_mod_item(&item))
+                            .collect()
+                    })
                     .unwrap_or_else(|| {
                         cov_mark::hit!(name_res_works_for_broken_modules);
                         Box::new([]) as Box<[_]>
@@ -251,8 +278,14 @@ impl<'a> Ctx<'a> {
             }
         };
         let ast_id = self.source_ast_id_map.ast_id(module);
-        let res = Mod { name, visibility, kind };
-        self.tree.big_data.insert(ast_id.upcast(), BigModItem::Mod(res));
+        let res = Mod {
+            name,
+            visibility,
+            kind,
+        };
+        self.tree
+            .big_data
+            .insert(ast_id.upcast(), BigModItem::Mod(res));
         Some(ast_id)
     }
 
@@ -262,7 +295,9 @@ impl<'a> Ctx<'a> {
         let ast_id = self.source_ast_id_map.ast_id(trait_def);
 
         let def = Trait { name, visibility };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Trait(def));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Trait(def));
         Some(ast_id)
     }
 
@@ -271,7 +306,9 @@ impl<'a> Ctx<'a> {
         // Note that trait impls don't get implicit `Self` unlike traits, because here they are a
         // type alias rather than a type parameter, so this is handled by the resolver.
         let res = Impl {};
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Impl(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Impl(res));
         ast_id
     }
 
@@ -282,8 +319,13 @@ impl<'a> Ctx<'a> {
             self.span_map().span_for_range(range).ctx
         })?;
 
-        let res = Use { visibility, use_tree };
-        self.tree.big_data.insert(ast_id.upcast(), BigModItem::Use(res));
+        let res = Use {
+            visibility,
+            use_tree,
+        };
+        self.tree
+            .big_data
+            .insert(ast_id.upcast(), BigModItem::Use(res));
         Some(ast_id)
     }
 
@@ -293,13 +335,21 @@ impl<'a> Ctx<'a> {
     ) -> Option<ItemTreeAstId<ExternCrate>> {
         let name = extern_crate.name_ref()?.as_name();
         let alias = extern_crate.rename().map(|a| {
-            a.name().map(|it| it.as_name()).map_or(ImportAlias::Underscore, ImportAlias::Alias)
+            a.name()
+                .map(|it| it.as_name())
+                .map_or(ImportAlias::Underscore, ImportAlias::Alias)
         });
         let visibility = self.lower_visibility(extern_crate);
         let ast_id = self.source_ast_id_map.ast_id(extern_crate);
 
-        let res = ExternCrate { name, alias, visibility };
-        self.tree.big_data.insert(ast_id.upcast(), BigModItem::ExternCrate(res));
+        let res = ExternCrate {
+            name,
+            alias,
+            visibility,
+        };
+        self.tree
+            .big_data
+            .insert(ast_id.upcast(), BigModItem::ExternCrate(res));
         Some(ast_id)
     }
 
@@ -312,8 +362,14 @@ impl<'a> Ctx<'a> {
         })?);
         let ast_id = self.source_ast_id_map.ast_id(m);
         let expand_to = hir_expand::ExpandTo::from_call_site(m);
-        let res = MacroCall { path, expand_to, ctxt: span_map.span_for_range(range).ctx };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::MacroCall(res));
+        let res = MacroCall {
+            path,
+            expand_to,
+            ctxt: span_map.span_for_range(range).ctx,
+        };
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::MacroCall(res));
         Some(ast_id)
     }
 
@@ -321,8 +377,12 @@ impl<'a> Ctx<'a> {
         let name = m.name()?;
         let ast_id = self.source_ast_id_map.ast_id(m);
 
-        let res = MacroRules { name: name.as_name() };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::MacroRules(res));
+        let res = MacroRules {
+            name: name.as_name(),
+        };
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::MacroRules(res));
         Some(ast_id)
     }
 
@@ -332,8 +392,13 @@ impl<'a> Ctx<'a> {
         let ast_id = self.source_ast_id_map.ast_id(m);
         let visibility = self.lower_visibility(m);
 
-        let res = Macro2 { name: name.as_name(), visibility };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Macro2(res));
+        let res = Macro2 {
+            name: name.as_name(),
+            visibility,
+        };
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::Macro2(res));
         Some(ast_id)
     }
 
@@ -360,7 +425,9 @@ impl<'a> Ctx<'a> {
         });
 
         let res = ExternBlock { children };
-        self.tree.small_data.insert(ast_id.upcast(), SmallModItem::ExternBlock(res));
+        self.tree
+            .small_data
+            .insert(ast_id.upcast(), SmallModItem::ExternBlock(res));
         ast_id
     }
 
@@ -414,7 +481,10 @@ impl UseTreeLowering<'_> {
                 .collect();
 
             Some(UseTree {
-                kind: UseTreeKind::Prefixed { prefix: prefix.map(Interned::new), list },
+                kind: UseTreeKind::Prefixed {
+                    prefix: prefix.map(Interned::new),
+                    list,
+                },
             })
         } else {
             let is_glob = tree.star_token().is_some();
@@ -423,7 +493,9 @@ impl UseTreeLowering<'_> {
                 None => None,
             };
             let alias = tree.rename().map(|a| {
-                a.name().map(|it| it.as_name()).map_or(ImportAlias::Underscore, ImportAlias::Alias)
+                a.name()
+                    .map(|it| it.as_name())
+                    .map_or(ImportAlias::Underscore, ImportAlias::Alias)
             });
             if alias.is_some() && is_glob {
                 return None;
@@ -435,7 +507,11 @@ impl UseTreeLowering<'_> {
                         cov_mark::hit!(glob_enum_group);
                     }
                     self.mapping.alloc(tree.clone());
-                    Some(UseTree { kind: UseTreeKind::Glob { path: path.map(Interned::new) } })
+                    Some(UseTree {
+                        kind: UseTreeKind::Glob {
+                            path: path.map(Interned::new),
+                        },
+                    })
                 }
                 // Globs can't be renamed
                 (_, Some(_), true) | (None, None, false) => None,
@@ -443,7 +519,12 @@ impl UseTreeLowering<'_> {
                 (None, Some(_), false) => None,
                 (Some(path), alias, false) => {
                     self.mapping.alloc(tree.clone());
-                    Some(UseTree { kind: UseTreeKind::Single { path: Interned::new(path), alias } })
+                    Some(UseTree {
+                        kind: UseTreeKind::Single {
+                            path: Interned::new(path),
+                            alias,
+                        },
+                    })
                 }
             }
         }
@@ -455,7 +536,10 @@ pub(crate) fn lower_use_tree(
     tree: ast::UseTree,
     span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext,
 ) -> Option<(UseTree, Arena<ast::UseTree>)> {
-    let mut lowering = UseTreeLowering { db, mapping: Arena::new() };
+    let mut lowering = UseTreeLowering {
+        db,
+        mapping: Arena::new(),
+    };
     let tree = lowering.lower_use_tree(tree, span_for_range)?;
     Some((tree, lowering.mapping))
 }
@@ -469,7 +553,9 @@ pub(crate) fn visibility_from_ast(
     node: Option<ast::Visibility>,
     span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext,
 ) -> RawVisibility {
-    let Some(node) = node else { return private_vis() };
+    let Some(node) = node else {
+        return private_vis();
+    };
     let path = match node.kind() {
         ast::VisibilityKind::In(path) => {
             let path = ModPath::from_src(db, path, span_for_range);

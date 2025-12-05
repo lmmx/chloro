@@ -1,13 +1,13 @@
 //! Defining opaque types via inference.
 
-use rustc_type_ir::{fold_regions, TypeVisitableExt};
+use rustc_type_ir::{TypeVisitableExt, fold_regions};
 use tracing::{debug, instrument};
 
 use crate::{
     infer::InferenceContext,
     next_solver::{
-        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
         EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
+        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
     },
 };
 

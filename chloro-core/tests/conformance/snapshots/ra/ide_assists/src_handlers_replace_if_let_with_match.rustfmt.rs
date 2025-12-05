@@ -121,14 +121,19 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
                             }
                         }
                     };
-                let arms = cond_bodies.into_iter().map(make_match_arm).chain([else_arm]);
+                let arms = cond_bodies
+                    .into_iter()
+                    .map(make_match_arm)
+                    .chain([else_arm]);
                 let match_expr = make.expr_match(scrutinee_to_be_expr, make.match_arm_list(arms));
                 match_expr.indent(indent);
                 match_expr.into()
             };
 
-            let has_preceding_if_expr =
-                if_expr.syntax().parent().is_some_and(|it| ast::IfExpr::can_cast(it.kind()));
+            let has_preceding_if_expr = if_expr
+                .syntax()
+                .parent()
+                .is_some_and(|it| ast::IfExpr::can_cast(it.kind()));
             let expr = if has_preceding_if_expr {
                 // make sure we replace the `else if let ...` with a block so we don't end up with `else expr`
                 match_expr.dedent(indent);
@@ -288,7 +293,8 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
                 _ => make.expr_let(if_let_pat, scrutinee).into(),
             };
             let condition = if let Some(guard) = guard {
-                make.expr_bin(condition, ast::BinaryOp::LogicOp(ast::LogicOp::And), guard).into()
+                make.expr_bin(condition, ast::BinaryOp::LogicOp(ast::LogicOp::And), guard)
+                    .into()
             } else {
                 condition
             };
@@ -297,7 +303,11 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
             then_expr.reindent_to(IndentLevel::single());
             else_expr.reindent_to(IndentLevel::single());
             let then_block = make_block_expr(then_expr);
-            let else_expr = if is_empty_expr(&else_expr) { None } else { Some(else_expr) };
+            let else_expr = if is_empty_expr(&else_expr) {
+                None
+            } else {
+                Some(else_expr)
+            };
             let if_let_expr = make.expr_if(
                 condition,
                 then_block,

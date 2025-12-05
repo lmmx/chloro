@@ -471,7 +471,11 @@ impl CompletionItem {
                 CompletionItemRefMode::Dereference => "*",
             };
             let label = format!("{prefix}{}", self.label.primary);
-            (label, ide_db::text_edit::Indel::insert(offset, String::from(prefix)), relevance)
+            (
+                label,
+                ide_db::text_edit::Indel::insert(offset, String::from(prefix)),
+                relevance,
+            )
         })
     }
 }
@@ -752,14 +756,36 @@ mod tests {
                 }),
                 ..default
             }],
-            vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::NonExact), ..default }],
-            vec![Cr { is_private_editable: true, ..default }],
+            vec![Cr {
+                postfix_match: Some(CompletionRelevancePostfixMatch::NonExact),
+                ..default
+            }],
+            vec![Cr {
+                is_private_editable: true,
+                ..default
+            }],
             vec![default],
-            vec![Cr { is_local: true, ..default }],
-            vec![Cr { type_match: Some(CompletionRelevanceTypeMatch::CouldUnify), ..default }],
-            vec![Cr { type_match: Some(CompletionRelevanceTypeMatch::Exact), ..default }],
-            vec![Cr { exact_name_match: true, ..default }],
-            vec![Cr { exact_name_match: true, is_local: true, ..default }],
+            vec![Cr {
+                is_local: true,
+                ..default
+            }],
+            vec![Cr {
+                type_match: Some(CompletionRelevanceTypeMatch::CouldUnify),
+                ..default
+            }],
+            vec![Cr {
+                type_match: Some(CompletionRelevanceTypeMatch::Exact),
+                ..default
+            }],
+            vec![Cr {
+                exact_name_match: true,
+                ..default
+            }],
+            vec![Cr {
+                exact_name_match: true,
+                is_local: true,
+                ..default
+            }],
             vec![Cr {
                 exact_name_match: true,
                 type_match: Some(CompletionRelevanceTypeMatch::Exact),
@@ -771,7 +797,10 @@ mod tests {
                 is_local: true,
                 ..default
             }],
-            vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::Exact), ..default }],
+            vec![Cr {
+                postfix_match: Some(CompletionRelevancePostfixMatch::Exact),
+                ..default
+            }],
         ];
 
         check_relevance_score_ordered(expected_relevance_order);

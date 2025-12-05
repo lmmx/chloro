@@ -3,7 +3,7 @@ COMPARISON DIFF
 
 Original size: 3283 bytes
 Chloro size:   3278 bytes
-Rustfmt size:  3393 bytes
+Rustfmt size:  3394 bytes
 
 ✗ Outputs DIFFER
 
@@ -22,7 +22,7 @@ Rustfmt size:  3393 bytes
 -                    return (
 -                        unsafe { String::from_utf8_unchecked(buf) },
 -                        LineEndings::Unix,
--                    )
+-                    );
 -                }
 +                None => return (unsafe { String::from_utf8_unchecked(buf) }, LineEndings::Unix),
                  Some(idx) => {

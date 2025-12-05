@@ -1,14 +1,14 @@
-use crate::{utils, AssistContext, Assists};
+use crate::{AssistContext, Assists, utils};
 use ide_db::{
     assists::{AssistId, AssistKind},
-    syntax_helpers::format_string_exprs::{parse_format_exprs, Arg},
+    syntax_helpers::format_string_exprs::{Arg, parse_format_exprs},
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, make, syntax_factory::SyntaxFactory, TokenTree},
     AstNode, AstToken, NodeOrToken,
     SyntaxKind::WHITESPACE,
     SyntaxToken, T,
+    ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
 };
 
 // Assist: extract_expressions_from_format_string
@@ -50,7 +50,12 @@ pub(crate) fn extract_expressions_from_format_string(
         AssistId(
             "extract_expressions_from_format_string",
             // if there aren't any expressions, then make the assist a RefactorExtract
-            if extracted_args.iter().filter(|f| matches!(f, Arg::Expr(_))).count() == 0 {
+            if extracted_args
+                .iter()
+                .filter(|f| matches!(f, Arg::Expr(_)))
+                .count()
+                == 0
+            {
                 AssistKind::RefactorExtract
             } else {
                 AssistKind::QuickFix

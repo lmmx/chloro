@@ -9,23 +9,6 @@ Rustfmt size:  36650 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  
- use either::Either;
- use hir::EditionedFileId;
--use ide_db::{base_db::RootQueryDb, FilePosition, RootDatabase};
-+use ide_db::{FilePosition, RootDatabase, base_db::RootQueryDb};
- use span::Edition;
- use std::iter;
- 
- use syntax::{
--    algo::{ancestors_at_offset, find_node_at_offset},
--    ast::{self, edit::IndentLevel, AstToken},
-     AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
-+    algo::{ancestors_at_offset, find_node_at_offset},
-+    ast::{self, AstToken, edit::IndentLevel},
- };
- 
- use ide_db::text_edit::TextEdit;
- 
  pub(crate) use on_enter::on_enter;
  
 -// Don't forget to add new trigger characters to `server_capabilities` in `caps.rs`.

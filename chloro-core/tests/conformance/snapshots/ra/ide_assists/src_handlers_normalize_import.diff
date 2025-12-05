@@ -8,17 +8,6 @@ Rustfmt size:  7241 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::imports::merge_imports::try_normalize_import;
--use syntax::{ast, AstNode};
-+use syntax::{AstNode, ast};
- 
- use crate::{
--    assist_context::{AssistContext, Assists},
-     AssistId,
-+    assist_context::{AssistContext, Assists},
- };
- 
- // Assist: normalize_import
      let use_item = if ctx.has_empty_selection() {
          ctx.find_node_at_offset()?
      } else {

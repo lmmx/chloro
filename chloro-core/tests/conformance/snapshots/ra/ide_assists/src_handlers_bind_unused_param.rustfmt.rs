@@ -1,8 +1,8 @@
 use crate::assist_context::{AssistContext, Assists};
-use ide_db::{assists::AssistId, defs::Definition, LineIndexDatabase};
+use ide_db::{LineIndexDatabase, assists::AssistId, defs::Definition};
 use syntax::{
-    ast::{self, edit_in_place::Indent, HasName},
     AstNode,
+    ast::{self, HasName, edit_in_place::Indent},
 };
 
 // Assist: bind_unused_param

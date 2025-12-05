@@ -57,7 +57,10 @@ pub(crate) fn crates_for(db: &RootDatabase, file_id: FileId) -> Vec<Crate> {
         .iter()
         .copied()
         .filter(|&crate_id| {
-            crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
+            crate_def_map(db, crate_id)
+                .modules_for_file(db, file_id)
+                .next()
+                .is_some()
         })
         .sorted()
         .collect()
@@ -74,9 +77,15 @@ mod tests {
         let navs = analysis.parent_module(position).unwrap();
         let navs = navs
             .iter()
-            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+            .map(|nav| FileRange {
+                file_id: nav.file_id,
+                range: nav.focus_or_full_range(),
+            })
             .collect::<Vec<_>>();
-        assert_eq!(expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(), navs);
+        assert_eq!(
+            expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(),
+            navs
+        );
     }
 
     #[test]

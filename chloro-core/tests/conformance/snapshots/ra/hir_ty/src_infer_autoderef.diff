@@ -8,17 +8,13 @@ Rustfmt size:  1772 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use rustc_ast_ir::Mutability;
- 
- use crate::{
-+    Adjust, Adjustment, OverloadedDeref,
+     Adjust, Adjustment, OverloadedDeref,
      autoderef::{Autoderef, AutoderefKind},
      infer::unify::InferenceTable,
 -    next_solver::{
--        infer::{traits::PredicateObligations, InferOk},
 -        Ty,
+-        infer::{InferOk, traits::PredicateObligations},
 -    },
--    Adjust, Adjustment, OverloadedDeref,
 +    next_solver::{Ty, infer::{InferOk, traits::PredicateObligations}},
  };
  

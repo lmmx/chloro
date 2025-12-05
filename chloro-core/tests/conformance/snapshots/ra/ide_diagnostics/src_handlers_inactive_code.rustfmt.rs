@@ -40,7 +40,7 @@ pub(crate) fn inactive_code(
 
 #[cfg(test)]
 mod tests {
-    use crate::{tests::check_diagnostics_with_config, DiagnosticsConfig};
+    use crate::{DiagnosticsConfig, tests::check_diagnostics_with_config};
 
     #[track_caller]
     pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

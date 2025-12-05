@@ -68,8 +68,10 @@ impl<'db> InferenceContext<'_, 'db> {
             None => (None, None),
         };
 
-        let ClosureSignatures { bound_sig, liberated_sig } =
-            self.sig_of_closure(arg_types, ret_type, expected_sig);
+        let ClosureSignatures {
+            bound_sig,
+            liberated_sig,
+        } = self.sig_of_closure(arg_types, ret_type, expected_sig);
         let body_ret_ty = bound_sig.output().skip_binder();
         let sig_ty = Ty::new_fn_ptr(interner, bound_sig);
 
@@ -91,8 +93,10 @@ impl<'db> InferenceContext<'_, 'db> {
                     tupled_upvars_ty,
                 };
 
-                let coroutine_id =
-                    self.db.intern_coroutine(InternedCoroutine(self.owner, tgt_expr)).into();
+                let coroutine_id = self
+                    .db
+                    .intern_coroutine(InternedCoroutine(self.owner, tgt_expr))
+                    .into();
                 let coroutine_ty = Ty::new_coroutine(
                     interner,
                     coroutine_id,
@@ -102,7 +106,9 @@ impl<'db> InferenceContext<'_, 'db> {
                 (None, coroutine_ty, Some((resume_ty, yield_ty)))
             }
             ClosureKind::Closure => {
-                let closure_id = self.db.intern_closure(InternedClosure(self.owner, tgt_expr));
+                let closure_id = self
+                    .db
+                    .intern_closure(InternedClosure(self.owner, tgt_expr));
                 match expected_kind {
                     Some(kind) => {
                         self.result.closure_info.insert(
@@ -189,9 +195,15 @@ impl<'db> InferenceContext<'_, 'db> {
                     },
                 );
 
-                let coroutine_id =
-                    self.db.intern_coroutine(InternedCoroutine(self.owner, tgt_expr)).into();
-                (None, Ty::new_coroutine_closure(interner, coroutine_id, closure_args.args), None)
+                let coroutine_id = self
+                    .db
+                    .intern_coroutine(InternedCoroutine(self.owner, tgt_expr))
+                    .into();
+                (
+                    None,
+                    Ty::new_coroutine_closure(interner, coroutine_id, closure_args.args),
+                    None,
+                )
             }
         };
 
@@ -273,7 +285,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 .deduce_closure_signature_from_predicates(
                     Ty::new_var(self.interner(), self.table.infer_ctxt.root_var(vid)),
                     closure_kind,
-                    self.table.obligations_for_self_ty(vid).into_iter().map(|obl| obl.predicate),
+                    self.table
+                        .obligations_for_self_ty(vid)
+                        .into_iter()
+                        .map(|obl| obl.predicate),
                 ),
             TyKind::FnPtr(sig_tys, hdr) => match closure_kind {
                 ClosureKind::Closure => {
@@ -367,13 +382,21 @@ impl<'db> InferenceContext<'_, 'db> {
                         .eq(inferred_fnptr_sig, generalized_fnptr_sig)
                         .map(|infer_ok| self.table.register_infer_ok(infer_ok));
 
-                    let resolved_sig =
-                        self.table.infer_ctxt.resolve_vars_if_possible(generalized_fnptr_sig);
+                    let resolved_sig = self
+                        .table
+                        .infer_ctxt
+                        .resolve_vars_if_possible(generalized_fnptr_sig);
 
-                    if resolved_sig.visit_with(&mut MentionsTy { expected_ty }).is_continue() {
+                    if resolved_sig
+                        .visit_with(&mut MentionsTy { expected_ty })
+                        .is_continue()
+                    {
                         expected_sig = Some(resolved_sig.fn_sig(self.interner()));
                     }
-                } else if inferred_sig.visit_with(&mut MentionsTy { expected_ty }).is_continue() {
+                } else if inferred_sig
+                    .visit_with(&mut MentionsTy { expected_ty })
+                    .is_continue()
+                {
                     expected_sig = inferred_sig;
                 }
             }
@@ -431,7 +454,9 @@ impl<'db> InferenceContext<'_, 'db> {
         closure_kind: ClosureKind,
         projection: PolyProjectionPredicate<'db>,
     ) -> Option<PolyFnSig<'db>> {
-        let SolverDefId::TypeAliasId(def_id) = projection.item_def_id() else { unreachable!() };
+        let SolverDefId::TypeAliasId(def_id) = projection.item_def_id() else {
+            unreachable!()
+        };
         let lang_item = self.db.lang_attr(def_id.into());
 
         // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,
@@ -662,7 +687,11 @@ impl<'db> InferenceContext<'_, 'db> {
         // Create a `PolyFnSig`. Note the oddity that late bound
         // regions appearing free in `expected_sig` are now bound up
         // in this binder we are creating.
-        assert!(!expected_sig.skip_binder().has_vars_bound_above(rustc_type_ir::INNERMOST));
+        assert!(
+            !expected_sig
+                .skip_binder()
+                .has_vars_bound_above(rustc_type_ir::INNERMOST)
+        );
         let bound_sig = expected_sig.map_bound(|sig| {
             self.interner().mk_fn_sig(
                 sig.inputs(),
@@ -746,7 +775,10 @@ impl<'db> InferenceContext<'_, 'db> {
             {
                 // Check that E' = S'.
                 let cause = ObligationCause::new();
-                let InferOk { value: (), obligations } = table
+                let InferOk {
+                    value: (),
+                    obligations,
+                } = table
                     .infer_ctxt
                     .at(&cause, table.trait_env.env)
                     .eq(expected_ty, supplied_ty)?;
@@ -755,7 +787,10 @@ impl<'db> InferenceContext<'_, 'db> {
 
             let supplied_output_ty = supplied_sig.output();
             let cause = ObligationCause::new();
-            let InferOk { value: (), obligations } = table
+            let InferOk {
+                value: (),
+                obligations,
+            } = table
                 .infer_ctxt
                 .at(&cause, table.trait_env.env)
                 .eq(expected_sigs.liberated_sig.output(), supplied_output_ty)?;
@@ -774,7 +809,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 FnAbi::RustCall,
             );
 
-            Ok(InferOk { value: expected_sigs, obligations: all_obligations })
+            Ok(InferOk {
+                value: expected_sigs,
+                obligations: all_obligations,
+            })
         })
     }
 
@@ -852,6 +890,9 @@ impl<'db> InferenceContext<'_, 'db> {
     fn closure_sigs(&self, bound_sig: PolyFnSig<'db>) -> ClosureSignatures<'db> {
         let liberated_sig = bound_sig.skip_binder();
         // FIXME: When we lower HRTB we'll need to actually liberate regions here.
-        ClosureSignatures { bound_sig, liberated_sig }
+        ClosureSignatures {
+            bound_sig,
+            liberated_sig,
+        }
     }
 }

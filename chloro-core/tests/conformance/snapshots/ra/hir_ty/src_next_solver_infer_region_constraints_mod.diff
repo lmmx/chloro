@@ -8,15 +8,6 @@ Rustfmt size:  24577 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use self::CombineMapType::*;
- use self::UndoLog::*;
--use super::unify_key::RegionVidKey;
- use super::MemberConstraint;
-+use super::unify_key::RegionVidKey;
- use crate::next_solver::infer::snapshot::undo_log::{InferCtxtUndoLogs, Snapshot};
- use crate::next_solver::infer::unify_key::RegionVariableValue;
- use crate::next_solver::{AliasTy, Binder, DbInterner, ParamTy, PlaceholderTy, Region, Ty};
  pub struct RegionConstraintStorage<'db> {
      /// For each `RegionVid`, the corresponding `RegionVariableOrigin`.
      pub(super) var_infos: IndexVec<RegionVid, RegionVariableInfo>,

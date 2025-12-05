@@ -8,11 +8,6 @@ Rustfmt size:  5609 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use syntax::{ast, ast::Radix, AstToken};
-+use syntax::{AstToken, ast, ast::Radix};
- 
- use crate::{AssistContext, AssistId, Assists, GroupLabel};
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist_by_label, check_assist_not_applicable, check_assist_target};

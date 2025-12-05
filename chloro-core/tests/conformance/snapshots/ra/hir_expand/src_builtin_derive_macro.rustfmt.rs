@@ -2,7 +2,7 @@
 
 use either::Either;
 use intern::sym;
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 use parser::SyntaxKind;
 use rustc_hash::FxHashSet;
 use span::{Edition, Span, SyntaxContext};
@@ -11,17 +11,18 @@ use syntax_bridge::DocCommentDesugarMode;
 use tracing::debug;
 
 use crate::{
+    ExpandError, ExpandResult, MacroCallId,
     builtin::quote::dollar_crate,
     db::ExpandDatabase,
     hygiene::span_with_def_site_ctxt,
     name::{self, AsName, Name},
     span_map::ExpansionSpanMap,
-    tt, ExpandError, ExpandResult, MacroCallId,
+    tt,
 };
 use syntax::{
     ast::{
-        self, edit_in_place::GenericParamsOwnerEdit, make, AstNode, FieldList, HasAttrs,
-        HasGenericArgs, HasGenericParams, HasModuleItem, HasName, HasTypeBounds,
+        self, AstNode, FieldList, HasAttrs, HasGenericArgs, HasGenericParams, HasModuleItem,
+        HasName, HasTypeBounds, edit_in_place::GenericParamsOwnerEdit, make,
     },
     ted,
 };

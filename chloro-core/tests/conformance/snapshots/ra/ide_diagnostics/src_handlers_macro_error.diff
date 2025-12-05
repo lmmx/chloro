@@ -23,12 +23,8 @@ Rustfmt size:  7310 bytes
          d.message.clone(),
          display_range,
      )
- #[cfg(test)]
- mod tests {
-     use crate::{
--        tests::{check_diagnostics, check_diagnostics_with_config},
          DiagnosticsConfig,
-+        tests::{check_diagnostics, check_diagnostics_with_config},
+         tests::{check_diagnostics, check_diagnostics_with_config},
      };
 -
      #[test]

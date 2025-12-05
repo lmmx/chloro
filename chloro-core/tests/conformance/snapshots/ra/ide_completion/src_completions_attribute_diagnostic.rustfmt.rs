@@ -3,7 +3,7 @@
 use ide_db::SymbolKind;
 use syntax::ast;
 
-use crate::{context::CompletionContext, CompletionItem, Completions};
+use crate::{CompletionItem, Completions, context::CompletionContext};
 
 use super::AttrCompletion;
 

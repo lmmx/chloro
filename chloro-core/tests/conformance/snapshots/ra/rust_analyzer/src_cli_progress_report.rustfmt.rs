@@ -16,11 +16,25 @@ pub(crate) struct ProgressReport<'a> {
 
 impl<'a> ProgressReport<'a> {
     pub(crate) fn new(len: usize) -> ProgressReport<'a> {
-        ProgressReport { curr: 0.0, text: String::new(), hidden: false, len, pos: 0, msg: None }
+        ProgressReport {
+            curr: 0.0,
+            text: String::new(),
+            hidden: false,
+            len,
+            pos: 0,
+            msg: None,
+        }
     }
 
     pub(crate) fn hidden() -> ProgressReport<'a> {
-        ProgressReport { curr: 0.0, text: String::new(), hidden: true, len: 0, pos: 0, msg: None }
+        ProgressReport {
+            curr: 0.0,
+            text: String::new(),
+            hidden: true,
+            len: 0,
+            pos: 0,
+            msg: None,
+        }
     }
 
     pub(crate) fn set_message(&mut self, msg: impl Fn() -> String + 'a) {
@@ -78,7 +92,9 @@ impl<'a> ProgressReport<'a> {
 
         // Backtrack to the first differing character
         let mut output = String::new();
-        output += &'\x08'.to_string().repeat(self.text.len() - common_prefix_length);
+        output += &'\x08'
+            .to_string()
+            .repeat(self.text.len() - common_prefix_length);
         // Output new suffix, using chars() iter to ensure unicode compatibility
         output.extend(text.chars().skip(common_prefix_length));
 

@@ -60,7 +60,9 @@ pub(crate) fn convert_tuple_struct_to_named_struct(
         .find_node_at_offset::<ast::Struct>()
         .map(Either::Left)
         .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
-    let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
+    let field_list = strukt_or_variant
+        .as_ref()
+        .either(|s| s.field_list(), |v| v.field_list())?;
 
     if ctx.offset() > field_list.syntax().text_range().start() {
         // Assist could be distracting after the braces
@@ -75,8 +77,13 @@ pub(crate) fn convert_tuple_struct_to_named_struct(
         Either::Left(s) => Either::Left(ctx.sema.to_def(s)?),
         Either::Right(v) => Either::Right(ctx.sema.to_def(v)?),
     };
-    let target = strukt_or_variant.as_ref().either(|s| s.syntax(), |v| v.syntax()).text_range();
-    let syntax = strukt_or_variant.as_ref().either(|s| s.syntax(), |v| v.syntax());
+    let target = strukt_or_variant
+        .as_ref()
+        .either(|s| s.syntax(), |v| v.syntax())
+        .text_range();
+    let syntax = strukt_or_variant
+        .as_ref()
+        .either(|s| s.syntax(), |v| v.syntax());
     acc.add(
         AssistId::refactor_rewrite("convert_tuple_struct_to_named_struct"),
         "Convert to named struct",
@@ -103,7 +110,9 @@ fn edit_struct_def(
         let mut field_editor = SyntaxEditor::new(field.syntax().clone());
         field_editor.insert_all(
             Position::first_child_of(field.syntax()),
-            f.attrs().map(|attr| attr.syntax().clone_subtree().clone_for_update().into()).collect(),
+            f.attrs()
+                .map(|attr| attr.syntax().clone_subtree().clone_for_update().into())
+                .collect(),
         );
         ast::RecordField::cast(field_editor.finish().new_root().clone())
     });
@@ -117,7 +126,10 @@ fn edit_struct_def(
             let mut insert_element = Vec::new();
             insert_element.push(ast::make::tokens::single_newline().syntax_element());
             insert_element.push(w.syntax().clone_for_update().syntax_element());
-            if w.syntax().last_token().is_none_or(|t| t.kind() != SyntaxKind::COMMA) {
+            if w.syntax()
+                .last_token()
+                .is_none_or(|t| t.kind() != SyntaxKind::COMMA)
+            {
                 insert_element.push(ast::make::token(T![,]).into());
             }
             insert_element.push(ast::make::tokens::single_newline().syntax_element());
@@ -283,9 +295,13 @@ fn generate_record_pat_list(
 ) -> ast::RecordPatFieldList {
     let pure_fields = pat.fields().filter(|p| !matches!(p, ast::Pat::RestPat(_)));
     let rest_len = names.len().saturating_sub(pure_fields.clone().count());
-    let rest_pat = pat.fields().find_map(|p| ast::RestPat::cast(p.syntax().clone()));
-    let rest_idx =
-        pat.fields().position(|p| ast::RestPat::can_cast(p.syntax().kind())).unwrap_or(names.len());
+    let rest_pat = pat
+        .fields()
+        .find_map(|p| ast::RestPat::cast(p.syntax().clone()));
+    let rest_idx = pat
+        .fields()
+        .position(|p| ast::RestPat::can_cast(p.syntax().kind()))
+        .unwrap_or(names.len());
     let before_rest = pat.fields().zip(names).take(rest_idx);
     let after_rest = pure_fields.zip(names.iter().skip(rest_len)).skip(rest_idx);
 
