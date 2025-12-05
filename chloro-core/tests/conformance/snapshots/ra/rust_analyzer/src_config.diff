@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166459 bytes
+Chloro size:   166458 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -176,15 +176,6 @@ Rustfmt size:  167117 bytes
  }
  
  #[derive(Clone, Debug, Default)]
-     }
- }
- 
--impl std::error::Error for ConfigErrors {}
-+impl std::error::Error for ConfigErrors {
-+}
- 
- impl Config {
-     pub fn new(
          DiagnosticsConfig {
              enabled: true,
              disable_experimental: false,

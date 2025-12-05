@@ -268,11 +268,9 @@ pub struct DbInterner<'db> {
     pub(crate) block: Option<BlockId>,
 }
 
-unsafe impl Send for DbInterner<'_> {
-}
+unsafe impl Send for DbInterner<'_> {}
 
-unsafe impl Sync for DbInterner<'_> {
-}
+unsafe impl Sync for DbInterner<'_> {}
 
 impl<'db> DbInterner<'db> {
     // FIXME(next-solver): remove this method

@@ -45,7 +45,7 @@ pub enum HlTag {
 #[repr(u8)]
 pub enum HlMod {
     /// Used for associated items.
-    Associated,
+    Associated = 0,
     /// Used with keywords like `async` and `await`.
     Async,
     /// Used to differentiate individual elements within attribute calls.

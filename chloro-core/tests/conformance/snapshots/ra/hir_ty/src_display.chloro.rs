@@ -69,11 +69,9 @@ pub trait HirWrite {
     fn end_location_link(&mut self) {}
 }
 
-impl HirWrite for String {
-}
+impl HirWrite for String {}
 
-impl HirWrite for fmt::Formatter<'_> {
-}
+impl HirWrite for fmt::Formatter<'_> {}
 
 pub struct HirFormatter<'a, 'db> {
     /// The database handle

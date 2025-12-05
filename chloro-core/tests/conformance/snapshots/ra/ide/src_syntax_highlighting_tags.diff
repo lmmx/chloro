@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10817 bytes
-Chloro size:   10561 bytes
+Chloro size:   10565 bytes
 Rustfmt size:  10923 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,6 @@ Rustfmt size:  10923 bytes
  #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
  #[repr(u8)]
  pub enum HlMod {
-     /// Used for associated items.
--    Associated = 0,
-+    Associated,
-     /// Used with keywords like `async` and `await`.
-     Async,
-     /// Used to differentiate individual elements within attribute calls.
      }
  
      fn mask(self) -> u32 {

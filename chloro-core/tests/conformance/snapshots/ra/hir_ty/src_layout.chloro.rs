@@ -88,8 +88,7 @@ pub enum LayoutError {
     UserReprTooSmall,
 }
 
-impl std::error::Error for LayoutError {
-}
+impl std::error::Error for LayoutError {}
 
 impl fmt::Display for LayoutError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

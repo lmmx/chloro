@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14489 bytes
+Chloro size:   14488 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -50,12 +50,9 @@ Rustfmt size:  14808 bytes
  pub type Variants = hir_def::layout::Variants<RustcFieldIdx, RustcEnumVariantIdx>;
  
  #[derive(Debug, PartialEq, Eq, Clone)]
-     UserReprTooSmall,
  }
  
--impl std::error::Error for LayoutError {}
-+impl std::error::Error for LayoutError {
-+}
+ impl std::error::Error for LayoutError {}
 +
  impl fmt::Display for LayoutError {
      fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

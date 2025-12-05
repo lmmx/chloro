@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8087 bytes
-Chloro size:   8152 bytes
+Chloro size:   8151 bytes
 Rustfmt size:  8281 bytes
 
 ✗ Outputs DIFFER
@@ -35,15 +35,6 @@ Rustfmt size:  8281 bytes
      /// If we started proving this as a result of trying to prove
      /// something else, track the total depth to ensure termination.
      /// If this goes over a certain threshold, we abort compilation --
-     }
- }
- 
--impl<'db, T: Eq> Eq for Obligation<'db, T> {}
-+impl<'db, T: Eq> Eq for Obligation<'db, T> {
-+}
- 
- impl<'db, T: Hash> Hash for Obligation<'db, T> {
-     fn hash<H: Hasher>(&self, state: &mut H) {
  }
  
  pub(crate) type PredicateObligation<'db> = Obligation<'db, Predicate<'db>>;

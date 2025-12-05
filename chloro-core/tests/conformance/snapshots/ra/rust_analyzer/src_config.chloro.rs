@@ -1608,8 +1608,7 @@ impl fmt::Display for ConfigErrors {
     }
 }
 
-impl std::error::Error for ConfigErrors {
-}
+impl std::error::Error for ConfigErrors {}
 
 impl Config {
     pub fn new(

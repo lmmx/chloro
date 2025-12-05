@@ -293,8 +293,7 @@ impl<'db> PartialEq for InternedClausesWrapper<'db> {
     }
 }
 
-impl<'db> Eq for InternedClausesWrapper<'db> {
-}
+impl<'db> Eq for InternedClausesWrapper<'db> {}
 
 impl<'db> std::hash::Hash for InternedClausesWrapper<'db> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -335,8 +334,7 @@ impl<'db> std::fmt::Debug for Clauses<'db> {
     }
 }
 
-impl<'db> rustc_type_ir::inherent::Clauses<DbInterner<'db>> for Clauses<'db> {
-}
+impl<'db> rustc_type_ir::inherent::Clauses<DbInterner<'db>> for Clauses<'db> {}
 
 impl<'db> rustc_type_ir::inherent::SliceLike for Clauses<'db> {
     type Item = Clause<'db>;
