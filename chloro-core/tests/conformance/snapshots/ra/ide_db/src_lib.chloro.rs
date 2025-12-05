@@ -2,6 +2,7 @@
 //!
 //! It is mainly a `HirDatabase` for semantic analysis, plus a `SymbolsDatabase`, for fuzzy search.
 
+extern crate self as ide_db;
 
 mod apply_change;
 

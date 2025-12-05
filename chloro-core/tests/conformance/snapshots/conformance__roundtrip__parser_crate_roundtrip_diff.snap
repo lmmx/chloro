@@ -1817,10 +1817,6 @@ expression: cleaned_diff
  
  type A = for<'a> Test<'a> + Send;
  
- impl ! {}
- 
--extern crate foo;
--extern crate self;
  
  type Result<T> = ();
  
@@ -2420,11 +2416,8 @@ expression: cleaned_diff
  type C = &mut ();
  
  fn main() {
-     match a.b()..S { _ => () };
- }
- 
--extern crate foo as bar;
--extern crate self as bar;
+ extern crate foo as bar;
+ extern crate self as bar;
  
 -fn foo(){
 -    ;;;some_expr();;;;{;;;};;;;Ok(())
@@ -2545,20 +2538,15 @@ expression: cleaned_diff
  where
      SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
 -{}
--
--struct S {
--    r#foo: u32
 +{
 +}
-+
-+struct S {
+ 
+ struct S {
+-    r#foo: u32
 +    r#foo: u32,
  }
  
--extern crate foo;
--extern crate foo as bar;
--extern crate self as baz;
- 
+ extern crate foo;
  unsafe extern {
      // sqrt (from libm) may be called with any `f64`
      pub safe fn sqrt(x: f64) -> f64;
@@ -3805,12 +3793,7 @@ expression: cleaned_diff
 +#
  
  #[cfg(not(feature = "in-rust-tree"))]
--extern crate ra_ap_rustc_lexer as rustc_lexer;
- #[cfg(feature = "in-rust-tree")]
--extern crate rustc_lexer;
- 
- mod event;
- mod frontmatter;
+ extern crate ra_ap_rustc_lexer as rustc_lexer;
      }
  }
  
