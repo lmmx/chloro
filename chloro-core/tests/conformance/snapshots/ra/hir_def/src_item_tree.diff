@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22821 bytes
+Chloro size:   22806 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
@@ -145,6 +145,16 @@ Rustfmt size:  23685 bytes
          attrs.shrink_to_fit();
          big_data.shrink_to_fit();
          small_data.shrink_to_fit();
+ }
+ 
+ #[derive(Default, Debug, Eq, PartialEq)]
+-struct ItemVisibilities {
+-    arena: ThinVec<RawVisibility>,
+-}
++struct ItemVisibilities { arena: ThinVec<RawVisibility> }
+ 
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ enum SmallModItem {
      Use(Use),
  }
  
@@ -178,8 +188,13 @@ Rustfmt size:  23685 bytes
      fn index(&self, index: RawVisibilityId) -> &Self::Output {
          static VIS_PUB: RawVisibility = RawVisibility::Public;
          static VIS_PRIV_IMPLICIT: RawVisibility =
-     kind: UseTreeKind,
  }
+ 
+ #[derive(Debug, Clone, Eq, PartialEq)]
+-pub struct UseTree {
+-    kind: UseTreeKind,
+-}
++pub struct UseTree { kind: UseTreeKind }
  
 -// FIXME: Would be nice to encode `None` into this
 -// We could just use a `Name` where `_` well means `_` ..
@@ -207,6 +222,16 @@ Rustfmt size:  23685 bytes
  
      /// ```ignore
      /// use prefix::{self, Item, ...};
+ }
+ 
+ #[derive(Debug, Clone, Eq, PartialEq)]
+-pub struct ExternBlock {
+-    pub(crate) children: Box<[ModItemId]>,
+-}
++pub struct ExternBlock { pub(crate) children: Box<[ModItemId]> }
+ 
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub struct Function {
  }
  
  #[derive(Debug, Clone, Eq, PartialEq)]

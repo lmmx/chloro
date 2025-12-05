@@ -104,18 +104,14 @@ impl Query {
 /// The set of roots for crates.io libraries.
 /// Files in libraries are assumed to never change.
 #[salsa::input(singleton, debug)]
-pub struct LibraryRoots {
-    #[returns(ref)]
-    pub roots: FxHashSet<SourceRootId>,
-}
+pub struct LibraryRoots { #[returns(ref)]
+    pub roots: FxHashSet<SourceRootId> }
 
 /// The set of "local" (that is, from the current workspace) roots.
 /// Files in local roots are assumed to change frequently.
 #[salsa::input(singleton, debug)]
-pub struct LocalRoots {
-    #[returns(ref)]
-    pub roots: FxHashSet<SourceRootId>,
-}
+pub struct LocalRoots { #[returns(ref)]
+    pub roots: FxHashSet<SourceRootId> }
 
 /// The symbol indices of modules that make up a given crate.
 pub fn crate_symbols(db: &dyn HirDatabase, krate: Crate) -> Box<[&SymbolIndex]> {

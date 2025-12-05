@@ -2,12 +2,22 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   58018 bytes
+Chloro size:   58008 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ };
+ 
+ #[derive(Debug, Default, Clone)]
+-pub struct UsageSearchResult {
+-    pub references: FxHashMap<EditionedFileId, Vec<FileReference>>,
+-}
++pub struct UsageSearchResult { pub references: FxHashMap<EditionedFileId, Vec<FileReference>> }
+ 
+ impl UsageSearchResult {
+     pub fn is_empty(&self) -> bool {
  
  impl IntoIterator for UsageSearchResult {
      type Item = (EditionedFileId, Vec<FileReference>);
@@ -50,6 +60,16 @@ Rustfmt size:  58275 bytes
      pub fn text(&self) -> syntax::TokenText<'_> {
          match self {
              FileReferenceNode::NameRef(name_ref) => name_ref.text(),
+ /// In some cases, the location of the references is known to within a `TextRange`,
+ /// e.g. for things like local variables.
+ #[derive(Clone, Debug)]
+-pub struct SearchScope {
+-    entries: FxHashMap<EditionedFileId, Option<TextRange>>,
+-}
++pub struct SearchScope { entries: FxHashMap<EditionedFileId, Option<TextRange>> }
+ 
+ impl SearchScope {
+     fn new(entries: FxHashMap<EditionedFileId, Option<TextRange>>) -> SearchScope {
  
  impl IntoIterator for SearchScope {
      type Item = (EditionedFileId, Option<TextRange>);

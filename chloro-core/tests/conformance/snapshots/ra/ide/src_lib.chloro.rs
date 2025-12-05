@@ -161,9 +161,7 @@ impl<T> RangeInfo<T> {
 
 /// `AnalysisHost` stores the current state of the world.
 #[derive(Debug)]
-pub struct AnalysisHost {
-    db: RootDatabase,
-}
+pub struct AnalysisHost { db: RootDatabase }
 
 impl AnalysisHost {
     pub fn new(lru_capacity: Option<u16>) -> AnalysisHost {
@@ -223,9 +221,7 @@ impl Default for AnalysisHost {
 /// state is advanced using `AnalysisHost::apply_change` method, all existing
 /// `Analysis` are canceled (most method return `Err(Canceled)`).
 #[derive(Debug)]
-pub struct Analysis {
-    db: RootDatabase,
-}
+pub struct Analysis { db: RootDatabase }
 
 impl Analysis {
     // Creates an analysis instance for a single file, without any external

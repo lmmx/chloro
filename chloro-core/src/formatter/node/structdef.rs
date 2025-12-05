@@ -3,7 +3,6 @@ use ra_ap_syntax::{
     ast::{self, HasVisibility},
 };
 
-use crate::formatter::config::MAX_WIDTH;
 use crate::formatter::node::common::{fields, header};
 use crate::formatter::printer::Printer;
 
@@ -21,6 +20,9 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
             ast::FieldList::RecordFieldList(record_fields) => {
                 let fields_vec: Vec<_> = record_fields.fields().collect();
 
+                // Check if any field has a default initializer
+                let has_default_initializer = fields_vec.iter().any(|field| field.expr().is_some());
+
                 // Check if there are any comments in the field list or inside fields
                 let has_comments_in_list = record_fields
                     .syntax()
@@ -36,21 +38,15 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
                 let has_comments = has_comments_in_list || has_comments_in_fields;
 
-                // Check if we can format on a single line (single field, no comments)
-                if fields_vec.len() == 1 && !has_comments {
-                    let field = &fields_vec[0];
-                    let field_text = field.syntax().text().to_string();
-
-                    // Build single-line version: " { field_text }"
-                    let single_line = format!(" {{ {} }}", field_text);
-
-                    let current_line_len = buf.lines().last().map(|l| l.len()).unwrap_or(0);
-
-                    if current_line_len + single_line.len() <= MAX_WIDTH {
-                        buf.push_str(&single_line);
-                        buf.push('\n');
-                        return;
-                    }
+                // Single-line if has default initializers and no comments
+                if has_default_initializer && !has_comments {
+                    let fields_str: Vec<_> = fields_vec
+                        .iter()
+                        .map(|f| f.syntax().text().to_string())
+                        .collect();
+                    buf.push_str(&format!(" {{ {} }}", fields_str.join(", ")));
+                    buf.push('\n');
+                    return;
                 }
 
                 // Multi-line format

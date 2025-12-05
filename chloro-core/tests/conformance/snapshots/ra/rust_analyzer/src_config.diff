@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166458 bytes
+Chloro size:   166453 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -133,6 +133,13 @@ Rustfmt size:  167117 bytes
      }
  
      pub fn none(&self) -> bool {
+ }
+ 
+ #[derive(Debug, Clone)]
+-pub struct NotificationsConfig {
+-    pub cargo_toml_not_found: bool,
+-}
++pub struct NotificationsConfig { pub cargo_toml_not_found: bool }
  
  #[derive(Debug, Clone)]
  pub enum RustfmtConfig {

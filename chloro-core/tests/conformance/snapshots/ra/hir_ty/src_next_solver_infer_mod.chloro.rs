@@ -281,9 +281,7 @@ pub enum BoundRegionConversionTime {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct FixupError {
-    unresolved: TyOrConstInferVar,
-}
+pub struct FixupError { unresolved: TyOrConstInferVar }
 
 impl fmt::Display for FixupError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -314,9 +312,7 @@ pub struct RegionObligation<'db> {
 }
 
 /// Used to configure inference contexts before their creation.
-pub struct InferCtxtBuilder<'db> {
-    interner: DbInterner<'db>,
-}
+pub struct InferCtxtBuilder<'db> { interner: DbInterner<'db> }
 
 pub trait DbInternerInferExt<'db> {
     fn infer_ctxt(self) -> InferCtxtBuilder<'db>;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2455 bytes
-Chloro size:   2455 bytes
+Chloro size:   2450 bytes
 Rustfmt size:  2593 bytes
 
 ✗ Outputs DIFFER
@@ -61,3 +61,11 @@ Rustfmt size:  2593 bytes
      }
  }
  
+ #[derive(Default, Clone, Debug)]
+-pub(crate) struct JsonFilter {
+-    pub(crate) allowed_names: Option<FxHashSet<String>>,
+-}
++pub(crate) struct JsonFilter { pub(crate) allowed_names: Option<FxHashSet<String>> }
+ 
+ impl JsonFilter {
+     pub(crate) fn from_spec(spec: &str) -> Self {

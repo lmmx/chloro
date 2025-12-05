@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4277 bytes
+Chloro size:   4267 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,13 @@ Rustfmt size:  4381 bytes
  use toolchain::Tool;
  
  use crate::{
+     },
+ }
+ 
+-pub(crate) struct CargoTestOutputParser {
+-    pub target: TestTarget,
+-}
++pub(crate) struct CargoTestOutputParser { pub target: TestTarget }
  
  impl CargoTestOutputParser {
      pub(crate) fn new(test_target: &TestTarget) -> Self {
@@ -40,6 +47,16 @@ Rustfmt size:  4381 bytes
              },
          })
      }
+ }
+ 
+ #[derive(Debug)]
+-pub(crate) struct CargoTestHandle {
+-    _handle: CommandHandle<CargoTestMessage>,
+-}
++pub(crate) struct CargoTestHandle { _handle: CommandHandle<CargoTestMessage> }
+ 
+ // Example of a cargo test command:
+ //
              cmd.arg(format!("--{cargo_target}"));
              cmd.arg(&test_target.target);
          } else {

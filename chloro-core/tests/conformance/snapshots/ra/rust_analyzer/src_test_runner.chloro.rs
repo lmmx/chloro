@@ -47,9 +47,7 @@ pub(crate) enum CargoTestOutput {
     },
 }
 
-pub(crate) struct CargoTestOutputParser {
-    pub target: TestTarget,
-}
+pub(crate) struct CargoTestOutputParser { pub target: TestTarget }
 
 impl CargoTestOutputParser {
     pub(crate) fn new(test_target: &TestTarget) -> Self {
@@ -81,9 +79,7 @@ impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
 }
 
 #[derive(Debug)]
-pub(crate) struct CargoTestHandle {
-    _handle: CommandHandle<CargoTestMessage>,
-}
+pub(crate) struct CargoTestHandle { _handle: CommandHandle<CargoTestMessage> }
 
 // Example of a cargo test command:
 //

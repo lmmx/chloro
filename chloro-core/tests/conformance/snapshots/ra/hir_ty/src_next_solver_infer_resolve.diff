@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3153 bytes
-Chloro size:   3217 bytes
+Chloro size:   3212 bytes
 Rustfmt size:  3226 bytes
 
 ✗ Outputs DIFFER
@@ -47,3 +47,13 @@ Rustfmt size:  3226 bytes
          } else {
              let ct = self.infcx.shallow_resolve_const(ct);
              ct.super_fold_with(self)
+     }
+ }
+ 
+-pub struct ReplaceInferWithError<'db> {
+-    interner: DbInterner<'db>,
+-}
++pub struct ReplaceInferWithError<'db> { interner: DbInterner<'db> }
+ 
+ impl<'db> ReplaceInferWithError<'db> {
+     #[inline]

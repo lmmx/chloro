@@ -572,9 +572,7 @@ fn module_def_doctest(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Op
 }
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct TestAttr {
-    pub ignore: bool,
-}
+pub struct TestAttr { pub ignore: bool }
 
 impl TestAttr {
     fn from_fn(db: &dyn HirDatabase, fn_def: hir::Function) -> TestAttr {

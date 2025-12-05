@@ -428,9 +428,7 @@ pub struct ExprCollector<'db> {
 }
 
 #[derive(Clone, Debug)]
-struct LabelRib {
-    kind: RibKind,
-}
+struct LabelRib { kind: RibKind }
 
 impl LabelRib {
     fn new(kind: RibKind) -> Self {

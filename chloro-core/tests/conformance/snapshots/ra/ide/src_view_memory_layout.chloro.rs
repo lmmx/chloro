@@ -21,9 +21,7 @@ pub struct MemoryLayoutNode {
     pub children_len: u64,
 }
 
-pub struct RecursiveMemoryLayout {
-    pub nodes: Vec<MemoryLayoutNode>,
-}
+pub struct RecursiveMemoryLayout { pub nodes: Vec<MemoryLayoutNode> }
 
 impl fmt::Display for RecursiveMemoryLayout {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {

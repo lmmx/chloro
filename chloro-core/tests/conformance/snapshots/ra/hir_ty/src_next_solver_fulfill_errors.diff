@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50790 bytes
+Chloro size:   50785 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,16 @@ Rustfmt size:  50684 bytes
          traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
      },
      inspect::{self, ProofTreeVisitor},
+ }
+ 
+ #[derive(Debug, Clone)]
+-pub struct MismatchedProjectionTypes<'db> {
+-    pub err: TypeError<'db>,
+-}
++pub struct MismatchedProjectionTypes<'db> { pub err: TypeError<'db> }
+ 
+ pub(super) fn fulfillment_error_for_no_solution<'db>(
+     infcx: &InferCtxt<'db>,
                  goal.goal().param_env,
                  pred,
              );

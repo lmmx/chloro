@@ -302,10 +302,8 @@ impl<'db> std::hash::Hash for InternedClausesWrapper<'db> {
 }
 
 #[salsa::interned(constructor = new_)]
-pub struct Clauses<'db> {
-    #[returns(ref)]
-    inner_: InternedClausesWrapper<'db>,
-}
+pub struct Clauses<'db> { #[returns(ref)]
+    inner_: InternedClausesWrapper<'db> }
 
 impl<'db> Clauses<'db> {
     pub fn new_from_iter(
@@ -443,9 +441,7 @@ impl<'db> rustc_type_ir::TypeSuperVisitable<DbInterner<'db>> for Clauses<'db> {
 pub struct Clause<'db>(pub(crate) Predicate<'db>);
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, TypeVisitable, TypeFoldable)]
-pub struct ParamEnv<'db> {
-    pub(crate) clauses: Clauses<'db>,
-}
+pub struct ParamEnv<'db> { pub(crate) clauses: Clauses<'db> }
 
 impl<'db> ParamEnv<'db> {
     pub fn empty() -> Self {

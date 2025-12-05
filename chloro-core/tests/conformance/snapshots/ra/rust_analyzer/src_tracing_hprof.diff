@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7455 bytes
+Chloro size:   7450 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
@@ -60,6 +60,16 @@ Rustfmt size:  7718 bytes
          attrs.record(&mut visitor);
          data
      }
+     }
+ }
+ 
+-pub struct DataVisitor<'a> {
+-    string: &'a mut String,
+-}
++pub struct DataVisitor<'a> { string: &'a mut String }
+ 
+ impl Visit for DataVisitor<'_> {
+     fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
  
          match span.parent() {
              Some(parent_span) => {

@@ -131,9 +131,7 @@ impl_intern_lookup!(
 pub type ExpandResult<T> = ValueResult<T, ExpandError>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
-pub struct ExpandError {
-    inner: Arc<(ExpandErrorKind, Span)>,
-}
+pub struct ExpandError { inner: Arc<(ExpandErrorKind, Span)> }
 
 impl ExpandError {
     pub fn new(span: Span, kind: ExpandErrorKind) -> Self {
@@ -1079,9 +1077,7 @@ intern::impl_internable!(ModPath, attrs::AttrInput);
 
 #[salsa_macros::interned(no_lifetime, debug, revisions = usize::MAX)]
 #[doc(alias = "MacroFileId")]
-pub struct MacroCallId {
-    pub loc: MacroCallLoc,
-}
+pub struct MacroCallId { pub loc: MacroCallLoc }
 
 impl From<span::MacroCallId> for MacroCallId {
     #[inline]

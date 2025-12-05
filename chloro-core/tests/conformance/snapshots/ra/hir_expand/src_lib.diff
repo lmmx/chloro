@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40650 bytes
-Chloro size:   40439 bytes
+Chloro size:   40429 bytes
 Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
@@ -46,6 +46,15 @@ Rustfmt size:  40650 bytes
      fn lookup(&self, db: &Self::Database) -> Self::Data;
  }
  
+ pub type ExpandResult<T> = ValueResult<T, ExpandError>;
+ 
+ #[derive(Debug, PartialEq, Eq, Clone, Hash)]
+-pub struct ExpandError {
+-    inner: Arc<(ExpandErrorKind, Span)>,
+-}
++pub struct ExpandError { inner: Arc<(ExpandErrorKind, Span)> }
+ 
+ impl ExpandError {
      pub fn new(span: Span, kind: ExpandErrorKind) -> Self {
          ExpandError { inner: Arc::new((kind, span)) }
      }
@@ -142,6 +151,16 @@ Rustfmt size:  40650 bytes
      pub fn map_range_down_exact(
          &self,
          span: Span,
+ 
+ #[salsa_macros::interned(no_lifetime, debug, revisions = usize::MAX)]
+ #[doc(alias = "MacroFileId")]
+-pub struct MacroCallId {
+-    pub loc: MacroCallLoc,
+-}
++pub struct MacroCallId { pub loc: MacroCallLoc }
+ 
+ impl From<span::MacroCallId> for MacroCallId {
+     #[inline]
          *self == HirFileId::from(other)
      }
  }

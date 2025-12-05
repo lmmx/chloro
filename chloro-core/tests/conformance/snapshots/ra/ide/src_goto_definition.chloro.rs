@@ -28,9 +28,7 @@ use syntax::{
 };
 
 #[derive(Debug)]
-pub struct GotoDefinitionConfig<'a> {
-    pub minicore: MiniCore<'a>,
-}
+pub struct GotoDefinitionConfig<'a> { pub minicore: MiniCore<'a> }
 
 // Feature: Go to Definition
 //

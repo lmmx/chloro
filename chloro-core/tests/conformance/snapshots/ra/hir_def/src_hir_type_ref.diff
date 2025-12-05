@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9897 bytes
-Chloro size:   9948 bytes
+Chloro size:   9938 bytes
 Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
@@ -34,6 +34,16 @@ Rustfmt size:  10040 bytes
  pub struct PathId(TypeRefId);
  
  impl PathId {
+ }
+ 
+ #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+-pub struct TraitRef {
+-    pub path: PathId,
+-}
++pub struct TraitRef { pub path: PathId }
+ 
+ #[derive(Clone, PartialEq, Eq, Hash, Debug)]
+ pub struct FnType {
  impl FnType {
      #[inline]
      pub fn split_params_and_ret(&self) -> (&[(Option<Name>, TypeRefId)], TypeRefId) {
@@ -74,6 +84,16 @@ Rustfmt size:  10040 bytes
                  TypeRef::Tuple(types) => types.iter().for_each(|&t| go(t, f, map)),
                  TypeRef::RawPtr(type_ref, _) | TypeRef::Slice(type_ref) => go(*type_ref, f, map),
                  TypeRef::Reference(it) => go(it.ty, f, map),
+ }
+ 
+ #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+-pub struct ConstRef {
+-    pub expr: ExprId,
+-}
++pub struct ConstRef { pub expr: ExprId }
+ 
+ /// A literal constant value
+ #[derive(Debug, Clone, PartialEq, Eq, Hash)]
      Bool(bool),
      Char(char),
  

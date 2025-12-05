@@ -2,12 +2,22 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70414 bytes
+Chloro size:   70409 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ };
+ 
+ #[derive(Debug)]
+-pub struct GotoDefinitionConfig<'a> {
+-    pub minicore: MiniCore<'a>,
+-}
++pub struct GotoDefinitionConfig<'a> { pub minicore: MiniCore<'a> }
+ 
+ // Feature: Go to Definition
+ //
      use crate::{GotoDefinitionConfig, fixture};
      use ide_db::{FileRange, MiniCore};
      use itertools::Itertools;

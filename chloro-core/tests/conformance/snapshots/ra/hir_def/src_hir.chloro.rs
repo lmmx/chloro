@@ -73,9 +73,7 @@ impl ExprOrPatId {
 stdx::impl_from!(ExprId, PatId for ExprOrPatId);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Label {
-    pub name: Name,
-}
+pub struct Label { pub name: Name }
 
 pub type LabelId = Idx<Label>;
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12654 bytes
-Chloro size:   12566 bytes
+Chloro size:   12561 bytes
 Rustfmt size:  13004 bytes
 
 ✗ Outputs DIFFER
@@ -65,6 +65,12 @@ Rustfmt size:  13004 bytes
      }
  }
  
+ /// A custom proc-macro expander handle. This handle together with its crate resolves to a [`ProcMacro`]
+ #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+-pub struct CustomProcMacroExpander {
+-    proc_macro_id: u32,
+-}
++pub struct CustomProcMacroExpander { proc_macro_id: u32 }
  
  impl CustomProcMacroExpander {
      const MISSING_EXPANDER: u32 = !0;

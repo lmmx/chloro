@@ -1252,9 +1252,7 @@ fn calculate_necessary_visibility(
 }
 
 /// Minimally implemented directed graph structure represented by adjacency list.
-struct Graph {
-    edges: Vec<Vec<usize>>,
-}
+struct Graph { edges: Vec<Vec<usize>> }
 
 impl Graph {
     fn new(node_count: usize) -> Self {

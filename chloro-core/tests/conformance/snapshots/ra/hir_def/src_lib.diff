@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43731 bytes
+Chloro size:   43721 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -276,6 +276,14 @@ Rustfmt size:  45085 bytes
  impl_intern!(BlockId, BlockLoc, intern_block, lookup_intern_block);
  
  /// A `ModuleId` that is always a crate's root module.
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+-pub struct CrateRootModuleId {
+-    krate: Crate,
+-}
++pub struct CrateRootModuleId { krate: Crate }
+ 
+ impl CrateRootModuleId {
+     pub fn def_map(self, db: &dyn DefDatabase) -> &DefMap {
          other.block.is_none() && other.local_id == DefMap::ROOT && self.krate == other.krate
      }
  }
@@ -520,6 +528,16 @@ Rustfmt size:  45085 bytes
                  call_site,
              )),
              err: None,
+ }
+ 
+ #[derive(Debug)]
+-pub struct UnresolvedMacro {
+-    pub path: ModPath,
+-}
++pub struct UnresolvedMacro { pub path: ModPath }
+ 
+ #[derive(Default, Debug, Eq, PartialEq, Clone, Copy)]
+ pub struct SyntheticSyntax;
              }
              let action = segments[1].symbol();
              if *action == sym::completions {

@@ -9,9 +9,7 @@ use std::fmt;
 use ide_db::impl_empty_upmap_from_ra_fixture;
 
 #[derive(Clone, Default, Debug, Hash, PartialEq, Eq)]
-pub struct Markup {
-    text: String,
-}
+pub struct Markup { text: String }
 
 impl From<Markup> for String {
     fn from(markup: Markup) -> Self {

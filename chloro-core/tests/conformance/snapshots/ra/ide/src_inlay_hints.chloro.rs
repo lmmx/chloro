@@ -543,9 +543,7 @@ pub enum InlayTooltip {
 }
 
 #[derive(Default, Hash, UpmapFromRaFixture)]
-pub struct InlayHintLabel {
-    pub parts: SmallVec<[InlayHintLabelPart; 1]>,
-}
+pub struct InlayHintLabel { pub parts: SmallVec<[InlayHintLabelPart; 1]> }
 
 impl InlayHintLabel {
     pub fn simple(

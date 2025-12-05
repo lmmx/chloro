@@ -74,9 +74,7 @@ where
 }
 
 #[derive(Default, Clone, Debug)]
-pub(crate) struct JsonFilter {
-    pub(crate) allowed_names: Option<FxHashSet<String>>,
-}
+pub(crate) struct JsonFilter { pub(crate) allowed_names: Option<FxHashSet<String>> }
 
 impl JsonFilter {
     pub(crate) fn from_spec(spec: &str) -> Self {

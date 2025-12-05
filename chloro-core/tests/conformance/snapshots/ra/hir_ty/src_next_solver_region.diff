@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11497 bytes
-Chloro size:   11564 bytes
+Chloro size:   11559 bytes
 Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
@@ -31,6 +31,17 @@ Rustfmt size:  11829 bytes
  };
  
  pub type RegionKind<'db> = rustc_type_ir::RegionKind<DbInterner<'db>>;
+ 
+ #[salsa::interned(constructor = new_)]
+-pub struct Region<'db> {
+-    #[returns(ref)]
+-    kind_: RegionKind<'db>,
+-}
++pub struct Region<'db> { #[returns(ref)]
++    kind_: RegionKind<'db> }
+ 
+ impl std::fmt::Debug for Region<'_> {
+     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
          index: DebruijnIndex,
          bound: BoundRegion,
      ) -> Region<'db> {

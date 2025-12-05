@@ -7,9 +7,7 @@ use syntax::TextRange;
 
 use crate::{HlRange, HlTag};
 
-pub(super) struct Highlights {
-    root: Node,
-}
+pub(super) struct Highlights { root: Node }
 
 struct Node {
     hl_range: HlRange,

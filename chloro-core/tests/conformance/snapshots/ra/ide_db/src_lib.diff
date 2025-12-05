@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   12247 bytes
+Chloro size:   12242 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
@@ -76,6 +76,16 @@ Rustfmt size:  12539 bytes
      #[salsa::invoke_interned(line_index)]
      fn line_index(&self, file_id: FileId) -> Arc<LineIndex>;
  }
+ }
+ 
+ #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+-pub struct SnippetCap {
+-    _private: (),
+-}
++pub struct SnippetCap { _private: () }
+ 
+ impl SnippetCap {
+     pub const fn new(allow_snippets: bool) -> Option<SnippetCap> {
  
      pub fn from_token(token: &'a syntax::SyntaxToken) -> Self {
          let kind = token.kind();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34792 bytes
-Chloro size:   34785 bytes
+Chloro size:   34780 bytes
 Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
@@ -18,6 +18,16 @@ Rustfmt size:  34938 bytes
  };
  
  #[derive(Debug, Clone)]
+ }
+ 
+ #[derive(Debug, Clone)]
+-pub struct FileStructureConfig {
+-    pub exclude_locals: bool,
+-}
++pub struct FileStructureConfig { pub exclude_locals: bool }
+ 
+ // Feature: File Structure
+ //
              node_range: node.syntax().text_range(),
              kind,
              detail,

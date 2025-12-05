@@ -1286,7 +1286,9 @@ fn f() {
     };
 }
 
-struct X { a: i32 }
+struct X {
+    a: i32,
+}
 
 fn f() {
     let foo = X {
@@ -2071,7 +2073,10 @@ fn simple_function() {
     struct S {}
 }
 
-struct S { #[attr] f: f32 }
+struct S {
+    #[attr]
+    f: f32,
+}
 
 fn main() {
     let [a, b, ..] = [];
@@ -3068,7 +3073,9 @@ use foo::bar::baz;
 
 use ::foo::bar::baz;
 
-struct S<T: Copy> { f: T }
+struct S<T: Copy> {
+    f: T,
+}
 
 enum E1 {
 }
@@ -3099,7 +3106,9 @@ enum E5 {
 
 // https://github.com/rust-lang/rust-analyzer/issues/674
 
-struct Repr { raw: [u8; 1] }
+struct Repr {
+    raw: [u8; 1],
+}
 
 fn abc() {
     Repr { raw: [0] }.raw[0] = 0;
@@ -3160,7 +3169,9 @@ where
 {
 }
 
-struct S { r#foo: u32 }
+struct S {
+    r#foo: u32,
+}
 
 
 unsafe extern {
@@ -3504,7 +3515,9 @@ fn r#foo() {}
 use foo;
 use ::bar;
 
-struct S { foo: u32 }
+struct S {
+    foo: u32,
+}
 
 fn foo() {
     async {};
@@ -3878,7 +3891,9 @@ struct S1<T>;
 
 struct S2<T>(u32);
 
-struct S3<T> { u: u32 }
+struct S3<T> {
+    u: u32,
+}
 
 struct S4<>;
 

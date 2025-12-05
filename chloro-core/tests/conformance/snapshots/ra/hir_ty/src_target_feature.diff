@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8872 bytes
-Chloro size:   8848 bytes
+Chloro size:   8843 bytes
 Rustfmt size:  8918 bytes
 
 ✗ Outputs DIFFER
@@ -19,6 +19,13 @@ Rustfmt size:  8918 bytes
  use rustc_hash::{FxHashMap, FxHashSet};
  
  #[derive(Debug, Default, Clone)]
+-pub struct TargetFeatures {
+-    pub(crate) enabled: FxHashSet<Symbol>,
+-}
++pub struct TargetFeatures { pub(crate) enabled: FxHashSet<Symbol> }
+ 
+ impl TargetFeatures {
+     pub fn from_attrs(attrs: &Attrs) -> Self {
  // Ideally we'd depend on rustc for this, but rustc_target doesn't compile on stable,
  // and t-compiler prefers for it to stay this way.
  

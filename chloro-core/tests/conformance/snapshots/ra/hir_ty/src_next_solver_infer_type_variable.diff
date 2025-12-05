@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14353 bytes
-Chloro size:   14329 bytes
+Chloro size:   14319 bytes
 Rustfmt size:  14730 bytes
 
 ✗ Outputs DIFFER
@@ -31,6 +31,13 @@ Rustfmt size:  14730 bytes
      undo_log: &'a mut InferCtxtUndoLogs<'db>,
  }
  
+ }
+ 
+ #[derive(Debug, Clone)]
+-pub(crate) struct TypeVariableData {
+-    origin: TypeVariableOrigin,
+-}
++pub(crate) struct TypeVariableData { origin: TypeVariableOrigin }
  
  #[derive(Clone, Debug)]
  pub(crate) enum TypeVariableValue<'db> {
@@ -157,6 +164,12 @@ Rustfmt size:  14730 bytes
          if a.vid.as_u32() < b.vid.as_u32() {
              Some((a, b))
  }
+ 
+ #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+-pub(crate) struct TyVidSubKey {
+-    vid: TyVid,
+-}
++pub(crate) struct TyVidSubKey { vid: TyVid }
  
  impl From<TyVid> for TyVidSubKey {
 -    #[inline] // make this function eligible for inlining - it is quite hot.

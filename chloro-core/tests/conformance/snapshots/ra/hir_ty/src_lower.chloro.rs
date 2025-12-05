@@ -68,14 +68,10 @@ use crate::{
 pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);
 
 #[derive(PartialEq, Eq, Debug, Hash)]
-pub struct ImplTraits<'db> {
-    pub(crate) impl_traits: Arena<ImplTrait<'db>>,
-}
+pub struct ImplTraits<'db> { pub(crate) impl_traits: Arena<ImplTrait<'db>> }
 
 #[derive(PartialEq, Eq, Debug, Hash)]
-pub struct ImplTrait<'db> {
-    pub(crate) predicates: Vec<Clause<'db>>,
-}
+pub struct ImplTrait<'db> { pub(crate) predicates: Vec<Clause<'db>> }
 
 pub type ImplTraitIdx<'db> = Idx<ImplTrait<'db>>;
 

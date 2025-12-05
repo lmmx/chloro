@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54425 bytes
+Chloro size:   54420 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -74,6 +74,16 @@ Rustfmt size:  54481 bytes
          let (module_def, idx, prefix_info) = self.def_map.resolve_path_locally(
              self.local_def_map,
              db,
+ }
+ 
+ #[derive(Default)]
+-struct ScopeNames {
+-    map: FxIndexMap<Name, SmallVec<[ScopeDef; 1]>>,
+-}
++struct ScopeNames { map: FxIndexMap<Name, SmallVec<[ScopeDef; 1]>> }
+ 
+ impl ScopeNames {
+     fn add(&mut self, name: &Name, def: ScopeDef) {
              set.push(def)
          }
      }

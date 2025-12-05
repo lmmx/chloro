@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74557 bytes
+Chloro size:   74552 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -77,8 +77,13 @@ Rustfmt size:  75023 bytes
 -// This is never intended to be used as a generic graph structure. If there's ever another need of
 -// graph algorithm, consider adding a library for that (and replace the following).
  /// Minimally implemented directed graph structure represented by adjacency list.
- struct Graph {
-     edges: Vec<Vec<usize>>,
+-struct Graph {
+-    edges: Vec<Vec<usize>>,
+-}
++struct Graph { edges: Vec<Vec<usize>> }
+ 
+ impl Graph {
+     fn new(node_count: usize) -> Self {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

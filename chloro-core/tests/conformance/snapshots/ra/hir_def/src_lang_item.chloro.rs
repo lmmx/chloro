@@ -200,9 +200,7 @@ pub fn lang_item(
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
-pub struct LangItems {
-    items: FxHashMap<LangItem, LangItemTarget>,
-}
+pub struct LangItems { items: FxHashMap<LangItem, LangItemTarget> }
 
 impl LangItems {
     pub fn target(&self, item: LangItem) -> Option<LangItemTarget> {

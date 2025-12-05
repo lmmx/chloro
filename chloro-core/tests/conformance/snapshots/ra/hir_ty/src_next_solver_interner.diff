@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81813 bytes
+Chloro size:   81790 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -164,6 +164,18 @@ Rustfmt size:  84055 bytes
  impl std::hash::Hash for AdtDefInner {
      #[inline]
      fn hash<H: std::hash::Hasher>(&self, s: &mut H) {
+ }
+ 
+ #[salsa::interned(no_lifetime, constructor = new_)]
+-pub struct AdtDef {
+-    #[returns(ref)]
+-    data_: AdtDefInner,
+-}
++pub struct AdtDef { #[returns(ref)]
++    data_: AdtDefInner }
+ 
+ impl AdtDef {
+     pub fn new<'db>(def_id: AdtId, interner: DbInterner<'db>) -> Self {
              }
          };
  
@@ -203,6 +215,18 @@ Rustfmt size:  84055 bytes
  
              let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
  
+ pub type PatternKind<'db> = rustc_type_ir::PatternKind<DbInterner<'db>>;
+ 
+ #[salsa::interned(constructor = new_, debug)]
+-pub struct Pattern<'db> {
+-    #[returns(ref)]
+-    kind_: InternedWrapperNoDebug<PatternKind<'db>>,
+-}
++pub struct Pattern<'db> { #[returns(ref)]
++    kind_: InternedWrapperNoDebug<PatternKind<'db>> }
+ 
+ impl<'db> std::fmt::Debug for InternedWrapperNoDebug<PatternKind<'db>> {
+     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
      fn flags(&self) -> rustc_type_ir::TypeFlags {
          match self.inner() {
              PatternKind::Range { start, end } => {
@@ -666,10 +690,11 @@ Rustfmt size:  84055 bytes
 -
      use crate::db::HirDatabase;
 -
-     struct Attached {
-         database: Cell<Option<NonNull<dyn HirDatabase>>>,
-     }
+-    struct Attached {
+-        database: Cell<Option<NonNull<dyn HirDatabase>>>,
+-    }
 -
++    struct Attached { database: Cell<Option<NonNull<dyn HirDatabase>>> }
      impl Attached {
          #[inline]
          fn attach<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {

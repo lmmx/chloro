@@ -242,9 +242,7 @@ pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'
     })
 }
 
-struct DeeplyNormalizeForDiagnosticsFolder<'a, 'tcx> {
-    at: At<'a, 'tcx>,
-}
+struct DeeplyNormalizeForDiagnosticsFolder<'a, 'tcx> { at: At<'a, 'tcx> }
 
 impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_, 'db> {
     fn cx(&self) -> DbInterner<'db> {

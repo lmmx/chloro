@@ -31,9 +31,7 @@ pub struct TypeParamData {
 
 /// Data about a generic lifetime parameter (to a function, struct, impl, ...).
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub struct LifetimeParamData {
-    pub name: Name,
-}
+pub struct LifetimeParamData { pub name: Name }
 
 /// Data about a generic const parameter (to a function, struct, impl, ...).
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]

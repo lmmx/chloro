@@ -90,9 +90,7 @@ const USELESS_METHODS: &[&str] = &[
 /// assert_eq!(generator.suggest_name("b"), "b3");
 /// ```
 #[derive(Debug, Default)]
-pub struct NameGenerator {
-    pool: FxHashMap<SmolStr, usize>,
-}
+pub struct NameGenerator { pool: FxHashMap<SmolStr, usize> }
 
 impl NameGenerator {
     /// Create a new generator with existing names. When suggesting a name, it will

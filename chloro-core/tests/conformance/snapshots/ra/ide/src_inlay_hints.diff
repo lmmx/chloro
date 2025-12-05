@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   36198 bytes
+Chloro size:   36193 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
@@ -29,6 +29,16 @@ Rustfmt size:  36233 bytes
              LazyProperty::Lazy
          } else {
              let tooltip = finish();
+ }
+ 
+ #[derive(Default, Hash, UpmapFromRaFixture)]
+-pub struct InlayHintLabel {
+-    pub parts: SmallVec<[InlayHintLabelPart; 1]>,
+-}
++pub struct InlayHintLabel { pub parts: SmallVec<[InlayHintLabelPart; 1]> }
+ 
+ impl InlayHintLabel {
+     pub fn simple(
  
  #[cfg(test)]
  mod tests {

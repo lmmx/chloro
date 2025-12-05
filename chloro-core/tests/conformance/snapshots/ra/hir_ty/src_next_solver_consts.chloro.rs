@@ -204,10 +204,8 @@ impl Hash for ConstBytes<'_> {
 }
 
 #[salsa::interned(constructor = new_, debug)]
-pub struct Valtree<'db> {
-    #[returns(ref)]
-    bytes_: ConstBytes<'db>,
-}
+pub struct Valtree<'db> { #[returns(ref)]
+    bytes_: ConstBytes<'db> }
 
 impl<'db> Valtree<'db> {
     pub fn new(bytes: ConstBytes<'db>) -> Self {
@@ -399,9 +397,7 @@ impl<'db> rustc_type_ir::inherent::Const<DbInterner<'db>> for Const<'db> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct BoundConst {
-    pub var: BoundVar,
-}
+pub struct BoundConst { pub var: BoundVar }
 
 impl<'db> rustc_type_ir::inherent::BoundVarLike<DbInterner<'db>> for BoundConst {
     fn var(self) -> BoundVar {

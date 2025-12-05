@@ -77,9 +77,7 @@ pub enum FulfillmentErrorCode<'db> {
 }
 
 #[derive(Debug, Clone)]
-pub struct MismatchedProjectionTypes<'db> {
-    pub err: TypeError<'db>,
-}
+pub struct MismatchedProjectionTypes<'db> { pub err: TypeError<'db> }
 
 pub(super) fn fulfillment_error_for_no_solution<'db>(
     infcx: &InferCtxt<'db>,

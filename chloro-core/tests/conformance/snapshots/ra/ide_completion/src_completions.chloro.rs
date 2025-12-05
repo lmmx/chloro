@@ -48,9 +48,7 @@ use crate::{
 
 /// Represents an in-progress set of completions being built.
 #[derive(Debug, Default)]
-pub struct Completions {
-    buf: Vec<CompletionItem>,
-}
+pub struct Completions { buf: Vec<CompletionItem> }
 
 impl From<Completions> for Vec<CompletionItem> {
     fn from(val: Completions) -> Self {

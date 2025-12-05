@@ -187,9 +187,7 @@ pub(crate) struct GlobalState {
 }
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct MiniCoreRustAnalyzerInternalOnly {
-    pub(crate) minicore_text: Option<String>,
-}
+pub(crate) struct MiniCoreRustAnalyzerInternalOnly { pub(crate) minicore_text: Option<String> }
 
 /// An immutable snapshot of the world's state at a point in time.
 pub(crate) struct GlobalStateSnapshot {

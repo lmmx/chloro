@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86857 bytes
+Chloro size:   86847 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -36,6 +36,22 @@ Rustfmt size:  87058 bytes
  };
  use salsa::plumbing::AsId;
  use smallvec::{SmallVec, smallvec};
+ pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);
+ 
+ #[derive(PartialEq, Eq, Debug, Hash)]
+-pub struct ImplTraits<'db> {
+-    pub(crate) impl_traits: Arena<ImplTrait<'db>>,
+-}
++pub struct ImplTraits<'db> { pub(crate) impl_traits: Arena<ImplTrait<'db>> }
+ 
+ #[derive(PartialEq, Eq, Debug, Hash)]
+-pub struct ImplTrait<'db> {
+-    pub(crate) predicates: Vec<Clause<'db>>,
+-}
++pub struct ImplTrait<'db> { pub(crate) predicates: Vec<Clause<'db>> }
+ 
+ pub type ImplTraitIdx<'db> = Idx<ImplTrait<'db>>;
+ 
      /// struct Foo<'a> { x: &'a () }
      /// async fn foo(Foo { x: _ }: Foo<'_>) {}
      /// ```
