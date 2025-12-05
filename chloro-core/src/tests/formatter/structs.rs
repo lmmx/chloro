@@ -5,7 +5,11 @@ use insta::assert_snapshot;
 fn preserve_struct_field_default_initializer() {
     let input = r#"struct S { f: f32 = 0.0 }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"struct S { f: f32 = 0.0 }"#);
+    assert_snapshot!(output, @r"
+    struct S {
+        f: f32 = 0.0,
+    }
+    ");
 }
 
 #[test]
@@ -46,7 +50,11 @@ fn preserve_enum_discriminant() {
 fn preserve_enum_discriminant_single_variant() {
     let input = r#"enum E { B = 92 }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"enum E { B = 92 }"#);
+    assert_snapshot!(output, @r"
+    enum E {
+        B = 92,
+    }
+    ");
 }
 
 #[test]

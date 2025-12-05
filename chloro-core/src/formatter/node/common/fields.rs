@@ -115,6 +115,11 @@ pub fn format_record_fields(fields: &ast::RecordFieldList, buf: &mut String, ind
             buf.push_str(&ty.syntax().text().to_string());
         }
 
+        if let Some(expr) = field.expr() {
+            buf.push_str(" = ");
+            buf.push_str(&expr.syntax().text().to_string());
+        }
+
         if let Some((ref whitespace, ref comment)) = trailing_comment {
             buf.push(',');
             buf.push_str(whitespace);

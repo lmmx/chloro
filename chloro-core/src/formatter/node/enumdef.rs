@@ -190,6 +190,11 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
 
+            if let Some(expr) = variant.expr() {
+                buf.push_str(" = ");
+                buf.push_str(&expr.syntax().text().to_string());
+            }
+
             // Check for trailing comment on same line
             if let Some((ref whitespace, ref comment)) = info.trailing_comment {
                 buf.push(',');
