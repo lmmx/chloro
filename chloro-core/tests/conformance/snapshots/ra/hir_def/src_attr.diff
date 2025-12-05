@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32850 bytes
-Chloro size:   32865 bytes
+Chloro size:   32866 bytes
 Rustfmt size:  32850 bytes
 
 ✗ Outputs DIFFER
@@ -19,40 +19,6 @@ Rustfmt size:  32850 bytes
  }
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-             AttrDefId::ModuleId(module) => {
-                 let def_map = module.def_map(db);
-                 let mod_data = &def_map[module.local_id];
--
-                 let raw_attrs = match mod_data.origin {
-                     ModuleOrigin::File { definition, declaration_tree_id, declaration, .. } => {
-                         let decl_attrs = declaration_tree_id
-             AttrDefId::TypeAliasId(it) => attrs_from_ast_id_loc(db, it),
-             AttrDefId::GenericParamId(it) => match it {
-                 GenericParamId::ConstParamId(it) => {
--                    let src = it.parent().child_source(db);
-                     // FIXME: We should be never getting `None` here.
-+                    let src = it.parent().child_source(db);
-                     Attrs(match src.value.get(it.local_id()) {
-                         Some(val) => RawAttrs::new_expanded(
-                             db,
-                     })
-                 }
-                 GenericParamId::TypeParamId(it) => {
--                    let src = it.parent().child_source(db);
-                     // FIXME: We should be never getting `None` here.
-+                    let src = it.parent().child_source(db);
-                     Attrs(match src.value.get(it.local_id()) {
-                         Some(val) => RawAttrs::new_expanded(
-                             db,
-                     })
-                 }
-                 GenericParamId::LifetimeParamId(it) => {
--                    let src = it.parent.child_source(db);
-                     // FIXME: We should be never getting `None` here.
-+                    let src = it.parent.child_source(db);
-                     Attrs(match src.value.get(it.local_id) {
-                         Some(val) => RawAttrs::new_expanded(
-                             db,
  mod tests {
      //! This module contains tests for doc-expression parsing.
      //! Currently, it tests `#[doc(hidden)]` and `#[doc(alias)]`.

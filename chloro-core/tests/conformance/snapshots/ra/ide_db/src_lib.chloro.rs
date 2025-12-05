@@ -223,45 +223,25 @@ impl RootDatabase {
     pub fn update_lru_capacities(&mut self, _lru_capacities: &FxHashMap<Box<str>, u16>) {
         // FIXME(salsa-transition): bring this back; allow changing LRU settings at runtime.
         // use hir::db as hir_db;
-
         // base_db::FileTextQuery.in_db_mut(self).set_lru_capacity(DEFAULT_FILE_TEXT_LRU_CAP);
-
         // base_db::ParseQuery.in_db_mut(self).set_lru_capacity(
-
         //     lru_capacities
-
         //         .get(stringify!(ParseQuery))
-
         //         .copied()
-
         //         .unwrap_or(base_db::DEFAULT_PARSE_LRU_CAP),
-
         // );
-
         // hir_db::ParseMacroExpansionQuery.in_db_mut(self).set_lru_capacity(
-
         //     lru_capacities
-
         //         .get(stringify!(ParseMacroExpansionQuery))
-
         //         .copied()
-
         //         .unwrap_or(4 * base_db::DEFAULT_PARSE_LRU_CAP),
-
         // );
-
         // hir_db::BorrowckQuery.in_db_mut(self).set_lru_capacity(
-
         //     lru_capacities
-
         //         .get(stringify!(BorrowckQuery))
-
         //         .copied()
-
         //         .unwrap_or(base_db::DEFAULT_BORROWCK_LRU_CAP),
-
         // );
-
         // hir::db::BodyWithSourceMapQuery.in_db_mut(self).set_lru_capacity(2048);
     }
 }

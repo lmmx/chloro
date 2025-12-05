@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8057 bytes
-Chloro size:   8085 bytes
+Chloro size:   8084 bytes
 Rustfmt size:  8222 bytes
 
 ✗ Outputs DIFFER
@@ -33,13 +33,6 @@ Rustfmt size:  8222 bytes
  
      match sema.resolve_path(&ast_path) {
          Some(hir::PathResolution::Def(hir::ModuleDef::Trait(def))) => Some(def),
-     };
- 
-     // Names must be unique between constants and functions. However, type aliases
-+
-     // may share the same name as a function or constant.
-     let mut impl_fns_consts = FxHashSet::default();
-     let mut impl_type = FxHashSet::default();
          }
      }
  

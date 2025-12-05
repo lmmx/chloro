@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62212 bytes
-Chloro size:   62246 bytes
+Chloro size:   62243 bytes
 Rustfmt size:  62212 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     }
- 
-     // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
-+
-     // default to plain paths.
-     let item_module = item.module(db)?;
-     if item_module.is_within_block() {
  use Stability::*;
  
  const MAX_PATH_LEN: usize = 15;
@@ -58,41 +51,13 @@ Rustfmt size:  62212 bytes
          ctx.from.krate.data(ctx.db).dependencies.iter().for_each(|dep| {
              find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id)
          });
-         return;
-     };
-     for info in import_info_for {
-+        // Determine best path for containing module and append last segment from `info`.
-+        // FIXME: we should guide this to look up the path locally, or from the same crate again?
-         if info.is_doc_hidden {
-             // the item or import is `#[doc(hidden)]`, so skip it as it is in an external crate
-             continue;
-         }
--
--        // Determine best path for containing module and append last segment from `info`.
--        // FIXME: we should guide this to look up the path locally, or from the same crate again?
-         let choice = find_path_for_module(
-             ctx,
-             visited_modules,
-             }
-             choice.stability = Unstable;
-         }
--
-         Choice::try_select(best_choice, choice, ctx.cfg.prefer_prelude, info.name.clone());
-     }
- }
-     let _p = tracing::info_span!("find_local_import_locations").entered();
- 
      // `from` can import anything below `from` with visibility of at least `from`, and anything
-+
      // above `from` with any visibility. That means we do not need to descend into private siblings
-+
      // of `from` (and similar).
- 
+-
      // Compute the initial worklist. We start with all direct child modules of `from` as well as all
-+
      // of its (recursive) parent modules.
      let mut worklist = def_map[from.local_id]
-         .children
      use stdx::format_to;
      use syntax::ast::AstNode;
      use test_fixture::WithFixture;

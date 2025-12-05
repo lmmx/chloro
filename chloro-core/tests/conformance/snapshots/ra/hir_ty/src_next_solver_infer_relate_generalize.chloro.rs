@@ -50,21 +50,13 @@ impl<'db> InferCtxt<'db> {
         debug_assert!(self.inner.borrow_mut().type_variables().probe(target_vid).is_unknown());
 
         // Generalize `source_ty` depending on the current variance. As an example, assume
-
         // `?target <: &'x ?1`, where `'x` is some free region and `?1` is an inference
-
         // variable.
-
         //
-
         // Then the `generalized_ty` would be `&'?2 ?3`, where `'?2` and `?3` are fresh
-
         // region/type inference variables.
-
         //
-
         // We then relate `generalized_ty <: source_ty`, adding constraints like `'x: '?2` and
-
         // `?1 <: ?3`.
         let Generalization { value_may_be_infer: generalized_ty, has_unconstrained_ty_var } = self
             .generalize(
@@ -87,15 +79,10 @@ impl<'db> InferCtxt<'db> {
         }
 
         // Finally, relate `generalized_ty` to `source_ty`, as described in previous comment.
-
         //
-
         // FIXME(#16847): This code is non-ideal because all these subtype
-
         // relations wind up attributed to the same spans. We need
-
         // to associate causes/spans with each of the relations in
-
         // the stack to get this right.
         if generalized_ty.is_ty_var() {
             // This happens for cases like `<?0 as Trait>::Assoc == ?0`.
@@ -209,7 +196,6 @@ impl<'db> InferCtxt<'db> {
             .union_value(target_vid, ConstVariableValue::Known { value: generalized_ct });
 
         // Make sure that the order is correct when relating the
-
         // generalized const and the source.
         if target_is_expected {
             relation.relate_with_variance(
@@ -436,17 +422,15 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     #[instrument(level = "debug", skip(self, t2), ret)]
     fn tys(&mut self, t: Ty<'db>, t2: Ty<'db>) -> RelateResult<'db, Ty<'db>> {
         assert_eq!(t, t2);
+
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         if let Some(result) = self.cache.get(&(t, self.ambient_variance, self.in_alias)) {
             return Ok(*result);
         }
 
         // Check to see whether the type we are generalizing references
-
         // any other type variable related to `vid` via
-
         // subtyping. This is basically our "occurs check", preventing
-
         // us from creating infinitely sized types.
         let g = match t.kind() {
             TyKind::Infer(
@@ -558,6 +542,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     #[instrument(level = "debug", skip(self, r2), ret)]
     fn regions(&mut self, r: Region<'db>, r2: Region<'db>) -> RelateResult<'db, Region<'db>> {
         assert_eq!(r, r2);
+
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match r.kind() {
             // Never make variables for regions bound within the type itself,
@@ -582,9 +567,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
         }
 
         // If we are in an invariant context, we can re-use the region
-
         // as is, unless it happens to be in some universe that we
-
         // can't name.
         if let Variance::Invariant = self.ambient_variance {
             let r_universe = self.infcx.universe_of_region(r);
@@ -599,6 +582,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     #[instrument(level = "debug", skip(self, c2), ret)]
     fn consts(&mut self, c: Const<'db>, c2: Const<'db>) -> RelateResult<'db, Const<'db>> {
         assert_eq!(c, c2);
+
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match c.kind() {
             ConstKind::Infer(InferConst::Var(vid)) => {
@@ -611,6 +595,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                 {
                     return Err(self.cyclic_term_error());
                 }
+
                 let mut inner = self.infcx.inner.borrow_mut();
                 let variable_table = &mut inner.const_unification_table();
                 match variable_table.probe_value(vid) {
@@ -622,14 +607,15 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                         if self.for_universe.can_name(universe) {
                             Ok(c)
                         } else {
-                            // See the comment for type inference variables
-                            // for more details.
                             let new_var_id = variable_table
                                 .new_key(ConstVariableValue::Unknown {
                                     origin,
                                     universe: self.for_universe,
                                 })
                                 .vid;
+
+                            // See the comment for type inference variables
+                            // for more details.
                             if self.infcx.next_trait_solver()
                                 && !matches!(
                                     self.infcx.typing_mode_unchecked(),

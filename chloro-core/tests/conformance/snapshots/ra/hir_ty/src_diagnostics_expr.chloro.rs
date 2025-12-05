@@ -169,6 +169,7 @@ impl<'db> ExprValidator<'db> {
         if !self.validate_lints {
             return;
         }
+
         // Check that the number of arguments matches the number of parameters.
         if self.infer.expr_type_mismatches().next().is_some() {
             // FIXME: Due to shortcomings in the current type system implementation, only emit
@@ -178,14 +179,17 @@ impl<'db> ExprValidator<'db> {
                 Some(it) => it,
                 None => return,
             };
+
             let checker = filter_map_next_checker.get_or_insert_with(|| {
                 FilterMapNextChecker::new(&self.owner.resolver(self.db()), self.db())
             });
+
             if checker.check(call_id, receiver, &callee).is_some() {
                 self.diagnostics.push(BodyValidationDiagnostic::ReplaceFilterMapNextWithFindMap {
                     method_call_expr: call_id,
                 });
             }
+
             if let Some(receiver_ty) = self.infer.type_of_expr_with_adjust(*receiver) {
                 checker.prev_receiver_ty = Some(receiver_ty);
             }
@@ -259,7 +263,6 @@ impl<'db> ExprValidator<'db> {
             };
 
         // FIXME Report unreachable arms
-
         // https://github.com/rust-lang/rust/blob/f31622a50/compiler/rustc_mir_build/src/thir/pattern/check_match.rs#L200
         let witnesses = report.non_exhaustiveness_witnesses;
         if !witnesses.is_empty() {
@@ -324,7 +327,6 @@ impl<'db> ExprValidator<'db> {
         let pattern_arena = Arena::new();
         let cx = MatchCheckCtx::new(self.owner.module(self.db()), &self.infcx, self.env.clone());
         for stmt in &**statements {
-            // optimization, wildcard trivially hold
             let &Statement::Let { pat, initializer, else_branch: None, .. } = stmt else {
                 continue;
             };
@@ -336,11 +338,15 @@ impl<'db> ExprValidator<'db> {
             if ty.references_non_lt_error() {
                 continue;
             }
+
             let mut have_errors = false;
             let deconstructed_pat = self.lower_pattern(&cx, pat, &mut have_errors);
+
+            // optimization, wildcard trivially hold
             if have_errors || matches!(deconstructed_pat.ctor(), Constructor::Wildcard) {
                 continue;
             }
+
             let match_arm = rustc_pattern_analysis::MatchArm {
                 pat: pattern_arena.alloc(deconstructed_pat),
                 has_guard: false,
@@ -466,6 +472,7 @@ impl<'db> ExprValidator<'db> {
                         // Check parent if expr.
                         top_if_expr = parent_if_expr;
                     }
+
                     self.diagnostics
                         .push(BodyValidationDiagnostic::RemoveUnnecessaryElse { if_expr: id })
                 }

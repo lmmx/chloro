@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   31454 bytes
+Chloro size:   31455 bytes
 Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         let mut nodes = Vec::new();
- 
-         // Determine if this is difftastic mode by checking if multiple sections share the same file_path
-+
-         // (in markdown mode, each section has a unique file path or sections are from the same file)
-         let mut file_section_counts: HashMap<String, usize> = HashMap::new();
-         for section in sections {
              if let Some(node_idx) = self
                  .tree_nodes
                  .iter()
@@ -22,17 +15,5 @@ Rustfmt size:  31467 bytes
 -            {
 +                .position(|n| n.section_index == Some(current_section_idx)) {
                  self.current_node_index = node_idx;
-             }
-         }
-         if let Some(section_idx) = self.get_current_section_index() {
-             if let Some(section) = self.sections.get(section_idx) {
-                 let lines_added = self.editor_state.as_ref().map_or(0, |es| es.lines.len());
--
-                 let file_map = self
-                     .file_offsets
-                     .entry(section.file_path.clone())
-                     .or_default();
--
-                 file_map.insert(section.line_start, lines_added);
              }
          }

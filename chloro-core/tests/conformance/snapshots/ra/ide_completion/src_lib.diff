@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   11494 bytes
+Chloro size:   11492 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
@@ -22,12 +22,3 @@ Rustfmt size:  11494 bytes
  /// Main entry point for completion. We run completion as a two-phase process.
  ///
  /// First, we look at the position and collect a so-called `CompletionContext`.
-     }
- 
-     // when the user types a bare `_` (that is it does not belong to an identifier)
-+
-     // the user might just wanted to type a `_` for type inference or pattern discarding
-+
-     // so try to suppress completions in those cases
-     if trigger_character == Some('_')
-         && ctx.original_token.kind() == syntax::SyntaxKind::UNDERSCORE

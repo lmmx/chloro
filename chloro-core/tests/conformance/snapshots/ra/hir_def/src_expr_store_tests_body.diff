@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16167 bytes
-Chloro size:   16225 bytes
+Chloro size:   16226 bytes
 Rustfmt size:  16197 bytes
 
 ✗ Outputs DIFFER
@@ -102,10 +102,3 @@ Rustfmt size:  16197 bytes
      assert_eq!(
          body[BindingId::from_raw(RawIdx::from_u32(0))].name.as_str(),
          "B",
-         Pat::Range { start, end } => {
-             let hir_start = &body[start.unwrap()];
-             let hir_end = &body[end.unwrap()];
--
-             assert!(matches!(hir_start, Expr::Path { .. }));
-             assert!(matches!(hir_end, Expr::Path { .. }));
-         }

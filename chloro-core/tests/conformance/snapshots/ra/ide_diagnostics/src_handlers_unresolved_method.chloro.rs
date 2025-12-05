@@ -121,17 +121,19 @@ fn assoc_func_fix(
     d: &hir::UnresolvedMethodCall<'_>,
 ) -> Option<Assist> {
     if let Some(f) = d.assoc_func_with_same_name {
-        // if receiver should be pass as first arg in the assoc func,
-        // we could omit generic parameters cause compiler can deduce it automatically
         let db = ctx.sema.db;
+
         let expr_ptr = &d.expr;
         let root = db.parse_or_expand(expr_ptr.file_id);
         let expr: ast::Expr = expr_ptr.value.to_node(&root).left()?;
+
         let call = ast::MethodCallExpr::cast(expr.syntax().clone())?;
         let range = InFile::new(expr_ptr.file_id, call.syntax().text_range())
             .original_node_file_range_rooted_opt(db)?;
+
         let receiver = call.receiver()?;
         let receiver_type = &ctx.sema.type_of_expr(&receiver)?.original;
+
         let assoc_fn_params = f.assoc_fn_params(db);
         let need_to_take_receiver_as_first_arg = if assoc_fn_params.is_empty() {
             false
@@ -152,25 +154,34 @@ fn assoc_func_fix(
                 })
                 .unwrap_or(false)
         };
+
         let mut receiver_type_adt_name =
             receiver_type.as_adt()?.name(db).display_no_db(ctx.edition).to_smolstr();
+
         let generic_parameters: Vec<SmolStr> =
             receiver_type.generic_parameters(db, ctx.display_target).collect();
+        // if receiver should be pass as first arg in the assoc func,
+        // we could omit generic parameters cause compiler can deduce it automatically
         if !need_to_take_receiver_as_first_arg && !generic_parameters.is_empty() {
             let generic_parameters = generic_parameters.join(", ");
             receiver_type_adt_name =
                 format_smolstr!("{receiver_type_adt_name}::<{generic_parameters}>");
         }
+
         let method_name = call.name_ref()?;
         let assoc_func_path = format!("{receiver_type_adt_name}::{method_name}");
+
         let assoc_func_path = make::expr_path(make::path_from_text(&assoc_func_path));
+
         let args: Vec<_> = if need_to_take_receiver_as_first_arg {
             std::iter::once(receiver).chain(call.arg_list()?.args()).collect()
         } else {
             call.arg_list()?.args().collect()
         };
         let args = make::arg_list(args);
+
         let assoc_func_call_expr_string = make::expr_call(assoc_func_path, args).to_string();
+
         Some(Assist {
             id: AssistId::quick_fix("method_call_to_assoc_func_call_fix"),
             label: Label::new(format!(

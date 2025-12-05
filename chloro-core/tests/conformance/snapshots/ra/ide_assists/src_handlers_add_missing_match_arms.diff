@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51270 bytes
-Chloro size:   51253 bytes
+Chloro size:   51250 bytes
 Rustfmt size:  51735 bytes
 
 ✗ Outputs DIFFER
@@ -81,17 +81,6 @@ Rustfmt size:  51735 bytes
  
          let variants_of_enums = vec![variants; len];
  
-     }
- 
-     // match x {
-+
-     //     bar => baz,
-+
-     //     $0
-+
-     // }
-     if let Some(last_arm) = match_arm_list.arms().last() {
-         let last_arm_range = last_arm.syntax().text_range();
      // match { _$0 => {...} }
      let wild_pat = ctx.find_node_at_offset_with_descend::<ast::WildcardPat>()?;
      let arm = wild_pat.syntax().parent().and_then(ast::MatchArm::cast)?;

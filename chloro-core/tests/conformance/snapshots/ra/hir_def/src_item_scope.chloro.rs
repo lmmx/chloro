@@ -748,6 +748,7 @@ impl ItemScope {
                 "{}:",
                 name.map_or("_".to_owned(), |name| name.display(db, Edition::LATEST).to_string())
             );
+
             if let Some(Item { import, .. }) = def.types {
                 buf.push_str(" t");
                 match import {
@@ -777,6 +778,7 @@ impl ItemScope {
             if def.is_none() {
                 buf.push_str(" _");
             }
+
             buf.push('\n');
         }
     }

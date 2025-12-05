@@ -131,9 +131,7 @@ pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<Infer
     ctx.type_inference_fallback();
 
     // Comment from rustc:
-
     // Even though coercion casts provide type hints, we check casts after fallback for
-
     // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
     let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
     for mut cast in cast_checks.into_iter() {
@@ -951,9 +949,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         ctx.type_inference_fallback();
 
         // Comment from rustc:
-
         // Even though coercion casts provide type hints, we check casts after fallback for
-
         // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
         let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
         for mut cast in cast_checks.into_iter() {
@@ -1123,7 +1119,6 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         );
 
         // Check if function contains a va_list, if it does then we append it to the parameter types
-
         // that are collected from the function data
         if data.is_varargs() {
             let va_list_ty = match self.resolve_va_list() {
@@ -1700,15 +1695,15 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                 (ty, variant)
             }
             Some(1) => {
-                // this could be an enum variant or associated type
-                // FIXME potentially resolve assoc type
                 let segment = path.segments().last().unwrap();
+                // this could be an enum variant or associated type
                 if let Some((AdtId::EnumId(enum_id), _)) = ty.as_adt() {
                     let enum_data = enum_id.enum_variants(self.db);
                     if let Some(variant) = enum_data.variant(segment) {
                         return (ty, Some(variant.into()));
                     }
                 }
+                // FIXME potentially resolve assoc type
                 (self.err_ty(), None)
             }
             Some(_) => {

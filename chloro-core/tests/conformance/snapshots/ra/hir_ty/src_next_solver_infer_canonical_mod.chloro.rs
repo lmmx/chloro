@@ -91,9 +91,9 @@ impl<'db> InferCtxt<'db> {
     ) -> GenericArg<'db> {
         match cv_info {
             CanonicalVarKind::Ty { ui, sub_root } => {
+                let vid = self.next_ty_var_id_in_universe(universe_map(ui));
                 // If this inference variable is related to an earlier variable
                 // via subtyping, we need to add that info to the inference context.
-                let vid = self.next_ty_var_id_in_universe(universe_map(ui));
                 if let Some(prev) = previous_var_values.get(sub_root.as_usize()) {
                     if let TyKind::Infer(InferTy::TyVar(sub_root)) = prev.expect_ty().kind() {
                         self.sub_unify_ty_vids_raw(vid, sub_root);

@@ -6,6 +6,253 @@ use insta::assert_snapshot;
 use super::*;
 
 #[test]
+fn preserve_comments_with_their_statements_in_block() {
+    // Comments should stay with the statement they precede, not all move to top
+    let input = r#"fn foo() {
+    {
+        // Comment 1
+        // Comment 2
+        let x = 1;
+
+        // Comment 3
+        if x > 0 {
+            return false;
+        }
+
+        // Comment 4
+        true
+    }
+}
+"#;
+    let output = format_source(input);
+    // Comments should stay with their statements, blank lines preserved
+    assert_snapshot!(output, @r#"
+    fn foo() {
+        {
+            // Comment 1
+            // Comment 2
+            let x = 1;
+
+            // Comment 3
+            if x > 0 {
+                return false;
+            }
+
+            // Comment 4
+            true
+        }
+    }
+    "#);
+}
+
+#[test]
+fn preserve_blank_lines_between_statements_in_block() {
+    // From node.rs: blank lines between `let` and `if` statements should be preserved
+    let input = r#"fn foo(prev: Option<i32>, curr: i32) -> bool {
+    {
+        let Some(prev) = prev else {
+            return false;
+        };
+
+        // No blank line between consecutive uses
+        if prev == 1 && curr == 1 {
+            return false;
+        }
+
+        // No blank line between consecutive mod declarations
+        if prev == 2 && curr == 2 {
+            return false;
+        }
+
+        // Blank line between different top-level items
+        true
+    }
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    fn foo(prev: Option<i32>, curr: i32) -> bool {
+        {
+            let Some(prev) = prev else {
+                return false;
+            };
+
+            // No blank line between consecutive uses
+            if prev == 1 && curr == 1 {
+                return false;
+            }
+
+            // No blank line between consecutive mod declarations
+            if prev == 2 && curr == 2 {
+                return false;
+            }
+
+            // Blank line between different top-level items
+            true
+        }
+    }
+    "#);
+}
+
+#[test]
+fn preserve_blank_line_after_variable_declaration() {
+    // Blank line after `let mut last_kind` should be preserved
+    let input = r#"fn foo() {
+    let mut last_kind: Option<i32> = None;
+    let mut prev_was_standalone_comment = false;
+
+    for item in items {
+        println!("{}", item);
+    }
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    fn foo() {
+        let mut last_kind: Option<i32> = None;
+        let mut prev_was_standalone_comment = false;
+
+        for item in items {
+            println!("{}", item);
+        }
+    }
+    "#);
+}
+
+#[test]
+fn preserve_blank_line_after_for_loop() {
+    let input = r#"fn foo() {
+    for (i, comment) in comments.iter().enumerate() {
+        println!("{}", comment);
+    }
+
+    match item {
+        1 => println!("one"),
+        _ => {}
+    }
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    fn foo() {
+        for (i, comment) in comments.iter().enumerate() {
+            println!("{}", comment);
+        }
+
+        match item {
+            1 => println!("one"),
+            _ => {}
+        }
+    }
+    "#);
+}
+
+#[test]
+fn preserve_end_of_line_comment_on_enum_variant() {
+    // End-of-line comments should stay on the same line
+    let input = r#"pub enum ImportGroup {
+    Internal(InternalKind), // self::, super::, crate::, - sorted first
+    External,               // everything else (including std, core, alloc)
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    pub enum ImportGroup {
+        Internal(InternalKind), // self::, super::, crate::, - sorted first
+        External, // everything else (including std, core, alloc)
+    }
+    "#);
+}
+
+#[test]
+fn preserve_blank_line_between_comment_block_and_function() {
+    // Blank line between a comment block and a function should be preserved
+    let input = r#"// /// Check if a string contains any lowercase ASCII characters
+// fn has_lowercase(s: &str) -> bool {
+//     s.as_bytes().iter().any(|&b| b.is_ascii_lowercase())
+// }
+
+pub fn sort_key(s: &str) -> bool {
+    true
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    // /// Check if a string contains any lowercase ASCII characters
+    // fn has_lowercase(s: &str) -> bool {
+    //     s.as_bytes().iter().any(|&b| b.is_ascii_lowercase())
+    // }
+
+    pub fn sort_key(s: &str) -> bool {
+        true
+    }
+    "#);
+}
+
+#[test]
+fn preserve_comment_between_statements_not_moved_to_top() {
+    // Comments should stay with the statement they precede, not move to top of block
+    let input = r#"fn foo() {
+    {
+        let x = 1;
+
+        // This comment is about the if statement
+        if x > 0 {
+            return true;
+        }
+
+        // This comment is about the match
+        match x {
+            1 => true,
+            _ => false,
+        }
+    }
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    fn foo() {
+        {
+            let x = 1;
+
+            // This comment is about the if statement
+            if x > 0 {
+                return true;
+            }
+
+            // This comment is about the match
+            match x {
+                1 => true,
+                _ => false,
+            }
+        }
+    }
+    "#);
+}
+
+#[test]
+fn preserve_blank_line_before_final_call() {
+    let input = r#"fn format_something() {
+    if condition {
+        do_something();
+    }
+
+    buf.close_brace_ln(indent);
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    fn format_something() {
+        if condition {
+            do_something();
+        }
+
+        buf.close_brace_ln(indent);
+    }
+    "#);
+}
+
+#[test]
 fn preserve_section_comments_in_match() {
     // Comments like "// === Section ===" should be preserved
     let input = r#"fn foo(x: i32) -> i32 {

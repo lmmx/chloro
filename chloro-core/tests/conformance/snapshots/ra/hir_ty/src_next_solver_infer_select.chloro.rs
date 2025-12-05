@@ -295,7 +295,6 @@ impl<'db> ProofTreeVisitor<'db> for Select {
         }
 
         // Don't winnow until `Certainty::Yes` -- we don't need to winnow until
-
         // codegen, and only on the good path.
         if matches!(goal.result().unwrap(), Certainty::Maybe { .. }) {
             return ControlFlow::Break(Ok(None));

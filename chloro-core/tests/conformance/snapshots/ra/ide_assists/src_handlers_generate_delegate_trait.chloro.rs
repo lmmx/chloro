@@ -199,27 +199,31 @@ impl Struct {
         let db = ctx.db();
 
         for (index, delegee) in field.impls.iter().enumerate() {
+            let trait_ = match delegee {
+                Delegee::Bound(b) => b,
+                Delegee::Impls(i, _) => i,
+            };
+
             // Skip trait that has `Self` type, which cannot be delegated
             //
             // See [`test_self_ty`]
+            if has_self_type(*trait_, ctx).is_some() {
+                continue;
+            }
+
             // FIXME :  We can omit already implemented impl_traits
             // But we don't know what the &[hir::Type] argument should look like.
             // if self.hir_ty.impls_trait(db, trait_, &[]) {
             //     continue;
             // }
-            let trait_ = match delegee {
-                Delegee::Bound(b) => b,
-                Delegee::Impls(i, _) => i,
-            };
-            if has_self_type(*trait_, ctx).is_some() {
-                continue;
-            }
             let signature = delegee.signature(db, field.edition);
+
             let Some(delegate) =
                 generate_impl(ctx, self, &field.ty, &field.name, delegee, field.edition)
             else {
                 continue;
             };
+
             acc.add_group(
                 &GroupLabel(format!("Generate delegate trait impls for field `{}`", field.name)),
                 AssistId(
@@ -255,9 +259,9 @@ fn generate_impl(
 
     match delegee {
         Delegee::Bound(delegee) => {
-            // Goto link : https://doc.rust-lang.org/reference/paths.html#qualified-paths
             let bound_def = ctx.sema.source(delegee.to_owned())?.value;
             let bound_params = bound_def.generic_param_list();
+
             let delegate = make::impl_trait(
                 None,
                 delegee.is_unsafe(db),
@@ -273,8 +277,11 @@ fn generate_impl(
                 None,
             )
             .clone_for_update();
+
+            // Goto link : https://doc.rust-lang.org/reference/paths.html#qualified-paths
             let qualified_path_type =
                 make::path_from_text(&format!("<{} as {}>", field_ty, delegate.trait_()?));
+
             let delegate_assoc_items = delegate.get_or_create_assoc_item_list();
             if let Some(ai) = bound_def.assoc_item_list() {
                 ai.assoc_items()
@@ -290,31 +297,21 @@ fn generate_impl(
                         }
                     });
             };
+
             let target_scope = ctx.sema.scope(strukt.strukt.syntax())?;
             let source_scope = ctx.sema.scope(bound_def.syntax())?;
             let transform = PathTransform::generic_transformation(&target_scope, &source_scope);
             ast::Impl::cast(transform.apply(delegate.syntax()))
         }
         Delegee::Impls(trait_, old_impl) => {
+            let old_impl = ctx.sema.source(old_impl.to_owned())?.value;
+            let old_impl_params = old_impl.generic_param_list();
+
             // 1) Resolve conflicts between generic parameters in old_impl and
             // those in strukt.
             //
             // These generics parameters will also be used in `field_ty` and
             // `where_clauses`, so we should substitute arguments in them as well.
-            // 2) Handle instantiated generics in `field_ty`.
-            // 2.1) Some generics used in `self_ty` may be instantiated, so they
-            // are no longer generics, we should remove and instantiate those
-            // generics in advance.
-            // `old_trait_args` contains names of generic args for trait in `old_impl`
-            // 2.2) Generate generic args applied on impl.
-            // 2.3) Instantiate generics with `transform_impl`, this step also
-            // remove unused params.
-            // 3) Generate delegate trait impl
-            // Goto link : https://doc.rust-lang.org/reference/paths.html#qualified-paths
-            // 4) Transform associated items in delegte trait impl
-            // 5) Remove useless where clauses
-            let old_impl = ctx.sema.source(old_impl.to_owned())?.value;
-            let old_impl_params = old_impl.generic_param_list();
             let strukt_params = resolve_name_conflicts(strukt_params, &old_impl_params);
             let (field_ty, ty_where_clause) = match &strukt_params {
                 Some(strukt_params) => {
@@ -327,16 +324,25 @@ fn generate_impl(
                 }
                 None => (field_ty.clone_for_update(), None),
             };
+
+            // 2) Handle instantiated generics in `field_ty`.
+            // 2.1) Some generics used in `self_ty` may be instantiated, so they
+            // are no longer generics, we should remove and instantiate those
+            // generics in advance.
+            // `old_trait_args` contains names of generic args for trait in `old_impl`
             let old_impl_trait_args = old_impl
                 .trait_()?
                 .generic_arg_list()
                 .map(|l| l.generic_args().map(|arg| arg.to_string()))
                 .map_or_else(FxHashSet::default, |it| it.collect());
+
             let trait_gen_params = remove_instantiated_params(
                 &old_impl.self_ty()?,
                 old_impl_params.clone(),
                 &old_impl_trait_args,
             );
+
+            // 2.2) Generate generic args applied on impl.
             let transform_args = generate_args_for_impl(
                 old_impl_params,
                 &old_impl.self_ty()?,
@@ -344,6 +350,9 @@ fn generate_impl(
                 &trait_gen_params,
                 &old_impl_trait_args,
             );
+
+            // 2.3) Instantiate generics with `transform_impl`, this step also
+            // remove unused params.
             let trait_gen_args = old_impl.trait_()?.generic_arg_list().and_then(|trait_args| {
                 let trait_args = &mut trait_args.clone_for_update();
                 if let Some(new_args) = transform_impl(
@@ -359,10 +368,12 @@ fn generate_impl(
                     None
                 }
             });
+
             let type_gen_args = strukt_params.clone().map(|params| params.to_generic_args());
             let path_type =
                 make::ty(&trait_.name(db).display_no_db(edition).to_smolstr()).clone_for_update();
             let path_type = transform_impl(ctx, ast_strukt, &old_impl, &transform_args, path_type)?;
+            // 3) Generate delegate trait impl
             let delegate = make::impl_trait(
                 None,
                 trait_.is_unsafe(db),
@@ -378,8 +389,11 @@ fn generate_impl(
                 None,
             )
             .clone_for_update();
+            // Goto link : https://doc.rust-lang.org/reference/paths.html#qualified-paths
             let qualified_path_type =
                 make::path_from_text(&format!("<{} as {}>", field_ty, delegate.trait_()?));
+
+            // 4) Transform associated items in delegte trait impl
             let delegate_assoc_items = delegate.get_or_create_assoc_item_list();
             for item in old_impl
                 .get_or_create_assoc_item_list()
@@ -392,6 +406,8 @@ fn generate_impl(
                 let assoc = process_assoc_item(item, qualified_path_type.clone(), field_name)?;
                 delegate_assoc_items.add_item(assoc);
             }
+
+            // 5) Remove useless where clauses
             if let Some(wc) = delegate.where_clause() {
                 remove_useless_where_clauses(&delegate.trait_()?, &delegate.self_ty()?, wc);
             }
@@ -463,7 +479,6 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
         .collect::<FxHashSet<_>>();
 
     // Keep where-clauses that have generics after substitution, and remove the
-
     // rest.
     let has_live_generics = |pred: &WherePred| {
         pred.syntax()
@@ -476,7 +491,6 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
 
     if wc.predicates().count() == 0 {
         // Remove useless whitespaces
-        // Remove where clause
         [syntax::Direction::Prev, syntax::Direction::Next]
             .into_iter()
             .flat_map(|dir| {
@@ -486,10 +500,12 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
                     .take_while(|node_or_tok| node_or_tok.kind() == SyntaxKind::WHITESPACE)
             })
             .for_each(ted::remove);
+
         ted::insert(
             ted::Position::after(wc.syntax()),
             NodeOrToken::Token(make::token(SyntaxKind::WHITESPACE)),
         );
+        // Remove where clause
         ted::remove(wc.syntax());
     }
 }
@@ -575,6 +591,7 @@ fn resolve_name_conflicts(
     match (strukt_params, old_impl_params) {
         (Some(old_strukt_params), Some(old_impl_params)) => {
             let params = make::generic_param_list(std::iter::empty()).clone_for_update();
+
             for old_strukt_param in old_strukt_params.generic_params() {
                 // Get old name from `strukt`
                 let name = SmolStr::from(match &old_strukt_param {
@@ -648,15 +665,10 @@ fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
 
     // We want rhs of the const assignment to be a qualified path
-
     // The general case for const assignment can be found [here](`https://doc.rust-lang.org/reference/items/constant-items.html`)
-
     // The qualified will have the following generic syntax :
-
     // <Base as Trait<GenArgs>>::ConstName;
-
     // FIXME : We can't rely on `make::path_qualified` for now but it would be nice to replace the following with it.
-
     // make::path_qualified(qual_path_ty, path_expr_segment.as_single_segment().unwrap());
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let inner = make::item_const(

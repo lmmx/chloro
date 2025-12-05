@@ -57,21 +57,13 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
         Context { generics, variances: vec![Variance::Bivariant; count], db }.solve();
 
     // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
-
     // since bivariance is prohibited in Rust, but rustc definitely does not fallback bivariance.
-
     // So why do we do this? Because, with the new solver, the effects of bivariance are catastrophic:
-
     // it leads to not relating types properly, and to very, very hard to debug bugs (speaking from experience).
-
     // Furthermore, our variance infra is known to not handle cycles properly. Therefore, at least until we fix
-
     // cycles, and perhaps forever at least for out tests, not allowing bivariance makes sense.
-
     // Why specifically invariance? I don't have a strong reason, mainly that invariance is a stronger relationship
-
     // (therefore, less room for mistakes) and that IMO incorrect covariance can be more problematic that incorrect
-
     // bivariance, at least while we don't handle lifetimes anyway.
     for variance in &mut variances {
         if *variance == Variance::Bivariant {
@@ -162,7 +154,6 @@ impl<'db> Context<'db> {
         let mut variances = self.variances;
 
         // Const parameters are always invariant.
-
         // Make all const parameters invariant.
         for (idx, param) in self.generics.iter_id().enumerate() {
             if let GenericParamId::ConstParamId(_) = param {
@@ -232,6 +223,7 @@ impl<'db> Context<'db> {
             TyKind::Dynamic(bounds, region) => {
                 // The type `dyn Trait<T> +'a` is covariant w/r/t `'a`:
                 self.add_constraints_from_region(region, variance);
+
                 for bound in bounds {
                     match bound.skip_binder() {
                         ExistentialPredicate::Trait(trait_ref) => {

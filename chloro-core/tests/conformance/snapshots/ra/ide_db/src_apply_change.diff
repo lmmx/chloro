@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10358 bytes
-Chloro size:   10379 bytes
+Chloro size:   10363 bytes
 Rustfmt size:  10358 bytes
 
 ✗ Outputs DIFFER
@@ -34,57 +34,10 @@ Rustfmt size:  10358 bytes
      // | VS Code | **rust-analyzer: Memory Usage (Clears Database)**
  
      // ![Memory Usage](https://user-images.githubusercontent.com/48062697/113065592-08559f00-91b1-11eb-8c96-64b88068ec02.gif)
-         let mut acc: Vec<(String, Bytes, usize)> = vec![];
- 
-         // fn collect_query_count<'q, Q>(table: &QueryTable<'q, Q>) -> usize
--        // where
--        //     QueryTable<'q, Q>: DebugQueryTable,
--        //     Q: Query,
--        //     <Q as Query>::Storage: 'q,
--        // {
--        //     struct EntryCounter(usize);
--        //     impl<K, V> FromIterator<TableEntry<K, V>> for EntryCounter {
--        //         fn from_iter<T>(iter: T) -> EntryCounter
--        //         where
--        //             T: IntoIterator<Item = TableEntry<K, V>>,
--        //         {
--        //             EntryCounter(iter.into_iter().count())
--        //         }
--        //     }
--        //     table.entries::<EntryCounter>().0
--        // }
- 
-+        // where
-+
-+        //     QueryTable<'q, Q>: DebugQueryTable,
-+
-+        //     Q: Query,
-+
-+        //     <Q as Query>::Storage: 'q,
-+
-+        // {
-+
-+        //     struct EntryCounter(usize);
-+
-+        //     impl<K, V> FromIterator<TableEntry<K, V>> for EntryCounter {
-+
-+        //         fn from_iter<T>(iter: T) -> EntryCounter
-+
-+        //         where
-+
-+        //             T: IntoIterator<Item = TableEntry<K, V>>,
-+
-+        //         {
-+
-+        //             EntryCounter(iter.into_iter().count())
-+
-+        //         }
-+
-+        //     }
-+
-+        //     table.entries::<EntryCounter>().0
-+
-+        // }
+         //     }
+         //     table.entries::<EntryCounter>().0
+         // }
+-
          macro_rules! purge_each_query {
              ($($q:path)*) => {$(
                  let before = memory_usage().allocated;

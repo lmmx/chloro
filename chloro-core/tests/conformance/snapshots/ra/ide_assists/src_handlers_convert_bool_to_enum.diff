@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40489 bytes
-Chloro size:   40412 bytes
+Chloro size:   40418 bytes
 Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
@@ -66,10 +66,8 @@ Rustfmt size:  41249 bytes
              for (scope, path) in delayed_mutations {
                  insert_use(&scope, path, &ctx.config.insert_use);
              }
-             cov_mark::hit!(not_applicable_non_bool_local);
-             return None;
          }
--
+ 
          let local_definition = Definition::Local(def);
 -        match ident_pat
 -            .syntax()
@@ -80,27 +78,6 @@ Rustfmt size:  41249 bytes
              Either::Left(param) => Some(BoolNodeData {
                  target_node: param.syntax().clone(),
                  name,
-             cov_mark::hit!(not_applicable_non_bool_const);
-             return None;
-         }
--
-         Some(BoolNodeData {
-             target_node: const_.syntax().clone(),
-             name,
-             cov_mark::hit!(not_applicable_non_bool_static);
-             return None;
-         }
--
-         Some(BoolNodeData {
-             target_node: static_.syntax().clone(),
-             name,
-         if field.name()? != name {
-             return None;
-         }
--
-         let adt = field.syntax().ancestors().find_map(ast::Adt::cast)?;
-         let def = ctx.sema.to_def(&field)?;
-         if !def.ty(ctx.db()).is_bool() {
          make::expr_if(
              expr,
              make::tail_only_block_expr(true_expr),
@@ -114,12 +91,8 @@ Rustfmt size:  41249 bytes
      }
  }
  
- ) {
-     for (file_id, references) in usages {
-         edit.edit_file(file_id.file_id(ctx.db()));
--
          let refs_with_imports = augment_references_with_imports(ctx, references, target_module);
--
+ 
          refs_with_imports.into_iter().rev().for_each(
 -            |FileReferenceWithImport {
 -                 range,

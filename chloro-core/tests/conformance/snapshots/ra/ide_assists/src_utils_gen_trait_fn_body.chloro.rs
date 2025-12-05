@@ -249,9 +249,11 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
                     }
                 }
             }
+
             let match_target = make::expr_path(make::ext::ident_path("self"));
             let list = make::match_arm_list(arms).indent(ast::edit::IndentLevel(1));
             let match_expr = make::expr_match(match_target, list);
+
             let body = make::block_expr(None, Some(match_expr.into()));
             let body = body.indent(ast::edit::IndentLevel(1));
             Some(body)
@@ -261,6 +263,7 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
             let name = format!("\"{annotated_name}\"");
             let args = make::arg_list(Some(make::expr_literal(&name).into()));
             let target = make::expr_path(make::ext::ident_path("f"));
+
             let expr = match strukt.field_list() {
                 // => f.debug_struct("Name").finish()
                 None => make::expr_method_call(target, make::name_ref("debug_struct"), args).into(),
@@ -296,6 +299,7 @@ fn gen_debug_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
                     expr
                 }
             };
+
             let method = make::name_ref("finish");
             let expr = make::expr_method_call(expr, method, make::arg_list(None)).into();
             let body = make::block_expr(None, Some(expr)).indent(ast::edit::IndentLevel(1));
@@ -432,7 +436,6 @@ fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast
     }
 
     // Check that self type and rhs type match. We don't know how to implement the method
-
     // automatically otherwise.
     if let Some(trait_ref) = trait_ref {
         let self_ty = trait_ref.self_ty();
@@ -622,7 +625,6 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
     }
 
     // Check that self type and rhs type match. We don't know how to implement the method
-
     // automatically otherwise.
     if let Some(trait_ref) = trait_ref {
         let self_ty = trait_ref.self_ty();

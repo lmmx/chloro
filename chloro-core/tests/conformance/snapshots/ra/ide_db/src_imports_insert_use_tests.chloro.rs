@@ -434,9 +434,7 @@ fn insert_empty_file() {
     cov_mark::check_count!(insert_empty_file, 2);
 
     // Default configuration
-
     // empty files will get two trailing newlines
-
     // this is due to the test case insert_no_imports above
     check_crate(
         "foo::bar",

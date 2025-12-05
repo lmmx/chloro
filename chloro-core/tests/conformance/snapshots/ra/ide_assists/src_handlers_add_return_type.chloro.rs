@@ -82,6 +82,7 @@ fn ret_ty_to_action(
                 }
                 _ => (insert_after_pos, true),
             };
+
             Some(InsertOrReplace::Insert(insert_pos, needs_whitespace))
         }
     }

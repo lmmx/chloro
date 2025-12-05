@@ -99,6 +99,7 @@ fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
             cov_mark::hit!(not_applicable_non_bool_local);
             return None;
         }
+
         let local_definition = Definition::Local(def);
         match ident_pat.syntax().parent().and_then(Either::<ast::Param, ast::LetStmt>::cast)? {
             Either::Left(param) => Some(BoolNodeData {
@@ -122,6 +123,7 @@ fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
             cov_mark::hit!(not_applicable_non_bool_const);
             return None;
         }
+
         Some(BoolNodeData {
             target_node: const_.syntax().clone(),
             name,
@@ -135,6 +137,7 @@ fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
             cov_mark::hit!(not_applicable_non_bool_static);
             return None;
         }
+
         Some(BoolNodeData {
             target_node: static_.syntax().clone(),
             name,
@@ -147,6 +150,7 @@ fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
         if field.name()? != name {
             return None;
         }
+
         let adt = field.syntax().ancestors().find_map(ast::Adt::cast)?;
         let def = ctx.sema.to_def(&field)?;
         if !def.ty(ctx.db()).is_bool() {
@@ -200,7 +204,9 @@ fn replace_usages(
 ) {
     for (file_id, references) in usages {
         edit.edit_file(file_id.file_id(ctx.db()));
+
         let refs_with_imports = augment_references_with_imports(ctx, references, target_module);
+
         refs_with_imports.into_iter().rev().for_each(
             |FileReferenceWithImport { range, name, import_data }| {
                 // replace the usages in patterns and expressions

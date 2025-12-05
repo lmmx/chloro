@@ -417,12 +417,12 @@ impl<'db> InferenceContext<'_, 'db> {
 
     fn mutate_path_pat(&mut self, path: &Path, id: PatId) {
         if let Some(place) = self.path_place(path, id.into()) {
-            // Remove the pattern span.
             self.add_capture(
                 place,
                 CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
             );
             self.current_capture_span_stack.pop();
+            // Remove the pattern span.
         }
     }
 
@@ -1148,6 +1148,7 @@ impl<'db> InferenceContext<'_, 'db> {
         for (closure, exprs) in deferred_closures.into_iter().rev() {
             self.current_captures = vec![];
             let kind = self.analyze_closure(closure);
+
             for (derefed_callee, callee_ty, params, expr) in exprs {
                 if let &Expr::Call { callee, .. } = &self.body[expr] {
                     let mut adjustments =

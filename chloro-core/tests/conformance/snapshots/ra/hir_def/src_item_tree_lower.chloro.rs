@@ -406,11 +406,13 @@ impl UseTreeLowering<'_> {
                     }
                 }
             };
+
             self.mapping.alloc(tree.clone());
             let list = use_tree_list
                 .use_trees()
                 .filter_map(|tree| self.lower_use_tree(tree, span_for_range))
                 .collect();
+
             Some(UseTree {
                 kind: UseTreeKind::Prefixed { prefix: prefix.map(Interned::new), list },
             })
@@ -426,6 +428,7 @@ impl UseTreeLowering<'_> {
             if alias.is_some() && is_glob {
                 return None;
             }
+
             match (path, alias, is_glob) {
                 (path, None, true) => {
                     if path.is_none() {

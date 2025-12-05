@@ -269,7 +269,6 @@ impl CompletionRelevance {
         } = self;
 
         // only applicable for completions within use items
-
         // lower rank for conflicting import names
         if is_name_already_imported {
             score -= 1;

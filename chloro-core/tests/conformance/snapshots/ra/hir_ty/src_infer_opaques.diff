@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5724 bytes
-Chloro size:   5721 bytes
+Chloro size:   5724 bytes
 Rustfmt size:  5762 bytes
 
 ✗ Outputs DIFFER
@@ -34,36 +34,6 @@ Rustfmt size:  5762 bytes
          else {
              unreachable!();
          };
- 
-         for def_id in defining_opaque_types_and_generators {
-+            // We do actually need to check this the second pass (we can't just
-+            // store this), because we can go from `UnconstrainedHiddenType` to
-+            // `HasDefiningUse` (because of fallback)
-             let def_id = match def_id {
-                 SolverDefId::InternedOpaqueTyId(it) => it,
-                 _ => continue,
-             };
--
--            // We do actually need to check this the second pass (we can't just
--            // store this), because we can go from `UnconstrainedHiddenType` to
--            // `HasDefiningUse` (because of fallback)
-             let mut usage_kind = UsageKind::None;
-             for &(opaque_type_key, hidden_type) in &opaque_types {
-                 if opaque_type_key.def_id != def_id.into() {
-                     break;
-                 }
-             }
--
-             if let UsageKind::HasDefiningUse(ty) = usage_kind {
-                 for &(opaque_type_key, hidden_type) in &opaque_types {
-                     if opaque_type_key.def_id != def_id.into() {
- 
-                 continue;
-             }
--
-             self.result.type_of_opaque.insert(def_id, self.types.error);
-         }
-     }
          let at = self.table.infer_ctxt.at(&cause, self.table.trait_env.env);
          let hidden_type = match at.deeply_normalize(hidden_type) {
              Ok(hidden_type) => hidden_type,

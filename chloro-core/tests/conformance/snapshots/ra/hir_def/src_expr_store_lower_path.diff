@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11991 bytes
-Chloro size:   11993 bytes
+Chloro size:   11990 bytes
 Rustfmt size:  11991 bytes
 
 ✗ Outputs DIFFER
@@ -20,17 +20,6 @@ Rustfmt size:  11991 bytes
  pub(super) fn lower_path(
      collector: &mut ExprCollector<'_>,
      mut path: ast::Path,
-     }
- 
-     // handle local_inner_macros :
-+
-     // Basically, even in rustc it is quite hacky:
-+
-     // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
-+
-     // We follow what it did anyway :)
-     if segments.len() == 1
-         && kind == PathKind::Plain
  pub fn hir_segment_to_ast_segment(path: &ast::Path, segment_idx: u32) -> Option<ast::PathSegment> {
      // Too tightly coupled to `lower_path()`, but unfortunately we cannot decouple them,
      // as keeping source maps for all paths segments will have a severe impact on memory usage.

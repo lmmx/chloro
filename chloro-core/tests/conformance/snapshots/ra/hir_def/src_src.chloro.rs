@@ -94,7 +94,6 @@ impl HasChildSource<LocalTypeOrConstParamId> for GenericDefId {
         let mut params = ArenaMap::default();
 
         // For traits and trait aliases the first type index is `Self`, we need to add it before
-
         // the other params.
         match *self {
             GenericDefId::TraitId(id) => {

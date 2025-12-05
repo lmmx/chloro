@@ -282,7 +282,6 @@ pub fn expand_speculative(
     };
 
     // Do the actual expansion, we need to directly expand the proc macro due to the attribute args
-
     // Otherwise the expand query will fetch the non speculative attribute args and pass those instead.
     let mut speculative_expansion = match loc.def.kind {
         MacroDefKind::ProcMacro(ast, expander, _) => {

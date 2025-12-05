@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11017 bytes
-Chloro size:   10996 bytes
+Chloro size:   10998 bytes
 Rustfmt size:  11350 bytes
 
 ✗ Outputs DIFFER
@@ -55,10 +55,7 @@ Rustfmt size:  11350 bytes
  
          if lifetimes.is_empty() && type_or_consts.is_empty() && where_predicates.is_empty() {
              static EMPTY: LazyLock<Arc<GenericParams>> = LazyLock::new(|| {
-             if !enabled {
-                 continue;
-             }
--
+ 
              match generic_param {
                  ast::GenericParam::TypeParam(type_param) => {
 -                    let name = type_param
@@ -78,10 +75,9 @@ Rustfmt size:  11350 bytes
                      let ty = ec.lower_type_ref_opt(
                          const_param.ty(),
                          &mut ExprCollector::impl_trait_error_allocator,
-             } else {
                  continue;
              };
--
+ 
 -            let lifetimes: Option<Box<_>> = pred
 -                .for_binder()
 -                .and_then(|it| it.generic_param_list())

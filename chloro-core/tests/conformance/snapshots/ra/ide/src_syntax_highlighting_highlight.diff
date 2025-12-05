@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34201 bytes
-Chloro size:   34251 bytes
+Chloro size:   34253 bytes
 Rustfmt size:  34201 bytes
 
 ✗ Outputs DIFFER
@@ -52,13 +52,6 @@ Rustfmt size:  34201 bytes
              HlOperator::Other.into()
          }
          (kind, _) => match kind {
-                         })
-                         .and_then(|it| AstPtr::try_from_raw(SyntaxNodePtr::new(&it)))
-                         .is_some_and(is_unsafe_node);
--
-                 if is_unsafe {
-                     return Highlight::from(HlPunct::Parenthesis) | HlMod::Unsafe;
-                 } else {
              T![;] => HlPunct::Semi,
              T![.] => HlPunct::Dot,
              _ => HlPunct::Other,
@@ -80,13 +73,6 @@ Rustfmt size:  34201 bytes
          }
          RECORD_EXPR_FIELD | RECORD_PAT_FIELD => HlTag::Symbol(SymbolKind::Field).into(),
          PATH_SEGMENT => {
-                 Some(it) => it,
-                 None => return default.into(),
-             };
--
-             match parent.kind() {
-                 CALL_EXPR => SymbolKind::Function.into(),
-                 _ => if name.text().chars().next().unwrap_or_default().is_uppercase() {
                      SymbolKind::Struct
                  } else {
                      SymbolKind::Const

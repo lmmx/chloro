@@ -105,11 +105,8 @@ impl<'db> InferCtxt<'db> {
         })?;
 
         // At this point, we need to replace any of the now-popped
-
         // type/region variables that appear in `value` with a fresh
-
         // variable of the appropriate kind. We can't do this during
-
         // the probe because they would just get popped then too. =)
         Ok(self.fudge_inference(snapshot_vars, value))
     }

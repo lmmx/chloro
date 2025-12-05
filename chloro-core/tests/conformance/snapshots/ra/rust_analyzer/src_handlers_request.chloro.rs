@@ -138,9 +138,9 @@ pub(crate) fn handle_memory_usage(_state: &mut GlobalState, _: ()) -> anyhow::Re
     }
     #[cfg(feature = "dhat")] {
         if let Some(dhat_output_file) = _state.config.dhat_output_file() {
-            // Need to drop the old profiler before creating a new one.
             let mut profiler = crate::DHAT_PROFILER.lock().unwrap();
             let old_profiler = profiler.take();
+            // Need to drop the old profiler before creating a new one.
             drop(old_profiler);
             *profiler = Some(dhat::Profiler::builder().file_name(&dhat_output_file).build());
             Ok(format!(
@@ -473,7 +473,6 @@ pub(crate) fn handle_on_type_formatting(
     let line_index = snap.file_line_index(position.file_id)?;
 
     // in `ide`, the `on_type` invariant is that
-
     // `text.char_at(position) == typed_char`.
     position.offset -= TextSize::of('.');
 
@@ -1350,15 +1349,10 @@ pub(crate) fn handle_rename(
         .map_err(to_proto::rename_error)?;
 
     // this is kind of a hack to prevent double edits from happening when moving files
-
     // When a module gets renamed by renaming the mod declaration this causes the file to move
-
     // which in turn will trigger a WillRenameFiles request to the server for which we reply with a
-
     // a second identical set of renames, the client will then apply both edits causing incorrect edits
-
     // with this we only emit source_file_edits in the WillRenameFiles response which will do the rename instead
-
     // See https://github.com/microsoft/vscode-languageserver-node/issues/752 for more info
     if !change.file_system_edits.is_empty() && snap.config.will_rename() {
         change.source_file_edits.clear();
@@ -2349,7 +2343,6 @@ fn run_rustfmt(
     let file = snap.analysis.file_text(file_id)?;
 
     // Determine the edition of the crate the file belongs to (if there's multiple, we pick the
-
     // highest edition).
     let Ok(editions) = snap
         .analysis
@@ -2366,9 +2359,7 @@ fn run_rustfmt(
     let source_root_id = snap.analysis.source_root_id(file_id).ok();
 
     // try to chdir to the file so we can respect `rustfmt.toml`
-
     // FIXME: use `rustfmt --config-path` once
-
     // https://github.com/rust-lang/rustfmt/issues/4660 gets fixed
     let current_dir = match text_document.uri.to_file_path() {
         Ok(mut path) => {

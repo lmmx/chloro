@@ -38,25 +38,15 @@ pub fn main_loop(config: Config, connection: Connection) -> anyhow::Result<()> {
     tracing::info!("initial config: {:#?}", config);
 
     // Windows scheduler implements priority boosts: if thread waits for an
-
     // event (like a condvar), and event fires, priority of the thread is
-
     // temporary bumped. This optimization backfires in our case: each time the
-
     // `main_loop` schedules a task to run on a threadpool, the worker threads
-
     // gets a higher priority, and (on a machine with fewer cores) displaces the
-
     // main loop! We work around this by marking the main loop as a
-
     // higher-priority thread.
-
     //
-
     // https://docs.microsoft.com/en-us/windows/win32/procthread/scheduling-priorities
-
     // https://docs.microsoft.com/en-us/windows/win32/procthread/priority-boosts
-
     // https://github.com/rust-lang/rust-analyzer/issues/2835
     #[cfg(windows)]
     unsafe {
@@ -604,14 +594,14 @@ impl GlobalState {
 
         let mut start = 0;
         for task_idx in 0..max_tasks {
-            // Diagnostics are triggered by the user typing
-            // so we run them on a latency sensitive thread.
             let extra = if task_idx < remainder { 1 } else { 0 };
             let end = start + chunk_length + extra;
             let slice = start..end;
             if slice.is_empty() {
                 break;
             }
+            // Diagnostics are triggered by the user typing
+            // so we run them on a latency sensitive thread.
             let snapshot = self.snapshot();
             self.task_pool.handle.spawn_with_sender(ThreadIntent::LatencySensitive, {
                 let subscriptions = subscriptions.clone();
@@ -680,7 +670,6 @@ impl GlobalState {
         tracing::trace!("updating tests for {:?}", subscriptions);
 
         // Updating tests are triggered by the user typing
-
         // so we run them on a latency sensitive thread.
         self.task_pool.handle.spawn(ThreadIntent::LatencySensitive, {
             let snapshot = self.snapshot();
@@ -716,6 +705,7 @@ impl GlobalState {
         let status = self.current_status();
         if self.last_reported_status != status {
             self.last_reported_status = status.clone();
+
             if self.config.server_status_notification() {
                 self.send_notification::<lsp_ext::ServerStatusNotification>(status);
             } else if let (
@@ -775,6 +765,7 @@ impl GlobalState {
                         (Progress::End, None)
                     }
                 };
+
                 self.report_progress("Fetching", state, msg, None, None);
             }
             Task::DiscoverLinkedProjects(arg) => {
@@ -785,14 +776,17 @@ impl GlobalState {
                     let title = &cfg.progress_label.clone();
                     let command = cfg.command.clone();
                     let discover = DiscoverCommand::new(self.discover_sender.clone(), command);
+
                     self.report_progress(title, Progress::Begin, None, None, None);
                     self.discover_workspace_queue
                         .request_op("Discovering workspace".to_owned(), ());
                     let _ = self.discover_workspace_queue.should_start_op();
+
                     let arg = match arg {
                         DiscoverProjectParam::Buildfile(it) => DiscoverArgument::Buildfile(it),
                         DiscoverProjectParam::Path(it) => DiscoverArgument::Path(it),
                     };
+
                     let handle = discover.spawn(
                         arg,
                         &std::env::current_dir()
@@ -821,6 +815,7 @@ impl GlobalState {
                         (Some(Progress::End), None)
                     }
                 };
+
                 if let Some(state) = state {
                     self.report_progress("Building compile-time-deps", state, msg, None, None);
                 }
@@ -836,6 +831,7 @@ impl GlobalState {
                         (Some(Progress::End), None)
                     }
                 };
+
                 if let Some(state) = state {
                     self.report_progress("Loading proc-macros", state, msg, None, None);
                 }
@@ -856,15 +852,16 @@ impl GlobalState {
                 self.debounce_workspace_fetch();
                 let vfs = &mut self.vfs.write().0;
                 for (path, contents) in files {
-                    // if the file is in mem docs, it's managed by the client via notifications
-                    // so only set it if its not in there
                     if matches!(path.name_and_extension(), Some(("minicore", Some("rs")))) {
                         // Not a lot of bad can happen from mistakenly identifying `minicore`, so proceed with that.
                         self.minicore.minicore_text = contents
                             .as_ref()
                             .and_then(|contents| String::from_utf8(contents.clone()).ok());
                     }
+
                     let path = VfsPath::from(path);
+                    // if the file is in mem docs, it's managed by the client via notifications
+                    // so only set it if its not in there
                     if !self.mem_docs.contains(&path)
                         && (is_changed || vfs.file_id(&path).is_none()) {
                         vfs.set_file_contents(path, contents);
@@ -874,6 +871,7 @@ impl GlobalState {
             vfs::loader::Message::Progress { n_total, n_done, dir, config_version } => {
                 let _p = span!(Level::INFO, "GlobalState::handle_vfs_msg/progress").entered();
                 stdx::always!(config_version <= self.vfs_config_version);
+
                 let (n_done, state) = match n_done {
                     LoadingProgress::Started => {
                         self.vfs_span =
@@ -886,8 +884,10 @@ impl GlobalState {
                         (n_total, Progress::End)
                     }
                 };
+
                 self.vfs_progress_config_version = config_version;
                 self.vfs_done = state == Progress::End;
+
                 let mut message = format!("{n_done}/{n_total}");
                 if let Some(dir) = dir {
                     message += &format!(
@@ -898,6 +898,7 @@ impl GlobalState {
                         }
                     );
                 }
+
                 self.report_progress(
                     "Roots Scanned",
                     state,
@@ -913,6 +914,7 @@ impl GlobalState {
         match task {
             QueuedTask::CheckIfIndexed(uri) => {
                 let snap = self.snapshot();
+
                 self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, move |sender| {
                     let _p = tracing::info_span!("GlobalState::check_if_indexed").entered();
                     tracing::debug!(?uri, "handling uri");
@@ -966,6 +968,7 @@ impl GlobalState {
                 self.discover_handle = None;
                 self.report_progress(&title, Progress::End, None, None, None);
                 self.discover_workspace_queue.op_completed(());
+
                 let mut config = Config::clone(&*self.config);
                 config.add_discovered_project_from_command(project, buildfile);
                 self.update_configuration(config);
@@ -986,14 +989,16 @@ impl GlobalState {
     fn handle_cargo_test_msg(&mut self, message: CargoTestMessage) {
         match message.output {
             CargoTestOutput::Test { name, state } => {
-                // The notification requires the namespace form (with underscores) of the target
                 let state = match state {
                     TestState::Started => lsp_ext::TestState::Started,
                     TestState::Ignored => lsp_ext::TestState::Skipped,
                     TestState::Ok => lsp_ext::TestState::Passed,
                     TestState::Failed { stdout } => lsp_ext::TestState::Failed { message: stdout },
                 };
+
+                // The notification requires the namespace form (with underscores) of the target
                 let test_id = format!("{}::{name}", message.target.target.replace('-', "_"));
+
                 self.send_notification::<lsp_ext::ChangeTestState>(
                     lsp_ext::ChangeTestStateParams { test_id, state },
                 );
@@ -1065,8 +1070,6 @@ impl GlobalState {
                 kind: ClearDiagnosticsKind::OlderThan(generation, ClearScope::Package(package_id)),
             } => self.diagnostics.clear_check_older_than_for_package(id, package_id, generation),
             FlycheckMessage::Progress { id, progress } => {
-                // When we're running multiple flychecks, we have to include a disambiguator in
-                // the title, or the editor complains. Note that this is a user-facing string.
                 let (state, message) = match progress {
                     flycheck::Progress::DidStart => (Progress::Begin, None),
                     flycheck::Progress::DidCheckCrate(target) => (Progress::Report, Some(target)),
@@ -1085,6 +1088,9 @@ impl GlobalState {
                         (Progress::End, None)
                     }
                 };
+
+                // When we're running multiple flychecks, we have to include a disambiguator in
+                // the title, or the editor complains. Note that this is a user-facing string.
                 let title = if self.flycheck.len() == 1 {
                     format!("{}", self.config.flycheck(None))
                 } else {

@@ -25,15 +25,6 @@ Rustfmt size:  17010 bytes
      let param_name = param_name.trim_matches('_');
      if param_name.is_empty() {
          return true;
-         ast::Expr::MacroExpr(macro_expr) => macro_expr.macro_call()?.path().map(Either::Right),
-         ast::Expr::RecordExpr(record_expr) => record_expr.path().map(Either::Right),
-         ast::Expr::PathExpr(path_expr) => {
--            let path = path_expr.path()?;
-             // single segment paths are likely locals
-+            let path = path_expr.path()?;
-             Some(match path.as_single_name_ref() {
-                 None => Either::Right(path),
-                 Some(name_ref) => Either::Left(vec![name_ref]),
              }
          }
          _ => None,

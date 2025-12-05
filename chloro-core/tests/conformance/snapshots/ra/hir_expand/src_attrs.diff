@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16759 bytes
+Chloro size:   16760 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -188,13 +188,6 @@ Rustfmt size:  17571 bytes
          if !is_cfg_attr {
              return smallvec![self];
          }
-             smallvec![]
-         } else {
-             cov_mark::hit!(cfg_attr_active);
--
-             attrs.collect::<SmallVec<[_; 1]>>()
-         }
-     }
      pub fn string_value_unescape(&self) -> Option<Cow<'_, str>> {
          match self.input.as_deref()? {
              AttrInput::Literal(tt::Literal {

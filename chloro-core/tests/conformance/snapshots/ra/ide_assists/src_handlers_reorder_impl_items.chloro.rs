@@ -52,7 +52,6 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     };
 
     // restrict the range
-
     // if cursor is in assoc_items, abort
     let assoc_range = items.syntax().text_range();
     let cursor_position = ctx.offset();

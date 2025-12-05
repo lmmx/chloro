@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98337 bytes
+Chloro size:   98334 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -36,20 +36,13 @@ Rustfmt size:  98473 bytes
  }
  
  pub(crate) fn render_tuple_field(
+     // FIXME: Temporary workaround for handling aliased import.
+     // This should be removed after we have proper support for importing alias.
      // <https://github.com/rust-lang/rust-analyzer/issues/14079>
- 
+-
      // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
-+
      // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
      if import_edit.item_to_import == import_edit.original_item {
-         import_edit.import_path.segments().last().cloned()
-     let expected_type = ctx.expected_type.as_ref()?;
- 
-     // We don't ever consider unit type to be an exact type match, since
-+
-     // nearly always this is not meaningful to the user.
-     if expected_type.is_unit() {
-         return None;
      if let Some(original_path) = &path_ctx.original_path {
          // At least one char was typed by the user already, in that case look for the original path
          if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())

@@ -339,6 +339,7 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
                 res = ImportGranularityGuess::CrateOrModule;
             }
         }
+
         let Some((curr, curr_vis, curr_attrs)) = use_stmts.next() else { break res };
         if is_tree_one_style(&curr) {
             if res != ImportGranularityGuess::One

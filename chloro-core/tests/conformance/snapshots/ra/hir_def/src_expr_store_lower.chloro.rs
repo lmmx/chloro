@@ -994,6 +994,7 @@ impl ExprCollector<'_> {
         Some(match expr {
             ast::Expr::IfExpr(e) => {
                 let then_branch = self.collect_block_opt(e.then_branch());
+
                 let else_branch = e.else_branch().map(|b| match b {
                     ast::ElseBranch::Block(it) => self.collect_block(it),
                     ast::ElseBranch::IfExpr(elif) => {
@@ -1001,7 +1002,9 @@ impl ExprCollector<'_> {
                         self.collect_expr(expr)
                     }
                 });
+
                 let condition = self.collect_expr_opt(e.condition());
+
                 self.alloc_expr(Expr::If { condition, then_branch, else_branch }, syntax_ptr)
             }
             ast::Expr::LetExpr(e) => {
@@ -1176,8 +1179,8 @@ impl ExprCollector<'_> {
                 self.alloc_expr(Expr::Break { expr, label }, syntax_ptr)
             }
             ast::Expr::ParenExpr(e) => {
-                // make the paren expr point to the inner expression as well for IDE resolution
                 let inner = self.collect_expr_opt(e.expr());
+                // make the paren expr point to the inner expression as well for IDE resolution
                 let src = self.expander.in_file(syntax_ptr);
                 self.store.expr_map.insert(src, inner.into());
                 inner
@@ -1229,6 +1232,7 @@ impl ExprCollector<'_> {
                 } else {
                     Expr::RecordLit { path, fields: Box::default(), spread: None }
                 };
+
                 self.alloc_expr(record_lit, syntax_ptr)
             }
             ast::Expr::FieldExpr(e) => {
@@ -1349,16 +1353,18 @@ impl ExprCollector<'_> {
                 }
             }
             ast::Expr::TupleExpr(e) => {
+                let mut exprs: Vec<_> = e.fields().map(|expr| self.collect_expr(expr)).collect();
                 // if there is a leading comma, the user is most likely to type out a leading expression
                 // so we insert a missing expression at the beginning for IDE features
-                let mut exprs: Vec<_> = e.fields().map(|expr| self.collect_expr(expr)).collect();
                 if comma_follows_token(e.l_paren_token()) {
                     exprs.insert(0, self.missing_expr());
                 }
+
                 self.alloc_expr(Expr::Tuple { exprs: exprs.into_boxed_slice() }, syntax_ptr)
             }
             ast::Expr::ArrayExpr(e) => {
                 let kind = e.kind();
+
                 match kind {
                     ArrayExprKind::ElementList(e) => {
                         let elements = e.map(|expr| self.collect_expr(expr)).collect();
@@ -1718,29 +1724,17 @@ impl ExprCollector<'_> {
         let body = self.collect_labelled_block_opt(label, e.loop_body());
 
         // Labels can also be used in the condition expression, like this:
-
         // ```
-
         // fn main() {
-
         //     let mut optional = Some(0);
-
         //     'my_label: while let Some(a) = match optional {
-
         //         None => break 'my_label,
-
         //         Some(val) => Some(val),
-
         //     } {
-
         //         println!("{}", a);
-
         //         optional = None;
-
         //     }
-
         // }
-
         // ```
         let condition = match label {
             Some((label_hygiene, label)) => self.with_labeled_rib(label, label_hygiene, |this| {
@@ -1980,6 +1974,7 @@ impl ExprCollector<'_> {
                 return collector(self, None);
             }
         };
+
         // No need to push macro and parsing errors as they'll be recreated from `macro_calls()`.
         match res.value {
             Some((mark, expansion)) => {
@@ -1988,6 +1983,7 @@ impl ExprCollector<'_> {
                 if let Some(macro_file) = self.expander.current_file_id().macro_file() {
                     self.store.expansions.insert(macro_call_ptr, macro_file);
                 }
+
                 let id = collector(self, expansion.map(|it| it.tree()));
                 self.expander.exit(mark);
                 id
@@ -2050,13 +2046,13 @@ impl ExprCollector<'_> {
                 statements.push(Statement::Let { pat, type_ref, initializer, else_branch });
             }
             ast::Stmt::ExprStmt(stmt) => {
-                // Note that macro could be expanded to multiple statements
                 let expr = stmt.expr();
                 match &expr {
                     Some(expr) if !self.check_cfg(expr) => return,
                     _ => (),
                 }
                 let has_semi = stmt.semicolon_token().is_some();
+                // Note that macro could be expanded to multiple statements
                 if let Some(ast::Expr::MacroExpr(mac)) = expr {
                     if let Some(expr) = self.collect_macro_as_stmt(statements, mac) {
                         statements.push(Statement::Expr { expr, has_semi })
@@ -2740,7 +2736,6 @@ impl ExprCollector<'_> {
         };
 
         // Create a list of all _unique_ (argument, format trait) combinations.
-
         // E.g. "{0} {0:x} {0} {1}" -> [(0, Display), (0, LowerHex), (1, Display)]
         let mut argmap = FxIndexSet::default();
         for piece in fmt.template.iter() {
@@ -2800,7 +2795,6 @@ impl ExprCollector<'_> {
         };
 
         // Assume that rustc version >= 1.89.0 iff lang item `format_arguments` exists
-
         // but `format_unsafe_arg` does not
         let fmt_args =
             || crate::lang_item::lang_item(self.db, self.module.krate(), LangItem::FormatArguments);
@@ -2878,17 +2872,11 @@ impl ExprCollector<'_> {
         };
 
         // Generate:
-
         //     <core::fmt::Arguments>::new_v1_formatted(
-
         //         lit_pieces,
-
         //         args,
-
         //         format_options,
-
         //         unsafe { ::core::fmt::UnsafeArg::new() }
-
         //     )
         let new_v1_formatted = LangItem::FormatArguments.ty_rel_path(
             self.db,
@@ -3061,7 +3049,6 @@ impl ExprCollector<'_> {
         };
 
         // Generate:
-
         //     &args
         let args = self.alloc_expr_desugared(Expr::Ref {
             expr: args,
@@ -3161,14 +3148,13 @@ impl ExprCollector<'_> {
 
         if self.module.krate().workspace_data(self.db).is_atleast_187() {
             // These need to match the constants in library/core/src/fmt/rt.rs.
-            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
-            // Highest bit always set.
             let align = match alignment {
                 Some(FormatAlignment::Left) => 0,
                 Some(FormatAlignment::Right) => 1,
                 Some(FormatAlignment::Center) => 2,
                 None => 3,
             };
+            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
             let flags = fill.unwrap_or(' ') as u32
                 | ((sign == Some(FormatSign::Plus)) as u32) << 21
                 | ((sign == Some(FormatSign::Minus)) as u32) << 22
@@ -3180,10 +3166,12 @@ impl ExprCollector<'_> {
                 | (precision.is_some() as u32) << 28
                 | align << 29
                 | 1 << 31;
+            // Highest bit always set.
             let flags = self.alloc_expr_desugared(Expr::Literal(Literal::Uint(
                 flags as u128,
                 Some(BuiltinUint::U32),
             )));
+
             let position =
                 RecordLitField { name: Name::new_symbol_root(sym::position), expr: position };
             let flags = RecordLitField { name: Name::new_symbol_root(sym::flags), expr: flags };
@@ -3199,7 +3187,6 @@ impl ExprCollector<'_> {
                 spread: None,
             })
         } else {
-            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
             let format_placeholder_new = {
                 let format_placeholder_new = LangItem::FormatPlaceholder.ty_rel_path(
                     self.db,
@@ -3211,6 +3198,7 @@ impl ExprCollector<'_> {
                     None => self.missing_expr(),
                 }
             };
+            // This needs to match `Flag` in library/core/src/fmt/rt.rs.
             let flags: u32 = ((sign == Some(FormatSign::Plus)) as u32)
                 | (((sign == Some(FormatSign::Minus)) as u32) << 1)
                 | ((alternate as u32) << 2)
@@ -3292,6 +3280,7 @@ impl ExprCollector<'_> {
             Some(FormatCount::Argument(arg)) => {
                 if let Ok(arg_index) = arg.index {
                     let (i, _) = argmap.insert_full((arg_index, ArgumentType::Usize));
+
                     let args = self.alloc_expr_desugared(Expr::Literal(Literal::Uint(
                         i as u128,
                         Some(BuiltinUint::Usize),

@@ -85,7 +85,6 @@ pub(crate) fn complete_postfix(
     postfix_snippet("deref", "*expr", &format!("*{receiver_text}")).add_to(acc, ctx.db);
 
     // The rest of the postfix completions create an expression that moves an argument,
-
     // so it's better to consider references now to avoid breaking the compilation
     let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
     let mut receiver_text =
@@ -318,7 +317,6 @@ fn get_receiver_text(
     let mut text = file_text.text(sema.db)[range.range].to_owned();
 
     // The receiver texts should be interpreted as-is, as they are expected to be
-
     // normal Rust expressions.
     escape_snippet_bits(&mut text);
     text
@@ -879,13 +877,9 @@ fn main() { ControlFlow::Break(42) }
         );
 
         // The receiver texts should be escaped, see comments in `get_receiver_text()`
-
         // for detail.
-
         //
-
         // Note that the last argument is what *lsp clients would see* rather than
-
         // what users would see. Unescaping happens thereafter.
         check_edit_with_config(
             config.clone(),

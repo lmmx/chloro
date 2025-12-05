@@ -218,7 +218,6 @@ fn map_rust_child_diagnostic(
     }
 
     // rustc renders suggestion diagnostics by appending the suggested replacement, so do the same
-
     // here, otherwise the diagnostic text is missing useful information.
     let mut message = rd.message.clone();
     if !suggested_replacements.is_empty() {

@@ -314,9 +314,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         assert!(!UndoLogs::<UndoLog<'db>>::in_snapshot(&self.undo_log));
 
         // If you add a new field to `RegionConstraintCollector`, you
-
         // should think carefully about whether it needs to be cleared
-
         // or updated in some way.
         let RegionConstraintStorage {
             var_infos: _,
@@ -328,11 +326,8 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         } = self.storage;
 
         // Clear the tables of (lubs, glbs), so that we will create
-
         // fresh regions if we do a LUB operation. As it happens,
-
         // LUB/GLB are not performed by the MIR type-checker, which is
-
         // the one that uses this method, but it's good to be correct.
         lubs.clear();
         glbs.clear();
@@ -340,11 +335,8 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         let data = mem::take(data);
 
         // Clear all unifications and recreate the variables a "now
-
         // un-unified" state. Note that when we unify `a` and `b`, we
-
         // also insert `a <= b` and a `b <= a` edges, so the
-
         // `RegionConstraintData` contains the relationship here.
         if *any_unifications {
             *any_unifications = false;
@@ -397,6 +389,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
             // equating regions.
             self.make_subregion(a, b);
             self.make_subregion(b, a);
+
             match (a.kind(), b.kind()) {
                 (RegionKind::ReVar(a), RegionKind::ReVar(b)) => {
                     debug!("make_eqregion: unifying {:?} with {:?}", a, b);
@@ -463,11 +456,11 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);
         #[expect(clippy::if_same_then_else)] if a.is_static() || b.is_static() {
+            a
             // nothing lives longer than static
-            a
         } else if a == b {
-            // LUB(a,a) = a
             a
+            // LUB(a,a) = a
         } else {
             self.combine_vars(db, Lub, a, b)
         }
@@ -482,14 +475,14 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: glb_regions({:?}, {:?})", a, b);
         #[expect(clippy::if_same_then_else)] if a.is_static() {
-            // static lives longer than everything else
             b
-        } else if b.is_static() {
             // static lives longer than everything else
+        } else if b.is_static() {
             a
+            // static lives longer than everything else
         } else if a == b {
-            // GLB(a,a) = a
             a
+            // GLB(a,a) = a
         } else {
             self.combine_vars(db, Glb, a, b)
         }

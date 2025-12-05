@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32445 bytes
+Chloro size:   32448 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -63,20 +63,6 @@ Rustfmt size:  32996 bytes
          expected_macro_subns: Option<MacroSubNs>,
      ) -> ResolvePathResult {
          let mut result = self.resolve_path_fp_with_macro_single(
-                     return result;
-                 }
-             }
--
-             let new = current_map.resolve_path_fp_with_macro_single(
-                 local_def_map,
-                 db,
-                 shadow,
-                 expected_macro_subns,
-             );
--
-             merge(new);
-         }
-     }
                  // FIXME: If the next segment doesn't resolve in the module and
                  // BuiltinShadowMode wasn't Module, then we need to try
                  // resolving it as a builtin.
@@ -94,8 +80,8 @@ Rustfmt size:  32996 bytes
              ))
          } else {
 -            Either::Right(ReachedFixedPoint::No) // extern crate declarations can add to the extern prelude
-+            // extern crate declarations can add to the extern prelude
 +            Either::Right(ReachedFixedPoint::No)
++            // extern crate declarations can add to the extern prelude
          }
      }
  
@@ -152,10 +138,3 @@ Rustfmt size:  32996 bytes
      }
  
      fn resolve_name_in_crate_root_or_extern_prelude(
-     let mut def_map = def_map;
-     loop {
-         let BlockInfo { parent, .. } = def_map.block.expect("block module without parent module");
--
-         def_map = parent.def_map(db, def_map.krate);
-         local_id = parent.local_id;
-         if !parent.is_block_module() {

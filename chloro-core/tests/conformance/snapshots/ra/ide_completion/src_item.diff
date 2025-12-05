@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27860 bytes
-Chloro size:   27789 bytes
+Chloro size:   27788 bytes
 Rustfmt size:  27860 bytes
 
 ✗ Outputs DIFFER
@@ -74,13 +74,6 @@ Rustfmt size:  27860 bytes
  #[derive(Debug, Clone, Copy, Eq, PartialEq)]
  pub struct CompletionRelevanceTraitInfo {
      /// The trait this item is from is a `#[doc(notable_trait)]`
-         } = self;
- 
-         // only applicable for completions within use items
-+
-         // lower rank for conflicting import names
-         if is_name_already_imported {
-             score -= 1;
              import_to_add,
          }
      }

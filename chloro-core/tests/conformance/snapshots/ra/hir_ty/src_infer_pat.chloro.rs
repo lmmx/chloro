@@ -490,7 +490,6 @@ impl<'db> InferenceContext<'_, 'db> {
         let expected = self.table.structurally_resolve_type(expected);
 
         // If `expected` is an infer ty, we try to equate it to an array if the given pattern
-
         // allows it. See issue #16609
         if self.pat_is_irrefutable(decl)
             && expected.is_ty_var()

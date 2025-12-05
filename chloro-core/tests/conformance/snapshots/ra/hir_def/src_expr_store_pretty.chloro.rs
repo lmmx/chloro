@@ -657,6 +657,7 @@ impl Printer<'_> {
                     Some(path) => self.print_path(path),
                     None => w!(self, "�"),
                 }
+
                 w!(self, "{{");
                 let edition = self.edition;
                 self.indented(|p| {
@@ -894,6 +895,7 @@ impl Printer<'_> {
                     Some(path) => self.print_path(path),
                     None => w!(self, "�"),
                 }
+
                 w!(self, " {{");
                 let edition = self.edition;
                 let oneline = matches!(self.line_format, LineFormat::Oneline);
@@ -1135,10 +1137,12 @@ impl Printer<'_> {
             if i != 0 || !matches!(path.kind(), PathKind::Plain) {
                 w!(self, "::");
             }
+
             w!(self, "{}", segment.name.display(self.db, self.edition));
             if let Some(generics) = segment.args_and_bindings {
                 w!(self, "::<");
                 self.print_generic_args(generics);
+
                 w!(self, ">");
             }
         }
@@ -1307,6 +1311,7 @@ impl Printer<'_> {
             if i != 0 {
                 w!(self, " + ");
             }
+
             match bound {
                 TypeBound::Path(path, modifier) => {
                     match modifier {

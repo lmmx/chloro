@@ -490,6 +490,10 @@ fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
     // stack that does not have #[allow_internal_unstable(edition_panic)].
     // (To avoid using the edition of e.g. the assert!() or debug_assert!() definition.)
     loop {
+        let Some(expn) = span.ctx.outer_expn(db) else {
+            break false;
+        };
+        let expn = db.lookup_intern_macro_call(expn.into());
         // FIXME: Record allow_internal_unstable in the macro def (not been done yet because it
         // would consume quite a bit extra memory for all call locs...)
         // if let Some(features) = expn.def.allow_internal_unstable {
@@ -498,10 +502,6 @@ fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
         //         continue;
         //     }
         // }
-        let Some(expn) = span.ctx.outer_expn(db) else {
-            break false;
-        };
-        let expn = db.lookup_intern_macro_call(expn.into());
         break expn.def.edition >= Edition::Edition2021;
     }
 }
@@ -877,11 +877,8 @@ fn include_str_expand(
     };
 
     // FIXME: we're not able to read excluded files (which is most of them because
-
     // it's unusual to `include_str!` a Rust file), but we can return an empty string.
-
     // Ideally, we'd be able to offer a precise expansion if the user asks for macro
-
     // expansion.
     let file_id = match relative_file(db, arg_id, path.as_str(), true, input_span) {
         Ok(file_id) => file_id,

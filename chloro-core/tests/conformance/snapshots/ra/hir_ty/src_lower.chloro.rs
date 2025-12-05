@@ -1716,7 +1716,6 @@ where
     }
 
     // FIXME: rustc gathers more predicates by recursing through resulting trait predicates.
-
     // See https://github.com/rust-lang/rust/blob/76c5ed2847cdb26ef2822a3a165d710f6b772217/compiler/rustc_hir_analysis/src/collect/predicates_of.rs#L689-L715
     (
         GenericPredicates(predicates.is_empty().not().then(|| predicates.into())),
@@ -2138,11 +2137,12 @@ fn named_associated_type_shorthand_candidates<'db, R>(
 
     match res {
         TypeNs::SelfType(impl_id) => {
+            let trait_ref = db.impl_trait(impl_id)?;
+
             // FIXME(next-solver): same method in `lower` checks for impl or not
             // Is that needed here?
             // we're _in_ the impl -- the binders get added back later. Correct,
             // but it would be nice to make this more explicit
-            let trait_ref = db.impl_trait(impl_id)?;
             search(trait_ref.skip_binder())
         }
         TypeNs::GenericParam(param_id) => {
@@ -2161,6 +2161,7 @@ fn named_associated_type_shorthand_candidates<'db, R>(
                     return search(trait_ref);
                 }
             }
+
             let predicates =
                 db.generic_predicates_for_param(def, param_id.into(), assoc_name.clone());
             predicates

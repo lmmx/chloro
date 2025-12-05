@@ -347,6 +347,7 @@ impl Query {
         match self.mode {
             SearchMode::Exact => {
                 let automaton = fst::automaton::Str::new(&self.lowercased);
+
                 for index in indices.iter() {
                     op = op.add(index.map.search(&automaton));
                 }
@@ -354,6 +355,7 @@ impl Query {
             }
             SearchMode::Fuzzy => {
                 let automaton = fst::automaton::Subsequence::new(&self.lowercased);
+
                 for index in indices.iter() {
                     op = op.add(index.map.search(&automaton));
                 }
@@ -361,6 +363,7 @@ impl Query {
             }
             SearchMode::Prefix => {
                 let automaton = fst::automaton::Str::new(&self.lowercased).starts_with();
+
                 for index in indices.iter() {
                     op = op.add(index.map.search(&automaton));
                 }

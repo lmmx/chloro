@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34589 bytes
+Chloro size:   34586 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -69,17 +69,6 @@ Rustfmt size:  35032 bytes
      where
          T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
      {
-         }
- 
-         // If there's a unique way to prove a given goal, recurse into
-+
-         // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
-+
-         // and a `(): Trait<?0>` goal we recurse into the impl and look at
-+
-         // the nested `?0: FnOnce(u32)` goal.
-         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
-             candidate.visit_nested_no_probe(self)
      env: Arc<TraitEnvironment<'db>>,
      tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>,
  ) -> bool {

@@ -154,6 +154,7 @@ impl<'db> Expr<'db> {
                     .collect::<Result<Vec<String>, DisplaySourceCodeError>>()?
                     .into_iter()
                     .join(", ");
+
                 match func.as_assoc_item(db).map(|it| it.container(db)) {
                     Some(container) => {
                         let container_name =
@@ -171,6 +172,7 @@ impl<'db> Expr<'db> {
                 if self.contains_many_in_illegal_pos(db) {
                     return Ok(many_formatter(&target.ty(db)));
                 }
+
                 let func_name = func.name(db).display(db, edition).to_string();
                 let self_param = func.self_param(db).unwrap();
                 let target_str =
@@ -181,6 +183,7 @@ impl<'db> Expr<'db> {
                     .collect::<Result<Vec<String>, DisplaySourceCodeError>>()?
                     .into_iter()
                     .join(", ");
+
                 match func.as_assoc_item(db).and_then(|it| it.container_or_implemented_trait(db)) {
                     Some(trait_) => {
                         let trait_name = mod_item_path_str(sema_scope, &ModuleDef::Trait(trait_))?;
@@ -239,6 +242,7 @@ impl<'db> Expr<'db> {
                     }
                     StructKind::Unit => String::new(),
                 };
+
                 let prefix = mod_item_path_str(sema_scope, &ModuleDef::Variant(*variant))?;
                 Ok(format!("{prefix}{inner}"))
             }
@@ -280,6 +284,7 @@ impl<'db> Expr<'db> {
                     }
                     StructKind::Unit => String::new(),
                 };
+
                 let prefix = mod_item_path_str(sema_scope, &ModuleDef::Adt(Adt::Struct(*strukt)))?;
                 Ok(format!("{prefix}{inner}"))
             }
@@ -297,6 +302,7 @@ impl<'db> Expr<'db> {
                 if expr.contains_many_in_illegal_pos(db) {
                     return Ok(many_formatter(&expr.ty(db)));
                 }
+
                 let strukt =
                     expr.gen_source_code(sema_scope, many_formatter, cfg, display_target)?;
                 let field = field.name(db).display(db, edition).to_string();
@@ -306,6 +312,7 @@ impl<'db> Expr<'db> {
                 if expr.contains_many_in_illegal_pos(db) {
                     return Ok(many_formatter(&expr.ty(db)));
                 }
+
                 let inner =
                     expr.gen_source_code(sema_scope, many_formatter, cfg, display_target)?;
                 Ok(format!("&{inner}"))

@@ -516,6 +516,7 @@ pub fn common_prefix(lhs: &ast::Path, rhs: &ast::Path) -> Option<(ast::Path, ast
             _ => break res,
         }
         res = Some((lhs_curr.clone(), rhs_curr.clone()));
+
         match lhs_curr.parent_path().zip(rhs_curr.parent_path()) {
             Some((lhs, rhs)) => {
                 lhs_curr = lhs;

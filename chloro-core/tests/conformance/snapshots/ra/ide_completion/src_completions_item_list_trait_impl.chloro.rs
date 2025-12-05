@@ -378,7 +378,9 @@ fn add_type_alias_impl(
                 ast::AssocItem::TypeAlias(ty) => ty,
                 _ => unreachable!(),
             };
+
             let start = transformed_ty.syntax().text_range().start();
+
             let end = if let Some(end) =
                 transformed_ty.colon_token().map(|tok| tok.text_range().start())
             {
@@ -399,10 +401,12 @@ fn add_type_alias_impl(
             } else {
                 return;
             };
+
             let len = end - start;
             let mut decl = transformed_ty.syntax().text().slice(..len).to_string();
             decl.truncate(decl.trim_end().len());
             decl.push_str(" = ");
+
             let wc = transformed_ty
                 .where_clause()
                 .map(|wc| {
@@ -415,6 +419,7 @@ fn add_type_alias_impl(
                     format!("{ws}{wc}")
                 })
                 .unwrap_or_default();
+
             match ctx.config.snippet_cap {
                 Some(cap) => {
                     let snippet = format!("{decl}$0{wc};");
@@ -447,9 +452,11 @@ fn add_const_impl(
                 ast::AssocItem::Const(const_) => const_,
                 _ => unreachable!(),
             };
+
             let label =
                 make_const_compl_syntax(ctx, &transformed_const, source.file_id.macro_file());
             let replacement = format!("{label} ");
+
             let mut item =
                 CompletionItem::new(SymbolKind::Const, replacement_range, label, ctx.edition);
             item.lookup_by(format_smolstr!("const {const_name}"))

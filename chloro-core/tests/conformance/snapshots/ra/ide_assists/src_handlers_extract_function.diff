@@ -48,13 +48,6 @@ Rustfmt size:  141954 bytes
  }
  
  #[derive(Debug)]
-         let first_element = stmts_in_selection.next();
- 
-         // If the tail expr is part of the selection too, make that the last element
-+
-         // Otherwise use the last stmt
-         let last_element = if let Some(tail_expr) =
-             parent.tail_expr().filter(|it| selected.intersect(it.syntax().text_range()).is_some())
                      .for_each(|expr| walk_expr(&expr, cb));
                  if let Some(expr) = parent
                      .tail_expr()
@@ -82,6 +75,13 @@ Rustfmt size:  141954 bytes
                      walk_patterns_in_expr(&expr, cb);
                  }
              }
+     // but doesn't necessary fully reflect all the intricacies of the underlying language semantics
+     // The correct approach here would be to expose this entire analysis as a method on some hir
+     // type. Something like `body.free_variables(statement_range)`.
+-
+     // we directly modify variable with set: `n = 0`, `n += 1`
+     if reference.category.contains(ReferenceCategory::WRITE) {
+         return true;
      let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
  
      if let Some(parent_match_arm) = parent_match_arm
@@ -126,20 +126,6 @@ Rustfmt size:  141954 bytes
  }
  
  impl<'db> FlowHandler<'db> {
-             }
-             FlowHandler::MatchOption { none } => {
-                 let some_name = "value";
--
-                 let some_arm = {
-                     let path = make::ext::ident_path("Some");
-                     let value_pat = make::ext::simple_ident_pat(make::name(some_name));
-             FlowHandler::MatchResult { err } => {
-                 let ok_name = "value";
-                 let err_name = "value";
--
-                 let ok_arm = {
-                     let path = make::ext::ident_path("Ok");
-                     let value_pat = make::ext::simple_ident_pat(make::name(ok_name));
          })
          .peekable();
  

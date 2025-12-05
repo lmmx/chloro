@@ -50,9 +50,7 @@ pub(crate) fn handle_work_done_progress_cancel(
     }
 
     // Just ignore this. It is OK to continue sending progress
-
     // notifications for this token, as the client can't know when
-
     // we accepted notification.
     Ok(())
 }
@@ -307,6 +305,7 @@ fn run_flycheck(state: &mut GlobalState, vfs_path: VfsPath) -> bool {
         let world = state.snapshot();
         let invocation_strategy = state.config.flycheck(None).invocation_strategy();
         let may_flycheck_workspace = state.config.flycheck_workspace(None);
+
         let task: Box<dyn FnOnce() -> ide::Cancellable<()> + Send + UnwindSafe> =
             match invocation_strategy {
                 InvocationStrategy::Once => {
@@ -468,6 +467,7 @@ fn run_flycheck(state: &mut GlobalState, vfs_path: VfsPath) -> bool {
                     })
                 }
             };
+
         state.task_pool.handle.spawn_with_sender(stdx::thread::ThreadIntent::Worker, move |_| {
             if let Err(e) = std::panic::catch_unwind(task) {
                 tracing::error!("flycheck task panicked: {e:?}")

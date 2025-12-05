@@ -177,29 +177,17 @@ impl flags::AnalysisStats {
         eprintln!("  dependency item stats: {dep_item_stats}");
 
         // FIXME(salsa-transition): bring back stats for ParseQuery (file size)
-
         // and ParseMacroExpansionQuery (macro expansion "file") size whenever we implement
-
         // Salsa's memory usage tracking works with tracked functions.
-
         // let mut total_file_size = Bytes::default();
-
         // for e in ide_db::base_db::ParseQuery.in_db(db).entries::<Vec<_>>() {
-
         //     total_file_size += syntax_len(db.parse(e.key).syntax_node())
-
         // }
-
         // let mut total_macro_file_size = Bytes::default();
-
         // for e in hir::db::ParseMacroExpansionQuery.in_db(db).entries::<Vec<_>>() {
-
         //     let val = db.parse_macro_expansion(e.key).value.0;
-
         //     total_macro_file_size += syntax_len(val.syntax_node())
-
         // }
-
         // eprintln!("source files: {total_file_size}, macro files: {total_macro_file_size}");
         eprintln!("{:<20} {}", "Item Tree Collection:", item_tree_time);
         report_metric("item tree time", item_tree_time.time.as_millis() as u64, "ms");

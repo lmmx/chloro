@@ -62,10 +62,11 @@ pub(crate) fn complete_type_path(
             trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
         }
         Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
-            // Iterate assoc types separately
             ctx.iterate_path_candidates(ty, |item| {
                 add_assoc_item(acc, item);
             });
+
+            // Iterate assoc types separately
             ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                 if let hir::AssocItem::TypeAlias(ty) = item {
                     acc.add_type_alias(ctx, ty)
@@ -79,6 +80,7 @@ pub(crate) fn complete_type_path(
             ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
                 acc.add_type_alias(ctx, alias);
             });
+
             match resolution {
                 hir::PathResolution::Def(hir::ModuleDef::Module(module)) => {
                     let module_scope = module.scope(ctx.db, Some(ctx.module));
@@ -93,18 +95,20 @@ pub(crate) fn complete_type_path(
                     | hir::ModuleDef::TypeAlias(_)
                     | hir::ModuleDef::BuiltinType(_)),
                 ) => {
-                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
-                    // (where AssocType is defined on a trait, not an inherent impl)
-                    // Iterate assoc types separately
                     let ty = match def {
                         hir::ModuleDef::Adt(adt) => adt.ty(ctx.db),
                         hir::ModuleDef::TypeAlias(a) => a.ty(ctx.db),
                         hir::ModuleDef::BuiltinType(builtin) => builtin.ty(ctx.db),
                         _ => return,
                     };
+
+                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
+                    // (where AssocType is defined on a trait, not an inherent impl)
                     ctx.iterate_path_candidates(&ty, |item| {
                         add_assoc_item(acc, item);
                     });
+
+                    // Iterate assoc types separately
                     ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
                         if let hir::AssocItem::TypeAlias(ty) = item {
                             acc.add_type_alias(ctx, ty)
@@ -124,6 +128,7 @@ pub(crate) fn complete_type_path(
                         hir::PathResolution::SelfType(impl_def) => impl_def.self_ty(ctx.db),
                         _ => return,
                     };
+
                     ctx.iterate_path_candidates(&ty, |item| {
                         add_assoc_item(acc, item);
                     });
@@ -197,6 +202,7 @@ pub(crate) fn complete_type_path(
                 }
                 _ => {}
             };
+
             acc.add_nameref_keywords_with_colon(ctx);
             acc.add_type_keywords(ctx);
             ctx.process_all_names(&mut |name, def, doc_aliases| {

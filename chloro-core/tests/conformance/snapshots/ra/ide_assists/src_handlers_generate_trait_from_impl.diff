@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10188 bytes
-Chloro size:   10144 bytes
+Chloro size:   10143 bytes
 Rustfmt size:  10188 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  10188 bytes
  // Assist: generate_trait_from_impl
  //
  // Generate trait for an already defined inherent impl and convert impl to a trait impl.
-     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
- 
-     // Check if cursor is to the left of assoc item list's L_CURLY.
-+
-     // if no L_CURLY then return.
-     let l_curly = impl_ast.assoc_item_list()?.l_curly_token()?;
- 
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};

@@ -1,3 +1,5 @@
+// In chloro-core/src/formatter/node/block.rs
+
 use crate::formatter::write_indent;
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode};
 
@@ -10,89 +12,112 @@ pub fn format_block(node: &SyntaxNode, buf: &mut String, indent: usize) {
     buf.push('}');
 }
 
+/// An item in a statement list with its associated preceding comments and blank line info
+struct StmtWithComments {
+    comments: Vec<String>,
+    node: SyntaxNode,
+    blank_line_before: bool,
+    is_last: bool,
+}
+
 pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let children: Vec<_> = node.children_with_tokens().collect();
-    let last_node_idx = children
-        .iter()
-        .rposition(|child| matches!(child, NodeOrToken::Node(_)));
 
-    let mut prev_was_item = false;
-    let mut prev_was_comment = false;
+    // Collect all statement nodes with their preceding comments and blank line info
+    let mut items: Vec<StmtWithComments> = Vec::new();
+    let mut pending_comments: Vec<String> = Vec::new();
+    let mut pending_blank_line = false;
+    let mut standalone_comments: Vec<(Vec<String>, bool)> = Vec::new(); // (comments, blank_line_before)
+
+    // First pass: identify all nodes and their indices
+    let node_indices: Vec<usize> = children
+        .iter()
+        .enumerate()
+        .filter_map(|(i, c)| match c {
+            NodeOrToken::Node(_) => Some(i),
+            _ => None,
+        })
+        .collect();
+
+    let last_node_idx = node_indices.last().copied();
 
     for (idx, child) in children.iter().enumerate() {
         match child {
             NodeOrToken::Node(n) => {
-                // Check for blank line before this node
-                let is_last_node = Some(idx) == last_node_idx;
-                if prev_was_item && should_have_blank_line_before(&children, idx) {
-                    buf.push('\n');
-                }
-                match n.kind() {
-                    SyntaxKind::WHITESPACE => continue,
-
-                    _ => {
-                        // Try to format the expression; fall back to verbatim if unsupported
-                        write_indent(buf, indent);
-                        match try_format_expr(n, indent) {
-                            FormatResult::Formatted(s) => {
-                                buf.push_str(&s);
-                                if !is_last_node {
-                                    buf.push(';');
-                                }
-                                buf.push('\n');
-                            }
-                            FormatResult::Unsupported => {
-                                buf.push_str(&n.text().to_string());
-                                buf.push('\n');
-                            }
-                        }
-                        prev_was_item = true;
-                        prev_was_comment = false;
-                    }
-                }
+                let is_last = Some(idx) == last_node_idx;
+                items.push(StmtWithComments {
+                    comments: std::mem::take(&mut pending_comments),
+                    node: n.clone(),
+                    blank_line_before: pending_blank_line,
+                    is_last,
+                });
+                pending_blank_line = false;
             }
             NodeOrToken::Token(t) => match t.kind() {
                 SyntaxKind::COMMENT => {
-                    // Check for blank line before comment
-                    if (prev_was_item || prev_was_comment)
-                        && should_have_blank_line_before(&children, idx)
-                    {
-                        buf.push('\n');
-                    }
-                    write_indent(buf, indent);
-                    buf.push_str(t.text());
-                    buf.push('\n');
-                    prev_was_item = false;
-                    prev_was_comment = true;
+                    pending_comments.push(t.text().to_string());
                 }
-                SyntaxKind::WHITESPACE => continue,
+                SyntaxKind::WHITESPACE => {
+                    if t.text().matches('\n').count() >= 2 {
+                        pending_blank_line = true;
+                    }
+                }
                 _ => {}
             },
         }
     }
-}
 
-/// Check if there should be a blank line before the item at the given index
-fn should_have_blank_line_before(
-    children: &[NodeOrToken<SyntaxNode, ra_ap_syntax::SyntaxToken>],
-    idx: usize,
-) -> bool {
-    // Look backwards for whitespace with 2+ newlines
-    for i in (0..idx).rev() {
-        match &children[i] {
-            NodeOrToken::Token(t) => {
-                if t.kind() == SyntaxKind::WHITESPACE {
-                    if t.text().matches('\n').count() >= 2 {
-                        return true;
-                    }
-                } else if t.kind() != SyntaxKind::COMMENT {
-                    break;
+    // Handle any trailing comments (not attached to a node)
+    if !pending_comments.is_empty() {
+        standalone_comments.push((std::mem::take(&mut pending_comments), pending_blank_line));
+    }
+
+    // Output items
+    let mut prev_was_item = false;
+
+    for item in items {
+        // Add blank line if needed
+        if prev_was_item && item.blank_line_before {
+            buf.push('\n');
+        }
+
+        // Output comments
+        for comment in &item.comments {
+            write_indent(buf, indent);
+            buf.push_str(comment);
+            buf.push('\n');
+        }
+
+        // Output the statement
+        write_indent(buf, indent);
+        match try_format_expr(&item.node, indent) {
+            FormatResult::Formatted(s) => {
+                buf.push_str(&s);
+                if !item.is_last {
+                    buf.push(';');
                 }
+                buf.push('\n');
             }
-            NodeOrToken::Node(_) => break,
+            FormatResult::Unsupported => {
+                buf.push_str(&item.node.text().to_string());
+                buf.push('\n');
+            }
+        }
+
+        prev_was_item = true;
+    }
+
+    // Output any trailing standalone comments
+    for (comments, blank_before) in standalone_comments {
+        if prev_was_item && blank_before {
+            buf.push('\n');
+        }
+        for comment in comments {
+            write_indent(buf, indent);
+            buf.push_str(&comment);
+            buf.push('\n');
         }
     }
-    false
 }
 
 pub fn format_block_expr_contents(node: &SyntaxNode, buf: &mut String, indent: usize) {

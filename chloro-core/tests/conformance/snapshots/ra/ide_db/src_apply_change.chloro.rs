@@ -56,37 +56,21 @@ impl RootDatabase {
         let mut acc: Vec<(String, Bytes, usize)> = vec![];
 
         // fn collect_query_count<'q, Q>(table: &QueryTable<'q, Q>) -> usize
-
         // where
-
         //     QueryTable<'q, Q>: DebugQueryTable,
-
         //     Q: Query,
-
         //     <Q as Query>::Storage: 'q,
-
         // {
-
         //     struct EntryCounter(usize);
-
         //     impl<K, V> FromIterator<TableEntry<K, V>> for EntryCounter {
-
         //         fn from_iter<T>(iter: T) -> EntryCounter
-
         //         where
-
         //             T: IntoIterator<Item = TableEntry<K, V>>,
-
         //         {
-
         //             EntryCounter(iter.into_iter().count())
-
         //         }
-
         //     }
-
         //     table.entries::<EntryCounter>().0
-
         // }
         macro_rules! purge_each_query {
             ($($q:path)*) => {$(

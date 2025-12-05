@@ -227,8 +227,6 @@ impl TraitImpls {
 
     fn collect_def_map(db: &dyn HirDatabase, map: &mut TraitFpMapCollector, def_map: &DefMap) {
         for (_module_id, module_data) in def_map.modules() {
-            // To better support custom derives, collect impls in all unnamed const items.
-            // const _: () = { ... };
             for impl_id in module_data.scope.impls() {
                 // Reservation impls should be ignored during trait resolution, so we never need
                 // them during type analysis. See rust-lang/rust#64631 for details.
@@ -247,6 +245,9 @@ impl TraitImpls {
                 let self_ty_fp = TyFingerprint::for_trait_impl(self_ty.instantiate_identity());
                 map.entry(target_trait).or_default().entry(self_ty_fp).or_default().push(impl_id);
             }
+
+            // To better support custom derives, collect impls in all unnamed const items.
+            // const _: () = { ... };
             for konst in module_data.scope.unnamed_consts() {
                 let body = db.body(konst.into());
                 for (_, block_def_map) in body.blocks(db) {
@@ -352,8 +353,6 @@ impl InherentImpls {
 
     fn collect_def_map(&mut self, db: &dyn HirDatabase, def_map: &DefMap) {
         for (_module_id, module_data) in def_map.modules() {
-            // To better support custom derives, collect impls in all unnamed const items.
-            // const _: () = { ... };
             for impl_id in module_data.scope.impls() {
                 let data = db.impl_signature(impl_id);
                 if data.target_trait.is_some() {
@@ -373,6 +372,9 @@ impl InherentImpls {
                     false => self.invalid_impls.push(impl_id),
                 }
             }
+
+            // To better support custom derives, collect impls in all unnamed const items.
+            // const _: () = { ... };
             for konst in module_data.scope.unnamed_consts() {
                 let body = db.body(konst.into());
                 for (_, block_def_map) in body.blocks(db) {
@@ -811,9 +813,7 @@ pub(crate) fn find_matching_impl<'db>(
     let selection = infcx.select(&obligation).ok()??;
 
     // Currently, we use a fulfillment context to completely resolve
-
     // all nested obligations. This is because they can inform the
-
     // inference of the impl's type parameters.
     let mut ocx = ObligationCtxt::new(infcx);
     let impl_source = selection.map(|obligation| ocx.register_obligation(obligation));
@@ -966,10 +966,9 @@ pub fn check_orphan_rules<'db>(db: &'db dyn HirDatabase, impl_: ImplId) -> bool 
             }
         }
     };
+
     //   - At least one of the types `T0..=Tn`` must be a local type. Let `Ti`` be the first such type.
-
     // FIXME: param coverage
-
     //   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
     let is_not_orphan = trait_ref.args.types().any(|ty| match unwrap_fundamental(ty).kind() {
         TyKind::Adt(adt_def, _) => is_local(adt_def.def_id().0.module(db).krate()),
@@ -1397,11 +1396,8 @@ fn iterate_inherent_methods<'db>(
     let env = table.trait_env.clone();
 
     // For trait object types and placeholder types with trait bounds, the methods of the trait and
-
     // its super traits are considered inherent methods. This matters because these methods have
-
     // higher priority than the other traits' methods, which would be considered in
-
     // `iterate_trait_method_candidates()` only after this function.
     match self_ty.kind() {
         TyKind::Param(_) => {
@@ -1608,6 +1604,7 @@ fn is_valid_impl_method_candidate<'db>(
             let db = table.db;
             check_that!(receiver_ty.is_none());
             check_that!(name.is_none_or(|n| n == item_name));
+
             if let Some(from_module) = visible_from_module
                 && !db.assoc_visibility(c.into()).is_visible_from(db, from_module)
             {
@@ -1645,7 +1642,9 @@ fn is_valid_trait_method_candidate<'db>(
     match item {
         AssocItemId::FunctionId(fn_id) => {
             let data = db.function_signature(fn_id);
+
             check_that!(name.is_none_or(|n| n == &data.name));
+
             table.run_in_snapshot(|table| {
                 let impl_subst = table.fresh_args_for_item(trait_id.into());
                 let expect_self_ty = impl_subst.type_at(0);
@@ -1691,6 +1690,7 @@ fn is_valid_trait_method_candidate<'db>(
         AssocItemId::ConstId(c) => {
             check_that!(receiver_ty.is_none());
             check_that!(name.is_none_or(|n| db.const_signature(c).name.as_ref() == Some(n)));
+
             IsValidCandidate::Yes
         }
         _ => IsValidCandidate::No,

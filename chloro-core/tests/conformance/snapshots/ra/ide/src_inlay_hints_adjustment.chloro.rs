@@ -294,12 +294,15 @@ fn mode_and_needs_parens_for_adjustment_hints(
         }
         PreferPrefix | PreferPostfix => {
             let prefer_postfix = matches!(mode, PreferPostfix);
+
             let (pre_inside, pre_outside) = needs_parens_for_adjustment_hints(expr, false);
             let prefix = (false, pre_inside, pre_outside);
             let pre_count = pre_inside as u8 + pre_outside as u8;
+
             let (post_inside, post_outside) = needs_parens_for_adjustment_hints(expr, true);
             let postfix = (true, post_inside, post_outside);
             let post_count = post_inside as u8 + post_outside as u8;
+
             match pre_count.cmp(&post_count) {
                 Less => prefix,
                 Greater => postfix,
@@ -315,13 +318,11 @@ fn mode_and_needs_parens_for_adjustment_hints(
 fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, bool) {
     let prec = expr.precedence();
     if postfix {
-        // given we are the higher precedence, no parent expression will have stronger requirements
         let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Postfix);
+        // given we are the higher precedence, no parent expression will have stronger requirements
         let needs_outer_parens = false;
         (needs_outer_parens, needs_inner_parens)
     } else {
-        // if we have no parent, we don't need outer parens to disambiguate
-        // otherwise anything with higher precedence than what we insert needs to wrap us
         let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Prefix);
         let parent = expr
             .syntax()
@@ -331,6 +332,9 @@ fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, 
             .filter(|it| !matches!(it, ast::Expr::ParenExpr(_)))
             .map(|it| it.precedence())
             .filter(|&prec| prec != ExprPrecedence::Unambiguous);
+
+        // if we have no parent, we don't need outer parens to disambiguate
+        // otherwise anything with higher precedence than what we insert needs to wrap us
         let needs_outer_parens = parent
             .is_some_and(|parent_prec| ExprPrecedence::Prefix.needs_parentheses_in(parent_prec));
         (needs_outer_parens, needs_inner_parens)

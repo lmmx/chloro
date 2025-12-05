@@ -157,13 +157,13 @@ impl<'db> HirFormatter<'_, 'db> {
                 format_bounds(self)
             }
             BoundsFormattingCtx::Exited => {
-                // Since we want to prevent only the infinite recursions in bounds formatting
-                // and do not want to skip formatting of other separate bounds, clear context
-                // when exiting the formatting of outermost bounds
                 let mut projection_tys_met = FxHashSet::default();
                 projection_tys_met.insert(target);
                 self.bounds_formatting_ctx = BoundsFormattingCtx::Entered { projection_tys_met };
                 let res = format_bounds(self);
+                // Since we want to prevent only the infinite recursions in bounds formatting
+                // and do not want to skip formatting of other separate bounds, clear context
+                // when exiting the formatting of outermost bounds
                 self.bounds_formatting_ctx = BoundsFormattingCtx::Exited;
                 res
             }
@@ -616,9 +616,7 @@ fn write_projection<'db>(
     let self_ty = trait_ref.self_ty();
 
     // if we are projection on a type parameter, check if the projection target has bounds
-
     // itself, if so, we render them directly as `impl Bound` instead of the less useful
-
     // `<Param as Trait>::Assoc`
     if !f.display_kind.is_source_code()
         && let TyKind::Param(param) = self_ty.kind()
@@ -2377,19 +2375,12 @@ impl<'db> HirDisplayWithExpressionStore<'db> for Path {
         }
 
         // Convert trait's `Self` bound back to the surface syntax. Note there is no associated
-
         // trait, so there can only be one path segment that `has_self_type`. The `Self` type
-
         // itself can contain further qualified path through, which will be handled by recursive
-
         // `hir_fmt`s.
-
         //
-
         // `trait_mod::Trait<Self = type_mod::Type, Args>::Assoc`
-
         // =>
-
         // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
         let trait_self_ty = self.segments().iter().find_map(|seg| {
             let generic_args = seg.args_and_bindings?;

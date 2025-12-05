@@ -191,6 +191,7 @@ fn edit_struct_references(
     for (file_id, refs) in usages {
         let source = ctx.sema.parse(file_id);
         let source = source.syntax();
+
         let mut editor = edit.make_editor(source);
         for r in refs.iter().rev() {
             if let Some((old_node, new_node)) = r

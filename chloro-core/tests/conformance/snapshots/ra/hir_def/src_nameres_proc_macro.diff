@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3679 bytes
-Chloro size:   3773 bytes
+Chloro size:   3774 bytes
 Rustfmt size:  3832 bytes
 
 ✗ Outputs DIFFER
@@ -46,10 +46,3 @@ Rustfmt size:  3832 bytes
              let helpers = tt::TokenTreesView::new(&tt.token_trees().flat_tokens()[3..]).try_into_subtree()?;
              let helpers = helpers
                  .iter()
-                     _ => None,
-                 })
-                 .collect::<Option<Box<[_]>>>()?;
--
-             Some((trait_name.as_name(), helpers))
-         }
- 

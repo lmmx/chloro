@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5746 bytes
-Chloro size:   5738 bytes
+Chloro size:   5744 bytes
 Rustfmt size:  5860 bytes
 
 ✗ Outputs DIFFER
@@ -24,25 +24,6 @@ Rustfmt size:  5860 bytes
  
  pub(crate) fn field_shorthand(
      db: &RootDatabase,
-             Some(it) => it,
-             None => continue,
-         };
--
-         let field_name = name_ref.syntax().text().to_string();
-         let field_expr = expr.syntax().text().to_string();
-         let field_name_is_tup_index = name_ref.as_tuple_field().is_some();
-         if field_name != field_expr || field_name_is_tup_index {
-             continue;
-         }
--
-         let mut edit_builder = TextEdit::builder();
-         edit_builder.delete(record_field.syntax().text_range());
-         edit_builder.insert(record_field.syntax().text_range().start(), field_name);
-         let edit = edit_builder.finish();
--
-         let field_range = record_field.syntax().text_range();
-         let vfs_file_id = file_id.file_id(db);
-         acc.push(
              Diagnostic::new(
                  DiagnosticCode::Clippy("redundant_field_names"),
                  "Shorthand struct initialization",
@@ -54,25 +35,6 @@ Rustfmt size:  5860 bytes
              )
              .with_fixes(Some(vec![fix(
                  "use_expr_field_shorthand",
-             Some(it) => it,
-             None => continue,
-         };
--
-         let field_name = name_ref.syntax().text().to_string();
-         let field_pat = pat.syntax().text().to_string();
-         let field_name_is_tup_index = name_ref.as_tuple_field().is_some();
-         if field_name != field_pat || field_name_is_tup_index {
-             continue;
-         }
--
-         let mut edit_builder = TextEdit::builder();
-         edit_builder.delete(record_pat_field.syntax().text_range());
-         edit_builder.insert(record_pat_field.syntax().text_range().start(), field_name);
-         let edit = edit_builder.finish();
--
-         let field_range = record_pat_field.syntax().text_range();
-         let vfs_file_id = file_id.file_id(db);
-         acc.push(
              Diagnostic::new(
                  DiagnosticCode::Clippy("redundant_field_names"),
                  "Shorthand struct pattern",

@@ -107,8 +107,10 @@ fn replace_usages(
 ) {
     for (file_id, references) in usages.iter() {
         edit.edit_file(file_id.file_id(ctx.db()));
+
         let refs_with_imports =
             augment_references_with_imports(edit, ctx, references, struct_name, target_module);
+
         refs_with_imports.into_iter().rev().for_each(|(name, import_data)| {
             if let Some(fn_) = name.syntax().parent().and_then(ast::Fn::cast) {
                 cov_mark::hit!(replace_trait_impl_fns);

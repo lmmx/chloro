@@ -600,6 +600,7 @@ impl<'db> Ty<'db> {
                                     _ => false,
                                 })
                                 .collect::<Vec<_>>();
+
                             Some(predicates)
                         }
                         _ => None,

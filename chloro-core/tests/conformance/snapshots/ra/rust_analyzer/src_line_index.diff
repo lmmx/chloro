@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3283 bytes
-Chloro size:   3279 bytes
+Chloro size:   3278 bytes
 Rustfmt size:  3393 bytes
 
 ✗ Outputs DIFFER
@@ -28,13 +28,6 @@ Rustfmt size:  3393 bytes
                  Some(idx) => {
                      crlf_seen = true;
                      idx + gap_len
-         }
- 
-         // Account for removed `\r`.
-+
-         // After `set_len`, `buf` is guaranteed to contain utf-8 again.
-         let new_len = buf.len() - gap_len;
-         let src = unsafe {
  #[cfg(test)]
  mod tests {
      use super::*;

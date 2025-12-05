@@ -532,14 +532,17 @@ pub fn explicit_item_bounds<'db>(
                 type_alias.into(),
                 LifetimeElisionKind::AnonymousReportError,
             );
+
             let item_args = GenericArgs::identity_for_item(interner, def_id);
             let interner_ty = Ty::new_projection_from_args(interner, def_id, item_args);
+
             let mut bounds = Vec::new();
             for bound in &type_alias_data.bounds {
                 ctx.lower_type_bound(bound, interner_ty, false).for_each(|pred| {
                     bounds.push(pred);
                 });
             }
+
             if !ctx.unsized_types.contains(&interner_ty) {
                 let sized_trait = LangItem::Sized
                     .resolve_trait(ctx.db, interner.krate.expect("Must have interner.krate"));
@@ -562,6 +565,7 @@ pub fn explicit_item_bounds<'db>(
                 bounds.extend(sized_bound);
                 bounds.shrink_to_fit();
             }
+
             rustc_type_ir::EarlyBinder::bind(Clauses::new_from_iter(interner, bounds))
         }
         SolverDefId::InternedOpaqueTyId(id) => {

@@ -69,7 +69,6 @@ pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
 
     // Check if cursor is to the left of assoc item list's L_CURLY.
-
     // if no L_CURLY then return.
     let l_curly = impl_ast.assoc_item_list()?.l_curly_token()?;
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13159 bytes
-Chloro size:   13179 bytes
+Chloro size:   13180 bytes
 Rustfmt size:  13159 bytes
 
 ✗ Outputs DIFFER
@@ -37,13 +37,3 @@ Rustfmt size:  13159 bytes
      type Infcx = InferCtxt<'db>;
  
      fn cx(&self) -> Self::Interner {
-             .as_ref()
-             .map_bound(|table| &table.impl_traits[opaque_idx].predicates);
-         for predicate in item_bounds.iter_instantiated_copied(interner, args.as_slice()) {
--            let predicate = replace_opaques_in(predicate);
--
-             // Require that the predicate holds for the concrete type.
-+            let predicate = replace_opaques_in(predicate);
-             debug!(?predicate);
-             goals.push(Goal::new(interner, param_env, predicate));
-         }

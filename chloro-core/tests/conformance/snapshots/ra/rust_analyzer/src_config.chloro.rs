@@ -3931,6 +3931,7 @@ fn validate_toml_table(
             ptr.push('_');
         }
         ptr.push_str(k);
+
         match v {
             // This is a table config, any entry in it is therefore valid
             toml::Value::Table(_) if verify(ptr) => (),
@@ -3939,6 +3940,7 @@ fn validate_toml_table(
                 .push((ptr.replace('_', "/"), toml::de::Error::custom("unexpected field"))),
             _ => (),
         }
+
         ptr.truncate(l);
     }
 }
@@ -3987,9 +3989,7 @@ mod tests {
         schema.push_str(",\n");
 
         // Transform the asciidoc form link to markdown style.
-
         //
-
         // https://link[text] => [text](https://link)
         let url_matches = schema.match_indices("https://");
         let mut url_offsets = url_matches.map(|(idx, _)| idx).collect::<Vec<usize>>();

@@ -341,11 +341,8 @@ fn cursor_at_trivial_match_arm_list(
     }
 
     // match x {
-
     //     bar => baz,
-
     //     $0
-
     // }
     if let Some(last_arm) = match_arm_list.arms().last() {
         let last_arm_range = last_arm.syntax().text_range();

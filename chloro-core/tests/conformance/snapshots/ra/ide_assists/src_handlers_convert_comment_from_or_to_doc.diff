@@ -28,10 +28,6 @@ Rustfmt size:  18641 bytes
      let target = if comment.kind().shape.is_line() {
          line_comments_text_range(&comment)?
      } else {
-     }
- 
-     // check if comment is followed by: `struct`, `trait`, `mod`, `fn`, `type`, `extern crate`,
-+
      // `use` or `const`.
      let parent = comment.syntax().parent();
      let par_kind = parent.as_ref().map(|parent| parent.kind());
@@ -49,8 +45,8 @@ Rustfmt size:  18641 bytes
          .take_while(|opt_com| opt_com.is_some())
          .flatten()
 -        .skip(1); // skip the first element so we don't duplicate it in next_comments
--
 +        .skip(1);
+ 
 +    // skip the first element so we don't duplicate it in next_comments
      let next_comments = comment
          .syntax()

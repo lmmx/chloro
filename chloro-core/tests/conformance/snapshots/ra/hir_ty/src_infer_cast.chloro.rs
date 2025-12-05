@@ -142,9 +142,7 @@ impl<'db> CastCheck<'db> {
         }
 
         // Chalk doesn't support trait upcasting and fails to solve some obvious goals
-
         // when the trait environment contains some recursive traits (See issue #18047)
-
         // We skip cast checks for such cases for now, until the next-gen solver.
         if contains_dyn_trait(self.cast_ty) {
             return Ok(());
@@ -390,6 +388,7 @@ fn pointer_kind<'db>(
                 never!("`{:?}` should be sized but is not?", ty);
                 return Err(());
             };
+
             let struct_data = id.fields(ctx.db);
             if let Some((last_field, _)) = struct_data.fields().iter().last() {
                 let last_field_ty =

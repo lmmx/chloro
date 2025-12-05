@@ -152,7 +152,6 @@ fn expand_maybe_stop(
     }
 
     // We can't check whether the fake expansion is inside macro call, because that requires semantic info.
-
     // But hopefully checking just the real one should be enough.
     if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset).is_some_and(|original_token| {
             !sema.is_inside_macro_call(original_file.with_value(&original_token))
@@ -1030,17 +1029,11 @@ fn classify_name_ref<'db>(
     };
 
     // We do not want to generate path completions when we are sandwiched between an item decl signature and its body.
-
     // ex. trait Foo $0 {}
-
     // in these cases parser recovery usually kicks in for our inserted identifier, causing it
-
     // to either be parsed as an ExprStmt or a ItemRecovery, depending on whether it is in a block
-
     // expression or an item list.
-
     // The following code checks if the body is missing, if it is we either cut off the body
-
     // from the item or it was missing in the first place
     let inbetween_body_and_decl_check = |node: SyntaxNode| {
         if let Some(NodeOrToken::Node(n)) =

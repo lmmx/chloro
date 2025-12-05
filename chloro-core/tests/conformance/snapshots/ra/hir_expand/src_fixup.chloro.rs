@@ -393,6 +393,7 @@ fn transform_tt<'a, 'b>(
                 break 'pop_finished_subtrees;
             }
         }
+
         let action = callback(&mut tt[i]);
         match action {
             TransformTtAction::Keep => {
@@ -401,17 +402,19 @@ fn transform_tt<'a, 'b>(
                 if let tt::TokenTree::Subtree(_) = &tt[i] {
                     subtrees_stack.push(i);
                 }
+
                 i += 1;
             }
             TransformTtAction::ReplaceWith(replacement) => {
-                // Skip the newly inserted replacement, we don't want to visit it.
                 let old_len = 1 + match &tt[i] {
                     tt::TokenTree::Leaf(_) => 0,
                     tt::TokenTree::Subtree(subtree) => subtree.usize_len(),
                 };
                 let len_diff = replacement.len() as i64 - old_len as i64;
                 tt.splice(i..i + old_len, replacement.flat_tokens().iter().cloned());
+                // Skip the newly inserted replacement, we don't want to visit it.
                 i += replacement.len();
+
                 for &subtree_idx in &subtrees_stack {
                     let tt::TokenTree::Subtree(subtree) = &mut tt[subtree_idx] else {
                         unreachable!("non-subtree on subtrees stack");
@@ -535,7 +538,6 @@ mod tests {
         );
 
         // the fixed-up tree should not contain braces as punct
-
         // FIXME: should probably instead check that it's a valid punctuation character
         for x in tt.token_trees().flat_tokens() {
             match x {
@@ -549,7 +551,6 @@ mod tests {
         reverse_fixups(&mut tt, &fixups.undo_info);
 
         // the fixed-up + reversed version should be equivalent to the original input
-
         // modulo token IDs and `Punct`s' spacing.
         let original_as_tt = syntax_bridge::syntax_node_to_token_tree(
             &parsed.syntax_node(),

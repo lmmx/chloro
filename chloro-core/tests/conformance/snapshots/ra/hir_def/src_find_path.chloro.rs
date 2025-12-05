@@ -37,7 +37,6 @@ pub fn find_path(
     }
 
     // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
-
     // default to plain paths.
     let item_module = item.module(db)?;
     if item_module.is_within_block() {
@@ -435,12 +434,13 @@ fn find_in_dep(
         return;
     };
     for info in import_info_for {
-        // Determine best path for containing module and append last segment from `info`.
-        // FIXME: we should guide this to look up the path locally, or from the same crate again?
         if info.is_doc_hidden {
             // the item or import is `#[doc(hidden)]`, so skip it as it is in an external crate
             continue;
         }
+
+        // Determine best path for containing module and append last segment from `info`.
+        // FIXME: we should guide this to look up the path locally, or from the same crate again?
         let choice = find_path_for_module(
             ctx,
             visited_modules,
@@ -459,6 +459,7 @@ fn find_in_dep(
             }
             choice.stability = Unstable;
         }
+
         Choice::try_select(best_choice, choice, ctx.cfg.prefer_prelude, info.name.clone());
     }
 }
@@ -578,13 +579,9 @@ fn find_local_import_locations(
     let _p = tracing::info_span!("find_local_import_locations").entered();
 
     // `from` can import anything below `from` with visibility of at least `from`, and anything
-
     // above `from` with any visibility. That means we do not need to descend into private siblings
-
     // of `from` (and similar).
-
     // Compute the initial worklist. We start with all direct child modules of `from` as well as all
-
     // of its (recursive) parent modules.
     let mut worklist = def_map[from.local_id]
         .children

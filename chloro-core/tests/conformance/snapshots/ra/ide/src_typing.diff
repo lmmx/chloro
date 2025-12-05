@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   35769 bytes
+Chloro size:   35768 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -210,10 +210,7 @@ Rustfmt size:  36650 bytes
 +        file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
  
      // if prior is fn call over multiple lines dont indent
-+
      // or if previous is method call over multiples lines keep that indent
-     let current_indent = {
-         let text = whitespace.text();
          return None;
      }
  

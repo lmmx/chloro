@@ -119,9 +119,7 @@ mod tests {
         check_assist_not_applicable_variations!("foo::bar::{$0self}");
 
         // This code compiles but transforming "bar::{self}" into "bar" causes a
-
         // compilation error (the name `bar` is defined multiple times).
-
         // Therefore, the normalize_input assist must not apply here.
         check_assist_not_applicable(
             normalize_import,

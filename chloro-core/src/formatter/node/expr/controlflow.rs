@@ -20,34 +20,60 @@ fn format_block_contents(block: &ast::BlockExpr, indent: usize) -> String {
     let mut buf = String::new();
 
     if let Some(stmt_list) = block.stmt_list() {
-        let stmts: Vec<_> = stmt_list.statements().collect();
-        let tail = stmt_list.tail_expr();
+        let children: Vec<_> = stmt_list.syntax().children_with_tokens().collect();
 
-        // Also collect comments from the stmt_list
-        for child in stmt_list.syntax().children_with_tokens() {
+        // Find the last node index for tail expression handling
+        let last_node_idx = children
+            .iter()
+            .rposition(|child| matches!(child, NodeOrToken::Node(_)));
+
+        let mut prev_was_item = false;
+
+        for (idx, child) in children.iter().enumerate() {
             match child {
-                NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT => {
-                    write_indent(&mut buf, indent);
-                    buf.push_str(t.text());
-                    buf.push('\n');
+                NodeOrToken::Token(t) => {
+                    match t.kind() {
+                        SyntaxKind::COMMENT => {
+                            // Check for blank line before this comment
+                            if prev_was_item && has_blank_line_before(&children, idx) {
+                                buf.push('\n');
+                            }
+                            write_indent(&mut buf, indent);
+                            buf.push_str(t.text());
+                            buf.push('\n');
+                            prev_was_item = false;
+                        }
+                        SyntaxKind::L_CURLY | SyntaxKind::R_CURLY | SyntaxKind::WHITESPACE => {
+                            // Skip braces and whitespace
+                        }
+                        _ => {}
+                    }
                 }
-                _ => {}
-            }
-        }
+                NodeOrToken::Node(n) => {
+                    // Check for blank line before this node
+                    if prev_was_item && has_blank_line_before(&children, idx) {
+                        buf.push('\n');
+                    }
 
-        for stmt in &stmts {
-            write_indent(&mut buf, indent);
-            buf.push_str(&stmt.syntax().text().to_string());
-            buf.push('\n');
-        }
+                    let is_last = Some(idx) == last_node_idx;
 
-        if let Some(tail_expr) = tail {
-            write_indent(&mut buf, indent);
-            match try_format_expr_inner(tail_expr.syntax(), indent) {
-                Some(s) => buf.push_str(&s),
-                None => buf.push_str(&tail_expr.syntax().text().to_string()),
+                    write_indent(&mut buf, indent);
+                    match try_format_expr_inner(n, indent) {
+                        Some(s) => {
+                            buf.push_str(&s);
+                            // Add semicolon for statements (not for tail expression)
+                            if !is_last && n.kind() != SyntaxKind::EXPR_STMT {
+                                // EXPR_STMT already includes semicolon in its text
+                            }
+                        }
+                        None => {
+                            buf.push_str(&n.text().to_string());
+                        }
+                    }
+                    buf.push('\n');
+                    prev_was_item = true;
+                }
             }
-            buf.push('\n');
         }
     }
 

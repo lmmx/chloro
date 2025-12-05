@@ -40,7 +40,6 @@ pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     let match_arm_body = match_arm.expr()?;
 
     // We don't need to check for leading pipe because it is directly under `MatchArm`
-
     // without `OrPat`.
     let new_parent = match_arm.syntax().parent()?;
 

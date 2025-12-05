@@ -938,11 +938,13 @@ pub(crate) fn folding_range(
             .chars()
             .take_while(|it| *it != '\n')
             .any(|it| !it.is_whitespace());
+
         let end_line = if has_more_text_on_end_line {
             range.end.line.saturating_sub(1)
         } else {
             range.end.line
         };
+
         lsp_types::FoldingRange {
             start_line: range.start.line,
             start_character: None,
@@ -992,9 +994,7 @@ pub(crate) fn url_from_abs_path(path: &AbsPath) -> lsp_types::Url {
     };
 
     // Note: lowercasing the `path` itself doesn't help, the `Url::parse`
-
     // machinery *also* canonicalizes the drive letter. So, just massage the
-
     // string in place.
     let mut url: String = url.into();
     url[driver_letter_range].make_ascii_lowercase();
@@ -1556,19 +1556,24 @@ pub(crate) fn runnable(
     match target_spec {
         Some(TargetSpec::Cargo(spec)) => {
             let workspace_root = spec.workspace_root.clone();
+
             let target = spec.target.clone();
+
             let (cargo_args, executable_args) = CargoTargetSpec::runnable_args(
                 snap,
                 Some(spec.clone()),
                 &runnable.kind,
                 &runnable.cfg,
             );
+
             let cwd = match runnable.kind {
                 ide::RunnableKind::Bin => workspace_root.clone(),
                 _ => spec.cargo_toml.parent().to_owned(),
             };
+
             let label = runnable.label(Some(&target));
             let location = location_link(snap, None, runnable.nav)?;
+
             Ok(Some(lsp_ext::Runnable {
                 label,
                 location: Some(location),
@@ -1590,6 +1595,7 @@ pub(crate) fn runnable(
         Some(TargetSpec::ProjectJson(spec)) => {
             let label = runnable.label(Some(&spec.label));
             let location = location_link(snap, None, runnable.nav)?;
+
             match spec.runnable_args(&runnable.kind) {
                 Some(json_shell_runnable_args) => {
                     let runnable_args = ShellRunnableArgs {
@@ -1614,8 +1620,10 @@ pub(crate) fn runnable(
             };
             let (cargo_args, executable_args) =
                 CargoTargetSpec::runnable_args(snap, None, &runnable.kind, &runnable.cfg);
+
             let label = runnable.label(None);
             let location = location_link(snap, None, runnable.nav)?;
+
             Ok(Some(lsp_ext::Runnable {
                 label,
                 location: Some(location),

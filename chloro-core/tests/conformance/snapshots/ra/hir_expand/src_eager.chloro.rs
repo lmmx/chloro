@@ -52,11 +52,8 @@ pub fn expand_eager_macro_input(
     let expand_to = ExpandTo::from_call_site(macro_call);
 
     // Note:
-
     // When `lazy_expand` is called, its *parent* file must already exist.
-
     // Here we store an eager macro id for the argument expanded subtree
-
     // for that purpose.
     let loc = MacroCallLoc {
         def,

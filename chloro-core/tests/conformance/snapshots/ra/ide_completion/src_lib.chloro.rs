@@ -204,9 +204,7 @@ pub fn completions(
     }
 
     // when the user types a bare `_` (that is it does not belong to an identifier)
-
     // the user might just wanted to type a `_` for type inference or pattern discarding
-
     // so try to suppress completions in those cases
     if trigger_character == Some('_')
         && ctx.original_token.kind() == syntax::SyntaxKind::UNDERSCORE

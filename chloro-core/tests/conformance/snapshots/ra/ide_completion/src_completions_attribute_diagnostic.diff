@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2095 bytes
-Chloro size:   2094 bytes
+Chloro size:   2095 bytes
 Rustfmt size:  2157 bytes
 
 ✗ Outputs DIFFER
@@ -18,13 +18,6 @@ Rustfmt size:  2157 bytes
  
  use super::AttrCompletion;
  
-             if already_annotated {
-                 continue;
-             }
--
-             let mut item = CompletionItem::new(
-                 SymbolKind::BuiltinAttr,
-                 ctx.source_range(),
  }
  
  const ATTRIBUTE_ARGS: &[AttrCompletion] = &[

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54426 bytes
+Chloro size:   54425 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -55,15 +55,6 @@ Rustfmt size:  54481 bytes
          let path = match path {
              Path::BarePath(mod_path) => mod_path,
              Path::Normal(it) => &it.mod_path,
-         }
- 
-         // If a path of the shape `u16::from_le_bytes` failed to resolve at all, then we fall back
-+
-         // to resolving to the primitive type, to allow this to still work in the presence of
-+
-         // `use core::u16;`.
-         if path.kind == PathKind::Plain
-             && n_segments > 1
      hygiene_info: &mut Option<(SyntaxContext, MacroDefId)>,
      macro_id: &MacroDefId,
  ) {
@@ -74,13 +65,6 @@ Rustfmt size:  54481 bytes
          // A macro is allowed to refer to variables from before its declaration.
          // Therefore, if we got to the rib of its declaration, give up its hygiene
          // and use its parent expansion.
-                 } else if let GenericDefId::AdtId(adt) = parent {
-                     acc.add(&Name::new_symbol_root(sym::Self_), ScopeDef::AdtSelfType(adt));
-                 }
--
-                 for (local_id, param) in params.iter_type_or_consts() {
-                     if let Some(name) = &param.name() {
-                         let id = TypeOrConstParamId { parent, local_id };
          &self,
          db: &dyn DefDatabase,
          path: &ModPath,

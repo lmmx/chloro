@@ -462,9 +462,7 @@ impl<'db> Resolver<'db> {
         }
 
         // If a path of the shape `u16::from_le_bytes` failed to resolve at all, then we fall back
-
         // to resolving to the primitive type, to allow this to still work in the presence of
-
         // `use core::u16;`.
         if path.kind == PathKind::Plain
             && n_segments > 1
@@ -1011,6 +1009,7 @@ impl<'db> Scope<'db> {
                 } else if let GenericDefId::AdtId(adt) = parent {
                     acc.add(&Name::new_symbol_root(sym::Self_), ScopeDef::AdtSelfType(adt));
                 }
+
                 for (local_id, param) in params.iter_type_or_consts() {
                     if let Some(name) = &param.name() {
                         let id = TypeOrConstParamId { parent, local_id };

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7219 bytes
-Chloro size:   7137 bytes
+Chloro size:   7136 bytes
 Rustfmt size:  7310 bytes
 
 ✗ Outputs DIFFER
@@ -61,12 +61,6 @@ Rustfmt size:  7310 bytes
      #[test]
      fn include_macro_should_allow_empty_content() {
          let mut config = DiagnosticsConfig::test_sample();
- 
-         // FIXME: This is a false-positive, the file is actually linked in via
-+
-         // `include!` macro
-         config.disabled.insert("unlinked-file".to_owned());
- 
  "#,
          );
      }

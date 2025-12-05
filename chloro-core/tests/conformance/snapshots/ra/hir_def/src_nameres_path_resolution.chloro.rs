@@ -222,6 +222,7 @@ impl DefMap {
                     return result;
                 }
             }
+
             let new = current_map.resolve_path_fp_with_macro_single(
                 local_def_map,
                 db,
@@ -231,6 +232,7 @@ impl DefMap {
                 shadow,
                 expected_macro_subns,
             );
+
             merge(new);
         }
     }
@@ -450,8 +452,8 @@ impl DefMap {
                 extern_crate.map(ImportOrExternCrate::ExternCrate),
             ))
         } else {
-            // extern crate declarations can add to the extern prelude
             Either::Right(ReachedFixedPoint::No)
+            // extern crate declarations can add to the extern prelude
         }
     }
 
@@ -795,6 +797,7 @@ fn adjust_to_nearest_non_block_module<'db>(
     let mut def_map = def_map;
     loop {
         let BlockInfo { parent, .. } = def_map.block.expect("block module without parent module");
+
         def_map = parent.def_map(db, def_map.krate);
         local_id = parent.local_id;
         if !parent.is_block_module() {

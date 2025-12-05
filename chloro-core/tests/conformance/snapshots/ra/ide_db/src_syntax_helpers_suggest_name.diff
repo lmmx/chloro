@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26487 bytes
+Chloro size:   26488 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -28,13 +28,6 @@ Rustfmt size:  26702 bytes
  
  const USELESS_NAME_PREFIXES: &[&str] = &["from_", "with_", "into_"];
  
-             Entry::Occupied(mut entry) => {
-                 let count = entry.get_mut();
-                 *count = (*count + 1).max(suffix);
--
-                 let mut new_name = SmolStrBuilder::new();
-                 new_name.push_str(&prefix);
-                 new_name.push_str(count.to_string().as_str());
      /// # Examples
      /// `a1b2c3` -> `a1b2c`
      fn split_numeric_suffix(name: &str) -> (&str, Option<usize>) {

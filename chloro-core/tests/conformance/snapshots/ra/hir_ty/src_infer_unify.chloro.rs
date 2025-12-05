@@ -100,11 +100,8 @@ impl<'a, 'db> ProofTreeVisitor<'db> for NestedObligationsForSelfTy<'a, 'db> {
         }
 
         // If there's a unique way to prove a given goal, recurse into
-
         // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
-
         // and a `(): Trait<?0>` goal we recurse into the impl and look at
-
         // the nested `?0: FnOnce(u32)` goal.
         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
             candidate.visit_nested_no_probe(self)

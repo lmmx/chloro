@@ -143,7 +143,6 @@ fn fixes(
     }
 
     // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
-
     // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
     let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
         let parent = path.parent()?;
@@ -228,7 +227,6 @@ fn make_fixes(
     };
 
     // If there's an existing `mod m;` statement matching the new one, don't emit a fix (it's
-
     // probably `#[cfg]`d out).
     for item in items.clone() {
         if let ast::Item::Module(m) = item

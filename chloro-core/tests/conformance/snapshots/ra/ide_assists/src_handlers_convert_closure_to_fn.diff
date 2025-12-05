@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   36393 bytes
+Chloro size:   36391 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
@@ -20,20 +20,6 @@ Rustfmt size:  36442 bytes
      hacks::parse_expr_from_str,
      ted,
  };
-         .collect::<FxHashSet<_>>();
- 
-     // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
-+
-     // by checking if it is mentioned by another parameter we need to include.
-     let mut reached_fixpoint = false;
-     let mut container_where_bounds_indices = Vec::new();
-         (!include_where_bounds.is_empty()).then(|| make::where_clause(include_where_bounds));
- 
-     // FIXME: Consider generic parameters that do not appear in params/return type/captures but
-+
-     // written explicitly inside the closure.
-     (Some(make::generic_param_list(include_params)), where_clause)
- }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

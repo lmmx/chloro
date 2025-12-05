@@ -324,7 +324,6 @@ fn hints_(
     }
 
     // apply hints
-
     // apply output if required
     if let (Some(output_lt), Some(r)) = (&output, ret_type)
         && let Some(ty) = r.ty()

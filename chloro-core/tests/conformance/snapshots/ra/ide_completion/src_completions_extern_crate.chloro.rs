@@ -15,6 +15,7 @@ pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionConte
         if imported_extern_crates.contains(&name) {
             continue;
         }
+
         let mut item = CompletionItem::new(
             CompletionItemKind::SymbolKind(SymbolKind::Module),
             ctx.source_range(),
@@ -22,6 +23,7 @@ pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionConte
             ctx.edition,
         );
         item.set_documentation(module.docs(ctx.db));
+
         item.add_to(acc, ctx.db);
     }
 }

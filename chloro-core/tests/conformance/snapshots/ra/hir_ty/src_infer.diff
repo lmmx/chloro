@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   74136 bytes
+Chloro size:   74131 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -26,15 +26,6 @@ Rustfmt size:  74236 bytes
  #[allow(unreachable_pub)]
  pub use coerce::could_coerce;
  #[allow(unreachable_pub)]
-     ctx.type_inference_fallback();
- 
-     // Comment from rustc:
-+
-     // Even though coercion casts provide type hints, we check casts after fallback for
-+
-     // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
-     let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
-     for mut cast in cast_checks.into_iter() {
  impl<'db> Adjustment<'db> {
      pub fn borrow(interner: DbInterner<'db>, m: Mutability, ty: Ty<'db>, lt: Region<'db>) -> Self {
          let ty = Ty::new_ref(interner, lt, ty, m);
@@ -206,22 +197,6 @@ Rustfmt size:  74236 bytes
      pub(crate) fn fixme_resolve_all_clone(&self) -> InferenceResult<'db> {
          let mut ctx = self.clone();
  
-         ctx.type_inference_fallback();
- 
-         // Comment from rustc:
-+
-         // Even though coercion casts provide type hints, we check casts after fallback for
-+
-         // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
-         let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
-         for mut cast in cast_checks.into_iter() {
-         );
- 
-         // Check if function contains a va_list, if it does then we append it to the parameter types
-+
-         // that are collected from the function data
-         if data.is_varargs() {
-             let va_list_ty = match self.resolve_va_list() {
          self.result.pat_adjustments.entry(pat).or_default().extend(adjustments);
      }
  
@@ -243,23 +218,6 @@ Rustfmt size:  74236 bytes
          params: &[GenericArg<'db>],
      ) -> Ty<'db> {
          match assoc_ty {
-                 (ty, variant)
-             }
-             Some(1) => {
--                let segment = path.segments().last().unwrap();
-                 // this could be an enum variant or associated type
-+                // FIXME potentially resolve assoc type
-+                let segment = path.segments().last().unwrap();
-                 if let Some((AdtId::EnumId(enum_id), _)) = ty.as_adt() {
-                     let enum_data = enum_id.enum_variants(self.db);
-                     if let Some(variant) = enum_data.variant(segment) {
-                         return (ty, Some(variant.into()));
-                     }
-                 }
--                // FIXME potentially resolve assoc type
-                 (self.err_ty(), None)
-             }
-             Some(_) => {
          match *self {
              Expectation::HasType(ety) => {
                  let ety = table.structurally_resolve_type(ety);

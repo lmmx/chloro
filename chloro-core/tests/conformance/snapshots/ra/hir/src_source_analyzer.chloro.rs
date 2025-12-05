@@ -994,7 +994,6 @@ impl<'db> SourceAnalyzer<'db> {
         let (store, _) = collector.store.finish();
 
         // Case where path is a qualifier of a use tree, e.g. foo::bar::{Baz, Qux} where we are
-
         // trying to resolve foo::bar.
         if let Some(use_tree) = parent().and_then(ast::UseTree::cast)
             && use_tree.coloncolon_token().is_some()
@@ -1014,7 +1013,6 @@ impl<'db> SourceAnalyzer<'db> {
             .and_then(ast::Meta::cast);
 
         // Case where path is a qualifier of another path, e.g. foo::bar::Baz where we are
-
         // trying to resolve foo::bar.
         if let Some(parent_hir_path) = parent_hir_path {
             return match resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store) {
@@ -1645,6 +1643,7 @@ fn resolve_hir_path_(
                 .map(|type_ns| PathResolutionPerNs::new(Some(type_ns), None, None))
                 .unwrap_or_else(|| PathResolutionPerNs::new(None, values(), None))
         };
+
         if res.any().is_some() {
             res
         } else if let Some(type_ns) = items() {

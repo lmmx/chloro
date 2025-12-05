@@ -8,19 +8,6 @@ Rustfmt size:  35861 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
-         // its return type, so we instead check for `<&Self as IntoIterator>::IntoIter`.
-         // Does <&receiver_ty as IntoIterator>::IntoIter` exist? Assume `iter` is valid
-+        // Does <receiver_ty as IntoIterator>::IntoIter` exist?
-         let iter = receiver_ty
-             .strip_references()
-             .add_reference(hir::Mutability::Shared)
-             .into_iterator_iter(ctx.db)
-             .map(|ty| (ty, SmolStr::new_static("iter()")));
--        // Does <receiver_ty as IntoIterator>::IntoIter` exist?
-         let into_iter = || {
-             receiver_ty
-                 .clone()
          for (i, ty) in receiver.tuple_fields(ctx.db).into_iter().enumerate() {
              // Tuples are always the last type in a deref chain, so just check if the name is
              // already seen without inserting into the hashset.

@@ -239,7 +239,6 @@ fn hover_offset(
     }
 
     // prefer descending the same token kind in attribute expansions, in normal macros text
-
     // equivalency is more important
     let mut descended = sema.descend_into_macros(original_token.clone());
 
@@ -599,6 +598,7 @@ fn runnable_action(
                 cov_mark::hit!(hover_macro_generated_struct_fn_doc_attr);
                 return None;
             }
+
             runnable_fn(sema, func).map(HoverAction::Runnable)
         }
         _ => None,

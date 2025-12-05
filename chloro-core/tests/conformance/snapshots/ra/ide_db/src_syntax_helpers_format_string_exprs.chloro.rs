@@ -58,9 +58,7 @@ pub fn parse_format_exprs(input: &str) -> Result<(String, Vec<Arg>), ()> {
     let mut output = String::new();
 
     // Count of open braces inside of an expression.
-
     // We assume that user knows what they're doing, thus we treat it like a correct pattern, e.g.
-
     // "{MyStruct { val_a: 0, val_b: 1 }}".
     let mut inexpr_open_count = 0;
 

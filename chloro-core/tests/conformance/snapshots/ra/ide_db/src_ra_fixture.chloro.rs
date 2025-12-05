@@ -95,7 +95,6 @@ impl RaFixtureAnalysis {
         let mut mapper = RangeMapper::default();
 
         // This is used for the `Injector`, to resolve precise location in the string literal,
-
         // which will then be used to resolve precise location in the enclosing file.
         let mut offset_with_indent = TextSize::new(0);
         // This is used to resolve the location relative to the virtual file into a location

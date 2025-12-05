@@ -26,6 +26,7 @@ pub(crate) fn complete_derive_path(
             ..
         } => {
             acc.add_super_keyword(ctx, *super_chain_len);
+
             for (name, def) in module.scope(ctx.db, Some(ctx.module)) {
                 match def {
                     ScopeDef::ModuleDef(hir::ModuleDef::Macro(mac)) if !existing_derives.contains(&mac) && mac.is_derive(ctx.db) => {

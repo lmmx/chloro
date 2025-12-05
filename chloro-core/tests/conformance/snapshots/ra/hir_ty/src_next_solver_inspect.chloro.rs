@@ -249,15 +249,15 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
         let infcx = self.goal.infcx;
         match goal.predicate.kind().no_bound_vars() {
             Some(PredicateKind::NormalizesTo(NormalizesTo { alias, term })) => {
+                let unconstrained_term = infcx.next_term_var_of_kind(term);
+                let goal =
+                    goal.with(infcx.interner, NormalizesTo { alias, term: unconstrained_term });
                 // We have to use a `probe` here as evaluating a `NormalizesTo` can constrain the
                 // expected term. This means that candidates which only fail due to nested goals
                 // and which normalize to a different term then the final result could ICE: when
                 // building their proof tree, the expected term was unconstrained, but when
                 // instantiating the candidate it is already constrained to the result of another
                 // candidate.
-                let unconstrained_term = infcx.next_term_var_of_kind(term);
-                let goal =
-                    goal.with(infcx.interner, NormalizesTo { alias, term: unconstrained_term });
                 let normalizes_to_term_hack = NormalizesToTermHack { term, unconstrained_term };
                 let (proof_tree, nested_goals_result) = infcx.probe(|_| {
                     // Here, if we have any nested goals, then we make sure to apply them

@@ -99,6 +99,7 @@ pub(crate) fn parse_macro_name_and_helper_attrs(tt: &TopSubtree) -> Option<(Name
                     _ => None,
                 })
                 .collect::<Option<Box<[_]>>>()?;
+
             Some((trait_name.as_name(), helpers))
         }
 

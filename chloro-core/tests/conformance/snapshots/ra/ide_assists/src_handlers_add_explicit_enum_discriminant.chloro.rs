@@ -43,7 +43,6 @@ pub(crate) fn add_explicit_enum_discriminant(
     let variant_list = enum_node.variant_list()?;
 
     // Don't offer the assist if the enum has no variants or if all variants already have an
-
     // explicit discriminant.
     if variant_list.variants().all(|variant_node| variant_node.expr().is_some()) {
         return None;

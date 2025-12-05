@@ -741,7 +741,6 @@ impl GlobalState {
         );
 
         // crate graph construction relies on these paths, record them so when one of them gets
-
         // deleted or created we trigger a reconstruction of the crate graph
         self.crate_graph_file_dependencies.clear();
         self.detached_files = self

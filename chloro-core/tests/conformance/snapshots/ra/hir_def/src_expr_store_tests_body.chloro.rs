@@ -588,6 +588,7 @@ const fn f(x: i32) -> i32 {
         Pat::Range { start, end } => {
             let hir_start = &body[start.unwrap()];
             let hir_end = &body[end.unwrap()];
+
             assert!(matches!(hir_start, Expr::Path { .. }));
             assert!(matches!(hir_end, Expr::Path { .. }));
         }

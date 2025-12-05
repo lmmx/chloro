@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7100 bytes
-Chloro size:   7128 bytes
+Chloro size:   7126 bytes
 Rustfmt size:  7241 bytes
 
 ✗ Outputs DIFFER
@@ -69,14 +69,6 @@ Rustfmt size:  7241 bytes
      #[test]
      fn test_braces_kept() {
          check_assist_not_applicable_variations!("foo::bar::{$0self}");
- 
-         // This code compiles but transforming "bar::{self}" into "bar" causes a
-+
-         // compilation error (the name `bar` is defined multiple times).
-+
-         // Therefore, the normalize_input assist must not apply here.
-         check_assist_not_applicable(
-             normalize_import,
  ",
          );
      }

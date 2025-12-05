@@ -72,6 +72,7 @@ impl<'db> UnifyValue for RegionVariableValue<'db> {
                         panic!("not a universal region")
                     }
                 };
+
                 if universe.can_name(universe_of_value) {
                     Ok(RegionVariableValue::Known { value: *value })
                 } else {

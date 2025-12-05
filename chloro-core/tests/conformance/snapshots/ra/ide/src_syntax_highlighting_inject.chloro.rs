@@ -260,9 +260,9 @@ fn find_doc_string_in_attr(attr: &hir::Attr, it: &ast::Attr) -> Option<ast::Stri
         // #[cfg_attr(..., doc = "", ...)]
         None => {
             // We gotta hunt the string token manually here
+            let text = attr.string_value()?.as_str();
             // FIXME: We just pick the first string literal that has the same text as the doc attribute
             // This means technically we might highlight the wrong one
-            let text = attr.string_value()?.as_str();
             it.syntax()
                 .descendants_with_tokens()
                 .filter_map(NodeOrToken::into_token)

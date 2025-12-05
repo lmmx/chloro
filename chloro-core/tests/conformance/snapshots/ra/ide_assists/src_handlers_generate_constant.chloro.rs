@@ -132,6 +132,7 @@ fn target_data_for_generate_constant(
             let indent = IndentLevel::from_node(module_node.syntax());
             let l_curly_token = module_node.item_list()?.l_curly_token()?;
             let offset = l_curly_token.text_range().end();
+
             let siblings_has_newline = l_curly_token
                 .siblings_with_tokens(Direction::Next)
                 .any(|it| it.kind() == SyntaxKind::WHITESPACE && it.to_string().contains('\n'));

@@ -52,6 +52,7 @@ pub(crate) fn complete_item_list(
                     _ => (),
                 }
             }
+
             acc.add_super_keyword(ctx, *super_chain_len);
         }
         Qualified::Absolute => acc.add_crate_roots(ctx, path_ctx),
@@ -125,7 +126,6 @@ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option
     }
 
     // ...and the rest deals with cases without any non-vis qualifiers.
-
     // Visibility qualifiers
     if !in_trait && !in_block && no_vis_qualifiers {
         add_keyword("pub(crate)", "pub(crate) $0");
@@ -153,6 +153,7 @@ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option
         if in_unsafe_extern_block {
             add_keyword("safe", "safe $0");
         }
+
         add_keyword("fn", "fn $1($2);");
         add_keyword("static", "static $1: $2;");
     } else {
@@ -162,6 +163,7 @@ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option
             }
             add_keyword("type", "type $0");
         }
+
         add_keyword("fn", "fn $1($2) {\n    $0\n}");
         add_keyword("unsafe", "unsafe $0");
         add_keyword("const", "const $0");

@@ -125,7 +125,6 @@ impl<'db> NormalizationFolder<'_, 'db> {
         self.select_all_and_stall_coroutine_predicates()?;
 
         // Alias is guaranteed to be fully structurally resolved,
-
         // so we can super fold here.
         let term = infcx.resolve_vars_if_possible(infer_term);
         // super-folding the `term` will directly fold the `Ty` or `Const` so
