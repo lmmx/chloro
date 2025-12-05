@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3](https://github.com/lmmx/chloro/compare/chloro-core-v0.7.2...chloro-core-v0.7.3) - 2025-12-05
+
+### <!-- 2 -->Bug Fixes
+
+- collect enum variant info with whitespace ([#71](https://github.com/lmmx/chloro/pull/71))
+- preserve blank line between comment block and func ([#70](https://github.com/lmmx/chloro/pull/70))
+
 ## [0.7.2](https://github.com/lmmx/chloro/compare/chloro-core-v0.7.1...chloro-core-v0.7.2) - 2025-12-05
 
 ### <!-- 2 -->Bug Fixes
