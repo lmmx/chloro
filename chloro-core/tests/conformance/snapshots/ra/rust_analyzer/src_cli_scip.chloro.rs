@@ -860,7 +860,7 @@ pub mod example_mod {
         );
 
         let file = si.files.first().unwrap();
-        let (_, token_id) = file.tokens.get(1).unwrap();
+        let (_, token_id) = file.tokens.get(1).unwrap(); // first token is file module, second is `bar`
         // first token is file module, second is `bar`
         let token = si.tokens.get(*token_id).unwrap();
 

@@ -741,7 +741,7 @@ impl<'db> Evaluator<'db> {
     ) -> Result<'db, (Address, Ty<'db>, Option<IntervalOrOwned>)> {
         let mut addr = locals.ptr[p.local].addr;
         let mut ty: Ty<'db> = locals.body.locals[p.local].ty;
-        let mut metadata: Option<IntervalOrOwned> = None;
+        let mut metadata: Option<IntervalOrOwned> = None; // locals are always sized
         // locals are always sized
         for proj in p.projection.lookup(&locals.body.projection_store) {
             let prev_ty = ty;

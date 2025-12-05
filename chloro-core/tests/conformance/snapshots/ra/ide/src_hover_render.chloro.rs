@@ -1256,9 +1256,9 @@ fn render_memory_layout(
             format_to!(label, "niches = {niches}, ");
         }
     }
-    label.pop();
+    label.pop(); // ' '
     // ' '
-    label.pop();
+    label.pop(); // ','
     // ','
     Some(label)
 }

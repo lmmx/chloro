@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   31037 bytes
+Chloro size:   31084 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -353,11 +353,9 @@ Rustfmt size:  31747 bytes
      #[test]
      fn documentation_matches_doc_comment() {
          let s = "/// foo\nfn bar() {}";
-         );
  
          let file = si.files.first().unwrap();
--        let (_, token_id) = file.tokens.get(1).unwrap(); // first token is file module, second is `bar`
-+        let (_, token_id) = file.tokens.get(1).unwrap();
+         let (_, token_id) = file.tokens.get(1).unwrap(); // first token is file module, second is `bar`
 +        // first token is file module, second is `bar`
          let token = si.tokens.get(*token_id).unwrap();
  
