@@ -143,14 +143,12 @@ fn sort_use_groups(items: &mut [ItemWithComments]) {
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
-            // Leftover comments
-            // Sort contiguous USE groups in place
-            // Output
             let mut module_inner_docs = Vec::new();
-            let mut inner_attrs: Vec<(Vec<Comment>, Attr)> = Vec::new();
+            let mut inner_attrs: Vec<(Vec<Comment>, Attr, bool)> = Vec::new(); // (comments, attr, blank_line_before)
             let mut other_items: Vec<ItemWithComments> = Vec::new();
             let mut pending_comments: Vec<Comment> = Vec::new();
             let mut pending_blank_line = false;
+            let mut pending_blank_line_for_inner_attr = false;
             let children: Vec<_> = node.children_with_tokens().collect();
             for child in children.iter() {
                 match child {
@@ -158,7 +156,12 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         SyntaxKind::ATTR => {
                             if let Some(attr) = Attr::cast(n.clone()) {
                                 if attr.excl_token().is_some() {
-                                    inner_attrs.push((std::mem::take(&mut pending_comments), attr));
+                                    inner_attrs.push((
+                                        std::mem::take(&mut pending_comments),
+                                        attr,
+                                        pending_blank_line_for_inner_attr,
+                                    ));
+                                    pending_blank_line_for_inner_attr = false;
                                     pending_blank_line = false;
                                 } else {
                                     other_items.push(ItemWithComments {
@@ -177,6 +180,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 blank_line_before: pending_blank_line,
                             });
                             pending_blank_line = false;
+                            pending_blank_line_for_inner_attr = false;
                         }
                     },
                     NodeOrToken::Token(t) => {
@@ -205,6 +209,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 }
                             }
                             pending_blank_line = true;
+                            pending_blank_line_for_inner_attr = true;
                         }
                     }
                 }
@@ -227,7 +232,10 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
             if !module_inner_docs.is_empty() && !inner_attrs.is_empty() {
                 buf.blank();
             }
-            for (comments, attr) in &inner_attrs {
+            for (i, (comments, attr, blank_before)) in inner_attrs.iter().enumerate() {
+                if i > 0 && *blank_before {
+                    buf.blank();
+                }
                 for comment in comments {
                     buf.newline(comment.text());
                 }
