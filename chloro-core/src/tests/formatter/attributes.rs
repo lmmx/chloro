@@ -40,7 +40,11 @@ fn foo() {}
 fn preserve_extern_block_with_function() {
     let input = r#"extern "C" { fn printf(format: *const i8, ...) -> i32; }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"extern "C" { fn printf(format: *const i8, ...) -> i32; }"#);
+    assert_snapshot!(output, @r#"
+    extern "C" {
+        fn printf(format: *const i8, ...) -> i32;
+    }
+    "#);
 }
 
 #[test]
@@ -70,7 +74,11 @@ fn preserve_unsafe_extern_block() {
 fn preserve_extern_block_with_attributed_variadic() {
     let input = r#"extern "C" { fn printf(format: *const i8, #[attr] ...) -> i32; }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"extern "C" { fn printf(format: *const i8, #[attr] ...) -> i32; }"#);
+    assert_snapshot!(output, @r#"
+    extern "C" {
+        fn printf(format: *const i8, #[attr] ...) -> i32;
+    }
+    "#);
 }
 
 #[test]
