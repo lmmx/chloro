@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32377 bytes
-Chloro size:   32357 bytes
+Chloro size:   32353 bytes
 Rustfmt size:  32377 bytes
 
 ✗ Outputs DIFFER
@@ -15,15 +15,6 @@ Rustfmt size:  32377 bytes
      let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
      let mut receiver_text =
          get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
- 
-     postfix_snippet("box", "Box::new(expr)", &format!("Box::new({receiver_text})"))
-         .add_to(acc, ctx.db);
--    postfix_snippet("dbg", "dbg!(expr)", &format!("dbg!({receiver_text})")).add_to(acc, ctx.db); // fixme
-+    postfix_snippet("dbg", "dbg!(expr)", &format!("dbg!({receiver_text})")).add_to(acc, ctx.db);
-+    // fixme
-     postfix_snippet("dbgr", "dbg!(&expr)", &format!("dbg!(&{receiver_text})")).add_to(acc, ctx.db);
-     postfix_snippet("call", "function(expr)", &format!("${{1}}({receiver_text})"))
-         .add_to(acc, ctx.db);
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

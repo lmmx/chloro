@@ -3,14 +3,14 @@ use ra_ap_syntax::{
     ast::{self, HasAttrs, HasDocComments, HasName, HasVisibility},
 };
 
-use crate::formatter::node::common::{fields, header};
+use crate::formatter::node::common::{comments, fields, header};
 use crate::formatter::printer::Printer;
 
 /// Information about a variant for formatting
 struct VariantInfo {
     variant: ast::Variant,
     leading_comments: Vec<String>,
-    trailing_comment: Option<String>,
+    trailing_comment: Option<(String, String)>, // (whitespace, comment)
     has_blank_line_before: bool,
 }
 
@@ -30,6 +30,10 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
         let mut trailing_comment_for_prev: Option<String> = None;
         let mut seen_newline = false;
 
+        // Check if there's a newline before this variant - if so, any comment
+        // at the start is a leading comment, not trailing for previous
+        let newline_before_variant = idx > 0 && comments::has_newline_before_node(variant.syntax());
+
         // Collect comments from inside the variant node (before the name)
         for child in variant.syntax().children_with_tokens() {
             match child {
@@ -38,8 +42,11 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
                         let text = t.text().to_string();
                         // Skip doc comments (handled by HasDocComments)
                         if !text.starts_with("///") && !text.starts_with("//!") {
-                            if !seen_newline && trailing_comment_for_prev.is_none() {
-                                // First comment before any newline - trailing for previous
+                            if !seen_newline
+                                && !newline_before_variant
+                                && trailing_comment_for_prev.is_none()
+                            {
+                                // First comment before any newline AND no newline before variant - trailing for previous
                                 trailing_comment_for_prev = Some(text);
                             } else {
                                 leading_comments.push(text);
@@ -47,10 +54,7 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
                         }
                     } else if t.kind() == SyntaxKind::WHITESPACE && t.text().contains('\n') {
                         seen_newline = true;
-                        // Newline encountered - any trailing comment becomes a leading comment
-                        if let Some(c) = trailing_comment_for_prev.take() {
-                            leading_comments.push(c);
-                        }
+                        // Don't move trailing_comment_for_prev to leading - it stays as trailing for previous variant
                     }
                 }
                 NodeOrToken::Node(n) => {
@@ -65,7 +69,7 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
         // attach it to that variant
         if let Some(comment) = trailing_comment_for_prev {
             if !result.is_empty() {
-                result.last_mut().unwrap().trailing_comment = Some(comment);
+                result.last_mut().unwrap().trailing_comment = Some((" ".to_string(), comment));
             } else {
                 // No previous variant, treat as leading comment
                 leading_comments.insert(0, comment);
@@ -81,7 +85,7 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
 
         // Check for trailing comment as sibling (after comma) - this handles
         // comments that ARE siblings, like the last variant's trailing comment
-        let trailing_from_sibling = get_trailing_comment_sibling(variant.syntax());
+        let trailing_from_sibling = comments::get_trailing_comment_sibling(variant.syntax());
 
         result.push(VariantInfo {
             variant: variant.clone(),
@@ -92,31 +96,6 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
     }
 
     result
-}
-
-/// Get a trailing comment on the same line as a variant (checking siblings after comma)
-fn get_trailing_comment_sibling(node: &SyntaxNode) -> Option<String> {
-    let mut next = node.next_sibling_or_token();
-    while let Some(item) = next {
-        match &item {
-            NodeOrToken::Token(t) => {
-                if t.kind() == SyntaxKind::COMMENT {
-                    return Some(t.text().to_string());
-                } else if t.kind() == SyntaxKind::WHITESPACE {
-                    if t.text().contains('\n') {
-                        return None;
-                    }
-                } else if t.kind() == SyntaxKind::COMMA {
-                    // Continue past the comma to look for trailing comment
-                } else {
-                    return None;
-                }
-                next = t.next_sibling_or_token();
-            }
-            NodeOrToken::Node(_) => return None,
-        }
-    }
-    None
 }
 
 /// Check if there's a blank line before this variant node
@@ -212,9 +191,10 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
             }
 
             // Check for trailing comment on same line
-            if let Some(ref trailing) = info.trailing_comment {
-                buf.push_str(", ");
-                buf.newline(trailing);
+            if let Some((ref whitespace, ref comment)) = info.trailing_comment {
+                buf.push(',');
+                buf.push_str(whitespace);
+                buf.newline(comment);
             } else {
                 buf.newline(",");
             }

@@ -1329,8 +1329,7 @@ impl ConfigChange {
     }
 
     pub fn change_user_config(&mut self, content: Option<Arc<str>>) {
-        assert!(self.user_config_change.is_none());
-        // Otherwise it is a double write.
+        assert!(self.user_config_change.is_none()); // Otherwise it is a double write.
         self.user_config_change = content;
     }
 
@@ -1400,10 +1399,8 @@ pub struct LensConfig {
     pub implementations: bool,
     // references
     pub method_refs: bool,
-    pub refs_adt: bool,
-    // for Struct, Enum, Union and Trait
-    pub refs_trait: bool,
-    // for Struct, Enum, Union and Trait
+    pub refs_adt: bool,   // for Struct, Enum, Union and Trait
+    pub refs_trait: bool, // for Struct, Enum, Union and Trait
     pub enum_variant_refs: bool,
     // annotations
     pub location: AnnotationLocation,

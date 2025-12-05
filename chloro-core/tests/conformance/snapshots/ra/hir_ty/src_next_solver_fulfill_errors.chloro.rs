@@ -66,8 +66,7 @@ pub enum FulfillmentErrorCode<'db> {
     Cycle(PredicateObligations<'db>),
     Select(SelectionError<'db>),
     Project(MismatchedProjectionTypes<'db>),
-    Subtype(ExpectedFound<Ty<'db>>, TypeError<'db>),
-    // always comes from a SubtypePredicate
+    Subtype(ExpectedFound<Ty<'db>>, TypeError<'db>), // always comes from a SubtypePredicate
     ConstEquate(ExpectedFound<Const<'db>>, TypeError<'db>),
     Ambiguity {
         /// Overflow is only `Some(suggest_recursion_limit)` when using the next generation

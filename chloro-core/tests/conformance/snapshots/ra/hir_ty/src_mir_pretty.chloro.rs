@@ -103,8 +103,7 @@ struct MirPrettyCtx<'a, 'db> {
 
 impl Write for MirPrettyCtx<'_, '_> {
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        let mut it = s.split('\n');
-        // note: `.lines()` is wrong here
+        let mut it = s.split('\n'); // note: `.lines()` is wrong here
         self.write(it.next().unwrap_or_default());
         for line in it {
             self.write_line();

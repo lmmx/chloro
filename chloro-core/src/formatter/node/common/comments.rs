@@ -92,3 +92,62 @@ pub fn is_comment_attached_to_next_item(
     }
     false
 }
+
+/// Get a trailing comment on the same line as a node (checking siblings after the node)
+/// Returns (whitespace_before_comment, comment_text) if found
+///
+/// This handles comments that appear after a node on the same line, like:
+///   `let x = 1; // trailing comment`
+///   `Variant, // trailing comment`
+pub fn get_trailing_comment_sibling(node: &SyntaxNode) -> Option<(String, String)> {
+    let mut next = node.next_sibling_or_token();
+    let mut whitespace_before = String::new();
+
+    while let Some(item) = next {
+        match &item {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::COMMENT {
+                    return Some((whitespace_before, t.text().to_string()));
+                } else if t.kind() == SyntaxKind::WHITESPACE {
+                    if t.text().contains('\n') {
+                        return None;
+                    }
+                    whitespace_before = t.text().to_string();
+                } else if t.kind() == SyntaxKind::COMMA || t.kind() == SyntaxKind::SEMICOLON {
+                    // Continue past comma/semicolon to look for trailing comment
+                    whitespace_before.clear();
+                } else {
+                    return None;
+                }
+                next = t.next_sibling_or_token();
+            }
+            NodeOrToken::Node(_) => return None,
+        }
+    }
+    None
+}
+
+/// Check if there's a newline in the whitespace immediately before this node
+/// Used to determine if a comment inside a node is trailing for the previous item
+/// or leading for this item.
+pub fn has_newline_before_node(node: &SyntaxNode) -> bool {
+    let mut current = node.prev_sibling_or_token();
+
+    while let Some(item) = current {
+        match &item {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::WHITESPACE {
+                    return t.text().contains('\n');
+                } else if t.kind() == SyntaxKind::COMMA || t.kind() == SyntaxKind::SEMICOLON {
+                    // Continue past comma/semicolon to find whitespace
+                    current = t.prev_sibling_or_token();
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+            NodeOrToken::Node(_) => return false,
+        }
+    }
+    false
+}

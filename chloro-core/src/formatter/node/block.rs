@@ -1,8 +1,7 @@
-// In chloro-core/src/formatter/node/block.rs
-
 use crate::formatter::write_indent;
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode};
 
+use super::common::comments;
 use super::expr::{FormatResult, try_format_expr};
 
 pub fn format_block(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -55,7 +54,17 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
             }
             NodeOrToken::Token(t) => match t.kind() {
                 SyntaxKind::COMMENT => {
-                    pending_comments.push(t.text().to_string());
+                    // Check if there's a newline before this comment
+                    let has_newline_before = idx > 0
+                        && matches!(
+                            &children[idx - 1],
+                            NodeOrToken::Token(prev) if prev.kind() == SyntaxKind::WHITESPACE && prev.text().contains('\n')
+                        );
+                    // Only collect as leading comment if there was a newline before it
+                    // Otherwise it's a trailing comment for the previous node (handled during output)
+                    if has_newline_before {
+                        pending_comments.push(t.text().to_string());
+                    }
                 }
                 SyntaxKind::WHITESPACE => {
                     if t.text().matches('\n').count() >= 2 {
@@ -96,10 +105,24 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 if !item.is_last {
                     buf.push(';');
                 }
+                // Check for trailing comment on same line
+                if let Some((whitespace, comment)) =
+                    comments::get_trailing_comment_sibling(&item.node)
+                {
+                    buf.push_str(&whitespace);
+                    buf.push_str(&comment);
+                }
                 buf.push('\n');
             }
             FormatResult::Unsupported => {
                 buf.push_str(&item.node.text().to_string());
+                // Check for trailing comment on same line
+                if let Some((whitespace, comment)) =
+                    comments::get_trailing_comment_sibling(&item.node)
+                {
+                    buf.push_str(&whitespace);
+                    buf.push_str(&comment);
+                }
                 buf.push('\n');
             }
         }

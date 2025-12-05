@@ -1816,8 +1816,7 @@ pub(crate) fn generic_defaults_with_diagnostics_query(
             result
         })
         .collect::<Vec<_>>();
-    ctx.diagnostics.clear();
-    // Don't include diagnostics from the parent.
+    ctx.diagnostics.clear(); // Don't include diagnostics from the parent.
     defaults.extend(generic_params.iter_self().map(|(_id, p)| {
         let (result, has_default) = handle_generic_param(&mut ctx, idx, p);
         has_any_default |= has_default;

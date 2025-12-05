@@ -21,10 +21,8 @@ pub fn expr_as_name_ref(expr: &ast::Expr) -> Option<ast::NameRef> {
 
 pub fn full_path_of_name_ref(name_ref: &ast::NameRef) -> Option<ast::Path> {
     let mut ancestors = name_ref.syntax().ancestors();
-    let _ = ancestors.next()?;
-    // skip self
-    let _ = ancestors.next().filter(|it| ast::PathSegment::can_cast(it.kind()))?;
-    // skip self
+    let _ = ancestors.next()?; // skip self
+    let _ = ancestors.next().filter(|it| ast::PathSegment::can_cast(it.kind()))?; // skip self
     ancestors.take_while(|it| ast::Path::can_cast(it.kind())).last().and_then(ast::Path::cast)
 }
 

@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25826 bytes
-Chloro size:   25832 bytes
+Chloro size:   25828 bytes
 Rustfmt size:  25826 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- #[derive(Debug)]
- enum TypeOrConst {
--    Either(ast::TypeArg), // indistinguishable type or const param
-+    Either(ast::TypeArg),
-+    // indistinguishable type or const param
-     Const(ast::ConstArg),
  }
  
  type LifetimeName = String;
