@@ -156,12 +156,12 @@ fn preserve_end_of_line_comment_on_enum_variant() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"
+    assert_snapshot!(output, @r"
     pub enum ImportGroup {
         Internal(InternalKind), // self::, super::, crate::, - sorted first
-        External, // everything else (including std, core, alloc)
+        External,               // everything else (including std, core, alloc)
     }
-    "#);
+    ");
 }
 
 #[test]

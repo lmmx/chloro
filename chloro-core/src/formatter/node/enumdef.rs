@@ -10,7 +10,7 @@ use crate::formatter::printer::Printer;
 struct VariantInfo {
     variant: ast::Variant,
     leading_comments: Vec<String>,
-    trailing_comment: Option<String>,
+    trailing_comment: Option<(String, String)>, // (whitespace, comment)
     has_blank_line_before: bool,
 }
 
@@ -92,7 +92,7 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
         // attach it to that variant
         if let Some(comment) = trailing_comment_for_prev {
             if !result.is_empty() {
-                result.last_mut().unwrap().trailing_comment = Some(comment);
+                result.last_mut().unwrap().trailing_comment = Some((" ".to_string(), comment));
             } else {
                 // No previous variant, treat as leading comment
                 leading_comments.insert(0, comment);
@@ -122,19 +122,24 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
 }
 
 /// Get a trailing comment on the same line as a variant (checking siblings after comma)
-fn get_trailing_comment_sibling(node: &SyntaxNode) -> Option<String> {
+/// Returns (whitespace_before_comment, comment_text)
+fn get_trailing_comment_sibling(node: &SyntaxNode) -> Option<(String, String)> {
     let mut next = node.next_sibling_or_token();
+    let mut whitespace_before = String::new();
+
     while let Some(item) = next {
         match &item {
             NodeOrToken::Token(t) => {
                 if t.kind() == SyntaxKind::COMMENT {
-                    return Some(t.text().to_string());
+                    return Some((whitespace_before, t.text().to_string()));
                 } else if t.kind() == SyntaxKind::WHITESPACE {
                     if t.text().contains('\n') {
                         return None;
                     }
+                    whitespace_before = t.text().to_string();
                 } else if t.kind() == SyntaxKind::COMMA {
                     // Continue past the comma to look for trailing comment
+                    whitespace_before.clear();
                 } else {
                     return None;
                 }
@@ -239,9 +244,10 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
             }
 
             // Check for trailing comment on same line
-            if let Some(ref trailing) = info.trailing_comment {
-                buf.push_str(", ");
-                buf.newline(trailing);
+            if let Some((ref whitespace, ref comment)) = info.trailing_comment {
+                buf.push(',');
+                buf.push_str(whitespace);
+                buf.newline(comment);
             } else {
                 buf.newline(",");
             }
