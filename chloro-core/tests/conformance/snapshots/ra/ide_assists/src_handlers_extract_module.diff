@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53688 bytes
+Chloro size:   53700 bytes
 Rustfmt size:  54459 bytes
 
 ✗ Outputs DIFFER
@@ -246,16 +246,6 @@ Rustfmt size:  54459 bytes
                  _ => source.file_id.original_file(ctx.db()).file_id(ctx.db()) == curr_file_id,
              };
  
- }
- 
- fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax::SyntaxElement>) {
--    if vis.is_none()
--        && let Some(node_or_token) = node_or_token_opt
--    {
-+    if vis.is_none() && let Some(node_or_token) = node_or_token_opt {
-         let pub_crate_vis = make::visibility_pub_crate().clone_for_update();
-         ted::insert(ted::Position::before(node_or_token), pub_crate_vis.syntax());
-     }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

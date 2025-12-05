@@ -377,7 +377,8 @@ impl<'db> BestObligation<'db> {
     ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
         if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
-            && !projection_clause.bound_vars().is_empty() {
+            && !projection_clause.bound_vars().is_empty()
+        {
             let pred = projection_clause.map_bound(|proj| proj.projection_term.trait_ref(interner));
             let obligation = Obligation::new(
                 interner,

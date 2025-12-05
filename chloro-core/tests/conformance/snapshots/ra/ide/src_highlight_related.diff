@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58223 bytes
-Chloro size:   57878 bytes
+Chloro size:   57906 bytes
 Rustfmt size:  59341 bytes
 
 ✗ Outputs DIFFER
@@ -261,15 +261,6 @@ Rustfmt size:  59341 bytes
 +    ) {
          if let Some(expr) = expanded.expr() {
              self.walk(&expr, cb);
-         }
- 
-         for stmt in expanded.statements() {
--            if let ast::Stmt::ExprStmt(stmt) = stmt
--                && let Some(expr) = stmt.expr()
--            {
-+            if let ast::Stmt::ExprStmt(stmt) = stmt && let Some(expr) = stmt.expr() {
-                 self.walk(&expr, cb);
-             }
          }
  
          let mut push_to_highlights = |file_id, range| {

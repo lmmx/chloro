@@ -651,7 +651,8 @@ fn path_ref_match(
     if let Some(original_path) = &path_ctx.original_path {
         // At least one char was typed by the user already, in that case look for the original path
         if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())
-            && let Some(ref_mode) = compute_ref_match(completion, ty) {
+            && let Some(ref_mode) = compute_ref_match(completion, ty)
+        {
             item.ref_match(ref_mode, original_path.syntax().text_range().start());
         }
     } else {

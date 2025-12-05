@@ -578,7 +578,9 @@ impl<'db> InferenceContext<'_, 'db> {
                     }
                 }
                 self.walk_expr(*expr);
-                if let Some(discr_place) = self.place_of_expr(*expr) && self.is_upvar(&discr_place) {
+                if let Some(discr_place) = self.place_of_expr(*expr)
+                    && self.is_upvar(&discr_place)
+                {
                     let mut capture_mode = None;
                     for arm in arms.iter() {
                         self.walk_pat(&mut capture_mode, arm.pat);

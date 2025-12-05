@@ -2381,7 +2381,8 @@ impl ModCollector<'_, '_> {
             &self.item_tree[mac.visibility],
         );
         if let Some(helpers) = helpers_opt
-            && self.def_collector.def_map.block.is_none() {
+            && self.def_collector.def_map.block.is_none()
+        {
             Arc::get_mut(&mut self.def_collector.def_map.data)
                 .unwrap()
                 .exported_derives

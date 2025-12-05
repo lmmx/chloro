@@ -308,7 +308,9 @@ pub fn for_each_tail_expr(expr: &ast::Expr, cb: &mut dyn FnMut(&ast::Expr)) {
                 Some(ast::BlockModifier::AsyncGen(_)) => (),
                 None => (),
             }
-            if let Some(stmt_list) = b.stmt_list() && let Some(e) = stmt_list.tail_expr() {
+            if let Some(stmt_list) = b.stmt_list()
+                && let Some(e) = stmt_list.tail_expr()
+            {
                 for_each_tail_expr(&e, cb);
             }
         }

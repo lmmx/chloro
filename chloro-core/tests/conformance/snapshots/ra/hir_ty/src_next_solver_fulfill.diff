@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12382 bytes
+Chloro size:   12390 bytes
 Rustfmt size:  12886 bytes
 
 ✗ Outputs DIFFER
@@ -116,12 +116,3 @@ Rustfmt size:  12886 bytes
              | TypingMode::PostAnalysis => return Default::default(),
          };
          let stalled_coroutines = stalled_coroutines.inner();
-         }
- 
-         if let TyKind::Coroutine(def_id, _) = ty.kind()
--            && self.stalled_coroutines.contains(&def_id.into())
--        {
-+            && self.stalled_coroutines.contains(&def_id.into()) {
-             ControlFlow::Break(())
-         } else if ty.has_coroutines() {
-             ty.super_visit_with(self)

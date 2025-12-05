@@ -779,7 +779,9 @@ fn cfg_attr_lint_attrs(
         }
     }
 
-    if prev_len != lint_attrs.len() && let Some(false) | None = sema.check_cfg_attr(value) {
+    if prev_len != lint_attrs.len()
+        && let Some(false) | None = sema.check_cfg_attr(value)
+    {
         // Discard the attributes when the condition is false.
         lint_attrs.truncate(prev_len);
     }

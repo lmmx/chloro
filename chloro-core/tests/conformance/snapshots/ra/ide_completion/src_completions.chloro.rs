@@ -119,7 +119,10 @@ impl Completions {
         ctx: &CompletionContext<'_>,
         super_chain_len: Option<usize>,
     ) {
-        if let Some(len) = super_chain_len && len > 0 && len < ctx.depth_from_crate_root {
+        if let Some(len) = super_chain_len
+            && len > 0
+            && len < ctx.depth_from_crate_root
+        {
             self.add_keyword(ctx, "super::");
         }
     }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50790 bytes
+Chloro size:   50798 bytes
 Rustfmt size:  51892 bytes
 
 ✗ Outputs DIFFER
@@ -209,15 +209,6 @@ Rustfmt size:  51892 bytes
          } else {
              ControlFlow::Continue(())
          }
-     ) -> ControlFlow<PredicateObligation<'db>> {
-         let interner = goal.infcx().interner;
-         if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
--            && !projection_clause.bound_vars().is_empty()
--        {
-+            && !projection_clause.bound_vars().is_empty() {
-             let pred = projection_clause.map_bound(|proj| proj.projection_term.trait_ref(interner));
-             let obligation = Obligation::new(
-                 interner,
                  goal.goal().param_env,
                  deeply_normalize_for_diagnostics(goal.infcx(), goal.goal().param_env, pred),
              );

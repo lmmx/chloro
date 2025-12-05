@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52289 bytes
-Chloro size:   52253 bytes
+Chloro size:   52289 bytes
 Rustfmt size:  54930 bytes
 
 ✗ Outputs DIFFER
@@ -221,16 +221,6 @@ Rustfmt size:  54930 bytes
                              if let Some(else_branch) = else_branch {
                                  self.consume_expr(*else_branch);
                              }
-                     }
-                 }
-                 self.walk_expr(*expr);
--                if let Some(discr_place) = self.place_of_expr(*expr)
--                    && self.is_upvar(&discr_place)
--                {
-+                if let Some(discr_place) = self.place_of_expr(*expr) && self.is_upvar(&discr_place) {
-                     let mut capture_mode = None;
-                     for arm in arms.iter() {
-                         self.walk_pat(&mut capture_mode, arm.pat);
                  self.consume_exprs(fields.iter().map(|it| it.expr));
              }
              Expr::Field { expr, name: _ } => self.select_from_expr(*expr),

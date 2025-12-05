@@ -770,7 +770,8 @@ impl GlobalState {
             }
             Task::DiscoverLinkedProjects(arg) => {
                 if let Some(cfg) = self.config.discover_workspace_config()
-                    && !self.discover_workspace_queue.op_in_progress() {
+                    && !self.discover_workspace_queue.op_in_progress()
+                {
                     // the clone is unfortunately necessary to avoid a borrowck error when
                     // `self.report_progress` is called later
                     let title = &cfg.progress_label.clone();

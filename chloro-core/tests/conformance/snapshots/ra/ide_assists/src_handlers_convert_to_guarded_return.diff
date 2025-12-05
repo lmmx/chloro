@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22391 bytes
-Chloro size:   22326 bytes
+Chloro size:   22330 bytes
 Rustfmt size:  22662 bytes
 
 ✗ Outputs DIFFER
@@ -106,15 +106,6 @@ Rustfmt size:  22662 bytes
          } else {
              chains.push(rhs);
          }
- fn clean_stmt_block(block: &ast::BlockExpr) -> ast::BlockExpr {
-     if block.statements().next().is_none()
-         && let Some(tail_expr) = block.tail_expr()
--        && block.modifier().is_none()
--    {
-+        && block.modifier().is_none() {
-         make::block_expr(once(make::expr_stmt(tail_expr).into()), None)
-     } else {
-         block.clone()
          _ => None,
      };
      then_block.tail_expr().is_some_and(is_early_expr)

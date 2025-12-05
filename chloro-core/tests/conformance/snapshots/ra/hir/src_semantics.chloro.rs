@@ -2402,7 +2402,9 @@ struct RenameConflictsVisitor<'a> {
 
 impl RenameConflictsVisitor<'_> {
     fn resolve_path(&mut self, node: ExprOrPatId, path: &Path) {
-        if let Path::BarePath(path) = path && let Some(name) = path.as_ident() {
+        if let Path::BarePath(path) = path
+            && let Some(name) = path.as_ident()
+        {
             if *name.symbol() == self.new_name {
                 if let Some(conflicting) = self.resolver.rename_will_conflict_with_renamed(
                     self.db,
@@ -2421,7 +2423,8 @@ impl RenameConflictsVisitor<'_> {
                     self.body.expr_or_pat_path_hygiene(node),
                     &self.new_name,
                     self.to_be_renamed,
-                ) {
+                )
+            {
                 self.conflicts.insert(conflicting);
             }
         }

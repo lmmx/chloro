@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 141954 bytes
-Chloro size:   141872 bytes
+Chloro size:   141876 bytes
 Rustfmt size:  143880 bytes
 
 ✗ Outputs DIFFER
@@ -457,15 +457,6 @@ Rustfmt size:  143880 bytes
  }
  
  /// checks if the relevant local was defined before(outside of) body
-     let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
- 
-     if let Some(parent_match_arm) = parent_match_arm
--        && parent_match_arm.comma_token().is_none()
--    {
-+        && parent_match_arm.comma_token().is_none() {
-         let parent_match_arm = builder.make_mut(parent_match_arm);
-         ted::append_child_raw(parent_match_arm.syntax(), make::token(T![,]));
-     }
  fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -> SyntaxNode {
      let ret_ty = fun.return_type(ctx);
  

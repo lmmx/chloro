@@ -2,6 +2,7 @@ use crate::format_source;
 
 mod attributes;
 mod comments;
+mod controlflow;
 mod externcrate;
 mod functions;
 mod impl_blocks;

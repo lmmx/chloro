@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54425 bytes
+Chloro size:   54437 bytes
 Rustfmt size:  56409 bytes
 
 ✗ Outputs DIFFER
@@ -283,16 +283,6 @@ Rustfmt size:  56409 bytes
                  let expr_scopes = expr_scopes.clone();
                  let scope_chain = expr_scopes
                      .scope_chain(expr_scopes.scope_for(expr_id))
-     hygiene_info: &mut Option<(SyntaxContext, MacroDefId)>,
-     macro_id: &MacroDefId,
- ) {
--    if let Some((parent_ctx, label_macro_id)) = hygiene_info
--        && label_macro_id == macro_id
--    {
-+    if let Some((parent_ctx, label_macro_id)) = hygiene_info && label_macro_id == macro_id {
-         // A macro is allowed to refer to variables from before its declaration.
-         // Therefore, if we got to the rib of its declaration, give up its hygiene
-         // and use its parent expansion.
      fn process_names(&self, acc: &mut ScopeNames, db: &'db dyn DefDatabase) {
          match self {
              Scope::BlockScope(m) => {

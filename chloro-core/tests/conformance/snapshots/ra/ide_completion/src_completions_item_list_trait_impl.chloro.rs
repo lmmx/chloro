@@ -229,8 +229,8 @@ fn add_function_impl_(
         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
 
     if let Some(source) = ctx.sema.source(func)
-        && let Some(transformed_fn) =
-            get_transformed_fn(ctx, source.value, impl_def, async_sugaring) {
+        && let Some(transformed_fn) = get_transformed_fn(ctx, source.value, impl_def, async_sugaring)
+    {
         let function_decl = function_declaration(ctx, &transformed_fn, source.file_id.macro_file());
         match ctx.config.snippet_cap {
             Some(cap) => {
@@ -445,7 +445,8 @@ fn add_const_impl(
     let const_name = const_.name(ctx.db).map(|n| n.display_no_db(ctx.edition).to_smolstr());
 
     if let Some(const_name) = const_name
-        && let Some(source) = ctx.sema.source(const_) {
+        && let Some(source) = ctx.sema.source(const_)
+    {
         let assoc_item = ast::AssocItem::Const(source.value);
         if let Some(transformed_item) = get_transformed_assoc_item(ctx, assoc_item, impl_def) {
             let transformed_const = match transformed_item {
