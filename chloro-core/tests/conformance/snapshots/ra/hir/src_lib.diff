@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   227393 bytes
+Chloro size:   227894 bytes
 Rustfmt size:  236066 bytes
 
 ✗ Outputs DIFFER
@@ -19,18 +19,6 @@ Rustfmt size:  236066 bytes
      per_ns::PerNs,
      resolver::{HasResolver, Resolver},
      signatures::{ImplFlags, StaticFlags, StructFlags, TraitFlags, VariantFields},
-     },
- };
- 
--// Be careful with these re-exports.
--//
--// `hir` is the boundary between the compiler and the IDE. It should try hard to
--// isolate the compiler from the ide, to allow the two to be refactored
--// independently. Re-exporting something from the compiler is the sure way to
--// breach the boundary.
--//
--// Generally, a refactoring which *removes* a name from this list is a good
--// idea!
  pub use {
      cfg::{CfgAtom, CfgExpr, CfgOptions},
      hir_def::{
@@ -95,8 +83,7 @@ Rustfmt size:  236066 bytes
 +    hir_ty::mir,
  };
  
--// These are negative re-exports: pub using these names is forbidden, they
--// should remain private to hir internals.
+ // These are negative re-exports: pub using these names is forbidden, they
  #[allow(unused)]
  use {
      hir_def::expr_store::path::Path,

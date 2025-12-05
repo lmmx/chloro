@@ -451,6 +451,9 @@ impl Anchor {
 
 #[cfg(test)]
 mod tests {
+    // NOTE: We use check_assist_by_label, but not check_assist_not_applicable_by_label
+    // because all of our not-applicable tests should behave that way for both assists
+    // extract_variable offers, and check_assist_not_applicable ensures neither is offered
     use crate::tests::{
         check_assist_by_label, check_assist_not_applicable, check_assist_not_applicable_by_label,
         check_assist_target,

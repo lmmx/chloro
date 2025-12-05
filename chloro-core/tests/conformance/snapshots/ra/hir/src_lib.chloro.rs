@@ -116,6 +116,15 @@ pub use crate::{
     },
 };
 
+// Be careful with these re-exports.
+//
+// `hir` is the boundary between the compiler and the IDE. It should try hard to
+// isolate the compiler from the ide, to allow the two to be refactored
+// independently. Re-exporting something from the compiler is the sure way to
+// breach the boundary.
+//
+// Generally, a refactoring which *removes* a name from this list is a good
+// idea!
 pub use {
     cfg::{CfgAtom, CfgExpr, CfgOptions},
     hir_def::{
@@ -151,6 +160,8 @@ pub use {
     hir_ty::mir,
 };
 
+// These are negative re-exports: pub using these names is forbidden, they
+// should remain private to hir internals.
 #[allow(unused)]
 use {
     hir_def::expr_store::path::Path,

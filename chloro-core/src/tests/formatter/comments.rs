@@ -2,6 +2,36 @@ use super::*;
 use insta::assert_snapshot;
 
 #[test]
+fn preserve_comments_before_pub_use() {
+    let input = r#"// Be careful with these re-exports.
+//
+// `hir` is the boundary between the compiler and the IDE.
+pub use {
+    cfg::{CfgAtom, CfgExpr},
+};"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    // Be careful with these re-exports.
+    //
+    // `hir` is the boundary between the compiler and the IDE.
+    pub use {
+        cfg::{CfgAtom, CfgExpr},
+    };
+    "#);
+}
+
+#[test]
+fn preserve_comment_before_simple_use() {
+    let input = r#"// Important import
+use foo::Bar;"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    // Important import
+    use foo::Bar;
+    "#);
+}
+
+#[test]
 fn preserve_fixme_comments() {
     let input = r#"struct Foo {
     // FIXME: This should be fixed
