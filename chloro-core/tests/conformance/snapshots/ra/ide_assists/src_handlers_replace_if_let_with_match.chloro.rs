@@ -389,11 +389,15 @@ fn is_sad_pat(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
 }
 
 fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) {
-    if let ast::Expr::ParenExpr(expr) = cond && let Some(sub_expr) = expr.expr() {
+    if let ast::Expr::ParenExpr(expr) = cond
+        && let Some(sub_expr) = expr.expr()
+    {
         let_and_guard(&sub_expr)
     } else if let ast::Expr::LetExpr(let_expr) = cond {
         (Some(let_expr.clone()), None)
-    } else if let ast::Expr::BinExpr(bin_expr) = cond && let Some(ast::Expr::LetExpr(let_expr)) = and_bin_expr_left(bin_expr).lhs() {
+    } else if let ast::Expr::BinExpr(bin_expr) = cond
+        && let Some(ast::Expr::LetExpr(let_expr)) = and_bin_expr_left(bin_expr).lhs()
+    {
         let new_expr = bin_expr.clone_subtree();
         let mut edit = SyntaxEditor::new(new_expr.syntax().clone());
 
@@ -417,7 +421,9 @@ fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) 
 }
 
 fn and_bin_expr_left(expr: &ast::BinExpr) -> ast::BinExpr {
-    if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And)) && let Some(ast::Expr::BinExpr(left)) = expr.lhs() {
+    if expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And))
+        && let Some(ast::Expr::BinExpr(left)) = expr.lhs()
+    {
         and_bin_expr_left(&left)
     } else {
         expr.clone()

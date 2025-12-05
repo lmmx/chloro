@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18749 bytes
-Chloro size:   18680 bytes
+Chloro size:   18708 bytes
 Rustfmt size:  19056 bytes
 
 ✗ Outputs DIFFER
@@ -108,16 +108,6 @@ Rustfmt size:  19056 bytes
              expr.lhs().map_or(false, is_pattern_cond) || expr.rhs().map_or(false, is_pattern_cond)
          }
          ast::Expr::ParenExpr(expr) => expr.expr().is_some_and(is_pattern_cond),
-                 Some(ast::BlockModifier::AsyncGen(_)) => (),
-                 None => (),
-             }
--            if let Some(stmt_list) = b.stmt_list()
--                && let Some(e) = stmt_list.tail_expr()
--            {
-+            if let Some(stmt_list) = b.stmt_list() && let Some(e) = stmt_list.tail_expr() {
-                 for_each_tail_expr(&e, cb);
-             }
-         }
          ast::Expr::ForExpr(f) => walk_loop(cb, f.label(), f.loop_body()),
          ast::Expr::MatchExpr(m) => {
              if let Some(arms) = m.match_arm_list() {

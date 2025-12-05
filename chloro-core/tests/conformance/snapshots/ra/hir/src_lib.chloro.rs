@@ -1015,7 +1015,8 @@ fn emit_macro_def_diagnostics<'db>(
 ) {
     let id = db.macro_def(m.id);
     if let hir_expand::db::TokenExpander::DeclarativeMacro(expander) = db.macro_expander(id)
-        && let Some(e) = expander.mac.err() {
+        && let Some(e) = expander.mac.err()
+    {
         let Some(ast) = id.ast_id().left() else {
             never!("declarative expander for non decl-macro: {:?}", e);
             return;

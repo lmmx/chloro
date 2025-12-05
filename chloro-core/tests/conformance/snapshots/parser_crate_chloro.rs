@@ -8178,7 +8178,9 @@ pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
         return;
     }
 
-    if let Some((cm, blocklike)) = expr_stmt(p, Some(m)) && !(p.at(T!['}']) || (semicolon != Semicolon::Required && p.at(EOF))) {
+    if let Some((cm, blocklike)) = expr_stmt(p, Some(m))
+        && !(p.at(T!['}']) || (semicolon != Semicolon::Required && p.at(EOF)))
+    {
         // test no_semi_after_block
         // fn foo() {
         //     if true {}

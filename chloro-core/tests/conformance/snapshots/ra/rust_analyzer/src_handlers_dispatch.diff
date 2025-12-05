@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15570 bytes
-Chloro size:   15531 bytes
+Chloro size:   15539 bytes
 Rustfmt size:  15839 bytes
 
 ✗ Outputs DIFFER
@@ -101,12 +101,3 @@ Rustfmt size:  15839 bytes
          if let Err(e) = f(self.global_state, params) {
              tracing::error!(handler = %N::METHOD, error = %e, "notification handler failed");
          }
- 
-     pub(crate) fn finish(&mut self) {
-         if let Some(not) = &self.not
--            && !not.method.starts_with("$/")
--        {
-+            && !not.method.starts_with("$/") {
-             tracing::error!("unhandled notification: {:?}", not);
-         }
-     }

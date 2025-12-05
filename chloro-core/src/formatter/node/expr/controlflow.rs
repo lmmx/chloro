@@ -6,6 +6,60 @@ use ra_ap_syntax::{NodeOrToken, SyntaxKind};
 
 use super::try_format_expr_inner;
 
+/// Check if an expression is a let chain (BIN_EXPR with && containing LET_EXPR on both sides)
+fn is_let_chain(node: &SyntaxNode) -> bool {
+    if node.kind() != SyntaxKind::BIN_EXPR {
+        return false;
+    }
+
+    if let Some(bin_expr) = ast::BinExpr::cast(node.clone()) {
+        // Check if operator is &&
+        if bin_expr.op_token().is_some_and(|t| t.text() == "&&") {
+            // Check if either side contains a LET_EXPR
+            let has_let = node.descendants().any(|n| n.kind() == SyntaxKind::LET_EXPR);
+            return has_let;
+        }
+    }
+    false
+}
+
+/// Format a let chain condition with proper line breaks
+fn format_let_chain(node: &SyntaxNode, indent: usize) -> Option<String> {
+    let bin_expr = ast::BinExpr::cast(node.clone())?;
+
+    let lhs = bin_expr.lhs()?;
+    let rhs = bin_expr.rhs()?;
+
+    let mut buf = String::new();
+
+    // Format LHS (may itself be a chain)
+    if is_let_chain(lhs.syntax()) {
+        buf.push_str(&format_let_chain(lhs.syntax(), indent)?);
+    } else {
+        match try_format_expr_inner(lhs.syntax(), indent) {
+            Some(s) => buf.push_str(&s),
+            None => buf.push_str(&lhs.syntax().text().to_string()),
+        }
+    }
+
+    // Add && on new line with indent
+    buf.push('\n');
+    write_indent(&mut buf, indent + 4);
+    buf.push_str("&& ");
+
+    // Format RHS
+    if is_let_chain(rhs.syntax()) {
+        buf.push_str(&format_let_chain(rhs.syntax(), indent)?);
+    } else {
+        match try_format_expr_inner(rhs.syntax(), indent) {
+            Some(s) => buf.push_str(&s),
+            None => buf.push_str(&rhs.syntax().text().to_string()),
+        }
+    }
+
+    Some(buf)
+}
+
 fn format_expr_attrs(node: &impl HasAttrs) -> String {
     let mut result = String::new();
     for attr in node.attrs() {
@@ -150,14 +204,22 @@ pub fn format_if_expr(node: &SyntaxNode, indent: usize) -> Option<String> {
     buf.push_str(&attrs);
     buf.push_str("if ");
 
-    // Format condition
-    match try_format_expr_inner(condition.syntax(), indent) {
-        Some(s) => buf.push_str(&s),
-        None => buf.push_str(&condition.syntax().text().to_string()),
-    }
+    // Check if this is a let chain - format specially
+    if is_let_chain(condition.syntax()) {
+        buf.push_str(&format_let_chain(condition.syntax(), indent)?);
+        buf.push('\n');
+        write_indent(&mut buf, indent);
+        buf.push_str(&format_block_with_braces(&then_branch, indent));
+    } else {
+        // Format condition normally
+        match try_format_expr_inner(condition.syntax(), indent) {
+            Some(s) => buf.push_str(&s),
+            None => buf.push_str(&condition.syntax().text().to_string()),
+        }
 
-    buf.push(' ');
-    buf.push_str(&format_block_with_braces(&then_branch, indent));
+        buf.push(' ');
+        buf.push_str(&format_block_with_braces(&then_branch, indent));
+    }
 
     // Handle else branch
     if let Some(else_branch) = if_expr.else_branch() {

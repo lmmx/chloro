@@ -766,7 +766,9 @@ impl<'a> WalkExpandedExprCtx<'a> {
         }
 
         for stmt in expanded.statements() {
-            if let ast::Stmt::ExprStmt(stmt) = stmt && let Some(expr) = stmt.expr() {
+            if let ast::Stmt::ExprStmt(stmt) = stmt
+                && let Some(expr) = stmt.expr()
+            {
                 self.walk(&expr, cb);
             }
         }

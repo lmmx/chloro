@@ -804,7 +804,9 @@ fn get_use_tree_paths_from_path(
 }
 
 fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax::SyntaxElement>) {
-    if vis.is_none() && let Some(node_or_token) = node_or_token_opt {
+    if vis.is_none()
+        && let Some(node_or_token) = node_or_token_opt
+    {
         let pub_crate_vis = make::visibility_pub_crate().clone_for_update();
         ted::insert(ted::Position::before(node_or_token), pub_crate_vis.syntax());
     }

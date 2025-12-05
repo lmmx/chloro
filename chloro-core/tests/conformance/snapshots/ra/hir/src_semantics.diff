@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   101230 bytes
+Chloro size:   101262 bytes
 Rustfmt size:  105416 bytes
 
 ✗ Outputs DIFFER
@@ -1169,25 +1169,6 @@ Rustfmt size:  105416 bytes
      }
  
      pub fn extern_crate_decls(&self) -> impl Iterator<Item = Name> + '_ {
- 
- impl RenameConflictsVisitor<'_> {
-     fn resolve_path(&mut self, node: ExprOrPatId, path: &Path) {
--        if let Path::BarePath(path) = path
--            && let Some(name) = path.as_ident()
--        {
-+        if let Path::BarePath(path) = path && let Some(name) = path.as_ident() {
-             if *name.symbol() == self.new_name {
-                 if let Some(conflicting) = self.resolver.rename_will_conflict_with_renamed(
-                     self.db,
-                     self.body.expr_or_pat_path_hygiene(node),
-                     &self.new_name,
-                     self.to_be_renamed,
--                )
--            {
-+                ) {
-                 self.conflicts.insert(conflicting);
-             }
-         }
      fn rename_conflicts(&mut self, expr: ExprId) {
          match &self.body[expr] {
              Expr::Path(path) => {

@@ -1938,7 +1938,8 @@ fn has_in_newline_expr_first(node: &SyntaxNode) -> bool {
             .ancestors()
             .take_while(|it| it.text_range().start() == node.text_range().start())
             .filter_map(Either::<ast::ExprStmt, ast::Expr>::cast)
-            .last() {
+            .last()
+    {
         stmt_like.syntax().parent().and_then(ast::StmtList::cast).is_some()
     } else {
         false

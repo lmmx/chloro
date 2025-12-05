@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33374 bytes
-Chloro size:   33302 bytes
+Chloro size:   33310 bytes
 Rustfmt size:  34468 bytes
 
 ✗ Outputs DIFFER
@@ -202,12 +202,11 @@ Rustfmt size:  34468 bytes
 -            }) = derives
 -                .iter_mut()
 -                .find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id)
--        {
 +            && let Some(DeriveMacroInvocation { derive_call_ids, .. }) =
-+                derives.iter_mut().find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id) {
++                derives.iter_mut().find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id)
+         {
              derive_call_ids[idx] = Some(call);
          }
-     }
          attr_call_id: MacroCallId,
          len: usize,
      ) {

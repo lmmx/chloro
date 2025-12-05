@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33895 bytes
-Chloro size:   33786 bytes
+Chloro size:   33798 bytes
 Rustfmt size:  34663 bytes
 
 ✗ Outputs DIFFER
@@ -199,16 +199,6 @@ Rustfmt size:  34663 bytes
          })
  }
  
-         }
-     }
- 
--    if prev_len != lint_attrs.len()
--        && let Some(false) | None = sema.check_cfg_attr(value)
--    {
-+    if prev_len != lint_attrs.len() && let Some(false) | None = sema.check_cfg_attr(value) {
-         // Discard the attributes when the condition is false.
-         lint_attrs.truncate(prev_len);
-     }
          }
          _ => panic!("non-lint passed to `handle_lints()`"),
      };

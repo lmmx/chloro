@@ -913,7 +913,9 @@ fn handle_macro_def_scope(
     hygiene_info: &mut Option<(SyntaxContext, MacroDefId)>,
     macro_id: &MacroDefId,
 ) {
-    if let Some((parent_ctx, label_macro_id)) = hygiene_info && label_macro_id == macro_id {
+    if let Some((parent_ctx, label_macro_id)) = hygiene_info
+        && label_macro_id == macro_id
+    {
         // A macro is allowed to refer to variables from before its declaration.
         // Therefore, if we got to the rib of its declaration, give up its hygiene
         // and use its parent expansion.

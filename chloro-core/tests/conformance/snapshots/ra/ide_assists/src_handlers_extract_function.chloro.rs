@@ -1446,7 +1446,8 @@ fn fixup_call_site(builder: &mut SourceChangeBuilder, body: &FunctionBody) {
     let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
 
     if let Some(parent_match_arm) = parent_match_arm
-        && parent_match_arm.comma_token().is_none() {
+        && parent_match_arm.comma_token().is_none()
+    {
         let parent_match_arm = builder.make_mut(parent_match_arm);
         ted::append_child_raw(parent_match_arm.syntax(), make::token(T![,]));
     }

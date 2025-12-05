@@ -306,7 +306,8 @@ impl<'db> TypeVisitor<DbInterner<'db>> for StalledOnCoroutines<'_, 'db> {
         }
 
         if let TyKind::Coroutine(def_id, _) = ty.kind()
-            && self.stalled_coroutines.contains(&def_id.into()) {
+            && self.stalled_coroutines.contains(&def_id.into())
+        {
             ControlFlow::Break(())
         } else if ty.has_coroutines() {
             ty.super_visit_with(self)
