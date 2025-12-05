@@ -69,7 +69,7 @@ as tested on rust-analyzer's [crates][ra-crates]:
 Add chloro to your `Cargo.toml`:
 ```toml
 [dependencies]
-chloro = "0.5"
+chloro = "0.7"
 ```
 
 #### CLI Installation
