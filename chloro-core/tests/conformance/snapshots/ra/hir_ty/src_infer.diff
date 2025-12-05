@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   74127 bytes
+Chloro size:   74131 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -26,15 +26,6 @@ Rustfmt size:  74236 bytes
  #[allow(unreachable_pub)]
  pub use coerce::could_coerce;
  #[allow(unreachable_pub)]
-     },
-     UnresolvedIdent {
-         id: ExprOrPatId,
--    },
--    // FIXME: This should be emitted in body lowering
-+    }, // FIXME: This should be emitted in body lowering
-     BreakOutsideOfLoop {
-         expr: ExprId,
-         is_break: bool,
  impl<'db> Adjustment<'db> {
      pub fn borrow(interner: DbInterner<'db>, m: Mutability, ty: Ty<'db>, lt: Region<'db>) -> Self {
          let ty = Ty::new_ref(interner, lt, ty, m);

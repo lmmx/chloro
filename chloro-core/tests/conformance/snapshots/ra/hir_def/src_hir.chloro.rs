@@ -118,7 +118,8 @@ pub enum Literal {
     Char(char),
     Bool(bool),
     Int(i128, Option<BuiltinInt>),
-    Uint(u128, Option<BuiltinUint>), // Here we are using a wrapper around float because float primitives do not implement Eq, so they
+    Uint(u128, Option<BuiltinUint>),
+    // Here we are using a wrapper around float because float primitives do not implement Eq, so they
     // could not be used directly here, to understand how the wrapper works go to definition of
     // FloatTypeWrapper
     Float(FloatTypeWrapper, Option<BuiltinFloat>),
@@ -208,7 +209,8 @@ pub enum Expr {
         statements: Box<[Statement]>,
         tail: Option<ExprId>,
     },
-    Const(ExprId), // FIXME: Fold this into Block with an unsafe flag?
+    Const(ExprId),
+    // FIXME: Fold this into Block with an unsafe flag?
     Unsafe {
         id: Option<BlockId>,
         statements: Box<[Statement]>,
@@ -284,7 +286,8 @@ pub enum Expr {
         lhs: ExprId,
         rhs: ExprId,
         op: Option<BinaryOp>,
-    }, // Assignments need a special treatment because of destructuring assignment.
+    },
+    // Assignments need a special treatment because of destructuring assignment.
     Assignment {
         target: PatId,
         value: ExprId,

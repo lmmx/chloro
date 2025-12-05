@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11678 bytes
-Chloro size:   11687 bytes
+Chloro size:   11691 bytes
 Rustfmt size:  12164 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     InternedClosureId(InternedClosureId),
-     InternedCoroutineId(InternedCoroutineId),
-     InternedOpaqueTyId(InternedOpaqueTyId),
--    EnumVariantId(EnumVariantId),
--    // FIXME(next-solver): Do we need the separation of `Ctor`? It duplicates some variants.
-+    EnumVariantId(EnumVariantId), // FIXME(next-solver): Do we need the separation of `Ctor`? It duplicates some variants.
-     Ctor(Ctor),
- }
- 
          let interner = DbInterner::conjure();
          let db = interner.db;
          match *self {

@@ -58,10 +58,12 @@ pub enum TyFingerprint {
     Char,
     Int(IntTy),
     Uint(UintTy),
-    Float(FloatTy), // These can have user-defined impls:
+    Float(FloatTy),
+    // These can have user-defined impls:
     Adt(hir_def::AdtId),
     Dyn(TraitId),
-    ForeignType(TypeAliasId), // These only exist for trait impls
+    ForeignType(TypeAliasId),
+    // These only exist for trait impls
     Unit,
     Unnameable,
     Function(u32),

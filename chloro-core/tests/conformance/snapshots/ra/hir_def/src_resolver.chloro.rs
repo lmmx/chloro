@@ -95,7 +95,8 @@ pub enum TypeNs {
     SelfType(ImplId),
     GenericParam(TypeParamId),
     AdtId(AdtId),
-    AdtSelfType(AdtId), // Yup, enum variants are added to the types ns, but any usage of variant as
+    AdtSelfType(AdtId),
+    // Yup, enum variants are added to the types ns, but any usage of variant as
     // type is an error.
     EnumVariantId(EnumVariantId),
     TypeAliasId(TypeAliasId),

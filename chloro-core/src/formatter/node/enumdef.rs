@@ -14,6 +14,29 @@ struct VariantInfo {
     has_blank_line_before: bool,
 }
 
+/// Check if there's a newline in the whitespace immediately before this variant node
+fn has_newline_before_variant(node: &SyntaxNode) -> bool {
+    let mut current = node.prev_sibling_or_token();
+
+    while let Some(item) = current {
+        match &item {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::WHITESPACE {
+                    return t.text().contains('\n');
+                } else if t.kind() == SyntaxKind::COMMA {
+                    // Continue past the comma to find whitespace
+                    current = t.prev_sibling_or_token();
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+            NodeOrToken::Node(_) => return false,
+        }
+    }
+    false
+}
+
 /// Pre-scan all variants to correctly assign trailing comments.
 ///
 /// Due to how rust-analyzer parses, a trailing comment like:
@@ -30,6 +53,10 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
         let mut trailing_comment_for_prev: Option<String> = None;
         let mut seen_newline = false;
 
+        // Check if there's a newline before this variant - if so, any comment
+        // at the start is a leading comment, not trailing for previous
+        let newline_before_variant = idx > 0 && has_newline_before_variant(variant.syntax());
+
         // Collect comments from inside the variant node (before the name)
         for child in variant.syntax().children_with_tokens() {
             match child {
@@ -38,8 +65,11 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
                         let text = t.text().to_string();
                         // Skip doc comments (handled by HasDocComments)
                         if !text.starts_with("///") && !text.starts_with("//!") {
-                            if !seen_newline && trailing_comment_for_prev.is_none() {
-                                // First comment before any newline - trailing for previous
+                            if !seen_newline
+                                && !newline_before_variant
+                                && trailing_comment_for_prev.is_none()
+                            {
+                                // First comment before any newline AND no newline before variant - trailing for previous
                                 trailing_comment_for_prev = Some(text);
                             } else {
                                 leading_comments.push(text);

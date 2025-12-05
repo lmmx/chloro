@@ -33,7 +33,8 @@ pub enum DynCompatibilityViolation {
     SelfReferential,
     Method(FunctionId, MethodViolationCode),
     AssocConst(ConstId),
-    GAT(TypeAliasId), // This doesn't exist in rustc, but added for better visualization
+    GAT(TypeAliasId),
+    // This doesn't exist in rustc, but added for better visualization
     HasNonCompatibleSuperTrait(TraitId),
 }
 

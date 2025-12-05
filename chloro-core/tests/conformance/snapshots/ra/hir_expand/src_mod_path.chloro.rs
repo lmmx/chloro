@@ -30,7 +30,8 @@ pub enum PathKind {
     Super(u8),
     Crate,
     /// Absolute path (::foo)
-    Abs, // FIXME: Can we remove this somehow?
+    Abs,
+    // FIXME: Can we remove this somehow?
     /// `$crate` from macro expansion
     DollarCrate(Crate),
 }

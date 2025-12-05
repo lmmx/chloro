@@ -63,8 +63,10 @@ pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
 
 enum FlipAction {
     // Flip the expression
-    Flip, // Flip the expression and replace the operator with this string
-    FlipAndReplaceOp(SyntaxKind), // Do not flip the expression
+    Flip,
+    // Flip the expression and replace the operator with this string
+    FlipAndReplaceOp(SyntaxKind),
+    // Do not flip the expression
     DontFlip,
 }
 

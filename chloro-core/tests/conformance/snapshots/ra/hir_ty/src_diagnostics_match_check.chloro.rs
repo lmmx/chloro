@@ -80,8 +80,9 @@ pub(crate) enum PatKind<'db> {
     /// `&P`, `&mut P`, etc.
     Deref {
         subpattern: Pat<'db>,
-    }, // FIXME: for now, only bool literals are implemented
+    },
 
+    // FIXME: for now, only bool literals are implemented
     LiteralBool {
         value: bool,
     },

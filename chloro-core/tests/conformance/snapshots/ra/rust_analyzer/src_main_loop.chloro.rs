@@ -115,7 +115,8 @@ pub(crate) enum Task {
     PrimeCaches(PrimeCachesProgress),
     FetchWorkspace(ProjectWorkspaceProgress),
     FetchBuildData(BuildDataProgress),
-    LoadProcMacros(ProcMacroProgress), // FIXME: Remove this in favor of a more general QueuedTask, see `handle_did_save_text_document`
+    LoadProcMacros(ProcMacroProgress),
+    // FIXME: Remove this in favor of a more general QueuedTask, see `handle_did_save_text_document`
     BuildDepsHaveChanged,
 }
 

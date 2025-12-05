@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   45251 bytes
+Chloro size:   45271 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -80,27 +80,6 @@ Rustfmt size:  45288 bytes
  }
  
  pub(crate) fn add_method_to_adt(
- #[derive(Debug)]
- enum ReferenceConversionType {
-     // reference can be stripped if the type is Copy
--    Copy,
--    // &String -> &str
--    AsRefStr,
--    // &Vec<T> -> &[T]
--    AsRefSlice,
--    // &Box<T> -> &T
--    Dereferenced,
--    // &Option<T> -> Option<&T>
--    Option,
--    // &Result<T, E> -> Result<&T, &E>
-+    Copy, // &String -> &str
-+    AsRefStr, // &Vec<T> -> &[T]
-+    AsRefSlice, // &Box<T> -> &T
-+    Dereferenced, // &Option<T> -> Option<&T>
-+    Option, // &Result<T, E> -> Result<&T, &E>
-     Result,
- }
- 
                  if self.impls_deref {
                      make::expr_ref(expr, false)
                  } else {

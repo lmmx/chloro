@@ -598,10 +598,12 @@ enum ChildMode<'db> {
     // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
     // and skip all `GoalSource::Misc`, which represent useless obligations
     // such as alias-eq which may not hold.
-    Trait(PolyTraitPredicate<'db>), // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
+    Trait(PolyTraitPredicate<'db>),
+    // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
     // and skip all `GoalSource::Misc`, which represent useless obligations
     // such as alias-eq which may not hold.
-    Host(Binder<'db, HostEffectPredicate<DbInterner<'db>>>), // Skip trying to derive an `ObligationCause` from this obligation, and
+    Host(Binder<'db, HostEffectPredicate<DbInterner<'db>>>),
+    // Skip trying to derive an `ObligationCause` from this obligation, and
     // report *all* sub-obligations as if they came directly from the parent
     // obligation.
     PassThrough,

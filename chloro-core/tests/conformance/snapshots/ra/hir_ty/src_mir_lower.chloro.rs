@@ -112,8 +112,9 @@ pub enum MirLowerError<'db> {
     MutatingRvalue,
     UnresolvedLabel,
     UnresolvedUpvar(Place<'db>),
-    InaccessibleLocal, // monomorphization errors:
+    InaccessibleLocal,
 
+    // monomorphization errors:
     GenericArgNotProvided(GenericParamId, GenericArgs<'db>),
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18501 bytes
+Chloro size:   18505 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
@@ -15,14 +15,6 @@ Rustfmt size:  18809 bytes
  const REGION_END: &str = "// endregion";
  
  #[derive(Debug, PartialEq, Eq)]
-     WhereClause,
-     ReturnType,
-     MatchArm,
--    Function,
--    // region: item runs
-+    Function, // region: item runs
-     Modules,
-     Consts,
      Statics,
      TypeAliases,
      ExternCrates,
