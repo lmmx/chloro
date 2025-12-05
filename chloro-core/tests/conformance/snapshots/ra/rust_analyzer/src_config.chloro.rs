@@ -1330,7 +1330,6 @@ impl ConfigChange {
 
     pub fn change_user_config(&mut self, content: Option<Arc<str>>) {
         assert!(self.user_config_change.is_none()); // Otherwise it is a double write.
-        // Otherwise it is a double write.
         self.user_config_change = content;
     }
 

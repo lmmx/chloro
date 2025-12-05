@@ -1536,7 +1536,6 @@ fn main() {
     }
     // still recover later
     let; //~ ERROR: expected pattern
-    //~ ERROR: expected pattern
     let _ = 0;
 }
 
@@ -3221,7 +3220,6 @@ fn outer() {
 impl Whatever {
     fn salsa_event(&self, event_fn: impl Fn() -> Event<Self>) {
         #![allow(unused_variables)] // this is  `inner_attr` of the block
-        // this is  `inner_attr` of the block
     }
 }
 
@@ -11014,7 +11012,6 @@ impl<'s> ScriptSource<'s> {
         };
         let info = input.next_slice(info_nl.start);
         let info = info.strip_suffix('\r').unwrap_or(info); // already excludes `\n`
-        // already excludes `\n`
         let info = info.trim_matches(is_horizontal_whitespace);
         if !info.is_empty() {
             let info_start = info.offset_from(&raw);
@@ -11049,7 +11046,6 @@ impl<'s> ScriptSource<'s> {
             .push_visible_span(open_start..open_end));
         };
         let frontmatter_start = input.current_token_start() + 1; // skip nl from infostring
-        // skip nl from infostring
         let _ = input.next_slice(frontmatter_nl.start + 1);
         let frontmatter_end = input.current_token_start();
         source.frontmatter = Some(frontmatter_start..frontmatter_end);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9045 bytes
-Chloro size:   9129 bytes
+Chloro size:   9057 bytes
 Rustfmt size:  9185 bytes
 
 ✗ Outputs DIFFER
@@ -41,13 +41,6 @@ Rustfmt size:  9185 bytes
  
              let output = format!("{block_prefix}\n{block_comment_body}\n{indentation}*/");
  
-         .flatten()
-         .skip(1); // skip the first element so we don't duplicate it in next_comments
- 
-+    // skip the first element so we don't duplicate it in next_comments
-     let next_comments = comment
-         .syntax()
-         .siblings_with_tokens(Direction::Next)
  pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) -> String {
      let text = comm.text();
      let contents_without_prefix = text.strip_prefix(comm.prefix()).unwrap_or(text);

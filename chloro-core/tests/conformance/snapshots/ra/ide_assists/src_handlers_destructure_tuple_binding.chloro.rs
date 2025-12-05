@@ -330,7 +330,6 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
         .skip(1) // PATH_EXPR
         .find(|s| !ast::ParenExpr::can_cast(s.kind()))?; // skip parentheses
 
-    // skip parentheses
     if let Some(field_expr) = ast::FieldExpr::cast(node) {
         let idx = field_expr.name_ref()?.as_tuple_field()?;
         if idx < data.field_names.len() {

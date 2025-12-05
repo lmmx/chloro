@@ -54,7 +54,17 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
             }
             NodeOrToken::Token(t) => match t.kind() {
                 SyntaxKind::COMMENT => {
-                    pending_comments.push(t.text().to_string());
+                    // Check if there's a newline before this comment
+                    let has_newline_before = idx > 0
+                        && matches!(
+                            &children[idx - 1],
+                            NodeOrToken::Token(prev) if prev.kind() == SyntaxKind::WHITESPACE && prev.text().contains('\n')
+                        );
+                    // Only collect as leading comment if there was a newline before it
+                    // Otherwise it's a trailing comment for the previous node (handled during output)
+                    if has_newline_before {
+                        pending_comments.push(t.text().to_string());
+                    }
                 }
                 SyntaxKind::WHITESPACE => {
                     if t.text().matches('\n').count() >= 2 {

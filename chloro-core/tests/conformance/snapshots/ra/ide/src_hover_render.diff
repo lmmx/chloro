@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53903 bytes
+Chloro size:   53881 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -52,15 +52,6 @@ Rustfmt size:  53876 bytes
  }
  
  pub(super) fn path(
-         }
-     }
-     label.pop(); // ' '
-+    // ' '
-     label.pop(); // ','
-+    // ','
-     Some(label)
- }
- 
  #[cfg(test)]
  mod tests {
      use super::*;

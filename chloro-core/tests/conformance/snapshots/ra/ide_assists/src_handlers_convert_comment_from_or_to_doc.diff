@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18595 bytes
-Chloro size:   18670 bytes
+Chloro size:   18598 bytes
 Rustfmt size:  18641 bytes
 
 ✗ Outputs DIFFER
@@ -41,13 +41,6 @@ Rustfmt size:  18641 bytes
  }
  
  /// The line -> block assist can  be invoked from anywhere within a sequence of line comments.
-         .flatten()
-         .skip(1); // skip the first element so we don't duplicate it in next_comments
- 
-+    // skip the first element so we don't duplicate it in next_comments
-     let next_comments = comment
-         .syntax()
-         .siblings_with_tokens(Direction::Next)
      let comments = relevant_line_comments(comment);
      let first = comments.first()?;
      let indentation = IndentLevel::from_token(first.syntax());

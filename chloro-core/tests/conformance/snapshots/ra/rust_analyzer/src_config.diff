@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166508 bytes
+Chloro size:   166465 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -101,13 +101,6 @@ Rustfmt size:  167117 bytes
 +    ratoml_file_change: Option<FxHashMap<SourceRootId, (RatomlFileKind, VfsPath, Option<Arc<str>>)>>,
      source_map_change: Option<Arc<FxHashMap<SourceRootId, SourceRootId>>>,
  }
- 
- 
-     pub fn change_user_config(&mut self, content: Option<Arc<str>>) {
-         assert!(self.user_config_change.is_none()); // Otherwise it is a double write.
-+        // Otherwise it is a double write.
-         self.user_config_change = content;
-     }
  
      pub debug: bool,
      pub update_test: bool,

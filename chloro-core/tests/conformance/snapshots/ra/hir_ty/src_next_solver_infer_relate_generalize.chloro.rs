@@ -423,7 +423,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     fn tys(&mut self, t: Ty<'db>, t2: Ty<'db>) -> RelateResult<'db, Ty<'db>> {
         assert_eq!(t, t2); // we are misusing TypeRelation here; both LHS and RHS ought to be ==
 
-        // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         if let Some(result) = self.cache.get(&(t, self.ambient_variance, self.in_alias)) {
             return Ok(*result);
         }
@@ -543,7 +542,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     fn regions(&mut self, r: Region<'db>, r2: Region<'db>) -> RelateResult<'db, Region<'db>> {
         assert_eq!(r, r2); // we are misusing TypeRelation here; both LHS and RHS ought to be ==
 
-        // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match r.kind() {
             // Never make variables for regions bound within the type itself,
             // nor for erased regions.
@@ -583,7 +581,6 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     fn consts(&mut self, c: Const<'db>, c2: Const<'db>) -> RelateResult<'db, Const<'db>> {
         assert_eq!(c, c2); // we are misusing TypeRelation here; both LHS and RHS ought to be ==
 
-        // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match c.kind() {
             ConstKind::Infer(InferConst::Var(vid)) => {
                 // If root const vids are equal, then `root_vid` and

@@ -1257,9 +1257,7 @@ fn render_memory_layout(
         }
     }
     label.pop(); // ' '
-    // ' '
     label.pop(); // ','
-    // ','
     Some(label)
 }
 

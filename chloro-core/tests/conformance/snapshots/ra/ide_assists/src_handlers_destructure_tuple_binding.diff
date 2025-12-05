@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   43368 bytes
+Chloro size:   43344 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -155,11 +155,6 @@ Rustfmt size:  44616 bytes
      let node = usage
          .name
          .syntax()
-         .skip(1) // PATH_EXPR
-         .find(|s| !ast::ParenExpr::can_cast(s.kind()))?; // skip parentheses
- 
-+    // skip parentheses
-     if let Some(field_expr) = ast::FieldExpr::cast(node) {
          let idx = field_expr.name_ref()?.as_tuple_field()?;
          if idx < data.field_names.len() {
              // special case: in macro call -> range of `field_expr` in applied macro, NOT range in actual file!
