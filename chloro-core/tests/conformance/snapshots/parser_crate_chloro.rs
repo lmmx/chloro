@@ -2681,7 +2681,9 @@ fn foo() {
     }
 }
 
-fn printf(format: *const i8, ..., _: u8) -> i32;
+extern "C" {
+    fn printf(format: *const i8, ..., _: u8) -> i32;
+}
 
 type T = [(); 92];
 use std::collections;
@@ -2838,6 +2840,8 @@ fn main() {
 
 const C: u32 = 92;
 
+unsafe extern "C" {}
+extern {}
 
 type T = (i32);
 
@@ -3185,19 +3189,20 @@ struct S {
 }
 
 
-// sqrt (from libm) may be called with any `f64`
-pub fn sqrt(x: f64) -> f64;
-// strlen (from libc) requires a valid pointer,
-// so we mark it as being an unsafe fn
-pub unsafe fn strlen(p: *const c_char) -> usize;
-// this function doesn't say safe or unsafe, so it defaults to unsafe
-pub fn free(p: *mut core::ffi::c_void);
-pub static mut COUNTER: i32;
-pub static IMPORTANT_BYTES: [u8; 256];
-pub static LINES: SyncUnsafeCell<i32>;
+unsafe extern {
+    // sqrt (from libm) may be called with any `f64`
+    pub safe fn sqrt(x: f64) -> f64;
+    // strlen (from libc) requires a valid pointer,
+    // so we mark it as being an unsafe fn
+    pub unsafe fn strlen(p: *const c_char) -> usize;
+    // this function doesn't say safe or unsafe, so it defaults to unsafe
+    pub fn free(p: *mut core::ffi::c_void);
+    pub safe static mut COUNTER: i32;
+    pub unsafe static IMPORTANT_BYTES: [u8; 256];
+    pub safe static LINES: SyncUnsafeCell<i32>;
+}
 
-//! This is a doc comment
-#![doc("This is also a doc comment")]
+extern "C" {}
 
 fn inner() {
     #![doc("Inner attributes allowed here")]
@@ -3280,9 +3285,11 @@ where
 #
 #
 
-fn a(_: *mut u8, ...);
-fn b(_: *mut u8, _: ...);
-fn c(_: *mut u8, #[cfg(never)] [w, t, f]: ...);
+extern "C" {
+    fn a(_: *mut u8, ...,);
+    fn b(_: *mut u8, _: ...);
+    fn c(_: *mut u8, #[cfg(never)] [w, t, f]: ...,);
+}
 
 fn main() {
     match .. {
@@ -3492,7 +3499,9 @@ fn g1(#[attr1] #[attr2] pat: Type) {}
 
 fn g2(#[attr1] x: u8) {}
 
-fn printf(format: *const i8, #[attr] ...) -> i32;
+extern "C" {
+    fn printf(format: *const i8, #[attr] ...) -> i32;
+}
 
 trait Foo {
     fn bar(#[attr] _: u64, # [attr] mut x: i32);
@@ -3615,6 +3624,7 @@ impl Foo {
 unsafe impl Foo {
 }
 
+unsafe extern "C++" {}
 
 fn main() {
     unsafe fn f() {}
@@ -3765,52 +3775,35 @@ fn test_use_tree_merge() {
     }
 }
 
-pub fn socket(domain: ::c_int, ty: ::c_int, protocol: ::c_int) -> ::c_int;
-pub fn bind(fd: ::c_int, addr: *const sockaddr, len: socklen_t) -> ::c_int;
-pub fn connect(socket: ::c_int, address: *const sockaddr, len: socklen_t) -> ::c_int;
-pub fn listen(socket: ::c_int, backlog: ::c_int) -> ::c_int;
-pub fn getsockname(
-    socket: ::c_int,
-    address: *mut sockaddr,
-    address_len: *mut socklen_t,
-) -> ::c_int;
-pub fn getsockopt(
-    sockfd: ::c_int,
-    level: ::c_int,
-    optname: ::c_int,
-    optval: *mut ::c_void,
-    optlen: *mut ::socklen_t,
-) -> ::c_int;
-pub fn setsockopt(
-    socket: ::c_int,
-    level: ::c_int,
-    name: ::c_int,
-    value: *const ::c_void,
-    option_len: socklen_t,
-) -> ::c_int;
-pub fn getpeername(
-    socket: ::c_int,
-    address: *mut sockaddr,
-    address_len: *mut socklen_t,
-) -> ::c_int;
-pub fn sendto(
-    socket: ::c_int,
-    buf: *const ::c_void,
-    len: ::size_t,
-    flags: ::c_int,
-    addr: *const sockaddr,
-    addrlen: socklen_t,
-) -> ::ssize_t;
-pub fn send(socket: ::c_int, buf: *const ::c_void, len: ::size_t, flags: ::c_int) -> ::ssize_t;
-pub fn recvfrom(
-    socket: ::c_int,
-    buf: *mut ::c_void,
-    len: ::size_t,
-    flags: ::c_int,
-    addr: *mut ::sockaddr,
-    addrlen: *mut ::socklen_t,
-) -> ::ssize_t;
-pub fn recv(socket: ::c_int, buf: *mut ::c_void, len: ::size_t, flags: ::c_int) -> ::ssize_t;
+extern {
+    pub fn socket(domain: ::c_int, ty: ::c_int, protocol: ::c_int) -> ::c_int;
+    pub fn bind(fd: ::c_int, addr: *const sockaddr, len: socklen_t) -> ::c_int;
+    pub fn connect(socket: ::c_int, address: *const sockaddr,
+                   len: socklen_t) -> ::c_int;
+    pub fn listen(socket: ::c_int, backlog: ::c_int) -> ::c_int;
+    pub fn getsockname(socket: ::c_int, address: *mut sockaddr,
+                       address_len: *mut socklen_t) -> ::c_int;
+    pub fn getsockopt(sockfd: ::c_int,
+                      level: ::c_int,
+                      optname: ::c_int,
+                      optval: *mut ::c_void,
+                      optlen: *mut ::socklen_t) -> ::c_int;
+    pub fn setsockopt(socket: ::c_int, level: ::c_int, name: ::c_int,
+                      value: *const ::c_void,
+                      option_len: socklen_t) -> ::c_int;
+    pub fn getpeername(socket: ::c_int, address: *mut sockaddr,
+                       address_len: *mut socklen_t) -> ::c_int;
+    pub fn sendto(socket: ::c_int, buf: *const ::c_void, len: ::size_t,
+                  flags: ::c_int, addr: *const sockaddr,
+                  addrlen: socklen_t) -> ::ssize_t;
+    pub fn send(socket: ::c_int, buf: *const ::c_void, len: ::size_t,
+                flags: ::c_int) -> ::ssize_t;
+    pub fn recvfrom(socket: ::c_int, buf: *mut ::c_void, len: ::size_t,
+                    flags: ::c_int, addr: *mut ::sockaddr,
+                    addrlen: *mut ::socklen_t) -> ::ssize_t;
+    pub fn recv(socket: ::c_int, buf: *mut ::c_void, len: ::size_t,
+                flags: ::c_int) -> ::ssize_t;
+}
 
 // https://github.com/rust-lang/rust-analyzer/issues/596
 
@@ -3903,7 +3896,9 @@ impl T for () {
 unsafe impl T for () {
 }
 
+extern {}
 
+extern "C" {}
 
 #[cfg(test)]
 #[Ignore]

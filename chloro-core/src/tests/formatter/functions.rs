@@ -42,12 +42,20 @@ fn format_short_function_single_line() {
     // Short functions that fit on one line should stay on one line
     let input = r#"fn arg_with_attr() { run_and_expect_no_errors("test"); }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"fn arg_with_attr() { run_and_expect_no_errors("test"); }"#);
+    assert_snapshot!(output, @r#"
+    fn arg_with_attr() {
+        run_and_expect_no_errors("test");
+    }
+    "#);
 }
 
 #[test]
 fn format_very_short_function_single_line() {
     let input = r#"fn foo() { bar(); }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"fn foo() { bar(); }"#);
+    assert_snapshot!(output, @r"
+    fn foo() {
+        bar();
+    }
+    ");
 }
