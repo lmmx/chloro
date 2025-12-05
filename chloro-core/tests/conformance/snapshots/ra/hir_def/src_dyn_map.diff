@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6860 bytes
-Chloro size:   6906 bytes
+Chloro size:   6905 bytes
 Rustfmt size:  6980 bytes
 
 ✗ Outputs DIFFER
@@ -91,12 +91,6 @@ Rustfmt size:  6980 bytes
      }
  }
  
--impl<K, V, P> Copy for Key<K, V, P> {}
-+impl<K, V, P> Copy for Key<K, V, P> {
-+}
- 
- impl<K, V, P> Clone for Key<K, V, P> {
-     fn clone(&self) -> Key<K, V, P> {
  
  pub trait Policy {
      type K;

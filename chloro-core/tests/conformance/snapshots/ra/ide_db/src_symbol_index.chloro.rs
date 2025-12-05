@@ -262,8 +262,7 @@ impl PartialEq for SymbolIndex {
     }
 }
 
-impl Eq for SymbolIndex {
-}
+impl Eq for SymbolIndex {}
 
 impl Hash for SymbolIndex {
     fn hash<H: Hasher>(&self, hasher: &mut H) {

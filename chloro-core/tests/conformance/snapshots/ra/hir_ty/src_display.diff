@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99266 bytes
+Chloro size:   99264 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -38,17 +38,12 @@ Rustfmt size:  99713 bytes
  }
  
 -// String will ignore link metadata
--impl HirWrite for String {}
-+impl HirWrite for String {
-+}
+ impl HirWrite for String {}
  
 -// `core::Formatter` will ignore metadata
--impl HirWrite for fmt::Formatter<'_> {}
-+impl HirWrite for fmt::Formatter<'_> {
-+}
+ impl HirWrite for fmt::Formatter<'_> {}
  
  pub struct HirFormatter<'a, 'db> {
-     /// The database handle
      bounds_formatting_ctx: BoundsFormattingCtx<'db>,
  }
  

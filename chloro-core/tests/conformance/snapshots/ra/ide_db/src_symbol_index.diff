@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17943 bytes
-Chloro size:   17939 bytes
+Chloro size:   17938 bytes
 Rustfmt size:  17943 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     }
- }
- 
--impl Eq for SymbolIndex {}
-+impl Eq for SymbolIndex {
-+}
- 
- impl Hash for SymbolIndex {
-     fn hash<H: Hasher>(&self, hasher: &mut H) {
  
  #[cfg(test)]
  mod tests {

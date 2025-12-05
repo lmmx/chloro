@@ -133,8 +133,7 @@ impl<'db, T: PartialEq> PartialEq<Obligation<'db, T>> for Obligation<'db, T> {
     }
 }
 
-impl<'db, T: Eq> Eq for Obligation<'db, T> {
-}
+impl<'db, T: Eq> Eq for Obligation<'db, T> {}
 
 impl<'db, T: Hash> Hash for Obligation<'db, T> {
     fn hash<H: Hasher>(&self, state: &mut H) {

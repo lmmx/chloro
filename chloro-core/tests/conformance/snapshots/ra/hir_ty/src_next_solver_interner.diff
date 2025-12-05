@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81815 bytes
+Chloro size:   81813 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -124,16 +124,11 @@ Rustfmt size:  84055 bytes
  }
  
 -// FIXME: very wrong, see https://github.com/rust-lang/rust/pull/144808
--unsafe impl Send for DbInterner<'_> {}
--unsafe impl Sync for DbInterner<'_> {}
-+unsafe impl Send for DbInterner<'_> {
-+}
+ unsafe impl Send for DbInterner<'_> {}
 +
-+unsafe impl Sync for DbInterner<'_> {
-+}
+ unsafe impl Sync for DbInterner<'_> {}
  
  impl<'db> DbInterner<'db> {
-     // FIXME(next-solver): remove this method
      }
  }
  

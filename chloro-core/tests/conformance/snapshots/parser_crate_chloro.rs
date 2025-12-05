@@ -2405,7 +2405,7 @@ fn foo() {
 use crate::foo;
 
 struct S {
-    f: f32,
+    f: f32 = 0.0,
 }
 
 fn foo() {
@@ -2633,7 +2633,7 @@ struct S;
 fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {}
 
 enum E {
-    X(i32),
+    X(i32) = 10,
 }
 
 type A = Foo<dyn T>;
@@ -3095,7 +3095,7 @@ enum E4 {
 
 enum E5 {
     A,
-    B,
+    B = 92,
     C {
         a: u32,
         pub b: f64,

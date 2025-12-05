@@ -32,8 +32,7 @@ impl fmt::Display for LspError {
     }
 }
 
-impl std::error::Error for LspError {
-}
+impl std::error::Error for LspError {}
 
 pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: bool) -> [u8; 20] {
     fn hash_completion_relevance(hasher: &mut TentHash, relevance: &CompletionRelevance) {

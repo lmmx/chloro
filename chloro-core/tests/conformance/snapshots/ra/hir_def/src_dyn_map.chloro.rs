@@ -122,8 +122,7 @@ impl<K, V, P> Key<K, V, P> {
     }
 }
 
-impl<K, V, P> Copy for Key<K, V, P> {
-}
+impl<K, V, P> Copy for Key<K, V, P> {}
 
 impl<K, V, P> Clone for Key<K, V, P> {
     fn clone(&self) -> Key<K, V, P> {
