@@ -1607,7 +1607,7 @@ expression: cleaned_diff
  }
  
 -default impl T for Foo {}
-+impl T for Foo {
++default impl T for Foo {
 +}
  
 -trait T where Self: Copy {}
@@ -2167,12 +2167,10 @@ expression: cleaned_diff
  }
  
  fn foo() {
-     for<'a> move || {};
  }
  
--default unsafe impl T for Foo {
+ default unsafe impl T for Foo {
 -    default unsafe fn foo() {}
-+unsafe impl T for Foo {
 +    unsafe fn foo() {}
  }
  
@@ -2943,10 +2941,10 @@ expression: cleaned_diff
 +unsafe impl Foo {
 +}
 +
-+impl Foo {
++default impl Foo {
 +}
 +
-+unsafe impl Foo {
++default unsafe impl Foo {
 +}
  
  unsafe extern "C++" {}
@@ -3064,11 +3062,11 @@ expression: cleaned_diff
 -default unsafe impl T for () {}
 -
 -extern {
-+impl T for () {
++default impl T for () {
  }
  
 -extern "C" {
-+unsafe impl T for () {
++default unsafe impl T for () {
  }
  
 +extern {}

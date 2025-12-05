@@ -27,6 +27,10 @@ pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     write_indent(buf, indent);
 
+    if impl_.default_token().is_some() {
+        buf.push_str("default ");
+    }
+
     if impl_.unsafe_token().is_some() {
         buf.push_str("unsafe ");
     }

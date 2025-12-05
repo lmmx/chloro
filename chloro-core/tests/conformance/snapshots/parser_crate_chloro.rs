@@ -1935,7 +1935,7 @@ fn main() {
     }
 }
 
-impl T for Foo {
+default impl T for Foo {
 }
 
 trait T
@@ -2619,7 +2619,7 @@ fn foo() {
     for<'a> move || {};
 }
 
-unsafe impl T for Foo {
+default unsafe impl T for Foo {
     unsafe fn foo() {}
 }
 
@@ -3618,10 +3618,10 @@ trait T {
 unsafe impl Foo {
 }
 
-impl Foo {
+default impl Foo {
 }
 
-unsafe impl Foo {
+default unsafe impl Foo {
 }
 
 unsafe extern "C++" {}
@@ -3890,10 +3890,10 @@ impl T for Foo {
     unsafe fn bar() {}
 }
 
-impl T for () {
+default impl T for () {
 }
 
-unsafe impl T for () {
+default unsafe impl T for () {
 }
 
 extern {}
