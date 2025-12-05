@@ -88,3 +88,23 @@ fn preserve_allow_attribute_after_doc_comment() {
     // The doc comment should come before the attribute
     assert!(output.contains("/// Go from `*const [T; N]` to `*const T`\n    #[allow(dead_code)]"));
 }
+
+#[test]
+fn preserve_trailing_comment_whitespace_alignment_in_struct() {
+    let input = r#"struct Foo {
+    pub method_refs: bool,
+    pub refs_adt: bool,   // for Struct, Enum, Union and Trait
+    pub refs_trait: bool, // for Struct, Enum, Union and Trait
+    pub enum_variant_refs: bool,
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    struct Foo {
+        pub method_refs: bool,
+        pub refs_adt: bool,   // for Struct, Enum, Union and Trait
+        pub refs_trait: bool, // for Struct, Enum, Union and Trait
+        pub enum_variant_refs: bool,
+    }
+    "#);
+}

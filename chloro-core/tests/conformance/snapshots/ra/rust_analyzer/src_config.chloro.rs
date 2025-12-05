@@ -1399,10 +1399,8 @@ pub struct LensConfig {
     pub implementations: bool,
     // references
     pub method_refs: bool,
-    pub refs_adt: bool,
-    // for Struct, Enum, Union and Trait
-    pub refs_trait: bool,
-    // for Struct, Enum, Union and Trait
+    pub refs_adt: bool,   // for Struct, Enum, Union and Trait
+    pub refs_trait: bool, // for Struct, Enum, Union and Trait
     pub enum_variant_refs: bool,
     // annotations
     pub location: AnnotationLocation,
