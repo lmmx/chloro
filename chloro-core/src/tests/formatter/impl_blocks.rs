@@ -1,5 +1,7 @@
 use super::*;
 
+use insta::assert_snapshot;
+
 #[test]
 fn impl_methods_have_blank_lines() {
     let input = r#"impl Foo {
@@ -27,4 +29,25 @@ fn impl_preserves_comments_on_methods() {
 "#;
     let output = format_source(input);
     assert!(output.contains("// This method is consumed by external tools"));
+}
+
+#[test]
+fn preserve_default_impl() {
+    let input = r#"default impl T for Foo {}"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"default impl T for Foo {}"#);
+}
+
+#[test]
+fn preserve_default_impl_with_body() {
+    let input = r#"default impl T for Foo {
+    fn method(&self) {}
+}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    default impl T for Foo {
+        fn method(&self) {}
+    }
+    "#);
 }

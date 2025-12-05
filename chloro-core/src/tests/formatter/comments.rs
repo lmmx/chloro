@@ -108,3 +108,55 @@ fn preserve_trailing_comment_whitespace_alignment_in_struct() {
     }
     "#);
 }
+
+#[test]
+fn preserve_module_inner_doc_comments() {
+    let input = r#"//! This is a module-level doc comment.
+//! It describes what this module does.
+//! And spans multiple lines.
+
+fn foo() {}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    //! This is a module-level doc comment.
+    //! It describes what this module does.
+    //! And spans multiple lines.
+
+    fn foo() {}
+    "#);
+}
+
+#[test]
+fn preserve_module_doc_comment_before_items() {
+    let input = r#"//! Adapted from a rustc test.
+//! The Rust parser handles this case.
+
+use std::io;
+
+fn main() {}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    //! Adapted from a rustc test.
+    //! The Rust parser handles this case.
+
+    use std::io;
+
+    fn main() {}
+    "#);
+}
+
+#[test]
+fn preserve_doc_comment_on_function() {
+    let input = r#"/// This function does something important.
+/// It has multiple lines of documentation.
+fn important_function() {}
+"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"
+    /// This function does something important.
+    /// It has multiple lines of documentation.
+    fn important_function() {}
+    "#);
+}

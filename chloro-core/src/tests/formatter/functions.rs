@@ -1,5 +1,7 @@
 use super::*;
 
+use insta::assert_snapshot;
+
 #[test]
 fn format_function_params_single_line_self_and_param() {
     let input = "pub fn origin(\n    self,\n    db: &dyn HirDatabase,\n) -> CrateOrigin {}";
@@ -33,4 +35,19 @@ fn format_function_params_multi_line_when_too_long() {
     let output = format_source(input);
     // Should have newlines in parameters
     assert!(output.contains(",\n"));
+}
+
+#[test]
+fn format_short_function_single_line() {
+    // Short functions that fit on one line should stay on one line
+    let input = r#"fn arg_with_attr() { run_and_expect_no_errors("test"); }"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"fn arg_with_attr() { run_and_expect_no_errors("test"); }"#);
+}
+
+#[test]
+fn format_very_short_function_single_line() {
+    let input = r#"fn foo() { bar(); }"#;
+    let output = format_source(input);
+    assert_snapshot!(output, @r#"fn foo() { bar(); }"#);
 }

@@ -7,6 +7,7 @@ mod impl_blocks;
 mod macros;
 mod self_format;
 mod struct_literals;
+mod structs;
 mod use_items;
 
 #[test]
