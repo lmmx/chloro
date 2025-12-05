@@ -222,8 +222,7 @@ pub enum InferenceDiagnostic<'db> {
     },
     UnresolvedIdent {
         id: ExprOrPatId,
-    },
-    // FIXME: This should be emitted in body lowering
+    }, // FIXME: This should be emitted in body lowering
     BreakOutsideOfLoop {
         expr: ExprId,
         is_break: bool,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58838 bytes
-Chloro size:   58786 bytes
+Chloro size:   58782 bytes
 Rustfmt size:  58838 bytes
 
 ✗ Outputs DIFFER
@@ -24,6 +24,15 @@ Rustfmt size:  58838 bytes
      reload::{BuildDataProgress, ProcMacroProgress, ProjectWorkspaceProgress},
      test_runner::{CargoTestMessage, CargoTestOutput, TestState},
  };
+     PrimeCaches(PrimeCachesProgress),
+     FetchWorkspace(ProjectWorkspaceProgress),
+     FetchBuildData(BuildDataProgress),
+-    LoadProcMacros(ProcMacroProgress),
+-    // FIXME: Remove this in favor of a more general QueuedTask, see `handle_did_save_text_document`
++    LoadProcMacros(ProcMacroProgress), // FIXME: Remove this in favor of a more general QueuedTask, see `handle_did_save_text_document`
+     BuildDepsHaveChanged,
+ }
+ 
  pub(crate) enum PrimeCachesProgress {
      Begin,
      Report(ide::ParallelPrimeCachesProgress),

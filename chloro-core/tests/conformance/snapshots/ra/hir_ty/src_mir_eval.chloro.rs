@@ -353,8 +353,7 @@ pub enum MirEvalError<'db> {
     /// Means that code had undefined behavior. We don't try to actively detect UB, but if it was detected
     /// then use this type of error.
     UndefinedBehavior(String),
-    Panic(String),
-    // FIXME: This should be folded into ConstEvalError?
+    Panic(String), // FIXME: This should be folded into ConstEvalError?
     MirLowerError(FunctionId, MirLowerError<'db>),
     MirLowerErrorForClosure(InternedClosureId, MirLowerError<'db>),
     TypeIsUnsized(Ty<'db>, &'static str),

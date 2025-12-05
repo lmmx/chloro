@@ -301,8 +301,7 @@ pub struct Module {
 pub enum ModuleDef {
     Module(Module),
     Function(Function),
-    Adt(Adt),
-    // Can't be directly declared, but can be imported.
+    Adt(Adt), // Can't be directly declared, but can be imported.
     // FIXME: Rename to `EnumVariant`
     Variant(Variant),
     Const(Const),
@@ -3587,8 +3586,7 @@ pub enum GenericDef {
     Adt(Adt),
     Trait(Trait),
     TypeAlias(TypeAlias),
-    Impl(Impl),
-    // consts can have type parameters from their parents (i.e. associated consts of traits)
+    Impl(Impl), // consts can have type parameters from their parents (i.e. associated consts of traits)
     Const(Const),
     Static(Static),
 }

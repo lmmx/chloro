@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16463 bytes
+Chloro size:   16455 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -52,3 +52,15 @@ Rustfmt size:  16583 bytes
                              Ok(())
                          } else {
                              Err(CastError::DifferingKinds)
+ #[derive(Debug, PartialEq, Eq)]
+ enum PointerKind<'db> {
+     // thin pointer
+-    Thin,
+-    // trait object
+-    VTable(BoundExistentialPredicates<'db>),
+-    // slice
++    Thin, // trait object
++    VTable(BoundExistentialPredicates<'db>), // slice
+     Length,
+     OfAlias,
+     OfParam(ParamTy),

@@ -359,10 +359,8 @@ impl<'db> CastCheck<'db> {
 #[derive(Debug, PartialEq, Eq)]
 enum PointerKind<'db> {
     // thin pointer
-    Thin,
-    // trait object
-    VTable(BoundExistentialPredicates<'db>),
-    // slice
+    Thin, // trait object
+    VTable(BoundExistentialPredicates<'db>), // slice
     Length,
     OfAlias,
     OfParam(ParamTy),

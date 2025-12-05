@@ -799,16 +799,11 @@ pub(crate) struct ReferenceConversion<'db> {
 #[derive(Debug)]
 enum ReferenceConversionType {
     // reference can be stripped if the type is Copy
-    Copy,
-    // &String -> &str
-    AsRefStr,
-    // &Vec<T> -> &[T]
-    AsRefSlice,
-    // &Box<T> -> &T
-    Dereferenced,
-    // &Option<T> -> Option<&T>
-    Option,
-    // &Result<T, E> -> Result<&T, &E>
+    Copy, // &String -> &str
+    AsRefStr, // &Vec<T> -> &[T]
+    AsRefSlice, // &Box<T> -> &T
+    Dereferenced, // &Option<T> -> Option<&T>
+    Option, // &Result<T, E> -> Result<&T, &E>
     Result,
 }
 

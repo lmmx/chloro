@@ -66,8 +66,7 @@ pub enum FulfillmentErrorCode<'db> {
     Cycle(PredicateObligations<'db>),
     Select(SelectionError<'db>),
     Project(MismatchedProjectionTypes<'db>),
-    Subtype(ExpectedFound<Ty<'db>>, TypeError<'db>),
-    // always comes from a SubtypePredicate
+    Subtype(ExpectedFound<Ty<'db>>, TypeError<'db>), // always comes from a SubtypePredicate
     ConstEquate(ExpectedFound<Const<'db>>, TypeError<'db>),
     Ambiguity {
         /// Overflow is only `Some(suggest_recursion_limit)` when using the next generation
@@ -599,12 +598,10 @@ enum ChildMode<'db> {
     // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
     // and skip all `GoalSource::Misc`, which represent useless obligations
     // such as alias-eq which may not hold.
-    Trait(PolyTraitPredicate<'db>),
-    // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
+    Trait(PolyTraitPredicate<'db>), // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
     // and skip all `GoalSource::Misc`, which represent useless obligations
     // such as alias-eq which may not hold.
-    Host(Binder<'db, HostEffectPredicate<DbInterner<'db>>>),
-    // Skip trying to derive an `ObligationCause` from this obligation, and
+    Host(Binder<'db, HostEffectPredicate<DbInterner<'db>>>), // Skip trying to derive an `ObligationCause` from this obligation, and
     // report *all* sub-obligations as if they came directly from the parent
     // obligation.
     PassThrough,

@@ -47,10 +47,7 @@ fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
                         }
                     } else if t.kind() == SyntaxKind::WHITESPACE && t.text().contains('\n') {
                         seen_newline = true;
-                        // Newline encountered - any trailing comment becomes a leading comment
-                        if let Some(c) = trailing_comment_for_prev.take() {
-                            leading_comments.push(c);
-                        }
+                        // Don't move trailing_comment_for_prev to leading - it stays as trailing for previous variant
                     }
                 }
                 NodeOrToken::Node(n) => {

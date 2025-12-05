@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65813 bytes
+Chloro size:   65805 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -26,6 +26,20 @@ Rustfmt size:  65944 bytes
  };
  use smallvec::{SmallVec, smallvec};
  use stdx::never;
+     Char,
+     Int(IntTy),
+     Uint(UintTy),
+-    Float(FloatTy),
+-    // These can have user-defined impls:
++    Float(FloatTy), // These can have user-defined impls:
+     Adt(hir_def::AdtId),
+     Dyn(TraitId),
+-    ForeignType(TypeAliasId),
+-    // These only exist for trait impls
++    ForeignType(TypeAliasId), // These only exist for trait impls
+     Unit,
+     Unnameable,
+     Function(u32),
  ];
  
  type TraitFpMap = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Box<[ImplId]>>>;

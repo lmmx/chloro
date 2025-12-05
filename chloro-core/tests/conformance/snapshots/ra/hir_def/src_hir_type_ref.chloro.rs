@@ -139,8 +139,7 @@ pub enum TypeRef {
     Placeholder,
     Tuple(ThinVec<TypeRefId>),
     Path(Path),
-    RawPtr(TypeRefId, Mutability),
-    // FIXME: Unbox this once `Idx` has a niche,
+    RawPtr(TypeRefId, Mutability), // FIXME: Unbox this once `Idx` has a niche,
     // as `RefType` should shrink by 4 bytes then
     Reference(Box<RefType>),
     Array(ArrayType),

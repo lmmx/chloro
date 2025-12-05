@@ -773,8 +773,7 @@ impl_from!(TypeParamId, LifetimeParamId, ConstParamId for GenericParamId);
 pub enum ModuleDefId {
     ModuleId(ModuleId),
     FunctionId(FunctionId),
-    AdtId(AdtId),
-    // Can't be directly declared, but can be imported.
+    AdtId(AdtId), // Can't be directly declared, but can be imported.
     EnumVariantId(EnumVariantId),
     ConstId(ConstId),
     StaticId(StaticId),
@@ -880,12 +879,10 @@ impl From<AssocItemId> for ModuleDefId {
 
 #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Hash, salsa_macros::Supertype)]
 pub enum GenericDefId {
-    AdtId(AdtId),
-    // consts can have type parameters from their parents (i.e. associated consts of traits)
+    AdtId(AdtId), // consts can have type parameters from their parents (i.e. associated consts of traits)
     ConstId(ConstId),
     FunctionId(FunctionId),
-    ImplId(ImplId),
-    // can't actually have generics currently, but they might in the future
+    ImplId(ImplId), // can't actually have generics currently, but they might in the future
     // More importantly, this completes the set of items that contain type references
     // which is to be used by the signature expression store in the future.
     StaticId(StaticId),

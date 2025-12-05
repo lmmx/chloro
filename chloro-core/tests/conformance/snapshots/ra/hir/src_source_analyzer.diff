@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 72179 bytes
-Chloro size:   72140 bytes
+Chloro size:   72136 bytes
 Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
@@ -34,6 +34,15 @@ Rustfmt size:  72179 bytes
      },
      traits::structurally_normalize_ty,
  };
+         body: Arc<Body>,
+         source_map: Arc<BodySourceMap>,
+         infer: Option<Arc<InferenceResult<'db>>>,
+-    },
+-    // To be folded into body once it is considered one
++    }, // To be folded into body once it is considered one
+     VariantFields {
+         def: VariantId,
+         store: Arc<ExpressionStore>,
          def: GenericDefId,
          store: Arc<ExpressionStore>,
          source_map: Arc<ExpressionStoreSourceMap>,

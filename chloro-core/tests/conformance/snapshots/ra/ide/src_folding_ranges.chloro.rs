@@ -24,8 +24,7 @@ pub enum FoldKind {
     WhereClause,
     ReturnType,
     MatchArm,
-    Function,
-    // region: item runs
+    Function, // region: item runs
     Modules,
     Consts,
     Statics,

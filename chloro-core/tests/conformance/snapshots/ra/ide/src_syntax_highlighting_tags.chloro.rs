@@ -35,9 +35,8 @@ pub enum HlTag {
     Operator(HlOperator),
     Punctuation(HlPunct),
     StringLiteral,
-    UnresolvedReference,
+    UnresolvedReference, // For things which don't have a specific highlight.
 
-    // For things which don't have a specific highlight.
     None,
 }
 
@@ -86,8 +85,7 @@ pub enum HlMod {
     /// Used for associated items, except Methods. (Some languages call these static members)
     Static,
     /// Used for items in traits and trait impls.
-    Trait,
-    // Keep this last!
+    Trait, // Keep this last!
     /// Used for unsafe functions, unsafe traits, mutable statics, union accesses and unsafe operations.
     Unsafe,
 }

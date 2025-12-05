@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9897 bytes
-Chloro size:   9948 bytes
+Chloro size:   9944 bytes
 Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
@@ -45,6 +45,15 @@ Rustfmt size:  10040 bytes
          (params, ret.1)
      }
  }
+     Placeholder,
+     Tuple(ThinVec<TypeRefId>),
+     Path(Path),
+-    RawPtr(TypeRefId, Mutability),
+-    // FIXME: Unbox this once `Idx` has a niche,
++    RawPtr(TypeRefId, Mutability), // FIXME: Unbox this once `Idx` has a niche,
+     // as `RefType` should shrink by 4 bytes then
+     Reference(Box<RefType>),
+     Array(ArrayType),
  }
  
  #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]

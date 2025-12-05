@@ -147,8 +147,7 @@ impl<'db> Operand<'db> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ProjectionElem<V, T> {
     Deref,
-    Field(Either<FieldId, TupleFieldId>),
-    // FIXME: get rid of this, and use FieldId for tuples and closures
+    Field(Either<FieldId, TupleFieldId>), // FIXME: get rid of this, and use FieldId for tuples and closures
     ClosureField(usize),
     Index(V),
     ConstantIndex {
@@ -158,8 +157,7 @@ pub enum ProjectionElem<V, T> {
     Subslice {
         from: u64,
         to: u64,
-    },
-    //Downcast(Option<Symbol>, VariantIdx),
+    }, //Downcast(Option<Symbol>, VariantIdx),
     OpaqueCast(T),
 }
 
@@ -947,9 +945,8 @@ pub enum Rvalue<'db> {
     ///
     /// **FIXME**: Document exactly which `CastKind`s allow which types of casts. Figure out why
     /// `ArrayToPointer` and `MutToConstPointer` are special.
-    Cast(CastKind, Operand<'db>, Ty<'db>),
+    Cast(CastKind, Operand<'db>, Ty<'db>), // FIXME link to `pointer::offset` when it hits stable.
 
-    // FIXME link to `pointer::offset` when it hits stable.
     //BinaryOp(BinOp, Box<(Operand, Operand)>),
     /// * `Offset` has the same semantics as `pointer::offset`, except that the second
     ///   parameter may be a `usize` as well.
@@ -1038,15 +1035,13 @@ pub enum Rvalue<'db> {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum StatementKind<'db> {
     Assign(Place<'db>, Rvalue<'db>),
-    FakeRead(Place<'db>),
-    //SetDiscriminant {
+    FakeRead(Place<'db>), //SetDiscriminant {
     //    place: Box<Place>,
     //    variant_index: VariantIdx,
     //},
     Deinit(Place<'db>),
     StorageLive(LocalId<'db>),
-    StorageDead(LocalId<'db>),
-    //Retag(RetagKind, Box<Place>),
+    StorageDead(LocalId<'db>), //Retag(RetagKind, Box<Place>),
     //AscribeUserType(Place, UserTypeProjection, Variance),
     //Intrinsic(Box<NonDivergingIntrinsic>),
     Nop,

@@ -2,12 +2,22 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   15904 bytes
+Chloro size:   15900 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     /// `&P`, `&mut P`, etc.
+     Deref {
+         subpattern: Pat<'db>,
+-    },
++    }, // FIXME: for now, only bool literals are implemented
+ 
+-    // FIXME: for now, only bool literals are implemented
+     LiteralBool {
+         value: bool,
+     },
      }
  }
  

@@ -7841,8 +7841,7 @@ pub(super) fn param_list_closure(p: &mut Parser<'_>) {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Flavor {
-    FnDef,
-    // Includes trait fn params; omitted param idents are not supported
+    FnDef, // Includes trait fn params; omitted param idents are not supported
     FnPointer,
     Closure,
 }

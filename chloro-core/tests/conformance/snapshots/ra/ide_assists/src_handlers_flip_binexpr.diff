@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6733 bytes
+Chloro size:   6725 bytes
 Rustfmt size:  6902 bytes
 
 ✗ Outputs DIFFER
@@ -27,6 +27,18 @@ Rustfmt size:  6902 bytes
      if !cursor_in_range {
          return None;
      }
+ 
+ enum FlipAction {
+     // Flip the expression
+-    Flip,
+-    // Flip the expression and replace the operator with this string
+-    FlipAndReplaceOp(SyntaxKind),
+-    // Do not flip the expression
++    Flip, // Flip the expression and replace the operator with this string
++    FlipAndReplaceOp(SyntaxKind), // Do not flip the expression
+     DontFlip,
+ }
+ 
  #[cfg(test)]
  mod tests {
      use super::*;
