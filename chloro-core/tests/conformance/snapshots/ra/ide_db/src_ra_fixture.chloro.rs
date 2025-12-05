@@ -460,6 +460,7 @@ impl UpmapFromRaFixture for TextRange {
 //         Ok(real_file_id)
 //     }
 // }
+
 impl UpmapFromRaFixture for FilePositionWrapper<FileId> {
     fn upmap_from_ra_fixture(
         self,

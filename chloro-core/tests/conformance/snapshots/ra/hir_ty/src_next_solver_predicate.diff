@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32330 bytes
+Chloro size:   32331 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -160,13 +160,6 @@ Rustfmt size:  32663 bytes
      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
          write!(f, "Binder<")?;
          match self.0.internee.skip_binder() {
- }
- 
- // FIXME: should make a "header" in interned_vec
--
- #[derive(Debug, Clone)]
- pub struct InternedClausesWrapper<'db>(SmallVec<[Clause<'db>; 2]>, TypeFlags, DebruijnIndex);
- 
      }
  }
  

@@ -29,7 +29,6 @@ use hir_def::{
     }
 
     // Should match rustfmt's output: each submodule on its own line(s),
-
     // separated by blank lines
     assert_snapshot!(formatted, @r"
     use hir_def::{

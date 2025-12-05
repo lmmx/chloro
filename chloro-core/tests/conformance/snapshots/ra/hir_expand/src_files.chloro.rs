@@ -232,6 +232,7 @@ impl<T> From<InRealFile<T>> for InFile<T> {
 }
 
 // region:transpose impls
+
 impl<FileKind, T> InFileWrapper<FileKind, Option<T>> {
     pub fn transpose(self) -> Option<InFileWrapper<FileKind, T>> {
         Some(InFileWrapper::new(self.file_id, self.value?))
@@ -248,6 +249,7 @@ impl<FileKind, L, R> InFileWrapper<FileKind, Either<L, R>> {
 }
 
 // endregion:transpose impls
+
 trait FileIdToSyntax {
     fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode;
 }

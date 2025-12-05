@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7261 bytes
-Chloro size:   7251 bytes
+Chloro size:   7252 bytes
 Rustfmt size:  7430 bytes
 
 ✗ Outputs DIFFER
@@ -31,13 +31,6 @@ Rustfmt size:  7430 bytes
      fn extend_with_opaques<'db>(
          db: &'db dyn HirDatabase,
          opaques: Option<Arc<EarlyBinder<'db, ImplTraits<'db>>>>,
- }
- 
- // These are firewall queries to prevent drawing dependencies between infers:
--
- #[salsa::tracked(returns(ref), unsafe(non_update_return_type))]
- pub(crate) fn rpit_hidden_types<'db>(
-     db: &'db dyn HirDatabase,
                      entry.insert(EarlyBinder::bind(hidden_type));
                  }
                  la_arena::Entry::Occupied(entry) => {

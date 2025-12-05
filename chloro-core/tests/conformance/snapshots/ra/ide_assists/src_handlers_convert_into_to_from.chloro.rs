@@ -4,6 +4,7 @@ use syntax::ast::{self, AstNode, HasGenericArgs, HasName};
 use crate::{AssistContext, AssistId, Assists};
 
 // FIXME: this should be a diagnostic
+
 // Assist: convert_into_to_from
 //
 // Converts an Into impl to an equivalent From impl.

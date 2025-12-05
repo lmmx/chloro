@@ -30,6 +30,7 @@ use crate::assist_context::{AssistContext, Assists};
 //     };
 // }
 // ```
+
 // Assist: desugar_try_expr_let_else
 //
 // Replaces a `try` expression with a `let else` statement.

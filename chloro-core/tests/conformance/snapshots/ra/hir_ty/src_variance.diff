@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30616 bytes
+Chloro size:   30617 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -42,13 +42,6 @@ Rustfmt size:  30951 bytes
  
      // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
      // since bivariance is prohibited in Rust, but rustc definitely does not fallback bivariance.
- // ) -> salsa::CycleRecoveryAction<Option<Arc<[Variance]>>> {
- //     salsa::CycleRecoveryAction::Iterate
- // }
--
- fn glb(v1: Variance, v2: Variance) -> Variance {
-     // Greatest lower bound of the variance lattice as defined in The Paper:
-     //
                      AdtId::StructId(s) => add_constraints_from_variant(VariantId::StructId(s)),
                      AdtId::UnionId(u) => add_constraints_from_variant(VariantId::UnionId(u)),
                      AdtId::EnumId(e) => {

@@ -6,35 +6,96 @@ use ra_ap_syntax::{
 use crate::formatter::node::common::{fields, header};
 use crate::formatter::printer::Printer;
 
-/// Collect non-doc comments from inside a variant node (before the name)
-fn collect_inner_comments(node: &SyntaxNode) -> Vec<String> {
-    let mut comments = Vec::new();
+/// Information about a variant for formatting
+struct VariantInfo {
+    variant: ast::Variant,
+    leading_comments: Vec<String>,
+    trailing_comment: Option<String>,
+    has_blank_line_before: bool,
+}
 
-    for child in node.children_with_tokens() {
-        match child {
-            NodeOrToken::Token(t) => {
-                if t.kind() == SyntaxKind::COMMENT {
-                    let text = t.text().to_string();
-                    // Skip doc comments (handled by HasDocComments)
-                    if !text.starts_with("///") && !text.starts_with("//!") {
-                        comments.push(text);
+/// Pre-scan all variants to correctly assign trailing comments.
+///
+/// Due to how rust-analyzer parses, a trailing comment like:
+///   `Foo, // comment`
+/// is actually attached as a leading child of the NEXT variant, not as a
+/// sibling after the current variant. We detect this by checking if the
+/// first token in a variant is a comment with no preceding newline.
+fn collect_variant_info(variants: &ast::VariantList) -> Vec<VariantInfo> {
+    let mut result: Vec<VariantInfo> = Vec::new();
+    let variant_list: Vec<_> = variants.variants().collect();
+
+    for (idx, variant) in variant_list.iter().enumerate() {
+        let mut leading_comments = Vec::new();
+        let mut trailing_comment_for_prev: Option<String> = None;
+        let mut seen_newline = false;
+
+        // Collect comments from inside the variant node (before the name)
+        for child in variant.syntax().children_with_tokens() {
+            match child {
+                NodeOrToken::Token(t) => {
+                    if t.kind() == SyntaxKind::COMMENT {
+                        let text = t.text().to_string();
+                        // Skip doc comments (handled by HasDocComments)
+                        if !text.starts_with("///") && !text.starts_with("//!") {
+                            if !seen_newline && trailing_comment_for_prev.is_none() {
+                                // First comment before any newline - trailing for previous
+                                trailing_comment_for_prev = Some(text);
+                            } else {
+                                leading_comments.push(text);
+                            }
+                        }
+                    } else if t.kind() == SyntaxKind::WHITESPACE && t.text().contains('\n') {
+                        seen_newline = true;
+                        // Newline encountered - any trailing comment becomes a leading comment
+                        if let Some(c) = trailing_comment_for_prev.take() {
+                            leading_comments.push(c);
+                        }
+                    }
+                }
+                NodeOrToken::Node(n) => {
+                    if n.kind() == SyntaxKind::NAME {
+                        break;
                     }
                 }
             }
-            NodeOrToken::Node(n) => {
-                // Stop when we hit the NAME node - comments after that are trailing
-                if n.kind() == SyntaxKind::NAME {
-                    break;
-                }
+        }
+
+        // If we still have a trailing_comment_for_prev and there's a previous variant,
+        // attach it to that variant
+        if let Some(comment) = trailing_comment_for_prev {
+            if !result.is_empty() {
+                result.last_mut().unwrap().trailing_comment = Some(comment);
+            } else {
+                // No previous variant, treat as leading comment
+                leading_comments.insert(0, comment);
             }
         }
+
+        // Check for blank line before
+        let has_blank_line_before = if idx > 0 {
+            has_blank_line_before_variant(variant.syntax())
+        } else {
+            false
+        };
+
+        // Check for trailing comment as sibling (after comma) - this handles
+        // comments that ARE siblings, like the last variant's trailing comment
+        let trailing_from_sibling = get_trailing_comment_sibling(variant.syntax());
+
+        result.push(VariantInfo {
+            variant: variant.clone(),
+            leading_comments,
+            trailing_comment: trailing_from_sibling,
+            has_blank_line_before,
+        });
     }
 
-    comments
+    result
 }
 
-/// Get a trailing comment on the same line as a variant (after the comma)
-fn get_trailing_comment(node: &SyntaxNode) -> Option<String> {
+/// Get a trailing comment on the same line as a variant (checking siblings after comma)
+fn get_trailing_comment_sibling(node: &SyntaxNode) -> Option<String> {
     let mut next = node.next_sibling_or_token();
     while let Some(item) = next {
         match &item {
@@ -58,8 +119,8 @@ fn get_trailing_comment(node: &SyntaxNode) -> Option<String> {
     None
 }
 
-/// Check if there's a blank line before this node (looking at preceding siblings)
-fn has_blank_line_before(node: &SyntaxNode) -> bool {
+/// Check if there's a blank line before this variant node
+fn has_blank_line_before_variant(node: &SyntaxNode) -> bool {
     let mut current = node.prev_sibling_or_token();
 
     while let Some(item) = current {
@@ -94,17 +155,19 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
     if let Some(variants) = enum_.variant_list() {
         buf.open_brace();
 
-        let mut first_variant = true;
+        // Pre-scan to correctly assign trailing comments
+        let variant_infos = collect_variant_info(&variants);
 
-        for variant in variants.variants() {
+        for (idx, info) in variant_infos.iter().enumerate() {
+            let variant = &info.variant;
+
             // Check for blank line before this variant (to preserve spacing)
-            if !first_variant && has_blank_line_before(variant.syntax()) {
+            if idx > 0 && info.has_blank_line_before {
                 buf.blank();
             }
 
-            // Collect comments from inside the variant node (before the name)
-            let comments_before = collect_inner_comments(variant.syntax());
-            for comment in &comments_before {
+            // Output leading comments
+            for comment in &info.leading_comments {
                 buf.line(indent + 4, comment);
             }
 
@@ -149,14 +212,12 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
             }
 
             // Check for trailing comment on same line
-            if let Some(trailing) = get_trailing_comment(variant.syntax()) {
+            if let Some(ref trailing) = info.trailing_comment {
                 buf.push_str(", ");
-                buf.newline(&trailing);
+                buf.newline(trailing);
             } else {
                 buf.newline(",");
             }
-
-            first_variant = false;
         }
 
         buf.close_brace(indent);

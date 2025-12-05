@@ -189,6 +189,19 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         } else if t.kind() == SyntaxKind::WHITESPACE
                             && t.text().matches('\n').count() >= 2
                         {
+                            // Blank line encountered - flush pending comments as standalone
+                            if !pending_comments.is_empty() {
+                                for comment in pending_comments.drain(..) {
+                                    other_items.push(ItemWithComments {
+                                        comments: vec![],
+                                        node: NodeOrToken::Token(SyntaxToken::from(
+                                            comment.syntax().clone(),
+                                        )),
+                                        blank_line_before: pending_blank_line,
+                                    });
+                                    pending_blank_line = false;
+                                }
+                            }
                             pending_blank_line = true;
                         }
                     }

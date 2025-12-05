@@ -80,12 +80,3 @@ Rustfmt size:  11613 bytes
      pub output: Option<PathBuf>,
      pub config_path: Option<PathBuf>,
      pub exclude_vendored_libraries: bool,
-         Self::from_vec_(args)
-     }
- }
--// generated end
- 
-+// generated end
- #[derive(Debug, PartialEq, Eq)]
- pub enum OutputFormat {
-     Csv,

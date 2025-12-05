@@ -96,6 +96,7 @@ impl<'db> UnifyValue for RegionVariableValue<'db> {
 }
 
 // Generic consts.
+
 #[derive(Copy, Clone, Debug)]
 pub struct ConstVariableOrigin {
 }

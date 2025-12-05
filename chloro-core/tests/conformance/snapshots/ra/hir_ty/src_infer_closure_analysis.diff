@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52289 bytes
-Chloro size:   52264 bytes
+Chloro size:   52265 bytes
 Rustfmt size:  52289 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- 
- // The below functions handle capture and closure kind (Fn, FnMut, ..)
--
- #[derive(Debug, Clone, PartialEq, Eq, Hash)]
- pub(crate) struct HirPlace<'db> {
-     pub(crate) local: BindingId,
                  place,
                  CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
              );

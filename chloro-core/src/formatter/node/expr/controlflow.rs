@@ -449,17 +449,11 @@ pub fn format_closure_expr(node: &SyntaxNode, _indent: usize) -> Option<String> 
     }
 
     // Body - closures are tricky because they can be:
-
     // 1. Simple expression: |x| x + 1
-
     // 2. Block expression: |x| { ... }
-
     //
-
     // For now, preserve the body verbatim to avoid breaking method chains.
-
     // The issue is that when we format a closure's block body, it interacts
-
     // badly with the parent call expression's formatting.
     if let Some(body) = closure.body() {
         buf.push(' ');

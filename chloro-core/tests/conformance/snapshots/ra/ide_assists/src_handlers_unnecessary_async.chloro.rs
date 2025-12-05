@@ -13,6 +13,7 @@ use syntax::{
 use crate::{AssistContext, Assists};
 
 // FIXME: This ought to be a diagnostic lint.
+
 // Assist: unnecessary_async
 //
 // Removes the `async` mark from functions which have no `.await` in their body.

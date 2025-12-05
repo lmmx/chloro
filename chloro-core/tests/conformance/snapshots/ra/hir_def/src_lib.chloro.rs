@@ -1144,6 +1144,7 @@ pub trait HasModule {
 //         self.lookup(db).container()
 //     }
 // }
+
 impl<N, ItemId> HasModule for ItemId
 where
     N: AstIdNode,
@@ -1167,6 +1168,7 @@ where
 //         self.lookup(db).container.module(db)
 //     }
 // }
+
 // region: manual-assoc-has-module-impls
 #[inline]
 fn module_for_assoc_item_loc<'db>(
@@ -1203,8 +1205,8 @@ impl HasModule for TypeAliasId {
         module_for_assoc_item_loc(db, *self)
     }
 }
-
 // endregion: manual-assoc-has-module-impls
+
 impl HasModule for EnumVariantId {
     #[inline]
     fn module(&self, db: &dyn DefDatabase) -> ModuleId {
@@ -1429,6 +1431,7 @@ pub struct SyntheticSyntax;
 //
 // Note that users have no way to override this attribute, so be careful and only include things
 // users definitely do not want to be completed!
+
 /// `#[rust_analyzer::completions(...)]` options.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Complete {

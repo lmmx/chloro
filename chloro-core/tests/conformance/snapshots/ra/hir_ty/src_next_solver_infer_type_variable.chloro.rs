@@ -299,6 +299,7 @@ impl<'db> TypeVariableTable<'_, 'db> {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+
 /// These structs (a newtyped TyVid) are used as the unification key
 /// for the `eq_relations`; they carry a `TypeVariableValue` along
 /// with them.

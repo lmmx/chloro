@@ -38,6 +38,7 @@
 // * `description` is an optional description of the snippet, if unset the snippet name will be used.
 //
 // * `requires` is an optional list of item paths that have to be resolvable in the current crate where the completion is rendered.
+
 // On failure of resolution the snippet won't be applicable, otherwise the snippet will insert an import for the items on insertion if
 // the items aren't yet in scope.
 //
@@ -98,6 +99,7 @@
 //     }
 // }
 // ````
+
 use hir::{ModPath, Name, Symbol};
 use ide_db::imports::import_assets::LocatedImport;
 use itertools::Itertools;

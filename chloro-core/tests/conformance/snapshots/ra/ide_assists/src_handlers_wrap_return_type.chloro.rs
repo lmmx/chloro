@@ -26,6 +26,7 @@ use crate::{AssistContext, AssistId, Assists};
 // ```
 // fn foo() -> Option<i32> { Some(42i32) }
 // ```
+
 // Assist: wrap_return_type_in_result
 //
 // Wrap the function's return type into Result.
@@ -38,6 +39,7 @@ use crate::{AssistContext, AssistId, Assists};
 // ```
 // fn foo() -> Result<i32, ${0:_}> { Ok(42i32) }
 // ```
+
 pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
     let parent = ret_type.syntax().parent()?;

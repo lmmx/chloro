@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15843 bytes
-Chloro size:   15837 bytes
+Chloro size:   15843 bytes
 Rustfmt size:  16061 bytes
 
 ✗ Outputs DIFFER
@@ -39,40 +39,6 @@ Rustfmt size:  16061 bytes
              )
          };
          let a = add_crate("a", 0);
- // //- proc_macros: identity
- // //- /lib.rs
- // mod foo;
--
- // //- /foo/mod.rs
- // pub mod bar;
--
- // //- /foo/bar.rs
- // $0
- // #[proc_macros::identity]
- // ",
- //     );
- // }
--
- #[test]
- fn typing_inside_macro_heavy_file_should_not_invalidate_def_map() {
-     check_def_map_is_not_recomputed(
- // //- minicore:derive
- // //- /lib.rs
- // mod foo;
--
- // //- /foo/mod.rs
- // pub mod bar;
--
- // //- /foo/bar.rs
- // $0
- // #[derive(proc_macros::DeriveIdentity)]
- // ",
- //     );
- // }
--
- #[test]
- fn typing_inside_a_function_should_not_invalidate_item_expansions() {
-     let (mut db, pos) = TestDB::with_position(
              let (_, module_data) = crate_def_map.modules.iter().last().unwrap();
              assert_eq!(module_data.scope.resolutions().count(), 4);
          },

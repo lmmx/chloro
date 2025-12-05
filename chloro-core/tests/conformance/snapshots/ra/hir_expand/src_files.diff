@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19575 bytes
+Chloro size:   19577 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -112,15 +112,9 @@ Rustfmt size:  20465 bytes
      }
  }
  
- // region:transpose impls
--
- impl<FileKind, T> InFileWrapper<FileKind, Option<T>> {
-     pub fn transpose(self) -> Option<InFileWrapper<FileKind, T>> {
-         Some(InFileWrapper::new(self.file_id, self.value?))
- }
  
  // endregion:transpose impls
--
+ 
 -trait FileIdToSyntax: Copy {
 +trait FileIdToSyntax {
      fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode;

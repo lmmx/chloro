@@ -17,20 +17,6 @@ Rustfmt size:  33220 bytes
  use cfg::{CfgExpr, CfgOptions};
  use either::Either;
  use hir_def::{
-         )*
-     };
- }
-+
- // FIXME Accept something like the following in the macro call instead
- // diagnostics![
- // pub struct BreakOutsideOfLoop {
- //     bad_value_break: bool,
- // }, ...
- // ]
--
- diagnostics![AnyDiagnostic<'db> ->
-     AwaitOutsideOfAsync,
-     BreakOutsideOfLoop,
      pub path: ModPath,
      pub is_bang: bool,
  }

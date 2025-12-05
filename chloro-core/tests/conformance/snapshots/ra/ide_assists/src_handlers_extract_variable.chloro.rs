@@ -28,6 +28,7 @@ use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
 //     var_name * 4;
 // }
 // ```
+
 // Assist: extract_constant
 //
 // Extracts subexpression into a constant.
@@ -44,6 +45,7 @@ use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
 //     VAR_NAME * 4;
 // }
 // ```
+
 // Assist: extract_static
 //
 // Extracts subexpression into a static.
