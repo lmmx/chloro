@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2](https://github.com/lmmx/chloro/compare/chloro-core-v0.7.1...chloro-core-v0.7.2) - 2025-12-05
+
+### <!-- 2 -->Bug Fixes
+
+- process children in order with comments and statements ([#69](https://github.com/lmmx/chloro/pull/69))
+- output leading comments before visibility/keywords ([#68](https://github.com/lmmx/chloro/pull/68))
+- no duplicate comments where already handled by item preamble ([#67](https://github.com/lmmx/chloro/pull/67))
+- collect module comments ([#66](https://github.com/lmmx/chloro/pull/66))
+- possible fix to unwanted newline in funcs ([#65](https://github.com/lmmx/chloro/pull/65))
+- multiple formats for self-format diagnosed issues ([#64](https://github.com/lmmx/chloro/pull/64))
+- internal kinds for use ord ([#63](https://github.com/lmmx/chloro/pull/63))
+- avoid mod and use movement ([#61](https://github.com/lmmx/chloro/pull/61))
+- stop putting blank lines between mod-mod ([#60](https://github.com/lmmx/chloro/pull/60))
+- use statement order fix ([#59](https://github.com/lmmx/chloro/pull/59))
+
+### <!-- 6 -->Testing
+
+- format own code ([#58](https://github.com/lmmx/chloro/pull/58))
+
+### <!-- 8 -->Styling
+
+- clippy
+
+### <!-- 9 -->Other
+
+- sort order rustfmt 2024 ([#62](https://github.com/lmmx/chloro/pull/62))
+- delete muchos printing code, use a trait ([#57](https://github.com/lmmx/chloro/pull/57))
+
 ## [0.7.1](https://github.com/lmmx/chloro/compare/chloro-core-v0.7.0...chloro-core-v0.7.1) - 2025-12-01
 
 ### <!-- 2 -->Bug Fixes
