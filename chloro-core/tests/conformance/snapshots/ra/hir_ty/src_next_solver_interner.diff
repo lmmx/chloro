@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81814 bytes
+Chloro size:   81815 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -160,13 +160,6 @@ Rustfmt size:  84055 bytes
      }
  }
  
-     flags: VariantFlags,
- }
- */
--
- #[derive(Debug, Clone, Eq, PartialEq, Hash)]
- pub struct AdtFlags {
-     is_enum: bool,
      repr: ReprOptions,
  }
  

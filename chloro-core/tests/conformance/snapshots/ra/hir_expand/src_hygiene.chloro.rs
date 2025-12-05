@@ -22,6 +22,7 @@
 
 // FIXME: Move this into the span crate? Not quite possible today as that depends on `MacroCallLoc`
 // which contains a bunch of unrelated things
+
 use std::convert::identity;
 
 use span::{Edition, MacroCallId, Span, SyntaxContext};

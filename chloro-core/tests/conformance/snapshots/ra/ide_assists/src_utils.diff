@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   45270 bytes
+Chloro size:   45271 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -18,13 +18,6 @@ Rustfmt size:  45288 bytes
          syntax_factory::SyntaxFactory,
      },
      syntax_editor::{Removable, SyntaxEditor},
- // FIXME: change the new fn checking to a more semantic approach when that's more
- // viable (e.g. we process proc macros, etc)
- // FIXME: this partially overlaps with `find_impl_block_*`
--
- /// `find_struct_impl` looks for impl of a struct, but this also has additional feature
- /// where it takes a list of function names and check if they exist inside impl_, if
- /// even one match is found, it returns None.
      false
  }
  

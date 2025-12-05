@@ -216,6 +216,7 @@ enum Value {
 //     #[test]
 //     fn client_config_update() {
 //         setup();
+
 //         let server = RatomlTest::new(
 //             vec![
 //                 r#"
@@ -235,7 +236,9 @@ enum Value {
 //             vec!["p1"],
 //             None,
 //         );
+
 //         assert!(!server.query(QueryType::AssistEmitMustUse, 1));
+
 //         // a.notification::<DidChangeConfiguration>(DidChangeConfigurationParams {
 //         //     settings: json!({
 //         //         "assists" : {
@@ -243,8 +246,10 @@ enum Value {
 //         //         }
 //         //     }),
 //         // });
+
 //         assert!(server.query(QueryType::AssistEmitMustUse, 1));
 //     }
+
 //     #[test]
 //     fn ratoml_create_ratoml_basic() {
 //         let server = RatomlTest::new(
@@ -271,8 +276,10 @@ enum Value {
 //             vec!["p1"],
 //             None,
 //         );
+
 //         assert!(server.query(QueryType::AssistEmitMustUse, 2));
 //     }
+
 #[test]
 fn ratoml_user_config_detected() {
     if skip_slow_tests() {
@@ -824,6 +831,7 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
 // name = "p1"
 // version = "0.1.0"
 // edition = "2021"
+
 // [dependencies]
 // p2 = { path = "../p2" }
 // "#,
@@ -833,13 +841,17 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
 //     Number(i32),
 //     Text(String),
 // }
+
 // use p2;
+
 // pub fn add(left: usize, right: usize) -> usize {
 //     p2::add(left, right)
 // }
+
 // #[cfg(test)]
 // mod tests {
 //     use super::*;
+
 //     #[test]
 //     fn it_works() {
 //         let result = add(2, 2);
@@ -852,7 +864,9 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
 // name = "p2"
 // version = "0.1.0"
 // edition = "2021"
+
 // # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 // [dependencies]
 // "#,
 //                 r#"
@@ -870,8 +884,10 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
 //             vec!["p1", "p2"],
 //             None,
 //         );
+
 //         assert!(!server.query(QueryType::AssistEmitMustUse, 5));
 //     }
+
 #[test]
 fn ratoml_in_root_is_workspace() {
     if skip_slow_tests() {

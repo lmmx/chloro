@@ -14,6 +14,7 @@ use crate::NavigationTarget;
 // | Editor  | Action Name |
 // |---------|-------------|
 // | VS Code | **rust-analyzer: Locate child modules** |
+
 /// This returns `Vec` because a module may be included from several places.
 pub(crate) fn child_modules(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
     let sema = Semantics::new(db);

@@ -3117,6 +3117,7 @@ enum E5 {
 }
 
 // https://github.com/rust-lang/rust-analyzer/issues/674
+
 struct Repr {
     raw: [u8; 1],
 }
@@ -3147,6 +3148,7 @@ use self::foo;
 use super::super::bar;
 
 // https://github.com/rust-lang/rust-analyzer/issues/972
+
 fn main() {
     match Some(-1) {
         Some(-1) => (),
@@ -3342,6 +3344,7 @@ use std::cell::Cell;
 use std::mem::swap;
 
 // Just a grab bag of stuff that you wouldn't want to actually write.
+
 fn strange() -> bool {
     let _x: bool = return true;
 }
@@ -3533,6 +3536,7 @@ fn foo() {
 use ;
 
 // https://github.com/rust-lang/rust-analyzer/issues/357
+
 // non-docs
 mod foo {
 }
@@ -3673,6 +3677,7 @@ fn main() {
 }
 
 // https://github.com/rust-lang/rust-analyzer/issues/311
+
 pub fn foo<S: Iterator>() -> String
 where
     <S as Iterator>::Item: Eq,
@@ -3810,6 +3815,7 @@ pub fn recvfrom(
 pub fn recv(socket: ::c_int, buf: *mut ::c_void, len: ::size_t, flags: ::c_int) -> ::ssize_t;
 
 // https://github.com/rust-lang/rust-analyzer/issues/596
+
 struct Foo;
 
 impl Foo {
@@ -3825,6 +3831,7 @@ fn main() {
 }
 
 // https://github.com/rust-lang/rust-analyzer/pull/983
+
 fn compound_assignment() {
     let mut a = 0;
     a += 1;
@@ -7817,6 +7824,7 @@ use super::*;
 // fn b(x: i32) {}
 // fn c(x: i32, ) {}
 // fn d(x: i32, y: ()) {}
+
 // test_err empty_param_slot
 // fn f(y: i32, ,t: i32) {}
 pub(super) fn param_list_fn_def(p: &mut Parser<'_>) {
@@ -8063,6 +8071,7 @@ fn attr(p: &mut Parser<'_>, inner: bool) {
 // #![p:: =]
 // #![unsafe]
 // #![unsafe =]
+
 // test metas
 // #![simple_ident]
 // #![simple::path]
@@ -9098,6 +9107,7 @@ pub(super) fn opt_generic_param_list(p: &mut Parser<'_>) {
 
 // test generic_param_list
 // fn f<T: Clone>() {}
+
 // test_err generic_param_list_recover
 // fn f<T: Clone,, U:, V>() {}
 pub(super) fn generic_param_list(p: &mut Parser<'_>) {
@@ -10914,8 +10924,8 @@ fn is_inner(text: &str) -> bool {
 #
 // avoid editing
 #
-
 // avoid editing
+
 type Span = std::ops::Range<usize>;
 
 #[derive(Debug)]

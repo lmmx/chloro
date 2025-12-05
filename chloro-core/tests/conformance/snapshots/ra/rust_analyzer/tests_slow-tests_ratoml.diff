@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22465 bytes
-Chloro size:   22424 bytes
+Chloro size:   22440 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -208,42 +208,6 @@ Rustfmt size:  23115 bytes
      }
  
      fn query(
- //     #[test]
- //     fn client_config_update() {
- //         setup();
--
- //         let server = RatomlTest::new(
- //             vec![
- //                 r#"
- //             vec!["p1"],
- //             None,
- //         );
--
- //         assert!(!server.query(QueryType::AssistEmitMustUse, 1));
--
- //         // a.notification::<DidChangeConfiguration>(DidChangeConfigurationParams {
- //         //     settings: json!({
- //         //         "assists" : {
- //         //         }
- //         //     }),
- //         // });
--
- //         assert!(server.query(QueryType::AssistEmitMustUse, 1));
- //     }
--
- //     #[test]
- //     fn ratoml_create_ratoml_basic() {
- //         let server = RatomlTest::new(
- //             vec!["p1"],
- //             None,
- //         );
--
- //         assert!(server.query(QueryType::AssistEmitMustUse, 2));
- //     }
--
- #[test]
- fn ratoml_user_config_detected() {
-     if skip_slow_tests() {
          1,
          InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
      );
@@ -266,46 +230,3 @@ Rustfmt size:  23115 bytes
      server.query(
          InternalTestingFetchConfigOption::AssistEmitMustUse,
          3,
- // name = "p1"
- // version = "0.1.0"
- // edition = "2021"
--
- // [dependencies]
- // p2 = { path = "../p2" }
- // "#,
- //     Number(i32),
- //     Text(String),
- // }
--
- // use p2;
--
- // pub fn add(left: usize, right: usize) -> usize {
- //     p2::add(left, right)
- // }
--
- // #[cfg(test)]
- // mod tests {
- //     use super::*;
--
- //     #[test]
- //     fn it_works() {
- //         let result = add(2, 2);
- // name = "p2"
- // version = "0.1.0"
- // edition = "2021"
--
- // # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
--
- // [dependencies]
- // "#,
- //                 r#"
- //             vec!["p1", "p2"],
- //             None,
- //         );
--
- //         assert!(!server.query(QueryType::AssistEmitMustUse, 5));
- //     }
--
- #[test]
- fn ratoml_in_root_is_workspace() {
-     if skip_slow_tests() {

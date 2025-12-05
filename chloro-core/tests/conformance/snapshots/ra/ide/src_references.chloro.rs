@@ -86,6 +86,7 @@ pub struct Declaration {
 // | VS Code | <kbd>Shift+Alt+F12</kbd> |
 //
 // ![Find All References](https://user-images.githubusercontent.com/48062697/113020670-b7c34f00-917a-11eb-8003-370ac5f2b3cb.gif)
+
 #[derive(Debug)]
 pub struct FindAllRefsConfig<'a> {
     pub search_scope: Option<SearchScope>,

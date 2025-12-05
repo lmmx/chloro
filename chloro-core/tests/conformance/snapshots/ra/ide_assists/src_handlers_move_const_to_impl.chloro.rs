@@ -10,6 +10,7 @@ use crate::assist_context::{AssistContext, Assists};
 // NOTE: Code may break if the self type implements a trait that has associated const with the same
 // name, but it's pretty expensive to check that (`hir::Impl::all_for_type()`) and we assume that's
 // pretty rare case.
+
 // Assist: move_const_to_impl
 //
 // Move a local constant item in a method to impl's associated constant. All the references will be

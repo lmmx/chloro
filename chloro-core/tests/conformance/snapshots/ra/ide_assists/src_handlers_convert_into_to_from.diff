@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7739 bytes
-Chloro size:   7730 bytes
+Chloro size:   7731 bytes
 Rustfmt size:  7739 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::{famous_defs::FamousDefs, helpers::mod_path_to_ast, traits::resolve_target_trait};
- use syntax::ast::{self, AstNode, HasGenericArgs, HasName};
- 
- use crate::{AssistContext, AssistId, Assists};
- 
- // FIXME: this should be a diagnostic
--
- // Assist: convert_into_to_from
- //
- // Converts an Into impl to an equivalent From impl.
  #[cfg(test)]
  mod tests {
      use super::*;

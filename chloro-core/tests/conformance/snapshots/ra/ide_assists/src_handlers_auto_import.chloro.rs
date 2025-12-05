@@ -71,6 +71,7 @@ use crate::{AssistContext, AssistId, Assists, GroupLabel};
 // In `VS Code` the configuration for this is `rust-analyzer.imports.prefix`.
 //
 // ![Auto Import](https://user-images.githubusercontent.com/48062697/113020673-b85be580-917a-11eb-9022-59585f35d4f8.gif)
+
 // Assist: auto_import
 //
 // If the name is unresolved, provides all possible imports for it.

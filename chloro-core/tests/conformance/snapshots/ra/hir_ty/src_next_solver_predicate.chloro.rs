@@ -283,6 +283,7 @@ impl<'db> Predicate<'db> {
 }
 
 // FIXME: should make a "header" in interned_vec
+
 #[derive(Debug, Clone)]
 pub struct InternedClausesWrapper<'db>(SmallVec<[Clause<'db>; 2]>, TypeFlags, DebruijnIndex);
 

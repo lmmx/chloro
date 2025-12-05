@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   166472 bytes
+Chloro size:   166473 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -46,13 +46,6 @@ Rustfmt size:  167117 bytes
  };
  
  type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
- //  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
- //  - Don't use abbreviations unless really necessary
- //  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
--
- #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
- #[serde(rename_all = "camelCase")]
- pub enum MaxSubstitutionLength {
      Limit(usize),
  }
  
@@ -259,15 +252,6 @@ Rustfmt size:  167117 bytes
          }
      }
  
-         self.client_info.as_ref().map(|it| it.name == "Neovim").unwrap_or_default()
-     }
- }
--// Deserialization definitions
- 
-+// Deserialization definitions
- macro_rules! create_bool_or_string_serde {
-     ($ident:ident<$bool:literal, $string:literal>) => {
-         mod $ident {
          }
      };
  }

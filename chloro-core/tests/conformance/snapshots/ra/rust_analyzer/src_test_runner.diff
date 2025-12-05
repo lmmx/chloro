@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4276 bytes
+Chloro size:   4277 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -40,13 +40,6 @@ Rustfmt size:  4381 bytes
              },
          })
      }
- // Example of a cargo test command:
- //
- // cargo test --package my-package --bin my_bin --no-fail-fast -- module::func -Z unstable-options --format=json
--
- #[derive(Debug, Clone)]
- pub(crate) struct TestTarget {
-     pub package: String,
              cmd.arg(format!("--{cargo_target}"));
              cmd.arg(&test_target.target);
          } else {

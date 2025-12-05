@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   43732 bytes
+Chloro size:   43735 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -504,29 +504,6 @@ Rustfmt size:  45085 bytes
      /// Returns the crate this thing is defined within.
      #[inline]
      #[doc(alias = "crate")]
- //         self.lookup(db).container()
- //     }
- // }
--
- impl<N, ItemId> HasModule for ItemId
- where
-     N: AstIdNode,
- //         self.lookup(db).container.module(db)
- //     }
- // }
--
- // region: manual-assoc-has-module-impls
- #[inline]
- fn module_for_assoc_item_loc<'db>(
-         module_for_assoc_item_loc(db, *self)
-     }
- }
--// endregion: manual-assoc-has-module-impls
- 
-+// endregion: manual-assoc-has-module-impls
- impl HasModule for EnumVariantId {
-     #[inline]
-     fn module(&self, db: &dyn DefDatabase) -> ModuleId {
                  GenericParamId::TypeParamId(it) => it.parent(),
                  GenericParamId::ConstParamId(it) => it.parent(),
                  GenericParamId::LifetimeParamId(it) => it.parent,
@@ -579,13 +556,6 @@ Rustfmt size:  45085 bytes
                  call_site,
              )),
              err: None,
- //
- // Note that users have no way to override this attribute, so be careful and only include things
- // users definitely do not want to be completed!
--
- /// `#[rust_analyzer::completions(...)]` options.
- #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
- pub enum Complete {
              }
              let action = segments[1].symbol();
              if *action == sym::completions {

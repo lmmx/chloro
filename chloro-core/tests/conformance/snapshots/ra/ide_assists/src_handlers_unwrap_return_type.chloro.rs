@@ -23,6 +23,7 @@ use crate::{AssistContext, AssistId, Assists};
 // ```
 // fn foo() -> i32 { 42i32 }
 // ```
+
 // Assist: unwrap_result_return_type
 //
 // Unwrap the function's return type.
@@ -35,6 +36,7 @@ use crate::{AssistContext, AssistId, Assists};
 // ```
 // fn foo() -> i32 { 42i32 }
 // ```
+
 pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
     let parent = ret_type.syntax().parent()?;

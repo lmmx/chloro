@@ -156,6 +156,7 @@ impl Drop for DropScopeToken {
 //         never!("Drop scope doesn't popped");
 //     }
 // }
+
 impl MirLowerError<'_> {
     pub fn pretty_print(
         &self,

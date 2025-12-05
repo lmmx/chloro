@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10203 bytes
-Chloro size:   10189 bytes
+Chloro size:   10190 bytes
 Rustfmt size:  10203 bytes
 
 ✗ Outputs DIFFER
@@ -17,13 +17,6 @@ Rustfmt size:  10203 bytes
  };
  
  use crate::assist_context::{AssistContext, Assists};
- // NOTE: Code may break if the self type implements a trait that has associated const with the same
- // name, but it's pretty expensive to check that (`hir::Impl::all_for_type()`) and we assume that's
- // pretty rare case.
--
- // Assist: move_const_to_impl
- //
- // Move a local constant item in a method to impl's associated constant. All the references will be
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

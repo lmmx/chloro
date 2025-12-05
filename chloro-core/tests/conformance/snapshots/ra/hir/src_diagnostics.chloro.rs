@@ -52,7 +52,6 @@ macro_rules! diagnostics {
         )*
     };
 }
-
 // FIXME Accept something like the following in the macro call instead
 // diagnostics![
 // pub struct BreakOutsideOfLoop {
@@ -67,6 +66,7 @@ macro_rules! diagnostics {
 //     bad_value_break: bool,
 // }, ...
 // ]
+
 diagnostics![AnyDiagnostic<'db> ->
     AwaitOutsideOfAsync,
     BreakOutsideOfLoop,

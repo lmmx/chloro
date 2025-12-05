@@ -24,6 +24,7 @@ use crate::{AssistContext, AssistId, Assists};
 //    field: i32
 // }
 // ```
+
 enum WrapUnwrapOption {
     WrapDerive {
         derive: TextRange,

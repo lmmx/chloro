@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   22059 bytes
+Chloro size:   22060 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
@@ -22,7 +22,7 @@ Rustfmt size:  22967 bytes
 -extern crate ra_ap_rustc_type_ir as rustc_type_ir;
  
 -extern crate ra_ap_rustc_next_trait_solver as rustc_next_trait_solver;
--
+ 
 -extern crate self as hir_ty;
  
  mod infer;

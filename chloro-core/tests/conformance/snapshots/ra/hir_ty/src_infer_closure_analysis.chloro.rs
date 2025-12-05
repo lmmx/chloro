@@ -33,6 +33,7 @@ use crate::{
 };
 
 // The below functions handle capture and closure kind (Fn, FnMut, ..)
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct HirPlace<'db> {
     pub(crate) local: BindingId,

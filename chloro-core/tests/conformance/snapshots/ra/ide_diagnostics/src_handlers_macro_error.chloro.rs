@@ -3,9 +3,11 @@ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 // Diagnostic: macro-error
 //
 // This diagnostic is shown for macro expansion errors.
+
 // Diagnostic: attribute-expansion-disabled
 //
 // This diagnostic is shown for attribute proc macros when attribute expansions have been disabled.
+
 // Diagnostic: proc-macro-disabled
 //
 // This diagnostic is shown for proc macros that have been specifically disabled via `rust-analyzer.procMacro.ignored`.

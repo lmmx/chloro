@@ -328,8 +328,10 @@ fn f() { foo }
 // //- proc_macros: identity
 // //- /lib.rs
 // mod foo;
+
 // //- /foo/mod.rs
 // pub mod bar;
+
 // //- /foo/bar.rs
 // $0
 // #[proc_macros::identity]
@@ -341,6 +343,7 @@ fn f() { foo }
 // ",
 //     );
 // }
+
 #[test]
 fn typing_inside_macro_heavy_file_should_not_invalidate_def_map() {
     check_def_map_is_not_recomputed(
@@ -461,8 +464,10 @@ pub struct S {}
 // //- minicore:derive
 // //- /lib.rs
 // mod foo;
+
 // //- /foo/mod.rs
 // pub mod bar;
+
 // //- /foo/bar.rs
 // $0
 // #[derive(proc_macros::DeriveIdentity)]
@@ -476,6 +481,7 @@ pub struct S {}
 // ",
 //     );
 // }
+
 #[test]
 fn typing_inside_a_function_should_not_invalidate_item_expansions() {
     let (mut db, pos) = TestDB::with_position(

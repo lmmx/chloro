@@ -4,6 +4,7 @@
 //! Note that the reference search is possible for not all of the classified items.
 
 // FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).
+
 use crate::RootDatabase;
 use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
 use crate::famous_defs::FamousDefs;

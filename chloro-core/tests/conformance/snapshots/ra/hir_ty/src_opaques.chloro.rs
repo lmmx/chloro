@@ -87,6 +87,7 @@ pub(crate) fn opaque_types_defined_by(
 }
 
 // These are firewall queries to prevent drawing dependencies between infers:
+
 #[salsa::tracked(returns(ref), unsafe(non_update_return_type))]
 pub(crate) fn rpit_hidden_types<'db>(
     db: &'db dyn HirDatabase,

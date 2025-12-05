@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25096 bytes
-Chloro size:   25031 bytes
+Chloro size:   25032 bytes
 Rustfmt size:  25274 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- // Some ideas for future improvements:
- // - Support replacing aliases which are used in expressions, e.g. `A::new()`.
- // - Remove unused aliases if there are no longer any users, see inline_call.rs.
--
- use hir::{HasSource, PathResolution};
- use ide_db::FxHashMap;
- use ide_db::{
  use syntax::ast::syntax_factory::SyntaxFactory;
  use syntax::syntax_editor::SyntaxEditor;
  use syntax::{

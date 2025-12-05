@@ -27,6 +27,7 @@ use syntax::{
 //     print!("{var} {}"$0, x + 1);
 // }
 // ```
+
 pub(crate) fn extract_expressions_from_format_string(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

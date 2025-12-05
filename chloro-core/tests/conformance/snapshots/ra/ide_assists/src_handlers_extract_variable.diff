@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51970 bytes
+Chloro size:   51972 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -21,20 +21,6 @@ Rustfmt size:  52351 bytes
      syntax_editor::Position,
  };
  
- //     var_name * 4;
- // }
- // ```
--
- // Assist: extract_constant
- //
- // Extracts subexpression into a constant.
- //     VAR_NAME * 4;
- // }
- // ```
--
- // Assist: extract_static
- //
- // Extracts subexpression into a static.
  }
  
  impl ExtractionKind {

@@ -74,6 +74,7 @@ impl CompletionFieldsToResolve {
 }
 
 //FIXME: split the following feature into fine-grained features.
+
 // Feature: Magic Completions
 //
 // In addition to usual reference completion, rust-analyzer provides some ✨magic✨
@@ -129,6 +130,7 @@ impl CompletionFieldsToResolve {
 // fuzzy matched against the completion input.
 //
 // ![Magic Completions](https://user-images.githubusercontent.com/48062697/113020667-b72ab880-917a-11eb-8778-716cf26a0eb3.gif)
+
 /// Main entry point for completion. We run completion as a two-phase process.
 ///
 /// First, we look at the position and collect a so-called `CompletionContext`.

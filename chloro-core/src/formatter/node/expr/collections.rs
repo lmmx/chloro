@@ -90,9 +90,8 @@ pub fn format_method_call_expr(node: &SyntaxNode, indent: usize) -> Option<Strin
     let method = ast::MethodCallExpr::cast(node.clone())?;
 
     // Check if this is part of a method chain - if so, don't format it here,
-
     // let the parent handle the whole chain, or fall back to verbatim.
-
+    //
     // A method chain is when the receiver is also a method call or field access.
     let receiver = method.receiver()?;
     let is_chain = matches!(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7755 bytes
-Chloro size:   7788 bytes
+Chloro size:   7789 bytes
 Rustfmt size:  8317 bytes
 
 ✗ Outputs DIFFER
@@ -23,10 +23,7 @@ Rustfmt size:  8317 bytes
  };
  
  // Assist: generate_constant
- //     let v = S::new(CAPACITY);
- // }
- // ```
--
+ 
  pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let constant_token = ctx.find_node_at_offset::<ast::NameRef>()?;
 -    if constant_token

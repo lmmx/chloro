@@ -341,8 +341,8 @@ impl RustAnalyzer {
         Self::from_vec_(args)
     }
 }
-
 // generated end
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum OutputFormat {
     Csv,

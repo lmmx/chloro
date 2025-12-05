@@ -2,16 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18779 bytes
-Chloro size:   18797 bytes
+Chloro size:   18798 bytes
 Rustfmt size:  18779 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //    field: i32
- // }
  // ```
--
+ 
  enum WrapUnwrapOption {
 -    WrapDerive { derive: TextRange, attr: ast::Attr },
 +    WrapDerive {

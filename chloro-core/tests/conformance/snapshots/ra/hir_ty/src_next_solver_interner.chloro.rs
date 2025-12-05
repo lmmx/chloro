@@ -418,6 +418,7 @@ pub struct VariantDef {
     flags: VariantFlags,
 }
 */
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct AdtFlags {
     is_enum: bool,

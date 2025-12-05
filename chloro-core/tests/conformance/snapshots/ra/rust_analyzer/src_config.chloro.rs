@@ -53,6 +53,7 @@ mod patch_old_style;
 //  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
 //  - Don't use abbreviations unless really necessary
 //  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum MaxSubstitutionLength {
@@ -2584,8 +2585,8 @@ impl Config {
         self.client_info.as_ref().map(|it| it.name == "Neovim").unwrap_or_default()
     }
 }
-
 // Deserialization definitions
+
 macro_rules! create_bool_or_string_serde {
     ($ident:ident<$bool:literal, $string:literal>) => {
         mod $ident {

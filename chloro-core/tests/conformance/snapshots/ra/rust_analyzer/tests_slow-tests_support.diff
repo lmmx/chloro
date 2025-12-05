@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20653 bytes
+Chloro size:   20654 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -190,13 +190,6 @@ Rustfmt size:  21158 bytes
      select! {
          recv(receiver) -> msg => Ok(msg.ok()),
          recv(after(timeout)) -> _ => Err(Timeout),
- }
- 
- // Comparison functionality borrowed from cargo:
--
- /// Compares JSON object for approximate equality.
- /// You can use `[..]` wildcard in strings (useful for OS dependent things such
- /// as paths). You can use a `"{...}"` string literal as a wildcard for
              let mut l = l.iter().collect::<Vec<_>>();
              let mut r = r.iter().collect::<Vec<_>>();
  

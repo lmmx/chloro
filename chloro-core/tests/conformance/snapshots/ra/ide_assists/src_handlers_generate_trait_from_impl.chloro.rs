@@ -10,6 +10,7 @@ use syntax::{
 // We generate erroneous code if a function is declared const (E0379)
 // This is left to the user to correct as our only option is to remove the
 // function completely which we should not be doing.
+
 // Assist: generate_trait_from_impl
 //
 // Generate trait for an already defined inherent impl and convert impl to a trait impl.

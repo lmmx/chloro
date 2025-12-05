@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14353 bytes
-Chloro size:   14328 bytes
+Chloro size:   14329 bytes
 Rustfmt size:  14730 bytes
 
 ✗ Outputs DIFFER
@@ -116,13 +116,6 @@ Rustfmt size:  14730 bytes
      }
  
      /// Returns indices of all variables that are not yet
- }
- 
- ///////////////////////////////////////////////////////////////////////////
--
- /// These structs (a newtyped TyVid) are used as the unification key
- /// for the `eq_relations`; they carry a `TypeVariableValue` along
- /// with them.
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub(crate) struct TyVidEqKey<'db> {
      vid: TyVid,
