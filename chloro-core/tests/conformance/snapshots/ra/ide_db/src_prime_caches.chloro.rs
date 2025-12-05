@@ -43,27 +43,16 @@ pub fn parallel_prime_caches(
     }
 
     // The setup here is a bit complicated. We try to make best use of compute resources.
-
     // The idea is that if we have a def map available to compute, we should do that first.
-
     // This is because def map is a dependency of both import map and symbols. So if we have
-
     // e.g. a def map and a symbols, if we compute the def map we can, after it completes,
-
     // compute the def maps of dependencies, the existing symbols and the symbols of the
-
     // new crate, all in parallel. But if we compute the symbols, after that we will only
-
     // have the def map to compute, and the rest of the CPU cores will rest, which is not
-
     // good.
-
     // However, it's better to compute symbols/import map than to compute a def map that
-
     // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
-
     // Such def map will just block on the dependency, which is just wasted time. So better
-
     // to compute the symbols/import map of an already computed def map in that time.
     let (reverse_deps, mut to_be_done_deps) = {
         let all_crates = db.all_crates();
@@ -177,7 +166,6 @@ pub fn parallel_prime_caches(
     let (mut module_symbols_total, mut module_symbols_done) = (0usize, 0usize);
 
     // an index map is used to preserve ordering so we can sort the progress report in order of
-
     // "longest crate to index" first
     let mut crates_currently_indexing =
         FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
@@ -192,15 +180,18 @@ pub fn parallel_prime_caches(
     }
 
     while crate_def_maps_done < crate_def_maps_total || crate_import_maps_done < crate_import_maps_total || module_symbols_done < module_symbols_total {
-        // Biased to prefer progress updates (and because it's faster).
         db.unwind_if_revision_cancelled();
+
         let progress = ParallelPrimeCachesProgress {
             crates_currently_indexing: crates_currently_indexing.values().cloned().collect(),
             crates_done: crate_def_maps_done,
             crates_total: crate_def_maps_total,
             work_type: "Indexing",
         };
+
         cb(progress);
+
+        // Biased to prefer progress updates (and because it's faster).
         let progress = match progress_receiver.recv() {
             Ok(p) => p,
             Err(crossbeam_channel::RecvError) => {
@@ -214,14 +205,16 @@ pub fn parallel_prime_caches(
                 return;
             }
         };
+
         match progress {
             ParallelPrimeCacheWorkerProgress::BeginCrateDefMap { crate_id, crate_name } => {
                 crates_currently_indexing.insert(crate_id, crate_name);
             }
             ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {
-                // Fire ready dependencies.
                 crates_currently_indexing.swap_remove(&crate_id);
                 crate_def_maps_done += 1;
+
+                // Fire ready dependencies.
                 for &dep in &reverse_deps[&crate_id] {
                     let to_be_done = to_be_done_deps.get_mut(&dep).unwrap();
                     *to_be_done -= 1;
@@ -230,6 +223,7 @@ pub fn parallel_prime_caches(
                         def_map_work_sender.send((dep, dep_name)).ok();
                     }
                 }
+
                 if crate_def_maps_done == crate_def_maps_total {
                     cb(ParallelPrimeCachesProgress {
                         crates_currently_indexing: vec![],
@@ -238,6 +232,7 @@ pub fn parallel_prime_caches(
                         work_type: "Collecting Symbols",
                     });
                 }
+
                 let origin = &crate_id.data(db).origin;
                 if origin.is_lang() {
                     crate_import_maps_total += 1;

@@ -366,7 +366,6 @@ impl<'db> MirLowerCtx<'_, 'db> {
                     mode,
                 )?,
                 None => {
-                    // The path is not a variant or a local, so it is a const
                     let unresolved_name = || {
                         MirLowerError::unresolved_path(self.db, p, self.display_target(), self.body)
                     };
@@ -375,6 +374,7 @@ impl<'db> MirLowerCtx<'_, 'db> {
                         .resolver
                         .resolve_path_in_value_ns(self.db, p, hygiene)
                         .ok_or_else(unresolved_name)?;
+
                     if let (
                         MatchingMode::Assign,
                         ResolveValueResult::ValueNs(ValueNs::LocalBinding(binding), _),
@@ -390,6 +390,8 @@ impl<'db> MirLowerCtx<'_, 'db> {
                         );
                         return Ok((current, current_else));
                     }
+
+                    // The path is not a variant or a local, so it is a const
                     if mode != MatchingMode::Check {
                         // A const don't bind anything. Only needs check.
                         return Ok((current, current_else));

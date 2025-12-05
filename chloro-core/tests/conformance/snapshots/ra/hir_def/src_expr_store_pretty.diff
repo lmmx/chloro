@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45529 bytes
+Chloro size:   45534 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
@@ -41,36 +41,3 @@ Rustfmt size:  45518 bytes
      if !generic_params.is_empty() {
          w!(p, "<");
          let mut first = true;
-                     Some(path) => self.print_path(path),
-                     None => w!(self, "�"),
-                 }
--
-                 w!(self, "{{");
-                 let edition = self.edition;
-                 self.indented(|p| {
-                     Some(path) => self.print_path(path),
-                     None => w!(self, "�"),
-                 }
--
-                 w!(self, " {{");
-                 let edition = self.edition;
-                 let oneline = matches!(self.line_format, LineFormat::Oneline);
-             if i != 0 || !matches!(path.kind(), PathKind::Plain) {
-                 w!(self, "::");
-             }
--
-             w!(self, "{}", segment.name.display(self.db, self.edition));
-             if let Some(generics) = segment.args_and_bindings {
-                 w!(self, "::<");
-                 self.print_generic_args(generics);
--
-                 w!(self, ">");
-             }
-         }
-             if i != 0 {
-                 w!(self, " + ");
-             }
--
-             match bound {
-                 TypeBound::Path(path, modifier) => {
-                     match modifier {

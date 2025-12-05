@@ -123,6 +123,7 @@ impl<'db> Evaluator<'db> {
                     let result = if result { 255 } else { 0 };
                     destination_bytes.extend(std::iter::repeat_n(result, dest_size));
                 }
+
                 destination.write_from_bytes(self, &destination_bytes)
             }
             "bitmask" => {

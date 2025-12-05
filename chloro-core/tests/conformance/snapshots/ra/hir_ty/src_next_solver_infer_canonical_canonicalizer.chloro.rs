@@ -374,6 +374,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                     t = Ty::new_var(self.tcx, root_vid);
                     vid = root_vid;
                 }
+
                 debug!("canonical: type var found with vid {:?}", vid);
                 match self.infcx.probe_ty_var(vid) {
                     // `t` could be a float / int variable; canonicalize that instead.
@@ -389,6 +390,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
                             // FIXME: perf problem described in #55921.
                             ui = UniverseIndex::ROOT;
                         }
+
                         let sub_root = self.get_or_insert_sub_root(vid);
                         self.canonicalize_ty_var(CanonicalVarKind::Ty { ui, sub_root }, t)
                     }
@@ -594,9 +596,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         let out_value = value.fold_with(&mut canonicalizer);
 
         // Once we have canonicalized `out_value`, it should not
-
         // contain anything that ties it to this inference context
-
         // anymore.
         debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
 
@@ -635,13 +635,9 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         }
 
         // This code is hot. `variables` and `var_values` are usually small
-
         // (fewer than 8 elements ~95% of the time). They are SmallVec's to
-
         // avoid allocations in those cases. We also don't use `indices` to
-
         // determine if a kind has been seen before until the limit of 8 has
-
         // been exceeded, to also avoid allocations for `indices`.
         if !var_values.spilled() {
             // `var_values` is stack-allocated. `indices` isn't used yet. Do a
@@ -652,12 +648,12 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
             } else {
                 // `kind` isn't present in `var_values`. Append it. Likewise
                 // for `info` and `variables`.
-                // If `var_values` has become big enough to be heap-allocated,
-                // fill up `indices` to facilitate subsequent lookups.
-                // The cv is the index of the appended element.
                 variables.push(info);
                 var_values.push(kind);
                 assert_eq!(variables.len(), var_values.len());
+
+                // If `var_values` has become big enough to be heap-allocated,
+                // fill up `indices` to facilitate subsequent lookups.
                 if var_values.spilled() {
                     assert!(indices.is_empty());
                     *indices = var_values
@@ -666,6 +662,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
                         .map(|(i, &kind)| (kind, BoundVar::new(i)))
                         .collect();
                 }
+                // The cv is the index of the appended element.
                 BoundVar::new(var_values.len() - 1)
             }
         } else {

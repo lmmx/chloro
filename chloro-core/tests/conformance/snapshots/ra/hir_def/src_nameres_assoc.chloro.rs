@@ -289,6 +289,7 @@ impl<'a> AssocItemCollector<'a> {
                 };
                 let path = Interned::new(path);
                 let ctxt = self.span_map.span_for_range(range).ctx;
+
                 let resolver = |path: &_| {
                     self.def_map
                         .resolve_path(

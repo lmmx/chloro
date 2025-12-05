@@ -18,8 +18,9 @@ pub(crate) fn complete_use_path(
 ) {
     match qualified {
         Qualified::With { path, resolution: Some(resolution), super_chain_len } => {
-            // only show `self` in a new use-tree when the qualifier doesn't end in self
             acc.add_super_keyword(ctx, *super_chain_len);
+
+            // only show `self` in a new use-tree when the qualifier doesn't end in self
             let not_preceded_by_self = *use_tree_parent
                 && !matches!(
                     path.segment().and_then(|it| it.kind()),
@@ -28,6 +29,7 @@ pub(crate) fn complete_use_path(
             if not_preceded_by_self {
                 acc.add_keyword(ctx, "self");
             }
+
             let mut already_imported_names = FxHashSet::default();
             if let Some(list) = ctx.token.parent_ancestors().find_map(ast::UseTreeList::cast) {
                 let use_tree = list.parent_use_tree();
@@ -39,6 +41,7 @@ pub(crate) fn complete_use_path(
                     }
                 }
             }
+
             match resolution {
                 hir::PathResolution::Def(hir::ModuleDef::Module(module)) => {
                     let module_scope = module.scope(ctx.db, Some(ctx.module));
@@ -58,6 +61,7 @@ pub(crate) fn complete_use_path(
                         }
                         let is_name_already_imported =
                             already_imported_names.contains(name.as_str());
+
                         let add_resolution = match def {
                             ScopeDef::Unknown if unknown_is_current(&name) => {
                                 // for `use self::foo$0`, don't suggest `foo` as a completion
@@ -67,6 +71,7 @@ pub(crate) fn complete_use_path(
                             ScopeDef::ModuleDef(_) | ScopeDef::Unknown => true,
                             _ => false,
                         };
+
                         if add_resolution {
                             let mut builder = Builder::from_resolution(ctx, path_ctx, name, def);
                             builder.with_relevance(|r| CompletionRelevance {

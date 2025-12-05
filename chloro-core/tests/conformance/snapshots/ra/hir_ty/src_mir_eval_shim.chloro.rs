@@ -459,7 +459,6 @@ impl<'db> Evaluator<'db> {
                 Ok(())
             }
             "pthread_key_create" => {
-                // return 0 as success
                 let key = self.thread_local_storage.create_key();
                 let Some(arg0) = args.first() else {
                     return Err(MirEvalError::InternalError(
@@ -479,6 +478,7 @@ impl<'db> Evaluator<'db> {
                     self.size_of_sized(key_ty, locals, "pthread_key_create key arg")?,
                 );
                 arg0_interval.write_from_bytes(self, &key.to_le_bytes()[0..arg0_interval.size])?;
+                // return 0 as success
                 destination.write_from_bytes(self, &0u64.to_le_bytes()[0..destination.size])?;
                 Ok(())
             }
@@ -494,7 +494,6 @@ impl<'db> Evaluator<'db> {
                 Ok(())
             }
             "pthread_setspecific" => {
-                // return 0 as success
                 let Some(arg0) = args.first() else {
                     return Err(MirEvalError::InternalError(
                         "pthread_setspecific arg0 is not provided".into(),
@@ -508,6 +507,7 @@ impl<'db> Evaluator<'db> {
                 };
                 let value = from_bytes!(u128, pad16(arg1.get(self)?, false));
                 self.thread_local_storage.set_key(key, value)?;
+                // return 0 as success
                 destination.write_from_bytes(self, &0u64.to_le_bytes()[0..destination.size])?;
                 Ok(())
             }
@@ -525,15 +525,15 @@ impl<'db> Evaluator<'db> {
                 self.exec_syscall(id, rest, destination, locals, span)
             }
             "sched_getaffinity" => {
-                // Only enable core 0 (we are single threaded anyway), which is bitset 0x0000001
-                // return 0 as success
                 let [_pid, _set_size, set] = args else {
                     return Err(MirEvalError::InternalError(
                         "libc::write args are not provided".into(),
                     ));
                 };
                 let set = Address::from_bytes(set.get(self)?)?;
+                // Only enable core 0 (we are single threaded anyway), which is bitset 0x0000001
                 self.write_memory(set, &[1])?;
+                // return 0 as success
                 self.write_memory_using_ref(destination.addr, destination.size)?.fill(0);
                 Ok(())
             }
@@ -856,8 +856,6 @@ impl<'db> Evaluator<'db> {
                 destination.write_from_bytes(self, &[u8::from(ans)])
             }
             "saturating_add" | "saturating_sub" => {
-                // FIXME: signed
-                // FIXME: signed
                 let [lhs, rhs] = args else {
                     return Err(MirEvalError::InternalError(
                         "saturating_add args are not provided".into(),
@@ -871,8 +869,10 @@ impl<'db> Evaluator<'db> {
                     _ => unreachable!(),
                 };
                 let bits = destination.size * 8;
+                // FIXME: signed
                 let is_signed = false;
                 let mx: u128 = if is_signed { (1 << (bits - 1)) - 1 } else { (1 << bits) - 1 };
+                // FIXME: signed
                 let mn: u128 = 0;
                 let ans = cmp::min(mx, cmp::max(mn, ans));
                 destination.write_from_bytes(self, &ans.to_le_bytes()[0..destination.size])
@@ -1385,16 +1385,6 @@ impl<'db> Evaluator<'db> {
                 "dyn concrete type",
             )?,
             TyKind::Adt(adt_def, subst) => {
-                // Must add any necessary padding to `size`
-                // (to make it a multiple of `align`) before returning it.
-                //
-                // Namely, the returned size should be, in C notation:
-                //
-                //   `size + ((size & (align-1)) ? align : 0)`
-                //
-                // emulated via the semi-standard fast bit trick:
-                //
-                //   `(size + (align-1)) & -align`
                 let id = adt_def.def_id().0;
                 let layout = self.layout_adt(id, subst)?;
                 let id = match id {
@@ -1411,6 +1401,16 @@ impl<'db> Evaluator<'db> {
                     self.size_align_of_unsized(last_field_ty, metadata, locals)?;
                 let align = sized_part_align.max(unsized_part_align) as isize;
                 let size = (sized_part_size + unsized_part_size) as isize;
+                // Must add any necessary padding to `size`
+                // (to make it a multiple of `align`) before returning it.
+                //
+                // Namely, the returned size should be, in C notation:
+                //
+                //   `size + ((size & (align-1)) ? align : 0)`
+                //
+                // emulated via the semi-standard fast bit trick:
+                //
+                //   `(size + (align-1)) & -align`
                 let size = (size + (align - 1)) & (-align);
                 (size as usize, align as usize)
             }

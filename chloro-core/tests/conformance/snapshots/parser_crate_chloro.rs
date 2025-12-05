@@ -1467,6 +1467,7 @@ fn main() {
     { async 92 }
     { try 92 }
     {
+        'label:
         92
     }
 }
@@ -3206,6 +3207,7 @@ fn inner() {
         //! As are ModuleDoc style comments
     };
     {
+        #![doc("Inner attributes are allowed in blocks when they are the last statement of another block")]
         //! As are ModuleDoc style comments
     }
 }
@@ -5915,15 +5917,10 @@ pub(crate) fn use_tree_list(p: &mut Parser<'_>) {
     let m = p.start();
 
     // test_err use_tree_list_err_recovery
-
     // use {a;
-
     // use b;
-
     // struct T;
-
     // fn test() {}
-
     // use {a ,, b};
     delimited(
         p,
@@ -5947,7 +5944,6 @@ pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
     name_r(p, ITEM_RECOVERY_SET);
 
     // test trait_item_generic_params
-
     // trait X<U: Debug + Display> {}
     generic_params::opt_generic_param_list(p);
 
@@ -5972,7 +5968,6 @@ pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
     }
 
     // test trait_item_where_clause
-
     // trait T where Self: Copy {}
     generic_params::opt_where_clause(p);
 
@@ -5993,12 +5988,10 @@ pub(super) fn impl_(p: &mut Parser<'_>, m: Marker) {
     }
 
     // test impl_item_const
-
     // impl const Send for S {}
     p.eat(T![const]);
 
     // test impl_item_never_type
-
     // impl ! {}
     if p.at(T![!]) && !p.nth_at(1, T!['{']) {
         // test impl_item_neg
@@ -6146,6 +6139,7 @@ fn const_or_static(p: &mut Parser<'_>, m: Marker, is_const: bool) {
         // }
         generic_params::opt_where_clause(p);
     }
+
     // test_err static_where_clause
     // static C: u32 = 0
     // where i32: Copy;
@@ -6408,25 +6402,15 @@ pub(super) fn item_or_macro(p: &mut Parser<'_>, stop_on_r_curly: bool, is_in_ext
     };
 
     // test macro_rules_as_macro_name
-
     // macro_rules! {}
-
     // macro_rules! ();
-
     // macro_rules! [];
-
     // fn main() {
-
     //     let foo = macro_rules!();
-
     // }
-
     // test_err macro_rules_as_macro_name
-
     // macro_rules! {};
-
     // macro_rules! ()
-
     // macro_rules! []
     if paths::is_use_path_start(p) {
         paths::use_path(p);
@@ -6480,7 +6464,6 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     }
 
     // test_err async_without_semicolon
-
     // fn foo() { let _ = async {} }
     if p.at(T![async])
         && (!matches!(p.nth(1), T!['{'] | T![gen] | T![move] | T![|])
@@ -6491,9 +6474,7 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     }
 
     // test_err gen_fn 2021
-
     // gen fn gen_fn() {}
-
     // async gen fn async_gen_fn() {}
     if p.at(T![gen]) && p.nth(1) == T![fn] {
         p.eat(T![gen]);
@@ -6501,7 +6482,6 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     }
 
     // test_err unsafe_block_in_mod
-
     // fn foo(){} unsafe { } fn bar(){}
     if p.at(T![unsafe]) && p.nth(1) != T!['{'] {
         p.eat(T![unsafe]);
@@ -6509,7 +6489,6 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     }
 
     // test safe_outside_of_extern
-
     // fn foo() { safe = true; }
     if is_in_extern && p.at_contextual_kw(T![safe]) {
         p.eat_contextual_kw(T![safe]);
@@ -6527,7 +6506,6 @@ pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Res
     }
 
     // test default_item
-
     // default impl T for Foo {}
     if p.at_contextual_kw(T![default]) {
         match p.nth(1) {
@@ -6649,9 +6627,7 @@ fn extern_crate(p: &mut Parser<'_>, m: Marker) {
     name_ref_or_self(p);
 
     // test extern_crate_rename
-
     // extern crate foo as bar;
-
     // extern crate self as bar;
     opt_rename(p);
     p.expect(T![;]);
@@ -6681,7 +6657,6 @@ fn type_alias(p: &mut Parser<'_>, m: Marker) {
     name(p);
 
     // test type_item_type_params
-
     // type Result<T> = ();
     generic_params::opt_generic_param_list(p);
 
@@ -6690,7 +6665,6 @@ fn type_alias(p: &mut Parser<'_>, m: Marker) {
     }
 
     // test type_item_where_clause_deprecated
-
     // type Foo where Foo: Copy = ();
     generic_params::opt_where_clause(p);
     if p.eat(T![=]) {
@@ -6698,7 +6672,6 @@ fn type_alias(p: &mut Parser<'_>, m: Marker) {
     }
 
     // test type_item_where_clause
-
     // type Foo = () where Foo: Copy;
     generic_params::opt_where_clause(p);
 
@@ -6790,9 +6763,7 @@ fn fn_(p: &mut Parser<'_>, m: Marker) {
     opt_ret_type(p);
 
     // test_err fn_ret_recovery
-
     // fn foo() -> A>]) { let x = 1; }
-
     // fn foo() -> A>]) where T: Copy { let x = 1; }
     while p.at(T![')']) | p.at(T![']']) | p.at(T![>]) {
         // recover from unbalanced return type brackets
@@ -6800,12 +6771,10 @@ fn fn_(p: &mut Parser<'_>, m: Marker) {
     }
 
     // test function_where_clause
-
     // fn foo<T>() where T: Copy {}
     generic_params::opt_where_clause(p);
 
     // test fn_decl
-
     // trait T { fn foo(); }
     if !p.eat(T![;]) {
         expressions::block_expr(p);
@@ -7069,11 +7038,8 @@ fn tuple_expr(p: &mut Parser<'_>) -> CompletedMarker {
     let mut saw_expr = false;
 
     // test_err tuple_expr_leading_comma
-
     // fn foo() {
-
     //     (,);
-
     // }
     if p.eat(T![,]) {
         p.error("expected expression");
@@ -7116,18 +7082,18 @@ fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
     p.bump_remap(T![builtin]);
     p.bump(T![#]);
     if p.eat_contextual_kw(T![offset_of]) {
+        p.expect(T!['(']);
+        type_(p);
+        p.expect(T![,]);
         // Due to our incomplete handling of macro groups, especially
         // those with empty delimiters, we wrap `expr` fragments in
         // parentheses sometimes. Since `offset_of` is a macro, and takes
         // `expr`, the field names could be wrapped in parentheses.
+        let wrapped_in_parens = p.eat(T!['(']);
         // test offset_of_parens
         // fn foo() {
         //     builtin#offset_of(Foo, (bar.baz.0));
         // }
-        p.expect(T!['(']);
-        type_(p);
-        p.expect(T![,]);
-        let wrapped_in_parens = p.eat(T!['(']);
         while !p.at(EOF) && !p.at(T![')']) {
             name_ref_mod_path_or_index(p);
             if !p.at(T![')']) {
@@ -7306,7 +7272,6 @@ fn parse_options(p: &mut Parser<'_>) {
     p.expect(T!['(']);
 
     while !p.eat(T![')']) && !p.at(EOF) {
-        // Allow trailing commas
         const OPTIONS: &[SyntaxKind] = &[
             T![pure],
             T![nomem],
@@ -7325,6 +7290,8 @@ fn parse_options(p: &mut Parser<'_>) {
             continue;
         }
         m.complete(p, ASM_OPTION);
+
+        // Allow trailing commas
         if p.eat(T![')']) {
             break;
         }
@@ -7336,10 +7303,11 @@ fn parse_clobber_abi(p: &mut Parser<'_>) {
     p.expect(T!['(']);
 
     while !p.eat(T![')']) && !p.at(EOF) {
-        // Allow trailing commas
         if !p.expect(T![string]) {
             break;
         }
+
+        // Allow trailing commas
         if p.eat(T![')']) {
             break;
         }
@@ -7427,7 +7395,6 @@ fn closure_expr(p: &mut Parser<'_>) -> CompletedMarker {
     let m = p.start();
 
     // test closure_binder
-
     // fn main() { for<'a> || (); }
     if p.at(T![for]) {
         types::for_binder(p);
@@ -7597,21 +7564,13 @@ pub(crate) fn match_arm_list(p: &mut Parser<'_>) {
     p.eat(T!['{']);
 
     // test match_arms_inner_attribute
-
     // fn foo() {
-
     //     match () {
-
     //         #![doc("Inner attribute")]
-
     //         #![doc("Can be")]
-
     //         #![doc("Stacked")]
-
     //         _ => (),
-
     //     }
-
     // }
     attributes::inner_attrs(p);
 
@@ -8217,7 +8176,6 @@ pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
     }
 
     // test block_items
-
     // fn a() { fn b() {} }
     let m = match items::opt_item(p, m, false) {
         Ok(()) => return,
@@ -8615,19 +8573,12 @@ fn postfix_dot_expr<const FLOAT_RECOVERY: bool>(
     }
 
     // test await_expr
-
     // fn foo() {
-
     //     x.await;
-
     //     x.0.await;
-
     //     x.0().await?.hello();
-
     //     x.0.0.await;
-
     //     x.0. await;
-
     // }
     if p.nth(nth1) == T![await] {
         let m = lhs.precede(p);
@@ -9354,12 +9305,11 @@ fn path_type_bound(p: &mut Parser<'_>) -> Result<(), ()> {
     p.eat(T![?]);
 
     // test_err invalid_question_for_type_trait_bound
-
     // fn f<T>() where T: ?for<> Sized {}
     if paths::is_use_path_start(p) {
+        types::path_type_bounds(p, false);
         // test_err type_bounds_macro_call_recovery
         // fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
-        types::path_type_bounds(p, false);
         if p.at(T![!]) {
             let m = p.start();
             p.bump(T![!]);
@@ -9733,7 +9683,6 @@ pub(super) fn for_type(p: &mut Parser<'_>, allow_bounds: bool) {
     let completed = m.complete(p, FOR_TYPE);
 
     // test no_dyn_trait_leading_for
-
     // type A = for<'a> Test<'a> + Send;
     if allow_bounds {
         opt_type_bounds_as_dyn_trait_type(p, completed);
@@ -9823,9 +9772,7 @@ pub(super) fn path_type_bounds(p: &mut Parser<'_>, allow_bounds: bool) {
     paths::type_path(p);
 
     // test path_type_with_bounds
-
     // fn foo() -> Box<T + 'f> {}
-
     // fn foo() -> Box<dyn T + 'f> {}
     let path = m.complete(p, PATH_TYPE);
     if allow_bounds {
@@ -9854,7 +9801,6 @@ pub(super) fn opt_type_bounds_as_dyn_trait_type(
     let m = m.precede(p);
 
     // This gets consumed here so it gets properly set
-
     // in the TYPE_BOUND_LIST
     p.eat(T![+]);
 
@@ -9971,69 +9917,37 @@ fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     }
 
     // test exclusive_range_pat
-
     // fn main() {
-
     //     match 42 {
-
     //         ..0 => {}
-
     //         1..2 => {}
-
     //     }
-
     // }
-
     // test dot_dot_pat
-
     // fn main() {
-
     //     let .. = ();
-
     //     //
-
     //     // Tuples
-
     //     //
-
     //     let (a, ..) = ();
-
     //     let (a, ..,) = ();
-
     //     let Tuple(a, ..) = ();
-
     //     let Tuple(a, ..,) = ();
-
     //     let (.., ..) = ();
-
     //     let Tuple(.., ..) = ();
-
     //     let (.., a, ..) = ();
-
     //     let Tuple(.., a, ..) = ();
-
     //     //
-
     //     // Slices
-
     //     //
-
     //     let [..] = ();
-
     //     let [head, ..] = ();
-
     //     let [head, tail @ ..] = ();
-
     //     let [head, .., cons] = ();
-
     //     let [head, mid @ .., cons] = ();
-
     //     let [head, .., .., cons] = ();
-
     //     let [head, .., mid, tail @ ..] = ();
-
     //     let [head, .., mid, .., cons] = ();
-
     // }
     if p.at(T![..]) {
         let m = p.start();
@@ -10050,6 +9964,9 @@ fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     if let Some(lhs) = atom_pat(p, recovery_set) {
         for range_op in [T![...], T![..=], T![..]] {
             if p.at(range_op) {
+                let m = lhs.precede(p);
+                p.bump(range_op);
+
                 // testing if we're at one of the following positions:
                 // `0 .. =>`
                 //       ^
@@ -10067,8 +9984,6 @@ fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
                 //      ^
                 // `0 .. if`
                 //       ^
-                let m = lhs.precede(p);
-                p.bump(range_op);
                 if matches!(
                     p.current(),
                     T![=] | T![,] | T![:] | T![')'] | T!['}'] | T![']'] | T![if] | EOF
@@ -10217,10 +10132,10 @@ fn tuple_pat_fields(p: &mut Parser<'_>) {
 fn record_pat_field(p: &mut Parser<'_>) {
     match p.current() {
         IDENT | INT_NUMBER if p.nth(1) == T![:] => {
-            // test record_field_pat_leading_or
-            // fn foo() { let R { a: | 1 | 2 } = 0; }
             name_ref_or_index(p);
             p.bump(T![:]);
+            // test record_field_pat_leading_or
+            // fn foo() { let R { a: | 1 | 2 } = 0; }
             pattern(p);
         }
         // test_err record_pat_field_eq_recovery
@@ -10324,11 +10239,8 @@ fn tuple_pat(p: &mut Parser<'_>) -> CompletedMarker {
     let mut has_rest = false;
 
     // test_err tuple_pat_leading_comma
-
     // fn foo() {
-
     //     let (,);
-
     // }
     if p.eat(T![,]) {
         p.error("expected pattern");
@@ -10957,6 +10869,7 @@ fn n_attached_trivias<'a>(
         | EXTERN_CRATE => {
             let mut res = 0;
             let mut trivias = trivias.enumerate().peekable();
+
             while let Some((i, (kind, text))) = trivias.next() {
                 match kind {
                     WHITESPACE if text.contains("\n\n") => {

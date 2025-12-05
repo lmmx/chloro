@@ -63,7 +63,6 @@ impl<'db> HirDisplay<'db> for Function {
         };
 
         // Write signature of the function
-
         // Block-local impls are "hoisted" to the nearest (non-block) module.
         if let Some(AssocItemContainer::Impl(_)) = container {
             module = module.nearest_non_block_module(db);
@@ -130,9 +129,7 @@ impl<'db> HirDisplay<'db> for Function {
         f.write_char(')')?;
 
         // `FunctionData::ret_type` will be `::core::future::Future<Output = ...>` for async fns.
-
         // Use ugly pattern match to strip the Future trait.
-
         // Better way?
         let ret_type = if !data.is_async() {
             data.ret_type

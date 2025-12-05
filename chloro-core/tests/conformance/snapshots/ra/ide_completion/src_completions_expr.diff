@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20947 bytes
-Chloro size:   20889 bytes
+Chloro size:   20910 bytes
 Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
@@ -82,15 +82,9 @@ Rustfmt size:  21861 bytes
 -            trait_: None,
 -        } => {
 +        Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
-+            // Iterate assoc types separately
              if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
                  cov_mark::hit!(completes_variant_through_alias);
                  acc.add_enum_variants(ctx, path_ctx, e);
-             }
--
-             ty.iterate_path_candidates_split_inherent(
-                 ctx.db,
-                 &ctx.scope,
                  &ctx.traits_in_scope(),
                  Some(ctx.module),
                  None,
@@ -102,11 +96,8 @@ Rustfmt size:  21861 bytes
 -                },
 +                PathCallback { ctx, acc, add_assoc_item, seen: FxHashSet::default() },
              );
--
--            // Iterate assoc types separately
-             ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
-                 if let hir::AssocItem::TypeAlias(ty) = item {
-                     acc.add_type_alias(ctx, ty)
+ 
+             // Iterate assoc types separately
                  None::<()>
              });
          }
@@ -130,33 +121,9 @@ Rustfmt size:  21861 bytes
              match resolution {
                  hir::PathResolution::Def(hir::ModuleDef::Module(module)) => {
                      let visible_from = if ctx.config.enable_private_editable {
-                     } else {
-                         Some(ctx.module)
-                     };
--
-                     let module_scope = module.scope(ctx.db, visible_from);
-                     for (name, def) in module_scope {
-                         if scope_def_applicable(def) {
-                     | hir::ModuleDef::TypeAlias(_)
-                     | hir::ModuleDef::BuiltinType(_)),
-                 ) => {
-+                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
-+                    // (where AssocType is defined on a trait, not an inherent impl)
-+                    // Iterate assoc types separately
-                     let ty = match def {
-                         hir::ModuleDef::Adt(adt) => adt.ty(ctx.db),
-                         hir::ModuleDef::TypeAlias(a) => a.ty(ctx.db),
-                         }
-                         _ => return,
-                     };
--
-                     if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
-                         cov_mark::hit!(completes_variant_through_alias);
-                         acc.add_enum_variants(ctx, path_ctx, e);
-                     }
--
--                    // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
--                    // (where AssocType is defined on a trait, not an inherent impl)
+ 
+                     // XXX: For parity with Rust bug #22519, this does not complete Ty::AssocType.
+                     // (where AssocType is defined on a trait, not an inherent impl)
 -
                      ty.iterate_path_candidates_split_inherent(
                          ctx.db,
@@ -172,23 +139,8 @@ Rustfmt size:  21861 bytes
 -                        },
 +                        PathCallback { ctx, acc, add_assoc_item, seen: FxHashSet::default() },
                      );
--
--                    // Iterate assoc types separately
-                     ty.iterate_assoc_items(ctx.db, ctx.krate, |item| {
-                         if let hir::AssocItem::TypeAlias(ty) = item {
-                             acc.add_type_alias(ctx, ty)
-                         hir::PathResolution::SelfType(impl_def) => impl_def.self_ty(ctx.db),
-                         _ => return,
-                     };
--
-                     if let Some(hir::Adt::Enum(e)) = ty.as_adt() {
-                         cov_mark::hit!(completes_variant_through_self);
-                         acc.add_enum_variants(ctx, path_ctx, e);
-                     }
--
-                     ty.iterate_path_candidates_split_inherent(
-                         ctx.db,
-                         &ctx.scope,
+ 
+                     // Iterate assoc types separately
                          &ctx.traits_in_scope(),
                          Some(ctx.module),
                          None,
@@ -215,72 +167,15 @@ Rustfmt size:  21861 bytes
                  let self_ty = (|| ctx.sema.to_def(impl_.as_ref()?)?.self_ty(ctx.db).as_adt())();
                  let complete_self = self_ty == Some(adt);
  
-                 _ => (),
-             });
--
              match is_func_update {
                  Some(record_expr) => {
 -                    let ty = ctx
 -                        .sema
 -                        .type_of_expr(&ast::Expr::RecordExpr(record_expr.clone()));
--
 +                    let ty = ctx.sema.type_of_expr(&ast::Expr::RecordExpr(record_expr.clone()));
+ 
                      match ty.as_ref().and_then(|t| t.original.as_adt()) {
                          Some(hir::Adt::Union(_)) => (),
-                         _ => {
-                     let mut add_keyword = |kw, snippet| {
-                         acc.add_keyword_snippet_expr(ctx, incomplete_let, kw, snippet)
-                     };
--
-                     if !in_block_expr {
-                         add_keyword("unsafe", "unsafe {\n    $0\n}");
-                         add_keyword("const", "const {\n    $0\n}");
-                     add_keyword("for", "for $1 in $2 {\n    $0\n}");
-                     add_keyword("true", "true");
-                     add_keyword("false", "false");
--
-                     if in_condition {
-                         add_keyword("letm", "let mut $1 = $0");
-                         add_keyword("let", "let $1 = $0");
-                     }
--
-                     if in_block_expr {
-                         add_keyword("letm", "let mut $1 = $0;");
-                         add_keyword("let", "let $1 = $0;");
-                     }
--
-                     if !before_else_kw && (after_if_expr || after_incomplete_let) {
-                         add_keyword("else", "else {\n    $0\n}");
-                     }
--
-                     if after_if_expr {
-                         add_keyword("else if", "else if $1 {\n    $0\n}");
-                     }
--
-                     if wants_raw_token {
-                         add_keyword("raw", "raw ");
-                     }
-                     if wants_mut_token {
-                         add_keyword("mut", "mut ");
-                     }
--
-                     if let Some(loop_ty) = innermost_breakable_ty {
-                         if in_block_expr {
-                             add_keyword("continue", "continue;");
-                             },
-                         );
-                     }
--
-                     if let Some(ret_ty) = innermost_ret_ty {
-                         add_keyword(
-                             "return",
-         if ty.is_unit() || ty.is_unknown() {
-             return;
-         }
--
-         let term_search_ctx = hir::term_search::TermSearchCtx {
-             sema: &ctx.sema,
-             scope: &ctx.scope,
          for expr in exprs {
              // Expand method calls
              match expr {
@@ -299,14 +194,5 @@ Rustfmt size:  21861 bytes
 +                    let term_search_ctx =
 +                        hir::term_search::TermSearchCtx { goal: target_ty, ..term_search_ctx };
                      let target_exprs = hir::term_search::term_search(&term_search_ctx);
--
+ 
                      for expr in target_exprs {
-                         let expanded_expr = hir::term_search::Expr::Method {
-                             func,
-                             target: Box::new(expr),
-                             params: params.clone(),
-                         };
--
-                         acc.add_expr(ctx, &expanded_expr)
-                     }
-                 }

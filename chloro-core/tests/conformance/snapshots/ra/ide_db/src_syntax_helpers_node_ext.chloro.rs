@@ -93,6 +93,7 @@ pub fn preorder_expr_with_ctx_checker(
             preorder.skip_subtree();
             continue;
         }
+
         match ast::Stmt::cast(node.clone()) {
             // Don't skip subtree since we want to process the expression child next
             Some(ast::Stmt::ExprStmt(_)) | Some(ast::Stmt::LetStmt(_)) => (),

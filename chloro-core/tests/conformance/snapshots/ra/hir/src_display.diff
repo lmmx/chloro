@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   30727 bytes
+Chloro size:   30724 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,13 @@ Rustfmt size:  31432 bytes
      },
      next_solver::ClauseKind,
  };
+         };
+ 
+         // Write signature of the function
+-
+         // Block-local impls are "hoisted" to the nearest (non-block) module.
+         if let Some(AssocItemContainer::Impl(_)) = container {
+             module = module.nearest_non_block_module(db);
  
          // FIXME: Use resolved `param.ty` once we no longer discard lifetimes
          let body = db.body(self.id.into());
@@ -43,15 +50,6 @@ Rustfmt size:  31432 bytes
              if !first {
                  f.write_str(", ")?;
              } else {
-         f.write_char(')')?;
- 
-         // `FunctionData::ret_type` will be `::core::future::Future<Output = ...>` for async fns.
-+
-         // Use ugly pattern match to strip the Future trait.
-+
-         // Better way?
-         let ret_type = if !data.is_async() {
-             data.ret_type
          let param = *data.params.first().unwrap();
          match &data.store[param] {
              TypeRef::Path(p) if p.is_self_type() => f.write_str("self"),

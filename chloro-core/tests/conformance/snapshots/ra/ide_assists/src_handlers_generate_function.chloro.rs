@@ -119,6 +119,7 @@ fn fn_target_info(
                         return None;
                     }
                 }
+
                 assoc_fn_target_info(ctx, call, adt, fn_name)
             }
             Some(hir::PathResolution::SelfType(impl_)) => {
@@ -267,7 +268,6 @@ impl FunctionBuilder {
         let fn_body;
 
         // If generated function has the name "new" and is an associated function, we generate fn body
-
         // as a constructor and assume a "Self" return type.
         if let Some(body) =
             make_fn_body_as_new_function(ctx, &fn_name.text(), adt_info, target_edition)
@@ -594,9 +594,11 @@ impl GeneratedFunctionTarget {
                 } else {
                     ted::Position::first_child_of(&item)
                 };
+
                 let indent = IndentLevel::from_node(&item);
                 let leading_ws = make::tokens::whitespace(&format!("\n{indent}"));
                 impl_.indent(indent);
+
                 ted::insert_all(position, vec![leading_ws.into(), impl_.syntax().clone().into()]);
             }
             GeneratedFunctionTarget::InEmptyItemList(item_list) => {
@@ -607,10 +609,12 @@ impl GeneratedFunctionTarget {
                     Some(child) => ted::Position::after(child),
                     None => ted::Position::first_child_of(&item_list),
                 };
+
                 let indent = IndentLevel::from_node(&item_list);
                 let leading_indent = indent + 1;
                 let leading_ws = make::tokens::whitespace(&format!("\n{leading_indent}"));
                 impl_.indent(indent);
+
                 ted::insert_all(position, vec![leading_ws.into(), impl_.syntax().clone().into()]);
             }
             GeneratedFunctionTarget::InImpl(_) => {
@@ -628,9 +632,11 @@ impl GeneratedFunctionTarget {
                 } else {
                     ted::Position::first_child_of(&item)
                 };
+
                 let indent = IndentLevel::from_node(&item);
                 let leading_ws = make::tokens::whitespace(&format!("\n\n{indent}"));
                 func.indent(indent);
+
                 ted::insert_all_raw(
                     position,
                     vec![leading_ws.into(), func.syntax().clone().into()],
@@ -644,11 +650,13 @@ impl GeneratedFunctionTarget {
                     Some(child) => ted::Position::after(child),
                     None => ted::Position::first_child_of(&item_list),
                 };
+
                 let indent = IndentLevel::from_node(&item_list);
                 let leading_indent = indent + 1;
                 let leading_ws = make::tokens::whitespace(&format!("\n{leading_indent}"));
                 let trailing_ws = make::tokens::whitespace(&format!("\n{indent}"));
                 func.indent(leading_indent);
+
                 ted::insert_all(
                     position,
                     vec![leading_ws.into(), func.syntax().clone().into(), trailing_ws.into()],
@@ -656,8 +664,10 @@ impl GeneratedFunctionTarget {
             }
             GeneratedFunctionTarget::InImpl(impl_) => {
                 let impl_ = edit.make_mut(impl_.clone());
+
                 let leading_indent = impl_.indent_level() + 1;
                 func.indent(leading_indent);
+
                 impl_.get_or_create_assoc_item_list().add_item(func.into());
             }
         }
@@ -785,13 +795,9 @@ fn params_and_where_preds_in_scope(
     let mut where_clauses = Vec::new();
 
     // There are two items where generic parameters currently in scope may be declared: the item
-
     // the cursor is at, and its parent (if any).
-
     //
-
     // We handle parent first so that their generic parameters appear first in the generic
-
     // parameter list of the function we're generating.
     let db = ctx.db();
     if let Some(parent) = body.as_assoc_item(db).map(|it| it.container(db)) {
@@ -810,7 +816,6 @@ fn params_and_where_preds_in_scope(
     }
 
     // Other defs with body may inherit generic parameters from its parent, but never have their
-
     // own generic parameters.
     if let hir::DefWithBody::Function(it) = body {
         let (params, clauses) = get_bounds_in_scope(ctx, it);
@@ -905,6 +910,7 @@ fn compute_contained_params_in_generic_param(
     match &node {
         ast::GenericParam::TypeParam(ty) => {
             let self_ty_param = ctx.sema.to_def(ty)?.into();
+
             let other_params = ty
                 .type_bound_list()
                 .into_iter()
@@ -912,6 +918,7 @@ fn compute_contained_params_in_generic_param(
                 .flat_map(|bound| bound.syntax().descendants())
                 .filter_map(|node| filter_generic_params(ctx, node))
                 .collect();
+
             Some(ParamBoundWithParams { node, self_ty_param, other_params })
         }
         ast::GenericParam::ConstParam(ct) => {
@@ -994,13 +1001,9 @@ fn filter_unnecessary_bounds(
     let node_count = generic_params_upper_bound + where_preds.len();
 
     // | node index range                        | what the node represents |
-
     // |-----------------------------------------|--------------------------|
-
     // | 0..param_count                          | generic parameter        |
-
     // | param_count..generic_params_upper_bound | `ast::GenericParam`      |
-
     // | generic_params_upper_bound..node_count  | `ast::WherePred`         |
     let mut graph = Graph::new(node_count);
     for (pred, pred_idx) in generic_params.iter().zip(param_count..) {
@@ -1059,7 +1062,6 @@ fn filter_bounds_in_scope(
     }
 
     // Now we know every element that belongs to an impl would be in scope at `target`, we can
-
     // filter them out just by looking at their parent.
     generic_params.retain(|it| !matches!(it.self_ty_param.parent(), hir::GenericDef::Impl(_)));
     where_preds.retain(|it| {

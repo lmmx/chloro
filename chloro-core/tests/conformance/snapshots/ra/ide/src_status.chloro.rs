@@ -17,23 +17,14 @@ pub(crate) fn status(db: &RootDatabase, file_id: Option<FileId>) -> String {
     let mut buf = String::new();
 
     // format_to!(buf, "{}\n", collect_query(CompressedFileTextQuery.in_db(db)));
-
     // format_to!(buf, "{}\n", collect_query(ParseQuery.in_db(db)));
-
     // format_to!(buf, "{}\n", collect_query(ParseMacroExpansionQuery.in_db(db)));
-
     // format_to!(buf, "{}\n", collect_query(LibrarySymbolsQuery.in_db(db)));
-
     // format_to!(buf, "{}\n", collect_query(ModuleSymbolsQuery.in_db(db)));
-
     // format_to!(buf, "{} in total\n", memory_usage());
-
     // format_to!(buf, "\nDebug info:\n");
-
     // format_to!(buf, "{}\n", collect_query(AttrsQuery.in_db(db)));
-
     // format_to!(buf, "{} ast id maps\n", collect_query_count(AstIdMapQuery.in_db(db)));
-
     // format_to!(buf, "{} block def maps\n", collect_query_count(BlockDefMapQuery.in_db(db)));
     if let Some(file_id) = file_id {
         format_to!(buf, "\nCrates for file {}:\n", file_id.index());

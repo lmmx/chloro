@@ -505,11 +505,8 @@ impl<'db> InferCtxt<'db> {
         };
 
         // This can get called from typeck (by euv), and `moves_by_default`
-
         // rightly refuses to work with inference variables, but
-
         // moves_by_default has a cache, which we want to use in other
-
         // cases.
         traits::type_known_to_meet_bound_modulo_regions(self, param_env, ty, copy_def_id)
     }
@@ -783,6 +780,7 @@ impl<'db> InferCtxt<'db> {
                     .borrow_mut()
                     .type_variables()
                     .new_var(self.universe(), TypeVariableOrigin { param_def_id: None });
+
                 Ty::new_var(self.interner, ty_var_id).into()
             }
             GenericParamId::ConstParamId(_) => {
@@ -1126,9 +1124,10 @@ impl<'db> InferCtxt<'db> {
     pub fn ty_or_const_infer_var_changed(&self, infer_var: TyOrConstInferVar) -> bool {
         match infer_var {
             TyOrConstInferVar::Ty(v) => {
+                use self::type_variable::TypeVariableValue;
+
                 // If `inlined_probe` returns a `Known` value, it never equals
                 // `Infer(TyVar(v))`.
-                use self::type_variable::TypeVariableValue;
                 match self.inner.borrow_mut().type_variables().inlined_probe(v) {
                     TypeVariableValue::Unknown { .. } => false,
                     TypeVariableValue::Known { .. } => true,

@@ -50,7 +50,6 @@ pub(crate) fn replace_turbofish_with_explicit_type(
     }
 
     // An improvement would be to check that this is correctly part of the return value of the
-
     // function call, or sub in the actual return type.
     let returned_type = match ctx.sema.type_of_expr(&initializer) {
         Some(returned_type) if !returned_type.original.contains_unknown() => {

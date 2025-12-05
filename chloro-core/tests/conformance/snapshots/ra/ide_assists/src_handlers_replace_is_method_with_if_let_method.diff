@@ -2,32 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6668 bytes
-Chloro size:   6657 bytes
+Chloro size:   6660 bytes
 Rustfmt size:  6668 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     match name_ref.text().as_str() {
-         "is_some" | "is_ok" => {
-             let receiver = call_expr.receiver()?;
--
-             let mut name_generator = suggest_name::NameGenerator::new_from_scope_locals(
-                 ctx.sema.scope(has_cond.syntax()),
-             );
-             } else {
-                 name_generator.for_variable(&receiver, &ctx.sema)
-             };
--
-             let (assist_id, message, text) = if name_ref.text() == "is_some" {
-                 ("replace_is_some_with_if_let_some", "Replace `is_some` with `let Some`", "Some")
-             } else {
-                 ("replace_is_ok_with_if_let_ok", "Replace `is_ok` with `let Ok`", "Ok")
-             };
--
-             acc.add(
-                 AssistId::refactor_rewrite(assist_id),
-                 message,
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

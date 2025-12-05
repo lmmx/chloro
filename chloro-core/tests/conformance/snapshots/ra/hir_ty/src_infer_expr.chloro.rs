@@ -144,28 +144,19 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // We only care about place exprs. Anything else returns an immediate
-
         // which would constitute a read. We don't care about distinguishing
-
         // "syntactic" place exprs since if the base of a field projection is
-
         // not a place then it would've been UB to read from it anyways since
-
         // that constitutes a read.
         if !self.is_syntactic_place_expr(expr) {
             return true;
         }
 
         // rustc queries parent hir node of `expr` here and determine whether
-
         // the current `expr` is read of value per its parent.
-
         // But since we don't have hir node, we cannot follow such "bottom-up"
-
         // method.
-
         // So, we pass down such readness from the parent expression through the
-
         // recursive `infer_expr*` calls in a "top-down" manner.
         is_read == ExprIsRead::Yes
     }
@@ -274,6 +265,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     self.err_ty()
                 };
             }
+
             if let Some(target) = expected.only_has_type(&mut self.table) {
                 self.coerce(expr.into(), ty, target, AllowTwoPhase::No, CoerceNever::Yes)
                     .expect("never-to-any coercion should always succeed")
@@ -1339,6 +1331,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     Expectation::rvalue_hint(self, g)
                 })
                 .unwrap_or_else(Expectation::none);
+
             let inner_ty = self.infer_expr_inner(inner_expr, &inner_exp, ExprIsRead::Yes);
             Ty::new_adt(
                 self.interner(),
@@ -1398,7 +1391,6 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // HACK: We can use this substitution for the function because the function itself doesn't
-
         // have its own generic parameters.
         let args = GenericArgs::new_from_iter(self.interner(), [lhs_ty.into(), rhs_ty.into()]);
 
@@ -1648,6 +1640,7 @@ impl<'db> InferenceContext<'_, 'db> {
             Some((field_id, ty)) => {
                 let adjustments = autoderef.adjust_steps();
                 let ty = self.process_remote_user_written_ty(ty);
+
                 (ty, field_id, adjustments, true)
             }
             None => {
@@ -1656,6 +1649,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 let ty = self.db.field_types(field_id.parent)[field_id.local_id]
                     .instantiate(self.interner(), subst);
                 let ty = self.process_remote_user_written_ty(ty);
+
                 (ty, Either::Left(field_id), adjustments, false)
             }
         })
@@ -1715,6 +1709,7 @@ impl<'db> InferenceContext<'_, 'db> {
                         let args = self.substs_for_method_call(tgt_expr, func.into(), None);
                         self.write_expr_adj(receiver, adjustments.into_boxed_slice());
                         self.write_method_resolution(tgt_expr, func, args);
+
                         self.check_method_call(
                             tgt_expr,
                             &[],
@@ -1866,8 +1861,10 @@ impl<'db> InferenceContext<'_, 'db> {
                         item: func.into(),
                     })
                 }
+
                 let (ty, adjustments) = adjust.apply(&mut self.table, receiver_ty);
                 self.write_expr_adj(receiver, adjustments.into_boxed_slice());
+
                 let gen_args = self.substs_for_method_call(tgt_expr, func.into(), generic_args);
                 self.write_method_resolution(tgt_expr, func, gen_args);
                 let interner = DbInterner::new_with(self.db, None, None);
@@ -1894,6 +1891,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     }
                     None => None,
                 };
+
                 let assoc_func_with_same_name = method_resolution::iterate_method_candidates(
                     &canonicalized_receiver,
                     &mut self.table,
@@ -1910,6 +1908,7 @@ impl<'db> InferenceContext<'_, 'db> {
                         _ => None,
                     },
                 );
+
                 self.push_diagnostic(InferenceDiagnostic::UnresolvedMethodCall {
                     expr: tgt_expr,
                     receiver: receiver_ty,
@@ -1917,6 +1916,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     field_with_same_name: field_with_same_name_exists,
                     assoc_func_with_same_name,
                 });
+
                 let recovered = match assoc_func_with_same_name {
                     Some(f) => {
                         let args = self.substs_for_method_call(tgt_expr, f.into(), generic_args);
@@ -2060,11 +2060,8 @@ impl<'db> InferenceContext<'_, 'db> {
         let provided_arg_count = provided_args.len() - skip_indices.len();
 
         // Keep track of whether we *could possibly* be satisfied, i.e. whether we're on the happy path
-
         // if the wrong number of arguments were supplied, we CAN'T be satisfied,
-
         // and if we're c_variadic, the supplied arguments must be >= the minimum count from the function
-
         // otherwise, they need to be identical, because rust doesn't currently support variadic functions
         let args_count_matches = if c_variadic {
             provided_arg_count >= minimum_input_count
@@ -2081,9 +2078,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // We introduce a helper function to demand that a given argument satisfy a given input
-
         // This is more complicated than just checking type equality, as arguments could be coerced
-
         // This version writes those types back so further type checking uses the narrowed types
         let demand_compatible = |this: &mut InferenceContext<'_, 'db>, idx| {
             let formal_input_ty: Ty<'db> = formal_input_tys[idx];
@@ -2148,13 +2143,9 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // Check the arguments.
-
         // We do this in a pretty awful way: first we type-check any arguments
-
         // that are not closures, then we type-check the closures. This is so
-
         // that we have more information about the types of arguments when we
-
         // type-check the functions. This isn't really the right way to do this.
         for check_closures in [false, true] {
             // More awful hacks: before we check argument types, try to do
@@ -2337,7 +2328,6 @@ impl<'db> InferenceContext<'_, 'db> {
     fn register_obligations_for_call(&mut self, callable_ty: Ty<'db>) {
         let callable_ty = self.table.try_structurally_resolve_type(callable_ty);
         if let TyKind::FnDef(fn_def, parameters) = callable_ty.kind() {
-            // add obligation for trait implementation, if this is a trait method
             let generic_predicates =
                 self.db.generic_predicates(GenericDefId::from_callable(self.db, fn_def.0));
             if let Some(predicates) = generic_predicates.instantiate(self.interner(), parameters) {
@@ -2347,6 +2337,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     Obligation::new(interner, ObligationCause::new(), param_env, predicate)
                 }));
             }
+            // add obligation for trait implementation, if this is a trait method
             match fn_def.0 {
                 CallableDefId::FunctionId(f) => {
                     if let ItemContainerId::TraitId(trait_) = f.lookup(self.db).container {

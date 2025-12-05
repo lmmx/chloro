@@ -50,49 +50,27 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // We now see if we can make progress. This might cause us to
-
         // unify inference variables for opaque types, since we may
-
         // have unified some other type variables during the first
-
         // phase of fallback. This means that we only replace
-
         // inference variables with their underlying opaque types as a
-
         // last resort.
-
         //
-
         // In code like this:
-
         //
-
         // ```rust
-
         // type MyType = impl Copy;
-
         // fn produce() -> MyType { true }
-
         // fn bad_produce() -> MyType { panic!() }
-
         // ```
-
         //
-
         // we want to unify the opaque inference variable in `bad_produce`
-
         // with the diverging fallback for `panic!` (e.g. `()` or `!`).
-
         // This will produce a nice error message about conflicting concrete
-
         // types for `MyType`.
-
         //
-
         // If we had tried to fallback the opaque inference variable to `MyType`,
-
         // we will generate a confusing type-check error that does not explicitly
-
         // refer to opaque types.
         self.table.select_obligations_where_possible();
     }
@@ -123,9 +101,7 @@ impl<'db> InferenceContext<'_, 'db> {
             self.calculate_diverging_fallback(&unresolved_variables, diverging_fallback_behavior);
 
         // We do fallback in two passes, to try to generate
-
         // better error messages.
-
         // The first time, we do *not* replace opaque types.
         let mut fallback_occurred = false;
         for ty in unresolved_variables {
@@ -263,25 +239,18 @@ impl<'db> InferenceContext<'_, 'db> {
         debug!("calculate_diverging_fallback({:?})", unresolved_variables);
 
         // Construct a coercion graph where an edge `A -> B` indicates
-
         // a type variable is that is coerced
         let coercion_graph = self.create_coercion_graph();
 
         // Extract the unsolved type inference variable vids; note that some
-
         // unsolved variables are integer/float variables and are excluded.
         let unsolved_vids = unresolved_variables.iter().filter_map(|ty| ty.ty_vid());
 
         // Compute the diverging root vids D -- that is, the root vid of
-
         // those type variables that (a) are the target of a coercion from
-
         // a `!` type and (b) have not yet been solved.
-
         //
-
         // These variables are the ones that are targets for fallback to
-
         // either `!` or `()`.
         let diverging_roots: FxHashSet<TyVid> = self
             .table
@@ -298,11 +267,8 @@ impl<'db> InferenceContext<'_, 'db> {
         debug!("calculate_diverging_fallback: diverging_roots={:?}", diverging_roots);
 
         // Find all type variables that are reachable from a diverging
-
         // type variable. These will typically default to `!`, unless
-
         // we find later that they are *also* reachable from some
-
         // other type variable outside this set.
         let mut roots_reachable_from_diverging = Dfs::empty(&coercion_graph);
         let mut diverging_vids = vec![];
@@ -332,11 +298,8 @@ impl<'db> InferenceContext<'_, 'db> {
         );
 
         // Find all type variables N0 that are not reachable from a
-
         // diverging variable, and then compute the set reachable from
-
         // N0, which we call N. These are the *non-diverging* type
-
         // variables. (Note that this set consists of "root variables".)
         let mut roots_reachable_from_non_diverging = Dfs::empty(&coercion_graph);
         for &non_diverging_vid in &non_diverging_vids {
@@ -355,9 +318,7 @@ impl<'db> InferenceContext<'_, 'db> {
         debug!("obligations: {:#?}", self.table.fulfillment_cx.pending_obligations());
 
         // For each diverging variable, figure out whether it can
-
         // reach a member of N. If so, it falls back to `()`. Else
-
         // `!`.
         let mut diverging_fallback =
             FxHashMap::with_capacity_and_hasher(diverging_vids.len(), FxBuildHasher);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9744 bytes
-Chloro size:   9728 bytes
+Chloro size:   9729 bytes
 Rustfmt size:  10260 bytes
 
 ✗ Outputs DIFFER
@@ -46,12 +46,6 @@ Rustfmt size:  10260 bytes
  
      LEGAL.contains(&node.kind()) && {
          let Some(p) = node.parent() else {
-             return false;
-         };
--
-         if p.kind() == ASSOC_ITEM_LIST {
-             p.parent()
-                 .and_then(ast::Impl::cast)
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};

@@ -442,7 +442,6 @@ fn rewrite_intra_doc_link(
     url.set_fragment(frag);
 
     // We want to strip the keyword prefix from the title, but only if the target is implicitly the same
-
     // as the title.
     let title = match link_type {
         LinkType::Email
@@ -562,7 +561,6 @@ fn get_doc_base_urls(
         .as_str();
 
     // special case base url of `BuiltinType` to core
-
     // https://github.com/rust-lang/rust-analyzer/issues/12250
     if let Definition::BuiltinType(..) = def {
         let web_link = Url::parse(&format!("https://doc.rust-lang.org/{channel}/core/")).ok();
@@ -751,11 +749,11 @@ fn filename_and_frag_for_def(
 fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
     Some(match assoc_item {
         AssocItem::Function(function) => {
+            let is_trait_method =
+                function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
             // This distinction may get more complicated when specialization is available.
             // Rustdoc makes this decision based on whether a method 'has defaultness'.
             // Currently this is only the case for provided trait methods.
-            let is_trait_method =
-                function.as_assoc_item(db).and_then(|assoc| assoc.container_trait(db)).is_some();
             if is_trait_method && !function.has_body(db) {
                 format!("tymethod.{}", function.name(db).as_str())
             } else {

@@ -434,7 +434,6 @@ impl<'db> InferenceContext<'_, 'db> {
         let lang_item = self.db.lang_attr(def_id.into());
 
         // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,
-
         // for closures and async closures, respectively.
         match closure_kind {
             ClosureKind::Closure if lang_item == Some(LangItem::FnOnceOutput) => {
@@ -519,13 +518,9 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // If the return type is a type variable, look for bounds on it.
-
         // We could theoretically support other kinds of return types here,
-
         // but none of them would be useful, since async closures return
-
         // concrete anonymous future types, and their futures are not coerced
-
         // into any other type within the body of the async closure.
         let TyKind::Infer(rustc_type_ir::TyVar(return_vid)) =
             projection.skip_binder().term.expect_type().kind()
@@ -549,31 +544,18 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // SUBTLE: If we didn't find a `Future<Output = ...>` bound for the return
-
         // vid, we still want to attempt to provide inference guidance for the async
-
         // closure's arguments. Instantiate a new vid to plug into the output type.
-
         //
-
         // You may be wondering, what if it's higher-ranked? Well, given that we
-
         // found a type variable for the `FnOnce::Output` projection above, we know
-
         // that the output can't mention any of the vars.
-
         //
-
         // Also note that we use a fresh var here for the signature since the signature
-
         // records the output of the *future*, and `return_vid` above is the type
-
         // variable of the future, not its output.
-
         //
-
         // FIXME: We probably should store this signature inference output in a way
-
         // that does not misuse a `FnSig` type, but that can be done separately.
         let return_ty = return_ty.unwrap_or_else(|| self.table.next_ty_var());
 
@@ -677,9 +659,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // Create a `PolyFnSig`. Note the oddity that late bound
-
         // regions appearing free in `expected_sig` are now bound up
-
         // in this binder we are creating.
         assert!(!expected_sig.skip_binder().has_vars_bound_above(rustc_type_ir::INNERMOST));
         let bound_sig = expected_sig.map_bound(|sig| {
@@ -693,22 +673,16 @@ impl<'db> InferenceContext<'_, 'db> {
         });
 
         // `deduce_expectations_from_expected_type` introduces
-
         // late-bound lifetimes defined elsewhere, which we now
-
         // anonymize away, so as not to confuse the user.
         let bound_sig = self.interner().anonymize_bound_vars(bound_sig);
 
         let closure_sigs = self.closure_sigs(bound_sig);
 
         // Up till this point, we have ignored the annotations that the user
-
         // gave. This function will check that they unify successfully.
-
         // Along the way, it also writes out entries for types that the user
-
         // wrote into our typeck results, which are then later used by the privacy
-
         // check.
         match self.merge_supplied_sig_with_expectation(decl_inputs, decl_output, closure_sigs) {
             Ok(infer_ok) => self.table.register_infer_ok(infer_ok),
@@ -744,31 +718,18 @@ impl<'db> InferenceContext<'_, 'db> {
         debug!(?supplied_sig);
 
         // FIXME(#45727): As discussed in [this comment][c1], naively
-
         // forcing equality here actually results in suboptimal error
-
         // messages in some cases. For now, if there would have been
-
         // an obvious error, we fallback to declaring the type of the
-
         // closure to be the one the user gave, which allows other
-
         // error message code to trigger.
-
         //
-
         // However, I think [there is potential to do even better
-
         // here][c2], since in *this* code we have the precise span of
-
         // the type parameter in question in hand when we report the
-
         // error.
-
         //
-
         // [c1]: https://github.com/rust-lang/rust/pull/45072#issuecomment-341089706
-
         // [c2]: https://github.com/rust-lang/rust/pull/45072#issuecomment-341096796
         self.table.commit_if_ok(|table| {
             let mut all_obligations = PredicateObligations::new();

@@ -181,8 +181,9 @@ impl<'db> SolverDelegate for SolverContext<'db> {
             .as_ref()
             .map_bound(|table| &table.impl_traits[opaque_idx].predicates);
         for predicate in item_bounds.iter_instantiated_copied(interner, args.as_slice()) {
-            // Require that the predicate holds for the concrete type.
             let predicate = replace_opaques_in(predicate);
+
+            // Require that the predicate holds for the concrete type.
             debug!(?predicate);
             goals.push(Goal::new(interner, param_env, predicate));
         }

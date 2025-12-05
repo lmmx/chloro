@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49883 bytes
+Chloro size:   49882 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -104,17 +104,6 @@ Rustfmt size:  49754 bytes
      }
  
      pub(crate) fn insert_type_vars<T>(&self, ty: T) -> T
-         };
- 
-         // This can get called from typeck (by euv), and `moves_by_default`
-+
-         // rightly refuses to work with inference variables, but
-+
-         // moves_by_default has a cache, which we want to use in other
-+
-         // cases.
-         traits::type_known_to_meet_bound_modulo_regions(self, param_env, ty, copy_def_id)
-     }
              _ => {}
          }
  
@@ -147,13 +136,6 @@ Rustfmt size:  49754 bytes
      }
  
      /// Number of type variables created so far.
-                     .borrow_mut()
-                     .type_variables()
-                     .new_var(self.universe(), TypeVariableOrigin { param_def_id: None });
--
-                 Ty::new_var(self.interner, ty_var_id).into()
-             }
-             GenericParamId::ConstParamId(_) => {
          def_id: SolverDefId,
          first: impl IntoIterator<Item = GenericArg<'db>>,
      ) -> GenericArgs<'db> {
@@ -170,17 +152,6 @@ Rustfmt size:  49754 bytes
      }
  
      /// Returns `true` if errors have been reported since this infcx was
-     pub fn ty_or_const_infer_var_changed(&self, infer_var: TyOrConstInferVar) -> bool {
-         match infer_var {
-             TyOrConstInferVar::Ty(v) => {
--                use self::type_variable::TypeVariableValue;
--
-                 // If `inlined_probe` returns a `Known` value, it never equals
-                 // `Infer(TyVar(v))`.
-+                use self::type_variable::TypeVariableValue;
-                 match self.inner.borrow_mut().type_variables().inlined_probe(v) {
-                     TypeVariableValue::Unknown { .. } => false,
-                     TypeVariableValue::Known { .. } => true,
          a: TraitRef<'db>,
          b: TraitRef<'db>,
      ) -> TypeTrace<'db> {

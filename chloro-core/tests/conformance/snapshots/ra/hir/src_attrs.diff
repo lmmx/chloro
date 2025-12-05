@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11937 bytes
-Chloro size:   11975 bytes
+Chloro size:   11972 bytes
 Rustfmt size:  12307 bytes
 
 ✗ Outputs DIFFER
@@ -169,16 +169,6 @@ Rustfmt size:  12307 bytes
      let traits_in_scope = resolver.traits_in_scope(db);
  
      let mut result = None;
- 
-     // `ty.iterate_path_candidates()` require a scope, which is not available when resolving
-+
-     // attributes here. Use path resolution directly instead.
-+
-     //
-+
-     // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
-     _ = method_resolution::iterate_path_candidates(
-         &canonical,
              // disambiguation) so we just pick the first one we find as well.
              result = as_module_def_if_namespace_matches(assoc_item_id.into(), ns);
  

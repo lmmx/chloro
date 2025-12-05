@@ -1059,8 +1059,8 @@ impl<'db> Evaluator<'db> {
                 }
                 Some(bb) => {
                     // We don't support const promotion, so we can't truncate the stack yet.
-                    // self.stack.truncate(my_stack_frame.prev_stack_ptr);
                     let _ = my_stack_frame.prev_stack_ptr;
+                    // self.stack.truncate(my_stack_frame.prev_stack_ptr);
                     current_block_idx = bb;
                 }
             }
@@ -1660,9 +1660,9 @@ impl<'db> Evaluator<'db> {
                 Ok(r)
             }
             Variants::Multiple { tag, tag_encoding, variants, .. } => {
-                // The only field on enum variants is the tag field
                 let size = tag.size(&*self.target_data_layout).bytes_usize();
                 let offset = layout.fields.offset(0).bytes_usize();
+                // The only field on enum variants is the tag field
                 let is_signed = tag.is_signed();
                 match tag_encoding {
                     TagEncoding::Direct => {

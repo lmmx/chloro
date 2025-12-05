@@ -450,6 +450,7 @@ impl MacroCallId {
         let mut macro_file = self;
         loop {
             let loc = db.lookup_intern_macro_call(macro_file);
+
             level += 1;
             macro_file = match loc.kind.file_id() {
                 HirFileId::FileId(_) => break level,
@@ -1046,7 +1047,6 @@ impl ExpandTo {
         };
 
         // FIXME: macros in statement position are treated as expression statements, they should
-
         // probably be their own statement kind. The *grand*parent indicates what's valid.
         if parent.kind() == MACRO_EXPR
             && parent

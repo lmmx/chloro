@@ -327,6 +327,7 @@ mod tests {
         for (fold, (range, attr)) in folds.iter().zip(ranges.into_iter()) {
             assert_eq!(fold.range.start(), range.start(), "mismatched start of folding ranges");
             assert_eq!(fold.range.end(), range.end(), "mismatched end of folding ranges");
+
             let kind = match fold.kind {
                 FoldKind::Comment => "comment",
                 FoldKind::Imports => "imports",

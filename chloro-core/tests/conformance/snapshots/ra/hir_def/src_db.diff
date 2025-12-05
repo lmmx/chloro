@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   12987 bytes
+Chloro size:   12990 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -89,24 +89,3 @@ Rustfmt size:  13097 bytes
      #[salsa::invoke(crate::lang_item::crate_notable_traits)]
      fn crate_notable_traits(&self, krate: Crate) -> Option<Arc<[TraitId]>>;
  
-     match id {
-         MacroId::Macro2Id(it) => {
-             let loc: Macro2Loc = it.lookup(db);
--
-             MacroDefId {
-                 krate: loc.container.krate,
-                 kind: kind(loc.expander, loc.id.file_id, loc.id.value.upcast()),
-         }
-         MacroId::MacroRulesId(it) => {
-             let loc: MacroRulesLoc = it.lookup(db);
--
-             MacroDefId {
-                 krate: loc.container.krate,
-                 kind: kind(loc.expander, loc.id.file_id, loc.id.value.upcast()),
-         }
-         MacroId::ProcMacroId(it) => {
-             let loc = it.lookup(db);
--
-             MacroDefId {
-                 krate: loc.container.krate,
-                 kind: MacroDefKind::ProcMacro(loc.id, loc.expander, loc.kind),

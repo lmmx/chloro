@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18504 bytes
+Chloro size:   18505 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
@@ -31,13 +31,6 @@ Rustfmt size:  18809 bytes
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (ranges, text) = extract_tags(ra_fixture, "fold");
-         for (fold, (range, attr)) in folds.iter().zip(ranges.into_iter()) {
-             assert_eq!(fold.range.start(), range.start(), "mismatched start of folding ranges");
-             assert_eq!(fold.range.end(), range.end(), "mismatched end of folding ranges");
--
-             let kind = match fold.kind {
-                 FoldKind::Comment => "comment",
-                 FoldKind::Imports => "imports",
              assert_eq!(kind, &attr.unwrap());
          }
      }

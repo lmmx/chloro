@@ -386,22 +386,24 @@ fn transform_assoc_fn_into_method_call(
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
-            // The `PathExpr` is the direct parent, above it is the `CallExpr`.
-            // Strip (de)references, as they will be taken automatically by auto(de)ref.
             let Some(fn_name) = call.name.as_name_ref() else { continue };
             let Some(path) = fn_name.syntax().parent().and_then(ast::PathSegment::cast) else {
                 continue;
             };
             let path = path.parent_path();
+            // The `PathExpr` is the direct parent, above it is the `CallExpr`.
             let Some(call) =
                 path.syntax().parent().and_then(|it| ast::CallExpr::cast(it.parent()?))
             else {
                 continue;
             };
+
             let Some(arg_list) = call.arg_list() else { continue };
             let mut args = arg_list.args();
             let Some(mut self_arg) = args.next() else { continue };
             let second_arg = args.next();
+
+            // Strip (de)references, as they will be taken automatically by auto(de)ref.
             loop {
                 let self_ = match &self_arg {
                     ast::Expr::RefExpr(self_) => self_.expr(),
@@ -418,8 +420,10 @@ fn transform_assoc_fn_into_method_call(
                     None => break,
                 };
             }
+
             let self_needs_parens =
                 self_arg.precedence().needs_parentheses_in(ExprPrecedence::Postfix);
+
             let replace_start = path.syntax().text_range().start();
             let replace_end = match second_arg {
                 Some(second_arg) => second_arg.syntax().text_range().start(),
@@ -435,6 +439,7 @@ fn transform_assoc_fn_into_method_call(
             else {
                 continue;
             };
+
             let Some(macro_mapped_self) = sema.original_range_opt(self_arg.syntax()) else {
                 continue;
             };
@@ -449,6 +454,7 @@ fn transform_assoc_fn_into_method_call(
             replacement.push('.');
             format_to!(replacement, "{fn_name}");
             replacement.push('(');
+
             source_change.insert_source_edit(
                 replace_range.file_id.file_id(sema.db),
                 TextEdit::replace(replace_range.range, replacement),
@@ -597,7 +603,6 @@ fn transform_method_call_into_assoc_fn(
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
-            // Strip parentheses, function arguments have higher precedence than any operator.
             let Some(fn_name) = call.name.as_name_ref() else { continue };
             let Some(method_call) = fn_name.syntax().parent().and_then(ast::MethodCallExpr::cast)
             else {
@@ -606,19 +611,25 @@ fn transform_method_call_into_assoc_fn(
             let Some(mut self_arg) = method_call.receiver() else {
                 continue;
             };
+
             let Some(scope) = sema.scope(fn_name.syntax()) else {
                 continue;
             };
             let self_adjust = method_to_assoc_fn_call_self_adjust(sema, &self_arg);
+
+            // Strip parentheses, function arguments have higher precedence than any operator.
             while let ast::Expr::ParenExpr(it) = &self_arg {
                 self_arg = match it.expr() {
                     Some(it) => it,
                     None => break,
                 };
             }
+
             let needs_comma = method_call.arg_list().is_some_and(|it| it.args().next().is_some());
+
             let self_needs_parens = self_adjust != CallReceiverAdjust::None
                 && self_arg.precedence().needs_parentheses_in(ExprPrecedence::Prefix);
+
             let replace_start = method_call.syntax().text_range().start();
             let replace_end = method_call
                 .arg_list()
@@ -632,6 +643,7 @@ fn transform_method_call_into_assoc_fn(
             else {
                 continue;
             };
+
             let fn_container_path = match f.container(sema.db) {
                 hir::ItemContainer::Trait(trait_) => {
                     // FIXME: We always put it as `Trait::function`. Is it better to use `Type::function` (but
@@ -674,6 +686,7 @@ fn transform_method_call_into_assoc_fn(
                 }
                 _ => continue,
             };
+
             let Some(macro_mapped_self) = sema.original_range_opt(self_arg.syntax()) else {
                 continue;
             };
@@ -698,6 +711,7 @@ fn transform_method_call_into_assoc_fn(
             if needs_comma {
                 replacement.push_str(", ");
             }
+
             source_change.insert_source_edit(
                 replace_range.file_id.file_id(sema.db),
                 TextEdit::replace(replace_range.range, replacement),

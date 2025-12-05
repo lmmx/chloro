@@ -210,7 +210,6 @@ use std::fmt::{Debug, Display};
         );
 
         // The assist macro below calls `check_assist_import_one` 4 times with different input
-
         // use item variations based on the first 2 input parameters.
         cov_mark::check_count!(merge_with_use_item_neighbors, 4);
         check_assist_import_one_variations!(

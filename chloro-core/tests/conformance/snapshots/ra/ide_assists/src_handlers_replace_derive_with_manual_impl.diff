@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30915 bytes
-Chloro size:   30915 bytes
+Chloro size:   30917 bytes
 Rustfmt size:  30915 bytes
 
 ✗ Outputs DIFFER
@@ -29,25 +29,6 @@ Rustfmt size:  30915 bytes
  }
  
  fn impl_def_from_trait(
- 
-     if has_more_derives {
-         // Make the paths into flat lists of tokens in a vec
-+        // ...which are interspersed with ", "
-+        // ...wrap them into the appropriate `NodeOrToken` variant
-+        // ...and make them into a flat list of tokens
-         let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
-             node.descendants_with_tokens()
-                 .filter_map(|element| element.into_token())
-                 .collect::<Vec<_>>()
-         });
--        // ...which are interspersed with ", "
-         let tt = Itertools::intersperse(tt, vec![make::token(T![,]), make::tokens::single_space()]);
--        // ...wrap them into the appropriate `NodeOrToken` variant
-         let tt = tt.flatten().map(syntax::NodeOrToken::Token);
--        // ...and make them into a flat list of tokens
-         let tt = tt.collect::<Vec<_>>();
--
-         let new_tree = make::token_tree(T!['('], tt).clone_for_update();
          editor.replace(old_tree.syntax(), new_tree.syntax());
      } else {
          // Remove the attr and any trailing whitespace
@@ -55,12 +36,6 @@ Rustfmt size:  30915 bytes
          if let Some(line_break) =
              attr.syntax().next_sibling_or_token().filter(|t| t.kind() == WHITESPACE)
          {
-             editor.delete(line_break)
-         }
--
-         editor.delete(attr.syntax())
-     }
- }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};

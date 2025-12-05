@@ -205,6 +205,7 @@ impl DiagnosticCollection {
 
         for (file_id, mut diagnostics) in diagnostics {
             diagnostics.sort_by_key(|it| (it.range.start, it.range.end));
+
             if let Some((old_gen, existing_diagnostics)) = target.get_mut(&file_id) {
                 if existing_diagnostics.len() == diagnostics.len()
                     && iter_eq_by(&diagnostics, &*existing_diagnostics, |new, existing| {
@@ -276,7 +277,6 @@ pub(crate) fn fetch_native_diagnostics(
     let _ctx = DbPanicContext::enter("fetch_native_diagnostics".to_owned());
 
     // the diagnostics produced may point to different files not requested by the concrete request,
-
     // put those into here and filter later
     let mut odd_ones = Vec::new();
     let mut diagnostics = subscriptions[slice]

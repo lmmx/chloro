@@ -354,9 +354,7 @@ pub fn semantic_diagnostics(
     let parse = sema.parse(editioned_file_id);
 
     // FIXME: This iterates the entire file which is a rather expensive operation.
-
     // We should implement these differently in some form?
-
     // Salsa caching + incremental re-parse would be better here
     for node in parse.syntax().descendants() {
         handlers::useless_braces::useless_braces(db, &mut res, editioned_file_id, &node);
@@ -511,7 +509,6 @@ pub fn semantic_diagnostics(
         .collect::<Vec<_>>();
 
     // The edition isn't accurate (each diagnostics may have its own edition due to macros),
-
     // but it's okay as it's only being used for error recovery.
     handle_lints(&ctx.sema, &mut lints, editioned_file_id.edition(db));
 
@@ -631,13 +628,16 @@ fn handle_lints(
         if !(default_severity == Severity::Allow && diag.severity == Severity::WeakWarning) {
             diag.severity = default_severity;
         }
+
         let mut diag_severity =
             lint_severity_at(sema, node, &lint_groups(&diag.code, edition), edition);
+
         if let outline_diag_severity @ Some(_) =
             find_outline_mod_lint_severity(sema, node, diag, edition)
         {
             diag_severity = outline_diag_severity;
         }
+
         if let Some(diag_severity) = diag_severity {
             diag.severity = diag_severity;
         }

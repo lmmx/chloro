@@ -90,12 +90,12 @@ pub(crate) fn complete_dot(
         // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
         // its return type, so we instead check for `<&Self as IntoIterator>::IntoIter`.
         // Does <&receiver_ty as IntoIterator>::IntoIter` exist? Assume `iter` is valid
-        // Does <receiver_ty as IntoIterator>::IntoIter` exist?
         let iter = receiver_ty
             .strip_references()
             .add_reference(hir::Mutability::Shared)
             .into_iterator_iter(ctx.db)
             .map(|ty| (ty, SmolStr::new_static("iter()")));
+        // Does <receiver_ty as IntoIterator>::IntoIter` exist?
         let into_iter = || {
             receiver_ty
                 .clone()

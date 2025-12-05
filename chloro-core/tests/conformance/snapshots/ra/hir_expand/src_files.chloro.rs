@@ -433,17 +433,19 @@ impl InFile<SyntaxToken> {
         match self.file_id {
             HirFileId::FileId(file_id) => FileRange { file_id, range: self.value.text_range() },
             HirFileId::MacroFile(mac_file) => {
-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
-                // keep pre-token map rewrite behaviour.
-                // Fall back to whole macro call.
                 let (range, ctxt) = span_for_offset(
                     db,
                     &db.expansion_span_map(mac_file),
                     self.value.text_range().start(),
                 );
+
+                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
+                // keep pre-token map rewrite behaviour.
                 if ctxt.is_root() {
                     return range;
                 }
+
+                // Fall back to whole macro call.
                 let loc = db.lookup_intern_macro_call(mac_file);
                 loc.kind.original_call_range(db)
             }
@@ -457,13 +459,14 @@ impl InFile<SyntaxToken> {
                 Some(FileRange { file_id, range: self.value.text_range() })
             }
             HirFileId::MacroFile(mac_file) => {
-                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
-                // keep pre-token map rewrite behaviour.
                 let (range, ctxt) = span_for_offset(
                     db,
                     &db.expansion_span_map(mac_file),
                     self.value.text_range().start(),
                 );
+
+                // FIXME: Figure out an API that makes proper use of ctx, this only exists to
+                // keep pre-token map rewrite behaviour.
                 if ctxt.is_root() {
                     Some(range)
                 } else {

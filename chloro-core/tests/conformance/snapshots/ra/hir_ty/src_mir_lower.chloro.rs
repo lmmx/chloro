@@ -528,7 +528,6 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
                         Ok(Some(current))
                     }
                     ValueNs::EnumVariantId(variant_id) => {
-                        // Otherwise its a tuple like enum, treated like a zero sized function, so no action is needed
                         let variant_fields = variant_id.fields(self.db);
                         if variant_fields.shape == FieldsShape::Unit {
                             let ty = self.infer.type_of_expr[expr_id];
@@ -541,6 +540,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
                                 expr_id.into(),
                             )?;
                         }
+                        // Otherwise its a tuple like enum, treated like a zero sized function, so no action is needed
                         Ok(Some(current))
                     }
                     ValueNs::GenericParam(p) => {
@@ -967,11 +967,11 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
                 not_supported!("const block")
             }
             Expr::Cast { expr, type_ref: _ } => {
-                // Since we don't have THIR, this is the "zipped" version of [rustc's HIR lowering](https://github.com/rust-lang/rust/blob/e71f9529121ca8f687e4b725e3c9adc3f1ebab4d/compiler/rustc_mir_build/src/thir/cx/expr.rs#L165-L178)
-                // and [THIR lowering as RValue](https://github.com/rust-lang/rust/blob/a4601859ae3875732797873612d424976d9e3dd0/compiler/rustc_mir_build/src/build/expr/as_rvalue.rs#L193-L313)
                 let Some((it, current)) = self.lower_expr_to_some_operand(*expr, current)? else {
                     return Ok(None);
                 };
+                // Since we don't have THIR, this is the "zipped" version of [rustc's HIR lowering](https://github.com/rust-lang/rust/blob/e71f9529121ca8f687e4b725e3c9adc3f1ebab4d/compiler/rustc_mir_build/src/thir/cx/expr.rs#L165-L178)
+                // and [THIR lowering as RValue](https://github.com/rust-lang/rust/blob/a4601859ae3875732797873612d424976d9e3dd0/compiler/rustc_mir_build/src/build/expr/as_rvalue.rs#L193-L313)
                 let rvalue = if self.infer.coercion_casts.contains(expr) {
                     Rvalue::Use(it)
                 } else {

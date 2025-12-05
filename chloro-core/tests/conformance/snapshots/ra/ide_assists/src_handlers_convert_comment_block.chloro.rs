@@ -132,6 +132,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .take_while(|opt_com| opt_com.is_some())
         .flatten()
         .skip(1);
+
     // skip the first element so we don't duplicate it in next_comments
     let next_comments = comment
         .syntax()

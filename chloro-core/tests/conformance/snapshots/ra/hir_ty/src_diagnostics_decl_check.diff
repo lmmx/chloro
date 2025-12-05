@@ -2,57 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   23118 bytes
+Chloro size:   23123 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         }
- 
-         // Check the function name.
-+
-         // Skipped if function is an associated item of a trait implementation.
-         if !self.is_trait_impl_container(container) {
-             let data = self.db.function_signature(func);
-             let Some(parent) = ident_pat.syntax().parent() else {
-                 continue;
-             };
--
-             let is_shorthand = ast::RecordPatField::cast(parent.clone())
-                 .map(|parent| parent.name_ref().is_none())
-                 .unwrap_or_default();
-                 // since the shorthand isn't the declaration.
-                 continue;
-             }
--
-             let is_param = ast::Param::can_cast(parent.kind());
-             let ident_type = if is_param { IdentType::Parameter } else { IdentType::Variable };
--
-             self.create_incorrect_case_diagnostic_for_ast_node(
-                 replacement,
-                 source_ptr.file_id,
-                     return;
-                 }
-             };
--
-             self.create_incorrect_case_diagnostic_for_ast_node(
-                 field_replacement,
-                 struct_src.file_id,
-                     return;
-                 }
-             };
--
-             self.create_incorrect_case_diagnostic_for_ast_node(
-                 variant_replacement,
-                 enum_src.file_id,
-                     return;
-                 }
-             };
--
-             self.create_incorrect_case_diagnostic_for_ast_node(
-                 field_replacement,
-                 variant_src.file_id,
          name: &Name,
          expected_case: CaseType,
          ident_type: IdentType,

@@ -70,7 +70,28 @@ fn preserve_blank_lines_between_statements_in_block() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output);
+    assert_snapshot!(output, @r#"
+    fn foo(prev: Option<i32>, curr: i32) -> bool {
+        {
+            let Some(prev) = prev else {
+                return false;
+            };
+
+            // No blank line between consecutive uses
+            if prev == 1 && curr == 1 {
+                return false;
+            }
+
+            // No blank line between consecutive mod declarations
+            if prev == 2 && curr == 2 {
+                return false;
+            }
+
+            // Blank line between different top-level items
+            true
+        }
+    }
+    "#);
 }
 
 #[test]
@@ -86,12 +107,20 @@ fn preserve_blank_line_after_variable_declaration() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output);
+    assert_snapshot!(output, @r#"
+    fn foo() {
+        let mut last_kind: Option<i32> = None;
+        let mut prev_was_standalone_comment = false;
+
+        for item in items {
+            println!("{}", item);
+        }
+    }
+    "#);
 }
 
 #[test]
-fn preserve_blank_line_after_match_arm_comment() {
-    // Blank line after `}` and before `match` should be preserved
+fn preserve_blank_line_after_for_loop() {
     let input = r#"fn foo() {
     for (i, comment) in comments.iter().enumerate() {
         println!("{}", comment);
@@ -104,7 +133,18 @@ fn preserve_blank_line_after_match_arm_comment() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output);
+    assert_snapshot!(output, @r#"
+    fn foo() {
+        for (i, comment) in comments.iter().enumerate() {
+            println!("{}", comment);
+        }
+
+        match item {
+            1 => println!("one"),
+            _ => {}
+        }
+    }
+    "#);
 }
 
 #[test]
@@ -116,7 +156,12 @@ fn preserve_end_of_line_comment_on_enum_variant() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output);
+    assert_snapshot!(output, @r#"
+    pub enum ImportGroup {
+        Internal(InternalKind), // self::, super::, crate::, - sorted first
+        External, // everything else (including std, core, alloc)
+    }
+    "#);
 }
 
 #[test]
@@ -132,7 +177,16 @@ pub fn sort_key(s: &str) -> bool {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output);
+    assert_snapshot!(output, @r#"
+    // /// Check if a string contains any lowercase ASCII characters
+    // fn has_lowercase(s: &str) -> bool {
+    //     s.as_bytes().iter().any(|&b| b.is_ascii_lowercase())
+    // }
+
+    pub fn sort_key(s: &str) -> bool {
+        true
+    }
+    "#);
 }
 
 #[test]
@@ -156,12 +210,28 @@ fn preserve_comment_between_statements_not_moved_to_top() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output);
+    assert_snapshot!(output, @r#"
+    fn foo() {
+        {
+            let x = 1;
+
+            // This comment is about the if statement
+            if x > 0 {
+                return true;
+            }
+
+            // This comment is about the match
+            match x {
+                1 => true,
+                _ => false,
+            }
+        }
+    }
+    "#);
 }
 
 #[test]
-fn preserve_blank_line_before_close_brace_comment() {
-    // From function.rs: blank line before `buf.close_brace_ln` should be preserved
+fn preserve_blank_line_before_final_call() {
     let input = r#"fn format_something() {
     if condition {
         do_something();
@@ -171,7 +241,15 @@ fn preserve_blank_line_before_close_brace_comment() {
 }
 "#;
     let output = format_source(input);
-    assert_snapshot!(output);
+    assert_snapshot!(output, @r#"
+    fn format_something() {
+        if condition {
+            do_something();
+        }
+
+        buf.close_brace_ln(indent);
+    }
+    "#);
 }
 
 #[test]

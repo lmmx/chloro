@@ -316,7 +316,6 @@ fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
 
     // if prior is fn call over multiple lines dont indent
-
     // or if previous is method call over multiples lines keep that indent
     let current_indent = {
         let text = whitespace.text();

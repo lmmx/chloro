@@ -285,8 +285,6 @@ impl CustomProcMacroExpander {
                 ExpandError::new(call_site, ExpandErrorKind::MacroDisabled),
             ),
             id => {
-                // Proc macros have access to the environment variables of the invoking crate.
-                // FIXME: Can we avoid the string allocation here?
                 let proc_macros = match db.proc_macros_for_crate(def_crate) {
                     Some(it) => it,
                     None => {
@@ -314,8 +312,12 @@ impl CustomProcMacroExpander {
                         );
                     }
                 };
+
+                // Proc macros have access to the environment variables of the invoking crate.
                 let env = calling_crate.env(db);
+                // FIXME: Can we avoid the string allocation here?
                 let current_dir = calling_crate.data(db).proc_macro_cwd.to_string();
+
                 match proc_macro.expander.expand(
                     tt,
                     attr_arg,

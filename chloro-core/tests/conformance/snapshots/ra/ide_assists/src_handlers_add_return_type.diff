@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11998 bytes
-Chloro size:   11990 bytes
+Chloro size:   11991 bytes
 Rustfmt size:  12025 bytes
 
 ✗ Outputs DIFFER
@@ -24,13 +24,6 @@ Rustfmt size:  12025 bytes
 +    let ty = ctx.sema.type_of_expr(&peel_blocks(tail_expr.clone()))?.adjusted();
      if ty.is_unit() {
          return None;
-     }
-                 }
-                 _ => (insert_after_pos, true),
-             };
--
-             Some(InsertOrReplace::Insert(insert_pos, needs_whitespace))
-         }
      }
  
  enum FnType {

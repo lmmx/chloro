@@ -396,6 +396,7 @@ fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) 
     } else if let ast::Expr::BinExpr(bin_expr) = cond && let Some(ast::Expr::LetExpr(let_expr)) = and_bin_expr_left(bin_expr).lhs() {
         let new_expr = bin_expr.clone_subtree();
         let mut edit = SyntaxEditor::new(new_expr.syntax().clone());
+
         let left_bin = and_bin_expr_left(&new_expr);
         if let Some(rhs) = left_bin.rhs() {
             edit.replace(left_bin.syntax(), rhs.syntax());
@@ -407,6 +408,7 @@ fn let_and_guard(cond: &ast::Expr) -> (Option<ast::LetExpr>, Option<ast::Expr>) 
             }
             edit.delete(left_bin.syntax());
         }
+
         let new_expr = edit.finish().new_root().clone();
         (Some(let_expr), ast::Expr::cast(new_expr))
     } else {

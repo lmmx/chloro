@@ -52,34 +52,22 @@ fn specializes_query(
     let parent_impl_signature = db.impl_signature(parent_impl_def_id);
 
     // We determine whether there's a subset relationship by:
-
     //
-
     // - replacing bound vars with placeholders in impl1,
-
     // - assuming the where clauses for impl1,
-
     // - instantiating impl2 with fresh inference variables,
-
     // - unifying,
-
     // - attempting to prove the where clauses for impl2
-
     //
-
     // The last three steps are encapsulated in `fulfill_implication`.
-
     //
-
     // See RFC 1210 for more details and justification.
-
     // Currently we do not allow e.g., a negative impl to specialize a positive one
     if specializing_impl_signature.is_negative() != parent_impl_signature.is_negative() {
         return false;
     }
 
     // create a parameter environment corresponding to an identity instantiation of the specializing impl,
-
     // i.e. the most generic instantiation of the specializing impl.
     let param_env = trait_env.env;
 
@@ -110,9 +98,7 @@ fn specializes_query(
     };
 
     // Now check that the source trait ref satisfies all the where clauses of the target impl.
-
     // This is not just for correctness; we also need this to constrain any params that may
-
     // only be referenced via projection predicates.
     if let Some(predicates) =
         db.generic_predicates(parent_impl_def_id.into()).instantiate(interner, parent_args)
@@ -153,21 +139,13 @@ pub(crate) fn specializes(
     let module = specializing_impl_def_id.loc(db).container;
 
     // We check that the specializing impl comes from a crate that has specialization enabled.
-
     //
-
     // We don't really care if the specialized impl (the parent) is in a crate that has
-
     // specialization enabled, since it's not being specialized.
-
     //
-
     // rustc also checks whether the specializing impls comes from a macro marked
-
     // `#[allow_internal_unstable(specialization)]`, but `#[allow_internal_unstable]`
-
     // is an internal feature, std is not using it for specialization nor is likely to
-
     // ever use it, and we don't have the span information necessary to replicate that.
     let def_map = crate_def_map(db, module.krate());
     if !def_map.is_unstable_feature_enabled(&sym::specialization)

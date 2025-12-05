@@ -852,7 +852,6 @@ impl<'a> FindUsages<'a> {
         cov_mark::hit!(short_associated_function_fast_search);
 
         // FIXME: If Rust ever gains the ability to `use Struct::method` we'll also need to account for free
-
         // functions.
         let finder = Finder::new(name.as_bytes());
         // The search for `Self` may return duplicate results with `ContainerName`, so deduplicate them.
@@ -1053,6 +1052,7 @@ impl<'a> FindUsages<'a> {
                     ModuleSource::BlockExpr(b) => (file_id, Some(b.syntax().text_range())),
                     ModuleSource::SourceFile(_) => (file_id, None),
                 };
+
                 let search_range = if let Some(&range) = search_scope.entries.get(&file_id) {
                     match (range, search_range) {
                         (None, range) | (range, None) => range,
@@ -1064,12 +1064,15 @@ impl<'a> FindUsages<'a> {
                 } else {
                     return;
                 };
+
                 let file_text = sema.db.file_text(file_id.file_id(self.sema.db));
                 let text = file_text.text(sema.db);
                 let search_range =
                     search_range.unwrap_or_else(|| TextRange::up_to(TextSize::of(&**text)));
+
                 let tree = LazyCell::new(|| sema.parse(file_id).syntax().clone());
                 let finder = &Finder::new("self");
+
                 for offset in Self::match_indices(text, finder, search_range) {
                     for name_ref in Self::find_nodes(sema, "self", file_id, &tree, offset).filter_map(
                         ast::NameRef::cast,
@@ -1223,6 +1226,7 @@ impl<'a> FindUsages<'a> {
                 adt_subst: _,
             }) => {
                 let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
+
                 let field = Definition::Field(field);
                 let local = Definition::Local(local);
                 let access = match self.def {

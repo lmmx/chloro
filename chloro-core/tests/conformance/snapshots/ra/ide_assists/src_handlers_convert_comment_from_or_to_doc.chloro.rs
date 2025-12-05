@@ -194,7 +194,6 @@ fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
     }
 
     // check if comment is followed by: `struct`, `trait`, `mod`, `fn`, `type`, `extern crate`,
-
     // `use` or `const`.
     let parent = comment.syntax().parent();
     let par_kind = parent.as_ref().map(|parent| parent.kind());
@@ -229,6 +228,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .take_while(|opt_com| opt_com.is_some())
         .flatten()
         .skip(1);
+
     // skip the first element so we don't duplicate it in next_comments
     let next_comments = comment
         .syntax()

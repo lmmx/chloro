@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18130 bytes
-Chloro size:   18059 bytes
+Chloro size:   18058 bytes
 Rustfmt size:  18477 bytes
 
 ✗ Outputs DIFFER
@@ -33,13 +33,6 @@ Rustfmt size:  18477 bytes
              tracing::error!(
                  "cannot crate the crate graph: {}\nCrate graph:\n{}\n",
                  if let Some(&s) = error.downcast_ref::<&'static str>() {
-         let mut mapper = RangeMapper::default();
- 
-         // This is used for the `Injector`, to resolve precise location in the string literal,
-+
-         // which will then be used to resolve precise location in the enclosing file.
-         let mut offset_with_indent = TextSize::new(0);
-         // This is used to resolve the location relative to the virtual file into a location
          let combined_offset = self.mapper.map_offset_down(inside_literal_range)?;
          // There is usually a small number of files, so a linear search is smaller and faster.
          let (_, &(file_id, file_line)) =

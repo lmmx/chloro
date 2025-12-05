@@ -129,7 +129,6 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
     }
 
     // We need to do this due to the checkOnSave_enable -> checkOnSave change, as that key now can either be an object or a bool
-
     // checkOnSave_* -> check_*
     if let Some(Value::Object(obj)) = copy.pointer("/checkOnSave") {
         // checkOnSave_enable -> checkOnSave

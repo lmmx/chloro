@@ -131,7 +131,6 @@ fn find_items(
     let _p = tracing::info_span!("find_items").entered();
 
     // NOTE: `external_query` includes `assoc_item_search`, so we don't need to
-
     // filter on our own.
     let external_importables = krate.query_external_importables(db, external_query).map(
         |(external_importable, do_not_complete)| {

@@ -80,13 +80,14 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         for def_id in defining_opaque_types_and_generators {
-            // We do actually need to check this the second pass (we can't just
-            // store this), because we can go from `UnconstrainedHiddenType` to
-            // `HasDefiningUse` (because of fallback)
             let def_id = match def_id {
                 SolverDefId::InternedOpaqueTyId(it) => it,
                 _ => continue,
             };
+
+            // We do actually need to check this the second pass (we can't just
+            // store this), because we can go from `UnconstrainedHiddenType` to
+            // `HasDefiningUse` (because of fallback)
             let mut usage_kind = UsageKind::None;
             for &(opaque_type_key, hidden_type) in &opaque_types {
                 if opaque_type_key.def_id != def_id.into() {
@@ -99,6 +100,7 @@ impl<'db> InferenceContext<'_, 'db> {
                     break;
                 }
             }
+
             if let UsageKind::HasDefiningUse(ty) = usage_kind {
                 for &(opaque_type_key, hidden_type) in &opaque_types {
                     if opaque_type_key.def_id != def_id.into() {
@@ -114,6 +116,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
                 continue;
             }
+
             self.result.type_of_opaque.insert(def_id, self.types.error);
         }
     }

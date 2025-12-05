@@ -26,6 +26,7 @@ pub(crate) fn complete_vis_path(
                 cov_mark::hit!(visibility_qualified);
                 acc.add_module(ctx, path_ctx, next, name, vec![]);
             }
+
             acc.add_super_keyword(ctx, *super_chain_len);
         }
         Qualified::Absolute | Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}

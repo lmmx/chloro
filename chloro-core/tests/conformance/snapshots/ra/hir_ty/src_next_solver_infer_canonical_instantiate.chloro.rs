@@ -93,6 +93,7 @@ where
                 c => panic!("{bound_ct:?} is a const but value is {c:?}"),
             },
         };
+
         let value = tcx.replace_escaping_bound_vars_uncached(value, delegate);
         value.fold_with(&mut CanonicalInstantiator {
             tcx,

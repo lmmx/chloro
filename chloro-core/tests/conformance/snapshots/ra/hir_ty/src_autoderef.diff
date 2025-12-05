@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12925 bytes
+Chloro size:   12921 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -83,16 +83,8 @@ Rustfmt size:  13256 bytes
          if self.state.at_start {
              self.state.at_start = false;
              debug!("autoderef stage #0 is {:?}", self.state.cur_ty);
-         }
- 
-         // Otherwise, deref if type is derefable:
-+
-         // NOTE: in the case of self.use_receiver_trait = true, you might think it would
-+
          // be better to skip this clause and use the Overloaded case only, since &T
-+
          // and &mut T implement Receiver. But built-in derefs apply equally to Receiver
-+
          // and Deref, and this has benefits for const and the emitted MIR.
 -        let (kind, new_ty) = if let Some(ty) = self
 -            .state

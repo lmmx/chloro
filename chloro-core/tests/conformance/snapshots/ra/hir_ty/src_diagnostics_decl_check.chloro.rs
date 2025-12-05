@@ -195,7 +195,6 @@ impl<'a> DeclValidator<'a> {
         }
 
         // Check the function name.
-
         // Skipped if function is an associated item of a trait implementation.
         if !self.is_trait_impl_container(container) {
             let data = self.db.function_signature(func);
@@ -264,6 +263,7 @@ impl<'a> DeclValidator<'a> {
             let Some(parent) = ident_pat.syntax().parent() else {
                 continue;
             };
+
             let is_shorthand = ast::RecordPatField::cast(parent.clone())
                 .map(|parent| parent.name_ref().is_none())
                 .unwrap_or_default();
@@ -272,8 +272,10 @@ impl<'a> DeclValidator<'a> {
                 // since the shorthand isn't the declaration.
                 continue;
             }
+
             let is_param = ast::Param::can_cast(parent.kind());
             let ident_type = if is_param { IdentType::Parameter } else { IdentType::Variable };
+
             self.create_incorrect_case_diagnostic_for_ast_node(
                 replacement,
                 source_ptr.file_id,
@@ -365,6 +367,7 @@ impl<'a> DeclValidator<'a> {
                     return;
                 }
             };
+
             self.create_incorrect_case_diagnostic_for_ast_node(
                 field_replacement,
                 struct_src.file_id,
@@ -452,6 +455,7 @@ impl<'a> DeclValidator<'a> {
                     return;
                 }
             };
+
             self.create_incorrect_case_diagnostic_for_ast_node(
                 variant_replacement,
                 enum_src.file_id,
@@ -524,6 +528,7 @@ impl<'a> DeclValidator<'a> {
                     return;
                 }
             };
+
             self.create_incorrect_case_diagnostic_for_ast_node(
                 field_replacement,
                 variant_src.file_id,

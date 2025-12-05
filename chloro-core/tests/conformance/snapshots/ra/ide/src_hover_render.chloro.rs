@@ -237,6 +237,7 @@ pub(super) fn underscore(
             _ => return None,
         }
     };
+
     // let it = infer_type.syntax().parent()?;
     // match_ast! {
     //     match it {
@@ -244,31 +245,18 @@ pub(super) fn underscore(
     //         ast::Param(_it) => (),
     //         ast::RetType(_it) => (),
     //         ast::TypeArg(_it) => (),
-
     //         ast::CastExpr(_it) => (),
-
     //         ast::ParenType(_it) => (),
-
     //         ast::TupleType(_it) => (),
-
     //         ast::PtrType(_it) => (),
-
     //         ast::RefType(_it) => (),
-
     //         ast::ArrayType(_it) => (),
-
     //         ast::SliceType(_it) => (),
-
     //         ast::ForType(_it) => (),
-
     //         _ => return None,
-
     //     }
-
     // }
-
     // FIXME: https://github.com/rust-lang/rust-analyzer/issues/11762, this currently always returns Unknown
-
     // type_info(sema, config, sema.resolve_type(&ast::Type::InferType(it))?, None)
     None
 }
@@ -310,9 +298,7 @@ pub(super) fn struct_rest_pat(
     let missing_fields = sema.record_pattern_missing_fields(pattern);
 
     // if there are no missing fields, the end result is a hover that shows ".."
-
     // should be left in to indicate that there are no more fields in the pattern
-
     // example, S {a: 1, b: 2, ..} when struct S {a: u32, b: u32}
     let mut res = HoverResult::default();
     let mut targets: Vec<hir::ModuleDef> = Vec::new();
@@ -1167,6 +1153,7 @@ fn markup(
         let offset = TextSize::new(buf.len() as u32);
         let buf_range_map = range_map.map(|range_map| range_map.shift_docstring_line_range(offset));
         format_to!(buf, "{}", doc);
+
         (buf.into(), buf_range_map)
     } else {
         (buf.into(), None)
@@ -1298,6 +1285,7 @@ fn keyword_hints(
     match token.kind() {
         T![await] | T![loop] | T![match] | T![unsafe] | T![as] | T![try] | T![if] | T![else] => {
             let keyword_mod = format!("{}_keyword", token.text());
+
             match ast::Expr::cast(parent).and_then(|site| sema.type_of_expr(&site)) {
                 // ignore the unit type ()
                 Some(ty) if !ty.adjusted.as_ref().unwrap_or(&ty.original).is_unit() => {
@@ -1308,9 +1296,11 @@ fn keyword_hints(
                         }
                     };
                     walk_and_push_ty(sema.db, &ty.original, &mut push_new_def);
+
                     let ty = ty.adjusted();
                     let description =
                         format!("{}: {}", token.text(), ty.display(sema.db, display_target));
+
                     KeywordHint {
                         description,
                         keyword_mod,

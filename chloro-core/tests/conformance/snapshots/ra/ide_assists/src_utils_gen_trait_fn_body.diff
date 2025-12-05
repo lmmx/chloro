@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33616 bytes
-Chloro size:   33614 bytes
+Chloro size:   33616 bytes
 Rustfmt size:  33768 bytes
 
 ✗ Outputs DIFFER
@@ -16,31 +16,6 @@ Rustfmt size:  33768 bytes
  
  /// Generate custom trait bodies without default implementation where possible.
  ///
-                     }
-                 }
-             }
--
-             let match_target = make::expr_path(make::ext::ident_path("self"));
-             let list = make::match_arm_list(arms).indent(ast::edit::IndentLevel(1));
-             let match_expr = make::expr_match(match_target, list);
--
-             let body = make::block_expr(None, Some(match_expr.into()));
-             let body = body.indent(ast::edit::IndentLevel(1));
-             Some(body)
-             let name = format!("\"{annotated_name}\"");
-             let args = make::arg_list(Some(make::expr_literal(&name).into()));
-             let target = make::expr_path(make::ext::ident_path("f"));
--
-             let expr = match strukt.field_list() {
-                 // => f.debug_struct("Name").finish()
-                 None => make::expr_method_call(target, make::name_ref("debug_struct"), args).into(),
-                     expr
-                 }
-             };
--
-             let method = make::name_ref("finish");
-             let expr = make::expr_method_call(expr, method, make::arg_list(None)).into();
-             let body = make::block_expr(None, Some(expr)).indent(ast::edit::IndentLevel(1));
  fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
      fn gen_eq_chain(expr: Option<ast::Expr>, cmp: ast::Expr) -> Option<ast::Expr> {
          match expr {
@@ -53,13 +28,6 @@ Rustfmt size:  33768 bytes
              None => Some(cmp),
          }
      }
-     }
- 
-     // Check that self type and rhs type match. We don't know how to implement the method
-+
-     // automatically otherwise.
-     if let Some(trait_ref) = trait_ref {
-         let self_ty = trait_ref.self_ty();
      fn gen_partial_eq_match(match_target: ast::Expr) -> Option<ast::Stmt> {
          let mut arms = vec![];
  
@@ -78,13 +46,6 @@ Rustfmt size:  33768 bytes
  
          arms.push(make::match_arm(
              make::ident_pat(false, false, make::name("ord")).into(),
-     }
- 
-     // Check that self type and rhs type match. We don't know how to implement the method
-+
-     // automatically otherwise.
-     if let Some(trait_ref) = trait_ref {
-         let self_ty = trait_ref.self_ty();
  }
  
  fn make_discriminant() -> Option<ast::Expr> {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33395 bytes
-Chloro size:   33371 bytes
+Chloro size:   33376 bytes
 Rustfmt size:  34403 bytes
 
 ✗ Outputs DIFFER
@@ -97,17 +97,9 @@ Rustfmt size:  34403 bytes
                      infos.reserve_exact(1);
                      infos.push(import_info);
  
-             } else {
-                 ItemInNs::Values(module_def_id)
-             };
--
-             let attr_id = item.into();
-             let attrs = &db.attrs(attr_id);
-             let item_do_not_complete = Complete::extract(false, attrs);
-                 is_unstable: attrs.is_unstable(),
                  complete: do_not_complete,
              };
--
+ 
 -            let (infos, _) = map
 -                .entry(assoc_item)
 -                .or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::Yes));
@@ -194,27 +186,6 @@ Rustfmt size:  34403 bytes
  
      let mut op = fst::map::OpBuilder::new();
  
-     match query.search_mode {
-         SearchMode::Exact => {
-             let automaton = fst::automaton::Str::new(&query.lowercased);
--
-             for map in &import_maps {
-                 op = op.add(map.fst.search(&automaton));
-             }
-         }
-         SearchMode::Fuzzy => {
-             let automaton = fst::automaton::Subsequence::new(&query.lowercased);
--
-             for map in &import_maps {
-                 op = op.add(map.fst.search(&automaton));
-             }
-         }
-         SearchMode::Prefix => {
-             let automaton = fst::automaton::Str::new(&query.lowercased).starts_with();
--
-             for map in &import_maps {
-                 op = op.add(map.fst.search(&automaton));
-             }
  ) -> FxHashSet<(ItemInNs, Complete)> {
      let mut res = FxHashSet::default();
      while let Some((_, indexed_values)) = stream.next() {

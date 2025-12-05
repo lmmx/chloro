@@ -401,7 +401,6 @@ mod tests {
         let mut range_set: FxHashMap<_, i32> = ranges.iter().map(|it| (it.0, 0)).collect();
 
         // Make sure that all references have at least one range. We use a HashMap instead of a
-
         // a HashSet so that we can have more than one reference at the same range.
         for (_, t) in s.tokens.iter() {
             for r in &t.references {

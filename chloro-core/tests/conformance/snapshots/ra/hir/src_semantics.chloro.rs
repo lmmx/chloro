@@ -1144,11 +1144,8 @@ impl<'db> SemanticsImpl<'db> {
             };
 
         // A stack of tokens to process, along with the file they came from
-
         // These are tracked to know which macro calls we still have to look into
-
         // the tokens themselves aren't that interesting as the span that is being used to map
-
         // things down never changes.
         let mut stack: Vec<(_, SmallVec<[_; 2]>)> = vec![];
         let include = file_id
@@ -1167,7 +1164,6 @@ impl<'db> SemanticsImpl<'db> {
         let mut m_cache = self.macro_call_cache.borrow_mut();
 
         // Filters out all tokens that contain the given range (usually the macro call), any such
-
         // token is redundant as the corresponding macro call has already been processed
         let filter_duplicates = |tokens: &mut SmallVec<_>, range: TextRange| {
             tokens.retain(|(t, _): &mut (SyntaxToken, _)| !range.contains_range(t.text_range()))
@@ -2099,6 +2095,7 @@ impl<'db> SemanticsImpl<'db> {
             if &parent == enclosing_node {
                 break false;
             }
+
             if let Some(parent) = ast::Expr::cast(parent.clone())
                 && let Some(ExprOrPatId::ExprId(expr_id)) =
                     source_map.node_expr(InFile { file_id, value: &parent })
@@ -2106,6 +2103,7 @@ impl<'db> SemanticsImpl<'db> {
             {
                 break true;
             }
+
             let Some(parent_) = parent.parent() else { break false };
             parent = parent_;
         }

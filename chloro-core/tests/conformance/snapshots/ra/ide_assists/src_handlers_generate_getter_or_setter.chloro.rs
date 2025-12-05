@@ -284,14 +284,12 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
     let field_ty = &record_field_info.field_ty;
 
     // Make the param list
-
     // `(&mut self, $field_name: $field_ty)`
     let field_param =
         make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
     let params = make::param_list(Some(make::mut_self_param()), [field_param]);
 
     // Make the assignment body
-
     // `self.$field_name = $field_name`
     let self_expr = make::ext::expr_self();
     let lhs = make::expr_field(self_expr, field_name);
@@ -370,9 +368,11 @@ fn extract_and_parse_record_fields(
                     None
                 })
                 .collect::<Vec<RecordFieldInfo>>();
+
             if info_of_record_fields_in_selection.is_empty() {
                 return None;
             }
+
             Some((info_of_record_fields_in_selection, field_names))
         }
         ast::FieldList::TupleFieldList(_) => None,
@@ -426,19 +426,21 @@ fn build_source_change(
 
     for (i, record_field_info) in info_of_record_fields.iter().enumerate() {
         // Make the new getter or setter fn
-        // Insert a tabstop only for last method we generate
         let new_fn = match assist_info.assist_type {
             AssistType::Set => generate_setter_from_info(&assist_info, record_field_info),
             _ => generate_getter_from_info(ctx, &assist_info, record_field_info),
         }
         .clone_for_update();
         new_fn.indent(1.into());
+
+        // Insert a tabstop only for last method we generate
         if i == record_fields_count - 1
             && let Some(cap) = ctx.config.snippet_cap
             && let Some(name) = new_fn.name()
         {
             builder.add_tabstop_before(cap, name);
         }
+
         assoc_item_list.add_item(new_fn.clone().into());
     }
 }

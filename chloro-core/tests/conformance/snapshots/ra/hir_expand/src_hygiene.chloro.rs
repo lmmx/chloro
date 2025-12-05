@@ -93,21 +93,13 @@ pub(super) fn apply_mark(
     }
 
     // Otherwise, `expn_id` is a macros 1.0 definition and the call site is in a
-
     // macros 2.0 expansion, i.e., a macros 1.0 invocation is in a macros 2.0 definition.
-
     //
-
     // In this case, the tokens from the macros 1.0 definition inherit the hygiene
-
     // at their invocation. That is, we pretend that the macros 1.0 definition
-
     // was defined at its invocation (i.e., inside the macros 2.0 definition)
-
     // so that the macros 2.0 definition remains hygienic.
-
     //
-
     // See the example at `test/ui/hygiene/legacy_interaction.rs`.
     for (call_id, transparency) in ctxt.marks(db) {
         call_site_ctxt = apply_mark_internal(db, call_site_ctxt, call_id, transparency, edition);

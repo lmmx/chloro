@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16464 bytes
+Chloro size:   16463 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -36,15 +36,6 @@ Rustfmt size:  16583 bytes
  }
  
  impl CastError {
-         }
- 
-         // Chalk doesn't support trait upcasting and fails to solve some obvious goals
-+
-         // when the trait environment contains some recursive traits (See issue #18047)
-+
-         // We skip cast checks for such cases for now, until the next-gen solver.
-         if contains_dyn_trait(self.cast_ty) {
-             return Ok(());
              };
  
          // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym
@@ -61,10 +52,3 @@ Rustfmt size:  16583 bytes
                              Ok(())
                          } else {
                              Err(CastError::DifferingKinds)
-                 never!("`{:?}` should be sized but is not?", ty);
-                 return Err(());
-             };
--
-             let struct_data = id.fields(ctx.db);
-             if let Some((last_field, _)) = struct_data.fields().iter().last() {
-                 let last_field_ty =

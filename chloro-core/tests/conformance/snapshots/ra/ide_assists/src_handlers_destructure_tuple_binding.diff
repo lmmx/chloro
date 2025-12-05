@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   43346 bytes
+Chloro size:   43348 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -159,8 +159,8 @@ Rustfmt size:  44616 bytes
          .skip_while(|s| !ast::PathExpr::can_cast(s.kind()))
          .skip(1) // PATH_EXPR
 -        .find(|s| !ast::ParenExpr::can_cast(s.kind()))?; // skip parentheses
--
 +        .find(|s| !ast::ParenExpr::can_cast(s.kind()))?;
+ 
 +    // skip parentheses
      if let Some(field_expr) = ast::FieldExpr::cast(node) {
          let idx = field_expr.name_ref()?.as_tuple_field()?;
@@ -175,10 +175,9 @@ Rustfmt size:  44616 bytes
                  cov_mark::hit!(destructure_tuple_macro_call);
  
                  // issue: cannot differentiate between tuple index passed into macro or tuple index as result of macro:
-                 // -> only handle `t`
                  return None;
              }
--
+ 
 -            Some(TupleIndex {
 -                index: idx,
 -                field_expr,

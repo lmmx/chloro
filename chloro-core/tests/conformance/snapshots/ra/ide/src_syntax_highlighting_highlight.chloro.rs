@@ -224,6 +224,7 @@ fn punctuation(
                         })
                         .and_then(|it| AstPtr::try_from_raw(SyntaxNodePtr::new(&it)))
                         .is_some_and(is_unsafe_node);
+
                 if is_unsafe {
                     return Highlight::from(HlPunct::Parenthesis) | HlMod::Unsafe;
                 } else {
@@ -840,6 +841,7 @@ fn highlight_name_ref_by_syntax(
                 Some(it) => it,
                 None => return default.into(),
             };
+
             match parent.kind() {
                 CALL_EXPR => SymbolKind::Function.into(),
                 _ => if name.text().chars().next().unwrap_or_default().is_uppercase() {

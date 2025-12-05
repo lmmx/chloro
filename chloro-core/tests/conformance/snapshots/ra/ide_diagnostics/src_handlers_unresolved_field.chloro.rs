@@ -151,17 +151,18 @@ fn add_field_to_struct_fix(
     match field_list {
         Some(FieldList::RecordFieldList(field_list)) => {
             // Get range of final field in the struct
-            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
             let visibility = if error_range.file_id == struct_range.file_id {
                 None
             } else {
                 Some(make::visibility_pub_crate())
             };
+
             let field_name = match field_name.chars().next() {
                 Some(ch) if ch.is_numeric() => return None,
                 Some(_) => make::name(field_name),
                 None => return None,
             };
+
             let (offset, record_field) = record_field_layout(
                 visibility,
                 field_name,
@@ -169,8 +170,11 @@ fn add_field_to_struct_fix(
                 field_list,
                 struct_syntax.value,
             )?;
+
             let mut src_change_builder =
                 SourceChangeBuilder::new(struct_range.file_id.file_id(ctx.sema.db));
+
+            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
             src_change_builder.insert(offset, record_field);
             Some(Assist {
                 id: AssistId::quick_fix("add-field-to-record-struct"),
@@ -183,8 +187,6 @@ fn add_field_to_struct_fix(
         }
         None => {
             // Add a field list to the Unit Struct
-            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
-            // A Unit Struct with no `;` is invalid syntax. We should not suggest this fix.
             let mut src_change_builder =
                 SourceChangeBuilder::new(struct_range.file_id.file_id(ctx.sema.db));
             let field_name = match field_name.chars().next() {
@@ -198,9 +200,12 @@ fn add_field_to_struct_fix(
             } else {
                 Some(make::visibility_pub_crate())
             };
+            // FIXME: Allow for choosing a visibility modifier see https://github.com/rust-lang/rust-analyzer/issues/11563
             let indent = IndentLevel::from_node(struct_syntax.value);
+
             let field =
                 make::record_field(visibility, field_name, suggested_type).indent(indent + 1);
+            // A Unit Struct with no `;` is invalid syntax. We should not suggest this fix.
             let semi_colon =
                 algo::skip_trivia_token(struct_syntax.value.last_token()?, Direction::Prev)?;
             if semi_colon.kind() != SyntaxKind::SEMICOLON {
@@ -210,6 +215,7 @@ fn add_field_to_struct_fix(
                 semi_colon.text_range(),
                 format!(" {{\n{}{field},\n{indent}}}", indent + 1),
             );
+
             Some(Assist {
                 id: AssistId::quick_fix("convert-unit-struct-to-record-struct"),
                 label: Label::new("Convert Unit Struct to Record Struct and add field".to_owned()),

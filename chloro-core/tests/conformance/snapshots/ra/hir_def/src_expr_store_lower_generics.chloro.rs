@@ -115,6 +115,7 @@ impl GenericParamsCollector {
             if !enabled {
                 continue;
             }
+
             match generic_param {
                 ast::GenericParam::TypeParam(type_param) => {
                     let name = type_param.name().map_or_else(Name::missing, |it| it.as_name());
@@ -179,6 +180,7 @@ impl GenericParamsCollector {
             } else {
                 continue;
             };
+
             let lifetimes: Option<Box<_>> =
                 pred.for_binder().and_then(|it| it.generic_param_list()).map(|param_list| {
                     // Higher-Ranked Trait Bounds

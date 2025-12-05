@@ -95,6 +95,7 @@ fn can_add(node: &SyntaxNode) -> bool {
         let Some(p) = node.parent() else {
             return false;
         };
+
         if p.kind() == ASSOC_ITEM_LIST {
             p.parent()
                 .and_then(ast::Impl::cast)

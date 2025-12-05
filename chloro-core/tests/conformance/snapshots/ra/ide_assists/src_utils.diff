@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   45266 bytes
+Chloro size:   45270 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -18,34 +18,6 @@ Rustfmt size:  45288 bytes
          syntax_factory::SyntaxFactory,
      },
      syntax_editor::{Removable, SyntaxEditor},
-                     );
-                 }
-             };
--
-             Some(make.expr_bin(bin.lhs()?, rev_kind, bin.rhs()?).into())
-         }
-         ast::Expr::MethodCallExpr(mce) => {
-             let receiver = mce.receiver()?;
-             let method = mce.name_ref()?;
-             let arg_list = mce.arg_list()?;
--
-             let method = match method.text().as_str() {
-                 "is_some" => "is_none",
-                 "is_none" => "is_some",
-                 "is_err" => "is_ok",
-                 _ => return None,
-             };
--
-             Some(make.expr_method_call(receiver, make.name_ref(method), arg_list).into())
-         }
-         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
-             let receiver = mce.receiver()?;
-             let method = mce.name_ref()?;
-             let arg_list = mce.arg_list()?;
--
-             let method = match method.text().as_str() {
-                 "is_some" => "is_none",
-                 "is_none" => "is_some",
  // FIXME: change the new fn checking to a more semantic approach when that's more
  // viable (e.g. we process proc macros, etc)
  // FIXME: this partially overlaps with `find_impl_block_*`
@@ -94,13 +66,6 @@ Rustfmt size:  45288 bytes
  pub(crate) fn generate_trait_impl_text_intransitive(
      adt: &ast::Adt,
      trait_text: &str,
-     });
- 
-     // FIXME: use syntax::make & mutable AST apis instead
-+
-     // `trait_text` and `code` can't be opaque blobs of text
-     let mut buf = String::with_capacity(code.len());
- 
  /// and lifetime parameters, with `<trait>` appended to `impl`'s generic parameters' bounds.
  ///
  /// This is useful for traits like `PartialEq`, since `impl<T> PartialEq for U<T>` often requires `T: PartialEq`.
@@ -164,13 +129,6 @@ Rustfmt size:  45288 bytes
  #[test]
  fn test_string_prefix() {
      assert_eq!(Some(""), string_prefix(r#""abc""#));
-         } else {
-             (Some(expr), None)
-         };
--
-         if let Some(chain_expr) = chain_expr
-             && chain_expr.syntax().text_range().contains_range(range)
-         {
      if let Some(tail_expr) = block_expr.tail_expr() {
          sema.type_of_expr(&tail_expr).is_some_and(|ty| ty.original.is_never())
      } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last()

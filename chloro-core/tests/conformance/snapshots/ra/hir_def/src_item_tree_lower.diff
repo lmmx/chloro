@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20372 bytes
-Chloro size:   20369 bytes
+Chloro size:   20372 bytes
 Rustfmt size:  20372 bytes
 
 ✗ Outputs DIFFER
@@ -16,23 +16,3 @@ Rustfmt size:  20372 bytes
          ModItemId, ModKind, ModPath, RawAttrs, RawVisibility, RawVisibilityId, SmallModItem,
          Static, Struct, StructKind, Trait, TypeAlias, Union, Use, UseTree, UseTreeKind,
          VisibilityExplicitness,
-                     }
-                 }
-             };
--
-             self.mapping.alloc(tree.clone());
-             let list = use_tree_list
-                 .use_trees()
-                 .filter_map(|tree| self.lower_use_tree(tree, span_for_range))
-                 .collect();
--
-             Some(UseTree {
-                 kind: UseTreeKind::Prefixed { prefix: prefix.map(Interned::new), list },
-             })
-             if alias.is_some() && is_glob {
-                 return None;
-             }
--
-             match (path, alias, is_glob) {
-                 (path, None, true) => {
-                     if path.is_none() {

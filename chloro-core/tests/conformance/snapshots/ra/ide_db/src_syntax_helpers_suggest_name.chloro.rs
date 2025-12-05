@@ -131,6 +131,7 @@ impl NameGenerator {
             Entry::Occupied(mut entry) => {
                 let count = entry.get_mut();
                 *count = (*count + 1).max(suffix);
+
                 let mut new_name = SmolStrBuilder::new();
                 new_name.push_str(&prefix);
                 new_name.push_str(count.to_string().as_str());

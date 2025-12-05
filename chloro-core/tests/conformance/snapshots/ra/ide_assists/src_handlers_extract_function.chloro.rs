@@ -650,7 +650,6 @@ impl FunctionBody {
         let first_element = stmts_in_selection.next();
 
         // If the tail expr is part of the selection too, make that the last element
-
         // Otherwise use the last stmt
         let last_element = if let Some(tail_expr) =
             parent.tail_expr().filter(|it| selected.intersect(it.syntax().text_range()).is_some())
@@ -1214,7 +1213,6 @@ fn reference_is_exclusive(
     // but doesn't necessary fully reflect all the intricacies of the underlying language semantics
     // The correct approach here would be to expose this entire analysis as a method on some hir
     // type. Something like `body.free_variables(statement_range)`.
-
     // we directly modify variable with set: `n = 0`, `n += 1`
     if reference.category.contains(ReferenceCategory::WRITE) {
         return true;
@@ -1593,6 +1591,7 @@ impl<'db> FlowHandler<'db> {
             }
             FlowHandler::MatchOption { none } => {
                 let some_name = "value";
+
                 let some_arm = {
                     let path = make::ext::ident_path("Some");
                     let value_pat = make::ext::simple_ident_pat(make::name(some_name));
@@ -1611,6 +1610,7 @@ impl<'db> FlowHandler<'db> {
             FlowHandler::MatchResult { err } => {
                 let ok_name = "value";
                 let err_name = "value";
+
                 let ok_arm = {
                     let path = make::ext::ident_path("Ok");
                     let value_pat = make::ext::simple_ident_pat(make::name(ok_name));

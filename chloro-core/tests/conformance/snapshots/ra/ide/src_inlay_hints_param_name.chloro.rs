@@ -238,8 +238,8 @@ pub(super) fn get_segment_representation(
         ast::Expr::MacroExpr(macro_expr) => macro_expr.macro_call()?.path().map(Either::Right),
         ast::Expr::RecordExpr(record_expr) => record_expr.path().map(Either::Right),
         ast::Expr::PathExpr(path_expr) => {
-            // single segment paths are likely locals
             let path = path_expr.path()?;
+            // single segment paths are likely locals
             Some(match path.as_single_name_ref() {
                 None => Either::Right(path),
                 Some(name_ref) => Either::Left(vec![name_ref]),

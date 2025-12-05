@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1954 bytes
-Chloro size:   1950 bytes
+Chloro size:   1952 bytes
 Rustfmt size:  1954 bytes
 
 ✗ Outputs DIFFER
@@ -20,20 +20,6 @@ Rustfmt size:  1954 bytes
  
  use super::Completions;
  
-         if imported_extern_crates.contains(&name) {
-             continue;
-         }
--
-         let mut item = CompletionItem::new(
-             CompletionItemKind::SymbolKind(SymbolKind::Module),
-             ctx.source_range(),
-             ctx.edition,
-         );
-         item.set_documentation(module.docs(ctx.db));
--
-         item.add_to(acc, ctx.db);
-     }
- }
  #[cfg(test)]
  mod test {
      use crate::tests::completion_list_no_kw;

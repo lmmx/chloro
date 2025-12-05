@@ -227,22 +227,16 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         }
 
         // Coercing *from* an unresolved inference variable means that
-
         // we have no information about the source type. This will always
-
         // ultimately fall back to some form of subtyping.
         if a.is_infer() {
             return self.coerce_from_inference_variable(a, b);
         }
 
         // Consider coercing the subtype to a DST
-
         //
-
         // NOTE: this is wrapped in a `commit_if_ok` because it creates
-
         // a "spurious" type variable, and we don't want to have that
-
         // type variable in memory if the coercion fails.
         let unsize = self.commit_if_ok(|this| this.coerce_unsized(a, b));
         match unsize {
@@ -256,9 +250,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         }
 
         // Examine the supertype and consider type-specific coercions, such
-
         // as auto-borrowing, coercing pointer mutability, a `dyn*` coercion,
-
         // or pin-ergonomics.
         match b.kind() {
             TyKind::RawPtr(_, b_mutbl) => {
@@ -308,6 +300,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         if b.is_infer() {
             // Two unresolved type variables: create a `Coerce` predicate.
             let target_ty = if self.use_lub { self.table.next_ty_var() } else { b };
+
             let mut obligations = PredicateObligations::with_capacity(2);
             for &source_ty in &[a, b] {
                 if source_ty != target_ty {
@@ -322,6 +315,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                     ));
                 }
             }
+
             debug!(
                 "coerce_from_inference_variable: two inference variables, target_ty={:?}, obligations={:?}",
                 target_ty, obligations
@@ -349,13 +343,9 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         debug_assert!(self.table.shallow_resolve(b) == b);
 
         // If we have a parameter of type `&M T_a` and the value
-
         // provided is `expr`, we will be adding an implicit borrow,
-
         // meaning that we convert `f(expr)` to `f(&M *expr)`. Therefore,
-
         // to type check, we will construct the type that `&M*expr` would
-
         // yield.
         let (r_a, mt_a) = match a.kind() {
             TyKind::Ref(r_a, ty, mutbl) => {
@@ -490,13 +480,9 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         }
 
         // Extract type or return an error. We return the first error
-
         // we got, which should be from relating the "base" type
-
         // (e.g., in example above, the failure from relating `Vec<T>`
-
         // to the target type), since that should be the least
-
         // confusing.
         let Some(InferOk { value: ty, mut obligations }) = found else {
             if let Some(first_error) = first_error {
@@ -533,7 +519,6 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         obligations.extend(o);
 
         // Now apply the autoref. We have to extract the region out of
-
         // the final ref type we got.
         let TyKind::Ref(region, _, _) = ty.kind() else {
             panic!("expected a ref type, got {:?}", ty);
@@ -560,9 +545,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         debug_assert!(self.table.shallow_resolve(target) == target);
 
         // We don't apply any coercions incase either the source or target
-
         // aren't sufficiently well known but tend to instead just equate
-
         // them both.
         if source.is_infer() {
             debug!("coerce_unsized: source is a TyVar, bailing out");
@@ -574,35 +557,20 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         }
 
         // This is an optimization because coercion is one of the most common
-
         // operations that we do in typeck, since it happens at every assignment
-
         // and call arg (among other positions).
-
         //
-
         // These targets are known to never be RHS in `LHS: CoerceUnsized<RHS>`.
-
         // That's because these are built-in types for which a core-provided impl
-
         // doesn't exist, and for which a user-written impl is invalid.
-
         //
-
         // This is technically incomplete when users write impossible bounds like
-
         // `where T: CoerceUnsized<usize>`, for example, but that trait is unstable
-
         // and coercion is allowed to be incomplete. The only case where this matters
-
         // is impossible bounds.
-
         //
-
         // Note that some of these types implement `LHS: Unsize<RHS>`, but they
-
         // do not implement *`CoerceUnsized`* which is the root obligation of the
-
         // check below.
         match target.kind() {
             TyKind::Bool
@@ -646,13 +614,9 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         };
 
         // Note, we want to avoid unnecessary unsizing. We don't want to coerce to
-
         // a DST unless we have to. This currently comes out in the wash since
-
         // we can't unify [T] with U. But to properly support DST, we need to allow
-
         // that, at which point we will need extra checks on the target here.
-
         // Handle reborrows before selecting `Source: CoerceUnsized<Target>`.
         let reborrow = match (source.kind(), target.kind()) {
             (TyKind::Ref(_, ty_a, mutbl_a), TyKind::Ref(_, _, mutbl_b)) => {
@@ -690,11 +654,8 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         let coerce_source = reborrow.as_ref().map_or(source, |(_, r)| r.target);
 
         // Setup either a subtyping or a LUB relationship between
-
         // the `CoerceUnsized` target type and the expected type.
-
         // We only have the latter, so we use an inference variable
-
         // for the former and let type inference do the rest.
         let coerce_target = self.table.next_ty_var();
 
@@ -709,17 +670,11 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         let cause = self.cause.clone();
 
         // Use a FIFO queue for this custom fulfillment procedure.
-
         //
-
         // A Vec (or SmallVec) is not a natural choice for a queue. However,
-
         // this code path is hot, and this queue usually has a max length of 1
-
         // and almost never more than 3. By using a SmallVec we avoid an
-
         // allocation, at the (very small) cost of (occasionally) having to
-
         // shift subsequent elements down when removing the front element.
         let mut queue: SmallVec<[PredicateObligation<'db>; 4]> = smallvec![Obligation::new(
             self.interner(),
@@ -918,6 +873,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
                         }
                     }
                 }
+
                 self.coerce_from_safe_fn(
                     a_sig,
                     b,
@@ -1085,7 +1041,6 @@ impl<'db> InferenceContext<'_, 'db> {
         );
 
         // The following check fixes #88097, where the compiler erroneously
-
         // attempted to coerce a closure type to itself via a function pointer.
         if prev_ty == new_ty {
             return Ok(prev_ty);
@@ -1103,7 +1058,6 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // Special-case that coercion alone cannot handle:
-
         // Function items or non-capturing closures of differing IDs or GenericArgs.
         let (a_sig, b_sig) = {
             let is_capturing_closure = |_ty: Ty<'db>| {
@@ -1207,19 +1161,12 @@ impl<'db> InferenceContext<'_, 'db> {
         }
 
         // Configure a Coerce instance to compute the LUB.
-
         // We don't allow two-phase borrows on any autorefs this creates since we
-
         // probably aren't processing function arguments here and even if we were,
-
         // they're going to get autorefed again anyway and we can apply 2-phase borrows
-
         // at that time.
-
         //
-
         // NOTE: we set `coerce_never` to `true` here because coercion LUBs only
-
         // operate on values and not places, so a never coercion is valid.
         let krate = self.krate();
         let mut coerce = Coerce {
@@ -1235,7 +1182,6 @@ impl<'db> InferenceContext<'_, 'db> {
         };
 
         // First try to coerce the new expression to the type of the previous ones,
-
         // but only if the new expression has no coercion already applied to it.
         let mut first_error = None;
         if !self.result.expr_adjustments.contains_key(&new) {
@@ -1595,7 +1541,6 @@ fn coerce<'db>(
     table.register_predicates(obligations);
 
     // default any type vars that weren't unified back to their original bound vars
-
     // (kind of hacky)
     let mut fallback_ty = |debruijn, infer| {
         let var = vars.var_values.iter().position(|arg| {

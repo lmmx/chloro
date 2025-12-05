@@ -362,20 +362,6 @@ Rustfmt size:  167117 bytes
      fn from_toml(toml: toml::Table, error_sink: &mut Vec<(String, toml::de::Error)>) -> Self {
          Self {
              workspace: WorkspaceConfigInput::from_toml(&toml, error_sink),
-             ptr.push('_');
-         }
-         ptr.push_str(k);
--
-         match v {
-             // This is a table config, any entry in it is therefore valid
-             toml::Value::Table(_) if verify(ptr) => (),
-                 .push((ptr.replace('_', "/"), toml::de::Error::custom("unexpected field"))),
-             _ => (),
-         }
--
-         ptr.truncate(l);
-     }
- }
  #[cfg(test)]
  mod tests {
      use std::{borrow::Cow, fs};
@@ -387,15 +373,6 @@ Rustfmt size:  167117 bytes
      #[test]
      fn generate_package_json_config() {
          let s = Config::json_schema();
-         schema.push_str(",\n");
- 
-         // Transform the asciidoc form link to markdown style.
-+
-         //
-+
-         // https://link[text] => [text](https://link)
-         let url_matches = schema.match_indices("https://");
-         let mut url_offsets = url_matches.map(|(idx, _)| idx).collect::<Vec<usize>>();
              ensure_file_contents(package_json_path.as_std_path(), &package_json)
          }
      }

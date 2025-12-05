@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18922 bytes
-Chloro size:   18923 bytes
+Chloro size:   18922 bytes
 Rustfmt size:  19198 bytes
 
 ✗ Outputs DIFFER
@@ -37,10 +37,8 @@ Rustfmt size:  19198 bytes
  
  use crate::{HasCrate, Module, ModuleDef, Semantics};
  
-         tracing::info!(?module, "SymbolCollector::collect");
  
          // The initial work is the root module we're collecting, additional work will
-+
          // be populated as we traverse the module's definitions.
 -        self.work.push(SymbolCollectorWork {
 -            module_id: module.into(),

@@ -146,13 +146,9 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
         }
 
         // Otherwise, deref if type is derefable:
-
         // NOTE: in the case of self.use_receiver_trait = true, you might think it would
-
         // be better to skip this clause and use the Overloaded case only, since &T
-
         // and &mut T implement Receiver. But built-in derefs apply equally to Receiver
-
         // and Deref, and this has benefits for const and the emitted MIR.
         let (kind, new_ty) = if let Some(ty) =
             self.state.cur_ty.builtin_deref(self.table.db, self.include_raw_pointers)

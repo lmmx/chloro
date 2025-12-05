@@ -88,6 +88,7 @@ pub(crate) fn real_span_map(
     let ast_id_map = db.ast_id_map(editioned_file_id.into());
 
     let tree = db.parse(editioned_file_id).tree();
+
     // This is an incrementality layer. Basically we can't use absolute ranges for our spans as that
     // would mean we'd invalidate everything whenever we type. So instead we make the text ranges
     // relative to some AstIds reducing the risk of invalidation as typing somewhere no longer

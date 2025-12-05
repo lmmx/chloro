@@ -1,7 +1,7 @@
 // In chloro-core/src/formatter/node/block.rs
 
 use crate::formatter::write_indent;
-use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
+use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode};
 
 use super::expr::{FormatResult, try_format_expr};
 

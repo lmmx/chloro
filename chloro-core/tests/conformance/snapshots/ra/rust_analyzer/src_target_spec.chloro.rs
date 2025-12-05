@@ -79,6 +79,7 @@ impl ProjectJsonTargetSpec {
                         return Some(runnable.clone());
                     }
                 }
+
                 None
             }
             RunnableKind::Test { test_id, .. } => {
@@ -97,6 +98,7 @@ impl ProjectJsonTargetSpec {
                         return Some(runnable);
                     }
                 }
+
                 None
             }
             RunnableKind::TestMod { .. } => None,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28412 bytes
-Chloro size:   28175 bytes
+Chloro size:   28174 bytes
 Rustfmt size:  28412 bytes
 
 ✗ Outputs DIFFER
@@ -116,6 +116,13 @@ Rustfmt size:  28412 bytes
      #[test]
      fn mutation_in_dead_code() {
          // This one is interesting. Dead code is not represented at all in the MIR, so
+         // there would be no mutability error for locals in dead code. Rustc tries to
+         // not emit `unused_mut` in this case, but since it works without `mut`, and
+         // special casing it is not trivial, we emit it.
+-
+         // Update: now MIR based `unused-variable` is taking over `unused-mut` for the same reason.
+         check_diagnostics(
+             r#"
              &["remove-unnecessary-else"],
          );
      }

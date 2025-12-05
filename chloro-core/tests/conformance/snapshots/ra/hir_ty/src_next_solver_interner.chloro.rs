@@ -653,7 +653,9 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
     ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
         if self.is_struct() {
             let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
+
             let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
+
             Some(EarlyBinder::bind(constraint_ty))
         } else {
             None
@@ -1852,7 +1854,6 @@ impl<'db> Interner for DbInterner<'db> {
         }
 
         // Ensure none of the other fields mention the parameters used
-
         // in unsizing.
         for field in prefix_fields {
             for arg in field_types[field.0].instantiate_identity().walk() {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 41840 bytes
-Chloro size:   41825 bytes
+Chloro size:   41824 bytes
 Rustfmt size:  41840 bytes
 
 ✗ Outputs DIFFER
@@ -16,13 +16,6 @@ Rustfmt size:  41840 bytes
  use std::{iter, mem};
  
  use hir::{ChangeWithProcMacros, ProcMacrosBuilder, db::DefDatabase};
-         );
- 
-         // crate graph construction relies on these paths, record them so when one of them gets
-+
-         // deleted or created we trigger a reconstruction of the crate graph
-         self.crate_graph_file_dependencies.clear();
-         self.detached_files = self
              }
          }
  

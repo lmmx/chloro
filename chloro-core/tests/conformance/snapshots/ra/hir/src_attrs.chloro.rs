@@ -275,11 +275,8 @@ fn resolve_impl_trait_item<'db>(
     let mut result = None;
 
     // `ty.iterate_path_candidates()` require a scope, which is not available when resolving
-
     // attributes here. Use path resolution directly instead.
-
     //
-
     // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
     _ = method_resolution::iterate_path_candidates(
         &canonical,

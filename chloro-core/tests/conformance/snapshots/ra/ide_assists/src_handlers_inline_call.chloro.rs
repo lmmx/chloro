@@ -275,6 +275,7 @@ impl CallInfo {
             let path = segment.syntax().parent().and_then(ast::Path::cast)?;
             let path = path.syntax().parent().and_then(ast::PathExpr::cast)?;
             let call = path.syntax().parent().and_then(ast::CallExpr::cast)?;
+
             Some(CallInfo {
                 arguments: call.arg_list()?.args().collect(),
                 node: ast::CallableExpr::Call(call),
@@ -393,9 +394,7 @@ fn inline(
     }
 
     // We should place the following code after last usage of `usages_for_locals`
-
     // because `ted::replace` will change the offset in syntax tree, which makes
-
     // `FileReference` incorrect
     if let Some(imp) =
         sema.ancestors_with_macros(fn_body.syntax().clone()).find_map(ast::Impl::cast)

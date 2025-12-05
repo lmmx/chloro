@@ -717,16 +717,19 @@ pub(super) fn complete_name_ref(
     match kind {
         NameRefKind::Path(path_ctx) => {
             flyimport::import_on_the_fly_path(acc, ctx, path_ctx);
+
             match &path_ctx.kind {
                 PathKind::Expr { expr_ctx } => {
                     expr::complete_expr_path(acc, ctx, path_ctx, expr_ctx);
                     expr::complete_expr(acc, ctx);
+
                     dot::complete_undotted_self(acc, ctx, path_ctx, expr_ctx);
                     item_list::complete_item_list_in_expr(acc, ctx, path_ctx, expr_ctx);
                     snippet::complete_expr_snippet(acc, ctx, path_ctx, expr_ctx);
                 }
                 PathKind::Type { location } => {
                     r#type::complete_type_path(acc, ctx, path_ctx, location);
+
                     match location {
                         TypeLocation::TupleField => {
                             field::complete_field_list_tuple_variant(acc, ctx, path_ctx);
@@ -751,6 +754,7 @@ pub(super) fn complete_name_ref(
                 }
                 PathKind::Item { kind } => {
                     item_list::complete_item_list(acc, ctx, path_ctx, kind);
+
                     snippet::complete_item_snippet(acc, ctx, path_ctx, kind);
                     if let ItemListKind::TraitImpl(impl_) = kind {
                         item_list::trait_impl::complete_trait_impl_item_by_name(

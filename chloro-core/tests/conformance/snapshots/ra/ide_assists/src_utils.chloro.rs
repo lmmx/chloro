@@ -304,12 +304,14 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                     );
                 }
             };
+
             Some(make.expr_bin(bin.lhs()?, rev_kind, bin.rhs()?).into())
         }
         ast::Expr::MethodCallExpr(mce) => {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
             let arg_list = mce.arg_list()?;
+
             let method = match method.text().as_str() {
                 "is_some" => "is_none",
                 "is_none" => "is_some",
@@ -317,6 +319,7 @@ fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Ex
                 "is_err" => "is_ok",
                 _ => return None,
             };
+
             Some(make.expr_method_call(receiver, make.name_ref(method), arg_list).into())
         }
         ast::Expr::PrefixExpr(pe) if pe.op_kind()? == ast::UnaryOp::Not => match pe.expr()? {
@@ -363,6 +366,7 @@ fn invert_special_case_legacy(expr: &ast::Expr) -> Option<ast::Expr> {
             let receiver = mce.receiver()?;
             let method = mce.name_ref()?;
             let arg_list = mce.arg_list()?;
+
             let method = match method.text().as_str() {
                 "is_some" => "is_none",
                 "is_none" => "is_some",
@@ -628,7 +632,6 @@ fn generate_impl_text_inner(
     });
 
     // FIXME: use syntax::make & mutable AST apis instead
-
     // `trait_text` and `code` can't be opaque blobs of text
     let mut buf = String::with_capacity(code.len());
 
@@ -1156,6 +1159,7 @@ pub(crate) fn cover_let_chain(mut expr: ast::Expr, range: TextRange) -> Option<a
         } else {
             (Some(expr), None)
         };
+
         if let Some(chain_expr) = chain_expr
             && chain_expr.syntax().text_range().contains_range(range)
         {

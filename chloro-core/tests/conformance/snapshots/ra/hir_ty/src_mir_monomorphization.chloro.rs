@@ -49,6 +49,7 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
             TyKind::Alias(..) => {
                 // First instantiate params.
                 let ty = ty.try_super_fold_with(self)?;
+
                 let mut ocx = ObligationCtxt::new(&self.infcx);
                 let ty = ocx
                     .structurally_normalize_ty(&ObligationCause::dummy(), self.trait_env.env, ty)

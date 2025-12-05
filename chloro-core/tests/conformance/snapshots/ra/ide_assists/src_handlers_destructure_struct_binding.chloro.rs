@@ -165,7 +165,6 @@ fn get_names_in_scope(
     }
 
     // If available, find names visible to the last usage of the binding
-
     // else, find names visible to the binding itself
     let last_usage = last_usage(usages);
     let node = last_usage.as_ref().unwrap_or(ident_pat.syntax());
@@ -225,7 +224,6 @@ fn destructure_pat(
     };
 
     // If the binding is nested inside a record, we need to wrap the new
-
     // destructured pattern in a non-shorthand record field
     let destructured_pat = if data.need_record_field_name {
         make.record_pat_field(make.name_ref(&name.to_string()), new_pat).syntax().clone()
@@ -301,10 +299,11 @@ fn build_usage_edit(
 ) -> Option<(SyntaxNode, SyntaxNode)> {
     match usage.name.syntax().ancestors().find_map(ast::FieldExpr::cast) {
         Some(field_expr) => Some({
-            // If struct binding is a reference, we might need to deref field usages
             let field_name: SmolStr = field_expr.name_ref()?.to_string().into();
             let new_field_name = field_names.get(&field_name)?;
             let new_expr = ast::make::expr_path(ast::make::ext::ident_path(new_field_name));
+
+            // If struct binding is a reference, we might need to deref field usages
             if data.is_ref {
                 let (replace_expr, ref_data) = determine_ref_and_parens(ctx, &field_expr);
                 (

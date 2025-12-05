@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52289 bytes
-Chloro size:   52263 bytes
+Chloro size:   52264 bytes
 Rustfmt size:  52289 bytes
 
 ✗ Outputs DIFFER
@@ -15,16 +15,12 @@ Rustfmt size:  52289 bytes
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
  pub(crate) struct HirPlace<'db> {
      pub(crate) local: BindingId,
- 
-     fn mutate_path_pat(&mut self, path: &Path, id: PatId) {
-         if let Some(place) = self.path_place(path, id.into()) {
-+            // Remove the pattern span.
-             self.add_capture(
                  place,
                  CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
              );
 -            self.current_capture_span_stack.pop(); // Remove the pattern span.
 +            self.current_capture_span_stack.pop();
++            // Remove the pattern span.
          }
      }
  
@@ -38,10 +34,3 @@ Rustfmt size:  52289 bytes
                      let mut capture_mode = None;
                      for arm in arms.iter() {
                          self.walk_pat(&mut capture_mode, arm.pat);
-         for (closure, exprs) in deferred_closures.into_iter().rev() {
-             self.current_captures = vec![];
-             let kind = self.analyze_closure(closure);
--
-             for (derefed_callee, callee_ty, params, expr) in exprs {
-                 if let &Expr::Call { callee, .. } = &self.body[expr] {
-                     let mut adjustments =

@@ -713,9 +713,7 @@ impl<'db> CompletionContext<'db> {
         let original_file = sema.parse(editioned_file_id);
 
         // Insert a fake ident to get a valid parse tree. We will use this file
-
         // to determine context, though the original_file will be used for
-
         // actual completion.
         let file_with_fake_ident = {
             let (_, edition) = editioned_file_id.unpack(db);
@@ -724,12 +722,10 @@ impl<'db> CompletionContext<'db> {
         };
 
         // always pick the token to the immediate left of the cursor, as that is what we are actually
-
         // completing on
         let original_token = original_file.syntax().token_at_offset(offset).left_biased()?;
 
         // try to skip completions on path with invalid colons
-
         // this approach works in normal path and inside token tree
         if original_token.kind() == T![:] {
             // return if no prev token before colon

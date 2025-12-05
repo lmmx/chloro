@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   81813 bytes
+Chloro size:   81814 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -211,13 +211,10 @@ Rustfmt size:  84055 bytes
 -                .skip_binder()
 -                .into_iter()
 -                .last()?;
--
 +            let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
+ 
              let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
--
-             Some(EarlyBinder::bind(constraint_ty))
-         } else {
-             None
+ 
      fn flags(&self) -> rustc_type_ir::TypeFlags {
          match self.inner() {
              PatternKind::Range { start, end } => {
@@ -552,13 +549,6 @@ Rustfmt size:  84055 bytes
          )
      }
  
-         }
- 
-         // Ensure none of the other fields mention the parameters used
-+
-         // in unsizing.
-         for field in prefix_fields {
-             for arg in field_types[field.0].instantiate_identity().walk() {
          }
  
          let mut map = Default::default();

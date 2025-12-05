@@ -89,13 +89,12 @@ impl Visibility {
         mut from_module: LocalModuleId,
     ) -> bool {
         debug_assert_eq!(to_module.krate, def_map.krate());
+
         // `to_module` might be the root module of a block expression. Those have the same
         // visibility as the containing module (even though no items are directly nameable from
         // there, getting this right is important for method resolution).
         // In that case, we adjust the visibility of `to_module` to point to the containing module.
-
         // Additional complication: `to_module` might be in `from_module`'s `DefMap`, which we're
-
         // currently computing, so we must not call the `def_map` query for it.
         let def_map_block = def_map.block_id();
         loop {
@@ -175,25 +174,31 @@ impl Visibility {
                         },
                     ));
                 }
+
                 if mod_a.krate() != def_map.krate() || mod_b.krate() != def_map.krate() {
                     return None;
                 }
+
                 let def_block = def_map.block_id();
                 if mod_a.containing_block() != def_block || mod_b.containing_block() != def_block {
                     return None;
                 }
+
                 let mut a_ancestors =
                     iter::successors(Some(mod_a.local_id), |&m| def_map[m].parent);
+
                 if a_ancestors.any(|m| m == mod_b.local_id) {
                     // B is above A
                     return Some(Visibility::Module(mod_b, expl_b));
                 }
+
                 let mut b_ancestors =
                     iter::successors(Some(mod_b.local_id), |&m| def_map[m].parent);
                 if b_ancestors.any(|m| m == mod_a.local_id) {
                     // A is above B
                     return Some(Visibility::Module(mod_a, expl_a));
                 }
+
                 None
             }
         }
@@ -236,25 +241,31 @@ impl Visibility {
                         },
                     ));
                 }
+
                 if mod_a.krate() != def_map.krate() || mod_b.krate() != def_map.krate() {
                     return None;
                 }
+
                 let def_block = def_map.block_id();
                 if mod_a.containing_block() != def_block || mod_b.containing_block() != def_block {
                     return None;
                 }
+
                 let mut a_ancestors =
                     iter::successors(Some(mod_a.local_id), |&m| def_map[m].parent);
+
                 if a_ancestors.any(|m| m == mod_b.local_id) {
                     // B is above A
                     return Some(Visibility::Module(mod_a, expl_a));
                 }
+
                 let mut b_ancestors =
                     iter::successors(Some(mod_b.local_id), |&m| def_map[m].parent);
                 if b_ancestors.any(|m| m == mod_a.local_id) {
                     // A is above B
                     return Some(Visibility::Module(mod_b, expl_b));
                 }
+
                 None
             }
         }

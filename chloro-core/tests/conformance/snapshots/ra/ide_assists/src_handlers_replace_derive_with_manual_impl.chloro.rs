@@ -256,17 +256,18 @@ fn update_attribute(
 
     if has_more_derives {
         // Make the paths into flat lists of tokens in a vec
-        // ...which are interspersed with ", "
-        // ...wrap them into the appropriate `NodeOrToken` variant
-        // ...and make them into a flat list of tokens
         let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
             node.descendants_with_tokens()
                 .filter_map(|element| element.into_token())
                 .collect::<Vec<_>>()
         });
+        // ...which are interspersed with ", "
         let tt = Itertools::intersperse(tt, vec![make::token(T![,]), make::tokens::single_space()]);
+        // ...wrap them into the appropriate `NodeOrToken` variant
         let tt = tt.flatten().map(syntax::NodeOrToken::Token);
+        // ...and make them into a flat list of tokens
         let tt = tt.collect::<Vec<_>>();
+
         let new_tree = make::token_tree(T!['('], tt).clone_for_update();
         editor.replace(old_tree.syntax(), new_tree.syntax());
     } else {
@@ -276,6 +277,7 @@ fn update_attribute(
         {
             editor.delete(line_break)
         }
+
         editor.delete(attr.syntax())
     }
 }

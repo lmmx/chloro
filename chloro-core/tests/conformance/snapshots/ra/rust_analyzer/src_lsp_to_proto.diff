@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111458 bytes
+Chloro size:   111466 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -244,19 +244,6 @@ Rustfmt size:  113494 bytes
      let mut builder = semantic_tokens::SemanticTokensBuilder::new(id);
  
      for highlight_range in highlights {
-             .chars()
-             .take_while(|it| *it != '\n')
-             .any(|it| !it.is_whitespace());
--
-         let end_line = if has_more_text_on_end_line {
-             range.end.line.saturating_sub(1)
-         } else {
-             range.end.line
-         };
--
-         lsp_types::FoldingRange {
-             start_line: range.start.line,
-             start_character: None,
      let url = lsp_types::Url::from_file_path(path).unwrap();
      match path.components().next() {
          Some(Utf8Component::Prefix(prefix))
@@ -268,15 +255,6 @@ Rustfmt size:  113494 bytes
          {
              // Need to lowercase driver letter
          }
-     };
- 
-     // Note: lowercasing the `path` itself doesn't help, the `Url::parse`
-+
-     // machinery *also* canonicalizes the drive letter. So, just massage the
-+
-     // string in place.
-     let mut url: String = url.into();
-     url[driver_letter_range].make_ascii_lowercase();
  
      let target_uri = url(snap, target.file_id);
      let target_range = range(&line_index, target.full_range);
@@ -543,47 +521,6 @@ Rustfmt size:  113494 bytes
          kind: Some(code_action_kind(assist.id.1)),
          edit: None,
          is_preferred: None,
-     match target_spec {
-         Some(TargetSpec::Cargo(spec)) => {
-             let workspace_root = spec.workspace_root.clone();
--
-             let target = spec.target.clone();
--
-             let (cargo_args, executable_args) = CargoTargetSpec::runnable_args(
-                 snap,
-                 Some(spec.clone()),
-                 &runnable.kind,
-                 &runnable.cfg,
-             );
--
-             let cwd = match runnable.kind {
-                 ide::RunnableKind::Bin => workspace_root.clone(),
-                 _ => spec.cargo_toml.parent().to_owned(),
-             };
--
-             let label = runnable.label(Some(&target));
-             let location = location_link(snap, None, runnable.nav)?;
--
-             Ok(Some(lsp_ext::Runnable {
-                 label,
-                 location: Some(location),
-         Some(TargetSpec::ProjectJson(spec)) => {
-             let label = runnable.label(Some(&spec.label));
-             let location = location_link(snap, None, runnable.nav)?;
--
-             match spec.runnable_args(&runnable.kind) {
-                 Some(json_shell_runnable_args) => {
-                     let runnable_args = ShellRunnableArgs {
-             };
-             let (cargo_args, executable_args) =
-                 CargoTargetSpec::runnable_args(snap, None, &runnable.kind, &runnable.cfg);
--
-             let label = runnable.label(None);
-             let location = location_link(snap, None, runnable.nav)?;
--
-             Ok(Some(lsp_ext::Runnable {
-                 label,
-                 location: Some(location),
                      .filter_map(|target| {
                          location(
                              snap,

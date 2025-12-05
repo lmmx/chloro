@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35928 bytes
-Chloro size:   35980 bytes
+Chloro size:   35981 bytes
 Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
@@ -63,13 +63,6 @@ Rustfmt size:  36357 bytes
              } else if let Some(rename) = single_subtree.rename() {
                  ted::insert_raw(
                      Position::last_child_of(use_tree.syntax()),
-             _ => break res,
-         }
-         res = Some((lhs_curr.clone(), rhs_curr.clone()));
--
-         match lhs_curr.parent_path().zip(rhs_curr.parent_path()) {
-             Some((lhs, rhs)) => {
-                 lhs_curr = lhs;
  }
  
  fn remove_subtree_if_only_self(use_tree: &ast::UseTree) {

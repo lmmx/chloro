@@ -97,7 +97,6 @@ impl<'a> SymbolCollector<'a> {
         tracing::info!(?module, "SymbolCollector::collect");
 
         // The initial work is the root module we're collecting, additional work will
-
         // be populated as we traverse the module's definitions.
         self.work.push(SymbolCollectorWork { module_id: module.into(), parent: None });
 
