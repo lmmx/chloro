@@ -53,5 +53,9 @@ fn format_short_function_single_line() {
 fn format_very_short_function_single_line() {
     let input = r#"fn foo() { bar(); }"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"fn foo() { bar(); }"#);
+    assert_snapshot!(output, @r"
+    fn foo() {
+        bar();
+    }
+    ");
 }
