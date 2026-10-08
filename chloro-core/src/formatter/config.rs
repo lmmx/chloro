@@ -119,6 +119,17 @@ pub enum Edition {
     Edition2024,
 }
 
+impl From<Edition> for StyleEdition {
+    fn from(edition: Edition) -> Self {
+        match edition {
+            Edition::Edition2015 => StyleEdition::Edition2015,
+            Edition::Edition2018 => StyleEdition::Edition2018,
+            Edition::Edition2021 => StyleEdition::Edition2021,
+            Edition::Edition2024 => StyleEdition::Edition2024,
+        }
+    }
+}
+
 /// Formatting options, named and defaulted as rustfmt's stable options.
 ///
 /// The defaults reproduce `rustfmt --edition 2024` with no `rustfmt.toml`.
@@ -167,8 +178,9 @@ pub struct Config {
     pub match_block_trailing_comma: bool,
     /// The edition of the parser.
     pub edition: Edition,
-    /// The edition of the Style Guide.
-    pub style_edition: StyleEdition,
+    /// The edition of the Style Guide. `None` follows `edition`, as in rustfmt, where an
+    /// unset `style_edition` is derived from `edition`.
+    pub style_edition: Option<StyleEdition>,
     /// Merge multiple `#[derive(...)]` into a single one.
     pub merge_derives: bool,
     /// Replace uses of the `try!` macro by the `?` shorthand.
@@ -205,7 +217,7 @@ impl Default for Config {
             fn_params_layout: Density::Tall,
             match_block_trailing_comma: false,
             edition: Edition::Edition2024,
-            style_edition: StyleEdition::Edition2024,
+            style_edition: None,
             merge_derives: true,
             use_try_shorthand: false,
             use_field_init_shorthand: false,
@@ -390,7 +402,7 @@ impl Config {
                 if key == "edition" {
                     self.edition = edition;
                 } else {
-                    self.style_edition = style;
+                    self.style_edition = Some(style);
                 }
             }
             "merge_derives" => self.merge_derives = bool_()?,
@@ -558,7 +570,11 @@ impl Settings {
         self.config.edition
     }
     pub(crate) fn style_edition(&self) -> StyleEdition {
-        self.config.style_edition
+        // rustfmt's `Config::default_for_possible_style_edition`: an explicit
+        // `style_edition` wins, otherwise the Style Guide edition is the language edition.
+        self.config
+            .style_edition
+            .unwrap_or(self.config.edition.into())
     }
     pub(crate) fn merge_derives(&self) -> bool {
         self.config.merge_derives
@@ -717,5 +733,21 @@ mod tests {
         assert!(config.set("wrap_comments", "true").is_err());
         assert!(config.set("wrap_comments", "false").is_ok());
         assert!(config.set("no_such_option", "1").is_err());
+    }
+
+    #[test]
+    fn style_edition_follows_edition_unless_set() {
+        let mut config = Config::default();
+        config.set("edition", "2021").unwrap();
+        assert_eq!(
+            Settings::new(&config).style_edition(),
+            StyleEdition::Edition2021
+        );
+        config.set("style_edition", "2024").unwrap();
+        config.set("edition", "2018").unwrap();
+        assert_eq!(
+            Settings::new(&config).style_edition(),
+            StyleEdition::Edition2024
+        );
     }
 }
