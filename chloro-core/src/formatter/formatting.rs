@@ -1,6 +1,7 @@
 //! Formatting a whole source text (rustfmt's `formatting.rs` and the snippet helpers of
 //! its `lib.rs`).
 
+use std::borrow::Cow;
 use std::rc::Rc;
 
 use ra_ap_parser::{LexedStr, StrStep, TopEntryPoint};
@@ -134,6 +135,18 @@ fn truncate_trailing_newlines(text: &mut String) {
             }
         }
         text.truncate(cut);
+    }
+}
+
+/// The source text as rustc's `SourceMap` stores it, which is the text rustfmt formats:
+/// without a leading byte order mark, and with `\r\n` replaced by `\n` (a lone `\r` is
+/// kept). rustc's `normalize_src`.
+pub(crate) fn normalize_src(source: &str) -> Cow<'_, str> {
+    let source = source.strip_prefix('\u{feff}').unwrap_or(source);
+    if source.contains("\r\n") {
+        Cow::Owned(source.replace("\r\n", "\n"))
+    } else {
+        Cow::Borrowed(source)
     }
 }
 
@@ -347,6 +360,25 @@ mod tests {
         let mut s = String::from("a\nb\n");
         apply_newline_style(NewlineStyle::Auto, &mut s, "x\ny\r\n");
         assert_eq!(s, "a\nb\n");
+    }
+
+    #[test]
+    fn source_is_normalised_as_rustc_loads_it() {
+        assert_eq!(normalize_src("\u{feff}a\r\nb\rc\n"), "a\nb\rc\n");
+        assert!(matches!(normalize_src("a\nb\n"), Cow::Borrowed(_)));
+    }
+
+    #[test]
+    fn crlf_source_is_formatted_with_unix_newlines_by_default() {
+        let source = "\u{feff}fn main() {\r\n    let x=\"a\r\nb\";\r\n}\r\n";
+        let expected = "fn main() {\n    let x = \"a\nb\";\n}\n";
+        assert_eq!(crate::formatter::format_source(source), expected);
+        let mut config = crate::Config::default();
+        config.set("newline_style", "Windows").unwrap();
+        assert_eq!(
+            crate::formatter::format_source_with_config(source, &config),
+            expected.replace('\n', "\r\n")
+        );
     }
 
     #[test]

@@ -62,16 +62,23 @@ pub fn format_source(source: &str) -> String {
 ///
 /// Source that does not parse is returned unchanged, as is a file with an inner
 /// `#![rustfmt::skip]` attribute or a configuration with `disable_all_formatting`.
+///
+/// As in rustfmt, the formatted text never starts with a byte order mark, and `\r\n` line
+/// endings in the source (including inside literals) read as `\n`; the output's line
+/// endings are set by `newline_style`.
 pub fn format_source_with_config(source: &str, config: &Config) -> String {
     let settings = Settings::new(config);
     if settings.disable_all_formatting() {
         return source.to_owned();
     }
-    match formatting::format_text(source, &settings, false) {
-        Some(formatted) if formatted.echoed => formatted.text,
+    let normalized = formatting::normalize_src(source);
+    match formatting::format_text(&normalized, &settings, false) {
+        Some(formatted) if formatted.echoed => source.to_owned(),
         Some(formatted) => {
             let mut text = formatted.text;
-            formatting::apply_newline_style(settings.newline_style(), &mut text, source);
+            // rustfmt detects the `Auto` style on the normalised source, in which no
+            // `\r\n` is left: `Auto` produces `\n` line endings.
+            formatting::apply_newline_style(settings.newline_style(), &mut text, &normalized);
             text
         }
         None => source.to_owned(),
