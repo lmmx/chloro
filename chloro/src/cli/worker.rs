@@ -1,6 +1,6 @@
 use super::args::Args;
 use crate::vlog;
-use chloro_core::format_source;
+use chloro_core::format_source_with_config;
 use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
@@ -31,8 +31,12 @@ pub fn format_file(file_path: &Path, args: &Args) -> ProcessResult {
         }
     };
 
-    // Format it
-    let formatted = format_source(&original);
+    // Format it. `--config` was validated before any file was processed.
+    let config = match args.formatting_config() {
+        Ok(config) => config,
+        Err(e) => return ProcessResult::Error(format!("Invalid --config: {e}")),
+    };
+    let formatted = format_source_with_config(&original, &config);
 
     let changed = original != formatted;
     let original_len = original.len();

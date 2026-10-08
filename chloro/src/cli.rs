@@ -41,6 +41,11 @@ pub mod cli {
             std::process::exit(0);
         }
 
+        if let Err(e) = args.formatting_config() {
+            eprintln!("Error: invalid --config: {e}");
+            std::process::exit(1);
+        }
+
         if args.verbose {
             eprintln!("Sources: {}", args.sources.join(", "));
             eprintln!(
