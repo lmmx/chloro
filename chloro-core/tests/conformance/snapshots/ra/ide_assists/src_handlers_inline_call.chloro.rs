@@ -21,7 +21,7 @@ use itertools::{Itertools, izip};
 use syntax::{
     AstNode, NodeOrToken, SyntaxKind,
     ast::{
-        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit_in_place::Indent, edit::IndentLevel,
+        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
     },
     ted,
 };
@@ -128,8 +128,9 @@ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                 let replaced = call_infos
                     .into_iter()
                     .map(|(call_info, mut_node)| {
-                        let replacement =
-                            inline(&ctx.sema, def_file, function, &func_body, &params, &call_info);
+                        let replacement = inline(
+                            &ctx.sema, def_file, function, &func_body, &params, &call_info,
+                        );
                         ted::replace(mut_node, replacement.syntax());
                     })
                     .count();
@@ -164,10 +165,12 @@ pub(super) fn split_refs_and_uses<T: ast::AstNode>(
             FileReferenceNode::NameRef(name_ref) => Some(name_ref),
             _ => None,
         })
-        .filter_map(|name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
-            Some(use_tree) => builder.make_mut(use_tree).path().map(Either::Right),
-            None => map_ref(name_ref).map(Either::Left),
-        })
+        .filter_map(
+            |name_ref| match name_ref.syntax().ancestors().find_map(ast::UseTree::cast) {
+                Some(use_tree) => builder.make_mut(use_tree).path().map(Either::Right),
+                None => map_ref(name_ref).map(Either::Left),
+            },
+        )
         .partition_map(|either| either)
 }
 
@@ -196,7 +199,10 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     let name_ref: ast::NameRef = ctx.find_node_at_offset()?;
     let call_info = CallInfo::from_name_ref(
         name_ref.clone(),
-        ctx.sema.file_to_module_def(ctx.vfs_file_id())?.krate().into(),
+        ctx.sema
+            .file_to_module_def(ctx.vfs_file_id())?
+            .krate()
+            .into(),
     )?;
     let (function, label) = match &call_info.node {
         ast::CallableExpr::Call(call) => {
@@ -210,9 +216,10 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             };
             (function, format!("Inline `{path}`"))
         }
-        ast::CallableExpr::MethodCall(call) => {
-            (ctx.sema.resolve_method_call(call)?, format!("Inline `{name_ref}`"))
-        }
+        ast::CallableExpr::MethodCall(call) => (
+            ctx.sema.resolve_method_call(call)?,
+            format!("Inline `{name_ref}`"),
+        ),
     };
 
     let fn_source = ctx.sema.source(function)?;
@@ -239,15 +246,15 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
         label,
         syntax.text_range(),
         |builder| {
-        let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
-        builder.replace_ast(
-            match call_info.node {
-                ast::CallableExpr::Call(it) => ast::Expr::CallExpr(it),
-                ast::CallableExpr::MethodCall(it) => ast::Expr::MethodCallExpr(it),
-            },
-            replacement,
-        );
-    },
+            let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
+            builder.replace_ast(
+                match call_info.node {
+                    ast::CallableExpr::Call(it) => ast::Expr::CallExpr(it),
+                    ast::CallableExpr::MethodCall(it) => ast::Expr::MethodCallExpr(it),
+                },
+                replacement,
+            );
+        },
     )
 }
 
@@ -322,7 +329,12 @@ fn inline(
     function: hir::Function,
     fn_body: &ast::BlockExpr,
     params: &[(ast::Pat, Option<ast::Type>, hir::Param<'_>)],
-    CallInfo { node, arguments, generic_arg_list, krate }: &CallInfo,
+    CallInfo {
+        node,
+        arguments,
+        generic_arg_list,
+        krate,
+    }: &CallInfo,
 ) -> ast::Expr {
     let file_id = sema.hir_file_for(fn_body.syntax());
     let mut body = if let Some(macro_file) = file_id.macro_file() {
@@ -396,8 +408,9 @@ fn inline(
     // We should place the following code after last usage of `usages_for_locals`
     // because `ted::replace` will change the offset in syntax tree, which makes
     // `FileReference` incorrect
-    if let Some(imp) =
-        sema.ancestors_with_macros(fn_body.syntax().clone()).find_map(ast::Impl::cast)
+    if let Some(imp) = sema
+        .ancestors_with_macros(fn_body.syntax().clone())
+        .find_map(ast::Impl::cast)
         && !node.syntax().ancestors().any(|anc| &anc == imp.syntax())
         && let Some(t) = imp.self_ty()
     {
@@ -452,7 +465,10 @@ fn inline(
                 }
             });
 
-            let ty = sema.type_of_expr(expr).filter(TypeInfo::has_adjustment).and(param_ty);
+            let ty = sema
+                .type_of_expr(expr)
+                .filter(TypeInfo::has_adjustment)
+                .and(param_ty);
 
             let is_self = param.name(sema.db).is_some_and(|name| name == sym::self_);
 
@@ -485,11 +501,16 @@ fn inline(
                         }
                     }
                 };
-                let_stmts
-                    .push(make::let_stmt(this_pat.into(), ty, Some(expr)).clone_for_update().into())
+                let_stmts.push(
+                    make::let_stmt(this_pat.into(), ty, Some(expr))
+                        .clone_for_update()
+                        .into(),
+                )
             } else {
                 let_stmts.push(
-                    make::let_stmt(pat.clone(), ty, Some(expr.clone())).clone_for_update().into(),
+                    make::let_stmt(pat.clone(), ty, Some(expr.clone()))
+                        .clone_for_update()
+                        .into(),
                 );
             }
         };
@@ -561,9 +582,14 @@ fn inline(
             body = make::block_expr(let_stmts, Some(body.into())).clone_for_update();
         }
     } else if let Some(stmt_list) = body.stmt_list() {
-        let position = stmt_list.l_curly_token().expect("L_CURLY for StatementList is missing.");
+        let position = stmt_list
+            .l_curly_token()
+            .expect("L_CURLY for StatementList is missing.");
         let_stmts.into_iter().rev().for_each(|let_stmt| {
-            ted::insert(ted::Position::after(position.clone()), let_stmt.syntax().clone());
+            ted::insert(
+                ted::Position::after(position.clone()),
+                let_stmt.syntax().clone(),
+            );
         });
     }
 
@@ -583,9 +609,12 @@ fn inline(
             .syntax()
             .parent()
             .and_then(ast::BinExpr::cast)
-            .and_then(|bin_expr| bin_expr.lhs()) {
+            .and_then(|bin_expr| bin_expr.lhs())
+        {
             Some(lhs) if lhs.syntax() == node.syntax() => {
-                make::expr_paren(ast::Expr::BlockExpr(body)).clone_for_update().into()
+                make::expr_paren(ast::Expr::BlockExpr(body))
+                    .clone_for_update()
+                    .into()
             }
             _ => ast::Expr::BlockExpr(body),
         },
@@ -601,7 +630,9 @@ fn path_expr_as_record_field(usage: &PathExpr) -> Option<ast::RecordExprField> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn no_args_or_return_value_gets_inlined_without_block() {
         check_assist(
@@ -620,6 +651,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_when_incorrect_number_of_parameters_are_provided() {
         cov_mark::check!(inline_call_incorrect_number_of_arguments);
@@ -631,6 +663,7 @@ fn main() { let x = add$0(42); }
 "#,
         );
     }
+
     #[test]
     fn args_with_side_effects() {
         check_assist(
@@ -656,6 +689,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn function_with_multiple_statements() {
         check_assist(
@@ -689,6 +723,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn function_with_self_param() {
         check_assist(
@@ -724,6 +759,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn method_by_val() {
         check_assist(
@@ -759,6 +795,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn method_by_ref() {
         check_assist(
@@ -794,6 +831,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn generic_method_by_ref() {
         check_assist(
@@ -829,6 +867,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn method_by_ref_mut() {
         check_assist(
@@ -866,6 +905,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn function_multi_use_expr_in_param() {
         check_assist(
@@ -893,6 +933,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn function_use_local_in_param() {
         cov_mark::check!(inline_call_inline_locals);
@@ -918,6 +959,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn method_in_impl() {
         check_assist(
@@ -952,6 +994,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn wraps_closure_in_paren() {
         cov_mark::check!(inline_call_inline_closure);
@@ -1002,6 +1045,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_single_literal_expr() {
         cov_mark::check!(inline_call_inline_literal);
@@ -1027,6 +1071,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_emits_type_for_coercion() {
         check_assist(
@@ -1055,6 +1100,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_substitutes_generics() {
         check_assist(
@@ -1083,6 +1129,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_callers() {
         check_assist(
@@ -1114,6 +1161,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn inline_callers_across_files() {
         check_assist(
@@ -1152,6 +1200,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn inline_callers_across_files_with_def_file() {
         check_assist(
@@ -1192,6 +1241,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn inline_callers_recursive() {
         cov_mark::check!(inline_into_callers_recursive);
@@ -1204,6 +1254,7 @@ fn foo$0() {
 "#,
         );
     }
+
     #[test]
     fn inline_call_recursive() {
         cov_mark::check!(inline_call_recursive);
@@ -1216,6 +1267,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn inline_call_field_shorthand() {
         cov_mark::check!(inline_call_inline_direct_field);
@@ -1270,6 +1322,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_callers_wrapped_in_parentheses() {
         check_assist(
@@ -1297,6 +1350,7 @@ fn bar() -> u32 {
 "#,
         )
     }
+
     #[test]
     fn inline_call_wrapped_in_parentheses() {
         check_assist(
@@ -1324,6 +1378,7 @@ fn bar() -> u32 {
 "#,
         )
     }
+
     #[test]
     fn inline_call_defined_in_macro() {
         cov_mark::check!(inline_call_defined_in_macro);
@@ -1358,6 +1413,7 @@ fn bar() -> u32 {
 "#,
         )
     }
+
     #[test]
     fn inline_call_with_self_type() {
         check_assist(
@@ -1382,6 +1438,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn inline_call_with_self_type_but_within_same_impl() {
         check_assist(
@@ -1406,6 +1463,7 @@ impl A {
 "#,
         )
     }
+
     #[test]
     fn local_variable_shadowing_callers_argument() {
         check_assist(
@@ -1438,6 +1496,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn async_fn_single_expression() {
         cov_mark::check!(inline_call_async_fn);
@@ -1467,6 +1526,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn async_fn_multiple_statements() {
         cov_mark::check!(inline_call_async_fn);
@@ -1499,6 +1559,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn async_fn_with_let_statements() {
         cov_mark::check!(inline_call_async_fn);
@@ -1538,6 +1599,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_call_closure_body() {
         check_assist(
@@ -1562,6 +1624,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_call_with_multiple_self_types_eq() {
         check_assist(
@@ -1605,6 +1668,7 @@ fn a() -> bool {
 "#,
         )
     }
+
     #[test]
     fn inline_call_with_self_type_in_macros() {
         check_assist(
@@ -1662,6 +1726,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn method_by_reborrow() {
         check_assist(
@@ -1699,6 +1764,7 @@ pub fn main() {
 "#,
         )
     }
+
     #[test]
     fn method_by_mut() {
         check_assist(
@@ -1736,6 +1802,7 @@ pub fn main() {
 "#,
         )
     }
+
     #[test]
     fn inline_call_with_reference_in_macros() {
         check_assist(
@@ -1778,6 +1845,7 @@ fn _hash2(self_: &u64, state: &mut u64) {
 "#,
         )
     }
+
     #[test]
     fn inline_into_callers_in_macros_not_applicable() {
         check_assist_not_applicable(

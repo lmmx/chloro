@@ -23,6 +23,9 @@ impl<'db> InferCtxt<'db> {
         opaque_type_key: OpaqueTypeKey<'db>,
         hidden_ty: OpaqueHiddenType<'db>,
     ) -> Option<Ty<'db>> {
-        self.inner.borrow_mut().opaque_types().register(opaque_type_key, hidden_ty)
+        self.inner
+            .borrow_mut()
+            .opaque_types()
+            .register(opaque_type_key, hidden_ty)
     }
 }

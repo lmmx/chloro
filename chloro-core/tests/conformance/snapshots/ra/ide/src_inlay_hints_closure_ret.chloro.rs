@@ -1,7 +1,6 @@
 //! Implementation of "closure return type" inlay hints.
 //!
 //! Tests live in [`bind_pat`][super::bind_pat] module.
-
 use hir::DisplayTarget;
 use ide_db::{famous_defs::FamousDefs, text_edit::TextEditBuilder};
 use syntax::ast::{self, AstNode};
@@ -22,7 +21,9 @@ pub(super) fn hints(
         return None;
     }
 
-    let ret_type = closure.ret_type().map(|rt| (rt.thin_arrow_token(), rt.ty().is_some()));
+    let ret_type = closure
+        .ret_type()
+        .map(|rt| (rt.thin_arrow_token(), rt.ty().is_some()));
     let arrow = match ret_type {
         Some((_, true)) => return None,
         Some((arrow, _)) => arrow,
@@ -38,7 +39,9 @@ pub(super) fn hints(
 
     let resolve_parent = Some(closure.syntax().text_range());
     let descended_closure = sema.descend_node_into_attributes(closure.clone()).pop()?;
-    let ty = sema.type_of_expr(&ast::Expr::ClosureExpr(descended_closure.clone()))?.adjusted();
+    let ty = sema
+        .type_of_expr(&ast::Expr::ClosureExpr(descended_closure.clone()))?
+        .adjusted();
     let callable = ty.as_callable(sema.db)?;
     let ty = callable.return_type();
     if arrow.is_none() && ty.is_unit() {
@@ -51,8 +54,10 @@ pub(super) fn hints(
         label.prepend_str(" -> ");
     }
 
-    let offset_to_insert_ty =
-        arrow.as_ref().map_or_else(|| param_list.syntax().text_range(), |t| t.text_range()).end();
+    let offset_to_insert_ty = arrow
+        .as_ref()
+        .map_or_else(|| param_list.syntax().text_range(), |t| t.text_range())
+        .end();
 
     // Insert braces if necessary
     let insert_braces = |builder: &mut TextEditBuilder| {
@@ -88,7 +93,9 @@ pub(super) fn hints(
 #[cfg(test)]
 mod tests {
     use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
+
     use super::*;
+
     #[test]
     fn return_type_hints_for_closure_without_block() {
         check_with_config(

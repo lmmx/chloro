@@ -30,19 +30,16 @@ use crate::{
             snapshot::CombinedSnapshot,
             traits::{Obligation, ObligationCause, PredicateObligation},
         },
-        inspect::{InspectConfig, InspectGoal, ProofTreeVisitor}, obligation_ctxt::ObligationCtxt,
+        inspect::{InspectConfig, InspectGoal, ProofTreeVisitor},
+        obligation_ctxt::ObligationCtxt,
     },
     traits::{
-        FnTrait, NextTraitSolveResult, next_trait_solve_canonical_in_ctxt,
-        next_trait_solve_in_ctxt,
+        FnTrait, NextTraitSolveResult, next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt,
     },
 };
 
 impl<'db> InferenceContext<'_, 'db> {
-    pub(super) fn canonicalize<T>(
-        &mut self,
-        t: T,
-    ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
+    pub(super) fn canonicalize<T>(&mut self, t: T) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
     where
         T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
     {
@@ -132,7 +129,9 @@ pub fn could_unify_deeply<'db>(
     env: Arc<TraitEnvironment<'db>>,
     tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>,
 ) -> bool {
-    could_unify_impl(db, env, tys, |ctxt| ctxt.evaluate_obligations_error_on_ambiguity())
+    could_unify_impl(db, env, tys, |ctxt| {
+        ctxt.evaluate_obligations_error_on_ambiguity()
+    })
 }
 
 fn could_unify_impl<'db>(
@@ -198,19 +197,22 @@ impl<'db> InferenceTable<'db> {
     }
 
     pub(crate) fn type_is_copy_modulo_regions(&self, ty: Ty<'db>) -> bool {
-        self.infer_ctxt.type_is_copy_modulo_regions(self.trait_env.env, ty)
+        self.infer_ctxt
+            .type_is_copy_modulo_regions(self.trait_env.env, ty)
     }
 
     pub(crate) fn type_var_is_sized(&self, self_ty: TyVid) -> bool {
         let Some(sized_did) = LangItem::Sized.resolve_trait(self.db, self.trait_env.krate) else {
             return true;
         };
-        self.obligations_for_self_ty(self_ty).into_iter().any(|obligation| {
-            match obligation.predicate.kind().skip_binder() {
-                PredicateKind::Clause(ClauseKind::Trait(data)) => data.def_id().0 == sized_did,
-                _ => false,
-            }
-        })
+        self.obligations_for_self_ty(self_ty)
+            .into_iter()
+            .any(
+                |obligation| match obligation.predicate.kind().skip_binder() {
+                    PredicateKind::Clause(ClauseKind::Trait(data)) => data.def_id().0 == sized_did,
+                    _ => false,
+                },
+            )
     }
 
     pub(super) fn obligations_for_self_ty(
@@ -232,7 +234,9 @@ impl<'db> InferenceTable<'db> {
         }
 
         obligations_for_self_ty.retain_mut(|obligation| {
-            obligation.predicate = self.infer_ctxt.resolve_vars_if_possible(obligation.predicate);
+            obligation.predicate = self
+                .infer_ctxt
+                .resolve_vars_if_possible(obligation.predicate);
             !obligation.predicate.has_placeholders()
         });
         obligations_for_self_ty
@@ -278,10 +282,7 @@ impl<'db> InferenceTable<'db> {
         self.diverging_type_vars.insert(ty);
     }
 
-    pub(crate) fn canonicalize<T>(
-        &mut self,
-        t: T,
-    ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
+    pub(crate) fn canonicalize<T>(&mut self, t: T) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
     where
         T: TypeFoldable<DbInterner<'db>>,
     {
@@ -450,18 +451,25 @@ impl<'db> InferenceTable<'db> {
         let mut goals = vec![];
 
         // FIXME(next-solver): Handle `goals`.
-        value.fold_with(&mut resolve_completely::Resolver::new(self, true, &mut goals))
+
+        value.fold_with(&mut resolve_completely::Resolver::new(
+            self, true, &mut goals,
+        ))
     }
 
     /// Unify two relatable values (e.g. `Ty`) and register new trait goals that arise from that.
     pub(crate) fn unify<T: ToTrace<'db>>(&mut self, ty1: T, ty2: T) -> bool {
-        self.try_unify(ty1, ty2).map(|infer_ok| self.register_infer_ok(infer_ok)).is_ok()
+        self.try_unify(ty1, ty2)
+            .map(|infer_ok| self.register_infer_ok(infer_ok))
+            .is_ok()
     }
 
     /// Unify two relatable values (e.g. `Ty`) and return new trait goals arising from it, so the
     /// caller needs to deal with them.
     pub(crate) fn try_unify<T: ToTrace<'db>>(&mut self, t1: T, t2: T) -> InferResult<'db, ()> {
-        self.infer_ctxt.at(&ObligationCause::new(), self.trait_env.env).eq(t1, t2)
+        self.infer_ctxt
+            .at(&ObligationCause::new(), self.trait_env.env)
+            .eq(t1, t2)
     }
 
     pub(crate) fn shallow_resolve(&self, ty: Ty<'db>) -> Ty<'db> {
@@ -531,7 +539,10 @@ impl<'db> InferenceTable<'db> {
     pub(crate) fn snapshot(&mut self) -> InferenceTableSnapshot<'db> {
         let ctxt_snapshot = self.infer_ctxt.start_snapshot();
         let obligations = self.fulfillment_cx.clone();
-        InferenceTableSnapshot { ctxt_snapshot, obligations }
+        InferenceTableSnapshot {
+            ctxt_snapshot,
+            obligations,
+        }
     }
 
     #[tracing::instrument(skip_all)]
@@ -571,14 +582,20 @@ impl<'db> InferenceTable<'db> {
     /// choice (during e.g. method resolution or deref).
     #[tracing::instrument(level = "debug", skip(self))]
     pub(crate) fn try_obligation(&mut self, predicate: Predicate<'db>) -> NextTraitSolveResult {
-        let goal = next_solver::Goal { param_env: self.trait_env.env, predicate };
+        let goal = next_solver::Goal {
+            param_env: self.trait_env.env,
+            predicate,
+        };
         let canonicalized = self.canonicalize(goal);
 
         next_trait_solve_canonical_in_ctxt(&self.infer_ctxt, canonicalized)
     }
 
     pub(crate) fn register_obligation(&mut self, predicate: Predicate<'db>) {
-        let goal = next_solver::Goal { param_env: self.trait_env.env, predicate };
+        let goal = next_solver::Goal {
+            param_env: self.trait_env.env,
+            predicate,
+        };
         self.register_obligation_in_env(goal)
     }
 
@@ -613,7 +630,8 @@ impl<'db> InferenceTable<'db> {
     }
 
     pub(crate) fn select_obligations_where_possible(&mut self) {
-        self.fulfillment_cx.try_evaluate_obligations(&self.infer_ctxt);
+        self.fulfillment_cx
+            .try_evaluate_obligations(&self.infer_ctxt);
     }
 
     pub(super) fn register_predicate(&mut self, obligation: PredicateObligation<'db>) {
@@ -621,7 +639,8 @@ impl<'db> InferenceTable<'db> {
             panic!("escaping bound vars in predicate {:?}", obligation);
         }
 
-        self.fulfillment_cx.register_predicate_obligation(&self.infer_ctxt, obligation);
+        self.fulfillment_cx
+            .register_predicate_obligation(&self.infer_ctxt, obligation);
     }
 
     pub(super) fn register_predicates<I>(&mut self, obligations: I)
@@ -656,7 +675,11 @@ impl<'db> InferenceTable<'db> {
         num_args: usize,
     ) -> Option<(FnTrait, Vec<Ty<'db>>, Ty<'db>)> {
         for (fn_trait_name, output_assoc_name, subtraits) in [
-            (FnTrait::FnOnce, sym::Output, &[FnTrait::Fn, FnTrait::FnMut][..]),
+            (
+                FnTrait::FnOnce,
+                sym::Output,
+                &[FnTrait::Fn, FnTrait::FnMut][..],
+            ),
             (FnTrait::AsyncFnMut, sym::CallRefFuture, &[FnTrait::AsyncFn]),
             (FnTrait::AsyncFnOnce, sym::CallOnceFuture, &[]),
         ] {
@@ -821,7 +844,10 @@ impl<'db> InferenceTable<'db> {
 impl fmt::Debug for InferenceTable<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("InferenceTable")
-            .field("name", &self.infer_ctxt.inner.borrow().type_variable_storage)
+            .field(
+                "name",
+                &self.infer_ctxt.inner.borrow().type_variable_storage,
+            )
             .field("fulfillment_cx", &self.fulfillment_cx)
             .finish()
     }
@@ -829,6 +855,7 @@ impl fmt::Debug for InferenceTable<'_> {
 
 mod resolve_completely {
     use rustc_type_ir::{DebruijnIndex, Flags, TypeFolder, TypeSuperFoldable};
+
     use crate::{
         infer::unify::InferenceTable,
         next_solver::{
@@ -837,19 +864,25 @@ mod resolve_completely {
             normalize::deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals,
         },
     };
+
     pub(super) struct Resolver<'a, 'db> {
         ctx: &'a mut InferenceTable<'db>,
         /// Whether we should normalize, disabled when resolving predicates.
         should_normalize: bool,
         nested_goals: &'a mut Vec<Goal<'db, Predicate<'db>>>,
     }
+
     impl<'a, 'db> Resolver<'a, 'db> {
         pub(super) fn new(
             ctx: &'a mut InferenceTable<'db>,
             should_normalize: bool,
             nested_goals: &'a mut Vec<Goal<'db, Predicate<'db>>>,
         ) -> Resolver<'a, 'db> {
-            Resolver { ctx, nested_goals, should_normalize }
+            Resolver {
+                ctx,
+                nested_goals,
+                should_normalize,
+            }
         }
 
         fn handle_term<T>(
@@ -883,6 +916,7 @@ mod resolve_completely {
             value.fold_with(&mut ReplaceInferWithError::new(self.ctx.interner()))
         }
     }
+
     impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Resolver<'cx, 'db> {
         fn cx(&self) -> DbInterner<'db> {
             self.ctx.interner()

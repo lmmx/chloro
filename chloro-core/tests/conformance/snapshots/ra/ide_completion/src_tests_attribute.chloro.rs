@@ -1,5 +1,4 @@
 //! Completion tests for attributes.
-
 use expect_test::expect;
 
 use crate::tests::{check, check_edit};
@@ -830,6 +829,7 @@ fn main() {
 
 mod cfg {
     use super::*;
+
     #[test]
     fn inside_cfg() {
         check(
@@ -863,6 +863,7 @@ mod cfg {
             "#]],
         );
     }
+
     #[test]
     fn inside_cfg_attr() {
         check(
@@ -926,6 +927,7 @@ mod cfg {
             "#]],
         );
     }
+
     #[test]
     fn cfg_target_endian() {
         check(
@@ -943,6 +945,7 @@ mod cfg {
             "#]],
         );
     }
+
     #[test]
     fn inside_conditional() {
         check_edit(
@@ -960,6 +963,7 @@ mod cfg {
 
 mod derive {
     use super::*;
+
     #[test]
     fn no_completion_for_incorrect_derive() {
         check(
@@ -970,6 +974,7 @@ mod derive {
             expect![[]],
         )
     }
+
     #[test]
     fn empty_derive() {
         check(
@@ -992,6 +997,7 @@ mod derive {
             "#]],
         );
     }
+
     #[test]
     fn derive_with_input_before() {
         check(
@@ -1013,6 +1019,7 @@ mod derive {
             "#]],
         )
     }
+
     #[test]
     fn derive_with_input_after() {
         check(
@@ -1034,6 +1041,7 @@ mod derive {
             "#]],
         );
     }
+
     #[test]
     fn derive_with_existing_derives() {
         check(
@@ -1054,6 +1062,7 @@ mod derive {
             "#]],
         );
     }
+
     #[test]
     fn derive_flyimport() {
         check(
@@ -1086,6 +1095,7 @@ use proc_macros::DeriveIdentity;
             "#]],
         );
     }
+
     #[test]
     fn derive_flyimport_edit() {
         check_edit(
@@ -1102,6 +1112,7 @@ use proc_macros::DeriveIdentity;
 "#,
         );
     }
+
     #[test]
     fn qualified() {
         check(
@@ -1129,6 +1140,7 @@ use proc_macros::DeriveIdentity;
 
 mod lint {
     use super::*;
+
     #[test]
     fn lint_empty() {
         check_edit(
@@ -1137,6 +1149,7 @@ mod lint {
             r#"#[allow(deprecated)] struct Test;"#,
         )
     }
+
     #[test]
     fn lint_with_existing() {
         check_edit(
@@ -1145,6 +1158,7 @@ mod lint {
             r#"#[allow(keyword_idents, deprecated)] struct Test;"#,
         )
     }
+
     #[test]
     fn lint_qualified() {
         check_edit(
@@ -1153,6 +1167,7 @@ mod lint {
             r#"#[allow(keyword_idents, deprecated)] struct Test;"#,
         )
     }
+
     #[test]
     fn lint_feature() {
         check_edit(
@@ -1161,6 +1176,7 @@ mod lint {
             r#"#[feature(box_patterns)] struct Test;"#,
         )
     }
+
     #[test]
     fn lint_clippy_unqualified() {
         check_edit(
@@ -1169,6 +1185,7 @@ mod lint {
             r#"#[allow(clippy::as_conversions)] struct Test;"#,
         );
     }
+
     #[test]
     fn lint_clippy_qualified() {
         check_edit(
@@ -1177,6 +1194,7 @@ mod lint {
             r#"#[allow(clippy::as_conversions)] struct Test;"#,
         );
     }
+
     #[test]
     fn lint_rustdoc_unqualified() {
         check_edit(
@@ -1185,6 +1203,7 @@ mod lint {
             r#"#[allow(rustdoc::bare_urls)] struct Test;"#,
         );
     }
+
     #[test]
     fn lint_rustdoc_qualified() {
         check_edit(
@@ -1193,6 +1212,7 @@ mod lint {
             r#"#[allow(rustdoc::bare_urls)] struct Test;"#,
         );
     }
+
     #[test]
     fn lint_unclosed() {
         check_edit(
@@ -1210,10 +1230,12 @@ mod lint {
 
 mod repr {
     use super::*;
+
     #[test]
     fn no_completion_for_incorrect_repr() {
         check(r#"#[repr{$0)] struct Test;"#, expect![[]])
     }
+
     #[test]
     fn empty() {
         check(
@@ -1238,10 +1260,12 @@ mod repr {
             "#]],
         );
     }
+
     #[test]
     fn transparent() {
         check(r#"#[repr(transparent, $0)] struct Test;"#, expect![[r#""#]]);
     }
+
     #[test]
     fn align() {
         check(
@@ -1264,6 +1288,7 @@ mod repr {
             "#]],
         );
     }
+
     #[test]
     fn packed() {
         check(
@@ -1286,6 +1311,7 @@ mod repr {
             "#]],
         );
     }
+
     #[test]
     fn c() {
         check(
@@ -1308,6 +1334,7 @@ mod repr {
             "#]],
         );
     }
+
     #[test]
     fn prim() {
         check(
@@ -1323,6 +1350,7 @@ mod repr {
 
 mod macro_use {
     use super::*;
+
     #[test]
     fn completes_macros() {
         check(
@@ -1348,6 +1376,7 @@ extern crate dep;
             "#]],
         )
     }
+
     #[test]
     fn only_completes_exported_macros() {
         check(
@@ -1371,6 +1400,7 @@ extern crate dep;
             "#]],
         )
     }
+
     #[test]
     fn does_not_completes_already_imported_macros() {
         check(

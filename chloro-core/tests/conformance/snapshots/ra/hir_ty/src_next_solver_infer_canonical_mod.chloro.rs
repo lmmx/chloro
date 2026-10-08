@@ -110,7 +110,10 @@ impl<'db> InferCtxt<'db> {
 
             CanonicalVarKind::PlaceholderTy(PlaceholderTy { universe, bound }) => {
                 let universe_mapped = universe_map(universe);
-                let placeholder_mapped = PlaceholderTy { universe: universe_mapped, bound };
+                let placeholder_mapped = PlaceholderTy {
+                    universe: universe_mapped,
+                    bound,
+                };
                 Ty::new_placeholder(self.interner, placeholder_mapped).into()
             }
 
@@ -122,14 +125,20 @@ impl<'db> InferCtxt<'db> {
                 let universe_mapped = universe_map(universe);
                 let placeholder_mapped: crate::next_solver::Placeholder<
                     crate::next_solver::BoundRegion,
-                > = PlaceholderRegion { universe: universe_mapped, bound };
+                > = PlaceholderRegion {
+                    universe: universe_mapped,
+                    bound,
+                };
                 Region::new_placeholder(self.interner, placeholder_mapped).into()
             }
 
             CanonicalVarKind::Const(ui) => self.next_const_var_in_universe(universe_map(ui)).into(),
             CanonicalVarKind::PlaceholderConst(PlaceholderConst { universe, bound }) => {
                 let universe_mapped = universe_map(universe);
-                let placeholder_mapped = PlaceholderConst { universe: universe_mapped, bound };
+                let placeholder_mapped = PlaceholderConst {
+                    universe: universe_mapped,
+                    bound,
+                };
                 Const::new_placeholder(self.interner, placeholder_mapped).into()
             }
         }

@@ -1,5 +1,4 @@
 //! Tools to work with format string literals for the `format_args!` family of macros.
-
 use syntax::{
     AstNode, AstToken, TextRange, TextSize,
     ast::{self, IsString},
@@ -294,7 +293,10 @@ pub fn lex_format_specifiers(
     {
         let (range, _) = chars.peek().unwrap();
         let offset = TextSize::from(1);
-        callback(TextRange::new(range.start() - offset, range.end()), FormatSpecifier::Escape);
+        callback(
+            TextRange::new(range.start() - offset, range.end()),
+            FormatSpecifier::Escape,
+        );
         chars.next();
     }
 }

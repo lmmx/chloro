@@ -33,7 +33,10 @@ pub fn find_path(
 
     // - if the item is a builtin, it's in scope
     if let ItemInNs::Types(ModuleDefId::BuiltinType(builtin)) = item {
-        return Some(ModPath::from_segments(PathKind::Plain, iter::once(builtin.as_name())));
+        return Some(ModPath::from_segments(
+            PathKind::Plain,
+            iter::once(builtin.as_name()),
+        ));
     }
 
     // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
@@ -68,7 +71,6 @@ enum Stability {
 use Stability::*;
 
 const MAX_PATH_LEN: usize = 15;
-
 const FIND_PATH_FUEL: usize = 10000;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -121,10 +123,18 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
     };
     if may_be_in_scope {
         // - if the item is already in scope, return the name under which it is
-        let scope_name =
-            find_in_scope(ctx.db, ctx.from_def_map, ctx.from, item, ctx.ignore_local_imports);
+        let scope_name = find_in_scope(
+            ctx.db,
+            ctx.from_def_map,
+            ctx.from,
+            item,
+            ctx.ignore_local_imports,
+        );
         if let Some(scope_name) = scope_name {
-            return Some(ModPath::from_segments(ctx.prefix.path_kind(), iter::once(scope_name)));
+            return Some(ModPath::from_segments(
+                ctx.prefix.path_kind(),
+                iter::once(scope_name),
+            ));
         }
     }
 
@@ -138,7 +148,9 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
         let loc = variant.lookup(ctx.db);
         if let Some(mut path) = find_path_inner(ctx, ItemInNs::Types(loc.parent.into()), max_len) {
             path.push_segment(
-                loc.parent.enum_variants(ctx.db).variants[loc.index as usize].1.clone(),
+                loc.parent.enum_variants(ctx.db).variants[loc.index as usize]
+                    .1
+                    .clone(),
             );
             return Some(path);
         }
@@ -148,7 +160,13 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
     }
 
     let mut best_choice = None;
-    calculate_best_path(ctx, &mut FxHashSet::default(), item, max_len, &mut best_choice);
+    calculate_best_path(
+        ctx,
+        &mut FxHashSet::default(),
+        item,
+        max_len,
+        &mut best_choice,
+    );
     best_choice.map(|choice| choice.path)
 }
 
@@ -199,7 +217,12 @@ fn find_path_for_module(
             } else {
                 PathKind::Plain
             };
-            return Some(Choice::new(ctx.cfg.prefer_prelude, kind, name.clone(), Stable));
+            return Some(Choice::new(
+                ctx.cfg.prefer_prelude,
+                kind,
+                name.clone(),
+                Stable,
+            ));
         }
     }
 
@@ -260,15 +283,11 @@ fn find_in_scope(
     ignore_local_imports: bool,
 ) -> Option<Name> {
     // FIXME: We could have multiple applicable names here, but we currently only return the first
-    def_map.with_ancestor_maps(
-        db,
-        from.local_id,
-        &mut |def_map, local_id| {
+    def_map.with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
         def_map[local_id].scope.names_of(item, |name, _, declared| {
             (declared || !ignore_local_imports).then(|| name.clone())
         })
-    },
-    )
+    })
 }
 
 /// Returns single-segment path (i.e. without any prefix) if `item` is found in prelude and its
@@ -369,9 +388,22 @@ fn calculate_best_path(
         // Item was defined in some upstream crate. This means that it must be exported from one,
         // too (unless we can't name it at all). It could *also* be (re)exported by the same crate
         // that wants to import it here, but we always prefer to use the external path here.
-        ctx.from.krate.data(ctx.db).dependencies.iter().for_each(|dep| {
-            find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id)
-        });
+
+        ctx.from
+            .krate
+            .data(ctx.db)
+            .dependencies
+            .iter()
+            .for_each(|dep| {
+                find_in_dep(
+                    ctx,
+                    visited_modules,
+                    item,
+                    max_len,
+                    best_choice,
+                    dep.crate_id,
+                )
+            });
     }
 }
 
@@ -384,31 +416,64 @@ fn find_in_sysroot(
 ) {
     let dependencies = &ctx.from.krate.data(ctx.db).dependencies;
     let mut search = |lang, best_choice: &mut _| {
-        if let Some(dep) = dependencies.iter().filter(|it| it.is_sysroot()).find(|dep| {
-            match dep.crate_id.data(ctx.db).origin {
+        if let Some(dep) = dependencies
+            .iter()
+            .filter(|it| it.is_sysroot())
+            .find(|dep| match dep.crate_id.data(ctx.db).origin {
                 CrateOrigin::Lang(l) => l == lang,
                 _ => false,
-            }
-        }) {
-            find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id);
+            })
+        {
+            find_in_dep(
+                ctx,
+                visited_modules,
+                item,
+                max_len,
+                best_choice,
+                dep.crate_id,
+            );
         }
     };
     if ctx.cfg.prefer_no_std {
         search(LangCrateOrigin::Core, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
         search(LangCrateOrigin::Std, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
     } else {
         search(LangCrateOrigin::Std, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
         search(LangCrateOrigin::Core, best_choice);
-        if matches!(best_choice, Some(Choice { stability: Stable, .. })) {
+        if matches!(
+            best_choice,
+            Some(Choice {
+                stability: Stable,
+                ..
+            })
+        ) {
             return;
         }
     }
@@ -417,7 +482,14 @@ fn find_in_sysroot(
         .filter(|it| it.is_sysroot())
         .chain(dependencies.iter().filter(|it| !it.is_sysroot()))
         .for_each(|dep| {
-            find_in_dep(ctx, visited_modules, item, max_len, best_choice, dep.crate_id);
+            find_in_dep(
+                ctx,
+                visited_modules,
+                item,
+                max_len,
+                best_choice,
+                dep.crate_id,
+            );
         });
 }
 
@@ -460,7 +532,12 @@ fn find_in_dep(
             choice.stability = Unstable;
         }
 
-        Choice::try_select(best_choice, choice, ctx.cfg.prefer_prelude, info.name.clone());
+        Choice::try_select(
+            best_choice,
+            choice,
+            ctx.cfg.prefer_prelude,
+            info.name.clone(),
+        );
     }
 }
 
@@ -535,7 +612,11 @@ impl Choice {
         match other
             .stability
             .cmp(&current.stability)
-            .then_with(|| other.prefer_due_to_prelude.cmp(&current.prefer_due_to_prelude))
+            .then_with(|| {
+                other
+                    .prefer_due_to_prelude
+                    .cmp(&current.prefer_due_to_prelude)
+            })
             .then_with(|| (current.path.len()).cmp(&(other.path.len() + 1)))
         {
             Ordering::Less => return,
@@ -581,13 +662,16 @@ fn find_local_import_locations(
     // `from` can import anything below `from` with visibility of at least `from`, and anything
     // above `from` with any visibility. That means we do not need to descend into private siblings
     // of `from` (and similar).
+
     // Compute the initial worklist. We start with all direct child modules of `from` as well as all
     // of its (recursive) parent modules.
     let mut worklist = def_map[from.local_id]
         .children
         .values()
         .map(|&child| def_map.module_id(child))
-        .chain(iter::successors(from.containing_module(db), |m| m.containing_module(db)))
+        .chain(iter::successors(from.containing_module(db), |m| {
+            m.containing_module(db)
+        }))
         .zip(iter::repeat(false))
         .collect::<Vec<_>>();
 
@@ -653,9 +737,12 @@ fn find_local_import_locations(
             }
         }
     }
-    worklist.into_iter().filter(|&(_, processed)| processed).for_each(|(module, _)| {
-        visited_modules.remove(&(item, module));
-    });
+    worklist
+        .into_iter()
+        .filter(|&(_, processed)| processed)
+        .for_each(|(module, _)| {
+            visited_modules.remove(&(item, module));
+        });
 }
 
 #[cfg(test)]
@@ -667,8 +754,11 @@ mod tests {
     use stdx::format_to;
     use syntax::ast::AstNode;
     use test_fixture::WithFixture;
+
     use crate::test_db::TestDB;
+
     use super::*;
+
     /// `code` needs to contain a cursor marker; checks that `find_path` for the
     /// item the `path` refers to returns that same path when called from the
     /// module the cursor is in.
@@ -686,10 +776,16 @@ mod tests {
         let module = db.module_at_position(pos);
         let parsed_path_file =
             syntax::SourceFile::parse(&format!("use {path};"), span::Edition::CURRENT);
-        let ast_path =
-            parsed_path_file.syntax_node().descendants().find_map(syntax::ast::Path::cast).unwrap();
+        let ast_path = parsed_path_file
+            .syntax_node()
+            .descendants()
+            .find_map(syntax::ast::Path::cast)
+            .unwrap();
         let mod_path = ModPath::from_src(&db, ast_path, &mut |range| {
-            db.span_map(pos.file_id.into()).as_ref().span_for_range(range).ctx
+            db.span_map(pos.file_id.into())
+                .as_ref()
+                .span_for_range(range)
+                .ctx
         })
         .unwrap();
 
@@ -722,7 +818,12 @@ mod tests {
                 module,
                 prefix,
                 ignore_local_imports,
-                FindPathConfig { prefer_no_std, prefer_prelude, prefer_absolute, allow_unstable },
+                FindPathConfig {
+                    prefer_no_std,
+                    prefer_prelude,
+                    prefer_absolute,
+                    allow_unstable,
+                },
             );
             format_to!(
                 res,
@@ -737,6 +838,7 @@ mod tests {
         }
         expect.assert_eq(&res);
     }
+
     fn check_found_path(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         path: &str,
@@ -744,6 +846,7 @@ mod tests {
     ) {
         check_found_path_(ra_fixture, path, false, false, false, false, expect);
     }
+
     fn check_found_path_prelude(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         path: &str,
@@ -751,6 +854,7 @@ mod tests {
     ) {
         check_found_path_(ra_fixture, path, true, false, false, false, expect);
     }
+
     fn check_found_path_absolute(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         path: &str,
@@ -758,6 +862,7 @@ mod tests {
     ) {
         check_found_path_(ra_fixture, path, false, true, false, false, expect);
     }
+
     fn check_found_path_prefer_no_std(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         path: &str,
@@ -765,6 +870,7 @@ mod tests {
     ) {
         check_found_path_(ra_fixture, path, false, false, true, false, expect);
     }
+
     fn check_found_path_prefer_no_std_allow_unstable(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         path: &str,
@@ -772,6 +878,7 @@ mod tests {
     ) {
         check_found_path_(ra_fixture, path, false, false, true, true, expect);
     }
+
     #[test]
     fn same_module() {
         check_found_path(
@@ -790,6 +897,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn enum_variant() {
         check_found_path(
@@ -808,6 +916,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn sub_module() {
         check_found_path(
@@ -828,6 +937,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn super_module() {
         check_found_path(
@@ -851,6 +961,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn self_module() {
         check_found_path(
@@ -871,6 +982,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn crate_root() {
         check_found_path(
@@ -891,6 +1003,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn same_crate() {
         check_found_path(
@@ -912,6 +1025,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn different_crate() {
         check_found_path(
@@ -932,6 +1046,7 @@ pub struct S;
             "#]],
         );
     }
+
     #[test]
     fn different_crate_renamed() {
         check_found_path(
@@ -953,6 +1068,7 @@ pub struct S;
             "#]],
         );
     }
+
     #[test]
     fn partially_imported() {
         cov_mark::check!(partially_imported);
@@ -1006,6 +1122,7 @@ pub mod ast {
             "#]],
         );
     }
+
     #[test]
     fn partially_imported_with_prefer_absolute() {
         cov_mark::check!(partially_imported);
@@ -1038,6 +1155,7 @@ pub mod ast {
             "#]],
         );
     }
+
     #[test]
     fn same_crate_reexport() {
         check_found_path(
@@ -1059,6 +1177,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn same_crate_reexport_rename() {
         check_found_path(
@@ -1080,6 +1199,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn different_crate_reexport() {
         check_found_path(
@@ -1102,6 +1222,7 @@ pub struct S;
             "#]],
         );
     }
+
     #[test]
     fn prelude() {
         check_found_path(
@@ -1126,6 +1247,7 @@ pub mod prelude {
             "#]],
         );
     }
+
     #[test]
     fn shadowed_prelude() {
         check_found_path(
@@ -1151,6 +1273,7 @@ pub mod prelude {
             "#]],
         );
     }
+
     #[test]
     fn imported_prelude() {
         check_found_path(
@@ -1176,6 +1299,7 @@ pub mod prelude {
             "#]],
         );
     }
+
     #[test]
     fn enum_variant_from_prelude() {
         let code = r#"
@@ -1214,6 +1338,7 @@ pub mod prelude {
             "#]],
         );
     }
+
     #[test]
     fn shortest_path() {
         check_found_path(
@@ -1239,6 +1364,7 @@ pub use crate::foo::bar::S;
             "#]],
         );
     }
+
     #[test]
     fn discount_private_imports() {
         cov_mark::check!(discount_private_imports);
@@ -1263,6 +1389,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn explicit_private_imports_crate() {
         check_found_path(
@@ -1285,6 +1412,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn explicit_private_imports() {
         cov_mark::check!(explicit_private_imports);
@@ -1311,6 +1439,7 @@ $0
             "#]],
         );
     }
+
     #[test]
     fn import_cycle() {
         check_found_path(
@@ -1338,6 +1467,7 @@ pub use super::foo;
             "#]],
         );
     }
+
     #[test]
     fn prefer_std_paths_over_alloc() {
         check_found_path(
@@ -1395,6 +1525,7 @@ pub mod pin {
             "#]],
         );
     }
+
     #[test]
     fn prefer_core_paths_over_std() {
         check_found_path_prefer_no_std(
@@ -1486,6 +1617,7 @@ pub mod fmt {
             "#]],
         );
     }
+
     #[test]
     fn prefer_alloc_paths_over_std() {
         check_found_path(
@@ -1520,6 +1652,7 @@ pub mod sync {
             "#]],
         );
     }
+
     #[test]
     fn prefer_shorter_paths_if_not_alloc() {
         check_found_path(
@@ -1546,6 +1679,7 @@ pub struct Arc;
             "#]],
         );
     }
+
     #[test]
     fn builtins_are_in_scope() {
         let code = r#"
@@ -1580,6 +1714,7 @@ pub mod primitive {
             "#]],
         );
     }
+
     #[test]
     fn inner_items() {
         check_found_path(
@@ -1600,6 +1735,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn inner_items_from_outer_scope() {
         check_found_path(
@@ -1622,6 +1758,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn inner_items_from_inner_module() {
         check_found_path(
@@ -1646,6 +1783,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn outer_items_with_inner_items_present() {
         check_found_path(
@@ -1670,6 +1808,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn from_inside_module() {
         check_found_path(
@@ -1695,6 +1834,7 @@ mod bar {
             "#]],
         )
     }
+
     #[test]
     fn from_inside_module2() {
         check_found_path(
@@ -1723,6 +1863,7 @@ mod qux {
             "#]],
         )
     }
+
     #[test]
     fn from_inside_module_with_inner_items() {
         check_found_path(
@@ -1749,6 +1890,7 @@ mod bar {
             "#]],
         )
     }
+
     #[test]
     fn recursive_pub_mod_reexport() {
         check_found_path(
@@ -1780,6 +1922,7 @@ pub mod name {
             "#]],
         );
     }
+
     #[test]
     fn extern_crate() {
         check_found_path(
@@ -1819,6 +1962,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn prelude_with_inner_items() {
         check_found_path(
@@ -1847,6 +1991,7 @@ pub mod prelude {
             "#]],
         );
     }
+
     #[test]
     fn different_crate_renamed_through_dep() {
         check_found_path(
@@ -1869,6 +2014,7 @@ pub struct S;
             "#]],
         );
     }
+
     #[test]
     fn different_crate_doc_hidden() {
         check_found_path(
@@ -1893,6 +2039,7 @@ pub struct S;
             "#]],
         );
     }
+
     #[test]
     fn respect_doc_hidden() {
         check_found_path(
@@ -1920,6 +2067,7 @@ pub mod ops {
             "#]],
         );
     }
+
     #[test]
     fn respect_unstable_modules() {
         check_found_path_prefer_no_std_allow_unstable(
@@ -1948,6 +2096,7 @@ pub mod error {
             "#]],
         );
     }
+
     #[test]
     fn respects_prelude_setting() {
         let ra_fixture = r#"
@@ -1987,6 +2136,7 @@ pub mod foo {
             "#]],
         );
     }
+
     #[test]
     fn respects_absolute_setting() {
         let ra_fixture = r#"
@@ -2023,6 +2173,7 @@ pub mod foo {
         "#]],
         );
     }
+
     #[test]
     fn respect_segment_length() {
         check_found_path(
@@ -2061,6 +2212,7 @@ pub mod prelude {
             "#]],
         );
     }
+
     #[test]
     fn regression_17271() {
         check_found_path(
@@ -2086,6 +2238,7 @@ pub fn c() {}
             "#]],
         );
     }
+
     #[test]
     fn prefer_long_std_over_short_extern() {
         check_found_path(

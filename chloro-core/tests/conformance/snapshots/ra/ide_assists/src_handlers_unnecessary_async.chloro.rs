@@ -37,11 +37,21 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         return None;
     }
     // Do nothing if the function has an `await` expression in its body.
-    if function.body()?.syntax().descendants().find_map(ast::AwaitExpr::cast).is_some() {
+    if function
+        .body()?
+        .syntax()
+        .descendants()
+        .find_map(ast::AwaitExpr::cast)
+        .is_some()
+    {
         return None;
     }
     // Do nothing if the method is a member of trait.
-    if let Some(impl_) = function.syntax().ancestors().nth(2).and_then(ast::Impl::cast)
+    if let Some(impl_) = function
+        .syntax()
+        .ancestors()
+        .nth(2)
+        .and_then(ast::Impl::cast)
         && impl_.trait_().is_some()
     {
         return None;
@@ -52,7 +62,10 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         let async_token = function.async_token()?;
         let next_token = async_token.next_token()?;
         if matches!(next_token.kind(), SyntaxKind::WHITESPACE) {
-            TextRange::new(async_token.text_range().start(), next_token.text_range().end())
+            TextRange::new(
+                async_token.text_range().start(),
+                next_token.text_range().end(),
+            )
         } else {
             async_token.text_range()
         }
@@ -94,9 +107,14 @@ fn find_all_references(
     ctx: &AssistContext<'_>,
     def: &Definition,
 ) -> impl Iterator<Item = (EditionedFileId, FileReference)> {
-    def.usages(&ctx.sema).all().into_iter().flat_map(|(file_id, references)| {
-        references.into_iter().map(move |reference| (file_id, reference))
-    })
+    def.usages(&ctx.sema)
+        .all()
+        .into_iter()
+        .flat_map(|(file_id, references)| {
+            references
+                .into_iter()
+                .map(move |reference| (file_id, reference))
+        })
 }
 
 /// Finds the await expression for the given `NameRef`.
@@ -131,23 +149,37 @@ fn find_await_expression(ctx: &AssistContext<'_>, nameref: &NameRef) -> Option<a
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn applies_on_empty_function() {
         check_assist(unnecessary_async, "pub asy$0nc fn f() {}", "pub fn f() {}")
     }
+
     #[test]
     fn applies_and_removes_whitespace() {
-        check_assist(unnecessary_async, "pub async$0       fn f() {}", "pub fn f() {}")
+        check_assist(
+            unnecessary_async,
+            "pub async$0       fn f() {}",
+            "pub fn f() {}",
+        )
     }
+
     #[test]
     fn applies_on_function_with_a_non_await_expr() {
-        check_assist(unnecessary_async, "pub asy$0nc fn f() { f2() }", "pub fn f() { f2() }")
+        check_assist(
+            unnecessary_async,
+            "pub asy$0nc fn f() { f2() }",
+            "pub fn f() { f2() }",
+        )
     }
+
     #[test]
     fn does_not_apply_on_function_with_an_await_expr() {
         check_assist_not_applicable(unnecessary_async, "pub asy$0nc fn f() { f2().await }")
     }
+
     #[test]
     fn applies_and_removes_await_on_reference() {
         check_assist(
@@ -164,6 +196,7 @@ pub async fn f() { f2() }
 pub async fn f3() { f2() }"#,
         )
     }
+
     #[test]
     fn applies_and_removes_await_from_within_module() {
         check_assist(
@@ -180,10 +213,12 @@ pub async fn f() { a::f2() }
 pub async fn f3() { a::f2() }"#,
         )
     }
+
     #[test]
     fn applies_and_removes_await_on_inner_await() {
         check_assist(
             unnecessary_async,
+            // Ensure that it is the first await on the 3rd line that is removed
             r#"
 pub async fn f() { f2().await }
 pub asy$0nc fn f2() -> i32 { 1 }
@@ -196,10 +231,12 @@ pub async fn f3() { f4(f2()).await }
 pub async fn f4(i: i32) { }"#,
         )
     }
+
     #[test]
     fn applies_and_removes_await_on_outer_await() {
         check_assist(
             unnecessary_async,
+            // Ensure that it is the second await on the 3rd line that is removed
             r#"
 pub async fn f() { f2().await }
 pub async$0 fn f2(i: i32) { }
@@ -212,6 +249,7 @@ pub async fn f3() { f2(f4().await) }
 pub async fn f4() -> i32 { 1 }"#,
         )
     }
+
     #[test]
     fn applies_on_method_call() {
         check_assist(
@@ -226,6 +264,7 @@ impl S { pub fn f2(&self) { } }
 pub async fn f(s: &S) { s.f2() }"#,
         )
     }
+
     #[test]
     fn does_not_apply_on_function_with_a_nested_await_expr() {
         check_assist_not_applicable(
@@ -233,10 +272,12 @@ pub async fn f(s: &S) { s.f2() }"#,
             "async$0 fn f() { if true { loop { f2().await } } }",
         )
     }
+
     #[test]
     fn does_not_apply_when_not_on_async_token() {
         check_assist_not_applicable(unnecessary_async, "pub async fn$0 f() { f2() }")
     }
+
     #[test]
     fn does_not_apply_on_async_trait_method() {
         check_assist_not_applicable(

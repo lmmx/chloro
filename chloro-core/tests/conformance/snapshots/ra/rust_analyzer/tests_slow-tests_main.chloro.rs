@@ -102,7 +102,9 @@ fn f() {
         text_document: server.doc_id("src/lib.rs"),
         work_done_progress_params: WorkDoneProgressParams::default(),
     });
-    let mut hints = serde_json::from_value::<Option<Vec<InlayHint>>>(res).unwrap().unwrap();
+    let mut hints = serde_json::from_value::<Option<Vec<InlayHint>>>(res)
+        .unwrap()
+        .unwrap();
     let hint = hints.pop().unwrap();
     assert!(hint.data.is_some());
     assert!(
@@ -163,7 +165,11 @@ use dependency2::Spam;
         partial_result_params: PartialResultParams::default(),
         work_done_progress_params: WorkDoneProgressParams::default(),
     });
-    assert!(res.to_string().contains("SpecialHashMap"), "{}", res.to_string());
+    assert!(
+        res.to_string().contains("SpecialHashMap"),
+        "{}",
+        res.to_string()
+    );
 
     let res = server.send_request::<Completion>(CompletionParams {
         text_document_position: TextDocumentPositionParams::new(
@@ -251,7 +257,10 @@ fn main() {}
     .wait_until_workspace_is_loaded();
 
     server.request::<Runnables>(
-        RunnablesParams { text_document: server.doc_id("foo/tests/spam.rs"), position: None },
+        RunnablesParams {
+            text_document: server.doc_id("foo/tests/spam.rs"),
+            position: None,
+        },
         json!([
           {
             "args": {
@@ -467,7 +476,10 @@ fn otherpkg() {}
     .wait_until_workspace_is_loaded();
 
     server.request::<Runnables>(
-        RunnablesParams { text_document: server.doc_id("foo/mainpkg/src/main.rs"), position: None },
+        RunnablesParams {
+            text_document: server.doc_id("foo/mainpkg/src/main.rs"),
+            position: None,
+        },
         json!([
             "{...}",
             {
@@ -492,7 +504,10 @@ fn otherpkg() {}
     );
 
     server.request::<Runnables>(
-        RunnablesParams { text_document: server.doc_id("foo/otherpkg/src/lib.rs"), position: None },
+        RunnablesParams {
+            text_document: server.doc_id("foo/otherpkg/src/lib.rs"),
+            position: None,
+        },
         json!([
             "{...}",
             {
@@ -693,8 +708,14 @@ fn main() {
     server.request::<RangeFormatting>(
         DocumentRangeFormattingParams {
             range: Range {
-                end: Position { line: 1, character: 0 },
-                start: Position { line: 1, character: 0 },
+                end: Position {
+                    line: 1,
+                    character: 0,
+                },
+                start: Position {
+                    line: 1,
+                    character: 0,
+                },
             },
             text_document: server.doc_id("src/lib.rs"),
             options: FormattingOptions {
@@ -827,8 +848,10 @@ fn main() {{}}
 "#,
     );
 
-    let server =
-        Project::with_fixture(&code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
+    let server = Project::with_fixture(&code)
+        .tmp_dir(tmp_dir)
+        .server()
+        .wait_until_workspace_is_loaded();
 
     server.request::<CodeActionRequest>(
         CodeActionParams {
@@ -924,7 +947,10 @@ fn main() {{}}
     server.request::<OnEnter>(
         TextDocumentPositionParams {
             text_document: server.doc_id("src/m0.rs"),
-            position: Position { line: 0, character: 5 },
+            position: Position {
+                line: 0,
+                character: 5,
+            },
         },
         json!([{
             "insertTextFormat": 2,
@@ -962,7 +988,10 @@ version = \"0.0.0\"
     server.request::<OnEnter>(
         TextDocumentPositionParams {
             text_document: server.doc_id("src/main.rs"),
-            position: Position { line: 0, character: 8 },
+            position: Position {
+                line: 0,
+                character: 8,
+            },
         },
         json!([{
             "insertTextFormat": 2,
@@ -1134,7 +1163,7 @@ fn out_dirs_check() {
 }
 
 #[test]
-#[cfg(not(windows))]
+#[cfg(not(windows))] // windows requires elevated permissions to create symlinks
 fn root_contains_symlink_out_dirs_check() {
     if skip_slow_tests() {
         return;
@@ -1236,7 +1265,13 @@ pub fn foo(_input: TokenStream) -> TokenStream {
         ),
         work_done_progress_params: Default::default(),
     });
-    let value = res.get("contents").unwrap().get("value").unwrap().as_str().unwrap();
+    let value = res
+        .get("contents")
+        .unwrap()
+        .get("value")
+        .unwrap()
+        .as_str()
+        .unwrap();
 
     expect![[r#"
 
@@ -1288,8 +1323,10 @@ use crate::old_folder::nested::foo as bar;
 //- /src/to_mod/foo.rs
 
 "#;
-    let server =
-        Project::with_fixture(code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
+    let server = Project::with_fixture(code)
+        .tmp_dir(tmp_dir)
+        .server()
+        .wait_until_workspace_is_loaded();
 
     //rename same level file
     server.request::<WillRenameFiles>(
@@ -1330,8 +1367,16 @@ use crate::old_folder::nested::foo as bar;
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
-                old_uri: base_path.join("src/from_mod/mod.rs").to_str().unwrap().to_owned(),
-                new_uri: base_path.join("src/from_mod/foo.rs").to_str().unwrap().to_owned(),
+                old_uri: base_path
+                    .join("src/from_mod/mod.rs")
+                    .to_str()
+                    .unwrap()
+                    .to_owned(),
+                new_uri: base_path
+                    .join("src/from_mod/foo.rs")
+                    .to_str()
+                    .unwrap()
+                    .to_owned(),
             }],
         },
         json!(null),
@@ -1341,8 +1386,16 @@ use crate::old_folder::nested::foo as bar;
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
-                old_uri: base_path.join("src/to_mod/foo.rs").to_str().unwrap().to_owned(),
-                new_uri: base_path.join("src/to_mod/mod.rs").to_str().unwrap().to_owned(),
+                old_uri: base_path
+                    .join("src/to_mod/foo.rs")
+                    .to_str()
+                    .unwrap()
+                    .to_owned(),
+                new_uri: base_path
+                    .join("src/to_mod/mod.rs")
+                    .to_str()
+                    .unwrap()
+                    .to_owned(),
             }],
         },
         json!(null),

@@ -230,7 +230,8 @@ impl AppState {
             if let Some(node_idx) = self
                 .tree_nodes
                 .iter()
-                .position(|n| n.section_index == Some(current_section_idx)) {
+                .position(|n| n.section_index == Some(current_section_idx))
+            {
                 self.current_node_index = node_idx;
             }
         }

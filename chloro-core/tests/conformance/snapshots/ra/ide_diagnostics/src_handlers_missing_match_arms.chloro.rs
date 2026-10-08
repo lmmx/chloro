@@ -20,14 +20,18 @@ pub(crate) fn missing_match_arms(
 mod tests {
     use crate::{
         DiagnosticsConfig,
-        tests::{check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled},
+        tests::{
+            check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
+        },
     };
     use test_utils::skip_slow_tests;
+
     #[track_caller]
     fn check_diagnostics_no_bails(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         cov_mark::check_count!(validate_match_bailed_out, 0);
         crate::tests::check_diagnostics(ra_fixture)
     }
+
     #[test]
     fn empty_body() {
         let mut config = DiagnosticsConfig::test_sample();
@@ -41,6 +45,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn empty_tuple() {
         check_diagnostics_no_bails(
@@ -58,6 +63,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn tuple_of_two_empty_tuple() {
         check_diagnostics_no_bails(
@@ -71,6 +77,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn boolean() {
         check_diagnostics_no_bails(
@@ -123,6 +130,7 @@ fn test_main() {
 "#,
         );
     }
+
     #[test]
     fn tuple_of_tuple_and_bools() {
         check_diagnostics_no_bails(
@@ -150,6 +158,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn enums() {
         check_diagnostics_no_bails(
@@ -177,6 +186,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn enum_containing_bool() {
         check_diagnostics_no_bails(
@@ -209,6 +219,7 @@ fn main() {
         "#,
         );
     }
+
     #[test]
     fn enum_different_sizes() {
         check_diagnostics_no_bails(
@@ -236,6 +247,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn tuple_of_enum_no_diagnostic() {
         check_diagnostics_no_bails(
@@ -254,17 +266,21 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn or_pattern_no_diagnostic() {
-        check_diagnostics_no_bails(r#"
+        check_diagnostics_no_bails(
+            r#"
 enum Either {A, B}
 
 fn main() {
     match (Either::A, Either::B) {
         (Either::A | Either::B, _) => (),
     }
-}"#)
+}"#,
+        )
     }
+
     #[test]
     fn mismatched_types() {
         cov_mark::check_count!(validate_match_bailed_out, 4);
@@ -298,6 +314,7 @@ fn main() {
             &["E0425"],
         );
     }
+
     #[test]
     fn mismatched_types_issue_15883() {
         // Check we don't panic.
@@ -316,6 +333,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn mismatched_types_in_or_patterns() {
         cov_mark::check_count!(validate_match_bailed_out, 2);
@@ -330,6 +348,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn malformed_match_arm_tuple_enum_missing_pattern() {
         // We are testing to be sure we don't panic here when the match
@@ -348,6 +367,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn malformed_match_arm_extra_fields() {
         cov_mark::check_count!(validate_match_bailed_out, 2);
@@ -367,6 +387,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn expr_diverges() {
         cov_mark::check_count!(validate_match_bailed_out, 2);
@@ -394,6 +415,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn expr_partially_diverges() {
         check_diagnostics_no_bails(
@@ -410,6 +432,7 @@ fn main() -> u32 {
 "#,
         );
     }
+
     #[test]
     fn enum_record() {
         check_diagnostics_no_bails(
@@ -447,6 +470,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn enum_record_fields_out_of_order() {
         check_diagnostics_no_bails(
@@ -473,6 +497,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn enum_record_ellipsis() {
         check_diagnostics_no_bails(
@@ -508,6 +533,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn enum_tuple_partial_ellipsis() {
         check_diagnostics_no_bails(
@@ -551,6 +577,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn never() {
         check_diagnostics_no_bails(
@@ -570,6 +597,7 @@ fn bang(never: !) {
 "#,
         );
     }
+
     #[test]
     fn unknown_type() {
         check_diagnostics_no_bails(
@@ -591,6 +619,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn arity_mismatch_issue_16746() {
         check_diagnostics_with_disabled(
@@ -602,6 +631,7 @@ fn main() {
             &["E0308"],
         );
     }
+
     #[test]
     fn tuple_of_bools_with_ellipsis_at_end_missing_arm() {
         check_diagnostics_no_bails(
@@ -614,6 +644,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn tuple_of_bools_with_ellipsis_at_beginning_missing_arm() {
         check_diagnostics_no_bails(
@@ -626,6 +657,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn tuple_of_bools_with_ellipsis_in_middle_missing_arm() {
         check_diagnostics_no_bails(
@@ -638,6 +670,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn record_struct() {
         check_diagnostics_no_bails(
@@ -662,6 +695,7 @@ fn main(f: Foo) {
 "#,
         );
     }
+
     #[test]
     fn tuple_struct() {
         check_diagnostics_no_bails(
@@ -679,6 +713,7 @@ fn main(f: Foo) {
 "#,
         );
     }
+
     #[test]
     fn unit_struct() {
         check_diagnostics_no_bails(
@@ -691,6 +726,7 @@ fn main(f: Foo) {
 "#,
         );
     }
+
     #[test]
     fn record_struct_ellipsis() {
         check_diagnostics_no_bails(
@@ -712,6 +748,7 @@ fn main(f: Foo) {
 "#,
         );
     }
+
     #[test]
     fn internal_or() {
         check_diagnostics_no_bails(
@@ -726,6 +763,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_panic_at_unimplemented_subpattern_type() {
         cov_mark::check_count!(validate_match_bailed_out, 1);
@@ -745,6 +783,7 @@ fn main(v: S) {
 "#,
         );
     }
+
     #[test]
     fn binding() {
         check_diagnostics_no_bails(
@@ -760,6 +799,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn binding_ref_has_correct_type() {
         // Asserts `PatKind::Binding(ref _x): bool`, not &bool.
@@ -781,6 +821,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn enum_non_exhaustive() {
         check_diagnostics_no_bails(
@@ -816,6 +857,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn match_guard() {
         check_diagnostics_no_bails(
@@ -835,6 +877,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn pattern_type_is_of_substitution() {
         check_diagnostics_no_bails(
@@ -849,6 +892,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn record_struct_no_such_field() {
         cov_mark::check_count!(validate_match_bailed_out, 1);
@@ -863,6 +907,7 @@ fn main(f: Foo) {
 "#,
         );
     }
+
     #[test]
     fn match_ergonomics_issue_9095() {
         check_diagnostics_no_bails(
@@ -877,6 +922,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn normalize_field_ty() {
         check_diagnostics_no_bails(
@@ -899,6 +945,7 @@ static __: () = {
 };",
         );
     }
+
     #[test]
     fn binding_mode_by_ref() {
         check_diagnostics_no_bails(
@@ -912,6 +959,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn macro_or_pat() {
         check_diagnostics_no_bails(
@@ -941,6 +989,7 @@ fn f(ty: Enum) {
 "#,
         );
     }
+
     #[test]
     fn unexpected_ty_fndef() {
         cov_mark::check!(validate_match_bailed_out);
@@ -957,6 +1006,7 @@ fn f() {
             &["E0425"],
         );
     }
+
     #[test]
     fn exponential_match() {
         if skip_slow_tests() {
@@ -982,6 +1032,7 @@ fn f() {
         write!(code, "}}").unwrap();
         check_diagnostics_no_bails(&code);
     }
+
     #[test]
     fn min_exhaustive() {
         check_diagnostics(
@@ -1019,8 +1070,10 @@ fn test(x: Result<i32, &'static !>) {
 "#,
         );
     }
+
     mod rust_unstable {
         use super::*;
+
         #[test]
         fn rfc_1872_exhaustive_patterns() {
             check_diagnostics_no_bails(
@@ -1039,6 +1092,7 @@ fn test() {
 }",
             );
         }
+
         #[test]
         fn rfc_1872_private_uninhabitedness() {
             check_diagnostics_no_bails(
@@ -1060,6 +1114,7 @@ fn test(x: Option<lib::PrivatelyUninhabited>) {
             );
         }
     }
+
     #[test]
     fn non_exhaustive_may_be_empty() {
         check_diagnostics_no_bails(
@@ -1078,6 +1133,7 @@ pub struct UninhabitedStruct {
 ",
         );
     }
+
     mod false_negatives {
         //! The implementation of match checking here is a work in progress. As we roll this out, we
         //! prefer false negatives to false positives (ideally there would be no false positives). This
@@ -1089,6 +1145,7 @@ pub struct UninhabitedStruct {
         //!   1. It acts as a backlog of work that can be done to improve the behavior of the system.
         //!   2. It ensures the code doesn't panic when handling these cases.
         use super::*;
+
         #[test]
         fn integers() {
             cov_mark::check_count!(validate_match_bailed_out, 1);
@@ -1105,6 +1162,7 @@ fn main() {
 "#,
             );
         }
+
         #[test]
         fn reference_patterns_at_top_level() {
             cov_mark::check_count!(validate_match_bailed_out, 1);
@@ -1120,6 +1178,7 @@ fn main() {
             "#,
             );
         }
+
         #[test]
         fn reference_patterns_in_fields() {
             cov_mark::check_count!(validate_match_bailed_out, 1);

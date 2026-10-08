@@ -113,16 +113,25 @@ pub(crate) fn goto_type_definition(
 mod tests {
     use ide_db::FileRange;
     use itertools::Itertools;
+
     use crate::fixture;
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);
-        let navs = analysis.goto_type_definition(position).unwrap().unwrap().info;
+        let navs = analysis
+            .goto_type_definition(position)
+            .unwrap()
+            .unwrap()
+            .info;
         assert!(!navs.is_empty(), "navigation is empty");
 
         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
         let navs = navs
             .into_iter()
-            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+            .map(|nav| FileRange {
+                file_id: nav.file_id,
+                range: nav.focus_or_full_range(),
+            })
             .sorted_by_key(cmp)
             .collect::<Vec<_>>();
         let expected = expected
@@ -132,6 +141,7 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(expected, navs);
     }
+
     #[test]
     fn goto_type_definition_works_simple() {
         check(
@@ -144,6 +154,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn goto_type_definition_record_expr_field() {
         check(
@@ -167,6 +178,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn goto_type_definition_record_pat_field() {
         check(
@@ -190,6 +202,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn goto_type_definition_works_simple_ref() {
         check(
@@ -202,6 +215,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn goto_type_definition_works_through_macro() {
         check(
@@ -215,6 +229,7 @@ id! {
 "#,
         );
     }
+
     #[test]
     fn dont_collect_type_from_token_in_macro_call() {
         check(
@@ -240,6 +255,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn goto_type_definition_for_param() {
         check(
@@ -250,6 +266,7 @@ fn foo($0f: Foo) {}
 "#,
         );
     }
+
     #[test]
     fn goto_type_definition_for_tuple_field() {
         check(
@@ -264,24 +281,31 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn goto_def_for_self_param() {
-        check(r#"
+        check(
+            r#"
 struct Foo;
      //^^^
 impl Foo {
     fn f(&self$0) {}
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn goto_def_for_type_fallback() {
-        check(r#"
+        check(
+            r#"
 struct Foo;
      //^^^
 impl Foo$0 {}
-"#)
+"#,
+        )
     }
+
     #[test]
     fn goto_def_for_struct_field() {
         check(
@@ -295,6 +319,7 @@ struct Foo {
 "#,
         );
     }
+
     #[test]
     fn goto_def_for_enum_struct_field() {
         check(
@@ -310,6 +335,7 @@ enum Foo {
 "#,
         );
     }
+
     #[test]
     fn goto_def_considers_generics() {
         check(
@@ -325,6 +351,7 @@ fn foo(x$0: Bar<Baz<Foo>, Baz<usize>) {}
 "#,
         );
     }
+
     #[test]
     fn implicit_format_args() {
         check(

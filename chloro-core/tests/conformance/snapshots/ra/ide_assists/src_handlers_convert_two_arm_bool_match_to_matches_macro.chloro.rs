@@ -116,7 +116,9 @@ fn is_bool_literal_expr(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     use super::convert_two_arm_bool_match_to_matches_macro;
+
     #[test]
     fn not_applicable_outside_of_range_left() {
         check_assist_not_applicable(
@@ -131,6 +133,7 @@ fn foo(a: Option<u32>) -> bool {
         "#,
         );
     }
+
     #[test]
     fn not_applicable_non_two_arm_match() {
         cov_mark::check!(non_two_arm_match);
@@ -147,6 +150,7 @@ fn foo(a: Option<u32>) -> bool {
         "#,
         );
     }
+
     #[test]
     fn not_applicable_both_false_arms() {
         cov_mark::check!(non_invert_bool_literal_arms);
@@ -162,6 +166,7 @@ fn foo(a: Option<u32>) -> bool {
         "#,
         );
     }
+
     #[test]
     fn not_applicable_both_true_arms() {
         cov_mark::check!(non_invert_bool_literal_arms);
@@ -177,6 +182,7 @@ fn foo(a: Option<u32>) -> bool {
         "#,
         );
     }
+
     #[test]
     fn convert_simple_case() {
         check_assist(
@@ -196,6 +202,7 @@ fn foo(a: Option<u32>) -> bool {
 "#,
         );
     }
+
     #[test]
     fn convert_simple_invert_case() {
         check_assist(
@@ -215,6 +222,7 @@ fn foo(a: Option<u32>) -> bool {
 "#,
         );
     }
+
     #[test]
     fn convert_with_guard_case() {
         check_assist(
@@ -234,6 +242,7 @@ fn foo(a: Option<u32>) -> bool {
 "#,
         );
     }
+
     #[test]
     fn convert_enum_match_cases() {
         check_assist(
@@ -257,6 +266,7 @@ fn foo(a: X) -> bool {
 "#,
         );
     }
+
     #[test]
     fn convert_target_simple() {
         check_assist_target(
@@ -275,6 +285,7 @@ fn foo(a: Option<u32>) -> bool {
     }"#,
         );
     }
+
     #[test]
     fn convert_target_complex() {
         check_assist_target(
@@ -295,6 +306,7 @@ fn main() {
     }",
         );
     }
+
     #[test]
     fn convert_non_literal_bool() {
         check_assist(

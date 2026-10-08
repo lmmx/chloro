@@ -1,7 +1,7 @@
 use syntax::T;
 use syntax::ast::RangeItem;
-use syntax::ast::edit_in_place::Indent;
 use syntax::ast::edit::IndentLevel;
+use syntax::ast::edit_in_place::Indent;
 use syntax::ast::syntax_factory::SyntaxFactory;
 use syntax::ast::{self, AstNode, HasName, LetStmt, Pat};
 
@@ -53,7 +53,10 @@ pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'
         .filter_map(|ref pat| {
             // Identifiers which resolve to constants are not bindings
             if ctx.sema.resolve_bind_pat_to_const(pat).is_none() {
-                Some((pat.name()?, pat.ref_token().is_none() && pat.mut_token().is_some()))
+                Some((
+                    pat.name()?,
+                    pat.ref_token().is_none() && pat.mut_token().is_some(),
+                ))
             } else {
                 None
             }
@@ -138,9 +141,9 @@ fn remove_mut_and_collect_idents(
             }
             non_mut_pat.into()
         }
-        ast::Pat::BoxPat(p) => {
-            make.box_pat(remove_mut_and_collect_idents(make, &p.pat()?, acc)?).into()
-        }
+        ast::Pat::BoxPat(p) => make
+            .box_pat(remove_mut_and_collect_idents(make, &p.pat()?, acc)?)
+            .into(),
         ast::Pat::OrPat(p) => make
             .or_pat(
                 p.pats()
@@ -149,9 +152,9 @@ fn remove_mut_and_collect_idents(
                 p.leading_pipe().is_some(),
             )
             .into(),
-        ast::Pat::ParenPat(p) => {
-            make.paren_pat(remove_mut_and_collect_idents(make, &p.pat()?, acc)?).into()
-        }
+        ast::Pat::ParenPat(p) => make
+            .paren_pat(remove_mut_and_collect_idents(make, &p.pat()?, acc)?)
+            .into(),
         ast::Pat::RangePat(p) => make
             .range_pat(
                 if let Some(start) = p.start() {
@@ -192,7 +195,8 @@ fn remove_mut_and_collect_idents(
                 acc.push(ident);
                 p.clone_for_update().into()
             } else {
-                make.ref_pat(remove_mut_and_collect_idents(make, &inner, acc)?).into()
+                make.ref_pat(remove_mut_and_collect_idents(make, &inner, acc)?)
+                    .into()
             }
         }
         ast::Pat::SlicePat(p) => make
@@ -230,7 +234,9 @@ fn remove_mut_and_collect_idents(
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     #[test]
     fn convert_let_else_to_match_no_type_let() {
         check_assist_not_applicable(
@@ -241,6 +247,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_on_else() {
         check_assist_not_applicable(
@@ -252,6 +259,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_no_macropat() {
         check_assist_not_applicable(
@@ -263,6 +271,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_target() {
         check_assist_target(
@@ -274,6 +283,7 @@ fn main() {
             "let Ok(x) = f() else { continue };",
         );
     }
+
     #[test]
     fn convert_let_else_to_match_basic() {
         check_assist(
@@ -291,6 +301,7 @@ fn main() {
 }",
         );
     }
+
     #[test]
     fn convert_let_else_to_match_const_ref() {
         check_assist(
@@ -318,6 +329,7 @@ fn main() {
 }",
         );
     }
+
     #[test]
     fn convert_let_else_to_match_const_ref_const() {
         check_assist(
@@ -337,6 +349,7 @@ fn main() {
 }",
         );
     }
+
     #[test]
     fn convert_let_else_to_match_mut() {
         check_assist(
@@ -354,6 +367,7 @@ fn main() {
 }",
         );
     }
+
     #[test]
     fn convert_let_else_to_match_multi_binders() {
         check_assist(
@@ -371,6 +385,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_slice() {
         check_assist(
@@ -388,6 +403,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_struct() {
         check_assist(
@@ -405,6 +421,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_struct_ident_pat() {
         check_assist(
@@ -422,6 +439,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_no_binder() {
         check_assist(
@@ -439,6 +457,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_range() {
         check_assist(
@@ -456,6 +475,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_refpat() {
         check_assist(
@@ -473,6 +493,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_refmut() {
         check_assist(
@@ -490,6 +511,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_atpat() {
         check_assist(
@@ -507,6 +529,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn convert_let_else_to_match_complex_init() {
         check_assist(

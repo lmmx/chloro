@@ -61,19 +61,28 @@ impl<'db> InferCtxt<'db> {
 
     #[instrument(skip(self, snapshot), level = "debug")]
     pub(crate) fn rollback_to(&self, snapshot: CombinedSnapshot) {
-        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot, universe } = snapshot;
+        let CombinedSnapshot {
+            undo_snapshot,
+            region_constraints_snapshot,
+            universe,
+        } = snapshot;
 
         self.universe.set(universe);
 
         let mut inner = self.inner.borrow_mut();
         inner.rollback_to(undo_snapshot);
-        inner.unwrap_region_constraints().rollback_to(region_constraints_snapshot);
+        inner
+            .unwrap_region_constraints()
+            .rollback_to(region_constraints_snapshot);
     }
 
     #[instrument(skip(self, snapshot), level = "debug")]
     fn commit_from(&self, snapshot: CombinedSnapshot) {
-        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot: _, universe: _ } =
-            snapshot;
+        let CombinedSnapshot {
+            undo_snapshot,
+            region_constraints_snapshot: _,
+            universe: _,
+        } = snapshot;
 
         self.inner.borrow_mut().commit(undo_snapshot);
     }
@@ -120,6 +129,9 @@ impl<'db> InferCtxt<'db> {
     }
 
     pub fn opaque_types_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {
-        self.inner.borrow().undo_log.opaque_types_in_snapshot(&snapshot.undo_snapshot)
+        self.inner
+            .borrow()
+            .undo_log
+            .opaque_types_in_snapshot(&snapshot.undo_snapshot)
     }
 }

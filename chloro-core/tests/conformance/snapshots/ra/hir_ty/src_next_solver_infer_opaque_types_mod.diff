@@ -2,19 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 937 bytes
-Chloro size:   937 bytes
+Chloro size:   976 bytes
 Rustfmt size:  976 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-         opaque_type_key: OpaqueTypeKey<'db>,
-         hidden_ty: OpaqueHiddenType<'db>,
-     ) -> Option<Ty<'db>> {
--        self.inner
--            .borrow_mut()
--            .opaque_types()
--            .register(opaque_type_key, hidden_ty)
-+        self.inner.borrow_mut().opaque_types().register(opaque_type_key, hidden_ty)
-     }
- }
+✓ Outputs are IDENTICAL

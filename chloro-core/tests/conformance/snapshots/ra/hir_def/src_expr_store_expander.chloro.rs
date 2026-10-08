@@ -61,9 +61,12 @@ impl Expander {
 
     pub(super) fn hygiene_for_range(&self, db: &dyn DefDatabase, range: TextRange) -> HygieneId {
         match self.span_map.as_ref() {
-            hir_expand::span_map::SpanMapRef::ExpansionSpanMap(span_map) => {
-                HygieneId::new(span_map.span_at(range.start()).ctx.opaque_and_semitransparent(db))
-            }
+            hir_expand::span_map::SpanMapRef::ExpansionSpanMap(span_map) => HygieneId::new(
+                span_map
+                    .span_at(range.start())
+                    .ctx
+                    .opaque_and_semitransparent(db),
+            ),
             hir_expand::span_map::SpanMapRef::RealSpanMap(_) => HygieneId::ROOT,
         }
     }
@@ -97,7 +100,10 @@ impl Expander {
             let macro_call = this.in_file(&macro_call);
 
             let expands_to = hir_expand::ExpandTo::from_call_site(macro_call.value);
-            let ast_id = AstId::new(macro_call.file_id, this.ast_id_map().ast_id(macro_call.value));
+            let ast_id = AstId::new(
+                macro_call.file_id,
+                this.ast_id_map().ast_id(macro_call.value),
+            );
             let path = macro_call.value.path().and_then(|path| {
                 let range = path.syntax().text_range();
                 let mod_path = ModPath::from_src(db, path, &mut |range| {
@@ -109,7 +115,8 @@ impl Expander {
 
             let Some((call_site, path)) = path else {
                 return ExpandResult::only_err(ExpandError::other(
-                    this.span_map.span_for_range(macro_call.value.syntax().text_range()),
+                    this.span_map
+                        .span_for_range(macro_call.value.syntax().text_range()),
                     "malformed macro invocation",
                 ));
             };
@@ -127,7 +134,10 @@ impl Expander {
                 Ok(call_id) => call_id,
                 Err(resolve_err) => {
                     unresolved_macro_err = Some(resolve_err);
-                    ExpandResult { value: None, err: None }
+                    ExpandResult {
+                        value: None,
+                        err: None,
+                    }
                 }
             }
         });
@@ -147,7 +157,15 @@ impl Expander {
         self.within_limit(db, |_this| ExpandResult::ok(Some(call_id)))
     }
 
-    pub(super) fn exit(&mut self, Mark { file_id, span_map, ast_id_map, mut bomb }: Mark) {
+    pub(super) fn exit(
+        &mut self,
+        Mark {
+            file_id,
+            span_map,
+            ast_id_map,
+            mut bomb,
+        }: Mark,
+    ) {
         self.span_map = span_map;
         self.current_file_id = file_id;
         self.ast_id_map = ast_id_map;
@@ -164,7 +182,10 @@ impl Expander {
     }
 
     pub(super) fn in_file<T>(&self, value: T) -> InFile<T> {
-        InFile { file_id: self.current_file_id, value }
+        InFile {
+            file_id: self.current_file_id,
+            value,
+        }
     }
 
     pub(super) fn current_file_id(&self) -> HirFileId {
@@ -198,7 +219,8 @@ impl Expander {
             self.recursion_depth = u32::MAX;
             cov_mark::hit!(your_stack_belongs_to_me);
             return ExpandResult::only_err(ExpandError::new(
-                db.macro_arg_considering_derives(call_id, &call_id.lookup(db).kind).2,
+                db.macro_arg_considering_derives(call_id, &call_id.lookup(db).kind)
+                    .2,
                 ExpandErrorKind::RecursionOverflow,
             ));
         }

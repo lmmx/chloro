@@ -38,17 +38,11 @@ impl RootDatabase {
     }
 
     // Feature: Memory Usage
-
     //
-
     // Clears rust-analyzer's internal database and prints memory usage statistics.
-
     //
-
     // | Editor  | Action Name |
-
     // |---------|-------------|
-
     // | VS Code | **rust-analyzer: Memory Usage (Clears Database)**
 
     // ![Memory Usage](https://user-images.githubusercontent.com/48062697/113065592-08559f00-91b1-11eb-8c96-64b88068ec02.gif)
@@ -72,6 +66,7 @@ impl RootDatabase {
         //     }
         //     table.entries::<EntryCounter>().0
         // }
+
         macro_rules! purge_each_query {
             ($($q:path)*) => {$(
                 let before = memory_usage().allocated;

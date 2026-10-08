@@ -110,7 +110,10 @@ fn highlight_closure_captures(
     token: SyntaxToken,
     file_id: EditionedFileId,
 ) -> Option<Vec<HighlightedRange>> {
-    let closure = token.parent_ancestors().take(2).find_map(ast::ClosureExpr::cast)?;
+    let closure = token
+        .parent_ancestors()
+        .take(2)
+        .find_map(ast::ClosureExpr::cast)?;
     let search_range = closure.body()?.syntax().text_range();
     let ty = &sema.type_of_expr(&closure.into())?.original;
     let c = ty.as_closure()?;
@@ -121,17 +124,21 @@ fn highlight_closure_captures(
             .flat_map(|local| {
                 let usages = Definition::Local(local)
                     .usages(sema)
-                    .in_scope(&SearchScope::file_range(FileRange { file_id, range: search_range }))
+                    .in_scope(&SearchScope::file_range(FileRange {
+                        file_id,
+                        range: search_range,
+                    }))
                     .include_self_refs()
                     .all()
                     .references
                     .remove(&file_id)
                     .into_iter()
                     .flatten()
-                    .map(|FileReference { category, range, .. }| HighlightedRange {
-                        range,
-                        category,
-                    });
+                    .map(
+                        |FileReference {
+                             category, range, ..
+                         }| HighlightedRange { range, category },
+                    );
                 let category = if local.is_mut(sema.db) {
                     ReferenceCategory::WRITE
                 } else {
@@ -181,7 +188,11 @@ fn highlight_references(
                 .remove(&file_id)
         })
         .flatten()
-        .map(|FileReference { category, range, .. }| HighlightedRange { range, category });
+        .map(
+            |FileReference {
+                 category, range, ..
+             }| HighlightedRange { range, category },
+        );
     let mut res = FxHashSet::default();
     for &def in &defs {
         // highlight trait usages
@@ -213,25 +224,30 @@ fn highlight_references(
             })();
             if let Some((trait_item_use_scope, use_tree)) = trait_item_use_scope {
                 res.extend(
-                    if use_tree { t.items(sema.db) } else { t.items_with_supertraits(sema.db) }
-                        .into_iter()
-                        .filter_map(|item| {
-                            Definition::from(item)
-                                .usages(sema)
-                                .set_scope(Some(&SearchScope::file_range(FileRange {
-                                    file_id,
-                                    range: trait_item_use_scope.text_range(),
-                                })))
-                                .include_self_refs()
-                                .all()
-                                .references
-                                .remove(&file_id)
-                        })
-                        .flatten()
-                        .map(|FileReference { category, range, .. }| HighlightedRange {
-                            range,
-                            category,
-                        }),
+                    if use_tree {
+                        t.items(sema.db)
+                    } else {
+                        t.items_with_supertraits(sema.db)
+                    }
+                    .into_iter()
+                    .filter_map(|item| {
+                        Definition::from(item)
+                            .usages(sema)
+                            .set_scope(Some(&SearchScope::file_range(FileRange {
+                                file_id,
+                                range: trait_item_use_scope.text_range(),
+                            })))
+                            .include_self_refs()
+                            .all()
+                            .references
+                            .remove(&file_id)
+                    })
+                    .flatten()
+                    .map(
+                        |FileReference {
+                             category, range, ..
+                         }| HighlightedRange { range, category },
+                    ),
                 );
             }
         }
@@ -239,8 +255,9 @@ fn highlight_references(
         // highlight the tail expr of the labelled block
         if matches!(def, Definition::Label(_)) {
             let label = token.parent_ancestors().nth(1).and_then(ast::Label::cast);
-            if let Some(block) =
-                label.and_then(|label| label.syntax().parent()).and_then(ast::BlockExpr::cast)
+            if let Some(block) = label
+                .and_then(|label| label.syntax().parent())
+                .and_then(ast::BlockExpr::cast)
             {
                 for_each_tail_expr(&block.into(), &mut |tail| {
                     if !matches!(tail, ast::Expr::BreakExpr(_)) {
@@ -318,7 +335,10 @@ pub(crate) fn highlight_branch_exit_points(
 
     let push_to_highlights = |file_id, range, highlights: &mut HighlightMap| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-            let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+            let hrange = HighlightedRange {
+                category: ReferenceCategory::empty(),
+                range,
+            };
             highlights.entry(file_id).or_default().insert(hrange);
         }
     };
@@ -401,7 +421,10 @@ fn hl_exit_points(
 
     let mut push_to_highlights = |file_id, range| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-            let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+            let hrange = HighlightedRange {
+                category: ReferenceCategory::empty(),
+                range,
+            };
             highlights.entry(file_id).or_default().insert(hrange);
         }
     };
@@ -418,7 +441,9 @@ fn hl_exit_points(
         let range = match &expr {
             ast::Expr::TryExpr(try_) => try_.question_mark_token().map(|token| token.text_range()),
             ast::Expr::MethodCallExpr(_) | ast::Expr::CallExpr(_) | ast::Expr::MacroExpr(_)
-                if sema.type_of_expr(&expr).is_some_and(|ty| ty.original.is_never()) =>
+                if sema
+                    .type_of_expr(&expr)
+                    .is_some_and(|ty| ty.original.is_never()) =>
             {
                 Some(expr.syntax().text_range())
             }
@@ -490,7 +515,9 @@ pub(crate) fn highlight_exit_points(
         merge_map(&mut res, new_map);
     }
 
-    res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+    res.into_iter()
+        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+        .collect()
 }
 
 pub(crate) fn highlight_break_points(
@@ -508,7 +535,10 @@ pub(crate) fn highlight_break_points(
 
         let mut push_to_highlights = |file_id, range| {
             if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-                let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+                let hrange = HighlightedRange {
+                    category: ReferenceCategory::empty(),
+                    range,
+                };
                 highlights.entry(file_id).or_default().insert(hrange);
             }
         };
@@ -585,7 +615,9 @@ pub(crate) fn highlight_break_points(
         merge_map(&mut res, new_map);
     }
 
-    res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+    res.into_iter()
+        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+        .collect()
 }
 
 pub(crate) fn highlight_yield_points(
@@ -601,7 +633,10 @@ pub(crate) fn highlight_yield_points(
 
         let mut push_to_highlights = |file_id, range| {
             if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-                let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+                let hrange = HighlightedRange {
+                    category: ReferenceCategory::empty(),
+                    range,
+                };
                 highlights.entry(file_id).or_default().insert(hrange);
             }
         };
@@ -661,7 +696,9 @@ pub(crate) fn highlight_yield_points(
         merge_map(&mut res, new_map);
     }
 
-    res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+    res.into_iter()
+        .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+        .collect()
 }
 
 fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange> {
@@ -686,7 +723,9 @@ fn original_frange(
     file_id: HirFileId,
     text_range: Option<TextRange>,
 ) -> Option<FileRange> {
-    InFile::new(file_id, text_range?).original_node_file_range_opt(db).map(|(frange, _)| frange)
+    InFile::new(file_id, text_range?)
+        .original_node_file_range_opt(db)
+        .map(|(frange, _)| frange)
 }
 
 fn merge_map(res: &mut HighlightMap, new: Option<HighlightMap>) {
@@ -709,7 +748,11 @@ struct WalkExpandedExprCtx<'a> {
 
 impl<'a> WalkExpandedExprCtx<'a> {
     fn new(sema: &'a Semantics<'a, RootDatabase>) -> Self {
-        Self { sema, depth: 0, check_ctx: &is_closure_or_blk_with_modif }
+        Self {
+            sema,
+            depth: 0,
+            check_ctx: &is_closure_or_blk_with_modif,
+        }
     }
 
     fn with_check_ctx(&self, check_ctx: &'static dyn Fn(&ast::Expr) -> bool) -> Self {
@@ -717,10 +760,7 @@ impl<'a> WalkExpandedExprCtx<'a> {
     }
 
     fn walk(&mut self, expr: &ast::Expr, cb: &mut dyn FnMut(usize, ast::Expr)) {
-        preorder_expr_with_ctx_checker(
-            expr,
-            self.check_ctx,
-            &mut |ev: WalkEvent<ast::Expr>| {
+        preorder_expr_with_ctx_checker(expr, self.check_ctx, &mut |ev: WalkEvent<ast::Expr>| {
             match ev {
                 syntax::WalkEvent::Enter(expr) => {
                     cb(self.depth, expr.clone());
@@ -730,8 +770,9 @@ impl<'a> WalkExpandedExprCtx<'a> {
                     }
 
                     if let ast::Expr::MacroExpr(expr) = expr
-                        && let Some(expanded) =
-                            expr.macro_call().and_then(|call| self.sema.expand_macro_call(&call))
+                        && let Some(expanded) = expr
+                            .macro_call()
+                            .and_then(|call| self.sema.expand_macro_call(&call))
                     {
                         match_ast! {
                             match (expanded.value) {
@@ -752,15 +793,10 @@ impl<'a> WalkExpandedExprCtx<'a> {
                 _ => {}
             }
             false
-        },
-        )
+        })
     }
 
-    fn handle_expanded(
-        &mut self,
-        expanded: ast::MacroStmts,
-        cb: &mut dyn FnMut(usize, ast::Expr),
-    ) {
+    fn handle_expanded(&mut self, expanded: ast::MacroStmts, cb: &mut dyn FnMut(usize, ast::Expr)) {
         if let Some(expr) = expanded.expr() {
             self.walk(&expr, cb);
         }
@@ -807,7 +843,10 @@ pub(crate) fn highlight_unsafe_points(
 
         let mut push_to_highlights = |file_id, range| {
             if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
-                let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+                let hrange = HighlightedRange {
+                    category: ReferenceCategory::empty(),
+                    range,
+                };
                 highlights.entry(file_id).or_default().push(hrange);
             }
         };
@@ -833,8 +872,11 @@ pub(crate) fn highlight_unsafe_points(
 #[cfg(test)]
 mod tests {
     use itertools::Itertools;
+
     use crate::fixture;
+
     use super::*;
+
     const ENABLED_CONFIG: HighlightRelatedConfig = HighlightRelatedConfig {
         break_points: true,
         exit_points: true,
@@ -843,10 +885,12 @@ mod tests {
         yield_points: true,
         branch_exit_points: true,
     };
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(ra_fixture, ENABLED_CONFIG);
     }
+
     #[track_caller]
     fn check_with_config(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -854,17 +898,25 @@ mod tests {
     ) {
         let (analysis, pos, annotations) = fixture::annotations(ra_fixture);
 
-        let hls = analysis.highlight_related(config, pos).unwrap().unwrap_or_default();
+        let hls = analysis
+            .highlight_related(config, pos)
+            .unwrap()
+            .unwrap_or_default();
 
-        let mut expected =
-            annotations.into_iter().map(|(r, access)| (r.range, access)).collect::<Vec<_>>();
+        let mut expected = annotations
+            .into_iter()
+            .map(|(r, access)| (r.range, access))
+            .collect::<Vec<_>>();
 
         let mut actual: Vec<(TextRange, String)> = hls
             .into_iter()
             .map(|hl| {
                 (
                     hl.range,
-                    hl.category.iter_names().map(|(name, _flag)| name.to_lowercase()).join(","),
+                    hl.category
+                        .iter_names()
+                        .map(|(name, _flag)| name.to_lowercase())
+                        .join(","),
                 )
             })
             .collect();
@@ -873,6 +925,7 @@ mod tests {
 
         assert_eq!(expected, actual);
     }
+
     #[test]
     fn test_hl_unsafe_block() {
         check(
@@ -898,6 +951,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_tuple_fields() {
         check(
@@ -913,6 +967,7 @@ fn foo(t: Tuple) {
 "#,
         );
     }
+
     #[test]
     fn test_hl_module() {
         check(
@@ -925,6 +980,7 @@ struct Foo;
 "#,
         );
     }
+
     #[test]
     fn test_hl_self_in_crate_root() {
         check(
@@ -948,6 +1004,7 @@ use lib$0;
 "#,
         );
     }
+
     #[test]
     fn test_hl_self_in_module() {
         check(
@@ -960,6 +1017,7 @@ use self$0;
 "#,
         );
     }
+
     #[test]
     fn test_hl_local() {
         check(
@@ -973,6 +1031,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_local_in_attr() {
         check(
@@ -988,6 +1047,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_multi_macro_usage() {
         check(
@@ -1026,6 +1086,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_yield_points() {
         check(
@@ -1044,6 +1105,7 @@ pub async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_yield_points2() {
         check(
@@ -1062,6 +1124,7 @@ pub async$0 fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_exit_points_of_async_blocks() {
         check(
@@ -1082,6 +1145,7 @@ pub fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_let_else_yield_points() {
         check(
@@ -1104,6 +1168,7 @@ pub async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_yield_nested_fn() {
         check(
@@ -1122,6 +1187,7 @@ async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_yield_nested_async_blocks() {
         check(
@@ -1136,6 +1202,7 @@ async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_exit_points() {
         check(
@@ -1155,6 +1222,7 @@ async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_exit_points2() {
         check(
@@ -1174,6 +1242,7 @@ async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_exit_points3() {
         check(
@@ -1193,6 +1262,7 @@ async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_let_else_exit_points() {
         check(
@@ -1212,6 +1282,7 @@ async fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_prefer_ref_over_tail_exit() {
         check(
@@ -1230,6 +1301,7 @@ fn foo() -> u32 {
 "#,
         );
     }
+
     #[test]
     fn test_hl_never_call_is_exit_point() {
         check(
@@ -1259,6 +1331,7 @@ fn never() -> ! { loop {} }
 "#,
         );
     }
+
     #[test]
     fn test_hl_inner_tail_exit_points() {
         check(
@@ -1300,6 +1373,7 @@ fn never() -> ! { loop {} }
 "#,
         );
     }
+
     #[test]
     fn test_hl_inner_tail_exit_points_labeled_block() {
         check(
@@ -1321,6 +1395,7 @@ fn never() -> ! { loop {} }
 "#,
         );
     }
+
     #[test]
     fn test_hl_inner_tail_exit_points_loops() {
         check(
@@ -1338,6 +1413,7 @@ fn never() -> ! { loop {} }
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_loop() {
         check(
@@ -1365,6 +1441,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_loop2() {
         check(
@@ -1391,6 +1468,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_for() {
         check(
@@ -1418,6 +1496,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_for_but_not_continue() {
         check(
@@ -1452,6 +1531,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_continue_for_but_not_break() {
         check(
@@ -1486,6 +1566,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_and_continue() {
         check(
@@ -1524,6 +1605,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_while() {
         check(
@@ -1551,6 +1633,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_labeled_block() {
         check(
@@ -1578,6 +1661,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_unlabeled_loop() {
         check(
@@ -1592,6 +1676,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_break_unlabeled_block_in_loop() {
         check(
@@ -1608,6 +1693,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_hl_field_shorthand() {
         check(
@@ -1622,9 +1708,13 @@ fn function(field: u32) {
 "#,
         );
     }
+
     #[test]
     fn test_hl_disabled_ref_local() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1636,9 +1726,13 @@ fn foo() {
             config,
         );
     }
+
     #[test]
     fn test_hl_disabled_ref_local_preserved_break() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1670,9 +1764,13 @@ fn foo() {
             config,
         );
     }
+
     #[test]
     fn test_hl_disabled_ref_local_preserved_yield() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1700,9 +1798,13 @@ async fn foo() {
             config,
         );
     }
+
     #[test]
     fn test_hl_disabled_ref_local_preserved_exit() {
-        let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            references: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1738,9 +1840,13 @@ fn foo() -> i32 {
             config,
         );
     }
+
     #[test]
     fn test_hl_disabled_break() {
-        let config = HighlightRelatedConfig { break_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            break_points: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1753,9 +1859,13 @@ fn foo() {
             config,
         );
     }
+
     #[test]
     fn test_hl_disabled_yield() {
-        let config = HighlightRelatedConfig { yield_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            yield_points: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1766,9 +1876,13 @@ async$0 fn foo() {
             config,
         );
     }
+
     #[test]
     fn test_hl_disabled_exit() {
-        let config = HighlightRelatedConfig { exit_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            exit_points: false,
+            ..ENABLED_CONFIG
+        };
 
         check_with_config(
             r#"
@@ -1782,6 +1896,7 @@ fn foo() ->$0 i32 {
             config,
         );
     }
+
     #[test]
     fn test_hl_multi_local() {
         check(
@@ -1833,6 +1948,7 @@ fn foo((
 "#,
         );
     }
+
     #[test]
     fn test_hl_trait_impl_methods() {
         check(
@@ -1894,6 +2010,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_assoc_type_highlighting() {
         check(
@@ -1909,6 +2026,7 @@ impl Trait for () {
 "#,
         );
     }
+
     #[test]
     fn test_closure_capture_pipe() {
         check(
@@ -1922,6 +2040,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_closure_capture_move() {
         check(
@@ -1935,6 +2054,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_trait_highlights_assoc_item_uses() {
         check(
@@ -1980,6 +2100,7 @@ fn f2<T: Foo>(t: T) {
 "#,
         );
     }
+
     #[test]
     fn test_trait_highlights_assoc_item_uses_use_tree() {
         check(
@@ -2022,6 +2143,7 @@ fn f<T: Foo>(t: T) {
 "#,
         );
     }
+
     #[test]
     fn implicit_format_args() {
         check(
@@ -2038,9 +2160,11 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn return_in_macros() {
-        check(r#"
+        check(
+            r#"
 macro_rules! N {
     ($i:ident, $x:expr, $blk:expr) => {
         for $i in 0..$x {
@@ -2067,11 +2191,14 @@ fn main() {
         })();
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn return_in_closure() {
-        check(r#"
+        check(
+            r#"
 macro_rules! N {
     ($i:ident, $x:expr, $blk:expr) => {
         for $i in 0..$x {
@@ -2097,11 +2224,14 @@ fn main() {
         })();
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn return_in_try() {
-        check(r#"
+        check(
+            r#"
 fn main() {
     fn f() {
  // ^^
@@ -2114,11 +2244,14 @@ fn main() {
      // ^^^^^^
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn break_in_try() {
-        check(r#"
+        check(
+            r#"
 fn main() {
     for i in 1..100 {
  // ^^^
@@ -2128,11 +2261,14 @@ fn main() {
         };
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn no_highlight_on_return_in_macro_call() {
-        check(r#"
+        check(
+            r#"
 //- minicore:include
 //- /lib.rs
 macro_rules! M {
@@ -2157,11 +2293,14 @@ fn main() {
 {
     return;
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn nested_match() {
-        check(r#"
+        check(
+            r#"
 fn main() {
     match$0 0 {
  // ^^^^^
@@ -2175,11 +2314,14 @@ fn main() {
           // ^
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn single_arm_highlight() {
-        check(r#"
+        check(
+            r#"
 fn main() {
     match 0 {
         0 =>$0 {
@@ -2191,11 +2333,16 @@ fn main() {
         _ => 2,
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn no_branches_when_disabled() {
-        let config = HighlightRelatedConfig { branch_exit_points: false, ..ENABLED_CONFIG };
+        let config = HighlightRelatedConfig {
+            branch_exit_points: false,
+            ..ENABLED_CONFIG
+        };
         check_with_config(
             r#"
 fn main() {
@@ -2208,9 +2355,11 @@ fn main() {
             config,
         );
     }
+
     #[test]
     fn asm() {
-        check(r#"
+        check(
+            r#"
 //- minicore: asm
 #[inline]
 pub unsafe fn bootstrap() -> ! {
@@ -2233,11 +2382,14 @@ pub unsafe fn bootstrap() -> ! {
         options(noreturn, nomem, nostack),
     );
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn complex_arms_highlight() {
-        check(r#"
+        check(
+            r#"
 fn calculate(n: i32) -> i32 { n * 2 }
 
 fn main() {
@@ -2257,11 +2409,14 @@ fn main() {
         },
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn match_in_macro_highlight() {
-        check(r#"
+        check(
+            r#"
 macro_rules! M {
     ($e:expr) => { $e };
 }
@@ -2277,8 +2432,10 @@ fn main() {
         }
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn match_in_macro_highlight_2() {
         check(
@@ -2305,9 +2462,11 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn nested_if_else() {
-        check(r#"
+        check(
+            r#"
 fn main() {
     if$0 true {
  // ^^
@@ -2323,11 +2482,14 @@ fn main() {
      // ^
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn if_else_if_highlight() {
-        check(r#"
+        check(
+            r#"
 fn main() {
     if$0 true {
  // ^^
@@ -2342,11 +2504,14 @@ fn main() {
      // ^
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn complex_if_branches() {
-        check(r#"
+        check(
+            r#"
 fn calculate(n: i32) -> i32 { n * 2 }
 
 fn main() {
@@ -2366,11 +2531,14 @@ fn main() {
         }
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn if_in_macro_highlight() {
-        check(r#"
+        check(
+            r#"
 macro_rules! M {
     ($e:expr) => { $e };
 }
@@ -2387,12 +2555,15 @@ fn main() {
         }
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn match_in_macro() {
         // We should not highlight the outer `match` expression.
-        check(r#"
+        check(
+            r#"
 macro_rules! M {
     (match) => { 1 };
 }
@@ -2405,8 +2576,10 @@ fn main() {
         }
     }
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn labeled_block_tail_expr() {
         check(
@@ -2423,6 +2596,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn labeled_block_tail_expr_2() {
         check(
@@ -2442,6 +2616,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn different_unsafe_block() {
         check(

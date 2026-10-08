@@ -41,6 +41,7 @@ pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 
     // We don't need to check for leading pipe because it is directly under `MatchArm`
     // without `OrPat`.
+
     let new_parent = match_arm.syntax().parent()?;
 
     acc.add(
@@ -58,7 +59,8 @@ pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
             let new_pat = if pats_after.len() == 1 {
                 pats_after[0].clone()
             } else {
-                make.or_pat(pats_after, or_pat.leading_pipe().is_some()).into()
+                make.or_pat(pats_after, or_pat.leading_pipe().is_some())
+                    .into()
             };
             let new_match_arm = make.match_arm(new_pat, match_arm.guard(), match_arm_body);
             let mut pipe_index = pipe_token.index();
@@ -106,7 +108,9 @@ pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn unmerge_match_arm_single_pipe() {
         check_assist(
@@ -138,6 +142,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unmerge_match_arm_guard() {
         check_assist(
@@ -169,6 +174,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unmerge_match_arm_leading_pipe() {
         check_assist_not_applicable(
@@ -184,6 +190,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unmerge_match_arm_multiple_pipes() {
         check_assist(
@@ -215,6 +222,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unmerge_match_arm_inserts_comma_if_required() {
         check_assist(
@@ -244,6 +252,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unmerge_match_arm_inserts_comma_if_had_after() {
         check_assist(

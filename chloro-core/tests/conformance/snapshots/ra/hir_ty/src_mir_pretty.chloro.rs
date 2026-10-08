@@ -43,11 +43,19 @@ impl<'db> MirBody<'db> {
         ctx.for_body(|this| match ctx.body.owner {
             hir_def::DefWithBodyId::FunctionId(id) => {
                 let data = db.function_signature(id);
-                w!(this, "fn {}() ", data.name.display(db, this.display_target.edition));
+                w!(
+                    this,
+                    "fn {}() ",
+                    data.name.display(db, this.display_target.edition)
+                );
             }
             hir_def::DefWithBodyId::StaticId(id) => {
                 let data = db.static_signature(id);
-                w!(this, "static {}: _ = ", data.name.display(db, this.display_target.edition));
+                w!(
+                    this,
+                    "static {}: _ = ",
+                    data.name.display(db, this.display_target.edition)
+                );
             }
             hir_def::DefWithBodyId::ConstId(id) => {
                 let data = db.const_signature(id);
@@ -126,7 +134,12 @@ impl<'db> HirDisplay<'db> for LocalName<'db> {
         match self {
             LocalName::Unknown(l) => write!(f, "_{}", u32::from(l.into_raw())),
             LocalName::Binding(n, l) => {
-                write!(f, "{}_{}", n.display(f.db, f.edition()), u32::from(l.into_raw()))
+                write!(
+                    f,
+                    "{}_{}",
+                    n.display(f.db, f.edition()),
+                    u32::from(l.into_raw())
+                )
             }
         }
     }
@@ -210,7 +223,8 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
             wln!(
                 self,
                 "let {}: {};",
-                self.local_name(id).display_test(self.db, self.display_target),
+                self.local_name(id)
+                    .display_test(self.db, self.display_target),
                 self.hir_display(&local.ty)
             );
         }
@@ -244,14 +258,16 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                             wln!(
                                 this,
                                 "StorageDead({})",
-                                this.local_name(*p).display_test(this.db, this.display_target)
+                                this.local_name(*p)
+                                    .display_test(this.db, this.display_target)
                             );
                         }
                         StatementKind::StorageLive(p) => {
                             wln!(
                                 this,
                                 "StorageLive({})",
-                                this.local_name(*p).display_test(this.db, this.display_target)
+                                this.local_name(*p)
+                                    .display_test(this.db, this.display_target)
                             );
                         }
                         StatementKind::Deinit(p) => {
@@ -283,7 +299,13 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                                 wln!(this, "_ => {},", this.basic_block_id(targets.otherwise()));
                             });
                         }
-                        TerminatorKind::Call { func, args, destination, target, .. } => {
+                        TerminatorKind::Call {
+                            func,
+                            args,
+                            destination,
+                            target,
+                            ..
+                        } => {
                             w!(this, "Call ");
                             this.with_block(|this| {
                                 w!(this, "func: ");
@@ -319,7 +341,12 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
         ) {
             let Some((last, head)) = projections.split_last() else {
                 // no projection
-                w!(this, "{}", this.local_name(local).display_test(this.db, this.display_target));
+                w!(
+                    this,
+                    "{}",
+                    this.local_name(local)
+                        .display_test(this.db, this.display_target)
+                );
                 return;
             };
             match last {
@@ -347,7 +374,11 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                         }
                         hir_def::VariantId::StructId(_) | hir_def::VariantId::UnionId(_) => {
                             f(this, local, head);
-                            w!(this, ".{}", name.display(this.db, this.display_target.edition));
+                            w!(
+                                this,
+                                ".{}",
+                                name.display(this.db, this.display_target.edition)
+                            );
                         }
                     }
                 }
@@ -364,7 +395,8 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                     w!(
                         this,
                         "[{}]",
-                        this.local_name(*l).display_test(this.db, this.display_target)
+                        this.local_name(*l)
+                            .display_test(this.db, this.display_target)
                     );
                 }
                 it => {
@@ -373,7 +405,11 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                 }
             }
         }
-        f(self, p.local, p.projection.lookup(&self.body.projection_store));
+        f(
+            self,
+            p.local,
+            p.projection.lookup(&self.body.projection_store),
+        );
     }
 
     fn operand(&mut self, r: &Operand<'db>) {
@@ -395,7 +431,9 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
                 match r {
                     BorrowKind::Shared => w!(self, "&"),
                     BorrowKind::Shallow => w!(self, "&shallow "),
-                    BorrowKind::Mut { kind: MutBorrowKind::ClosureCapture } => w!(self, "&uniq "),
+                    BorrowKind::Mut {
+                        kind: MutBorrowKind::ClosureCapture,
+                    } => w!(self, "&uniq "),
                     BorrowKind::Mut {
                         kind: MutBorrowKind::Default | MutBorrowKind::TwoPhasedBorrow,
                     } => w!(self, "&mut "),
@@ -415,7 +453,11 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
             Rvalue::Repeat(op, len) => {
                 w!(self, "[");
                 self.operand(op);
-                w!(self, "; {}]", len.display_test(self.db, self.display_target));
+                w!(
+                    self,
+                    "; {}]",
+                    len.display_test(self.db, self.display_target)
+                );
             }
             Rvalue::Aggregate(AggregateKind::Adt(_, _), it) => {
                 w!(self, "Adt(");
@@ -474,8 +516,7 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
             Rvalue::ThreadLocalRef(n)
             | Rvalue::AddressOf(n)
             | Rvalue::BinaryOp(n)
-            | Rvalue::NullaryOp(n) => match *n {
-            },
+            | Rvalue::NullaryOp(n) => match *n {},
         }
     }
 
@@ -490,10 +531,7 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
         }
     }
 
-    fn hir_display<'b, T: HirDisplay<'db>>(
-        &self,
-        ty: &'b T,
-    ) -> impl Display + use<'a, 'b, 'db, T>
+    fn hir_display<'b, T: HirDisplay<'db>>(&self, ty: &'b T) -> impl Display + use<'a, 'b, 'db, T>
     where
         'db: 'b,
     {

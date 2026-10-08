@@ -29,7 +29,11 @@ use rustc_type_ir::{
 use crate::next_solver::{
     AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
     TyKind,
-    infer::{InferCtxt, TypeTrace, relate::RelateResult, traits::{Obligation, PredicateObligations}},
+    infer::{
+        InferCtxt, TypeTrace,
+        relate::RelateResult,
+        traits::{Obligation, PredicateObligations},
+    },
 };
 
 #[derive(Clone, Copy)]
@@ -65,7 +69,13 @@ impl<'infcx, 'db> LatticeOp<'infcx, 'db> {
         param_env: ParamEnv<'db>,
         kind: LatticeOpKind,
     ) -> LatticeOp<'infcx, 'db> {
-        LatticeOp { infcx, trace, param_env, kind, obligations: PredicateObligations::new() }
+        LatticeOp {
+            infcx,
+            trace,
+            param_env,
+            kind,
+            obligations: PredicateObligations::new(),
+        }
     }
 
     pub(crate) fn into_obligations(self) -> PredicateObligations<'db> {
@@ -88,7 +98,10 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         match variance {
             Variance::Invariant => {
                 self.obligations.extend(
-                    self.infcx.at(&self.trace.cause, self.param_env).eq(a, b)?.into_obligations(),
+                    self.infcx
+                        .at(&self.trace.cause, self.param_env)
+                        .eq(a, b)?
+                        .into_obligations(),
                 );
                 Ok(a)
             }
@@ -146,8 +159,18 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
             }
 
             (
-                TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: a_def_id, .. }),
-                TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: b_def_id, .. }),
+                TyKind::Alias(
+                    rustc_type_ir::Opaque,
+                    AliasTy {
+                        def_id: a_def_id, ..
+                    },
+                ),
+                TyKind::Alias(
+                    rustc_type_ir::Opaque,
+                    AliasTy {
+                        def_id: b_def_id, ..
+                    },
+                ),
             ) if a_def_id == b_def_id => super_combine_tys(infcx, self, a, b),
 
             _ => super_combine_tys(infcx, self, a, b),
@@ -190,7 +213,9 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
             self.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)?;
             Ok(a)
         } else {
-            Ok(Binder::dummy(self.relate(a.skip_binder(), b.skip_binder())?))
+            Ok(Binder::dummy(
+                self.relate(a.skip_binder(), b.skip_binder())?,
+            ))
         }
     }
 }
@@ -236,7 +261,12 @@ impl<'db> PredicateEmittingRelation<InferCtxt<'db>> for LatticeOp<'_, 'db> {
         preds: impl IntoIterator<Item: Upcast<DbInterner<'db>, Predicate<'db>>>,
     ) {
         self.obligations.extend(preds.into_iter().map(|pred| {
-            Obligation::new(self.infcx.interner, self.trace.cause.clone(), self.param_env, pred)
+            Obligation::new(
+                self.infcx.interner,
+                self.trace.cause.clone(),
+                self.param_env,
+                pred,
+            )
         }))
     }
 

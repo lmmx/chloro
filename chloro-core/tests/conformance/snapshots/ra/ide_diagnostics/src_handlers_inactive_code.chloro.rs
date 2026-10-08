@@ -41,6 +41,7 @@ pub(crate) fn inactive_code(
 #[cfg(test)]
 mod tests {
     use crate::{DiagnosticsConfig, tests::check_diagnostics_with_config};
+
     #[track_caller]
     pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let config = DiagnosticsConfig {
@@ -49,6 +50,7 @@ mod tests {
         };
         check_diagnostics_with_config(config, ra_fixture)
     }
+
     #[test]
     fn cfg_diagnostics() {
         check(
@@ -82,9 +84,11 @@ fn f() {
         "#,
         );
     }
+
     #[test]
     fn inactive_item() {
         // Additional tests in `cfg` crate. This only tests disabled cfgs.
+
         check(
             r#"
     #[cfg(no)] pub fn f() {}
@@ -104,6 +108,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn inactive_assoc_item() {
         check(
@@ -121,6 +126,7 @@ trait Bar {
 "#,
         );
     }
+
     /// Tests that `cfg` attributes behind `cfg_attr` is handled properly.
     #[test]
     fn inactive_via_cfg_attr() {
@@ -139,6 +145,7 @@ trait Bar {
 "#,
         );
     }
+
     #[test]
     fn inactive_fields_and_variants() {
         check(
@@ -169,6 +176,7 @@ union FooBar {
 "#,
         );
     }
+
     #[test]
     fn modules() {
         check(
@@ -189,6 +197,7 @@ union FooBar {
 "#,
         );
     }
+
     #[test]
     fn cfg_true_false() {
         check(

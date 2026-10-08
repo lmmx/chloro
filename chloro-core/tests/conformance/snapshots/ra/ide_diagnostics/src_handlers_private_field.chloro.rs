@@ -15,7 +15,10 @@ pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField)
         format!(
             "field `{}` of `{}` is private",
             d.field.name(ctx.sema.db).display(ctx.sema.db, ctx.edition),
-            d.field.parent_def(ctx.sema.db).name(ctx.sema.db).display(ctx.sema.db, ctx.edition)
+            d.field
+                .parent_def(ctx.sema.db)
+                .name(ctx.sema.db)
+                .display(ctx.sema.db, ctx.edition)
         ),
         d.expr.map(|it| it.into()),
     )
@@ -24,7 +27,9 @@ pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField)
         &ctx.sema,
         d.expr.file_id.original_file(ctx.sema.db),
         d.field,
-        ctx.sema.original_range(d.expr.to_node(ctx.sema.db).syntax()).range,
+        ctx.sema
+            .original_range(d.expr.to_node(ctx.sema.db).syntax())
+            .range,
     ))
 }
 
@@ -35,8 +40,14 @@ pub(crate) fn field_is_private_fixes(
     fix_range: TextRange,
 ) -> Option<Vec<Assist>> {
     let def_crate = private_field.krate(sema.db);
-    let usage_crate = sema.file_to_module_def(usage_file_id.file_id(sema.db))?.krate();
-    let mut visibility_text = if usage_crate == def_crate { "pub(crate) " } else { "pub " };
+    let usage_crate = sema
+        .file_to_module_def(usage_file_id.file_id(sema.db))?
+        .krate();
+    let mut visibility_text = if usage_crate == def_crate {
+        "pub(crate) "
+    } else {
+        "pub "
+    };
 
     let source = private_field.source(sema.db)?;
     let existing_visibility = match &source.value {
@@ -47,7 +58,10 @@ pub(crate) fn field_is_private_fixes(
         Some(visibility) => {
             // If there is an existing visibility, don't insert whitespace after.
             visibility_text = visibility_text.trim_end();
-            source.with_value(visibility.syntax()).original_file_range_opt(sema.db)?.0
+            source
+                .with_value(visibility.syntax())
+                .original_file_range_opt(sema.db)?
+                .0
         }
         None => {
             let (range, _) = source.syntax().original_file_range_opt(sema.db)?;
@@ -73,6 +87,7 @@ pub(crate) fn field_is_private_fixes(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix};
+
     #[test]
     fn private_field() {
         check_diagnostics(
@@ -85,6 +100,7 @@ fn main(s: module::Struct) {
 "#,
         );
     }
+
     #[test]
     fn private_tuple_field() {
         check_diagnostics(
@@ -97,6 +113,7 @@ fn main(s: module::Struct) {
 "#,
         );
     }
+
     #[test]
     fn private_but_shadowed_in_deref() {
         check_diagnostics(
@@ -116,6 +133,7 @@ fn main(s: module::Struct) {
 "#,
         );
     }
+
     #[test]
     fn block_module_madness() {
         check_diagnostics(
@@ -135,6 +153,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn block_module_madness2() {
         check_diagnostics(
@@ -160,6 +179,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn change_visibility_fix() {
         check_fix(
@@ -191,6 +211,7 @@ fn foo(v: foo::bar::Struct) {
             "#,
         );
     }
+
     #[test]
     fn change_visibility_with_existing_visibility() {
         check_fix(

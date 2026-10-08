@@ -36,7 +36,9 @@ pub(crate) fn call_hierarchy(
     goto_definition::goto_definition(
         db,
         position,
-        &GotoDefinitionConfig { minicore: config.minicore },
+        &GotoDefinitionConfig {
+            minicore: config.minicore,
+        },
     )
 }
 
@@ -67,16 +69,19 @@ pub(crate) fn incoming_calls(
         .flat_map(|func| func.usages(sema).all());
 
     for (_, references) in references {
-        let references =
-            references.iter().filter_map(|FileReference { name, .. }| name.as_name_ref());
+        let references = references
+            .iter()
+            .filter_map(|FileReference { name, .. }| name.as_name_ref());
         for name in references {
             // This target is the containing function
-            let def_nav = sema.ancestors_with_macros(name.syntax().clone()).find_map(|node| {
-                let def = ast::Fn::cast(node).and_then(|fn_| sema.to_def(&fn_))?;
-                // We should return def before check if it is a test, so that we
-                // will not continue to search for outer fn in nested fns
-                def.try_to_nav(sema).map(|nav| (def, nav))
-            });
+            let def_nav = sema
+                .ancestors_with_macros(name.syntax().clone())
+                .find_map(|node| {
+                    let def = ast::Fn::cast(node).and_then(|fn_| sema.to_def(&fn_))?;
+                    // We should return def before check if it is a test, so that we
+                    // will not continue to search for outer fn in nested fns
+                    def.try_to_nav(sema).map(|nav| (def, nav))
+                });
 
             if let Some((def, nav)) = def_nav {
                 if config.exclude_tests && def.is_test(db) {
@@ -167,7 +172,10 @@ impl CallLocations {
     }
 
     fn into_items(self) -> Vec<CallItem> {
-        self.funcs.into_iter().map(|(target, ranges)| CallItem { target, ranges }).collect()
+        self.funcs
+            .into_iter()
+            .map(|(target, ranges)| CallItem { target, ranges })
+            .collect()
     }
 }
 
@@ -176,7 +184,9 @@ mod tests {
     use expect_test::{Expect, expect};
     use ide_db::{FilePosition, MiniCore};
     use itertools::Itertools;
+
     use crate::fixture;
+
     fn check_hierarchy(
         exclude_tests: bool,
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -188,14 +198,19 @@ mod tests {
             format!(
                 "{} : {}",
                 item.target.debug_render(),
-                item.ranges.iter().format_with(", ", |range, f| f(&format_args!(
-                    "{:?}:{:?}",
-                    range.file_id, range.range
-                )))
+                item.ranges
+                    .iter()
+                    .format_with(", ", |range, f| f(&format_args!(
+                        "{:?}:{:?}",
+                        range.file_id, range.range
+                    )))
             )
         }
 
-        let config = crate::CallHierarchyConfig { exclude_tests, minicore: MiniCore::default() };
+        let config = crate::CallHierarchyConfig {
+            exclude_tests,
+            minicore: MiniCore::default(),
+        };
         let (analysis, pos) = fixture::position(ra_fixture);
 
         let mut navs = analysis.call_hierarchy(pos, &config).unwrap().unwrap().info;
@@ -203,14 +218,17 @@ mod tests {
         let nav = navs.pop().unwrap();
         expected_nav.assert_eq(&nav.debug_render());
 
-        let item_pos =
-            FilePosition { file_id: nav.file_id, offset: nav.focus_or_full_range().start() };
+        let item_pos = FilePosition {
+            file_id: nav.file_id,
+            offset: nav.focus_or_full_range().start(),
+        };
         let incoming_calls = analysis.incoming_calls(&config, item_pos).unwrap().unwrap();
         expected_incoming.assert_eq(&incoming_calls.into_iter().map(debug_render).join("\n"));
 
         let outgoing_calls = analysis.outgoing_calls(&config, item_pos).unwrap().unwrap();
         expected_outgoing.assert_eq(&outgoing_calls.into_iter().map(debug_render).join("\n"));
     }
+
     #[test]
     fn test_call_hierarchy_on_ref() {
         check_hierarchy(
@@ -227,6 +245,7 @@ fn caller() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_on_def() {
         check_hierarchy(
@@ -243,6 +262,7 @@ fn caller() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_same_fn() {
         check_hierarchy(
@@ -260,6 +280,7 @@ fn caller() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_different_fn() {
         check_hierarchy(
@@ -282,6 +303,7 @@ fn caller2() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_tests_mod() {
         check_hierarchy(
@@ -310,6 +332,7 @@ mod tests {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_different_files() {
         check_hierarchy(
@@ -331,6 +354,7 @@ pub fn callee() {}
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_outgoing() {
         check_hierarchy(
@@ -348,6 +372,7 @@ fn call$0er() {
             expect!["callee Function FileId(0) 0..14 3..9 : FileId(0):33..39, FileId(0):47..53"],
         );
     }
+
     #[test]
     fn test_call_hierarchy_outgoing_in_different_files() {
         check_hierarchy(
@@ -369,6 +394,7 @@ pub fn callee() {}
             expect!["callee Function FileId(1) 0..18 7..13 foo : FileId(0):45..51"],
         );
     }
+
     #[test]
     fn test_call_hierarchy_incoming_outgoing() {
         check_hierarchy(
@@ -392,6 +418,7 @@ fn caller3() {
             expect!["caller3 Function FileId(0) 66..83 69..76 : FileId(0):52..59"],
         );
     }
+
     #[test]
     fn test_call_hierarchy_issue_5103() {
         check_hierarchy(
@@ -430,6 +457,7 @@ fn main() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_macros_incoming() {
         check_hierarchy(
@@ -477,6 +505,7 @@ fn caller() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_macros_outgoing() {
         check_hierarchy(
@@ -503,6 +532,7 @@ fn caller$0() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_macros_incoming_different_files() {
         check_hierarchy(
@@ -590,6 +620,7 @@ macro_rules! call {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_in_macros_outgoing_different_files() {
         check_hierarchy(
@@ -649,6 +680,7 @@ macro_rules! call {
             expect![[]],
         );
     }
+
     #[test]
     fn test_trait_method_call_hierarchy() {
         check_hierarchy(
@@ -673,6 +705,7 @@ fn caller() {
             expect![[]],
         );
     }
+
     #[test]
     fn test_call_hierarchy_excluding_tests() {
         check_hierarchy(

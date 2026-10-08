@@ -11,7 +11,10 @@ use thin_vec::ThinVec;
 use crate::{
     LifetimeParamId, TypeParamId,
     builtin_type::{BuiltinInt, BuiltinType, BuiltinUint},
-    expr_store::{ExpressionStore, path::{GenericArg, Path}},
+    expr_store::{
+        ExpressionStore,
+        path::{GenericArg, Path},
+    },
     hir::{ExprId, Literal},
 };
 
@@ -81,9 +84,9 @@ impl Rawness {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 /// A `TypeRefId` that is guaranteed to always be `TypeRef::Path`. We use this for things like
 /// impl's trait, that are always paths but need to be traced back to source code.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct PathId(TypeRefId);
 
 impl PathId {
@@ -114,7 +117,10 @@ pub struct FnType {
 impl FnType {
     #[inline]
     pub fn split_params_and_ret(&self) -> (&[(Option<Name>, TypeRefId)], TypeRefId) {
-        let (ret, params) = self.params.split_last().expect("should have at least return type");
+        let (ret, params) = self
+            .params
+            .split_last()
+            .expect("should have at least return type");
         (params, ret.1)
     }
 }
@@ -154,7 +160,7 @@ pub enum TypeRef {
 }
 
 #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
-const () = assert!(size_of::<TypeRef>() == 24);
+const _: () = assert!(size_of::<TypeRef>() == 24);
 
 pub type TypeRefId = Idx<TypeRef>;
 
@@ -179,7 +185,7 @@ pub enum TypeBound {
 }
 
 #[cfg(target_pointer_width = "64")]
-const [(); 16] = [(); size_of::<TypeBound>()];
+const _: [(); 16] = [(); size_of::<TypeBound>()];
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum UseArgRef {
@@ -207,9 +213,10 @@ impl TypeRef {
             let type_ref = &map[type_ref];
             f(type_ref);
             match type_ref {
-                TypeRef::Fn(fn_) => {
-                    fn_.params.iter().for_each(|&(_, param_type)| go(param_type, f, map))
-                }
+                TypeRef::Fn(fn_) => fn_
+                    .params
+                    .iter()
+                    .for_each(|&(_, param_type)| go(param_type, f, map)),
                 TypeRef::Tuple(types) => types.iter().for_each(|&t| go(t, f, map)),
                 TypeRef::RawPtr(type_ref, _) | TypeRef::Slice(type_ref) => go(*type_ref, f, map),
                 TypeRef::Reference(it) => go(it.ty, f, map),
@@ -285,11 +292,11 @@ pub enum LiteralConstRef {
     Bool(bool),
     Char(char),
 
+    /// Case of an unknown value that rustc might know but we don't
     // FIXME: this is a hack to get around chalk not being able to represent unevaluatable
     // constants
     // https://github.com/rust-lang/rust-analyzer/pull/8813#issuecomment-840679177
     // https://rust-lang.zulipchat.com/#narrow/stream/144729-wg-traits/topic/Handling.20non.20evaluatable.20constants'.20equality/near/238386348
-    /// Case of an unknown value that rustc might know but we don't
     Unknown,
 }
 

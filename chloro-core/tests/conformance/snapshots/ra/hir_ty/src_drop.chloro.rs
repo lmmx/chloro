@@ -11,7 +11,9 @@ use crate::{
     db::HirDatabase,
     method_resolution::TyFingerprint,
     next_solver::{
-        Ty, TyKind, infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
+        Ty, TyKind,
+        infer::{InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
     },
 };
 
@@ -31,7 +33,10 @@ fn has_destructor(db: &dyn HirDatabase, adt: AdtId) -> bool {
         },
         None => db.trait_impls_in_crate(module.krate()),
     };
-    impls.for_trait_and_self_ty(drop_trait, TyFingerprint::Adt(adt)).next().is_some()
+    impls
+        .for_trait_and_self_ty(drop_trait, TyFingerprint::Adt(adt))
+        .next()
+        .is_some()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -60,7 +65,9 @@ fn has_drop_glue_impl<'db>(
     visited: &mut FxHashSet<Ty<'db>>,
 ) -> DropGlue {
     let mut ocx = ObligationCtxt::new(infcx);
-    let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
+    let ty = ocx
+        .structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty)
+        .unwrap_or(ty);
 
     if !visited.insert(ty) {
         // Recursive type.

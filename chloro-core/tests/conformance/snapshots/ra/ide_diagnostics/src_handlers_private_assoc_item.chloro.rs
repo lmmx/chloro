@@ -34,6 +34,7 @@ pub(crate) fn private_assoc_item(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn private_method() {
         check_diagnostics(
@@ -51,6 +52,7 @@ fn main(s: module::Struct) {
 "#,
         );
     }
+
     #[test]
     fn private_func() {
         check_diagnostics(
@@ -68,6 +70,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn private_const() {
         check_diagnostics(
@@ -85,6 +88,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn private_but_shadowed_in_deref() {
         check_diagnostics(
@@ -110,6 +114,7 @@ fn main(s: module::Struct) {
 "#,
         );
     }
+
     #[test]
     fn can_see_through_top_level_anonymous_const() {
         // regression test for #14046.

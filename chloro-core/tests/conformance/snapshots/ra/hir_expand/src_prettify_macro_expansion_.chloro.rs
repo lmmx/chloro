@@ -23,9 +23,12 @@ pub fn prettify_macro_expansion(
     syntax_bridge::prettify_macro_expansion::prettify_macro_expansion(
         syn,
         &mut |dollar_crate| {
-            let ctx = span_map.span_at(dollar_crate.text_range().start() + span_offset).ctx;
-            let replacement =
-                syntax_ctx_id_to_dollar_crate_replacement.entry(ctx).or_insert_with(|| {
+            let ctx = span_map
+                .span_at(dollar_crate.text_range().start() + span_offset)
+                .ctx;
+            let replacement = syntax_ctx_id_to_dollar_crate_replacement
+                .entry(ctx)
+                .or_insert_with(|| {
                     let macro_call_id = ctx
                         .outer_expn(db)
                         .expect("`$crate` cannot come from `SyntaxContextId::ROOT`");
@@ -39,8 +42,10 @@ pub fn prettify_macro_expansion(
                     // Lastly, if nothing else found, resort to leaving `$crate`.
                     if target_crate_id == macro_def_crate {
                         make::tokens::crate_kw()
-                    } else if let Some(dep) =
-                        target_crate.dependencies.iter().find(|dep| dep.crate_id == macro_def_crate)
+                    } else if let Some(dep) = target_crate
+                        .dependencies
+                        .iter()
+                        .find(|dep| dep.crate_id == macro_def_crate)
                     {
                         make::tokens::ident(dep.name.as_str())
                     } else if let Some(crate_name) = &macro_def_crate.extra_data(db).display_name {
@@ -54,7 +59,11 @@ pub fn prettify_macro_expansion(
                 return None;
             }
             // We need to `clone_subtree()` but rowan doesn't provide such operation for tokens.
-            let parent = replacement.parent().unwrap().clone_subtree().clone_for_update();
+            let parent = replacement
+                .parent()
+                .unwrap()
+                .clone_subtree()
+                .clone_for_update();
             parent
                 .children_with_tokens()
                 .filter_map(NodeOrToken::into_token)

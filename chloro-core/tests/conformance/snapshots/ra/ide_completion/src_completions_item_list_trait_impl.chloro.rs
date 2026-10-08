@@ -192,7 +192,15 @@ fn add_function_impl(
         &[AsyncSugaring::Plain]
     };
     for &sugaring in sugar {
-        add_function_impl_(acc, ctx, replacement_range, func, impl_def, fn_name, sugaring);
+        add_function_impl_(
+            acc,
+            ctx,
+            replacement_range,
+            func,
+            impl_def,
+            fn_name,
+            sugaring,
+        );
     }
 }
 
@@ -214,7 +222,11 @@ fn add_function_impl_(
         "{}fn {}({})",
         async_,
         fn_name.display(ctx.db, ctx.edition),
-        if func.assoc_fn_params(ctx.db).is_empty() { "" } else { ".." }
+        if func.assoc_fn_params(ctx.db).is_empty() {
+            ""
+        } else {
+            ".."
+        }
     );
 
     let completion_kind = CompletionItemKind::SymbolKind(if func.has_self_param(ctx.db) {
@@ -224,12 +236,20 @@ fn add_function_impl_(
     });
 
     let mut item = CompletionItem::new(completion_kind, replacement_range, label, ctx.edition);
-    item.lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
-        .set_documentation(func.docs(ctx.db))
-        .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+    item.lookup_by(format!(
+        "{}fn {}",
+        async_,
+        fn_name.display(ctx.db, ctx.edition)
+    ))
+    .set_documentation(func.docs(ctx.db))
+    .set_relevance(CompletionRelevance {
+        exact_name_match: true,
+        ..Default::default()
+    });
 
     if let Some(source) = ctx.sema.source(func)
-        && let Some(transformed_fn) = get_transformed_fn(ctx, source.value, impl_def, async_sugaring)
+        && let Some(transformed_fn) =
+            get_transformed_fn(ctx, source.value, impl_def, async_sugaring)
     {
         let function_decl = function_declaration(ctx, &transformed_fn, source.file_id.macro_file());
         match ctx.config.snippet_cap {
@@ -369,7 +389,10 @@ fn add_type_alias_impl(
         CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
     item.lookup_by(format!("type {alias_name}"))
         .set_documentation(type_alias.docs(ctx.db))
-        .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+        .set_relevance(CompletionRelevance {
+            exact_name_match: true,
+            ..Default::default()
+        });
 
     if let Some(source) = ctx.sema.source(type_alias) {
         let assoc_item = ast::AssocItem::TypeAlias(source.value);
@@ -381,11 +404,14 @@ fn add_type_alias_impl(
 
             let start = transformed_ty.syntax().text_range().start();
 
-            let end = if let Some(end) =
-                transformed_ty.colon_token().map(|tok| tok.text_range().start())
+            let end = if let Some(end) = transformed_ty
+                .colon_token()
+                .map(|tok| tok.text_range().start())
             {
                 end
-            } else if let Some(end) = transformed_ty.eq_token().map(|tok| tok.text_range().start())
+            } else if let Some(end) = transformed_ty
+                .eq_token()
+                .map(|tok| tok.text_range().start())
             {
                 end
             } else if let Some(end) = transformed_ty
@@ -394,8 +420,9 @@ fn add_type_alias_impl(
                 .map(|tok| tok.text_range().start())
             {
                 end
-            } else if let Some(end) =
-                transformed_ty.semicolon_token().map(|tok| tok.text_range().start())
+            } else if let Some(end) = transformed_ty
+                .semicolon_token()
+                .map(|tok| tok.text_range().start())
             {
                 end
             } else {
@@ -442,7 +469,9 @@ fn add_const_impl(
     const_: hir::Const,
     impl_def: hir::Impl,
 ) {
-    let const_name = const_.name(ctx.db).map(|n| n.display_no_db(ctx.edition).to_smolstr());
+    let const_name = const_
+        .name(ctx.db)
+        .map(|n| n.display_no_db(ctx.edition).to_smolstr());
 
     if let Some(const_name) = const_name
         && let Some(source) = ctx.sema.source(const_)
@@ -535,7 +564,9 @@ fn function_declaration(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::tests::{check, check_edit, check_no_kw};
+
     #[test]
     fn no_completion_inside_fn() {
         check_no_kw(
@@ -634,6 +665,7 @@ impl Test for T {
             "#]],
         );
     }
+
     #[test]
     fn no_completion_inside_const() {
         check_no_kw(
@@ -729,6 +761,7 @@ impl Test for T {
             expect![[""]],
         );
     }
+
     #[test]
     fn no_completion_inside_type() {
         check_no_kw(
@@ -760,6 +793,7 @@ impl Test for T {
             expect![[r#""#]],
         );
     }
+
     #[test]
     fn name_ref_single_function() {
         check_edit(
@@ -788,6 +822,7 @@ impl Test for T {
 "#,
         );
     }
+
     #[test]
     fn single_function() {
         check_edit(
@@ -816,6 +851,7 @@ impl Test for T {
 "#,
         );
     }
+
     #[test]
     fn generic_fn() {
         check_edit(
@@ -869,6 +905,7 @@ impl Test for T {
 "#,
         );
     }
+
     #[test]
     fn associated_type() {
         check_edit(
@@ -914,6 +951,7 @@ impl Test for () {
 ",
         );
     }
+
     #[test]
     fn associated_const() {
         check_edit(
@@ -960,6 +998,7 @@ impl Test for () {
 ",
         );
     }
+
     #[test]
     fn fn_with_lifetimes() {
         check_edit(
@@ -986,6 +1025,7 @@ impl<'x, 'y, A> Test<'x, 'y, A> for () {
 "#,
         );
     }
+
     #[test]
     fn complete_without_name() {
         let test = |completion: &str, hint: &str, completed: &str, next_sibling: &str| {
@@ -1027,7 +1067,7 @@ impl Test for T {{
         // Enumerate some possible next siblings.
         for next_sibling in [
             "",
-            "fn other_fn() {}",
+            "fn other_fn() {}", // `const $0 fn` -> `const fn`
             "type OtherType = i32;",
             "const OTHER_CONST: i32 = 0;",
             "async fn other_fn() {}",
@@ -1038,9 +1078,15 @@ impl Test for T {{
         ] {
             test("fn bar", "fn $0", "fn bar() {\n    $0\n}", next_sibling);
             test("type Foo", "type $0", "type Foo = $0;", next_sibling);
-            test("const CONST", "const $0", "const CONST: u16 = $0;", next_sibling);
+            test(
+                "const CONST",
+                "const $0",
+                "const CONST: u16 = $0;",
+                next_sibling,
+            );
         }
     }
+
     #[test]
     fn snippet_does_not_overwrite_comment_or_attr() {
         let test = |completion: &str, hint: &str, completed: &str| {
@@ -1084,6 +1130,7 @@ impl Foo for T {{
         test("type Type", "type T$0", "type Type = $0;");
         test("const CONST", "const C$0", "const CONST: i32 = $0;");
     }
+
     #[test]
     fn generics_are_inlined_in_return_type() {
         check_edit(
@@ -1112,6 +1159,7 @@ impl Foo<u32> for Bar {
 "#,
         )
     }
+
     #[test]
     fn generics_are_inlined_in_parameter() {
         check_edit(
@@ -1140,6 +1188,7 @@ impl Foo<u32> for Bar {
 "#,
         )
     }
+
     #[test]
     fn generics_are_inlined_when_part_of_other_types() {
         check_edit(
@@ -1168,6 +1217,7 @@ impl Foo<u32> for Bar {
 "#,
         )
     }
+
     #[test]
     fn generics_are_inlined_complex() {
         check_edit(
@@ -1196,6 +1246,7 @@ impl Foo<u32, Vec<usize>, u8> for Bar {
 "#,
         )
     }
+
     #[test]
     fn generics_are_inlined_in_associated_const() {
         check_edit(
@@ -1222,6 +1273,7 @@ impl Foo<u32> for Bar {
 "#,
         )
     }
+
     #[test]
     fn generics_are_inlined_in_where_clause() {
         check_edit(
@@ -1257,6 +1309,7 @@ impl Foo<u32> for Bar {
 "#,
         )
     }
+
     #[test]
     fn works_directly_in_impl() {
         check_no_kw(
@@ -1290,6 +1343,7 @@ impl Tr for () {
         "#]],
         );
     }
+
     #[test]
     fn fixes_up_macro_generated() {
         check_edit(
@@ -1336,6 +1390,7 @@ impl Foo for Test {
 "#,
         );
     }
+
     #[test]
     fn macro_generated_assoc_item() {
         check_edit(
@@ -1372,6 +1427,7 @@ impl AnotherTrait for () {
 "#,
         );
     }
+
     // FIXME: `T` in `ty!(T)` should be replaced by `PathTransform`.
     #[test]
     fn macro_generated_assoc_item2() {
@@ -1409,6 +1465,7 @@ impl AnotherTrait<i32> for () {
 "#,
         );
     }
+
     #[test]
     fn includes_gat_generics() {
         check_edit(
@@ -1457,6 +1514,7 @@ impl Tr for () {
 "#,
         );
     }
+
     #[test]
     fn strips_comments() {
         check_edit(
@@ -1531,6 +1589,7 @@ impl Tr for () {
 "#,
         );
     }
+
     #[test]
     fn impl_fut() {
         check_edit(
@@ -1562,6 +1621,7 @@ impl DesugaredAsyncTrait for () {
 "#,
         );
     }
+
     #[test]
     fn impl_fut_resugared() {
         check_edit(
@@ -1593,6 +1653,7 @@ impl DesugaredAsyncTrait for () {
 "#,
         );
     }
+
     #[test]
     fn async_desugared() {
         check_edit(
@@ -1624,6 +1685,7 @@ impl DesugaredAsyncTrait for () {
 "#,
         );
     }
+
     #[test]
     fn async_() {
         check_edit(
@@ -1655,6 +1717,7 @@ impl DesugaredAsyncTrait for () {
 "#,
         );
     }
+
     #[test]
     fn within_attr_macro() {
         check(

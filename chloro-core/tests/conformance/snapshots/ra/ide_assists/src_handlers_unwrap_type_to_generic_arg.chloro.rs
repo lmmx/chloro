@@ -21,10 +21,7 @@ use crate::{AssistContext, Assists};
 //     todo!()
 // }
 // ```
-pub(crate) fn unwrap_type_to_generic_arg(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn unwrap_type_to_generic_arg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path_type = ctx.find_node_at_offset::<ast::PathType>()?;
     let path = path_type.path()?;
     let segment = path.segment()?;
@@ -61,6 +58,7 @@ pub(crate) fn unwrap_type_to_generic_arg(
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn test_unwrap_type_to_generic_arg() {
         check_assist(
@@ -78,6 +76,7 @@ fn foo() -> i32 {
 "#,
         );
     }
+
     #[test]
     fn unwrap_type_to_generic_arg_not_applicable_for_non_generic_arg_list() {
         check_assist_not_applicable(
@@ -87,6 +86,7 @@ fn foo() -> $0i32 {}
 "#,
         );
     }
+
     #[test]
     fn unwrap_type_to_generic_arg_not_applicable_for_multiple_generic_args() {
         check_assist_not_applicable(
@@ -99,6 +99,7 @@ fn foo() -> $0Result<i32, ()> {
 "#,
         );
     }
+
     #[test]
     fn unwrap_type_to_generic_arg_with_lifetime_and_const() {
         check_assist(
@@ -125,6 +126,7 @@ fn test<'a>() -> i32 {
 "#,
         );
     }
+
     #[test]
     fn unwrap_type_to_generic_arg_in_let_stmt() {
         check_assist(

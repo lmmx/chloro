@@ -84,8 +84,10 @@ pub(crate) fn signature_help(
         // this prevents us from leaving the CallExpression
         .and_then(|tok| algo::skip_trivia_token(tok, Direction::Prev))?;
     let token = sema.descend_into_macros_single_exact(token);
-    let edition =
-        sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
+    let edition = sema
+        .attach_first_edition(file_id)
+        .map(|it| it.edition(db))
+        .unwrap_or(Edition::CURRENT);
     let display_target = sema.first_crate(file_id)?.to_display_target(db);
 
     for node in token.parent_ancestors() {
@@ -167,8 +169,12 @@ fn signature_help_for_call(
     let (callable, active_parameter) =
         callable_for_arg_list(sema, arg_list, token.text_range().start())?;
 
-    let mut res =
-        SignatureHelp { doc: None, signature: String::new(), parameters: vec![], active_parameter };
+    let mut res = SignatureHelp {
+        doc: None,
+        signature: String::new(),
+        parameters: vec![],
+        active_parameter,
+    };
 
     let db = sema.db;
     let mut fn_params = None;
@@ -200,7 +206,11 @@ fn signature_help_for_call(
         }
         hir::CallableKind::TupleStruct(strukt) => {
             res.doc = strukt.docs(db);
-            format_to!(res.signature, "struct {}", strukt.name(db).display(db, edition));
+            format_to!(
+                res.signature,
+                "struct {}",
+                strukt.name(db).display(db, edition)
+            );
 
             let generic_params = GenericDef::Adt(strukt.into())
                 .params(db)
@@ -269,11 +279,13 @@ fn signature_help_for_call(
             // In that case, fall back to render definitions of the respective parameters.
             // This is overly conservative: we do not substitute known type vars
             // (see FIXME in tests::impl_trait) and falling back on any unknowns.
-            hir::attach_db(db, || match (p.ty().contains_unknown(), fn_params.as_deref()) {
-                (true, Some(fn_params)) => {
-                    format_to!(buf, "{}", fn_params[idx].ty().display(db, display_target))
+            hir::attach_db(db, || {
+                match (p.ty().contains_unknown(), fn_params.as_deref()) {
+                    (true, Some(fn_params)) => {
+                        format_to!(buf, "{}", fn_params[idx].ty().display(db, display_target))
+                    }
+                    _ => format_to!(buf, "{}", p.ty().display(db, display_target)),
                 }
-                _ => format_to!(buf, "{}", p.ty().display(db, display_target)),
             });
             res.push_call_param(&buf);
         }
@@ -282,7 +294,11 @@ fn signature_help_for_call(
 
     let mut render = |ret_type: hir::Type<'_>| {
         if !ret_type.is_unit() {
-            format_to!(res.signature, " -> {}", ret_type.display(db, display_target));
+            format_to!(
+                res.signature,
+                " -> {}",
+                ret_type.display(db, display_target)
+            );
         }
     };
     match callable.kind() {
@@ -356,8 +372,10 @@ fn signature_help_for_generics(
     }
 
     let params = generics_def.params(sema.db);
-    let num_lifetime_params =
-        params.iter().take_while(|param| matches!(param, GenericParam::LifetimeParam(_))).count();
+    let num_lifetime_params = params
+        .iter()
+        .take_while(|param| matches!(param, GenericParam::LifetimeParam(_)))
+        .count();
     if first_arg_is_non_lifetime {
         // Lifetime parameters were omitted.
         active_parameter += num_lifetime_params;
@@ -382,7 +400,9 @@ fn signature_help_for_generics(
                 }
             }
             GenericParam::ConstParam(param) => {
-                if let Some(expr) = param.default(db, display_target).and_then(|konst| konst.expr())
+                if let Some(expr) = param
+                    .default(db, display_target)
+                    .and_then(|konst| konst.expr())
                 {
                     format_to!(buf, " = {}", expr);
                 }
@@ -406,7 +426,12 @@ fn add_assoc_type_bindings(
     args: ast::GenericArgList,
     edition: Edition,
 ) {
-    if args.syntax().ancestors().find_map(ast::TypeBound::cast).is_none() {
+    if args
+        .syntax()
+        .ancestors()
+        .find_map(ast::TypeBound::cast)
+        .is_none()
+    {
         // Assoc type bindings are only valid in type bound position.
         return;
     }
@@ -447,7 +472,10 @@ fn signature_help_for_record_lit(
 ) -> Option<SignatureHelp> {
     signature_help_for_record_(
         sema,
-        record.record_expr_field_list()?.syntax().children_with_tokens(),
+        record
+            .record_expr_field_list()?
+            .syntax()
+            .children_with_tokens(),
         &record.path()?,
         record
             .record_expr_field_list()?
@@ -469,7 +497,10 @@ fn signature_help_for_record_pat(
 ) -> Option<SignatureHelp> {
     signature_help_for_record_(
         sema,
-        record.record_pat_field_list()?.syntax().children_with_tokens(),
+        record
+            .record_pat_field_list()?
+            .syntax()
+            .children_with_tokens(),
         &record.path()?,
         record
             .record_pat_field_list()?
@@ -519,7 +550,11 @@ fn signature_help_for_tuple_struct_pat(
         match adt {
             hir::Adt::Struct(it) => {
                 res.doc = it.docs(db);
-                format_to!(res.signature, "struct {} (", it.name(db).display(db, edition));
+                format_to!(
+                    res.signature,
+                    "struct {} (",
+                    it.name(db).display(db, edition)
+                );
                 it.fields(db)
             }
             _ => return None,
@@ -551,11 +586,11 @@ fn signature_help_for_tuple_pat(
     Some(signature_help_for_tuple_pat_ish(
         db,
         SignatureHelp {
-        doc: None,
-        signature: String::from('('),
-        parameters: vec![],
-        active_parameter: None,
-    },
+            doc: None,
+            signature: String::from('('),
+            parameters: vec![],
+            active_parameter: None,
+        },
         pat.syntax(),
         token,
         field_pats,
@@ -590,7 +625,11 @@ fn signature_help_for_tuple_expr(
     let fields = expr.original.tuple_fields(db);
     let mut buf = String::new();
     for ty in fields {
-        format_to!(buf, "{}", ty.display_truncated(db, Some(20), display_target));
+        format_to!(
+            buf,
+            "{}",
+            ty.display_truncated(db, Some(20), display_target)
+        );
         res.push_call_param(&buf);
         buf.clear();
     }
@@ -646,19 +685,29 @@ fn signature_help_for_record_<'db>(
             hir::Adt::Struct(it) => {
                 fields = it.fields(db);
                 res.doc = it.docs(db);
-                format_to!(res.signature, "struct {} {{ ", it.name(db).display(db, edition));
+                format_to!(
+                    res.signature,
+                    "struct {} {{ ",
+                    it.name(db).display(db, edition)
+                );
             }
             hir::Adt::Union(it) => {
                 fields = it.fields(db);
                 res.doc = it.docs(db);
-                format_to!(res.signature, "union {} {{ ", it.name(db).display(db, edition));
+                format_to!(
+                    res.signature,
+                    "union {} {{ ",
+                    it.name(db).display(db, edition)
+                );
             }
             _ => return None,
         }
     }
 
-    let mut fields =
-        fields.into_iter().map(|field| (field.name(db), Some(field))).collect::<FxIndexMap<_, _>>();
+    let mut fields = fields
+        .into_iter()
+        .map(|field| (field.name(db), Some(field)))
+        .collect::<FxIndexMap<_, _>>();
     let mut buf = String::new();
     for (field, ty) in fields2 {
         let name = field.name(db);
@@ -710,7 +759,9 @@ fn signature_help_for_tuple_pat_ish<'db>(
 
     res.active_parameter = {
         Some(if is_left_of_rest_pat {
-            commas.take_while(|t| t.text_range().start() <= token.text_range().start()).count()
+            commas
+                .take_while(|t| t.text_range().start() <= token.text_range().start())
+                .count()
         } else {
             let n_commas = commas
                 .collect::<Vec<_>>()
@@ -724,21 +775,27 @@ fn signature_help_for_tuple_pat_ish<'db>(
 
     let mut buf = String::new();
     for ty in fields {
-        format_to!(buf, "{}", ty.display_truncated(db, Some(20), display_target));
+        format_to!(
+            buf,
+            "{}",
+            ty.display_truncated(db, Some(20), display_target)
+        );
         res.push_call_param(&buf);
         buf.clear();
     }
     res.signature.push(')');
     res
 }
-
 #[cfg(test)]
 mod tests {
+
     use expect_test::{Expect, expect};
     use ide_db::FilePosition;
     use stdx::format_to;
     use test_fixture::ChangeFixture;
+
     use crate::RootDatabase;
+
     /// Creates analysis from a multi-file fixture, returns positions marked with $0.
     pub(crate) fn position(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -746,12 +803,17 @@ mod tests {
         let mut database = RootDatabase::default();
         let change_fixture = ChangeFixture::parse(&database, ra_fixture);
         database.apply_change(change_fixture.change);
-        let (file_id, range_or_offset) =
-            change_fixture.file_position.expect("expected a marker ($0)");
+        let (file_id, range_or_offset) = change_fixture
+            .file_position
+            .expect("expected a marker ($0)");
         let offset = range_or_offset.expect_offset();
-        let position = FilePosition { file_id: file_id.file_id(&database), offset };
+        let position = FilePosition {
+            file_id: file_id.file_id(&database),
+            offset,
+        };
         (database, position)
     }
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
@@ -769,7 +831,10 @@ mod tests {
 
                     let start = u32::from(range.start());
                     let gap = start.checked_sub(offset).unwrap_or_else(|| {
-                        panic!("parameter ranges out of order: {:?}", sig_help.parameter_ranges())
+                        panic!(
+                            "parameter ranges out of order: {:?}",
+                            sig_help.parameter_ranges()
+                        )
                     });
                     rendered.extend(std::iter::repeat_n(' ', gap as usize));
                     let param_text = &sig_help.signature[*range];
@@ -787,6 +852,7 @@ mod tests {
         };
         expect.assert_eq(&actual);
     }
+
     #[test]
     fn test_fn_signature_two_args() {
         check(
@@ -834,6 +900,7 @@ fn bar() { foo(3, $0); }
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_two_args_empty() {
         check(
@@ -848,6 +915,7 @@ fn bar() { foo($0); }
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_two_args_first_generics() {
         check(
@@ -865,6 +933,7 @@ fn bar() { foo($03, ); }
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_no_params() {
         check(
@@ -878,6 +947,7 @@ fn bar() { foo($0); }
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_for_impl() {
         check(
@@ -894,6 +964,7 @@ fn bar() {
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_for_method_self() {
         check(
@@ -912,6 +983,7 @@ fn bar() {
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_for_method_with_arg() {
         check(
@@ -930,6 +1002,7 @@ fn main() { S.foo($0); }
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_for_generic_method() {
         check(
@@ -948,6 +1021,7 @@ fn main() { S(1u32).foo($0); }
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_for_method_with_arg_as_assoc_fn() {
         check(
@@ -966,6 +1040,7 @@ fn main() { S::foo($0); }
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_with_docs_simple() {
         check(
@@ -989,6 +1064,7 @@ fn bar() {
             "#]],
         );
     }
+
     #[test]
     fn test_fn_signature_with_docs() {
         check(
@@ -1026,6 +1102,7 @@ pub fn r#do() {
             "##]],
         );
     }
+
     #[test]
     fn test_fn_signature_with_docs_impl() {
         check(
@@ -1068,6 +1145,7 @@ pub fn do_it() {
             "##]],
         );
     }
+
     #[test]
     fn test_fn_signature_with_docs_from_actix() {
         check(
@@ -1101,6 +1179,7 @@ fn foo(mut r: impl WriteHandler<()>) {
             "#]],
         );
     }
+
     #[test]
     fn call_info_bad_offset() {
         check(
@@ -1112,6 +1191,7 @@ fn bar() { foo $0 (3, ); }
             expect![[""]],
         );
     }
+
     #[test]
     fn outside_of_arg_list() {
         check(
@@ -1163,6 +1243,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_nested_method_in_lambda() {
         check(
@@ -1184,6 +1265,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn works_for_tuple_structs() {
         check(
@@ -1203,6 +1285,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn tuple_struct_pat() {
         check(
@@ -1222,6 +1305,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn tuple_struct_pat_rest() {
         check(
@@ -1321,6 +1405,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn generic_struct() {
         check(
@@ -1337,6 +1422,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn works_for_enum_variants() {
         check(
@@ -1363,6 +1449,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn cant_call_struct_record() {
         check(
@@ -1376,6 +1463,7 @@ fn main() {
             expect![[""]],
         );
     }
+
     #[test]
     fn cant_call_enum_record() {
         check(
@@ -1397,6 +1485,7 @@ fn main() {
             expect![[""]],
         );
     }
+
     #[test]
     fn fn_signature_for_call_in_macro() {
         check(
@@ -1413,6 +1502,7 @@ id! {
             "#]],
         );
     }
+
     #[test]
     fn fn_signature_for_method_call_defined_in_macro() {
         check(
@@ -1432,6 +1522,7 @@ fn test() { S.foo($0); }
             "#]],
         );
     }
+
     #[test]
     fn call_info_for_lambdas() {
         check(
@@ -1479,6 +1570,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn call_info_for_fn_def_over_reference() {
         check(
@@ -1497,6 +1589,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn call_info_for_fn_ptr() {
         check(
@@ -1512,6 +1605,7 @@ fn main(f: fn(i32, f64) -> char) {
             "#]],
         )
     }
+
     #[test]
     fn call_info_for_fn_impl() {
         check(
@@ -1584,6 +1678,7 @@ fn main() {
             expect![""],
         );
     }
+
     #[test]
     fn call_info_for_unclosed_call() {
         check(
@@ -1612,6 +1707,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn test_multiline_argument() {
         check(
@@ -1654,6 +1750,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_generics_simple() {
         check(
@@ -1677,6 +1774,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_generics_on_variant() {
         check(
@@ -1704,6 +1802,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_lots_of_generics() {
         check(
@@ -1727,6 +1826,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_generics_in_trait_ufcs() {
         check(
@@ -1750,6 +1850,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_generics_in_method_call() {
         check(
@@ -1771,6 +1872,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_generic_param_in_method_call() {
         check(
@@ -1790,6 +1892,7 @@ fn sup() {
             "#]],
         );
     }
+
     #[test]
     fn test_generic_kinds() {
         check(
@@ -1821,6 +1924,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_trait_assoc_types() {
         check(
@@ -1919,6 +2023,7 @@ fn f() -> impl Tr<B = (), $0
             "#]],
         );
     }
+
     #[test]
     fn test_supertrait_assoc() {
         check(
@@ -1938,6 +2043,7 @@ fn f() -> impl Sub<$0
             "#]],
         );
     }
+
     #[test]
     fn no_assoc_types_outside_type_bounds() {
         check(
@@ -1955,6 +2061,7 @@ impl Tr<$0
         "#]],
         );
     }
+
     #[test]
     fn impl_trait() {
         // FIXME: Substitute type vars in impl trait (`U` -> `i8`)
@@ -1974,6 +2081,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn fully_qualified_syntax() {
         check(
@@ -1990,6 +2098,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn help_for_generic_call() {
         check(
@@ -2017,6 +2126,7 @@ fn f<T, F: FnMut(&T, u16) -> &T>(f: F) {
             "#]],
         );
     }
+
     #[test]
     fn regression_13579() {
         // FIXME(next-solver): There should be signature help available here.
@@ -2041,6 +2151,7 @@ fn take<C, Error>(
             expect![""],
         );
     }
+
     #[test]
     fn record_literal() {
         check(
@@ -2064,6 +2175,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn record_literal_nonexistent_field() {
         check(
@@ -2085,6 +2197,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn tuple_variant_record_literal() {
         check(
@@ -2118,6 +2231,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn record_literal_self() {
         check(
@@ -2136,6 +2250,7 @@ impl S {
             "#]],
         );
     }
+
     #[test]
     fn record_pat() {
         check(
@@ -2159,6 +2274,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_in_nested_method_in_lambda() {
         check(
@@ -2182,6 +2298,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_expr_free() {
         check(
@@ -2233,6 +2350,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_expr_expected() {
         check(
@@ -2273,6 +2391,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_pat_free() {
         check(
@@ -2361,6 +2480,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_pat_expected() {
         check(
@@ -2488,6 +2608,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_generic_param() {
         check(
@@ -2505,6 +2626,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_generic_param() {
         check(
@@ -2525,6 +2647,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_variant_generic_param() {
         check(
@@ -2545,6 +2668,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_generic_arg_with_default() {
         check(
@@ -2581,6 +2705,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_async_function() {
         check(

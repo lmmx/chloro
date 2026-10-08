@@ -3,16 +3,19 @@
 use base_db::AnchoredPath;
 use cfg::CfgExpr;
 use either::Either;
-use intern::{Symbol, sym::self};
+use intern::{
+    Symbol,
+    sym::{self},
+};
 use itertools::Itertools;
 use mbe::{DelimiterKind, expect_fragment};
 use span::{Edition, FileId, Span};
 use stdx::format_to;
-use syntax_bridge::syntax_node_to_token_tree;
 use syntax::{
     format_smolstr,
     unescape::{unescape_byte, unescape_char, unescape_str},
 };
+use syntax_bridge::syntax_node_to_token_tree;
 
 use crate::{
     EditionedFileId, ExpandError, ExpandResult, Lookup as _, MacroCallId,
@@ -148,7 +151,11 @@ register_builtin! {
 }
 
 fn mk_pound(span: Span) -> tt::Leaf {
-    crate::tt::Leaf::Punct(crate::tt::Punct { char: '#', spacing: crate::tt::Spacing::Alone, span })
+    crate::tt::Leaf::Punct(crate::tt::Punct {
+        char: '#',
+        spacing: crate::tt::Spacing::Alone,
+        span,
+    })
 }
 
 fn module_path_expand(
@@ -410,7 +417,10 @@ fn cfg_select_expand(
         }
         None => ExpandResult::new(
             tt::TopSubtree::empty(tt::DelimSpan::from_single(span)),
-            ExpandError::other(span, "none of the predicates in this `cfg_select` evaluated to true"),
+            ExpandError::other(
+                span,
+                "none of the predicates in this `cfg_select` evaluated to true",
+            ),
         ),
     }
 }
@@ -424,7 +434,11 @@ fn cfg_expand(
     let loc = db.lookup_intern_macro_call(id);
     let expr = CfgExpr::parse(tt);
     let enabled = loc.krate.cfg_options(db).check(&expr) != Some(false);
-    let expanded = if enabled { quote!(span=>true) } else { quote!(span=>false) };
+    let expanded = if enabled {
+        quote!(span=>true)
+    } else {
+        quote!(span=>false)
+    };
     ExpandResult::ok(expanded)
 }
 
@@ -437,7 +451,11 @@ fn panic_expand(
     let dollar_crate = dollar_crate(span);
     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
 
-    let mac = if use_panic_2021(db, call_site_span) { sym::panic_2021 } else { sym::panic_2015 };
+    let mac = if use_panic_2021(db, call_site_span) {
+        sym::panic_2021
+    } else {
+        sym::panic_2015
+    };
 
     // Pass the original arguments
     let subtree = WithDelimiter {
@@ -635,7 +653,10 @@ fn concat_expand(
         i += 1;
     }
     let span = span.unwrap_or_else(|| tt.top_subtree().delimiter.open);
-    ExpandResult { value: quote!(span =>#text), err }
+    ExpandResult {
+        value: quote!(span =>#text),
+        err,
+    }
 }
 
 fn concat_bytes_expand(
@@ -760,14 +781,24 @@ fn relative_file(
     err_span: Span,
 ) -> Result<EditionedFileId, ExpandError> {
     let lookup = db.lookup_intern_macro_call(call_id);
-    let call_site = lookup.kind.file_id().original_file_respecting_includes(db).file_id(db);
-    let path = AnchoredPath { anchor: call_site, path: path_str };
+    let call_site = lookup
+        .kind
+        .file_id()
+        .original_file_respecting_includes(db)
+        .file_id(db);
+    let path = AnchoredPath {
+        anchor: call_site,
+        path: path_str,
+    };
     let res: FileId = db
         .resolve_path(path)
         .ok_or_else(|| ExpandError::other(err_span, format!("failed to load file `{path_str}`")))?;
     // Prevent include itself
     if res == call_site && !allow_recursion {
-        Err(ExpandError::other(err_span, format!("recursive inclusion of `{path_str}`")))
+        Err(ExpandError::other(
+            err_span,
+            format!("recursive inclusion of `{path_str}`"),
+        ))
     } else {
         Ok(EditionedFileId::new(db, res, lookup.krate.data(db).edition))
     }
@@ -782,8 +813,9 @@ fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
         while let TtElement::Subtree(sub, tt_iter) = &mut tt
             && let DelimiterKind::Parenthesis | DelimiterKind::Invisible = sub.delimiter.kind
         {
-            tt =
-                tt_iter.exactly_one().map_err(|_| sub.delimiter.open.cover(sub.delimiter.close))?;
+            tt = tt_iter
+                .exactly_one()
+                .map_err(|_| sub.delimiter.open.cover(sub.delimiter.close))?;
         }
 
         match tt {
@@ -803,9 +835,7 @@ fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
             TtElement::Subtree(tt, _) => Err(tt.delimiter.open.cover(tt.delimiter.close)),
         }
     })()
-    .map_err(
-        |span| ExpandError::other(span, "expected string literal"),
-    )
+    .map_err(|span| ExpandError::other(span, "expected string literal"))
 }
 
 fn include_expand(
@@ -818,7 +848,10 @@ fn include_expand(
         Ok(editioned_file_id) => editioned_file_id,
         Err(e) => {
             return ExpandResult::new(
-                tt::TopSubtree::empty(DelimSpan { open: span, close: span }),
+                tt::TopSubtree::empty(DelimSpan {
+                    open: span,
+                    close: span,
+                }),
                 e,
             );
         }
@@ -871,7 +904,10 @@ fn include_str_expand(
         Ok(it) => it,
         Err(e) => {
             return ExpandResult::new(
-                tt::TopSubtree::empty(DelimSpan { open: call_site, close: call_site }),
+                tt::TopSubtree::empty(DelimSpan {
+                    open: call_site,
+                    close: call_site,
+                }),
                 e,
             );
         }
@@ -909,7 +945,10 @@ fn env_expand(
         Ok(it) => it,
         Err(e) => {
             return ExpandResult::new(
-                tt::TopSubtree::empty(DelimSpan { open: span, close: span }),
+                tt::TopSubtree::empty(DelimSpan {
+                    open: span,
+                    close: span,
+                }),
                 e,
             );
         }
@@ -934,7 +973,10 @@ fn env_expand(
     });
     let expanded = quote! {span => #s };
 
-    ExpandResult { value: expanded, err }
+    ExpandResult {
+        value: expanded,
+        err,
+    }
 }
 
 fn option_env_expand(
@@ -947,7 +989,10 @@ fn option_env_expand(
         Ok(it) => it,
         Err(e) => {
             return ExpandResult::new(
-                tt::TopSubtree::empty(DelimSpan { open: call_site, close: call_site }),
+                tt::TopSubtree::empty(DelimSpan {
+                    open: call_site,
+                    close: call_site,
+                }),
                 e,
             );
         }
@@ -972,9 +1017,9 @@ fn quote_expand(
 ) -> ExpandResult<tt::TopSubtree> {
     ExpandResult::new(
         tt::TopSubtree::empty(tt::DelimSpan {
-        open: span,
-        close: span,
-    }),
+            open: span,
+            close: span,
+        }),
         ExpandError::other(span, "quote! is not implemented"),
     )
 }

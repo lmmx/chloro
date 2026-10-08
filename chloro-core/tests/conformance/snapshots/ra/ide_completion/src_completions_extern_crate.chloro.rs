@@ -31,6 +31,7 @@ pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionConte
 #[cfg(test)]
 mod test {
     use crate::tests::completion_list_no_kw;
+
     #[test]
     fn can_complete_extern_crate() {
         let case = r#"
@@ -49,6 +50,7 @@ mod other_mod {}
 
         assert_eq!("md other_crate_a\n".to_owned(), completion_list);
     }
+
     #[test]
     fn will_not_complete_existing_import() {
         let case = r#"

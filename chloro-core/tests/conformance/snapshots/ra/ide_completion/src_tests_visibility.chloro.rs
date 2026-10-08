@@ -1,5 +1,4 @@
 //! Completion tests for visibility modifiers.
-
 use expect_test::expect;
 
 use crate::tests::{check, check_with_private_editable, check_with_trigger_character};

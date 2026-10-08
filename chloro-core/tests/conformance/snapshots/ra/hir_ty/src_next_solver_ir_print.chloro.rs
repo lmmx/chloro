@@ -3,7 +3,7 @@
 use std::any::type_name_of_val;
 
 use rustc_type_ir::inherent::SliceLike;
-use rustc_type_ir::{ir_print::IrPrint, self as ty};
+use rustc_type_ir::{self as ty, ir_print::IrPrint};
 
 use super::SolverDefId;
 use super::interner::DbInterner;
@@ -33,10 +33,7 @@ impl<'db> IrPrint<ty::AliasTerm<Self>> for DbInterner<'db> {
         Self::print_debug(t, fmt)
     }
 
-    fn print_debug(
-        t: &ty::AliasTerm<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print_debug(t: &ty::AliasTerm<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::with_attached_db(|db| match t.def_id {
             SolverDefId::TypeAliasId(id) => fmt.write_str(&format!(
                 "AliasTerm({:?}[{:?}])",
@@ -50,7 +47,6 @@ impl<'db> IrPrint<ty::AliasTerm<Self>> for DbInterner<'db> {
         })
     }
 }
-
 impl<'db> IrPrint<ty::TraitRef<Self>> for DbInterner<'db> {
     fn print(t: &ty::TraitRef<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
@@ -78,7 +74,6 @@ impl<'db> IrPrint<ty::TraitRef<Self>> for DbInterner<'db> {
         })
     }
 }
-
 impl<'db> IrPrint<ty::TraitPredicate<Self>> for DbInterner<'db> {
     fn print(t: &ty::TraitPredicate<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
@@ -91,7 +86,6 @@ impl<'db> IrPrint<ty::TraitPredicate<Self>> for DbInterner<'db> {
         fmt.write_str(&format!("TODO: {:?}", type_name_of_val(t)))
     }
 }
-
 impl<'db> IrPrint<rustc_type_ir::HostEffectPredicate<Self>> for DbInterner<'db> {
     fn print(
         t: &rustc_type_ir::HostEffectPredicate<Self>,
@@ -107,7 +101,6 @@ impl<'db> IrPrint<rustc_type_ir::HostEffectPredicate<Self>> for DbInterner<'db> 
         fmt.write_str(&format!("TODO: {:?}", type_name_of_val(t)))
     }
 }
-
 impl<'db> IrPrint<ty::ExistentialTraitRef<Self>> for DbInterner<'db> {
     fn print(
         t: &ty::ExistentialTraitRef<Self>,
@@ -130,7 +123,6 @@ impl<'db> IrPrint<ty::ExistentialTraitRef<Self>> for DbInterner<'db> {
         })
     }
 }
-
 impl<'db> IrPrint<ty::ExistentialProjection<Self>> for DbInterner<'db> {
     fn print(
         t: &ty::ExistentialProjection<Self>,
@@ -157,7 +149,6 @@ impl<'db> IrPrint<ty::ExistentialProjection<Self>> for DbInterner<'db> {
         })
     }
 }
-
 impl<'db> IrPrint<ty::ProjectionPredicate<Self>> for DbInterner<'db> {
     fn print(
         t: &ty::ProjectionPredicate<Self>,
@@ -184,7 +175,6 @@ impl<'db> IrPrint<ty::ProjectionPredicate<Self>> for DbInterner<'db> {
         })
     }
 }
-
 impl<'db> IrPrint<ty::NormalizesTo<Self>> for DbInterner<'db> {
     fn print(t: &ty::NormalizesTo<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
@@ -197,7 +187,6 @@ impl<'db> IrPrint<ty::NormalizesTo<Self>> for DbInterner<'db> {
         fmt.write_str(&format!("TODO: {:?}", type_name_of_val(t)))
     }
 }
-
 impl<'db> IrPrint<ty::SubtypePredicate<Self>> for DbInterner<'db> {
     fn print(
         t: &ty::SubtypePredicate<Self>,
@@ -213,12 +202,8 @@ impl<'db> IrPrint<ty::SubtypePredicate<Self>> for DbInterner<'db> {
         fmt.write_str(&format!("TODO: {:?}", type_name_of_val(t)))
     }
 }
-
 impl<'db> IrPrint<ty::CoercePredicate<Self>> for DbInterner<'db> {
-    fn print(
-        t: &ty::CoercePredicate<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print(t: &ty::CoercePredicate<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
     }
 
@@ -229,7 +214,6 @@ impl<'db> IrPrint<ty::CoercePredicate<Self>> for DbInterner<'db> {
         fmt.write_str(&format!("TODO: {:?}", type_name_of_val(t)))
     }
 }
-
 impl<'db> IrPrint<ty::FnSig<Self>> for DbInterner<'db> {
     fn print(t: &ty::FnSig<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)

@@ -4,7 +4,6 @@
 //!    Bar/* = 0*/,
 //! }
 //! ```
-
 use hir::Semantics;
 use ide_db::text_edit::TextEdit;
 use ide_db::{RootDatabase, famous_defs::FamousDefs};
@@ -60,7 +59,10 @@ fn variant_hints(
     let d = v.eval(sema.db);
 
     let range = match variant.field_list() {
-        Some(field_list) => name.syntax().text_range().cover(field_list.syntax().text_range()),
+        Some(field_list) => name
+            .syntax()
+            .text_range()
+            .cover(field_list.syntax().text_range()),
         None => name.syntax().text_range(),
     };
     let eq_ = if eq_token.is_none() { " =" } else { "" };
@@ -101,21 +103,26 @@ fn variant_hints(
 
     Some(())
 }
-
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::inlay_hints::{
         DiscriminantHints, InlayHintsConfig,
         tests::{DISABLED_CONFIG, check_edit, check_with_config},
     };
+
     #[track_caller]
     fn check_discriminants(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(
-            InlayHintsConfig { discriminant_hints: DiscriminantHints::Always, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                discriminant_hints: DiscriminantHints::Always,
+                ..DISABLED_CONFIG
+            },
             ra_fixture,
         );
     }
+
     #[track_caller]
     fn check_discriminants_fieldless(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(
@@ -126,6 +133,7 @@ mod tests {
             ra_fixture,
         );
     }
+
     #[test]
     fn fieldless() {
         check_discriminants(
@@ -159,6 +167,7 @@ enum Enum {
 "#,
         );
     }
+
     #[test]
     fn datacarrying_mixed() {
         check_discriminants(
@@ -192,6 +201,7 @@ enum Enum {
 "#,
         );
     }
+
     #[test]
     fn datacarrying_mixed_fieldless_set() {
         check_discriminants_fieldless(
@@ -208,10 +218,14 @@ enum Enum {
 "#,
         );
     }
+
     #[test]
     fn edit() {
         check_edit(
-            InlayHintsConfig { discriminant_hints: DiscriminantHints::Always, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                discriminant_hints: DiscriminantHints::Always,
+                ..DISABLED_CONFIG
+            },
             r#"
 #[repr(u8)]
 enum Enum {

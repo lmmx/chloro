@@ -2,7 +2,6 @@
 //! by its name and a few criteria.
 //! The main reason for this module to exist is the fact that project's items and dependencies' items
 //! are located in different caches, with different APIs.
-
 use std::ops::ControlFlow;
 
 use either::Either;
@@ -114,11 +113,11 @@ pub fn items_with_name_in_module<T>(
     local_query.search(
         &[SymbolIndex::module_symbols(db, module)],
         |local_candidate| {
-        cb(match local_candidate.def {
-            hir::ModuleDef::Macro(macro_def) => ItemInNs::Macros(macro_def),
-            def => ItemInNs::from(def),
-        })
-    },
+            cb(match local_candidate.def {
+                hir::ModuleDef::Macro(macro_def) => ItemInNs::Macros(macro_def),
+                def => ItemInNs::from(def),
+            })
+        },
     )
 }
 

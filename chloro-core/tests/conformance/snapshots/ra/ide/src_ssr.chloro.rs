@@ -28,7 +28,10 @@ pub(crate) fn ssr_assists(
 
         let source_change_for_workspace = SourceChange::from_iter(match_finder.edits());
 
-        (Some(source_change_for_file), Some(source_change_for_workspace))
+        (
+            Some(source_change_for_file),
+            Some(source_change_for_workspace),
+        )
     } else {
         (None, None)
     };
@@ -62,7 +65,9 @@ mod tests {
         FileRange, FxHashSet, RootDatabase, base_db::salsa::Setter as _, symbol_index::LocalRoots,
     };
     use test_fixture::WithFixture;
+
     use super::ssr_assists;
+
     fn get_assists(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         resolve: AssistResolveStrategy,
@@ -75,11 +80,12 @@ mod tests {
             &db,
             &resolve,
             FileRange {
-            file_id: file_id.file_id(&db),
-            range: range_or_offset.into(),
-        },
+                file_id: file_id.file_id(&db),
+                range: range_or_offset.into(),
+            },
         )
     }
+
     #[test]
     fn not_applicable_comment_not_ssr() {
         let ra_fixture = r#"
@@ -92,6 +98,7 @@ mod tests {
 
         assert_eq!(0, assists.len());
     }
+
     #[test]
     fn resolve_edits_true() {
         let assists = get_assists(
@@ -213,6 +220,7 @@ mod tests {
         "#]]
         .assert_debug_eq(&apply_in_workspace_assist);
     }
+
     #[test]
     fn resolve_edits_false() {
         let assists = get_assists(

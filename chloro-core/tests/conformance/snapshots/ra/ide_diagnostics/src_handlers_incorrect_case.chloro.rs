@@ -3,8 +3,11 @@ use ide_db::{assists::Assist, defs::NameClass, rename::RenameDefinition};
 use syntax::AstNode;
 
 use crate::{
-    Diagnostic, DiagnosticCode, DiagnosticsContext, unresolved_fix,
+    Diagnostic,
+    DiagnosticCode,
+    DiagnosticsContext,
     // references::rename::rename_with_semantics,
+    unresolved_fix,
 };
 
 // Diagnostic: incorrect-ident-case
@@ -51,6 +54,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Option<Vec<Ass
 #[cfg(test)]
 mod change_case {
     use crate::tests::{check_diagnostics, check_diagnostics_with_disabled, check_fix};
+
     #[test]
     fn test_rename_incorrect_case() {
         check_fix(
@@ -136,6 +140,7 @@ mod other {
 "#,
         );
     }
+
     #[test]
     fn test_uppercase_const_no_diagnostics() {
         check_diagnostics(
@@ -146,6 +151,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_rename_incorrect_case_struct_method() {
         check_fix(
@@ -169,6 +175,7 @@ impl TestStruct {
 "#,
         );
     }
+
     #[test]
     fn test_single_incorrect_case_diagnostic_in_function_name_issue_6970() {
         check_diagnostics(
@@ -179,6 +186,7 @@ fn FOO() {}
         );
         check_fix(r#"fn FOO$0() {}"#, r#"fn foo() {}"#);
     }
+
     #[test]
     fn incorrect_function_name() {
         check_diagnostics(
@@ -188,6 +196,7 @@ fn NonSnakeCaseName() {}
 "#,
         );
     }
+
     #[test]
     fn incorrect_function_params() {
         check_diagnostics(
@@ -200,6 +209,7 @@ fn foo2(ok_param: &str, CAPS_PARAM: u8) { _ = (ok_param, CAPS_PARAM); }
 "#,
         );
     }
+
     #[test]
     fn incorrect_variable_names() {
         check_diagnostics(
@@ -214,6 +224,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn incorrect_struct_names() {
         check_diagnostics(
@@ -226,6 +237,7 @@ struct SCREAMING_CASE {}
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_for_camel_cased_acronyms_in_struct_name() {
         check_diagnostics(
@@ -234,6 +246,7 @@ struct AABB {}
 "#,
         );
     }
+
     #[test]
     fn incorrect_struct_field() {
         check_diagnostics(
@@ -243,6 +256,7 @@ struct SomeStruct { SomeField: u8 }
 "#,
         );
     }
+
     #[test]
     fn incorrect_enum_names() {
         check_diagnostics(
@@ -255,6 +269,7 @@ enum SOME_ENUM {}
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_for_camel_cased_acronyms_in_enum_name() {
         check_diagnostics(
@@ -263,6 +278,7 @@ enum AABB {}
 "#,
         );
     }
+
     #[test]
     fn incorrect_enum_variant_name() {
         check_diagnostics(
@@ -272,6 +288,7 @@ enum SomeEnum { SOME_VARIANT(u8) }
 "#,
         );
     }
+
     #[test]
     fn incorrect_const_name() {
         check_diagnostics(
@@ -281,6 +298,7 @@ const some_weird_const: u8 = 10;
 "#,
         );
     }
+
     #[test]
     fn incorrect_static_name() {
         check_diagnostics(
@@ -290,6 +308,7 @@ static some_weird_const: u8 = 10;
 "#,
         );
     }
+
     #[test]
     fn fn_inside_impl_struct() {
         check_diagnostics(
@@ -308,6 +327,7 @@ impl someStruct {
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_for_enum_variants() {
         check_diagnostics(
@@ -325,6 +345,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn allow_attributes_crate_attr() {
         check_diagnostics(
@@ -348,6 +369,7 @@ mod F {
     "#,
         );
     }
+
     #[test]
     fn external_macro() {
         check_diagnostics(
@@ -364,6 +386,7 @@ fn foo() {
     "#,
         );
     }
+
     #[test]
     fn complex_ignore() {
         check_diagnostics(
@@ -389,23 +412,30 @@ impl T for U {
 "#,
         );
     }
+
     #[test]
     fn infinite_loop_inner_items() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 fn qualify() {
     mod foo {
         use super::*;
     }
 }
-            "#)
+            "#,
+        )
     }
-    #[test]
+
+    #[test] // Issue #8809.
     fn parenthesized_parameter() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 fn f((_O): u8) {}
    // ^^ 💡 warn: Variable `_O` should have snake_case name, e.g. `_o`
-"#)
+"#,
+        )
     }
+
     #[test]
     fn ignores_no_mangle_items() {
         cov_mark::check!(extern_func_no_mangle_ignored);
@@ -416,6 +446,7 @@ extern "C" fn NonSnakeCaseName(some_var: u8) -> u8;
             "#,
         );
     }
+
     #[test]
     fn ignores_no_mangle_items_with_no_abi() {
         cov_mark::check!(extern_func_no_mangle_ignored);
@@ -426,6 +457,7 @@ extern fn NonSnakeCaseName(some_var: u8) -> u8;
             "#,
         );
     }
+
     #[test]
     fn no_mangle_items_with_rust_abi() {
         check_diagnostics(
@@ -436,6 +468,7 @@ extern "Rust" fn NonSnakeCaseName(some_var: u8) -> u8;
             "#,
         );
     }
+
     #[test]
     fn no_mangle_items_non_extern() {
         check_diagnostics(
@@ -446,6 +479,7 @@ fn NonSnakeCaseName(some_var: u8) -> u8;
             "#,
         );
     }
+
     #[test]
     fn extern_fn_name() {
         check_diagnostics(
@@ -459,6 +493,7 @@ extern fn NonSnakeCaseName(some_var: u8) -> u8;
             "#,
         );
     }
+
     #[test]
     fn ignores_extern_items() {
         cov_mark::check!(extern_func_incorrect_case_ignored);
@@ -472,6 +507,7 @@ extern {
             "#,
         );
     }
+
     #[test]
     fn ignores_extern_items_from_macro() {
         check_diagnostics(
@@ -489,6 +525,7 @@ extern {
             "#,
         );
     }
+
     #[test]
     fn incorrect_trait_and_assoc_item_names() {
         check_diagnostics(
@@ -507,6 +544,7 @@ trait BAD_TRAIT {
     "#,
         );
     }
+
     #[test]
     fn no_diagnostics_for_trait_impl_assoc_items_except_pats_in_body() {
         cov_mark::check!(trait_impl_assoc_const_incorrect_case_ignored);
@@ -541,6 +579,7 @@ impl BAD_TRAIT for () {
             &["unused_variables"],
         );
     }
+
     #[test]
     fn allow_attributes() {
         check_diagnostics(
@@ -596,6 +635,7 @@ trait BAD_TRAIT {
     "#,
         );
     }
+
     #[test]
     fn deny_attributes() {
         check_diagnostics(
@@ -668,6 +708,7 @@ trait BAD_TRAIT {
     "#,
         );
     }
+
     #[test]
     fn fn_inner_items() {
         check_diagnostics(
@@ -696,6 +737,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn const_body_inner_items() {
         check_diagnostics(
@@ -719,6 +761,7 @@ const _: () = {
 "#,
         );
     }
+
     #[test]
     fn static_body_inner_items() {
         check_diagnostics(
@@ -742,7 +785,9 @@ static FOO: () = {
 "#,
         );
     }
+
     #[test]
+    // FIXME
     #[should_panic]
     fn enum_variant_body_inner_item() {
         check_diagnostics(
@@ -761,6 +806,7 @@ enum E {
 "#,
         );
     }
+
     #[test]
     fn module_name_inline() {
         check_diagnostics(
@@ -773,16 +819,20 @@ mod M {
 "#,
         );
     }
+
     #[test]
     fn module_name_decl() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 //- /Foo.rs
 
 //- /main.rs
 mod Foo;
   //^^^ 💡 warn: Module `Foo` should have snake_case name, e.g. `foo`
-"#)
+"#,
+        )
     }
+
     #[test]
     fn test_field_shorthand() {
         check_diagnostics(
@@ -793,6 +843,7 @@ fn func(Foo { _nonSnake }: Foo) {}
 "#,
         );
     }
+
     #[test]
     fn test_match() {
         check_diagnostics(
@@ -856,6 +907,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_for_loop() {
         check_diagnostics(
@@ -882,6 +934,7 @@ fn func() {
 "#,
         );
     }
+
     #[test]
     fn override_lint_level() {
         check_diagnostics(
@@ -913,6 +966,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn different_files() {
         check_diagnostics(
@@ -947,6 +1001,7 @@ fn BAR() {
         "#,
         );
     }
+
     #[test]
     fn cfged_lint_attrs() {
         check_diagnostics(
@@ -968,6 +1023,7 @@ fn QUX() {}
         "#,
         );
     }
+
     #[test]
     fn allow_with_comment() {
         check_diagnostics(

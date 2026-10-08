@@ -21,7 +21,6 @@ pub trait CanonicalExt<'db, V> {
     fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
     where
         V: TypeFoldable<DbInterner<'db>>;
-
     fn instantiate_projected<T>(
         &self,
         tcx: DbInterner<'db>,
@@ -106,8 +105,10 @@ where
 /// Replaces the bound vars in a canonical binder with var values.
 struct CanonicalInstantiator<'db, 'a> {
     tcx: DbInterner<'db>,
+
     // The values that the bound vars are being instantiated with.
     var_values: &'a [GenericArg<'db>],
+
     // Because we use `BoundVarIndexKind::Canonical`, we can cache
     // based only on the entire ty, not worrying about a `DebruijnIndex`
     cache: FxHashMap<Ty<'db>, Ty<'db>>,

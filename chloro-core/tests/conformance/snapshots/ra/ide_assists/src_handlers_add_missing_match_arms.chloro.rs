@@ -79,7 +79,9 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
 
     let scope = ctx.sema.scope(expr.syntax())?;
     let module = scope.module();
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(scope.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(scope.krate()));
     let self_ty = if ctx.config.prefer_self_ty {
         scope
             .containing_function()
@@ -96,8 +98,9 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
 
         let variants = enum_def.variants(ctx.db());
 
-        let has_hidden_variants =
-            variants.iter().any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
+        let has_hidden_variants = variants
+            .iter()
+            .any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
 
         let missing_pats = variants
             .into_iter()
@@ -118,10 +121,15 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
         } else {
             Box::new(missing_pats)
         };
-        (missing_pats.peekable(), is_non_exhaustive, has_hidden_variants)
+        (
+            missing_pats.peekable(),
+            is_non_exhaustive,
+            has_hidden_variants,
+        )
     } else if let Some(enum_defs) = resolve_tuple_of_enum_def(&ctx.sema, &expr, self_ty.as_ref()) {
-        let is_non_exhaustive =
-            enum_defs.iter().any(|enum_def| enum_def.is_non_exhaustive(ctx.db(), module.krate()));
+        let is_non_exhaustive = enum_defs
+            .iter()
+            .any(|enum_def| enum_def.is_non_exhaustive(ctx.db(), module.krate()));
 
         let mut n_arms = 1;
         let variants_of_enums: Vec<Vec<ExtendedVariant>> = enum_defs
@@ -177,8 +185,9 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
             return None;
         }
 
-        let has_hidden_variants =
-            variants.iter().any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
+        let has_hidden_variants = variants
+            .iter()
+            .any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
 
         let variants_of_enums = vec![variants; len];
 
@@ -356,7 +365,11 @@ fn cursor_at_trivial_match_arm_list(
     // match { _$0 => {...} }
     let wild_pat = ctx.find_node_at_offset_with_descend::<ast::WildcardPat>()?;
     let arm = wild_pat.syntax().parent().and_then(ast::MatchArm::cast)?;
-    let arm_match_expr = arm.syntax().ancestors().nth(2).and_then(ast::MatchExpr::cast)?;
+    let arm_match_expr = arm
+        .syntax()
+        .ancestors()
+        .nth(2)
+        .and_then(ast::MatchExpr::cast)?;
     if arm_match_expr == *match_expr {
         cov_mark::hit!(add_missing_match_arms_trivial_arm);
         return Some(());
@@ -366,19 +379,23 @@ fn cursor_at_trivial_match_arm_list(
 }
 
 fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
-    !existing_pats.iter().any(|pat| does_pat_match_variant(pat, var))
+    !existing_pats
+        .iter()
+        .any(|pat| does_pat_match_variant(pat, var))
 }
 
 // Fixme: this is still somewhat limited, use hir_ty::diagnostics::match_check?
 fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
     match (pat, var) {
         (Pat::WildcardPat(_), _) => true,
-        (Pat::SlicePat(spat), Pat::SlicePat(svar)) => {
-            spat.pats().zip(svar.pats()).all(|(p, v)| does_pat_match_variant(&p, &v))
-        }
-        (Pat::TuplePat(tpat), Pat::TuplePat(tvar)) => {
-            tpat.fields().zip(tvar.fields()).all(|(p, v)| does_pat_match_variant(&p, &v))
-        }
+        (Pat::SlicePat(spat), Pat::SlicePat(svar)) => spat
+            .pats()
+            .zip(svar.pats())
+            .all(|(p, v)| does_pat_match_variant(&p, &v)),
+        (Pat::TuplePat(tpat), Pat::TuplePat(tvar)) => tpat
+            .fields()
+            .zip(tvar.fields())
+            .all(|(p, v)| does_pat_match_variant(&p, &v)),
         (Pat::OrPat(opat), _) => opat.pats().any(|p| does_pat_match_variant(&p, var)),
         _ => utils::does_pat_match_variant(pat, var),
     }
@@ -387,10 +404,7 @@ fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
 #[derive(Eq, PartialEq, Clone)]
 enum ExtendedEnum {
     Bool,
-    Enum {
-        enum_: hir::Enum,
-        use_self: bool,
-    },
+    Enum { enum_: hir::Enum, use_self: bool },
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
@@ -455,10 +469,13 @@ fn resolve_enum_def(
     expr: &ast::Expr,
     self_ty: Option<&hir::Type<'_>>,
 ) -> Option<ExtendedEnum> {
-    sema.type_of_expr(expr)?.adjusted().autoderef(sema.db).find_map(|ty| match ty.as_adt() {
-        Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
-        _ => ty.is_bool().then_some(ExtendedEnum::Bool),
-    })
+    sema.type_of_expr(expr)?
+        .adjusted()
+        .autoderef(sema.db)
+        .find_map(|ty| match ty.as_adt() {
+            Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
+            _ => ty.is_bool().then_some(ExtendedEnum::Bool),
+        })
 }
 
 fn resolve_tuple_of_enum_def(
@@ -490,12 +507,15 @@ fn resolve_array_of_enum_def(
     expr: &ast::Expr,
     self_ty: Option<&hir::Type<'_>>,
 ) -> Option<(ExtendedEnum, usize)> {
-    sema.type_of_expr(expr)?.adjusted().as_array(sema.db).and_then(|(ty, len)| {
-        ty.autoderef(sema.db).find_map(|ty| match ty.as_adt() {
-            Some(Adt::Enum(e)) => Some((ExtendedEnum::enum_(sema.db, e, &ty, self_ty), len)),
-            _ => ty.is_bool().then_some((ExtendedEnum::Bool, len)),
+    sema.type_of_expr(expr)?
+        .adjusted()
+        .as_array(sema.db)
+        .and_then(|(ty, len)| {
+            ty.autoderef(sema.db).find_map(|ty| match ty.as_adt() {
+                Some(Adt::Enum(e)) => Some((ExtendedEnum::enum_(sema.db, e, &ty, self_ty), len)),
+                _ => ty.is_bool().then_some((ExtendedEnum::Bool, len)),
+            })
         })
-    })
 }
 
 fn build_pat(
@@ -507,7 +527,10 @@ fn build_pat(
 ) -> Option<ast::Pat> {
     let db = ctx.db();
     match var {
-        ExtendedVariant::Variant { variant: var, use_self } => {
+        ExtendedVariant::Variant {
+            variant: var,
+            use_self,
+        } => {
             let edition = module.krate().edition(db);
             let path = if use_self {
                 make::path_from_segments(
@@ -559,7 +582,9 @@ mod tests {
         TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_target,
         check_assist_unresolved, check_assist_with_config,
     };
+
     use super::add_missing_match_arms;
+
     #[test]
     fn all_match_arms_provided() {
         check_assist_not_applicable(
@@ -580,6 +605,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn not_applicable_outside_of_range_left() {
         check_assist_not_applicable(
@@ -595,6 +621,7 @@ fn foo(a: A) {
         "#,
         );
     }
+
     #[test]
     fn not_applicable_outside_of_range_right() {
         cov_mark::check!(not_applicable_outside_of_range_right);
@@ -611,6 +638,7 @@ fn foo(a: A) {
         "#,
         );
     }
+
     #[test]
     fn all_boolean_match_arms_provided() {
         check_assist_not_applicable(
@@ -625,6 +653,7 @@ fn foo(a: bool) {
 "#,
         )
     }
+
     #[test]
     fn tuple_of_non_enum() {
         // for now this case is not handled, although it potentially could be
@@ -639,6 +668,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_boolean() {
         check_assist(
@@ -659,6 +689,7 @@ fn foo(a: bool) {
 "#,
         )
     }
+
     #[test]
     fn partial_fill_boolean() {
         check_assist(
@@ -680,6 +711,7 @@ fn foo(a: bool) {
 "#,
         )
     }
+
     #[test]
     fn all_boolean_tuple_arms_provided() {
         check_assist_not_applicable(
@@ -709,6 +741,7 @@ fn foo(a: bool) {
 "#,
         )
     }
+
     #[test]
     fn fill_boolean_tuple() {
         check_assist(
@@ -731,6 +764,7 @@ fn foo(a: bool) {
 "#,
         )
     }
+
     #[test]
     fn fill_boolean_array() {
         check_assist(
@@ -810,6 +844,7 @@ fn foo(a: bool) {
 "#,
         )
     }
+
     #[test]
     fn partial_fill_boolean_tuple() {
         check_assist(
@@ -853,6 +888,7 @@ fn foo(a: bool) {
 "#,
         )
     }
+
     #[test]
     fn partial_fill_record_tuple() {
         check_assist(
@@ -886,6 +922,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn partial_fill_option() {
         check_assist(
@@ -908,6 +945,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn partial_fill_option_with_indentation() {
         check_assist(
@@ -940,6 +978,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn partial_fill_or_pat() {
         check_assist(
@@ -963,6 +1002,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn partial_fill() {
         check_assist(
@@ -993,6 +1033,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn partial_fill_bind_pat() {
         check_assist(
@@ -1018,6 +1059,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_empty_body() {
         cov_mark::check!(add_missing_match_arms_empty_body);
@@ -1047,6 +1089,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_end_of_last_arm() {
         cov_mark::check!(add_missing_match_arms_end_of_last_arm);
@@ -1081,6 +1124,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_tuple_of_enum() {
         check_assist(
@@ -1112,6 +1156,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_tuple_of_enum_ref() {
         check_assist(
@@ -1143,6 +1188,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_tuple_of_enum_partial() {
         check_assist(
@@ -1203,6 +1249,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn add_missing_match_arms_tuple_of_enum_partial_with_wildcards() {
         check_assist(
@@ -1231,6 +1278,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_partial_with_deep_pattern() {
         // Fixme: cannot handle deep patterns
@@ -1247,6 +1295,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_tuple_of_enum_not_applicable() {
         check_assist_not_applicable(
@@ -1268,6 +1317,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_single_element_tuple_of_enum() {
         check_assist(
@@ -1294,6 +1344,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_match_arm_refs() {
         check_assist(
@@ -1342,6 +1393,7 @@ fn foo(a: &mut A) {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_target_simple() {
         check_assist_target(
@@ -1356,6 +1408,7 @@ fn main() {
             "match E::X {}",
         );
     }
+
     #[test]
     fn add_missing_match_arms_target_complex() {
         check_assist_target(
@@ -1374,6 +1427,7 @@ fn main() {
     }",
         );
     }
+
     #[test]
     fn add_missing_match_arms_trivial_arm() {
         cov_mark::check!(add_missing_match_arms_trivial_arm);
@@ -1400,6 +1454,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn wildcard_inside_expression_not_applicable() {
         check_assist_not_applicable(
@@ -1418,6 +1473,7 @@ fn foo(e : E) {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_qualifies_path() {
         check_assist(
@@ -1445,6 +1501,7 @@ fn main() {
 "#,
         );
     }
+
     // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
     // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
     #[ignore]
@@ -1475,6 +1532,7 @@ fn foo(a: A) {
 "#,
         );
     }
+
     // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
     // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
     #[ignore]
@@ -1502,6 +1560,7 @@ fn foo(a: A) {
 "#,
         );
     }
+
     #[test]
     fn add_missing_match_arms_placeholder() {
         check_assist(
@@ -1525,6 +1584,7 @@ fn foo(a: A) {
 "#,
         );
     }
+
     #[test]
     fn option_order() {
         cov_mark::check!(option_order);
@@ -1547,6 +1607,7 @@ fn foo(opt: Option<i32>) {
 "#,
         );
     }
+
     #[test]
     fn works_inside_macro_call() {
         check_assist(
@@ -1579,6 +1640,7 @@ fn foo(t: Test) {
 }"#,
         );
     }
+
     #[test]
     fn lazy_computation() {
         // Computing a single missing arm is enough to determine applicability of the assist.
@@ -1593,6 +1655,7 @@ fn foo(tuple: (A, A)) {
 "#,
         );
     }
+
     #[test]
     fn adds_comma_before_new_arms() {
         check_assist(
@@ -1612,6 +1675,7 @@ fn foo(t: bool) {
 }"#,
         );
     }
+
     #[test]
     fn does_not_add_extra_comma() {
         check_assist(
@@ -1631,6 +1695,7 @@ fn foo(t: bool) {
 }"#,
         );
     }
+
     #[test]
     fn does_not_remove_catch_all_with_non_empty_expr() {
         cov_mark::check!(add_missing_match_arms_empty_expr);
@@ -1652,6 +1717,7 @@ fn foo(t: bool) {
 }"#,
         );
     }
+
     #[test]
     fn does_not_fill_hidden_variants() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1676,6 +1742,7 @@ fn foo(t: ::e::E) {
 "#,
         );
     }
+
     #[test]
     fn does_not_fill_hidden_variants_tuple() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1701,6 +1768,7 @@ fn foo(t: (bool, ::e::E)) {
 "#,
         );
     }
+
     #[test]
     fn fills_wildcard_with_only_hidden_variants() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1724,6 +1792,7 @@ fn foo(t: ::e::E) {
 "#,
         );
     }
+
     #[test]
     fn does_not_fill_wildcard_when_hidden_variants_are_explicit() {
         check_assist_not_applicable(
@@ -1740,6 +1809,7 @@ pub enum E { #[doc(hidden)] A, }
 "#,
         );
     }
+
     #[test]
     fn does_not_fill_wildcard_with_wildcard() {
         check_assist_not_applicable(
@@ -1756,6 +1826,7 @@ pub enum E { #[doc(hidden)] A, }
 "#,
         );
     }
+
     #[test]
     fn fills_wildcard_on_non_exhaustive_with_explicit_matches() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1782,6 +1853,7 @@ fn foo(t: ::e::E) {
 "#,
         );
     }
+
     #[test]
     fn fills_wildcard_on_non_exhaustive_without_matches() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1807,6 +1879,7 @@ fn foo(t: ::e::E) {
 "#,
         );
     }
+
     #[test]
     fn fills_wildcard_on_non_exhaustive_with_doc_hidden() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1831,6 +1904,7 @@ fn foo(t: ::e::E) {
 "#,
         );
     }
+
     #[test]
     fn fills_wildcard_on_non_exhaustive_with_doc_hidden_with_explicit_arms() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1856,6 +1930,7 @@ fn foo(t: ::e::E) {
 "#,
         );
     }
+
     #[test]
     fn fill_wildcard_with_partial_wildcard() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1880,6 +1955,7 @@ fn foo(t: ::e::E, b: bool) {
 "#,
         );
     }
+
     #[test]
     fn does_not_fill_wildcard_with_partial_wildcard_and_wildcard() {
         check_assist_not_applicable(
@@ -1896,6 +1972,7 @@ fn foo(t: ::e::E, b: bool) {
 pub enum E { #[doc(hidden)] A, }"#,
         );
     }
+
     #[test]
     fn non_exhaustive_doc_hidden_tuple_fills_wildcard() {
         cov_mark::check!(added_wildcard_pattern);
@@ -1920,6 +1997,7 @@ fn foo(t: ::e::E) {
 "#,
         );
     }
+
     #[test]
     fn ignores_doc_hidden_for_crate_local_enums() {
         check_assist(
@@ -1942,6 +2020,7 @@ fn foo(t: E) {
 }"#,
         );
     }
+
     #[test]
     fn ignores_non_exhaustive_for_crate_local_enums() {
         check_assist(
@@ -1966,6 +2045,7 @@ fn foo(t: E) {
 }"#,
         );
     }
+
     #[test]
     fn ignores_doc_hidden_and_non_exhaustive_for_crate_local_enums() {
         check_assist(
@@ -1990,6 +2070,7 @@ fn foo(t: E) {
 }"#,
         );
     }
+
     #[test]
     fn not_applicable_when_match_arm_list_cannot_be_upmapped() {
         check_assist_not_applicable(
@@ -2009,6 +2090,7 @@ fn main() {
 "#,
         );
     }
+
     /// See [`discussion`](https://github.com/rust-lang/rust-analyzer/pull/15594#discussion_r1322960614)
     #[test]
     fn missing_field_name() {
@@ -2039,6 +2121,7 @@ fn a() {
 }"#,
         )
     }
+
     #[test]
     fn suggest_name_for_tuple_struct_patterns() {
         // single tuple struct
@@ -2115,11 +2198,15 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn prefer_self() {
         check_assist_with_config(
             add_missing_match_arms,
-            AssistConfig { prefer_self_ty: true, ..TEST_CONFIG },
+            AssistConfig {
+                prefer_self_ty: true,
+                ..TEST_CONFIG
+            },
             r#"
 enum Foo {
     Bar,
@@ -2151,11 +2238,15 @@ impl Foo {
             "#,
         );
     }
+
     #[test]
     fn prefer_self_with_generics() {
         check_assist_with_config(
             add_missing_match_arms,
-            AssistConfig { prefer_self_ty: true, ..TEST_CONFIG },
+            AssistConfig {
+                prefer_self_ty: true,
+                ..TEST_CONFIG
+            },
             r#"
 enum Foo<T> {
     Bar(T),
@@ -2188,7 +2279,10 @@ impl<T> Foo<T> {
         );
         check_assist_with_config(
             add_missing_match_arms,
-            AssistConfig { prefer_self_ty: true, ..TEST_CONFIG },
+            AssistConfig {
+                prefer_self_ty: true,
+                ..TEST_CONFIG
+            },
             r#"
 enum Foo<T> {
     Bar(T),

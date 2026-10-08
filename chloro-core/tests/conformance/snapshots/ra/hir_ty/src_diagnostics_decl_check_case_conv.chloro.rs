@@ -98,32 +98,55 @@ fn is_snake_case<F: Fn(char) -> bool>(ident: &str, wrong_case: F) -> bool {
 mod tests {
     use super::*;
     use expect_test::{Expect, expect};
+
     fn check<F: Fn(&str) -> Option<String>>(fun: F, input: &str, expect: Expect) {
         // `None` is translated to empty string, meaning that there is nothing to fix.
         let output = fun(input).unwrap_or_default();
 
         expect.assert_eq(&output);
     }
+
     #[test]
     fn test_to_lower_snake_case() {
         check(to_lower_snake_case, "lower_snake_case", expect![[""]]);
-        check(to_lower_snake_case, "UPPER_SNAKE_CASE", expect![["upper_snake_case"]]);
+        check(
+            to_lower_snake_case,
+            "UPPER_SNAKE_CASE",
+            expect![["upper_snake_case"]],
+        );
         check(to_lower_snake_case, "Weird_Case", expect![["weird_case"]]);
-        check(to_lower_snake_case, "UpperCamelCase", expect![["upper_camel_case"]]);
-        check(to_lower_snake_case, "lowerCamelCase", expect![["lower_camel_case"]]);
+        check(
+            to_lower_snake_case,
+            "UpperCamelCase",
+            expect![["upper_camel_case"]],
+        );
+        check(
+            to_lower_snake_case,
+            "lowerCamelCase",
+            expect![["lower_camel_case"]],
+        );
         check(to_lower_snake_case, "a", expect![[""]]);
         check(to_lower_snake_case, "abc", expect![[""]]);
         check(to_lower_snake_case, "foo__bar", expect![["foo_bar"]]);
         check(to_lower_snake_case, "Δ", expect!["δ"]);
     }
+
     #[test]
     fn test_to_camel_case() {
         check(to_camel_case, "UpperCamelCase", expect![[""]]);
         check(to_camel_case, "UpperCamelCase_", expect![[""]]);
         check(to_camel_case, "_CamelCase", expect![[""]]);
         check(to_camel_case, "lowerCamelCase", expect![["LowerCamelCase"]]);
-        check(to_camel_case, "lower_snake_case", expect![["LowerSnakeCase"]]);
-        check(to_camel_case, "UPPER_SNAKE_CASE", expect![["UpperSnakeCase"]]);
+        check(
+            to_camel_case,
+            "lower_snake_case",
+            expect![["LowerSnakeCase"]],
+        );
+        check(
+            to_camel_case,
+            "UPPER_SNAKE_CASE",
+            expect![["UpperSnakeCase"]],
+        );
         check(to_camel_case, "Weird_Case", expect![["WeirdCase"]]);
         check(to_camel_case, "name", expect![["Name"]]);
         check(to_camel_case, "A", expect![[""]]);
@@ -134,13 +157,26 @@ mod tests {
         check(to_camel_case, "Abc_123", expect![["Abc123"]]);
         check(to_camel_case, "A1_b2_c3", expect![["A1B2C3"]]);
     }
+
     #[test]
     fn test_to_upper_snake_case() {
         check(to_upper_snake_case, "UPPER_SNAKE_CASE", expect![[""]]);
-        check(to_upper_snake_case, "lower_snake_case", expect![["LOWER_SNAKE_CASE"]]);
+        check(
+            to_upper_snake_case,
+            "lower_snake_case",
+            expect![["LOWER_SNAKE_CASE"]],
+        );
         check(to_upper_snake_case, "Weird_Case", expect![["WEIRD_CASE"]]);
-        check(to_upper_snake_case, "UpperCamelCase", expect![["UPPER_CAMEL_CASE"]]);
-        check(to_upper_snake_case, "lowerCamelCase", expect![["LOWER_CAMEL_CASE"]]);
+        check(
+            to_upper_snake_case,
+            "UpperCamelCase",
+            expect![["UPPER_CAMEL_CASE"]],
+        );
+        check(
+            to_upper_snake_case,
+            "lowerCamelCase",
+            expect![["LOWER_CAMEL_CASE"]],
+        );
         check(to_upper_snake_case, "A", expect![[""]]);
         check(to_upper_snake_case, "ABC", expect![[""]]);
         check(to_upper_snake_case, "X86_64", expect![[""]]);

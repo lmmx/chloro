@@ -10,12 +10,8 @@ use crate::next_solver::{Const, Region};
 
 #[derive(Clone, Debug)]
 pub(crate) enum RegionVariableValue<'db> {
-    Known {
-        value: Region<'db>,
-    },
-    Unknown {
-        universe: UniverseIndex,
-    },
+    Known { value: Region<'db> },
+    Unknown { universe: UniverseIndex },
 }
 
 #[derive(PartialEq, Copy, Clone, Debug)]
@@ -26,30 +22,29 @@ pub(crate) struct RegionVidKey<'db> {
 
 impl<'db> From<RegionVid> for RegionVidKey<'db> {
     fn from(vid: RegionVid) -> Self {
-        RegionVidKey { vid, phantom: PhantomData }
+        RegionVidKey {
+            vid,
+            phantom: PhantomData,
+        }
     }
 }
 
 impl<'db> UnifyKey for RegionVidKey<'db> {
     type Value = RegionVariableValue<'db>;
-
     #[inline]
     fn index(&self) -> u32 {
         self.vid.as_u32()
     }
-
     #[inline]
     fn from_index(i: u32) -> Self {
         RegionVidKey::from(RegionVid::from_u32(i))
     }
-
     fn tag() -> &'static str {
         "RegionVidKey"
     }
 }
 
 pub(crate) struct RegionUnificationError;
-
 impl<'db> UnifyValue for RegionVariableValue<'db> {
     type Error = RegionUnificationError;
 
@@ -89,7 +84,9 @@ impl<'db> UnifyValue for RegionVariableValue<'db> {
                 // be nameable by both universes. Therefore, the resulting
                 // universe is the minimum of the two universes, because that is
                 // the one which contains the fewest names in scope.
-                Ok(RegionVariableValue::Unknown { universe: (*a).min(*b) })
+                Ok(RegionVariableValue::Unknown {
+                    universe: (*a).min(*b),
+                })
             }
         }
     }
@@ -98,8 +95,7 @@ impl<'db> UnifyValue for RegionVariableValue<'db> {
 // Generic consts.
 
 #[derive(Copy, Clone, Debug)]
-pub struct ConstVariableOrigin {
-}
+pub struct ConstVariableOrigin {}
 
 #[derive(Clone, Debug)]
 pub(crate) enum ConstVariableValue<'db> {
@@ -131,27 +127,26 @@ pub(crate) struct ConstVidKey<'db> {
 
 impl<'db> From<ConstVid> for ConstVidKey<'db> {
     fn from(vid: ConstVid) -> Self {
-        ConstVidKey { vid, phantom: PhantomData }
+        ConstVidKey {
+            vid,
+            phantom: PhantomData,
+        }
     }
 }
 
 impl<'db> UnifyKey for ConstVidKey<'db> {
     type Value = ConstVariableValue<'db>;
-
     #[inline]
     fn index(&self) -> u32 {
         self.vid.as_u32()
     }
-
     #[inline]
     fn from_index(i: u32) -> Self {
         ConstVidKey::from(ConstVid::from_u32(i))
     }
-
     fn tag() -> &'static str {
         "ConstVidKey"
     }
-
     fn order_roots(a: Self, _: &Self::Value, b: Self, _: &Self::Value) -> Option<(Self, Self)> {
         if a.vid.as_u32() < b.vid.as_u32() {
             Some((a, b))
@@ -180,8 +175,14 @@ impl<'db> UnifyValue for ConstVariableValue<'db> {
 
             // If both sides are *unknown*, it hardly matters, does it?
             (
-                ConstVariableValue::Unknown { origin, universe: universe1 },
-                ConstVariableValue::Unknown { origin: _, universe: universe2 },
+                ConstVariableValue::Unknown {
+                    origin,
+                    universe: universe1,
+                },
+                ConstVariableValue::Unknown {
+                    origin: _,
+                    universe: universe2,
+                },
             ) => {
                 // If we unify two unbound variables, ?T and ?U, then whatever
                 // value they wind up taking (which must be the same value) must
@@ -189,7 +190,10 @@ impl<'db> UnifyValue for ConstVariableValue<'db> {
                 // universe is the minimum of the two universes, because that is
                 // the one which contains the fewest names in scope.
                 let universe = cmp::min(*universe1, *universe2);
-                Ok(ConstVariableValue::Unknown { origin: *origin, universe })
+                Ok(ConstVariableValue::Unknown {
+                    origin: *origin,
+                    universe,
+                })
             }
         }
     }

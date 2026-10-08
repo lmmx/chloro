@@ -32,11 +32,21 @@ fn check_hover_no_result(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     let (analysis, position) = fixture::position(ra_fixture);
     let hover = analysis
         .hover(
-            &HoverConfig { links_in_hover: true, ..HOVER_BASE_CONFIG },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            &HoverConfig {
+                links_in_hover: true,
+                ..HOVER_BASE_CONFIG
+            },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap();
-    assert!(hover.is_none(), "hover not expected but found: {:?}", hover.unwrap());
+    assert!(
+        hover.is_none(),
+        "hover not expected but found: {:?}",
+        hover.unwrap()
+    );
 }
 
 #[track_caller]
@@ -45,8 +55,14 @@ fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let (analysis, position) = fixture::position(ra_fixture);
     let hover = analysis
         .hover(
-            &HoverConfig { links_in_hover: true, ..HOVER_BASE_CONFIG },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            &HoverConfig {
+                links_in_hover: true,
+                ..HOVER_BASE_CONFIG
+            },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -72,7 +88,10 @@ fn check_hover_fields_limit(
                 max_fields_count: fields_count.into(),
                 ..HOVER_BASE_CONFIG
             },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -98,7 +117,10 @@ fn check_hover_enum_variants_limit(
                 max_enum_variants_count: variants_count.into(),
                 ..HOVER_BASE_CONFIG
             },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -124,7 +146,10 @@ fn check_assoc_count(
                 max_trait_assoc_items_count: Some(count),
                 ..HOVER_BASE_CONFIG
             },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -141,7 +166,10 @@ fn check_hover_no_links(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect:
     let hover = analysis
         .hover(
             &HOVER_BASE_CONFIG,
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -157,8 +185,14 @@ fn check_hover_no_memory_layout(#[rust_analyzer::rust_fixture] ra_fixture: &str,
     let (analysis, position) = fixture::position(ra_fixture);
     let hover = analysis
         .hover(
-            &HoverConfig { memory_layout: None, ..HOVER_BASE_CONFIG },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            &HoverConfig {
+                memory_layout: None,
+                ..HOVER_BASE_CONFIG
+            },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -179,7 +213,10 @@ fn check_hover_no_markdown(#[rust_analyzer::rust_fixture] ra_fixture: &str, expe
                 format: HoverDocFormat::PlainText,
                 ..HOVER_BASE_CONFIG
             },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -195,24 +232,34 @@ fn check_actions(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect
     let (analysis, file_id, position) = fixture::range_or_position(ra_fixture);
     let mut hover = analysis
         .hover(
-            &HoverConfig { links_in_hover: true, ..HOVER_BASE_CONFIG },
-            FileRange { file_id, range: position.range_or_empty() },
+            &HoverConfig {
+                links_in_hover: true,
+                ..HOVER_BASE_CONFIG
+            },
+            FileRange {
+                file_id,
+                range: position.range_or_empty(),
+            },
         )
         .unwrap()
         .unwrap();
     // stub out ranges into minicore as they can change every now and then
-    hover.info.actions.iter_mut().for_each(|action| match action {
-        super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
-            if data.nav.file_id == file_id {
-                return;
-            }
-            data.nav.full_range = TextRange::empty(span::TextSize::new(!0));
-            if let Some(range) = &mut data.nav.focus_range {
-                *range = TextRange::empty(span::TextSize::new(!0));
-            }
-        }),
-        _ => (),
-    });
+    hover
+        .info
+        .actions
+        .iter_mut()
+        .for_each(|action| match action {
+            super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
+                if data.nav.file_id == file_id {
+                    return;
+                }
+                data.nav.full_range = TextRange::empty(span::TextSize::new(!0));
+                if let Some(range) = &mut data.nav.focus_range {
+                    *range = TextRange::empty(span::TextSize::new(!0));
+                }
+            }),
+            _ => (),
+        });
     expect.assert_debug_eq(&hover.info.actions)
 }
 
@@ -225,22 +272,32 @@ fn check_hover_range(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Ex
 fn check_hover_range_actions(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let (analysis, range) = fixture::range(ra_fixture);
     let mut hover = analysis
-        .hover(&HoverConfig { links_in_hover: true, ..HOVER_BASE_CONFIG }, range)
+        .hover(
+            &HoverConfig {
+                links_in_hover: true,
+                ..HOVER_BASE_CONFIG
+            },
+            range,
+        )
         .unwrap()
         .unwrap();
     // stub out ranges into minicore as they can change every now and then
-    hover.info.actions.iter_mut().for_each(|action| match action {
-        super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
-            if data.nav.file_id == range.file_id {
-                return;
-            }
-            data.nav.full_range = TextRange::empty(span::TextSize::new(!0));
-            if let Some(range) = &mut data.nav.focus_range {
-                *range = TextRange::empty(span::TextSize::new(!0));
-            }
-        }),
-        _ => (),
-    });
+    hover
+        .info
+        .actions
+        .iter_mut()
+        .for_each(|action| match action {
+            super::HoverAction::GoToType(act) => act.iter_mut().for_each(|data| {
+                if data.nav.file_id == range.file_id {
+                    return;
+                }
+                data.nav.full_range = TextRange::empty(span::TextSize::new(!0));
+                if let Some(range) = &mut data.nav.focus_range {
+                    *range = TextRange::empty(span::TextSize::new(!0));
+                }
+            }),
+            _ => (),
+        });
     expect.assert_debug_eq(&hover.info.actions);
 }
 
@@ -5145,6 +5202,7 @@ impl<T$0: Trait + ?Sized> Foo<T> {}
 
 mod type_param_sized_bounds {
     use super::*;
+
     #[test]
     fn single_implicit() {
         check(
@@ -5169,6 +5227,7 @@ fn foo<T$0>() {}
             "#]],
         );
     }
+
     #[test]
     fn single_explicit() {
         check(
@@ -5193,6 +5252,7 @@ fn foo<T$0: Sized>() {}
             "#]],
         );
     }
+
     #[test]
     fn single_relaxed() {
         check(
@@ -5217,6 +5277,7 @@ fn foo<T$0: ?Sized>() {}
             "#]],
         );
     }
+
     #[test]
     fn multiple_implicit() {
         check(
@@ -5242,6 +5303,7 @@ fn foo<T$0: Trait>() {}
             "#]],
         );
     }
+
     #[test]
     fn multiple_explicit() {
         check(
@@ -5267,6 +5329,7 @@ fn foo<T$0: Trait + Sized>() {}
             "#]],
         );
     }
+
     #[test]
     fn multiple_relaxed() {
         check(
@@ -5292,6 +5355,7 @@ fn foo<T$0: Trait + ?Sized>() {}
             "#]],
         );
     }
+
     #[test]
     fn mixed() {
         check(
@@ -5316,6 +5380,7 @@ fn foo<T$0: ?Sized + Sized + Sized>() {}
             "#]],
         );
     }
+
     #[test]
     fn mixed2() {
         check(
@@ -6727,7 +6792,6 @@ impl T1 for Foo {
         "#]],
     );
 }
-
 #[test]
 fn hover_generic_assoc() {
     check(
@@ -6858,8 +6922,14 @@ fn hover_feature() {
     let (analysis, position) = fixture::position(r#"#![feature(intrinsics$0)]"#);
     analysis
         .hover(
-            &HoverConfig { links_in_hover: true, ..HOVER_BASE_CONFIG },
-            FileRange { file_id: position.file_id, range: TextRange::empty(position.offset) },
+            &HoverConfig {
+                links_in_hover: true,
+                ..HOVER_BASE_CONFIG
+            },
+            FileRange {
+                file_id: position.file_id,
+                range: TextRange::empty(position.offset),
+            },
         )
         .unwrap()
         .unwrap();
@@ -7718,6 +7788,7 @@ pub struct Foo;
 #[test]
 fn hover_dollar_crate() {
     // $crate should be resolved to the right crate name.
+
     check(
         r#"
 //- /main.rs crate:main deps:dep

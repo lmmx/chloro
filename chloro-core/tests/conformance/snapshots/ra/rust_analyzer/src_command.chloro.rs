@@ -17,9 +17,8 @@ use stdx::process::streaming_output;
 
 /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
 /// cargo output into a Rust data type
-pub(crate) trait CargoParser<T> {
+pub(crate) trait CargoParser<T>: Send + 'static {
     fn from_line(&self, line: &str, error: &mut String) -> Option<T>;
-
     fn from_eof(&self) -> Option<T>;
 }
 
@@ -38,7 +37,12 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
         stderr: ChildStderr,
     ) -> Self {
         let parser = Box::new(parser);
-        CargoActor { parser, sender, stdout, stderr }
+        CargoActor {
+            parser,
+            sender,
+            stdout,
+            stderr,
+        }
     }
 }
 
@@ -52,13 +56,18 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
         // Because cargo only outputs one JSON object per line, we can
         // simply skip a line if it doesn't parse, which just ignores any
         // erroneous output.
+
         let mut stdout = outfile.as_ref().and_then(|path| {
             _ = std::fs::create_dir_all(path);
-            Some(BufWriter::new(std::fs::File::create(path.join("stdout")).ok()?))
+            Some(BufWriter::new(
+                std::fs::File::create(path.join("stdout")).ok()?,
+            ))
         });
         let mut stderr = outfile.as_ref().and_then(|path| {
             _ = std::fs::create_dir_all(path);
-            Some(BufWriter::new(std::fs::File::create(path.join("stderr")).ok()?))
+            Some(BufWriter::new(
+                std::fs::File::create(path.join("stderr")).ok()?,
+            ))
         });
 
         let mut stdout_errors = String::new();
@@ -151,10 +160,16 @@ impl<T: Sized + Send + 'static> CommandHandle<T> {
         sender: Sender<T>,
         out_file: Option<Utf8PathBuf>,
     ) -> std::io::Result<Self> {
-        command.stdout(Stdio::piped()).stderr(Stdio::piped()).stdin(Stdio::null());
+        command
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .stdin(Stdio::null());
 
         let program = command.get_program().into();
-        let arguments = command.get_args().map(|arg| arg.into()).collect::<Vec<OsString>>();
+        let arguments = command
+            .get_args()
+            .map(|arg| arg.into())
+            .collect::<Vec<OsString>>();
         let current_dir = command.get_current_dir().map(|arg| arg.to_path_buf());
 
         let mut child = StdCommandWrap::from(command);
@@ -172,7 +187,14 @@ impl<T: Sized + Send + 'static> CommandHandle<T> {
             stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, "CommandHandle")
                 .spawn(move || actor.run(out_file))
                 .expect("failed to spawn thread");
-        Ok(CommandHandle { program, arguments, current_dir, child, thread, _phantom: PhantomData })
+        Ok(CommandHandle {
+            program,
+            arguments,
+            current_dir,
+            child,
+            thread,
+            _phantom: PhantomData,
+        })
     }
 
     pub(crate) fn cancel(mut self) {

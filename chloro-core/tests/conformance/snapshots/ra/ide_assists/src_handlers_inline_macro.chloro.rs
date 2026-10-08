@@ -38,7 +38,11 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let unexpanded = ctx.find_node_at_offset::<ast::MacroCall>()?;
     let macro_call = ctx.sema.to_def(&unexpanded)?;
-    let target_crate_id = ctx.sema.file_to_module_def(ctx.vfs_file_id())?.krate().into();
+    let target_crate_id = ctx
+        .sema
+        .file_to_module_def(ctx.vfs_file_id())?
+        .krate()
+        .into();
     let text_range = unexpanded.syntax().text_range();
 
     acc.add(
@@ -59,7 +63,9 @@ pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     macro_rules! simple_macro {
         () => {
             r#"
@@ -85,6 +91,7 @@ macro_rules! foo {
 "#
         };
     }
+
     macro_rules! complex_macro {
         () => {
             r#"
@@ -105,6 +112,7 @@ macro_rules! num {
             "foo!(foo)",
         );
     }
+
     #[test]
     fn inline_macro_target_start() {
         check_assist_target(
@@ -113,6 +121,7 @@ macro_rules! num {
             "foo!(foo)",
         );
     }
+
     #[test]
     fn inline_macro_target_end() {
         check_assist_target(
@@ -121,6 +130,7 @@ macro_rules! num {
             "foo!(foo)",
         );
     }
+
     #[test]
     fn inline_macro_simple_case1() {
         check_assist(
@@ -129,6 +139,7 @@ macro_rules! num {
             concat!(simple_macro!(), r#"fn f() { let result = true; }"#),
         );
     }
+
     #[test]
     fn inline_macro_simple_case2() {
         check_assist(
@@ -137,6 +148,7 @@ macro_rules! num {
             concat!(simple_macro!(), r#"fn f() { let result = false; }"#),
         );
     }
+
     #[test]
     fn inline_macro_simple_not_applicable() {
         check_assist_not_applicable(
@@ -144,6 +156,7 @@ macro_rules! num {
             concat!(simple_macro!(), r#"fn f() { let result$0 = foo!(foo); }"#),
         );
     }
+
     #[test]
     fn inline_macro_simple_not_applicable_broken_macro() {
         // FIXME: This is a bug. The macro should not expand, but it's
@@ -151,10 +164,14 @@ macro_rules! num {
         // so it's presumably OK for the time being.
         check_assist(
             inline_macro,
-            concat!(simple_macro!(), r#"fn f() { let result = foo$0!(asdfasdf); }"#),
+            concat!(
+                simple_macro!(),
+                r#"fn f() { let result = foo$0!(asdfasdf); }"#
+            ),
             concat!(simple_macro!(), r#"fn f() { let result = true; }"#),
         );
     }
+
     #[test]
     fn inline_macro_double_case1() {
         check_assist(
@@ -163,6 +180,7 @@ macro_rules! num {
             concat!(double_macro!(), r#"fn f() { let result = bar!(bar); }"#),
         );
     }
+
     #[test]
     fn inline_macro_double_case2() {
         check_assist(
@@ -171,22 +189,37 @@ macro_rules! num {
             concat!(double_macro!(), r#"fn f() { let result = bar!(asdf); }"#),
         );
     }
+
     #[test]
     fn inline_macro_complex_case1() {
         check_assist(
             inline_macro,
-            concat!(complex_macro!(), r#"fn f() { let result = num!(+ +$0 + - +); }"#),
-            concat!(complex_macro!(), r#"fn f() { let result = 1+num!(+ + - +); }"#),
+            concat!(
+                complex_macro!(),
+                r#"fn f() { let result = num!(+ +$0 + - +); }"#
+            ),
+            concat!(
+                complex_macro!(),
+                r#"fn f() { let result = 1+num!(+ + - +); }"#
+            ),
         );
     }
+
     #[test]
     fn inline_macro_complex_case2() {
         check_assist(
             inline_macro,
-            concat!(complex_macro!(), r#"fn f() { let result = n$0um!(- + + - +); }"#),
-            concat!(complex_macro!(), r#"fn f() { let result = -1+num!(+ + - +); }"#),
+            concat!(
+                complex_macro!(),
+                r#"fn f() { let result = n$0um!(- + + - +); }"#
+            ),
+            concat!(
+                complex_macro!(),
+                r#"fn f() { let result = -1+num!(+ + - +); }"#
+            ),
         );
     }
+
     #[test]
     fn inline_macro_recursive_macro() {
         check_assist(
@@ -205,6 +238,7 @@ fn f() { let result = foo!(); }
 "#,
         );
     }
+
     #[test]
     fn inline_macro_unknown_macro() {
         check_assist_not_applicable(
@@ -214,6 +248,7 @@ fn f() { let result = foo$0!(); }
 "#,
         );
     }
+
     #[test]
     fn inline_macro_function_call_not_applicable() {
         check_assist_not_applicable(
@@ -223,6 +258,7 @@ fn f() { let result = foo$0(); }
 "#,
         );
     }
+
     #[test]
     fn inline_macro_with_whitespace() {
         check_assist(
@@ -245,6 +281,7 @@ fn f() { if true{}; }
 "#,
         )
     }
+
     #[test]
     fn whitespace_between_text_and_pound() {
         check_assist(
@@ -289,6 +326,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn dollar_crate() {
         check_assist(

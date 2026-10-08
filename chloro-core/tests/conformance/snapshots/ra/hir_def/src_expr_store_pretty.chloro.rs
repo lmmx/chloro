@@ -1,5 +1,4 @@
 //! A pretty-printer for HIR.
-
 #![allow(dead_code)]
 
 use std::{
@@ -11,8 +10,6 @@ use hir_expand::{Lookup, mod_path::PathKind};
 use itertools::Itertools;
 use span::Edition;
 use syntax::ast::HasName;
-use crate::{LifetimeParamId, signatures::StructFlags};
-use crate::{item_tree::FieldsShape, signatures::FieldData};
 
 use crate::{
     AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
@@ -26,6 +23,8 @@ use crate::{
     src::HasSource,
     type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef},
 };
+use crate::{LifetimeParamId, signatures::StructFlags};
+use crate::{item_tree::FieldsShape, signatures::FieldData};
 
 use super::*;
 
@@ -59,7 +58,10 @@ where
 {
     let loc = id.lookup(db);
     let source = loc.source(db);
-    source.value.name().map_or_else(|| default.to_owned(), |name| name.to_string())
+    source
+        .value
+        .name()
+        .map_or_else(|| default.to_owned(), |name| name.to_string())
 }
 
 pub fn print_body_hir(
@@ -105,7 +107,10 @@ pub fn print_body_hir(
         p.buf.push(' ');
     }
     p.print_expr(body.body_expr);
-    if matches!(owner, DefWithBodyId::StaticId(_) | DefWithBodyId::ConstId(_)) {
+    if matches!(
+        owner,
+        DefWithBodyId::StaticId(_) | DefWithBodyId::ConstId(_)
+    ) {
         p.buf.push(';');
     }
     p.buf
@@ -139,7 +144,12 @@ pub fn print_variant_body_hir(db: &dyn DefDatabase, owner: VariantId, edition: E
     }
 
     for (_, data) in fields.fields().iter() {
-        let FieldData { name, type_ref, visibility, is_unsafe } = data;
+        let FieldData {
+            name,
+            type_ref,
+            visibility,
+            is_unsafe,
+        } = data;
         match visibility {
             crate::item_tree::RawVisibility::Module(interned, _visibility_explicitness) => {
                 w!(p, "pub(in {})", interned.display(db, p.edition))
@@ -209,7 +219,14 @@ pub fn print_path(
 
 pub fn print_struct(
     db: &dyn DefDatabase,
-    StructSignature { name, generic_params, store, flags, shape, repr }: &StructSignature,
+    StructSignature {
+        name,
+        generic_params,
+        store,
+        flags,
+        shape,
+        repr,
+    }: &StructSignature,
     edition: Edition,
 ) -> String {
     let mut p = Printer {
@@ -299,7 +316,10 @@ pub fn print_function(
         if i != 0 {
             w!(p, ", ");
         }
-        if legacy_const_generics_indices.as_ref().is_some_and(|idx| idx.contains(&(i as u32))) {
+        if legacy_const_generics_indices
+            .as_ref()
+            .is_some_and(|idx| idx.contains(&(i as u32)))
+        {
             w!(p, "const: ");
         }
         p.print_type_ref(*param);
@@ -335,7 +355,11 @@ fn print_where_clauses(db: &dyn DefDatabase, generic_params: &GenericParams, p: 
                         w!(p, ": ");
                         p.print_lifetime_ref(*bound);
                     }
-                    WherePredicate::ForLifetime { lifetimes, target, bound } => {
+                    WherePredicate::ForLifetime {
+                        lifetimes,
+                        target,
+                        bound,
+                    } => {
                         w!(p, "for<");
                         for (i, lifetime) in lifetimes.iter().enumerate() {
                             if i != 0 {
@@ -355,11 +379,7 @@ fn print_where_clauses(db: &dyn DefDatabase, generic_params: &GenericParams, p: 
     }
 }
 
-fn print_generic_params(
-    db: &dyn DefDatabase,
-    generic_params: &GenericParams,
-    p: &mut Printer<'_>,
-) {
+fn print_generic_params(db: &dyn DefDatabase, generic_params: &GenericParams, p: &mut Printer<'_>) {
     if !generic_params.is_empty() {
         w!(p, "<");
         let mut first = true;
@@ -430,7 +450,11 @@ pub fn print_pat_hir(
         store,
         buf: String::new(),
         indent_level: 0,
-        line_format: if oneline { LineFormat::Oneline } else { LineFormat::Newline },
+        line_format: if oneline {
+            LineFormat::Oneline
+        } else {
+            LineFormat::Newline
+        },
         edition,
     };
     p.print_pat(pat);
@@ -459,7 +483,10 @@ impl Write for Printer<'_> {
 
             self.buf.push_str(line);
 
-            if matches!(self.line_format, LineFormat::Newline | LineFormat::Indentation) {
+            if matches!(
+                self.line_format,
+                LineFormat::Newline | LineFormat::Indentation
+            ) {
                 self.line_format = if line.ends_with('\n') {
                     LineFormat::Indentation
                 } else {
@@ -535,7 +562,11 @@ impl Printer<'_> {
                 );
             }
             Expr::Path(path) => self.print_path(path),
-            Expr::If { condition, then_branch, else_branch } => {
+            Expr::If {
+                condition,
+                then_branch,
+                else_branch,
+            } => {
                 w!(self, "if ");
                 self.print_expr(*condition);
                 w!(self, " ");
@@ -553,7 +584,11 @@ impl Printer<'_> {
             }
             Expr::Loop { body, label } => {
                 if let Some(lbl) = label {
-                    w!(self, "{}: ", self.store[*lbl].name.display(self.db, self.edition));
+                    w!(
+                        self,
+                        "{}: ",
+                        self.store[*lbl].name.display(self.db, self.edition)
+                    );
                 }
                 w!(self, "loop ");
                 self.print_expr(*body);
@@ -571,7 +606,12 @@ impl Printer<'_> {
                 }
                 w!(self, ")");
             }
-            Expr::MethodCall { receiver, method_name, args, generic_args } => {
+            Expr::MethodCall {
+                receiver,
+                method_name,
+                args,
+                generic_args,
+            } => {
                 self.print_expr(*receiver);
                 w!(self, ".{}", method_name.display(self.db, self.edition));
                 if let Some(args) = generic_args {
@@ -611,13 +651,21 @@ impl Printer<'_> {
             Expr::Continue { label } => {
                 w!(self, "continue");
                 if let Some(lbl) = label {
-                    w!(self, " {}", self.store[*lbl].name.display(self.db, self.edition));
+                    w!(
+                        self,
+                        " {}",
+                        self.store[*lbl].name.display(self.db, self.edition)
+                    );
                 }
             }
             Expr::Break { expr, label } => {
                 w!(self, "break");
                 if let Some(lbl) = label {
-                    w!(self, " {}", self.store[*lbl].name.display(self.db, self.edition));
+                    w!(
+                        self,
+                        " {}",
+                        self.store[*lbl].name.display(self.db, self.edition)
+                    );
                 }
                 if let Some(expr) = expr {
                     self.whitespace();
@@ -652,7 +700,11 @@ impl Printer<'_> {
                     self.print_expr(*expr);
                 }
             }
-            Expr::RecordLit { path, fields, spread } => {
+            Expr::RecordLit {
+                path,
+                fields,
+                spread,
+            } => {
                 match path {
                     Some(path) => self.print_path(path),
                     None => w!(self, "�"),
@@ -687,7 +739,11 @@ impl Printer<'_> {
                 w!(self, " as ");
                 self.print_type_ref(*type_ref);
             }
-            Expr::Ref { expr, rawness, mutability } => {
+            Expr::Ref {
+                expr,
+                rawness,
+                mutability,
+            } => {
                 w!(self, "&");
                 if rawness.is_raw() {
                     w!(self, "raw ");
@@ -726,7 +782,11 @@ impl Printer<'_> {
                 self.print_expr(*rhs);
                 w!(self, "{}", ket);
             }
-            Expr::Range { lhs, rhs, range_type } => {
+            Expr::Range {
+                lhs,
+                rhs,
+                range_type,
+            } => {
                 if let Some(lhs) = lhs {
                     w!(self, "(");
                     self.print_expr(*lhs);
@@ -749,7 +809,14 @@ impl Printer<'_> {
                 self.print_expr(*index);
                 w!(self, "]");
             }
-            Expr::Closure { args, arg_types, ret_type, body, closure_kind, capture_by } => {
+            Expr::Closure {
+                args,
+                arg_types,
+                ret_type,
+                body,
+                closure_kind,
+                capture_by,
+            } => {
                 match closure_kind {
                     ClosureKind::Coroutine(Movability::Static) => {
                         w!(self, "static ");
@@ -802,7 +869,10 @@ impl Printer<'_> {
                                 w!(p, ", ");
                             }
                         }
-                        Array::Repeat { initializer, repeat } => {
+                        Array::Repeat {
+                            initializer,
+                            repeat,
+                        } => {
                             p.print_expr(*initializer);
                             w!(p, "; ");
                             p.print_expr(*repeat);
@@ -813,16 +883,29 @@ impl Printer<'_> {
                 w!(self, "]");
             }
             Expr::Literal(lit) => self.print_literal(lit),
-            Expr::Block { id: _, statements, tail, label } => {
+            Expr::Block {
+                id: _,
+                statements,
+                tail,
+                label,
+            } => {
                 let label = label.map(|lbl| {
                     format!("{}: ", self.store[lbl].name.display(self.db, self.edition))
                 });
                 self.print_block(label.as_deref(), statements, tail);
             }
-            Expr::Unsafe { id: _, statements, tail } => {
+            Expr::Unsafe {
+                id: _,
+                statements,
+                tail,
+            } => {
                 self.print_block(Some("unsafe "), statements, tail);
             }
-            Expr::Async { id: _, statements, tail } => {
+            Expr::Async {
+                id: _,
+                statements,
+                tail,
+            } => {
                 self.print_block(Some("async "), statements, tail);
             }
             Expr::Const(id) => {
@@ -890,7 +973,11 @@ impl Printer<'_> {
                 }
                 w!(self, ")");
             }
-            Pat::Record { path, args, ellipsis } => {
+            Pat::Record {
+                path,
+                args,
+                ellipsis,
+            } => {
                 match path {
                     Some(path) => self.print_path(path),
                     None => w!(self, "�"),
@@ -905,8 +992,11 @@ impl Printer<'_> {
 
                         let mut same_name = false;
                         if let Pat::Bind { id, subpat: None } = &self.store[arg.pat]
-                            && let Binding { name, mode: BindingAnnotation::Unannotated, .. } =
-                                &self.store.assert_expr_only().bindings[*id]
+                            && let Binding {
+                                name,
+                                mode: BindingAnnotation::Unannotated,
+                                ..
+                            } = &self.store.assert_expr_only().bindings[*id]
                             && name.as_str() == field_name
                         {
                             same_name = true;
@@ -942,7 +1032,11 @@ impl Printer<'_> {
                     self.print_expr(*end);
                 }
             }
-            Pat::Slice { prefix, slice, suffix } => {
+            Pat::Slice {
+                prefix,
+                slice,
+                suffix,
+            } => {
                 w!(self, "[");
                 for pat in prefix.iter() {
                     self.print_pat(*pat);
@@ -968,7 +1062,11 @@ impl Printer<'_> {
                     self.print_pat(*pat);
                 }
             }
-            Pat::TupleStruct { path, args, ellipsis } => {
+            Pat::TupleStruct {
+                path,
+                args,
+                ellipsis,
+            } => {
                 match path {
                     Some(path) => self.print_path(path),
                     None => w!(self, "�"),
@@ -1008,7 +1106,12 @@ impl Printer<'_> {
 
     fn print_stmt(&mut self, stmt: &Statement) {
         match stmt {
-            Statement::Let { pat, type_ref, initializer, else_branch } => {
+            Statement::Let {
+                pat,
+                type_ref,
+                initializer,
+                else_branch,
+            } => {
                 w!(self, "let ");
                 self.print_pat(*pat);
                 if let Some(ty) = type_ref {
@@ -1202,7 +1305,13 @@ impl Printer<'_> {
 
     pub(crate) fn print_lifetime_param(&mut self, param: LifetimeParamId) {
         let generic_params = self.db.generic_params(param.parent);
-        w!(self, "{}", generic_params[param.local_id].name.display(self.db, self.edition))
+        w!(
+            self,
+            "{}",
+            generic_params[param.local_id]
+                .name
+                .display(self.db, self.edition)
+        )
     }
 
     pub(crate) fn print_lifetime_ref(&mut self, lt_ref: LifetimeRefId) {
@@ -1268,8 +1377,10 @@ impl Printer<'_> {
                 w!(self, "]");
             }
             TypeRef::Fn(fn_) => {
-                let ((_, return_type), args) =
-                    fn_.params.split_last().expect("TypeRef::Fn is missing return type");
+                let ((_, return_type), args) = fn_
+                    .params
+                    .split_last()
+                    .expect("TypeRef::Fn is missing return type");
                 if fn_.is_unsafe {
                     w!(self, "unsafe ");
                 }

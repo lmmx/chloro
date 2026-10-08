@@ -1210,11 +1210,17 @@ struct Foo {
     let highlights = &analysis
         .highlight_range(
             HL_CONFIG,
-            FileRange { file_id, range: TextRange::at(45.into(), 1.into()) },
+            FileRange {
+                file_id,
+                range: TextRange::at(45.into(), 1.into()),
+            },
         )
         .unwrap();
 
-    assert_eq!(&highlights[0].highlight.to_string(), "field.declaration.public");
+    assert_eq!(
+        &highlights[0].highlight.to_string(),
+        "field.declaration.public"
+    );
 }
 
 #[test]
@@ -1259,7 +1265,9 @@ fn check_highlighting_with_config(
     rainbow: bool,
 ) {
     let (analysis, file_id) = fixture::file(ra_fixture.trim());
-    let actual_html = &analysis.highlight_as_html_with_config(config, file_id, rainbow).unwrap();
+    let actual_html = &analysis
+        .highlight_as_html_with_config(config, file_id, rainbow)
+        .unwrap();
     expect.assert_eq(actual_html)
 }
 
@@ -1338,7 +1346,10 @@ fn benchmark_syntax_highlighting_parser() {
             .unwrap()
             .iter()
             .filter(|it| {
-                matches!(it.highlight.tag, HlTag::Symbol(SymbolKind::Function | SymbolKind::Method))
+                matches!(
+                    it.highlight.tag,
+                    HlTag::Symbol(SymbolKind::Function | SymbolKind::Method)
+                )
             })
             .count()
     };

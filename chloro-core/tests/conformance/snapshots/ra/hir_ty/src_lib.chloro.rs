@@ -74,9 +74,9 @@ use crate::{
     display::{DisplayTarget, HirDisplay},
     infer::unify::InferenceTable,
     next_solver::{
-        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
-        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
-        PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
+        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
+        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
+        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
     },
 };
 
@@ -154,7 +154,11 @@ impl<'db> MemoryMap<'db> {
     ) -> Result<FxHashMap<usize, usize>, MirEvalError<'db>> {
         let mut transform = |(addr, val): (&usize, &[u8])| {
             let addr = *addr;
-            let align = if addr == 0 { 64 } else { (addr - (addr & (addr - 1))).min(64) };
+            let align = if addr == 0 {
+                64
+            } else {
+                (addr - (addr & (addr - 1))).min(64)
+            };
             f(val, align).map(|it| (addr, it))
         };
         match self {
@@ -164,9 +168,11 @@ impl<'db> MemoryMap<'db> {
                 map.insert(addr, val);
                 map
             }),
-            MemoryMap::Complex(cm) => {
-                cm.memory.iter().map(|(addr, val)| transform((addr, val))).collect()
-            }
+            MemoryMap::Complex(cm) => cm
+                .memory
+                .iter()
+                .map(|(addr, val)| transform((addr, val)))
+                .collect(),
         }
     }
 
@@ -341,10 +347,7 @@ pub enum ImplTraitId<'db> {
 /// 'Canonicalizes' the `t` by replacing any errors with new variables. Also
 /// ensures there are no unbound variables or inference variables anywhere in
 /// the `t`.
-pub fn replace_errors_with_variables<'db, T>(
-    interner: DbInterner<'db>,
-    t: &T,
-) -> Canonical<'db, T>
+pub fn replace_errors_with_variables<'db, T>(interner: DbInterner<'db>, t: &T) -> Canonical<'db, T>
 where
     T: rustc_type_ir::TypeFoldable<DbInterner<'db>> + Clone,
 {
@@ -387,7 +390,12 @@ where
             #[cfg(debug_assertions)]
             let error = || Err(());
             #[cfg(not(debug_assertions))]
-            let error = || Ok(Ty::new_error(self.interner, crate::next_solver::ErrorGuaranteed));
+            let error = || {
+                Ok(Ty::new_error(
+                    self.interner,
+                    crate::next_solver::ErrorGuaranteed,
+                ))
+            };
 
             match t.kind() {
                 TyKind::Error(_) => {
@@ -399,7 +407,10 @@ where
                     Ok(Ty::new_bound(
                         self.interner,
                         self.binder,
-                        BoundTy { var, kind: BoundTyKind::Anon },
+                        BoundTy {
+                            var,
+                            kind: BoundTyKind::Anon,
+                        },
                     ))
                 }
                 TyKind::Infer(_) => error(),
@@ -426,8 +437,13 @@ where
             match ct.kind() {
                 ConstKind::Error(_) => {
                     let var = rustc_type_ir::BoundVar::from_usize(self.vars.len());
-                    self.vars.push(CanonicalVarKind::Const(rustc_type_ir::UniverseIndex::ZERO));
-                    Ok(Const::new_bound(self.interner, self.binder, BoundConst { var }))
+                    self.vars
+                        .push(CanonicalVarKind::Const(rustc_type_ir::UniverseIndex::ZERO));
+                    Ok(Const::new_bound(
+                        self.interner,
+                        self.binder,
+                        BoundConst { var },
+                    ))
                 }
                 ConstKind::Infer(_) => error(),
                 ConstKind::Bound(BoundVarIndexKind::Bound(index), _) if index > self.binder => {
@@ -446,11 +462,15 @@ where
             match region.kind() {
                 RegionKind::ReError(_) => {
                     let var = rustc_type_ir::BoundVar::from_usize(self.vars.len());
-                    self.vars.push(CanonicalVarKind::Region(rustc_type_ir::UniverseIndex::ZERO));
+                    self.vars
+                        .push(CanonicalVarKind::Region(rustc_type_ir::UniverseIndex::ZERO));
                     Ok(Region::new_bound(
                         self.interner,
                         self.binder,
-                        BoundRegion { var, kind: BoundRegionKind::Anon },
+                        BoundRegion {
+                            var,
+                            kind: BoundRegionKind::Anon,
+                        },
                     ))
                 }
                 RegionKind::ReVar(_) => error(),
@@ -462,8 +482,11 @@ where
         }
     }
 
-    let mut error_replacer =
-        ErrorReplacer { vars: Vec::new(), binder: rustc_type_ir::DebruijnIndex::ZERO, interner };
+    let mut error_replacer = ErrorReplacer {
+        vars: Vec::new(),
+        binder: rustc_type_ir::DebruijnIndex::ZERO,
+        interner,
+    };
     let value = match t.clone().try_fold_with(&mut error_replacer) {
         Ok(t) => t,
         Err(_) => panic!("Encountered unbound or inference vars in {t:?}"),
@@ -568,7 +591,9 @@ pub fn collect_params<'db, T>(value: &T) -> Vec<TypeOrConstParamId>
 where
     T: ?Sized + rustc_type_ir::TypeVisitable<DbInterner<'db>>,
 {
-    let mut collector = ParamCollector { params: FxHashSet::default() };
+    let mut collector = ParamCollector {
+        params: FxHashSet::default(),
+    };
     value.visit_with(&mut collector);
     Vec::from_iter(collector.params)
 }
@@ -578,7 +603,9 @@ pub fn known_const_to_ast<'db>(
     db: &'db dyn HirDatabase,
     display_target: DisplayTarget,
 ) -> Option<ConstArg> {
-    Some(make::expr_const_value(konst.display(db, display_target).to_string().as_str()))
+    Some(make::expr_const_value(
+        konst.display(db, display_target).to_string().as_str(),
+    ))
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -609,8 +636,10 @@ pub fn setup_tracing() -> Option<tracing::subscriber::DefaultGuard> {
         return None;
     }
 
-    let filter: tracing_subscriber::filter::Targets =
-        env::var("CHALK_DEBUG").ok().and_then(|it| it.parse().ok()).unwrap_or_default();
+    let filter: tracing_subscriber::filter::Targets = env::var("CHALK_DEBUG")
+        .ok()
+        .and_then(|it| it.parse().ok())
+        .unwrap_or_default();
     let layer = HierarchicalLayer::default()
         .with_indent_lines(true)
         .with_ansi(false)

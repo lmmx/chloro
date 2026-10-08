@@ -69,7 +69,10 @@ pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     };
 
     if let Some(parent) = tgt.syntax().parent()
-        && matches!(parent.kind(), syntax::SyntaxKind::BIN_EXPR | syntax::SyntaxKind::LET_STMT)
+        && matches!(
+            parent.kind(),
+            syntax::SyntaxKind::BIN_EXPR | syntax::SyntaxKind::LET_STMT
+        )
     {
         return None;
     }
@@ -140,7 +143,6 @@ impl AssignmentsCollector<'_> {
 
         Some(())
     }
-
     fn collect_if(&mut self, if_expr: &ast::IfExpr) -> Option<()> {
         let then_branch = if_expr.then_branch()?;
         self.collect_block(&then_branch)?;
@@ -153,12 +155,13 @@ impl AssignmentsCollector<'_> {
             }
         }
     }
-
     fn collect_block(&mut self, block: &ast::BlockExpr) -> Option<()> {
-        let last_expr = block.tail_expr().or_else(|| match block.statements().last()? {
-            ast::Stmt::ExprStmt(stmt) => stmt.expr(),
-            ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
-        })?;
+        let last_expr = block
+            .tail_expr()
+            .or_else(|| match block.statements().last()? {
+                ast::Stmt::ExprStmt(stmt) => stmt.expr(),
+                ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
+            })?;
 
         if let ast::Expr::BinExpr(expr) = last_expr {
             return self.collect_expr(&expr);
@@ -197,7 +200,10 @@ fn is_equivalent(
                 false
             }
         }
-        (ast::Expr::PrefixExpr(prefix0), ast::Expr::PrefixExpr(prefix1)) if prefix0.op_kind() == Some(ast::UnaryOp::Deref) && prefix1.op_kind() == Some(ast::UnaryOp::Deref) => {
+        (ast::Expr::PrefixExpr(prefix0), ast::Expr::PrefixExpr(prefix1))
+            if prefix0.op_kind() == Some(ast::UnaryOp::Deref)
+                && prefix1.op_kind() == Some(ast::UnaryOp::Deref) =>
+        {
             cov_mark::hit!(test_pull_assignment_up_deref);
             if let (Some(prefix0), Some(prefix1)) = (prefix0.expr(), prefix1.expr()) {
                 is_equivalent(sema, &prefix0, &prefix1)
@@ -212,7 +218,9 @@ fn is_equivalent(
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn test_pull_assignment_up_if() {
         check_assist(
@@ -239,6 +247,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn test_pull_assignment_up_inner_if() {
         check_assist(
@@ -269,6 +278,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn test_pull_assignment_up_match() {
         check_assist(
@@ -307,6 +317,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn test_pull_assignment_up_match_in_if_expr() {
         check_assist(
@@ -333,6 +344,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn test_pull_assignment_up_assignment_expressions() {
         check_assist(
@@ -363,6 +375,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn test_pull_assignment_up_not_last_not_applicable() {
         check_assist_not_applicable(
@@ -380,6 +393,7 @@ fn foo() {
 }"#,
         )
     }
+
     #[test]
     fn test_pull_assignment_up_chained_if() {
         cov_mark::check!(test_pull_assignment_up_chained_if);
@@ -411,6 +425,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn test_pull_assignment_up_retains_stmts() {
         check_assist(
@@ -441,6 +456,7 @@ fn foo() {
 }"#,
         )
     }
+
     #[test]
     fn pull_assignment_up_let_stmt_not_applicable() {
         check_assist_not_applicable(
@@ -457,6 +473,7 @@ fn foo() {
 }"#,
         )
     }
+
     #[test]
     fn pull_assignment_up_if_missing_assignment_not_applicable() {
         check_assist_not_applicable(
@@ -471,6 +488,7 @@ fn foo() {
 }"#,
         )
     }
+
     #[test]
     fn pull_assignment_up_match_missing_assignment_not_applicable() {
         check_assist_not_applicable(
@@ -491,6 +509,7 @@ fn foo() {
 }"#,
         )
     }
+
     #[test]
     fn test_pull_assignment_up_field_assignment() {
         cov_mark::check!(test_pull_assignment_up_field_assignment);
@@ -522,6 +541,7 @@ fn foo() {
 }"#,
         )
     }
+
     #[test]
     fn test_pull_assignment_up_deref() {
         cov_mark::check!(test_pull_assignment_up_deref);
@@ -553,6 +573,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn test_cant_pull_non_assignments() {
         cov_mark::check!(test_cant_pull_non_assignments);

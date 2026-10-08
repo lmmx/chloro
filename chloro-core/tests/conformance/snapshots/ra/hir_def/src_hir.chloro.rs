@@ -28,7 +28,10 @@ use type_ref::TypeRefId;
 use crate::{
     BlockId,
     builtin_type::{BuiltinFloat, BuiltinInt, BuiltinUint},
-    expr_store::{HygieneId, path::{GenericArgs, Path}},
+    expr_store::{
+        HygieneId,
+        path::{GenericArgs, Path},
+    },
     type_ref::{Mutability, Rawness},
 };
 
@@ -40,6 +43,8 @@ pub type ExprId = Idx<Expr>;
 
 pub type PatId = Idx<Pat>;
 
+// FIXME: Encode this as a single u32, we won't ever reach all 32 bits especially given these counts
+// are local to the body.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum ExprOrPatId {
     ExprId(ExprId),
@@ -69,19 +74,21 @@ impl ExprOrPatId {
         matches!(self, Self::PatId(_))
     }
 }
-
 stdx::impl_from!(ExprId, PatId for ExprOrPatId);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Label {
     pub name: Name,
 }
-
 pub type LabelId = Idx<Label>;
 
+// We leave float values as a string to avoid double rounding.
+// For PartialEq, string comparison should work, as ordering is not important
+// https://github.com/rust-lang/rust-analyzer/issues/12380#issuecomment-1137284360
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FloatTypeWrapper(Symbol);
 
+// FIXME(#17451): Use builtin types once stabilised.
 impl FloatTypeWrapper {
     pub fn new(sym: Symbol) -> Self {
         Self(sym)
@@ -125,8 +132,8 @@ pub enum Literal {
     Float(FloatTypeWrapper, Option<BuiltinFloat>),
 }
 
-/// Used in range patterns.
 #[derive(Debug, Clone, Eq, PartialEq)]
+/// Used in range patterns.
 pub enum LiteralOrConst {
     Literal(Literal),
     Const(PatId),
@@ -161,14 +168,19 @@ impl From<ast::LiteralKind> for Literal {
             }
             LiteralKind::FloatNumber(lit) => {
                 let ty = lit.suffix().and_then(BuiltinFloat::from_suffix);
-                Literal::Float(FloatTypeWrapper::new(Symbol::intern(&lit.value_string())), ty)
+                Literal::Float(
+                    FloatTypeWrapper::new(Symbol::intern(&lit.value_string())),
+                    ty,
+                )
             }
             LiteralKind::ByteString(bs) => {
                 let text = bs.value().map_or_else(|_| Default::default(), Box::from);
                 Literal::ByteString(text)
             }
             LiteralKind::String(s) => {
-                let text = s.value().map_or_else(|_| Symbol::empty(), |it| Symbol::intern(&it));
+                let text = s
+                    .value()
+                    .map_or_else(|_| Symbol::empty(), |it| Symbol::intern(&it));
                 Literal::String(text)
             }
             LiteralKind::CString(s) => {
@@ -344,7 +356,6 @@ pub enum InlineAsmKind {
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AsmOptions(u16);
-
 bitflags::bitflags! {
     impl AsmOptions: u16 {
         const PURE            = 1 << 0;
@@ -363,7 +374,6 @@ impl AsmOptions {
     pub const COUNT: usize = Self::all().bits().count_ones() as usize;
 
     pub const GLOBAL_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW);
-
     pub const NAKED_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW).union(Self::NORETURN);
 
     pub fn human_readable_names(&self) -> Vec<&'static str> {
@@ -446,7 +456,14 @@ impl AsmOperand {
     }
 
     pub fn is_clobber(&self) -> bool {
-        matches!(self, AsmOperand::Out { reg: InlineAsmRegOrRegClass::Reg(_), late: _, expr: None })
+        matches!(
+            self,
+            AsmOperand::Out {
+                reg: InlineAsmRegOrRegClass::Reg(_),
+                late: _,
+                expr: None
+            }
+        )
     }
 }
 
@@ -479,13 +496,8 @@ pub enum Movability {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Array {
-    ElementList {
-        elements: Box<[ExprId]>,
-    },
-    Repeat {
-        initializer: ExprId,
-        repeat: ExprId,
-    },
+    ElementList { elements: Box<[ExprId]> },
+    Repeat { initializer: ExprId, repeat: ExprId },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -648,7 +660,11 @@ impl Pat {
                 args.iter().copied().for_each(f);
             }
             Pat::Ref { pat, .. } => f(*pat),
-            Pat::Slice { prefix, slice, suffix } => {
+            Pat::Slice {
+                prefix,
+                slice,
+                suffix,
+            } => {
                 let total_iter = prefix.iter().chain(slice.iter()).chain(suffix.iter());
                 total_iter.copied().for_each(f);
             }

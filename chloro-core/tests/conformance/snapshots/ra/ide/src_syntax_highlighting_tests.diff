@@ -2,49 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31331 bytes
-Chloro size:   31331 bytes
+Chloro size:   31474 bytes
 Rustfmt size:  31474 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     let highlights = &analysis
-         .highlight_range(
-             HL_CONFIG,
--            FileRange {
--                file_id,
--                range: TextRange::at(45.into(), 1.into()),
--            },
-+            FileRange { file_id, range: TextRange::at(45.into(), 1.into()) },
-         )
-         .unwrap();
- 
--    assert_eq!(
--        &highlights[0].highlight.to_string(),
--        "field.declaration.public"
--    );
-+    assert_eq!(&highlights[0].highlight.to_string(), "field.declaration.public");
- }
- 
- #[test]
-     rainbow: bool,
- ) {
-     let (analysis, file_id) = fixture::file(ra_fixture.trim());
--    let actual_html = &analysis
--        .highlight_as_html_with_config(config, file_id, rainbow)
--        .unwrap();
-+    let actual_html = &analysis.highlight_as_html_with_config(config, file_id, rainbow).unwrap();
-     expect.assert_eq(actual_html)
- }
- 
-             .unwrap()
-             .iter()
-             .filter(|it| {
--                matches!(
--                    it.highlight.tag,
--                    HlTag::Symbol(SymbolKind::Function | SymbolKind::Method)
--                )
-+                matches!(it.highlight.tag, HlTag::Symbol(SymbolKind::Function | SymbolKind::Method))
-             })
-             .count()
-     };
+✓ Outputs are IDENTICAL

@@ -39,10 +39,7 @@ use crate::{
 //     }
 // }
 // ```
-pub(crate) fn generate_is_empty_from_len(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_is_empty_from_len(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
     let fn_name = fn_node.name()?;
 
@@ -104,7 +101,9 @@ fn get_impl_method(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn len_function_not_present() {
         cov_mark::check!(len_function_not_present);
@@ -121,6 +120,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn len_function_with_parameters() {
         cov_mark::check!(len_function_with_parameters);
@@ -138,6 +138,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn is_empty_already_implemented() {
         cov_mark::check!(is_empty_already_implemented);
@@ -160,6 +161,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn len_fn_different_return_type() {
         cov_mark::check!(len_fn_different_return_type);
@@ -177,6 +179,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn generate_is_empty() {
         check_assist(
@@ -208,6 +211,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn multiple_functions_in_impl() {
         check_assist(
@@ -257,6 +261,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn multiple_impls() {
         check_assist_not_applicable(

@@ -19,6 +19,7 @@ pub(crate) fn unresolved_extern_crate(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn unresolved_extern_crate() {
         check_diagnostics(
@@ -31,6 +32,7 @@ extern crate core;
 "#,
         );
     }
+
     #[test]
     fn extern_crate_self_as() {
         cov_mark::check!(extern_crate_self_as);

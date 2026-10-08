@@ -16,8 +16,8 @@ use rust_analyzer::{
     config::{Config, ConfigChange, ConfigErrors},
     lsp, main_loop,
 };
-use serde_json::{Value, json, to_string_pretty};
 use serde::Serialize;
+use serde_json::{Value, json, to_string_pretty};
 use test_utils::FixtureWithProjectMeta;
 use tracing_subscriber::fmt::TestWriter;
 use vfs::AbsPathBuf;
@@ -88,7 +88,11 @@ impl Project<'_> {
 
     pub(crate) fn run_lsif(self) -> String {
         let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
-            if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
+            if self.root_dir_contains_symlink {
+                TestDir::new_symlink()
+            } else {
+                TestDir::new()
+            }
         });
 
         let FixtureWithProjectMeta {
@@ -113,7 +117,9 @@ impl Project<'_> {
         let mut buf = Vec::new();
         flags::Lsif::run(
             flags::Lsif {
-                path: tmp_dir_path.join(self.roots.iter().exactly_one().unwrap()).into(),
+                path: tmp_dir_path
+                    .join(self.roots.iter().exactly_one().unwrap())
+                    .into(),
                 exclude_vendored_libraries: false,
             },
             &mut buf,
@@ -156,7 +162,11 @@ impl Project<'_> {
         };
 
         let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
-            if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
+            if self.root_dir_contains_symlink {
+                TestDir::new_symlink()
+            } else {
+                TestDir::new()
+            }
         });
 
         static INIT: Once = Once::new();
@@ -165,7 +175,9 @@ impl Project<'_> {
                 writer: TestWriter::default(),
                 // Deliberately enable all `error` logs if the user has not set RA_LOG, as there is usually
                 // useful information in there for debugging.
-                filter: std::env::var("RA_LOG").ok().unwrap_or_else(|| "error".to_owned()),
+                filter: std::env::var("RA_LOG")
+                    .ok()
+                    .unwrap_or_else(|| "error".to_owned()),
                 chalk_filter: std::env::var("CHALK_DEBUG").ok(),
                 profile_filter: std::env::var("RA_PROFILE").ok(),
                 json_profile_filter: std::env::var("RA_PROFILE_JSON").ok(),
@@ -186,7 +198,9 @@ impl Project<'_> {
 
         for entry in fixture {
             if let Some(pth) = entry.path.strip_prefix("/$$CONFIG_DIR$$") {
-                let path = Config::user_config_dir_path().unwrap().join(&pth['/'.len_utf8()..]);
+                let path = Config::user_config_dir_path()
+                    .unwrap()
+                    .join(&pth['/'.len_utf8()..]);
                 fs::create_dir_all(path.parent().unwrap()).unwrap();
                 fs::write(path.as_path(), entry.text.as_bytes()).unwrap();
             } else {
@@ -197,8 +211,11 @@ impl Project<'_> {
         }
 
         let tmp_dir_path = AbsPathBuf::assert(tmp_dir.path().to_path_buf());
-        let mut roots =
-            self.roots.into_iter().map(|root| tmp_dir_path.join(root)).collect::<Vec<_>>();
+        let mut roots = self
+            .roots
+            .into_iter()
+            .map(|root| tmp_dir_path.join(root))
+            .collect::<Vec<_>>();
         if roots.is_empty() {
             roots.push(tmp_dir_path.clone());
         }
@@ -316,7 +333,9 @@ impl Server {
 
     pub(crate) fn doc_id(&self, rel_path: &str) -> TextDocumentIdentifier {
         let path = self.dir.path().join(rel_path);
-        TextDocumentIdentifier { uri: Url::from_file_path(path).unwrap() }
+        TextDocumentIdentifier {
+            uri: Url::from_file_path(path).unwrap(),
+        }
     }
 
     pub(crate) fn notification<N>(&self, params: N::Params)
@@ -358,12 +377,14 @@ impl Server {
         let r = Request::new(id.into(), R::METHOD.to_owned(), params);
         self.send_request_(r)
     }
-
     #[track_caller]
     fn send_request_(&self, r: Request) -> Value {
         let id = r.id.clone();
         self.client.sender.send(r.clone().into()).unwrap();
-        while let Some(msg) = self.recv().unwrap_or_else(|Timeout| panic!("timeout: {r:?}")) {
+        while let Some(msg) = self
+            .recv()
+            .unwrap_or_else(|Timeout| panic!("timeout: {r:?}"))
+        {
             match msg {
                 Message::Request(req) => {
                     if req.method == "client/registerCapability" {
@@ -389,7 +410,6 @@ impl Server {
         }
         panic!("no response for {r:?}");
     }
-
     pub(crate) fn wait_until_workspace_is_loaded(self) -> Server {
         self.wait_for_message_cond(1, &|msg: &Message| match msg {
             Message::Notification(n) if n.method == "experimental/serverStatus" => {
@@ -398,7 +418,10 @@ impl Server {
                     .extract::<lsp::ext::ServerStatusParams>("experimental/serverStatus")
                     .unwrap();
                 if status.health != lsp::ext::Health::Ok {
-                    panic!("server errored/warned while loading workspace: {:?}", status.message);
+                    panic!(
+                        "server errored/warned while loading workspace: {:?}",
+                        status.message
+                    );
                 }
                 status.quiescent
             }
@@ -407,7 +430,6 @@ impl Server {
         .unwrap_or_else(|Timeout| panic!("timeout while waiting for ws to load"));
         self
     }
-
     fn wait_for_message_cond(
         &self,
         n: usize,
@@ -427,7 +449,6 @@ impl Server {
         }
         Ok(())
     }
-
     fn recv(&self) -> Result<Option<Message>, Timeout> {
         let msg = recv_timeout(&self.client.receiver)?;
         let msg = msg.inspect(|msg| {
@@ -435,7 +456,6 @@ impl Server {
         });
         Ok(msg)
     }
-
     fn send_notification(&self, not: Notification) {
         self.client.sender.send(Message::Notification(not)).unwrap();
     }
@@ -465,8 +485,11 @@ impl Drop for Server {
 struct Timeout;
 
 fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout> {
-    let timeout =
-        if cfg!(target_os = "macos") { Duration::from_secs(300) } else { Duration::from_secs(120) };
+    let timeout = if cfg!(target_os = "macos") {
+        Duration::from_secs(300)
+    } else {
+        Duration::from_secs(120)
+    };
     select! {
         recv(receiver) -> msg => Ok(msg.ok()),
         recv(after(timeout)) -> _ => Err(Timeout),
@@ -492,13 +515,15 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
             let mut l = l.iter().collect::<Vec<_>>();
             let mut r = r.iter().collect::<Vec<_>>();
 
-            l.retain(|l| match r.iter().position(|r| find_mismatch(l, r).is_none()) {
-                Some(i) => {
-                    r.remove(i);
-                    false
-                }
-                None => true,
-            });
+            l.retain(
+                |l| match r.iter().position(|r| find_mismatch(l, r).is_none()) {
+                    Some(i) => {
+                        r.remove(i);
+                        false
+                    }
+                    None => true,
+                },
+            );
 
             if !l.is_empty() {
                 assert!(!r.is_empty());

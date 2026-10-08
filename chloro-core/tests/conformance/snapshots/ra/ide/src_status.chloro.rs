@@ -22,10 +22,12 @@ pub(crate) fn status(db: &RootDatabase, file_id: Option<FileId>) -> String {
     // format_to!(buf, "{}\n", collect_query(LibrarySymbolsQuery.in_db(db)));
     // format_to!(buf, "{}\n", collect_query(ModuleSymbolsQuery.in_db(db)));
     // format_to!(buf, "{} in total\n", memory_usage());
+
     // format_to!(buf, "\nDebug info:\n");
     // format_to!(buf, "{}\n", collect_query(AttrsQuery.in_db(db)));
     // format_to!(buf, "{} ast id maps\n", collect_query_count(AstIdMapQuery.in_db(db)));
     // format_to!(buf, "{} block def maps\n", collect_query_count(BlockDefMapQuery.in_db(db)));
+
     if let Some(file_id) = file_id {
         format_to!(buf, "\nCrates for file {}:\n", file_id.index());
         let crates = crate::parent_module::crates_for(db, file_id);
@@ -41,8 +43,11 @@ pub(crate) fn status(db: &RootDatabase, file_id: Option<FileId>) -> String {
                 is_proc_macro,
                 proc_macro_cwd,
             } = crate_id.data(db);
-            let ExtraCrateData { version, display_name, potential_cfg_options } =
-                crate_id.extra_data(db);
+            let ExtraCrateData {
+                version,
+                display_name,
+                potential_cfg_options,
+            } = crate_id.extra_data(db);
             let cfg_options = crate_id.cfg_options(db);
             let env = crate_id.env(db);
             format_to!(
@@ -55,7 +60,11 @@ pub(crate) fn status(db: &RootDatabase, file_id: Option<FileId>) -> String {
             );
             format_to!(buf, "    Root module file id: {}\n", root_file_id.index());
             format_to!(buf, "    Edition: {}\n", edition);
-            format_to!(buf, "    Version: {}\n", version.as_deref().unwrap_or("n/a"));
+            format_to!(
+                buf,
+                "    Version: {}\n",
+                version.as_deref().unwrap_or("n/a")
+            );
             format_to!(buf, "    Enabled cfgs: {:?}\n", cfg_options);
             format_to!(buf, "    Potential cfgs: {:?}\n", potential_cfg_options);
             format_to!(buf, "    Env: {:?}\n", env);

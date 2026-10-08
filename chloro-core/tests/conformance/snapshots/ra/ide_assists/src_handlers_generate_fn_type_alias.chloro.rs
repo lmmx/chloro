@@ -42,11 +42,15 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
     let func_node = ast::Fn::cast(func.clone())?;
     let param_list = func_node.param_list()?;
 
-    let assoc_owner = func.ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
+    let assoc_owner = func
+        .ancestors()
+        .nth(2)
+        .and_then(Either::<ast::Trait, ast::Impl>::cast);
     // This is where we'll insert the type alias, since type aliases in `impl`s or `trait`s are not supported
-    let insertion_node = assoc_owner
-        .as_ref()
-        .map_or_else(|| func, |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax));
+    let insertion_node = assoc_owner.as_ref().map_or_else(
+        || func,
+        |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
+    );
 
     for style in ParamStyle::ALL {
         acc.add_group(
@@ -61,8 +65,9 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
 
                 let mut fn_params_vec = Vec::new();
 
-                if let Some(self_ty) =
-                    param_list.self_param().and_then(|p| ctx.sema.type_of_self(&p))
+                if let Some(self_ty) = param_list
+                    .self_param()
+                    .and_then(|p| ctx.sema.type_of_self(&p))
                 {
                     let is_ref = self_ty.is_reference();
                     let is_mut = self_ty.is_mutable_reference();
@@ -70,8 +75,11 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
                     if let Some(adt) = self_ty.strip_references().as_adt() {
                         let inner_type = make::ty(adt.name(ctx.db()).as_str());
 
-                        let ast_self_ty =
-                            if is_ref { make::ty_ref(inner_type, is_mut) } else { inner_type };
+                        let ast_self_ty = if is_ref {
+                            make::ty_ref(inner_type, is_mut)
+                        } else {
+                            inner_type
+                        };
 
                         fn_params_vec.push(make::unnamed_param(ast_self_ty));
                     }
@@ -154,7 +162,9 @@ impl ParamStyle {
 #[cfg(test)]
 mod tests {
     use crate::tests::check_assist_by_label;
+
     use super::*;
+
     #[test]
     fn generate_fn_alias_unnamed_simple() {
         check_assist_by_label(
@@ -170,6 +180,7 @@ fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_unnamed_unsafe() {
         check_assist_by_label(
@@ -185,6 +196,7 @@ unsafe fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_unnamed_extern() {
         check_assist_by_label(
@@ -200,6 +212,7 @@ extern fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_type_unnamed_extern_abi() {
         check_assist_by_label(
@@ -215,6 +228,7 @@ extern "FooABI" fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_unnamed_unsafe_extern_abi() {
         check_assist_by_label(
@@ -230,6 +244,7 @@ unsafe extern "FooABI" fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_unnamed_generics() {
         check_assist_by_label(
@@ -245,6 +260,7 @@ fn foo<A, B>(a: A, b: B) -> i32 { return 42; }
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_unnamed_generics_bounds() {
         check_assist_by_label(
@@ -260,6 +276,7 @@ fn foo<A: Trait, B: Trait>(a: A, b: B) -> i32 { return 42; }
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_unnamed_self() {
         check_assist_by_label(
@@ -283,6 +300,7 @@ impl S {
             ParamStyle::Unnamed.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_named_simple() {
         check_assist_by_label(
@@ -298,6 +316,7 @@ fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Named.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_named_unsafe() {
         check_assist_by_label(
@@ -313,6 +332,7 @@ unsafe fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Named.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_named_extern() {
         check_assist_by_label(
@@ -328,6 +348,7 @@ extern fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Named.label(),
         );
     }
+
     #[test]
     fn generate_fn_type_named_extern_abi() {
         check_assist_by_label(
@@ -343,6 +364,7 @@ extern "FooABI" fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Named.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_named_unsafe_extern_abi() {
         check_assist_by_label(
@@ -358,6 +380,7 @@ unsafe extern "FooABI" fn foo(param: u32) -> i32 { return 42; }
             ParamStyle::Named.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_named_generics() {
         check_assist_by_label(
@@ -373,6 +396,7 @@ fn foo<A, B>(a: A, b: B) -> i32 { return 42; }
             ParamStyle::Named.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_named_generics_bounds() {
         check_assist_by_label(
@@ -388,6 +412,7 @@ fn foo<A: Trait, B: Trait>(a: A, b: B) -> i32 { return 42; }
             ParamStyle::Named.label(),
         );
     }
+
     #[test]
     fn generate_fn_alias_named_self() {
         check_assist_by_label(

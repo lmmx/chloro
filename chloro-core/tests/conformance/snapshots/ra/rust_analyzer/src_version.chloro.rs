@@ -47,11 +47,17 @@ pub const fn version() -> VersionInfo {
         option_env!("RA_COMMIT_HASH"),
         option_env!("RA_COMMIT_DATE"),
     ) {
-        (Some(short_commit_hash), Some(commit_hash), Some(commit_date)) => {
-            Some(CommitInfo { short_commit_hash, commit_hash, commit_date })
-        }
+        (Some(short_commit_hash), Some(commit_hash), Some(commit_date)) => Some(CommitInfo {
+            short_commit_hash,
+            commit_hash,
+            commit_date,
+        }),
         _ => None,
     };
 
-    VersionInfo { version, release_channel, commit_info }
+    VersionInfo {
+        version,
+        release_channel,
+        commit_info,
+    }
 }

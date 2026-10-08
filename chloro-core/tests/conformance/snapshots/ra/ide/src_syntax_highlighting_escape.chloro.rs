@@ -1,5 +1,4 @@
 //! Syntax highlighting for escape sequences
-
 use crate::syntax_highlighting::highlights::Highlights;
 use crate::{HlRange, HlTag};
 use syntax::ast::{Byte, Char, IsString};
@@ -44,7 +43,11 @@ pub(super) fn highlight_escape_char(stack: &mut Highlights, char: &Char) {
         char.syntax().text_range().start() + TextSize::from(1),
         TextSize::from(text.len() as u32),
     );
-    stack.add(HlRange { range, highlight: HlTag::EscapeSequence.into(), binding_hash: None })
+    stack.add(HlRange {
+        range,
+        highlight: HlTag::EscapeSequence.into(),
+        binding_hash: None,
+    })
 }
 
 pub(super) fn highlight_escape_byte(stack: &mut Highlights, byte: &Byte) {
@@ -66,5 +69,9 @@ pub(super) fn highlight_escape_byte(stack: &mut Highlights, byte: &Byte) {
         byte.syntax().text_range().start() + TextSize::from(2),
         TextSize::from(text.len() as u32),
     );
-    stack.add(HlRange { range, highlight: HlTag::EscapeSequence.into(), binding_hash: None })
+    stack.add(HlRange {
+        range,
+        highlight: HlTag::EscapeSequence.into(),
+        binding_hash: None,
+    })
 }

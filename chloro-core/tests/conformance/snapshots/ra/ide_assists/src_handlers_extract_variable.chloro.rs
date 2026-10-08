@@ -6,7 +6,12 @@ use ide_db::{
 use syntax::{
     NodeOrToken, SyntaxKind, SyntaxNode, T,
     algo::ancestors_at_offset,
-    ast::{self, AstNode, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory},
+    ast::{
+        self, AstNode,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+        syntax_factory::SyntaxFactory,
+    },
     syntax_editor::Position,
 };
 
@@ -70,7 +75,11 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             .next()
             .and_then(ast::Expr::cast)
         {
-            expr.syntax().ancestors().find_map(valid_target_expr)?.syntax().clone()
+            expr.syntax()
+                .ancestors()
+                .find_map(valid_target_expr)?
+                .syntax()
+                .clone()
         } else {
             return None;
         }
@@ -85,7 +94,10 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         }
     };
 
-    let node = node.ancestors().take_while(|anc| anc.text_range() == node.text_range()).last()?;
+    let node = node
+        .ancestors()
+        .take_while(|anc| anc.text_range() == node.text_range())
+        .last()?;
     let range = node.text_range();
 
     let to_extract = node
@@ -191,7 +203,8 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
                 let new_stmt: ast::Stmt = match kind {
                     ExtractionKind::Variable => {
                         let ident_pat = make.ident_pat(false, needs_mut, pat_name);
-                        make.let_stmt(ident_pat.into(), None, Some(initializer)).into()
+                        make.let_stmt(ident_pat.into(), None, Some(initializer))
+                            .into()
                     }
                     ExtractionKind::Constant => {
                         let ast_ty = make.ty(&ty_string);
@@ -270,7 +283,9 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 
 fn peel_parens(mut expr: ast::Expr) -> ast::Expr {
     while let ast::Expr::ParenExpr(parens) = &expr {
-        let Some(expr_inside) = parens.expr() else { break };
+        let Some(expr_inside) = parens.expr() else {
+            break;
+        };
         expr = expr_inside;
     }
     expr
@@ -283,9 +298,9 @@ fn valid_target_expr(node: SyntaxNode) -> Option<ast::Expr> {
         SyntaxKind::PATH_EXPR | SyntaxKind::LOOP_EXPR | SyntaxKind::LET_EXPR => None,
         SyntaxKind::BREAK_EXPR => ast::BreakExpr::cast(node).and_then(|e| e.expr()),
         SyntaxKind::RETURN_EXPR => ast::ReturnExpr::cast(node).and_then(|e| e.expr()),
-        SyntaxKind::BLOCK_EXPR => {
-            ast::BlockExpr::cast(node).filter(|it| it.is_standalone()).map(ast::Expr::from)
-        }
+        SyntaxKind::BLOCK_EXPR => ast::BlockExpr::cast(node)
+            .filter(|it| it.is_standalone())
+            .map(ast::Expr::from),
         _ => ast::Expr::cast(node),
     }
 }
@@ -297,7 +312,11 @@ enum ExtractionKind {
 }
 
 impl ExtractionKind {
-    const ALL: &'static [ExtractionKind] = &[ExtractionKind::Variable, ExtractionKind::Constant, ExtractionKind::Static];
+    const ALL: &'static [ExtractionKind] = &[
+        ExtractionKind::Variable,
+        ExtractionKind::Constant,
+        ExtractionKind::Static,
+    ];
 
     fn assist_id(&self) -> AssistId {
         let s = match self {
@@ -396,8 +415,10 @@ impl Anchor {
                 if ast::MacroCall::can_cast(node.kind()) {
                     return None;
                 }
-                if let Some(expr) =
-                    node.parent().and_then(ast::StmtList::cast).and_then(|it| it.tail_expr())
+                if let Some(expr) = node
+                    .parent()
+                    .and_then(ast::StmtList::cast)
+                    .and_then(|it| it.tail_expr())
                     && expr.syntax() == &node
                 {
                     cov_mark::hit!(test_extract_var_last_expr);
@@ -458,7 +479,9 @@ mod tests {
         check_assist_by_label, check_assist_not_applicable, check_assist_not_applicable_by_label,
         check_assist_target,
     };
+
     use super::*;
+
     #[test]
     fn extract_var_simple_without_select() {
         check_assist_by_label(
@@ -570,6 +593,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_const_simple_without_select() {
         check_assist_by_label(
@@ -664,6 +688,7 @@ fn main() {
             "Extract into constant",
         );
     }
+
     #[test]
     fn extract_static_simple_without_select() {
         check_assist_by_label(
@@ -758,6 +783,7 @@ fn main() {
             "Extract into static",
         );
     }
+
     #[test]
     fn dont_extract_unit_expr_without_select() {
         check_assist_not_applicable(
@@ -783,6 +809,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn extract_var_simple() {
         check_assist_by_label(
@@ -799,6 +826,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_const_simple() {
         check_assist_by_label(
@@ -815,6 +843,7 @@ fn foo() {
             "Extract into constant",
         );
     }
+
     #[test]
     fn extract_static_simple() {
         check_assist_by_label(
@@ -831,11 +860,16 @@ fn foo() {
             "Extract into static",
         );
     }
+
     #[test]
     fn dont_extract_in_comment() {
         cov_mark::check!(extract_var_in_comment_is_not_applicable);
-        check_assist_not_applicable(extract_variable, r#"fn main() { 1 + /* $0comment$0 */ 1; }"#);
+        check_assist_not_applicable(
+            extract_variable,
+            r#"fn main() { 1 + /* $0comment$0 */ 1; }"#,
+        );
     }
+
     #[test]
     fn extract_var_expr_stmt() {
         cov_mark::check!(test_extract_var_expr_stmt);
@@ -866,6 +900,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_const_expr_stmt() {
         cov_mark::check!(test_extract_var_expr_stmt);
@@ -897,6 +932,7 @@ fn foo() {
             "Extract into constant",
         );
     }
+
     #[test]
     fn extract_static_expr_stmt() {
         cov_mark::check!(test_extract_var_expr_stmt);
@@ -928,6 +964,7 @@ fn foo() {
             "Extract into static",
         );
     }
+
     #[test]
     fn extract_var_part_of_expr_stmt() {
         check_assist_by_label(
@@ -944,6 +981,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_const_part_of_expr_stmt() {
         check_assist_by_label(
@@ -960,6 +998,7 @@ fn foo() {
             "Extract into constant",
         );
     }
+
     #[test]
     fn extract_static_part_of_expr_stmt() {
         check_assist_by_label(
@@ -976,6 +1015,7 @@ fn foo() {
             "Extract into static",
         );
     }
+
     #[test]
     fn extract_var_last_expr() {
         cov_mark::check!(test_extract_var_last_expr);
@@ -1018,6 +1058,7 @@ fn bar(i: i32) -> i32 {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_const_last_expr() {
         cov_mark::check!(test_extract_var_last_expr);
@@ -1060,6 +1101,7 @@ const fn bar(i: i32) -> i32 {
             "Extract into constant",
         )
     }
+
     #[test]
     fn extract_static_last_expr() {
         cov_mark::check!(test_extract_var_last_expr);
@@ -1102,6 +1144,7 @@ const fn bar(i: i32) -> i32 {
             "Extract into static",
         )
     }
+
     #[test]
     fn extract_var_in_match_arm_no_block() {
         cov_mark::check!(test_extract_var_in_match_arm_no_block);
@@ -1131,6 +1174,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_in_match_arm_with_block() {
         check_assist_by_label(
@@ -1163,6 +1207,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_in_match_guard() {
         cov_mark::check!(test_extract_var_in_match_guard);
@@ -1188,6 +1233,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_in_closure_no_block() {
         cov_mark::check!(test_extract_var_in_closure_no_block);
@@ -1209,6 +1255,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_in_closure_with_block() {
         check_assist_by_label(
@@ -1226,6 +1273,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_path_simple() {
         check_assist_by_label(
@@ -1244,6 +1292,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_path_method() {
         check_assist_by_label(
@@ -1262,6 +1311,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_return() {
         check_assist_by_label(
@@ -1280,6 +1330,7 @@ fn foo() -> u32 {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_does_not_add_extra_whitespace() {
         check_assist_by_label(
@@ -1346,6 +1397,7 @@ fn foo() -> u32 {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_break() {
         check_assist_by_label(
@@ -1368,6 +1420,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_let_expr() {
         check_assist_by_label(
@@ -1386,6 +1439,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_for_cast() {
         check_assist_by_label(
@@ -1404,6 +1458,7 @@ fn main() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_field_shorthand() {
         check_assist_by_label(
@@ -1430,6 +1485,7 @@ fn main() {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_name_from_type() {
         check_assist_by_label(
@@ -1452,6 +1508,7 @@ fn foo() -> Test {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_name_from_parameter() {
         check_assist_by_label(
@@ -1474,6 +1531,7 @@ fn foo() {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_parameter_name_has_precedence_over_type() {
         check_assist_by_label(
@@ -1498,6 +1556,7 @@ fn foo() {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_name_from_function() {
         check_assist_by_label(
@@ -1520,6 +1579,7 @@ fn foo() -> bool {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_name_from_method() {
         check_assist_by_label(
@@ -1548,6 +1608,7 @@ fn foo() -> u32 {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_name_from_method_param() {
         check_assist_by_label(
@@ -1576,6 +1637,7 @@ fn foo() {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_name_from_ufcs_method_param() {
         check_assist_by_label(
@@ -1604,6 +1666,7 @@ fn foo() {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_var_parameter_name_has_precedence_over_function() {
         check_assist_by_label(
@@ -1626,6 +1689,7 @@ fn foo() {
             "Extract into variable",
         )
     }
+
     #[test]
     fn extract_macro_call() {
         check_assist_by_label(
@@ -1700,14 +1764,17 @@ fn main() {
             "Extract into static",
         );
     }
+
     #[test]
     fn extract_var_for_return_not_applicable() {
         check_assist_not_applicable(extract_variable, "fn foo() { $0return$0; } ");
     }
+
     #[test]
     fn extract_var_for_break_not_applicable() {
         check_assist_not_applicable(extract_variable, "fn main() { loop { $0break$0; }; }");
     }
+
     #[test]
     fn extract_var_for_let_expr_not_applicable() {
         check_assist_not_applicable(
@@ -1715,6 +1782,7 @@ fn main() {
             "fn main() { if $0let Some(x) = Some(2+2) {} }",
         );
     }
+
     #[test]
     fn extract_var_unit_expr_not_applicable() {
         check_assist_not_applicable(
@@ -1730,10 +1798,15 @@ fn foo() {
 }"#,
         );
     }
+
     // FIXME: This is not quite correct, but good enough(tm) for the sorting heuristic
     #[test]
     fn extract_var_target() {
-        check_assist_target(extract_variable, r#"fn foo() -> u32 { $0return 2 + 2$0; }"#, "2 + 2");
+        check_assist_target(
+            extract_variable,
+            r#"fn foo() -> u32 { $0return 2 + 2$0; }"#,
+            "2 + 2",
+        );
 
         check_assist_target(
             extract_variable,
@@ -1749,6 +1822,7 @@ fn main() {
             "2 + 2",
         );
     }
+
     #[test]
     fn extract_var_no_block_body() {
         check_assist_not_applicable_by_label(
@@ -1759,6 +1833,7 @@ const X: usize = $0100$0;
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_const_no_block_body() {
         check_assist_by_label(
@@ -1861,6 +1936,7 @@ fn bar() {
             "Extract into constant",
         );
     }
+
     #[test]
     fn extract_static_no_block_body() {
         check_assist_by_label(
@@ -1963,6 +2039,7 @@ fn bar() {
             "Extract into static",
         );
     }
+
     #[test]
     fn extract_var_mutable_reference_parameter() {
         check_assist_by_label(
@@ -1997,6 +2074,7 @@ fn foo(s: &mut S) {
             "Extract into variable",
         );
     }
+
     #[test]
     fn dont_extract_const_mutable_reference_parameter() {
         check_assist_not_applicable_by_label(
@@ -2017,6 +2095,7 @@ fn foo(s: &mut S) {
             "Extract into constant",
         );
     }
+
     #[test]
     fn dont_extract_static_mutable_reference_parameter() {
         check_assist_not_applicable_by_label(
@@ -2037,6 +2116,7 @@ fn foo(s: &mut S) {
             "Extract into static",
         );
     }
+
     #[test]
     fn extract_var_mutable_reference_parameter_deep_nesting() {
         check_assist_by_label(
@@ -2081,6 +2161,7 @@ fn foo(f: &mut Y) {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_reference_parameter() {
         check_assist_by_label(
@@ -2121,6 +2202,7 @@ fn foo(s: &S) {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_index_deref() {
         check_assist_by_label(
@@ -2160,6 +2242,7 @@ fn foo(s: &S) {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_reference_parameter_deep_nesting() {
         check_assist_by_label(
@@ -2214,6 +2297,7 @@ fn foo(s: &S) {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_regular_parameter() {
         check_assist_by_label(
@@ -2254,6 +2338,7 @@ fn foo(s: S) {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_mutable_reference_local() {
         check_assist_by_label(
@@ -2320,6 +2405,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_reference_local() {
         check_assist_by_label(
@@ -2386,6 +2472,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_var_for_mutable_borrow() {
         check_assist_by_label(
@@ -2402,6 +2489,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn dont_extract_const_for_mutable_borrow() {
         check_assist_not_applicable_by_label(
@@ -2413,6 +2501,7 @@ fn foo() {
             "Extract into constant",
         );
     }
+
     #[test]
     fn dont_extract_static_for_mutable_borrow() {
         check_assist_not_applicable_by_label(
@@ -2424,6 +2513,7 @@ fn foo() {
             "Extract into static",
         );
     }
+
     #[test]
     fn generates_no_ref_on_calls() {
         check_assist_by_label(
@@ -2450,6 +2540,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn generates_no_ref_for_deref() {
         check_assist_by_label(
@@ -2480,6 +2571,7 @@ fn foo() {
             "Extract into variable",
         );
     }
+
     #[test]
     fn extract_string_literal() {
         check_assist_by_label(
@@ -2536,6 +2628,7 @@ fn foo() {
             "Extract into static",
         );
     }
+
     #[test]
     fn extract_variable_string_literal_use_field_shorthand() {
         // When field shorthand is available, it should
@@ -2594,6 +2687,7 @@ fn foo() {
             "Extract into static",
         );
     }
+
     #[test]
     fn extract_variable_name_conflicts() {
         check_assist_by_label(

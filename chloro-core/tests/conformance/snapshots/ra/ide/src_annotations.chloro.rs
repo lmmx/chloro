@@ -17,6 +17,12 @@ use crate::{
 
 mod fn_references;
 
+// Feature: Annotations
+//
+// Provides user with annotations above items for looking up references or impl blocks
+// and running/debugging binaries.
+//
+// ![Annotations](https://user-images.githubusercontent.com/48062697/113020672-b7c34f00-917a-11eb-8f6e-858735660a0e.png)
 #[derive(Debug, Hash, PartialEq, Eq)]
 pub struct Annotation {
     pub range: TextRange,
@@ -68,7 +74,10 @@ pub(crate) fn annotations(
 
             let range = runnable.nav.focus_or_full_range();
 
-            annotations.insert(Annotation { range, kind: AnnotationKind::Runnable(runnable) });
+            annotations.insert(Annotation {
+                range,
+                kind: AnnotationKind::Runnable(runnable),
+            });
         }
     }
 
@@ -78,17 +87,22 @@ pub(crate) fn annotations(
             AnnotationLocation::AboveName => cmd_target,
             AnnotationLocation::AboveWholeItem => range,
         };
-        let target_pos = FilePosition { file_id, offset: cmd_target.start() };
+        let target_pos = FilePosition {
+            file_id,
+            offset: cmd_target.start(),
+        };
         (annotation_range, target_pos)
     };
 
     visit_file_defs(&Semantics::new(db), file_id, &mut |def| {
         let range = match def {
-            Definition::Const(konst) if config.annotate_references => {
-                konst.source(db).and_then(|node| name_range(db, node, file_id))
-            }
+            Definition::Const(konst) if config.annotate_references => konst
+                .source(db)
+                .and_then(|node| name_range(db, node, file_id)),
             Definition::Trait(trait_) if config.annotate_references || config.annotate_impls => {
-                trait_.source(db).and_then(|node| name_range(db, node, file_id))
+                trait_
+                    .source(db)
+                    .and_then(|node| name_range(db, node, file_id))
             }
             Definition::Adt(adt) => match adt {
                 hir::Adt::Enum(enum_) => {
@@ -97,7 +111,9 @@ pub(crate) fn annotations(
                             .variants(db)
                             .into_iter()
                             .filter_map(|variant| {
-                                variant.source(db).and_then(|node| name_range(db, node, file_id))
+                                variant
+                                    .source(db)
+                                    .and_then(|node| name_range(db, node, file_id))
                             })
                             .for_each(|range| {
                                 let (annotation_range, target_position) = mk_ranges(range);
@@ -111,14 +127,17 @@ pub(crate) fn annotations(
                             })
                     }
                     if config.annotate_references || config.annotate_impls {
-                        enum_.source(db).and_then(|node| name_range(db, node, file_id))
+                        enum_
+                            .source(db)
+                            .and_then(|node| name_range(db, node, file_id))
                     } else {
                         None
                     }
                 }
                 _ => {
                     if config.annotate_references || config.annotate_impls {
-                        adt.source(db).and_then(|node| name_range(db, node, file_id))
+                        adt.source(db)
+                            .and_then(|node| name_range(db, node, file_id))
                     } else {
                         None
                     }
@@ -135,14 +154,20 @@ pub(crate) fn annotations(
         if config.annotate_impls && !matches!(def, Definition::Const(_)) {
             annotations.insert(Annotation {
                 range: annotation_range,
-                kind: AnnotationKind::HasImpls { pos: target_pos, data: None },
+                kind: AnnotationKind::HasImpls {
+                    pos: target_pos,
+                    data: None,
+                },
             });
         }
 
         if config.annotate_references {
             annotations.insert(Annotation {
                 range: annotation_range,
-                kind: AnnotationKind::HasReferences { pos: target_pos, data: None },
+                kind: AnnotationKind::HasReferences {
+                    pos: target_pos,
+                    data: None,
+                },
             });
         }
 
@@ -185,7 +210,10 @@ pub(crate) fn annotations(
             let (annotation_range, target_range) = mk_ranges(range);
             Annotation {
                 range: annotation_range,
-                kind: AnnotationKind::HasReferences { pos: target_range, data: None },
+                kind: AnnotationKind::HasReferences {
+                    pos: target_range,
+                    data: None,
+                },
             }
         }));
     }
@@ -193,7 +221,11 @@ pub(crate) fn annotations(
     annotations
         .into_iter()
         .sorted_by_key(|a| {
-            (a.range.start(), a.range.end(), matches!(a.kind, AnnotationKind::Runnable(..)))
+            (
+                a.range.start(),
+                a.range.end(),
+                matches!(a.kind, AnnotationKind::Runnable(..)),
+            )
         })
         .collect()
 }
@@ -216,14 +248,19 @@ pub(crate) fn resolve_annotation(
             *data = find_all_refs(
                 &Semantics::new(db),
                 pos,
-                &FindAllRefsConfig { search_scope: None, minicore: config.minicore },
+                &FindAllRefsConfig {
+                    search_scope: None,
+                    minicore: config.minicore,
+                },
             )
             .map(|result| {
                 result
                     .into_iter()
                     .flat_map(|res| res.references)
                     .flat_map(|(file_id, access)| {
-                        access.into_iter().map(move |(range, _)| FileRange { file_id, range })
+                        access
+                            .into_iter()
+                            .map(move |(range, _)| FileRange { file_id, range })
                     })
                     .collect()
             });
@@ -245,8 +282,11 @@ fn should_skip_runnable(kind: &RunnableKind, binary_target: bool) -> bool {
 mod tests {
     use expect_test::{Expect, expect};
     use ide_db::MiniCore;
+
     use crate::{Annotation, AnnotationConfig, fixture};
+
     use super::AnnotationLocation;
+
     const DEFAULT_CONFIG: AnnotationConfig<'_> = AnnotationConfig {
         binary_target: true,
         annotate_runnables: true,
@@ -258,6 +298,7 @@ mod tests {
         minicore: MiniCore::default(),
         filter_adjacent_derive_implementations: false,
     };
+
     fn check_with_config(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         expect: Expect,
@@ -269,14 +310,20 @@ mod tests {
             .annotations(config, file_id)
             .unwrap()
             .into_iter()
-            .map(|annotation| analysis.resolve_annotation(&DEFAULT_CONFIG, annotation).unwrap())
+            .map(|annotation| {
+                analysis
+                    .resolve_annotation(&DEFAULT_CONFIG, annotation)
+                    .unwrap()
+            })
             .collect();
 
         expect.assert_debug_eq(&annotations);
     }
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         check_with_config(ra_fixture, expect, &DEFAULT_CONFIG);
     }
+
     #[test]
     fn const_annotations() {
         check(
@@ -368,6 +415,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn struct_references_annotations() {
         check(
@@ -457,6 +505,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn struct_and_trait_impls_annotations() {
         check(
@@ -611,6 +660,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn runnable_annotation() {
         check(
@@ -661,6 +711,7 @@ fn main() {}
             "#]],
         );
     }
+
     #[test]
     fn method_annotations() {
         check(
@@ -791,6 +842,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_annotations() {
         check(
@@ -904,6 +956,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn test_no_annotations_outside_module_tree() {
         check(
@@ -918,6 +971,7 @@ struct Foo;
             "#]],
         );
     }
+
     #[test]
     fn test_no_annotations_macro_struct_def() {
         check(
@@ -936,6 +990,7 @@ m!();
             "#]],
         );
     }
+
     #[test]
     fn test_annotations_macro_struct_def_call_site() {
         check(
@@ -985,6 +1040,7 @@ m! {
             "#]],
         );
     }
+
     #[test]
     fn test_annotations_appear_above_whole_item_when_configured_to_do_so() {
         check_with_config(
@@ -1025,7 +1081,10 @@ struct Foo;
                     },
                 ]
             "#]],
-            &AnnotationConfig { location: AnnotationLocation::AboveWholeItem, ..DEFAULT_CONFIG },
+            &AnnotationConfig {
+                location: AnnotationLocation::AboveWholeItem,
+                ..DEFAULT_CONFIG
+            },
         );
     }
 }

@@ -21,8 +21,8 @@ mod progress_report;
 use std::io::Read;
 
 use anyhow::Result;
-use hir_ty::db::HirDatabase;
 use hir::{Module, Name};
+use hir_ty::db::HirDatabase;
 use ide::{AnalysisHost, Edition};
 use itertools::Itertools;
 use vfs::Vfs;
@@ -39,7 +39,6 @@ impl Verbosity {
     pub fn is_verbose(self) -> bool {
         matches!(self, Verbosity::Verbose | Verbosity::Spammy)
     }
-
     pub fn is_spammy(self) -> bool {
         matches!(self, Verbosity::Spammy)
     }

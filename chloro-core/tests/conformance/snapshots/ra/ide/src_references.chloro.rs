@@ -127,8 +127,11 @@ pub(crate) fn find_all_refs(
     let syntax = sema.parse_guess_edition(position.file_id).syntax().clone();
     let make_searcher = |literal_search: bool| {
         move |def: Definition| {
-            let mut usages =
-                def.usages(sema).set_scope(config.search_scope.as_ref()).include_self_refs().all();
+            let mut usages = def
+                .usages(sema)
+                .set_scope(config.search_scope.as_ref())
+                .include_self_refs()
+                .all();
             if literal_search {
                 retain_adt_literal_usages(&mut usages, def, sema);
             }
@@ -167,7 +170,10 @@ pub(crate) fn find_all_refs(
                     nav,
                 }
             });
-            ReferenceSearchResult { declaration, references }
+            ReferenceSearchResult {
+                declaration,
+                references,
+            }
         }
     };
 
@@ -184,7 +190,13 @@ pub(crate) fn find_all_refs(
             fixture_analysis.map_offset_down(position.offset)
     {
         return analysis
-            .find_all_refs(FilePosition { file_id: virtual_file_id, offset: file_offset }, config)
+            .find_all_refs(
+                FilePosition {
+                    file_id: virtual_file_id,
+                    offset: file_offset,
+                },
+                config,
+            )
             .ok()??
             .upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, position.file_id)
             .ok();
@@ -194,15 +206,22 @@ pub(crate) fn find_all_refs(
         Some(name) => {
             let def = match NameClass::classify(sema, &name)? {
                 NameClass::Definition(it) | NameClass::ConstReference(it) => it,
-                NameClass::PatFieldShorthand { local_def: _, field_ref, adt_subst: _ } => {
-                    Definition::Field(field_ref)
-                }
+                NameClass::PatFieldShorthand {
+                    local_def: _,
+                    field_ref,
+                    adt_subst: _,
+                } => Definition::Field(field_ref),
             };
             Some(vec![make_searcher(true)(def)])
         }
         None => {
             let search = make_searcher(false);
-            Some(find_defs(sema, &syntax, position.offset)?.into_iter().map(search).collect())
+            Some(
+                find_defs(sema, &syntax, position.offset)?
+                    .into_iter()
+                    .map(search)
+                    .collect(),
+            )
         }
     }
 }
@@ -251,9 +270,11 @@ pub(crate) fn find_defs(
                     }
                     ast::NameLike::Name(name) => match NameClass::classify(sema, &name)? {
                         NameClass::Definition(it) | NameClass::ConstReference(it) => it,
-                        NameClass::PatFieldShorthand { local_def, field_ref: _, adt_subst: _ } => {
-                            Definition::Local(local_def)
-                        }
+                        NameClass::PatFieldShorthand {
+                            local_def,
+                            field_ref: _,
+                            adt_subst: _,
+                        } => Definition::Local(local_def),
                     },
                     ast::NameLike::Lifetime(lifetime) => {
                         NameRefClass::classify_lifetime(sema, &lifetime)
@@ -451,7 +472,10 @@ fn handle_control_flow_keywords(
     })
     .collect();
 
-    Some(ReferenceSearchResult { declaration: None, references })
+    Some(ReferenceSearchResult {
+        declaration: None,
+        references,
+    })
 }
 
 #[cfg(test)]
@@ -460,7 +484,9 @@ mod tests {
     use hir::EditionedFileId;
     use ide_db::{FileId, MiniCore, RootDatabase};
     use stdx::format_to;
+
     use crate::{SearchScope, fixture, references::FindAllRefsConfig};
+
     #[test]
     fn exclude_tests() {
         check(
@@ -505,6 +531,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn test_access() {
         check(
@@ -525,6 +552,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn test_struct_literal_after_space() {
         check(
@@ -547,6 +575,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_struct_literal_before_space() {
         check(
@@ -565,6 +594,7 @@ struct Foo$0 {}
             "#]],
         );
     }
+
     #[test]
     fn test_struct_literal_with_generic_type() {
         check(
@@ -582,6 +612,7 @@ struct Foo<T> $0{}
             "#]],
         );
     }
+
     #[test]
     fn test_struct_literal_for_tuple() {
         check(
@@ -600,6 +631,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_struct_literal_for_union() {
         check(
@@ -620,6 +652,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_after_space() {
         check(
@@ -645,6 +678,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_variant_record_after_space() {
         check(
@@ -666,6 +700,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_variant_tuple_before_paren() {
         check(
@@ -687,6 +722,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_before_space() {
         check(
@@ -708,6 +744,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_with_generic_type() {
         check(
@@ -728,6 +765,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_for_tuple() {
         check(
@@ -748,6 +786,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_for_local() {
         check(
@@ -773,6 +812,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn search_filters_by_range() {
         check(
@@ -794,6 +834,7 @@ fn bar() {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_for_param_inside() {
         check(
@@ -807,6 +848,7 @@ fn foo(i : u32) -> u32 { i$0 }
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_for_fn_param() {
         check(
@@ -820,6 +862,7 @@ fn foo(i$0 : u32) -> u32 { i }
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_field_name() {
         check(
@@ -840,6 +883,7 @@ fn main(s: Foo) {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_impl_item_name() {
         check(
@@ -856,6 +900,7 @@ impl Foo {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_enum_var_name() {
         check(
@@ -873,6 +918,7 @@ enum Foo {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_enum_var_field() {
         check(
@@ -890,6 +936,7 @@ enum Foo {
             "#]],
         );
     }
+
     #[test]
     fn test_self() {
         check(
@@ -915,6 +962,7 @@ impl<T> S<T> {
             "#]],
         )
     }
+
     #[test]
     fn test_self_inside_not_adt_impl() {
         check(
@@ -938,6 +986,7 @@ impl TestTrait for () {
             "#]],
         )
     }
+
     #[test]
     fn test_find_all_refs_two_modules() {
         check(
@@ -980,6 +1029,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_decl_module() {
         check(
@@ -1005,6 +1055,7 @@ pub struct Foo {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_decl_module_on_self() {
         check(
@@ -1022,6 +1073,7 @@ use self$0;
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_decl_module_on_self_crate_root() {
         check(
@@ -1036,6 +1088,7 @@ use self$0;
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_super_mod_vis() {
         check(
@@ -1064,6 +1117,7 @@ pub(super) struct Foo$0 {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_with_scope() {
         let code = r#"
@@ -1103,6 +1157,7 @@ pub(super) struct Foo$0 {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_macro_def() {
         check(
@@ -1123,6 +1178,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn test_basic_highlight_read_write() {
         check(
@@ -1140,6 +1196,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn test_basic_highlight_field_read_write() {
         check(
@@ -1161,6 +1218,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn test_basic_highlight_decl_no_write() {
         check(
@@ -1177,6 +1235,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn test_find_struct_function_refs_outside_module() {
         check(
@@ -1200,6 +1259,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_nested_module() {
         check(
@@ -1222,6 +1282,7 @@ fn g() { f(); }
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_struct_pat() {
         check(
@@ -1243,6 +1304,7 @@ fn f(s: S) {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_enum_var_pat() {
         check(
@@ -1266,6 +1328,7 @@ fn f(e: En) {
             "#]],
         );
     }
+
     #[test]
     fn test_find_all_refs_enum_var_privacy() {
         check(
@@ -1289,6 +1352,7 @@ fn f() -> m::En {
             "#]],
         );
     }
+
     #[test]
     fn test_find_self_refs() {
         check(
@@ -1314,6 +1378,7 @@ impl Foo {
             "#]],
         );
     }
+
     #[test]
     fn test_find_self_refs_decl() {
         check(
@@ -1333,6 +1398,7 @@ impl Foo {
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_if_branches() {
         check(
@@ -1358,6 +1424,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_match_branches() {
         check(
@@ -1380,6 +1447,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_match_arm_arrow() {
         check(
@@ -1399,6 +1467,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_nested_branches() {
         check(
@@ -1429,6 +1498,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_match_with_complex_guards() {
         check(
@@ -1453,6 +1523,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_mixed_if_match_expressions() {
         check(
@@ -1480,9 +1551,11 @@ fn main() {
             "#]],
         );
     }
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         check_with_scope(ra_fixture, None, expect)
     }
+
     fn check_with_scope(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>,
@@ -1524,6 +1597,7 @@ fn main() {
         }
         expect.assert_eq(actual.trim_start())
     }
+
     #[test]
     fn test_find_lifetimes_function() {
         check(
@@ -1546,6 +1620,7 @@ fn foo<'a, 'b: 'a>(x: &'a$0 ()) -> &'a () where &'a (): Foo<'a> {
             "#]],
         );
     }
+
     #[test]
     fn test_find_lifetimes_type_alias() {
         check(
@@ -1560,6 +1635,7 @@ type Foo<'a, T> where T: 'a$0 = &'a T;
             "#]],
         );
     }
+
     #[test]
     fn test_find_lifetimes_trait_impl() {
         check(
@@ -1582,6 +1658,7 @@ impl<'a> Foo<'a> for &'a () {
             "#]],
         );
     }
+
     #[test]
     fn test_map_range_to_original() {
         check(
@@ -1599,6 +1676,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_map_range_to_original_ref() {
         check(
@@ -1616,6 +1694,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_find_labels() {
         check(
@@ -1637,6 +1716,7 @@ fn foo<'a>() -> &'a () {
             "#]],
         );
     }
+
     #[test]
     fn test_find_const_param() {
         check(
@@ -1652,6 +1732,7 @@ fn foo<const FOO$0: usize>() -> usize {
             "#]],
         );
     }
+
     #[test]
     fn test_trait() {
         check(
@@ -1667,6 +1748,7 @@ impl Foo for () {}
             "#]],
         );
     }
+
     #[test]
     fn test_trait_self() {
         check(
@@ -1685,6 +1767,7 @@ impl Foo for () {}
             "#]],
         );
     }
+
     #[test]
     fn test_self_ty() {
         check(
@@ -1742,6 +1825,7 @@ impl Foo {
             "#]],
         );
     }
+
     #[test]
     fn test_trait_alias() {
         check(
@@ -1759,6 +1843,7 @@ fn foo<T: Bar>(_: impl Bar, _: &dyn Bar) {}
             "#]],
         );
     }
+
     #[test]
     fn test_trait_alias_self() {
         check(
@@ -1772,6 +1857,7 @@ trait Foo = where Self$0: ;
             "#]],
         );
     }
+
     #[test]
     fn test_attr_differs_from_fn_with_same_name() {
         check(
@@ -1788,6 +1874,7 @@ fn test$0() {
             "#]],
         );
     }
+
     #[test]
     fn test_const_in_pattern() {
         check(
@@ -1812,6 +1899,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_primitives() {
         check(
@@ -1824,6 +1912,7 @@ fn foo(_: bool) -> bo$0ol { true }
             "#]],
         );
     }
+
     #[test]
     fn test_transitive() {
         check(
@@ -1846,6 +1935,7 @@ pub use level1::Foo;
             "#]],
         );
     }
+
     #[test]
     fn test_decl_macro_references() {
         check(
@@ -1875,6 +1965,7 @@ lib::foo!();
             "#]],
         );
     }
+
     #[test]
     fn macro_doesnt_reference_attribute_on_call() {
         check(
@@ -1894,6 +1985,7 @@ m$0!();
             "#]],
         );
     }
+
     #[test]
     fn multi_def() {
         check(
@@ -1927,6 +2019,7 @@ fn f() {
             "#]],
         )
     }
+
     #[test]
     fn attr_expanded() {
         check(
@@ -1944,6 +2037,7 @@ fn func$0() {
             "#]],
         )
     }
+
     #[test]
     fn attr_assoc_item() {
         check(
@@ -1964,6 +2058,7 @@ trait Trait {
             "#]],
         )
     }
+
     // FIXME: import is classified as function
     #[test]
     fn attr() {
@@ -1994,6 +2089,7 @@ fn func$0() {}
             "#]],
         );
     }
+
     // FIXME: import is classified as function
     #[test]
     fn proc_macro() {
@@ -2011,6 +2107,7 @@ mirror$0! {}
             "#]],
         )
     }
+
     #[test]
     fn derive() {
         check(
@@ -2042,6 +2139,7 @@ pub fn deri$0ve(_stream: TokenStream) -> TokenStream {}
             "#]],
         );
     }
+
     #[test]
     fn assoc_items_trait_def() {
         check(
@@ -2132,6 +2230,7 @@ fn f<T: Trait>() {
             "#]],
         );
     }
+
     #[test]
     fn assoc_items_trait_impl_def() {
         check(
@@ -2216,6 +2315,7 @@ fn f<T: Trait>() {
             "#]],
         );
     }
+
     #[test]
     fn assoc_items_ref() {
         check(
@@ -2300,6 +2400,7 @@ fn f<T: Trait>() {
             "#]],
         );
     }
+
     #[test]
     fn name_clashes() {
         check(
@@ -2418,6 +2519,7 @@ fn method$0() {}
             "#]],
         );
     }
+
     #[test]
     fn raw_identifier() {
         check(
@@ -2432,6 +2534,7 @@ fn main() { r#fn(); }
             "#]],
         );
     }
+
     #[test]
     fn implicit_format_args() {
         check(
@@ -2454,6 +2557,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_fn_kw() {
         check(
@@ -2490,6 +2594,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn goto_ref_exit_points() {
         check(
@@ -2511,6 +2616,7 @@ fn$0 foo() -> u32 {
             "#]],
         );
     }
+
     #[test]
     fn test_ref_yield_points() {
         check(
@@ -2531,6 +2637,7 @@ pub async$0 fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_for_kw() {
         check(
@@ -2549,6 +2656,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn goto_ref_on_break_kw() {
         check(
@@ -2566,6 +2674,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn goto_ref_on_break_kw_for_block() {
         check(
@@ -2582,6 +2691,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn goto_ref_on_break_with_label() {
         check(
@@ -2607,6 +2717,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_on_return_in_try() {
         check(
@@ -2629,6 +2740,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn goto_ref_on_break_in_try() {
         check(
@@ -2647,6 +2759,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn goto_ref_on_return_in_async_block() {
         check(
@@ -2663,6 +2776,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn goto_ref_on_return_in_macro_call() {
         check(
@@ -2703,8 +2817,10 @@ fn main() {
             "#]],
         )
     }
+
     // The following are tests for short_associated_function_fast_search() in crates/ide-db/src/search.rs, because find all references
     // use `FindUsages` and I found it easy to test it here.
+
     #[test]
     fn goto_ref_on_short_associated_function() {
         cov_mark::check!(short_associated_function_fast_search);
@@ -2730,6 +2846,7 @@ fn baz() {
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_on_short_associated_function_with_aliases() {
         cov_mark::check!(short_associated_function_fast_search);
@@ -2780,6 +2897,7 @@ pub(in super::super) type Baz = Itself<crate::Foo>;
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_on_short_associated_function_self_works() {
         cov_mark::check!(short_associated_function_fast_search);
@@ -2819,6 +2937,7 @@ fn foo() { <super::Foo as super::Trait>::Assoc::new(); }
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_on_short_associated_function_overlapping_self_ranges() {
         check(
@@ -2842,6 +2961,7 @@ impl Foo {
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_on_short_associated_function_no_direct_self_but_path_contains_self() {
         cov_mark::check!(short_associated_function_fast_search);
@@ -2872,6 +2992,7 @@ impl Foo {
             "#]],
         );
     }
+
     // Checks that we can circumvent our fast path logic using complicated type level functions.
     // This mainly exists as a documentation. I don't believe it is fixable.
     // Usages search is not 100% accurate anyway; we miss macros.
@@ -2910,6 +3031,7 @@ fn bar() {
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_on_short_associated_function_same_path_mention_alias_and_self() {
         cov_mark::check!(short_associated_function_fast_search);
@@ -2935,6 +3057,7 @@ impl Foo {
             "#]],
         );
     }
+
     #[test]
     fn goto_ref_on_included_file() {
         check(
@@ -2955,6 +3078,7 @@ const FOO$0: i32 = 0;
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_if_let_match_combined() {
         check(
@@ -2986,6 +3110,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn test_highlight_nested_match_expressions() {
         check(
@@ -3015,6 +3140,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn raw_labels_and_lifetimes() {
         check(

@@ -1,5 +1,4 @@
 //! Processes out #[cfg] and #[cfg_attr] attributes from the input for the derive macro
-
 use std::iter::Peekable;
 
 use base_db::Crate;
@@ -84,9 +83,9 @@ enum CfgExprStage {
     StrippigCfgExpr,
     /// Found the comma after the CFGExpr. Will keep all tokens until the next comma or the end of the attribute
     FoundComma,
+    /// Everything following the attribute. This could be another attribute or the end of the attribute.
     // FIXME: cfg_attr with multiple attributes will not be handled correctly. We will only keep the first attribute
     // Related Issue: https://github.com/rust-lang/rust-analyzer/issues/10110
-    /// Everything following the attribute. This could be another attribute or the end of the attribute.
     EverythingElse,
 }
 
@@ -136,14 +135,16 @@ fn remove_tokens_within_cfg_attr(meta: Meta) -> Option<FxHashSet<SyntaxElement>>
     }
     Some(remove)
 }
-
 /// Removes a possible comma after the [AstNode]
 fn remove_possible_comma(item: &impl AstNode, res: &mut FxHashSet<SyntaxElement>) {
-    if let Some(comma) = item.syntax().next_sibling_or_token().filter(|it| it.kind() == T![,]) {
+    if let Some(comma) = item
+        .syntax()
+        .next_sibling_or_token()
+        .filter(|it| it.kind() == T![,])
+    {
         res.insert(comma);
     }
 }
-
 fn process_enum(
     db: &dyn ExpandDatabase,
     variants: VariantList,
@@ -260,7 +261,6 @@ pub(crate) fn process_cfg_attrs(
     }
     Some(remove)
 }
-
 /// Parses a `cfg` attribute from the meta
 fn parse_from_attr_token_tree(tt: &TokenTree) -> Option<CfgExpr> {
     let mut iter = tt
@@ -275,7 +275,6 @@ fn parse_from_attr_token_tree(tt: &TokenTree) -> Option<CfgExpr> {
 fn is_not_closing_paren(element: &NodeOrToken<ast::TokenTree, syntax::SyntaxToken>) -> bool {
     !matches!(element, NodeOrToken::Token(token) if (token.kind() == syntax::T![')']))
 }
-
 fn is_not_whitespace(element: &NodeOrToken<ast::TokenTree, syntax::SyntaxToken>) -> bool {
     !matches!(element, NodeOrToken::Token(token) if (token.kind() == SyntaxKind::WHITESPACE))
 }
@@ -346,13 +345,14 @@ where
     }
     result
 }
-
 #[cfg(test)]
 mod tests {
     use cfg::DnfExpr;
     use expect_test::{Expect, expect};
     use syntax::{AstNode, SourceFile, ast::Attr};
+
     use crate::cfg_process::parse_from_attr_token_tree;
+
     fn check_dnf_from_syntax(input: &str, expect: Expect) {
         let parse = SourceFile::parse(input, span::Edition::CURRENT);
         let node = match parse.tree().syntax().descendants().find_map(Attr::cast) {

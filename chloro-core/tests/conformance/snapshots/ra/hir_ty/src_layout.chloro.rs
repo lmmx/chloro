@@ -68,9 +68,7 @@ impl rustc_index::Idx for RustcFieldIdx {
 }
 
 pub type Layout = LayoutData<RustcFieldIdx, RustcEnumVariantIdx>;
-
 pub type TagEncoding = hir_def::layout::TagEncoding<RustcEnumVariantIdx>;
-
 pub type Variants = hir_def::layout::Variants<RustcFieldIdx, RustcEnumVariantIdx>;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -89,7 +87,6 @@ pub enum LayoutError {
 }
 
 impl std::error::Error for LayoutError {}
-
 impl fmt::Display for LayoutError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -105,7 +102,10 @@ impl fmt::Display for LayoutError {
             LayoutError::TargetLayoutNotAvailable => write!(f, "target layout not available"),
             LayoutError::Unknown => write!(f, "unknown"),
             LayoutError::UserReprTooSmall => {
-                write!(f, "the `#[repr]` hint is too small to hold the discriminants of the enum")
+                write!(
+                    f,
+                    "the `#[repr]` hint is too small to hold the discriminants of the enum"
+                )
             }
         }
     }
@@ -123,7 +123,9 @@ struct LayoutCx<'a> {
 
 impl<'a> LayoutCx<'a> {
     fn new(target: &'a TargetDataLayout) -> Self {
-        Self { calc: LayoutCalculator::new(target) }
+        Self {
+            calc: LayoutCalculator::new(target),
+        }
     }
 }
 
@@ -143,10 +145,12 @@ fn layout_of_simd_ty<'db>(
     // where T is a primitive scalar (integer/float/pointer).
     let fields = db.field_types(id.into());
     let mut fields = fields.iter();
-    let Some(TyKind::Array(e_ty, e_len)) = fields
-        .next()
-        .filter(|_| fields.next().is_none())
-        .map(|f| (*f.1).instantiate(DbInterner::new_with(db, None, None), args).kind())
+    let Some(TyKind::Array(e_ty, e_len)) =
+        fields.next().filter(|_| fields.next().is_none()).map(|f| {
+            (*f.1)
+                .instantiate(DbInterner::new_with(db, None, None), args)
+                .kind()
+        })
     else {
         return Err(LayoutError::InvalidSimdType);
     };
@@ -172,7 +176,10 @@ pub fn layout_of_ty_query<'db>(
     let cx = LayoutCx::new(dl);
     let infer_ctxt = interner.infer_ctxt().build(TypingMode::PostAnalysis);
     let cause = ObligationCause::dummy();
-    let ty = infer_ctxt.at(&cause, ParamEnv::empty()).deeply_normalize(ty).unwrap_or(ty);
+    let ty = infer_ctxt
+        .at(&cause, ParamEnv::empty())
+        .deeply_normalize(ty)
+        .unwrap_or(ty);
     let result = match ty.kind() {
         TyKind::Adt(def, args) => {
             match def.inner().id {
@@ -198,7 +205,10 @@ pub fn layout_of_ty_query<'db>(
             dl,
             Scalar::Initialized {
                 value: Primitive::Int(Integer::I32, false),
-                valid_range: WrappingRange { start: 0, end: 0x10FFFF },
+                valid_range: WrappingRange {
+                    start: 0,
+                    end: 0x10FFFF,
+                },
             },
         ),
         TyKind::Int(i) => Layout::scalar(
@@ -248,8 +258,11 @@ pub fn layout_of_ty_query<'db>(
             ),
         ),
         TyKind::Tuple(tys) => {
-            let kind =
-                if tys.len() == 0 { StructKind::AlwaysSized } else { StructKind::MaybeUnsized };
+            let kind = if tys.len() == 0 {
+                StructKind::AlwaysSized
+            } else {
+                StructKind::MaybeUnsized
+            };
 
             let fields = tys
                 .iter()
@@ -270,7 +283,8 @@ pub fn layout_of_ty_query<'db>(
         }
         TyKind::Str => {
             let element = scalar_unit(dl, Primitive::Int(Integer::I8, false));
-            cx.calc.array_like::<_, _, ()>(&Layout::scalar(dl, element), None)?
+            cx.calc
+                .array_like::<_, _, ()>(&Layout::scalar(dl, element), None)?
         }
         // Potentially-wide pointers.
         TyKind::Ref(_, pointee, _) | TyKind::RawPtr(pointee, _) => {
@@ -330,14 +344,16 @@ pub fn layout_of_ty_query<'db>(
             let fields = captures
                 .iter()
                 .map(|it| {
-                    let ty =
-                        it.ty.instantiate(interner, args.split_closure_args_untupled().parent_args);
+                    let ty = it
+                        .ty
+                        .instantiate(interner, args.split_closure_args_untupled().parent_args);
                     db.layout_of_ty(ty, trait_env.clone())
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             let fields = fields.iter().map(|it| &**it).collect::<Vec<_>>();
             let fields = fields.iter().collect::<IndexVec<_, _>>();
-            cx.calc.univariant(&fields, &ReprOptions::default(), StructKind::AlwaysSized)?
+            cx.calc
+                .univariant(&fields, &ReprOptions::default(), StructKind::AlwaysSized)?
         }
 
         TyKind::Coroutine(_, _)
@@ -408,7 +424,10 @@ fn field_ty<'a>(
 }
 
 fn scalar_unit(dl: &TargetDataLayout, value: Primitive) -> Scalar {
-    Scalar::Initialized { value, valid_range: WrappingRange::full(value.size(dl)) }
+    Scalar::Initialized {
+        value,
+        valid_range: WrappingRange::full(value.size(dl)),
+    }
 }
 
 #[cfg(test)]

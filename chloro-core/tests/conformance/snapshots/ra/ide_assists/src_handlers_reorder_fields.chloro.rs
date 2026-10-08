@@ -21,8 +21,10 @@ use crate::{AssistContext, AssistId, Assists};
 // ```
 pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path = ctx.find_node_at_offset::<ast::Path>()?;
-    let record =
-        path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
+    let record = path
+        .syntax()
+        .parent()
+        .and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
 
     let parent_node = match ctx.covering_element() {
         SyntaxElement::Node(n) => n,
@@ -31,7 +33,9 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 
     let ranks = compute_fields_ranks(&path, ctx)?;
     let get_rank_of_field = |of: Option<SmolStr>| {
-        *ranks.get(of.unwrap_or_default().trim_start_matches("r#")).unwrap_or(&usize::MAX)
+        *ranks
+            .get(of.unwrap_or_default().trim_start_matches("r#"))
+            .unwrap_or(&usize::MAX)
     };
 
     let field_list = match &record {
@@ -65,7 +69,10 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         cov_mark::hit!(reorder_sorted_fields);
         return None;
     }
-    let target = record.as_ref().either(AstNode::syntax, AstNode::syntax).text_range();
+    let target = record
+        .as_ref()
+        .either(AstNode::syntax, AstNode::syntax)
+        .text_range();
     acc.add(
         AssistId::refactor_rewrite("reorder_fields"),
         "Reorder record fields",
@@ -119,7 +126,9 @@ fn compute_fields_ranks(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn reorder_sorted_fields() {
         cov_mark::check!(reorder_sorted_fields);
@@ -131,6 +140,7 @@ const test: Foo = $0Foo { foo: 0, bar: 0 };
 "#,
         )
     }
+
     #[test]
     fn trivial_empty_fields() {
         check_assist_not_applicable(
@@ -141,6 +151,7 @@ const test: Foo = $0Foo {};
 "#,
         )
     }
+
     #[test]
     fn reorder_struct_fields() {
         check_assist(
@@ -181,6 +192,7 @@ fn f(f: Foo) -> {
 "#,
         )
     }
+
     #[test]
     fn reorder_with_extra_field() {
         check_assist(

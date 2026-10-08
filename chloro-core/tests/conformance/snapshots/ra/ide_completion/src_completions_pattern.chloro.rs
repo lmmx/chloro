@@ -26,7 +26,10 @@ pub(crate) fn complete_pattern(
         }
         _ => {
             let tok = ctx.token.text_range().start();
-            match (pattern_ctx.ref_token.as_ref(), pattern_ctx.mut_token.as_ref()) {
+            match (
+                pattern_ctx.ref_token.as_ref(),
+                pattern_ctx.mut_token.as_ref(),
+            ) {
                 (None, None) => {
                     add_keyword("ref", "ref $0");
                     add_keyword("mut", "mut $0");
@@ -67,15 +70,20 @@ pub(crate) fn complete_pattern(
     let refutable = pattern_ctx.refutability == PatternRefutability::Refutable;
     let single_variant_enum = |enum_: hir::Enum| enum_.num_variants(ctx.db) == 1;
 
-    if let Some(hir::Adt::Enum(e)) =
-        ctx.expected_type.as_ref().and_then(|ty| ty.strip_references().as_adt())
+    if let Some(hir::Adt::Enum(e)) = ctx
+        .expected_type
+        .as_ref()
+        .and_then(|ty| ty.strip_references().as_adt())
         && (refutable || single_variant_enum(e))
     {
         super::enum_variants_with_paths(
             acc,
             ctx,
             e,
-            pattern_ctx.impl_or_trait.as_ref().and_then(|it| it.as_ref().left()),
+            pattern_ctx
+                .impl_or_trait
+                .as_ref()
+                .and_then(|it| it.as_ref().left()),
             |acc, ctx, variant, path| {
                 acc.add_qualified_variant_pat(ctx, pattern_ctx, variant, path);
             },
@@ -131,7 +139,11 @@ pub(crate) fn complete_pattern_path(
     path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
 ) {
     match qualified {
-        Qualified::With { resolution: Some(resolution), super_chain_len, .. } => {
+        Qualified::With {
+            resolution: Some(resolution),
+            super_chain_len,
+            ..
+        } => {
             acc.add_super_keyword(ctx, *super_chain_len);
 
             match resolution {

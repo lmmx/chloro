@@ -3,7 +3,6 @@
 //! fn f(a: i32, b: i32) -> i32 { a + b }
 //! let _x /* i32 */= f(4, 4);
 //! ```
-
 use hir::{DisplayTarget, Semantics};
 use ide_db::{RootDatabase, famous_defs::FamousDefs};
 
@@ -133,7 +132,10 @@ fn is_named_constructor(
         }
     }?;
 
-    let expr = sema.descend_node_into_attributes(expr.clone()).pop().unwrap_or(expr);
+    let expr = sema
+        .descend_node_into_attributes(expr.clone())
+        .pop()
+        .unwrap_or(expr);
     // unwrap postfix expressions
     let expr = match expr {
         ast::Expr::TryExpr(it) => it.expr(),
@@ -150,7 +152,10 @@ fn is_named_constructor(
     };
     let path = expr.path()?;
 
-    let callable = sema.type_of_expr(&ast::Expr::PathExpr(expr))?.original.as_callable(sema.db);
+    let callable = sema
+        .type_of_expr(&ast::Expr::PathExpr(expr))?
+        .original
+        .as_callable(sema.db);
     let callable_kind = callable.map(|it| it.kind());
     let qual_seg = match callable_kind {
         Some(hir::CallableKind::Function(_) | hir::CallableKind::TupleEnumVariant(_)) => {
@@ -166,7 +171,10 @@ fn is_named_constructor(
                 None => name_ref.to_string(),
             }
         }
-        ast::PathSegmentKind::Type { type_ref: Some(ty), trait_ref: None } => ty.to_string(),
+        ast::PathSegmentKind::Type {
+            type_ref: Some(ty),
+            trait_ref: None,
+        } => ty.to_string(),
         _ => return None,
     };
     (ctor_name == ty_name).then_some(())
@@ -175,18 +183,29 @@ fn is_named_constructor(
 #[cfg(test)]
 mod tests {
     // This module also contains tests for super::closure_ret
+
     use expect_test::expect;
     use hir::ClosureStyle;
     use syntax::{TextRange, TextSize};
     use test_utils::extract_annotations;
+
     use crate::{ClosureReturnTypeHints, fixture, inlay_hints::InlayHintsConfig};
+
     use crate::inlay_hints::tests::{
         DISABLED_CONFIG, TEST_CONFIG, check, check_edit, check_no_edit, check_with_config,
     };
+
     #[track_caller]
     fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
-        check_with_config(InlayHintsConfig { type_hints: true, ..DISABLED_CONFIG }, ra_fixture);
+        check_with_config(
+            InlayHintsConfig {
+                type_hints: true,
+                ..DISABLED_CONFIG
+            },
+            ra_fixture,
+        );
     }
+
     #[test]
     fn type_hints_only() {
         check_types(
@@ -198,6 +217,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn type_hints_bindings_after_at() {
         check_types(
@@ -219,6 +239,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn default_generic_types_should_not_be_displayed() {
         check(
@@ -235,6 +256,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn shorten_iterators_in_associated_params() {
         check_types(
@@ -266,6 +288,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn iterator_hint_regression_issue_12674() {
         // Ensure we don't crash while solving the projection type of iterators.
@@ -299,12 +322,16 @@ fn main(a: SliceIter<'_, Container>) {
         );
         analysis
             .inlay_hints(
-                &InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG },
+                &InlayHintsConfig {
+                    chaining_hints: true,
+                    ..DISABLED_CONFIG
+                },
                 file_id,
                 None,
             )
             .unwrap();
     }
+
     #[test]
     fn infer_call_method_return_associated_types_with_generic() {
         check_types(
@@ -325,6 +352,7 @@ fn main(a: SliceIter<'_, Container>) {
             "#,
         );
     }
+
     #[test]
     fn lt_hints() {
         check_types(
@@ -343,9 +371,11 @@ fn f<'a>() {
 "#,
         );
     }
+
     #[test]
     fn fn_hints() {
-        check_types(r#"
+        check_types(
+            r#"
 //- minicore: fn, sized
 fn foo() -> impl Fn() { loop {} }
 fn foo1() -> impl Fn(f64) { loop {} }
@@ -374,8 +404,10 @@ fn main() {
     let foo = foo7();
      // ^^^ *const impl Fn(f64, f64) -> u32
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn check_hint_range_limit() {
         let fixture = r#"
@@ -407,18 +439,28 @@ fn main() {
         let expected = extract_annotations(&analysis.file_text(file_id).unwrap());
         let inlay_hints = analysis
             .inlay_hints(
-                &InlayHintsConfig { type_hints: true, ..DISABLED_CONFIG },
+                &InlayHintsConfig {
+                    type_hints: true,
+                    ..DISABLED_CONFIG
+                },
                 file_id,
                 Some(TextRange::new(TextSize::from(491), TextSize::from(640))),
             )
             .unwrap();
-        let actual =
-            inlay_hints.into_iter().map(|it| (it.range, it.label.to_string())).collect::<Vec<_>>();
-        assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
+        let actual = inlay_hints
+            .into_iter()
+            .map(|it| (it.range, it.label.to_string()))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            expected, actual,
+            "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}"
+        );
     }
+
     #[test]
     fn fn_hints_ptr_rpit_fn_parentheses() {
-        check_types(r#"
+        check_types(
+            r#"
 //- minicore: fn, sized
 trait Trait {}
 
@@ -455,8 +497,10 @@ fn main() {
     let foo = foo10();
     //  ^^^ *const impl Fn()
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn unit_structs_have_no_type_hints() {
         check_types(
@@ -472,6 +516,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn const_pats_have_no_type_hints() {
         check_types(
@@ -486,6 +531,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn let_statement() {
         check_types(
@@ -521,6 +567,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn if_expr() {
         check_types(
@@ -533,6 +580,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn while_expr() {
         check_types(
@@ -548,6 +596,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn match_arm_list() {
         check_types(
@@ -567,6 +616,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn complete_for_hint() {
         check_types(
@@ -603,6 +653,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multi_dyn_trait_bounds() {
         check_types(
@@ -630,6 +681,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn shorten_iterator_hints() {
         check_types(
@@ -661,6 +713,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn skip_constructor_and_enum_type_hints() {
         check_with_config(
@@ -740,6 +793,7 @@ fn fallible() -> ControlFlow<()> {
 "#,
         );
     }
+
     #[test]
     fn shows_constructor_type_hints_when_enabled() {
         check_types(
@@ -786,10 +840,14 @@ fn fallible() -> ControlFlow<()> {
 "#,
         );
     }
+
     #[test]
     fn closure_style() {
         check_with_config(
-            InlayHintsConfig { type_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                type_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: fn
 fn main() {
@@ -851,6 +909,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn skip_closure_type_hints() {
         check_with_config(
@@ -897,6 +956,7 @@ fn bar(f: impl FnOnce(u8) -> u8) -> impl FnOnce(u8) -> u8 {
 "#,
         );
     }
+
     #[test]
     fn skip_closure_parameter_hints() {
         check_with_config(
@@ -926,10 +986,14 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn hint_truncation() {
         check_with_config(
-            InlayHintsConfig { max_length: Some(8), ..TEST_CONFIG },
+            InlayHintsConfig {
+                max_length: Some(8),
+                ..TEST_CONFIG
+            },
             r#"
 struct Smol<T>(T);
 
@@ -945,6 +1009,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn edit_for_let_stmt() {
         check_edit(
@@ -969,6 +1034,7 @@ fn test<F>(v: S<(S<i32>, S<()>)>, f: F) {
             "#]],
         );
     }
+
     #[test]
     fn edit_for_closure_param() {
         check_edit(
@@ -987,6 +1053,7 @@ fn test<T>(t: T) {
             "#]],
         );
     }
+
     #[test]
     fn edit_for_closure_ret() {
         check_edit(
@@ -1007,6 +1074,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn edit_prefixes_paths() {
         check_edit(
@@ -1043,6 +1111,7 @@ mod middle {
             "#]],
         );
     }
+
     #[test]
     fn no_edit_for_top_pat_where_type_annotation_is_invalid() {
         check_no_edit(
@@ -1058,6 +1127,7 @@ fn test() {
 "#,
         )
     }
+
     #[test]
     fn no_edit_for_opaque_type() {
         check_no_edit(
@@ -1076,6 +1146,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn no_edit_for_closure_return_without_body_block() {
         let config = InlayHintsConfig {
@@ -1100,6 +1171,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn type_hints_async_block() {
         check_types(
@@ -1111,6 +1183,7 @@ async fn main() {
 }"#,
         );
     }
+
     #[test]
     fn type_hints_async_block_with_tail_return_exp() {
         check_types(
@@ -1124,6 +1197,7 @@ async fn main() {
 }"#,
         );
     }
+
     #[test]
     fn works_in_included_file() {
         check_types(
@@ -1138,6 +1212,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn collapses_nested_impl_projections() {
         check_types(
@@ -1178,6 +1253,7 @@ fn f5<G: T<Assoc = ()>>(it: G) {
 "#,
         );
     }
+
     #[test]
     fn regression_19007() {
         check_types(

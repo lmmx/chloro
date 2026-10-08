@@ -42,25 +42,25 @@ pub(crate) fn add_lifetime_to_type(acc: &mut Assists, ctx: &AssistContext<'_>) -
         "Add lifetime",
         target,
         |builder| {
-        match node.generic_param_list() {
-            Some(gen_param) => {
-                if let Some(left_angle) = gen_param.l_angle_token() {
-                    builder.insert(left_angle.text_range().end(), "'a, ");
+            match node.generic_param_list() {
+                Some(gen_param) => {
+                    if let Some(left_angle) = gen_param.l_angle_token() {
+                        builder.insert(left_angle.text_range().end(), "'a, ");
+                    }
+                }
+                None => {
+                    if let Some(name) = node.name() {
+                        builder.insert(name.syntax().text_range().end(), "<'a>");
+                    }
                 }
             }
-            None => {
-                if let Some(name) = node.name() {
-                    builder.insert(name.syntax().text_range().end(), "<'a>");
-                }
-            }
-        }
 
-        for ref_type in ref_types {
-            if let Some(amp_token) = ref_type.amp_token() {
-                builder.insert(amp_token.text_range().end(), "'a ");
+            for ref_type in ref_types {
+                if let Some(amp_token) = ref_type.amp_token() {
+                    builder.insert(amp_token.text_range().end(), "'a ");
+                }
             }
-        }
-    },
+        },
     )
 }
 
@@ -144,7 +144,9 @@ fn find_ref_types_from_field_list(field_list: &ast::FieldList) -> Option<Vec<ast
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn add_lifetime_to_struct() {
         check_assist(
@@ -174,6 +176,7 @@ mod tests {
         check_assist_not_applicable(add_lifetime_to_type, r#"struct Foo<'a> { a: &$0'a i32 }"#);
         check_assist_not_applicable(add_lifetime_to_type, r#"struct Foo { a: &'a$0 i32 }"#);
     }
+
     #[test]
     fn add_lifetime_to_enum() {
         check_assist(
@@ -200,6 +203,7 @@ mod tests {
         );
         check_assist_not_applicable(add_lifetime_to_type, r#"enum Foo { Bar, $0Misc }"#);
     }
+
     #[test]
     fn add_lifetime_to_union() {
         check_assist(

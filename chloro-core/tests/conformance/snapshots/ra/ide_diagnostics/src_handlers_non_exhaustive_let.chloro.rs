@@ -20,6 +20,7 @@ pub(crate) fn non_exhaustive_let(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn option_nonexhaustive() {
         check_diagnostics(
@@ -32,6 +33,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn option_exhaustive() {
         check_diagnostics(
@@ -43,6 +45,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn option_nonexhaustive_inside_blocks() {
         check_diagnostics(
@@ -81,6 +84,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn min_exhaustive() {
         check_diagnostics(
@@ -102,6 +106,7 @@ fn test(x: Result<i32, &'static !>) {
 "#,
         );
     }
+
     #[test]
     fn empty_patterns_normalize() {
         check_diagnostics(
@@ -126,6 +131,7 @@ fn foo(v: Enum<()>) {
         "#,
         );
     }
+
     #[test]
     fn regression_20259() {
         check_diagnostics(
@@ -149,6 +155,7 @@ fn test(x: Foo<(i32, bool)>) {
 "#,
         );
     }
+
     #[test]
     fn uninhabited_variants() {
         check_diagnostics(

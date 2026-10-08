@@ -1,5 +1,4 @@
 //! Completion tests for expressions.
-
 use expect_test::expect;
 
 use crate::tests::check;

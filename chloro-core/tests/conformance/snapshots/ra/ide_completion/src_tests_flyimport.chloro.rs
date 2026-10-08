@@ -21,8 +21,10 @@ fn check_with_config(
 
     let mut acc = crate::completions::Completions::default();
     hir::attach_db(ctx.db, || {
-        if let CompletionAnalysis::Name(NameContext { kind: NameKind::IdentPat(pat_ctx), .. }) =
-            &analysis
+        if let CompletionAnalysis::Name(NameContext {
+            kind: NameKind::IdentPat(pat_ctx),
+            ..
+        }) = &analysis
         {
             crate::completions::flyimport::import_on_the_fly_pat(&mut acc, &ctx, pat_ctx);
         }

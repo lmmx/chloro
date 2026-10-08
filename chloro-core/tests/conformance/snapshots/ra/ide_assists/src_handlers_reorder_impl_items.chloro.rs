@@ -82,8 +82,12 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
                 ast::AssocItem::MacroCall(_) => None,
             };
 
-            name.and_then(|n| ranks.get(n.text().as_str().trim_start_matches("r#")).copied())
-                .unwrap_or(usize::MAX)
+            name.and_then(|n| {
+                ranks
+                    .get(n.text().as_str().trim_start_matches("r#"))
+                    .copied()
+            })
+            .unwrap_or(usize::MAX)
         })
         .collect();
 
@@ -137,7 +141,9 @@ fn trait_definition(path: &ast::Path, sema: &Semantics<'_, RootDatabase>) -> Opt
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn not_applicable_if_sorted() {
         cov_mark::check!(not_applicable_if_sorted);
@@ -162,6 +168,7 @@ $0impl Bar for Foo {
         "#,
         )
     }
+
     #[test]
     fn reorder_impl_trait_functions() {
         check_assist(
@@ -200,6 +207,7 @@ impl Bar for Foo {
 "#,
         )
     }
+
     #[test]
     fn not_applicable_if_empty() {
         check_assist_not_applicable(
@@ -211,6 +219,7 @@ $0impl Bar for Foo {}
         "#,
         )
     }
+
     #[test]
     fn reorder_impl_trait_items() {
         check_assist(
@@ -265,6 +274,7 @@ impl Bar for Foo {
         "#,
         )
     }
+
     #[test]
     fn reorder_impl_trait_items_uneven_ident_lengths() {
         check_assist(
@@ -293,6 +303,7 @@ impl Bar for Foo {
 }"#,
         )
     }
+
     #[test]
     fn not_applicable_editing_assoc_items() {
         cov_mark::check!(not_applicable_editing_assoc_items);

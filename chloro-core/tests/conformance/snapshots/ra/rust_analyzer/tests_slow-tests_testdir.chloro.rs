@@ -63,7 +63,10 @@ impl TestDir {
                 };
             }
 
-            return TestDir { path: Utf8PathBuf::from_path_buf(path).unwrap(), keep: false };
+            return TestDir {
+                path: Utf8PathBuf::from_path_buf(path).unwrap(),
+                keep: false,
+            };
         }
         panic!("Failed to create a temporary directory")
     }
@@ -73,7 +76,6 @@ impl TestDir {
         self.keep = true;
         self
     }
-
     pub(crate) fn path(&self) -> &Utf8Path {
         &self.path
     }
@@ -86,7 +88,9 @@ impl Drop for TestDir {
         }
 
         let filetype = fs::symlink_metadata(&self.path).unwrap().file_type();
-        let actual_path = filetype.is_symlink().then(|| fs::read_link(&self.path).unwrap());
+        let actual_path = filetype
+            .is_symlink()
+            .then(|| fs::read_link(&self.path).unwrap());
 
         if let Some(actual_path) = actual_path {
             remove_dir_all(Utf8Path::from_path(&actual_path).unwrap()).unwrap_or_else(|err| {

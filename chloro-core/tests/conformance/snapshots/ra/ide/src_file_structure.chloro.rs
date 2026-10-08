@@ -111,7 +111,10 @@ fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<Str
             node_range: node.syntax().text_range(),
             kind,
             detail,
-            deprecated: node.attrs().filter_map(|x| x.simple_name()).any(|x| x == "deprecated"),
+            deprecated: node
+                .attrs()
+                .filter_map(|x| x.simple_name())
+                .any(|x| x == "deprecated"),
         })
     }
 
@@ -240,8 +243,10 @@ fn structure_token(token: SyntaxToken) -> Option<StructureNode> {
     if let Some(comment) = ast::Comment::cast(token) {
         let text = comment.text().trim();
 
-        if let Some(region_name) =
-            text.strip_prefix("// region:").map(str::trim).filter(|it| !it.is_empty())
+        if let Some(region_name) = text
+            .strip_prefix("// region:")
+            .map(str::trim)
+            .filter(|it| !it.is_empty())
         {
             return Some(StructureNode {
                 parent: None,
@@ -261,20 +266,29 @@ fn structure_token(token: SyntaxToken) -> Option<StructureNode> {
 #[cfg(test)]
 mod tests {
     use expect_test::{Expect, expect};
+
     use super::*;
-    const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig { exclude_locals: true };
+
+    const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig {
+        exclude_locals: true,
+    };
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         check_with_config(ra_fixture, &DEFAULT_CONFIG, expect);
     }
+
     fn check_with_config(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         config: &FileStructureConfig,
         expect: Expect,
     ) {
-        let file = SourceFile::parse(ra_fixture, span::Edition::CURRENT).ok().unwrap();
+        let file = SourceFile::parse(ra_fixture, span::Edition::CURRENT)
+            .ok()
+            .unwrap();
         let structure = file_structure(&file, config);
         expect.assert_debug_eq(&structure)
     }
+
     #[test]
     fn test_negative_trait_bound() {
         let txt = r#"impl !Unpin for Test {}"#;
@@ -297,6 +311,7 @@ mod tests {
         "#]],
         );
     }
+
     #[test]
     fn test_file_structure() {
         check(
@@ -719,6 +734,7 @@ fn let_statements() {
             "#]],
         );
     }
+
     #[test]
     fn test_file_structure_include_locals() {
         check_with_config(
@@ -758,7 +774,9 @@ fn let_statements() {
     let _ = g();
 }
 "#,
-            &FileStructureConfig { exclude_locals: false },
+            &FileStructureConfig {
+                exclude_locals: false,
+            },
             expect![[r#"
                 [
                     StructureNode {

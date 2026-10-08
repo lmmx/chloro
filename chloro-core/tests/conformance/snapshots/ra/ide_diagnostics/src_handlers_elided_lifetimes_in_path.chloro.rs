@@ -28,6 +28,7 @@ pub(crate) fn elided_lifetimes_in_path(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn fn_() {
         check_diagnostics(
@@ -51,6 +52,7 @@ fn foo(_: Foo<'_>) -> Foo { loop {} }
         "#,
         );
     }
+
     #[test]
     fn async_fn() {
         check_diagnostics(
@@ -72,6 +74,7 @@ fn foo(_: Foo<'_>) -> Foo { loop {} }
         "#,
         );
     }
+
     #[test]
     fn no_error_when_explicitly_elided() {
         check_diagnostics(
@@ -88,6 +91,7 @@ impl Trait<'_> for Foo<'_> {}
         "#,
         );
     }
+
     #[test]
     fn impl_() {
         check_diagnostics(

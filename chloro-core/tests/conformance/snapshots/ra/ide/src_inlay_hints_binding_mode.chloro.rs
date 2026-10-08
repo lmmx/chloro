@@ -2,7 +2,6 @@
 //! ```no_run
 //! let /* & */ (/* ref */ x,) = &(0,);
 //! ```
-
 use std::mem;
 
 use hir::Mutability;
@@ -23,14 +22,19 @@ pub(super) fn hints(
         return None;
     }
 
-    let outer_paren_pat = pat.syntax().ancestors().skip(1).map_while(ast::ParenPat::cast).last();
+    let outer_paren_pat = pat
+        .syntax()
+        .ancestors()
+        .skip(1)
+        .map_while(ast::ParenPat::cast)
+        .last();
     let range = outer_paren_pat.as_ref().map_or_else(
         || match pat {
             // for ident patterns that @ bind a name, render the un-ref patterns in front of the inner pattern
             // instead of the name as that makes it more clear and doesn't really change the outcome
-            ast::Pat::IdentPat(it) => {
-                it.pat().map_or_else(|| it.syntax().text_range(), |it| it.syntax().text_range())
-            }
+            ast::Pat::IdentPat(it) => it
+                .pat()
+                .map_or_else(|| it.syntax().text_range(), |it| it.syntax().text_range()),
             it => it.syntax().text_range(),
         },
         |it| it.syntax().text_range(),
@@ -116,7 +120,9 @@ pub(super) fn hints(
             }
             edit.finish()
         });
-        hints.iter_mut().for_each(|h| h.text_edit = Some(edit.clone()));
+        hints
+            .iter_mut()
+            .for_each(|h| h.text_edit = Some(edit.clone()));
     }
 
     Some(())
@@ -125,14 +131,19 @@ pub(super) fn hints(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::{
         InlayHintsConfig,
         inlay_hints::tests::{DISABLED_CONFIG, check_edit, check_with_config},
     };
+
     #[test]
     fn hints_binding_modes() {
         check_with_config(
-            InlayHintsConfig { binding_mode_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                binding_mode_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn __(
     (x,): (u32,),
@@ -185,10 +196,14 @@ fn __(
 }"#,
         );
     }
+
     #[test]
     fn hints_binding_modes_complex_ident_pat() {
         check_with_config(
-            InlayHintsConfig { binding_mode_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                binding_mode_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 struct Struct {
     field: &'static str,
@@ -199,10 +214,14 @@ fn foo(s @ Struct { field, .. }: &Struct) {}
 "#,
         );
     }
+
     #[test]
     fn edits() {
         check_edit(
-            InlayHintsConfig { binding_mode_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                binding_mode_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     match &(0,) {

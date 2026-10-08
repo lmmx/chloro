@@ -55,7 +55,11 @@ pub struct At<'a, 'db> {
 impl<'db> InferCtxt<'db> {
     #[inline]
     pub fn at<'a>(&'a self, cause: &'a ObligationCause, param_env: ParamEnv<'db>) -> At<'a, 'db> {
-        At { infcx: self, cause, param_env }
+        At {
+            infcx: self,
+            cause,
+            param_env,
+        }
     }
 
     /// Forks the inference context, creating a new inference context with the same inference
@@ -77,6 +81,7 @@ impl<'db> InferCtxt<'db> {
     pub fn fork_with_typing_mode(&self, typing_mode: TypingMode<DbInterner<'db>>) -> Self {
         // Unlike `fork`, this invalidates all cache entries as they may depend on the
         // typing mode.
+
         Self {
             interner: self.interner,
             typing_mode,
@@ -87,7 +92,7 @@ impl<'db> InferCtxt<'db> {
     }
 }
 
-pub trait ToTrace<'db> {
+pub trait ToTrace<'db>: Relate<DbInterner<'db>> {
     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db>;
 }
 
@@ -108,9 +113,7 @@ impl<'a, 'db> At<'a, 'db> {
             actual,
             Span::dummy(),
         )
-        .map(
-            |goals| self.goals_to_obligations(goals),
-        )
+        .map(|goals| self.goals_to_obligations(goals))
     }
 
     /// Makes `expected <: actual`.
@@ -126,9 +129,7 @@ impl<'a, 'db> At<'a, 'db> {
             actual,
             Span::dummy(),
         )
-        .map(
-            |goals| self.goals_to_obligations(goals),
-        )
+        .map(|goals| self.goals_to_obligations(goals))
     }
 
     /// Makes `expected == actual`.
@@ -144,9 +145,7 @@ impl<'a, 'db> At<'a, 'db> {
             actual,
             Span::dummy(),
         )
-        .map(
-            |goals| self.goals_to_obligations(goals),
-        )
+        .map(|goals| self.goals_to_obligations(goals))
     }
 
     pub fn relate<T>(self, expected: T, variance: Variance, actual: T) -> InferResult<'db, ()>
@@ -192,7 +191,10 @@ impl<'a, 'db> At<'a, 'db> {
             LatticeOpKind::Lub,
         );
         let value = op.relate(expected, actual)?;
-        Ok(InferOk { value, obligations: op.into_obligations() })
+        Ok(InferOk {
+            value,
+            obligations: op.into_obligations(),
+        })
     }
 
     fn goals_to_obligations(&self, goals: Vec<Goal<'db, Predicate<'db>>>) -> InferOk<'db, ()> {

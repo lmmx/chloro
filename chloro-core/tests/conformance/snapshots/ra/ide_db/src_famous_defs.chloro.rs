@@ -161,11 +161,14 @@ impl FamousDefs<'_, '_> {
     pub fn alloc_string_ToString(&self) -> Option<Trait> {
         self.find_trait("alloc:string:ToString")
     }
-
     pub fn builtin_crates(&self) -> impl Iterator<Item = Crate> {
-        IntoIterator::into_iter(
-            [self.std(), self.core(), self.alloc(), self.test(), self.proc_macro()],
-        )
+        IntoIterator::into_iter([
+            self.std(),
+            self.core(),
+            self.alloc(),
+            self.test(),
+            self.proc_macro(),
+        ])
         .flatten()
     }
 
@@ -233,11 +236,18 @@ impl FamousDefs<'_, '_> {
         for segment in path {
             module = module.children(db).find_map(|child| {
                 let name = child.name(db)?;
-                if name.as_str() == segment { Some(child) } else { None }
+                if name.as_str() == segment {
+                    Some(child)
+                } else {
+                    None
+                }
             })?;
         }
-        let def =
-            module.scope(db, None).into_iter().find(|(name, _def)| name.as_str() == trait_)?.1;
+        let def = module
+            .scope(db, None)
+            .into_iter()
+            .find(|(name, _def)| name.as_str() == trait_)?
+            .1;
         Some(def)
     }
 }

@@ -28,7 +28,10 @@ pub struct OpportunisticVarResolver<'a, 'db> {
 impl<'a, 'db> OpportunisticVarResolver<'a, 'db> {
     #[inline]
     pub fn new(infcx: &'a InferCtxt<'db>) -> Self {
-        OpportunisticVarResolver { infcx, cache: Default::default() }
+        OpportunisticVarResolver {
+            infcx,
+            cache: Default::default(),
+        }
     }
 }
 

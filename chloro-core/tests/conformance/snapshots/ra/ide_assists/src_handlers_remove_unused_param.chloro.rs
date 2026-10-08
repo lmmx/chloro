@@ -38,8 +38,12 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         _ => return None,
     };
     let func = param.syntax().ancestors().find_map(ast::Fn::cast)?;
-    let is_self_present =
-        param.syntax().parent()?.children().find_map(ast::SelfParam::cast).is_some();
+    let is_self_present = param
+        .syntax()
+        .parent()?
+        .children()
+        .find_map(ast::SelfParam::cast)
+        .is_some();
 
     // check if fn is in impl Trait for ..
     if func
@@ -86,7 +90,14 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                 editor.delete(element);
             }
             for (file_id, references) in fn_def.usages(&ctx.sema).all() {
-                process_usages(ctx, builder, file_id, references, param_position, is_self_present);
+                process_usages(
+                    ctx,
+                    builder,
+                    file_id,
+                    references,
+                    param_position,
+                    is_self_present,
+                );
             }
             builder.add_file_edits(ctx.vfs_file_id(), editor);
         },
@@ -109,11 +120,11 @@ fn process_usages(
         .filter_map(|usage| process_usage(&source_file, usage, arg_to_remove, is_self_present));
 
     for element_range in possible_ranges {
-        let Some(SyntaxElement::Node(parent)) = element_range
-            .iter()
-            .cloned()
-            .reduce(|a, b| least_common_ancestor_element(&a, &b).unwrap().syntax_element())
-        else {
+        let Some(SyntaxElement::Node(parent)) = element_range.iter().cloned().reduce(|a, b| {
+            least_common_ancestor_element(&a, &b)
+                .unwrap()
+                .syntax_element()
+        }) else {
             continue;
         };
         let mut editor = builder.make_editor(&parent);
@@ -195,11 +206,16 @@ pub(crate) fn elements_to_remove(node: &SyntaxNode) -> Vec<SyntaxElement> {
     });
     if let Some((dir, token)) = up_to_comma {
         let after = token.siblings_with_tokens(dir).nth(1).unwrap();
-        let mut result: Vec<_> =
-            node.siblings_with_tokens(dir).take_while(|it| it != &after).collect();
+        let mut result: Vec<_> = node
+            .siblings_with_tokens(dir)
+            .take_while(|it| it != &after)
+            .collect();
         if node.next_sibling().is_some() {
             result.extend(
-                token.siblings_with_tokens(dir).skip(1).take_while(|it| it.kind() == WHITESPACE),
+                token
+                    .siblings_with_tokens(dir)
+                    .skip(1)
+                    .take_while(|it| it.kind() == WHITESPACE),
             );
         }
 
@@ -212,7 +228,9 @@ pub(crate) fn elements_to_remove(node: &SyntaxNode) -> Vec<SyntaxElement> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn remove_unused() {
         check_assist(
@@ -229,6 +247,7 @@ fn b() { foo(9, ) }
 "#,
         );
     }
+
     #[test]
     fn remove_unused_first_param() {
         check_assist(
@@ -245,6 +264,7 @@ fn b() { foo(2,) }
 "#,
         );
     }
+
     #[test]
     fn remove_unused_single_param() {
         check_assist(
@@ -261,6 +281,7 @@ fn b() { foo( ) }
 "#,
         );
     }
+
     #[test]
     fn remove_unused_surrounded_by_params() {
         check_assist(
@@ -277,6 +298,7 @@ fn b() { foo(1, 3,) }
 "#,
         );
     }
+
     #[test]
     fn remove_unused_qualified_call() {
         check_assist(
@@ -291,6 +313,7 @@ fn b() { bar::foo(9) }
 "#,
         );
     }
+
     #[test]
     fn remove_unused_turbofished_func() {
         check_assist(
@@ -305,6 +328,7 @@ fn b() { foo::<i32>(9) }
 "#,
         );
     }
+
     #[test]
     fn remove_unused_generic_unused_param_func() {
         check_assist(
@@ -321,6 +345,7 @@ fn b2() { foo(9) }
 "#,
         );
     }
+
     #[test]
     fn keep_used() {
         cov_mark::check!(keep_used);
@@ -332,6 +357,7 @@ fn main() { foo(9, 2) }
 "#,
         );
     }
+
     #[test]
     fn trait_impl() {
         cov_mark::check!(trait_impl);
@@ -347,6 +373,7 @@ impl Trait for () {
 "#,
         );
     }
+
     #[test]
     fn remove_across_files() {
         check_assist(
@@ -379,6 +406,7 @@ fn bar() {
 "#,
         )
     }
+
     #[test]
     fn test_remove_method_param() {
         check_assist(
@@ -405,6 +433,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn nested_call() {
         check_assist(

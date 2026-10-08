@@ -21,7 +21,9 @@ pub(crate) fn normalize_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
     let use_item = if ctx.has_empty_selection() {
         ctx.find_node_at_offset()?
     } else {
-        ctx.covering_element().ancestors().find_map(ast::Use::cast)?
+        ctx.covering_element()
+            .ancestors()
+            .find_map(ast::Use::cast)?
     };
 
     let target = use_item.syntax().text_range();
@@ -33,8 +35,8 @@ pub(crate) fn normalize_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         "Normalize import",
         target,
         |builder| {
-        builder.replace_ast(use_item, normalized_use_item);
-    },
+            builder.replace_ast(use_item, normalized_use_item);
+        },
     )
 }
 
@@ -44,7 +46,9 @@ mod tests {
         check_assist, check_assist_import_one, check_assist_not_applicable,
         check_assist_not_applicable_for_import_one,
     };
+
     use super::*;
+
     macro_rules! check_assist_variations {
         ($fixture: literal, $expected: literal) => {
             check_assist(
@@ -92,6 +96,7 @@ mod tests {
             );
         };
     }
+
     macro_rules! check_assist_not_applicable_variations {
         ($fixture: literal) => {
             check_assist_not_applicable(normalize_import, concat!("use $0", $fixture, ";"));
@@ -107,6 +112,7 @@ mod tests {
             );
         };
     }
+
     #[test]
     fn test_order() {
         check_assist_variations!(
@@ -114,6 +120,7 @@ mod tests {
             "foo::{self, Baz, FOO_BAZ, Qux, r#aaa, bar::{Bar, Quux}, baz, v9, v10, *}"
         );
     }
+
     #[test]
     fn test_braces_kept() {
         check_assist_not_applicable_variations!("foo::bar::{$0self}");
@@ -142,6 +149,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn test_redundant_braces() {
         check_assist_variations!("foo::{bar::{baz, Qux}}", "foo::bar::{Qux, baz}");
@@ -157,6 +165,7 @@ fn main() {
             "foo::bar::{self, FOO_BAZ, Qux, baz, *}"
         );
     }
+
     #[test]
     fn test_merge() {
         check_assist_variations!(
@@ -168,18 +177,28 @@ fn main() {
             "foo::{FOO_BAZ, Quux, bar::{self, baz::{self, Foo}, *}, qux, *}"
         );
     }
+
     #[test]
     fn test_merge_self() {
         check_assist_variations!("std::{fmt, fmt::Display}", "std::fmt::{self, Display}");
     }
+
     #[test]
     fn test_merge_nested() {
-        check_assist_variations!("std::{fmt::Debug, fmt::Display}", "std::fmt::{Debug, Display}");
+        check_assist_variations!(
+            "std::{fmt::Debug, fmt::Display}",
+            "std::fmt::{Debug, Display}"
+        );
     }
+
     #[test]
     fn test_merge_nested2() {
-        check_assist_variations!("std::{fmt::Debug, fmt::Display}", "std::fmt::{Debug, Display}");
+        check_assist_variations!(
+            "std::{fmt::Debug, fmt::Display}",
+            "std::fmt::{Debug, Display}"
+        );
     }
+
     #[test]
     fn test_merge_self_with_nested_self_item() {
         check_assist_variations!(
@@ -187,6 +206,7 @@ fn main() {
             "std::fmt::{self, Debug, Display, Write}"
         );
     }
+
     #[test]
     fn works_with_trailing_comma() {
         check_assist(
@@ -216,6 +236,7 @@ use {
 ",
         );
     }
+
     #[test]
     fn not_applicable_to_normalized_import() {
         check_assist_not_applicable_variations!("foo::bar");

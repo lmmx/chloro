@@ -2,17 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6722 bytes
-Chloro size:   6723 bytes
+Chloro size:   6722 bytes
 Rustfmt size:  6722 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Completion tests for item specifics overall.
- //!
- //! Except for use items which are tested in [super::use_tree] and mod declarations with are tested
- //! in [crate::completions::mod_].
-+
- use expect_test::expect;
- 
- use crate::tests::{check, check_edit, check_with_base_items};
+✓ Outputs are IDENTICAL

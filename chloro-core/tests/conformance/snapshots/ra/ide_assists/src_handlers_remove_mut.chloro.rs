@@ -26,13 +26,13 @@ pub(crate) fn remove_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
         "Remove `mut` keyword",
         target,
         |builder| {
-        let mut editor = builder.make_editor(&mut_token.parent().unwrap());
-        match mut_token.next_token() {
-            Some(it) if it.kind() == SyntaxKind::WHITESPACE => editor.delete(it),
-            _ => (),
-        }
-        editor.delete(mut_token);
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            let mut editor = builder.make_editor(&mut_token.parent().unwrap());
+            match mut_token.next_token() {
+                Some(it) if it.kind() == SyntaxKind::WHITESPACE => editor.delete(it),
+                _ => (),
+            }
+            editor.delete(mut_token);
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }

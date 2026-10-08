@@ -8,7 +8,10 @@ use syntax::{Edition, SmolStr, ToSmolStr};
 use crate::{
     CompletionItem, CompletionItemKind,
     context::{ParamContext, ParamKind, PathCompletionCtx, PatternContext},
-    render::{RenderContext, variant::{format_literal_label, format_literal_lookup, visible_fields}},
+    render::{
+        RenderContext,
+        variant::{format_literal_label, format_literal_lookup, visible_fields},
+    },
 };
 
 pub(crate) fn render_struct_pat(
@@ -28,16 +31,33 @@ pub(crate) fn render_struct_pat(
     }
 
     let name = local_name.unwrap_or_else(|| strukt.name(ctx.db()));
-    let (name, escaped_name) =
-        (name.as_str(), name.display(ctx.db(), ctx.completion.edition).to_smolstr());
+    let (name, escaped_name) = (
+        name.as_str(),
+        name.display(ctx.db(), ctx.completion.edition).to_smolstr(),
+    );
     let kind = strukt.kind(ctx.db());
     let label = format_literal_label(name, kind, ctx.snippet_cap());
     let lookup = format_literal_lookup(name, kind);
-    let pat = render_pat(&ctx, pattern_ctx, &escaped_name, kind, &visible_fields, fields_omitted)?;
+    let pat = render_pat(
+        &ctx,
+        pattern_ctx,
+        &escaped_name,
+        kind,
+        &visible_fields,
+        fields_omitted,
+    )?;
 
     let db = ctx.db();
 
-    Some(build_completion(ctx, label, lookup, pat, strukt, strukt.ty(db), false))
+    Some(build_completion(
+        ctx,
+        label,
+        lookup,
+        pat,
+        strukt,
+        strukt.ty(db),
+        false,
+    ))
 }
 
 pub(crate) fn render_variant_pat(
@@ -70,9 +90,10 @@ pub(crate) fn render_variant_pat(
     };
 
     let (label, lookup, pat) = match path_ctx {
-        Some(PathCompletionCtx { has_call_parens: true, .. }) => {
-            (name.clone(), name, escaped_name.to_string())
-        }
+        Some(PathCompletionCtx {
+            has_call_parens: true,
+            ..
+        }) => (name.clone(), name, escaped_name.to_string()),
         _ => {
             let kind = variant.kind(ctx.db());
             let label = format_literal_label(name.as_str(), kind, ctx.snippet_cap());
@@ -107,6 +128,7 @@ fn build_completion(
     pat: String,
     def: impl HasDocs + Copy,
     adt_ty: hir::Type<'_>,
+    // Missing in context of match statement completions
     is_variant_missing: bool,
 ) -> CompletionItem {
     let mut relevance = ctx.completion_relevance();
@@ -157,7 +179,10 @@ fn render_pat(
     let needs_ascription = matches!(
         pattern_ctx,
         PatternContext {
-            param_ctx: Some(ParamContext { kind: ParamKind::Function(_), .. }),
+            param_ctx: Some(ParamContext {
+                kind: ParamKind::Function(_),
+                ..
+            }),
             has_type_ascription: false,
             parent_pat: None,
             ..
@@ -188,7 +213,11 @@ fn render_record_as_pat(
             format!(
                 "{name} {{ {}{} }}",
                 fields.enumerate().format_with(", ", |(idx, field), f| {
-                    f(&format_args!("{}${}", field.name(db).display(db, edition), idx + 1))
+                    f(&format_args!(
+                        "{}${}",
+                        field.name(db).display(db, edition),
+                        idx + 1
+                    ))
                 }),
                 if fields_omitted { ", .." } else { "" },
                 name = name
@@ -197,7 +226,9 @@ fn render_record_as_pat(
         None => {
             format!(
                 "{name} {{ {}{} }}",
-                fields.map(|field| field.name(db).display_no_db(edition).to_smolstr()).format(", "),
+                fields
+                    .map(|field| field.name(db).display_no_db(edition).to_smolstr())
+                    .format(", "),
                 if fields_omitted { ", .." } else { "" },
                 name = name
             )

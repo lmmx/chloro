@@ -85,7 +85,9 @@ fn add_group_separators(s: &str, group_size: usize) -> String {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist_by_label, check_assist_not_applicable, check_assist_target};
+
     use super::*;
+
     #[test]
     fn group_separators() {
         let cases = vec![
@@ -111,6 +113,7 @@ mod tests {
             assert_eq!(add_group_separators(input, group_size), expected)
         }
     }
+
     #[test]
     fn good_targets() {
         let cases = vec![
@@ -126,6 +129,7 @@ mod tests {
             check_assist_target(reformat_number_literal, case.0, case.1);
         }
     }
+
     #[test]
     fn bad_targets() {
         let cases = vec![
@@ -143,10 +147,15 @@ mod tests {
             check_assist_not_applicable(reformat_number_literal, case);
         }
     }
+
     #[test]
     fn labels() {
         let cases = vec![
-            ("const _: i32 = 10000$0", "const _: i32 = 10_000", "Convert 10000 to 10_000"),
+            (
+                "const _: i32 = 10000$0",
+                "const _: i32 = 10_000",
+                "Convert 10000 to 10_000",
+            ),
             (
                 "const _: i32 = 0xFF0000$0;",
                 "const _: i32 = 0xFF_0000;",
@@ -167,7 +176,11 @@ mod tests {
                 "const _: i32 = 10_000i32;",
                 "Convert 10000i32 to 10_000i32",
             ),
-            ("const _: i32 = 1_0_0_0_i32$0;", "const _: i32 = 1000i32;", "Remove digit separators"),
+            (
+                "const _: i32 = 1_0_0_0_i32$0;",
+                "const _: i32 = 1000i32;",
+                "Remove digit separators",
+            ),
         ];
 
         for case in cases {

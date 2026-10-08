@@ -424,9 +424,13 @@ use self::fmt;",
 
 #[test]
 fn insert_no_imports() {
-    check_crate("foo::bar", "fn main() {}", r"use foo::bar;
+    check_crate(
+        "foo::bar",
+        "fn main() {}",
+        r"use foo::bar;
 
-fn main() {}")
+fn main() {}",
+    )
 }
 
 #[test]
@@ -700,8 +704,16 @@ use std::io;",
 
 #[test]
 fn merge_last_into_self() {
-    check_module("foo::bar::baz", r"use foo::bar;", r"use foo::bar::{self, baz};");
-    check_one("foo::bar::baz", r"use {foo::bar};", r"use {foo::bar::{self, baz}};");
+    check_module(
+        "foo::bar::baz",
+        r"use foo::bar;",
+        r"use foo::bar::{self, baz};",
+    );
+    check_one(
+        "foo::bar::baz",
+        r"use {foo::bar};",
+        r"use {foo::bar::{self, baz}};",
+    );
 }
 
 #[test]
@@ -929,12 +941,20 @@ use std::{fmt, io};",
 
 #[test]
 fn merge_into_module_import() {
-    check_crate("std::fmt::Result", r"use std::{fmt, io};", r"use std::{fmt::{self, Result}, io};")
+    check_crate(
+        "std::fmt::Result",
+        r"use std::{fmt, io};",
+        r"use std::{fmt::{self, Result}, io};",
+    )
 }
 
 #[test]
 fn merge_groups_self() {
-    check_crate("std::fmt::Debug", r"use std::fmt;", r"use std::fmt::{self, Debug};")
+    check_crate(
+        "std::fmt::Debug",
+        r"use std::fmt;",
+        r"use std::fmt::{self, Debug};",
+    )
 }
 
 #[test]
@@ -944,12 +964,12 @@ fn merge_mod_into_glob() {
         r"use token::TokenKind::*;",
         r"use token::TokenKind::{self, *};",
         &InsertUseConfig {
-        granularity: ImportGranularity::Crate,
-        enforce_granularity: true,
-        prefix_kind: PrefixKind::Plain,
-        group: false,
-        skip_glob_imports: false,
-    },
+            granularity: ImportGranularity::Crate,
+            enforce_granularity: true,
+            prefix_kind: PrefixKind::Plain,
+            group: false,
+            skip_glob_imports: false,
+        },
     )
 }
 
@@ -960,12 +980,12 @@ fn merge_self_glob() {
         r"use self::*;",
         r"use self::{self, *};",
         &InsertUseConfig {
-        granularity: ImportGranularity::Crate,
-        enforce_granularity: true,
-        prefix_kind: PrefixKind::Plain,
-        group: false,
-        skip_glob_imports: false,
-    },
+            granularity: ImportGranularity::Crate,
+            enforce_granularity: true,
+            prefix_kind: PrefixKind::Plain,
+            group: false,
+            skip_glob_imports: false,
+        },
     )
 }
 
@@ -1071,9 +1091,15 @@ fn guess_empty() {
 
 #[test]
 fn guess_single() {
-    check_guess(r"use foo::{baz::{qux, quux}, bar};", ImportGranularityGuess::Crate);
+    check_guess(
+        r"use foo::{baz::{qux, quux}, bar};",
+        ImportGranularityGuess::Crate,
+    );
     check_guess(r"use foo::bar;", ImportGranularityGuess::Unknown);
-    check_guess(r"use foo::bar::{baz, qux};", ImportGranularityGuess::CrateOrModule);
+    check_guess(
+        r"use foo::bar::{baz, qux};",
+        ImportGranularityGuess::CrateOrModule,
+    );
     check_guess(r"use {foo::bar};", ImportGranularityGuess::One);
 }
 
@@ -1339,7 +1365,13 @@ fn check_with_config(
     let sema = &Semantics::new(&db);
     let source_file = sema.parse(file_id);
     let file = pos
-        .and_then(|pos| source_file.syntax().token_at_offset(pos.expect_offset()).next()?.parent())
+        .and_then(|pos| {
+            source_file
+                .syntax()
+                .token_at_offset(pos.expect_offset())
+                .next()?
+                .parent()
+        })
         .and_then(|it| ImportScope::find_insert_use_container(&it, sema))
         .unwrap_or_else(|| ImportScope {
             kind: ImportScopeKind::File(source_file),
@@ -1354,7 +1386,12 @@ fn check_with_config(
         .unwrap();
 
     insert_use(&file, path, config);
-    let result = file.as_syntax_node().ancestors().last().unwrap().to_string();
+    let result = file
+        .as_syntax_node()
+        .ancestors()
+        .last()
+        .unwrap()
+        .to_string();
     assert_eq_text!(&trim_indent(ra_fixture_after), &result);
 }
 
@@ -1383,7 +1420,12 @@ fn check_crate(
     #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
 ) {
-    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::Crate)
+    check(
+        path,
+        ra_fixture_before,
+        ra_fixture_after,
+        ImportGranularity::Crate,
+    )
 }
 
 fn check_module(
@@ -1391,7 +1433,12 @@ fn check_module(
     #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
 ) {
-    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::Module)
+    check(
+        path,
+        ra_fixture_before,
+        ra_fixture_after,
+        ImportGranularity::Module,
+    )
 }
 
 fn check_none(
@@ -1399,7 +1446,12 @@ fn check_none(
     #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
 ) {
-    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::Item)
+    check(
+        path,
+        ra_fixture_before,
+        ra_fixture_after,
+        ImportGranularity::Item,
+    )
 }
 
 fn check_one(
@@ -1407,7 +1459,12 @@ fn check_one(
     #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
 ) {
-    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::One)
+    check(
+        path,
+        ra_fixture_before,
+        ra_fixture_after,
+        ImportGranularity::One,
+    )
 }
 
 fn check_merge_only_fail(ra_fixture0: &str, ra_fixture1: &str, mb: MergeBehavior) {
@@ -1431,6 +1488,9 @@ fn check_merge_only_fail(ra_fixture0: &str, ra_fixture1: &str, mb: MergeBehavior
 
 fn check_guess(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: ImportGranularityGuess) {
     let syntax = ast::SourceFile::parse(ra_fixture, span::Edition::CURRENT).tree();
-    let file = ImportScope { kind: ImportScopeKind::File(syntax), required_cfgs: vec![] };
+    let file = ImportScope {
+        kind: ImportScopeKind::File(syntax),
+        required_cfgs: vec![],
+    };
     assert_eq!(super::guess_granularity_from_scope(&file), expected);
 }

@@ -27,7 +27,9 @@ use crate::{
     FileId, HlMod, HlOperator, HlPunct, HlTag,
     syntax_highlighting::{
         escape::{highlight_escape_byte, highlight_escape_char, highlight_escape_string},
-        format::highlight_format_string, highlights::Highlights, tags::Highlight,
+        format::highlight_format_string,
+        highlights::Highlights,
+        tags::Highlight,
     },
 };
 
@@ -217,7 +219,14 @@ pub(crate) fn highlight(
 
     let mut hl = highlights::Highlights::new(root.text_range());
     let krate = sema.scope(&root).map(|it| it.krate());
-    traverse(&mut hl, &sema, config, InRealFile::new(file_id, &root), krate, range_to_highlight);
+    traverse(
+        &mut hl,
+        &sema,
+        config,
+        InRealFile::new(file_id, &root),
+        krate,
+        range_to_highlight,
+    );
     hl.to_vec()
 }
 
@@ -225,7 +234,10 @@ fn traverse(
     hl: &mut Highlights,
     sema: &Semantics<'_, RootDatabase>,
     config: &HighlightConfig<'_>,
-    InRealFile { file_id, value: root }: InRealFile<&SyntaxNode>,
+    InRealFile {
+        file_id,
+        value: root,
+    }: InRealFile<&SyntaxNode>,
     krate: Option<hir::Crate>,
     range_to_highlight: TextRange,
 ) {
@@ -339,7 +351,10 @@ fn traverse(
             {
                 match ast::Item::cast(node.clone()) {
                     Some(item) => {
-                        if attr_or_derive_item.as_ref().is_some_and(|it| *it.item() == item) {
+                        if attr_or_derive_item
+                            .as_ref()
+                            .is_some_and(|it| *it.item() == item)
+                        {
                             attr_or_derive_item = None;
                         }
                         if matches!(
@@ -395,13 +410,16 @@ fn traverse(
                     NodeOrToken::Node(n) => {
                         sema.body_for(InFile::new(descended.file_id, n.syntax()))
                     }
-                    NodeOrToken::Token(t) => {
-                        t.parent().and_then(|it| sema.body_for(InFile::new(descended.file_id, &it)))
-                    }
+                    NodeOrToken::Token(t) => t
+                        .parent()
+                        .and_then(|it| sema.body_for(InFile::new(descended.file_id, &it))),
                 };
                 (descended, body)
             }
-            n => (InFile::new(file_id.into(), n), body_stack.last().copied().flatten()),
+            n => (
+                InFile::new(file_id.into(), n),
+                body_stack.last().copied().flatten(),
+            ),
         };
         // string highlight injections
         if let (Some(original_token), Some(descended_token)) =
@@ -481,7 +499,11 @@ fn traverse(
                 highlight |= HlMod::Macro
             }
 
-            hl.add(HlRange { range, highlight, binding_hash });
+            hl.add(HlRange {
+                range,
+                highlight,
+                binding_hash,
+            });
         }
     }
 }

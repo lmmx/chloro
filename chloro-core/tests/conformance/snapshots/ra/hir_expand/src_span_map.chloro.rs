@@ -88,7 +88,6 @@ pub(crate) fn real_span_map(
     let ast_id_map = db.ast_id_map(editioned_file_id.into());
 
     let tree = db.parse(editioned_file_id).tree();
-
     // This is an incrementality layer. Basically we can't use absolute ranges for our spans as that
     // would mean we'd invalidate everything whenever we type. So instead we make the text ranges
     // relative to some AstIds reducing the risk of invalidation as typing somewhere no longer
@@ -102,8 +101,13 @@ pub(crate) fn real_span_map(
     // them again, something we might get access to in the future. But even then, proc-macros doing
     // this kind of joining makes them as stable as the AstIdMap (which is basically changing on
     // every input of the file)…
-    let item_to_entry =
-        |item: ast::Item| (item.syntax().text_range().start(), ast_id_map.ast_id(&item).erase());
+
+    let item_to_entry = |item: ast::Item| {
+        (
+            item.syntax().text_range().start(),
+            ast_id_map.ast_id(&item).erase(),
+        )
+    };
     // Top level items make for great anchors as they are the most stable and a decent boundary
     pairs.extend(tree.items().map(item_to_entry));
     // Unfortunately, assoc items are very common in Rust, so descend into those as well and make
@@ -115,13 +119,21 @@ pub(crate) fn real_span_map(
         {
             if let Some(extern_item_list) = it.extern_item_list() {
                 pairs.extend(
-                    extern_item_list.extern_items().map(ast::Item::from).map(item_to_entry),
+                    extern_item_list
+                        .extern_items()
+                        .map(ast::Item::from)
+                        .map(item_to_entry),
                 );
             }
         }
         ast::Item::Impl(it) if !collect_attrs(it).map(TupleExt::tail).any(|it| it.is_left()) => {
             if let Some(assoc_item_list) = it.assoc_item_list() {
-                pairs.extend(assoc_item_list.assoc_items().map(ast::Item::from).map(item_to_entry));
+                pairs.extend(
+                    assoc_item_list
+                        .assoc_items()
+                        .map(ast::Item::from)
+                        .map(item_to_entry),
+                );
             }
         }
         ast::Item::Module(it) if !collect_attrs(it).map(TupleExt::tail).any(|it| it.is_left()) => {
@@ -131,7 +143,12 @@ pub(crate) fn real_span_map(
         }
         ast::Item::Trait(it) if !collect_attrs(it).map(TupleExt::tail).any(|it| it.is_left()) => {
             if let Some(assoc_item_list) = it.assoc_item_list() {
-                pairs.extend(assoc_item_list.assoc_items().map(ast::Item::from).map(item_to_entry));
+                pairs.extend(
+                    assoc_item_list
+                        .assoc_items()
+                        .map(ast::Item::from)
+                        .map(item_to_entry),
+                );
             }
         }
         _ => (),

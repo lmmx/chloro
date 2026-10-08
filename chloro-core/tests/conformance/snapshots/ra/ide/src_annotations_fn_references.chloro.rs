@@ -14,7 +14,11 @@ pub(super) fn find_all_methods(
 ) -> Vec<(TextRange, Option<TextRange>)> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(file_id);
-    source_file.syntax().descendants().filter_map(method_range).collect()
+    source_file
+        .syntax()
+        .descendants()
+        .filter_map(method_range)
+        .collect()
 }
 
 fn method_range(item: SyntaxNode) -> Option<(TextRange, Option<TextRange>)> {
@@ -33,9 +37,11 @@ fn method_range(item: SyntaxNode) -> Option<(TextRange, Option<TextRange>)> {
 #[cfg(test)]
 mod tests {
     use syntax::TextRange;
+
     use crate::TextSize;
     use crate::fixture;
     use std::ops::RangeInclusive;
+
     #[test]
     fn test_find_all_methods() {
         let (analysis, pos) = fixture::position(
@@ -51,6 +57,7 @@ mod tests {
         let refs = super::find_all_methods(&analysis.db, pos.file_id);
         check_result(&refs, &[3..=13, 27..=33, 47..=57]);
     }
+
     #[test]
     fn test_find_trait_methods() {
         let (analysis, pos) = fixture::position(
@@ -65,6 +72,7 @@ mod tests {
         let refs = super::find_all_methods(&analysis.db, pos.file_id);
         check_result(&refs, &[19..=22, 35..=38]);
     }
+
     #[test]
     fn test_skip_tests() {
         let (analysis, pos) = fixture::position(
@@ -85,6 +93,7 @@ mod tests {
         let refs = super::find_all_methods(&analysis.db, pos.file_id);
         check_result(&refs, &[28..=34]);
     }
+
     fn check_result(refs: &[(TextRange, Option<TextRange>)], expected: &[RangeInclusive<u32>]) {
         assert_eq!(refs.len(), expected.len());
 

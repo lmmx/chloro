@@ -34,6 +34,7 @@ pub(crate) fn incorrect_generics_order(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn lifetime_out_of_order() {
         check_diagnostics(
@@ -45,6 +46,7 @@ fn bar(_v: Foo<(), 'static>) {}
         "#,
         );
     }
+
     #[test]
     fn types_and_consts() {
         check_diagnostics(
@@ -65,6 +67,7 @@ fn baz(_v: Baz<1, ()>) {}
         "#,
         );
     }
+
     #[test]
     fn no_error_when_num_incorrect() {
         check_diagnostics(

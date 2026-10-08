@@ -29,8 +29,10 @@ fn check_dyn_compatibility<'a>(
     #[rust_analyzer::rust_fixture] ra_fixture: &str,
     expected: impl IntoIterator<Item = (&'a str, Vec<DynCompatibilityViolationKind>)>,
 ) {
-    let mut expected: FxHashMap<_, _> =
-        expected.into_iter().map(|(id, osvs)| (id, FxHashSet::from_iter(osvs))).collect();
+    let mut expected: FxHashMap<_, _> = expected
+        .into_iter()
+        .map(|(id, osvs)| (id, FxHashSet::from_iter(osvs)))
+        .collect();
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
     for (trait_id, name) in file_ids.into_iter().flat_map(|file_id| {
         let module_id = db.module_for_file(file_id.file_id(&db));
@@ -72,11 +74,17 @@ fn check_dyn_compatibility<'a>(
                 ControlFlow::Continue(())
             });
         });
-        assert_eq!(osvs, expected, "dyn-compatibility violations for `{name}` do not match;");
+        assert_eq!(
+            osvs, expected,
+            "dyn-compatibility violations for `{name}` do not match;"
+        );
     }
 
     let remains: Vec<_> = expected.keys().collect();
-    assert!(remains.is_empty(), "Following traits do not exist in the test fixture; {remains:?}");
+    assert!(
+        remains.is_empty(),
+        "Following traits do not exist in the test fixture; {remains:?}"
+    );
 }
 
 #[test]
@@ -159,7 +167,11 @@ trait Qax {
     fn bar<'a>(&self, t: &'a ());
 }
 "#,
-        [("Bar", vec![Method(Generic)]), ("Quux", vec![]), ("Qax", vec![])],
+        [
+            ("Bar", vec![Method(Generic)]),
+            ("Quux", vec![]),
+            ("Qax", vec![]),
+        ],
     );
 }
 
@@ -237,7 +249,10 @@ trait GatTrait {
 
 trait SuperTrait<T>: GatTrait {}
 "#,
-        [("GatTrait", vec![GAT]), ("SuperTrait", vec![HasNonCompatibleSuperTrait])],
+        [
+            ("GatTrait", vec![GAT]),
+            ("SuperTrait", vec![HasNonCompatibleSuperTrait]),
+        ],
     );
 }
 
@@ -269,7 +284,10 @@ trait Foo {
 
 trait Bar: Foo {}
 "#,
-        [("Foo", vec![Method(Generic)]), ("Bar", vec![HasNonCompatibleSuperTrait])],
+        [
+            ("Foo", vec![Method(Generic)]),
+            ("Bar", vec![HasNonCompatibleSuperTrait]),
+        ],
     );
 }
 

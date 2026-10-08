@@ -3,7 +3,6 @@
 //! Note `//- proc_macros: identity` fixture metas in tests -- we don't use real
 //! proc-macros here, as that would be slow. Instead, we use several hard-coded
 //! in-memory macros.
-
 use expect_test::expect;
 
 use crate::macro_expansion_tests::{check, check_errors};

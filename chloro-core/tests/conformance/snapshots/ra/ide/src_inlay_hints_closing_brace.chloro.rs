@@ -3,7 +3,6 @@
 //! fn g() {
 //! } /* fn g */
 //! ```
-
 use hir::{DisplayTarget, HirDisplay, InRealFile, Semantics};
 use ide_db::{FileRange, RootDatabase};
 use syntax::{
@@ -22,7 +21,10 @@ pub(super) fn hints(
     sema: &Semantics<'_, RootDatabase>,
     config: &InlayHintsConfig<'_>,
     display_target: DisplayTarget,
-    InRealFile { file_id, value: node }: InRealFile<SyntaxNode>,
+    InRealFile {
+        file_id,
+        value: node,
+    }: InRealFile<SyntaxNode>,
 ) -> Option<()> {
     let min_lines = config.closing_brace_hints_min_lines?;
 
@@ -114,7 +116,9 @@ pub(super) fn hints(
 
         (
             format!("{}!", mac.path()?),
-            mac.path().and_then(|it| it.segment()).map(|it| it.syntax().text_range()),
+            mac.path()
+                .and_then(|it| it.segment())
+                .map(|it| it.syntax().text_range()),
         )
     } else {
         return None;
@@ -134,13 +138,16 @@ pub(super) fn hints(
     }
 
     let mut lines = 1;
-    node.text().for_each_chunk(|s| lines += s.matches('\n').count());
+    node.text()
+        .for_each_chunk(|s| lines += s.matches('\n').count());
     if lines < min_lines {
         return None;
     }
 
-    let linked_location =
-        name_range.map(|range| FileRange { file_id: file_id.file_id(sema.db), range });
+    let linked_location = name_range.map(|range| FileRange {
+        file_id: file_id.file_id(sema.db),
+        range,
+    });
     acc.push(InlayHint {
         range: closing_token.text_range(),
         kind: InlayKind::ClosingBrace,
@@ -161,10 +168,14 @@ mod tests {
         InlayHintsConfig,
         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
+
     #[test]
     fn hints_closing_brace() {
         check_with_config(
-            InlayHintsConfig { closing_brace_hints_min_lines: Some(2), ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                closing_brace_hints_min_lines: Some(2),
+                ..DISABLED_CONFIG
+            },
             r#"
 fn a() {}
 
@@ -224,10 +235,14 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn hints_closing_brace_for_block_expr() {
         check_with_config(
-            InlayHintsConfig { closing_brace_hints_min_lines: Some(2), ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                closing_brace_hints_min_lines: Some(2),
+                ..DISABLED_CONFIG
+            },
             r#"
 fn test() {
     'end: {

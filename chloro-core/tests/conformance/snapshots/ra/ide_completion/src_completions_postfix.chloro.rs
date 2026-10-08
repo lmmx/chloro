@@ -36,13 +36,18 @@ pub(crate) fn complete_postfix(
     }
 
     let (dot_receiver, receiver_ty, receiver_is_ambiguous_float_literal) = match dot_access {
-        DotAccess { receiver_ty: Some(ty), receiver: Some(it), kind, .. } => (
+        DotAccess {
+            receiver_ty: Some(ty),
+            receiver: Some(it),
+            kind,
+            ..
+        } => (
             it,
             &ty.original,
             match *kind {
-                DotAccessKind::Field { receiver_is_ambiguous_float_literal } => {
-                    receiver_is_ambiguous_float_literal
-                }
+                DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal,
+                } => receiver_is_ambiguous_float_literal,
                 DotAccessKind::Method => false,
             },
         ),
@@ -68,13 +73,18 @@ pub(crate) fn complete_postfix(
     if let Some(drop_trait) = ctx.famous_defs().core_ops_Drop()
         && receiver_ty.impls_trait(ctx.db, drop_trait, &[])
         && let Some(drop_fn) = ctx.famous_defs().core_mem_drop()
-        && let Some(path) = ctx.module.find_path(ctx.db, ItemInNs::Values(drop_fn.into()), cfg)
+        && let Some(path) = ctx
+            .module
+            .find_path(ctx.db, ItemInNs::Values(drop_fn.into()), cfg)
     {
         cov_mark::hit!(postfix_drop_completion);
         let mut item = postfix_snippet(
             "drop",
             "fn drop(&mut self)",
-            &format!("{path}($0{receiver_text})", path = path.display(ctx.db, ctx.edition)),
+            &format!(
+                "{path}($0{receiver_text})",
+                path = path.display(ctx.db, ctx.edition)
+            ),
         );
         item.set_documentation(drop_fn.docs(ctx.db));
         item.add_to(acc, ctx.db);
@@ -86,6 +96,7 @@ pub(crate) fn complete_postfix(
 
     // The rest of the postfix completions create an expression that moves an argument,
     // so it's better to consider references now to avoid breaking the compilation
+
     let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
     let mut receiver_text =
         get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
@@ -100,12 +111,20 @@ pub(crate) fn complete_postfix(
         add_custom_postfix_completions(acc, ctx, &postfix_snippet, &receiver_text);
     }
 
-    postfix_snippet("box", "Box::new(expr)", &format!("Box::new({receiver_text})"))
-        .add_to(acc, ctx.db);
+    postfix_snippet(
+        "box",
+        "Box::new(expr)",
+        &format!("Box::new({receiver_text})"),
+    )
+    .add_to(acc, ctx.db);
     postfix_snippet("dbg", "dbg!(expr)", &format!("dbg!({receiver_text})")).add_to(acc, ctx.db); // fixme
     postfix_snippet("dbgr", "dbg!(&expr)", &format!("dbg!(&{receiver_text})")).add_to(acc, ctx.db);
-    postfix_snippet("call", "function(expr)", &format!("${{1}}({receiver_text})"))
-        .add_to(acc, ctx.db);
+    postfix_snippet(
+        "call",
+        "function(expr)",
+        &format!("${{1}}({receiver_text})"),
+    )
+    .add_to(acc, ctx.db);
 
     let try_enum = TryEnum::from_ty(&ctx.sema, &receiver_ty.strip_references());
     let mut is_in_cond = false;
@@ -231,8 +250,12 @@ pub(crate) fn complete_postfix(
                 }
             }
         } else if receiver_ty.is_bool() || receiver_ty.is_unknown() {
-            postfix_snippet("if", "if expr {}", &format!("if {receiver_text} {{\n    $0\n}}"))
-                .add_to(acc, ctx.db);
+            postfix_snippet(
+                "if",
+                "if expr {}",
+                &format!("if {receiver_text} {{\n    $0\n}}"),
+            )
+            .add_to(acc, ctx.db);
             postfix_snippet(
                 "while",
                 "while expr {}",
@@ -258,8 +281,11 @@ pub(crate) fn complete_postfix(
         true
     };
     {
-        let (open_brace, close_brace) =
-            if block_should_be_wrapped { ("{ ", " }") } else { ("", "") };
+        let (open_brace, close_brace) = if block_should_be_wrapped {
+            ("{ ", " }")
+        } else {
+            ("", "")
+        };
         // FIXME: Why add parentheses
         let (open_paren, close_paren) = if is_in_cond { ("(", ")") } else { ("", "") };
         let unsafe_completion_string =
@@ -333,7 +359,10 @@ fn escape_snippet_bits(text: &mut String) {
 fn include_references(initial_element: &ast::Expr) -> (ast::Expr, String) {
     let mut resulting_element = initial_element.clone();
 
-    while let Some(field_expr) = resulting_element.syntax().parent().and_then(ast::FieldExpr::cast)
+    while let Some(field_expr) = resulting_element
+        .syntax()
+        .parent()
+        .and_then(ast::FieldExpr::cast)
     {
         resulting_element = ast::Expr::from(field_expr);
     }
@@ -342,8 +371,10 @@ fn include_references(initial_element: &ast::Expr) -> (ast::Expr, String) {
 
     let mut found_ref_or_deref = false;
 
-    while let Some(parent_deref_element) =
-        resulting_element.syntax().parent().and_then(ast::PrefixExpr::cast)
+    while let Some(parent_deref_element) = resulting_element
+        .syntax()
+        .parent()
+        .and_then(ast::PrefixExpr::cast)
     {
         if parent_deref_element.op_kind() != Some(ast::UnaryOp::Deref) {
             break;
@@ -355,8 +386,10 @@ fn include_references(initial_element: &ast::Expr) -> (ast::Expr, String) {
         prefix.insert(0, '*');
     }
 
-    while let Some(parent_ref_element) =
-        resulting_element.syntax().parent().and_then(ast::RefExpr::cast)
+    while let Some(parent_ref_element) = resulting_element
+        .syntax()
+        .parent()
+        .and_then(ast::RefExpr::cast)
     {
         found_ref_or_deref = true;
         let exclusive = parent_ref_element.mut_token().is_some();
@@ -412,7 +445,10 @@ fn build_postfix_snippet_builder<'ctx>(
                 cov_mark::hit!(postfix_inexact_match_is_low_priority);
                 Some(CompletionRelevancePostfixMatch::NonExact)
             };
-            let relevance = CompletionRelevance { postfix_match, ..Default::default() };
+            let relevance = CompletionRelevance {
+                postfix_match,
+                ..Default::default()
+            };
             item.set_relevance(relevance);
             item
         }
@@ -427,22 +463,26 @@ fn add_custom_postfix_completions(
     receiver_text: &str,
 ) -> Option<()> {
     ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
-    ctx.config.postfix_snippets().filter(|(_, snip)| snip.scope == SnippetScope::Expr).for_each(
-        |(trigger, snippet)| {
+    ctx.config
+        .postfix_snippets()
+        .filter(|(_, snip)| snip.scope == SnippetScope::Expr)
+        .for_each(|(trigger, snippet)| {
             let imports = match snippet.imports(ctx) {
                 Some(imports) => imports,
                 None => return,
             };
             let body = snippet.postfix_snippet(receiver_text);
-            let mut builder =
-                postfix_snippet(trigger, snippet.description.as_deref().unwrap_or_default(), &body);
+            let mut builder = postfix_snippet(
+                trigger,
+                snippet.description.as_deref().unwrap_or_default(),
+                &body,
+            );
             builder.documentation(Documentation::new(format!("```rust\n{body}\n```")));
             for import in imports.into_iter() {
                 builder.add_import(import);
             }
             builder.add_to(acc, ctx.db);
-        },
-    );
+        });
     None
 }
 
@@ -467,10 +507,12 @@ pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::{
         CompletionConfig, Snippet,
         tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
     };
+
     #[test]
     fn postfix_completion_works_for_trivial_path_expression() {
         check(
@@ -500,6 +542,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn postfix_completion_works_for_function_calln() {
         check(
@@ -531,6 +574,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn postfix_type_filtering() {
         check(
@@ -557,6 +601,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn let_middle_block() {
         check(
@@ -586,6 +631,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn option_iflet() {
         check_edit(
@@ -607,6 +653,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn option_iflet_cond() {
         check(
@@ -686,6 +733,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn option_letelse() {
         check_edit(
@@ -708,6 +756,7 @@ $0
 "#,
         );
     }
+
     #[test]
     fn result_match() {
         check_edit(
@@ -730,10 +779,12 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn postfix_completion_works_for_ambiguous_float_literal() {
         check_edit("refm", r#"fn main() { 42.$0 }"#, r#"fn main() { &mut 42 }"#)
     }
+
     #[test]
     fn works_in_simple_macro() {
         check_edit(
@@ -754,10 +805,19 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn postfix_completion_for_references() {
-        check_edit("dbg", r#"fn main() { &&42.$0 }"#, r#"fn main() { dbg!(&&42) }"#);
-        check_edit("refm", r#"fn main() { &&42.$0 }"#, r#"fn main() { &&&mut 42 }"#);
+        check_edit(
+            "dbg",
+            r#"fn main() { &&42.$0 }"#,
+            r#"fn main() { dbg!(&&42) }"#,
+        );
+        check_edit(
+            "refm",
+            r#"fn main() { &&42.$0 }"#,
+            r#"fn main() { &&&mut 42 }"#,
+        );
         check_edit(
             "ifl",
             r#"
@@ -777,16 +837,23 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn postfix_completion_for_unsafe() {
         postfix_completion_for_block("unsafe");
     }
+
     #[test]
     fn postfix_completion_for_const() {
         postfix_completion_for_block("const");
     }
+
     fn postfix_completion_for_block(kind: &str) {
-        check_edit(kind, r#"fn main() { foo.$0 }"#, &format!("fn main() {{ {kind} {{ foo }} }}"));
+        check_edit(
+            kind,
+            r#"fn main() { foo.$0 }"#,
+            &format!("fn main() {{ {kind} {{ foo }} }}"),
+        );
         check_edit(
             kind,
             r#"fn main() { { foo }.$0 }"#,
@@ -844,6 +911,7 @@ fn main() {
             &format!("fn main() {{ let x = true else {{panic!()}}.{kind} $0}}"),
         );
     }
+
     #[test]
     fn custom_postfix_completion() {
         let config = CompletionConfig {
@@ -918,6 +986,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn postfix_completion_for_format_like_strings() {
         check_edit(
@@ -950,17 +1019,27 @@ fn main() {
             r#"fn main() { "{2+2}".$0 }"#,
             r#"fn main() { log::debug!("{}", 2+2) }"#,
         );
-        check_edit("logi", r#"fn main() { "{2+2}".$0 }"#, r#"fn main() { log::info!("{}", 2+2) }"#);
-        check_edit("logw", r#"fn main() { "{2+2}".$0 }"#, r#"fn main() { log::warn!("{}", 2+2) }"#);
+        check_edit(
+            "logi",
+            r#"fn main() { "{2+2}".$0 }"#,
+            r#"fn main() { log::info!("{}", 2+2) }"#,
+        );
+        check_edit(
+            "logw",
+            r#"fn main() { "{2+2}".$0 }"#,
+            r#"fn main() { log::warn!("{}", 2+2) }"#,
+        );
         check_edit(
             "loge",
             r#"fn main() { "{2+2}".$0 }"#,
             r#"fn main() { log::error!("{}", 2+2) }"#,
         );
     }
+
     #[test]
     fn postfix_custom_snippets_completion_for_references() {
         // https://github.com/rust-lang/rust-analyzer/issues/7929
+
         let snippet = Snippet::new(
             &[],
             &["ok".into()],
@@ -972,21 +1051,30 @@ fn main() {
         .unwrap();
 
         check_edit_with_config(
-            CompletionConfig { snippets: vec![snippet.clone()], ..TEST_CONFIG },
+            CompletionConfig {
+                snippets: vec![snippet.clone()],
+                ..TEST_CONFIG
+            },
             "ok",
             r#"fn main() { &&42.o$0 }"#,
             r#"fn main() { Ok(&&42) }"#,
         );
 
         check_edit_with_config(
-            CompletionConfig { snippets: vec![snippet.clone()], ..TEST_CONFIG },
+            CompletionConfig {
+                snippets: vec![snippet.clone()],
+                ..TEST_CONFIG
+            },
             "ok",
             r#"fn main() { &&42.$0 }"#,
             r#"fn main() { Ok(&&42) }"#,
         );
 
         check_edit_with_config(
-            CompletionConfig { snippets: vec![snippet], ..TEST_CONFIG },
+            CompletionConfig {
+                snippets: vec![snippet],
+                ..TEST_CONFIG
+            },
             "ok",
             r#"
 struct A {
@@ -1010,6 +1098,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn no_postfix_completions_in_if_block_that_has_an_else() {
         check(
@@ -1021,6 +1110,7 @@ fn test() {
             expect![[r#""#]],
         );
     }
+
     #[test]
     fn mut_ref_consuming() {
         check_edit(
@@ -1039,6 +1129,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn deref_consuming() {
         check_edit(
@@ -1057,6 +1148,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inside_macro() {
         check_edit(

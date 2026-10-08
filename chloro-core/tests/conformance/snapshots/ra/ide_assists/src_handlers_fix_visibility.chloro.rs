@@ -53,7 +53,10 @@ fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) 
     let current_module = ctx.sema.scope(path.syntax())?.module();
     let target_module = def.module(ctx.db())?;
 
-    if def.visibility(ctx.db()).is_visible_from(ctx.db(), current_module.into()) {
+    if def
+        .visibility(ctx.db())
+        .is_visible_from(ctx.db(), current_module.into())
+    {
         return None;
     };
 
@@ -80,15 +83,15 @@ fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) 
         assist_label,
         target,
         |edit| {
-        edit.edit_file(target_file);
+            edit.edit_file(target_file);
 
-        let vis_owner = edit.make_mut(vis_owner);
-        vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
+            let vis_owner = edit.make_mut(vis_owner);
+            vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
 
-        if let Some((cap, vis)) = ctx.config.snippet_cap.zip(vis_owner.visibility()) {
-            edit.add_tabstop_before(cap, vis);
-        }
-    },
+            if let Some((cap, vis)) = ctx.config.snippet_cap.zip(vis_owner.visibility()) {
+                edit.add_tabstop_before(cap, vis);
+            }
+        },
     )
 }
 
@@ -150,7 +153,11 @@ fn target_data_for_def(
             let in_file_source = m.declaration_source(db)?;
             let file_id = in_file_source.file_id.original_file(db);
             let range = in_file_source.value.syntax().text_range();
-            (ast::AnyHasVisibility::new(in_file_source.value), range, file_id.file_id(db))
+            (
+                ast::AnyHasVisibility::new(in_file_source.value),
+                range,
+                file_id.file_id(db),
+            )
         }
         // FIXME
         hir::ModuleDef::Macro(_) => return None,
@@ -164,7 +171,9 @@ fn target_data_for_def(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn fix_visibility_of_fn() {
         check_assist(
@@ -180,6 +189,7 @@ mod tests {
               fn main() { foo::foo$0() } ",
         )
     }
+
     #[test]
     fn fix_visibility_of_adt_in_submodule() {
         check_assist(
@@ -219,6 +229,7 @@ mod tests {
               fn main() { foo::Foo$0 } ",
         );
     }
+
     #[test]
     fn fix_visibility_of_adt_in_other_file() {
         check_assist(
@@ -235,6 +246,7 @@ struct Foo;
 ",
         );
     }
+
     #[test]
     fn fix_visibility_of_enum_variant_field() {
         // Enum variants, as well as their fields, always get the enum's visibility. In fact, rustc
@@ -270,6 +282,7 @@ pub struct Foo { pub bar: () }
 ",
         );
     }
+
     #[test]
     fn fix_visibility_of_const() {
         check_assist(
@@ -285,6 +298,7 @@ pub struct Foo { pub bar: () }
               fn main() { foo::FOO$0 } ",
         );
     }
+
     #[test]
     fn fix_visibility_of_static() {
         check_assist(
@@ -300,6 +314,7 @@ pub struct Foo { pub bar: () }
               fn main() { foo::FOO$0 } ",
         );
     }
+
     #[test]
     fn fix_visibility_of_trait() {
         check_assist(
@@ -315,6 +330,7 @@ pub struct Foo { pub bar: () }
               fn main() { let x: &dyn foo::Foo$0; } ",
         );
     }
+
     #[test]
     fn fix_visibility_of_type_alias() {
         check_assist(
@@ -330,6 +346,7 @@ pub struct Foo { pub bar: () }
               fn main() { let x: foo::Foo$0; } ",
         );
     }
+
     #[test]
     fn fix_visibility_of_module() {
         check_assist(
@@ -364,6 +381,7 @@ mod bar {
               fn main() { foo::bar$0::bar(); } ",
         );
     }
+
     #[test]
     fn fix_visibility_of_inline_module_in_other_file() {
         check_assist(
@@ -382,6 +400,7 @@ pub fn baz() {}
 ",
         );
     }
+
     #[test]
     fn fix_visibility_of_module_declaration_in_other_file() {
         check_assist(
@@ -402,6 +421,7 @@ mod bar {
 ",
         );
     }
+
     #[test]
     fn adds_pub_when_target_is_in_another_crate() {
         check_assist(
@@ -416,6 +436,7 @@ struct Bar;
 ",
         )
     }
+
     #[test]
     fn replaces_pub_crate_with_pub() {
         check_assist(
@@ -430,6 +451,7 @@ pub(crate) struct Bar;
 ",
         );
     }
+
     #[test]
     fn fix_visibility_of_reexport() {
         // FIXME: broken test, this should fix visibility of the re-export

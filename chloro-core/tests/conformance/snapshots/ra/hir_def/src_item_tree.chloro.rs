@@ -68,11 +68,8 @@ pub(crate) struct RawVisibilityId(u32);
 
 impl RawVisibilityId {
     const PUB: Self = RawVisibilityId(u32::MAX);
-
     const PRIV_IMPLICIT: Self = RawVisibilityId(u32::MAX - 1);
-
     const PRIV_EXPLICIT: Self = RawVisibilityId(u32::MAX - 2);
-
     const PUB_CRATE: Self = RawVisibilityId(u32::MAX - 3);
 }
 
@@ -120,13 +117,21 @@ pub(crate) fn file_item_tree_query(db: &dyn DefDatabase, file_id: HirFileId) -> 
             },
         }
     };
-    let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
+    let ItemTree {
+        top_level,
+        top_attrs,
+        attrs,
+        vis,
+        big_data,
+        small_data,
+    } = &item_tree;
     if small_data.is_empty()
         && big_data.is_empty()
         && top_level.is_empty()
         && attrs.is_empty()
         && top_attrs.is_empty()
-        && vis.arena.is_empty() {
+        && vis.arena.is_empty()
+    {
         EMPTY
             .get_or_init(|| {
                 Arc::new(ItemTree {
@@ -135,7 +140,9 @@ pub(crate) fn file_item_tree_query(db: &dyn DefDatabase, file_id: HirFileId) -> 
                     small_data: FxHashMap::default(),
                     big_data: FxHashMap::default(),
                     top_attrs: RawAttrs::EMPTY,
-                    vis: ItemVisibilities { arena: ThinVec::new() },
+                    vis: ItemVisibilities {
+                        arena: ThinVec::new(),
+                    },
                 })
             })
             .clone()
@@ -155,13 +162,21 @@ pub(crate) fn block_item_tree_query(db: &dyn DefDatabase, block: BlockId) -> Arc
 
     let ctx = lower::Ctx::new(db, loc.ast_id.file_id);
     let mut item_tree = ctx.lower_block(&block);
-    let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
+    let ItemTree {
+        top_level,
+        top_attrs,
+        attrs,
+        vis,
+        big_data,
+        small_data,
+    } = &item_tree;
     if small_data.is_empty()
         && big_data.is_empty()
         && top_level.is_empty()
         && attrs.is_empty()
         && top_attrs.is_empty()
-        && vis.arena.is_empty() {
+        && vis.arena.is_empty()
+    {
         EMPTY
             .get_or_init(|| {
                 Arc::new(ItemTree {
@@ -170,7 +185,9 @@ pub(crate) fn block_item_tree_query(db: &dyn DefDatabase, block: BlockId) -> Arc
                     small_data: FxHashMap::default(),
                     big_data: FxHashMap::default(),
                     top_attrs: RawAttrs::EMPTY,
-                    vis: ItemVisibilities { arena: ThinVec::new() },
+                    vis: ItemVisibilities {
+                        arena: ThinVec::new(),
+                    },
                 })
             })
             .clone()
@@ -179,7 +196,6 @@ pub(crate) fn block_item_tree_query(db: &dyn DefDatabase, block: BlockId) -> Arc
         Arc::new(item_tree)
     }
 }
-
 /// The item tree of a source file.
 #[derive(Debug, Default, Eq, PartialEq)]
 pub struct ItemTree {
@@ -245,7 +261,13 @@ impl ItemTree {
                 _ => {}
             }
         }
-        ItemTreeDataStats { traits, impls, mods, macro_calls, macro_rules }
+        ItemTreeDataStats {
+            traits,
+            impls,
+            mods,
+            macro_calls,
+            macro_rules,
+        }
     }
 
     pub fn pretty_print(&self, db: &dyn DefDatabase, edition: Edition) -> String {
@@ -253,7 +275,14 @@ impl ItemTree {
     }
 
     fn shrink_to_fit(&mut self) {
-        let ItemTree { top_level: _, attrs, big_data, small_data, vis: _, top_attrs: _ } = self;
+        let ItemTree {
+            top_level: _,
+            attrs,
+            big_data,
+            small_data,
+            vis: _,
+            top_attrs: _,
+        } = self;
         attrs.shrink_to_fit();
         big_data.shrink_to_fit();
         small_data.shrink_to_fit();
@@ -289,11 +318,13 @@ enum BigModItem {
     Use(Use),
 }
 
+// `ModItem` is stored a bunch in `ItemTree`'s so we pay the max for each item. It should stay as
+// small as possible which is why we split them in two, most common ones are 3 usize but some rarer
+// ones are 5.
 #[cfg(target_pointer_width = "64")]
-const [(); std::mem::size_of::<BigModItem>()] = [(); std::mem::size_of::<[usize; 5]>()];
-
+const _: [(); std::mem::size_of::<BigModItem>()] = [(); std::mem::size_of::<[usize; 5]>()];
 #[cfg(target_pointer_width = "64")]
-const [(); std::mem::size_of::<SmallModItem>()] = [(); std::mem::size_of::<[usize; 3]>()];
+const _: [(); std::mem::size_of::<SmallModItem>()] = [(); std::mem::size_of::<[usize; 3]>()];
 
 #[derive(Default, Debug, Eq, PartialEq)]
 pub struct ItemTreeDataStats {
@@ -305,8 +336,8 @@ pub struct ItemTreeDataStats {
 }
 
 /// Trait implemented by all nodes in the item tree.
-pub(crate) trait ItemTreeNode {
-    type Source;
+pub(crate) trait ItemTreeNode: Clone {
+    type Source: AstIdNode;
 }
 
 #[allow(type_alias_bounds)]
@@ -410,7 +441,6 @@ ModItemId ->
 
 impl Index<RawVisibilityId> for ItemTree {
     type Output = RawVisibility;
-
     fn index(&self, index: RawVisibilityId) -> &Self::Output {
         static VIS_PUB: RawVisibility = RawVisibility::Public;
         static VIS_PRIV_IMPLICIT: RawVisibility =
@@ -440,6 +470,8 @@ pub struct UseTree {
     kind: UseTreeKind,
 }
 
+// FIXME: Would be nice to encode `None` into this
+// We could just use a `Name` where `_` well means `_` ..
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImportAlias {
     /// Unnamed alias, as in `use Foo as _;`
@@ -450,7 +482,10 @@ pub enum ImportAlias {
 
 impl ImportAlias {
     pub fn display(&self, edition: Edition) -> impl fmt::Display + '_ {
-        ImportAliasDisplay { value: self, edition }
+        ImportAliasDisplay {
+            value: self,
+            edition,
+        }
     }
 }
 
@@ -484,9 +519,7 @@ pub enum UseTreeKind {
     /// use *;  // (invalid, but can occur in nested tree)
     /// use path::*;
     /// ```
-    Glob {
-        path: Option<Interned<ModPath>>,
-    },
+    Glob { path: Option<Interned<ModPath>> },
 
     /// ```ignore
     /// use prefix::{self, Item, ...};
@@ -589,8 +622,7 @@ pub struct Trait {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Impl {
-}
+pub struct Impl {}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TypeAlias {
@@ -608,9 +640,7 @@ pub struct Mod {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) enum ModKind {
     /// `mod m { ... }`
-    Inline {
-        items: Box<[ModItemId]>,
-    },
+    Inline { items: Box<[ModItemId]> },
     /// `mod m;`
     Outline,
 }
@@ -701,7 +731,12 @@ impl UseTree {
         match &self.kind {
             UseTreeKind::Single { path, alias } => {
                 if let Some((path, kind)) = concat_mod_paths(prefix, path) {
-                    cb(Idx::from_raw(RawIdx::from_u32(*counting_index)), path, kind, alias.clone());
+                    cb(
+                        Idx::from_raw(RawIdx::from_u32(*counting_index)),
+                        path,
+                        kind,
+                        alias.clone(),
+                    );
                 }
             }
             UseTreeKind::Glob { path: Some(path) } => {
@@ -724,7 +759,10 @@ impl UseTree {
                     );
                 }
             }
-            UseTreeKind::Prefixed { prefix: additional_prefix, list } => {
+            UseTreeKind::Prefixed {
+                prefix: additional_prefix,
+                list,
+            } => {
                 let prefix = match additional_prefix {
                     Some(path) => match concat_mod_paths(prefix, path) {
                         Some((path, ImportKind::Plain)) => Some(path),

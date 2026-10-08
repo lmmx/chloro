@@ -23,15 +23,19 @@ use crate::next_solver::{AliasTy, Binder, DbInterner, ParamTy, PlaceholderTy, Re
 pub struct RegionConstraintStorage<'db> {
     /// For each `RegionVid`, the corresponding `RegionVariableOrigin`.
     pub(super) var_infos: IndexVec<RegionVid, RegionVariableInfo>,
+
     pub(super) data: RegionConstraintData<'db>,
+
     /// For a given pair of regions (R1, R2), maps to a region R3 that
     /// is designated as their LUB (edges R1 <= R3 and R2 <= R3
     /// exist). This prevents us from making many such regions.
     lubs: CombineMap<'db>,
+
     /// For a given pair of regions (R1, R2), maps to a region R3 that
     /// is designated as their GLB (edges R3 <= R1 and R3 <= R2
     /// exist). This prevents us from making many such regions.
     glbs: CombineMap<'db>,
+
     /// When we add a R1 == R2 constraint, we currently add (a) edges
     /// R1 <= R2 and R2 <= R1 and (b) we unify the two regions in this
     /// table. You can then call `opportunistic_resolve_var` early
@@ -41,6 +45,7 @@ pub struct RegionConstraintStorage<'db> {
     /// would wind up with a fresh stream of region variables that have been
     /// equated but appear distinct.
     pub(super) unification_table: ut::UnificationTableStorage<RegionVidKey<'db>>,
+
     /// a flag set to true when we perform any unifications; this is used
     /// to micro-optimize `take_and_reset_data`
     any_unifications: bool,
@@ -62,10 +67,12 @@ pub struct RegionConstraintData<'db> {
     /// Constraints of the form `A <= B`, where either `A` or `B` can
     /// be a region variable (or neither, as it happens).
     pub constraints: Vec<Constraint<'db>>,
+
     /// Constraints of the form `R0 member of [R1, ..., Rn]`, meaning that
     /// `R0` must be equal to one of the regions `R1..Rn`. These occur
     /// with `impl Trait` quite frequently.
     pub member_constraints: Vec<MemberConstraint<'db>>,
+
     /// A "verify" is something that we need to verify after inference
     /// is done, but which does not directly affect inference in any
     /// way.
@@ -224,6 +231,7 @@ pub enum VerifyBound<'db> {
 pub struct VerifyIfEq<'db> {
     /// Type which must match the generic `G`
     pub ty: Ty<'db>,
+
     /// Bound that applies if `ty` is equal.
     pub bound: Region<'db>,
 }
@@ -285,7 +293,10 @@ impl<'db> RegionConstraintStorage<'db> {
         &'a mut self,
         undo_log: &'a mut InferCtxtUndoLogs<'db>,
     ) -> RegionConstraintCollector<'db, 'a> {
-        RegionConstraintCollector { storage: self, undo_log }
+        RegionConstraintCollector {
+            storage: self,
+            undo_log,
+        }
     }
 }
 
@@ -356,7 +367,9 @@ impl<'db> RegionConstraintCollector<'db, '_> {
 
     pub(super) fn start_snapshot(&self) -> RegionSnapshot {
         debug!("RegionConstraintCollector: start_snapshot");
-        RegionSnapshot { any_unifications: self.storage.any_unifications }
+        RegionSnapshot {
+            any_unifications: self.storage.any_unifications,
+        }
     }
 
     pub(super) fn rollback_to(&mut self, snapshot: RegionSnapshot) {
@@ -367,7 +380,9 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     pub(super) fn new_region_var(&mut self, universe: UniverseIndex) -> RegionVid {
         let vid = self.storage.var_infos.push(RegionVariableInfo { universe });
 
-        let u_vid = self.unification_table_mut().new_key(RegionVariableValue::Unknown { universe });
+        let u_vid = self
+            .unification_table_mut()
+            .new_key(RegionVariableValue::Unknown { universe });
         assert_eq!(vid, u_vid.vid);
         self.undo_log.push(AddVar(vid));
         debug!("created new region variable {:?} in {:?}", vid, universe);
@@ -376,7 +391,10 @@ impl<'db> RegionConstraintCollector<'db, '_> {
 
     fn add_constraint(&mut self, constraint: Constraint<'db>) {
         // cannot add constraints once regions are resolved
-        debug!("RegionConstraintCollector: add_constraint({:?})", constraint);
+        debug!(
+            "RegionConstraintCollector: add_constraint({:?})",
+            constraint
+        );
 
         let index = self.storage.data.constraints.len();
         self.storage.data.constraints.push(constraint);
@@ -425,6 +443,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     #[instrument(skip(self), level = "debug")]
     pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
         // cannot add constraints once regions are resolved
+
         match (sub.kind(), sup.kind()) {
             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");
@@ -455,7 +474,8 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     ) -> Region<'db> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);
-        #[expect(clippy::if_same_then_else)] if a.is_static() || b.is_static() {
+        #[expect(clippy::if_same_then_else)]
+        if a.is_static() || b.is_static() {
             a // nothing lives longer than static
         } else if a == b {
             a // LUB(a,a) = a
@@ -472,7 +492,8 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     ) -> Region<'db> {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: glb_regions({:?}, {:?})", a, b);
-        #[expect(clippy::if_same_then_else)] if a.is_static() {
+        #[expect(clippy::if_same_then_else)]
+        if a.is_static() {
             b // static lives longer than everything else
         } else if b.is_static() {
             a // static lives longer than everything else
@@ -645,7 +666,11 @@ impl<'db> RegionConstraintData<'db> {
     /// Returns `true` if this region constraint data contains no constraints, and `false`
     /// otherwise.
     pub fn is_empty(&self) -> bool {
-        let RegionConstraintData { constraints, member_constraints, verifys } = self;
+        let RegionConstraintData {
+            constraints,
+            member_constraints,
+            verifys,
+        } = self;
         constraints.is_empty() && member_constraints.is_empty() && verifys.is_empty()
     }
 }

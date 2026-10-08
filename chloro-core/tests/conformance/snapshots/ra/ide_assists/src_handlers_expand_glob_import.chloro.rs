@@ -161,13 +161,17 @@ fn build_expanded_import(
     let refs_in_target = find_refs_in_mod(ctx, target_module, visible_from, must_be_pub);
     let imported_defs = find_imported_defs(ctx, use_item);
 
-    let filtered_defs =
-        if reexport_public_items { refs_in_target } else { refs_in_target.used_refs(ctx) };
+    let filtered_defs = if reexport_public_items {
+        refs_in_target
+    } else {
+        refs_in_target.used_refs(ctx)
+    };
 
     let names_to_import = find_names_to_import(filtered_defs, imported_defs);
     let expanded = make::use_tree_list(names_to_import.iter().map(|n| {
         let path = make::ext::ident_path(
-            &n.display(ctx.db(), current_module.krate().edition(ctx.db())).to_string(),
+            &n.display(ctx.db(), current_module.krate().edition(ctx.db()))
+                .to_string(),
         );
         make::use_tree(path, None, None, false)
     }))
@@ -290,7 +294,13 @@ impl Refs {
     }
 
     fn filter_out_by_defs(&self, defs: Vec<Definition>) -> Refs {
-        Refs(self.0.clone().into_iter().filter(|r| !defs.contains(&r.def)).collect())
+        Refs(
+            self.0
+                .clone()
+                .into_iter()
+                .filter(|r| !defs.contains(&r.def))
+                .collect(),
+        )
     }
 }
 
@@ -327,7 +337,9 @@ fn is_visible_from(ctx: &AssistContext<'_>, expandable: &Expandable, from: Modul
     fn is_mod_visible_from(ctx: &AssistContext<'_>, module: Module, from: Module) -> bool {
         match module.parent(ctx.db()) {
             Some(parent) => {
-                module.visibility(ctx.db()).is_visible_from(ctx.db(), from.into())
+                module
+                    .visibility(ctx.db())
+                    .is_visible_from(ctx.db(), from.into())
                     && is_mod_visible_from(ctx, parent, from)
             }
             None => true,
@@ -337,14 +349,17 @@ fn is_visible_from(ctx: &AssistContext<'_>, expandable: &Expandable, from: Modul
     match expandable {
         Expandable::Module(module) => match module.parent(ctx.db()) {
             Some(parent) => {
-                module.visibility(ctx.db()).is_visible_from(ctx.db(), from.into())
+                module
+                    .visibility(ctx.db())
+                    .is_visible_from(ctx.db(), from.into())
                     && is_mod_visible_from(ctx, parent, from)
             }
             None => true,
         },
         Expandable::Enum(enm) => {
             let module = enm.module(ctx.db());
-            enm.visibility(ctx.db()).is_visible_from(ctx.db(), from.into())
+            enm.visibility(ctx.db())
+                .is_visible_from(ctx.db(), from.into())
                 && is_mod_visible_from(ctx, module, from)
         }
     }
@@ -368,7 +383,10 @@ fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition>
     [Direction::Prev, Direction::Next]
         .into_iter()
         .flat_map(|dir| {
-            use_item.syntax().siblings(dir.to_owned()).filter(|n| ast::Use::can_cast(n.kind()))
+            use_item
+                .syntax()
+                .siblings(dir.to_owned())
+                .filter(|n| ast::Use::can_cast(n.kind()))
         })
         .flat_map(|n| n.descendants().filter_map(ast::NameRef::cast))
         .filter_map(|r| match NameRefClass::classify(&ctx.sema, &r)? {
@@ -391,13 +409,19 @@ fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition>
 
 fn find_names_to_import(refs_in_target: Refs, imported_defs: Vec<Definition>) -> Vec<Name> {
     let final_refs = refs_in_target.filter_out_by_defs(imported_defs);
-    final_refs.0.iter().map(|r| r.visible_name.clone()).collect()
+    final_refs
+        .0
+        .iter()
+        .map(|r| r.visible_name.clone())
+        .collect()
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn expanding_glob_import() {
         check_assist(
@@ -434,6 +458,7 @@ fn qux(bar: Bar, baz: Baz) {
 ",
         )
     }
+
     #[test]
     fn expanding_glob_import_unused() {
         check_assist(
@@ -466,6 +491,7 @@ fn qux() {}
 ",
         )
     }
+
     #[test]
     fn expanding_glob_import_with_existing_explicit_names() {
         check_assist(
@@ -502,6 +528,7 @@ fn qux(bar: Bar, baz: Baz) {
 ",
         )
     }
+
     #[test]
     fn expanding_glob_import_with_existing_uses_in_same_module() {
         check_assist(
@@ -540,6 +567,7 @@ fn qux(bar: Bar, baz: Baz) {
 ",
         )
     }
+
     #[test]
     fn expanding_nested_glob_import() {
         check_assist(
@@ -866,6 +894,7 @@ fn qux(bar: Bar, baz: Baz) {
 ",
         );
     }
+
     #[test]
     fn expanding_glob_import_with_macro_defs() {
         check_assist(
@@ -897,6 +926,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn expanding_glob_import_with_trait_method_uses() {
         check_assist(
@@ -954,6 +984,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn expanding_is_not_applicable_if_target_module_is_not_accessible_from_current_scope() {
         check_assist_not_applicable(
@@ -988,6 +1019,7 @@ fn qux(baz: Baz) {}
 ",
         );
     }
+
     #[test]
     fn expanding_is_not_applicable_if_cursor_is_not_in_star_token() {
         check_assist_not_applicable(
@@ -1005,6 +1037,7 @@ fn qux(baz: Baz) {}
     ",
         )
     }
+
     #[test]
     fn expanding_glob_import_single_nested_glob_only() {
         check_assist(
@@ -1033,6 +1066,7 @@ struct Baz {
 ",
         );
     }
+
     #[test]
     fn test_support_for_enums() {
         check_assist(
@@ -1075,6 +1109,7 @@ fn main() {
 }"#,
         )
     }
+
     #[test]
     fn test_expanding_multiple_variants_at_once() {
         check_assist(
@@ -1125,6 +1160,7 @@ mod abc {
 }"#,
         )
     }
+
     #[test]
     fn expanding_glob_reexport() {
         check_assist(
@@ -1159,6 +1195,7 @@ pub use foo::{Bar, Baz, f};
 ",
         )
     }
+
     #[test]
     fn expanding_recursive_glob_reexport() {
         check_assist(
@@ -1187,6 +1224,7 @@ pub use foo::{Bar, Baz};
 ",
         )
     }
+
     #[test]
     fn expanding_reexport_is_not_applicable_for_private_import() {
         check_assist_not_applicable(

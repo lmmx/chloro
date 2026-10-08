@@ -977,9 +977,12 @@ fn foo { crate:::$0 }
 "#,
         expect![""],
     );
-    check_no_kw(r#"
+    check_no_kw(
+        r#"
 fn foo { crate::::$0 }
-"#, expect![""])
+"#,
+        expect![""],
+    )
 }
 
 #[test]
@@ -1519,7 +1522,11 @@ fn foo<T>() {
 #[test]
 fn fn_generic_params_const_param_snippet() {
     check_edit("const", "fn foo<c$0>() {}", "fn foo<const $1: $0>() {}");
-    check_edit("const", "fn foo<T, c$0>() {}", "fn foo<T, const $1: $0>() {}");
+    check_edit(
+        "const",
+        "fn foo<T, c$0>() {}",
+        "fn foo<T, const $1: $0>() {}",
+    );
     check(
         r#"
 fn foo<T: $0>() {}

@@ -94,13 +94,17 @@ fn existing_from_impl(
     let field_ty = variant.fields(sema.db).first()?.ty(sema.db);
     let enum_ty = enum_.ty(sema.db);
     tracing::debug!(?enum_, ?field_ty, ?enum_ty);
-    enum_ty.impls_trait(infcx, from_trait, &[field_ty]).then_some(())
+    enum_ty
+        .impls_trait(infcx, from_trait, &[field_ty])
+        .then_some(())
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_generate_from_impl_for_enum() {
         check_assist(
@@ -120,6 +124,7 @@ impl From<u32> for A {
 "#,
         );
     }
+
     // FIXME(next-solver): it would be nice to not be *required* to resolve the
     // path in order to properly generate assists
     #[test]
@@ -143,6 +148,7 @@ impl From<foo::bar::baz::Boo> for A {
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_no_element() {
         check_assist_not_applicable(
@@ -153,6 +159,7 @@ enum A { $0One }
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_more_than_one_element_in_tuple() {
         check_assist_not_applicable(
@@ -163,6 +170,7 @@ enum A { $0One(u32, String) }
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_struct_variant() {
         check_assist(
@@ -182,6 +190,7 @@ impl From<u32> for A {
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_already_exists() {
         cov_mark::check!(test_add_from_impl_already_exists);
@@ -199,6 +208,7 @@ impl From<u32> for A {
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_different_variant_impl_exists() {
         check_assist(
@@ -238,6 +248,7 @@ pub trait From<T> {
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_static_str() {
         check_assist(
@@ -257,6 +268,7 @@ impl From<&'static str> for A {
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_generic_enum() {
         check_assist(
@@ -276,6 +288,7 @@ impl<T, U: Clone> From<T> for Generic<T, U> {
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_with_lifetime() {
         check_assist(

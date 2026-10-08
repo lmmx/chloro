@@ -69,8 +69,11 @@ pub(crate) fn generate_single_field_struct_from(
         return None;
     }
 
-    let main_field_name =
-        names.as_ref().map_or(TokenText::borrowed("value"), |names| names[main_field_i].text());
+    let main_field_name = names
+        .as_ref()
+        .map_or(TokenText::borrowed("value"), |names| {
+            names[main_field_i].text()
+        });
     let main_field_ty = types[main_field_i].clone();
 
     acc.add(
@@ -81,7 +84,9 @@ pub(crate) fn generate_single_field_struct_from(
             let indent = strukt.indent_level();
             let ty_where_clause = strukt.where_clause();
             let type_gen_params = strukt.generic_param_list();
-            let type_gen_args = type_gen_params.as_ref().map(|params| params.to_generic_args());
+            let type_gen_args = type_gen_params
+                .as_ref()
+                .map(|params| params.to_generic_args());
             let trait_gen_args = Some(make::generic_arg_list([ast::GenericArg::TypeArg(
                 make::type_arg(main_field_ty.clone()),
             )]));
@@ -114,9 +119,10 @@ pub(crate) fn generate_single_field_struct_from(
             )
             .indent(1.into());
 
-            let cfg_attrs = strukt
-                .attrs()
-                .filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
+            let cfg_attrs = strukt.attrs().filter(|attr| {
+                attr.as_simple_call()
+                    .is_some_and(|(name, _arg)| name == "cfg")
+            });
 
             let impl_ = make::impl_trait(
                 cfg_attrs,
@@ -178,7 +184,9 @@ fn make_constructors(
     types: &[ast::Type],
 ) -> Vec<Option<ast::Expr>> {
     let (db, sema) = (ctx.db(), &ctx.sema);
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(module.krate()));
     types
         .iter()
         .map(|ty| {
@@ -200,13 +208,23 @@ fn get_fields(strukt: &ast::Struct) -> Option<(Option<Vec<ast::Name>>, Vec<ast::
     Some(match strukt.kind() {
         ast::StructKind::Unit => return None,
         ast::StructKind::Record(fields) => {
-            let names = fields.fields().map(|field| field.name()).collect::<Option<_>>()?;
-            let types = fields.fields().map(|field| field.ty()).collect::<Option<_>>()?;
+            let names = fields
+                .fields()
+                .map(|field| field.name())
+                .collect::<Option<_>>()?;
+            let types = fields
+                .fields()
+                .map(|field| field.ty())
+                .collect::<Option<_>>()?;
             (Some(names), types)
         }
-        ast::StructKind::Tuple(fields) => {
-            (None, fields.fields().map(|field| field.ty()).collect::<Option<_>>()?)
-        }
+        ast::StructKind::Tuple(fields) => (
+            None,
+            fields
+                .fields()
+                .map(|field| field.ty())
+                .collect::<Option<_>>()?,
+        ),
     })
 }
 
@@ -228,13 +246,17 @@ fn from_impl_exists(
     let field_ty = strukt.fields(db).get(main_field_i)?.ty(db);
     let struct_ty = strukt.ty(db);
     tracing::debug!(?strukt, ?field_ty, ?struct_ty);
-    struct_ty.impls_trait(infcx, from_trait, &[field_ty]).then_some(())
+    struct_ty
+        .impls_trait(infcx, from_trait, &[field_ty])
+        .then_some(())
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::generate_single_field_struct_from;
+
     #[test]
     fn works() {
         check_assist(
@@ -286,6 +308,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn cfgs() {
         check_assist(
@@ -315,6 +338,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn indent() {
         check_assist(
@@ -370,6 +394,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn where_clause_indent() {
         check_assist(
@@ -457,6 +482,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn generics() {
         check_assist(
@@ -711,6 +737,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn tuple() {
         check_assist(
@@ -746,6 +773,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn trivial() {
         check_assist(
@@ -821,6 +849,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn unit() {
         check_assist(
@@ -872,6 +901,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn invalid_multiple_main_field() {
         check_assist_not_applicable(
@@ -910,6 +940,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn exists_other_from() {
         check_assist(
@@ -973,6 +1004,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn exists_from() {
         check_assist_not_applicable(

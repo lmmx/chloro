@@ -219,8 +219,9 @@ pub(crate) fn generate_impl_trait(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                     editor.add_annotation(ty.syntax(), placeholder);
                 }
 
-                if let Some(expr) =
-                    impl_.assoc_item_list().and_then(|it| it.assoc_items().find_map(extract_expr))
+                if let Some(expr) = impl_
+                    .assoc_item_list()
+                    .and_then(|it| it.assoc_items().find_map(extract_expr))
                 {
                     let tabstop = edit.make_tabstop_before(cap);
                     editor.add_annotation(expr.syntax(), tabstop);
@@ -248,7 +249,9 @@ fn extract_expr(item: ast::AssocItem) -> Option<ast::Expr> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_target};
+
     use super::*;
+
     #[test]
     fn test_add_impl() {
         check_assist(
@@ -263,6 +266,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_with_generics() {
         check_assist(
@@ -277,6 +281,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_with_generics_and_lifetime_parameters() {
         check_assist(
@@ -291,6 +296,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_with_attributes() {
         check_assist(
@@ -308,6 +314,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_with_default_generic() {
         check_assist(
@@ -322,6 +329,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_with_constrained_default_generic() {
         check_assist(
@@ -336,6 +344,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_with_const_defaulted_generic() {
         check_assist(
@@ -350,6 +359,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_with_trait_constraint() {
         check_assist(
@@ -380,6 +390,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn add_impl_target() {
         check_assist_target(
@@ -393,6 +404,7 @@ mod tests {
             "/// Has a lifetime parameter\nstruct Foo<'a, T: Foo<'a>> {}",
         );
     }
+
     #[test]
     fn test_add_trait_impl() {
         check_assist(
@@ -407,6 +419,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_trait_impl_with_generics() {
         check_assist(
@@ -421,6 +434,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_trait_impl_with_generics_and_lifetime_parameters() {
         check_assist(
@@ -435,6 +449,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_trait_impl_with_attributes() {
         check_assist(
@@ -452,6 +467,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_trait_impl_with_default_generic() {
         check_assist(
@@ -466,6 +482,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_trait_impl_with_constrained_default_generic() {
         check_assist(
@@ -480,6 +497,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_trait_impl_with_const_defaulted_generic() {
         check_assist(
@@ -494,6 +512,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_trait_impl_with_trait_constraint() {
         check_assist(
@@ -524,6 +543,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn add_trait_impl_target() {
         check_assist_target(
@@ -537,6 +557,7 @@ mod tests {
             "/// Has a lifetime parameter\nstruct Foo<'a, T: Foo<'a>> {}",
         );
     }
+
     #[test]
     fn add_impl_with_indent() {
         check_assist(
@@ -555,6 +576,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn add_impl_with_multiple_indent() {
         check_assist(
@@ -577,6 +599,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn add_trait_impl_with_indent() {
         check_assist(
@@ -595,6 +618,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_trait() {
         check_assist(
@@ -625,6 +649,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_trait_use_generic() {
         check_assist(
@@ -682,6 +707,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_trait_docs() {
         check_assist(
@@ -716,6 +742,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_trait_assoc_types() {
         check_assist(
@@ -744,6 +771,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_trait_indent() {
         check_assist(
@@ -780,6 +808,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_add_impl_trait_empty() {
         check_assist(

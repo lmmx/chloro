@@ -21,8 +21,8 @@ use crate::{
 };
 
 use super::{
-    ConstEvalError,
     super::mir::{MirEvalError, MirLowerError},
+    ConstEvalError,
 };
 
 mod intrinsics;
@@ -42,15 +42,16 @@ fn check_fail(
     error: impl FnOnce(ConstEvalError<'_>) -> bool,
 ) {
     let (db, file_id) = TestDB::with_single_file(ra_fixture);
-    crate::attach_db(
-        &db,
-        || match eval_goal(&db, file_id) {
+    crate::attach_db(&db, || match eval_goal(&db, file_id) {
         Ok(_) => panic!("Expected fail, but it succeeded"),
         Err(e) => {
-            assert!(error(simplify(e.clone())), "Actual error was: {}", pretty_print_err(e, &db))
+            assert!(
+                error(simplify(e.clone())),
+                "Actual error was: {}",
+                pretty_print_err(e, &db)
+            )
         }
-    },
-    )
+    })
 }
 
 #[track_caller]
@@ -134,7 +135,12 @@ fn eval_goal(db: &TestDB, file_id: EditionedFileId) -> Result<Const<'_>, ConstEv
         .declarations()
         .find_map(|x| match x {
             hir_def::ModuleDefId::ConstId(x) => {
-                if db.const_signature(x).name.as_ref()?.display(db, file_id.edition(db)).to_string()
+                if db
+                    .const_signature(x)
+                    .name
+                    .as_ref()?
+                    .display(db, file_id.edition(db))
+                    .to_string()
                     == "GOAL"
                 {
                     Some(x)
@@ -145,7 +151,11 @@ fn eval_goal(db: &TestDB, file_id: EditionedFileId) -> Result<Const<'_>, ConstEv
             _ => None,
         })
         .expect("No const named GOAL found in the test");
-    db.const_eval(const_id.into(), GenericArgs::new_from_iter(interner, []), None)
+    db.const_eval(
+        const_id.into(),
+        GenericArgs::new_from_iter(interner, []),
+        None,
+    )
 }
 
 #[test]
@@ -165,7 +175,10 @@ fn bit_op() {
     check_fail(r#"const GOAL: i8 = 1 << 8"#, |e| {
         e == ConstEvalError::MirEvalError(MirEvalError::Panic("Overflow in Shl".to_owned()))
     });
-    check_number(r#"const GOAL: i32 = 100000000i32 << 11"#, (100000000i32 << 11) as i128);
+    check_number(
+        r#"const GOAL: i32 = 100000000i32 << 11"#,
+        (100000000i32 << 11) as i128,
+    );
 }
 
 #[test]
@@ -193,14 +206,18 @@ fn floating_point() {
     check_number(
         r#"const GOAL: f16 = 2.0 + 3.0 * 5.5 - 8.;"#,
         i128::from_le_bytes(pad16(
-            &u16::try_from("10.5".parse::<f16>().unwrap().to_bits()).unwrap().to_le_bytes(),
+            &u16::try_from("10.5".parse::<f16>().unwrap().to_bits())
+                .unwrap()
+                .to_le_bytes(),
             true,
         )),
     );
     check_number(
         r#"const GOAL: f16 = -90.0 + 36.0;"#,
         i128::from_le_bytes(pad16(
-            &u16::try_from("-54.0".parse::<f16>().unwrap().to_bits()).unwrap().to_le_bytes(),
+            &u16::try_from("-54.0".parse::<f16>().unwrap().to_bits())
+                .unwrap()
+                .to_le_bytes(),
             true,
         )),
     );
@@ -285,11 +302,17 @@ fn casts() {
 fn floating_point_casts() {
     check_number(r#"const GOAL: usize = 12i32 as f32 as usize"#, 12);
     check_number(r#"const GOAL: i8 = -12i32 as f64 as i8"#, -12);
-    check_number(r#"const GOAL: i32 = (-1ui8 as f32 + 2u64 as f32) as i32"#, 1);
+    check_number(
+        r#"const GOAL: i32 = (-1ui8 as f32 + 2u64 as f32) as i32"#,
+        1,
+    );
     check_number(r#"const GOAL: i8 = (0./0.) as i8"#, 0);
     check_number(r#"const GOAL: i8 = (1./0.) as i8"#, 127);
     check_number(r#"const GOAL: i8 = (-1./0.) as i8"#, -128);
-    check_number(r#"const GOAL: i64 = 1e18f64 as f32 as i64"#, 999999984306749440);
+    check_number(
+        r#"const GOAL: i64 = 1e18f64 as f32 as i64"#,
+        999999984306749440,
+    );
 }
 
 #[test]
@@ -2469,6 +2492,7 @@ fn extern_weak_statics() {
 }
 
 #[test]
+// FIXME
 #[should_panic]
 fn from_ne_bytes() {
     check_number(
@@ -2513,13 +2537,10 @@ fn enums() {
         const GOAL: E = E::A;
         "#,
     );
-    crate::attach_db(
-        &db,
-        || {
+    crate::attach_db(&db, || {
         let r = eval_goal(&db, file_id).unwrap();
         assert_eq!(try_const_usize(&db, r), Some(1));
-    },
-    )
+    })
 }
 
 #[test]
@@ -2551,6 +2572,7 @@ fn const_transfer_memory() {
 }
 
 #[test]
+// FIXME
 #[should_panic]
 fn anonymous_const_block() {
     check_number(
@@ -2906,7 +2928,12 @@ fn unsized_local() {
         z[1]
     };
     "#,
-        |e| matches!(e, ConstEvalError::MirLowerError(MirLowerError::UnsizedTemporary(_))),
+        |e| {
+            matches!(
+                e,
+                ConstEvalError::MirLowerError(MirLowerError::UnsizedTemporary(_))
+            )
+        },
     );
 }
 

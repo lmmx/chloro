@@ -60,7 +60,10 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
     let trait_new = get_trait_mut(&trait_, famous)?;
 
     // Index -> IndexMut
-    ted::replace(trait_name.syntax(), make::name_ref(trait_new).clone_for_update().syntax());
+    ted::replace(
+        trait_name.syntax(),
+        make::name_ref(trait_new).clone_for_update().syntax(),
+    );
 
     // index -> index_mut
     let (trait_method_name, new_trait_method_name) = impl_def
@@ -70,33 +73,55 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
         .find_map(process_method_name)?;
     ted::replace(
         trait_method_name.syntax(),
-        make::name(new_trait_method_name).clone_for_update().syntax(),
+        make::name(new_trait_method_name)
+            .clone_for_update()
+            .syntax(),
     );
 
-    if let Some(type_alias) = impl_def.syntax().descendants().find_map(ast::TypeAlias::cast) {
+    if let Some(type_alias) = impl_def
+        .syntax()
+        .descendants()
+        .find_map(ast::TypeAlias::cast)
+    {
         ted::remove(type_alias.syntax());
     }
 
     // &self -> &mut self
     let mut_self_param = make::mut_self_param();
-    let self_param: ast::SelfParam =
-        impl_def.syntax().descendants().find_map(ast::SelfParam::cast)?;
-    ted::replace(self_param.syntax(), mut_self_param.clone_for_update().syntax());
+    let self_param: ast::SelfParam = impl_def
+        .syntax()
+        .descendants()
+        .find_map(ast::SelfParam::cast)?;
+    ted::replace(
+        self_param.syntax(),
+        mut_self_param.clone_for_update().syntax(),
+    );
 
     // &Self::Output -> &mut Self::Output
-    let ret_type = impl_def.syntax().descendants().find_map(ast::RetType::cast)?;
+    let ret_type = impl_def
+        .syntax()
+        .descendants()
+        .find_map(ast::RetType::cast)?;
     let new_ret_type = process_ret_type(&ret_type)?;
-    ted::replace(ret_type.syntax(), make::ret_type(new_ret_type).clone_for_update().syntax());
+    ted::replace(
+        ret_type.syntax(),
+        make::ret_type(new_ret_type).clone_for_update().syntax(),
+    );
 
-    let fn_ = impl_def.assoc_item_list()?.assoc_items().find_map(|it| match it {
-        ast::AssocItem::Fn(f) => Some(f),
-        _ => None,
-    })?;
+    let fn_ = impl_def
+        .assoc_item_list()?
+        .assoc_items()
+        .find_map(|it| match it {
+            ast::AssocItem::Fn(f) => Some(f),
+            _ => None,
+        })?;
     let _ = process_ref_mut(&fn_);
 
     let assoc_list = make::assoc_item_list(None).clone_for_update();
     ted::replace(impl_def.assoc_item_list()?.syntax(), assoc_list.syntax());
-    impl_def.get_or_create_assoc_item_list().add_item(syntax::ast::AssocItem::Fn(fn_));
+    impl_def
+        .get_or_create_assoc_item_list()
+        .add_item(syntax::ast::AssocItem::Fn(fn_));
 
     let target = impl_def.syntax().text_range();
     acc.add(
@@ -122,7 +147,10 @@ fn process_ref_mut(fn_: &ast::Fn) -> Option<()> {
         ast::Expr::RefExpr(ref_expr) if ref_expr.mut_token().is_none() => {
             ted::insert_all_raw(
                 ted::Position::after(ref_expr.amp_token()?),
-                vec![make::token(T![mut]).into(), make::tokens::whitespace(" ").into()],
+                vec![
+                    make::token(T![mut]).into(),
+                    make::tokens::whitespace(" ").into(),
+                ],
             );
         }
         _ => {}
@@ -172,7 +200,9 @@ mod tests {
         AssistConfig,
         tests::{TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_with_config},
     };
+
     use super::*;
+
     #[test]
     fn test_generate_mut_trait_impl() {
         check_assist(
@@ -306,6 +336,7 @@ impl core::ops::Deref for Foo {
 "#,
         );
     }
+
     #[test]
     fn test_generate_mut_trait_impl_non_zero_indent() {
         check_assist(
@@ -392,6 +423,7 @@ mod foo {
 "#,
         );
     }
+
     #[test]
     fn test_generate_mut_trait_impl_not_applicable() {
         check_assist_not_applicable(
@@ -411,11 +443,15 @@ impl AsRef$0<i32> for [T; 3] {}
 "#,
         );
     }
+
     #[test]
     fn no_snippets() {
         check_assist_with_config(
             generate_mut_trait_impl,
-            AssistConfig { snippet_cap: None, ..TEST_CONFIG },
+            AssistConfig {
+                snippet_cap: None,
+                ..TEST_CONFIG
+            },
             r#"
 //- minicore: index
 pub enum Axis { X = 0, Y = 1, Z = 2 }

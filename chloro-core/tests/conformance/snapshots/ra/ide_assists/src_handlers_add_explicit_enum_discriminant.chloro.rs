@@ -44,7 +44,10 @@ pub(crate) fn add_explicit_enum_discriminant(
 
     // Don't offer the assist if the enum has no variants or if all variants already have an
     // explicit discriminant.
-    if variant_list.variants().all(|variant_node| variant_node.expr().is_some()) {
+    if variant_list
+        .variants()
+        .all(|variant_node| variant_node.expr().is_some())
+    {
         return None;
     }
 
@@ -86,7 +89,9 @@ fn add_variant_discriminant(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::add_explicit_enum_discriminant;
+
     #[test]
     fn non_primitive_repr_non_data_bearing_add_discriminant() {
         check_assist(
@@ -113,6 +118,7 @@ enum TheEnum {
 "#,
         );
     }
+
     #[test]
     fn primitive_repr_data_bearing_add_discriminant() {
         check_assist(
@@ -137,6 +143,7 @@ enum TheEnum {
 "#,
         );
     }
+
     #[test]
     fn non_primitive_repr_data_bearing_not_applicable() {
         check_assist_not_applicable(
@@ -150,6 +157,7 @@ enum TheEnum$0 {
 "#,
         );
     }
+
     #[test]
     fn primitive_repr_non_data_bearing_add_discriminant() {
         check_assist(
@@ -174,6 +182,7 @@ enum TheEnum {
 "#,
         );
     }
+
     #[test]
     fn discriminants_already_explicit_not_applicable() {
         check_assist_not_applicable(
@@ -186,6 +195,7 @@ enum TheEnum$0 {
 "#,
         );
     }
+
     #[test]
     fn empty_enum_not_applicable() {
         check_assist_not_applicable(

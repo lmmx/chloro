@@ -93,7 +93,8 @@ pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
         add_sort_fields_assist(acc, union_ast.record_field_list()?)
     } else if let Some(variant_ast) = ctx.find_node_at_offset::<ast::Variant>() {
         add_sort_field_list_assist(acc, variant_ast.field_list())
-    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>() {
+    } else if let Some(enum_struct_variant_ast) = ctx.find_node_at_offset::<ast::RecordFieldList>()
+    {
         // should be above enum and below struct
         add_sort_fields_assist(acc, enum_struct_variant_ast)
     } else if let Some(enum_ast) = ctx.find_node_at_offset::<ast::Enum>() {
@@ -130,22 +131,19 @@ impl AddRewrite for Assists {
             label,
             target.text_range(),
             |builder| {
-            let mut editor = builder.make_editor(target);
+                let mut editor = builder.make_editor(target);
 
-            old.into_iter()
-                .zip(new)
-                .for_each(|(old, new)| editor.replace(old.syntax(), new.syntax()));
+                old.into_iter()
+                    .zip(new)
+                    .for_each(|(old, new)| editor.replace(old.syntax(), new.syntax()));
 
-            builder.add_file_edits(builder.file_id, editor)
-        },
+                builder.add_file_edits(builder.file_id, editor)
+            },
         )
     }
 }
 
-fn add_sort_field_list_assist(
-    acc: &mut Assists,
-    field_list: Option<ast::FieldList>,
-) -> Option<()> {
+fn add_sort_field_list_assist(acc: &mut Assists, field_list: Option<ast::FieldList>) -> Option<()> {
     match field_list {
         Some(ast::FieldList::RecordFieldList(it)) => add_sort_fields_assist(acc, it),
         _ => {
@@ -163,7 +161,9 @@ fn add_sort_methods_assist(
     let selection = ctx.selection_trimmed();
 
     // ignore assist if the selection intersects with an associated item.
-    if item_list.assoc_items().any(|item| item.syntax().text_range().intersect(selection).is_some())
+    if item_list
+        .assoc_items()
+        .any(|item| item.syntax().text_range().intersect(selection).is_some())
     {
         return None;
     }
@@ -176,7 +176,12 @@ fn add_sort_methods_assist(
         return None;
     }
 
-    acc.add_rewrite("Sort methods alphabetically", methods, sorted, item_list.syntax())
+    acc.add_rewrite(
+        "Sort methods alphabetically",
+        methods,
+        sorted,
+        item_list.syntax(),
+    )
 }
 
 fn add_sort_fields_assist(
@@ -191,7 +196,12 @@ fn add_sort_fields_assist(
         return None;
     }
 
-    acc.add_rewrite("Sort fields alphabetically", fields, sorted, record_field_list.syntax())
+    acc.add_rewrite(
+        "Sort fields alphabetically",
+        fields,
+        sorted,
+        record_field_list.syntax(),
+    )
 }
 
 fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -> Option<()> {
@@ -203,7 +213,12 @@ fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -
         return None;
     }
 
-    acc.add_rewrite("Sort variants alphabetically", variants, sorted, variant_list.syntax())
+    acc.add_rewrite(
+        "Sort variants alphabetically",
+        variants,
+        sorted,
+        variant_list.syntax(),
+    )
 }
 
 fn sort_by_name<T: HasName + Clone>(initial: &[T]) -> Vec<T> {
@@ -224,7 +239,9 @@ fn sort_by_name<T: HasName + Clone>(initial: &[T]) -> Vec<T> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn not_applicable_if_selection_in_fn_body() {
         check_assist_not_applicable(
@@ -240,6 +257,7 @@ impl S {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_selection_at_associated_const() {
         check_assist_not_applicable(
@@ -254,6 +272,7 @@ impl S {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_selection_overlaps_nodes() {
         check_assist_not_applicable(
@@ -267,6 +286,7 @@ impl $0S {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_no_selection() {
         cov_mark::check!(not_applicable_if_no_selection);
@@ -281,6 +301,7 @@ t$0rait Bar {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_selection_in_trait_fn_body() {
         check_assist_not_applicable(
@@ -295,49 +316,70 @@ trait Bar {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_trait_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(sort_items, r#"
+        check_assist_not_applicable(
+            sort_items,
+            r#"
 t$0rait Bar$0 {
 }
-        "#)
+        "#,
+        )
     }
+
     #[test]
     fn not_applicable_if_impl_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(sort_items, r#"
+        check_assist_not_applicable(
+            sort_items,
+            r#"
 struct Bar;
 $0impl Bar$0 {
 }
-        "#)
+        "#,
+        )
     }
+
     #[test]
     fn not_applicable_if_struct_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(sort_items, r#"
+        check_assist_not_applicable(
+            sort_items,
+            r#"
 $0struct Bar$0 ;
-        "#)
+        "#,
+        )
     }
+
     #[test]
     fn not_applicable_if_struct_empty2() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(sort_items, r#"
+        check_assist_not_applicable(
+            sort_items,
+            r#"
 $0struct Bar$0 { };
-        "#)
+        "#,
+        )
     }
+
     #[test]
     fn not_applicable_if_enum_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
 
-        check_assist_not_applicable(sort_items, r#"
+        check_assist_not_applicable(
+            sort_items,
+            r#"
 $0enum ZeroVariants$0 {};
-        "#)
+        "#,
+        )
     }
+
     #[test]
     fn not_applicable_if_trait_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
@@ -353,6 +395,7 @@ t$0rait Bar$0 {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_impl_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
@@ -369,6 +412,7 @@ $0impl Bar$0 {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_struct_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
@@ -384,6 +428,7 @@ $0struct Bar$0 {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_union_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
@@ -399,6 +444,7 @@ $0union Bar$0 {
         "#,
         )
     }
+
     #[test]
     fn not_applicable_if_enum_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
@@ -414,6 +460,7 @@ $0enum Bar$0 {
         "#,
         )
     }
+
     #[test]
     fn sort_trait() {
         check_assist(
@@ -444,6 +491,7 @@ trait Bar {
         "#,
         )
     }
+
     #[test]
     fn sort_impl() {
         check_assist(
@@ -474,6 +522,7 @@ impl Bar {
         "#,
         )
     }
+
     #[test]
     fn sort_struct() {
         check_assist(
@@ -494,6 +543,7 @@ struct Bar {
         "#,
         )
     }
+
     #[test]
     fn sort_struct_inside_a_function() {
         check_assist(
@@ -518,6 +568,7 @@ fn hello() {
         "#,
         )
     }
+
     #[test]
     fn sort_generic_struct_with_lifetime() {
         check_assist(
@@ -540,6 +591,7 @@ struct Bar<'a, T> {
         "#,
         )
     }
+
     #[test]
     fn sort_struct_fields_diff_len() {
         check_assist(
@@ -560,6 +612,7 @@ struct Bar {
         "#,
         )
     }
+
     #[test]
     fn sort_union() {
         check_assist(
@@ -580,6 +633,7 @@ union Bar {
         "#,
         )
     }
+
     #[test]
     fn sort_enum() {
         check_assist(
@@ -602,6 +656,7 @@ enum Bar {
         "#,
         )
     }
+
     #[test]
     fn sort_struct_enum_variant_fields() {
         check_assist(
@@ -624,6 +679,7 @@ enum Bar {
         "#,
         )
     }
+
     #[test]
     fn sort_struct_enum_variant() {
         check_assist(

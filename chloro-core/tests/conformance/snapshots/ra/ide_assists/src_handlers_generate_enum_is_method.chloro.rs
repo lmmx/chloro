@@ -63,7 +63,9 @@ pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>
         "Generate an `is_` method for this enum variant",
         target,
         |builder| {
-            let vis = parent_enum.visibility().map_or(String::new(), |v| format!("{v} "));
+            let vis = parent_enum
+                .visibility()
+                .map_or(String::new(), |v| format!("{v} "));
             let method = format!(
                 "    /// Returns `true` if the {enum_lowercase_name} is [`{variant_name}`].
     ///
@@ -82,7 +84,9 @@ pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_generate_enum_is_from_variant() {
         check_assist(
@@ -110,6 +114,7 @@ impl Variant {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_is_already_implemented() {
         check_assist_not_applicable(
@@ -128,6 +133,7 @@ impl Variant {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_is_from_tuple_variant() {
         check_assist(
@@ -155,6 +161,7 @@ impl Variant {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_is_from_record_variant() {
         check_assist(
@@ -182,6 +189,7 @@ impl Variant {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_is_from_variant_with_one_variant() {
         check_assist(
@@ -201,6 +209,7 @@ impl Variant {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_is_from_variant_with_visibility_marker() {
         check_assist(
@@ -228,6 +237,7 @@ impl Variant {
 }"#,
         );
     }
+
     #[test]
     fn test_multiple_generate_enum_is_from_variant() {
         check_assist(
@@ -273,6 +283,7 @@ impl Variant {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_is_variant_names() {
         check_assist(

@@ -45,28 +45,33 @@ pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         label,
         target,
         |builder| {
-        let make = SyntaxFactory::with_mappings();
-        let new_use = make.use_(
-            use_.attrs(),
-            use_.visibility(),
-            make.use_tree(path, tree.use_tree_list(), tree.rename(), tree.star_token().is_some()),
-        );
+            let make = SyntaxFactory::with_mappings();
+            let new_use = make.use_(
+                use_.attrs(),
+                use_.visibility(),
+                make.use_tree(
+                    path,
+                    tree.use_tree_list(),
+                    tree.rename(),
+                    tree.star_token().is_some(),
+                ),
+            );
 
-        let mut editor = builder.make_editor(use_.syntax());
-        // Remove the use tree from the current use item
-        tree.remove(&mut editor);
-        // Insert a newline and indentation, followed by the new use item
-        editor.insert_all(
-            Position::after(use_.syntax()),
-            vec![
-                make.whitespace(&format!("\n{}", IndentLevel::from_node(use_.syntax())))
-                    .syntax_element(),
-                new_use.syntax().syntax_element(),
-            ],
-        );
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            let mut editor = builder.make_editor(use_.syntax());
+            // Remove the use tree from the current use item
+            tree.remove(&mut editor);
+            // Insert a newline and indentation, followed by the new use item
+            editor.insert_all(
+                Position::after(use_.syntax()),
+                vec![
+                    make.whitespace(&format!("\n{}", IndentLevel::from_node(use_.syntax())))
+                        .syntax_element(),
+                    new_use.syntax().syntax_element(),
+                ],
+            );
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -79,7 +84,10 @@ fn resolve_full_path(tree: &ast::UseTree) -> Option<ast::Path> {
         .filter_map(|t| t.path());
 
     let final_path = paths.reduce(|prev, next| make::path_concat(next, prev))?;
-    if final_path.segment().is_some_and(|it| it.self_token().is_some()) {
+    if final_path
+        .segment()
+        .is_some_and(|it| it.self_token().is_some())
+    {
         final_path.qualifier()
     } else {
         Some(final_path)
@@ -89,7 +97,9 @@ fn resolve_full_path(tree: &ast::UseTree) -> Option<ast::Path> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn skip_single_import() {
         cov_mark::check!(skip_single_import);
@@ -112,6 +122,7 @@ use std::fmt::Debug as Dbg$0;
 ",
         );
     }
+
     #[test]
     fn skip_single_glob_import() {
         check_assist_not_applicable(
@@ -121,6 +132,7 @@ use std::fmt::*$0;
 ",
         );
     }
+
     #[test]
     fn unmerge_import() {
         check_assist(
@@ -145,6 +157,7 @@ use std::fmt::format;
 ",
         );
     }
+
     #[test]
     fn unmerge_glob_import() {
         check_assist(
@@ -158,6 +171,7 @@ use std::fmt::*;
 ",
         );
     }
+
     #[test]
     fn unmerge_renamed_import() {
         check_assist(
@@ -171,6 +185,7 @@ use std::fmt::Display as Disp;
 ",
         );
     }
+
     #[test]
     fn unmerge_indented_import() {
         check_assist(
@@ -188,6 +203,7 @@ mod format {
 ",
         );
     }
+
     #[test]
     fn unmerge_nested_import() {
         check_assist(
@@ -211,6 +227,7 @@ use foo::bar::baz::{qux, foobar};
 ",
         );
     }
+
     #[test]
     fn unmerge_import_with_visibility() {
         check_assist(
@@ -224,6 +241,7 @@ pub use std::fmt::Display;
 ",
         );
     }
+
     #[test]
     fn unmerge_import_on_self() {
         check_assist(
@@ -233,6 +251,7 @@ pub use std::fmt::Display;
 use std::process;",
         );
     }
+
     #[test]
     fn unmerge_import_with_attributes() {
         check_assist(

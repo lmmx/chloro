@@ -20,6 +20,7 @@ pub(crate) fn malformed_derive(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn invalid_input() {
         check_diagnostics(

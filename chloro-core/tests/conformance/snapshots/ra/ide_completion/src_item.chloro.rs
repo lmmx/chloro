@@ -29,6 +29,7 @@ use crate::{
 pub struct CompletionItem {
     /// Label in the completion pop up which identifies completion.
     pub label: CompletionItemLabel,
+
     /// Range of identifier that is being completed.
     ///
     /// It should be used primarily for UI, but we also use this to convert
@@ -43,22 +44,28 @@ pub struct CompletionItem {
     /// Typically, replaces `source_range` with new identifier.
     pub text_edit: TextEdit,
     pub is_snippet: bool,
+
     /// What item (struct, function, etc) are we completing.
     pub kind: CompletionItemKind,
+
     /// Lookup is used to check if completion item indeed can complete current
     /// ident.
     ///
     /// That is, in `foo.bar$0` lookup of `abracadabra` will be accepted (it
     /// contains `bar` sub sequence), and `quux` will rejected.
     pub lookup: SmolStr,
+
     /// Additional info to show in the UI pop up.
     pub detail: Option<String>,
     pub documentation: Option<Documentation>,
+
     /// Whether this item is marked as deprecated
     pub deprecated: bool,
+
     /// If completing a function call, ask the editor to show parameter popup
     /// after completion.
     pub trigger_call_info: bool,
+
     /// We use this to sort completion. Relevance records facts like "do the
     /// types align precisely?". We can't sort by relevances directly, they are
     /// only partially ordered.
@@ -67,12 +74,14 @@ pub struct CompletionItem {
     /// all possible items, and then separately build an ordered completion list
     /// based on relevance and fuzzy matching with the already typed identifier.
     pub relevance: CompletionRelevance,
+
+    /// Indicates that a reference or mutable reference to this variable is a
+    /// possible match.
     // FIXME: We shouldn't expose Mutability here (that is HIR types at all), its fine for now though
     // until we have more splitting completions in which case we should think about
     // generalizing this. See https://github.com/rust-lang/rust-analyzer/issues/12571
-    /// Indicates that a reference or mutable reference to this variable is a
-    /// possible match.
     pub ref_match: Option<(CompletionItemRefMode, TextSize)>,
+
     /// The import data to add to completion's edits.
     pub import_to_add: SmallVec<[String; 1]>,
 }
@@ -86,7 +95,7 @@ pub struct CompletionItemLabel {
     /// The right detail for the completion item, usually rendered right aligned at the end of the completion item.
     pub detail_right: Option<String>,
 }
-
+// We use custom debug for CompletionItem to make snapshot tests more readable.
 impl fmt::Debug for CompletionItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = f.debug_struct("CompletionItem");
@@ -175,7 +184,6 @@ pub struct CompletionRelevance {
     /// true when there is an `await.method()` or `iter().method()` completion.
     pub is_skipping_completion: bool,
 }
-
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct CompletionRelevanceTraitInfo {
     /// The trait this item is from is a `#[doc(notable_trait)]`
@@ -463,7 +471,11 @@ impl CompletionItem {
                 CompletionItemRefMode::Dereference => "*",
             };
             let label = format!("{prefix}{}", self.label.primary);
-            (label, ide_db::text_edit::Indel::insert(offset, String::from(prefix)), relevance)
+            (
+                label,
+                ide_db::text_edit::Indel::insert(offset, String::from(prefix)),
+                relevance,
+            )
         })
     }
 }
@@ -586,32 +598,26 @@ impl Builder {
             import_to_add,
         }
     }
-
     pub(crate) fn lookup_by(&mut self, lookup: impl Into<SmolStr>) -> &mut Builder {
         self.lookup = Some(lookup.into());
         self
     }
-
     pub(crate) fn label(&mut self, label: impl Into<SmolStr>) -> &mut Builder {
         self.label = label.into();
         self
     }
-
     pub(crate) fn trait_name(&mut self, trait_name: SmolStr) -> &mut Builder {
         self.trait_name = Some(trait_name);
         self
     }
-
     pub(crate) fn doc_aliases(&mut self, doc_aliases: Vec<SmolStr>) -> &mut Builder {
         self.doc_aliases = doc_aliases;
         self
     }
-
     pub(crate) fn insert_text(&mut self, insert_text: impl Into<String>) -> &mut Builder {
         self.insert_text = Some(insert_text.into());
         self
     }
-
     pub(crate) fn insert_snippet(
         &mut self,
         cap: SnippetCap,
@@ -621,21 +627,17 @@ impl Builder {
         self.is_snippet = true;
         self.insert_text(snippet)
     }
-
     pub(crate) fn text_edit(&mut self, edit: TextEdit) -> &mut Builder {
         self.text_edit = Some(edit);
         self
     }
-
     pub(crate) fn snippet_edit(&mut self, _cap: SnippetCap, edit: TextEdit) -> &mut Builder {
         self.is_snippet = true;
         self.text_edit(edit)
     }
-
     pub(crate) fn detail(&mut self, detail: impl Into<String>) -> &mut Builder {
         self.set_detail(Some(detail))
     }
-
     pub(crate) fn set_detail(&mut self, detail: Option<impl Into<String>>) -> &mut Builder {
         self.detail = detail.map(Into::into);
         if let Some(detail) = &self.detail
@@ -645,27 +647,22 @@ impl Builder {
         }
         self
     }
-
     #[allow(unused)]
     pub(crate) fn documentation(&mut self, docs: Documentation) -> &mut Builder {
         self.set_documentation(Some(docs))
     }
-
     pub(crate) fn set_documentation(&mut self, docs: Option<Documentation>) -> &mut Builder {
         self.documentation = docs;
         self
     }
-
     pub(crate) fn set_deprecated(&mut self, deprecated: bool) -> &mut Builder {
         self.deprecated = deprecated;
         self
     }
-
     pub(crate) fn set_relevance(&mut self, relevance: CompletionRelevance) -> &mut Builder {
         self.relevance = relevance;
         self
     }
-
     pub(crate) fn with_relevance(
         &mut self,
         relevance: impl FnOnce(CompletionRelevance) -> CompletionRelevance,
@@ -673,17 +670,14 @@ impl Builder {
         self.relevance = relevance(mem::take(&mut self.relevance));
         self
     }
-
     pub(crate) fn trigger_call_info(&mut self) -> &mut Builder {
         self.trigger_call_info = true;
         self
     }
-
     pub(crate) fn add_import(&mut self, import_to_add: LocatedImport) -> &mut Builder {
         self.imports_to_add.push(import_to_add);
         self
     }
-
     pub(crate) fn ref_match(
         &mut self,
         ref_mode: CompletionItemRefMode,
@@ -698,9 +692,11 @@ impl Builder {
 mod tests {
     use itertools::Itertools;
     use test_utils::assert_eq_text;
+
     use super::{
         CompletionRelevance, CompletionRelevancePostfixMatch, CompletionRelevanceTypeMatch,
     };
+
     /// Check that these are CompletionRelevance are sorted in ascending order
     /// by their relevance score.
     ///
@@ -736,6 +732,7 @@ mod tests {
 
         assert_eq_text!(&expected, &actual);
     }
+
     #[test]
     fn relevance_score() {
         use CompletionRelevance as Cr;
@@ -759,14 +756,36 @@ mod tests {
                 }),
                 ..default
             }],
-            vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::NonExact), ..default }],
-            vec![Cr { is_private_editable: true, ..default }],
+            vec![Cr {
+                postfix_match: Some(CompletionRelevancePostfixMatch::NonExact),
+                ..default
+            }],
+            vec![Cr {
+                is_private_editable: true,
+                ..default
+            }],
             vec![default],
-            vec![Cr { is_local: true, ..default }],
-            vec![Cr { type_match: Some(CompletionRelevanceTypeMatch::CouldUnify), ..default }],
-            vec![Cr { type_match: Some(CompletionRelevanceTypeMatch::Exact), ..default }],
-            vec![Cr { exact_name_match: true, ..default }],
-            vec![Cr { exact_name_match: true, is_local: true, ..default }],
+            vec![Cr {
+                is_local: true,
+                ..default
+            }],
+            vec![Cr {
+                type_match: Some(CompletionRelevanceTypeMatch::CouldUnify),
+                ..default
+            }],
+            vec![Cr {
+                type_match: Some(CompletionRelevanceTypeMatch::Exact),
+                ..default
+            }],
+            vec![Cr {
+                exact_name_match: true,
+                ..default
+            }],
+            vec![Cr {
+                exact_name_match: true,
+                is_local: true,
+                ..default
+            }],
             vec![Cr {
                 exact_name_match: true,
                 type_match: Some(CompletionRelevanceTypeMatch::Exact),
@@ -778,7 +797,10 @@ mod tests {
                 is_local: true,
                 ..default
             }],
-            vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::Exact), ..default }],
+            vec![Cr {
+                postfix_match: Some(CompletionRelevancePostfixMatch::Exact),
+                ..default
+            }],
         ];
 
         check_relevance_score_ordered(expected_relevance_order);

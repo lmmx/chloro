@@ -528,7 +528,6 @@ impl <> $crate::fmt::Debug for Command< > where {
 }"#]],
     );
 }
-
 #[test]
 fn test_debug_expand_with_cfg() {
     check(
@@ -601,7 +600,6 @@ impl <> $crate::fmt::Debug for HideAndShowEnum< > where {
 }"#]],
     );
 }
-
 #[test]
 fn test_default_expand_with_cfg() {
     check(

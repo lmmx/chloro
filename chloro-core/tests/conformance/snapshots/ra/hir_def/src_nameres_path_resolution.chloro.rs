@@ -75,7 +75,12 @@ impl ResolvePathResult {
         segment_index: Option<usize>,
         prefix_info: ResolvePathResultPrefixInfo,
     ) -> ResolvePathResult {
-        ResolvePathResult { resolved_def, segment_index, reached_fixedpoint, prefix_info }
+        ResolvePathResult {
+            resolved_def,
+            segment_index,
+            reached_fixedpoint,
+            prefix_info,
+        }
     }
 }
 
@@ -99,7 +104,10 @@ impl DefMap {
         &self,
         local_def_map: &LocalDefMap,
         db: &dyn DefDatabase,
+        // module to import to
         original_module: LocalModuleId,
+        // pub(path)
+        //     ^^^^ this
         visibility: &RawVisibility,
         within_impl: bool,
     ) -> Option<Visibility> {
@@ -157,9 +165,12 @@ impl DefMap {
         local_def_map: &LocalDefMap,
         db: &dyn DefDatabase,
         mode: ResolveMode,
+        // module to import to
         mut original_module: LocalModuleId,
         path: &ModPath,
         shadow: BuiltinShadowMode,
+        // Pass `MacroSubNs` if we know we're resolving macro names and which kind of macro we're
+        // resolving them to. Pass `None` otherwise, e.g. when we're resolving import paths.
         expected_macro_subns: Option<MacroSubNs>,
     ) -> ResolvePathResult {
         let mut result = self.resolve_path_fp_with_macro_single(
@@ -292,8 +303,11 @@ impl DefMap {
                 // FIXME: If the next segment doesn't resolve in the module and
                 // BuiltinShadowMode wasn't Module, then we need to try
                 // resolving it as a builtin.
-                let prefer_module =
-                    if path.segments().len() == 1 { shadow } else { BuiltinShadowMode::Module };
+                let prefer_module = if path.segments().len() == 1 {
+                    shadow
+                } else {
+                    BuiltinShadowMode::Module
+                };
 
                 tracing::debug!("resolving {:?} in module", segment);
                 self.resolve_name_in_module(
@@ -666,7 +680,10 @@ impl DefMap {
                 sub_namespace_match(Some(MacroSubNs::from_id(db, id)), expected_macro_subns)
             })
             .map_or_else(PerNs::none, |m| PerNs::macros(m, Visibility::Public, None));
-        let from_scope = self[module].scope.get(name).filter_macro(db, expected_macro_subns);
+        let from_scope = self[module]
+            .scope
+            .get(name)
+            .filter_macro(db, expected_macro_subns);
         let from_builtin = match self.block {
             Some(_) => {
                 // Only resolve to builtins in the root `DefMap`.
@@ -722,23 +739,28 @@ impl DefMap {
     }
 
     fn resolve_name_in_extern_prelude(&self, local_def_map: &LocalDefMap, name: &Name) -> PerNs {
-        local_def_map.extern_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
-            PerNs::types(
-                it.into(),
-                Visibility::Public,
-                extern_crate.map(ImportOrExternCrate::ExternCrate),
-            )
-        })
+        local_def_map
+            .extern_prelude
+            .get(name)
+            .map_or(PerNs::none(), |&(it, extern_crate)| {
+                PerNs::types(
+                    it.into(),
+                    Visibility::Public,
+                    extern_crate.map(ImportOrExternCrate::ExternCrate),
+                )
+            })
     }
 
     fn resolve_in_macro_use_prelude(&self, name: &Name) -> PerNs {
-        self.macro_use_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
-            PerNs::macros(
-                it,
-                Visibility::Public,
-                extern_crate.map(ImportOrExternCrate::ExternCrate),
-            )
-        })
+        self.macro_use_prelude
+            .get(name)
+            .map_or(PerNs::none(), |&(it, extern_crate)| {
+                PerNs::macros(
+                    it,
+                    Visibility::Public,
+                    extern_crate.map(ImportOrExternCrate::ExternCrate),
+                )
+            })
     }
 
     fn resolve_name_in_crate_root_or_extern_prelude(

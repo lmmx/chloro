@@ -18,24 +18,28 @@ use crate::{
     TraitEnvironment,
     db::HirDatabase,
     inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
-    next_solver::{Ty, TyKind, infer::{InferCtxt, traits::ObligationCause}},
+    next_solver::{
+        Ty, TyKind,
+        infer::{InferCtxt, traits::ObligationCause},
+    },
 };
 
 use super::{FieldPat, Pat, PatKind};
 
 use Constructor::*;
 
-pub(crate) type DeconstructedPat<'a, 'db> = rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
-
-pub(crate) type MatchArm<'a, 'b, 'db> = rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;
-
-pub(crate) type WitnessPat<'a, 'db> = rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
+// Re-export r-a-specific versions of all these types.
+pub(crate) type DeconstructedPat<'a, 'db> =
+    rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
+pub(crate) type MatchArm<'a, 'b, 'db> =
+    rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;
+pub(crate) type WitnessPat<'a, 'db> =
+    rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
 
 /// [Constructor] uses this in unimplemented variants.
 /// It allows porting match expressions from upstream algorithm without losing semantics.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum Void {
-}
+pub(crate) enum Void {}
 
 /// An index type for enum variants. This ranges from 0 to `variants.len()`, whereas `EnumVariantId`
 /// can take arbitrary large values (and hence mustn't be used with `IndexVec`/`BitSet`).
@@ -83,7 +87,13 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         let db = infcx.interner.db;
         let def_map = module.crate_def_map(db);
         let exhaustive_patterns = def_map.is_unstable_feature_enabled(&sym::exhaustive_patterns);
-        Self { module, db, exhaustive_patterns, env, infcx }
+        Self {
+            module,
+            db,
+            exhaustive_patterns,
+            env,
+            infcx,
+        }
     }
 
     pub(crate) fn compute_match_usefulness<'b>(
@@ -114,7 +124,12 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
     /// Returns whether the given ADT is from another crate declared `#[non_exhaustive]`.
     fn is_foreign_non_exhaustive(&self, adt: hir_def::AdtId) -> bool {
         let is_local = adt.krate(self.db) == self.module.krate();
-        !is_local && self.db.attrs(adt.into()).by_key(sym::non_exhaustive).exists()
+        !is_local
+            && self
+                .db
+                .attrs(adt.into())
+                .by_key(sym::non_exhaustive)
+                .exists()
     }
 
     fn variant_id_for_adt(
@@ -149,15 +164,17 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         let field_tys = self.db.field_types(variant);
         let fields_len = variant.fields(self.db).fields().len() as u32;
 
-        (0..fields_len).map(|idx| LocalFieldId::from_raw(idx.into())).map(move |fid| {
-            let ty = field_tys[fid].instantiate(self.infcx.interner, substs);
-            let ty = self
-                .infcx
-                .at(&ObligationCause::dummy(), self.env.env)
-                .deeply_normalize(ty)
-                .unwrap_or(ty);
-            (fid, ty)
-        })
+        (0..fields_len)
+            .map(|idx| LocalFieldId::from_raw(idx.into()))
+            .map(move |fid| {
+                let ty = field_tys[fid].instantiate(self.infcx.interner, substs);
+                let ty = self
+                    .infcx
+                    .at(&ObligationCause::dummy(), self.env.env)
+                    .deeply_normalize(ty)
+                    .unwrap_or(ty);
+                (fid, ty)
+            })
     }
 
     pub(crate) fn lower_pat(&self, pat: &Pat<'db>) -> DeconstructedPat<'a, 'db> {
@@ -167,8 +184,14 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         let arity;
 
         match pat.kind.as_ref() {
-            PatKind::Binding { subpattern: Some(subpat), .. } => return self.lower_pat(subpat),
-            PatKind::Binding { subpattern: None, .. } | PatKind::Wild => {
+            PatKind::Binding {
+                subpattern: Some(subpat),
+                ..
+            } => return self.lower_pat(subpat),
+            PatKind::Binding {
+                subpattern: None, ..
+            }
+            | PatKind::Wild => {
                 ctor = Wildcard;
                 fields = Vec::new();
                 arity = 0;
@@ -177,7 +200,11 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
                 ctor = match pat.ty.kind() {
                     TyKind::Ref(..) => Ref,
                     _ => {
-                        never!("pattern has unexpected type: pat: {:?}, ty: {:?}", pat, &pat.ty);
+                        never!(
+                            "pattern has unexpected type: pat: {:?}, ty: {:?}",
+                            pat,
+                            &pat.ty
+                        );
                         Wildcard
                     }
                 };
@@ -219,7 +246,11 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
                         arity = variant.fields(self.db).fields().len();
                     }
                     _ => {
-                        never!("pattern has unexpected type: pat: {:?}, ty: {:?}", pat, &pat.ty);
+                        never!(
+                            "pattern has unexpected type: pat: {:?}, ty: {:?}",
+                            pat,
+                            &pat.ty
+                        );
                         ctor = Wildcard;
                         fields.clear();
                         arity = 0;
@@ -274,7 +305,11 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
                         .collect();
 
                     if let VariantId::EnumVariantId(enum_variant) = variant {
-                        PatKind::Variant { substs, enum_variant, subpatterns }
+                        PatKind::Variant {
+                            substs,
+                            enum_variant,
+                            subpatterns,
+                        }
                     } else {
                         PatKind::Leaf { subpatterns }
                     }
@@ -288,7 +323,9 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
             // be careful to reconstruct the correct constant pattern here. However a string
             // literal pattern will never be reported as a non-exhaustiveness witness, so we
             // ignore this issue.
-            Ref => PatKind::Deref { subpattern: subpatterns.next().unwrap() },
+            Ref => PatKind::Deref {
+                subpattern: subpatterns.next().unwrap(),
+            },
             Slice(_) => unimplemented!(),
             DerefPattern(_) => unimplemented!(),
             &Str(void) => match void {},
@@ -309,15 +346,10 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
 
 impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
     type Error = ();
-
     type Ty = Ty<'db>;
-
     type VariantIdx = EnumVariantContiguousIndex;
-
     type StrLit = Void;
-
     type ArmData = ();
-
     type PatData = ();
 
     fn is_exhaustive_patterns_feature_on(&self) -> bool {
@@ -363,9 +395,10 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         let single = |ty| smallvec![(ty, PrivateUninhabitedField(false))];
         let tys: SmallVec<[_; 2]> = match ctor {
             Struct | Variant(_) | UnionField => match ty.kind() {
-                TyKind::Tuple(substs) => {
-                    substs.iter().map(|ty| (ty, PrivateUninhabitedField(false))).collect()
-                }
+                TyKind::Tuple(substs) => substs
+                    .iter()
+                    .map(|ty| (ty, PrivateUninhabitedField(false)))
+                    .collect(),
                 TyKind::Ref(_, rty, _) => single(rty),
                 TyKind::Adt(adt_def, ..) => {
                     let adt = adt_def.def_id().0;
@@ -386,14 +419,22 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
                         .collect()
                 }
                 ty_kind => {
-                    never!("Unexpected type for `{:?}` constructor: {:?}", ctor, ty_kind);
+                    never!(
+                        "Unexpected type for `{:?}` constructor: {:?}",
+                        ctor,
+                        ty_kind
+                    );
                     single(*ty)
                 }
             },
             Ref => match ty.kind() {
                 TyKind::Ref(_, rty, _) => single(rty),
                 ty_kind => {
-                    never!("Unexpected type for `{:?}` constructor: {:?}", ctor, ty_kind);
+                    never!(
+                        "Unexpected type for `{:?}` constructor: {:?}",
+                        ctor,
+                        ty_kind
+                    );
                     single(*ty)
                 }
             },
@@ -469,12 +510,14 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
                         }
                     }
                     hir_def::AdtId::UnionId(_) => ConstructorSet::Union,
-                    hir_def::AdtId::StructId(_) => {
-                        ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) }
-                    }
+                    hir_def::AdtId::StructId(_) => ConstructorSet::Struct {
+                        empty: cx.is_uninhabited(*ty),
+                    },
                 }
             }
-            TyKind::Tuple(..) => ConstructorSet::Struct { empty: cx.is_uninhabited(*ty) },
+            TyKind::Tuple(..) => ConstructorSet::Struct {
+                empty: cx.is_uninhabited(*ty),
+            },
             TyKind::Ref(..) => ConstructorSet::Ref,
             TyKind::Never => ConstructorSet::NoConstructors,
             // This type is one for which we cannot list constructors, like `str` or `f64`.
@@ -488,9 +531,9 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         _ty: &Self::Ty,
     ) -> fmt::Result {
         write!(f, "<write_variant_name unsupported>")
-
         // We lack the database here ...
         // let variant = ty.as_adt().and_then(|(adt, _)| Self::variant_id_for_adt(db, ctor, adt));
+
         // if let Some(variant) = variant {
         //     match variant {
         //         VariantId::EnumVariantId(v) => {

@@ -18,6 +18,7 @@ pub(crate) fn unresolved_assoc_item(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn bare() {
         check_diagnostics(
@@ -31,6 +32,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unimplemented_trait() {
         check_diagnostics(

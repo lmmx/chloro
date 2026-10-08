@@ -33,13 +33,12 @@ use crate::assist_context::{AssistContext, Assists};
 //     }
 // }
 // ```
-pub(crate) fn convert_range_for_to_while(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn convert_range_for_to_while(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let for_kw = ctx.find_token_syntax_at_offset(T![for])?;
     let for_ = ast::ForExpr::cast(for_kw.parent()?)?;
-    let ast::Pat::IdentPat(pat) = for_.pat()? else { return None };
+    let ast::Pat::IdentPat(pat) = for_.pat()? else {
+        return None;
+    };
     let iterable = for_.iterable()?;
     let (start, end, step, inclusive) = extract_range(&iterable)?;
     let name = pat.name()?;
@@ -81,7 +80,9 @@ pub(crate) fn convert_range_for_to_while(
                 elements.extend([
                     make.token(T![while]).syntax_element(),
                     make.whitespace(" ").syntax_element(),
-                    make.expr_bin(var_expr.clone(), op, end).syntax().syntax_element(),
+                    make.expr_bin(var_expr.clone(), op, end)
+                        .syntax()
+                        .syntax_element(),
                 ]);
             } else {
                 elements.push(make.token(T![loop]).syntax_element());
@@ -92,11 +93,14 @@ pub(crate) fn convert_range_for_to_while(
                 elements,
             );
 
-            let op = ast::BinaryOp::Assignment { op: Some(ast::ArithOp::Add) };
+            let op = ast::BinaryOp::Assignment {
+                op: Some(ast::ArithOp::Add),
+            };
             edit.insert_all(
                 Position::after(last),
                 vec![
-                    make.whitespace(&format!("\n{}", indent + 1)).syntax_element(),
+                    make.whitespace(&format!("\n{}", indent + 1))
+                        .syntax_element(),
                     make.expr_bin(var_expr, op, step).syntax().syntax_element(),
                     make.token(T![;]).syntax_element(),
                 ],
@@ -113,7 +117,12 @@ fn extract_range(iterable: &ast::Expr) -> Option<(ast::Expr, Option<ast::Expr>, 
         ast::Expr::ParenExpr(expr) => extract_range(&expr.expr()?)?,
         ast::Expr::RangeExpr(range) => {
             let inclusive = range.op_kind()? == ast::RangeOp::Inclusive;
-            (range.start()?, range.end(), make::expr_literal("1").into(), inclusive)
+            (
+                range.start()?,
+                range.end(),
+                make::expr_literal("1").into(),
+                inclusive,
+            )
         }
         ast::Expr::MethodCallExpr(call) if call.name_ref()?.text() == "step_by" => {
             let [step] = call.arg_list()?.args().collect_array()?;
@@ -127,7 +136,9 @@ fn extract_range(iterable: &ast::Expr) -> Option<(ast::Expr, Option<ast::Expr>, 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_convert_range_for_to_while() {
         check_assist(
@@ -150,6 +161,7 @@ fn foo() {
             ",
         );
     }
+
     #[test]
     fn test_convert_range_for_to_while_no_end_bound() {
         check_assist(
@@ -172,6 +184,7 @@ fn foo() {
             ",
         );
     }
+
     #[test]
     fn test_convert_range_for_to_while_with_mut_binding() {
         check_assist(
@@ -194,6 +207,7 @@ fn foo() {
             ",
         );
     }
+
     #[test]
     fn test_convert_range_for_to_while_with_label() {
         check_assist(
@@ -216,6 +230,7 @@ fn foo() {
             ",
         );
     }
+
     #[test]
     fn test_convert_range_for_to_while_step_by() {
         check_assist(
@@ -238,6 +253,7 @@ fn foo() {
             ",
         );
     }
+
     #[test]
     fn test_convert_range_for_to_while_not_applicable_non_range() {
         check_assist_not_applicable(

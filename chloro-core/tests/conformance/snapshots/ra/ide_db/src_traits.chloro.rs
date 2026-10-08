@@ -10,8 +10,11 @@ pub fn resolve_target_trait(
     sema: &Semantics<'_, RootDatabase>,
     impl_def: &ast::Impl,
 ) -> Option<hir::Trait> {
-    let ast_path =
-        impl_def.trait_().map(|it| it.syntax().clone()).and_then(ast::PathType::cast)?.path()?;
+    let ast_path = impl_def
+        .trait_()
+        .map(|it| it.syntax().clone())
+        .and_then(ast::PathType::cast)?
+        .path()?;
 
     match sema.resolve_path(&ast_path) {
         Some(hir::PathResolution::Def(hir::ModuleDef::Trait(def))) => Some(def),
@@ -52,9 +55,7 @@ pub fn get_missing_assoc_items(
         }
     }
 
-    resolve_target_trait(sema, impl_def).map_or(
-        vec![],
-        |target_trait| {
+    resolve_target_trait(sema, impl_def).map_or(vec![], |target_trait| {
         target_trait
             .items(sema.db)
             .into_iter()
@@ -70,8 +71,7 @@ pub fn get_missing_assoc_items(
                     .unwrap_or_default(),
             })
             .collect()
-    },
-    )
+    })
 }
 
 /// Converts associated trait impl items to their trait definition counterpart
@@ -81,9 +81,7 @@ pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> 
         let trait_ = assoc.implemented_trait(db)?;
         assoc_item_of_trait(db, assoc, trait_)
     })()
-    .unwrap_or(
-        def,
-    )
+    .unwrap_or(def)
 }
 
 /// If this is an trait (impl) assoc item, returns the assoc item of the corresponding trait definition.
@@ -124,7 +122,9 @@ mod tests {
     use span::Edition;
     use syntax::ast::{self, AstNode};
     use test_fixture::ChangeFixture;
+
     use crate::RootDatabase;
+
     /// Creates analysis from a multi-file fixture, returns positions marked with $0.
     pub(crate) fn position(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -132,18 +132,21 @@ mod tests {
         let mut database = RootDatabase::default();
         let change_fixture = ChangeFixture::parse(&database, ra_fixture);
         database.apply_change(change_fixture.change);
-        let (file_id, range_or_offset) =
-            change_fixture.file_position.expect("expected a marker ($0)");
+        let (file_id, range_or_offset) = change_fixture
+            .file_position
+            .expect("expected a marker ($0)");
         let offset = range_or_offset.expect_offset();
         (database, FilePosition { file_id, offset })
     }
+
     fn check_trait(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
 
         let file = sema.parse(position.file_id);
-        let impl_block: ast::Impl =
-            sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
+        let impl_block: ast::Impl = sema
+            .find_node_at_offset_with_descend(file.syntax(), position.offset)
+            .unwrap();
         let trait_ = crate::traits::resolve_target_trait(&sema, &impl_block);
         let actual = match trait_ {
             Some(trait_) => trait_.name(&db).display(&db, Edition::CURRENT).to_string(),
@@ -151,21 +154,29 @@ mod tests {
         };
         expect.assert_eq(&actual);
     }
+
     fn check_missing_assoc(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
 
         let file = sema.parse(position.file_id);
-        let impl_block: ast::Impl =
-            sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
+        let impl_block: ast::Impl = sema
+            .find_node_at_offset_with_descend(file.syntax(), position.offset)
+            .unwrap();
         let items = crate::traits::get_missing_assoc_items(&sema, &impl_block);
         let actual = items
             .into_iter()
-            .map(|item| item.name(&db).unwrap().display(&db, Edition::CURRENT).to_string())
+            .map(|item| {
+                item.name(&db)
+                    .unwrap()
+                    .display(&db, Edition::CURRENT)
+                    .to_string()
+            })
             .collect::<Vec<_>>()
             .join("\n");
         expect.assert_eq(&actual);
     }
+
     #[test]
     fn resolve_trait() {
         check_trait(
@@ -208,6 +219,7 @@ impl Bar {
             expect![[""]],
         );
     }
+
     #[test]
     fn missing_assoc_items() {
         check_missing_assoc(

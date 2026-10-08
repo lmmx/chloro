@@ -16,7 +16,10 @@ use crate::next_solver::{
     DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ParamEnv, Predicate, PredicateKind,
     QueryResult, SolverContext, Span, Term,
     fulfill::NextSolverError,
-    infer::{InferCtxt, traits::{Obligation, ObligationCause}},
+    infer::{
+        InferCtxt,
+        traits::{Obligation, ObligationCause},
+    },
     obligation_ctxt::ObligationCtxt,
 };
 
@@ -87,12 +90,20 @@ impl<'db> NormalizesToTermHack<'db> {
         f: impl FnOnce(&mut ObligationCtxt<'_, 'db>),
     ) -> Result<Certainty, NoSolution> {
         let mut ocx = ObligationCtxt::new(infcx);
-        ocx.eq(&ObligationCause::dummy(), param_env, self.term, self.unconstrained_term)?;
+        ocx.eq(
+            &ObligationCause::dummy(),
+            param_env,
+            self.term,
+            self.unconstrained_term,
+        )?;
         f(&mut ocx);
         let errors = ocx.evaluate_obligations_error_on_ambiguity();
         if errors.is_empty() {
             Ok(Certainty::Yes)
-        } else if errors.iter().all(|e| !matches!(e, NextSolverError::TrueError(_))) {
+        } else if errors
+            .iter()
+            .all(|e| !matches!(e, NextSolverError::TrueError(_)))
+        {
             Ok(Certainty::AMBIGUOUS)
         } else {
             Err(NoSolution)
@@ -250,15 +261,23 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
         match goal.predicate.kind().no_bound_vars() {
             Some(PredicateKind::NormalizesTo(NormalizesTo { alias, term })) => {
                 let unconstrained_term = infcx.next_term_var_of_kind(term);
-                let goal =
-                    goal.with(infcx.interner, NormalizesTo { alias, term: unconstrained_term });
+                let goal = goal.with(
+                    infcx.interner,
+                    NormalizesTo {
+                        alias,
+                        term: unconstrained_term,
+                    },
+                );
                 // We have to use a `probe` here as evaluating a `NormalizesTo` can constrain the
                 // expected term. This means that candidates which only fail due to nested goals
                 // and which normalize to a different term then the final result could ICE: when
                 // building their proof tree, the expected term was unconstrained, but when
                 // instantiating the candidate it is already constrained to the result of another
                 // candidate.
-                let normalizes_to_term_hack = NormalizesToTermHack { term, unconstrained_term };
+                let normalizes_to_term_hack = NormalizesToTermHack {
+                    term,
+                    unconstrained_term,
+                };
                 let (proof_tree, nested_goals_result) = infcx.probe(|_| {
                     // Here, if we have any nested goals, then we make sure to apply them
                     // considering the constrained RHS, and pass the resulting certainty to
@@ -298,8 +317,11 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
                 // into another candidate who ends up with different inference
                 // constraints, we get an ICE if we already applied the constraints
                 // from the chosen candidate.
-                let proof_tree =
-                    infcx.probe(|_| infcx.evaluate_root_goal_for_proof_tree(goal, Span::dummy()).1);
+                let proof_tree = infcx.probe(|_| {
+                    infcx
+                        .evaluate_root_goal_for_proof_tree(goal, Span::dummy())
+                        .1
+                });
                 InspectGoal::new(infcx, self.goal.depth + 1, proof_tree, None, source)
             }
         }
@@ -312,7 +334,9 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
         &self,
         visitor: &mut V,
     ) -> V::Result {
-        self.goal.infcx.probe(|_| self.visit_nested_no_probe(visitor))
+        self.goal
+            .infcx
+            .probe(|_| self.visit_nested_no_probe(visitor))
     }
 }
 
@@ -349,10 +373,15 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
                 inspect::ProbeStep::AddGoal(..) | inspect::ProbeStep::RecordImplArgs { .. } => {
                     steps.push(step)
                 }
-                inspect::ProbeStep::MakeCanonicalResponse { shallow_certainty: c } => {
+                inspect::ProbeStep::MakeCanonicalResponse {
+                    shallow_certainty: c,
+                } => {
                     assert!(matches!(
                         shallow_certainty.replace(c),
-                        None | Some(Certainty::Maybe { cause: MaybeCause::Ambiguity, .. })
+                        None | Some(Certainty::Maybe {
+                            cause: MaybeCause::Ambiguity,
+                            ..
+                        })
                     ));
                 }
                 inspect::ProbeStep::NestedProbe(ref probe) => {
@@ -439,8 +468,12 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
     ) -> Self {
         let infcx = <&SolverContext<'db>>::from(infcx);
 
-        let inspect::GoalEvaluation { uncanonicalized_goal, orig_values, final_revision, result } =
-            root;
+        let inspect::GoalEvaluation {
+            uncanonicalized_goal,
+            orig_values,
+            final_revision,
+            result,
+        } = root;
         // If there's a normalizes-to goal, AND the evaluation result with the result of
         // constraining the normalizes-to RHS and computing the nested goals.
         let result = result.and_then(|ok| {
@@ -472,7 +505,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
 
 /// The public API to interact with proof trees.
 pub(crate) trait ProofTreeVisitor<'db> {
-    type Result;
+    type Result: VisitorResult;
 
     fn config(&self) -> InspectConfig {
         InspectConfig { max_depth: 10 }
@@ -498,6 +531,12 @@ impl<'db> InferCtxt<'db> {
     ) -> V::Result {
         let (_, proof_tree) = <&SolverContext<'db>>::from(self)
             .evaluate_root_goal_for_proof_tree(goal, Span::dummy());
-        visitor.visit_goal(&InspectGoal::new(self, depth, proof_tree, None, GoalSource::Misc))
+        visitor.visit_goal(&InspectGoal::new(
+            self,
+            depth,
+            proof_tree,
+            None,
+            GoalSource::Misc,
+        ))
     }
 }

@@ -62,7 +62,10 @@ pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
             let new_expr = expr.reset_indent().indent(1.into());
             let block_expr = make.block_expr(None, Some(new_expr));
 
-            editor.replace(expr.syntax(), block_expr.indent(expr.indent_level()).syntax());
+            editor.replace(
+                expr.syntax(),
+                block_expr.indent(expr.indent_level()).syntax(),
+            );
 
             editor.add_mappings(make.finish_with_mappings());
             builder.add_file_edits(ctx.vfs_file_id(), editor);
@@ -110,7 +113,9 @@ fn get_replacement_node(ctx: &AssistContext<'_>) -> Option<(ParentType, ast::Exp
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn suggest_add_braces_for_closure() {
         check_assist(
@@ -129,6 +134,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn suggest_add_braces_for_closure_in_match() {
         check_assist(
@@ -155,6 +161,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn suggest_add_braces_for_assignment() {
         check_assist(
@@ -173,6 +180,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn no_assist_for_closures_with_braces() {
         check_assist_not_applicable(
@@ -184,6 +192,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn suggest_add_braces_for_match() {
         check_assist(
@@ -208,6 +217,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn multiple_indent() {
         check_assist(
@@ -242,6 +252,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn no_assist_for_match_with_braces() {
         check_assist_not_applicable(

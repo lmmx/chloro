@@ -33,6 +33,7 @@ pub(crate) fn incorrect_generics_len(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn partially_specified_generics() {
         check_diagnostics(
@@ -47,6 +48,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn enum_variant() {
         check_diagnostics(
@@ -65,6 +67,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn lifetimes() {
         check_diagnostics(
@@ -86,6 +89,7 @@ fn foo(Foo(_): Foo) -> Foo {
         "#,
         );
     }
+
     #[test]
     fn no_error_for_elided_lifetimes() {
         check_diagnostics(
@@ -96,6 +100,7 @@ fn foo(_v: &()) -> Foo { loop {} }
         "#,
         );
     }
+
     #[test]
     fn errs_for_elided_lifetimes_if_lifetimes_are_explicitly_provided() {
         check_diagnostics(
@@ -109,6 +114,7 @@ fn foo(_v: Foo<'_>
         "#,
         );
     }
+
     #[test]
     fn types_and_consts() {
         check_diagnostics(
@@ -125,6 +131,7 @@ fn bar() {
         "#,
         );
     }
+
     #[test]
     fn respects_defaults() {
         check_diagnostics(
@@ -137,6 +144,7 @@ fn bar(_v: Bar<()>) {}
         "#,
         );
     }
+
     #[test]
     fn constant() {
         check_diagnostics(
@@ -149,6 +157,7 @@ fn baz() {
         "#,
         );
     }
+
     #[test]
     fn assoc_type() {
         check_diagnostics(
@@ -162,6 +171,7 @@ fn foo<T: Trait<Assoc<i32> = bool>>() {}
         "#,
         );
     }
+
     #[test]
     fn regression_19669() {
         check_diagnostics(
@@ -173,6 +183,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn generic_assoc_type_infer_lifetime_in_expr_position() {
         check_diagnostics(
@@ -196,6 +207,7 @@ impl WithSignals for Player {
         "#,
         );
     }
+
     #[test]
     fn enum_type_alias_default_param() {
         check_diagnostics(

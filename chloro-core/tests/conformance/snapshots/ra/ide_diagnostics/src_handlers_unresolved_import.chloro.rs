@@ -23,6 +23,7 @@ pub(crate) fn unresolved_import(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn unresolved_import() {
         check_diagnostics(
@@ -35,6 +36,7 @@ mod does_exist {}
 "#,
         );
     }
+
     #[test]
     fn unresolved_import_in_use_tree() {
         // Only the relevant part of a nested `use` item should be highlighted.
@@ -61,6 +63,7 @@ mod does_exist {
 "#,
         );
     }
+
     #[test]
     fn dedup_unresolved_import_from_unresolved_crate() {
         check_diagnostics(

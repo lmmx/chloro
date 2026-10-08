@@ -2,29 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5111 bytes
-Chloro size:   5112 bytes
+Chloro size:   5132 bytes
 Rustfmt size:  5132 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! This module contains a helper for converting a field access expression into a
- //! path expression. This is used when destructuring a tuple or struct.
- //!
- //! It determines whether to deref the new expression and/or wrap it in parentheses,
- //! based on the parent of the existing expression.
-+
- use syntax::{
-     AstNode, T,
-     ast::{self, FieldExpr, MethodCallExpr, make},
-     field_expr: &FieldExpr,
- ) -> (ast::Expr, RefData) {
-     let s = field_expr.syntax();
--    let mut ref_data = RefData {
--        needs_deref: true,
--        needs_parentheses: true,
--    };
-+    let mut ref_data = RefData { needs_deref: true, needs_parentheses: true };
-     let mut target_node = field_expr.clone().into();
- 
-     let parent = match s.parent().map(ast::Expr::cast) {
+✓ Outputs are IDENTICAL

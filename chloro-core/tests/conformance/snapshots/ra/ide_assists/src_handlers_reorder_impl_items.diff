@@ -2,67 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6390 bytes
-Chloro size:   6383 bytes
+Chloro size:   6460 bytes
 Rustfmt size:  6460 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-                 ast::AssocItem::MacroCall(_) => None,
-             };
- 
--            name.and_then(|n| {
--                ranks
--                    .get(n.text().as_str().trim_start_matches("r#"))
--                    .copied()
--            })
--            .unwrap_or(usize::MAX)
-+            name.and_then(|n| ranks.get(n.text().as_str().trim_start_matches("r#")).copied())
-+                .unwrap_or(usize::MAX)
-         })
-         .collect();
- 
- #[cfg(test)]
- mod tests {
-     use crate::tests::{check_assist, check_assist_not_applicable};
--
-     use super::*;
--
-     #[test]
-     fn not_applicable_if_sorted() {
-         cov_mark::check!(not_applicable_if_sorted);
-         "#,
-         )
-     }
--
-     #[test]
-     fn reorder_impl_trait_functions() {
-         check_assist(
- "#,
-         )
-     }
--
-     #[test]
-     fn not_applicable_if_empty() {
-         check_assist_not_applicable(
-         "#,
-         )
-     }
--
-     #[test]
-     fn reorder_impl_trait_items() {
-         check_assist(
-         "#,
-         )
-     }
--
-     #[test]
-     fn reorder_impl_trait_items_uneven_ident_lengths() {
-         check_assist(
- }"#,
-         )
-     }
--
-     #[test]
-     fn not_applicable_editing_assoc_items() {
-         cov_mark::check!(not_applicable_editing_assoc_items);
+✓ Outputs are IDENTICAL
