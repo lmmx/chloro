@@ -5,10 +5,10 @@
 //! removed syntax, and leaves some rustc parse errors to a later validation pass, which
 //! also reports semantic errors that rustc's parser does not (and that rustfmt therefore
 //! formats through). [`rejected_by_rustc`] reproduces the rustc parse errors that matter
-//! for formatting. Each rule below was checked against `rustfmt --edition 2024` (1.9.0).
+//! for formatting. Each rule below was checked against rustfmt 1.9.0.
 
 use ra_ap_syntax::ast::{self, AstNode};
-use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, T};
+use ra_ap_syntax::{Edition, NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, T};
 use rowan::{GreenNodeData, GreenTokenData, Language};
 
 // The rules run on every file, so they read the green tree (no allocation per node) and
@@ -58,14 +58,17 @@ fn condition_index(node: &GreenNodeData) -> Option<usize> {
 }
 
 /// rustc accepts `let` only as an operand of a `&&` chain in an `if`/`while` condition or
-/// a match guard. `path` holds the ancestors of the `let`, innermost last.
-fn let_expr_allowed(path: &[(&GreenNodeData, usize)]) -> bool {
+/// a match guard, and accepts a `let` chained with `&&` in an `if`/`while` condition only
+/// from edition 2024. `path` holds the ancestors of the `let`, innermost last.
+fn let_expr_allowed(path: &[(&GreenNodeData, usize)], edition: Edition) -> bool {
+    let mut chained = false;
     for &(parent, index) in path.iter().rev() {
         match kind(parent.kind()) {
-            SyntaxKind::BIN_EXPR if has_token(parent, T![&&]) => {}
+            SyntaxKind::BIN_EXPR if has_token(parent, T![&&]) => chained = true,
             // A `let` in a branch block is reached through the block, not directly.
             SyntaxKind::IF_EXPR | SyntaxKind::WHILE_EXPR => {
-                return condition_index(parent) == Some(index);
+                return condition_index(parent) == Some(index)
+                    && (!chained || edition.at_least_2024());
             }
             SyntaxKind::MATCH_GUARD => return true,
             _ => return false,
@@ -102,7 +105,27 @@ fn chained_range(range: &GreenNodeData) -> bool {
     false
 }
 
-fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool {
+/// A binary expression whose operator is a comparison.
+fn is_comparison(node: &GreenNodeData) -> bool {
+    kind(node.kind()) == SyntaxKind::BIN_EXPR
+        && node.children().any(|c| {
+            matches!(
+                child_kind(&c),
+                T![==] | T![!=] | T![<] | T![>] | T![<=] | T![>=]
+            )
+        })
+}
+
+/// `a < b > c`, `a == b == c`: comparison operators do not chain (they share one precedence
+/// level and have no associativity in rustc).
+fn chained_comparison(node: &GreenNodeData) -> bool {
+    is_comparison(node)
+        && node
+            .children()
+            .any(|c| matches!(c, NodeOrToken::Node(n) if is_comparison(n)))
+}
+
+fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition: Edition) -> bool {
     let parent_kind = path.last().map(|(p, _)| kind(p.kind()));
     match kind(node.kind()) {
         // `const mut X: T = ..;`
@@ -115,7 +138,7 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool
                     || has_token(node, T![default])
                     || has_token(node, T![!]))
         }
-        SyntaxKind::LET_EXPR => !let_expr_allowed(path),
+        SyntaxKind::LET_EXPR => !let_expr_allowed(path, edition),
         // `static async || {}`
         SyntaxKind::CLOSURE_EXPR => has_token(node, T![static]) && has_token(node, T![async]),
         // `&raw place` without `const` or `mut`
@@ -140,6 +163,7 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool
                 })
         }
         SyntaxKind::RANGE_EXPR => chained_range(node),
+        SyntaxKind::BIN_EXPR => chained_comparison(node),
         _ => false,
     }
 }
@@ -151,8 +175,9 @@ fn walk<'a>(
     node: &'a GreenNodeData,
     path: &mut Vec<(&'a GreenNodeData, usize)>,
     prev_colon: &mut bool,
+    edition: Edition,
 ) -> bool {
-    if node_rejected(node, path) {
+    if node_rejected(node, path, edition) {
         return true;
     }
     for (index, child) in node.children().enumerate() {
@@ -166,7 +191,7 @@ fn walk<'a>(
             }
             NodeOrToken::Node(n) => {
                 path.push((node, index));
-                let rejected = walk(n, path, prev_colon);
+                let rejected = walk(n, path, prev_colon, edition);
                 path.pop();
                 if rejected {
                     return true;
@@ -178,25 +203,46 @@ fn walk<'a>(
 }
 
 /// `true` if rustc's parser rejects `file`, which rust-analyzer's parser accepted.
-pub(crate) fn rejected_by_rustc(file: &ast::SourceFile) -> bool {
-    subtree_rejected_by_rustc(file.syntax())
+pub(crate) fn rejected_by_rustc(file: &ast::SourceFile, edition: Edition) -> bool {
+    subtree_rejected_by_rustc(file.syntax(), edition)
 }
 
 /// `true` if rustc's parser rejects the syntax under `root` (a file or a macro argument).
 ///
 /// Rules that look at ancestors (`let` placement, `if` blocks) only see ancestors within
 /// `root`; for a file, that is all of them.
-pub(crate) fn subtree_rejected_by_rustc(root: &SyntaxNode) -> bool {
-    walk(&root.green(), &mut Vec::new(), &mut false)
+pub(crate) fn subtree_rejected_by_rustc(root: &SyntaxNode, edition: Edition) -> bool {
+    walk(&root.green(), &mut Vec::new(), &mut false, edition)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ra_ap_syntax::{Edition, SourceFile};
+    use ra_ap_syntax::SourceFile;
 
     fn rejected(src: &str) -> bool {
-        rejected_by_rustc(&SourceFile::parse(src, Edition::Edition2024).tree())
+        rejected_in(src, Edition::Edition2024)
+    }
+
+    fn rejected_in(src: &str, edition: Edition) -> bool {
+        rejected_by_rustc(&SourceFile::parse(src, edition).tree(), edition)
+    }
+
+    #[test]
+    fn let_chains_need_edition_2024() {
+        for src in [
+            "fn f() { if a && let x = 1 {} }",
+            "fn f() { while let x = 1 && a {} }",
+        ] {
+            assert!(rejected_in(src, Edition::Edition2021), "{src}");
+            assert!(!rejected_in(src, Edition::Edition2024), "{src}");
+        }
+        for src in [
+            "fn f() { if let x = 1 {} }",
+            "fn f() { match x { _ if let x = 1 && a => {} } }",
+        ] {
+            assert!(!rejected_in(src, Edition::Edition2021), "{src}");
+        }
     }
 
     #[test]
@@ -214,6 +260,7 @@ mod tests {
             "fn f() { let S { #[a] x, .. } = (); }",
             "use a::self;",
             "fn f() { let x = (1..2)..3; }",
+            "fn f() { let x = a < (b == c) && d > e; }",
             "fn f() { ..=..=..; .. ..; }",
         ] {
             assert!(!rejected(src), "{src}");
@@ -238,6 +285,8 @@ mod tests {
             "fn f() { let ():::X = (); }",
             "fn f() { let x = 1..2..3; }",
             "fn f() { let x = 1..=2..=3; }",
+            "fn f() { let x = a < b > c; }",
+            "fn f() { let x = a == b != c; }",
         ] {
             assert!(rejected(src), "{src}");
         }

@@ -297,7 +297,7 @@ impl<'a> MacroTokens<'a> {
         } else {
             root
         };
-        if node.kind() == SyntaxKind::ERROR || subtree_rejected_by_rustc(&node) {
+        if node.kind() == SyntaxKind::ERROR || subtree_rejected_by_rustc(&node, self.edition) {
             return None;
         }
         Some(node.green().into_owned())

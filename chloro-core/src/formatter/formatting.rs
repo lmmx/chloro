@@ -55,7 +55,7 @@ fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
         return None;
     }
     let file = SourceFile::cast(builder.finish().syntax_node())?;
-    (!rejected_by_rustc(&file)).then_some(file)
+    (!rejected_by_rustc(&file, edition)).then_some(file)
 }
 
 /// Formats a parsed source text. Returns `None` when the text does not parse.
