@@ -10,14 +10,12 @@ pub use {
     cfg::{CfgAtom, CfgExpr},
 };"#;
     let output = format_source(input);
-    assert_snapshot!(output, @r#"
+    assert_snapshot!(output, @r"
     // Be careful with these re-exports.
     //
     // `hir` is the boundary between the compiler and the IDE.
-    pub use {
-        cfg::{CfgAtom, CfgExpr},
-    };
-    "#);
+    pub use cfg::{CfgAtom, CfgExpr};
+    ");
 }
 
 #[test]

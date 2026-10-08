@@ -17,7 +17,10 @@ default = []
 [dependencies]
 ctor = { default-features = false, version = "0.6.1" }
 
+ra_ap_parser = "0.0.307"
 ra_ap_syntax = "0.0.307"
+rowan = "0.15.15"
+unicode-width = "0.1"
 
 [dev-dependencies]
 braces = "0.2.6"
