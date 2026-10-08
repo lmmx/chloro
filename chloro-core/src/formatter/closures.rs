@@ -22,7 +22,7 @@ use super::lists::{
     DefinitiveListTactic, ListFormatting, ListTactic, Separator, definitive_tactic, itemize_list,
     write_list,
 };
-use super::nodes::{Block, StmtKind};
+use super::nodes::{Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of};
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
 use super::span::{Span, Spanned};
@@ -33,12 +33,7 @@ use super::utils::{last_line_width, left_most_sub_expr};
 /// `const`, `gen` and `try` blocks are distinct expression kinds in rustc).
 fn plain_block(expr: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
     match expr {
-        ast::Expr::BlockExpr(b)
-            if b.async_token().is_none()
-                && b.const_token().is_none()
-                && b.gen_token().is_none()
-                && b.try_token().is_none() =>
-        {
+        ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
             Some((b.clone(), Block::from_block_expr(b)?))
         }
         _ => None,
@@ -170,10 +165,8 @@ fn rewrite_closure_expr(
 ) -> Option<String> {
     fn allow_multi_line(expr: &ast::Expr) -> bool {
         match expr {
-            ast::Expr::MatchExpr(..)
-            | ast::Expr::BlockExpr(..)
-            | ast::Expr::LoopExpr(..)
-            | ast::Expr::RecordExpr(..) => true,
+            ast::Expr::MatchExpr(..) | ast::Expr::LoopExpr(..) | ast::Expr::RecordExpr(..) => true,
+            ast::Expr::BlockExpr(b) => block_expr_kind(b) != BlockExprKind::ConstBlock,
 
             ast::Expr::RefExpr(r) => r.expr().is_some_and(|e| allow_multi_line(&e)),
             ast::Expr::TryExpr(t) => t.expr().is_some_and(|e| allow_multi_line(&e)),
@@ -433,13 +426,16 @@ fn is_block_closure_forced_inner(expr: &ast::Expr, style_edition: StyleEdition) 
 ///      |x| 5
 /// isn't parsed as (if true {...} else {...} | x) | 5
 fn expr_requires_semi_to_be_stmt(e: &ast::Expr) -> bool {
-    !matches!(
-        e,
+    match e {
         ast::Expr::IfExpr(..)
-            | ast::Expr::MatchExpr(..)
-            | ast::Expr::BlockExpr(..)
-            | ast::Expr::WhileExpr(..)
-            | ast::Expr::LoopExpr(..)
-            | ast::Expr::ForExpr(..)
-    )
+        | ast::Expr::MatchExpr(..)
+        | ast::Expr::WhileExpr(..)
+        | ast::Expr::LoopExpr(..)
+        | ast::Expr::ForExpr(..) => false,
+        ast::Expr::BlockExpr(..) => !matches!(
+            block_kind_of(e),
+            Some(BlockExprKind::Block | BlockExprKind::TryBlock)
+        ),
+        _ => true,
+    }
 }

@@ -13,7 +13,10 @@ use super::expr::{
     prefer_next_line, rewrite_cond,
 };
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
-use super::nodes::{Attribute, Block, StmtKind, contains_skip, inner_attributes, outer_attributes};
+use super::nodes::{
+    Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, contains_skip,
+    inner_attributes, outer_attributes,
+};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::utils::{
@@ -163,22 +166,13 @@ pub(crate) fn rewrite_match(
 /// A plain block: rustc's `ExprKind::Block` with `BlockCheckMode::Default`.
 fn is_default_block(body: &ast::Expr) -> bool {
     matches!(body, ast::Expr::BlockExpr(b)
-        if b.unsafe_token().is_none()
-            && b.async_token().is_none()
-            && b.const_token().is_none()
-            && b.gen_token().is_none()
-            && b.try_token().is_none())
+        if b.unsafe_token().is_none() && block_expr_kind(b) == BlockExprKind::Block)
 }
 
 /// rustc's `ExprKind::Block` of any rules (but not `async`/`const`/`gen`/`try` blocks).
 fn as_block(body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
     match body {
-        ast::Expr::BlockExpr(b)
-            if b.async_token().is_none()
-                && b.const_token().is_none()
-                && b.gen_token().is_none()
-                && b.try_token().is_none() =>
-        {
+        ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
             Some((b.clone(), Block::from_block_expr(b)?))
         }
         _ => None,
@@ -377,7 +371,7 @@ fn flatten_arm_body(
 
     if let Some(block) = block_can_be_flattened(context, body) {
         if let StmtKind::Expr(ref expr) = block.stmts[0].kind {
-            if let ast::Expr::BlockExpr(_) = expr {
+            if block_kind_of(expr) == Some(BlockExprKind::Block) {
                 if outer_attributes(expr.syntax()).is_empty() {
                     flatten_arm_body(context, expr, None)
                 } else {
@@ -628,7 +622,6 @@ fn can_flatten_block_around_this(body: &ast::Expr) -> bool {
         ast::Expr::ForExpr(..) | ast::Expr::WhileExpr(..) => false,
         ast::Expr::LoopExpr(..)
         | ast::Expr::MatchExpr(..)
-        | ast::Expr::BlockExpr(..)
         | ast::Expr::ClosureExpr(..)
         | ast::Expr::ArrayExpr(..)
         | ast::Expr::CallExpr(..)
@@ -636,6 +629,7 @@ fn can_flatten_block_around_this(body: &ast::Expr) -> bool {
         | ast::Expr::MacroExpr(..)
         | ast::Expr::RecordExpr(..)
         | ast::Expr::TupleExpr(..) => true,
+        ast::Expr::BlockExpr(b) => block_expr_kind(b) == BlockExprKind::Block,
         ast::Expr::RefExpr(r) => r.expr().is_some_and(|e| can_flatten_block_around_this(&e)),
         ast::Expr::TryExpr(t) => t.expr().is_some_and(|e| can_flatten_block_around_this(&e)),
         ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| can_flatten_block_around_this(&e)),

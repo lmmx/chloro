@@ -220,6 +220,40 @@ pub(crate) fn span_without_attrs(node: &SyntaxNode) -> Span {
     }
 }
 
+/// rustc's expression kind for a block expression. rust-analyzer has one `BlockExpr` for all
+/// of them; rustfmt treats them differently (overflow, closure bodies, match arms).
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub(crate) enum BlockExprKind {
+    /// `{}`, `unsafe {}`, `'a: {}`: `ExprKind::Block`.
+    Block,
+    /// `async {}`, `gen {}`, `async gen {}`: `ExprKind::Gen`.
+    Gen,
+    /// `try {}`: `ExprKind::TryBlock`.
+    TryBlock,
+    /// `const {}`: `ExprKind::ConstBlock`.
+    ConstBlock,
+}
+
+pub(crate) fn block_expr_kind(b: &ast::BlockExpr) -> BlockExprKind {
+    if b.const_token().is_some() {
+        BlockExprKind::ConstBlock
+    } else if b.try_token().is_some() {
+        BlockExprKind::TryBlock
+    } else if b.async_token().is_some() || b.gen_token().is_some() {
+        BlockExprKind::Gen
+    } else {
+        BlockExprKind::Block
+    }
+}
+
+/// The rustc kind of `expr` if it is a block expression.
+pub(crate) fn block_kind_of(expr: &ast::Expr) -> Option<BlockExprKind> {
+    match expr {
+        ast::Expr::BlockExpr(b) => Some(block_expr_kind(b)),
+        _ => None,
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum BlockRules {
     Default,

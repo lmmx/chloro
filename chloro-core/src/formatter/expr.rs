@@ -22,8 +22,8 @@ use super::lists::{
 use super::macros::{MacroPosition, rewrite_macro};
 use super::matches::rewrite_match;
 use super::nodes::{
-    Attribute, Block, Stmt, StmtKind, contains_skip, inner_attributes, outer_attributes,
-    span_without_attrs,
+    Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, contains_skip,
+    inner_attributes, outer_attributes, span_without_attrs,
 };
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::pairs::{PairParts, bin_op_text, rewrite_all_pairs, rewrite_pair};
@@ -1338,7 +1338,11 @@ pub(crate) fn can_be_overflowed_expr(
         }
 
         // Handle always block-like expressions
-        ast::Expr::BlockExpr(..) | ast::Expr::ClosureExpr(..) => true,
+        ast::Expr::BlockExpr(b) => matches!(
+            block_expr_kind(b),
+            BlockExprKind::Block | BlockExprKind::Gen
+        ),
+        ast::Expr::ClosureExpr(..) => true,
 
         // Handle `[]` and `{}`-like expressions
         ast::Expr::ArrayExpr(..) | ast::Expr::RecordExpr(..) => {
