@@ -8,6 +8,8 @@
 //! cargo run --release -p chloro-core --example config_matrix -- --root ~/.cargo/registry/src default
 //! ```
 //!
+//! The first five differing files of each option are listed; `-v` lists all of them.
+//!
 //! `default` compares rustfmt's default configuration. `--root` selects another directory
 //! of Rust sources, such as the cargo registry, as a corpus chloro was not developed on.
 //!
@@ -135,6 +137,8 @@ fn run(option: &str, files: &[PathBuf]) -> (usize, usize, Vec<String>) {
 fn main() {
     let mut args: Vec<String> = std::env::args().skip(1).collect();
     let mut sample = 200;
+    let verbose = args.iter().any(|a| a == "-v");
+    args.retain(|a| a != "-v");
     if let Some(i) = args.iter().position(|a| a == "-n") {
         sample = args[i + 1].parse().expect("-n takes a number");
         args.drain(i..=i + 1);
@@ -157,7 +161,7 @@ fn main() {
     for option in options {
         let (identical, compared, differing) = run(option, &files);
         println!("{option:<40} {identical:>4}/{compared:<4}");
-        for path in differing.iter().take(5) {
+        for path in differing.iter().take(if verbose { usize::MAX } else { 5 }) {
             println!("    {path}");
         }
     }
