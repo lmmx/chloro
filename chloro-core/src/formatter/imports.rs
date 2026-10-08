@@ -91,7 +91,10 @@ pub(crate) struct UseTree {
     // Comment information within nested use tree.
     pub(crate) list_item: Option<ListItem>,
     // Additional fields for top level use items.
-    visibility: Option<ast::Visibility>,
+    /// rustc's `Option<Visibility>`: `Some` for the tree of a `use` item, holding `None` when
+    /// no visibility is written (rustc's `VisibilityKind::Inherited`); `None` for a nested
+    /// tree.
+    visibility: Option<Option<ast::Visibility>>,
     attrs: Option<Vec<Attribute>>,
 }
 
@@ -251,6 +254,7 @@ impl UseTree {
         let vis = self
             .visibility
             .as_ref()
+            .and_then(Option::as_ref)
             .map_or(Cow::from(""), |vis| format_visibility(Some(vis)));
         let use_str = self
             .rewrite(context, shape.offset_left(vis.len())?)
@@ -300,7 +304,7 @@ impl UseTree {
             context,
             &item.use_tree()?,
             None,
-            item.visibility(),
+            Some(item.visibility()),
             Some(super::items::item_span(item.syntax()).lo()),
             if attrs.is_empty() { None } else { Some(attrs) },
         );
@@ -311,7 +315,7 @@ impl UseTree {
         context: &RewriteContext<'_>,
         a: &ast::UseTree,
         list_item: Option<ListItem>,
-        visibility: Option<ast::Visibility>,
+        visibility: Option<Option<ast::Visibility>>,
         opt_lo: Option<BytePos>,
         attrs: Option<Vec<Attribute>>,
     ) -> UseTree {
