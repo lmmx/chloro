@@ -140,7 +140,7 @@ fn main() {
         total_add += u64::from(add);
         total_rem += u64::from(rem);
         per_file.push((add + rem, &case.key));
-        if show.iter().any(|s| case.key == *s) {
+        if show.contains(&case.key) {
             println!("=== {} (- rustfmt, + chloro) ===\n{text}", case.key);
         }
         if idempotence && format_source(&out) != out {
