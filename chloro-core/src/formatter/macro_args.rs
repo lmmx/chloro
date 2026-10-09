@@ -344,17 +344,21 @@ impl<'a> MacroTokens<'a> {
         }
         let new_tt = GreenNode::new(tt.green().kind(), children);
 
-        // Path of child indices from the root to the token tree.
-        let mut path = Vec::new();
-        let mut node = tt.clone();
-        while let Some(parent) = node.parent() {
-            path.push(node.index());
-            node = parent;
-        }
+        // The ancestors of the token tree below the root. The fragments cover the text they
+        // replace, so every ancestor in the copy has the range and kind it had before; a
+        // binary search on ranges finds it without creating a red node per sibling.
+        let ancestors: Vec<(SyntaxKind, ra_ap_syntax::TextRange)> = tt
+            .ancestors()
+            .take_while(|node| node.parent().is_some())
+            .map(|node| (node.kind(), node.text_range()))
+            .collect();
         let root = SyntaxNode::new_root(tt.replace_with(new_tt));
         let mut new = root;
-        for &index in path.iter().rev() {
-            new = new.children_with_tokens().nth(index)?.into_node()?;
+        for &(kind, range) in ancestors.iter().rev() {
+            new = new.child_or_token_at_range(range)?.into_node()?;
+            if new.kind() != kind || new.text_range() != range {
+                return None;
+            }
         }
         let elements: Vec<_> = new.children_with_tokens().collect();
         positions
