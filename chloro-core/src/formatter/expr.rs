@@ -1652,8 +1652,8 @@ fn rewrite_struct_lit(
         let tactic = struct_lit_tactic(h_shape, context, &item_vec);
         let nested_shape = shape_for_tactic(tactic, h_shape, v_shape);
 
-        let ends_with_comma = span_ends_with_comma(context, span);
-        let force_no_trailing_comma = context.inside_macro() && !ends_with_comma;
+        let force_no_trailing_comma =
+            context.inside_macro() && !span_ends_with_comma(context, span);
 
         let fmt = struct_lit_formatting(
             nested_shape,

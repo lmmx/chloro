@@ -5,7 +5,8 @@ use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
 use std::rc::Rc;
 
-use ra_ap_syntax::SyntaxNode;
+use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode};
+use rowan::Language;
 
 use super::config::Settings;
 use super::macro_args::ParsedMacroArgs;
@@ -83,11 +84,35 @@ pub(crate) struct RunState {
     pub(crate) macro_args: RefCell<MacroArgsCache>,
     /// Rewrites already computed in this run; see [`RewriteContext::memoize`].
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
+    /// `padding[k]` is a whitespace token of 2^k spaces; see [`RunState::padding`].
+    padding: RefCell<Vec<rowan::GreenToken>>,
     /// Start offsets of the source lines, computed on first use.
     line_starts: OnceCell<Vec<BytePos>>,
 }
 
 impl RunState {
+    /// Whitespace tokens of `len` bytes in total, shared between calls: at most one token
+    /// of each power of two.
+    pub(crate) fn padding(
+        &self,
+        len: usize,
+    ) -> Vec<NodeOrToken<rowan::GreenNode, rowan::GreenToken>> {
+        let mut pads = self.padding.borrow_mut();
+        let mut out = Vec::new();
+        let mut k = 0;
+        while len >> k != 0 {
+            if pads.len() == k {
+                let kind = RustLanguage::kind_to_raw(SyntaxKind::WHITESPACE);
+                pads.push(rowan::GreenToken::new(kind, &" ".repeat(1 << k)));
+            }
+            if len & (1 << k) != 0 {
+                out.push(NodeOrToken::Token(pads[k].clone()));
+            }
+            k += 1;
+        }
+        out
+    }
+
     /// Drops the memoized rewrites (see [`RewriteContext::memoize`]); only their memory is
     /// lost, as every later rewrite can be computed again.
     pub(crate) fn clear_memo(&self) {

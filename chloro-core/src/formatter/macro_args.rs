@@ -99,6 +99,7 @@ struct MacroTokens<'a> {
     base: BytePos,
     toks: Vec<Tok>,
     edition: Edition,
+    run: std::rc::Rc<super::context::RunState>,
 }
 
 impl<'a> MacroTokens<'a> {
@@ -138,6 +139,7 @@ impl<'a> MacroTokens<'a> {
             base,
             toks,
             edition,
+            run: context.run.clone(),
         })
     }
 
@@ -304,7 +306,13 @@ impl<'a> MacroTokens<'a> {
     }
 
     /// Replaces the parsed ranges of the token tree with the fragment nodes, in a copy of
-    /// the whole tree, and returns the fragment nodes of the copy.
+    /// the token tree, and returns the fragment nodes of the copy.
+    ///
+    /// The copy is the second child of a new root whose first children are whitespace of
+    /// the length of the text before the token tree, so every node of the copy has the
+    /// offset of the text it covers in the source, which spans and comment recovery rely
+    /// on. Copying the ancestors of the token tree instead costs a copy of every child
+    /// list on the path to the root, once per macro call.
     fn splice(&self, fragments: &[Fragment]) -> Option<Vec<SyntaxNode>> {
         if fragments.is_empty() {
             return Some(Vec::new());
@@ -343,23 +351,13 @@ impl<'a> MacroTokens<'a> {
             return None;
         }
         let new_tt = GreenNode::new(tt.green().kind(), children);
-
-        // The ancestors of the token tree below the root. The fragments cover the text they
-        // replace, so every ancestor in the copy has the range and kind it had before; a
-        // binary search on ranges finds it without creating a red node per sibling.
-        let ancestors: Vec<(SyntaxKind, ra_ap_syntax::TextRange)> = tt
-            .ancestors()
-            .take_while(|node| node.parent().is_some())
-            .map(|node| (node.kind(), node.text_range()))
-            .collect();
-        let root = SyntaxNode::new_root(tt.replace_with(new_tt));
-        let mut new = root;
-        for &(kind, range) in ancestors.iter().rev() {
-            new = new.child_or_token_at_range(range)?.into_node()?;
-            if new.kind() != kind || new.text_range() != range {
-                return None;
-            }
-        }
+        let mut root_children = self
+            .run
+            .padding(u32::from(tt.text_range().start()) as usize);
+        root_children.push(NodeOrToken::Node(new_tt));
+        let root = SyntaxNode::new_root(GreenNode::new(tt.green().kind(), root_children));
+        let new = root.last_child()?;
+        debug_assert_eq!(new.text_range(), tt.text_range());
         let elements: Vec<_> = new.children_with_tokens().collect();
         positions
             .iter()
