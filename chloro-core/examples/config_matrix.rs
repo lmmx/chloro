@@ -54,6 +54,7 @@ const MATRIX: &[&str] = &[
     "style_edition=2015",
     "edition=2021",
     "edition=2018",
+    "edition=2015",
 ];
 
 fn fixtures(root: &Path) -> Vec<PathBuf> {
