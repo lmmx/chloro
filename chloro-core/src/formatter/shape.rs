@@ -9,7 +9,7 @@ use std::ops::{Add, Sub};
 
 use super::config::Settings;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct Indent {
     /// Width of the block indent, in characters. Must be a multiple of `Config::tab_spaces`.
     pub(crate) block_indent: usize,
@@ -143,7 +143,7 @@ impl Sub<usize> for Indent {
 // 8096 is close enough to infinite for rustfmt.
 const INFINITE_SHAPE_WIDTH: usize = 8096;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct Shape {
     pub(crate) width: usize,
     /// The current indentation of code.

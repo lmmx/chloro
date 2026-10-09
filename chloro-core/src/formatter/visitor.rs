@@ -369,6 +369,10 @@ impl<'a> FmtVisitor<'a> {
     }
 
     pub(crate) fn visit_item(&mut self, item: &ast::Item) {
+        if self.block_indent.block_indent == 0 {
+            // No rewrite of a later top-level item reuses one of this item's nodes.
+            self.run.clear_memo();
+        }
         let attrs = item_attrs(item);
         let span = item_span(item.syntax());
         let full_span = item.span();

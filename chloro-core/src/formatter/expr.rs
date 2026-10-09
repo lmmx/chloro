@@ -110,6 +110,17 @@ pub(crate) fn format_expr(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
+    context.memoize(expr.syntax(), expr_type as u8, shape, || {
+        format_expr_uncached(expr, expr_type, context, shape)
+    })
+}
+
+fn format_expr_uncached(
+    expr: &ast::Expr,
+    expr_type: ExprType,
+    context: &RewriteContext<'_>,
+    shape: Shape,
+) -> Option<String> {
     let outer = outer_attributes(expr.syntax());
     if contains_skip(&outer) {
         return Some(context.snippet(expr.span()).to_owned());
