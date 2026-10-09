@@ -27,6 +27,7 @@ use super::context::{Rewrite, RewriteContext};
 use super::expr::{expr_span, lit_ends_in_dot, rewrite_call};
 use super::lists::extract_pre_comment;
 use super::macros::convert_try_mac;
+use super::nodes::node_text;
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
@@ -250,22 +251,28 @@ impl Rewrite for ChainItem {
             ChainItemKind::MethodCall(ref name, ref types, ref exprs) => {
                 Self::rewrite_method_call(name, types, exprs, self.span, context, shape)?
             }
-            ChainItemKind::StructField(ref ident) => format!(".{}", ident.syntax().text()),
-            ChainItemKind::TupleField(ref ident, nested) => format!(
-                "{}.{}",
+            ChainItemKind::StructField(ref ident) => {
+                let mut field = String::from(".");
+                field.push_str(&node_text(ident.syntax()));
+                field
+            }
+            ChainItemKind::TupleField(ref ident, nested) => {
+                let mut field = String::new();
                 if nested && context.config.style_edition() <= StyleEdition::Edition2021 {
-                    " "
-                } else {
-                    ""
-                },
-                ident.syntax().text()
-            ),
+                    field.push(' ');
+                }
+                field.push('.');
+                field.push_str(&node_text(ident.syntax()));
+                field
+            }
             ChainItemKind::Await => ".await".to_owned(),
             ChainItemKind::Comment(ref comment, _) => {
                 rewrite_comment(comment, false, shape, context.config)?
             }
         };
-        Some(format!("{rewrite}{}", "?".repeat(self.tries)))
+        let mut rewrite = rewrite;
+        rewrite.extend(std::iter::repeat_n('?', self.tries));
+        Some(rewrite)
     }
 }
 
@@ -306,7 +313,9 @@ impl ChainItem {
 
             format!("::<{}>", type_list.join(", "))
         };
-        let callee_str = format!(".{}{}", method_name.syntax().text(), type_str);
+        let mut callee_str = String::from(".");
+        callee_str.push_str(&node_text(method_name.syntax()));
+        callee_str.push_str(&type_str);
         let args = args.iter().cloned().map(OverflowableItem::Expr).collect();
         rewrite_call(context, &callee_str, args, span, shape)
     }
