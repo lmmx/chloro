@@ -4,6 +4,7 @@ use std::borrow::Cow;
 use std::cmp::min;
 
 use ra_ap_syntax::SyntaxKind;
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody, IsString};
 
 use super::attr::rewrite_attrs;
@@ -21,6 +22,7 @@ use super::lists::{
 };
 use super::macros::{MacroPosition, rewrite_macro};
 use super::matches::rewrite_match;
+use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, contains_skip,
     inner_attributes, outer_attributes, span_without_attrs,
@@ -134,7 +136,7 @@ fn format_expr_uncached(
 
     let expr_rw = match expr {
         ast::Expr::ArrayExpr(array) => {
-            if array.semicolon_token().is_some() {
+            if has_token(array.syntax(), T![;]) {
                 let mut exprs = array.exprs();
                 let value = exprs.next()?;
                 let repeats = exprs.next()?;
@@ -405,7 +407,7 @@ fn rewrite_block_expr(
     let block = Block::from_block_expr(b)?;
     let attrs = expr_attrs(expr);
     let label = b.label();
-    if b.const_token().is_some() {
+    if has_token(b.syntax(), T![const]) {
         // Inner attributes are associated with the const block expression, not the inner block.
         let rewrite = rewrite_block(&block, Some(&attrs), label.as_ref(), context, shape)?;
         return Some(format!("const {rewrite}"));
@@ -1319,7 +1321,7 @@ pub(crate) fn is_simple_expr(expr: &ast::Expr) -> bool {
             i.base().is_some_and(|e| is_simple_expr(&e))
                 && i.index().is_some_and(|e| is_simple_expr(&e))
         }
-        ast::Expr::ArrayExpr(a) if a.semicolon_token().is_some() => {
+        ast::Expr::ArrayExpr(a) if has_token(a.syntax(), T![;]) => {
             let mut exprs = a.exprs();
             exprs.next().is_some_and(|e| is_simple_expr(&e))
                 && exprs.next().is_some_and(|e| is_simple_expr(&e))
@@ -1362,9 +1364,9 @@ pub(crate) fn can_be_overflowed_expr(
         }
         ast::Expr::MacroExpr(m) => {
             let delim = m.macro_call().and_then(|c| c.token_tree()).map(|tt| {
-                if tt.l_brack_token().is_some() {
+                if has_token(tt.syntax(), T!['[']) {
                     Delimiter::Bracket
-                } else if tt.l_curly_token().is_some() {
+                } else if has_token(tt.syntax(), T!['{']) {
                     Delimiter::Brace
                 } else {
                     Delimiter::Parenthesis

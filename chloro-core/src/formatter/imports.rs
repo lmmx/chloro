@@ -10,6 +10,7 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fmt;
 
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, HasName, HasVisibility};
 
 use super::comment::combine_strs_with_missing_comments;
@@ -19,8 +20,8 @@ use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, Separator, definitive_tactic, itemize_list,
     write_list,
 };
-use super::nodes::node_text;
 use super::nodes::{Attribute, outer_attributes};
+use super::nodes::{has_token, node_text};
 use super::shape::Shape;
 use super::sort::version_sort;
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span};
@@ -234,7 +235,7 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
     }
     segments.reverse();
     for (i, seg) in segments.iter().enumerate() {
-        if i == 0 && seg.coloncolon_token().is_some() {
+        if i == 0 && has_token(seg.syntax(), T![::]) {
             global = true;
         }
         let text = seg
@@ -335,7 +336,7 @@ impl UseTree {
 
         // rustc's prefix path: `::` alone (`use ::*`, `use ::{a}`) is a global empty path.
         let (names, path_global) = a.path().map(|p| path_segment_names(&p)).unwrap_or_default();
-        let bare_root = a.path().is_none() && a.coloncolon_token().is_some();
+        let bare_root = a.path().is_none() && has_token(a.syntax(), T![::]);
         let is_global = path_global || bare_root;
         // Number of rustc prefix segments, counting the `{{root}}` segment of a global path.
         let prefix_len = names.len() + usize::from(is_global);
@@ -353,7 +354,7 @@ impl UseTree {
 
         let style_edition = context.config.style_edition();
 
-        if a.star_token().is_some() {
+        if has_token(a.syntax(), T![*]) {
             // in case of a global path and the glob starts at the root, e.g., "::*"
             if prefix_len == 1 && leading_modsep {
                 result.path.push(UseSegment {

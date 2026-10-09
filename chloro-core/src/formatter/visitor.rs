@@ -9,6 +9,7 @@ use std::cell::Cell;
 use std::rc::Rc;
 
 use ra_ap_syntax::SyntaxKind;
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, HasModuleItem, HasName, HasVisibility};
 
 use super::comment::{CodeCharKind, CommentCodeSlices, contains_comment, rewrite_comment};
@@ -21,11 +22,11 @@ use super::items::{
 use super::macros::{
     MacroDef, MacroPosition, mac_span, macro_style, rewrite_macro, rewrite_macro_def,
 };
-use super::nodes::node_text;
 use super::nodes::{
     AttrStyle, Attribute, Block, StmtKind, contains_skip, inner_attributes, outer_attributes,
     span_without_attrs,
 };
+use super::nodes::{has_token, node_text};
 use super::overflow::Delimiter;
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span};
@@ -411,7 +412,7 @@ impl<'a> FmtVisitor<'a> {
                 let rw = self.with_context(|ctx| format_impl(ctx, i, block_indent));
                 self.push_rewrite(span, rw);
             }
-            ast::Item::Trait(t) if t.eq_token().is_some() => {
+            ast::Item::Trait(t) if has_token(t.syntax(), T![=]) => {
                 let shape = Shape::indented(self.block_indent, self.config);
                 let rw = self.with_context(|ctx| format_trait_alias(ctx, t, shape));
                 self.push_rewrite(span, rw);

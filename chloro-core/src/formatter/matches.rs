@@ -2,6 +2,7 @@
 
 use std::iter::repeat_n;
 
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode};
 
 use super::attr::rewrite_attrs;
@@ -13,6 +14,7 @@ use super::expr::{
     prefer_next_line, rewrite_cond,
 };
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
+use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, contains_skip,
     inner_attributes, outer_attributes,
@@ -166,7 +168,7 @@ pub(crate) fn rewrite_match(
 /// A plain block: rustc's `ExprKind::Block` with `BlockCheckMode::Default`.
 fn is_default_block(body: &ast::Expr) -> bool {
     matches!(body, ast::Expr::BlockExpr(b)
-        if b.unsafe_token().is_none() && block_expr_kind(b) == BlockExprKind::Block)
+        if !has_token(b.syntax(), T![unsafe]) && block_expr_kind(b) == BlockExprKind::Block)
 }
 
 /// rustc's `ExprKind::Block` of any rules (but not `async`/`const`/`gen`/`try` blocks).

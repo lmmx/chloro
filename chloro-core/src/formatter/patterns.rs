@@ -1,5 +1,6 @@
 //! Patterns (rustfmt's `patterns.rs`).
 
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, HasName};
 
 use super::attr::rewrite_attrs;
@@ -15,8 +16,8 @@ use super::lists::{
     struct_lit_shape, struct_lit_tactic, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
-use super::nodes::node_text;
 use super::nodes::outer_attributes;
+use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
 use super::shape::Shape;
@@ -116,7 +117,7 @@ impl Rewrite for ast::Pat {
             ast::Pat::RestPat(_) => (1 <= shape.width).then(|| "..".to_owned()),
             ast::Pat::RangePat(r) => rewrite_range_pat(context, shape, r),
             ast::Pat::RefPat(r) => {
-                let prefix = if r.mut_token().is_some() {
+                let prefix = if has_token(r.syntax(), T![mut]) {
                     "&mut "
                 } else {
                     "&"
@@ -137,7 +138,7 @@ impl Rewrite for ast::Pat {
                 let lit = l.literal()?;
                 let kind = LitKind::of(&lit);
                 let lit_str = rewrite_literal(context, kind, lit.span(), shape)?;
-                if l.minus_token().is_some() {
+                if has_token(l.syntax(), T![-]) {
                     Some(format!("-{lit_str}"))
                 } else {
                     Some(lit_str)
@@ -191,7 +192,7 @@ fn rewrite_ident_pat(
     shape: Shape,
 ) -> Option<String> {
     let span = p.span();
-    let mut_prefix = if p.mut_token().is_some() && p.ref_token().is_none() {
+    let mut_prefix = if has_token(p.syntax(), T![mut]) && !has_token(p.syntax(), T![ref]) {
         "mut"
     } else {
         ""

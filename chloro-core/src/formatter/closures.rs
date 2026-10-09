@@ -9,6 +9,7 @@
 //!     statement without needing a semi-colon), then adding or removing braces
 //!     can change whether it is treated as an expression or statement.
 
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode};
 
 use super::config::StyleEdition;
@@ -22,6 +23,7 @@ use super::lists::{
     DefinitiveListTactic, ListFormatting, ListTactic, Separator, definitive_tactic, itemize_list,
     write_list,
 };
+use super::nodes::has_token;
 use super::nodes::{Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of};
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
@@ -216,13 +218,13 @@ fn rewrite_closure_fn_decl(
         None => String::new(),
     };
 
-    let const_ = if closure.const_token().is_some() {
+    let const_ = if has_token(closure.syntax(), T![const]) {
         "const "
     } else {
         ""
     };
 
-    let immovable = if closure.static_token().is_some() {
+    let immovable = if has_token(closure.syntax(), T![static]) {
         "static "
     } else {
         ""
@@ -233,7 +235,7 @@ fn rewrite_closure_fn_decl(
         (None, Some(_)) => "gen ",
         (None, None) => "",
     };
-    let capture_str = if closure.move_token().is_some() {
+    let capture_str = if has_token(closure.syntax(), T![move]) {
         "move "
     } else if closure
         .syntax()

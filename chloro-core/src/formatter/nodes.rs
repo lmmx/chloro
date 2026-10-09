@@ -6,6 +6,7 @@
 //! The types and functions here present rowan nodes in the shape the ported rustfmt logic
 //! expects, so that the formatting modules can follow rustfmt's control flow closely.
 
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode};
 use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken};
 use rowan::Language;
@@ -45,7 +46,7 @@ impl Attribute {
         match self {
             Attribute::Doc(t) if is_inner_doc_comment(t) => AttrStyle::Inner,
             Attribute::Doc(_) => AttrStyle::Outer,
-            Attribute::Normal(a) if a.excl_token().is_some() => AttrStyle::Inner,
+            Attribute::Normal(a) if has_token(a.syntax(), T![!]) => AttrStyle::Inner,
             Attribute::Normal(_) => AttrStyle::Outer,
         }
     }
@@ -179,7 +180,9 @@ pub(crate) fn outer_attributes(node: &SyntaxNode) -> Vec<Attribute> {
                 _ => break,
             },
             NodeOrToken::Node(n) => match ast::Attr::cast(n) {
-                Some(attr) if attr.excl_token().is_none() => attrs.push(Attribute::Normal(attr)),
+                Some(attr) if !has_token(attr.syntax(), T![!]) => {
+                    attrs.push(Attribute::Normal(attr))
+                }
                 Some(_) => {}
                 None => break,
             },
@@ -196,7 +199,7 @@ pub(crate) fn inner_attributes(container: &SyntaxNode) -> Vec<Attribute> {
         .filter_map(|child| match child {
             NodeOrToken::Token(t) if is_inner_doc_comment(&t) => Some(Attribute::Doc(t)),
             NodeOrToken::Node(n) => ast::Attr::cast(n)
-                .filter(|a| a.excl_token().is_some())
+                .filter(|a| has_token(a.syntax(), T![!]))
                 .map(Attribute::Normal),
             _ => None,
         })
@@ -218,6 +221,14 @@ pub(crate) fn span_without_attrs(node: &SyntaxNode) -> Span {
         Some(el) => full.with_lo(el.text_range().start().into()),
         None => full,
     }
+}
+
+/// Whether `node` has a direct child token of `kind`: a generated `x_token().is_some()`
+/// that reads the green tree instead of creating a red node per child.
+pub(crate) fn has_token(node: &SyntaxNode, kind: SyntaxKind) -> bool {
+    node.green().children().any(|child| {
+        matches!(child, NodeOrToken::Token(t) if RustLanguage::kind_from_raw(t.kind()) == kind)
+    })
 }
 
 /// The source text of `node`. Reads the green tree, which costs neither a red node per
@@ -251,11 +262,11 @@ pub(crate) enum BlockExprKind {
 }
 
 pub(crate) fn block_expr_kind(b: &ast::BlockExpr) -> BlockExprKind {
-    if b.const_token().is_some() {
+    if has_token(b.syntax(), T![const]) {
         BlockExprKind::ConstBlock
-    } else if b.try_token().is_some() {
+    } else if has_token(b.syntax(), T![try]) {
         BlockExprKind::TryBlock
-    } else if b.async_token().is_some() || b.gen_token().is_some() {
+    } else if has_token(b.syntax(), T![async]) || has_token(b.syntax(), T![gen]) {
         BlockExprKind::Gen
     } else {
         BlockExprKind::Block
@@ -414,7 +425,7 @@ pub(crate) fn stmts_of(list: &ast::StmtList) -> Vec<Stmt> {
                     });
                 } else if let Some(es) = ast::ExprStmt::cast(n.clone()) {
                     let Some(expr) = es.expr() else { continue };
-                    let has_semi = es.semicolon_token().is_some();
+                    let has_semi = has_token(es.syntax(), T![;]);
                     let kind = match macro_stmt(&expr, has_semi) {
                         Some(call) => StmtKind::MacCall(call),
                         None if has_semi => StmtKind::Semi(expr),

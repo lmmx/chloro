@@ -1,5 +1,6 @@
 //! Types, paths, generics and bounds (rustfmt's `types.rs`).
 
+use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, AstToken, HasGenericArgs, HasName, HasTypeBounds};
 use ra_ap_syntax::{SyntaxKind, SyntaxToken};
 
@@ -13,8 +14,8 @@ use super::lists::{
     SeparatorTactic, definitive_tactic, itemize_list, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
-use super::nodes::node_text;
 use super::nodes::{Attribute, outer_attributes};
+use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
 use super::shape::Shape;
@@ -85,7 +86,7 @@ pub(crate) fn rewrite_path(
     }
     let segments = path_segments(path);
     let first = segments.first()?;
-    let is_global = first.coloncolon_token().is_some() && first.type_anchor().is_none();
+    let is_global = has_token(first.syntax(), T![::]) && first.type_anchor().is_none();
     let path_span = path.span();
 
     // 32 covers almost all path lengths measured when compiling core, and there isn't a big
@@ -114,7 +115,7 @@ pub(crate) fn rewrite_path(
             let trait_segments = path_segments(&trait_path);
             if trait_segments
                 .first()
-                .is_some_and(|s| s.coloncolon_token().is_some())
+                .is_some_and(|s| has_token(s.syntax(), T![::]))
                 && path_context != PathContext::Import
             {
                 result.push_str("::");
@@ -309,7 +310,7 @@ fn rewrite_segment(
         if args.generic_args().next().is_some() {
             // HACK: squeeze out the span between the identifier and the parameters.
             // The hack is required so that we don't remove the separator inside macro calls.
-            let force_separator = context.inside_macro() && args.coloncolon_token().is_some();
+            let force_separator = context.inside_macro() && has_token(args.syntax(), T![::]);
             let separator = if path_context == PathContext::Expr || force_separator {
                 "::"
             } else {
@@ -802,7 +803,7 @@ impl Rewrite for ast::Type {
         match self {
             ast::Type::DynTraitType(dt) => {
                 // A bare trait object (`'a + Trait`, edition 2015 syntax) stays bare.
-                let (shape, prefix) = if dt.dyn_token().is_some() {
+                let (shape, prefix) = if has_token(dt.syntax(), T![dyn]) {
                     // 4 = "dyn "
                     (shape.offset_left(4)?, "dyn ")
                 } else {
@@ -824,7 +825,7 @@ impl Rewrite for ast::Type {
                 Some(format!("{prefix}{res}"))
             }
             ast::Type::PtrType(pt) => {
-                let prefix = if pt.mut_token().is_some() {
+                let prefix = if has_token(pt.syntax(), T![mut]) {
                     "*mut "
                 } else {
                     "*const "
@@ -931,7 +932,7 @@ fn rewrite_ref_type(
     shape: Shape,
 ) -> Option<String> {
     let span = rt.span();
-    let is_mut = rt.mut_token().is_some();
+    let is_mut = has_token(rt.syntax(), T![mut]);
     let mut_str = if is_mut { "mut " } else { "" };
     let mut_len = mut_str.len();
     let mut result = String::with_capacity(128);
@@ -1038,7 +1039,7 @@ fn rewrite_fn_ptr(
         result.push_str("for<> ");
     }
 
-    if fn_ptr.unsafe_token().is_some() {
+    if has_token(fn_ptr.syntax(), T![unsafe]) {
         result.push_str("unsafe ");
     } else if fn_ptr
         .syntax()
@@ -1084,7 +1085,7 @@ pub(crate) fn has_c_variadic(params: &ast::ParamList) -> bool {
     params
         .params()
         .last()
-        .is_some_and(|p| p.dotdotdot_token().is_some())
+        .is_some_and(|p| has_token(p.syntax(), T![...]))
 }
 
 fn is_generic_bounds_in_order(generic_bounds: &[ast::TypeBound]) -> bool {

@@ -10,7 +10,7 @@ use std::borrow::Cow;
 use std::cmp::{max, min};
 
 use ra_ap_syntax::ast::{self, AstNode, HasGenericParams, HasName, HasVisibility};
-use ra_ap_syntax::{SyntaxKind, SyntaxNode, T};
+use ra_ap_syntax::{SyntaxNode, T};
 
 use super::comment::{
     FindUncommented, combine_strs_with_missing_comments, contains_comment, is_last_comment_block,
@@ -28,11 +28,11 @@ use super::lists::{
     definitive_tactic, itemize_list, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
-use super::nodes::node_text;
 use super::nodes::{
     Attribute, Block, contains_skip, generics_span, inner_attributes, outer_attributes,
     span_without_attrs, where_clause_span,
 };
+use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span, rustc_span, token_span};
@@ -52,11 +52,6 @@ fn type_annotation_separator(context: &RewriteContext<'_>) -> &'static str {
 /// rustc's item span: the item without its outer attributes and doc comments.
 pub(crate) fn item_span(node: &SyntaxNode) -> Span {
     span_without_attrs(node)
-}
-
-/// `true` if `node` has a direct child token of `kind`.
-fn has_token(node: &SyntaxNode, kind: SyntaxKind) -> bool {
-    node.children_with_tokens().any(|el| el.kind() == kind)
 }
 
 fn name_span(name: &ast::Name) -> Span {
@@ -395,27 +390,30 @@ impl FnSig {
         params.extend(param_list.params().map(FnParam::Param));
         // rustc's `FnDecl::c_variadic`: the last parameter is `...`.
         let variadic = super::types::has_c_variadic(&param_list);
-        let coroutine = match (f.async_token().is_some(), f.gen_token().is_some()) {
+        let coroutine = match (
+            has_token(f.syntax(), T![async]),
+            has_token(f.syntax(), T![gen]),
+        ) {
             (true, true) => "async gen ",
             (true, false) => "async ",
             (false, true) => "gen ",
             (false, false) => "",
         };
-        let safety = if f.unsafe_token().is_some() {
+        let safety = if has_token(f.syntax(), T![unsafe]) {
             "unsafe "
-        } else if f.safe_token().is_some() {
+        } else if has_token(f.syntax(), T![safe]) {
             "safe "
         } else {
             ""
         };
         Some(FnSig {
             vis: f.visibility(),
-            defaultness: if f.default_token().is_some() {
+            defaultness: if has_token(f.syntax(), T![default]) {
                 "default "
             } else {
                 ""
             },
-            constness: if f.const_token().is_some() {
+            constness: if has_token(f.syntax(), T![const]) {
                 "const "
             } else {
                 ""
@@ -551,12 +549,12 @@ impl Rewrite for ast::Param {
         let Some(pat) = self.pat() else {
             // An unnamed parameter (fn pointer types, C variadics). rustfmt rewrites only the
             // type, which drops any attributes of the parameter.
-            if self.dotdotdot_token().is_some() {
+            if has_token(self.syntax(), T![...]) {
                 return Some("...".to_owned());
             }
             return self.ty()?.rewrite(context, shape);
         };
-        if self.dotdotdot_token().is_some() {
+        if has_token(self.syntax(), T![...]) {
             // `name: ...`
             let pat_str = pat.rewrite(context, Shape::legacy(shape.width, shape.indent))?;
             let variadic = format!("{pat_str}{}...", colon_spaces(context.config));
@@ -626,12 +624,12 @@ impl Rewrite for ast::SelfParam {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let (param_attrs, span, has_multiple_attr_lines, _) =
             param_attrs(self.syntax(), context, shape)?;
-        let mut_str = if self.mut_token().is_some() {
+        let mut_str = if has_token(self.syntax(), T![mut]) {
             "mut "
         } else {
             ""
         };
-        let self_str = if self.amp_token().is_some() {
+        let self_str = if has_token(self.syntax(), T![&]) {
             let lifetime_str = match self.lifetime() {
                 Some(l) => format!("{} ", l.syntax().text()),
                 None => String::new(),
@@ -642,7 +640,7 @@ impl Rewrite for ast::SelfParam {
                 .any(|el| el.as_token().is_some_and(|t| t.text() == "pin"));
             if is_pinned {
                 // `&pin mut self` / `&pin const self`
-                let ptr = if self.mut_token().is_some() {
+                let ptr = if has_token(self.syntax(), T![mut]) {
                     "mut"
                 } else {
                     "const"
@@ -682,7 +680,7 @@ pub(crate) fn span_lo_for_param(param: &ast::Param) -> BytePos {
 fn param_ty_hi(param: &ast::Param) -> BytePos {
     match (param.ty(), param.pat()) {
         (Some(ty), _) => ty.span().hi(),
-        (None, Some(pat)) if param.dotdotdot_token().is_none() => pat.span().hi(),
+        (None, Some(pat)) if !has_token(param.syntax(), T![...]) => pat.span().hi(),
         _ => node_range_span(param.syntax()).hi(),
     }
 }
@@ -1524,7 +1522,7 @@ fn format_generics(
 impl FmtVisitor<'_> {
     /// `extern "abi" { .. }` (rustc's foreign module).
     pub(crate) fn format_foreign_mod(&mut self, fm: &ast::ExternBlock, span: Span) {
-        if fm.unsafe_token().is_some() {
+        if has_token(fm.syntax(), T![unsafe]) {
             self.buffer.push_str("unsafe ");
         }
         let abi = format_abi(fm.abi().as_ref(), &self.get_context());
@@ -2076,16 +2074,16 @@ fn format_impl_ref_and_type(
     result.push_str(&format_visibility(iimpl.visibility().as_ref()));
 
     let of_trait = iimpl.trait_();
-    let constness = iimpl.const_token().is_some();
+    let constness = has_token(iimpl.syntax(), T![const]);
     if of_trait.is_some() {
-        if iimpl.default_token().is_some() {
+        if has_token(iimpl.syntax(), T![default]) {
             result.push_str("default ");
         }
-        if iimpl.unsafe_token().is_some() {
+        if has_token(iimpl.syntax(), T![unsafe]) {
             result.push_str("unsafe ");
         }
     } else {
-        if iimpl.unsafe_token().is_some() {
+        if has_token(iimpl.syntax(), T![unsafe]) {
             // rustc rejects `unsafe` inherent impls; keep it rather than drop code.
             result.push_str("unsafe ");
         }
@@ -2110,7 +2108,7 @@ fn format_impl_ref_and_type(
         if constness {
             result.push_str(" const");
         }
-        let polarity_str = if iimpl.excl_token().is_some() {
+        let polarity_str = if has_token(iimpl.syntax(), T![!]) {
             "!"
         } else {
             ""
@@ -2239,12 +2237,12 @@ pub(crate) fn format_trait(
         } else {
             ""
         },
-        if trait_.unsafe_token().is_some() {
+        if has_token(trait_.syntax(), T![unsafe]) {
             "unsafe "
         } else {
             ""
         },
-        if trait_.auto_token().is_some() {
+        if has_token(trait_.syntax(), T![auto]) {
             "auto "
         } else {
             ""
@@ -2957,7 +2955,7 @@ fn rewrite_struct_field_prefix(field: &FieldDef) -> Option<String> {
     let vis = format_visibility(field.vis().as_ref());
     match field {
         FieldDef::Named(f) => {
-            let safety = if f.unsafe_token().is_some() {
+            let safety = if has_token(f.syntax(), T![unsafe]) {
                 "unsafe "
             } else {
                 ""
@@ -3123,7 +3121,7 @@ pub(crate) fn rewrite_type_alias(
             } else {
                 rewrite_ty(&rw_info, ty.as_ref(), rhs_hi, ta.visibility().as_ref())
             }?;
-            if ta.default_token().is_some() {
+            if has_token(ta.syntax(), T![default]) {
                 Some(format!("default {result}"))
             } else {
                 Some(result)
@@ -3321,7 +3319,7 @@ impl StaticParts {
             ty: c.ty(),
             mutability: "",
             expr: c.body(),
-            defaultness: if c.default_token().is_some() {
+            defaultness: if has_token(c.syntax(), T![default]) {
                 "default "
             } else {
                 ""
@@ -3333,9 +3331,9 @@ impl StaticParts {
     pub(crate) fn from_static(s: &ast::Static) -> Option<Self> {
         Some(StaticParts {
             prefix: "static",
-            safety: if s.unsafe_token().is_some() {
+            safety: if has_token(s.syntax(), T![unsafe]) {
                 "unsafe "
-            } else if s.safe_token().is_some() {
+            } else if has_token(s.syntax(), T![safe]) {
                 "safe "
             } else {
                 ""
@@ -3344,7 +3342,11 @@ impl StaticParts {
             name: node_text(s.name()?.syntax()),
             has_generics: false,
             ty: s.ty(),
-            mutability: if s.mut_token().is_some() { "mut " } else { "" },
+            mutability: if has_token(s.syntax(), T![mut]) {
+                "mut "
+            } else {
+                ""
+            },
             expr: s.body(),
             defaultness: "",
             span: item_span(s.syntax()),
@@ -3457,14 +3459,18 @@ impl Rewrite for ast::ExternItem {
                 // FIXME(#21): we're dropping potential comments in between the
                 // function kw here.
                 let vis = format_visibility(s.visibility().as_ref());
-                let safety = if s.unsafe_token().is_some() {
+                let safety = if has_token(s.syntax(), T![unsafe]) {
                     "unsafe "
-                } else if s.safe_token().is_some() {
+                } else if has_token(s.syntax(), T![safe]) {
                     "safe "
                 } else {
                     ""
                 };
-                let mut_str = if s.mut_token().is_some() { "mut " } else { "" };
+                let mut_str = if has_token(s.syntax(), T![mut]) {
+                    "mut "
+                } else {
+                    ""
+                };
                 let prefix = format!(
                     "{}{}static {}{}:",
                     vis,
