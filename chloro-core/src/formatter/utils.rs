@@ -124,12 +124,19 @@ pub(crate) fn semicolon_for_expr(context: &RewriteContext<'_>, expr: &ast::Expr)
 
 /// Computes the length of the given string, as it would appear in the output.
 pub(crate) fn unicode_str_width(s: &str) -> usize {
-    // `width()` counts every ASCII character except `\n` as one column (unicode-width 0.1).
-    if s.is_ascii() && !s.contains('\n') {
-        s.len()
-    } else {
-        s.width()
+    if !s.is_ascii() {
+        return s.width();
     }
+    // unicode-width 0.1.14 counts every ASCII character as one column, except `\n` and a
+    // `\r` before `\n`, which count as none.
+    let bytes = s.as_bytes();
+    let mut width = bytes.len();
+    for (i, &b) in bytes.iter().enumerate() {
+        if b == b'\n' {
+            width -= 1 + usize::from(i > 0 && bytes[i - 1] == b'\r');
+        }
+    }
+    width
 }
 
 pub(crate) fn count_newlines(input: &str) -> usize {
@@ -389,6 +396,16 @@ fn get_prefix_space_width(config: &Settings, s: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn ascii_width_matches_unicode_width() {
+        for s in [
+            "", "abc", "a\nb", "a\r\nb", "\r", "a\rb", "\t x\n\n", "\r\n\r\n", "\n\r",
+        ] {
+            assert_eq!(unicode_str_width(s), s.width(), "{s:?}");
+        }
+    }
+
     use super::*;
 
     #[test]
