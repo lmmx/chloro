@@ -8,6 +8,7 @@ use unicode_width::UnicodeWidthStr;
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
+use super::nodes::node_text;
 use super::shape::{Indent, Shape};
 
 /// Computes the length of a string's last line, minus offset.
@@ -31,7 +32,7 @@ pub(crate) fn format_visibility(vis: Option<&ast::Visibility>) -> Cow<'static, s
     };
     let path_str = path
         .segments()
-        .map(|seg| seg.syntax().text().to_string())
+        .map(|seg| node_text(seg.syntax()))
         .collect::<Vec<_>>()
         .join("::");
     let is_keyword = |s: &str| s == "crate" || s == "self" || s == "super";

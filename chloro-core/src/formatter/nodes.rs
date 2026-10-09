@@ -220,6 +220,22 @@ pub(crate) fn span_without_attrs(node: &SyntaxNode) -> Span {
     }
 }
 
+/// The source text of `node`. Reads the green tree, which costs neither a red node per
+/// token nor `fmt` machinery, unlike `node.text().to_string()`.
+pub(crate) fn node_text(node: &SyntaxNode) -> String {
+    fn push(green: &rowan::GreenNodeData, out: &mut String) {
+        for child in green.children() {
+            match child {
+                NodeOrToken::Node(n) => push(n, out),
+                NodeOrToken::Token(t) => out.push_str(t.text()),
+            }
+        }
+    }
+    let mut out = String::with_capacity(usize::from(node.text_range().len()));
+    push(&node.green(), &mut out);
+    out
+}
+
 /// rustc's expression kind for a block expression. rust-analyzer has one `BlockExpr` for all
 /// of them; rustfmt treats them differently (overflow, closure bodies, match arms).
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

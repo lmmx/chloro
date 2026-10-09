@@ -15,6 +15,7 @@ use super::lists::{
     struct_lit_shape, struct_lit_tactic, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
+use super::nodes::node_text;
 use super::nodes::outer_attributes;
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
@@ -202,7 +203,7 @@ fn rewrite_ident_pat(
         _ => ("", ""),
     };
     let name = p.name()?;
-    let id_str = name.syntax().text().to_string();
+    let id_str = node_text(name.syntax());
     let name_span = name.span();
     let sub_pat = match p.pat() {
         Some(sub) => {
@@ -420,7 +421,7 @@ impl Rewrite for ast::RecordPatField {
             ),
             Some(name_ref) => {
                 let nested_shape = shape.block_indent(context.config.tab_spaces());
-                let id_str = name_ref.syntax().text().to_string();
+                let id_str = node_text(name_ref.syntax());
                 let one_line_width = id_str.len() + 2 + pat_str.len();
                 let pat_and_id_str = if one_line_width <= shape.width {
                     format!("{id_str}: {pat_str}")

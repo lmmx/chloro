@@ -14,6 +14,7 @@ use super::context::RewriteContext;
 use super::imports::UseTree;
 use super::items::{is_mod_decl, rewrite_extern_crate, rewrite_mod};
 use super::lists::{ListFormatting, ListItem, itemize_list, write_list};
+use super::nodes::node_text;
 use super::nodes::{contains_skip, outer_attributes};
 use super::shape::Shape;
 use super::sort::version_sort;
@@ -30,7 +31,7 @@ fn symbol(text: String) -> String {
 
 fn mod_name(item: &ast::Item) -> String {
     match item {
-        ast::Item::Module(m) => m.name().map(|n| symbol(n.syntax().text().to_string())),
+        ast::Item::Module(m) => m.name().map(|n| symbol(node_text(n.syntax()))),
         _ => None,
     }
     .unwrap_or_default()
@@ -41,11 +42,11 @@ fn extern_crate_names(item: &ast::Item) -> (String, Option<String>) {
     match item {
         ast::Item::ExternCrate(e) => (
             e.name_ref()
-                .map(|n| symbol(n.syntax().text().to_string()))
+                .map(|n| symbol(node_text(n.syntax())))
                 .unwrap_or_default(),
             e.rename().map(|r| {
                 r.name()
-                    .map_or_else(|| "_".to_owned(), |n| symbol(n.syntax().text().to_string()))
+                    .map_or_else(|| "_".to_owned(), |n| symbol(node_text(n.syntax())))
             }),
         ),
         _ => (String::new(), None),

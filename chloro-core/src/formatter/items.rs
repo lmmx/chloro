@@ -28,6 +28,7 @@ use super::lists::{
     definitive_tactic, itemize_list, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
+use super::nodes::node_text;
 use super::nodes::{
     Attribute, Block, contains_skip, generics_span, inner_attributes, outer_attributes,
     span_without_attrs, where_clause_span,
@@ -63,7 +64,7 @@ fn name_span(name: &ast::Name) -> Span {
 }
 
 fn name_text(name: Option<ast::Name>) -> Option<String> {
-    Some(name?.syntax().text().to_string())
+    Some(node_text(name?.syntax()))
 }
 
 /// The `(lo, hi)` of rustc's visibility span: the visibility, or an empty span at the start
@@ -1409,7 +1410,7 @@ fn format_header(
         }
     }
 
-    result.push_str(&name.syntax().text().to_string());
+    result.push_str(&node_text(name.syntax()));
 
     result
 }
@@ -1873,7 +1874,7 @@ impl FmtVisitor<'_> {
                 self.block_indent,
                 Some(one_line_width),
             )?,
-            None => field.name()?.syntax().text().to_string(),
+            None => node_text(field.name()?.syntax()),
         };
 
         let variant_body = if let Some(expr) = field.expr() {
@@ -2254,8 +2255,7 @@ pub(crate) fn format_trait(
     let body_lo = context.snippet_provider.span_after(item_span, "{");
 
     let shape = Shape::indented(offset, context.config).offset_left(result.len())?;
-    let generics_str =
-        rewrite_generics(context, &name.syntax().text().to_string(), &generics, shape)?;
+    let generics_str = rewrite_generics(context, &node_text(name.syntax()), &generics, shape)?;
     result.push_str(&generics_str);
 
     // FIXME(#2055): rustfmt fails to format when there are comments between trait bounds.
@@ -2440,7 +2440,7 @@ pub(crate) fn format_trait_alias(
         ta.where_clause(),
         where_fallback,
     );
-    let alias = name.syntax().text().to_string();
+    let alias = node_text(name.syntax());
     // 6 = "trait ", 2 = " ="
     let g_shape = shape.offset_left(6)?.sub_width(2)?;
     let generics_str = rewrite_generics(context, &alias, &generics, g_shape)?;
@@ -3101,7 +3101,7 @@ pub(crate) fn rewrite_type_alias(
         indent,
         generics: &generics,
         after_where_clause: &after_where_clause,
-        name: name.syntax().text().to_string(),
+        name: node_text(name.syntax()),
         bounds: &bounds,
         span,
     };
@@ -3309,7 +3309,7 @@ pub(crate) struct StaticParts {
 impl StaticParts {
     pub(crate) fn from_const(c: &ast::Const) -> Option<Self> {
         let name = match c.name() {
-            Some(n) => n.syntax().text().to_string(),
+            Some(n) => node_text(n.syntax()),
             None => c.underscore_token()?.text().to_string(),
         };
         Some(StaticParts {
@@ -3341,7 +3341,7 @@ impl StaticParts {
                 ""
             },
             vis: s.visibility(),
-            name: s.name()?.syntax().text().to_string(),
+            name: node_text(s.name()?.syntax()),
             has_generics: false,
             ty: s.ty(),
             mutability: if s.mut_token().is_some() { "mut " } else { "" },
@@ -3559,7 +3559,7 @@ pub(crate) fn rewrite_mod(
         result.push_str("unsafe ");
     }
     result.push_str("mod ");
-    result.push_str(&module.name()?.syntax().text().to_string());
+    result.push_str(&node_text(module.name()?.syntax()));
     result.push(';');
     rewrite_attrs(context, module.syntax(), &result, attrs_shape)
 }

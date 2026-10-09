@@ -21,6 +21,7 @@ use super::items::{
 use super::macros::{
     MacroDef, MacroPosition, mac_span, macro_style, rewrite_macro, rewrite_macro_def,
 };
+use super::nodes::node_text;
 use super::nodes::{
     AttrStyle, Attribute, Block, StmtKind, contains_skip, inner_attributes, outer_attributes,
     span_without_attrs,
@@ -686,10 +687,7 @@ impl<'a> FmtVisitor<'a> {
             self.push_str("unsafe ");
         }
         self.push_str("mod ");
-        let name = m
-            .name()
-            .map(|n| n.syntax().text().to_string())
-            .unwrap_or_default();
+        let name = m.name().map(|n| node_text(n.syntax())).unwrap_or_default();
         self.push_str(&name);
 
         if let Some(item_list) = m.item_list() {

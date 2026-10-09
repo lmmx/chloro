@@ -13,6 +13,7 @@ use super::lists::{
     SeparatorTactic, definitive_tactic, itemize_list, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
+use super::nodes::node_text;
 use super::nodes::{Attribute, outer_attributes};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
@@ -45,7 +46,7 @@ pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
 
 /// The text of a path segment's name as written (`r#type` keeps its prefix).
 pub(crate) fn segment_ident(segment: &ast::PathSegment) -> Option<String> {
-    segment.name_ref().map(|n| n.syntax().text().to_string())
+    segment.name_ref().map(|n| node_text(n.syntax()))
 }
 
 /// Does not wrap on simple segments.
@@ -212,7 +213,7 @@ fn rewrite_assoc_type_arg(
     shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
-    result.push_str(&atc.name_ref()?.syntax().text().to_string());
+    result.push_str(&node_text(atc.name_ref()?.syntax()));
 
     if let Some(gen_args) = atc.generic_arg_list() {
         let budget = shape.width.checked_sub(result.len())?;
@@ -699,7 +700,7 @@ impl Rewrite for ast::GenericParam {
         let param_start = match self {
             ast::GenericParam::ConstParam(cp) => {
                 param.push_str("const ");
-                param.push_str(&cp.name()?.syntax().text().to_string());
+                param.push_str(&node_text(cp.name()?.syntax()));
                 param.push_str(": ");
                 param.push_str(&cp.ty()?.rewrite(context, shape)?);
                 if let Some(default) = cp.default_val() {
@@ -719,7 +720,7 @@ impl Rewrite for ast::GenericParam {
             }
             ast::GenericParam::TypeParam(tp) => {
                 let name = tp.name()?;
-                param.push_str(&name.syntax().text().to_string());
+                param.push_str(&node_text(name.syntax()));
                 name.span().lo()
             }
         };

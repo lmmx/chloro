@@ -19,6 +19,7 @@ use super::expr::{RhsAssignKind, rewrite_array, rewrite_assign_rhs};
 use super::formatting::{format_code_block, format_snippet};
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::macro_args::{ParsedMacroArgs, parse_expr, parse_lazy_static, parse_macro_args};
+use super::nodes::node_text;
 use super::nodes::{Block, BlockRules};
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::shape::{Indent, Shape};
@@ -611,7 +612,7 @@ pub(crate) fn rewrite_macro_def(
     };
 
     result += " ";
-    result += &def.name()?.syntax().text().to_string();
+    result += &node_text(def.name()?.syntax());
 
     let multi_branch_style = def.is_macro_rules() || parsed_def.len() != 1;
 

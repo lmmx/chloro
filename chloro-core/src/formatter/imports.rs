@@ -19,6 +19,7 @@ use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, Separator, definitive_tactic, itemize_list,
     write_list,
 };
+use super::nodes::node_text;
 use super::nodes::{Attribute, outer_attributes};
 use super::shape::Shape;
 use super::sort::version_sort;
@@ -238,7 +239,7 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
         }
         let text = seg
             .name_ref()
-            .map_or_else(String::new, |n| n.syntax().text().to_string());
+            .map_or_else(String::new, |n| node_text(n.syntax()));
         names.push(text);
     }
     (names, global)
@@ -415,7 +416,7 @@ impl UseTree {
             };
             let alias = a.rename().and_then(|rename| {
                 let alias = match rename.name() {
-                    Some(n) => n.syntax().text().to_string(),
+                    Some(n) => node_text(n.syntax()),
                     // for impl-only-use
                     None => "_".to_owned(),
                 };
