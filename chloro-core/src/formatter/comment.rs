@@ -433,8 +433,20 @@ pub(crate) trait FindUncommented {
 
 impl FindUncommented for str {
     fn find_uncommented(&self, pat: &str) -> Option<usize> {
+        let first = pat.bytes().next().filter(u8::is_ascii);
         let mut needle_iter = pat.chars();
-        for (kind, i, b) in CharClasses::new(self) {
+        let mut classes = CharClasses::new(self);
+        loop {
+            // A skipped character is `Normal` and differs from the first character of the
+            // pattern, so it would only reset a needle that is already reset.
+            if let Some(first) = first
+                && needle_iter.as_str().len() == pat.len()
+            {
+                classes.skip_plain(Some(first));
+            }
+            let Some((kind, i, b)) = classes.next() else {
+                break;
+            };
             match needle_iter.next() {
                 None => {
                     return Some(i - pat.len());
@@ -490,7 +502,18 @@ pub(crate) fn find_comment_end(s: &str) -> Option<usize> {
 /// Returns `true` if text contains any comment.
 pub(crate) fn contains_comment(text: &str) -> bool {
     // Fast path: every comment starts with `/`.
-    text.contains('/') && CharClasses::new(text).any(|(kind, _, _)| kind.is_comment())
+    if !text.contains('/') {
+        return false;
+    }
+    let mut classes = CharClasses::new(text);
+    loop {
+        classes.skip_plain(None);
+        match classes.next() {
+            Some((kind, _, _)) if kind.is_comment() => return true,
+            Some(_) => {}
+            None => return false,
+        }
+    }
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -628,6 +651,25 @@ impl<'a> CharClasses<'a> {
 
     fn is_raw_string_suffix(&self, count: u32) -> bool {
         (0..count as usize).all(|n| self.peek_nth(n) == Some('#'))
+    }
+
+    /// In the `Normal` state, moves past the characters that `next` would classify as
+    /// `Normal` without leaving the state: everything but `r`, `"`, `'` and `/`, all ASCII,
+    /// so the scan can work on bytes. Also stops at `stop`, a byte the caller looks for.
+    fn skip_plain(&mut self, stop: Option<u8>) {
+        if self.status != CharClassesStatus::Normal {
+            return;
+        }
+        let bytes = self.src.as_bytes();
+        let mut pos = self.pos;
+        while let Some(&b) = bytes.get(pos) {
+            if matches!(b, b'r' | b'"' | b'\'' | b'/') || Some(b) == stop {
+                break;
+            }
+            pos += 1;
+        }
+        // `pos` is at a char boundary: it is at the end or at an ASCII byte.
+        self.pos = pos;
     }
 }
 
@@ -840,15 +882,26 @@ impl<'a> Iterator for LineClasses<'a> {
 /// comments is functional code. Line comments contain their ending newlines.
 struct UngroupedCommentCodeSlices<'a> {
     slice: &'a str,
-    iter: std::iter::Peekable<CharClasses<'a>>,
+    iter: CharClasses<'a>,
+    /// The next item of `iter`, once looked at.
+    peeked: Option<Option<(FullCodeCharKind, usize, char)>>,
 }
 
 impl<'a> UngroupedCommentCodeSlices<'a> {
     fn new(code: &'a str) -> UngroupedCommentCodeSlices<'a> {
         UngroupedCommentCodeSlices {
             slice: code,
-            iter: CharClasses::new(code).peekable(),
+            iter: CharClasses::new(code),
+            peeked: None,
         }
+    }
+
+    fn advance(&mut self) -> Option<(FullCodeCharKind, usize, char)> {
+        self.peeked.take().unwrap_or_else(|| self.iter.next())
+    }
+
+    fn peek(&mut self) -> Option<(FullCodeCharKind, usize, char)> {
+        *self.peeked.get_or_insert_with(|| self.iter.next())
     }
 }
 
@@ -856,21 +909,27 @@ impl<'a> Iterator for UngroupedCommentCodeSlices<'a> {
     type Item = (CodeCharKind, usize, &'a str);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (kind, start_idx, _) = self.iter.next()?;
+        let (kind, start_idx, _) = self.advance()?;
         match kind {
             FullCodeCharKind::Normal | FullCodeCharKind::InString => {
-                // Consume all the Normal code
-                while let Some(&(char_kind, _, _)) = self.iter.peek() {
-                    if char_kind.is_comment() {
-                        break;
+                // Consume all the Normal code. Characters skipped by `skip_plain` are
+                // `Normal`, so they belong to this slice.
+                loop {
+                    if self.peeked.is_none() {
+                        self.iter.skip_plain(None);
                     }
-                    let _ = self.iter.next();
+                    match self.peek() {
+                        Some((char_kind, _, _)) if !char_kind.is_comment() => {
+                            self.peeked = None;
+                        }
+                        _ => break,
+                    }
                 }
             }
             FullCodeCharKind::StartComment => {
                 // Consume the whole comment
                 loop {
-                    match self.iter.next() {
+                    match self.advance() {
                         Some((kind, ..)) if kind.inside_comment() => continue,
                         _ => break,
                     }
@@ -878,8 +937,8 @@ impl<'a> Iterator for UngroupedCommentCodeSlices<'a> {
             }
             _ => {}
         }
-        let slice = match self.iter.peek() {
-            Some(&(_, end_idx, _)) => &self.slice[start_idx..end_idx],
+        let slice = match self.peek() {
+            Some((_, end_idx, _)) => &self.slice[start_idx..end_idx],
             None => &self.slice[start_idx..],
         };
         Some((
