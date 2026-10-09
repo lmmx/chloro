@@ -49,6 +49,29 @@ pub(crate) fn segment_ident(segment: &ast::PathSegment) -> Option<String> {
     segment.name_ref().map(|n| node_text(n.syntax()))
 }
 
+/// The identifier of a path that is nothing else (`x`, `String`, `self`): one segment with
+/// a name and no qualifier, `::` or arguments. Reads the green tree.
+fn single_ident_path(path: &ast::Path) -> Option<String> {
+    use ra_ap_syntax::{NodeOrToken, RustLanguage};
+    use rowan::Language;
+    let only_node = |green: &rowan::GreenNodeData, kind: SyntaxKind| {
+        let mut children = green.children();
+        match (children.next(), children.next()) {
+            (Some(NodeOrToken::Node(n)), None) if RustLanguage::kind_from_raw(n.kind()) == kind => {
+                Some(n.to_owned())
+            }
+            _ => None,
+        }
+    };
+    let segment = only_node(&path.syntax().green(), SyntaxKind::PATH_SEGMENT)?;
+    let name_ref = only_node(&segment, SyntaxKind::NAME_REF)?;
+    let mut text = String::new();
+    for child in name_ref.children() {
+        text.push_str(child.as_token()?.text());
+    }
+    Some(text)
+}
+
 /// Does not wrap on simple segments.
 pub(crate) fn rewrite_path(
     context: &RewriteContext<'_>,
@@ -56,6 +79,10 @@ pub(crate) fn rewrite_path(
     path: &ast::Path,
     shape: Shape,
 ) -> Option<String> {
+    // The general code below gives such a path its identifier, if the identifier fits.
+    if let Some(ident) = single_ident_path(path) {
+        return (ident.len() <= shape.width).then_some(ident);
+    }
     let segments = path_segments(path);
     let first = segments.first()?;
     let is_global = first.coloncolon_token().is_some() && first.type_anchor().is_none();
