@@ -702,23 +702,33 @@ and what it must keep. "Evidence" cites a measurement or says none exists.
   - how much of rustfmt's layout search could be decided without trial: **not measured**
     (X9).
 
-### Ranking
+### Provisional ordering (for choosing experiments, not an architecture)
 
-| option | evidence so far | implementation cost | risk to conformance | likely end-to-end gain |
+The table orders the options by which experiment to run first. It does not choose an
+architecture: no option has an end-to-end measurement. Three of its entries rest on
+claims that are **not established**:
+- that a decide-once formatter has the largest potential gain — the 1.73 rewrites per node
+  is a call count, not an instruction cost;
+- that a flat CST raises the formatter's ceiling to 27–31 MB/s — the figure is a
+  construction benchmark without typed accessors, traversal or formatting;
+- that streaming reduces to a flat tree per statement — a design argument from
+  `forward_parent` and layout lookahead, not a measurement (X6).
+
+Later measurements are in
+[2026-10-10-formatter-work-measurements.md](2026-10-10-formatter-work-measurements.md). They
+bound the first claim: removing every repeated rewrite of expressions, patterns and types
+would save about 17–18.5% of `format_source`.
+
+| option | evidence so far | implementation cost | risk to conformance | possible end-to-end gain (unmeasured) |
 |---|---|---|---|---|
-| 7 decide-once formatter | agreement-corpus gap 2.3–2.4x on simple items | high | high | largest potential; formatting is about 2.85 of 3.85 s |
-| 2 flat CST, whole file | construction 2.2–2.4x faster than rowan; no end-to-end data | high (typed layer over every accessor) | low: same parser, same trivia rules | raises the ceiling from about 13 to about 27–31 MB/s; needs formatter gains to matter |
+| 7 decide-once formatter | agreement-corpus gap 2.3–2.4x on simple items; repeated rewrites bounded at 17–18.5% of `format_source` (later entry) | high | high | bounded by the repeat share for speculation; the rest of the agreement-corpus gap lies elsewhere |
+| 2 flat CST, whole file | construction 2.2–2.4x faster than rowan, without typed accessors | high (typed layer over every accessor) | low: same parser, same trivia rules | raises the parse floor; formatter effect unknown |
 | 2 flat CST, per item | as whole-file, plus a lower fixed cost per tree | as whole-file, plus cross-item context | as whole-file | memory; speed beyond whole-file not shown |
 | 1 cheaper rowan | 6% fewer construction instructions; wall not separable | low | none | small; ceiling unchanged |
-| 5 own typed parser | none | very high | high (rustc acceptance) | at most about 0.12 s over option 2 on the fixtures, unless the parser is faster |
-| 3 event log | the log already in place; nothing to roll back | none | none | nothing beyond options 1 and 2 |
-| 4 streaming | none; buffering reduces it to option 2 per statement | high (parser change) | medium | not more than option 2 |
-| 6 on demand / scannerless | parsing must cover the whole file; at most 3.7% unread | high | high | small |
-
-The less a representation materialises, the further down this table it sits. That is
-because of the measured needs above, not a preference: the formatter reads most of the
-syntax, more than once per node, so materialising it once is cheaper than recognising it
-again.
+| 5 own typed parser | none | very high | high (rustc acceptance) | unknown; materialisation is about 0.12 s of the fixtures' parse floor |
+| 3 event log | the log already in place; nothing to roll back | none | none | none identified beyond options 1 and 2 |
+| 4 streaming | none; X6 not run | high (parser change) | medium | unknown |
+| 6 on demand / scannerless | parsing must cover the whole file; at most 3.7% unread | high | high | small by the 3.7% bound |
 
 ## Experiment matrix (none run yet)
 
