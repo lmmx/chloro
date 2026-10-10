@@ -45,8 +45,8 @@ The formatter follows rustfmt's source module by module (`visitor`, `items`, `ex
 the rustfmt code it reproduces. A thin adaptation layer presents rust-analyzer's lossless
 tree in the shape rustfmt expects: rustc's spans, doc comments as attributes, rustc's
 classification of statements, and macro arguments re-parsed as expressions, types,
-patterns or items. See [docs/JOURNAL.md](docs/JOURNAL.md) for the design, the
-measurements and the known gaps.
+patterns or items. The [journal entry](docs/journal/2026-10-10-rustfmt-port.md) records
+the design, the measurements and the known gaps.
 
 `Config` has one field per stable rustfmt option, with rustfmt's names and defaults.
 Unstable rustfmt options keep their default behaviour.
