@@ -14,7 +14,7 @@ use super::lists::{
     SeparatorTactic, definitive_tactic, itemize_list, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
-use super::nodes::{Attribute, outer_attributes};
+use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
@@ -36,10 +36,10 @@ pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
     let mut segments = Vec::new();
     let mut cur = Some(path.clone());
     while let Some(p) = cur {
-        if let Some(seg) = p.segment() {
+        if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);
         }
-        cur = p.qualifier();
+        cur = child::<ast::Path>(p.syntax());
     }
     segments.reverse();
     segments
@@ -47,7 +47,7 @@ pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
 
 /// The text of a path segment's name as written (`r#type` keeps its prefix).
 pub(crate) fn segment_ident(segment: &ast::PathSegment) -> Option<String> {
-    segment.name_ref().map(|n| node_text(n.syntax()))
+    child::<ast::NameRef>(segment.syntax()).map(|n| node_text(n.syntax()))
 }
 
 /// The identifier of a path that is nothing else (`x`, `String`, `self`): one segment with
@@ -86,7 +86,8 @@ pub(crate) fn rewrite_path(
     }
     let segments = path_segments(path);
     let first = segments.first()?;
-    let is_global = has_token(first.syntax(), T![::]) && first.type_anchor().is_none();
+    let is_global =
+        has_token(first.syntax(), T![::]) && child::<ast::TypeAnchor>(first.syntax()).is_none();
     let path_span = path.span();
 
     // 32 covers almost all path lengths measured when compiling core, and there isn't a big
@@ -100,7 +101,7 @@ pub(crate) fn rewrite_path(
     let mut span_lo = path_span.lo();
     let mut rest = &segments[..];
 
-    if let Some(anchor) = first.type_anchor() {
+    if let Some(anchor) = child::<ast::TypeAnchor>(first.syntax()) {
         // `<Ty>::rest` or `<Ty as Trait>::rest`
         result.push('<');
         // `<Ty as Trait>`: the self type, then the trait after `as`.
@@ -200,7 +201,7 @@ impl SegmentParam {
     pub(crate) fn from_generic_arg(arg: &ast::GenericArg) -> Option<SegmentParam> {
         Some(match arg {
             ast::GenericArg::LifetimeArg(lt) => SegmentParam::LifeTime(lt.clone()),
-            ast::GenericArg::TypeArg(ty) => SegmentParam::Type(ty.ty()?),
+            ast::GenericArg::TypeArg(ty) => SegmentParam::Type(child::<ast::Type>(ty.syntax())?),
             ast::GenericArg::ConstArg(c) => SegmentParam::Const(c.clone()),
             ast::GenericArg::AssocTypeArg(a) => SegmentParam::Binding(a.clone()),
         })
@@ -241,7 +242,7 @@ fn rewrite_assoc_type_arg(
     shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
-    result.push_str(&node_text(atc.name_ref()?.syntax()));
+    result.push_str(&node_text(child::<ast::NameRef>(atc.syntax())?.syntax()));
 
     if let Some(gen_args) = atc.generic_arg_list() {
         let budget = shape.width.checked_sub(result.len())?;
@@ -257,21 +258,21 @@ fn rewrite_assoc_type_arg(
         let budget = shape.width.checked_sub(result.len())?;
         let shape = Shape::legacy(budget, shape.indent + result.len());
         result.push_str(&rewrite_parenthesized_args(&args, None, context, shape)?);
-    } else if atc.return_type_syntax().is_some() {
+    } else if child::<ast::ReturnTypeSyntax>(atc.syntax()).is_some() {
         // Return type notation: `method(..): Bound`.
         result.push_str("(..)");
     }
 
-    let is_bound = atc.type_bound_list().is_some();
+    let is_bound = child::<ast::TypeBoundList>(atc.syntax()).is_some();
     let infix = if is_bound { ": " } else { " = " };
     result.push_str(infix);
 
     let budget = shape.width.checked_sub(result.len())?;
     let shape = Shape::legacy(budget, shape.indent + result.len());
-    let rewrite = if let Some(bounds) = atc.type_bound_list() {
+    let rewrite = if let Some(bounds) = child::<ast::TypeBoundList>(atc.syntax()) {
         let bounds: Vec<_> = bounds.bounds().collect();
         rewrite_bounds(&bounds, context, shape)?
-    } else if let Some(ty) = atc.ty() {
+    } else if let Some(ty) = child::<ast::Type>(atc.syntax()) {
         ty.rewrite(context, shape)?
     } else {
         atc.const_arg()?.expr()?.rewrite(context, shape)?
@@ -325,9 +326,14 @@ fn rewrite_segment(
         }
         result.push_str(&generics_str)
     } else if let Some(args) = segment.parenthesized_arg_list() {
-        let s = rewrite_parenthesized_args(&args, segment.ret_type(), context, shape)?;
+        let s = rewrite_parenthesized_args(
+            &args,
+            child::<ast::RetType>(segment.syntax()),
+            context,
+            shape,
+        )?;
         result.push_str(&s);
-    } else if segment.return_type_syntax().is_some() {
+    } else if child::<ast::ReturnTypeSyntax>(segment.syntax()).is_some() {
         result.push_str("(..)");
     }
 
@@ -342,12 +348,15 @@ fn rewrite_parenthesized_args(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    let inputs: Vec<ast::Type> = args.type_args().filter_map(|a| a.ty()).collect();
+    let inputs: Vec<ast::Type> = args
+        .type_args()
+        .filter_map(|a| child::<ast::Type>(a.syntax()))
+        .collect();
     let span = mk_sp(
         args.span().lo(),
         ret.as_ref().map_or(args.span().hi(), |r| r.span().hi()),
     );
-    let output = ret.and_then(|r| r.ty());
+    let output = ret.and_then(|r| child::<ast::Type>(r.syntax()));
     format_function_type(&inputs, output.as_ref(), false, span, context, shape)
 }
 
@@ -605,7 +614,7 @@ enum BoundKind {
 }
 
 fn bound_kind(bound: &ast::TypeBound) -> BoundKind {
-    if bound.lifetime().is_some() {
+    if child::<ast::Lifetime>(bound.syntax()).is_some() {
         BoundKind::Outlives
     } else if bound.use_bound_generic_args().is_some() {
         BoundKind::Use
@@ -695,7 +704,7 @@ fn rewrite_poly_trait_ref(
     };
     let shape = shape.offset_left(constness.len() + polarity.len())?;
 
-    let path_str = match bound.ty()? {
+    let path_str = match child::<ast::Type>(bound.syntax())? {
         ast::Type::PathType(p) => rewrite_path(context, PathContext::Type, &p.path()?, shape)?,
         other => other.rewrite(context, shape)?,
     };
@@ -730,7 +739,7 @@ impl Rewrite for ast::GenericParam {
                 param.push_str("const ");
                 param.push_str(&node_text(cp.name()?.syntax()));
                 param.push_str(": ");
-                param.push_str(&cp.ty()?.rewrite(context, shape)?);
+                param.push_str(&child::<ast::Type>(cp.syntax())?.rewrite(context, shape)?);
                 if let Some(default) = cp.default_val() {
                     param.push_str(" = ");
                     let budget = shape.width.checked_sub(param.len())?;
@@ -742,7 +751,7 @@ impl Rewrite for ast::GenericParam {
                 token_span(&cp.const_token()?).lo()
             }
             ast::GenericParam::LifetimeParam(lp) => {
-                let lt = lp.lifetime()?;
+                let lt = child::<ast::Lifetime>(lp.syntax())?;
                 param.push_str(context.snippet(lt.span()));
                 lt.span().lo()
             }
@@ -830,11 +839,11 @@ impl Rewrite for ast::Type {
                 } else {
                     "*const "
                 };
-                rewrite_unary_prefix(context, prefix, &pt.ty()?, shape)
+                rewrite_unary_prefix(context, prefix, &child::<ast::Type>(pt.syntax())?, shape)
             }
             ast::Type::RefType(rt) => rewrite_ref_type(rt, context, shape),
             ast::Type::ParenType(pt) => {
-                let ty = pt.ty()?;
+                let ty = child::<ast::Type>(pt.syntax())?;
                 if context.config.style_edition() <= StyleEdition::Edition2021 {
                     let budget = shape.width.checked_sub(2)?;
                     return ty
@@ -863,7 +872,7 @@ impl Rewrite for ast::Type {
             }
             ast::Type::SliceType(st) => {
                 let budget = shape.width.checked_sub(4)?;
-                st.ty()?
+                child::<ast::Type>(st.syntax())?
                     .rewrite(context, Shape::legacy(budget, shape.indent + 1))
                     .map(|ty_str| format!("[{ty_str}]"))
             }
@@ -874,7 +883,7 @@ impl Rewrite for ast::Type {
             }
             ast::Type::PathType(pt) => rewrite_path(context, PathContext::Type, &pt.path()?, shape),
             ast::Type::ArrayType(at) => rewrite_pair(
-                &at.ty()?,
+                &child::<ast::Type>(at.syntax())?,
                 &at.const_arg()?.expr()?,
                 PairParts::new("[", "; ", "]"),
                 context,
@@ -885,7 +894,7 @@ impl Rewrite for ast::Type {
             ast::Type::FnPtrType(fp) => rewrite_fn_ptr(fp, &[], false, self.span(), context, shape),
             ast::Type::ForType(ft) => {
                 let params = binder_params(ft.for_binder());
-                match ft.ty()? {
+                match child::<ast::Type>(ft.syntax())? {
                     ast::Type::FnPtrType(fp) => {
                         rewrite_fn_ptr(&fp, &params, true, self.span(), context, shape)
                     }
@@ -902,9 +911,12 @@ impl Rewrite for ast::Type {
                 }
             }
             ast::Type::NeverType(_) => Some(String::from("!")),
-            ast::Type::MacroType(mt) => {
-                rewrite_macro(&mt.macro_call()?, context, shape, MacroPosition::Expression)
-            }
+            ast::Type::MacroType(mt) => rewrite_macro(
+                &child::<ast::MacroCall>(mt.syntax())?,
+                context,
+                shape,
+                MacroPosition::Expression,
+            ),
             ast::Type::ImplTraitType(it) => {
                 let bounds: Vec<_> = it
                     .type_bound_list()
@@ -939,9 +951,9 @@ fn rewrite_ref_type(
     result.push('&');
     let ref_hi = context.snippet_provider.span_after(span, "&");
     let mut cmnt_lo = ref_hi;
-    let ty = rt.ty()?;
+    let ty = child::<ast::Type>(rt.syntax())?;
 
-    if let Some(lifetime) = rt.lifetime() {
+    if let Some(lifetime) = child::<ast::Lifetime>(rt.syntax()) {
         shape.width.checked_sub(2 + mut_len)?;
         let lt_str = context.snippet(lifetime.span()).to_owned();
         let before_lt_span = mk_sp(cmnt_lo, lifetime.span().lo());
@@ -1049,15 +1061,19 @@ fn rewrite_fn_ptr(
         result.push_str("safe ");
     }
 
-    result.push_str(&format_abi(fn_ptr.abi().as_ref(), context));
+    result.push_str(&format_abi(
+        child::<ast::Abi>(fn_ptr.syntax()).as_ref(),
+        context,
+    ));
 
     result.push_str("fn");
 
     let func_ty_shape = shape.offset_left(result.len())?;
 
-    let param_list = fn_ptr.param_list()?;
+    let param_list = child::<ast::ParamList>(fn_ptr.syntax())?;
     let params: Vec<ast::Param> = param_list.params().collect();
-    let output = fn_ptr.ret_type().and_then(|r| r.ty());
+    let output =
+        child::<ast::RetType>(fn_ptr.syntax()).and_then(|r| child::<ast::Type>(r.syntax()));
     let decl_span = mk_sp(
         param_list.span().lo(),
         fn_ptr
@@ -1130,7 +1146,7 @@ fn join_bounds_inner(
     // that contains more than one item
     let is_item_with_multi_items_array = |item: &ast::TypeBound| match bound_kind(item) {
         BoundKind::Trait => {
-            let Some(ast::Type::PathType(pt)) = item.ty() else {
+            let Some(ast::Type::PathType(pt)) = child::<ast::Type>(item.syntax()) else {
                 return false;
             };
             let Some(path) = pt.path() else {
@@ -1263,7 +1279,9 @@ fn join_bounds_inner(
 /// The bounds of an `impl Trait` type, if `ty` is one.
 pub(crate) fn opaque_ty(ty: Option<&ast::Type>) -> Option<Vec<ast::TypeBound>> {
     match ty? {
-        ast::Type::ImplTraitType(it) => Some(it.type_bound_list()?.bounds().collect()),
+        ast::Type::ImplTraitType(it) => {
+            Some(child::<ast::TypeBoundList>(it.syntax())?.bounds().collect())
+        }
         _ => None,
     }
 }

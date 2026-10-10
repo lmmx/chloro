@@ -16,8 +16,8 @@ use super::expr::{
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::nodes::has_token;
 use super::nodes::{
-    Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, contains_skip,
-    inner_attributes, outer_attributes,
+    Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child,
+    contains_skip, inner_attributes, outer_attributes,
 };
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
@@ -200,7 +200,7 @@ fn collect_beginning_verts(
 ) -> Vec<Option<BytePos>> {
     arms.iter()
         .map(|a| {
-            let pat = a.pat()?;
+            let pat = child::<ast::Pat>(a.syntax())?;
             context
                 .snippet(pat.span())
                 .starts_with('|')
@@ -265,7 +265,7 @@ fn rewrite_match_arm(
     has_leading_pipe: bool,
 ) -> Option<String> {
     let attrs = outer_attributes(arm.syntax());
-    let pat = arm.pat()?;
+    let pat = child::<ast::Pat>(arm.syntax())?;
     let body = arm.expr()?;
     let (missing_span, attrs_str) = if !attrs.is_empty() {
         if contains_skip(&attrs) {
@@ -293,7 +293,9 @@ fn rewrite_match_arm(
 
     // Patterns
     let label = match &body {
-        ast::Expr::BlockExpr(b) => b.label().and_then(|l| l.lifetime()),
+        ast::Expr::BlockExpr(b) => {
+            child::<ast::Label>(b.syntax()).and_then(|l| child::<ast::Lifetime>(l.syntax()))
+        }
         _ => None,
     };
     let pat_shape = match label {
@@ -351,7 +353,7 @@ fn stmt_is_expr_mac(kind: &StmtKind) -> bool {
 
 fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<Block> {
     let (block_expr, block) = as_block(expr)?;
-    (block_expr.label().is_none()
+    (child::<ast::Label>(block_expr.syntax()).is_none()
         && !block.is_unsafe()
         && !context.inside_macro()
         && is_simple_block(context, &block, Some(&expr_attrs(expr)))

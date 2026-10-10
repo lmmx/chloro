@@ -9,7 +9,7 @@
 //! plain identifiers, formatting the body as Rust code, and substituting back. Matchers
 //! are kept as written (rustfmt's `format_macro_matchers` is off by default).
 
-use ra_ap_syntax::ast::{self, AstNode, AstToken, HasName, HasVisibility};
+use ra_ap_syntax::ast::{self, AstNode, AstToken, HasName};
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken, T};
 
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, contains_comment};
@@ -20,7 +20,7 @@ use super::formatting::{format_code_block, format_snippet};
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::macro_args::{ParsedMacroArgs, parse_expr, parse_lazy_static, parse_macro_args};
 use super::nodes::node_text;
-use super::nodes::{Block, BlockRules};
+use super::nodes::{Block, BlockRules, child};
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::shape::{Indent, Shape};
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
@@ -568,8 +568,8 @@ impl MacroDef {
 
     fn visibility(&self) -> Option<ast::Visibility> {
         match self {
-            MacroDef::Rules(m) => m.visibility(),
-            MacroDef::Def(m) => m.visibility(),
+            MacroDef::Rules(m) => child::<ast::Visibility>(m.syntax()),
+            MacroDef::Def(m) => child::<ast::Visibility>(m.syntax()),
         }
     }
 }

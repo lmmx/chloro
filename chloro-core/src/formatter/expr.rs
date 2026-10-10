@@ -24,7 +24,7 @@ use super::macros::{MacroPosition, rewrite_macro};
 use super::matches::rewrite_match;
 use super::nodes::has_token;
 use super::nodes::{
-    Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, contains_skip,
+    Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, child, contains_skip,
     inner_attributes, outer_attributes, span_without_attrs,
 };
 use super::overflow::{self, Delimiter, OverflowableItem};
@@ -88,7 +88,7 @@ pub(crate) fn expr_span(expr: &ast::Expr) -> Span {
 pub(crate) fn expr_attrs(expr: &ast::Expr) -> Vec<Attribute> {
     let mut attrs = outer_attributes(expr.syntax());
     if let ast::Expr::BlockExpr(b) = expr
-        && let Some(list) = b.stmt_list()
+        && let Some(list) = child::<ast::StmtList>(b.syntax())
     {
         attrs.extend(inner_attributes(list.syntax()));
     }
@@ -202,7 +202,9 @@ fn format_expr_uncached(
             let len = fields.len();
             rewrite_tuple(context, fields, span, shape, len == 1)
         }
-        ast::Expr::LetExpr(l) => rewrite_let(context, shape, &l.pat()?, &l.expr()?),
+        ast::Expr::LetExpr(l) => {
+            rewrite_let(context, shape, &child::<ast::Pat>(l.syntax())?, &l.expr()?)
+        }
         ast::Expr::IfExpr(_)
         | ast::Expr::ForExpr(_)
         | ast::Expr::LoopExpr(_)
@@ -213,14 +215,14 @@ fn format_expr_uncached(
         ast::Expr::MatchExpr(m) => rewrite_match(context, m, shape, span, &expr_attrs(expr)),
         ast::Expr::PathExpr(p) => rewrite_path(context, PathContext::Expr, &p.path()?, shape),
         ast::Expr::ContinueExpr(c) => {
-            let id_str = match c.lifetime() {
+            let id_str = match child::<ast::Lifetime>(c.syntax()) {
                 Some(label) => format!(" {}", context.snippet(label.span())),
                 None => String::new(),
             };
             Some(format!("continue{id_str}"))
         }
         ast::Expr::BreakExpr(b) => {
-            let id_str = match b.lifetime() {
+            let id_str = match child::<ast::Lifetime>(b.syntax()) {
                 Some(label) => format!(" {}", context.snippet(label.span())),
                 None => String::new(),
             };
@@ -239,17 +241,19 @@ fn format_expr_uncached(
         | ast::Expr::FieldExpr(_)
         | ast::Expr::MethodCallExpr(_)
         | ast::Expr::AwaitExpr(_) => rewrite_chain(expr, context, shape),
-        ast::Expr::MacroExpr(m) => {
-            rewrite_macro(&m.macro_call()?, context, shape, MacroPosition::Expression).or_else(
-                || {
-                    wrap_str(
-                        context.snippet(span).to_owned(),
-                        context.config.max_width(),
-                        shape,
-                    )
-                },
+        ast::Expr::MacroExpr(m) => rewrite_macro(
+            &child::<ast::MacroCall>(m.syntax())?,
+            context,
+            shape,
+            MacroPosition::Expression,
+        )
+        .or_else(|| {
+            wrap_str(
+                context.snippet(span).to_owned(),
+                context.config.max_width(),
+                shape,
             )
-        }
+        }),
         ast::Expr::ReturnExpr(r) => match r.expr() {
             None => Some("return".to_owned()),
             Some(e) => rewrite_unary_prefix(context, "return ", &e, shape),
@@ -270,7 +274,7 @@ fn format_expr_uncached(
         }
         ast::Expr::CastExpr(c) => rewrite_pair(
             &c.expr()?,
-            &c.ty()?,
+            &child::<ast::Type>(c.syntax())?,
             PairParts::infix(" as "),
             context,
             shape,
@@ -406,7 +410,7 @@ fn rewrite_block_expr(
 ) -> Option<String> {
     let block = Block::from_block_expr(b)?;
     let attrs = expr_attrs(expr);
-    let label = b.label();
+    let label = child::<ast::Label>(b.syntax());
     if has_token(b.syntax(), T![const]) {
         // Inner attributes are associated with the const block expression, not the inner block.
         let rewrite = rewrite_block(&block, Some(&attrs), label.as_ref(), context, shape)?;
@@ -716,7 +720,7 @@ struct ControlFlow<'a> {
 
 fn extract_pats_and_cond(expr: ast::Expr) -> (Option<ast::Pat>, Option<ast::Expr>) {
     match expr {
-        ast::Expr::LetExpr(l) => (l.pat(), l.expr()),
+        ast::Expr::LetExpr(l) => (child::<ast::Pat>(l.syntax()), l.expr()),
         _ => (None, Some(expr)),
     }
 }
@@ -747,8 +751,8 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
             cond: Some(f.iterable()?),
             block: Block::from_block_expr(&f.loop_body()?)?,
             else_block: None,
-            label: f.label(),
-            pat: Some(f.pat()?),
+            label: child::<ast::Label>(f.syntax()),
+            pat: Some(child::<ast::Pat>(f.syntax())?),
             keyword: "for",
             matcher: "",
             connector: " in",
@@ -761,7 +765,7 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
             cond: None,
             block: Block::from_block_expr(&l.loop_body()?)?,
             else_block: None,
-            label: l.label(),
+            label: child::<ast::Label>(l.syntax()),
             pat: None,
             keyword: "loop",
             matcher: "",
@@ -777,7 +781,7 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
                 cond: Some(cond?),
                 block: Block::from_block_expr(&w.loop_body()?)?,
                 else_block: None,
-                label: w.label(),
+                label: child::<ast::Label>(w.syntax()),
                 matcher: if pat.is_some() { "let" } else { "" },
                 pat,
                 keyword: "while",
@@ -1171,7 +1175,7 @@ pub(crate) fn rewrite_label(
     context: &RewriteContext<'_>,
     opt_label: Option<&ast::Label>,
 ) -> Cow<'static, str> {
-    match opt_label.and_then(|l| l.lifetime()) {
+    match opt_label.and_then(|l| child::<ast::Lifetime>(l.syntax())) {
         Some(lt) => Cow::from(format!("{}: ", context.snippet(lt.span()))),
         None => Cow::from(""),
     }
@@ -1310,7 +1314,9 @@ pub(crate) fn is_simple_expr(expr: &ast::Expr) -> bool {
     match expr {
         ast::Expr::Literal(..) => true,
         ast::Expr::PathExpr(p) => p.path().is_some_and(|p| {
-            p.qualifier().is_none() && p.segment().is_some_and(|s| s.type_anchor().is_none())
+            child::<ast::Path>(p.syntax()).is_none()
+                && child::<ast::PathSegment>(p.syntax())
+                    .is_some_and(|s| child::<ast::TypeAnchor>(s.syntax()).is_none())
         }),
         ast::Expr::RefExpr(r) => r.expr().is_some_and(|e| is_simple_expr(&e)),
         ast::Expr::CastExpr(c) => c.expr().is_some_and(|e| is_simple_expr(&e)),
@@ -1363,15 +1369,17 @@ pub(crate) fn can_be_overflowed_expr(
                 || (context.use_block_indent() && args_len == 1)
         }
         ast::Expr::MacroExpr(m) => {
-            let delim = m.macro_call().and_then(|c| c.token_tree()).map(|tt| {
-                if has_token(tt.syntax(), T!['[']) {
-                    Delimiter::Bracket
-                } else if has_token(tt.syntax(), T!['{']) {
-                    Delimiter::Brace
-                } else {
-                    Delimiter::Parenthesis
-                }
-            });
+            let delim = child::<ast::MacroCall>(m.syntax())
+                .and_then(|c| c.token_tree())
+                .map(|tt| {
+                    if has_token(tt.syntax(), T!['[']) {
+                        Delimiter::Bracket
+                    } else if has_token(tt.syntax(), T!['{']) {
+                        Delimiter::Brace
+                    } else {
+                        Delimiter::Parenthesis
+                    }
+                });
             match (delim, context.config.overflow_delimited_expr()) {
                 (Some(Delimiter::Bracket), true) | (Some(Delimiter::Brace), true) => true,
                 _ => context.use_block_indent() && args_len == 1,
@@ -1726,7 +1734,7 @@ pub(crate) fn rewrite_field(
         attrs_str.push_str(&shape.indent.to_string_with_newline(context.config));
     };
     let expr = field.expr()?;
-    match field.name_ref() {
+    match child::<ast::NameRef>(field.syntax()) {
         None => {
             // Shorthand: `Foo { a }`.
             Some(attrs_str + context.snippet(expr_span(&expr)))

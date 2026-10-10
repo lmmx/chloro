@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 use ra_ap_syntax::SyntaxKind;
 use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, HasModuleItem, HasName, HasVisibility};
+use ra_ap_syntax::ast::{self, AstNode, HasModuleItem, HasName};
 
 use super::comment::{CodeCharKind, CommentCodeSlices, contains_comment, rewrite_comment};
 use super::config::{Settings, StyleEdition};
@@ -23,8 +23,8 @@ use super::macros::{
     MacroDef, MacroPosition, mac_span, macro_style, rewrite_macro, rewrite_macro_def,
 };
 use super::nodes::{
-    AttrStyle, Attribute, Block, StmtKind, contains_skip, inner_attributes, outer_attributes,
-    span_without_attrs,
+    AttrStyle, Attribute, Block, StmtKind, child, contains_skip, inner_attributes,
+    outer_attributes, span_without_attrs,
 };
 use super::nodes::{has_token, node_text};
 use super::overflow::Delimiter;
@@ -70,7 +70,7 @@ fn item_attrs(item: &ast::Item) -> Vec<Attribute> {
         ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax().clone()),
         ast::Item::Fn(f) => f
             .body()
-            .and_then(|b| b.stmt_list())
+            .and_then(|b| child::<ast::StmtList>(b.syntax()))
             .map(|l| l.syntax().clone()),
         _ => None,
     };
@@ -509,7 +509,7 @@ impl<'a> FmtVisitor<'a> {
         let skip_span = item_span(ai.syntax());
         let mut attrs = outer_attributes(ai.syntax());
         if let ast::AssocItem::Fn(f) = ai
-            && let Some(list) = f.body().and_then(|b| b.stmt_list())
+            && let Some(list) = f.body().and_then(|b| child::<ast::StmtList>(b.syntax()))
         {
             attrs.extend(inner_attributes(list.syntax()));
         }
@@ -679,7 +679,7 @@ impl<'a> FmtVisitor<'a> {
     }
 
     fn format_mod(&mut self, m: &ast::Module, s: Span, attrs: &[Attribute]) {
-        let vis_str = format_visibility(m.visibility().as_ref());
+        let vis_str = format_visibility(child::<ast::Visibility>(m.syntax()).as_ref());
         self.push_str(&vis_str);
         if m.syntax()
             .children_with_tokens()

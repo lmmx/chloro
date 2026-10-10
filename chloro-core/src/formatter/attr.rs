@@ -15,7 +15,7 @@ use super::lists::{
     ListFormatting, ListTactic, Separator, SeparatorTactic, definitive_tactic, itemize_list,
     write_list,
 };
-use super::nodes::{AttrStyle, Attribute};
+use super::nodes::{AttrStyle, Attribute, child};
 use super::overflow;
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
@@ -219,7 +219,7 @@ fn parse_meta_list(tt: &SyntaxNode) -> Option<Vec<MetaItemInner>> {
 /// rustc's `Attribute::meta()`: the attribute as a meta item, if its arguments have the
 /// required shape.
 pub(crate) fn attr_meta(attr: &ast::Attr) -> Option<MetaItem> {
-    let meta = attr.meta()?;
+    let meta = child::<ast::Meta>(attr.syntax())?;
     let path_node = meta.path()?;
     let path: String = path_node
         .syntax()
@@ -516,7 +516,9 @@ impl Rewrite for Attribute {
 
         // 1 = `[`
         let shape = shape.offset_left(prefix.len() + 1)?;
-        let is_unsafe = attr.meta().and_then(|m| m.unsafe_token()).is_some();
+        let is_unsafe = child::<ast::Meta>(attr.syntax())
+            .and_then(|m| m.unsafe_token())
+            .is_some();
         Some(match meta.rewrite(context, shape) {
             Some(rw) if is_unsafe => format!("{prefix}[unsafe({rw})]"),
             Some(rw) => format!("{prefix}[{rw}]"),

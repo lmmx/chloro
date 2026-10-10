@@ -11,7 +11,7 @@ use std::cmp::Ordering;
 use std::fmt;
 
 use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, HasName, HasVisibility};
+use ra_ap_syntax::ast::{self, AstNode, HasName};
 
 use super::comment::combine_strs_with_missing_comments;
 use super::config::{Edition, StyleEdition};
@@ -20,7 +20,7 @@ use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, Separator, definitive_tactic, itemize_list,
     write_list,
 };
-use super::nodes::{Attribute, outer_attributes};
+use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
 use super::shape::Shape;
 use super::sort::version_sort;
@@ -228,10 +228,10 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
     let mut segments: Vec<ast::PathSegment> = Vec::new();
     let mut cur = Some(path.clone());
     while let Some(p) = cur {
-        if let Some(seg) = p.segment() {
+        if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);
         }
-        cur = p.qualifier();
+        cur = child::<ast::Path>(p.syntax());
     }
     segments.reverse();
     for (i, seg) in segments.iter().enumerate() {
@@ -306,7 +306,7 @@ impl UseTree {
             context,
             &item.use_tree()?,
             None,
-            Some(item.visibility()),
+            Some(child::<ast::Visibility>(item.syntax())),
             Some(super::items::item_span(item.syntax()).lo()),
             if attrs.is_empty() { None } else { Some(attrs) },
         );

@@ -15,7 +15,7 @@ use super::imports::UseTree;
 use super::items::{is_mod_decl, rewrite_extern_crate, rewrite_mod};
 use super::lists::{ListFormatting, ListItem, itemize_list, write_list};
 use super::nodes::node_text;
-use super::nodes::{contains_skip, outer_attributes};
+use super::nodes::{child, contains_skip, outer_attributes};
 use super::shape::Shape;
 use super::sort::version_sort;
 use super::span::{Span, Spanned, mk_sp};
@@ -41,7 +41,7 @@ fn mod_name(item: &ast::Item) -> String {
 fn extern_crate_names(item: &ast::Item) -> (String, Option<String>) {
     match item {
         ast::Item::ExternCrate(e) => (
-            e.name_ref()
+            child::<ast::NameRef>(e.syntax())
                 .map(|n| symbol(node_text(n.syntax())))
                 .unwrap_or_default(),
             e.rename().map(|r| {

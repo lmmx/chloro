@@ -17,7 +17,7 @@ use super::lists::{
 };
 use super::macros::{MacroPosition, rewrite_macro};
 use super::nodes::outer_attributes;
-use super::nodes::{has_token, node_text};
+use super::nodes::{child, has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
 use super::shape::Shape;
@@ -48,7 +48,7 @@ fn is_short_pattern_inner(context: &RewriteContext<'_>, pat: &ast::Pat) -> bool 
     match pat {
         ast::Pat::RestPat(_) | ast::Pat::WildcardPat(_) | ast::Pat::LiteralPat(_) => true,
         ast::Pat::ConstBlockPat(_) => context.config.style_edition() <= StyleEdition::Edition2024,
-        ast::Pat::IdentPat(p) => p.pat().is_none(),
+        ast::Pat::IdentPat(p) => child::<ast::Pat>(p.syntax()).is_none(),
         ast::Pat::RecordPat(..)
         | ast::Pat::PathPat(..)
         | ast::Pat::MacroPat(..)
@@ -58,9 +58,15 @@ fn is_short_pattern_inner(context: &RewriteContext<'_>, pat: &ast::Pat) -> bool 
         ast::Pat::TupleStructPat(t) => {
             t.path().is_some_and(|p| path_segments(&p).len() <= 1) && t.fields().count() <= 1
         }
-        ast::Pat::BoxPat(p) => p.pat().is_some_and(|p| is_short_pattern_inner(context, &p)),
-        ast::Pat::RefPat(p) => p.pat().is_some_and(|p| is_short_pattern_inner(context, &p)),
-        ast::Pat::ParenPat(p) => p.pat().is_some_and(|p| is_short_pattern_inner(context, &p)),
+        ast::Pat::BoxPat(p) => {
+            child::<ast::Pat>(p.syntax()).is_some_and(|p| is_short_pattern_inner(context, &p))
+        }
+        ast::Pat::RefPat(p) => {
+            child::<ast::Pat>(p.syntax()).is_some_and(|p| is_short_pattern_inner(context, &p))
+        }
+        ast::Pat::ParenPat(p) => {
+            child::<ast::Pat>(p.syntax()).is_some_and(|p| is_short_pattern_inner(context, &p))
+        }
         ast::Pat::OrPat(p) => p.pats().all(|p| is_short_pattern_inner(context, &p)),
     }
 }
@@ -111,7 +117,9 @@ impl Rewrite for ast::Pat {
                     .ends_with_newline(false);
                 write_list(&items, &fmt)
             }
-            ast::Pat::BoxPat(p) => rewrite_unary_prefix(context, "box ", &p.pat()?, shape),
+            ast::Pat::BoxPat(p) => {
+                rewrite_unary_prefix(context, "box ", &child::<ast::Pat>(p.syntax())?, shape)
+            }
             ast::Pat::IdentPat(p) => rewrite_ident_pat(p, context, shape),
             ast::Pat::WildcardPat(_) => (1 <= shape.width).then(|| "_".to_owned()),
             ast::Pat::RestPat(_) => (1 <= shape.width).then(|| "..".to_owned()),
@@ -122,7 +130,7 @@ impl Rewrite for ast::Pat {
                 } else {
                     "&"
                 };
-                rewrite_unary_prefix(context, prefix, &r.pat()?, shape)
+                rewrite_unary_prefix(context, prefix, &child::<ast::Pat>(r.syntax())?, shape)
             }
             ast::Pat::TuplePat(t) => {
                 let fields: Vec<ast::Pat> = t.fields().collect();
@@ -175,9 +183,12 @@ impl Rewrite for ast::Pat {
                 )
             }
             ast::Pat::RecordPat(r) => rewrite_struct_pat(r, self.span(), context, shape),
-            ast::Pat::MacroPat(m) => {
-                rewrite_macro(&m.macro_call()?, context, shape, MacroPosition::Pat)
-            }
+            ast::Pat::MacroPat(m) => rewrite_macro(
+                &child::<ast::MacroCall>(m.syntax())?,
+                context,
+                shape,
+                MacroPosition::Pat,
+            ),
             ast::Pat::ParenPat(p) => p
                 .pat()?
                 .rewrite(context, shape.offset_left(1)?.sub_width(1)?)
@@ -206,7 +217,7 @@ fn rewrite_ident_pat(
     let name = p.name()?;
     let id_str = node_text(name.syntax());
     let name_span = name.span();
-    let sub_pat = match p.pat() {
+    let sub_pat = match child::<ast::Pat>(p.syntax()) {
         Some(sub) => {
             // 2 - `@ `.
             let width = shape.width.checked_sub(

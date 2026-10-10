@@ -24,7 +24,7 @@ use super::lists::{
     write_list,
 };
 use super::nodes::has_token;
-use super::nodes::{Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of};
+use super::nodes::{Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child};
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
 use super::span::{Span, Spanned};
@@ -61,7 +61,8 @@ pub(crate) fn rewrite_closure(
                 .map(|s| format!("{prefix} {s}"));
         }
 
-        let result = if closure.ret_type().is_none() && !context.inside_macro() {
+        let result = if child::<ast::RetType>(closure.syntax()).is_none() && !context.inside_macro()
+        {
             try_rewrite_without_block(&body, &prefix, context, shape, body_shape)
         } else {
             None
@@ -98,7 +99,12 @@ fn try_rewrite_without_block(
 
 fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) -> ast::Expr {
     if let Some((block_expr, block)) = plain_block(expr)
-        && !needs_block(&block, block_expr.label().is_some(), prefix, context)
+        && !needs_block(
+            &block,
+            child::<ast::Label>(block_expr.syntax()).is_some(),
+            prefix,
+            context,
+        )
     {
         // block.stmts.len() == 1 except with `|| {{}}`;
         // https://github.com/rust-lang/rustfmt/issues/3844
@@ -255,9 +261,9 @@ fn rewrite_closure_fn_decl(
     // 1 = |
     let param_offset = nested_shape.indent + 1;
     let param_shape = nested_shape.offset_left(1)?.visual_indent(0);
-    let ret_str = match closure.ret_type() {
+    let ret_str = match child::<ast::RetType>(closure.syntax()) {
         Some(ret) => {
-            let ty = ret.ty()?;
+            let ty = child::<ast::Type>(ret.syntax())?;
             let arrow_width = "-> ".len();
             let shape = param_shape.offset_left(arrow_width)?;
             format!("-> {}", ty.rewrite(context, shape)?)
@@ -332,7 +338,7 @@ pub(crate) fn rewrite_last_closure(
             if !block.is_unsafe()
                 && !context.inside_macro()
                 && is_simple_block(context, &block, Some(&expr_attrs(&body)))
-                && block_expr.label().is_none() =>
+                && child::<ast::Label>(block_expr.syntax()).is_none() =>
         {
             match &block.stmts[0].kind {
                 StmtKind::Expr(e) => e.clone(),
@@ -353,7 +359,7 @@ pub(crate) fn rewrite_last_closure(
     // We force to use block for the body of the closure for certain kinds of expressions.
     if is_block_closure_forced(context, &body) {
         return rewrite_closure_with_block(&body, &prefix, context, body_shape).map(|body_str| {
-            match closure.ret_type() {
+            match child::<ast::RetType>(closure.syntax()) {
                 None if body_str.lines().count() <= 7 => {
                     // If the expression can fit in a single line, we need not force block
                     // closure.  However, if the closure has a return type, then we must

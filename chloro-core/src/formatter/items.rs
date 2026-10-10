@@ -9,7 +9,7 @@
 use std::borrow::Cow;
 use std::cmp::{max, min};
 
-use ra_ap_syntax::ast::{self, AstNode, HasGenericParams, HasName, HasVisibility};
+use ra_ap_syntax::ast::{self, AstNode, HasGenericParams, HasName};
 use ra_ap_syntax::{SyntaxNode, T};
 
 use super::comment::{
@@ -29,7 +29,7 @@ use super::lists::{
 };
 use super::macros::{MacroPosition, rewrite_macro};
 use super::nodes::{
-    Attribute, Block, contains_skip, generics_span, inner_attributes, outer_attributes,
+    Attribute, Block, child, contains_skip, generics_span, inner_attributes, outer_attributes,
     span_without_attrs, where_clause_span,
 };
 use super::nodes::{has_token, node_text};
@@ -377,9 +377,9 @@ pub(crate) struct FnSig {
 impl FnSig {
     pub(crate) fn from_fn(f: &ast::Fn) -> Option<FnSig> {
         let name_hi = name_span(&f.name()?).hi();
-        let param_list = f.param_list()?;
+        let param_list = child::<ast::ParamList>(f.syntax())?;
         let params_hi = node_range_span(param_list.syntax()).hi();
-        let ret = f.ret_type();
+        let ret = child::<ast::RetType>(f.syntax());
         let where_fallback = ret
             .as_ref()
             .map_or(params_hi, |r| node_range_span(r.syntax()).hi());
@@ -407,7 +407,7 @@ impl FnSig {
             ""
         };
         Some(FnSig {
-            vis: f.visibility(),
+            vis: child::<ast::Visibility>(f.syntax()),
             defaultness: if has_token(f.syntax(), T![default]) {
                 "default "
             } else {
@@ -420,12 +420,12 @@ impl FnSig {
             },
             coroutine,
             safety,
-            has_abi: f.abi().is_some(),
-            abi: f.abi(),
+            has_abi: child::<ast::Abi>(f.syntax()).is_some(),
+            abi: child::<ast::Abi>(f.syntax()),
             generics: Generics::new(
                 f.generic_param_list(),
                 name_hi,
-                f.where_clause(),
+                child::<ast::WhereClause>(f.syntax()),
                 where_fallback,
             ),
             params,
@@ -450,7 +450,11 @@ impl FnSig {
     }
 
     fn ret_span(&self) -> Span {
-        match self.ret.as_ref().and_then(|r| r.ty()) {
+        match self
+            .ret
+            .as_ref()
+            .and_then(|r| child::<ast::Type>(r.syntax()))
+        {
             Some(ty) => ty.span(),
             None => mk_sp(self.default_ret_lo, self.default_ret_lo),
         }
@@ -482,7 +486,7 @@ fn rewrite_ret(
     shape: Shape,
 ) -> Option<String> {
     match ret {
-        Some(r) if r.ty().is_some() => r.rewrite(context, shape),
+        Some(r) if child::<ast::Type>(r.syntax()).is_some() => r.rewrite(context, shape),
         _ => Some(String::new()),
     }
 }
@@ -678,7 +682,10 @@ pub(crate) fn span_lo_for_param(param: &ast::Param) -> BytePos {
 }
 
 fn param_ty_hi(param: &ast::Param) -> BytePos {
-    match (param.ty(), param.pat()) {
+    match (
+        child::<ast::Type>(param.syntax()),
+        child::<ast::Pat>(param.syntax()),
+    ) {
         (Some(ty), _) => ty.span().hi(),
         (None, Some(pat)) if !has_token(param.syntax(), T![...]) => pat.span().hi(),
         _ => node_range_span(param.syntax()).hi(),
@@ -831,7 +838,10 @@ fn rewrite_fn_base(
     }
 
     // Return type.
-    let has_ret = fn_sig.ret.as_ref().is_some_and(|r| r.ty().is_some());
+    let has_ret = fn_sig
+        .ret
+        .as_ref()
+        .is_some_and(|r| child::<ast::Type>(r.syntax()).is_some());
     if has_ret {
         let ret_should_indent = if put_params_in_block || fn_sig.params.is_empty() {
             // If our params are block layout then we surely must have space.
@@ -1525,7 +1535,7 @@ impl FmtVisitor<'_> {
         if has_token(fm.syntax(), T![unsafe]) {
             self.buffer.push_str("unsafe ");
         }
-        let abi = format_abi(fm.abi().as_ref(), &self.get_context());
+        let abi = format_abi(child::<ast::Abi>(fm.syntax()).as_ref(), &self.get_context());
         let abi = if abi.is_empty() {
             // rustc's `Extern::from_abi(None)` is an implicit ABI.
             "extern \"C\" ".to_owned()
@@ -1736,7 +1746,7 @@ impl FmtVisitor<'_> {
             &context,
             "enum ",
             &name,
-            e.visibility().as_ref(),
+            child::<ast::Visibility>(e.syntax()).as_ref(),
             span.lo(),
             self.block_indent,
         );
@@ -1744,7 +1754,12 @@ impl FmtVisitor<'_> {
         let params_hi = e
             .generic_param_list()
             .map_or(name_hi, |l| node_range_span(l.syntax()).hi());
-        let generics = Generics::new(e.generic_param_list(), name_hi, e.where_clause(), params_hi);
+        let generics = Generics::new(
+            e.generic_param_list(),
+            name_hi,
+            child::<ast::WhereClause>(e.syntax()),
+            params_hi,
+        );
         let generics_str = format_generics(
             &context,
             &generics,
@@ -1922,7 +1937,7 @@ pub(crate) fn format_impl(
         iimpl
             .impl_token()
             .map_or(item_span.lo(), |t| token_span(&t).hi()),
-        iimpl.where_clause(),
+        child::<ast::WhereClause>(iimpl.syntax()),
         self_ty_hi,
     );
     let items = assoc_items(iimpl.assoc_item_list());
@@ -2071,7 +2086,9 @@ fn format_impl_ref_and_type(
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
 
-    result.push_str(&format_visibility(iimpl.visibility().as_ref()));
+    result.push_str(&format_visibility(
+        child::<ast::Visibility>(iimpl.syntax()).as_ref(),
+    ));
 
     let of_trait = iimpl.trait_();
     let constness = has_token(iimpl.syntax(), T![const]);
@@ -2223,7 +2240,7 @@ pub(crate) fn format_trait(
     let generics = Generics::new(
         trait_.generic_param_list(),
         name_hi,
-        trait_.where_clause(),
+        child::<ast::WhereClause>(trait_.syntax()),
         where_fallback,
     );
     let items = assoc_items(trait_.assoc_item_list());
@@ -2231,7 +2248,7 @@ pub(crate) fn format_trait(
     let mut result = String::with_capacity(128);
     let header = format!(
         "{}{}{}{}trait ",
-        format_visibility(trait_.visibility().as_ref()),
+        format_visibility(child::<ast::Visibility>(trait_.syntax()).as_ref()),
         if has_token(trait_.syntax(), T![const]) {
             "const "
         } else {
@@ -2435,14 +2452,14 @@ pub(crate) fn format_trait_alias(
     let generics = Generics::new(
         ta.generic_param_list(),
         name_hi,
-        ta.where_clause(),
+        child::<ast::WhereClause>(ta.syntax()),
         where_fallback,
     );
     let alias = node_text(name.syntax());
     // 6 = "trait ", 2 = " ="
     let g_shape = shape.offset_left(6)?.sub_width(2)?;
     let generics_str = rewrite_generics(context, &alias, &generics, g_shape)?;
-    let vis_str = format_visibility(ta.visibility().as_ref());
+    let vis_str = format_visibility(child::<ast::Visibility>(ta.syntax()).as_ref());
     let constness = if has_token(ta.syntax(), T![const]) {
         "const "
     } else {
@@ -2538,11 +2555,11 @@ impl StructParts {
             generics: Some(Generics::new(
                 s.generic_param_list(),
                 name_hi,
-                s.where_clause(),
+                child::<ast::WhereClause>(s.syntax()),
                 where_fallback,
             )),
             name,
-            vis: s.visibility(),
+            vis: child::<ast::Visibility>(s.syntax()),
             def: VariantData::of(s.field_list()),
             span: item_span(s.syntax()),
         })
@@ -2559,11 +2576,11 @@ impl StructParts {
             generics: Some(Generics::new(
                 u.generic_param_list(),
                 name_hi,
-                u.where_clause(),
+                child::<ast::WhereClause>(u.syntax()),
                 params_hi,
             )),
             name,
-            vis: u.visibility(),
+            vis: child::<ast::Visibility>(u.syntax()),
             def: VariantData::Struct(
                 u.record_field_list()
                     .map(|l| l.fields().collect())
@@ -2938,15 +2955,8 @@ impl FieldDef {
 
     fn vis(&self) -> Option<ast::Visibility> {
         match self {
-            FieldDef::Named(f) => f.visibility(),
-            FieldDef::Positional(f) => f.visibility(),
-        }
-    }
-
-    fn ty(&self) -> Option<ast::Type> {
-        match self {
-            FieldDef::Named(f) => f.ty(),
-            FieldDef::Positional(f) => f.ty(),
+            FieldDef::Named(f) => child::<ast::Visibility>(f.syntax()),
+            FieldDef::Positional(f) => child::<ast::Visibility>(f.syntax()),
         }
     }
 }
@@ -3018,7 +3028,7 @@ fn rewrite_struct_field(
         spacing.push(' ');
     }
 
-    let ty = field.ty()?;
+    let ty = child::<ast::Type>(field.syntax())?;
     let orig_ty = shape
         .offset_left(overhead + spacing.len())
         .and_then(|ty_shape| ty.rewrite(context, ty_shape));
@@ -3066,7 +3076,7 @@ pub(crate) fn rewrite_type_alias(
     let name = ta.name()?;
     let name_hi = name_span(&name).hi();
     let bounds = type_bounds(ta.syntax());
-    let ty = ta.ty();
+    let ty = child::<ast::Type>(ta.syntax());
     let params_hi = ta
         .generic_param_list()
         .map_or(name_hi, |l| node_range_span(l.syntax()).hi());
@@ -3074,7 +3084,7 @@ pub(crate) fn rewrite_type_alias(
 
     // rust-analyzer keeps a single where clause; rustc distinguishes the one before `=`
     // from the one after the type.
-    let wc = ta.where_clause();
+    let wc = child::<ast::WhereClause>(ta.syntax());
     let wc_after = match (&wc, &ty) {
         (Some(wc), Some(ty)) => wc.syntax().text_range().start() >= ty.syntax().text_range().end(),
         _ => false,
@@ -3109,17 +3119,30 @@ pub(crate) fn rewrite_type_alias(
     match (visitor_kind, &op_ty) {
         (Item | AssocTraitItem | ForeignItem, Some(op_bounds)) => {
             let op = OpaqueType { bounds: op_bounds };
-            rewrite_ty(&rw_info, Some(&op), rhs_hi, ta.visibility().as_ref())
+            rewrite_ty(
+                &rw_info,
+                Some(&op),
+                rhs_hi,
+                child::<ast::Visibility>(ta.syntax()).as_ref(),
+            )
         }
-        (Item | AssocTraitItem | ForeignItem, None) => {
-            rewrite_ty(&rw_info, ty.as_ref(), rhs_hi, ta.visibility().as_ref())
-        }
+        (Item | AssocTraitItem | ForeignItem, None) => rewrite_ty(
+            &rw_info,
+            ty.as_ref(),
+            rhs_hi,
+            child::<ast::Visibility>(ta.syntax()).as_ref(),
+        ),
         (AssocImplItem, _) => {
             let result = if let Some(op_bounds) = &op_ty {
                 let op = OpaqueType { bounds: op_bounds };
                 rewrite_ty(&rw_info, Some(&op), rhs_hi, None)
             } else {
-                rewrite_ty(&rw_info, ty.as_ref(), rhs_hi, ta.visibility().as_ref())
+                rewrite_ty(
+                    &rw_info,
+                    ty.as_ref(),
+                    rhs_hi,
+                    child::<ast::Visibility>(ta.syntax()).as_ref(),
+                )
             }?;
             if has_token(ta.syntax(), T![default]) {
                 Some(format!("default {result}"))
@@ -3313,10 +3336,11 @@ impl StaticParts {
         Some(StaticParts {
             prefix: "const",
             safety: "",
-            vis: c.visibility(),
+            vis: child::<ast::Visibility>(c.syntax()),
             name,
-            has_generics: c.generic_param_list().is_some() || c.where_clause().is_some(),
-            ty: c.ty(),
+            has_generics: c.generic_param_list().is_some()
+                || child::<ast::WhereClause>(c.syntax()).is_some(),
+            ty: child::<ast::Type>(c.syntax()),
             mutability: "",
             expr: c.body(),
             defaultness: if has_token(c.syntax(), T![default]) {
@@ -3338,10 +3362,10 @@ impl StaticParts {
             } else {
                 ""
             },
-            vis: s.visibility(),
+            vis: child::<ast::Visibility>(s.syntax()),
             name: node_text(s.name()?.syntax()),
             has_generics: false,
-            ty: s.ty(),
+            ty: child::<ast::Type>(s.syntax()),
             mutability: if has_token(s.syntax(), T![mut]) {
                 "mut "
             } else {
@@ -3458,7 +3482,7 @@ impl Rewrite for ast::ExternItem {
             ast::ExternItem::Static(s) => {
                 // FIXME(#21): we're dropping potential comments in between the
                 // function kw here.
-                let vis = format_visibility(s.visibility().as_ref());
+                let vis = format_visibility(child::<ast::Visibility>(s.syntax()).as_ref());
                 let safety = if has_token(s.syntax(), T![unsafe]) {
                     "unsafe "
                 } else if has_token(s.syntax(), T![safe]) {
@@ -3482,7 +3506,7 @@ impl Rewrite for ast::ExternItem {
                 rewrite_assign_rhs(
                     context,
                     prefix,
-                    &s.ty()?,
+                    &child::<ast::Type>(s.syntax())?,
                     &RhsAssignKind::Ty,
                     shape.sub_width(1)?,
                 )
@@ -3556,7 +3580,9 @@ pub(crate) fn rewrite_mod(
     attrs_shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(32);
-    result.push_str(&format_visibility(module.visibility().as_ref()));
+    result.push_str(&format_visibility(
+        child::<ast::Visibility>(module.syntax()).as_ref(),
+    ));
     if module
         .syntax()
         .children_with_tokens()

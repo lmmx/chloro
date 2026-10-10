@@ -56,7 +56,7 @@ impl Attribute {
         match self {
             Attribute::Doc(_) => None,
             Attribute::Normal(a) => {
-                let path = a.meta()?.path()?;
+                let path = child::<ast::Meta>(a.syntax())?.path()?;
                 Some(
                     path.syntax()
                         .descendants_with_tokens()
@@ -88,7 +88,7 @@ impl Attribute {
                 let Some(path) = self.path_text() else {
                     return false;
                 };
-                let meta = a.meta();
+                let meta = child::<ast::Meta>(a.syntax());
                 let has_args = meta
                     .as_ref()
                     .is_some_and(|m| m.token_tree().is_some() || m.expr().is_some());
@@ -241,6 +241,34 @@ pub(crate) fn has_token(node: &SyntaxNode, kind: SyntaxKind) -> bool {
     })
 }
 
+/// The first child node of `parent` that casts to `N`: the generated `support::child`
+/// accessors (`x.expr()`, `x.path()`, ...), but a red node is created only for the child
+/// found, located by a binary search on its range, instead of one per child inspected.
+pub(crate) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
+    let mut offset = parent.text_range().start();
+    for green_child in parent.green().children() {
+        let (kind, len) = match green_child {
+            NodeOrToken::Node(n) => (Some(n.kind()), n.text_len()),
+            NodeOrToken::Token(t) => (None, t.text_len()),
+        };
+        if let Some(kind) = kind
+            && N::can_cast(RustLanguage::kind_from_raw(kind))
+        {
+            if len == 0.into() {
+                // A range search cannot tell empty siblings apart.
+                return parent.children().find_map(N::cast);
+            }
+            let range = ra_ap_syntax::TextRange::at(offset, len);
+            return parent
+                .child_or_token_at_range(range)?
+                .into_node()
+                .and_then(N::cast);
+        }
+        offset += len;
+    }
+    None
+}
+
 /// The source text of `node`. Reads the green tree, which costs neither a red node per
 /// token nor `fmt` machinery, unlike `node.text().to_string()`.
 pub(crate) fn node_text(node: &SyntaxNode) -> String {
@@ -310,7 +338,7 @@ pub(crate) struct Block {
 impl Block {
     /// The block of a block expression (`{}`, `unsafe {}`, `'a: {}`, `async {}`, ...).
     pub(crate) fn from_block_expr(block: &ast::BlockExpr) -> Option<Block> {
-        let stmt_list = block.stmt_list()?;
+        let stmt_list = child::<ast::StmtList>(block.syntax())?;
         let list_span = node_range_span(stmt_list.syntax());
         let (rules, span) = match block.unsafe_token() {
             Some(t) => (BlockRules::Unsafe, list_span.with_lo(token_span(&t).lo())),
@@ -408,7 +436,7 @@ fn macro_stmt(expr: &ast::Expr, has_semi: bool) -> Option<ast::MacroCall> {
     let ast::Expr::MacroExpr(m) = expr else {
         return None;
     };
-    let call = m.macro_call()?;
+    let call = child::<ast::MacroCall>(m.syntax())?;
     let braces = call
         .token_tree()
         .and_then(|tt| tt.l_curly_token())

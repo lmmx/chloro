@@ -1,9 +1,10 @@
 //! Binary-operator-like pairs (rustfmt's `pairs.rs`).
 
-use ra_ap_syntax::ast;
+use ra_ap_syntax::ast::{self, AstNode};
 
 use super::context::{Rewrite, RewriteContext};
 use super::lists::SeparatorPlace;
+use super::nodes::child;
 use super::shape::Shape;
 use super::utils::{
     first_line_width, is_assignment, is_single_line, last_line_width, trimmed_last_line_width,
@@ -244,7 +245,9 @@ struct PairList {
 fn is_ident_or_bool_lit(expr: &ast::Expr) -> bool {
     match expr {
         ast::Expr::PathExpr(p) => p.path().is_some_and(|p| {
-            p.qualifier().is_none() && p.segment().is_some_and(|s| s.type_anchor().is_none())
+            child::<ast::Path>(p.syntax()).is_none()
+                && child::<ast::PathSegment>(p.syntax())
+                    .is_some_and(|s| child::<ast::TypeAnchor>(s.syntax()).is_none())
         }),
         ast::Expr::Literal(lit) => matches!(lit.kind(), ast::LiteralKind::Bool(_)),
         ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| is_ident_or_bool_lit(&e)),

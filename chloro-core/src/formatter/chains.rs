@@ -19,7 +19,7 @@
 use std::borrow::Cow;
 use std::cmp::min;
 
-use ra_ap_syntax::ast::{self, AstNode, HasArgList, HasGenericArgs, RangeItem};
+use ra_ap_syntax::ast::{self, AstNode, HasGenericArgs, RangeItem};
 
 use super::comment::{CharClasses, FullCodeCharKind, rewrite_comment};
 use super::config::StyleEdition;
@@ -27,6 +27,7 @@ use super::context::{Rewrite, RewriteContext};
 use super::expr::{expr_span, lit_ends_in_dot, rewrite_call};
 use super::lists::extract_pre_comment;
 use super::macros::convert_try_mac;
+use super::nodes::child;
 use super::nodes::node_text;
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
@@ -191,17 +192,17 @@ impl ChainItemKind {
                             .collect()
                     })
                     .unwrap_or_default();
-                let receiver = call.receiver()?;
+                let receiver = child::<ast::Expr>(call.syntax())?;
                 let span = mk_sp(expr_span(&receiver).hi(), full.hi());
-                let args = call.arg_list()?.args().collect();
+                let args = child::<ast::ArgList>(call.syntax())?.args().collect();
                 (
-                    ChainItemKind::MethodCall(call.name_ref()?, types, args),
+                    ChainItemKind::MethodCall(child::<ast::NameRef>(call.syntax())?, types, args),
                     span,
                 )
             }
             ast::Expr::FieldExpr(field) => {
                 let nested = field.expr()?;
-                let name = field.name_ref()?;
+                let name = child::<ast::NameRef>(field.syntax())?;
                 let kind = if Self::is_tup_field_access(expr) {
                     ChainItemKind::TupleField(name.clone(), Self::is_tup_field_access(&nested))
                 } else {
@@ -465,9 +466,11 @@ impl Chain {
             return Some(Self::convert_try(expr.expr.clone(), false, context));
         }
         match &expr.expr {
-            ast::Expr::MethodCallExpr(call) => {
-                Some(Self::convert_try(call.receiver()?, true, context))
-            }
+            ast::Expr::MethodCallExpr(call) => Some(Self::convert_try(
+                child::<ast::Expr>(call.syntax())?,
+                true,
+                context,
+            )),
             ast::Expr::FieldExpr(f) => Some(Self::convert_try(f.expr()?, false, context)),
             ast::Expr::TryExpr(t) => Some(Self::convert_try(t.expr()?, false, context)),
             ast::Expr::AwaitExpr(a) => Some(Self::convert_try(a.expr()?, false, context)),
