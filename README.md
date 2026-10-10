@@ -66,6 +66,15 @@ Non-default values of the stable options are compared with `rustfmt --config` by
 local cargo registry (`-- --root ~/.cargo/registry/src -n 6000 default`), a corpus chloro
 was not developed against, gave identical output for 5384 of 5386 files.
 
+[ra-crates]: https://github.com/rust-lang/rust-analyzer/tree/master/crates
+
+<!-- just: conf-md -->
+**Summary:** +2 / -2
+
+1219 of 1220 files identical; the one differing file is
+[`parser/test_data_parser_err_0024_many_type_parens`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/parser/test_data_parser_err_0024_many_type_parens.diff).
+<!-- /just: conf-md -->
+
 ## Performance
 
 rustfmt chooses a layout by trying several and keeping the first that fits, so chloro does
@@ -77,15 +86,6 @@ in process it formats about 3.5 MB/s; a `chloro` process on one large file takes
 ```sh
 cargo run --release -p chloro-core --example bench -- -w 10   # throughput, 10 slowest files
 ```
-
-[ra-crates]: https://github.com/rust-lang/rust-analyzer/tree/master/crates
-
-<!-- just: conf-md -->
-**Summary:** +2 / -2
-
-1219 of 1220 files identical; the one differing file is
-[`parser/test_data_parser_err_0024_many_type_parens`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/parser/test_data_parser_err_0024_many_type_parens.diff).
-<!-- /just: conf-md -->
 
 ## Installation
 
