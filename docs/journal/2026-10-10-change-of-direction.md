@@ -359,8 +359,13 @@ every multi-line string literal character by character, as rustfmt does. The lex
 already classified that text as one string token.
 
 Finding (measured): on code where both versions give rustfmt's output, the port spends
-about 2.3–2.4x the proof of concept's formatting work. That gap is overhead of the port's
-implementation, not work that conformance needs.
+about 2.3–2.4x the proof of concept's formatting work.
+
+*Corrected in [2026-10-10-first-attempts-and-reuse.md](2026-10-10-first-attempts-and-reuse.md): the two versions do not do the same work on this corpus. The proof of
+concept still copies statements, types and macro calls whose text holds no single space to
+perturb (1,682 macro calls formatted by the port against 182 by the proof of concept,
+2,743 types against 0). The gap is therefore not all overhead of the port's
+implementation.*
 
 Limits:
 - the agreement corpus contains only constructs the proof of concept formats correctly;
@@ -413,7 +418,9 @@ Established (measured):
      about 60–65% of its wall time;
    - the ceiling for any formatter on this rowan tree is about 13–14 MB/s (Evidence 2).
 4. **On code where both give rustfmt's output, the port does about 2.3–2.4x the
-   formatting work** (Evidence 8). That gap is overhead of the port's implementation.
+   formatting work** (Evidence 8). *Corrected in [2026-10-10-first-attempts-and-reuse.md](2026-10-10-first-attempts-and-reuse.md): part of that gap is work the proof of
+   concept still skips on this corpus, and per node of the same kind the port costs
+   0.8–2.1x, with outliers for literals and arrays.*
 5. **The port makes about 2x the proof of concept's allocations** (20.3 M against 10.3 M on
    the fixtures). The bulk of the increase comes from strings and lists, not red nodes
    (Evidence 5, 6).
@@ -761,8 +768,8 @@ The request was to create a recovery branch from `c4d74ee` and port the conforma
 onto it. The evidence so far:
 - the proof of concept's lead comes mostly from work it does not do (Evidence 3, 4);
 - the work it skips is rustfmt's layout search, which conformance needs (phase 1);
-- on code where it does the same work, it does it with about 2.3–2.4x less formatting
-  work (Evidence 8).
+- on code where both give rustfmt's output, it does about 2.3–2.4x less formatting work
+  (Evidence 8) — *Corrected in [2026-10-10-first-attempts-and-reuse.md](2026-10-10-first-attempts-and-reuse.md): partly because it still skips work there.*
 
 The last point keeps per-node specialisation in play as option 7. It does not show that
 the proof of concept's code is the base on which to build. X9 and X10 are the measurements

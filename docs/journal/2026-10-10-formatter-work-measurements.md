@@ -21,14 +21,15 @@ Labels as before:
 
 ## Summary
 
-- **Repeated layout attempts are bounded** (measured):
+- **Repeated rewrites of expressions, patterns and types are bounded** (measured):
   - rewriting an expression, pattern or type node that was already rewritten costs 18.5% of
     `format_source` cycles on the fixtures and 16.9% of instructions on the sample, with
     the counting overhead included;
   - removing every such repeat would make the port about 1.2x faster, about 4.2 MB/s, on
     these figures.
-- **A decide-once design can save at most the repeat share**, unless it also changes how
-  each first attempt is computed. Most of the port's cost lies in the first attempts:
+- **Removing repeated rewrites at this level can save at most the repeat share.** That is
+  not a bound on all speculation: speculation inside a single rewrite call is not counted.
+  A decide-once design would also have to change how each first attempt is computed. Most of the port's cost lies in the first attempts:
   allocation, red-tree navigation, building and measuring strings.
 - **Repeats split three ways** (measured):
 
@@ -189,8 +190,9 @@ The instrumentation adds about 89 M instructions to the uninstrumented 595.3 M.
 
 Findings (measured):
 - Removing all repeated rewrites of these three categories would save about 17–18.5% of
-  `format_source` on these corpora. That bounds what avoiding layout speculation *at this
-  level* can save.
+  `format_source` on these corpora. That bounds the saving from
+  removing repeated rewrites of these three categories, not from removing all
+  speculation.
 - The bound leaves out speculation inside one rewrite call: strings built and discarded
   within a single `rewrite_*` function, list tactics, and `rewrite_fn_base`'s parameter
   layouts. That work is counted in first attempts.
@@ -259,9 +261,11 @@ No gain large enough to steer the architecture is available here.
 ## What this changes in the previous entry
 
 The previous entry's ordering is corrected as follows:
-- **Decide-once formatting.** Its gain from removing speculation is bounded by the repeat
-  share, about 17–18.5%. Reusing results across indentation is the largest part of that,
-  and is untested.
+- **Decide-once formatting.** Its gain from removing repeated rewrites of expressions,
+  patterns and types is bounded by the repeat share, about 17–18.5%. Speculation inside a
+  single rewrite call is outside that bound. Reusing results across indentation was the
+  largest part of that share; it was tested next and is not exact (see
+  [2026-10-10-first-attempts-and-reuse.md](2026-10-10-first-attempts-and-reuse.md)).
 - **Text rescans.** They are not a large lever on their own. The larger part of text
   scanning runs over built strings, in measuring candidate results.
 - **What remains unmeasured.** No single mechanism measured so far explains the 2.3–2.4x
