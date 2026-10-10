@@ -112,6 +112,11 @@ pub(crate) fn format_expr(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
+    // Paths and literals have no subexpressions: rewriting one again costs less than
+    // storing it.
+    if matches!(expr, ast::Expr::PathExpr(_) | ast::Expr::Literal(_)) {
+        return format_expr_uncached(expr, expr_type, context, shape);
+    }
     context.memoize(expr.syntax(), expr_type as u8, shape, || {
         format_expr_uncached(expr, expr_type, context, shape)
     })

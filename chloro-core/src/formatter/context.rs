@@ -15,7 +15,8 @@ use super::span::{BytePos, SnippetProvider, Span};
 
 /// Parsed macro arguments keyed by token tree range and the `vec!` flag. rustfmt rewrites
 /// a macro call once per candidate shape; the arguments are parsed once.
-pub(crate) type MacroArgsCache = HashMap<(BytePos, BytePos, bool), Option<ParsedMacroArgs>>;
+pub(crate) type MacroArgsCache =
+    HashMap<(BytePos, BytePos, bool), Option<ParsedMacroArgs>, FxBuildHasher>;
 
 /// FxHash (rustc's hasher): the memo keys are a few machine words, for which SipHash's
 /// setup cost dominates.
