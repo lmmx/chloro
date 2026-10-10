@@ -3,7 +3,7 @@ use std::iter::successors;
 use ide_db::{RootDatabase, defs::NameClass, ty_filter::TryEnum};
 use syntax::{
     AstNode, Edition, SyntaxKind, T, TextRange,
-    ast::{self, HasName, edit_in_place::Indent, edit::IndentLevel, syntax_factory::SyntaxFactory},
+    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
     syntax_editor::SyntaxEditor,
 };
 
@@ -121,14 +121,19 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
                             }
                         }
                     };
-                let arms = cond_bodies.into_iter().map(make_match_arm).chain([else_arm]);
+                let arms = cond_bodies
+                    .into_iter()
+                    .map(make_match_arm)
+                    .chain([else_arm]);
                 let match_expr = make.expr_match(scrutinee_to_be_expr, make.match_arm_list(arms));
                 match_expr.indent(indent);
                 match_expr.into()
             };
 
-            let has_preceding_if_expr =
-                if_expr.syntax().parent().is_some_and(|it| ast::IfExpr::can_cast(it.kind()));
+            let has_preceding_if_expr = if_expr
+                .syntax()
+                .parent()
+                .is_some_and(|it| ast::IfExpr::can_cast(it.kind()));
             let expr = if has_preceding_if_expr {
                 // make sure we replace the `else if let ...` with a block so we don't end up with `else expr`
                 match_expr.dedent(indent);
@@ -288,7 +293,8 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
                 _ => make.expr_let(if_let_pat, scrutinee).into(),
             };
             let condition = if let Some(guard) = guard {
-                make.expr_bin(condition, ast::BinaryOp::LogicOp(ast::LogicOp::And), guard).into()
+                make.expr_bin(condition, ast::BinaryOp::LogicOp(ast::LogicOp::And), guard)
+                    .into()
             } else {
                 condition
             };
@@ -297,7 +303,11 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
             then_expr.reindent_to(IndentLevel::single());
             else_expr.reindent_to(IndentLevel::single());
             let then_block = make_block_expr(then_expr);
-            let else_expr = if is_empty_expr(&else_expr) { None } else { Some(else_expr) };
+            let else_expr = if is_empty_expr(&else_expr) {
+                None
+            } else {
+                Some(else_expr)
+            };
             let if_let_expr = make.expr_if(
                 condition,
                 then_block,
@@ -433,7 +443,9 @@ fn and_bin_expr_left(expr: &ast::BinExpr) -> ast::BinExpr {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     #[test]
     fn test_if_let_with_match_inapplicable_for_simple_ifs() {
         check_assist_not_applicable(
@@ -445,6 +457,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_if_with_match_no_else() {
         check_assist(
@@ -468,6 +481,7 @@ pub fn foo(foo: bool) {
 "#,
         )
     }
+
     #[test]
     fn test_if_with_match_with_else() {
         check_assist(
@@ -495,6 +509,7 @@ pub fn foo(foo: bool) {
 "#,
         )
     }
+
     #[test]
     fn test_if_with_match_comments() {
         check_assist(
@@ -533,6 +548,7 @@ pub fn foo(foo: i32) {
 "#,
         )
     }
+
     #[test]
     fn test_if_let_with_match_no_else() {
         check_assist(
@@ -560,6 +576,7 @@ impl VariantData {
 "#,
         )
     }
+
     #[test]
     fn test_if_let_with_match_available_range_left() {
         check_assist_not_applicable(
@@ -575,6 +592,7 @@ impl VariantData {
 "#,
         )
     }
+
     #[test]
     fn test_if_let_with_match_available_range_right() {
         check_assist_not_applicable(
@@ -590,6 +608,7 @@ impl VariantData {
 "#,
         )
     }
+
     #[test]
     fn test_if_let_with_match_let_chain() {
         check_assist(
@@ -693,6 +712,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_let_chain_no_else() {
         check_assist(
@@ -737,6 +757,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_basic() {
         check_assist(
@@ -776,6 +797,7 @@ impl VariantData {
 "#,
         )
     }
+
     #[test]
     fn test_if_let_with_match_on_tail_if_let() {
         check_assist(
@@ -809,6 +831,7 @@ impl VariantData {
 "#,
         )
     }
+
     #[test]
     fn special_case_option() {
         check_assist(
@@ -833,6 +856,7 @@ fn foo(x: Option<i32>) {
 "#,
         );
     }
+
     #[test]
     fn special_case_inverted_option() {
         check_assist(
@@ -857,6 +881,7 @@ fn foo(x: Option<i32>) {
 "#,
         );
     }
+
     #[test]
     fn special_case_result() {
         check_assist(
@@ -881,6 +906,7 @@ fn foo(x: Result<i32, ()>) {
 "#,
         );
     }
+
     #[test]
     fn special_case_inverted_result() {
         check_assist(
@@ -905,6 +931,7 @@ fn foo(x: Result<i32, ()>) {
 "#,
         );
     }
+
     #[test]
     fn nested_indent() {
         check_assist(
@@ -981,6 +1008,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_if_let_with_match_nested_tuple_struct() {
         check_assist(
@@ -1033,6 +1061,7 @@ fn foo(x: Result<MyStruct, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_slice() {
         check_assist(
@@ -1179,6 +1208,7 @@ fn foo(x: Result<Option<[&'static str; 2]>, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_literal() {
         check_assist(
@@ -1205,6 +1235,7 @@ fn foo(x: Result<&'static str, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_tuple() {
         check_assist(
@@ -1255,6 +1286,7 @@ fn foo(x: Result<(i32, i32, i32), ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_or() {
         check_assist(
@@ -1329,6 +1361,7 @@ fn foo(x: Result<(i32, i32), ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_range() {
         check_assist(
@@ -1355,6 +1388,7 @@ fn foo(x: Result<i32, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_paren() {
         check_assist(
@@ -1405,6 +1439,7 @@ fn foo(x: Result<(i32, i32), ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_macro() {
         check_assist(
@@ -1443,6 +1478,7 @@ fn foo(x: Result<i32, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_path() {
         check_assist(
@@ -1479,6 +1515,7 @@ fn foo(x: Result<MyEnum, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_record() {
         check_assist(
@@ -1617,6 +1654,7 @@ fn foo(x: Result<MyEnum, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_if_let_with_match_nested_ident() {
         check_assist(
@@ -1691,6 +1729,7 @@ fn foo(x: Result<i32, ()>) {
 "#,
         );
     }
+
     #[test]
     fn test_replace_match_with_if_let_unwraps_simple_expressions() {
         check_assist(
@@ -1716,6 +1755,7 @@ impl VariantData {
 }           "#,
         )
     }
+
     #[test]
     fn test_replace_match_with_if_let_doesnt_unwrap_multiline_expressions() {
         check_assist(
@@ -1743,6 +1783,7 @@ fn foo() {
 }           "#,
         )
     }
+
     #[test]
     fn replace_match_with_if_let_target() {
         check_assist_target(
@@ -1762,6 +1803,7 @@ impl VariantData {
         }"#,
         );
     }
+
     #[test]
     fn special_case_option_match_to_if_let() {
         check_assist(
@@ -1786,6 +1828,7 @@ fn foo(x: Option<i32>) {
 "#,
         );
     }
+
     #[test]
     fn special_case_result_match_to_if_let() {
         check_assist(
@@ -1810,6 +1853,7 @@ fn foo(x: Result<i32, ()>) {
 "#,
         );
     }
+
     #[test]
     fn nested_indent_match_to_if_let() {
         check_assist(
@@ -1882,6 +1926,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_match_with_if_let_empty_wildcard_expr() {
         check_assist(
@@ -1903,6 +1948,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn replace_match_with_if_let_number_body() {
         check_assist(
@@ -1924,6 +1970,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn replace_match_with_if_let_exhaustive() {
         check_assist(
@@ -1943,6 +1990,7 @@ fn print_source(def_source: ModuleSource) {
 "#,
         )
     }
+
     #[test]
     fn replace_match_with_if_let_prefer_name_bind() {
         check_assist(
@@ -1982,6 +2030,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_match_with_if_let_prefer_nonempty_body() {
         check_assist(
@@ -2021,6 +2070,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_match_with_if_let_rejects_double_name_bindings() {
         check_assist_not_applicable(
@@ -2035,6 +2085,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_replace_match_with_if_let_keeps_unsafe_block() {
         check_assist(
@@ -2060,6 +2111,7 @@ impl VariantData {
 }           "#,
         )
     }
+
     #[test]
     fn test_replace_match_with_if_let_forces_else() {
         check_assist(
@@ -2083,6 +2135,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_replace_match_with_if_bool() {
         check_assist(
@@ -2142,6 +2195,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_replace_match_with_if_let_chain() {
         check_assist(
@@ -2165,6 +2219,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_replace_match_with_if_let_not_applicable_pat2_is_ident_pat() {
         check_assist_not_applicable(

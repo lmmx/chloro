@@ -75,8 +75,8 @@ pub(crate) struct PathCompletionCtx<'db> {
     pub(crate) qualified: Qualified<'db>,
     /// The parent of the path we are completing.
     pub(crate) parent: Option<ast::Path>,
-    /// The path of which we are completing the segment
     #[allow(dead_code)]
+    /// The path of which we are completing the segment
     pub(crate) path: ast::Path,
     /// The path of which we are completing the segment in the original file
     pub(crate) original_path: Option<ast::Path>,
@@ -211,7 +211,10 @@ impl TypeLocation {
 
     pub(crate) fn complete_types(&self) -> bool {
         match self {
-            TypeLocation::GenericArg { corresponding_param: Some(param), .. } => {
+            TypeLocation::GenericArg {
+                corresponding_param: Some(param),
+                ..
+            } => {
                 matches!(param, ast::GenericParam::TypeParam(_))
             }
             TypeLocation::AssocConstEq => false,
@@ -242,9 +245,7 @@ pub(crate) enum ItemListKind {
     Impl,
     TraitImpl(Option<ast::Impl>),
     Trait,
-    ExternBlock {
-        is_unsafe: bool,
-    },
+    ExternBlock { is_unsafe: bool },
 }
 
 #[derive(Debug)]
@@ -443,6 +444,7 @@ pub(crate) struct CompletionContext<'a> {
     pub(crate) db: &'a RootDatabase,
     pub(crate) config: &'a CompletionConfig<'a>,
     pub(crate) position: FilePosition,
+
     pub(crate) trigger_character: Option<char>,
     /// The token before the cursor, in the original file.
     pub(crate) original_token: SyntaxToken,
@@ -457,16 +459,20 @@ pub(crate) struct CompletionContext<'a> {
     pub(crate) containing_function: Option<hir::Function>,
     /// Whether nightly toolchain is used. Cached since this is looked up a lot.
     pub(crate) is_nightly: bool,
-    // FIXME: This should probably be the crate of the current token?
     /// The edition of the current crate
+    // FIXME: This should probably be the crate of the current token?
     pub(crate) edition: Edition,
+
     /// The expected name of what we are completing.
     /// This is usually the parameter name of the function argument we are completing.
     pub(crate) expected_name: Option<NameOrNameRef>,
     /// The expected type of what we are completing.
     pub(crate) expected_type: Option<Type<'a>>,
+
     pub(crate) qualifier_ctx: QualifierCtx,
+
     pub(crate) locals: FxHashMap<Name, Local>,
+
     /// The module depth of the current module of the cursor position.
     /// - crate-root
     ///  - mod foo
@@ -474,6 +480,7 @@ pub(crate) struct CompletionContext<'a> {
     ///
     /// Here depth will be 2
     pub(crate) depth_from_crate_root: usize,
+
     /// Traits whose methods will be excluded from flyimport. Flyimport should not suggest
     /// importing those traits.
     ///
@@ -484,6 +491,7 @@ pub(crate) struct CompletionContext<'a> {
     ///
     /// Note the trait *themselves* are not excluded, only their methods are.
     pub(crate) exclude_traits: FxHashSet<hir::Trait>,
+
     /// Whether and how to complete semicolon for unit-returning functions.
     pub(crate) complete_semicolon: CompleteSemicolon,
 }
@@ -699,6 +707,7 @@ impl CompletionContext<'_> {
     }
 }
 
+// CompletionContext construction
 impl<'db> CompletionContext<'db> {
     pub(crate) fn new(
         db: &'db RootDatabase,
@@ -718,12 +727,17 @@ impl<'db> CompletionContext<'db> {
         let file_with_fake_ident = {
             let (_, edition) = editioned_file_id.unpack(db);
             let parse = db.parse(editioned_file_id);
-            parse.reparse(TextRange::empty(offset), COMPLETION_MARKER, edition).tree()
+            parse
+                .reparse(TextRange::empty(offset), COMPLETION_MARKER, edition)
+                .tree()
         };
 
         // always pick the token to the immediate left of the cursor, as that is what we are actually
         // completing on
-        let original_token = original_file.syntax().token_at_offset(offset).left_biased()?;
+        let original_token = original_file
+            .syntax()
+            .token_at_offset(offset)
+            .left_biased()?;
 
         // try to skip completions on path with invalid colons
         // this approach works in normal path and inside token tree
@@ -815,8 +829,11 @@ impl<'db> CompletionContext<'db> {
                     .map(|it| (it.into_module_def(), *kind))
             })
             .collect();
-        exclude_flyimport
-            .extend(exclude_traits.iter().map(|&t| (t.into(), AutoImportExclusionType::Always)));
+        exclude_flyimport.extend(
+            exclude_traits
+                .iter()
+                .map(|&t| (t.into(), AutoImportExclusionType::Always)),
+        );
 
         // FIXME: This should be part of `CompletionAnalysis` / `expand_and_analyze`
         let complete_semicolon = if config.add_semicolon_to_unit {

@@ -86,7 +86,9 @@ pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
 #[cfg(test)]
 mod tests {
     use crate::tests::check_assist;
+
     use super::*;
+
     #[test]
     fn unwrap_tuples() {
         check_assist(
@@ -120,6 +122,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unwrap_tuple_with_types() {
         check_assist(

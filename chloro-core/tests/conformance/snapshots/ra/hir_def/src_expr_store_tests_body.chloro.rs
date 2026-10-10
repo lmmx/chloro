@@ -174,9 +174,7 @@ fn main() {
                 },
             }
         }"#]]
-    .assert_eq(
-        &body.pretty_print(&db, def, Edition::CURRENT),
-    )
+    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
 }
 
 #[test]
@@ -259,9 +257,7 @@ fn main() {
                 },
             );
         }"#]]
-    .assert_eq(
-        &body.pretty_print(&db, def, Edition::CURRENT),
-    )
+    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
 }
 
 #[test]
@@ -344,9 +340,7 @@ fn main() {
                 }
             };
         }"#]]
-    .assert_eq(
-        &body.pretty_print(&db, def, Edition::CURRENT),
-    )
+    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
 }
 
 #[test]
@@ -414,9 +408,7 @@ impl SsrError {
                 },
             );
         }"#]]
-    .assert_eq(
-        &body.pretty_print(&db, def, Edition::CURRENT),
-    )
+    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
 }
 
 #[test]
@@ -464,9 +456,7 @@ fn f(a: i32, b: u32) -> String {
                 );
             };
         }"#]]
-    .assert_eq(
-        &body.pretty_print(&db, def, Edition::CURRENT),
-    )
+    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
 }
 
 #[test]
@@ -474,6 +464,7 @@ fn destructuring_assignment_tuple_macro() {
     // This is a funny one. `let m!()() = Bar()` is an error in rustc, because `m!()()` isn't a valid pattern,
     // but in destructuring assignment it is valid, because `m!()()` is a valid expression, and destructuring
     // assignments start their lives as expressions. So we have to do the same.
+
     let (db, body, def) = lower(
         r#"
 struct Bar();
@@ -499,9 +490,7 @@ fn foo() {
         fn foo() {
             Bar() = Bar();
         }"#]]
-    .assert_eq(
-        &body.pretty_print(&db, def, Edition::CURRENT),
-    )
+    .assert_eq(&body.pretty_print(&db, def, Edition::CURRENT))
 }
 
 #[test]
@@ -519,7 +508,11 @@ fn f() {
 }
     "#,
     );
-    assert_eq!(body.assert_expr_only().bindings.len(), 1, "should have a binding for `B`");
+    assert_eq!(
+        body.assert_expr_only().bindings.len(),
+        1,
+        "should have a binding for `B`"
+    );
     assert_eq!(
         body[BindingId::from_raw(RawIdx::from_u32(0))].name.as_str(),
         "B",

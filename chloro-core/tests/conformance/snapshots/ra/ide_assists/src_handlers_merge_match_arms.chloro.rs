@@ -177,7 +177,9 @@ fn get_arm_types<'db>(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn merge_match_arms_single_patterns() {
         check_assist(
@@ -209,6 +211,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_multiple_patterns() {
         check_assist(
@@ -240,6 +243,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_placeholder_pattern() {
         check_assist(
@@ -271,6 +275,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn merges_all_subsequent_arms() {
         check_assist(
@@ -301,6 +306,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn merge_match_arms_selection_has_leading_whitespace() {
         check_assist(
@@ -330,6 +336,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_stops_at_end_of_selection() {
         check_assist(
@@ -359,6 +366,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_works_despite_accidental_selection() {
         check_assist(
@@ -388,6 +396,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_rejects_guards() {
         check_assist_not_applicable(
@@ -411,6 +420,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_different_type() {
         check_assist_not_applicable(
@@ -426,6 +436,7 @@ fn func() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_different_type_multiple_fields() {
         check_assist_not_applicable(
@@ -441,6 +452,7 @@ fn func() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_same_type_multiple_fields() {
         check_assist(
@@ -463,6 +475,7 @@ fn func() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_same_type_subsequent_arm_with_different_type_in_other() {
         check_assist(
@@ -498,6 +511,7 @@ fn func(e: MyEnum) {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_same_type_skip_arm_with_different_type_in_between() {
         check_assist_not_applicable(
@@ -519,6 +533,7 @@ fn func(e: MyEnum) {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_same_type_different_number_of_fields() {
         check_assist_not_applicable(
@@ -534,6 +549,7 @@ fn func() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_same_destructuring_different_types() {
         check_assist_not_applicable(
@@ -556,6 +572,7 @@ fn func() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_range() {
         check_assist(
@@ -583,6 +600,7 @@ fn func() {
 "#,
         );
     }
+
     #[test]
     fn merge_match_arms_enum_without_field() {
         check_assist_not_applicable(
@@ -602,6 +620,7 @@ fn func(x: MyEnum) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_enum_destructuring_different_types() {
         check_assist_not_applicable(
@@ -621,6 +640,7 @@ fn func(x: MyEnum) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_enum_destructuring_same_types() {
         check_assist(
@@ -652,6 +672,7 @@ fn func(x: MyEnum) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_enum_destructuring_same_types_different_name() {
         check_assist_not_applicable(
@@ -671,6 +692,7 @@ fn func(x: MyEnum) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_enum_nested_pattern_different_names() {
         check_assist_not_applicable(
@@ -698,6 +720,7 @@ fn main(msg: Message) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_enum_nested_pattern_same_names() {
         check_assist(
@@ -745,6 +768,7 @@ fn main(msg: Message) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_enum_destructuring_with_ignore() {
         check_assist(
@@ -776,6 +800,7 @@ fn func(x: MyEnum) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_nested_with_conflicting_identifier() {
         check_assist_not_applicable(
@@ -801,6 +826,7 @@ fn main(msg: Message) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_tuple() {
         check_assist_not_applicable(
@@ -815,6 +841,7 @@ fn func() {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_parentheses() {
         check_assist_not_applicable(
@@ -831,6 +858,7 @@ fn func(x: i32) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_refpat() {
         check_assist_not_applicable(
@@ -848,6 +876,7 @@ fn func() {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_slice() {
         check_assist_not_applicable(
@@ -864,6 +893,7 @@ fn func(binary: &[u8]) {
         "#,
         )
     }
+
     #[test]
     fn merge_match_arms_slice_identical() {
         check_assist(

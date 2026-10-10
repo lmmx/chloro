@@ -40,7 +40,10 @@ pub(crate) fn useless_braces(
             Diagnostic::new(
                 DiagnosticCode::RustcLint("unused_braces"),
                 "Unnecessary braces in use statement".to_owned(),
-                FileRange { file_id: file_id.file_id(db), range: use_range },
+                FileRange {
+                    file_id: file_id.file_id(db),
+                    range: use_range,
+                },
             )
             .with_main_node(InFile::new(file_id.into(), SyntaxNodePtr::new(node)))
             .with_fixes(Some(vec![fix(
@@ -61,6 +64,7 @@ mod tests {
         DiagnosticsConfig,
         tests::{check_diagnostics, check_diagnostics_with_config, check_fix},
     };
+
     #[test]
     fn test_check_unnecessary_braces_in_use_statement() {
         check_diagnostics(
@@ -159,6 +163,7 @@ use a::{c, d::e};
 "#,
         );
     }
+
     #[test]
     fn respect_lint_attributes_for_unused_braces() {
         check_diagnostics(

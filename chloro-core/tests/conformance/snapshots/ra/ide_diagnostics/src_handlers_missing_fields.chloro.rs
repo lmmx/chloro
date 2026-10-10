@@ -57,14 +57,19 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
     // `struct A(usize);`
     // `let a = A { 0: () }`
     // but it is uncommon usage and it should not be encouraged.
-    if d.missed_fields.iter().any(|it| it.as_tuple_index().is_some()) {
+    if d.missed_fields
+        .iter()
+        .any(|it| it.as_tuple_index().is_some())
+    {
         return None;
     }
 
     let root = ctx.sema.db.parse_or_expand(d.file);
 
-    let current_module =
-        ctx.sema.scope(d.field_list_parent.to_node(&root).syntax()).map(|it| it.module());
+    let current_module = ctx
+        .sema
+        .scope(d.field_list_parent.to_node(&root).syntax())
+        .map(|it| it.module());
     let range = InFile::new(d.file, d.field_list_parent.text_range())
         .original_node_file_range_rooted_opt(ctx.sema.db)?;
 
@@ -100,11 +105,13 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
             let missing_fields = ctx.sema.record_literal_missing_fields(field_list_parent);
 
             let mut locals = FxHashMap::default();
-            ctx.sema.scope(field_list_parent.syntax())?.process_all_names(&mut |name, def| {
-                if let hir::ScopeDef::Local(local) = def {
-                    locals.insert(name, local);
-                }
-            });
+            ctx.sema
+                .scope(field_list_parent.syntax())?
+                .process_all_names(&mut |name, def| {
+                    if let hir::ScopeDef::Local(local) = def {
+                        locals.insert(name, local);
+                    }
+                });
 
             let generate_fill_expr = |ty: &Type<'_>| match ctx.config.expr_fill_default {
                 ExprFillDefaultMode::Todo => make::ext::expr_todo(),
@@ -148,7 +155,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
                         )
                     })();
 
-                    if expr.is_some() { expr } else { Some(generate_fill_expr(ty)) }
+                    if expr.is_some() {
+                        expr
+                    } else {
+                        Some(generate_fill_expr(ty))
+                    }
                 };
                 let field = make::record_expr_field(
                     make::name_ref(&f.name(ctx.sema.db).display_no_db(ctx.edition).to_smolstr()),
@@ -187,9 +198,10 @@ fn make_ty(
 ) -> ast::Type {
     let ty_str = match ty.as_adt() {
         Some(adt) => adt.name(db).display(db, edition).to_string(),
-        None => {
-            ty.display_source_code(db, module.into(), false).ok().unwrap_or_else(|| "_".to_owned())
-        }
+        None => ty
+            .display_source_code(db, module.into(), false)
+            .ok()
+            .unwrap_or_else(|| "_".to_owned()),
     };
 
     make::ty(&ty_str)
@@ -240,11 +252,23 @@ fn get_default_constructor(
 
     let famous_defs = FamousDefs(&ctx.sema, krate);
     if has_new_func {
-        Some(make::ext::expr_ty_new(&make_ty(ty, ctx.sema.db, module, ctx.edition)))
+        Some(make::ext::expr_ty_new(&make_ty(
+            ty,
+            ctx.sema.db,
+            module,
+            ctx.edition,
+        )))
     } else if ty.as_adt() == famous_defs.core_option_Option()?.ty(ctx.sema.db).as_adt() {
         Some(make::ext::option_none())
-    } else if !ty.is_array() && ty.impls_trait(ctx.sema.db, famous_defs.core_default_Default()?, &[]) {
-        Some(make::ext::expr_ty_default(&make_ty(ty, ctx.sema.db, module, ctx.edition)))
+    } else if !ty.is_array()
+        && ty.impls_trait(ctx.sema.db, famous_defs.core_default_Default()?, &[])
+    {
+        Some(make::ext::expr_ty_default(&make_ty(
+            ty,
+            ctx.sema.db,
+            module,
+            ctx.edition,
+        )))
     } else {
         None
     }
@@ -253,6 +277,7 @@ fn get_default_constructor(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix};
+
     #[test]
     fn missing_record_pat_field_diagnostic() {
         check_diagnostics(
@@ -266,36 +291,46 @@ fn baz(s: S) {
 "#,
         );
     }
+
     #[test]
     fn missing_record_pat_field_no_diagnostic_if_not_exhaustive() {
-        check_diagnostics(r"
+        check_diagnostics(
+            r"
 struct S { foo: i32, bar: () }
 fn baz(s: S) -> i32 {
     match s {
         S { foo, .. } => foo,
     }
 }
-")
+",
+        )
     }
+
     #[test]
     fn missing_record_pat_field_box() {
-        check_diagnostics(r"
+        check_diagnostics(
+            r"
 struct S { s: Box<u32> }
 fn x(a: S) {
     let S { box s } = a;
 }
-")
+",
+        )
     }
+
     #[test]
     fn missing_record_pat_field_ref() {
-        check_diagnostics(r"
+        check_diagnostics(
+            r"
 struct S { s: u32 }
 fn x(a: S) {
     let S { ref s } = a;
     _ = s;
 }
-")
+",
+        )
     }
+
     #[test]
     fn missing_record_expr_in_assignee_expr() {
         check_diagnostics(
@@ -331,6 +366,7 @@ fn in_tuple_struct(a: T) {
             ",
         );
     }
+
     #[test]
     fn range_mapping_out_of_macros() {
         check_fix(
@@ -362,6 +398,7 @@ pub struct Foo { pub a: i32, pub b: i32 }
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_empty() {
         check_fix(
@@ -382,6 +419,7 @@ fn test_fn() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_zst_fields() {
         check_fix(
@@ -467,6 +505,7 @@ fn test_fn() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_self() {
         check_fix(
@@ -486,6 +525,7 @@ impl TestStruct {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_enum() {
         check_fix(
@@ -513,6 +553,7 @@ impl Expr {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_partial() {
         check_fix(
@@ -532,6 +573,7 @@ fn test_fn() {
 ",
         );
     }
+
     #[test]
     fn test_fill_struct_fields_new() {
         check_fix(
@@ -563,6 +605,7 @@ fn test_fn() {
 ",
         );
     }
+
     #[test]
     fn test_fill_struct_fields_default() {
         check_fix(
@@ -595,6 +638,7 @@ fn test_fn() {
 ",
         );
     }
+
     #[test]
     fn test_fill_struct_fields_raw_ident() {
         check_fix(
@@ -614,6 +658,7 @@ fn test_fn() {
 ",
         );
     }
+
     #[test]
     fn test_fill_struct_fields_no_diagnostic() {
         check_diagnostics(
@@ -627,6 +672,7 @@ fn test_fn() {
         "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_no_diagnostic_on_spread() {
         check_diagnostics(
@@ -641,6 +687,7 @@ fn test_fn() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_blank_line() {
         check_fix(
@@ -665,6 +712,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_shorthand() {
         cov_mark::check!(field_shorthand);
@@ -694,6 +742,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_shorthand_ty_mismatch() {
         check_fix(
@@ -722,6 +771,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_fields_shorthand_unifies() {
         check_fix(
@@ -750,6 +800,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_pat_fields() {
         check_fix(
@@ -774,6 +825,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_fill_struct_pat_fields_partial() {
         check_fix(
@@ -798,9 +850,11 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn import_extern_crate_clash_with_inner_item() {
         // This is more of a resolver test, but doesn't really work with the hir_def testsuite.
+
         check_diagnostics(
             r#"
 //- /lib.rs crate:lib deps:jwt

@@ -2,27 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30351 bytes
-Chloro size:   30336 bytes
+Chloro size:   30351 bytes
 Rustfmt size:  30351 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- 
- #[test]
- fn infer_builtin_macros_include_expression() {
--    check_types(
--        r#"
-+    check_types(r#"
- //- /main.rs
- #[rustc_builtin_macro]
- macro_rules! include {() => {}}
- }
- //- /bla.rs
- 0
--        "#,
--    )
-+        "#)
- }
- 
- #[test]
+✓ Outputs are IDENTICAL

@@ -74,7 +74,9 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Option
 mod tests {
     // This diagnostic was the first to be emitted in ty lowering, so the tests here also test
     // diagnostics in ty lowering in general (which is why there are so many of them).
+
     use crate::tests::{check_diagnostics, check_fix};
+
     #[test]
     fn primitives() {
         check_diagnostics(
@@ -99,6 +101,7 @@ fn foo() {
             "#,
         );
     }
+
     #[test]
     fn modules() {
         check_diagnostics(
@@ -122,6 +125,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn type_parameters() {
         check_diagnostics(
@@ -135,6 +139,7 @@ fn foo<T, U>() {
         "#,
         );
     }
+
     #[test]
     fn fn_like_generic_args() {
         check_diagnostics(
@@ -146,6 +151,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn fn_signature() {
         check_diagnostics(
@@ -164,6 +170,7 @@ fn foo(
         "#,
         );
     }
+
     #[test]
     fn const_static_type() {
         check_diagnostics(
@@ -175,6 +182,7 @@ static A: i32::<{ 1 + 3 }> = 0;
         "#,
         );
     }
+
     #[test]
     fn fix() {
         check_fix(
@@ -238,6 +246,7 @@ fn foo() {
 }"#,
         );
     }
+
     #[test]
     fn in_fields() {
         check_diagnostics(
@@ -261,6 +270,7 @@ enum D {
         "#,
         );
     }
+
     #[test]
     fn in_generics() {
         check_diagnostics(
@@ -331,6 +341,7 @@ impl<A: foo::<()>::Trait> E<()> for ()
         "#,
         );
     }
+
     #[test]
     fn assoc_items() {
         check_diagnostics(
@@ -360,6 +371,7 @@ impl Foo {
         "#,
         );
     }
+
     #[test]
     fn const_param_ty() {
         check_diagnostics(
@@ -377,6 +389,7 @@ fn foo<
         "#,
         );
     }
+
     #[test]
     fn generic_defaults() {
         check_diagnostics(
@@ -386,6 +399,7 @@ struct Foo<A = bool<i32>>(A);
         "#,
         );
     }
+
     #[test]
     fn impl_self_ty() {
         check_diagnostics(
@@ -399,6 +413,7 @@ impl Trait for Foo<bool<i32>> {}
         "#,
         );
     }
+
     #[test]
     fn impl_trait() {
         check_diagnostics(
@@ -411,6 +426,7 @@ impl foo::<()>::Trait for () {}
         "#,
         );
     }
+
     #[test]
     fn type_alias() {
         check_diagnostics(
@@ -427,6 +443,7 @@ impl Trait for () {
         "#,
         );
     }
+
     #[test]
     fn in_record_expr() {
         check_diagnostics(
@@ -441,6 +458,7 @@ fn baz() {
         "#,
         );
     }
+
     #[test]
     fn in_record_pat() {
         check_diagnostics(
@@ -455,6 +473,7 @@ fn baz(v: foo::Bar) {
         "#,
         );
     }
+
     #[test]
     fn in_tuple_struct_pat() {
         check_diagnostics(
@@ -469,6 +488,7 @@ fn baz(v: foo::Bar) {
         "#,
         );
     }
+
     #[test]
     fn in_path_pat() {
         check_diagnostics(
@@ -483,6 +503,7 @@ fn baz(v: foo::Bar) {
         "#,
         );
     }
+
     #[test]
     fn in_path_expr() {
         check_diagnostics(
@@ -497,6 +518,7 @@ fn baz() {
         "#,
         );
     }
+
     #[test]
     fn const_param_and_static() {
         check_diagnostics(
@@ -512,6 +534,7 @@ fn baz<const CONST_PARAM: usize>() {
         "#,
         );
     }
+
     #[test]
     fn local_variable() {
         check_diagnostics(
@@ -524,6 +547,7 @@ fn baz() {
         "#,
         );
     }
+
     #[test]
     fn enum_variant() {
         check_diagnostics(
@@ -552,6 +576,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn dyn_trait() {
         check_diagnostics(
@@ -569,6 +594,7 @@ fn bar() {
         "#,
         );
     }
+
     #[test]
     fn regression_18768() {
         check_diagnostics(
@@ -593,6 +619,7 @@ fn bar() {
         "#,
         );
     }
+
     #[test]
     fn enum_variant_type_ns() {
         check_diagnostics(

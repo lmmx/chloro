@@ -21,7 +21,10 @@ pub(crate) fn complete_dot(
     dot_access: &DotAccess<'_>,
 ) {
     let receiver_ty = match dot_access {
-        DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
+        DotAccess {
+            receiver_ty: Some(receiver_ty),
+            ..
+        } => &receiver_ty.original,
         _ => return,
     };
 
@@ -43,9 +46,11 @@ pub(crate) fn complete_dot(
         if ctx.config.enable_auto_await {
             // Completions that skip `.await`, e.g. `.await.foo()`.
             let dot_access_kind = match &dot_access.kind {
-                DotAccessKind::Field { receiver_is_ambiguous_float_literal: _ } => {
-                    DotAccessKind::Field { receiver_is_ambiguous_float_literal: false }
-                }
+                DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: _,
+                } => DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: false,
+                },
                 it @ DotAccessKind::Method => *it,
             };
             let dot_access = DotAccess {
@@ -105,14 +110,19 @@ pub(crate) fn complete_dot(
         if let Some((iter, iter_sym)) = iter.or_else(into_iter) {
             // Skip iterators, e.g. complete `.iter().filter_map()`.
             let dot_access_kind = match &dot_access.kind {
-                DotAccessKind::Field { receiver_is_ambiguous_float_literal: _ } => {
-                    DotAccessKind::Field { receiver_is_ambiguous_float_literal: false }
-                }
+                DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: _,
+                } => DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: false,
+                },
                 it @ DotAccessKind::Method => *it,
             };
             let dot_access = DotAccess {
                 receiver: dot_access.receiver.clone(),
-                receiver_ty: Some(hir::TypeInfo { original: iter.clone(), adjusted: None }),
+                receiver_ty: Some(hir::TypeInfo {
+                    original: iter.clone(),
+                    adjusted: None,
+                }),
                 kind: dot_access_kind,
                 ctx: dot_access.ctx,
             };
@@ -142,7 +152,10 @@ pub(crate) fn complete_undotted_self(
         return;
     }
     let self_param = match expr_ctx {
-        PathExprCtx { self_param: Some(self_param), .. } => self_param,
+        PathExprCtx {
+            self_param: Some(self_param),
+            ..
+        } => self_param,
         _ => return,
     };
 
@@ -157,7 +170,9 @@ pub(crate) fn complete_undotted_self(
                 &DotAccess {
                     receiver: None,
                     receiver_ty: None,
-                    kind: DotAccessKind::Field { receiver_is_ambiguous_float_literal: false },
+                    kind: DotAccessKind::Field {
+                        receiver_is_ambiguous_float_literal: false,
+                    },
                     ctx: DotAccessExprCtx {
                         in_block_expr: expr_ctx.in_block_expr,
                         in_breakable: expr_ctx.in_breakable,
@@ -177,7 +192,9 @@ pub(crate) fn complete_undotted_self(
             &DotAccess {
                 receiver: None,
                 receiver_ty: None,
-                kind: DotAccessKind::Field { receiver_is_ambiguous_float_literal: false },
+                kind: DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: false,
+                },
                 ctx: DotAccessExprCtx {
                     in_block_expr: expr_ctx.in_block_expr,
                     in_breakable: expr_ctx.in_breakable,
@@ -210,7 +227,9 @@ fn complete_fields(
         for (i, ty) in receiver.tuple_fields(ctx.db).into_iter().enumerate() {
             // Tuples are always the last type in a deref chain, so just check if the name is
             // already seen without inserting into the hashset.
-            if !seen_names.contains(&hir::Name::new_tuple_field(i)) && (!has_parens || ty.is_fn() || ty.is_closure()) {
+            if !seen_names.contains(&hir::Name::new_tuple_field(i))
+                && (!has_parens || ty.is_fn() || ty.is_closure())
+            {
                 // Tuple fields are always public (tuple struct fields are handled above).
                 tuple_index(acc, i, ty);
             }
@@ -270,14 +289,20 @@ fn complete_methods(
         traits_in_scope,
         Some(ctx.module),
         None,
-        Callback { ctx, f, seen_methods: FxHashSet::default() },
+        Callback {
+            ctx,
+            f,
+            seen_methods: FxHashSet::default(),
+        },
     );
 }
 
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::tests::{check_edit, check_no_kw, check_with_private_editable};
+
     #[test]
     fn test_struct_field_and_method_completion() {
         check_no_kw(
@@ -294,6 +319,7 @@ fn foo(s: S) { s.$0 }
             "#]],
         );
     }
+
     #[test]
     fn no_unstable_method_on_stable() {
         check_no_kw(
@@ -310,6 +336,7 @@ impl S {
             expect![""],
         );
     }
+
     #[test]
     fn unstable_method_on_nightly() {
         check_no_kw(
@@ -329,6 +356,7 @@ impl S {
             "#]],
         );
     }
+
     #[test]
     fn test_struct_field_completion_self() {
         check_no_kw(
@@ -344,6 +372,7 @@ impl S {
             "#]],
         )
     }
+
     #[test]
     fn test_struct_field_completion_autoderef() {
         check_no_kw(
@@ -359,6 +388,7 @@ impl A {
             "#]],
         )
     }
+
     #[test]
     fn test_no_struct_field_completion_for_method_call() {
         check_no_kw(
@@ -369,6 +399,7 @@ fn foo(a: A) { a.$0() }
             expect![[r#""#]],
         );
     }
+
     #[test]
     fn test_visibility_filtering() {
         check_no_kw(
@@ -463,6 +494,7 @@ fn foo(a: lib::A) { a.$0 }
             "#]],
         );
     }
+
     #[test]
     fn test_visibility_filtering_with_private_editable_enabled() {
         check_with_private_editable(
@@ -562,6 +594,7 @@ fn foo(a: lib::A) { a.$0 }
             "#]],
         );
     }
+
     #[test]
     fn test_local_impls() {
         check_no_kw(
@@ -590,6 +623,7 @@ fn foo(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn test_doc_hidden_filtering() {
         check_no_kw(
@@ -616,6 +650,7 @@ impl A {
             "#]],
         )
     }
+
     #[test]
     fn test_union_field_completion() {
         check_no_kw(
@@ -629,6 +664,7 @@ fn foo(u: U) { u.$0 }
             "#]],
         );
     }
+
     #[test]
     fn test_method_completion_only_fitting_impls() {
         check_no_kw(
@@ -647,6 +683,7 @@ fn foo(a: A<u32>) { a.$0 }
             "#]],
         )
     }
+
     #[test]
     fn test_trait_method_completion() {
         check_no_kw(
@@ -676,6 +713,7 @@ fn foo(a: A) { a.the_method();$0 }
 "#,
         );
     }
+
     #[test]
     fn test_trait_method_completion_deduplicated() {
         check_no_kw(
@@ -690,6 +728,7 @@ fn foo(a: &A) { a.$0 }
             "#]],
         );
     }
+
     #[test]
     fn completes_trait_method_from_other_module() {
         check_no_kw(
@@ -707,6 +746,7 @@ fn foo(a: A) { a.$0 }
             "#]],
         );
     }
+
     #[test]
     fn test_no_non_self_method() {
         check_no_kw(
@@ -722,6 +762,7 @@ fn foo(a: A) {
             expect![[r#""#]],
         );
     }
+
     #[test]
     fn test_tuple_field_completion() {
         check_no_kw(
@@ -737,6 +778,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_struct_field_completion() {
         check_no_kw(
@@ -753,6 +795,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_field_inference() {
         check_no_kw(
@@ -773,6 +816,7 @@ impl T {
             "#]],
         );
     }
+
     #[test]
     fn test_field_no_same_name() {
         check_no_kw(
@@ -795,6 +839,7 @@ fn test(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_field_no_same_index() {
         check_no_kw(
@@ -817,6 +862,7 @@ fn test(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn test_tuple_struct_deref_to_tuple_no_same_index() {
         check_no_kw(
@@ -838,6 +884,7 @@ fn test(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn test_completion_works_in_consts() {
         check_no_kw(
@@ -852,6 +899,7 @@ const X: u32 = {
             "#]],
         );
     }
+
     #[test]
     fn works_in_simple_macro_1() {
         check_no_kw(
@@ -867,6 +915,7 @@ fn foo(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn works_in_simple_macro_2() {
         // this doesn't work yet because the macro doesn't expand without the token -- maybe it can be fixed with better recovery
@@ -883,6 +932,7 @@ fn foo(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn works_in_simple_macro_recursive_1() {
         check_no_kw(
@@ -898,6 +948,7 @@ fn foo(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn macro_expansion_resilient() {
         check_no_kw(
@@ -923,6 +974,7 @@ fn foo(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn test_method_completion_issue_3547() {
         check_no_kw(
@@ -941,6 +993,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn completes_method_call_when_receiver_is_a_macro_call() {
         check_no_kw(
@@ -955,6 +1008,7 @@ fn main() { make_s!().f$0; }
             "#]],
         )
     }
+
     #[test]
     fn completes_after_macro_call_in_submodule() {
         check_no_kw(
@@ -982,6 +1036,7 @@ mod foo {
             "#]],
         );
     }
+
     #[test]
     fn issue_8931() {
         check_no_kw(
@@ -1008,6 +1063,7 @@ impl S {
             "#]],
         );
     }
+
     #[test]
     fn completes_bare_fields_and_methods_in_methods() {
         check_no_kw(
@@ -1039,6 +1095,7 @@ impl Foo { fn foo(&mut self) { $0 } }"#,
             "#]],
         );
     }
+
     #[test]
     fn macro_completion_after_dot() {
         check_no_kw(
@@ -1063,6 +1120,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn completes_method_call_when_receiver_type_has_errors_issue_10297() {
         check_no_kw(
@@ -1084,6 +1142,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn postfix_drop_completion() {
         cov_mark::check!(postfix_drop_completion);
@@ -1112,6 +1171,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn issue_12484() {
         check_no_kw(
@@ -1133,6 +1193,7 @@ fn test(thing: impl Encrypt) {
             "#]],
         )
     }
+
     #[test]
     fn only_consider_same_type_once() {
         check_no_kw(
@@ -1158,6 +1219,7 @@ fn test(a: A) {
             "#]],
         );
     }
+
     #[test]
     fn no_inference_var_in_completion() {
         check_no_kw(
@@ -1172,6 +1234,7 @@ fn test(s: S<Unknown>) {
             "#]],
         );
     }
+
     #[test]
     fn assoc_impl_1() {
         check_no_kw(
@@ -1212,6 +1275,7 @@ impl<F: core::ops::Deref<Target = impl Bar>> Foo<F> {
             "#]],
         );
     }
+
     #[test]
     fn assoc_impl_2() {
         check_no_kw(
@@ -1247,6 +1311,7 @@ impl<B: Bar, F: core::ops::Deref<Target = B>> Foo<F> {
             "#]],
         );
     }
+
     #[test]
     fn test_struct_function_field_completion() {
         check_no_kw(
@@ -1271,6 +1336,7 @@ fn foo() { (S { va_field: 0, fn_field: || {} }.fn_field)() }
 "#,
         );
     }
+
     #[test]
     fn test_tuple_function_field_completion() {
         check_no_kw(
@@ -1304,6 +1370,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn test_fn_field_dot_access_method_has_parens_false() {
         check_no_kw(
@@ -1376,6 +1443,7 @@ fn baz() {
 "#,
         );
     }
+
     #[test]
     fn skip_iter() {
         check_no_kw(
@@ -1422,6 +1490,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn skip_await() {
         check_no_kw(
@@ -1472,6 +1541,7 @@ async fn bar() {
 "#,
         );
     }
+
     #[test]
     fn receiver_without_deref_impl_completion() {
         check_no_kw(
@@ -1501,6 +1571,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn no_iter_suggestion_on_iterator() {
         check_no_kw(

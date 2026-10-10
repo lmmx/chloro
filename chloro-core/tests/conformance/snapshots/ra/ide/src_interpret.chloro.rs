@@ -1,7 +1,7 @@
 use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
 use ide_db::{FilePosition, LineIndexDatabase, RootDatabase, base_db::SourceDatabase};
-use stdx::format_to;
 use std::time::{Duration, Instant};
+use stdx::format_to;
 use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
 
 // Feature: Interpret A Function, Static Or Const.

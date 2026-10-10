@@ -39,29 +39,40 @@ impl std::fmt::Debug for SolverDefId {
         let interner = DbInterner::conjure();
         let db = interner.db;
         match *self {
-            SolverDefId::AdtId(AdtId::StructId(id)) => {
-                f.debug_tuple("AdtId").field(&db.struct_signature(id).name.as_str()).finish()
-            }
-            SolverDefId::AdtId(AdtId::EnumId(id)) => {
-                f.debug_tuple("AdtId").field(&db.enum_signature(id).name.as_str()).finish()
-            }
-            SolverDefId::AdtId(AdtId::UnionId(id)) => {
-                f.debug_tuple("AdtId").field(&db.union_signature(id).name.as_str()).finish()
-            }
+            SolverDefId::AdtId(AdtId::StructId(id)) => f
+                .debug_tuple("AdtId")
+                .field(&db.struct_signature(id).name.as_str())
+                .finish(),
+            SolverDefId::AdtId(AdtId::EnumId(id)) => f
+                .debug_tuple("AdtId")
+                .field(&db.enum_signature(id).name.as_str())
+                .finish(),
+            SolverDefId::AdtId(AdtId::UnionId(id)) => f
+                .debug_tuple("AdtId")
+                .field(&db.union_signature(id).name.as_str())
+                .finish(),
             SolverDefId::ConstId(id) => f
                 .debug_tuple("ConstId")
-                .field(&db.const_signature(id).name.as_ref().map_or("_", |name| name.as_str()))
+                .field(
+                    &db.const_signature(id)
+                        .name
+                        .as_ref()
+                        .map_or("_", |name| name.as_str()),
+                )
                 .finish(),
-            SolverDefId::FunctionId(id) => {
-                f.debug_tuple("FunctionId").field(&db.function_signature(id).name.as_str()).finish()
-            }
+            SolverDefId::FunctionId(id) => f
+                .debug_tuple("FunctionId")
+                .field(&db.function_signature(id).name.as_str())
+                .finish(),
             SolverDefId::ImplId(id) => f.debug_tuple("ImplId").field(&id).finish(),
-            SolverDefId::StaticId(id) => {
-                f.debug_tuple("StaticId").field(&db.static_signature(id).name.as_str()).finish()
-            }
-            SolverDefId::TraitId(id) => {
-                f.debug_tuple("TraitId").field(&db.trait_signature(id).name.as_str()).finish()
-            }
+            SolverDefId::StaticId(id) => f
+                .debug_tuple("StaticId")
+                .field(&db.static_signature(id).name.as_str())
+                .finish(),
+            SolverDefId::TraitId(id) => f
+                .debug_tuple("TraitId")
+                .field(&db.trait_signature(id).name.as_str())
+                .finish(),
             SolverDefId::TypeAliasId(id) => f
                 .debug_tuple("TypeAliasId")
                 .field(&db.type_alias_signature(id).name.as_str())
@@ -81,20 +92,29 @@ impl std::fmt::Debug for SolverDefId {
                     .field(&format_args!(
                         "\"{}::{}\"",
                         db.enum_signature(parent_enum).name.as_str(),
-                        parent_enum.enum_variants(db).variant_name_by_id(id).unwrap().as_str()
+                        parent_enum
+                            .enum_variants(db)
+                            .variant_name_by_id(id)
+                            .unwrap()
+                            .as_str()
                     ))
                     .finish()
             }
-            SolverDefId::Ctor(Ctor::Struct(id)) => {
-                f.debug_tuple("Ctor").field(&db.struct_signature(id).name.as_str()).finish()
-            }
+            SolverDefId::Ctor(Ctor::Struct(id)) => f
+                .debug_tuple("Ctor")
+                .field(&db.struct_signature(id).name.as_str())
+                .finish(),
             SolverDefId::Ctor(Ctor::Enum(id)) => {
                 let parent_enum = id.loc(db).parent;
                 f.debug_tuple("Ctor")
                     .field(&format_args!(
                         "\"{}::{}\"",
                         db.enum_signature(parent_enum).name.as_str(),
-                        parent_enum.enum_variants(db).variant_name_by_id(id).unwrap().as_str()
+                        parent_enum
+                            .enum_variants(db)
+                            .variant_name_by_id(id)
+                            .unwrap()
+                            .as_str()
                     ))
                     .finish()
             }
@@ -222,7 +242,6 @@ impl<'db> inherent::DefId<DbInterner<'db>> for SolverDefId {
     fn as_local(self) -> Option<SolverDefId> {
         Some(self)
     }
-
     fn is_local(self) -> bool {
         true
     }
@@ -284,15 +303,10 @@ macro_rules! declare_id_wrapper {
 }
 
 declare_id_wrapper!(TraitIdWrapper, TraitId);
-
 declare_id_wrapper!(TypeAliasIdWrapper, TypeAliasId);
-
 declare_id_wrapper!(ClosureIdWrapper, InternedClosureId);
-
 declare_id_wrapper!(CoroutineIdWrapper, InternedCoroutineId);
-
 declare_id_wrapper!(AdtIdWrapper, AdtId);
-
 declare_id_wrapper!(ImplIdWrapper, ImplId);
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -303,21 +317,18 @@ impl std::fmt::Debug for CallableIdWrapper {
         std::fmt::Debug::fmt(&self.0, f)
     }
 }
-
 impl From<CallableIdWrapper> for CallableDefId {
     #[inline]
     fn from(value: CallableIdWrapper) -> CallableDefId {
         value.0
     }
 }
-
 impl From<CallableDefId> for CallableIdWrapper {
     #[inline]
     fn from(value: CallableDefId) -> CallableIdWrapper {
         Self(value)
     }
 }
-
 impl From<CallableIdWrapper> for SolverDefId {
     #[inline]
     fn from(value: CallableIdWrapper) -> SolverDefId {
@@ -328,10 +339,8 @@ impl From<CallableIdWrapper> for SolverDefId {
         }
     }
 }
-
 impl TryFrom<SolverDefId> for CallableIdWrapper {
     type Error = ();
-
     #[inline]
     fn try_from(value: SolverDefId) -> Result<Self, Self::Error> {
         match value {
@@ -342,12 +351,10 @@ impl TryFrom<SolverDefId> for CallableIdWrapper {
         }
     }
 }
-
 impl<'db> inherent::DefId<DbInterner<'db>> for CallableIdWrapper {
     fn as_local(self) -> Option<SolverDefId> {
         Some(self.into())
     }
-
     fn is_local(self) -> bool {
         true
     }

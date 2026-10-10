@@ -30,10 +30,13 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     let file = sema.parse(file_id);
     let krate = sema.file_to_module_def(file_id.file_id(db))?.krate().into();
 
-    let tok = pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
-        SyntaxKind::IDENT => 1,
-        _ => 0,
-    })?;
+    let tok = pick_best_token(
+        file.syntax().token_at_offset(position.offset),
+        |kind| match kind {
+            SyntaxKind::IDENT => 1,
+            _ => 0,
+        },
+    )?;
 
     // due to how rust-analyzer works internally, we need to special case derive attributes,
     // otherwise they might not get found, e.g. here with the cursor at $0 `#[attr]` would expand:
@@ -42,45 +45,64 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     // #[derive($0Foo)]
     // struct Bar;
     // ```
-    let derive = sema.descend_into_macros_exact(tok.clone()).into_iter().find_map(|descended| {
-        let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
-        if !macro_file.is_derive_attr_pseudo_expansion(db) {
-            return None;
-        }
 
-        let name = descended.parent_ancestors().filter_map(ast::Path::cast).last()?.to_string();
-        // up map out of the #[derive] expansion
-        let InFile { file_id, value: tokens } =
-            hir::InMacroFile::new(macro_file, descended).upmap_once(db);
-        let token = sema.parse_or_expand(file_id).covering_element(tokens[0]).into_token()?;
-        let attr = token.parent_ancestors().find_map(ast::Attr::cast)?;
-        let expansions = sema.expand_derive_macro(&attr)?;
-        let idx = attr
-            .token_tree()?
-            .token_trees_and_tokens()
-            .filter_map(NodeOrToken::into_token)
-            .take_while(|it| it != &token)
-            .filter(|it| it.kind() == T![,])
-            .count();
-        let ExpandResult { err, value: expansion } = expansions.get(idx)?.clone();
-        let expansion_file_id = sema.hir_file_for(&expansion).macro_file()?;
-        let expansion_span_map = db.expansion_span_map(expansion_file_id);
-        let mut expansion = format(
-            db,
-            SyntaxKind::MACRO_ITEMS,
-            position.file_id,
-            expansion,
-            &expansion_span_map,
-            krate,
-        );
-        if let Some(err) = err {
-            expansion.insert_str(
-                0,
-                &format!("Expansion had errors: {}\n\n", err.render_to_string(sema.db)),
+    let derive = sema
+        .descend_into_macros_exact(tok.clone())
+        .into_iter()
+        .find_map(|descended| {
+            let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
+            if !macro_file.is_derive_attr_pseudo_expansion(db) {
+                return None;
+            }
+
+            let name = descended
+                .parent_ancestors()
+                .filter_map(ast::Path::cast)
+                .last()?
+                .to_string();
+            // up map out of the #[derive] expansion
+            let InFile {
+                file_id,
+                value: tokens,
+            } = hir::InMacroFile::new(macro_file, descended).upmap_once(db);
+            let token = sema
+                .parse_or_expand(file_id)
+                .covering_element(tokens[0])
+                .into_token()?;
+            let attr = token.parent_ancestors().find_map(ast::Attr::cast)?;
+            let expansions = sema.expand_derive_macro(&attr)?;
+            let idx = attr
+                .token_tree()?
+                .token_trees_and_tokens()
+                .filter_map(NodeOrToken::into_token)
+                .take_while(|it| it != &token)
+                .filter(|it| it.kind() == T![,])
+                .count();
+            let ExpandResult {
+                err,
+                value: expansion,
+            } = expansions.get(idx)?.clone();
+            let expansion_file_id = sema.hir_file_for(&expansion).macro_file()?;
+            let expansion_span_map = db.expansion_span_map(expansion_file_id);
+            let mut expansion = format(
+                db,
+                SyntaxKind::MACRO_ITEMS,
+                position.file_id,
+                expansion,
+                &expansion_span_map,
+                krate,
             );
-        }
-        Some(ExpandedMacro { name, expansion })
-    });
+            if let Some(err) = err {
+                expansion.insert_str(
+                    0,
+                    &format!(
+                        "Expansion had errors: {}\n\n",
+                        err.render_to_string(sema.db)
+                    ),
+                );
+            }
+            Some(ExpandedMacro { name, expansion })
+        });
 
     if derive.is_some() {
         return derive;
@@ -108,8 +130,11 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
             if let Some(mac) = ast::MacroCall::cast(node) {
                 let mut name = mac.path()?.segment()?.name_ref()?.to_string();
                 name.push('!');
-                let syntax_kind =
-                    mac.syntax().parent().map(|it| it.kind()).unwrap_or(SyntaxKind::MACRO_ITEMS);
+                let syntax_kind = mac
+                    .syntax()
+                    .parent()
+                    .map(|it| it.kind())
+                    .unwrap_or(SyntaxKind::MACRO_ITEMS);
                 break (
                     name,
                     expand_macro_recur(
@@ -144,7 +169,10 @@ fn expand_macro_recur(
     result_span_map: &mut SpanMap<SyntaxContext>,
     offset_in_original_node: TextSize,
 ) -> Option<SyntaxNode> {
-    let ExpandResult { value: expanded, err } = match macro_call {
+    let ExpandResult {
+        value: expanded,
+        err,
+    } = match macro_call {
         item @ ast::Item::MacroCall(macro_call) => sema
             .expand_attr_macro(item)
             .map(|it| it.map(|it| it.value))
@@ -155,15 +183,26 @@ fn expand_macro_recur(
     if let Some(err) = err {
         format_to!(error, "\n{}", err.render_to_string(sema.db));
     }
-    let file_id =
-        sema.hir_file_for(&expanded).macro_file().expect("expansion must produce a macro file");
+    let file_id = sema
+        .hir_file_for(&expanded)
+        .macro_file()
+        .expect("expansion must produce a macro file");
     let expansion_span_map = sema.db.expansion_span_map(file_id);
     result_span_map.merge(
-        TextRange::at(offset_in_original_node, macro_call.syntax().text_range().len()),
+        TextRange::at(
+            offset_in_original_node,
+            macro_call.syntax().text_range().len(),
+        ),
         expanded.text_range().len(),
         &expansion_span_map,
     );
-    Some(expand(sema, expanded, error, result_span_map, u32::from(offset_in_original_node) as i32))
+    Some(expand(
+        sema,
+        expanded,
+        error,
+        result_span_map,
+        u32::from(offset_in_original_node) as i32,
+    ))
 }
 
 fn expand(
@@ -198,7 +237,10 @@ fn expand(
         }
     }
 
-    replacements.into_iter().rev().for_each(|(old, new)| ted::replace(old.syntax(), new));
+    replacements
+        .into_iter()
+        .rev()
+        .for_each(|(old, new)| ted::replace(old.syntax(), new));
     expanded
 }
 
@@ -239,8 +281,9 @@ fn _format(
     // hack until we get hygiene working (same character amount to preserve formatting as much as possible)
     const DOLLAR_CRATE_REPLACE: &str = "__r_a_";
     const BUILTIN_REPLACE: &str = "builtin__POUND";
-    let expansion =
-        expansion.replace("$crate", DOLLAR_CRATE_REPLACE).replace("builtin #", BUILTIN_REPLACE);
+    let expansion = expansion
+        .replace("$crate", DOLLAR_CRATE_REPLACE)
+        .replace("builtin #", BUILTIN_REPLACE);
     let (prefix, suffix) = match kind {
         SyntaxKind::MACRO_PAT => ("fn __(", ": u32);"),
         SyntaxKind::MACRO_EXPR | SyntaxKind::MACRO_STMTS => ("fn __() {", "}"),
@@ -275,9 +318,9 @@ fn _format(
             .replace(BUILTIN_REPLACE, "builtin #");
         let output = output.trim().strip_prefix(prefix)?;
         let output = match kind {
-            SyntaxKind::MACRO_PAT => {
-                output.strip_suffix(suffix).or_else(|| output.strip_suffix(": u32,\n);"))?
-            }
+            SyntaxKind::MACRO_PAT => output
+                .strip_suffix(suffix)
+                .or_else(|| output.strip_suffix(": u32,\n);"))?,
             _ => output.strip_suffix(suffix)?,
         };
         let trim_indent = stdx::trim_indent(output);
@@ -291,7 +334,9 @@ fn _format(
 #[cfg(test)]
 mod tests {
     use expect_test::{Expect, expect};
+
     use crate::fixture;
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, pos) = fixture::position(ra_fixture);
@@ -299,6 +344,7 @@ mod tests {
         let actual = format!("{}\n{}", expansion.name, expansion.expansion);
         expect.assert_eq(&actual);
     }
+
     #[test]
     fn expand_allowed_builtin_macro() {
         check(
@@ -310,6 +356,7 @@ $0concat!("test", 10, 'b', true);"#,
                 "test10btrue""#]],
         );
     }
+
     #[test]
     fn do_not_expand_disallowed_macro() {
         let (analysis, pos) = fixture::position(
@@ -320,6 +367,7 @@ $0asm!("0x300, x0");"#,
         let expansion = analysis.expand_macro(pos).unwrap();
         assert!(expansion.is_none());
     }
+
     #[test]
     fn macro_expand_as_keyword() {
         check(
@@ -336,6 +384,7 @@ fn main() {
                 5i64 as _"#]],
         );
     }
+
     #[test]
     fn macro_expand_underscore() {
         check(
@@ -352,6 +401,7 @@ fn main() {
                 for _ in 0..42{}"#]],
         );
     }
+
     #[test]
     fn macro_expand_recursive_expansion() {
         check(
@@ -372,6 +422,7 @@ f$0oo!();
                 fn b(){}"#]],
         );
     }
+
     #[test]
     fn macro_expand_multiple_lines() {
         check(
@@ -394,6 +445,7 @@ f$0oo!();
                 }"#]],
         );
     }
+
     #[test]
     fn macro_expand_match_ast() {
         check(
@@ -432,6 +484,7 @@ fn main() {
                 }"#]],
         );
     }
+
     #[test]
     fn macro_expand_match_ast_inside_let_statement() {
         check(
@@ -453,6 +506,7 @@ fn main() {
                 {}"#]],
         );
     }
+
     #[test]
     fn macro_expand_inner_macro_rules() {
         check(
@@ -484,6 +538,7 @@ fn main() {
                 }"#]],
         );
     }
+
     #[test]
     fn macro_expand_inner_macro_fail_to_expand() {
         check(
@@ -507,6 +562,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn macro_expand_with_dollar_crate() {
         check(
@@ -528,6 +584,7 @@ fn main() {
                 0"#]],
         );
     }
+
     #[test]
     fn macro_expand_with_dyn_absolute_path() {
         check(
@@ -545,6 +602,7 @@ fn main() {
                 fn f<T>(_: &dyn ::std::marker::Copy){}"#]],
         );
     }
+
     #[test]
     fn macro_expand_item_expansion_in_expression_call() {
         check(
@@ -562,6 +620,7 @@ fn main() {
                 fn f<T>(){}"#]],
         );
     }
+
     #[test]
     fn macro_expand_derive() {
         check(
@@ -588,6 +647,7 @@ struct Foo {}
                     }"#]],
         );
     }
+
     #[test]
     fn macro_expand_derive2() {
         check(
@@ -603,6 +663,7 @@ struct Foo {}
                 impl <>core::marker::Copy for Foo< >where{}"#]],
         );
     }
+
     #[test]
     fn macro_expand_derive_multi() {
         check(
@@ -638,6 +699,7 @@ struct Foo {}
                     }"#]],
         );
     }
+
     #[test]
     fn dollar_crate() {
         check(
@@ -677,6 +739,7 @@ crate::Foo;
 crate::Foo;"#]],
         );
     }
+
     #[test]
     fn semi_glueing() {
         check(
@@ -698,6 +761,7 @@ __log!(written:%; "Test"$0);
             "#]],
         );
     }
+
     #[test]
     fn assoc_call() {
         check(
@@ -714,6 +778,7 @@ impl () {
                 fn assoc(){}"#]],
         );
     }
+
     #[test]
     fn eager() {
         check(
@@ -736,6 +801,7 @@ fn test() {
                 "<>""#]],
         );
     }
+
     #[test]
     fn in_included() {
         check(
@@ -754,6 +820,7 @@ foo$0!();
                 fn item(){}"#]],
         );
     }
+
     #[test]
     fn include() {
         check(
@@ -778,6 +845,7 @@ foo();
                 foo();"#]],
         );
     }
+
     #[test]
     fn works_in_sig() {
         check(
@@ -805,6 +873,7 @@ fn foo(_: foo$0!() ) {}
                 u32"#]],
         );
     }
+
     #[test]
     fn works_in_generics() {
         check(
@@ -820,6 +889,7 @@ impl<const C: foo$0!()> Trait for () {}
                 Trait"#]],
         );
     }
+
     #[test]
     fn works_in_fields() {
         check(

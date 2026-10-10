@@ -25,9 +25,12 @@ pub(crate) fn goto_declaration(
 ) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
-    let original_token = file
-        .token_at_offset(offset)
-        .find(|it| matches!(it.kind(), IDENT | T![self] | T![super] | T![crate] | T![Self]))?;
+    let original_token = file.token_at_offset(offset).find(|it| {
+        matches!(
+            it.kind(),
+            IDENT | T![self] | T![super] | T![crate] | T![Self]
+        )
+    })?;
     let range = original_token.text_range();
     let info: Vec<NavigationTarget> = sema
         .descend_into_macros_no_opaque(original_token, false)
@@ -64,7 +67,10 @@ pub(crate) fn goto_declaration(
 
             let trait_ = assoc.implemented_trait(db)?;
             let name = Some(assoc.name(db)?);
-            let item = trait_.items(db).into_iter().find(|it| it.name(db) == name)?;
+            let item = trait_
+                .items(db)
+                .into_iter()
+                .find(|it| it.name(db) == name)?;
             item.try_to_nav(&sema)
         })
         .flatten()
@@ -81,8 +87,13 @@ pub(crate) fn goto_declaration(
 mod tests {
     use ide_db::{FileRange, MiniCore};
     use itertools::Itertools;
+
     use crate::{GotoDefinitionConfig, fixture};
-    const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig { minicore: MiniCore::default() };
+
+    const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig {
+        minicore: MiniCore::default(),
+    };
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);
         let navs = analysis
@@ -97,7 +108,10 @@ mod tests {
         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
         let navs = navs
             .into_iter()
-            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+            .map(|nav| FileRange {
+                file_id: nav.file_id,
+                range: nav.focus_or_full_range(),
+            })
             .sorted_by_key(cmp)
             .collect::<Vec<_>>();
         let expected = expected
@@ -107,25 +121,32 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(expected, navs);
     }
+
     #[test]
     fn goto_decl_module_outline() {
-        check(r#"
+        check(
+            r#"
 //- /main.rs
 mod foo;
  // ^^^
 //- /foo.rs
 use self$0;
-"#)
+"#,
+        )
     }
+
     #[test]
     fn goto_decl_module_inline() {
-        check(r#"
+        check(
+            r#"
 mod foo {
  // ^^^
     use self$0;
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn goto_decl_goto_def_fallback() {
         check(
@@ -136,6 +157,7 @@ impl Foo$0 {}
 "#,
         );
     }
+
     #[test]
     fn goto_decl_assoc_item_no_impl_item() {
         check(
@@ -152,6 +174,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn goto_decl_assoc_item() {
         check(
@@ -181,6 +204,7 @@ impl Trait for () {
 "#,
         );
     }
+
     #[test]
     fn goto_decl_field_pat_shorthand() {
         check(
@@ -193,6 +217,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn goto_decl_constructor_shorthand() {
         check(
@@ -206,24 +231,30 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn goto_decl_for_extern_crate() {
-        check(r#"
+        check(
+            r#"
 //- /main.rs crate:main deps:std
 extern crate std$0;
          /// ^^^
 //- /std/lib.rs crate:std
 // empty
-"#)
+"#,
+        )
     }
+
     #[test]
     fn goto_decl_for_renamed_extern_crate() {
-        check(r#"
+        check(
+            r#"
 //- /main.rs crate:main deps:std
 extern crate std as abc$0;
                 /// ^^^
 //- /std/lib.rs crate:std
 // empty
-"#)
+"#,
+        )
     }
 }

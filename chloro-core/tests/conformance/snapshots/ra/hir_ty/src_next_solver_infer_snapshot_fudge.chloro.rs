@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use ena::{
     snapshot_vec as sv,
-    unify::{UnifyKey, self as ut},
+    unify::{self as ut, UnifyKey},
 };
 use rustc_type_ir::{
     ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
@@ -12,7 +12,8 @@ use rustc_type_ir::{
 use crate::next_solver::{
     Const, ConstKind, DbInterner, Region, Ty, TyKind,
     infer::{
-        InferCtxt, UnificationTable, iter_idx_range, snapshot::VariableLengths,
+        InferCtxt, UnificationTable, iter_idx_range,
+        snapshot::VariableLengths,
         type_variable::TypeVariableOrigin,
         unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
     },
@@ -41,7 +42,10 @@ fn const_vars_since_snapshot<'db>(
         iter_idx_range(range)
             .map(|index| match table.probe_value(index) {
                 ConstVariableValue::Known { value: _ } => ConstVariableOrigin {},
-                ConstVariableValue::Unknown { origin, universe: _ } => origin,
+                ConstVariableValue::Unknown {
+                    origin,
+                    universe: _,
+                } => origin,
             })
             .collect(),
     )
@@ -121,7 +125,10 @@ impl<'db> InferCtxt<'db> {
         if snapshot_vars.is_empty() {
             value
         } else {
-            value.fold_with(&mut InferenceFudger { infcx: self, snapshot_vars })
+            value.fold_with(&mut InferenceFudger {
+                infcx: self,
+                snapshot_vars,
+            })
         }
     }
 }
@@ -140,21 +147,39 @@ impl SnapshotVarData {
         let region_vars = inner
             .unwrap_region_constraints()
             .vars_since_snapshot(vars_pre_snapshot.region_constraints_len);
-        let type_vars = inner.type_variables().vars_since_snapshot(vars_pre_snapshot.type_var_len);
-        let int_vars =
-            vars_since_snapshot(&inner.int_unification_table(), vars_pre_snapshot.int_var_len);
-        let float_vars =
-            vars_since_snapshot(&inner.float_unification_table(), vars_pre_snapshot.float_var_len);
+        let type_vars = inner
+            .type_variables()
+            .vars_since_snapshot(vars_pre_snapshot.type_var_len);
+        let int_vars = vars_since_snapshot(
+            &inner.int_unification_table(),
+            vars_pre_snapshot.int_var_len,
+        );
+        let float_vars = vars_since_snapshot(
+            &inner.float_unification_table(),
+            vars_pre_snapshot.float_var_len,
+        );
 
         let const_vars = const_vars_since_snapshot(
             &mut inner.const_unification_table(),
             vars_pre_snapshot.const_var_len,
         );
-        SnapshotVarData { region_vars, type_vars, int_vars, float_vars, const_vars }
+        SnapshotVarData {
+            region_vars,
+            type_vars,
+            int_vars,
+            float_vars,
+            const_vars,
+        }
     }
 
     fn is_empty(&self) -> bool {
-        let SnapshotVarData { region_vars, type_vars, int_vars, float_vars, const_vars } = self;
+        let SnapshotVarData {
+            region_vars,
+            type_vars,
+            int_vars,
+            float_vars,
+            const_vars,
+        } = self;
         region_vars.is_empty()
             && type_vars.0.is_empty()
             && int_vars.is_empty()
@@ -190,7 +215,12 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
                         // that it is unbound, so we can just return
                         // it.
                         debug_assert!(
-                            self.infcx.inner.borrow_mut().type_variables().probe(vid).is_unknown()
+                            self.infcx
+                                .inner
+                                .borrow_mut()
+                                .type_variables()
+                                .probe(vid)
+                                .is_unknown()
                         );
                         ty
                     }

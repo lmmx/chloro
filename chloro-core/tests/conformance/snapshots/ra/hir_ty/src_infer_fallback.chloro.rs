@@ -80,7 +80,11 @@ impl<'db> InferenceContext<'_, 'db> {
             return DivergingFallbackBehavior::ToNever;
         }
 
-        if self.resolver.def_map().is_unstable_feature_enabled(&sym::never_type_fallback) {
+        if self
+            .resolver
+            .def_map()
+            .is_unstable_feature_enabled(&sym::never_type_fallback)
+        {
             return DivergingFallbackBehavior::ContextDependent;
         }
 
@@ -158,7 +162,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 None => return false,
             },
         };
-        debug!("fallback_if_possible(ty={:?}): defaulting to `{:?}`", ty, fallback);
+        debug!(
+            "fallback_if_possible(ty={:?}): defaulting to `{:?}`",
+            ty, fallback
+        );
 
         self.demand_eqtype(ty, fallback);
         true
@@ -264,7 +271,10 @@ impl<'db> InferenceContext<'_, 'db> {
             "calculate_diverging_fallback: diverging_type_vars={:?}",
             self.table.diverging_type_vars
         );
-        debug!("calculate_diverging_fallback: diverging_roots={:?}", diverging_roots);
+        debug!(
+            "calculate_diverging_fallback: diverging_roots={:?}",
+            diverging_roots
+        );
 
         // Find all type variables that are reachable from a diverging
         // type variable. These will typically default to `!`, unless
@@ -286,7 +296,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 roots_reachable_from_diverging.move_to(root_vid.as_u32().into());
 
                 // drain the iterator to visit all nodes reachable from this node
-                while roots_reachable_from_diverging.next(&coercion_graph).is_some() {}
+                while roots_reachable_from_diverging
+                    .next(&coercion_graph)
+                    .is_some()
+                {}
             } else {
                 non_diverging_vids.push(unsolved_vid);
             }
@@ -304,18 +317,27 @@ impl<'db> InferenceContext<'_, 'db> {
         let mut roots_reachable_from_non_diverging = Dfs::empty(&coercion_graph);
         for &non_diverging_vid in &non_diverging_vids {
             let root_vid = self.table.infer_ctxt.root_var(non_diverging_vid);
-            if roots_reachable_from_diverging.discovered.contains(root_vid.as_usize()) {
+            if roots_reachable_from_diverging
+                .discovered
+                .contains(root_vid.as_usize())
+            {
                 continue;
             }
             roots_reachable_from_non_diverging.move_to(root_vid.as_u32().into());
-            while roots_reachable_from_non_diverging.next(&coercion_graph).is_some() {}
+            while roots_reachable_from_non_diverging
+                .next(&coercion_graph)
+                .is_some()
+            {}
         }
         debug!(
             "calculate_diverging_fallback: roots_reachable_from_non_diverging={:?}",
             roots_reachable_from_non_diverging,
         );
 
-        debug!("obligations: {:#?}", self.table.fulfillment_cx.pending_obligations());
+        debug!(
+            "obligations: {:#?}",
+            self.table.fulfillment_cx.pending_obligations()
+        );
 
         // For each diverging variable, figure out whether it can
         // reach a member of N. If so, it falls back to `()`. Else
@@ -328,7 +350,11 @@ impl<'db> InferenceContext<'_, 'db> {
             let root_vid = self.table.infer_ctxt.root_var(diverging_vid);
             let can_reach_non_diverging = Dfs::new(&coercion_graph, root_vid.as_u32().into())
                 .iter(&coercion_graph)
-                .any(|n| roots_reachable_from_non_diverging.discovered.contains(n.index()));
+                .any(|n| {
+                    roots_reachable_from_non_diverging
+                        .discovered
+                        .contains(n.index())
+                });
 
             let mut fallback_to = |ty| {
                 diverging_fallback.insert(diverging_ty, ty);
@@ -371,7 +397,10 @@ impl<'db> InferenceContext<'_, 'db> {
                     //     fallback_to(self.types.unit);
                     // }
                     if can_reach_non_diverging {
-                        debug!("fallback to () - reached non-diverging: {:?}", diverging_vid);
+                        debug!(
+                            "fallback to () - reached non-diverging: {:?}",
+                            diverging_vid
+                        );
                         fallback_to(self.types.unit);
                     } else {
                         debug!("fallback to ! - all diverging: {:?}", diverging_vid);
@@ -396,7 +425,10 @@ impl<'db> InferenceContext<'_, 'db> {
     fn create_coercion_graph(&self) -> Graph<(), ()> {
         let pending_obligations = self.table.fulfillment_cx.pending_obligations();
         let pending_obligations_len = pending_obligations.len();
-        debug!("create_coercion_graph: pending_obligations={:?}", pending_obligations);
+        debug!(
+            "create_coercion_graph: pending_obligations={:?}",
+            pending_obligations
+        );
         let coercion_edges = pending_obligations
             .into_iter()
             .filter_map(|obligation| {
@@ -415,7 +447,11 @@ impl<'db> InferenceContext<'_, 'db> {
                 // coercion and subtyping.
                 let (a, b) = match atom {
                     PredicateKind::Coerce(CoercePredicate { a, b }) => (a, b),
-                    PredicateKind::Subtype(SubtypePredicate { a_is_expected: _, a, b }) => (a, b),
+                    PredicateKind::Subtype(SubtypePredicate {
+                        a_is_expected: _,
+                        a,
+                        b,
+                    }) => (a, b),
                     _ => return None,
                 };
 
@@ -434,6 +470,10 @@ impl<'db> InferenceContext<'_, 'db> {
 
     /// If `ty` is an unresolved type variable, returns its root vid.
     fn root_vid(&self, ty: Ty<'db>) -> Option<TyVid> {
-        Some(self.table.infer_ctxt.root_var(self.shallow_resolve(ty).ty_vid()?))
+        Some(
+            self.table
+                .infer_ctxt
+                .root_var(self.shallow_resolve(ty).ty_vid()?),
+        )
     }
 }

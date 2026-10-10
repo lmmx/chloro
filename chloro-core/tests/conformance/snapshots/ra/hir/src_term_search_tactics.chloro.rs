@@ -208,12 +208,20 @@ pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(
                 // Note that we need special case for 0 param constructors because of multi cartesian
                 // product
                 let exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
-                    vec![Expr::Struct { strukt, generics, params: Vec::new() }]
+                    vec![Expr::Struct {
+                        strukt,
+                        generics,
+                        params: Vec::new(),
+                    }]
                 } else {
                     param_exprs
                         .into_iter()
                         .multi_cartesian_product()
-                        .map(|params| Expr::Struct { strukt, generics: generics.clone(), params })
+                        .map(|params| Expr::Struct {
+                            strukt,
+                            generics: generics.clone(),
+                            params,
+                        })
                         .collect()
                 };
 
@@ -329,12 +337,17 @@ pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(
 
                 // Only account for stable type parameters for now, unstable params can be default
                 // tho, for example in `Box<T, #[unstable] A: Allocator>`
-                if type_params.iter().any(|it| it.is_unstable(db) && it.default(db).is_none()) {
+                if type_params
+                    .iter()
+                    .any(|it| it.is_unstable(db) && it.default(db).is_none())
+                {
                     return None;
                 }
 
-                let non_default_type_params_len =
-                    type_params.iter().filter(|it| it.default(db).is_none()).count();
+                let non_default_type_params_len = type_params
+                    .iter()
+                    .filter(|it| it.default(db).is_none())
+                    .count();
 
                 // Ignore bigger number of generics for now as they kill the performance
                 if non_default_type_params_len > 0 {
@@ -391,7 +404,11 @@ pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(
                         // Note that we need special case for 0 param constructors because of multi cartesian
                         // product
                         let fn_exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
-                            vec![Expr::Function { func: *it, generics, params: Vec::new() }]
+                            vec![Expr::Function {
+                                func: *it,
+                                generics,
+                                params: Vec::new(),
+                            }]
                         } else {
                             param_exprs
                                 .into_iter()
@@ -447,9 +464,15 @@ pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(
         .filter(|ty| !ty.type_arguments().any(|it| it.contains_unknown()))
         .filter(|_| should_continue())
         .flat_map(|ty| {
-            Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
+            Impl::all_for_type(db, ty.clone())
+                .into_iter()
+                .map(move |imp| (ty.clone(), imp))
         })
-        .flat_map(|(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)))
+        .flat_map(|(ty, imp)| {
+            imp.items(db)
+                .into_iter()
+                .map(move |item| (imp, ty.clone(), item))
+        })
         .filter_map(|(imp, ty, it)| match it {
             AssocItem::Function(f) => Some((imp, ty, f)),
             _ => None,
@@ -497,8 +520,10 @@ pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(
                 return None;
             }
 
-            let self_ty =
-                it.self_param(db).expect("No self param").ty_with_args(db, ty.type_arguments());
+            let self_ty = it
+                .self_param(db)
+                .expect("No self param")
+                .ty_with_args(db, ty.type_arguments());
 
             // Ignore functions that have different self type
             if !self_ty.autoderef(db).any(|s_ty| ty == s_ty) {
@@ -559,19 +584,26 @@ pub(super) fn struct_projection<'a, 'lt, 'db, DB: HirDatabase>(
     lookup
         .new_types(NewTypesKey::StructProjection)
         .into_iter()
-        .map(|ty| (ty.clone(), lookup.find(db, &ty).expect("Expr not in lookup")))
+        .map(|ty| {
+            (
+                ty.clone(),
+                lookup.find(db, &ty).expect("Expr not in lookup"),
+            )
+        })
         .filter(|_| should_continue())
         .flat_map(move |(ty, targets)| {
-            ty.fields(db).into_iter().filter_map(move |(field, filed_ty)| {
-                if !field.is_visible_from(db, module) {
-                    return None;
-                }
-                let exprs = targets
-                    .clone()
-                    .into_iter()
-                    .map(move |target| Expr::Field { field, expr: Box::new(target) });
-                Some((filed_ty, exprs))
-            })
+            ty.fields(db)
+                .into_iter()
+                .filter_map(move |(field, filed_ty)| {
+                    if !field.is_visible_from(db, module) {
+                        return None;
+                    }
+                    let exprs = targets.clone().into_iter().map(move |target| Expr::Field {
+                        field,
+                        expr: Box::new(target),
+                    });
+                    Some((filed_ty, exprs))
+                })
         })
         .filter_map(|(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs))
         .flatten()
@@ -601,9 +633,18 @@ pub(super) fn famous_types<'a, 'lt, 'db, DB: HirDatabase>(
     let bool_ty = Ty::new_bool(interner);
     let unit_ty = Ty::new_unit(interner);
     [
-        Expr::FamousType { ty: Type::new(db, module.id, bool_ty), value: "true" },
-        Expr::FamousType { ty: Type::new(db, module.id, bool_ty), value: "false" },
-        Expr::FamousType { ty: Type::new(db, module.id, unit_ty), value: "()" },
+        Expr::FamousType {
+            ty: Type::new(db, module.id, bool_ty),
+            value: "true",
+        },
+        Expr::FamousType {
+            ty: Type::new(db, module.id, bool_ty),
+            value: "false",
+        },
+        Expr::FamousType {
+            ty: Type::new(db, module.id, unit_ty),
+            value: "()",
+        },
     ]
     .into_iter()
     .inspect(|exprs| {
@@ -640,10 +681,16 @@ pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(
         .filter(|ty| !ty.type_arguments().any(|it| it.contains_unknown()))
         .filter(|_| should_continue())
         .flat_map(|ty| {
-            Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
+            Impl::all_for_type(db, ty.clone())
+                .into_iter()
+                .map(move |imp| (ty.clone(), imp))
         })
         .filter(|(_, imp)| !imp.is_unsafe(db))
-        .flat_map(|(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)))
+        .flat_map(|(ty, imp)| {
+            imp.items(db)
+                .into_iter()
+                .map(move |item| (imp, ty.clone(), item))
+        })
         .filter_map(|(imp, ty, it)| match it {
             AssocItem::Function(f) => Some((imp, ty, f)),
             _ => None,
@@ -697,12 +744,20 @@ pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(
             // product
             let generics = ty.type_arguments().collect();
             let fn_exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
-                vec![Expr::Function { func: it, generics, params: Vec::new() }]
+                vec![Expr::Function {
+                    func: it,
+                    generics,
+                    params: Vec::new(),
+                }]
             } else {
                 param_exprs
                     .into_iter()
                     .multi_cartesian_product()
-                    .map(|params| Expr::Function { func: it, generics: generics.clone(), params })
+                    .map(|params| Expr::Function {
+                        func: it,
+                        generics: generics.clone(),
+                        params,
+                    })
                     .collect()
             };
 
@@ -753,8 +808,10 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
             }
 
             // Early exit if some param cannot be filled from lookup
-            let param_exprs: Vec<Vec<Expr<'db>>> =
-                ty.type_arguments().map(|field| lookup.find(db, &field)).collect::<Option<_>>()?;
+            let param_exprs: Vec<Vec<Expr<'db>>> = ty
+                .type_arguments()
+                .map(|field| lookup.find(db, &field))
+                .collect::<Option<_>>()?;
 
             let exprs: Vec<Expr<'db>> = param_exprs
                 .into_iter()
@@ -764,7 +821,10 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
                     let tys: Vec<Type<'_>> = params.iter().map(|it| it.ty(db)).collect();
                     let tuple_ty = Type::new_tuple(module.krate().into(), &tys);
 
-                    let expr = Expr::Tuple { ty: tuple_ty.clone(), params };
+                    let expr = Expr::Tuple {
+                        ty: tuple_ty.clone(),
+                        params,
+                    };
                     lookup.insert(tuple_ty, iter::once(expr.clone()));
                     expr
                 })
@@ -773,5 +833,9 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
             Some(exprs)
         })
         .flatten()
-        .filter_map(|expr| expr.ty(db).could_unify_with_deeply(db, &ctx.goal).then_some(expr))
+        .filter_map(|expr| {
+            expr.ty(db)
+                .could_unify_with_deeply(db, &ctx.goal)
+                .then_some(expr)
+        })
 }

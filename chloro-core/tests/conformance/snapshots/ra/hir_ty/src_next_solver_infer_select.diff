@@ -2,63 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16020 bytes
-Chloro size:   16050 bytes
+Chloro size:   16174 bytes
 Rustfmt size:  16174 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     }
- }
- 
--struct Select {}
-+struct Select {
-+}
- 
- impl<'db> ProofTreeVisitor<'db> for Select {
-     type Result = ControlFlow<SelectionResult<'db, Selection<'db>>>;
-         return false;
-     }
- 
--    let ProbeKind::TraitCandidate {
--        source: victim_source,
--        result: _,
--    } = victim.kind()
--    else {
-+    let ProbeKind::TraitCandidate { source: victim_source, result: _ } = victim.kind() else {
-         return false;
-     };
--    let ProbeKind::TraitCandidate {
--        source: other_source,
--        result: _,
--    } = other.kind()
--    else {
-+    let ProbeKind::TraitCandidate { source: other_source, result: _ } = other.kind() else {
-         return false;
-     };
- 
-         ) => true,
- 
-         // Prefer specializing candidates over specialized candidates.
--        (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => victim
--            .goal()
--            .infcx()
--            .interner
--            .impl_specializes(other_def_id, victim_def_id),
-+        (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => {
-+            victim.goal().infcx().interner.impl_specializes(other_def_id, victim_def_id)
-+        }
- 
-         _ => false,
-     }
-         | ProbeKind::Root { result: _ }
-         | ProbeKind::ShadowedEnvProbing
-         | ProbeKind::RigidAlias { result: _ } => {
--            panic!(
--                "didn't expect to assemble trait candidate from {:#?}",
--                cand.kind()
--            )
-+            panic!("didn't expect to assemble trait candidate from {:#?}", cand.kind())
-         }
-     })
- }
+✓ Outputs are IDENTICAL

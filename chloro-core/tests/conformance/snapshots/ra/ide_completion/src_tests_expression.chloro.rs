@@ -1,5 +1,4 @@
 //! Completion tests for expressions.
-
 use expect_test::{Expect, expect};
 
 use crate::{
@@ -41,6 +40,7 @@ fn baz() {
     let foo = create_foo(&$0);
 }
             "#,
+        // This should not contain `FooDesc {…}`.
         expect![[r#"
             ct CONST                   Unit
             en Enum                    Enum
@@ -1057,7 +1057,11 @@ fn brr() {
 #[test]
 fn return_unit_block() {
     cov_mark::check!(return_unit_block);
-    check_edit("return", r#"fn f() { if true { $0 } }"#, r#"fn f() { if true { return; } }"#);
+    check_edit(
+        "return",
+        r#"fn f() { if true { $0 } }"#,
+        r#"fn f() { if true { return; } }"#,
+    );
 }
 
 #[test]
@@ -1092,8 +1096,16 @@ fn return_value_no_block() {
 
 #[test]
 fn break_unit_block() {
-    check_edit("break", r#"fn f() { loop { break; $0 } }"#, r#"fn f() { loop { break; break; } }"#);
-    check_edit("break", r#"fn f() { loop { $0 } }"#, r#"fn f() { loop { break; } }"#);
+    check_edit(
+        "break",
+        r#"fn f() { loop { break; $0 } }"#,
+        r#"fn f() { loop { break; break; } }"#,
+    );
+    check_edit(
+        "break",
+        r#"fn f() { loop { $0 } }"#,
+        r#"fn f() { loop { break; } }"#,
+    );
 }
 
 #[test]
@@ -3267,8 +3279,16 @@ fn foo() -> (i32, i32) {
 
 #[test]
 fn let_in_condition() {
-    check_edit("let", r#"fn f() { if $0 {} }"#, r#"fn f() { if let $1 = $0 {} }"#);
-    check_edit("let", r#"fn f() { if $0x {} }"#, r#"fn f() { if let $1 = $0x {} }"#);
+    check_edit(
+        "let",
+        r#"fn f() { if $0 {} }"#,
+        r#"fn f() { if let $1 = $0 {} }"#,
+    );
+    check_edit(
+        "let",
+        r#"fn f() { if $0x {} }"#,
+        r#"fn f() { if let $1 = $0x {} }"#,
+    );
     check_edit(
         "let",
         r#"fn f() { if $0foo.bar() {} }"#,
@@ -3278,7 +3298,11 @@ fn let_in_condition() {
 
 #[test]
 fn let_in_let_chain() {
-    check_edit("let", r#"fn f() { if true && $0 {} }"#, r#"fn f() { if true && let $1 = $0 {} }"#);
+    check_edit(
+        "let",
+        r#"fn f() { if true && $0 {} }"#,
+        r#"fn f() { if true && let $1 = $0 {} }"#,
+    );
 }
 
 #[test]

@@ -1,5 +1,4 @@
 //! Builtin attributes.
-
 use intern::sym;
 use span::Span;
 
@@ -44,17 +43,17 @@ impl BuiltinAttrExpander {
     }
 
     pub fn is_derive(self) -> bool {
-        matches!(self, BuiltinAttrExpander::Derive | BuiltinAttrExpander::DeriveConst)
+        matches!(
+            self,
+            BuiltinAttrExpander::Derive | BuiltinAttrExpander::DeriveConst
+        )
     }
-
     pub fn is_test(self) -> bool {
         matches!(self, BuiltinAttrExpander::Test)
     }
-
     pub fn is_bench(self) -> bool {
         matches!(self, BuiltinAttrExpander::Bench)
     }
-
     pub fn is_test_case(self) -> bool {
         matches!(self, BuiltinAttrExpander::TestCase)
     }
@@ -127,9 +126,10 @@ fn derive_expand(
 ) -> ExpandResult<tt::TopSubtree> {
     let loc = db.lookup_intern_macro_call(id);
     let derives = match &loc.kind {
-        MacroCallKind::Attr { attr_args: Some(attr_args), .. } if loc.def.is_attribute_derive() => {
-            attr_args
-        }
+        MacroCallKind::Attr {
+            attr_args: Some(attr_args),
+            ..
+        } if loc.def.is_attribute_derive() => attr_args,
         _ => {
             return ExpandResult::ok(tt::TopSubtree::empty(tt::DelimSpan {
                 open: span,
@@ -145,12 +145,20 @@ pub fn pseudo_derive_attr_expansion(
     args: &tt::TopSubtree,
     call_site: Span,
 ) -> ExpandResult<tt::TopSubtree> {
-    let mk_leaf =
-        |char| tt::Leaf::Punct(tt::Punct { char, spacing: tt::Spacing::Alone, span: call_site });
+    let mk_leaf = |char| {
+        tt::Leaf::Punct(tt::Punct {
+            char,
+            spacing: tt::Spacing::Alone,
+            span: call_site,
+        })
+    };
 
     let mut token_trees = tt::TopSubtreeBuilder::new(args.top_subtree().delimiter);
     let iter = args.token_trees().split(|tt| {
-        matches!(tt, tt::TtElement::Leaf(tt::Leaf::Punct(tt::Punct { char: ',', .. })))
+        matches!(
+            tt,
+            tt::TtElement::Leaf(tt::Leaf::Punct(tt::Punct { char: ',', .. }))
+        )
     });
     for tts in iter {
         token_trees.extend([mk_leaf('#'), mk_leaf('!')]);

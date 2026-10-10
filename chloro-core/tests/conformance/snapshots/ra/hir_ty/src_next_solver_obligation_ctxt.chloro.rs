@@ -5,7 +5,8 @@ use crate::next_solver::{
     Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
     fulfill::{FulfillmentCtxt, NextSolverError},
     infer::{
-        InferCtxt, InferOk, at::ToTrace,
+        InferCtxt, InferOk,
+        at::ToTrace,
         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
     },
 };
@@ -19,20 +20,25 @@ pub struct ObligationCtxt<'a, 'db> {
 
 impl<'a, 'db> ObligationCtxt<'a, 'db> {
     pub fn new(infcx: &'a InferCtxt<'db>) -> Self {
-        Self { infcx, engine: FulfillmentCtxt::new(infcx) }
+        Self {
+            infcx,
+            engine: FulfillmentCtxt::new(infcx),
+        }
     }
 }
 
 impl<'a, 'db> ObligationCtxt<'a, 'db> {
     pub fn register_obligation(&mut self, obligation: PredicateObligation<'db>) {
-        self.engine.register_predicate_obligation(self.infcx, obligation);
+        self.engine
+            .register_predicate_obligation(self.infcx, obligation);
     }
 
     pub fn register_obligations(
         &mut self,
         obligations: impl IntoIterator<Item = PredicateObligation<'db>>,
     ) {
-        self.engine.register_predicate_obligations(self.infcx, obligations);
+        self.engine
+            .register_predicate_obligations(self.infcx, obligations);
     }
 
     pub fn register_infer_ok_obligations<T>(&mut self, infer_ok: InferOk<'db, T>) -> T {
@@ -136,7 +142,8 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
 
     #[must_use]
     pub fn evaluate_obligations_error_on_ambiguity(&mut self) -> Vec<NextSolverError<'db>> {
-        self.engine.evaluate_obligations_error_on_ambiguity(self.infcx)
+        self.engine
+            .evaluate_obligations_error_on_ambiguity(self.infcx)
     }
 
     /// Returns the not-yet-processed and stalled obligations from the
@@ -166,7 +173,9 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         param_env: ParamEnv<'db>,
         value: Ty<'db>,
     ) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {
-        self.infcx.at(cause, param_env).structurally_normalize_ty(value, &mut self.engine)
+        self.infcx
+            .at(cause, param_env)
+            .structurally_normalize_ty(value, &mut self.engine)
     }
 
     pub fn structurally_normalize_const(
@@ -175,7 +184,9 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         param_env: ParamEnv<'db>,
         value: Const<'db>,
     ) -> Result<Const<'db>, Vec<NextSolverError<'db>>> {
-        self.infcx.at(cause, param_env).structurally_normalize_const(value, &mut self.engine)
+        self.infcx
+            .at(cause, param_env)
+            .structurally_normalize_const(value, &mut self.engine)
     }
 
     pub fn structurally_normalize_term(
@@ -184,6 +195,8 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         param_env: ParamEnv<'db>,
         value: Term<'db>,
     ) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
-        self.infcx.at(cause, param_env).structurally_normalize_term(value, &mut self.engine)
+        self.infcx
+            .at(cause, param_env)
+            .structurally_normalize_term(value, &mut self.engine)
     }
 }

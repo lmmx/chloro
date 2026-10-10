@@ -1,5 +1,4 @@
 //! Utilities for LSP-related boilerplate code.
-
 use std::{mem, ops::Range};
 
 use lsp_server::Notification;
@@ -9,12 +8,15 @@ use triomphe::Arc;
 use crate::{
     global_state::GlobalState,
     line_index::{LineEndings, LineIndex, PositionEncoding},
-    lsp_ext,
     lsp::{LspError, from_proto},
+    lsp_ext,
 };
 
 pub(crate) fn invalid_params_error(message: String) -> LspError {
-    LspError { code: lsp_server::ErrorCode::InvalidParams as i32, message }
+    LspError {
+        code: lsp_server::ErrorCode::InvalidParams as i32,
+        message,
+    }
 }
 
 pub(crate) fn notification_is<N: lsp_types::notification::Notification>(
@@ -44,7 +46,7 @@ impl GlobalState {
         message: String,
         show_open_log_button: bool,
     ) {
-        match self.config.open_server_logs() && show_open_log_button {
+        match self.config.open_server_logs() && show_open_log_button  {
             true => self.send_request::<lsp_types::request::ShowMessageRequest>(
                 lsp_types::ShowMessageRequestParams {
                     typ,
@@ -90,7 +92,10 @@ impl GlobalState {
             None => {
                 tracing::error!("{message}");
                 self.send_notification::<lsp_types::notification::ShowMessage>(
-                    lsp_types::ShowMessageParams { typ: lsp_types::MessageType::ERROR, message },
+                    lsp_types::ShowMessageParams {
+                        typ: lsp_types::MessageType::ERROR,
+                        message,
+                    },
                 );
             }
         }
@@ -137,7 +142,9 @@ impl GlobalState {
         let work_done_progress = match state {
             Progress::Begin => {
                 self.send_request::<lsp_types::request::WorkDoneProgressCreate>(
-                    lsp_types::WorkDoneProgressCreateParams { token: token.clone() },
+                    lsp_types::WorkDoneProgressCreateParams {
+                        token: token.clone(),
+                    },
                     |_, _| (),
                 );
 
@@ -173,14 +180,16 @@ pub(crate) fn apply_document_changes(
 ) -> String {
     // If at least one of the changes is a full document change, use the last
     // of them as the starting point and ignore all previous changes.
-    let (mut text, content_changes) =
-        match content_changes.iter().rposition(|change| change.range.is_none()) {
-            Some(idx) => {
-                let text = mem::take(&mut content_changes[idx].text);
-                (text, &content_changes[idx + 1..])
-            }
-            None => (file_contents.to_owned(), &content_changes[..]),
-        };
+    let (mut text, content_changes) = match content_changes
+        .iter()
+        .rposition(|change| change.range.is_none())
+    {
+        Some(idx) => {
+            let text = mem::take(&mut content_changes[idx].text);
+            (text, &content_changes[idx + 1..])
+        }
+        None => (file_contents.to_owned(), &content_changes[..]),
+    };
     if content_changes.is_empty() {
         return text;
     }
@@ -257,7 +266,9 @@ mod tests {
         CompletionItem, CompletionTextEdit, InsertReplaceEdit, Position, Range,
         TextDocumentContentChangeEvent,
     };
+
     use super::*;
+
     #[test]
     fn test_apply_document_changes() {
         macro_rules! c {
@@ -288,8 +299,11 @@ mod tests {
         assert_eq!(text, "the");
         let text = apply_document_changes(encoding, &text, c![0, 3; 0, 3 => " quick"]);
         assert_eq!(text, "the quick");
-        let text =
-            apply_document_changes(encoding, &text, c![0, 0; 0, 4 => "", 0, 5; 0, 5 => " foxes"]);
+        let text = apply_document_changes(
+            encoding,
+            &text,
+            c![0, 0; 0, 4 => "", 0, 5; 0, 5 => " foxes"],
+        );
         assert_eq!(text, "quick foxes");
         let text = apply_document_changes(encoding, &text, c![0, 11; 0, 11 => "\ndream"]);
         assert_eq!(text, "quick foxes\ndream");
@@ -301,15 +315,21 @@ mod tests {
             c![0, 0; 0, 0 => "the ", 1, 4; 1, 4 => " quiet", 1, 16; 1, 16 => "s\n"],
         );
         assert_eq!(text, "the quick foxes\nhave quiet dreams\n");
-        let text =
-            apply_document_changes(encoding, &text, c![0, 15; 0, 15 => "\n", 2, 17; 2, 17 => "\n"]);
+        let text = apply_document_changes(
+            encoding,
+            &text,
+            c![0, 15; 0, 15 => "\n", 2, 17; 2, 17 => "\n"],
+        );
         assert_eq!(text, "the quick foxes\n\nhave quiet dreams\n\n");
         let text = apply_document_changes(
             encoding,
             &text,
             c![1, 0; 1, 0 => "DREAM", 2, 0; 2, 0 => "they ", 3, 0; 3, 0 => "DON'T THEY?"],
         );
-        assert_eq!(text, "the quick foxes\nDREAM\nthey have quiet dreams\nDON'T THEY?\n");
+        assert_eq!(
+            text,
+            "the quick foxes\nDREAM\nthey have quiet dreams\nDON'T THEY?\n"
+        );
         let text =
             apply_document_changes(encoding, &text, c![0, 10; 1, 5 => "", 2, 0; 2, 12 => ""]);
         assert_eq!(text, "the quick \nthey have quiet dreams\n");
@@ -328,6 +348,7 @@ mod tests {
             apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "ț\nc", 0, 2; 0, 2 => "c"]);
         assert_eq!(text, "ațc\ncb");
     }
+
     #[test]
     fn empty_completion_disjoint_tests() {
         let empty_completion = CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
@@ -366,6 +387,7 @@ mod tests {
             "Empty completion does not prevent joint extra edits from failing the validation"
         );
     }
+
     #[test]
     fn completion_with_joint_edits_disjoint_tests() {
         let disjoint_edit = lsp_types::TextEdit::new(
@@ -410,6 +432,7 @@ mod tests {
             "Completion with disjoint edits fails the validation even with empty extra edits"
         );
     }
+
     #[test]
     fn completion_with_disjoint_edits_disjoint_tests() {
         let disjoint_edit = lsp_types::TextEdit::new(

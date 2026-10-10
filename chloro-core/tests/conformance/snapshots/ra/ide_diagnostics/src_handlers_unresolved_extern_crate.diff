@@ -2,23 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1224 bytes
-Chloro size:   1222 bytes
+Chloro size:   1224 bytes
 Rustfmt size:  1224 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
- mod tests {
-     use crate::tests::check_diagnostics;
--
-     #[test]
-     fn unresolved_extern_crate() {
-         check_diagnostics(
- "#,
-         );
-     }
--
-     #[test]
-     fn extern_crate_self_as() {
-         cov_mark::check!(extern_crate_self_as);
+✓ Outputs are IDENTICAL

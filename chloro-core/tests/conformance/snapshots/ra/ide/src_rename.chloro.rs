@@ -12,8 +12,8 @@ use ide_db::{
     source_change::SourceChangeBuilder,
 };
 use itertools::Itertools;
-use stdx::{always, format_to, never};
 use std::fmt::Write;
+use stdx::{always, format_to, never};
 use syntax::{
     AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
     ast::{self, HasArgList, prec::ExprPrecedence},
@@ -75,27 +75,31 @@ pub(crate) fn prepare_rename(
     let source_file = sema.parse_guess_edition(position.file_id);
     let syntax = source_file.syntax();
 
-    let res = find_definitions(&sema, syntax, position, &Name::new_symbol_root(sym::underscore))?
-        .filter(|(_, _, def, _, _)| def.range_for_rename(&sema).is_some())
-        .map(|(frange, kind, _, _, _)| {
-            always!(
-                frange.range.contains_inclusive(position.offset)
-                    && frange.file_id == position.file_id
-            );
+    let res = find_definitions(
+        &sema,
+        syntax,
+        position,
+        &Name::new_symbol_root(sym::underscore),
+    )?
+    .filter(|(_, _, def, _, _)| def.range_for_rename(&sema).is_some())
+    .map(|(frange, kind, _, _, _)| {
+        always!(
+            frange.range.contains_inclusive(position.offset) && frange.file_id == position.file_id
+        );
 
-            Ok(match kind {
-                SyntaxKind::LIFETIME => {
-                    TextRange::new(frange.range.start() + TextSize::from(1), frange.range.end())
-                }
-                _ => frange.range,
-            })
+        Ok(match kind {
+            SyntaxKind::LIFETIME => {
+                TextRange::new(frange.range.start() + TextSize::from(1), frange.range.end())
+            }
+            _ => frange.range,
         })
-        .reduce(|acc, cur| match (acc, cur) {
-            // ensure all ranges are the same
-            (Ok(acc_inner), Ok(cur_inner)) if acc_inner == cur_inner => Ok(acc_inner),
-            (e @ Err(_), _) | (_, e @ Err(_)) => e,
-            _ => bail!("inconsistent text range"),
-        });
+    })
+    .reduce(|acc, cur| match (acc, cur) {
+        // ensure all ranges are the same
+        (Ok(acc_inner), Ok(cur_inner)) if acc_inner == cur_inner => Ok(acc_inner),
+        (e @ Err(_), _) | (_, e @ Err(_)) => e,
+        _ => bail!("inconsistent text range"),
+    });
 
     match res {
         // ensure at least one definition was found
@@ -209,7 +213,9 @@ pub(crate) fn will_rename_file(
     let sema = Semantics::new(db);
     let module = sema.file_to_module_def(file_id)?;
     let def = Definition::Module(module);
-    let mut change = def.rename(&sema, new_name_stem, RenameDefinition::Yes).ok()?;
+    let mut change = def
+        .rename(&sema, new_name_stem, RenameDefinition::Yes)
+        .ok()?;
     change.file_system_edits.clear();
     Some(change)
 }
@@ -226,7 +232,11 @@ fn alias_fallback(
         .find_map(ast::UseTree::cast)?;
 
     let last_path_segment = use_tree.path()?.segments().last()?.name_ref()?;
-    if !last_path_segment.syntax().text_range().contains_inclusive(offset) {
+    if !last_path_segment
+        .syntax()
+        .text_range()
+        .contains_inclusive(offset)
+    {
         return None;
     };
 
@@ -251,9 +261,11 @@ fn find_definitions(
     syntax: &SyntaxNode,
     FilePosition { file_id, offset }: FilePosition,
     new_name: &Name,
-) -> RenameResult<impl Iterator<Item = (FileRange, SyntaxKind, Definition, Name, RenameDefinition)>> {
-    let maybe_format_args =
-        syntax.token_at_offset(offset).find(|t| matches!(t.kind(), SyntaxKind::STRING));
+) -> RenameResult<impl Iterator<Item = (FileRange, SyntaxKind, Definition, Name, RenameDefinition)>>
+{
+    let maybe_format_args = syntax
+        .token_at_offset(offset)
+        .find(|t| matches!(t.kind(), SyntaxKind::STRING));
 
     if let Some((range, _, _, Some(resolution))) =
         maybe_format_args.and_then(|token| sema.check_for_format_args_template(token, offset))
@@ -386,21 +398,29 @@ fn transform_assoc_fn_into_method_call(
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
-            let Some(fn_name) = call.name.as_name_ref() else { continue };
+            let Some(fn_name) = call.name.as_name_ref() else {
+                continue;
+            };
             let Some(path) = fn_name.syntax().parent().and_then(ast::PathSegment::cast) else {
                 continue;
             };
             let path = path.parent_path();
             // The `PathExpr` is the direct parent, above it is the `CallExpr`.
-            let Some(call) =
-                path.syntax().parent().and_then(|it| ast::CallExpr::cast(it.parent()?))
+            let Some(call) = path
+                .syntax()
+                .parent()
+                .and_then(|it| ast::CallExpr::cast(it.parent()?))
             else {
                 continue;
             };
 
-            let Some(arg_list) = call.arg_list() else { continue };
+            let Some(arg_list) = call.arg_list() else {
+                continue;
+            };
             let mut args = arg_list.args();
-            let Some(mut self_arg) = args.next() else { continue };
+            let Some(mut self_arg) = args.next() else {
+                continue;
+            };
             let second_arg = args.next();
 
             // Strip (de)references, as they will be taken automatically by auto(de)ref.
@@ -421,8 +441,9 @@ fn transform_assoc_fn_into_method_call(
                 };
             }
 
-            let self_needs_parens =
-                self_arg.precedence().needs_parentheses_in(ExprPrecedence::Postfix);
+            let self_needs_parens = self_arg
+                .precedence()
+                .needs_parentheses_in(ExprPrecedence::Postfix);
 
             let replace_start = path.syntax().text_range().start();
             let replace_end = match second_arg {
@@ -508,16 +529,28 @@ fn rename_to_self(
         // if the impl is a ref to the type we can just match the `&T` with self directly
         (first_param_ty.clone(), "self")
     } else {
-        first_param_ty.remove_ref().map_or((first_param_ty.clone(), "self"), |ty| {
-            (ty, if first_param_ty.is_mutable_reference() { "&mut self" } else { "&self" })
-        })
+        first_param_ty
+            .remove_ref()
+            .map_or((first_param_ty.clone(), "self"), |ty| {
+                (
+                    ty,
+                    if first_param_ty.is_mutable_reference() {
+                        "&mut self"
+                    } else {
+                        "&self"
+                    },
+                )
+            })
     };
 
     if ty != impl_ty {
         bail!("Parameter type differs from impl block type");
     }
 
-    let InFile { file_id, value: param_source } = sema
+    let InFile {
+        file_id,
+        value: param_source,
+    } = sema
         .source(first_param.clone())
         .ok_or_else(|| format_err!("No source for parameter found"))?;
 
@@ -564,7 +597,10 @@ fn method_to_assoc_fn_call_self_adjust(
             if matches!(self_adjust[i].kind, hir::Adjust::Deref(..))
                 && matches!(
                     self_adjust.get(i + 1),
-                    Some(hir::Adjustment { kind: hir::Adjust::Borrow(..), .. })
+                    Some(hir::Adjustment {
+                        kind: hir::Adjust::Borrow(..),
+                        ..
+                    })
                 )
             {
                 // Deref then ref (reborrow), skip them.
@@ -603,8 +639,13 @@ fn transform_method_call_into_assoc_fn(
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
-            let Some(fn_name) = call.name.as_name_ref() else { continue };
-            let Some(method_call) = fn_name.syntax().parent().and_then(ast::MethodCallExpr::cast)
+            let Some(fn_name) = call.name.as_name_ref() else {
+                continue;
+            };
+            let Some(method_call) = fn_name
+                .syntax()
+                .parent()
+                .and_then(ast::MethodCallExpr::cast)
             else {
                 continue;
             };
@@ -625,10 +666,14 @@ fn transform_method_call_into_assoc_fn(
                 };
             }
 
-            let needs_comma = method_call.arg_list().is_some_and(|it| it.args().next().is_some());
+            let needs_comma = method_call
+                .arg_list()
+                .is_some_and(|it| it.args().next().is_some());
 
             let self_needs_parens = self_adjust != CallReceiverAdjust::None
-                && self_arg.precedence().needs_parentheses_in(ExprPrecedence::Prefix);
+                && self_arg
+                    .precedence()
+                    .needs_parentheses_in(ExprPrecedence::Prefix);
 
             let replace_start = method_call.syntax().text_range().start();
             let replace_end = method_call
@@ -656,7 +701,8 @@ fn transform_method_call_into_assoc_fn(
                     ) else {
                         continue;
                     };
-                    path.display(sema.db, replace_range.file_id.edition(sema.db)).to_string()
+                    path.display(sema.db, replace_range.file_id.edition(sema.db))
+                        .to_string()
                 }
                 hir::ItemContainer::Impl(impl_) => {
                     let ty = impl_.self_ty(sema.db);
@@ -739,14 +785,20 @@ fn rename_self_to_param(
         _ => bail!("Cannot rename local to self outside of function"),
     };
 
-    let InFile { file_id, value: self_param } =
-        sema.source(self_param).ok_or_else(|| format_err!("cannot find function source"))?;
+    let InFile {
+        file_id,
+        value: self_param,
+    } = sema
+        .source(self_param)
+        .ok_or_else(|| format_err!("cannot find function source"))?;
 
     let def = Definition::Local(local);
     let usages = def.usages(sema).all();
     let edit = text_edit_from_self_param(
         &self_param,
-        new_name.display(sema.db, file_id.edition(sema.db)).to_string(),
+        new_name
+            .display(sema.db, file_id.edition(sema.db))
+            .to_string(),
     )
     .ok_or_else(|| format_err!("No target type found"))?;
     if usages.len() > 1 && identifier_kind == IdentifierKind::Underscore {
@@ -786,7 +838,10 @@ fn text_edit_from_self_param(self_param: &ast::SelfParam, new_name: String) -> O
 
     replacement_text.push_str("Self");
 
-    Some(TextEdit::replace(self_param.syntax().text_range(), replacement_text))
+    Some(TextEdit::replace(
+        self_param.syntax().text_range(),
+        replacement_text,
+    ))
 }
 
 #[cfg(test)]
@@ -797,9 +852,17 @@ mod tests {
     use itertools::Itertools;
     use stdx::trim_indent;
     use test_utils::assert_eq_text;
+
     use crate::fixture;
+
     use super::{RangeInfo, RenameConfig, RenameError};
-    const TEST_CONFIG: RenameConfig = RenameConfig { prefer_no_std: false, prefer_prelude: true, prefer_absolute: false };
+
+    const TEST_CONFIG: RenameConfig = RenameConfig {
+        prefer_no_std: false,
+        prefer_prelude: true,
+        prefer_absolute: false,
+    };
+
     #[track_caller]
     fn check(
         new_name: &str,
@@ -833,8 +896,10 @@ mod tests {
             }
             Err(err) => {
                 if ra_fixture_after.starts_with("error:") {
-                    let error_message =
-                        ra_fixture_after.chars().skip("error:".len()).collect::<String>();
+                    let error_message = ra_fixture_after
+                        .chars()
+                        .skip("error:".len())
+                        .collect::<String>();
                     assert_eq!(error_message.trim(), err.to_string());
                 } else {
                     panic!("Rename to '{new_name}' failed unexpectedly: {err}")
@@ -842,10 +907,14 @@ mod tests {
             }
         };
     }
+
     #[track_caller]
     fn check_conflicts(new_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, conflicts) = fixture::annotations(ra_fixture);
-        let source_change = analysis.rename(position, new_name, &TEST_CONFIG).unwrap().unwrap();
+        let source_change = analysis
+            .rename(position, new_name, &TEST_CONFIG)
+            .unwrap()
+            .unwrap();
         let expected_conflicts = conflicts
             .into_iter()
             .map(|(file_range, _)| (file_range.file_id, file_range.range))
@@ -865,6 +934,7 @@ mod tests {
             "rename conflicts mismatch: {source_change:#?}"
         );
     }
+
     fn check_expect(
         new_name: &str,
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -877,6 +947,7 @@ mod tests {
             .expect("Expect returned a RenameError");
         expect.assert_eq(&filter_expect(source_change))
     }
+
     fn check_expect_will_rename_file(
         new_name: &str,
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -889,6 +960,7 @@ mod tests {
             .expect("Expect returned a RenameError");
         expect.assert_eq(&filter_expect(source_change))
     }
+
     fn check_prepare(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);
         let result = analysis
@@ -902,6 +974,7 @@ mod tests {
             Err(RenameError(err)) => expect.assert_eq(&err),
         };
     }
+
     fn filter_expect(source_change: SourceChange) -> String {
         let source_file_edits = source_change
             .source_file_edits
@@ -914,6 +987,7 @@ mod tests {
             source_file_edits, source_change.file_system_edits
         )
     }
+
     #[test]
     fn rename_will_shadow() {
         check_conflicts(
@@ -928,6 +1002,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn rename_will_be_shadowed() {
         check_conflicts(
@@ -943,12 +1018,20 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn test_prepare_rename_namelikes() {
         check_prepare(r"fn name$0<'lifetime>() {}", expect![[r#"3..7: name"#]]);
-        check_prepare(r"fn name<'lifetime$0>() {}", expect![[r#"9..17: lifetime"#]]);
-        check_prepare(r"fn name<'lifetime>() { name$0(); }", expect![[r#"23..27: name"#]]);
+        check_prepare(
+            r"fn name<'lifetime$0>() {}",
+            expect![[r#"9..17: lifetime"#]],
+        );
+        check_prepare(
+            r"fn name<'lifetime>() { name$0(); }",
+            expect![[r#"23..27: name"#]],
+        );
     }
+
     #[test]
     fn test_prepare_rename_in_macro() {
         check_prepare(
@@ -961,10 +1044,15 @@ foo!(Foo$0);",
             expect![[r#"83..86: Foo"#]],
         );
     }
+
     #[test]
     fn test_prepare_rename_keyword() {
-        check_prepare(r"struct$0 Foo;", expect![[r#"No references found at position"#]]);
+        check_prepare(
+            r"struct$0 Foo;",
+            expect![[r#"No references found at position"#]],
+        );
     }
+
     #[test]
     fn test_prepare_rename_tuple_field() {
         check_prepare(
@@ -979,6 +1067,7 @@ fn baz() {
             expect![[r#"No references found at position"#]],
         );
     }
+
     #[test]
     fn test_prepare_rename_builtin() {
         check_prepare(
@@ -990,6 +1079,7 @@ fn foo() {
             expect![[r#"No references found at position"#]],
         );
     }
+
     #[test]
     fn test_prepare_rename_self() {
         check_prepare(
@@ -1005,14 +1095,25 @@ impl Foo {
             expect![[r#"No references found at position"#]],
         );
     }
+
     #[test]
     fn test_rename_to_underscore() {
-        check("_", r#"fn main() { let i$0 = 1; }"#, r#"fn main() { let _ = 1; }"#);
+        check(
+            "_",
+            r#"fn main() { let i$0 = 1; }"#,
+            r#"fn main() { let _ = 1; }"#,
+        );
     }
+
     #[test]
     fn test_rename_to_raw_identifier() {
-        check("r#fn", r#"fn main() { let i$0 = 1; }"#, r#"fn main() { let r#fn = 1; }"#);
+        check(
+            "r#fn",
+            r#"fn main() { let i$0 = 1; }"#,
+            r#"fn main() { let r#fn = 1; }"#,
+        );
     }
+
     #[test]
     fn test_rename_to_invalid_identifier1() {
         check(
@@ -1021,6 +1122,7 @@ impl Foo {
             "error: Invalid name `invalid!`: not an identifier",
         );
     }
+
     #[test]
     fn test_rename_to_invalid_identifier2() {
         check(
@@ -1029,6 +1131,7 @@ impl Foo {
             "error: Invalid name `multiple tokens`: not an identifier",
         );
     }
+
     #[test]
     fn test_rename_to_invalid_identifier3() {
         check(
@@ -1037,6 +1140,7 @@ impl Foo {
             "error: Invalid name `super`: cannot rename to a keyword",
         );
     }
+
     #[test]
     fn test_rename_to_invalid_identifier_lifetime() {
         cov_mark::check!(rename_not_an_ident_ref);
@@ -1046,6 +1150,7 @@ impl Foo {
             "error: Invalid name `'foo`: not an identifier",
         );
     }
+
     #[test]
     fn test_rename_to_invalid_identifier_lifetime2() {
         check(
@@ -1054,10 +1159,16 @@ impl Foo {
             r#"error: Invalid name `_`: not a lifetime identifier"#,
         );
     }
+
     #[test]
     fn test_rename_accepts_lifetime_without_apostrophe() {
-        check("foo", r#"fn main<'a>(_: &'a$0 ()) {}"#, r#"fn main<'foo>(_: &'foo ()) {}"#);
+        check(
+            "foo",
+            r#"fn main<'a>(_: &'a$0 ()) {}"#,
+            r#"fn main<'foo>(_: &'foo ()) {}"#,
+        );
     }
+
     #[test]
     fn test_rename_to_underscore_invalid() {
         cov_mark::check!(rename_underscore_multiple);
@@ -1067,6 +1178,7 @@ impl Foo {
             "error: Cannot rename reference to `_` as it is being referenced multiple times",
         );
     }
+
     #[test]
     fn test_rename_mod_invalid() {
         check(
@@ -1075,6 +1187,7 @@ impl Foo {
             "error: Invalid name `'foo`: cannot rename module to 'foo",
         );
     }
+
     #[test]
     fn test_rename_mod_invalid_raw_ident() {
         check(
@@ -1083,6 +1196,7 @@ impl Foo {
             "error: Invalid name `self`: cannot rename module to self",
         );
     }
+
     #[test]
     fn test_rename_for_local() {
         check(
@@ -1111,6 +1225,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_rename_unresolved_reference() {
         check(
@@ -1119,6 +1234,7 @@ fn main() {
             "error: No references found at position",
         );
     }
+
     #[test]
     fn test_rename_macro_multiple_occurrences() {
         check(
@@ -1148,6 +1264,7 @@ const _: Baaah = Baaah {};
     "#,
         )
     }
+
     #[test]
     fn test_rename_for_macro_args() {
         check(
@@ -1168,6 +1285,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_rename_for_macro_args_rev() {
         check(
@@ -1188,6 +1306,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_rename_for_macro_define_fn() {
         check(
@@ -1208,6 +1327,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_rename_for_macro_define_fn_rev() {
         check(
@@ -1228,18 +1348,34 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_rename_for_param_inside() {
-        check("j", r#"fn foo(i : u32) -> u32 { i$0 }"#, r#"fn foo(j : u32) -> u32 { j }"#);
+        check(
+            "j",
+            r#"fn foo(i : u32) -> u32 { i$0 }"#,
+            r#"fn foo(j : u32) -> u32 { j }"#,
+        );
     }
+
     #[test]
     fn test_rename_refs_for_fn_param() {
-        check("j", r#"fn foo(i$0 : u32) -> u32 { i }"#, r#"fn foo(j : u32) -> u32 { j }"#);
+        check(
+            "j",
+            r#"fn foo(i$0 : u32) -> u32 { i }"#,
+            r#"fn foo(j : u32) -> u32 { j }"#,
+        );
     }
+
     #[test]
     fn test_rename_for_mut_param() {
-        check("j", r#"fn foo(mut i$0 : u32) -> u32 { i }"#, r#"fn foo(mut j : u32) -> u32 { j }"#);
+        check(
+            "j",
+            r#"fn foo(mut i$0 : u32) -> u32 { i }"#,
+            r#"fn foo(mut j : u32) -> u32 { j }"#,
+        );
     }
+
     #[test]
     fn test_rename_struct_field() {
         check(
@@ -1264,6 +1400,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_rename_field_in_field_shorthand() {
         cov_mark::check!(test_rename_field_in_field_shorthand);
@@ -1289,6 +1426,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_rename_local_in_field_shorthand() {
         cov_mark::check!(test_rename_local_in_field_shorthand);
@@ -1314,6 +1452,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_field_shorthand_correct_struct() {
         check(
@@ -1340,6 +1479,7 @@ impl Bar {
 "#,
         );
     }
+
     #[test]
     fn test_shadow_local_for_struct_shorthand() {
         check(
@@ -1368,6 +1508,7 @@ fn baz(j: i32) -> Self {
 "#,
         );
     }
+
     #[test]
     fn test_rename_mod() {
         check_expect(
@@ -1412,6 +1553,7 @@ mod foo$0;
             "#]],
         );
     }
+
     #[test]
     fn test_rename_mod_in_use_tree() {
         check_expect(
@@ -1469,6 +1611,7 @@ use crate::foo$0::FooContent;
             "#]],
         );
     }
+
     #[test]
     fn test_rename_mod_in_dir() {
         check_expect(
@@ -1515,6 +1658,7 @@ mod fo$0o;
             "#]],
         );
     }
+
     #[test]
     fn test_rename_unusually_nested_mod() {
         check_expect(
@@ -1556,6 +1700,7 @@ mod outer { mod fo$0o; }
             "#]],
         );
     }
+
     #[test]
     fn test_module_rename_in_path() {
         check(
@@ -1578,6 +1723,7 @@ fn main() { baz::bar(); }
 "#,
         );
     }
+
     #[test]
     fn test_rename_mod_filename_and_path() {
         check_expect(
@@ -1636,6 +1782,7 @@ pub mod foo$0;
             "#]],
         );
     }
+
     #[test]
     fn test_rename_mod_recursive() {
         check_expect(
@@ -1731,6 +1878,7 @@ mod quux;
             "#,
         )
     }
+
     #[test]
     fn test_rename_mod_in_macro() {
         check(
@@ -1758,6 +1906,7 @@ submodule!(bar);
 "#,
         )
     }
+
     #[test]
     fn test_rename_mod_for_crate_root() {
         check_expect_will_rename_file(
@@ -1774,6 +1923,7 @@ mod bar$0;
             "#]],
         )
     }
+
     #[test]
     fn test_rename_mod_to_raw_ident() {
         check_expect(
@@ -1841,6 +1991,7 @@ pub fn baz() {}
             "#]],
         );
     }
+
     #[test]
     fn test_rename_mod_from_raw_ident() {
         check_expect(
@@ -1908,6 +2059,7 @@ pub fn baz() {}
             "#]],
         );
     }
+
     #[test]
     fn test_rename_each_usage_gets_appropriate_rawness() {
         check_expect(
@@ -2030,6 +2182,7 @@ fn bar() {
             "#]],
         );
     }
+
     #[test]
     fn rename_raw_identifier() {
         check_expect(
@@ -2128,6 +2281,7 @@ fn bar() {
             "#]],
         );
     }
+
     #[test]
     fn test_enum_variant_from_module_1() {
         cov_mark::check!(rename_non_local);
@@ -2157,6 +2311,7 @@ fn func(f: foo::Foo) {
 "#,
         );
     }
+
     #[test]
     fn test_enum_variant_from_module_2() {
         check(
@@ -2181,6 +2336,7 @@ fn foo(f: foo::Foo) {
 "#,
         );
     }
+
     #[test]
     fn test_parameter_to_self() {
         cov_mark::check!(rename_to_self);
@@ -2227,6 +2383,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_parameter_to_self_error_no_impl() {
         check(
@@ -2255,6 +2412,7 @@ impl Bar {
             "error: Parameter type differs from impl block type",
         );
     }
+
     #[test]
     fn test_parameter_to_self_error_not_first() {
         check(
@@ -2270,6 +2428,7 @@ impl Foo {
             "error: Only the first parameter may be renamed to self",
         );
     }
+
     #[test]
     fn test_parameter_to_self_impl_ref() {
         check(
@@ -2292,6 +2451,7 @@ impl &Foo {
 "#,
         );
     }
+
     #[test]
     fn test_self_to_parameter() {
         check(
@@ -2316,6 +2476,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_owned_self_to_parameter() {
         cov_mark::check!(rename_self_to_param);
@@ -2341,6 +2502,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_owned_self_to_parameter_with_lifetime() {
         cov_mark::check!(rename_self_to_param);
@@ -2366,6 +2528,7 @@ impl<'a> Foo<'a> {
 "#,
         );
     }
+
     #[test]
     fn test_self_outside_of_methods() {
         check(
@@ -2382,6 +2545,7 @@ fn f(foo: Self) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn no_type_value_ns_confuse() {
         // Test that we don't rename items from different namespaces.
@@ -2401,6 +2565,7 @@ fn f(bar: i32) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn test_self_in_path_to_parameter() {
         check(
@@ -2427,6 +2592,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_rename_field_put_init_shorthand() {
         cov_mark::check!(test_rename_field_put_init_shorthand);
@@ -2448,6 +2614,7 @@ fn foo(bar: i32) -> Foo {
 "#,
         );
     }
+
     #[test]
     fn test_rename_local_simple() {
         check(
@@ -2464,6 +2631,7 @@ fn foo(i: i32) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn test_rename_local_put_init_shorthand() {
         cov_mark::check!(test_rename_local_put_init_shorthand);
@@ -2485,6 +2653,7 @@ fn foo(i: i32) -> Foo {
 "#,
         );
     }
+
     #[test]
     fn test_struct_field_pat_into_shorthand() {
         cov_mark::check!(test_rename_field_put_init_shorthand_pat);
@@ -2527,6 +2696,7 @@ fn foo(foo: Foo) {
 "#,
         );
     }
+
     #[test]
     fn test_struct_local_pat_into_shorthand() {
         cov_mark::check!(test_rename_local_put_init_shorthand_pat);
@@ -2569,6 +2739,7 @@ fn foo(foo: Foo) {
 "#,
         );
     }
+
     #[test]
     fn test_rename_binding_in_destructure_pat() {
         let expected_fixture = r#"
@@ -2610,6 +2781,7 @@ fn foo(foo: Foo) {
             expected_fixture,
         );
     }
+
     #[test]
     fn test_rename_binding_in_destructure_param_pat() {
         check(
@@ -2634,6 +2806,7 @@ fn foo(Foo { i: bar }: Foo) -> i32 {
 "#,
         )
     }
+
     #[test]
     fn test_struct_field_complex_ident_pat() {
         cov_mark::check!(rename_record_pat_field_name_split);
@@ -2655,6 +2828,7 @@ fn foo(foo: Foo) {
 "#,
         );
     }
+
     #[test]
     fn test_rename_lifetimes() {
         check(
@@ -2681,6 +2855,7 @@ impl<'yeeee> Foo<'yeeee> for &'yeeee () {
 "#,
         )
     }
+
     #[test]
     fn test_rename_bind_pat() {
         check(
@@ -2715,6 +2890,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn test_rename_label() {
         check(
@@ -2739,6 +2915,7 @@ fn foo<'a>() -> &'a () {
 "#,
         )
     }
+
     #[test]
     fn test_rename_label_new_name_without_apostrophe() {
         check(
@@ -2763,6 +2940,7 @@ fn main() {
         "#,
         );
     }
+
     #[test]
     fn test_self_to_self() {
         cov_mark::check!(rename_self_to_self);
@@ -2782,6 +2960,7 @@ impl Foo {
 "#,
         )
     }
+
     #[test]
     fn test_rename_field_in_pat_in_macro_doesnt_shorthand() {
         // ideally we would be able to make this emit a short hand, but I doubt this is easily possible
@@ -2815,6 +2994,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn test_rename_tuple_field() {
         check(
@@ -2830,6 +3010,7 @@ fn baz() {
             "error: No references found at position",
         );
     }
+
     #[test]
     fn test_rename_builtin() {
         check(
@@ -2842,6 +3023,7 @@ fn foo() {
             "error: Cannot rename builtin type",
         );
     }
+
     #[test]
     fn test_rename_self() {
         check(
@@ -2858,6 +3040,7 @@ impl Foo {
             "error: No references found at position",
         );
     }
+
     #[test]
     fn test_rename_ignores_self_ty() {
         check(
@@ -2874,6 +3057,7 @@ impl Fo0 where Self: {}
 "#,
         );
     }
+
     #[test]
     fn test_rename_fails_on_aliases() {
         check(
@@ -2894,6 +3078,7 @@ use Bar$0;
             "error: Renaming aliases is currently unsupported",
         );
     }
+
     #[test]
     fn test_rename_trait_method() {
         let res = r"
@@ -2973,6 +3158,7 @@ impl Foo for () {
             res,
         );
     }
+
     #[test]
     fn test_rename_trait_method_prefix_of_second() {
         check(
@@ -2991,6 +3177,7 @@ trait Foo {
 "#,
         );
     }
+
     #[test]
     fn test_rename_trait_const() {
         let res = r"
@@ -3042,6 +3229,7 @@ fn f() { <()>::BAR$0; }"#,
             res,
         );
     }
+
     #[test]
     fn defs_from_macros_arent_renamed() {
         check(
@@ -3054,6 +3242,7 @@ fn main() { f$0()  }
             "error: No identifier available to rename",
         )
     }
+
     #[test]
     fn attributed_item() {
         check(
@@ -3075,6 +3264,7 @@ fn function() {
 "#,
         )
     }
+
     #[test]
     fn in_macro_multi_mapping() {
         check(
@@ -3119,6 +3309,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn rename_multi_local() {
         check(
@@ -3167,6 +3358,7 @@ fn foo((bar | bar | bar): ()) {
 "#,
         );
     }
+
     #[test]
     fn regression_13498() {
         check(
@@ -3195,6 +3387,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn extern_crate() {
         check_prepare(
@@ -3221,6 +3414,7 @@ use foo as qux;
         // ",
         //         );
     }
+
     #[test]
     fn extern_crate_rename() {
         check_prepare(
@@ -3248,6 +3442,7 @@ use qux as frob;
         // ",
         //         );
     }
+
     #[test]
     fn extern_crate_self() {
         check_prepare(
@@ -3270,6 +3465,7 @@ use self as qux;
         // ",
         //         );
     }
+
     #[test]
     fn extern_crate_self_rename() {
         check_prepare(
@@ -3296,6 +3492,7 @@ use qux as frob;
         // ",
         //         );
     }
+
     #[test]
     fn disallow_renaming_for_non_local_definition() {
         check(
@@ -3310,6 +3507,7 @@ fn main() { let _: S$0; }
             "error: Cannot rename a non-local definition",
         );
     }
+
     #[test]
     fn disallow_renaming_for_builtin_macros() {
         check(
@@ -3324,6 +3522,7 @@ struct A;
             "error: Cannot rename a non-local definition",
         );
     }
+
     #[test]
     fn implicit_format_args() {
         check(
@@ -3343,6 +3542,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn implicit_format_args2() {
         check(
@@ -3362,6 +3562,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn asm_operand() {
         check(
@@ -3385,6 +3586,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn asm_operand2() {
         check(
@@ -3416,6 +3618,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn rename_path_inside_use_tree() {
         check(
@@ -3443,6 +3646,7 @@ fn main() { let _: Baz; }
 "#,
         )
     }
+
     #[test]
     fn rename_path_inside_use_tree_foreign() {
         check(
@@ -3460,6 +3664,7 @@ fn main() { let _: Baz; }
 "#,
         );
     }
+
     #[test]
     fn rename_type_param_ref_in_use_bound() {
         check(
@@ -3472,6 +3677,7 @@ fn foo<U>() -> impl use<U> Trait {}
 "#,
         );
     }
+
     #[test]
     fn rename_type_param_in_use_bound() {
         check(
@@ -3484,6 +3690,7 @@ fn foo<U>() -> impl use<U> Trait {}
 "#,
         );
     }
+
     #[test]
     fn rename_lifetime_param_ref_in_use_bound() {
         check(
@@ -3496,6 +3703,7 @@ fn foo<'u>() -> impl use<'u> Trait {}
 "#,
         );
     }
+
     #[test]
     fn rename_lifetime_param_in_use_bound() {
         check(
@@ -3508,6 +3716,7 @@ fn foo<'u>() -> impl use<'u> Trait {}
 "#,
         );
     }
+
     #[test]
     fn rename_parent_type_param_in_use_bound() {
         check(
@@ -3524,6 +3733,7 @@ trait Trait<U> {
 "#,
         );
     }
+
     #[test]
     fn rename_macro_generated_type_from_type_with_a_suffix() {
         check(
@@ -3543,7 +3753,9 @@ usage(BarSuffix);
 "#,
         );
     }
+
     #[test]
+    // FIXME
     #[should_panic]
     fn rename_macro_generated_type_from_type_usage_with_a_suffix() {
         check(
@@ -3565,6 +3777,7 @@ fn other_place() { Bar; }
 "#,
         );
     }
+
     #[test]
     fn rename_macro_generated_type_from_variant_with_a_suffix() {
         check(
@@ -3588,7 +3801,9 @@ usage(BarSuffix);
 "#,
         );
     }
+
     #[test]
+    // FIXME
     #[should_panic]
     fn rename_macro_generated_type_from_variant_usage_with_a_suffix() {
         check(
@@ -3614,6 +3829,7 @@ fn other_place() { Quux::Bar$0; }
 "#,
         );
     }
+
     #[test]
     fn rename_to_self_callers() {
         check(
@@ -3687,6 +3903,7 @@ fn bar(v: Foo) {
         "#,
         );
     }
+
     #[test]
     fn rename_to_self_callers_in_macro() {
         check(
@@ -3717,6 +3934,7 @@ fn bar(v: Foo) {
         "#,
         );
     }
+
     #[test]
     fn rename_from_self_callers() {
         check(

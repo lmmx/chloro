@@ -2,36 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3808 bytes
-Chloro size:   3808 bytes
+Chloro size:   3910 bytes
 Rustfmt size:  3910 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     input: ast::TokenTree,
- ) {
-     if let Some(existing_reprs) = super::parse_comma_sep_expr(input) {
--        for &ReprCompletion {
--            label,
--            snippet,
--            lookup,
--            collides,
--        } in REPR_COMPLETIONS
--        {
-+        for &ReprCompletion { label, snippet, lookup, collides } in REPR_COMPLETIONS {
-             let repr_already_annotated = existing_reprs
-                 .iter()
-                 .filter_map(|expr| match expr {
- }
- 
- const fn attr(label: &'static str, collides: &'static [&'static str]) -> ReprCompletion {
--    ReprCompletion {
--        label,
--        snippet: None,
--        lookup: None,
--        collides,
--    }
-+    ReprCompletion { label, snippet: None, lookup: None, collides }
- }
- 
- #[rustfmt::skip]
+✓ Outputs are IDENTICAL

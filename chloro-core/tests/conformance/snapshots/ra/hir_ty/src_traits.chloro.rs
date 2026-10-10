@@ -19,7 +19,8 @@ use crate::{
     db::HirDatabase,
     next_solver::{
         Canonical, DbInterner, GenericArgs, Goal, ParamEnv, Predicate, SolverContext, Span, Ty,
-        TyKind, infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
+        TyKind,
+        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
         obligation_ctxt::ObligationCtxt,
     },
 };
@@ -54,7 +55,12 @@ impl<'db> TraitEnvironment<'db> {
         traits_from_clauses: Box<[(Ty<'db>, TraitId)]>,
         env: ParamEnv<'db>,
     ) -> Arc<Self> {
-        Arc::new(TraitEnvironment { krate, block, traits_from_clauses, env })
+        Arc::new(TraitEnvironment {
+            krate,
+            block,
+            traits_from_clauses,
+            env,
+        })
     }
 
     // pub fn with_block(self: &mut Arc<Self>, block: BlockId) {
@@ -75,9 +81,13 @@ pub fn structurally_normalize_ty<'db>(
     ty: Ty<'db>,
     env: Arc<TraitEnvironment<'db>>,
 ) -> Ty<'db> {
-    let TyKind::Alias(..) = ty.kind() else { return ty };
+    let TyKind::Alias(..) = ty.kind() else {
+        return ty;
+    };
     let mut ocx = ObligationCtxt::new(infcx);
-    let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
+    let ty = ocx
+        .structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty)
+        .unwrap_or(ty);
     ty.replace_infer_with_error(infcx.interner)
 }
 
@@ -230,14 +240,9 @@ pub fn implements_trait_unique<'db>(
     env: Arc<TraitEnvironment<'db>>,
     trait_: TraitId,
 ) -> bool {
-    implements_trait_unique_impl(
-        db,
-        env,
-        trait_,
-        &mut |infcx| {
+    implements_trait_unique_impl(db, env, trait_, &mut |infcx| {
         infcx.fill_rest_fresh_args(trait_.into(), [ty.into()])
-    },
-    )
+    })
 }
 
 /// This should not be used in `hir-ty`, only in `hir`.

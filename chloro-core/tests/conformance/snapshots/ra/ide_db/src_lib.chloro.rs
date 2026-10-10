@@ -45,6 +45,7 @@ pub mod syntax_helpers {
     pub use hir::prettify_macro_expansion;
     pub mod node_ext;
     pub mod suggest_name;
+
     pub use parser::LexedStr;
 }
 
@@ -68,11 +69,11 @@ pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 pub use ::line_index;
 
+/// `base_db` is normally also needed in places where `ide_db` is used, so this re-export is for convenience.
 pub use base_db::{self, FxIndexMap, FxIndexSet};
 pub use span::{self, FileId};
 
 pub type FilePosition = FilePositionWrapper<FileId>;
-
 pub type FileRange = FileRangeWrapper<FileId>;
 
 #[salsa_macros::db]
@@ -172,7 +173,10 @@ impl SourceDatabase for RootDatabase {
     }
 
     fn nonce_and_revision(&self) -> (Nonce, salsa::Revision) {
-        (self.nonce, salsa::plumbing::ZalsaDatabase::zalsa(self).current_revision())
+        (
+            self.nonce,
+            salsa::plumbing::ZalsaDatabase::zalsa(self).current_revision(),
+        )
     }
 }
 
@@ -222,6 +226,7 @@ impl RootDatabase {
     pub fn update_lru_capacities(&mut self, _lru_capacities: &FxHashMap<Box<str>, u16>) {
         // FIXME(salsa-transition): bring this back; allow changing LRU settings at runtime.
         // use hir::db as hir_db;
+
         // base_db::FileTextQuery.in_db_mut(self).set_lru_capacity(DEFAULT_FILE_TEXT_LRU_CAP);
         // base_db::ParseQuery.in_db_mut(self).set_lru_capacity(
         //     lru_capacities
@@ -246,7 +251,7 @@ impl RootDatabase {
 }
 
 #[query_group::query_group]
-pub trait LineIndexDatabase {
+pub trait LineIndexDatabase: base_db::RootQueryDb {
     #[salsa::invoke_interned(line_index)]
     fn line_index(&self, file_id: FileId) -> Arc<LineIndex>;
 }
@@ -346,7 +351,11 @@ impl<'a> Ranker<'a> {
 
     pub fn from_token(token: &'a syntax::SyntaxToken) -> Self {
         let kind = token.kind();
-        Ranker { kind, text: token.text(), ident_kind: kind.is_any_identifier() }
+        Ranker {
+            kind,
+            text: token.text(),
+            ident_kind: kind.is_any_identifier(),
+        }
     }
 
     /// A utility function that ranks a token again a given kind and text, returning a number that
@@ -358,9 +367,13 @@ impl<'a> Ranker<'a> {
         let both_idents = exact_same_kind || (tok_kind.is_any_identifier() && self.ident_kind);
         let same_text = tok.text() == self.text;
         // anything that mapped into a token tree has likely no semantic information
-        let no_tt_parent =
-            tok.parent().is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
-        (both_idents as usize) | ((exact_same_kind as usize) << 1) | ((same_text as usize) << 2) | ((no_tt_parent as usize) << 3)
+        let no_tt_parent = tok
+            .parent()
+            .is_some_and(|it| it.kind() != parser::SyntaxKind::TOKEN_TREE);
+        (both_idents as usize)
+            | ((exact_same_kind as usize) << 1)
+            | ((same_text as usize) << 2)
+            | ((no_tt_parent as usize) << 3)
     }
 }
 

@@ -1,5 +1,4 @@
 //! Basic tree diffing functionality.
-
 use rustc_hash::FxHashMap;
 use syntax::{NodeOrToken, SyntaxElement, SyntaxNode};
 
@@ -28,7 +27,8 @@ impl TreeDiff {
                 TreeDiffInsertPos::After(it) => it.text_range().end(),
                 TreeDiffInsertPos::AsFirstChild(it) => it.text_range().start(),
             };
-            to.iter().for_each(|to| builder.insert(offset, to.to_string()));
+            to.iter()
+                .for_each(|to| builder.insert(offset, to.to_string()));
         }
         for (from, to) in &self.replacements {
             builder.replace(from.text_range(), to.to_string());
@@ -158,7 +158,9 @@ mod tests {
     use itertools::Itertools;
     use parser::{Edition, SyntaxKind};
     use syntax::{AstNode, SourceFile, SyntaxElement};
+
     use crate::text_edit::TextEdit;
+
     #[test]
     fn replace_node_token() {
         cov_mark::check!(diff_node_token_replace);
@@ -182,6 +184,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn replace_parent() {
         cov_mark::check!(diff_insert_as_first_child);
@@ -204,6 +207,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn insert_last() {
         cov_mark::check!(diff_insert);
@@ -232,6 +236,7 @@ use baz;"#,
             "#]],
         );
     }
+
     #[test]
     fn insert_middle() {
         check_diff(
@@ -259,6 +264,7 @@ use baz;"#,
             "#]],
         )
     }
+
     #[test]
     fn insert_first() {
         check_diff(
@@ -286,6 +292,7 @@ use baz;"#,
             "#]],
         )
     }
+
     #[test]
     fn first_child_insertion() {
         cov_mark::check!(insert_first_child);
@@ -315,6 +322,7 @@ use baz;"#,
             "#]],
         );
     }
+
     #[test]
     fn delete_last() {
         cov_mark::check!(diff_delete);
@@ -338,6 +346,7 @@ use baz;"#,
             "#]],
         );
     }
+
     #[test]
     fn delete_middle() {
         cov_mark::check!(diff_insertions);
@@ -373,6 +382,7 @@ use crate::AstNode;
             "#]],
         )
     }
+
     #[test]
     fn delete_first() {
         check_diff(
@@ -402,6 +412,7 @@ use crate::AstNode;
             "#]],
         )
     }
+
     #[test]
     fn merge_use() {
         check_diff(
@@ -444,6 +455,7 @@ use std::ops::{self, RangeInclusive};
             "#]],
         )
     }
+
     #[test]
     fn early_return_assist() {
         check_diff(
@@ -494,9 +506,16 @@ fn main() {
             "#]],
         )
     }
+
     fn check_diff(from: &str, to: &str, expected_diff: Expect) {
-        let from_node = SourceFile::parse(from, Edition::CURRENT).tree().syntax().clone();
-        let to_node = SourceFile::parse(to, Edition::CURRENT).tree().syntax().clone();
+        let from_node = SourceFile::parse(from, Edition::CURRENT)
+            .tree()
+            .syntax()
+            .clone();
+        let to_node = SourceFile::parse(to, Edition::CURRENT)
+            .tree()
+            .syntax()
+            .clone();
         let diff = super::diff(&from_node, &to_node);
 
         let line_number =
@@ -508,30 +527,35 @@ fn main() {
         };
 
         let insertions =
-            diff.insertions.iter().format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
-                f(&format!(
-                    "Line {}: {:?}\n-> {}",
-                    line_number(match k {
-                        super::TreeDiffInsertPos::After(syn) => syn,
-                        super::TreeDiffInsertPos::AsFirstChild(syn) => syn,
-                    }),
-                    k,
-                    v.iter().format_with("\n-> ", |v, f| f(&fmt_syntax(v)))
-                ))
-            });
+            diff.insertions
+                .iter()
+                .format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
+                    f(&format!(
+                        "Line {}: {:?}\n-> {}",
+                        line_number(match k {
+                            super::TreeDiffInsertPos::After(syn) => syn,
+                            super::TreeDiffInsertPos::AsFirstChild(syn) => syn,
+                        }),
+                        k,
+                        v.iter().format_with("\n-> ", |v, f| f(&fmt_syntax(v)))
+                    ))
+                });
 
         let replacements = diff
             .replacements
             .iter()
             .sorted_by_key(|(syntax, _)| syntax.text_range().start())
             .format_with("\n", |(k, v), f| {
-                f(&format!("Line {}: {k:?} -> {}", line_number(k), fmt_syntax(v)))
+                f(&format!(
+                    "Line {}: {k:?} -> {}",
+                    line_number(k),
+                    fmt_syntax(v)
+                ))
             });
 
-        let deletions = diff
-            .deletions
-            .iter()
-            .format_with("\n", |v, f| f(&format!("Line {}: {}", line_number(v), fmt_syntax(v))));
+        let deletions = diff.deletions.iter().format_with("\n", |v, f| {
+            f(&format!("Line {}: {}", line_number(v), fmt_syntax(v)))
+        });
 
         let actual = format!(
             "insertions:\n\n{insertions}\n\nreplacements:\n\n{replacements}\n\ndeletions:\n\n{deletions}\n"

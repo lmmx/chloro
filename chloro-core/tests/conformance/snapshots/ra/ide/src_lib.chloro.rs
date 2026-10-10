@@ -7,10 +7,10 @@
 //! However, IDE specific bits of the analysis (most notably completion) happen
 //! in this crate.
 
+// For proving that RootDatabase is RefUnwindSafe.
+
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 #![recursion_limit = "128"]
-
-// For proving that RootDatabase is RefUnwindSafe.
 
 #[cfg(test)]
 mod fixture;
@@ -63,7 +63,6 @@ use std::panic::{AssertUnwindSafe, UnwindSafe};
 use cfg::CfgOptions;
 use fetch_crates::CrateInfo;
 use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
-use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 use ide_db::{
     FxHashMap, FxIndexSet, LineIndexDatabase,
     base_db::{
@@ -72,6 +71,7 @@ use ide_db::{
     },
     prime_caches, symbol_index,
 };
+use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 use macros::UpmapFromRaFixture;
 use syntax::{SourceFile, ast};
 use triomphe::Arc;
@@ -94,9 +94,9 @@ pub use crate::{
     },
     inlay_hints::{
         AdjustmentHints, AdjustmentHintsMode, ClosureReturnTypeHints, DiscriminantHints,
-        GenericParameterHints, InlayFieldsToResolve, InlayHint, InlayHintLabel,
-        InlayHintLabelPart, InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip,
-        LazyProperty, LifetimeElisionHints,
+        GenericParameterHints, InlayFieldsToResolve, InlayHint, InlayHintLabel, InlayHintLabelPart,
+        InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip, LazyProperty,
+        LifetimeElisionHints,
     },
     join_lines::JoinLinesConfig,
     markup::Markup,
@@ -114,7 +114,8 @@ pub use crate::{
         StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
     },
     syntax_highlighting::{
-        HighlightConfig, HlRange, tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
+        HighlightConfig, HlRange,
+        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
     },
     test_explorer::{TestItem, TestItemKind},
 };
@@ -167,7 +168,9 @@ pub struct AnalysisHost {
 
 impl AnalysisHost {
     pub fn new(lru_capacity: Option<u16>) -> AnalysisHost {
-        AnalysisHost { db: RootDatabase::new(lru_capacity) }
+        AnalysisHost {
+            db: RootDatabase::new(lru_capacity),
+        }
     }
 
     pub fn with_database(db: RootDatabase) -> AnalysisHost {
@@ -185,7 +188,9 @@ impl AnalysisHost {
     /// Returns a snapshot of the current state, which you can query for
     /// semantic information.
     pub fn analysis(&self) -> Analysis {
-        Analysis { db: self.db.clone() }
+        Analysis {
+            db: self.db.clone(),
+        }
     }
 
     /// Applies changes to the current state of the world. If there are
@@ -198,15 +203,12 @@ impl AnalysisHost {
     pub fn per_query_memory_usage(&mut self) -> Vec<(String, profile::Bytes, usize)> {
         self.db.per_query_memory_usage()
     }
-
     pub fn request_cancellation(&mut self) {
         self.db.request_cancellation();
     }
-
     pub fn raw_database(&self) -> &RootDatabase {
         &self.db
     }
-
     pub fn raw_database_mut(&mut self) -> &mut RootDatabase {
         &mut self.db
     }
@@ -227,6 +229,12 @@ pub struct Analysis {
     db: RootDatabase,
 }
 
+// As a general design guideline, `Analysis` API are intended to be independent
+// from the language server protocol. That is, when exposing some functionality
+// we should think in terms of "what API makes most sense" and not in terms of
+// "what types LSP uses". Although currently LSP is the only consumer of the
+// API, the API should in theory be usable as a library, or via a different
+// protocol.
 impl Analysis {
     // Creates an analysis instance for a single file, without any external
     // dependencies, stdlib support or ability to apply changes. See
@@ -259,7 +267,10 @@ impl Analysis {
             cfg_options,
             None,
             Env::default(),
-            CrateOrigin::Local { repo: None, name: None },
+            CrateOrigin::Local {
+                repo: None,
+                name: None,
+            },
             false,
             proc_macro_cwd,
             Arc::new(CrateWorkspaceData {
@@ -293,7 +304,12 @@ impl Analysis {
     ) -> Option<(Analysis, RaFixtureAnalysis)> {
         let analysis =
             RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
-        Some((Analysis { db: analysis.db.clone() }, analysis))
+        Some((
+            Analysis {
+                db: analysis.db.clone(),
+            },
+            analysis,
+        ))
     }
 
     /// Debug info about the current state of the analysis.
@@ -388,10 +404,7 @@ impl Analysis {
         self.with_db(test_explorer::discover_test_roots)
     }
 
-    pub fn discover_tests_in_crate_by_test_id(
-        &self,
-        crate_id: &str,
-    ) -> Cancellable<Vec<TestItem>> {
+    pub fn discover_tests_in_crate_by_test_id(&self, crate_id: &str) -> Cancellable<Vec<TestItem>> {
         self.with_db(|db| test_explorer::discover_tests_in_crate_by_test_id(db, crate_id))
     }
 
@@ -418,11 +431,7 @@ impl Analysis {
 
     /// Returns an edit to remove all newlines in the range, cleaning up minor
     /// stuff like trailing commas.
-    pub fn join_lines(
-        &self,
-        config: &JoinLinesConfig,
-        frange: FileRange,
-    ) -> Cancellable<TextEdit> {
+    pub fn join_lines(&self, config: &JoinLinesConfig, frange: FileRange) -> Cancellable<TextEdit> {
         self.with_db(|db| {
             let editioned_file_id_wrapper =
                 EditionedFileId::current_edition(&self.db, frange.file_id);
@@ -481,7 +490,6 @@ impl Analysis {
     ) -> Cancellable<Vec<InlayHint>> {
         self.with_db(|db| inlay_hints::inlay_hints(db, file_id, range, config))
     }
-
     pub fn inlay_hints_resolve(
         &self,
         config: &InlayHintsConfig<'_>,
@@ -763,10 +771,8 @@ impl Analysis {
         imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe,
     ) -> Cancellable<Vec<TextEdit>> {
         Ok(self
-        .with_db(
-            |db| ide_completion::resolve_completion_edits(db, config, position, imports),
-        )?
-        .unwrap_or_default())
+            .with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?
+            .unwrap_or_default())
     }
 
     /// Computes the set of parser level diagnostics for the given file.
@@ -870,7 +876,11 @@ impl Analysis {
             let mut match_finder =
                 ide_ssr::MatchFinder::in_context(db, resolve_context, selections)?;
             match_finder.add_rule(rule)?;
-            let edits = if parse_only { Default::default() } else { match_finder.edits() };
+            let edits = if parse_only {
+                Default::default()
+            } else {
+                match_finder.edits()
+            };
             Ok(SourceChange::from_iter(edits))
         })
     }

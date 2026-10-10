@@ -41,14 +41,16 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<A
     let return_expr = d.return_expr.value.to_node(&root);
     let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);
 
-    let FileRange { range, file_id } =
-        ctx.sema.original_range_opt(stmt.as_ref().map_or(return_expr.syntax(), AstNode::syntax))?;
+    let FileRange { range, file_id } = ctx
+        .sema
+        .original_range_opt(stmt.as_ref().map_or(return_expr.syntax(), AstNode::syntax))?;
     if Some(file_id) != d.return_expr.file_id.file_id() {
         return None;
     }
 
-    let replacement =
-        return_expr.expr().map_or_else(String::new, |expr| format!("{}", expr.syntax().text()));
+    let replacement = return_expr
+        .expr()
+        .map_or_else(String::new, |expr| format!("{}", expr.syntax().text()));
     let edit = TextEdit::replace(range, replacement);
     let source_change = SourceChange::from_text_edit(file_id.file_id(ctx.sema.db), edit);
 
@@ -65,6 +67,7 @@ mod tests {
     use crate::tests::{
         check_diagnostics, check_diagnostics_with_disabled, check_fix, check_fix_with_disabled,
     };
+
     #[test]
     fn remove_trailing_return() {
         check_diagnostics(
@@ -75,6 +78,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn remove_trailing_return_inner_function() {
         check_diagnostics(
@@ -88,6 +92,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn remove_trailing_return_closure() {
         check_diagnostics(
@@ -109,6 +114,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn remove_trailing_return_unit() {
         check_diagnostics(
@@ -119,6 +125,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn remove_trailing_return_no_semi() {
         check_diagnostics(
@@ -129,6 +136,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn remove_trailing_return_in_if() {
         check_diagnostics_with_disabled(
@@ -145,6 +153,7 @@ fn foo(x: usize) -> u8 {
             &["remove-unnecessary-else"],
         );
     }
+
     #[test]
     fn remove_trailing_return_in_match() {
         check_diagnostics(
@@ -159,6 +168,7 @@ fn foo<T, E>(x: Result<T, E>) -> u8 {
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_if_no_return_keyword() {
         check_diagnostics(
@@ -169,6 +179,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_if_not_last_statement() {
         check_diagnostics(
@@ -180,6 +191,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_if_not_last_statement2() {
         check_diagnostics(
@@ -191,6 +203,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn replace_with_expr() {
         check_fix(
@@ -206,6 +219,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn replace_with_unit() {
         check_fix(
@@ -221,6 +235,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_with_expr_no_semi() {
         check_fix(
@@ -236,6 +251,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn replace_in_inner_function() {
         check_fix(
@@ -257,6 +273,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn replace_in_closure() {
         check_fix(
@@ -292,6 +309,7 @@ fn foo() -> u8 {
 "#,
         );
     }
+
     #[test]
     fn replace_in_if() {
         check_fix_with_disabled(
@@ -336,6 +354,7 @@ fn foo(x: usize) -> u8 {
 "#,
         );
     }
+
     #[test]
     fn replace_in_match() {
         check_fix(

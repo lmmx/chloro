@@ -6,8 +6,8 @@ use std::time::{Duration, Instant};
 use std::{cell::RefCell, fs::read_to_string, panic::AssertUnwindSafe, path::PathBuf};
 
 use hir::{ChangeWithProcMacros, Crate};
-use ide_db::base_db;
 use ide::{AnalysisHost, DiagnosticCode, DiagnosticsConfig};
+use ide_db::base_db;
 use itertools::Either;
 use profile::StopWatch;
 use project_model::toolchain_info::{QueryConfig, target_data};
@@ -109,7 +109,11 @@ impl Tester {
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let krates = Crate::all(db);
-        let root_crate = krates.iter().cloned().find(|krate| krate.origin(db).is_local()).unwrap();
+        let root_crate = krates
+            .iter()
+            .cloned()
+            .find(|krate| krate.origin(db).is_local())
+            .unwrap();
         let root_file = root_crate.root_file(db);
         Ok(Self {
             host,
@@ -127,7 +131,10 @@ impl Tester {
             // These are not tests
             return;
         }
-        if IGNORED_TESTS.iter().any(|ig| p.file_name().is_some_and(|x| x == *ig)) {
+        if IGNORED_TESTS
+            .iter()
+            .any(|ig| p.file_name().is_some_and(|x| x == *ig))
+        {
             println!("{p:?} IGNORE");
             self.ignore_count += 1;
             return;
@@ -244,7 +251,11 @@ impl Tester {
         );
         println!("Testing time and memory = {}", self.stopwatch.elapsed());
         report_metric("rustc failed tests", self.fail_count, "#");
-        report_metric("rustc testing time", self.stopwatch.elapsed().time.as_millis() as u64, "ms");
+        report_metric(
+            "rustc testing time",
+            self.stopwatch.elapsed().time.as_millis() as u64,
+            "ms",
+        );
     }
 }
 

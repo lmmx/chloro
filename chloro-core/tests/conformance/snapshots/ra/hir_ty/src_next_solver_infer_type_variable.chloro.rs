@@ -90,6 +90,7 @@ pub(crate) struct TypeVariableStorage<'db> {
 
 pub(crate) struct TypeVariableTable<'a, 'db> {
     storage: &'a mut TypeVariableStorage<'db>,
+
     undo_log: &'a mut InferCtxtUndoLogs<'db>,
 }
 
@@ -108,12 +109,8 @@ pub(crate) struct TypeVariableData {
 
 #[derive(Clone, Debug)]
 pub(crate) enum TypeVariableValue<'db> {
-    Known {
-        value: Ty<'db>,
-    },
-    Unknown {
-        universe: UniverseIndex,
-    },
+    Known { value: Ty<'db> },
+    Unknown { universe: UniverseIndex },
 }
 
 impl<'db> TypeVariableValue<'db> {
@@ -140,7 +137,10 @@ impl<'db> TypeVariableStorage<'db> {
         &'a mut self,
         undo_log: &'a mut InferCtxtUndoLogs<'db>,
     ) -> TypeVariableTable<'a, 'db> {
-        TypeVariableTable { storage: self, undo_log }
+        TypeVariableTable {
+            storage: self,
+            undo_log,
+        }
     }
 
     #[inline]
@@ -188,14 +188,18 @@ impl<'db> TypeVariableTable<'_, 'db> {
     /// Precondition: `vid` must not have been previously instantiated.
     pub(crate) fn instantiate(&mut self, vid: TyVid, ty: Ty<'db>) {
         let vid = self.root_var(vid);
-        debug_assert!(!ty.is_ty_var(), "instantiating ty var with var: {vid:?} {ty:?}");
+        debug_assert!(
+            !ty.is_ty_var(),
+            "instantiating ty var with var: {vid:?} {ty:?}"
+        );
         debug_assert!(self.probe(vid).is_unknown());
         debug_assert!(
             self.eq_relations().probe_value(vid).is_unknown(),
             "instantiating type variable `{vid:?}` twice: new-value = {ty:?}, old-value={:?}",
             self.eq_relations().probe_value(vid)
         );
-        self.eq_relations().union_value(vid, TypeVariableValue::Known { value: ty });
+        self.eq_relations()
+            .union_value(vid, TypeVariableValue::Known { value: ty });
     }
 
     /// Creates a new type variable.
@@ -208,12 +212,10 @@ impl<'db> TypeVariableTable<'_, 'db> {
     /// - `origin`: indicates *why* the type variable was created.
     ///   The code in this module doesn't care, but it can be useful
     ///   for improving error messages.
-    pub(crate) fn new_var(
-        &mut self,
-        universe: UniverseIndex,
-        origin: TypeVariableOrigin,
-    ) -> TyVid {
-        let eq_key = self.eq_relations().new_key(TypeVariableValue::Unknown { universe });
+    pub(crate) fn new_var(&mut self, universe: UniverseIndex, origin: TypeVariableOrigin) -> TyVid {
+        let eq_key = self
+            .eq_relations()
+            .new_key(TypeVariableValue::Unknown { universe });
 
         let sub_key = self.sub_unification_table().new_key(());
         debug_assert_eq!(eq_key.vid, sub_key.vid);
@@ -221,7 +223,10 @@ impl<'db> TypeVariableTable<'_, 'db> {
         let index = self.storage.values.push(TypeVariableData { origin });
         debug_assert_eq!(eq_key.vid, index);
 
-        debug!("new_var(index={:?}, universe={:?}, origin={:?})", eq_key.vid, universe, origin);
+        debug!(
+            "new_var(index={:?}, universe={:?}, origin={:?})",
+            eq_key.vid, universe, origin
+        );
 
         index
     }
@@ -280,7 +285,12 @@ impl<'db> TypeVariableTable<'_, 'db> {
         value_count: usize,
     ) -> (Range<TyVid>, Vec<TypeVariableOrigin>) {
         let range = TyVid::from_usize(value_count)..TyVid::from_usize(self.num_vars());
-        (range.clone(), iter_idx_range(range).map(|index| self.var_origin(index)).collect())
+        (
+            range.clone(),
+            iter_idx_range(range)
+                .map(|index| self.var_origin(index))
+                .collect(),
+        )
     }
 
     /// Returns indices of all variables that are not yet
@@ -306,34 +316,34 @@ impl<'db> TypeVariableTable<'_, 'db> {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) struct TyVidEqKey<'db> {
     vid: TyVid,
+
     // in the table, we map each ty-vid to one of these:
     phantom: PhantomData<TypeVariableValue<'db>>,
 }
 
 impl<'db> From<TyVid> for TyVidEqKey<'db> {
-    #[inline]
+    #[inline] // make this function eligible for inlining - it is quite hot.
     fn from(vid: TyVid) -> Self {
-        TyVidEqKey { vid, phantom: PhantomData }
+        TyVidEqKey {
+            vid,
+            phantom: PhantomData,
+        }
     }
 }
 
 impl<'db> ut::UnifyKey for TyVidEqKey<'db> {
     type Value = TypeVariableValue<'db>;
-
     #[inline(always)]
     fn index(&self) -> u32 {
         self.vid.as_u32()
     }
-
     #[inline]
     fn from_index(i: u32) -> Self {
         TyVidEqKey::from(TyVid::from_u32(i))
     }
-
     fn tag() -> &'static str {
         "TyVidEqKey"
     }
-
     fn order_roots(a: Self, _: &Self::Value, b: Self, _: &Self::Value) -> Option<(Self, Self)> {
         if a.vid.as_u32() < b.vid.as_u32() {
             Some((a, b))
@@ -349,7 +359,7 @@ pub(crate) struct TyVidSubKey {
 }
 
 impl From<TyVid> for TyVidSubKey {
-    #[inline]
+    #[inline] // make this function eligible for inlining - it is quite hot.
     fn from(vid: TyVid) -> Self {
         TyVidSubKey { vid }
     }
@@ -357,17 +367,16 @@ impl From<TyVid> for TyVidSubKey {
 
 impl ut::UnifyKey for TyVidSubKey {
     type Value = ();
-
     #[inline]
     fn index(&self) -> u32 {
         self.vid.as_u32()
     }
-
     #[inline]
     fn from_index(i: u32) -> TyVidSubKey {
-        TyVidSubKey { vid: TyVid::from_u32(i) }
+        TyVidSubKey {
+            vid: TyVid::from_u32(i),
+        }
     }
-
     fn tag() -> &'static str {
         "TyVidSubKey"
     }
@@ -395,8 +404,12 @@ impl<'db> ut::UnifyValue for TypeVariableValue<'db> {
 
             // If both sides are *unknown*, it hardly matters, does it?
             (
-                &TypeVariableValue::Unknown { universe: universe1 },
-                &TypeVariableValue::Unknown { universe: universe2 },
+                &TypeVariableValue::Unknown {
+                    universe: universe1,
+                },
+                &TypeVariableValue::Unknown {
+                    universe: universe2,
+                },
             ) => {
                 // If we unify two unbound variables, ?T and ?U, then whatever
                 // value they wind up taking (which must be the same value) must

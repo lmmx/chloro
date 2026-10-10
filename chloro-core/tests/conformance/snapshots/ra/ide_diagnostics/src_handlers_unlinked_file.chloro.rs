@@ -81,6 +81,7 @@ fn fixes(
 ) -> Option<Vec<Assist>> {
     // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
     // suggest that as a fix.
+
     let db = ctx.sema.db;
 
     let source_root = ctx.sema.db.file_source_root(file_id).source_root_id(db);
@@ -106,12 +107,16 @@ fn fixes(
         let crate_def_map = crate_def_map(ctx.sema.db, krate);
 
         let root_module = &crate_def_map[DefMap::ROOT];
-        let Some(root_file_id) = root_module.origin.file_id() else { continue };
+        let Some(root_file_id) = root_module.origin.file_id() else {
+            continue;
+        };
         let Some(crate_root_path) = source_root.path_for_file(&root_file_id.file_id(ctx.sema.db))
         else {
             continue;
         };
-        let Some(rel) = parent.strip_prefix(&crate_root_path.parent()?) else { continue };
+        let Some(rel) = parent.strip_prefix(&crate_root_path.parent()?) else {
+            continue;
+        };
 
         // try resolving the relative difference of the paths as inline modules
         let mut current = root_module;
@@ -122,7 +127,11 @@ fn fixes(
                 // shouldn't occur
                 _ => continue 'crates,
             };
-            match current.children.iter().find(|(name, _)| name.as_str() == seg) {
+            match current
+                .children
+                .iter()
+                .find(|(name, _)| name.as_str() == seg)
+            {
                 Some((_, &child)) => current = &crate_def_map[child],
                 None => continue 'crates,
             }
@@ -131,8 +140,10 @@ fn fixes(
             }
         }
 
-        let InFile { file_id: parent_file_id, value: source } =
-            current.definition_source(ctx.sema.db);
+        let InFile {
+            file_id: parent_file_id,
+            value: source,
+        } = current.definition_source(ctx.sema.db);
         let parent_file_id = parent_file_id.file_id()?;
         return make_fixes(
             parent_file_id.file_id(ctx.sema.db),
@@ -143,23 +154,34 @@ fn fixes(
     }
 
     // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
+
     // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
     let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
         let parent = path.parent()?;
         let (name, _) = path.name_and_extension()?;
-        Some(([parent.join(&format!("{name}.rs"))?, path.join("mod.rs")?], name.to_owned()))
+        Some((
+            [parent.join(&format!("{name}.rs"))?, path.join("mod.rs")?],
+            name.to_owned(),
+        ))
     });
     let mut stack = vec![];
-    let &parent_id =
-        paths.inspect(|(_, name)| stack.push(name.clone())).find_map(|(paths, _)| {
-            paths.into_iter().find_map(|path| source_root.file_for_path(&path))
+    let &parent_id = paths
+        .inspect(|(_, name)| stack.push(name.clone()))
+        .find_map(|(paths, _)| {
+            paths
+                .into_iter()
+                .find_map(|path| source_root.file_for_path(&path))
         })?;
     stack.pop();
     let relevant_crates = db.relevant_crates(parent_id);
     'crates: for &krate in relevant_crates.iter() {
         let crate_def_map = crate_def_map(ctx.sema.db, krate);
         let Some((_, module)) = crate_def_map.modules().find(|(_, module)| {
-            module.origin.file_id().map(|file_id| file_id.file_id(ctx.sema.db)) == Some(parent_id)
+            module
+                .origin
+                .file_id()
+                .map(|file_id| file_id.file_id(ctx.sema.db))
+                == Some(parent_id)
                 && !module.origin.is_inline()
         }) else {
             continue;
@@ -187,8 +209,10 @@ fn fixes(
                     continue 'crates;
                 }
             }
-            let InFile { file_id: parent_file_id, value: source } =
-                current.definition_source(ctx.sema.db);
+            let InFile {
+                file_id: parent_file_id,
+                value: source,
+            } = current.definition_source(ctx.sema.db);
             let parent_file_id = parent_file_id.file_id()?;
             return make_fixes(
                 parent_file_id.file_id(ctx.sema.db),
@@ -240,7 +264,12 @@ fn make_fixes(
     }
 
     // If there are existing `mod m;` items, append after them (after the first group of them, rather).
-    match items.clone().skip_while(|item| !is_outline_mod(item)).take_while(is_outline_mod).last() {
+    match items
+        .clone()
+        .skip_while(|item| !is_outline_mod(item))
+        .take_while(is_outline_mod)
+        .last()
+    {
         Some(last) => {
             cov_mark::hit!(unlinked_file_append_to_existing_mods);
             let offset = last.syntax().text_range().end();
@@ -309,6 +338,7 @@ fn make_fixes(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix, check_fixes, check_no_fix};
+
     #[test]
     fn unlinked_file_prepend_first_item() {
         cov_mark::check!(unlinked_file_prepend_before_first_item);
@@ -339,6 +369,7 @@ fn f() {}
             ],
         );
     }
+
     #[test]
     fn unlinked_file_append_mod() {
         cov_mark::check!(unlinked_file_append_to_existing_mods);
@@ -371,6 +402,7 @@ mod preexisting_bottom;)
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_insert_in_empty_file() {
         cov_mark::check!(unlinked_file_empty_file);
@@ -385,6 +417,7 @@ mod foo;
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_insert_in_empty_file_mod_file() {
         check_fix(
@@ -412,6 +445,7 @@ mod foo;
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_old_style_modrs() {
         check_fix(
@@ -429,6 +463,7 @@ mod foo;
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_new_style_mod() {
         check_fix(
@@ -444,6 +479,7 @@ mod foo;
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_with_cfg_off() {
         cov_mark::check!(unlinked_file_skip_fix_when_mod_already_exists);
@@ -458,6 +494,7 @@ $0
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_with_cfg_on() {
         check_diagnostics(
@@ -470,6 +507,7 @@ mod foo;
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_insert_into_inline_simple() {
         check_fix(
@@ -489,6 +527,7 @@ mod foo {
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_insert_into_inline_simple_modrs() {
         check_fix(
@@ -508,6 +547,7 @@ mod baz {
 "#,
         );
     }
+
     #[test]
     fn unlinked_file_insert_into_inline_simple_modrs_main() {
         check_fix(
@@ -525,6 +565,7 @@ mod bar {
 "#,
         );
     }
+
     #[test]
     fn include_macro_works() {
         check_diagnostics(

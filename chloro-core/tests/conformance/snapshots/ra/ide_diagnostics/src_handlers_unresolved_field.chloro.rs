@@ -37,10 +37,7 @@ pub(crate) fn unresolved_field(
             d.name.display(ctx.sema.db, ctx.edition),
             d.receiver.display(ctx.sema.db, ctx.display_target)
         ),
-        adjusted_display_range(
-        ctx,
-        d.expr,
-        &|expr| {
+        adjusted_display_range(ctx, d.expr, &|expr| {
             Some(
                 match expr.left()? {
                     ast::Expr::MethodCallExpr(it) => it.name_ref(),
@@ -50,12 +47,9 @@ pub(crate) fn unresolved_field(
                 .syntax()
                 .text_range(),
             )
-        },
-    ),
+        }),
     )
-    .with_fixes(
-        fixes(ctx, d),
-    )
+    .with_fixes(fixes(ctx, d))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Vec<Assist>> {
@@ -64,11 +58,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<V
         fixes.extend(method_fix(ctx, &d.expr));
     }
     fixes.extend(field_fix(ctx, d));
-    if fixes.is_empty() {
-        None
-    } else {
-        Some(fixes)
-    }
+    if fixes.is_empty() { None } else { Some(fixes) }
 }
 
 // FIXME: Add Snippet Support
@@ -83,11 +73,15 @@ fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Opti
     let adt = d.receiver.strip_references().as_adt()?;
     let target_module = adt.module(ctx.sema.db);
 
-    let suggested_type = if let Some(new_field_type) =
-        ctx.sema.type_of_expr(&expr).map(|v| v.adjusted()).filter(|it| !it.is_unknown())
+    let suggested_type = if let Some(new_field_type) = ctx
+        .sema
+        .type_of_expr(&expr)
+        .map(|v| v.adjusted())
+        .filter(|it| !it.is_unknown())
     {
-        let display =
-            new_field_type.display_source_code(ctx.sema.db, target_module.into(), false).ok();
+        let display = new_field_type
+            .display_source_code(ctx.sema.db, target_module.into(), false)
+            .ok();
         make::ty(display.as_deref().unwrap_or("()"))
     } else {
         make::ty("()")
@@ -123,8 +117,13 @@ fn add_variant_to_union(
     let range = adt_syntax.original_file_range_rooted(ctx.sema.db);
     let field_name = make::name(field_name);
 
-    let (offset, record_field) =
-        record_field_layout(None, field_name, suggested_type, field_list, adt_syntax.value)?;
+    let (offset, record_field) = record_field_layout(
+        None,
+        field_name,
+        suggested_type,
+        field_list,
+        adt_syntax.value,
+    )?;
 
     let mut src_change_builder = SourceChangeBuilder::new(range.file_id.file_id(ctx.sema.db));
     src_change_builder.insert(offset, record_field);
@@ -268,7 +267,10 @@ fn record_field_layout(
     let comma = if needs_comma { ",\n" } else { "\n" };
     let record_field = make::record_field(visibility, name, suggested_type);
 
-    Some((offset, format!("{comma}{indent}{record_field}{trailing_new_line}")))
+    Some((
+        offset,
+        format!("{comma}{indent}{record_field}{trailing_new_line}"),
+    ))
 }
 
 // FIXME: We should fill out the call here, move the cursor and trigger signature help
@@ -291,9 +293,9 @@ fn method_fix(
         command: None,
     })
 }
-
 #[cfg(test)]
 mod tests {
+
     use crate::{
         DiagnosticsConfig,
         tests::{
@@ -301,6 +303,7 @@ mod tests {
             check_fix, check_no_fix,
         },
     };
+
     #[test]
     fn smoke_test() {
         check_diagnostics(
@@ -312,6 +315,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn method_clash() {
         check_diagnostics(
@@ -327,6 +331,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn method_trait_() {
         check_diagnostics(
@@ -343,6 +348,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn method_trait_2() {
         check_diagnostics(
@@ -361,6 +367,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_on_unknown() {
         check_diagnostics_with_disabled(
@@ -374,12 +381,14 @@ fn foo() {
             &["E0425"],
         );
     }
+
     #[test]
     fn no_diagnostic_for_missing_name() {
         let mut config = DiagnosticsConfig::test_sample();
         config.disabled.insert("syntax-error".to_owned());
         check_diagnostics_with_config(config, "fn foo() { (). }");
     }
+
     #[test]
     fn unresolved_field_fix_on_unit() {
         check_fix(
@@ -510,9 +519,11 @@ fn foo() {
             "#,
         );
     }
+
     #[test]
     fn no_fix_when_indexed() {
-        check_no_fix(r#"
+        check_no_fix(
+            r#"
             struct Kek {}
 impl Kek {
     pub fn foo(self) {
@@ -521,11 +532,14 @@ impl Kek {
 }
 
 fn main() {}
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn no_fix_when_without_field() {
-        check_no_fix(r#"
+        check_no_fix(
+            r#"
             struct Kek {}
 impl Kek {
     pub fn foo(self) {
@@ -534,8 +548,10 @@ impl Kek {
 }
 
 fn main() {}
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn regression_18683() {
         check_diagnostics(

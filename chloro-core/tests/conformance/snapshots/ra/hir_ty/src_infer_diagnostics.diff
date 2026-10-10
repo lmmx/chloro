@@ -2,48 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4441 bytes
-Chloro size:   4077 bytes
+Chloro size:   4556 bytes
 Rustfmt size:  4556 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     lower::{LifetimeElisionKind, TyLoweringContext},
- };
- 
--// Unfortunately, this struct needs to use interior mutability (but we encapsulate it)
--// because when lowering types and paths we hold a `TyLoweringContext` that holds a reference
--// to our resolver and so we cannot have mutable reference, but we really want to have
--// ability to dispatch diagnostics during this work otherwise the code becomes a complete mess.
- #[derive(Debug, Default, Clone)]
- pub(super) struct Diagnostics<'db>(RefCell<Vec<InferenceDiagnostic<'db>>>);
- 
-         diagnostics: Vec<TyLoweringDiagnostic>,
-     ) {
-         self.0.borrow_mut().extend(
--            diagnostics
--                .into_iter()
--                .map(|diag| InferenceDiagnostic::TyDiagnostic { source, diag }),
-+            diagnostics.into_iter().map(|diag| InferenceDiagnostic::TyDiagnostic { source, diag }),
-         );
-     }
- 
-         node: ExprOrPatId,
-     ) -> PathLoweringContext<'b, 'a, 'db> {
-         let on_diagnostic = PathDiagnosticCallback {
--            data: Either::Right(PathDiagnosticCallbackData {
--                diagnostics: self.diagnostics,
--                node,
--            }),
-+            data: Either::Right(PathDiagnosticCallbackData { diagnostics: self.diagnostics, node }),
-             callback: |data, _, diag| {
-                 let data = data.as_ref().right().unwrap();
--                data.diagnostics.push(InferenceDiagnostic::PathDiagnostic {
--                    node: data.node,
--                    diag,
--                });
-+                data.diagnostics
-+                    .push(InferenceDiagnostic::PathDiagnostic { node: data.node, diag });
-             },
-         };
-         PathLoweringContext::new(&mut self.ctx, on_diagnostic, path)
+✓ Outputs are IDENTICAL

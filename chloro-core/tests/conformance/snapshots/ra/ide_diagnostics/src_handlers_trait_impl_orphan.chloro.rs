@@ -21,6 +21,7 @@ pub(crate) fn trait_impl_orphan(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn simple() {
         check_diagnostics(
@@ -39,6 +40,7 @@ impl LocalTrait for bar::Bar {}
 "#,
         );
     }
+
     #[test]
     fn generics() {
         check_diagnostics(
@@ -63,6 +65,7 @@ trait LocalTrait<T> {}
 "#,
         );
     }
+
     #[test]
     fn fundamental() {
         check_diagnostics(
@@ -83,6 +86,7 @@ struct LocalType;
 "#,
         );
     }
+
     #[test]
     fn dyn_object() {
         check_diagnostics(
@@ -98,6 +102,7 @@ impl<T> foo::Foo<dyn LocalTrait> for Bar {}
 "#,
         );
     }
+
     #[test]
     fn twice_fundamental() {
         check_diagnostics(

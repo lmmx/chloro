@@ -58,7 +58,10 @@ pub(super) fn hints(
         .map(|(param, param_name, _, hir::FileRange { range, .. })| {
             let colon = if config.render_colons { ":" } else { "" };
             let label = InlayHintLabel::simple(
-                format!("{}{colon}", param_name.display(sema.db, krate.edition(sema.db))),
+                format!(
+                    "{}{colon}",
+                    param_name.display(sema.db, krate.edition(sema.db))
+                ),
                 None,
                 config.lazy_location_opt(|| {
                     let source = sema.source(param)?;
@@ -69,10 +72,11 @@ pub(super) fn hints(
                             _ => None,
                         },
                     }?;
-                    sema.original_range_opt(name_syntax.syntax()).map(|frange| ide_db::FileRange {
-                        file_id: frange.file_id.file_id(sema.db),
-                        range: frange.range,
-                    })
+                    sema.original_range_opt(name_syntax.syntax())
+                        .map(|frange| ide_db::FileRange {
+                            file_id: frange.file_id.file_id(sema.db),
+                            range: frange.range,
+                        })
                 }),
             );
             InlayHint {
@@ -99,20 +103,24 @@ fn get_callable<'db>(
         ast::Expr::CallExpr(expr) => {
             let descended = sema.descend_node_into_attributes(expr.clone()).pop();
             let expr = descended.as_ref().unwrap_or(expr);
-            sema.type_of_expr(&expr.expr()?)?.original.as_callable(sema.db).zip(expr.arg_list())
+            sema.type_of_expr(&expr.expr()?)?
+                .original
+                .as_callable(sema.db)
+                .zip(expr.arg_list())
         }
         ast::Expr::MethodCallExpr(expr) => {
             let descended = sema.descend_node_into_attributes(expr.clone()).pop();
             let expr = descended.as_ref().unwrap_or(expr);
-            sema.resolve_method_call_as_callable(expr).zip(expr.arg_list())
+            sema.resolve_method_call_as_callable(expr)
+                .zip(expr.arg_list())
         }
         _ => None,
     }
 }
 
 const INSIGNIFICANT_METHOD_NAMES: &[&str] = &["clone", "as_ref", "into"];
-
-const INSIGNIFICANT_PARAMETER_NAMES: &[&str] = &["predicate", "value", "pat", "rhs", "other", "msg", "op"];
+const INSIGNIFICANT_PARAMETER_NAMES: &[&str] =
+    &["predicate", "value", "pat", "rhs", "other", "msg", "op"];
 
 fn should_hide_param_name_hint(
     sema: &Semantics<'_, RootDatabase>,
@@ -129,6 +137,7 @@ fn should_hide_param_name_hint(
     //   parameter is a prefix/suffix of argument with _ splitting it off
     // - param starts with `ra_fixture`
     // - param is a well known name in a unary function
+
     let param_name = param_name.trim_matches('_');
     if param_name.is_empty() {
         return true;
@@ -193,7 +202,9 @@ pub(super) fn is_argument_similar_to_param_name(
     debug_assert!(!argument.is_empty());
     debug_assert!(!param_name.is_empty());
     let param_name = param_name.split('_');
-    let argument = argument.iter().flat_map(|it| it.text_non_mutable().split('_'));
+    let argument = argument
+        .iter()
+        .flat_map(|it| it.text_non_mutable().split('_'));
 
     let prefix_match = zip(argument.clone(), param_name.clone())
         .all(|(arg, param)| arg.eq_ignore_ascii_case(param));
@@ -208,8 +219,9 @@ pub(super) fn get_segment_representation(
 ) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
     match expr {
         ast::Expr::MethodCallExpr(method_call_expr) => {
-            let receiver =
-                method_call_expr.receiver().and_then(|expr| get_segment_representation(&expr));
+            let receiver = method_call_expr
+                .receiver()
+                .and_then(|expr| get_segment_representation(&expr));
             let name_ref = method_call_expr.name_ref()?;
             if INSIGNIFICANT_METHOD_NAMES.contains(&name_ref.text().as_str()) {
                 return receiver;
@@ -223,7 +235,9 @@ pub(super) fn get_segment_representation(
             }))
         }
         ast::Expr::FieldExpr(field_expr) => {
-            let expr = field_expr.expr().and_then(|expr| get_segment_representation(&expr));
+            let expr = field_expr
+                .expr()
+                .and_then(|expr| get_segment_representation(&expr));
             let name_ref = field_expr.name_ref()?;
             let res = match expr {
                 Some(Either::Left(mut left)) => {
@@ -289,9 +303,7 @@ fn is_adt_constructor_similar_to_param_name(
         }
         _ => None,
     })()
-    .unwrap_or(
-        false,
-    )
+    .unwrap_or(false)
 }
 
 #[cfg(test)]
@@ -300,13 +312,18 @@ mod tests {
         InlayHintsConfig,
         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
+
     #[track_caller]
     fn check_params(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(
-            InlayHintsConfig { parameter_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                parameter_hints: true,
+                ..DISABLED_CONFIG
+            },
             ra_fixture,
         );
     }
+
     #[test]
     fn param_hints_only() {
         check_params(
@@ -322,6 +339,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn param_hints_on_closure() {
         check_params(
@@ -338,6 +356,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn param_name_similar_to_fn_name_still_hints() {
         check_params(
@@ -353,6 +372,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn param_name_similar_to_fn_name() {
         check_params(
@@ -374,6 +394,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn param_name_same_as_fn_name() {
         check_params(
@@ -386,6 +407,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn never_hide_param_when_multiple_params() {
         check_params(
@@ -401,6 +423,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn param_hints_look_through_as_ref_and_clone() {
         check_params(
@@ -419,9 +442,11 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn self_param_hints() {
-        check_params(r#"
+        check_params(
+            r#"
 struct Foo;
 
 impl Foo {
@@ -435,11 +460,14 @@ fn main() {
     Foo::bar(&Foo);
            //^^^^ self
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn param_name_hints_show_for_literals() {
-        check_params(r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
+        check_params(
+            r#"pub fn test(a: i32, b: i32) -> [i32; 2] { [a, b] }
 fn main() {
     test(
         0xa_b,
@@ -447,8 +475,10 @@ fn main() {
         0xa_b,
       //^^^^^ b
     );
-}"#)
+}"#,
+        )
     }
+
     #[test]
     fn function_call_parameter_hint() {
         check_params(
@@ -507,6 +537,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn parameter_hint_heuristics() {
         check_params(

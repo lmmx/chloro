@@ -38,7 +38,10 @@ pub(crate) fn move_to_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     let target = source_file.syntax().text_range();
     let module_name = module.name(ctx.db())?.as_str().to_smolstr();
     let path = format!("./{module_name}/mod.rs");
-    let dst = AnchoredPathBuf { anchor: ctx.vfs_file_id(), path };
+    let dst = AnchoredPathBuf {
+        anchor: ctx.vfs_file_id(),
+        path,
+    };
     acc.add(
         AssistId::refactor("move_to_mod_rs"),
         format!("Convert {module_name}.rs to {module_name}/mod.rs"),
@@ -52,7 +55,9 @@ pub(crate) fn move_to_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn trivial() {
         check_assist(
@@ -69,6 +74,7 @@ fn t() {}
 "#,
         );
     }
+
     #[test]
     fn must_select_all_file() {
         cov_mark::check!(not_all_selected);
@@ -92,6 +98,7 @@ $0fn$0 t() {}
 "#,
         );
     }
+
     #[test]
     fn cannot_promote_mod_rs() {
         cov_mark::check!(already_mod_rs);
@@ -104,6 +111,7 @@ $0fn t() {}$0
 "#,
         );
     }
+
     #[test]
     fn cannot_promote_main_and_lib_rs() {
         check_assist_not_applicable(
@@ -119,6 +127,7 @@ $0fn t() {}$0
 "#,
         );
     }
+
     #[test]
     fn works_in_mod() {
         // note: /a/b.rs remains untouched

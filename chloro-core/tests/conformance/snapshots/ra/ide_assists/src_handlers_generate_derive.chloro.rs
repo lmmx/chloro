@@ -46,56 +46,58 @@ pub(crate) fn generate_derive(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         "Add `#[derive]`",
         target,
         |edit| {
-        match derive_attr {
-            None => {
-                let derive = make::attr_outer(make::meta_token_tree(
-                    make::ext::ident_path("derive"),
-                    make::token_tree(T!['('], vec![]).clone_for_update(),
-                ))
-                .clone_for_update();
+            match derive_attr {
+                None => {
+                    let derive = make::attr_outer(make::meta_token_tree(
+                        make::ext::ident_path("derive"),
+                        make::token_tree(T!['('], vec![]).clone_for_update(),
+                    ))
+                    .clone_for_update();
 
-                let mut editor = edit.make_editor(nominal.syntax());
-                let indent = IndentLevel::from_node(nominal.syntax());
-                let after_attrs_and_comments = nominal
-                    .syntax()
-                    .children_with_tokens()
-                    .find(|it| !matches!(it.kind(), WHITESPACE | COMMENT | ATTR))
-                    .map_or(Position::first_child_of(nominal.syntax()), Position::before);
-                editor.insert_all(
-                    after_attrs_and_comments,
-                    vec![
-                        derive.syntax().syntax_element(),
-                        make::tokens::whitespace(&format!("\n{indent}")).syntax_element(),
-                    ],
-                );
+                    let mut editor = edit.make_editor(nominal.syntax());
+                    let indent = IndentLevel::from_node(nominal.syntax());
+                    let after_attrs_and_comments = nominal
+                        .syntax()
+                        .children_with_tokens()
+                        .find(|it| !matches!(it.kind(), WHITESPACE | COMMENT | ATTR))
+                        .map_or(Position::first_child_of(nominal.syntax()), Position::before);
+                    editor.insert_all(
+                        after_attrs_and_comments,
+                        vec![
+                            derive.syntax().syntax_element(),
+                            make::tokens::whitespace(&format!("\n{indent}")).syntax_element(),
+                        ],
+                    );
 
-                let delimiter = derive
-                    .meta()
-                    .expect("make::attr_outer was expected to have Meta")
-                    .token_tree()
-                    .expect("failed to get token tree out of Meta")
-                    .r_paren_token()
-                    .expect("make::attr_outer was expected to have a R_PAREN");
-                let tabstop_before = edit.make_tabstop_before(cap);
-                editor.add_annotation(delimiter, tabstop_before);
-                edit.add_file_edits(ctx.vfs_file_id(), editor);
-            }
-            Some(_) => {
-                // Just move the cursor.
-                edit.add_tabstop_before_token(
-                    cap,
-                    delimiter.expect("Right delim token could not be found."),
-                );
-            }
-        };
-    },
+                    let delimiter = derive
+                        .meta()
+                        .expect("make::attr_outer was expected to have Meta")
+                        .token_tree()
+                        .expect("failed to get token tree out of Meta")
+                        .r_paren_token()
+                        .expect("make::attr_outer was expected to have a R_PAREN");
+                    let tabstop_before = edit.make_tabstop_before(cap);
+                    editor.add_annotation(delimiter, tabstop_before);
+                    edit.add_file_edits(ctx.vfs_file_id(), editor);
+                }
+                Some(_) => {
+                    // Just move the cursor.
+                    edit.add_tabstop_before_token(
+                        cap,
+                        delimiter.expect("Right delim token could not be found."),
+                    );
+                }
+            };
+        },
     )
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_target};
+
     use super::*;
+
     #[test]
     fn add_derive_new() {
         check_assist(
@@ -123,6 +125,7 @@ mod m {
             ",
         );
     }
+
     #[test]
     fn add_derive_existing() {
         check_assist(
@@ -131,6 +134,7 @@ mod m {
             "#[derive(Clone$0)]\nstruct Foo { a: i32, }",
         );
     }
+
     #[test]
     fn add_derive_existing_with_brackets() {
         check_assist(
@@ -145,6 +149,7 @@ struct Foo { a: i32, }
 ",
         );
     }
+
     #[test]
     fn add_derive_existing_missing_delimiter() {
         // since `#[derive]` isn't a simple attr call (i.e. `#[derive()]`)
@@ -161,6 +166,7 @@ struct Foo { a: i32$0, }",
 struct Foo { a: i32, }",
         );
     }
+
     #[test]
     fn add_derive_new_with_doc_comment() {
         check_assist(
@@ -196,6 +202,7 @@ mod m {
             ",
         );
     }
+
     #[test]
     fn add_derive_target() {
         check_assist_target(

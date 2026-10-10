@@ -18,7 +18,9 @@ use syntax::{
     ast::{
         self, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
         HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
-        WherePred, edit::{self, AstNodeEdit}, make,
+        WherePred,
+        edit::{self, AstNodeEdit},
+        make,
     },
     ted::{self, Position},
 };
@@ -151,7 +153,13 @@ impl Field {
             }
         }
 
-        Some(Field { name, ty, range, impls, edition })
+        Some(Field {
+            name,
+            ty,
+            range,
+            impls,
+            edition,
+        })
     }
 }
 
@@ -225,13 +233,19 @@ impl Struct {
             };
 
             acc.add_group(
-                &GroupLabel(format!("Generate delegate trait impls for field `{}`", field.name)),
+                &GroupLabel(format!(
+                    "Generate delegate trait impls for field `{}`",
+                    field.name
+                )),
                 AssistId(
                     "generate_delegate_trait",
                     ide_db::assists::AssistKind::Generate,
                     Some(index),
                 ),
-                format!("Generate delegate trait impl `{}` for `{}`", signature, field.name),
+                format!(
+                    "Generate delegate trait impl `{}` for `{}`",
+                    signature, field.name
+                ),
                 field.range,
                 |builder| {
                     builder.insert(
@@ -326,9 +340,11 @@ fn generate_impl(
             };
 
             // 2) Handle instantiated generics in `field_ty`.
+
             // 2.1) Some generics used in `self_ty` may be instantiated, so they
             // are no longer generics, we should remove and instantiate those
             // generics in advance.
+
             // `old_trait_args` contains names of generic args for trait in `old_impl`
             let old_impl_trait_args = old_impl
                 .trait_()?
@@ -353,21 +369,24 @@ fn generate_impl(
 
             // 2.3) Instantiate generics with `transform_impl`, this step also
             // remove unused params.
-            let trait_gen_args = old_impl.trait_()?.generic_arg_list().and_then(|trait_args| {
-                let trait_args = &mut trait_args.clone_for_update();
-                if let Some(new_args) = transform_impl(
-                    ctx,
-                    ast_strukt,
-                    &old_impl,
-                    &transform_args,
-                    trait_args.clone_subtree(),
-                ) {
-                    *trait_args = new_args.clone_subtree();
-                    Some(new_args)
-                } else {
-                    None
-                }
-            });
+            let trait_gen_args = old_impl
+                .trait_()?
+                .generic_arg_list()
+                .and_then(|trait_args| {
+                    let trait_args = &mut trait_args.clone_for_update();
+                    if let Some(new_args) = transform_impl(
+                        ctx,
+                        ast_strukt,
+                        &old_impl,
+                        &transform_args,
+                        trait_args.clone_subtree(),
+                    ) {
+                        *trait_args = new_args.clone_subtree();
+                        Some(new_args)
+                    } else {
+                        None
+                    }
+                });
 
             let type_gen_args = strukt_params.clone().map(|params| params.to_generic_args());
             let path_type =
@@ -487,7 +506,9 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
             .any(|e| e.kind() == SyntaxKind::IDENT && live_generics.contains(&e.to_string()))
             .not()
     };
-    wc.predicates().filter(has_live_generics).for_each(|pred| wc.remove_predicate(pred));
+    wc.predicates()
+        .filter(has_live_generics)
+        .for_each(|pred| wc.remove_predicate(pred));
 
     if wc.predicates().count() == 0 {
         // Remove useless whitespaces
@@ -532,9 +553,13 @@ fn generate_args_for_impl(
         let field_args = field_ty.generic_arg_list().map(|gal| gal.generic_args());
         let self_ty_args = self_ty.generic_arg_list().map(|gal| gal.generic_args());
         if let (Some(field_args), Some(self_ty_args)) = (field_args, self_ty_args) {
-            self_ty_args.zip(field_args).for_each(|(self_ty_arg, field_arg)| {
-                arg_substs.entry(self_ty_arg.to_string()).or_insert(field_arg);
-            })
+            self_ty_args
+                .zip(field_args)
+                .for_each(|(self_ty_arg, field_arg)| {
+                    arg_substs
+                        .entry(self_ty_arg.to_string())
+                        .or_insert(field_arg);
+                })
         }
     }
 
@@ -728,9 +753,10 @@ fn func_assoc_item(
 
                 make::expr_call(make::expr_path(qualified_path), args)
             }
-            None => {
-                make::expr_call(make::expr_path(qualified_path), convert_param_list_to_arg_list(l))
-            }
+            None => make::expr_call(
+                make::expr_path(qualified_path),
+                convert_param_list_to_arg_list(l),
+            ),
         },
         None => make::expr_call(
             make::expr_path(qualified_path),
@@ -784,10 +810,12 @@ fn qualified_path(qual_path_ty: ast::Path, path_expr_seg: ast::Path) -> ast::Pat
 
 #[cfg(test)]
 mod test {
+
     use super::*;
     use crate::tests::{
         check_assist, check_assist_not_applicable, check_assist_not_applicable_no_grouping,
     };
+
     #[test]
     fn test_tuple_struct_basic() {
         check_assist(
@@ -808,6 +836,7 @@ impl Trait for Base {}
 "#,
         );
     }
+
     #[test]
     fn test_self_ty() {
         // trait with `Self` type cannot be delegated
@@ -830,6 +859,7 @@ impl Trait for Base {
 "#,
         );
     }
+
     #[test]
     fn test_struct_struct_basic() {
         check_assist(
@@ -854,6 +884,7 @@ impl Trait for Base {}
 "#,
         )
     }
+
     // Structs need to be by def populated with fields
     // However user can invoke this assist while still editing
     // We therefore assert its non-applicability
@@ -873,6 +904,7 @@ impl Trait for Base {}
 "#,
         )
     }
+
     #[test]
     fn test_yet_unspecified_field_type() {
         check_assist_not_applicable(
@@ -889,6 +921,7 @@ impl Trait for Base {}
 "#,
         );
     }
+
     #[test]
     fn test_unsafe_trait() {
         check_assist(
@@ -913,6 +946,7 @@ unsafe impl Trait for Base {}
 "#,
         );
     }
+
     #[test]
     fn test_unsafe_trait_with_unsafe_fn() {
         check_assist(
@@ -959,6 +993,7 @@ unsafe impl Trait for Base {
 "#,
         );
     }
+
     #[test]
     fn test_struct_with_where_clause() {
         check_assist(
@@ -987,6 +1022,7 @@ where
 }"#,
         );
     }
+
     #[test]
     fn test_fields_with_generics() {
         check_assist(
@@ -1035,6 +1071,7 @@ impl<T1> Trait<T1> for S {
 "#,
         );
     }
+
     #[test]
     fn test_generics_with_conflict_names() {
         check_assist(
@@ -1081,6 +1118,7 @@ impl<T, T1> Trait<T> for S<T1> {
 "#,
         );
     }
+
     #[test]
     fn test_lifetime_with_conflict_names() {
         check_assist(
@@ -1127,6 +1165,7 @@ impl<'a, T, T1> Trait<T> for S<'a, T1> {
 "#,
         );
     }
+
     #[test]
     fn test_multiple_generics() {
         check_assist(
@@ -1175,6 +1214,7 @@ impl<T1> Trait<i32> for S<T1> {
 "#,
         );
     }
+
     #[test]
     fn test_generics_multiplex() {
         check_assist(
@@ -1221,6 +1261,7 @@ impl<T1> Trait<T1> for S<T1> {
 "#,
         );
     }
+
     #[test]
     fn test_complex_without_where() {
         check_assist(
@@ -1281,6 +1322,7 @@ impl<'a, T, const C: usize> Trait<'a, T, C> for Base {
 "#,
         );
     }
+
     #[test]
     fn test_complex_two() {
         check_assist(
@@ -1352,6 +1394,7 @@ where
 }"#,
         )
     }
+
     #[test]
     fn test_complex_three() {
         check_assist(
@@ -1441,6 +1484,7 @@ where
 "#,
         )
     }
+
     #[test]
     fn test_type_bound() {
         check_assist(
@@ -1469,6 +1513,7 @@ where
 }"#,
         );
     }
+
     #[test]
     fn test_type_bound_with_generics_1() {
         check_assist(
@@ -1532,6 +1577,7 @@ where
 }"#,
         );
     }
+
     #[test]
     fn test_type_bound_with_generics_2() {
         check_assist(
@@ -1593,6 +1639,7 @@ where
 }"#,
         );
     }
+
     #[test]
     fn test_docstring_example() {
         check_assist(
@@ -1651,6 +1698,7 @@ impl SomeTrait for B {
 "#,
         );
     }
+
     #[test]
     fn import_from_other_mod() {
         check_assist(
@@ -1717,6 +1765,7 @@ impl some_module::SomeTrait for B {
 }"#,
         )
     }
+
     #[test]
     fn test_fn_with_attrs() {
         check_assist(
@@ -1777,6 +1826,7 @@ impl T for B {
 "#,
         );
     }
+
     #[test]
     fn test_ty_alias_attrs() {
         check_assist(
@@ -1833,6 +1883,7 @@ impl T for B {
 "#,
         );
     }
+
     #[test]
     fn assoc_items_attributes_mutably_cloned() {
         check_assist(
@@ -1868,6 +1919,7 @@ impl<D, T: C<A>> C<D> for B<T> {
 "#,
         )
     }
+
     #[test]
     fn delegate_trait_skipped_when_no_grouping() {
         check_assist_not_applicable_no_grouping(

@@ -1,11 +1,9 @@
 //! Reports references in code that the IDE layer cannot resolve.
-
 use hir::{AnyDiagnostic, Crate, Module, Semantics, db::HirDatabase, sym};
-use ide_db::{
-    EditionedFileId, FxHashSet, LineIndexDatabase as _, base_db::SourceDatabase,
-    defs::NameRefClass,
-};
 use ide::{AnalysisHost, RootDatabase, TextRange};
+use ide_db::{
+    EditionedFileId, FxHashSet, LineIndexDatabase as _, base_db::SourceDatabase, defs::NameRefClass,
+};
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use parser::SyntaxKind;
 use syntax::{AstNode, WalkEvent, ast};
@@ -68,8 +66,12 @@ impl flags::UnresolvedReferences {
             let file_id = module.definition_source_file_id(db).original_file(db);
             let file_id = file_id.file_id(db);
             if !visited_files.contains(&file_id) {
-                let crate_name =
-                    module.krate().display_name(db).as_deref().unwrap_or(&sym::unknown).to_owned();
+                let crate_name = module
+                    .krate()
+                    .display_name(db)
+                    .as_deref()
+                    .unwrap_or(&sym::unknown)
+                    .to_owned();
                 let file_path = vfs.file_path(file_id);
                 eprintln!("processing crate: {crate_name}, module: {file_path}",);
 
@@ -96,8 +98,10 @@ impl flags::UnresolvedReferences {
 }
 
 fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
-    let mut worklist: Vec<_> =
-        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+    let mut worklist: Vec<_> = Crate::all(db)
+        .into_iter()
+        .map(|krate| krate.root_module())
+        .collect();
     let mut modules = Vec::new();
 
     while let Some(module) = worklist.pop() {
@@ -125,7 +129,9 @@ fn find_unresolved_references(
         };
 
         let node = inactive_code.node;
-        let range = node.map(|it| it.text_range()).original_node_file_range_rooted(db);
+        let range = node
+            .map(|it| it.text_range())
+            .original_node_file_range_rooted(db);
 
         if range.file_id.file_id(db) != file_id {
             continue;
@@ -156,7 +162,9 @@ fn all_unresolved_references(
             continue;
         };
         let Some(descended_name_ref) = name_ref.syntax().first_token().and_then(|tok| {
-            sema.descend_into_macros_single_exact(tok).parent().and_then(ast::NameRef::cast)
+            sema.descend_into_macros_single_exact(tok)
+                .parent()
+                .and_then(ast::NameRef::cast)
         }) else {
             continue;
         };
@@ -167,7 +175,11 @@ fn all_unresolved_references(
         }
 
         // if we couldn't classify it, but it's in an attr, ignore it. See #10935
-        if descended_name_ref.syntax().ancestors().any(|it| it.kind() == SyntaxKind::ATTR) {
+        if descended_name_ref
+            .syntax()
+            .ancestors()
+            .any(|it| it.kind() == SyntaxKind::ATTR)
+        {
             continue;
         }
 

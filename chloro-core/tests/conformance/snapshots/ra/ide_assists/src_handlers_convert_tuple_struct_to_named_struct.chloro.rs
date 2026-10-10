@@ -4,7 +4,9 @@ use ide_db::defs::{Definition, NameRefClass};
 use std::ops::RangeInclusive;
 use syntax::{
     SyntaxElement, SyntaxKind, SyntaxNode, T, TextSize,
-    ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory},
+    ast::{
+        self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory,
+    },
     match_ast,
     syntax_editor::{Element, Position, SyntaxEditor},
 };
@@ -58,7 +60,9 @@ pub(crate) fn convert_tuple_struct_to_named_struct(
         .find_node_at_offset::<ast::Struct>()
         .map(Either::Left)
         .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
-    let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
+    let field_list = strukt_or_variant
+        .as_ref()
+        .either(|s| s.field_list(), |v| v.field_list())?;
 
     if ctx.offset() > field_list.syntax().text_range().start() {
         // Assist could be distracting after the braces
@@ -73,8 +77,13 @@ pub(crate) fn convert_tuple_struct_to_named_struct(
         Either::Left(s) => Either::Left(ctx.sema.to_def(s)?),
         Either::Right(v) => Either::Right(ctx.sema.to_def(v)?),
     };
-    let target = strukt_or_variant.as_ref().either(|s| s.syntax(), |v| v.syntax()).text_range();
-    let syntax = strukt_or_variant.as_ref().either(|s| s.syntax(), |v| v.syntax());
+    let target = strukt_or_variant
+        .as_ref()
+        .either(|s| s.syntax(), |v| v.syntax())
+        .text_range();
+    let syntax = strukt_or_variant
+        .as_ref()
+        .either(|s| s.syntax(), |v| v.syntax());
     acc.add(
         AssistId::refactor_rewrite("convert_tuple_struct_to_named_struct"),
         "Convert to named struct",
@@ -101,7 +110,9 @@ fn edit_struct_def(
         let mut field_editor = SyntaxEditor::new(field.syntax().clone());
         field_editor.insert_all(
             Position::first_child_of(field.syntax()),
-            f.attrs().map(|attr| attr.syntax().clone_subtree().clone_for_update().into()).collect(),
+            f.attrs()
+                .map(|attr| attr.syntax().clone_subtree().clone_for_update().into())
+                .collect(),
         );
         ast::RecordField::cast(field_editor.finish().new_root().clone())
     });
@@ -115,7 +126,10 @@ fn edit_struct_def(
             let mut insert_element = Vec::new();
             insert_element.push(ast::make::tokens::single_newline().syntax_element());
             insert_element.push(w.syntax().clone_for_update().syntax_element());
-            if w.syntax().last_token().is_none_or(|t| t.kind() != SyntaxKind::COMMA) {
+            if w.syntax()
+                .last_token()
+                .is_none_or(|t| t.kind() != SyntaxKind::COMMA)
+            {
                 insert_element.push(ast::make::token(T![,]).into());
             }
             insert_element.push(ast::make::tokens::single_newline().syntax_element());
@@ -281,9 +295,13 @@ fn generate_record_pat_list(
 ) -> ast::RecordPatFieldList {
     let pure_fields = pat.fields().filter(|p| !matches!(p, ast::Pat::RestPat(_)));
     let rest_len = names.len().saturating_sub(pure_fields.clone().count());
-    let rest_pat = pat.fields().find_map(|p| ast::RestPat::cast(p.syntax().clone()));
-    let rest_idx =
-        pat.fields().position(|p| ast::RestPat::can_cast(p.syntax().kind())).unwrap_or(names.len());
+    let rest_pat = pat
+        .fields()
+        .find_map(|p| ast::RestPat::cast(p.syntax().clone()));
+    let rest_idx = pat
+        .fields()
+        .position(|p| ast::RestPat::can_cast(p.syntax().kind()))
+        .unwrap_or(names.len());
     let before_rest = pat.fields().zip(names).take(rest_idx);
     let after_rest = pure_fields.zip(names.iter().skip(rest_len)).skip(rest_idx);
 
@@ -296,7 +314,9 @@ fn generate_record_pat_list(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn not_applicable_other_than_tuple_struct() {
         check_assist_not_applicable(
@@ -323,6 +343,7 @@ fn test() {
 }"#,
         );
     }
+
     #[test]
     fn convert_simple_struct() {
         check_assist(
@@ -363,6 +384,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_and_rest_pat() {
         check_assist(
@@ -399,6 +421,7 @@ fn foo(X { field1: a, field4: d, .. }: X) {}
 "#,
         );
     }
+
     #[test]
     fn convert_simple_struct_cursor_on_struct_keyword() {
         check_assist(
@@ -439,6 +462,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_simple_struct_cursor_on_visibility_keyword() {
         check_assist(
@@ -479,6 +503,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_referenced_via_self_kw() {
         check_assist(
@@ -519,6 +544,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_destructured_struct() {
         check_assist(
@@ -555,6 +581,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_with_visibility() {
         check_assist(
@@ -593,6 +620,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_with_wrapped_references() {
         check_assist(
@@ -675,6 +703,7 @@ impl Outer {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_with_multi_file_references() {
         check_assist(
@@ -707,6 +736,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn convert_struct_with_where_clause() {
         check_assist(
@@ -736,6 +766,7 @@ where
             r#"enum Enum { Variant$0 }"#,
         );
     }
+
     #[test]
     fn convert_variant_in_macro_args() {
         check_assist(
@@ -758,6 +789,7 @@ fn test() {
 }"#,
         );
     }
+
     #[test]
     fn convert_simple_variant() {
         check_assist(
@@ -804,6 +836,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_variant_referenced_via_self_kw() {
         check_assist(
@@ -850,6 +883,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_destructured_variant() {
         check_assist(
@@ -888,6 +922,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_variant_with_wrapped_references() {
         check_assist(
@@ -970,6 +1005,7 @@ impl Outer {
 }"#,
         );
     }
+
     #[test]
     fn convert_variant_with_multi_file_references() {
         check_assist(
@@ -1006,6 +1042,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn convert_directly_used_variant() {
         check_assist(
@@ -1042,6 +1079,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn where_clause_with_trailing_comma() {
         check_assist(
@@ -1064,6 +1102,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn fields_with_attrs() {
         check_assist(
@@ -1076,6 +1115,7 @@ pub struct Foo { #[my_custom_attr]field1: u32 }
 "#,
         );
     }
+
     #[test]
     fn convert_in_macro_pattern_args() {
         check_assist(
@@ -1116,6 +1156,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_in_multi_file_macro_pattern_args() {
         check_assist(

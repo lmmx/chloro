@@ -57,7 +57,10 @@ fn check_expr_field_shorthand(
             Diagnostic::new(
                 DiagnosticCode::Clippy("redundant_field_names"),
                 "Shorthand struct initialization",
-                FileRange { file_id: vfs_file_id, range: field_range },
+                FileRange {
+                    file_id: vfs_file_id,
+                    range: field_range,
+                },
             )
             .with_fixes(Some(vec![fix(
                 "use_expr_field_shorthand",
@@ -103,7 +106,10 @@ fn check_pat_field_shorthand(
             Diagnostic::new(
                 DiagnosticCode::Clippy("redundant_field_names"),
                 "Shorthand struct pattern",
-                FileRange { file_id: vfs_file_id, range: field_range },
+                FileRange {
+                    file_id: vfs_file_id,
+                    range: field_range,
+                },
             )
             .with_fixes(Some(vec![fix(
                 "use_pat_field_shorthand",
@@ -118,6 +124,7 @@ fn check_pat_field_shorthand(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix};
+
     #[test]
     fn test_check_expr_field_shorthand() {
         check_diagnostics(
@@ -169,6 +176,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_check_pat_field_shorthand() {
         check_diagnostics(

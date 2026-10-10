@@ -26,7 +26,8 @@ use crate::{
     context::{DotAccess, DotAccessKind, PathCompletionCtx, PathKind, PatternContext},
     item::{Builder, CompletionRelevanceTypeMatch},
     render::{
-        function::render_fn, literal::render_variant_lit,
+        function::render_fn,
+        literal::render_variant_lit,
         macro_::{render_macro, render_macro_pat},
     },
 };
@@ -80,12 +81,17 @@ impl<'a> RenderContext<'a> {
         CompletionRelevance {
             is_private_editable: self.is_private_editable,
             requires_import: self.import_to_add.is_some(),
+            ..Default::default()
         }
     }
 
     fn is_immediately_after_macro_bang(&self) -> bool {
         self.completion.token.kind() == SyntaxKind::BANG
-            && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
+            && self
+                .completion
+                .token
+                .parent()
+                .is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
     }
 
     fn is_deprecated(&self, def: impl HasAttrs) -> bool {
@@ -128,8 +134,10 @@ pub(crate) fn render_field(
     let db = ctx.db();
     let is_deprecated = ctx.is_deprecated(field);
     let name = field.name(db);
-    let (name, escaped_name) =
-        (name.as_str().to_smolstr(), name.display_no_db(ctx.completion.edition).to_smolstr());
+    let (name, escaped_name) = (
+        name.as_str().to_smolstr(),
+        name.display_no_db(ctx.completion.edition).to_smolstr(),
+    );
     let mut item = CompletionItem::new(
         SymbolKind::Field,
         ctx.source_range(),
@@ -159,8 +167,11 @@ pub(crate) fn render_field(
             field_with_receiver(receiver.as_deref(), &escaped_name).into(),
         );
 
-        let expected_fn_type =
-            ctx.completion.expected_type.as_ref().is_some_and(|ty| ty.is_fn() || ty.is_closure());
+        let expected_fn_type = ctx
+            .completion
+            .expected_type
+            .as_ref()
+            .is_some_and(|ty| ty.is_fn() || ty.is_closure());
 
         if !expected_fn_type
             && let Some(receiver) = &dot_access.receiver
@@ -191,8 +202,7 @@ pub(crate) fn render_field(
 }
 
 fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
-    receiver
-    .map_or_else(
+    receiver.map_or_else(
         || field_name.into(),
         |receiver| format_smolstr!("{}.{field_name}", receiver),
     )
@@ -210,8 +220,11 @@ pub(crate) fn render_tuple_field(
         field_with_receiver(receiver.as_deref(), &field.to_string()),
         ctx.completion.edition,
     );
-    item.detail(ty.display(ctx.db(), ctx.completion.display_target).to_string())
-        .lookup_by(field.to_string());
+    item.detail(
+        ty.display(ctx.db(), ctx.completion.display_target)
+            .to_string(),
+    )
+    .lookup_by(field.to_string());
     item.set_relevance(CompletionRelevance {
         is_skipping_completion: receiver.is_some(),
         ..ctx.completion_relevance()
@@ -265,7 +278,13 @@ pub(crate) fn render_resolution_with_import(
     // This now just renders the alias text, but we need to find the aliases earlier and call this with the alias instead.
     let doc_aliases = ctx.completion.doc_aliases_in_scope(resolution);
     let ctx = ctx.doc_aliases(doc_aliases);
-    Some(render_resolution_path(ctx, path_ctx, local_name, Some(import_edit), resolution))
+    Some(render_resolution_path(
+        ctx,
+        path_ctx,
+        local_name,
+        Some(import_edit),
+        resolution,
+    ))
 }
 
 pub(crate) fn render_resolution_with_import_pat(
@@ -275,7 +294,13 @@ pub(crate) fn render_resolution_with_import_pat(
 ) -> Option<Builder> {
     let resolution = ScopeDef::from(import_edit.original_item);
     let local_name = get_import_name(resolution, &ctx, &import_edit)?;
-    Some(render_resolution_pat(ctx, pattern_ctx, local_name, Some(import_edit), resolution))
+    Some(render_resolution_pat(
+        ctx,
+        pattern_ctx,
+        local_name,
+        Some(import_edit),
+        resolution,
+    ))
 }
 
 pub(crate) fn render_expr(
@@ -301,8 +326,9 @@ pub(crate) fn render_expr(
 
     let cfg = ctx.config.find_path_config(ctx.is_nightly);
 
-    let label =
-        expr.gen_source_code(&ctx.scope, &mut label_formatter, cfg, ctx.display_target).ok()?;
+    let label = expr
+        .gen_source_code(&ctx.scope, &mut label_formatter, cfg, ctx.display_target)
+        .ok()?;
 
     let source_range = match ctx.original_token.parent() {
         Some(node) => match node.ancestors().find_map(ast::Path::cast) {
@@ -312,16 +338,23 @@ pub(crate) fn render_expr(
         None => ctx.source_range(),
     };
 
-    let mut item =
-        CompletionItem::new(CompletionItemKind::Expression, source_range, label, ctx.edition);
+    let mut item = CompletionItem::new(
+        CompletionItemKind::Expression,
+        source_range,
+        label,
+        ctx.edition,
+    );
 
     let snippet = format!(
         "{}$0",
-        expr.gen_source_code(&ctx.scope, &mut snippet_formatter, cfg, ctx.display_target).ok()?
+        expr.gen_source_code(&ctx.scope, &mut snippet_formatter, cfg, ctx.display_target)
+            .ok()?
     );
     let edit = TextEdit::replace(source_range, snippet);
     item.snippet_edit(ctx.config.snippet_cap?, edit);
-    item.documentation(Documentation::new(String::from("Autogenerated expression by term search")));
+    item.documentation(Documentation::new(String::from(
+        "Autogenerated expression by term search",
+    )));
     item.set_relevance(crate::CompletionRelevance {
         type_match: compute_type_match(ctx, &expr.ty(ctx.db)),
         ..Default::default()
@@ -332,7 +365,9 @@ pub(crate) fn render_expr(
             continue;
         };
 
-        item.add_import(LocatedImport::new_no_completion(path, trait_item, trait_item));
+        item.add_import(LocatedImport::new_no_completion(
+            path, trait_item, trait_item,
+        ));
     }
 
     Some(item)
@@ -346,6 +381,7 @@ fn get_import_name(
     // FIXME: Temporary workaround for handling aliased import.
     // This should be removed after we have proper support for importing alias.
     // <https://github.com/rust-lang/rust-analyzer/issues/14079>
+
     // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
     // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
     if import_edit.item_to_import == import_edit.original_item {
@@ -424,7 +460,9 @@ fn render_resolution_path(
     let config = completion.config;
     let requires_import = import_to_add.is_some();
 
-    let name = local_name.display_no_db(ctx.completion.edition).to_smolstr();
+    let name = local_name
+        .display_no_db(ctx.completion.edition)
+        .to_smolstr();
     let mut item = render_resolution_simple_(ctx, &local_name, import_to_add, resolution);
     if local_name.needs_escape(completion.edition) {
         item.insert_text(local_name.display_no_db(completion.edition).to_smolstr());
@@ -432,7 +470,11 @@ fn render_resolution_path(
     // Add `<>` for generic types
     let type_path_no_ty_args = matches!(
         path_ctx,
-        PathCompletionCtx { kind: PathKind::Type { .. }, has_type_args: false, .. }
+        PathCompletionCtx {
+            kind: PathKind::Type { .. },
+            has_type_args: false,
+            ..
+        }
     ) && config.callable.is_some();
     if type_path_no_ty_args && let Some(cap) = cap {
         let has_non_default_type_params = match resolution {
@@ -448,7 +490,10 @@ fn render_resolution_path(
             item.lookup_by(name.clone())
                 .label(SmolStr::from_iter([&name, "<…>"]))
                 .trigger_call_info()
-                .insert_snippet(cap, format!("{}<$0>", local_name.display(db, completion.edition)));
+                .insert_snippet(
+                    cap,
+                    format!("{}<$0>", local_name.display(db, completion.edition)),
+                );
         }
     }
 
@@ -607,7 +652,9 @@ fn compute_type_match(
 }
 
 fn compute_exact_name_match(ctx: &CompletionContext<'_>, completion_name: &str) -> bool {
-    ctx.expected_name.as_ref().is_some_and(|name| name.text() == completion_name)
+    ctx.expected_name
+        .as_ref()
+        .is_some_and(|name| name.text() == completion_name)
 }
 
 fn compute_ref_match(
@@ -621,7 +668,9 @@ fn compute_ref_match(
         return None;
     }
     if let Some(expected_without_ref) = &expected_without_ref
-        && completion_ty.autoderef(ctx.db).any(|ty| ty == *expected_without_ref)
+        && completion_ty
+            .autoderef(ctx.db)
+            .any(|ty| ty == *expected_without_ref)
     {
         cov_mark::hit!(suggest_ref);
         let mutability = if expected_type.is_mutable_reference() {
@@ -669,14 +718,17 @@ fn path_ref_match(
 #[cfg(test)]
 mod tests {
     use std::cmp;
+
     use expect_test::{Expect, expect};
     use ide_db::SymbolKind;
     use itertools::Itertools;
+
     use crate::{
         CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
         item::CompletionRelevanceTypeMatch,
         tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
     };
+
     #[track_caller]
     fn check(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -686,26 +738,33 @@ mod tests {
         let actual = do_completion(ra_fixture, kind.into());
         expect.assert_debug_eq(&actual);
     }
+
     #[track_caller]
     fn check_kinds(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         kinds: &[CompletionItemKind],
         expect: Expect,
     ) {
-        let actual: Vec<_> =
-            kinds.iter().flat_map(|&kind| do_completion(ra_fixture, kind)).collect();
+        let actual: Vec<_> = kinds
+            .iter()
+            .flat_map(|&kind| do_completion(ra_fixture, kind))
+            .collect();
         expect.assert_debug_eq(&actual);
     }
+
     #[track_caller]
     fn check_function_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-        let actual: Vec<_> =
-            do_completion(ra_fixture, CompletionItemKind::SymbolKind(SymbolKind::Method))
-                .into_iter()
-                .map(|item| (item.detail.unwrap_or_default(), item.relevance.function))
-                .collect();
+        let actual: Vec<_> = do_completion(
+            ra_fixture,
+            CompletionItemKind::SymbolKind(SymbolKind::Method),
+        )
+        .into_iter()
+        .map(|item| (item.detail.unwrap_or_default(), item.relevance.function))
+        .collect();
 
         expect.assert_debug_eq(&actual);
     }
+
     #[track_caller]
     fn check_relevance_for_kinds(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -717,6 +776,7 @@ mod tests {
         actual.sort_by_key(|it| (cmp::Reverse(it.relevance.score()), it.label.primary.clone()));
         check_relevance_(actual, expect);
     }
+
     #[track_caller]
     fn check_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let mut actual = get_all_items(TEST_CONFIG, ra_fixture, None);
@@ -726,6 +786,7 @@ mod tests {
         actual.sort_by_key(|it| (cmp::Reverse(it.relevance.score()), it.label.primary.clone()));
         check_relevance_(actual, expect);
     }
+
     #[track_caller]
     fn check_relevance_(actual: Vec<CompletionItem>, expect: Expect) {
         let actual = actual
@@ -755,7 +816,10 @@ mod tests {
 
         fn display_relevance(relevance: CompletionRelevance) -> String {
             let relevance_factors = vec![
-                (relevance.type_match == Some(CompletionRelevanceTypeMatch::Exact), "type"),
+                (
+                    relevance.type_match == Some(CompletionRelevanceTypeMatch::Exact),
+                    "type",
+                ),
                 (
                     relevance.type_match == Some(CompletionRelevanceTypeMatch::CouldUnify),
                     "type_could_unify",
@@ -766,7 +830,10 @@ mod tests {
                     relevance.postfix_match == Some(CompletionRelevancePostfixMatch::Exact),
                     "snippet",
                 ),
-                (relevance.trait_.is_some_and(|it| it.is_op_method), "op_method"),
+                (
+                    relevance.trait_.is_some_and(|it| it.is_op_method),
+                    "op_method",
+                ),
                 (relevance.requires_import, "requires_import"),
             ]
             .into_iter()
@@ -776,6 +843,7 @@ mod tests {
             format!("[{relevance_factors}]")
         }
     }
+
     #[test]
     fn set_struct_type_completion_info() {
         check_relevance(
@@ -809,6 +877,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_union_type_completion_info() {
         check_relevance(
@@ -846,6 +915,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_enum_type_completion_info() {
         check_relevance(
@@ -883,6 +953,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_enum_variant_type_completion_info() {
         check_relevance(
@@ -918,6 +989,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_fn_type_completion_info() {
         check_relevance(
@@ -949,6 +1021,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_const_type_completion_info() {
         check_relevance(
@@ -980,6 +1053,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_static_type_completion_info() {
         check_relevance(
@@ -1011,6 +1085,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_self_type_completion_info_with_params() {
         check_relevance(
@@ -1042,6 +1117,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn set_self_type_completion_info() {
         check_relevance(
@@ -1071,6 +1147,7 @@ fn func(input: Struct) { }
             "#]],
         );
     }
+
     #[test]
     fn set_builtin_type_completion_info() {
         check_relevance(
@@ -1097,6 +1174,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn enum_detail_includes_record_fields() {
         check(
@@ -1146,6 +1224,7 @@ fn main() { Foo::Fo$0 }
             "#]],
         );
     }
+
     #[test]
     fn enum_detail_includes_tuple_fields() {
         check(
@@ -1195,6 +1274,7 @@ fn main() { Foo::Fo$0 }
             "#]],
         );
     }
+
     #[test]
     fn fn_detail_includes_args_and_return_type() {
         check(
@@ -1241,6 +1321,7 @@ fn main() { fo$0 }
             "#]],
         );
     }
+
     #[test]
     fn fn_detail_includes_variadics() {
         check(
@@ -1287,6 +1368,7 @@ fn main() { fo$0 }
             "#]],
         );
     }
+
     #[test]
     fn enum_detail_just_name_for_unit() {
         check(
@@ -1335,6 +1417,7 @@ fn main() { Foo::Fo$0 }
             "#]],
         );
     }
+
     #[test]
     fn lookup_enums_by_two_qualifiers() {
         check_kinds(
@@ -1345,10 +1428,10 @@ mod m {
 fn main() { let _: m::Spam = S$0 }
 "#,
             &[
-            CompletionItemKind::SymbolKind(SymbolKind::Function),
-            CompletionItemKind::SymbolKind(SymbolKind::Module),
-            CompletionItemKind::SymbolKind(SymbolKind::Variant),
-        ],
+                CompletionItemKind::SymbolKind(SymbolKind::Function),
+                CompletionItemKind::SymbolKind(SymbolKind::Module),
+                CompletionItemKind::SymbolKind(SymbolKind::Variant),
+            ],
             expect![[r#"
                 [
                     CompletionItem {
@@ -1453,6 +1536,7 @@ fn main() { let _: m::Spam = S$0 }
             "#]],
         )
     }
+
     #[test]
     fn sets_deprecated_flag_in_items() {
         check(
@@ -1541,6 +1625,7 @@ fn foo() { A { the$0 } }
             "#]],
         );
     }
+
     #[test]
     fn renders_docs() {
         check_kinds(
@@ -1631,10 +1716,10 @@ enum E {
 use self::E::*;
 "#,
             &[
-            CompletionItemKind::SymbolKind(SymbolKind::Module),
-            CompletionItemKind::SymbolKind(SymbolKind::Variant),
-            CompletionItemKind::SymbolKind(SymbolKind::Enum),
-        ],
+                CompletionItemKind::SymbolKind(SymbolKind::Module),
+                CompletionItemKind::SymbolKind(SymbolKind::Variant),
+                CompletionItemKind::SymbolKind(SymbolKind::Enum),
+            ],
             expect![[r#"
                 [
                     CompletionItem {
@@ -1708,6 +1793,7 @@ use self::E::*;
             "#]],
         )
     }
+
     #[test]
     fn dont_render_attrs() {
         check(
@@ -1759,6 +1845,7 @@ fn foo(s: S) { s.$0 }
             "#]],
         )
     }
+
     #[test]
     fn no_call_parens_if_fn_ptr_needed() {
         cov_mark::check!(no_call_parens_if_fn_ptr_needed);
@@ -1799,6 +1886,7 @@ fn main() -> RawIdentTable {
 "#,
         );
     }
+
     #[test]
     fn no_parens_in_use_item() {
         check_edit(
@@ -1813,6 +1901,7 @@ use crate::m::foo;
 "#,
         );
     }
+
     #[test]
     fn no_parens_in_call() {
         check_edit(
@@ -1840,6 +1929,7 @@ fn f(foo: &Foo) { foo.foo(); }
 "#,
         );
     }
+
     #[test]
     fn inserts_angle_brackets_for_generics() {
         cov_mark::check!(inserts_angle_brackets_for_generics);
@@ -1888,6 +1978,7 @@ fn foo(xs: Vec<i128>)
 "#,
         );
     }
+
     #[test]
     fn active_param_relevance() {
         check_relevance(
@@ -1903,6 +1994,7 @@ fn foo(s: S) { test(s.$0) }
             "#]],
         );
     }
+
     #[test]
     fn record_field_relevances() {
         check_relevance(
@@ -1918,6 +2010,7 @@ fn foo(a: A) { B { bar: a.$0 }; }
             "#]],
         )
     }
+
     #[test]
     fn tuple_field_detail() {
         check(
@@ -1964,6 +2057,7 @@ fn f() -> i32 {
             "#]],
         );
     }
+
     #[test]
     fn record_field_and_call_relevances() {
         check_relevance(
@@ -1993,6 +2087,7 @@ fn foo(a: A) { f(B { bar: a.$0 }); }
             "#]],
         );
     }
+
     #[test]
     fn prioritize_exact_ref_match() {
         check_relevance(
@@ -2011,6 +2106,7 @@ fn go(world: &WorldSnapshot) { go(w$0) }
             "#]],
         );
     }
+
     #[test]
     fn too_many_arguments() {
         cov_mark::check!(too_many_arguments);
@@ -2026,6 +2122,7 @@ fn f(foo: &Foo) { f(foo, w$0) }
             "#]],
         );
     }
+
     #[test]
     fn score_fn_type_and_name_match() {
         check_relevance(
@@ -2045,6 +2142,7 @@ fn f() { A { bar: b$0 }; }
             "#]],
         );
     }
+
     #[test]
     fn score_method_type_and_name_match() {
         check_relevance(
@@ -2067,6 +2165,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn score_method_name_match_only() {
         check_relevance(
@@ -2085,6 +2184,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn test_avoid_redundant_suggestion() {
         check_relevance(
@@ -2108,6 +2208,7 @@ fn bb()-> &'static aa {
             "#]],
         );
     }
+
     #[test]
     fn suggest_ref_mut() {
         cov_mark::check!(suggest_ref);
@@ -2170,6 +2271,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn suggest_deref_copy() {
         cov_mark::check!(suggest_deref);
@@ -2204,6 +2306,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn suggest_deref_trait() {
         check_relevance(
@@ -2246,6 +2349,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn suggest_deref_mut() {
         check_relevance(
@@ -2294,6 +2398,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn locals() {
         check_relevance(
@@ -2311,6 +2416,7 @@ fn foo(bar: u32) {
             "#]],
         );
     }
+
     #[test]
     fn enum_owned() {
         check_relevance(
@@ -2332,6 +2438,7 @@ fn bar(t: Foo) {}
             "#]],
         );
     }
+
     #[test]
     fn enum_ref() {
         check_relevance(
@@ -2354,6 +2461,7 @@ fn bar(t: &Foo) {}
             "#]],
         );
     }
+
     #[test]
     fn suggest_deref_fn_ret() {
         check_relevance(
@@ -2393,6 +2501,7 @@ fn main() {
             "#]],
         )
     }
+
     #[test]
     fn op_function_relevances() {
         check_relevance(
@@ -2432,6 +2541,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn constructor_order_simple() {
         check_relevance(
@@ -2457,6 +2567,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn constructor_order_kind() {
         check_function_relevance(
@@ -2567,6 +2678,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn constructor_order_relevance() {
         check_relevance(
@@ -2606,6 +2718,7 @@ fn test() {
 
         //
     }
+
     #[test]
     fn function_relevance_generic_1() {
         check_relevance(
@@ -2640,6 +2753,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn function_relevance_generic_2() {
         // Generic 2
@@ -2675,6 +2789,7 @@ fn test() {
             "#]],
         );
     }
+
     #[test]
     fn struct_field_method_ref() {
         check_kinds(
@@ -2768,6 +2883,7 @@ fn foo(f: Foo) { let _: &u32 = f.b$0 }
             "#]],
         );
     }
+
     #[test]
     fn expected_fn_type_ref() {
         check_kinds(
@@ -2813,6 +2929,7 @@ fn foo() {
             "#]],
         )
     }
+
     #[test]
     fn qualified_path_ref() {
         check_kinds(
@@ -2871,6 +2988,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn generic_enum() {
         check_relevance(
@@ -2902,6 +3020,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn postfix_exact_match_is_high_priority() {
         cov_mark::check!(postfix_exact_match_is_high_priority);
@@ -2923,7 +3042,10 @@ fn main() {
     let _: bool = (9 > 2).not$0;
 }
     "#,
-            &[CompletionItemKind::Snippet, CompletionItemKind::SymbolKind(SymbolKind::Method)],
+            &[
+                CompletionItemKind::Snippet,
+                CompletionItemKind::SymbolKind(SymbolKind::Method),
+            ],
             expect![[r#"
                 sn not !expr [snippet]
                 sn box Box::new(expr) []
@@ -2943,6 +3065,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn postfix_inexact_match_is_low_priority() {
         cov_mark::check!(postfix_inexact_match_is_low_priority);
@@ -2956,7 +3079,10 @@ fn main() {
     S.$0
 }
     "#,
-            &[CompletionItemKind::Snippet, CompletionItemKind::SymbolKind(SymbolKind::Method)],
+            &[
+                CompletionItemKind::Snippet,
+                CompletionItemKind::SymbolKind(SymbolKind::Method),
+            ],
             expect![[r#"
                 me f() fn(&self) []
                 sn box Box::new(expr) []
@@ -2975,6 +3101,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn flyimport_reduced_relevance() {
         check_relevance(
@@ -3002,6 +3129,7 @@ fn f() {
             "#]],
         );
     }
+
     #[test]
     fn completes_struct_with_raw_identifier() {
         check_edit(
@@ -3020,6 +3148,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn completes_fn_with_raw_identifier() {
         check_edit(
@@ -3038,6 +3167,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn completes_macro_with_raw_identifier() {
         check_edit(
@@ -3056,6 +3186,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn completes_variant_with_raw_identifier() {
         check_edit(
@@ -3074,6 +3205,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn completes_field_with_raw_identifier() {
         check_edit(
@@ -3104,6 +3236,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn completes_const_with_raw_identifier() {
         check_edit(
@@ -3124,6 +3257,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn completes_type_alias_with_raw_identifier() {
         check_edit(
@@ -3140,6 +3274,7 @@ impl r#trait for r#struct { type r#type = $0; }
 "#,
         )
     }
+
     #[test]
     fn field_access_includes_self() {
         check_edit(
@@ -3168,6 +3303,7 @@ impl S {
 "#,
         )
     }
+
     #[test]
     fn notable_traits_method_relevance() {
         check_kinds(

@@ -251,3 +251,27 @@ use std::*;
 use z;
 ");
 }
+
+#[test]
+fn bare_self_import_is_removed() {
+    // rustfmt removes `use self;` unless it carries attributes: every `use` item has a
+    // visibility in rustc, `Inherited` when none is written.
+    let output = format_source("use self;\npub use self;\n#[a]\nuse self;\nuse a;\n");
+    assert_snapshot!(output, @r"
+    #[a]
+    use self;
+    use a;
+    ");
+}
+
+#[test]
+fn global_paths_lose_leading_colons_in_edition_2015() {
+    let mut config = crate::Config::default();
+    config.set("edition", "2015").unwrap();
+    let output =
+        crate::format_source_with_config("use ::self;\nuse ::foo;\nuse ::self as x;\n", &config);
+    assert_snapshot!(output, @r"
+    use self as x;
+    use foo;
+    ");
+}

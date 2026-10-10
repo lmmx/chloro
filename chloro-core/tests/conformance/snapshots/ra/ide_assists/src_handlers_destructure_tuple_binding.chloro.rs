@@ -75,7 +75,11 @@ pub(crate) fn destructure_tuple_binding_impl(
 
     acc.add(
         AssistId::refactor_rewrite("destructure_tuple_binding"),
-        if with_sub_pattern { "Destructure tuple in place" } else { "Destructure tuple" },
+        if with_sub_pattern {
+            "Destructure tuple in place"
+        } else {
+            "Destructure tuple"
+        },
         data.ident_pat.syntax().text_range(),
         |edit| destructure_tuple_edit_impl(ctx, edit, &data, false),
     );
@@ -94,7 +98,9 @@ fn destructure_tuple_edit_impl(
 
     assignment_edit.apply();
     if let Some(usages_edit) = current_file_usages_edit {
-        usages_edit.into_iter().for_each(|usage_edit| usage_edit.apply(edit))
+        usages_edit
+            .into_iter()
+            .for_each(|usage_edit| usage_edit.apply(edit))
     }
 }
 
@@ -149,21 +155,24 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
         })
         .collect::<Vec<_>>();
 
-    Some(TupleData { ident_pat, ref_type, field_names, usages })
+    Some(TupleData {
+        ident_pat,
+        ref_type,
+        field_names,
+        usages,
+    })
 }
 
 enum RefType {
     ReadOnly,
     Mutable,
 }
-
 struct TupleData {
     ident_pat: IdentPat,
     ref_type: Option<RefType>,
     field_names: Vec<String>,
     usages: Option<Vec<FileReference>>,
 }
-
 fn edit_tuple_assignment(
     ctx: &AssistContext<'_>,
     edit: &mut SourceChangeBuilder,
@@ -193,14 +202,20 @@ fn edit_tuple_assignment(
         if let Some(ast::Pat::IdentPat(first_pat)) = tuple_pat.fields().next() {
             edit.add_tabstop_before(
                 cap,
-                first_pat.name().expect("first ident pattern should have a name"),
+                first_pat
+                    .name()
+                    .expect("first ident pattern should have a name"),
             )
         }
     }
 
-    AssignmentEdit { ident_pat, tuple_pat, in_sub_pattern, is_shorthand_field }
+    AssignmentEdit {
+        ident_pat,
+        tuple_pat,
+        in_sub_pattern,
+        is_shorthand_field,
+    }
 }
-
 struct AssignmentEdit {
     ident_pat: ast::IdentPat,
     tuple_pat: ast::TuplePat,
@@ -214,8 +229,14 @@ impl AssignmentEdit {
         if self.in_sub_pattern {
             self.ident_pat.set_pat(Some(self.tuple_pat.into()))
         } else if self.is_shorthand_field {
-            ted::insert(ted::Position::after(self.ident_pat.syntax()), self.tuple_pat.syntax());
-            ted::insert_raw(ted::Position::after(self.ident_pat.syntax()), make::token(T![:]));
+            ted::insert(
+                ted::Position::after(self.ident_pat.syntax()),
+                self.tuple_pat.syntax(),
+            );
+            ted::insert_raw(
+                ted::Position::after(self.ident_pat.syntax()),
+                make::token(T![:]),
+            );
         } else {
             ted::replace(self.ident_pat.syntax(), self.tuple_pat.syntax())
         }
@@ -235,6 +256,7 @@ fn edit_tuple_usages(
     // We also defer editing usages in the current file first since
     // tree mutation in the same file breaks when `builder.edit_file`
     // is called
+
     let edits = data
         .usages
         .as_ref()?
@@ -245,7 +267,6 @@ fn edit_tuple_usages(
 
     Some(edits)
 }
-
 fn edit_tuple_usage(
     ctx: &AssistContext<'_>,
     builder: &mut SourceChangeBuilder,
@@ -281,7 +302,6 @@ fn edit_tuple_field_usage(
         EditTupleUsage::ReplaceExpr(field_expr.into(), field_name)
     }
 }
-
 enum EditTupleUsage {
     /// no index access -> make invalid -> requires handling by user
     /// -> put usage in block comment
@@ -301,9 +321,10 @@ impl EditTupleUsage {
                 edit.insert(range.start(), "/*");
                 edit.insert(range.end(), "*/");
             }
-            EditTupleUsage::ReplaceExpr(target_expr, replace_with) => {
-                ted::replace(target_expr.syntax(), replace_with.clone_for_update().syntax())
-            }
+            EditTupleUsage::ReplaceExpr(target_expr, replace_with) => ted::replace(
+                target_expr.syntax(),
+                replace_with.clone_for_update().syntax(),
+            ),
         }
     }
 }
@@ -312,7 +333,6 @@ struct TupleIndex {
     index: usize,
     field_expr: FieldExpr,
 }
-
 fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIndex> {
     // usage is IDENT
     // IDENT
@@ -322,6 +342,7 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
     //     PATH_EXPR
     //      PAREN_EXRP*
     //       FIELD_EXPR
+
     let node = usage
         .name
         .syntax()
@@ -334,7 +355,11 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
         let idx = field_expr.name_ref()?.as_tuple_field()?;
         if idx < data.field_names.len() {
             // special case: in macro call -> range of `field_expr` in applied macro, NOT range in actual file!
-            if field_expr.syntax().ancestors().any(|a| ast::MacroStmts::can_cast(a.kind())) {
+            if field_expr
+                .syntax()
+                .ancestors()
+                .any(|a| ast::MacroStmts::can_cast(a.kind()))
+            {
                 cov_mark::hit!(destructure_tuple_macro_call);
 
                 // issue: cannot differentiate between tuple index passed into macro or tuple index as result of macro:
@@ -351,7 +376,10 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
                 return None;
             }
 
-            Some(TupleIndex { index: idx, field_expr })
+            Some(TupleIndex {
+                index: idx,
+                field_expr,
+            })
         } else {
             // tuple index out of range
             None
@@ -364,30 +392,41 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     // Tests for direct tuple destructure:
     // `let $0t = (1,2);` -> `let (_0, _1) = (1,2);`
+
     fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
         destructure_tuple_binding_impl(acc, ctx, false)
     }
+
     #[test]
     fn dont_trigger_on_unit() {
         cov_mark::check!(destructure_tuple_no_tuple);
-        check_assist_not_applicable(assist, r#"
+        check_assist_not_applicable(
+            assist,
+            r#"
 fn main() {
 let $0v = ();
 }
-            "#)
+            "#,
+        )
     }
     #[test]
     fn dont_trigger_on_number() {
         cov_mark::check!(destructure_tuple_no_tuple);
-        check_assist_not_applicable(assist, r#"
+        check_assist_not_applicable(
+            assist,
+            r#"
 fn main() {
 let $0v = 32;
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn destructure_3_tuple() {
         check_assist(
@@ -442,6 +481,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn replace_usage_in_parentheses() {
         check_assist(
@@ -462,6 +502,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn handle_function_call() {
         check_assist(
@@ -480,6 +521,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn handle_invalid_index() {
         check_assist(
@@ -498,6 +540,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn dont_replace_variable_with_same_name_as_tuple() {
         check_assist(
@@ -524,6 +567,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn keep_function_call_in_tuple_item() {
         check_assist(
@@ -542,6 +586,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn keep_type() {
         check_assist(
@@ -558,6 +603,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn destructure_reference() {
         check_assist(
@@ -578,6 +624,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn destructure_multiple_reference() {
         check_assist(
@@ -598,6 +645,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn keep_reference() {
         check_assist(
@@ -618,6 +666,7 @@ fn foo(t: &(usize, usize)) -> usize {
             "#,
         )
     }
+
     #[test]
     fn with_ref() {
         check_assist(
@@ -636,6 +685,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn with_mut() {
         check_assist(
@@ -656,6 +706,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn with_ref_mut() {
         check_assist(
@@ -676,6 +727,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn dont_trigger_for_non_tuple_reference() {
         check_assist_not_applicable(
@@ -688,6 +740,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn dont_trigger_on_static_tuple() {
         check_assist_not_applicable(
@@ -697,14 +750,19 @@ static $0TUP: (usize, usize) = (1,2);
             "#,
         )
     }
+
     #[test]
     fn dont_trigger_on_wildcard() {
-        check_assist_not_applicable(assist, r#"
+        check_assist_not_applicable(
+            assist,
+            r#"
 fn main() {
     let $0_ = (1,2);
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn dont_trigger_in_struct() {
         check_assist_not_applicable(
@@ -716,6 +774,7 @@ struct S {
             "#,
         )
     }
+
     #[test]
     fn dont_trigger_in_struct_creation() {
         check_assist_not_applicable(
@@ -732,6 +791,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn dont_trigger_on_tuple_struct() {
         check_assist_not_applicable(
@@ -744,6 +804,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn dont_trigger_when_subpattern_exists() {
         // sub-pattern is only allowed with IdentPat (name), not other patterns (like TuplePat)
@@ -760,6 +821,7 @@ fn sum(t: (usize, usize)) -> usize {
             "#,
         )
     }
+
     #[test]
     fn in_subpattern() {
         check_assist(
@@ -778,6 +840,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn in_record_shorthand_field() {
         check_assist(
@@ -798,6 +861,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn in_record_field() {
         check_assist(
@@ -818,6 +882,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn in_nested_tuple() {
         check_assist(
@@ -834,6 +899,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn in_closure() {
         check_assist(
@@ -852,6 +918,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn in_closure_args() {
         check_assist(
@@ -870,6 +937,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn in_function_args() {
         check_assist(
@@ -886,6 +954,7 @@ fn f(($0_0, _1): (usize, usize)) {
             "#,
         )
     }
+
     #[test]
     fn in_if_let() {
         check_assist(
@@ -927,6 +996,7 @@ fn f(o: Option<(usize, usize)>) {
             "#,
         )
     }
+
     #[test]
     fn in_match() {
         check_assist(
@@ -995,6 +1065,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn in_for() {
         check_assist(
@@ -1037,6 +1108,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn not_applicable_on_tuple_usage() {
         //Improvement: might be reasonable to allow & implement
@@ -1050,6 +1122,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn replace_all() {
         check_assist(
@@ -1086,6 +1159,7 @@ fn main() {
             "#,
         )
     }
+
     #[test]
     fn non_trivial_tuple_assignment() {
         check_assist(
@@ -1126,15 +1200,18 @@ fn main {
             "#,
         )
     }
+
     mod assist {
         use super::*;
         use crate::tests::check_assist_by_label;
+
         fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
             destructure_tuple_binding_impl(acc, ctx, true)
         }
         fn in_place_assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
             destructure_tuple_binding_impl(acc, ctx, false)
         }
+
         pub(crate) fn check_in_place_assist(
             #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
             #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
@@ -1147,6 +1224,7 @@ fn main {
                 "Destructure tuple",
             );
         }
+
         pub(crate) fn check_sub_pattern_assist(
             #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
             #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
@@ -1158,6 +1236,7 @@ fn main {
                 "Destructure tuple in sub-pattern",
             );
         }
+
         pub(crate) fn check_both_assists(
             ra_fixture_before: &str,
             ra_fixture_after_in_place: &str,
@@ -1167,12 +1246,14 @@ fn main {
             check_sub_pattern_assist(ra_fixture_before, ra_fixture_after_in_sub_pattern);
         }
     }
+
     /// Tests for destructure of tuple in sub-pattern:
     /// `let $0t = (1,2);` -> `let t @ (_0, _1) = (1,2);`
     mod sub_pattern {
         use super::assist::*;
         use super::*;
         use crate::tests::check_assist_by_label;
+
         #[test]
         fn destructure_in_sub_pattern() {
             check_sub_pattern_assist(
@@ -1192,6 +1273,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn trigger_both_destructure_tuple_assists() {
             fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
@@ -1223,6 +1305,7 @@ fn main() {
                 "Destructure tuple in sub-pattern",
             );
         }
+
         #[test]
         fn replace_indices() {
             check_sub_pattern_assist(
@@ -1242,6 +1325,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn keep_function_call() {
             cov_mark::check!(destructure_tuple_call_with_subpattern);
@@ -1260,6 +1344,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn keep_type() {
             check_sub_pattern_assist(
@@ -1279,6 +1364,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn in_function_args() {
             check_sub_pattern_assist(
@@ -1296,6 +1382,7 @@ fn f(t @ ($0_0, _1): (usize, usize)) {
                 "#,
             )
         }
+
         #[test]
         fn with_ref() {
             check_sub_pattern_assist(
@@ -1354,10 +1441,12 @@ fn main() {
             )
         }
     }
+
     /// Tests for tuple usage in macro call:
     /// `println!("{}", t.0)`
     mod in_macro_call {
         use super::assist::*;
+
         #[test]
         fn detect_macro_call() {
             cov_mark::check!(destructure_tuple_macro_call);
@@ -1384,9 +1473,11 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn tuple_usage() {
             check_both_assists(
+                // leading `"foo"` to ensure `$e` doesn't start at position `0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1419,6 +1510,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn tuple_function_usage() {
             check_both_assists(
@@ -1454,6 +1546,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn tuple_index_usage() {
             check_both_assists(
@@ -1467,6 +1560,7 @@ fn main() {
     m!(t.0);
 }
                 "#,
+                // FIXME: replace `t.0` with `_0` (cannot detect range of tuple index in macro call)
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1477,6 +1571,7 @@ fn main() {
     m!(/*t*/.0);
 }
                 "#,
+                // FIXME: replace `t.0` with `_0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1489,6 +1584,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn tuple_in_parentheses_index_usage() {
             check_both_assists(
@@ -1502,6 +1598,7 @@ fn main() {
     m!((t).0);
 }
                 "#,
+                // FIXME: replace `(t).0` with `_0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1512,6 +1609,7 @@ fn main() {
     m!((/*t*/).0);
 }
                 "#,
+                // FIXME: replace `(t).0` with `_0`
                 r#"
 macro_rules! m {
     ($e:expr) => { "foo"; $e };
@@ -1524,6 +1622,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn empty_macro() {
             check_in_place_assist(
@@ -1538,6 +1637,7 @@ fn main() {
     m!(t);
 }
                 "#,
+                // FIXME: macro allows no arg -> is valid. But assist should result in invalid code
                 r#"
 macro_rules! m {
     () => { "foo" };
@@ -1551,6 +1651,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn tuple_index_in_macro() {
             check_both_assists(
@@ -1564,6 +1665,7 @@ fn main() {
     m!(t, t.0);
 }
                 "#,
+                // FIXME: replace `t.0` in macro call (not IN macro) with `_0`
                 r#"
 macro_rules! m {
     ($t:expr, $i:expr) => { $t.0 + $i };
@@ -1574,6 +1676,7 @@ fn main() {
     m!(/*t*/, /*t*/.0);
 }
                 "#,
+                // FIXME: replace `t.0` in macro call with `_0`
                 r#"
 macro_rules! m {
     ($t:expr, $i:expr) => { $t.0 + $i };
@@ -1587,8 +1690,10 @@ fn main() {
             )
         }
     }
+
     mod refs {
         use super::assist::*;
+
         #[test]
         fn no_ref() {
             check_in_place_assist(
@@ -1674,6 +1779,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn deref_and_parentheses() {
             // Operator/Expressions with higher precedence than deref (`*`):
@@ -1755,8 +1861,10 @@ fn foo() -> Option<()> {
                 "#,
             )
         }
+
         // ---------
         // auto-ref/deref
+
         #[test]
         fn self_auto_ref_doesnt_need_deref() {
             check_in_place_assist(
@@ -1786,6 +1894,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn self_owned_requires_deref() {
             check_in_place_assist(
@@ -1815,6 +1924,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn self_auto_ref_in_trait_call_doesnt_require_deref() {
             check_in_place_assist(
@@ -1833,6 +1943,7 @@ fn main() {
     let s = t.0.f();
 }
                 "#,
+                // FIXME: doesn't need deref * parens. But `ctx.sema.resolve_method_call` doesn't resolve trait implementations
                 r#"
 trait T {
     fn f(self);
@@ -1891,6 +2002,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn no_outer_parens_when_ref_deref() {
             check_in_place_assist(
@@ -1918,6 +2030,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn auto_ref_deref() {
             check_in_place_assist(
@@ -1955,6 +2068,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn mutable() {
             check_in_place_assist(
@@ -1988,6 +2102,7 @@ fn main() {
                 "#,
             )
         }
+
         #[test]
         fn with_ref_keyword() {
             check_in_place_assist(

@@ -4,6 +4,7 @@
 use std::io::{self};
 
 use anyhow::Context;
+use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
     Layer, Registry,
     filter::{Targets, filter_fn},
@@ -11,7 +12,6 @@ use tracing_subscriber::{
     layer::SubscriberExt,
 };
 use tracing_tree::HierarchicalLayer;
-use tracing::level_filters::LevelFilter;
 
 use crate::tracing::hprof;
 use crate::tracing::json;
@@ -37,6 +37,7 @@ pub struct Config<T> {
     /// env RA_PROFILE=*@3>10        // dump everything, up to depth 3, if it takes more than 10
     /// ```
     pub profile_filter: Option<String>,
+
     /// Filtering syntax, set in a shell:
     /// ```text
     /// env RA_PROFILE_JSON=foo|bar|baz
@@ -76,8 +77,9 @@ where
 
         let chalk_layer = match self.chalk_filter {
             Some(chalk_filter) => {
-                let level: LevelFilter =
-                    chalk_filter.parse().with_context(|| "invalid chalk log filter")?;
+                let level: LevelFilter = chalk_filter
+                    .parse()
+                    .with_context(|| "invalid chalk log filter")?;
 
                 let chalk_filter = Targets::new()
                     .with_target("chalk_solve", level)
@@ -92,7 +94,9 @@ where
                     .with_filter(chalk_filter)
                     .boxed()
             }
-            None => None::<HierarchicalLayer>.with_filter(LevelFilter::OFF).boxed(),
+            None => None::<HierarchicalLayer>
+                .with_filter(LevelFilter::OFF)
+                .boxed(),
         };
 
         // TODO: remove `.with_filter(LevelFilter::OFF)` on the `None` branch.

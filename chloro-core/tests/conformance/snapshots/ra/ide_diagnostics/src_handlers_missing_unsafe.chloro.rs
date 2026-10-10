@@ -58,10 +58,18 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Option<Vec<Ass
     }
     let edit = TextEdit::replace(node_to_add_unsafe_block.text_range(), replacement);
     let source_change = SourceChange::from_text_edit(
-        d.node.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+        d.node
+            .file_id
+            .original_file(ctx.sema.db)
+            .file_id(ctx.sema.db),
         edit,
     );
-    Some(vec![fix("add_unsafe", "Add unsafe block", source_change, expr.syntax().text_range())])
+    Some(vec![fix(
+        "add_unsafe",
+        "Add unsafe block",
+        source_change,
+        expr.syntax().text_range(),
+    )])
 }
 
 // Pick the first ancestor expression of the unsafe `expr` that is not a
@@ -81,8 +89,10 @@ fn pick_best_node_to_add_unsafe_block(unsafe_expr: &ast::Expr) -> Option<SyntaxN
     // - `ast::MethodCallExpr`: call an unsafe method
     // - `ast::PrefixExpr`: dereference a raw pointer
     // - `ast::PathExpr`: access a static mut variable
-    for (node, parent) in
-        unsafe_expr.syntax().ancestors().zip(unsafe_expr.syntax().ancestors().skip(1))
+    for (node, parent) in unsafe_expr
+        .syntax()
+        .ancestors()
+        .zip(unsafe_expr.syntax().ancestors().skip(1))
     {
         match_ast! {
             match parent {
@@ -131,17 +141,21 @@ fn needs_parentheses(expr: &ast::Expr) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix, check_no_fix};
+
     #[test]
     fn missing_unsafe_diagnostic_with_raw_ptr() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 //- minicore: sized
 fn main() {
     let x = &5_usize as *const usize;
     unsafe { let _y = *x; }
     let _z = *x;
 }          //^^💡 error: dereference of raw pointer is unsafe and requires an unsafe function or block
-"#)
+"#,
+        )
     }
+
     #[test]
     fn missing_unsafe_diagnostic_with_unsafe_call() {
         check_diagnostics(
@@ -174,6 +188,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn missing_unsafe_diagnostic_with_static_mut() {
         check_diagnostics(
@@ -196,6 +211,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn missing_unsafe_diagnostic_with_extern_static() {
         check_diagnostics(
@@ -220,6 +236,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_unsafe_diagnostic_with_addr_of_static() {
         check_diagnostics(
@@ -244,6 +261,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_missing_unsafe_diagnostic_with_safe_intrinsic() {
         check_diagnostics(
@@ -261,6 +279,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_missing_unsafe_diagnostic_with_legacy_safe_intrinsic() {
         check_diagnostics(
@@ -279,6 +298,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_missing_unsafe_diagnostic_with_deprecated_safe_2024() {
         check_diagnostics(
@@ -292,6 +312,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_unsafe_block_when_dereferencing_a_raw_pointer() {
         check_fix(
@@ -310,6 +331,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_unsafe_block_when_calling_unsafe_function() {
         check_fix(
@@ -334,6 +356,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn add_unsafe_block_when_calling_unsafe_method() {
         check_fix(
@@ -366,6 +389,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn add_unsafe_block_when_accessing_mutable_static() {
         check_fix(
@@ -394,6 +418,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn add_unsafe_block_when_calling_unsafe_intrinsic() {
         check_fix(
@@ -417,6 +442,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn unsafe_expr_as_a_receiver_of_a_method_call() {
         check_fix(
@@ -440,9 +466,11 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn raw_deref_on_union_field() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 fn main() {
 
     union U {
@@ -478,8 +506,10 @@ fn main() {
        // ^^^ 💡 error: access to union field is unsafe and requires an unsafe function or block
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn unsafe_expr_as_an_argument_of_a_method_call() {
         check_fix(
@@ -501,6 +531,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn unsafe_expr_as_left_hand_side_of_assignment() {
         check_fix(
@@ -520,6 +551,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn unsafe_expr_as_right_hand_side_of_assignment() {
         check_fix(
@@ -542,6 +574,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn unsafe_expr_in_binary_plus() {
         check_fix(
@@ -562,6 +595,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn needs_parentheses_for_unambiguous() {
         check_fix(
@@ -582,6 +616,7 @@ fn foo() -> u8 {
 "#,
         )
     }
+
     #[test]
     fn ref_to_unsafe_expr() {
         check_fix(
@@ -601,6 +636,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn ref_ref_to_unsafe_expr() {
         check_fix(
@@ -620,9 +656,11 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn unsafe_expr_in_macro_call() {
-        check_no_fix(r#"
+        check_no_fix(
+            r#"
 unsafe fn foo() -> u8 {
     0
 }
@@ -630,11 +668,14 @@ unsafe fn foo() -> u8 {
 fn main() {
     let x = format!("foo: {}", foo$0());
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn rustc_deprecated_safe_2024() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 //- /ed2021.rs crate:ed2021 edition:2021
 #[rustc_deprecated_safe_2024]
 unsafe fn deprecated_safe() -> u8 {
@@ -670,8 +711,10 @@ fn main() {
     ed2024::deprecated_safe();
  // ^^^^^^^^^^^^^^^^^^^^^^^^^💡 warn: call to unsafe function is unsafe and requires an unsafe function or block
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn orphan_unsafe_format_args() {
         // Checks that we don't place orphan arguments for formatting under an unsafe block.
@@ -697,6 +740,7 @@ fn foo() {
         "#,
         );
     }
+
     #[test]
     fn unsafe_op_in_unsafe_fn_allowed_by_default_in_edition_2021() {
         check_diagnostics(
@@ -717,6 +761,7 @@ unsafe fn foo(p: *mut i32) {
             "#,
         );
     }
+
     #[test]
     fn unsafe_op_in_unsafe_fn_warn_by_default_in_edition_2024() {
         check_diagnostics(
@@ -739,16 +784,20 @@ unsafe fn foo(p: *mut i32) {
             "#,
         );
     }
+
     #[test]
     fn unsafe_op_in_unsafe_fn() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 #![warn(unsafe_op_in_unsafe_fn)]
 unsafe fn foo(p: *mut i32) {
     *p = 123;
   //^^💡 warn: dereference of raw pointer is unsafe and requires an unsafe function or block
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn no_unsafe_diagnostic_with_safe_kw() {
         check_diagnostics(
@@ -783,6 +832,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_unsafe_diagnostic_when_destructuring_union_with_wildcard() {
         check_diagnostics(
@@ -796,6 +846,7 @@ fn foo(v: &Union) {
 "#,
         );
     }
+
     #[test]
     fn union_destructuring() {
         check_diagnostics(
@@ -825,6 +876,7 @@ fn foo(v @ Union { field: _field }: &Union) {
 "#,
         );
     }
+
     #[test]
     fn union_field_access() {
         check_diagnostics(
@@ -837,6 +889,7 @@ fn foo(v: &Union) {
 "#,
         );
     }
+
     #[test]
     fn inline_asm() {
         check_diagnostics(
@@ -849,17 +902,22 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn unsafe_op_in_unsafe_fn_dismissed_in_signature() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 #![warn(unsafe_op_in_unsafe_fn)]
 union Union { field: u32 }
 unsafe fn foo(Union { field: _field }: Union) {}
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn union_assignment_allowed() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 union Union { field: u32 }
 fn foo(mut v: Union) {
     v.field = 123;
@@ -873,11 +931,14 @@ fn bar(mut v: Union2) {
     v.field.field = 123;
 }
 
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn raw_ref_reborrow_is_safe() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 fn main() {
     let ptr: *mut i32;
     let _addr = &raw const *ptr;
@@ -886,8 +947,10 @@ fn main() {
     let ptr = &local as *const i32;
     let _addr = &raw const *ptr;
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn target_feature() {
         check_diagnostics(
@@ -907,6 +970,7 @@ fn baz() {
         "#,
         );
     }
+
     #[test]
     fn unsafe_fn_ptr_call() {
         check_diagnostics(
@@ -918,6 +982,7 @@ fn f(it: unsafe fn()){
         "#,
         );
     }
+
     #[test]
     fn unsafe_call_in_const_expr() {
         check_diagnostics(
@@ -930,6 +995,7 @@ fn main() {
         "#,
         );
     }
+
     #[test]
     fn asm_label() {
         check_diagnostics(
@@ -950,6 +1016,7 @@ fn foo() {
             "#,
         );
     }
+
     #[test]
     fn regression_19823() {
         check_diagnostics(
@@ -992,6 +1059,7 @@ impl FooTrait for S2 {
         "#,
         );
     }
+
     #[test]
     fn no_false_positive_on_format_args_since_1_89_0() {
         check_diagnostics(
@@ -1005,6 +1073,7 @@ fn test() {
             "#,
         );
     }
+
     #[test]
     fn naked_asm_is_safe() {
         check_diagnostics(
@@ -1019,6 +1088,7 @@ extern "C" fn naked() {
         "#,
         );
     }
+
     #[test]
     fn target_feature_safe_on_wasm() {
         check_diagnostics(

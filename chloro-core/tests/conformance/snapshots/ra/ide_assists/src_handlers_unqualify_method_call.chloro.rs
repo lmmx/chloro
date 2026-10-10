@@ -27,10 +27,15 @@ use crate::{AssistContext, AssistId, Assists};
 // ```
 pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call = ctx.find_node_at_offset::<ast::CallExpr>()?;
-    let ast::Expr::PathExpr(path_expr) = call.expr()? else { return None };
+    let ast::Expr::PathExpr(path_expr) = call.expr()? else {
+        return None;
+    };
     let path = path_expr.path()?;
 
-    let cursor_in_range = path.syntax().text_range().contains_range(ctx.selection_trimmed());
+    let cursor_in_range = path
+        .syntax()
+        .text_range()
+        .contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
@@ -46,20 +51,27 @@ pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) 
 
     let scope = ctx.sema.scope(path.syntax())?;
     let res = ctx.sema.resolve_path(&path)?;
-    let hir::PathResolution::Def(hir::ModuleDef::Function(fun)) = res else { return None };
+    let hir::PathResolution::Def(hir::ModuleDef::Function(fun)) = res else {
+        return None;
+    };
     if !fun.has_self_param(ctx.sema.db) {
         return None;
     }
 
     // `core::ops::Add::add(` -> ``
-    let delete_path =
-        TextRange::new(path.syntax().text_range().start(), l_paren.text_range().end());
+    let delete_path = TextRange::new(
+        path.syntax().text_range().start(),
+        l_paren.text_range().end(),
+    );
 
     // Parens around `expr` if needed
-    let parens = first_arg.precedence().needs_parentheses_in(ExprPrecedence::Postfix).then(|| {
-        let range = first_arg.syntax().text_range();
-        (range.start(), range.end())
-    });
+    let parens = first_arg
+        .precedence()
+        .needs_parentheses_in(ExprPrecedence::Postfix)
+        .then(|| {
+            let range = first_arg.syntax().text_range();
+            (range.start(), range.end())
+        });
 
     // `, ` -> `.add(`
     let replace_comma = TextRange::new(
@@ -131,7 +143,9 @@ fn add_import(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn unqualify_method_call_simple() {
         check_assist(
@@ -146,6 +160,7 @@ impl S { fn f(self, S: S) {} }
 fn f() { S.f(S); }"#,
         );
     }
+
     #[test]
     fn unqualify_method_call_trait() {
         check_assist(
@@ -181,6 +196,7 @@ use core::ops::Add;
 fn f() { 2.add(2); }"#,
         );
     }
+
     #[test]
     fn unqualify_method_call_single_arg() {
         check_assist(
@@ -195,6 +211,7 @@ fn f() { 2.add(2); }"#,
         fn f() { S.f(); }"#,
         );
     }
+
     #[test]
     fn unqualify_method_call_parens() {
         check_assist(
@@ -218,6 +235,7 @@ impl core::ops::Deref for S {
 fn f() { (&S).deref(); }"#,
         );
     }
+
     #[test]
     fn unqualify_method_call_doesnt_apply_with_cursor_not_on_path() {
         check_assist_not_applicable(
@@ -227,6 +245,7 @@ fn f() { (&S).deref(); }"#,
 fn f() { core::ops::Add::add(2,$0 2); }"#,
         );
     }
+
     #[test]
     fn unqualify_method_call_doesnt_apply_with_no_self() {
         check_assist_not_applicable(
@@ -237,6 +256,7 @@ impl S { fn assoc(S: S, S: S) {} }
 fn f() { S::assoc$0(S, S); }"#,
         );
     }
+
     #[test]
     fn inherent_method() {
         check_assist(
@@ -267,6 +287,7 @@ fn baz() {
         "#,
         );
     }
+
     #[test]
     fn trait_method_in_impl() {
         check_assist(
@@ -301,6 +322,7 @@ impl foo::Bar for Baz {
         "#,
         );
     }
+
     #[test]
     fn trait_method_already_imported() {
         check_assist(

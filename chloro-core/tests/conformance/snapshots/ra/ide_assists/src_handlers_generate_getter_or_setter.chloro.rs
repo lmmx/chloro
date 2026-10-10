@@ -39,6 +39,7 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     //
     // This is the only part where implementation diverges a bit,
     // subsequent code is generic for both of these modes
+
     let (strukt, info_of_record_fields, mut fn_names) = extract_and_parse(ctx, AssistType::Set)?;
 
     // No record fields to do work on :(
@@ -47,7 +48,9 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     }
 
     // Prepend set_ to fn names.
-    fn_names.iter_mut().for_each(|name| *name = format!("set_{name}"));
+    fn_names
+        .iter_mut()
+        .for_each(|name| *name = format!("set_{name}"));
 
     // Return early if we've found an existing fn
     let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &fn_names)?;
@@ -58,7 +61,11 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         .map(|record_field_info| record_field_info.target)
         .reduce(|acc, target| acc.cover(target))?;
 
-    let setter_info = AssistInfo { impl_def, strukt, assist_type: AssistType::Set };
+    let setter_info = AssistInfo {
+        impl_def,
+        strukt,
+        assist_type: AssistType::Set,
+    };
 
     acc.add_group(
         &GroupLabel("Generate getter/setter".to_owned()),
@@ -174,8 +181,14 @@ pub(crate) fn generate_getter_impl(
     ctx: &AssistContext<'_>,
     mutable: bool,
 ) -> Option<()> {
-    let (strukt, info_of_record_fields, fn_names) =
-        extract_and_parse(ctx, if mutable { AssistType::MutGet } else { AssistType::Get })?;
+    let (strukt, info_of_record_fields, fn_names) = extract_and_parse(
+        ctx,
+        if mutable {
+            AssistType::MutGet
+        } else {
+            AssistType::Get
+        },
+    )?;
     // No record fields to do work on :(
     if info_of_record_fields.is_empty() {
         return None;
@@ -198,7 +211,11 @@ pub(crate) fn generate_getter_impl(
     let getter_info = AssistInfo {
         impl_def,
         strukt,
-        assist_type: if mutable { AssistType::MutGet } else { AssistType::Get },
+        assist_type: if mutable {
+            AssistType::MutGet
+        } else {
+            AssistType::Get
+        },
     };
 
     acc.add_group(
@@ -285,8 +302,10 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
 
     // Make the param list
     // `(&mut self, $field_name: $field_ty)`
-    let field_param =
-        make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
+    let field_param = make::param(
+        make::ident_pat(false, false, make::name(field_name)).into(),
+        field_ty.clone(),
+    );
     let params = make::param_list(Some(make::mut_self_param()), [field_param]);
 
     // Make the assignment body
@@ -393,7 +412,12 @@ fn parse_record_field(
 
     let target = record_field.syntax().text_range();
 
-    Some(RecordFieldInfo { field_name, field_ty, fn_name, target })
+    Some(RecordFieldInfo {
+        field_name,
+        field_ty,
+        fn_name,
+        target,
+    })
 }
 
 fn build_source_change(
@@ -416,7 +440,10 @@ fn build_source_change(
 
         ted::insert_all_raw(
             ted::Position::after(strukt.syntax()),
-            vec![make::tokens::blank_line().into(), impl_def.syntax().clone().into()],
+            vec![
+                make::tokens::blank_line().into(),
+                impl_def.syntax().clone().into(),
+            ],
         );
 
         impl_def
@@ -448,7 +475,9 @@ fn build_source_change(
 #[cfg(test)]
 mod tests_getter {
     use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_generate_getter_from_field() {
         check_assist(
@@ -491,6 +520,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_generate_getter_from_field_no_snippet_cap() {
         check_assist_no_snippet_cap(
@@ -533,6 +563,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_generate_getter_already_implemented() {
         check_assist_not_applicable(
@@ -565,6 +596,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_generate_getter_from_field_with_visibility_marker() {
         check_assist(
@@ -587,6 +619,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_generate_getter_from_field_with_visibility_marker_no_snippet_cap() {
         check_assist_no_snippet_cap(
@@ -609,6 +642,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_multiple_generate_getter() {
         check_assist(
@@ -643,6 +677,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_multiple_generate_getter_no_snippet_cap() {
         check_assist_no_snippet_cap(
@@ -677,6 +712,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_not_a_special_case() {
         cov_mark::check_count!(convert_reference_type, 0);
@@ -701,6 +737,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn test_convert_reference_type() {
         cov_mark::check_count!(convert_reference_type, 6);
@@ -867,6 +904,7 @@ impl Context {
 "#,
         );
     }
+
     #[test]
     fn test_generate_multiple_getters_from_selection() {
         check_assist(
@@ -895,6 +933,7 @@ impl Context {
     "#,
         );
     }
+
     #[test]
     fn test_generate_multiple_getters_from_selection_one_already_exists() {
         // As impl for one of the fields already exist, skip it
@@ -919,10 +958,13 @@ impl Context {
 #[cfg(test)]
 mod tests_setter {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     fn check_not_applicable(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_assist_not_applicable(generate_setter, ra_fixture)
     }
+
     #[test]
     fn test_generate_setter_from_field() {
         check_assist(
@@ -943,6 +985,7 @@ impl<T: Clone> Person<T> {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_setter_already_implemented() {
         check_not_applicable(
@@ -958,6 +1001,7 @@ impl<T: Clone> Person<T> {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_setter_from_field_with_visibility_marker() {
         check_assist(
@@ -978,6 +1022,7 @@ impl<T: Clone> Person<T> {
 }"#,
         );
     }
+
     #[test]
     fn test_multiple_generate_setter() {
         check_assist(

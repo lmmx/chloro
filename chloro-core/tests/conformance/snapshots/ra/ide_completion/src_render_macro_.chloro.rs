@@ -12,12 +12,25 @@ use crate::{
 
 pub(crate) fn render_macro(
     ctx: RenderContext<'_>,
-    PathCompletionCtx { kind, has_macro_bang, has_call_parens, .. }: &PathCompletionCtx<'_>,
+    PathCompletionCtx {
+        kind,
+        has_macro_bang,
+        has_call_parens,
+        ..
+    }: &PathCompletionCtx<'_>,
+
     name: hir::Name,
     macro_: hir::Macro,
 ) -> Builder {
     let _p = tracing::info_span!("render_macro").entered();
-    render(ctx, *kind == PathKind::Use, *has_macro_bang, *has_call_parens, name, macro_)
+    render(
+        ctx,
+        *kind == PathKind::Use,
+        *has_macro_bang,
+        *has_call_parens,
+        name,
+        macro_,
+    )
 }
 
 pub(crate) fn render_macro_pat(
@@ -40,17 +53,26 @@ fn render(
 ) -> Builder {
     let source_range = if ctx.is_immediately_after_macro_bang() {
         cov_mark::hit!(completes_macro_call_if_cursor_at_bang_token);
-        completion.token.parent().map_or_else(|| ctx.source_range(), |it| it.text_range())
+        completion
+            .token
+            .parent()
+            .map_or_else(|| ctx.source_range(), |it| it.text_range())
     } else {
         ctx.source_range()
     };
 
-    let (name, escaped_name) =
-        (name.as_str(), name.display(ctx.db(), completion.edition).to_smolstr());
+    let (name, escaped_name) = (
+        name.as_str(),
+        name.display(ctx.db(), completion.edition).to_smolstr(),
+    );
     let docs = ctx.docs(macro_);
     let docs_str = docs.as_ref().map(Documentation::as_str).unwrap_or_default();
     let is_fn_like = macro_.is_fn_like(completion.db);
-    let (bra, ket) = if is_fn_like { guess_macro_braces(name, docs_str) } else { ("", "") };
+    let (bra, ket) = if is_fn_like {
+        guess_macro_braces(name, docs_str)
+    } else {
+        ("", "")
+    };
 
     let needs_bang = is_fn_like && !is_use_path && !has_macro_bang;
 
@@ -61,7 +83,11 @@ fn render(
         completion.edition,
     );
     item.set_deprecated(ctx.is_deprecated(macro_))
-        .detail(macro_.display(completion.db, completion.display_target).to_string())
+        .detail(
+            macro_
+                .display(completion.db, completion.display_target)
+                .to_string(),
+        )
         .set_documentation(docs)
         .set_relevance(ctx.completion_relevance());
 
@@ -72,7 +98,8 @@ fn render(
             item.insert_snippet(cap, snippet).lookup_by(lookup);
         }
         _ if needs_bang => {
-            item.insert_text(banged_name(&escaped_name)).lookup_by(banged_name(name));
+            item.insert_text(banged_name(&escaped_name))
+                .lookup_by(banged_name(name));
         }
         _ => {
             cov_mark::hit!(dont_insert_macro_call_parens_unnecessary);
@@ -139,6 +166,7 @@ fn guess_macro_braces(macro_name: &str, docs: &str) -> (&'static str, &'static s
 #[cfg(test)]
 mod tests {
     use crate::tests::check_edit;
+
     #[test]
     fn dont_insert_macro_call_parens_unnecessary() {
         cov_mark::check!(dont_insert_macro_call_parens_unnecessary);
@@ -168,6 +196,7 @@ fn main() { frobnicate!(); }
 "#,
         );
     }
+
     #[test]
     fn add_bang_to_parens() {
         check_edit(
@@ -186,6 +215,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn guesses_macro_braces() {
         check_edit(
@@ -238,6 +268,7 @@ fn main() { foo! {$0} }
 "#,
         )
     }
+
     #[test]
     fn completes_macro_call_if_cursor_at_bang_token() {
         // Regression test for https://github.com/rust-lang/rust-analyzer/issues/9904
@@ -264,6 +295,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn complete_missing_macro_arg() {
         // Regression test for https://github.com/rust-lang/rust-analyzer/issues/14246

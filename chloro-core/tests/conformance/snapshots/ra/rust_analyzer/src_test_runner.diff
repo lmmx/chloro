@@ -2,52 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4277 bytes
+Chloro size:   4381 bytes
 Rustfmt size:  4381 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! This module provides the functionality needed to run `cargo test` in a background
- //! thread and report the result of each test in a channel.
- 
- use crossbeam_channel::Sender;
- use paths::{AbsPath, Utf8Path};
- use project_model::TargetKind;
--use serde::Deserialize as _;
- use serde_derive::Deserialize;
-+use serde::Deserialize as _;
- use toolchain::Tool;
- 
- use crate::{
- 
- impl CargoTestOutputParser {
-     pub(crate) fn new(test_target: &TestTarget) -> Self {
--        Self {
--            target: test_target.clone(),
--        }
-+        Self { target: test_target.clone() }
-     }
- }
- 
-             output: if let Ok(message) = CargoTestOutput::deserialize(&mut deserializer) {
-                 message
-             } else {
--                CargoTestOutput::Custom {
--                    text: line.to_owned(),
--                }
-+                CargoTestOutput::Custom { text: line.to_owned() }
-             },
-         })
-     }
-             cmd.arg(format!("--{cargo_target}"));
-             cmd.arg(&test_target.target);
-         } else {
--            tracing::warn!(
--                "Running test for unknown cargo target {:?}",
--                test_target.kind
--            );
-+            tracing::warn!("Running test for unknown cargo target {:?}", test_target.kind);
-         }
- 
-         // --no-fail-fast is needed to ensure that all requested tests will run
+✓ Outputs are IDENTICAL

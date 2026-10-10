@@ -2,20 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6478 bytes
-Chloro size:   6478 bytes
+Chloro size:   6513 bytes
 Rustfmt size:  6513 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     }
- 
-     fn nonce_and_revision(&self) -> (Nonce, salsa::Revision) {
--        (
--            self.nonce,
--            salsa::plumbing::ZalsaDatabase::zalsa(self).current_revision(),
--        )
-+        (self.nonce, salsa::plumbing::ZalsaDatabase::zalsa(self).current_revision())
-     }
- }
- 
+✓ Outputs are IDENTICAL

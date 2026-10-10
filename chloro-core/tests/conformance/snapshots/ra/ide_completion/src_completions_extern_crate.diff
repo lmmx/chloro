@@ -2,23 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1954 bytes
-Chloro size:   1952 bytes
+Chloro size:   1954 bytes
 Rustfmt size:  1954 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
- mod test {
-     use crate::tests::completion_list_no_kw;
--
-     #[test]
-     fn can_complete_extern_crate() {
-         let case = r#"
- 
-         assert_eq!("md other_crate_a\n".to_owned(), completion_list);
-     }
--
-     #[test]
-     fn will_not_complete_existing_import() {
-         let case = r#"
+✓ Outputs are IDENTICAL

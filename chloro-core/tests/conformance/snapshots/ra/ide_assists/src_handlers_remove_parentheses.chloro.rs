@@ -24,9 +24,14 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let parens = ctx.find_node_at_offset::<ast::ParenExpr>()?;
 
-    let cursor_in_range =
-        parens.l_paren_token()?.text_range().contains_range(ctx.selection_trimmed())
-            || parens.r_paren_token()?.text_range().contains_range(ctx.selection_trimmed());
+    let cursor_in_range = parens
+        .l_paren_token()?
+        .text_range()
+        .contains_range(ctx.selection_trimmed())
+        || parens
+            .r_paren_token()?
+            .text_range()
+            .contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
@@ -67,7 +72,9 @@ pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn remove_parens_space() {
         check_assist(
@@ -76,19 +83,42 @@ mod tests {
             r#"fn f() { match true {} }"#,
         );
     }
+
     #[test]
     fn remove_parens_simple() {
-        check_assist(remove_parentheses, r#"fn f() { $0(2) + 2; }"#, r#"fn f() { 2 + 2; }"#);
-        check_assist(remove_parentheses, r#"fn f() { ($02) + 2; }"#, r#"fn f() { 2 + 2; }"#);
-        check_assist(remove_parentheses, r#"fn f() { (2)$0 + 2; }"#, r#"fn f() { 2 + 2; }"#);
-        check_assist(remove_parentheses, r#"fn f() { (2$0) + 2; }"#, r#"fn f() { 2 + 2; }"#);
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { $0(2) + 2; }"#,
+            r#"fn f() { 2 + 2; }"#,
+        );
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { ($02) + 2; }"#,
+            r#"fn f() { 2 + 2; }"#,
+        );
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { (2)$0 + 2; }"#,
+            r#"fn f() { 2 + 2; }"#,
+        );
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { (2$0) + 2; }"#,
+            r#"fn f() { 2 + 2; }"#,
+        );
     }
+
     #[test]
     fn remove_parens_closure() {
-        check_assist(remove_parentheses, r#"fn f() { &$0(|| 42) }"#, r#"fn f() { &|| 42 }"#);
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { &$0(|| 42) }"#,
+            r#"fn f() { &|| 42 }"#,
+        );
 
         check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(|| 42).f() }"#);
     }
+
     #[test]
     fn remove_parens_if_let_chains() {
         check_assist_not_applicable(
@@ -96,6 +126,7 @@ mod tests {
             r#"fn f() { if let true = $0(true && true) {} }"#,
         );
     }
+
     #[test]
     fn remove_parens_associativity() {
         check_assist(
@@ -105,6 +136,7 @@ mod tests {
         );
         check_assist_not_applicable(remove_parentheses, r#"fn f() { 2 + $0(2 + 2); }"#);
     }
+
     #[test]
     fn remove_parens_precedence() {
         check_assist(
@@ -112,15 +144,28 @@ mod tests {
             r#"fn f() { $0(2 * 3) + 1; }"#,
             r#"fn f() { 2 * 3 + 1; }"#,
         );
-        check_assist(remove_parentheses, r#"fn f() { ( $0(2) ); }"#, r#"fn f() { ( 2 ); }"#);
-        check_assist(remove_parentheses, r#"fn f() { $0(2?)?; }"#, r#"fn f() { 2??; }"#);
-        check_assist(remove_parentheses, r#"fn f() { f(($02 + 2)); }"#, r#"fn f() { f(2 + 2); }"#);
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { ( $0(2) ); }"#,
+            r#"fn f() { ( 2 ); }"#,
+        );
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { $0(2?)?; }"#,
+            r#"fn f() { 2??; }"#,
+        );
+        check_assist(
+            remove_parentheses,
+            r#"fn f() { f(($02 + 2)); }"#,
+            r#"fn f() { f(2 + 2); }"#,
+        );
         check_assist(
             remove_parentheses,
             r#"fn f() { (1<2) &&$0(3>4); }"#,
             r#"fn f() { (1<2) && 3>4; }"#,
         );
     }
+
     #[test]
     fn remove_parens_doesnt_apply_precedence() {
         check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(2 + 2) * 8; }"#);
@@ -128,11 +173,13 @@ mod tests {
         check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(2 + 2).await; }"#);
         check_assist_not_applicable(remove_parentheses, r#"fn f() { $0!(2..2); }"#);
     }
+
     #[test]
     fn remove_parens_doesnt_apply_with_cursor_not_on_paren() {
         check_assist_not_applicable(remove_parentheses, r#"fn f() { (2 +$0 2) }"#);
         check_assist_not_applicable(remove_parentheses, r#"fn f() {$0 (2 + 2) }"#);
     }
+
     #[test]
     fn remove_parens_doesnt_apply_when_expr_would_be_turned_into_a_statement() {
         check_assist_not_applicable(remove_parentheses, r#"fn x() -> u8 { $0({ 0 } + 1) }"#);
@@ -142,6 +189,7 @@ mod tests {
         );
         check_assist_not_applicable(remove_parentheses, r#"fn x() -> u8 { $0(loop {} + 1) }"#);
     }
+
     #[test]
     fn remove_parens_doesnt_apply_weird_syntax_and_edge_cases() {
         // removing `()` would break code because {} would be counted as the loop/if body
@@ -150,6 +198,7 @@ mod tests {
         check_assist_not_applicable(remove_parentheses, r#"fn f() { if $0(S {} == 2) {} }"#);
         check_assist_not_applicable(remove_parentheses, r#"fn f() { if $0(return) {} }"#);
     }
+
     #[test]
     fn remove_parens_return_with_value_followed_by_block() {
         check_assist(
@@ -158,6 +207,7 @@ mod tests {
             r#"fn f() { if return () {} }"#,
         );
     }
+
     #[test]
     fn remove_exprs_let_else_restrictions() {
         // `}` is not allowed before `else` here
@@ -176,6 +226,7 @@ mod tests {
             r#"fn f() { let _ = $0(true && true) else { return }; }"#,
         );
     }
+
     #[test]
     fn remove_parens_weird_places() {
         check_assist(
@@ -190,6 +241,7 @@ mod tests {
             r#"fn x() -> u8 { { [{ 0 } + 1] } }"#,
         );
     }
+
     #[test]
     fn remove_parens_return_dot_f() {
         check_assist(
@@ -198,6 +250,7 @@ mod tests {
             r#"fn f() { return.f() }"#,
         );
     }
+
     #[test]
     fn remove_parens_prefix_then_return_something() {
         check_assist(
@@ -206,6 +259,7 @@ mod tests {
             r#"fn f() { &return () }"#,
         );
     }
+
     #[test]
     fn remove_parens_double_paren_stmt() {
         check_assist(
@@ -220,6 +274,7 @@ mod tests {
             r#"fn x() -> u8 { ({ 0 } + 1) }"#,
         );
     }
+
     #[test]
     fn remove_parens_im_tired_of_naming_tests() {
         check_assist(
@@ -230,6 +285,7 @@ mod tests {
 
         check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(return 2) + 2 }"#);
     }
+
     #[test]
     fn remove_parens_indirect_calls() {
         check_assist(

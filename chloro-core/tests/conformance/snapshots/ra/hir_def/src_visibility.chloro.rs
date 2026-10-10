@@ -33,7 +33,9 @@ impl Visibility {
         raw_vis: &RawVisibility,
     ) -> Self {
         // we fall back to public visibility (i.e. fail open) if the path can't be resolved
-        resolver.resolve_visibility(db, raw_vis).unwrap_or(Visibility::Public)
+        resolver
+            .resolve_visibility(db, raw_vis)
+            .unwrap_or(Visibility::Public)
     }
 
     pub(crate) fn is_visible_from_other_crate(self) -> bool {
@@ -89,11 +91,11 @@ impl Visibility {
         mut from_module: LocalModuleId,
     ) -> bool {
         debug_assert_eq!(to_module.krate, def_map.krate());
-
         // `to_module` might be the root module of a block expression. Those have the same
         // visibility as the containing module (even though no items are directly nameable from
         // there, getting this right is important for method resolution).
         // In that case, we adjust the visibility of `to_module` to point to the containing module.
+
         // Additional complication: `to_module` might be in `from_module`'s `DefMap`, which we're
         // currently computing, so we must not call the `def_map` query for it.
         let def_map_block = def_map.block_id();
@@ -285,7 +287,10 @@ pub(crate) fn field_visibilities_query(
     let resolver = variant_id.module(db).resolver(db);
     let mut res = ArenaMap::default();
     for (field_id, field_data) in fields.iter() {
-        res.insert(field_id, Visibility::resolve(db, &resolver, &field_data.visibility));
+        res.insert(
+            field_id,
+            Visibility::resolve(db, &resolver, &field_data.visibility),
+        );
     }
     res.shrink_to_fit();
     Arc::new(res)
@@ -298,7 +303,10 @@ pub fn visibility_from_ast(
 ) -> Visibility {
     let mut span_map = None;
     let raw_vis = crate::item_tree::visibility_from_ast(db, ast_vis.value, &mut |range| {
-        span_map.get_or_insert_with(|| db.span_map(ast_vis.file_id)).span_for_range(range).ctx
+        span_map
+            .get_or_insert_with(|| db.span_map(ast_vis.file_id))
+            .span_for_range(range)
+            .ctx
     });
     match raw_vis {
         RawVisibility::PubSelf(explicitness) => {

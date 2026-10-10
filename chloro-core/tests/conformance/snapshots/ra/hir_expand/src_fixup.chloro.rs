@@ -8,12 +8,12 @@ use span::{
     SyntaxContext,
 };
 use stdx::never;
-use syntax_bridge::DocCommentDesugarMode;
 use syntax::{
     SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
     ast::{self, AstNode, HasLoopBody},
     match_ast,
 };
+use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
 use tt::Spacing;
 
@@ -43,10 +43,11 @@ impl SyntaxFixupUndoInfo {
     pub(crate) const NONE: Self = SyntaxFixupUndoInfo { original: None };
 }
 
+// We mark spans with `FIXUP_DUMMY_AST_ID` to indicate that they are fake.
 const FIXUP_DUMMY_AST_ID: ErasedFileAstId = FIXUP_ERASED_FILE_AST_ID_MARKER;
-
 const FIXUP_DUMMY_RANGE: TextRange = TextRange::empty(TextSize::new(0));
-
+// If the fake span has this range end, that means that the range start is an index into the
+// `original` list in `SyntaxFixupUndoInfo`.
 const FIXUP_DUMMY_RANGE_END: TextSize = TextSize::new(!0);
 
 pub(crate) fn fixup_syntax(
@@ -64,12 +65,17 @@ pub(crate) fn fixup_syntax(
         let span = span_map.span_for_range(range);
         Span {
             range: dummy_range,
-            anchor: SpanAnchor { ast_id: FIXUP_DUMMY_AST_ID, ..span.anchor },
+            anchor: SpanAnchor {
+                ast_id: FIXUP_DUMMY_AST_ID,
+                ..span.anchor
+            },
             ctx: span.ctx,
         }
     };
     while let Some(event) = preorder.next() {
-        let syntax::WalkEvent::Enter(node) = event else { continue };
+        let syntax::WalkEvent::Enter(node) = event else {
+            continue;
+        };
 
         let node_range = node.text_range();
         if can_handle_error(&node) && has_error_to_handle(&node) {
@@ -84,7 +90,10 @@ pub(crate) fn fixup_syntax(
                 sym: sym::__ra_fixup,
                 span: Span {
                     range: TextRange::new(TextSize::new(idx), FIXUP_DUMMY_RANGE_END),
-                    anchor: SpanAnchor { ast_id: FIXUP_DUMMY_AST_ID, ..span.anchor },
+                    anchor: SpanAnchor {
+                        ast_id: FIXUP_DUMMY_AST_ID,
+                        ..span.anchor
+                    },
                     ctx: span.ctx,
                 },
                 is_raw: tt::IdentIsRaw::No,
@@ -336,11 +345,16 @@ fn can_handle_error(node: &SyntaxNode) -> bool {
 }
 
 fn has_error_to_handle(node: &SyntaxNode) -> bool {
-    has_error(node) || node.children().any(|c| !can_handle_error(&c) && has_error_to_handle(&c))
+    has_error(node)
+        || node
+            .children()
+            .any(|c| !can_handle_error(&c) && has_error_to_handle(&c))
 }
 
 pub(crate) fn reverse_fixups(tt: &mut TopSubtree, undo_info: &SyntaxFixupUndoInfo) {
-    let Some(undo_info) = undo_info.original.as_deref() else { return };
+    let Some(undo_info) = undo_info.original.as_deref() else {
+        return;
+    };
     let undo_info = &**undo_info;
     let delimiter = tt.top_subtree_delimiter_mut();
     #[allow(deprecated)]
@@ -350,7 +364,10 @@ pub(crate) fn reverse_fixups(tt: &mut TopSubtree, undo_info: &SyntaxFixupUndoInf
     ) {
         let span = |file_id| Span {
             range: TextRange::empty(TextSize::new(0)),
-            anchor: SpanAnchor { file_id, ast_id: ROOT_ERASED_FILE_AST_ID },
+            anchor: SpanAnchor {
+                file_id,
+                ast_id: ROOT_ERASED_FILE_AST_ID,
+            },
             ctx: SyntaxContext::root(span::Edition::Edition2015),
         };
         delimiter.open = span(delimiter.open.anchor.file_id);
@@ -468,11 +485,13 @@ mod tests {
     use syntax::TextRange;
     use syntax_bridge::DocCommentDesugarMode;
     use triomphe::Arc;
+
     use crate::{
         fixup::reverse_fixups,
         span_map::{RealSpanMap, SpanMap},
         tt,
     };
+
     // The following three functions are only meant to check partial structural equivalence of
     // `TokenTree`s, see the last assertion in `check()`.
     fn check_leaf_eq(a: &tt::Leaf, b: &tt::Leaf) -> bool {
@@ -483,11 +502,13 @@ mod tests {
             _ => false,
         }
     }
+
     fn check_subtree_eq(a: &tt::TopSubtree, b: &tt::TopSubtree) -> bool {
         let a = a.view().as_token_trees().flat_tokens();
         let b = b.view().as_token_trees().flat_tokens();
         a.len() == b.len() && std::iter::zip(a, b).all(|(a, b)| check_tt_eq(a, b))
     }
+
     fn check_tt_eq(a: &tt::TokenTree, b: &tt::TokenTree) -> bool {
         match (a, b) {
             (tt::TokenTree::Leaf(a), tt::TokenTree::Leaf(b)) => check_leaf_eq(a, b),
@@ -497,6 +518,7 @@ mod tests {
             _ => false,
         }
     }
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, mut expect: Expect) {
         let parsed = syntax::SourceFile::parse(ra_fixture, span::Edition::CURRENT);
@@ -563,26 +585,35 @@ mod tests {
             "different token tree:\n{tt:?}\n\n{original_as_tt:?}"
         );
     }
+
     #[test]
     fn just_for_token() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     for
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {for _ in __ra_fixup {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn for_no_iter_pattern() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     for {}
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {for _ in __ra_fixup {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn for_no_body() {
         check(
@@ -596,41 +627,54 @@ fn foo () {for bar in qux {}}
 "#]],
         )
     }
+
     // FIXME: https://github.com/rust-lang/rust-analyzer/pull/12937#discussion_r937633695
     #[test]
     fn for_no_pat() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     for in qux {
 
     }
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {__ra_fixup}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn match_no_expr_no_arms() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     match
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {match __ra_fixup {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn match_expr_no_arms() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     match it {
 
     }
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {match it {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn match_no_expr() {
         check(
@@ -646,26 +690,35 @@ fn foo () {match __ra_fixup {}}
 "#]],
         )
     }
+
     #[test]
     fn incomplete_field_expr_1() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     a.
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {a . __ra_fixup}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn incomplete_field_expr_2() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     a.;
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {a . __ra_fixup ;}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn incomplete_field_expr_3() {
         check(
@@ -680,16 +733,21 @@ fn foo () {a . __ra_fixup ; bar () ;}
 "#]],
         )
     }
+
     #[test]
     fn incomplete_let() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     let it = a
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {let it = a ;}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn incomplete_field_expr_in_let() {
         check(
@@ -703,6 +761,7 @@ fn foo () {let it = a . __ra_fixup ;}
 "#]],
         )
     }
+
     #[test]
     fn field_expr_before_call() {
         // another case that easily happens while typing
@@ -718,116 +777,160 @@ fn foo () {a . b ; bar () ;}
 "#]],
         )
     }
+
     #[test]
     fn extraneous_comma() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     bar(,);
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {__ra_fixup ;}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_if_1() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     if a
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {if a {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_if_2() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     if
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {if __ra_fixup {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_if_3() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     if {}
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {if __ra_fixup {} {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_while_1() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     while
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {while __ra_fixup {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_while_2() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     while foo
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {while foo {}}
-"#]])
+"#]],
+        )
     }
     #[test]
     fn fixup_while_3() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     while {}
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {while __ra_fixup {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_loop() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     loop
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {loop {}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_path() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     path::
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {path :: __ra_fixup}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_record_ctor_field() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     R { f: }
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {R {f : __ra_fixup}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn no_fixup_record_ctor_field() {
-        check(r#"
+        check(
+            r#"
 fn foo() {
     R { f: a }
 }
-"#, expect![[r#"
+"#,
+            expect![[r#"
 fn foo () {R {f : a}}
-"#]])
+"#]],
+        )
     }
+
     #[test]
     fn fixup_arg_list() {
         check(
@@ -851,6 +954,7 @@ fn foo () {bar . foo (a)}
 "#]],
         );
     }
+
     #[test]
     fn fixup_closure() {
         check(
@@ -864,6 +968,7 @@ fn foo () {|| __ra_fixup}
 "#]],
         );
     }
+
     #[test]
     fn fixup_regression_() {
         check(

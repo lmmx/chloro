@@ -91,7 +91,9 @@ pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) ->
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn single_line() {
         check_assist(
@@ -125,6 +127,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn single_line_indented() {
         check_assist(
@@ -143,6 +146,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multiline() {
         check_assist(
@@ -167,6 +171,7 @@ below"]
 "#,
         );
     }
+
     #[test]
     fn end_of_line() {
         check_assist_not_applicable(
@@ -178,6 +183,7 @@ fn main() { /// end-of-line$0 comment
 "#,
         );
     }
+
     #[test]
     fn single_line_different_kinds() {
         check_assist(
@@ -200,6 +206,7 @@ below"]
 "#,
         );
     }
+
     #[test]
     fn single_line_separate_chunks() {
         check_assist(
@@ -218,6 +225,7 @@ below"]
 "#,
         );
     }
+
     #[test]
     fn block_comment() {
         check_assist(
@@ -232,6 +240,7 @@ below"]
 "#,
         );
     }
+
     #[test]
     fn inner_doc_block() {
         check_assist(
@@ -246,6 +255,7 @@ below"]
 "#,
         );
     }
+
     #[test]
     fn block_indent() {
         check_assist(
@@ -272,6 +282,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn end_of_line_block() {
         check_assist_not_applicable(
@@ -283,11 +294,13 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn regular_comment() {
         check_assist_not_applicable(desugar_doc_comment, r#"// some$0 comment"#);
         check_assist_not_applicable(desugar_doc_comment, r#"/* some$0 comment*/"#);
     }
+
     #[test]
     fn quotes_and_escapes() {
         check_assist(

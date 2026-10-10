@@ -41,6 +41,8 @@ pub enum HlTag {
     None,
 }
 
+// Don't forget to adjust the feature description in crates/ide/src/syntax_highlighting.rs.
+// And make sure to use the lsp strings used when converting to the protocol in crates\rust-analyzer\src\semantic_tokens.rs, not the names of the variants here.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum HlMod {
@@ -264,7 +266,10 @@ impl HlMod {
     }
 
     fn mask(self) -> u32 {
-        debug_assert!(Self::ALL.len() <= 32, "HlMod::mask is not enough to cover all variants");
+        debug_assert!(
+            Self::ALL.len() <= 32,
+            "HlMod::mask is not enough to cover all variants"
+        );
         1 << (self as u32)
     }
 }
@@ -312,9 +317,11 @@ impl From<SymbolKind> for Highlight {
 
 impl Highlight {
     pub(crate) fn new(tag: HlTag) -> Highlight {
-        Highlight { tag, mods: HlMods::default() }
+        Highlight {
+            tag,
+            mods: HlMods::default(),
+        }
     }
-
     pub fn is_empty(&self) -> bool {
         self.tag == HlTag::None && self.mods.is_empty()
     }
@@ -359,6 +366,9 @@ impl HlMods {
     }
 
     pub fn iter(self) -> impl Iterator<Item = HlMod> {
-        HlMod::ALL.iter().copied().filter(move |it| self.0 & it.mask() == it.mask())
+        HlMod::ALL
+            .iter()
+            .copied()
+            .filter(move |it| self.0 & it.mask() == it.mask())
     }
 }

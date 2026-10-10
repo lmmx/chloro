@@ -1,6 +1,5 @@
 //! Defines `Body`: a lowered representation of functions, statics and
 //! consts.
-
 use std::ops;
 
 use hir_expand::{InFile, Lookup};
@@ -78,7 +77,10 @@ impl Body {
         let mut params = None;
 
         let mut is_async_fn = false;
-        let InFile { file_id, value: body } = {
+        let InFile {
+            file_id,
+            value: body,
+        } = {
             match def {
                 DefWithBodyId::FunctionId(f) => {
                     let f = f.lookup(db);

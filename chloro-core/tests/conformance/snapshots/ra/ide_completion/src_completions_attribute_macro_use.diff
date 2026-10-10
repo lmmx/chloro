@@ -2,32 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1223 bytes
-Chloro size:   1224 bytes
+Chloro size:   1262 bytes
 Rustfmt size:  1262 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Completion for macros in `#[macro_use(...)]`
-+
- use hir::ModuleDef;
- use ide_db::SymbolKind;
- use syntax::ast;
-     extern_crate: Option<&ast::ExternCrate>,
-     existing_imports: &[ast::Path],
- ) {
--    let Some(extern_crate) = extern_crate else {
--        return;
--    };
--    let Some(extern_crate) = ctx.sema.to_def(extern_crate) else {
--        return;
--    };
--    let Some(krate) = extern_crate.resolved_crate(ctx.db) else {
--        return;
--    };
-+    let Some(extern_crate) = extern_crate else { return };
-+    let Some(extern_crate) = ctx.sema.to_def(extern_crate) else { return };
-+    let Some(krate) = extern_crate.resolved_crate(ctx.db) else { return };
- 
-     for mod_def in krate.root_module().declarations(ctx.db) {
-         if let ModuleDef::Macro(mac) = mod_def {
+✓ Outputs are IDENTICAL

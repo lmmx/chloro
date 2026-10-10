@@ -45,7 +45,9 @@ pub(crate) fn qualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let current_edition = current_module.krate().edition(ctx.db());
     let target_module_def = ModuleDef::from(resolved_call);
     let item_in_ns = ItemInNs::from(target_module_def);
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(current_module.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(current_module.krate()));
     let receiver_path = current_module.find_path(
         ctx.sema.db,
         item_for_path_search(ctx.sema.db, item_in_ns)?,
@@ -94,6 +96,7 @@ fn item_as_assoc(db: &dyn HirDatabase, item: ItemInNs) -> Option<AssocItem> {
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn struct_method() {
         check_assist(
@@ -122,6 +125,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn struct_method_multi_params() {
         check_assist(
@@ -150,6 +154,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn struct_method_consume() {
         check_assist(
@@ -178,6 +183,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn struct_method_exclusive() {
         check_assist(
@@ -206,6 +212,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn struct_method_cross_crate() {
         check_assist(
@@ -232,6 +239,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn struct_method_generic() {
         check_assist(
@@ -260,6 +268,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method() {
         check_assist(
@@ -302,6 +311,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_multi_params() {
         check_assist(
@@ -344,6 +354,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_consume() {
         check_assist(
@@ -386,6 +397,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_exclusive() {
         check_assist(
@@ -428,6 +440,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_cross_crate() {
         check_assist(
@@ -454,6 +467,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_generic() {
         check_assist(
@@ -496,6 +510,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn struct_method_over_struct_instance() {
         check_assist_not_applicable(
@@ -513,6 +528,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_over_struct_instance() {
         check_assist_not_applicable(

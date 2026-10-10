@@ -2,7 +2,6 @@
 //!
 //! Except for use items which are tested in [super::use_tree] and mod declarations with are tested
 //! in [crate::completions::mod_].
-
 use expect_test::expect;
 
 use crate::tests::{check, check_edit, check_with_base_items};

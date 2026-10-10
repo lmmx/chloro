@@ -33,7 +33,9 @@ pub(crate) fn complete_for_and_where(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::tests::{check, check_edit};
+
     #[test]
     fn test_else_edit_after_if() {
         check_edit(
@@ -44,6 +46,7 @@ mod tests {
 } }"#,
         );
     }
+
     #[test]
     fn test_keywords_after_unsafe_in_block_expr() {
         check(
@@ -58,6 +61,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn test_completion_await_impls_future() {
         check(
@@ -115,6 +119,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn test_completion_await_impls_into_future() {
         check(
@@ -144,6 +149,7 @@ fn foo(a: A) { a.$0 }
             "#]],
         );
     }
+
     #[test]
     fn for_in_impl() {
         check_edit(
@@ -205,6 +211,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn let_semi() {
         cov_mark::check!(let_semi);
@@ -338,6 +345,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn if_completion_in_match_guard() {
         check_edit(
@@ -358,6 +366,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn if_completion_in_match_arm_expr() {
         check_edit(
@@ -380,6 +389,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn if_completion_in_match_arm_expr_block() {
         check_edit(
@@ -406,6 +416,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn if_completion_in_parameter() {
         check_edit(
@@ -480,6 +491,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn if_completion_in_let_statement() {
         check_edit(
@@ -518,6 +530,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn if_completion_in_format() {
         check_edit(
@@ -558,6 +571,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn if_completion_in_value_expected_expressions() {
         check_edit(
@@ -656,6 +670,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn completes_let_in_block() {
         check_edit(
@@ -685,6 +700,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn completes_let_in_condition() {
         check_edit(
@@ -714,6 +730,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn completes_let_in_no_empty_condition() {
         check_edit(
@@ -743,6 +760,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn completes_let_in_condition_block() {
         check_edit(

@@ -50,7 +50,11 @@ fn find_crate_by_id(db: &RootDatabase, crate_id: &str) -> Option<base_db::Crate>
     // only show tests for the local crates.
     db.all_crates().iter().copied().find(|&id| {
         id.data(db).origin.is_local()
-            && id.extra_data(db).display_name.as_ref().is_some_and(|x| x.to_string() == crate_id)
+            && id
+                .extra_data(db)
+                .display_name
+                .as_ref()
+                .is_some_and(|x| x.to_string() == crate_id)
     })
 }
 
@@ -122,7 +126,9 @@ pub(crate) fn discover_tests_in_crate_by_test_id(
 pub(crate) fn discover_tests_in_file(db: &RootDatabase, file_id: FileId) -> Vec<TestItem> {
     let sema = Semantics::new(db);
 
-    let Some(module) = sema.file_to_module_def(file_id) else { return vec![] };
+    let Some(module) = sema.file_to_module_def(file_id) else {
+        return vec![];
+    };
     let Some((mut tests, id)) = find_module_id_and_test_parents(&sema, module) else {
         return vec![];
     };
@@ -153,7 +159,10 @@ fn find_module_id_and_test_parents(
     let parent = Some(id.clone());
     id += "::";
     let module_name = &module.name(sema.db);
-    let module_name = module_name.as_ref().map(|n| n.as_str()).unwrap_or("[mod without name]");
+    let module_name = module_name
+        .as_ref()
+        .map(|n| n.as_str())
+        .unwrap_or("[mod without name]");
     id += module_name;
     let nav = NavigationTarget::from_module_to_decl(sema.db, module).call_site;
     r.push(TestItem {

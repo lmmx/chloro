@@ -1,5 +1,4 @@
 //! Implementation of "chaining" inlay hints.
-
 use hir::DisplayTarget;
 use ide_db::famous_defs::FamousDefs;
 use syntax::{
@@ -78,16 +77,26 @@ pub(super) fn hints(
 mod tests {
     use expect_test::{Expect, expect};
     use ide_db::text_edit::{TextRange, TextSize};
+
     use crate::{
         InlayHintsConfig, fixture,
         inlay_hints::{
-            LazyProperty, tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
+            LazyProperty,
+            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
         },
     };
+
     #[track_caller]
     fn check_chains(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
-        check_with_config(InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG }, ra_fixture);
+        check_with_config(
+            InlayHintsConfig {
+                chaining_hints: true,
+                ..DISABLED_CONFIG
+            },
+            ra_fixture,
+        );
     }
+
     #[track_caller]
     pub(super) fn check_expect_clear_loc(
         config: InlayHintsConfig<'_>,
@@ -96,19 +105,29 @@ mod tests {
     ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let mut inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
-        inlay_hints.iter_mut().flat_map(|hint| &mut hint.label.parts).for_each(|hint| {
-            if let Some(LazyProperty::Computed(loc)) = &mut hint.linked_location {
-                loc.range = TextRange::empty(TextSize::from(0));
-            }
-        });
-        let filtered =
-            inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect::<Vec<_>>();
+        inlay_hints
+            .iter_mut()
+            .flat_map(|hint| &mut hint.label.parts)
+            .for_each(|hint| {
+                if let Some(LazyProperty::Computed(loc)) = &mut hint.linked_location {
+                    loc.range = TextRange::empty(TextSize::from(0));
+                }
+            });
+        let filtered = inlay_hints
+            .into_iter()
+            .map(|hint| (hint.range, hint.label))
+            .collect::<Vec<_>>();
         expect.assert_debug_eq(&filtered)
     }
+
     #[test]
     fn chaining_hints_ignore_comments() {
         check_expect(
-            InlayHintsConfig { type_hints: false, chaining_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                type_hints: false,
+                chaining_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 struct A(B);
 impl A { fn into_b(self) -> B { self.0 } }
@@ -167,6 +186,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn chaining_hints_without_newlines() {
         check_chains(
@@ -182,10 +202,14 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn disabled_location_links() {
         check_expect(
-            InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                chaining_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
     struct A { pub b: B }
     struct B { pub c: C }
@@ -248,10 +272,14 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn struct_access_chaining_hints() {
         check_expect(
-            InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                chaining_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 struct A { pub b: B }
 struct B { pub c: C }
@@ -314,10 +342,14 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn generic_chaining_hints() {
         check_expect(
-            InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                chaining_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 struct A<T>(T);
 struct B<T>(T);
@@ -413,10 +445,14 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn shorten_iterator_chaining_hints() {
         check_expect_clear_loc(
-            InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                chaining_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: iterators
 use core::iter;
@@ -572,6 +608,7 @@ fn main() {
             "#]],
         );
     }
+
     #[test]
     fn hints_in_attr_call() {
         check_expect(

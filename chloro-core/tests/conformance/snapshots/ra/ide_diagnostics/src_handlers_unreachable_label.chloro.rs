@@ -9,7 +9,10 @@ pub(crate) fn unreachable_label(
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0767"),
-        format!("use of unreachable label `{}`", name.display(ctx.sema.db, ctx.edition)),
+        format!(
+            "use of unreachable label `{}`",
+            name.display(ctx.sema.db, ctx.edition)
+        ),
         d.node.map(|it| it.into()),
     )
     .stable()
@@ -18,6 +21,7 @@ pub(crate) fn unreachable_label(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn async_blocks_are_borders() {
         check_diagnostics(
@@ -37,6 +41,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn closures_are_borders() {
         check_diagnostics(
@@ -56,6 +61,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn blocks_pass_through() {
         check_diagnostics(
@@ -71,6 +77,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn try_blocks_pass_through() {
         check_diagnostics(

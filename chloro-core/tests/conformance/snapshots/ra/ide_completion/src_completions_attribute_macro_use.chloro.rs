@@ -1,5 +1,4 @@
 //! Completion for macros in `#[macro_use(...)]`
-
 use hir::ModuleDef;
 use ide_db::SymbolKind;
 use syntax::ast;
@@ -12,9 +11,15 @@ pub(super) fn complete_macro_use(
     extern_crate: Option<&ast::ExternCrate>,
     existing_imports: &[ast::Path],
 ) {
-    let Some(extern_crate) = extern_crate else { return };
-    let Some(extern_crate) = ctx.sema.to_def(extern_crate) else { return };
-    let Some(krate) = extern_crate.resolved_crate(ctx.db) else { return };
+    let Some(extern_crate) = extern_crate else {
+        return;
+    };
+    let Some(extern_crate) = ctx.sema.to_def(extern_crate) else {
+        return;
+    };
+    let Some(krate) = extern_crate.resolved_crate(ctx.db) else {
+        return;
+    };
 
     for mod_def in krate.root_module().declarations(ctx.db) {
         if let ModuleDef::Macro(mac) = mod_def {

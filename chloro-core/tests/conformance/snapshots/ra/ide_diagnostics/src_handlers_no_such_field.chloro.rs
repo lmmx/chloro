@@ -94,7 +94,11 @@ fn missing_record_expr_field_fixes(
     let new_field = make::record_field(
         None,
         make::name(record_expr_field.field_name()?.ident_token()?.text()),
-        make::ty(&new_field_type.display_source_code(sema.db, module.into(), true).ok()?),
+        make::ty(
+            &new_field_type
+                .display_source_code(sema.db, module.into(), true)
+                .ok()?,
+        ),
     );
 
     let last_field = record_fields.fields().last()?;
@@ -135,6 +139,7 @@ fn missing_record_expr_field_fixes(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix, check_no_fix};
+
     #[test]
     fn dont_work_for_field_with_disabled_cfg() {
         check_diagnostics(
@@ -164,6 +169,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_such_field_diagnostics() {
         check_diagnostics(
@@ -228,6 +234,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn no_such_field_enum_with_feature_flag_diagnostics() {
         check_diagnostics(
@@ -250,6 +257,7 @@ fn test_fn(f: Foo) {
 "#,
         );
     }
+
     #[test]
     fn no_such_field_with_feature_flag_diagnostics_on_struct_lit() {
         check_diagnostics(
@@ -289,6 +297,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn no_such_field_with_type_macro() {
         check_diagnostics(
@@ -304,6 +313,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_add_field_from_usage() {
         check_fix(
@@ -326,6 +336,7 @@ struct Foo {
 ",
         )
     }
+
     #[test]
     fn test_add_field_in_other_file_from_usage() {
         check_fix(
@@ -349,20 +360,25 @@ pub struct Foo {
 "#,
         )
     }
+
     #[test]
     fn test_tuple_field_on_record_struct() {
-        check_no_fix(r#"
+        check_no_fix(
+            r#"
 struct Struct {}
 fn main() {
     Struct {
         0$0: 0
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn test_struct_field_private() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 mod m {
     pub struct Struct {
         field: u32,
@@ -389,8 +405,10 @@ fn f(s@m::Struct {
       //^^^^^^ 💡 error: field is private
     };
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn test_struct_field_private_same_crate_fix() {
         check_diagnostics(
@@ -436,6 +454,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_struct_field_private_other_crate_fix() {
         check_fix(
@@ -460,6 +479,7 @@ pub struct Struct {
 "#,
         );
     }
+
     #[test]
     fn editions_between_macros() {
         check_diagnostics(

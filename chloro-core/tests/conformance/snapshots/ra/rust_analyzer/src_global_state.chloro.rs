@@ -12,11 +12,11 @@ use std::{
 use cargo_metadata::PackageId;
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use hir::ChangeWithProcMacros;
+use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
 use ide_db::{
     MiniCore,
     base_db::{Crate, ProcMacroPaths, SourceDatabase},
 };
-use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
 use itertools::Itertools;
 use load_cargo::SourceRootConfig;
 use lsp_types::{SemanticTokens, Url};
@@ -38,8 +38,8 @@ use crate::{
     discover,
     flycheck::{FlycheckHandle, FlycheckMessage},
     line_index::{LineEndings, LineIndex},
-    lsp_ext,
     lsp::{from_proto, to_proto::url_from_abs_path},
+    lsp_ext,
     main_loop::Task,
     mem_docs::MemDocs,
     op_queue::{Cause, OpQueue},
@@ -65,17 +65,13 @@ pub(crate) struct FetchBuildDataResponse {
     pub(crate) build_scripts: Vec<anyhow::Result<WorkspaceBuildScripts>>,
 }
 
+// Enforces drop order
 pub(crate) struct Handle<H, C> {
     pub(crate) handle: H,
     pub(crate) receiver: C,
 }
 
-pub(crate) type ReqHandler =
-    fn(
-        &mut GlobalState,
-        lsp_server::Response,
-    );
-
+pub(crate) type ReqHandler = fn(&mut GlobalState, lsp_server::Response);
 type ReqQueue = lsp_server::ReqQueue<(String, Instant), ReqHandler>;
 
 /// `GlobalState` is the primary mutable state of the language server
@@ -89,9 +85,11 @@ type ReqQueue = lsp_server::ReqQueue<(String, Instant), ReqHandler>;
 pub(crate) struct GlobalState {
     sender: Sender<lsp_server::Message>,
     req_queue: ReqQueue,
+
     pub(crate) task_pool: Handle<TaskPool<Task>, Receiver<Task>>,
     pub(crate) fmt_pool: Handle<TaskPool<Task>, Receiver<Task>>,
     pub(crate) cancellation_pool: thread::Pool,
+
     pub(crate) config: Arc<Config>,
     pub(crate) config_errors: Option<ConfigErrors>,
     pub(crate) analysis_host: AnalysisHost,
@@ -101,30 +99,37 @@ pub(crate) struct GlobalState {
     /// A mapping that maps a local source root's `SourceRootId` to it parent's `SourceRootId`, if it has one.
     pub(crate) local_roots_parent_map: Arc<FxHashMap<SourceRootId, SourceRootId>>,
     pub(crate) semantic_tokens_cache: Arc<Mutex<FxHashMap<Url, SemanticTokens>>>,
+
     // status
     pub(crate) shutdown_requested: bool,
     pub(crate) last_reported_status: lsp_ext::ServerStatusParams,
+
     // proc macros
     pub(crate) proc_macro_clients: Arc<[Option<anyhow::Result<ProcMacroClient>>]>,
     pub(crate) build_deps_changed: bool,
+
     // Flycheck
     pub(crate) flycheck: Arc<[FlycheckHandle]>,
     pub(crate) flycheck_sender: Sender<FlycheckMessage>,
     pub(crate) flycheck_receiver: Receiver<FlycheckMessage>,
     pub(crate) last_flycheck_error: Option<String>,
+
     // Test explorer
     pub(crate) test_run_session: Option<Vec<CargoTestHandle>>,
     pub(crate) test_run_sender: Sender<CargoTestMessage>,
     pub(crate) test_run_receiver: Receiver<CargoTestMessage>,
     pub(crate) test_run_remaining_jobs: usize,
+
     // Project loading
     pub(crate) discover_handle: Option<discover::DiscoverHandle>,
     pub(crate) discover_sender: Sender<discover::DiscoverProjectMessage>,
     pub(crate) discover_receiver: Receiver<discover::DiscoverProjectMessage>,
+
     // Debouncing channel for fetching the workspace
     // we want to delay it until the VFS looks stable-ish (and thus is not currently in the middle
     // of a VCS operation like `git switch`)
     pub(crate) fetch_ws_receiver: Option<(Receiver<Instant>, FetchWorkspaceRequest)>,
+
     // VFS
     pub(crate) loader: Handle<Box<dyn vfs::loader::Handle>, Receiver<vfs::loader::Message>>,
     pub(crate) vfs: Arc<RwLock<(vfs::Vfs, FxHashMap<FileId, LineEndings>)>>,
@@ -135,6 +140,7 @@ pub(crate) struct GlobalState {
     // as that handle's lifetime is the same as `GlobalState` itself.
     pub(crate) vfs_span: Option<tracing::span::EnteredSpan>,
     pub(crate) wants_to_switch: Option<Cause>,
+
     /// `workspaces` field stores the data we actually use, while the `OpQueue`
     /// stores the result of the last fetch.
     ///
@@ -163,12 +169,14 @@ pub(crate) struct GlobalState {
     pub(crate) workspaces: Arc<Vec<ProjectWorkspace>>,
     pub(crate) crate_graph_file_dependencies: FxHashSet<vfs::VfsPath>,
     pub(crate) detached_files: FxHashSet<ManifestPath>,
+
     // op queues
     pub(crate) fetch_workspaces_queue: OpQueue<FetchWorkspaceRequest, FetchWorkspaceResponse>,
     pub(crate) fetch_build_data_queue: OpQueue<(), FetchBuildDataResponse>,
     pub(crate) fetch_proc_macros_queue: OpQueue<(ChangeWithProcMacros, Vec<ProcMacroPaths>), bool>,
     pub(crate) prime_caches_queue: OpQueue,
     pub(crate) discover_workspace_queue: OpQueue,
+
     /// A deferred task queue.
     ///
     /// This queue is used for doing database-dependent work inside of sync
@@ -183,9 +191,11 @@ pub(crate) struct GlobalState {
     /// This is marked true if we failed to load a crate root file at crate graph creation,
     /// which will usually end up causing a bunch of incorrect diagnostics on startup.
     pub(crate) incomplete_crate_graph: bool,
+
     pub(crate) minicore: MiniCoreRustAnalyzerInternalOnly,
 }
 
+// FIXME: This should move to the VFS once the rewrite is done.
 #[derive(Debug, Clone, Default)]
 pub(crate) struct MiniCoreRustAnalyzerInternalOnly {
     pub(crate) minicore_text: Option<String>,
@@ -366,7 +376,10 @@ impl GlobalState {
                             .config
                             .discover_workspace_config()
                             .map(|cfg| {
-                                cfg.files_to_watch.iter().map(String::as_str).collect::<Vec<&str>>()
+                                cfg.files_to_watch
+                                    .iter()
+                                    .map(String::as_str)
+                                    .collect::<Vec<&str>>()
                             })
                             .unwrap_or_default();
 
@@ -425,7 +438,9 @@ impl GlobalState {
 
         self.analysis_host.apply_change(change);
         if !modified_ratoml_files.is_empty()
-            || !self.config.same_source_root_parent_map(&self.local_roots_parent_map)
+            || !self
+                .config
+                .same_source_root_parent_map(&self.local_roots_parent_map)
         {
             let config_change = {
                 let _p = span!(Level::INFO, "GlobalState::process_changes/config_change").entered();
@@ -530,17 +545,19 @@ impl GlobalState {
         // didn't find anything (to make up for the lack of precision).
         {
             if !matches!(&workspace_structure_change, Some((.., true))) {
-                _ = self
-                    .deferred_task_queue
-                    .sender
-                    .send(crate::main_loop::QueuedTask::CheckProcMacroSources(modified_rust_files));
+                _ = self.deferred_task_queue.sender.send(
+                    crate::main_loop::QueuedTask::CheckProcMacroSources(modified_rust_files),
+                );
             }
             // FIXME: ideally we should only trigger a workspace fetch for non-library changes
             // but something's going wrong with the source root business when we add a new local
             // crate see https://github.com/rust-lang/rust-analyzer/issues/13029
             if let Some((path, force_crate_graph_reload)) = workspace_structure_change {
-                let _p = span!(Level::INFO, "GlobalState::process_changes/ws_structure_change")
-                    .entered();
+                let _p = span!(
+                    Level::INFO,
+                    "GlobalState::process_changes/ws_structure_change"
+                )
+                .entered();
                 self.enqueue_workspace_fetch(path, force_crate_graph_reload);
             }
         }
@@ -559,7 +576,11 @@ impl GlobalState {
             mem_docs: self.mem_docs.clone(),
             semantic_tokens_cache: Arc::clone(&self.semantic_tokens_cache),
             proc_macros_loaded: !self.config.expand_proc_macros()
-                || self.fetch_proc_macros_queue.last_op_result().copied().unwrap_or(false),
+                || self
+                    .fetch_proc_macros_queue
+                    .last_op_result()
+                    .copied()
+                    .unwrap_or(false),
             flycheck: self.flycheck.clone(),
         }
     }
@@ -569,7 +590,10 @@ impl GlobalState {
         params: R::Params,
         handler: ReqHandler,
     ) {
-        let request = self.req_queue.outgoing.register(R::METHOD.to_owned(), params, handler);
+        let request = self
+            .req_queue
+            .outgoing
+            .register(R::METHOD.to_owned(), params, handler);
         self.send(request.into());
     }
 
@@ -595,9 +619,10 @@ impl GlobalState {
         request: &lsp_server::Request,
         request_received: Instant,
     ) {
-        self.req_queue
-            .incoming
-            .register(request.id.clone(), (request.method.clone(), request_received));
+        self.req_queue.incoming.register(
+            request.id.clone(),
+            (request.method.clone(), request_received),
+        );
     }
 
     pub(crate) fn respond(&mut self, response: lsp_server::Response) {
@@ -705,7 +730,10 @@ impl GlobalState {
 
         self.fetch_ws_receiver = Some((
             crossbeam_channel::after(Duration::from_millis(100)),
-            FetchWorkspaceRequest { path: Some(path), force_crate_graph_reload },
+            FetchWorkspaceRequest {
+                path: Some(path),
+                force_crate_graph_reload,
+            },
         ));
     }
 
@@ -737,22 +765,27 @@ impl GlobalStateSnapshot {
     }
 
     /// Returns `None` if the file was excluded.
-    pub(crate) fn vfs_path_to_file_id(
-        &self,
-        vfs_path: &VfsPath,
-    ) -> anyhow::Result<Option<FileId>> {
+    pub(crate) fn vfs_path_to_file_id(&self, vfs_path: &VfsPath) -> anyhow::Result<Option<FileId>> {
         vfs_path_to_file_id(&self.vfs_read(), vfs_path)
     }
 
     pub(crate) fn file_line_index(&self, file_id: FileId) -> Cancellable<LineIndex> {
         let endings = self.vfs.read().1[&file_id];
         let index = self.analysis.file_line_index(file_id)?;
-        let res = LineIndex { index, endings, encoding: self.config.caps().negotiated_encoding() };
+        let res = LineIndex {
+            index,
+            endings,
+            encoding: self.config.caps().negotiated_encoding(),
+        };
         Ok(res)
     }
 
     pub(crate) fn file_version(&self, file_id: FileId) -> Option<i32> {
-        Some(self.mem_docs.get(self.vfs_read().file_path(file_id))?.version)
+        Some(
+            self.mem_docs
+                .get(self.vfs_read().file_path(file_id))?
+                .version,
+        )
     }
 
     pub(crate) fn url_file_version(&self, url: &Url) -> Option<i32> {
@@ -780,7 +813,10 @@ impl GlobalStateSnapshot {
         for workspace in self.workspaces.iter() {
             match &workspace.kind {
                 ProjectWorkspaceKind::Cargo { cargo, .. }
-                | ProjectWorkspaceKind::DetachedFile { cargo: Some((cargo, _, _)), .. } => {
+                | ProjectWorkspaceKind::DetachedFile {
+                    cargo: Some((cargo, _, _)),
+                    ..
+                } => {
                     let Some(target_idx) = cargo.target_by_root(path) else {
                         continue;
                     };
@@ -829,7 +865,10 @@ impl GlobalStateSnapshot {
         for workspace in self.workspaces.iter() {
             match &workspace.kind {
                 ProjectWorkspaceKind::Cargo { cargo, .. }
-                | ProjectWorkspaceKind::DetachedFile { cargo: Some((cargo, _, _)), .. } => {
+                | ProjectWorkspaceKind::DetachedFile {
+                    cargo: Some((cargo, _, _)),
+                    ..
+                } => {
                     let package = cargo.packages().find(|p| cargo[*p].id == *package)?;
 
                     return cargo[package]
@@ -873,8 +912,9 @@ pub(crate) fn vfs_path_to_file_id(
     vfs: &vfs::Vfs,
     vfs_path: &VfsPath,
 ) -> anyhow::Result<Option<FileId>> {
-    let (file_id, excluded) =
-        vfs.file_id(vfs_path).ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
+    let (file_id, excluded) = vfs
+        .file_id(vfs_path)
+        .ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
     match excluded {
         vfs::FileExcluded::Yes => Ok(None),
         vfs::FileExcluded::No => Ok(Some(file_id)),

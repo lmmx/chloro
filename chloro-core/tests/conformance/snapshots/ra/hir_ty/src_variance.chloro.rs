@@ -53,8 +53,12 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
     if count == 0 {
         return VariancesOf::new_from_iter(interner, []);
     }
-    let mut variances =
-        Context { generics, variances: vec![Variance::Bivariant; count], db }.solve();
+    let mut variances = Context {
+        generics,
+        variances: vec![Variance::Bivariant; count],
+        db,
+    }
+    .solve();
 
     // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
     // since bivariance is prohibited in Rust, but rustc definitely does not fallback bivariance.
@@ -139,15 +143,21 @@ impl<'db> Context<'db> {
                     AdtId::StructId(s) => add_constraints_from_variant(VariantId::StructId(s)),
                     AdtId::UnionId(u) => add_constraints_from_variant(VariantId::UnionId(u)),
                     AdtId::EnumId(e) => {
-                        e.enum_variants(db).variants.iter().for_each(|&(variant, _, _)| {
-                            add_constraints_from_variant(VariantId::EnumVariantId(variant))
-                        });
+                        e.enum_variants(db)
+                            .variants
+                            .iter()
+                            .for_each(|&(variant, _, _)| {
+                                add_constraints_from_variant(VariantId::EnumVariantId(variant))
+                            });
                     }
                 }
             }
             GenericDefId::FunctionId(f) => {
-                let sig =
-                    self.db.callable_item_signature(f.into()).instantiate_identity().skip_binder();
+                let sig = self
+                    .db
+                    .callable_item_signature(f.into())
+                    .instantiate_identity()
+                    .skip_binder();
                 self.add_constraints_from_sig(sig.inputs_and_output.iter(), Variance::Covariant);
             }
             _ => {}
@@ -177,7 +187,11 @@ impl<'db> Context<'db> {
     /// in a context with the generics defined in `generics` and
     /// ambient variance `variance`
     fn add_constraints_from_ty(&mut self, ty: Ty<'db>, variance: Variance) {
-        tracing::debug!("add_constraints_from_ty(ty={:?}, variance={:?})", ty, variance);
+        tracing::debug!(
+            "add_constraints_from_ty(ty={:?}, variance={:?})",
+            ty,
+            variance
+        );
         match ty.kind() {
             TyKind::Int(_)
             | TyKind::Uint(_)
@@ -193,7 +207,10 @@ impl<'db> Context<'db> {
             | TyKind::Coroutine(..)
             | TyKind::CoroutineClosure(..)
             | TyKind::Closure(..) => {
-                never!("Unexpected unnameable type in variance computation: {:?}", ty);
+                never!(
+                    "Unexpected unnameable type in variance computation: {:?}",
+                    ty
+                );
             }
             TyKind::Ref(lifetime, ty, mutbl) => {
                 self.add_constraints_from_region(lifetime, variance);
@@ -259,7 +276,10 @@ impl<'db> Context<'db> {
             | TyKind::Infer(..)
             | TyKind::UnsafeBinder(..)
             | TyKind::Pat(..) => {
-                never!("unexpected type encountered in variance inference: {:?}", ty)
+                never!(
+                    "unexpected type encountered in variance inference: {:?}",
+                    ty
+                )
             }
         }
     }
@@ -391,8 +411,11 @@ mod tests {
     use stdx::format_to;
     use syntax::{AstNode, ast::HasName};
     use test_fixture::WithFixture;
+
     use hir_def::Lookup;
+
     use crate::{db::HirDatabase, test_db::TestDB, variance::generics};
+
     #[test]
     fn phantom_data() {
         check(
@@ -408,6 +431,7 @@ struct Covariant<A> {
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_types() {
         check(
@@ -452,6 +476,7 @@ enum Enum<A,B,C> { //~ ERROR [A: +, B: -, C: o]
             "#]],
         );
     }
+
     #[test]
     fn type_resolve_error_two_structs_deep() {
         check(
@@ -470,6 +495,7 @@ struct Other<'a> {
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_associated_consts() {
         // FIXME: Should be invariant
@@ -488,6 +514,7 @@ struct Foo<T: Trait> { //~ ERROR [T: o]
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_associated_types() {
         check(
@@ -514,6 +541,7 @@ struct Bar<'a, T : Trait<'a>> { //~ ERROR ['a: o, T: o]
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_associated_types2() {
         // FIXME: RPITs have variance, but we can't treat them as their own thing right now
@@ -528,6 +556,7 @@ fn make() -> *const dyn Foo<Bar = &'static u32> {}
             expect![""],
         );
     }
+
     #[test]
     fn rustc_test_variance_trait_bounds() {
         check(
@@ -569,6 +598,7 @@ struct TestBox<U,T:Getter<U>+Setter<U>> { //~ ERROR [U: *, T: +]
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_trait_matching() {
         check(
@@ -603,6 +633,7 @@ fn pick<'b, G>(get: &'b G, if_odd: &'b i32) -> i32
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_trait_object_bound() {
         check(
@@ -624,6 +655,7 @@ struct TOption<'a> { //~ ERROR ['a: +]
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_types_bounds() {
         check(
@@ -672,6 +704,7 @@ struct TestObject<A, R> { //~ ERROR [A: o, R: o]
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_unused_region_param() {
         check(
@@ -687,6 +720,7 @@ trait SomeTrait<'a> { fn foo(&self); } // OK on traits.
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_unused_type_param() {
         check(
@@ -720,6 +754,7 @@ struct DoubleNothing<T> {
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_use_contravariant_struct1() {
         check(
@@ -737,6 +772,7 @@ fn foo<'min,'max>(v: SomeStruct<&'max ()>)
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_use_contravariant_struct2() {
         check(
@@ -754,6 +790,7 @@ fn bar<'min,'max>(v: SomeStruct<&'min ()>)
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_use_covariant_struct1() {
         check(
@@ -771,6 +808,7 @@ fn foo<'min,'max>(v: SomeStruct<&'min ()>)
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_use_covariant_struct2() {
         check(
@@ -788,6 +826,7 @@ fn foo<'min,'max>(v: SomeStruct<&'max ()>)
             "#]],
         );
     }
+
     #[test]
     fn rustc_test_variance_use_invariant_struct1() {
         check(
@@ -811,6 +850,7 @@ fn bar<'min,'max>(v: SomeStruct<&'min ()>)
             "#]],
         );
     }
+
     #[test]
     fn invalid_arg_counts() {
         check(
@@ -826,6 +866,7 @@ struct S3<T>(S<T, T>);
             "#]],
         );
     }
+
     #[test]
     fn prove_fixedpoint() {
         check(
@@ -837,6 +878,7 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
             "#]],
         );
     }
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: Expect) {
         // use tracing_subscriber::{layer::SubscriberExt, Layer};
@@ -848,9 +890,7 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
         // ));
         let (db, file_id) = TestDB::with_single_file(ra_fixture);
 
-        crate::attach_db(
-            &db,
-            || {
+        crate::attach_db(&db, || {
             let mut defs: Vec<GenericDefId> = Vec::new();
             let module = db.module_for_file_opt(file_id.file_id(&db)).unwrap();
             let def_map = module.def_map(&db);
@@ -931,7 +971,6 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
             }
 
             expected.assert_eq(&res);
-        },
-        )
+        })
     }
 }

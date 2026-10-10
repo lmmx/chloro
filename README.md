@@ -8,61 +8,84 @@
 [![Dependencies: 32](https://img.shields.io/badge/cargo%20tree-32-blue)](https://crates.io/crates/chloro)
 [![Binary Size: 1.7M](https://img.shields.io/badge/build%20size-1.7M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
 
-chloro is a minimal Rust code formatter.
-
-## Motivation
-
-For when you want to format two source files in a consistent way, as fast as possible.
-
-## How it works
-
-Using [rowan][rowan] from the rust-analyzer project, which can give both green and red trees.
-The latter are notoriously expensive, but a formatter should only need the former.
-
-Proof of concept library/CLI to explore a fast and low memory code formatter [WIP],
-with use cases of code diffing in mind.
+chloro is a Rust code formatter that reproduces `rustfmt --edition 2024` without depending
+on the compiler: it is a port of rustfmt 1.9.0's formatting logic onto the syntax trees of
+rust-analyzer's parser ([rowan][rowan]).
 
 [rowan]: https://github.com/rust-analyzer/rowan
 
+## Usage
+
+```rust
+// rustfmt's defaults (`rustfmt --edition 2024` without a rustfmt.toml)
+let formatted = chloro::format_source("fn main(){let x=1;}");
+assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
+
+// rustfmt's stable options, by their rustfmt names
+let mut config = chloro::Config::default();
+config.set("max_width", "80").unwrap();
+config.set("use_small_heuristics", "Max").unwrap();
+let formatted = chloro::format_source_with_config("fn main(){}", &config);
+```
+
+Source that does not parse, or that rustc's parser would reject, is returned unchanged,
+as rustfmt leaves such files alone. As in rustfmt, a byte order mark is dropped and the
+output's line endings follow `newline_style` (`\n` by default, whatever the input used).
+
+The CLI takes the same options as rustfmt's `--config`:
+
+```sh
+chloro --config max_width=80,tab_spaces=2 --write src/
+```
+
+## How it works
+
+The formatter follows rustfmt's source module by module (`visitor`, `items`, `expr`,
+`chains`, `overflow`, `lists`, `comment`, ...), so each formatting decision can be traced to
+the rustfmt code it reproduces. A thin adaptation layer presents rust-analyzer's lossless
+tree in the shape rustfmt expects: rustc's spans, doc comments as attributes, rustc's
+classification of statements, and macro arguments re-parsed as expressions, types,
+patterns or items. The [journal entries](docs/journal/) record the design, the
+measurements and the known gaps.
+
+`Config` has one field per stable rustfmt option, with rustfmt's names and defaults.
+Unstable rustfmt options keep their default behaviour.
+
 ## Rustfmt Conformance
 
-Diff 'leaderboard' for how well formatting with chloro matches rustfmt,
-as tested on rust-analyzer's [crates][ra-crates]:
+Formatting rust-analyzer's [crates][ra-crates] (1220 files, 13.8 MB) with chloro and with
+rustfmt 1.9.0 gives identical output for 1219 files; the remaining file is a parser
+error-recovery test case. Every output is a fixed point of chloro. To reproduce:
 
-[ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
+```sh
+cargo run --release -p chloro-core --example conform -- -i
+```
+
+Non-default values of the stable options are compared with `rustfmt --config` by
+`cargo run --release -p chloro-core --example config_matrix`. The same example run over a
+local cargo registry (`-- --root ~/.cargo/registry/src -n 6000 default`), a corpus chloro
+was not developed against, gave identical output for 5384 of 5386 files.
+
+[ra-crates]: https://github.com/rust-lang/rust-analyzer/tree/master/crates
 
 <!-- just: conf-md -->
-**Summary:** +111,690 / -25,543
+**Summary:** +2 / -2
 
-| **Top 5 <del>Removed</del> Lines** | **Top 5 <ins>Added</ins> Lines** |
-|---|---|
-| `- )` × 252<br>`- );` × 207<br>`- },` × 180<br>`- }` × 146<br>`- r#"` × 140<br> | `+ }` × 164<br>`+ },` × 106<br>`+"#)` × 104<br>`+ }` × 84<br>`+ check(r#"` × 79<br> |
-
-### Top 20 Most Impacted Files
-
-| Rank | Size Rank | Diff Rank | Impact |   +   |    -    | File |
-|------|-----------|-----------|--------|-------|---------|------|
-| 1 | 2 | 1 | 17.4% | 1,135 | 6,538 | [`hir/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir/src_lib.diff) |
-| 2 | 10 | 2 | 23.6% | 829 | 3,517 | [`hir_def/src_expr_store_lower`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_expr_store_lower.diff) |
-| 3 | 3 | 7 | 8.1% | 498 | 6,120 | [`ide_assists/src_handlers_extract_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_extract_function.diff) |
-| 4 | 1 | 69 | 1.4% | 155 | 11,163 | [`ide/src_hover_tests`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_hover_tests.diff) |
-| 5 | 21 | 4 | 24.0% | 626 | 2,605 | [`hir_def/src_nameres_collector`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_nameres_collector.diff) |
-| 6 | 7 | 12 | 10.8% | 417 | 3,870 | [`ide/src_goto_definition`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_goto_definition.diff) |
-| 7 | 5 | 17 | 8.8% | 364 | 4,156 | [`rust_analyzer/src_config`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_config.diff) |
-| 8 | 27 | 5 | 23.4% | 575 | 2,454 | [`hir/src_semantics`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir/src_semantics.diff) |
-| 9 | 18 | 8 | 17.0% | 453 | 2,672 | [`rust_analyzer/src_handlers_request`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_handlers_request.diff) |
-| 10 | 12 | 14 | 12.4% | 391 | 3,163 | [`hir_ty/src_mir_eval`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_mir_eval.diff) |
-| 11 | 56 | 3 | 45.7% | 706 | 1,544 | [`hir_expand/src_builtin_derive_macro`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_expand/src_builtin_derive_macro.diff) |
-| 12 | 8 | 23 | 8.8% | 336 | 3,799 | [`ide/src_rename`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_rename.diff) |
-| 13 | 22 | 9 | 17.7% | 452 | 2,551 | [`hir_ty/src_infer_expr`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_infer_expr.diff) |
-| 14 | 13 | 20 | 11.5% | 359 | 3,118 | [`ide_assists/src_handlers_generate_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_function.diff) |
-| 15 | 15 | 19 | 11.9% | 362 | 3,030 | [`rust_analyzer/src_lsp_to_proto`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_lsp_to_proto.diff) |
-| 16 | 30 | 13 | 17.8% | 410 | 2,302 | [`hir_ty/src_mir_lower`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_mir_lower.diff) |
-| 17 | 11 | 40 | 6.8% | 222 | 3,271 | [`ide_completion/src_render`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_completion/src_render.diff) |
-| 18 | 26 | 18 | 14.8% | 363 | 2,461 | [`ide/src_highlight_related`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_highlight_related.diff) |
-| 19 | 34 | 15 | 17.7% | 387 | 2,184 | [`hir_ty/src_lower`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_lower.diff) |
-| 20 | 109 | 6 | 54.3% | 557 | 1,026 | [`rust_analyzer/src_reload`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_reload.diff) |
+1219 of 1220 files identical; the one differing file is
+[`parser/test_data_parser_err_0024_many_type_parens`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/parser/test_data_parser_err_0024_many_type_parens.diff).
 <!-- /just: conf-md -->
+
+## Performance
+
+rustfmt chooses a layout by trying several and keeping the first that fits, so chloro does
+the same work rustfmt does; it memoizes rewrites to keep nested code from multiplying it,
+and reads rust-analyzer's green tree where the typed API would allocate. Single-threaded and
+in process it formats about 3.5 MB/s; a `chloro` process on one large file takes
+0.35x–0.71x the time of a `rustfmt` process. The CLI formats files in parallel.
+
+```sh
+cargo run --release -p chloro-core --example bench -- -w 10   # throughput, 10 slowest files
+```
 
 ## Installation
 

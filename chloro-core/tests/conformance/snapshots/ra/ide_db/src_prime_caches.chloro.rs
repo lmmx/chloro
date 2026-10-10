@@ -2,7 +2,6 @@
 //! sometimes is counter productive when, for example, the first goto definition
 //! request takes longer to compute. This module implements prepopulation of
 //! various caches, it's not really advanced at the moment.
-
 use std::panic::AssertUnwindSafe;
 
 use hir::{Symbol, db::DefDatabase};
@@ -54,14 +53,17 @@ pub fn parallel_prime_caches(
     // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
     // Such def map will just block on the dependency, which is just wasted time. So better
     // to compute the symbols/import map of an already computed def map in that time.
+
     let (reverse_deps, mut to_be_done_deps) = {
         let all_crates = db.all_crates();
         let to_be_done_deps = all_crates
             .iter()
             .map(|&krate| (krate, krate.data(db).dependencies.len() as u32))
             .collect::<FxHashMap<_, _>>();
-        let mut reverse_deps =
-            all_crates.iter().map(|&krate| (krate, Vec::new())).collect::<FxHashMap<_, _>>();
+        let mut reverse_deps = all_crates
+            .iter()
+            .map(|&krate| (krate, Vec::new()))
+            .collect::<FxHashMap<_, _>>();
         for &krate in &*all_crates {
             for dep in &krate.data(db).dependencies {
                 reverse_deps.get_mut(&dep.crate_id).unwrap().push(krate);
@@ -157,7 +159,12 @@ pub fn parallel_prime_caches(
             .expect("failed to spawn thread");
         }
 
-        (def_map_work_sender, import_map_work_sender, symbols_work_sender, progress_receiver)
+        (
+            def_map_work_sender,
+            import_map_work_sender,
+            symbols_work_sender,
+            progress_receiver,
+        )
     };
 
     let crate_def_maps_total = db.all_crates().len();
@@ -179,7 +186,10 @@ pub fn parallel_prime_caches(
         def_map_work_sender.send((krate, name)).ok();
     }
 
-    while crate_def_maps_done < crate_def_maps_total || crate_import_maps_done < crate_import_maps_total || module_symbols_done < module_symbols_total {
+    while crate_def_maps_done < crate_def_maps_total
+        || crate_import_maps_done < crate_import_maps_total
+        || module_symbols_done < module_symbols_total
+    {
         db.unwind_if_revision_cancelled();
 
         let progress = ParallelPrimeCachesProgress {
@@ -207,7 +217,10 @@ pub fn parallel_prime_caches(
         };
 
         match progress {
-            ParallelPrimeCacheWorkerProgress::BeginCrateDefMap { crate_id, crate_name } => {
+            ParallelPrimeCacheWorkerProgress::BeginCrateDefMap {
+                crate_id,
+                crate_name,
+            } => {
                 crates_currently_indexing.insert(crate_id, crate_name);
             }
             ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {

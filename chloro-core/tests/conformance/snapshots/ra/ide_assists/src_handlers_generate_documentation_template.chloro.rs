@@ -69,7 +69,10 @@ pub(crate) fn generate_documentation_template(
                     doc_lines.append(&mut lines);
                 }
             }
-            builder.insert(text_range.start(), documentation_from_lines(doc_lines, indent_level));
+            builder.insert(
+                text_range.start(),
+                documentation_from_lines(doc_lines, indent_level),
+            );
         },
     )
 }
@@ -98,8 +101,11 @@ pub(crate) fn generate_documentation_template(
 pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let tok: ast::Comment = ctx.find_token_at_offset()?;
     let node = tok.syntax().parent()?;
-    let last_doc_token =
-        ast::AnyHasDocComments::cast(node.clone())?.doc_comments().last()?.syntax().clone();
+    let last_doc_token = ast::AnyHasDocComments::cast(node.clone())?
+        .doc_comments()
+        .last()?
+        .syntax()
+        .clone();
     let next_token = skip_whitespace_token(last_doc_token.next_token()?, syntax::Direction::Next)?;
 
     let example = match_ast! {
@@ -223,7 +229,9 @@ fn introduction_builder(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<S
                 };
 
                 let self_ty = linkable_self_ty?;
-                Some(format!("Returns{reference} the {what} of this [`{self_ty}`]."))
+                Some(format!(
+                    "Returns{reference} the {what} of this [`{self_ty}`]."
+                ))
             }
             _ => None,
         };
@@ -266,7 +274,11 @@ fn panics_builder(ast_func: &ast::Fn) -> Option<Vec<String>> {
 /// Builds an optional `# Errors` section
 fn errors_builder(ast_func: &ast::Fn) -> Option<Vec<String>> {
     match return_type(ast_func)?.to_string().contains("Result") {
-        true => Some(string_vec_from(&["# Errors", "", "This function will return an error if ."])),
+        true => Some(string_vec_from(&[
+            "# Errors",
+            "",
+            "This function will return an error if .",
+        ])),
         false => None,
     }
 }
@@ -284,7 +296,8 @@ fn safety_builder(ast_func: &ast::Fn) -> Option<Vec<String>> {
 fn is_public(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<bool> {
     let hir_func = ctx.sema.to_def(ast_func)?;
     Some(
-        hir_func.visibility(ctx.db()) == Visibility::Public && all_parent_mods_public(&hir_func, ctx),
+        hir_func.visibility(ctx.db()) == Visibility::Public
+            && all_parent_mods_public(&hir_func, ctx),
     )
 }
 
@@ -314,7 +327,9 @@ fn can_panic(ast_func: &ast::Fn) -> Option<bool> {
     let body = ast_func.body()?.to_string();
     let mut iter = body.chars();
     let assert_postfix = |s| {
-        ["!(", "_eq!(", "_ne!(", "_matches!("].iter().any(|postfix| str::starts_with(s, postfix))
+        ["!(", "_eq!(", "_ne!(", "_matches!("]
+            .iter()
+            .any(|postfix| str::starts_with(s, postfix))
     };
 
     while !iter.as_str().is_empty() {
@@ -343,7 +358,11 @@ fn self_name(ast_func: &ast::Fn) -> Option<String> {
 
 /// Helper function to get the name of the type of `self`
 fn self_type(ast_func: &ast::Fn) -> Option<ast::Type> {
-    ast_func.syntax().ancestors().find_map(ast::Impl::cast).and_then(|i| i.self_ty())
+    ast_func
+        .syntax()
+        .ancestors()
+        .find_map(ast::Impl::cast)
+        .and_then(|i| i.self_ty())
 }
 
 /// Output the real name of `Self` like `MyType<T>`, without the lifetimes.
@@ -353,11 +372,14 @@ fn self_type_without_lifetimes(ast_func: &ast::Fn) -> Option<String> {
         _ => return None,
     };
     let mut name = path_segment.name_ref()?.to_string();
-    let generics = path_segment.generic_arg_list().into_iter().flat_map(|list| {
-        list.generic_args()
-            .filter(|generic| matches!(generic, ast::GenericArg::TypeArg(_)))
-            .map(|generic| generic.to_string())
-    });
+    let generics = path_segment
+        .generic_arg_list()
+        .into_iter()
+        .flat_map(|list| {
+            list.generic_args()
+                .filter(|generic| matches!(generic, ast::GenericArg::TypeArg(_)))
+                .map(|generic| generic.to_string())
+        });
     let generics: String = generics.format(", ").to_string();
     if !generics.is_empty() {
         name.push('<');
@@ -465,7 +487,12 @@ fn function_call(
 
 /// Helper function to count the parameters including `self`
 fn count_parameters(param_list: &ast::ParamList) -> usize {
-    param_list.params().count() + if param_list.self_param().is_some() { 1 } else { 0 }
+    param_list.params().count()
+        + if param_list.self_param().is_some() {
+            1
+        } else {
+            0
+        }
 }
 
 /// Helper function to transform lines of documentation into a Rust code documentation
@@ -518,7 +545,9 @@ fn returns_a_value(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn not_applicable_on_function_calls() {
         check_assist_not_applicable(
@@ -531,6 +560,7 @@ fn calls_hello_world() {
 "#,
         )
     }
+
     #[test]
     fn not_applicable_in_trait_impl() {
         check_assist_not_applicable(
@@ -544,6 +574,7 @@ impl MyTrait for MyStruct {
 "#,
         )
     }
+
     #[test]
     fn not_applicable_if_function_already_documented() {
         check_assist_not_applicable(
@@ -554,6 +585,7 @@ pub fn $0documented_function() {}
 "#,
         );
     }
+
     #[test]
     fn supports_noop_function() {
         check_assist(
@@ -567,6 +599,7 @@ pub fn noop() {}
 "#,
         );
     }
+
     #[test]
     fn is_applicable_if_function_is_private() {
         check_assist(
@@ -580,6 +613,7 @@ fn private() {}
 "#,
         );
     }
+
     #[test]
     fn no_doc_example_for_private_fn() {
         check_assist_not_applicable(
@@ -590,6 +624,7 @@ fn private() {}
 "#,
         );
     }
+
     #[test]
     fn supports_a_parameter() {
         check_assist(
@@ -612,6 +647,7 @@ pub fn noop_with_param(_a: i32) {}
 "#,
         );
     }
+
     #[test]
     fn detects_unsafe_function() {
         check_assist(
@@ -656,6 +692,7 @@ pub unsafe fn noop_unsafe() {}
 "#,
         );
     }
+
     #[test]
     fn guesses_panic_macro_can_panic() {
         check_assist(
@@ -681,6 +718,7 @@ pub fn panics_if(a: bool) {
 "#,
         );
     }
+
     #[test]
     fn guesses_debug_assert_macro_cannot_panic() {
         check_assist(
@@ -698,6 +736,7 @@ pub fn debug_panics_if_not(a: bool) {
 "#,
         );
     }
+
     #[test]
     fn guesses_assert_macro_can_panic() {
         check_assist(
@@ -719,6 +758,7 @@ pub fn panics_if_not(a: bool) {
 "#,
         );
     }
+
     #[test]
     fn guesses_assert_eq_macro_can_panic() {
         check_assist(
@@ -740,6 +780,7 @@ pub fn panics_if_not(a: bool) {
 "#,
         );
     }
+
     #[test]
     fn guesses_unwrap_can_panic() {
         check_assist(
@@ -761,6 +802,7 @@ pub fn panics_if_none(a: Option<()>) {
 "#,
         );
     }
+
     #[test]
     fn guesses_expect_can_panic() {
         check_assist(
@@ -782,6 +824,7 @@ pub fn panics_if_none2(a: Option<()>) {
 "#,
         );
     }
+
     #[test]
     fn checks_output_in_example() {
         check_assist(
@@ -808,6 +851,7 @@ pub fn returns_a_value() -> i32 {
 "#,
         );
     }
+
     #[test]
     fn detects_result_output() {
         check_assist(
@@ -829,6 +873,7 @@ pub fn returns_a_result() -> Result<i32, std::io::Error> {
 "#,
         );
     }
+
     #[test]
     fn checks_ref_mut_in_example() {
         check_assist(
@@ -857,6 +902,7 @@ pub fn modifies_a_value(a: &mut i32) {
 "#,
         );
     }
+
     #[test]
     fn stores_result_if_at_least_3_params() {
         check_assist(
@@ -884,6 +930,7 @@ pub fn sum3(a: i32, b: i32, c: i32) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn supports_fn_in_mods() {
         check_assist(
@@ -914,6 +961,7 @@ pub mod a {
 "#,
         );
     }
+
     #[test]
     fn supports_fn_in_impl() {
         check_assist(
@@ -942,6 +990,7 @@ impl MyStruct {
 "#,
         );
     }
+
     #[test]
     fn supports_unsafe_fn_in_trait() {
         check_assist(
@@ -963,6 +1012,7 @@ pub trait MyTrait {
 "#,
         );
     }
+
     #[test]
     fn supports_fn_in_trait_with_default_panicking() {
         check_assist(
@@ -988,6 +1038,7 @@ pub trait MyTrait {
 "#,
         );
     }
+
     #[test]
     fn supports_fn_in_trait_returning_result() {
         check_assist(
@@ -1009,6 +1060,7 @@ pub trait MyTrait {
 "#,
         );
     }
+
     #[test]
     fn detects_new() {
         check_assist(
@@ -1058,6 +1110,7 @@ impl<T> MyGenericStruct<T> {
 "#,
         );
     }
+
     #[test]
     fn removes_one_lifetime_from_description() {
         check_assist(
@@ -1087,6 +1140,7 @@ impl<'a, T> MyGenericStruct<'a, T> {
 "#,
         );
     }
+
     #[test]
     fn removes_all_lifetimes_from_description() {
         check_assist(
@@ -1118,6 +1172,7 @@ impl<'a, 'b, T> MyGenericStruct<'a, 'b, T> {
 "#,
         );
     }
+
     #[test]
     fn removes_all_lifetimes_and_brackets_from_description() {
         check_assist(
@@ -1149,6 +1204,7 @@ impl<'a, 'b> MyGenericStruct<'a, 'b> {
 "#,
         );
     }
+
     #[test]
     fn detects_new_with_self() {
         check_assist(
@@ -1178,6 +1234,7 @@ impl<T> MyGenericStruct2<T> {
 "#,
         );
     }
+
     #[test]
     fn supports_method_call() {
         check_assist(
@@ -1205,6 +1262,7 @@ impl<T> MyGenericStruct<T> {
 "#,
         );
     }
+
     #[test]
     fn checks_modified_self_param() {
         check_assist(
@@ -1237,6 +1295,7 @@ impl<T> MyGenericStruct<T> {
 "#,
         );
     }
+
     #[test]
     fn generates_intro_for_getters() {
         check_assist(
@@ -1304,6 +1363,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn no_getter_intro_for_prefixed_methods() {
         check_assist(
@@ -1323,6 +1383,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn generates_intro_for_setters() {
         check_assist(

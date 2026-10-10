@@ -11,7 +11,10 @@ pub(crate) fn await_outside_of_async(
         adjusted_display_range(ctx, d.node, &|node| Some(node.await_token()?.text_range()));
     Diagnostic::new(
         crate::DiagnosticCode::RustcHardError("E0728"),
-        format!("`await` is used inside {}, which is not an `async` context", d.location),
+        format!(
+            "`await` is used inside {}, which is not an `async` context",
+            d.location
+        ),
         display_range,
     )
     .stable()
@@ -20,6 +23,7 @@ pub(crate) fn await_outside_of_async(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn await_inside_non_async_fn() {
         check_diagnostics(
@@ -33,6 +37,7 @@ fn bar() {
 "#,
         );
     }
+
     #[test]
     fn await_inside_async_fn() {
         check_diagnostics(
@@ -45,6 +50,7 @@ async fn bar() {
 "#,
         );
     }
+
     #[test]
     fn await_inside_closure() {
         check_diagnostics(
@@ -58,6 +64,7 @@ async fn bar() {
 "#,
         );
     }
+
     #[test]
     fn await_inside_async_block() {
         check_diagnostics(
@@ -70,6 +77,7 @@ fn bar() {
 "#,
         );
     }
+
     #[test]
     fn await_in_complex_context() {
         check_diagnostics(

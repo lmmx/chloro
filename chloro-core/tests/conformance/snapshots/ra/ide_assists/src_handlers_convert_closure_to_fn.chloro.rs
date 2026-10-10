@@ -8,7 +8,11 @@ use stdx::format_to;
 use syntax::{
     AstNode, Direction, SyntaxKind, SyntaxNode, T, TextSize, ToSmolStr,
     algo::{skip_trivia_token, skip_whitespace_token},
-    ast::{self, HasArgList, HasGenericParams, HasName, edit::{AstNodeEdit, IndentLevel}, make},
+    ast::{
+        self, HasArgList, HasGenericParams, HasName,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+    },
     hacks::parse_expr_from_str,
     ted,
 };
@@ -187,7 +191,9 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
                     let expr = match capture_usage_source {
                         Either::Left(expr) => expr,
                         Either::Right(pat) => {
-                            let Some(expr) = expr_of_pat(pat) else { continue };
+                            let Some(expr) = expr_of_pat(pat) else {
+                                continue;
+                            };
                             expr
                         }
                     };
@@ -255,12 +261,16 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
                 None => {
                     let Some(top_stmt) =
                         closure.syntax().ancestors().skip(1).find_map(|ancestor| {
-                            ast::Stmt::cast(ancestor.clone()).map(Either::Left).or_else(|| {
-                                ast::ClosureExpr::cast(ancestor.clone())
-                                    .map(Either::Left)
-                                    .or_else(|| ast::BlockExpr::cast(ancestor).map(Either::Right))
-                                    .map(Either::Right)
-                            })
+                            ast::Stmt::cast(ancestor.clone())
+                                .map(Either::Left)
+                                .or_else(|| {
+                                    ast::ClosureExpr::cast(ancestor.clone())
+                                        .map(Either::Left)
+                                        .or_else(|| {
+                                            ast::BlockExpr::cast(ancestor).map(Either::Right)
+                                        })
+                                        .map(Either::Right)
+                                })
                         })
                     else {
                         return;
@@ -284,7 +294,9 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
                             builder.insert(range, format!("\n{indent}{fn_}"));
                         }
                         Either::Right(Either::Left(closure_inside_closure)) => {
-                            let Some(closure_body) = closure_inside_closure.body() else { return };
+                            let Some(closure_body) = closure_inside_closure.body() else {
+                                return;
+                            };
                             // FIXME: Maybe we can indent this properly, adding newlines and all, but this is hard.
                             builder.insert(
                                 closure_body.syntax().text_range().start(),
@@ -294,7 +306,9 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
                                 .insert(closure_body.syntax().text_range().end(), " }".to_owned());
                         }
                         Either::Right(Either::Right(block_expr)) => {
-                            let Some(tail_expr) = block_expr.tail_expr() else { return };
+                            let Some(tail_expr) = block_expr.tail_expr() else {
+                                return;
+                            };
                             let Some(insert_in) =
                                 tail_expr.syntax().first_token().and_then(|token| {
                                     skip_whitespace_token(token.prev_token()?, Direction::Prev)
@@ -345,12 +359,17 @@ fn compute_closure_type_params(
         })
         .collect::<FxHashSet<_>>();
 
-    let Some((container_params, container_where, container)) =
-        closure.syntax().ancestors().find_map(ast::AnyHasGenericParams::cast).and_then(
-            |container| {
-                Some((container.generic_param_list()?, container.where_clause(), container))
-            },
-        )
+    let Some((container_params, container_where, container)) = closure
+        .syntax()
+        .ancestors()
+        .find_map(ast::AnyHasGenericParams::cast)
+        .and_then(|container| {
+            Some((
+                container.generic_param_list()?,
+                container.where_clause(),
+                container,
+            ))
+        })
     else {
         return (None, None);
     };
@@ -366,7 +385,11 @@ fn compute_closure_type_params(
 
     let all_params = container_params
         .type_or_const_params()
-        .chain(containing_impl.iter().flat_map(|(param_list, _)| param_list.type_or_const_params()))
+        .chain(
+            containing_impl
+                .iter()
+                .flat_map(|(param_list, _)| param_list.type_or_const_params()),
+        )
         .filter_map(|param| Some(param.name()?.text().to_smolstr()))
         .collect::<FxHashSet<_>>();
 
@@ -404,7 +427,10 @@ fn compute_closure_type_params(
         for param in container_params.type_or_const_params() {
             insert_name(param.syntax());
         }
-        for (pred_index, pred) in container_where.iter().flat_map(|it| it.predicates()).enumerate()
+        for (pred_index, pred) in container_where
+            .iter()
+            .flat_map(|it| it.predicates())
+            .enumerate()
         {
             if insert_name(pred.syntax()) {
                 container_where_bounds_indices.push(pred_index);
@@ -443,7 +469,9 @@ fn compute_closure_type_params(
         .and_then(|(_, it)| it.as_ref())
         .into_iter()
         .flat_map(|where_| {
-            impl_where_bounds_indices.iter().filter_map(|&index| where_.predicates().nth(index))
+            impl_where_bounds_indices
+                .iter()
+                .filter_map(|&index| where_.predicates().nth(index))
         })
         .chain(container_where.iter().flat_map(|where_| {
             container_where_bounds_indices
@@ -468,7 +496,9 @@ fn wrap_capture_in_deref_if_needed(
     fn peel_parens(mut expr: ast::Expr) -> ast::Expr {
         loop {
             if ast::ParenExpr::can_cast(expr.syntax().kind()) {
-                let Some(parent) = expr.syntax().parent().and_then(ast::Expr::cast) else { break };
+                let Some(parent) = expr.syntax().parent().and_then(ast::Expr::cast) else {
+                    break;
+                };
                 expr = parent;
             } else {
                 break;
@@ -513,7 +543,9 @@ fn capture_as_arg(ctx: &AssistContext<'_>, capture: &ClosureCapture<'_>) -> ast:
     if let ast::Expr::PrefixExpr(expr) = &place
         && expr.op_kind() == Some(ast::UnaryOp::Deref)
     {
-        return expr.expr().expect("`display_place_source_code()` produced an invalid expr");
+        return expr
+            .expr()
+            .expect("`display_place_source_code()` produced an invalid expr");
     }
     make::expr_ref(place, needs_mut)
 }
@@ -531,7 +563,9 @@ fn handle_calls(
 
     match closure_name {
         Some(closure_name) => {
-            let Some(closure_def) = ctx.sema.to_def(closure_name) else { return };
+            let Some(closure_def) = ctx.sema.to_def(closure_name) else {
+                return;
+            };
             let closure_usages = Definition::from(closure_def).usages(&ctx.sema).all();
             for (_, usages) in closure_usages {
                 for usage in usages {
@@ -545,7 +579,10 @@ fn handle_calls(
                     };
                     let Some(expr) = name.parent().and_then(|it| {
                         ast::Expr::cast(
-                            ast::PathSegment::cast(it)?.parent_path().syntax().parent()?,
+                            ast::PathSegment::cast(it)?
+                                .parent_path()
+                                .syntax()
+                                .parent()?,
                         )
                     }) else {
                         continue;
@@ -555,7 +592,12 @@ fn handle_calls(
             }
         }
         None => {
-            handle_call(builder, ctx, ast::Expr::ClosureExpr(closure.clone()), captures_as_args);
+            handle_call(
+                builder,
+                ctx,
+                ast::Expr::ClosureExpr(closure.clone()),
+                captures_as_args,
+            );
         }
     }
 }
@@ -566,13 +608,20 @@ fn handle_call(
     closure_ref: ast::Expr,
     captures_as_args: &[ast::Expr],
 ) -> Option<()> {
-    let call =
-        ast::CallExpr::cast(peel_blocks_and_refs_and_parens(closure_ref).syntax().parent()?)?;
+    let call = ast::CallExpr::cast(
+        peel_blocks_and_refs_and_parens(closure_ref)
+            .syntax()
+            .parent()?,
+    )?;
     let args = call.arg_list()?;
     // The really last token is `)`; we need one before that.
-    let has_trailing_comma = args.syntax().last_token()?.prev_token().is_some_and(|token| {
-        skip_trivia_token(token, Direction::Prev).is_some_and(|token| token.kind() == T![,])
-    });
+    let has_trailing_comma = args
+        .syntax()
+        .last_token()?
+        .prev_token()
+        .is_some_and(|token| {
+            skip_trivia_token(token, Direction::Prev).is_some_and(|token| token.kind() == T![,])
+        });
     let has_existing_args = args.args().next().is_some();
 
     let FileRangeWrapper { file_id, range } = ctx.sema.original_range_opt(args.syntax())?;
@@ -580,8 +629,11 @@ fn handle_call(
     let arg_list_indent = args.indent_level();
     let insert_newlines =
         first_arg_indent.is_some_and(|first_arg_indent| first_arg_indent != arg_list_indent);
-    let indent =
-        if insert_newlines { first_arg_indent.unwrap().to_string() } else { String::new() };
+    let indent = if insert_newlines {
+        first_arg_indent.unwrap().to_string()
+    } else {
+        String::new()
+    };
     // FIXME: This text manipulation seems risky.
     let text = ctx.db().file_text(file_id.file_id(ctx.db())).text(ctx.db());
     let mut text = text[..u32::from(range.end()).try_into().unwrap()].trim_end();
@@ -598,8 +650,9 @@ fn handle_call(
     if insert_newlines {
         to_insert.push('\n');
     }
-    let (last_arg, rest_args) =
-        captures_as_args.split_last().expect("already checked has captures");
+    let (last_arg, rest_args) = captures_as_args
+        .split_last()
+        .expect("already checked has captures");
     if !insert_newlines && has_existing_args {
         to_insert.push(' ');
     }
@@ -634,7 +687,9 @@ fn handle_call(
 
 fn peel_blocks_and_refs_and_parens(mut expr: ast::Expr) -> ast::Expr {
     loop {
-        let Some(parent) = expr.syntax().parent() else { break };
+        let Some(parent) = expr.syntax().parent() else {
+            break;
+        };
         if matches!(parent.kind(), SyntaxKind::PAREN_EXPR | SyntaxKind::REF_EXPR) {
             expr = ast::Expr::cast(parent).unwrap();
             continue;
@@ -660,8 +715,10 @@ fn expr_of_pat(pat: ast::Pat) -> Option<ast::Expr> {
                 break 'find_expr let_stmt.initializer();
             }
             if ast::MatchArm::can_cast(ancestor.kind())
-                && let Some(match_) =
-                    ancestor.parent().and_then(|it| it.parent()).and_then(ast::MatchExpr::cast)
+                && let Some(match_) = ancestor
+                    .parent()
+                    .and_then(|it| it.parent())
+                    .and_then(ast::MatchExpr::cast)
             {
                 break 'find_expr match_.expr();
             }
@@ -676,7 +733,9 @@ fn expr_of_pat(pat: ast::Pat) -> Option<ast::Expr> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn handles_unique_captures() {
         check_assist(
@@ -698,6 +757,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multiple_capture_usages() {
         check_assist(
@@ -727,6 +787,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn changes_names_of_place() {
         check_assist(
@@ -764,6 +825,7 @@ impl C {
 "#,
         );
     }
+
     #[test]
     fn self_with_fields_does_not_change_to_this() {
         check_assist(
@@ -795,6 +857,7 @@ impl A {
 "#,
         );
     }
+
     #[test]
     fn replaces_async_closure_with_async_fn() {
         check_assist(
@@ -816,6 +879,7 @@ fn foo(&self) {
 "#,
         );
     }
+
     #[test]
     fn replaces_async_block_with_async_fn() {
         check_assist(
@@ -835,6 +899,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     #[ignore = "FIXME: we do not do type inference for gen blocks yet"]
     fn replaces_gen_block_with_gen_fn() {
@@ -860,6 +925,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn leaves_block_in_place() {
         check_assist(
@@ -879,6 +945,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn wraps_in_block_if_needed() {
         check_assist(
@@ -958,6 +1025,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn closure_in_closure() {
         check_assist(
@@ -977,6 +1045,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn closure_in_block() {
         check_assist(
@@ -1001,6 +1070,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn finds_pat_for_expr() {
         check_assist(
@@ -1030,6 +1100,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn with_existing_params() {
         check_assist(
@@ -1057,6 +1128,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn with_existing_params_newlines() {
         check_assist(
@@ -1094,6 +1166,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn with_existing_params_trailing_comma() {
         check_assist(
@@ -1131,6 +1204,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn closure_using_generic_params() {
         check_assist(
@@ -1166,6 +1240,7 @@ impl<A, B: From<A>, const C: usize> Foo<A, B, C> {
 "#,
         );
     }
+
     #[test]
     fn closure_in_stmt() {
         check_assist(
@@ -1190,6 +1265,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn unique_and_imm() {
         check_assist(
@@ -1217,6 +1293,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn only_applicable_in_param_list() {
         check_assist_not_applicable(

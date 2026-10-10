@@ -1,7 +1,6 @@
 //! Implementation of "closure captures" inlay hints.
 //!
 //! Tests live in [`bind_pat`][super::bind_pat] module.
-
 use ide_db::famous_defs::FamousDefs;
 use ide_db::text_edit::{TextRange, TextSize};
 use stdx::{TupleExt, never};
@@ -74,12 +73,13 @@ pub(super) fn hints(
                 // force cache the source file, otherwise sema lookup will potentially panic
                 _ = sema.parse_or_expand(source.file());
                 source.name().and_then(|name| {
-                    name.syntax().original_file_range_opt(sema.db).map(TupleExt::head).map(
-                        |frange| ide_db::FileRange {
+                    name.syntax()
+                        .original_file_range_opt(sema.db)
+                        .map(TupleExt::head)
+                        .map(|frange| ide_db::FileRange {
                             file_id: frange.file_id.file_id(sema.db),
                             range: frange.range,
-                        },
-                    )
+                        })
                 })
             }),
             tooltip: None,
@@ -100,10 +100,14 @@ mod tests {
         InlayHintsConfig,
         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
+
     #[test]
     fn all_capture_kinds() {
         check_with_config(
-            InlayHintsConfig { closure_capture_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                closure_capture_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: copy, derive
 
@@ -145,10 +149,14 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_token() {
         check_with_config(
-            InlayHintsConfig { closure_capture_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                closure_capture_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: copy, derive
 fn main() {

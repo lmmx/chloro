@@ -30,12 +30,16 @@ pub(crate) fn complete_ra_fixture(
         crate::completions(
             &analysis.db,
             ctx.config,
-            FilePositionWrapper { file_id: virtual_file_id, offset: virtual_offset },
+            FilePositionWrapper {
+                file_id: virtual_file_id,
+                offset: virtual_offset,
+            },
             ctx.trigger_character,
         )
     })?;
-    let completions =
-        completions.upmap_from_ra_fixture(&analysis, virtual_file_id, ctx.position.file_id).ok()?;
+    let completions = completions
+        .upmap_from_ra_fixture(&analysis, virtual_file_id, ctx.position.file_id)
+        .ok()?;
     acc.add_many(completions);
     Some(())
 }
@@ -50,7 +54,9 @@ impl_empty_upmap_from_ra_fixture!(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::tests::check;
+
     #[test]
     fn it_works() {
         check(

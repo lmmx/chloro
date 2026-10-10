@@ -58,8 +58,13 @@ fn render(
     let mut kind = thing.kind(db);
     let should_add_parens = !matches!(
         path_ctx,
-        PathCompletionCtx { has_call_parens: true, .. }
-            | PathCompletionCtx { kind: PathKind::Use | PathKind::Type { .. }, .. }
+        PathCompletionCtx {
+            has_call_parens: true,
+            ..
+        } | PathCompletionCtx {
+            kind: PathKind::Use | PathKind::Type { .. },
+            ..
+        }
     );
 
     let fields = thing.fields(completion)?;
@@ -67,7 +72,10 @@ fn render(
         Some(path) => {
             let short = hir::ModPath::from_segments(
                 hir::PathKind::Plain,
-                path.segments().iter().skip(path.segments().len().saturating_sub(2)).cloned(),
+                path.segments()
+                    .iter()
+                    .skip(path.segments().len().saturating_sub(2))
+                    .cloned(),
             );
             (path, short, true)
         }
@@ -75,7 +83,9 @@ fn render(
     };
     let (qualified_name, escaped_qualified_name) = (
         qualified_name.display_verbatim(ctx.db()).to_string(),
-        qualified_name.display(ctx.db(), completion.edition).to_string(),
+        qualified_name
+            .display(ctx.db(), completion.edition)
+            .to_string(),
     );
     let snippet_cap = ctx.snippet_cap();
 
@@ -103,7 +113,9 @@ fn render(
     let label = format_literal_label(&qualified_name, kind, snippet_cap);
     let lookup = if qualified {
         format_literal_lookup(
-            &short_qualified_name.display(ctx.db(), completion.edition).to_string(),
+            &short_qualified_name
+                .display(ctx.db(), completion.edition)
+                .to_string(),
             kind,
         )
     } else {
@@ -121,11 +133,14 @@ fn render(
     item.detail(rendered.detail);
 
     match snippet_cap {
-        Some(snippet_cap) => item.insert_snippet(snippet_cap, rendered.literal).trigger_call_info(),
+        Some(snippet_cap) => item
+            .insert_snippet(snippet_cap, rendered.literal)
+            .trigger_call_info(),
         None => item.insert_text(rendered.literal),
     };
 
-    item.set_documentation(thing.docs(db)).set_deprecated(thing.is_deprecated(&ctx));
+    item.set_documentation(thing.docs(db))
+        .set_deprecated(thing.is_deprecated(&ctx));
 
     let ty = thing.ty(db);
     item.set_relevance(CompletionRelevance {

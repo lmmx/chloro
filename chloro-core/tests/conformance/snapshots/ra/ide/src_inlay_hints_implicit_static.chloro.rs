@@ -2,7 +2,6 @@
 //! ```no_run
 //! static S: &/* 'static */str = "";
 //! ```
-
 use either::Either;
 use ide_db::famous_defs::FamousDefs;
 use ide_db::text_edit::TextEdit;
@@ -59,6 +58,7 @@ mod tests {
         InlayHintsConfig, LifetimeElisionHints,
         inlay_hints::tests::{TEST_CONFIG, check_with_config},
     };
+
     #[test]
     fn hints_lifetimes_static() {
         check_with_config(

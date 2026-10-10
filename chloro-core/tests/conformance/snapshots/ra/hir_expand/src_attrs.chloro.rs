@@ -1,5 +1,4 @@
 //! A higher level attributes based on TokenTree, with also some shortcuts.
-
 use std::iter;
 use std::{borrow::Cow, fmt, ops};
 
@@ -11,9 +10,9 @@ use intern::{Interned, Symbol, sym};
 use mbe::{DelimiterKind, Punct};
 use smallvec::{SmallVec, smallvec};
 use span::{Span, SyntaxContext};
-use syntax_bridge::{DocCommentDesugarMode, desugar_doc_comment_text, syntax_node_to_token_tree};
 use syntax::unescape;
 use syntax::{AstNode, AstToken, SyntaxNode, ast, match_ast};
+use syntax_bridge::{DocCommentDesugarMode, desugar_doc_comment_text, syntax_node_to_token_tree};
 use triomphe::ThinArc;
 
 use crate::{
@@ -86,9 +85,9 @@ impl RawAttrs {
         span_map: SpanMapRef<'_>,
     ) -> impl Iterator<Item = Attr> {
         collect_attrs(owner).filter_map(move |(id, attr)| match attr {
-            Either::Left(attr) => {
-                attr.meta().and_then(|meta| Attr::from_src(db, meta, span_map, id))
-            }
+            Either::Left(attr) => attr
+                .meta()
+                .and_then(|meta| Attr::from_src(db, meta, span_map, id)),
             Either::Right(comment) if DESUGAR_COMMENTS => comment.doc_comment().map(|doc| {
                 let span = span_map.span_for_range(comment.syntax().text_range());
                 let (text, kind) = desugar_doc_comment_text(doc, DocCommentDesugarMode::ProcMacro);
@@ -115,16 +114,16 @@ impl RawAttrs {
         cfg_options: &CfgOptions,
     ) -> impl Iterator<Item = Attr> {
         Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map)
-        .flat_map(
-            |attr| attr.expand_cfg_attr(db, cfg_options),
-        )
+            .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
     }
 
     pub fn merge(&self, other: Self) -> Self {
         match (&self.entries, other.entries) {
             (None, None) => Self::EMPTY,
             (None, entries @ Some(_)) => Self { entries },
-            (Some(entries), None) => Self { entries: Some(entries.clone()) },
+            (Some(entries), None) => Self {
+                entries: Some(entries.clone()),
+            },
             (Some(a), Some(b)) => {
                 let last_ast_index = a.slice.last().map_or(0, |it| it.id.ast_index() + 1);
                 let items = a
@@ -138,15 +137,20 @@ impl RawAttrs {
                         it
                     }))
                     .collect::<Vec<_>>();
-                Self { entries: Some(ThinArc::from_header_and_iter((), items.into_iter())) }
+                Self {
+                    entries: Some(ThinArc::from_header_and_iter((), items.into_iter())),
+                }
             }
         }
     }
 
     /// Processes `cfg_attr`s
     pub fn expand_cfg_attr(self, db: &dyn ExpandDatabase, krate: Crate) -> RawAttrs {
-        let has_cfg_attrs =
-            self.iter().any(|attr| attr.path.as_ident().is_some_and(|name| *name == sym::cfg_attr));
+        let has_cfg_attrs = self.iter().any(|attr| {
+            attr.path
+                .as_ident()
+                .is_some_and(|name| *name == sym::cfg_attr)
+        });
         if !has_cfg_attrs {
             return self;
         }
@@ -175,13 +179,21 @@ pub struct AttrId {
     id: u32,
 }
 
+// FIXME: This only handles a single level of cfg_attr nesting
+// that is `#[cfg_attr(all(), cfg_attr(all(), cfg(any())))]` breaks again
 impl AttrId {
     const INNER_ATTR_SET_BIT: u32 = 1 << 31;
 
     pub fn new(id: usize, is_inner: bool) -> Self {
         assert!(id <= !Self::INNER_ATTR_SET_BIT as usize);
         let id = id as u32;
-        Self { id: if is_inner { id | Self::INNER_ATTR_SET_BIT } else { id } }
+        Self {
+            id: if is_inner {
+                id | Self::INNER_ATTR_SET_BIT
+            } else {
+                id
+            },
+        }
     }
 
     pub fn ast_index(&self) -> usize {
@@ -233,7 +245,10 @@ impl Attr {
         let span = span_map.span_for_range(range);
         let input = if let Some(ast::Expr::Literal(lit)) = ast.expr() {
             let token = lit.token();
-            Some(Box::new(AttrInput::Literal(token_to_literal(token.text(), span))))
+            Some(Box::new(AttrInput::Literal(token_to_literal(
+                token.text(),
+                span,
+            ))))
         } else if let Some(tt) = ast.token_tree() {
             let tree = syntax_node_to_token_tree(
                 tt.syntax(),
@@ -245,7 +260,12 @@ impl Attr {
         } else {
             None
         };
-        Some(Attr { id, path, input, ctxt: span.ctx })
+        Some(Attr {
+            id,
+            path,
+            input,
+            ctxt: span.ctx,
+        })
     }
 
     fn from_tt(
@@ -275,7 +295,10 @@ impl Attr {
                 if !matches!(
                     tt,
                     tt::TtElement::Leaf(
-                        tt::Leaf::Punct(tt::Punct { char: ':' | '$', .. }) | tt::Leaf::Ident(_),
+                        tt::Leaf::Punct(tt::Punct {
+                            char: ':' | '$',
+                            ..
+                        }) | tt::Leaf::Ident(_),
                     )
                 ) {
                     input = path_split_savepoint.remaining();
@@ -289,9 +312,9 @@ impl Attr {
         let path = Interned::new(ModPath::from_tt(db, path)?);
 
         let input = match (input.flat_tokens().first(), input.try_into_subtree()) {
-            (_, Some(tree)) => {
-                Some(Box::new(AttrInput::TokenTree(tt::TopSubtree::from_subtree(tree))))
-            }
+            (_, Some(tree)) => Some(Box::new(AttrInput::TokenTree(
+                tt::TopSubtree::from_subtree(tree),
+            ))),
             (Some(tt::TokenTree::Leaf(tt::Leaf::Punct(tt::Punct { char: '=', .. }))), _) => {
                 match input.flat_tokens().get(1) {
                     Some(tt::TokenTree::Leaf(tt::Leaf::Literal(lit))) => {
@@ -302,7 +325,12 @@ impl Attr {
             }
             _ => None,
         };
-        Some(Attr { id, path, input, ctxt })
+        Some(Attr {
+            id,
+            path,
+            input,
+            ctxt,
+        })
     }
 
     pub fn path(&self) -> &ModPath {
@@ -314,7 +342,10 @@ impl Attr {
         db: &dyn ExpandDatabase,
         cfg_options: &CfgOptions,
     ) -> impl IntoIterator<Item = Self> {
-        let is_cfg_attr = self.path.as_ident().is_some_and(|name| *name == sym::cfg_attr);
+        let is_cfg_attr = self
+            .path
+            .as_ident()
+            .is_some_and(|name| *name == sym::cfg_attr);
         if !is_cfg_attr {
             return smallvec![self];
         }
@@ -372,11 +403,15 @@ impl Attr {
     pub fn string_value_unescape(&self) -> Option<Cow<'_, str>> {
         match self.input.as_deref()? {
             AttrInput::Literal(tt::Literal {
-                symbol: text, kind: tt::LitKind::StrRaw(_), ..
+                symbol: text,
+                kind: tt::LitKind::StrRaw(_),
+                ..
             }) => Some(Cow::Borrowed(text.as_str())),
-            AttrInput::Literal(tt::Literal { symbol: text, kind: tt::LitKind::Str, .. }) => {
-                unescape(text.as_str())
-            }
+            AttrInput::Literal(tt::Literal {
+                symbol: text,
+                kind: tt::LitKind::Str,
+                ..
+            }) => unescape(text.as_str()),
             _ => None,
         }
     }
@@ -412,7 +447,12 @@ impl Attr {
         }
         let paths = args
             .token_trees()
-            .split(|tt| matches!(tt, tt::TtElement::Leaf(tt::Leaf::Punct(Punct { char: ',', .. }))))
+            .split(|tt| {
+                matches!(
+                    tt,
+                    tt::TtElement::Leaf(tt::Leaf::Punct(Punct { char: ',', .. }))
+                )
+            })
             .filter_map(move |tts| {
                 let span = tts.flat_tokens().first()?.first_span();
                 Some((ModPath::from_tt(db, tts)?, span))
@@ -459,8 +499,10 @@ fn unescape(s: &str) -> Option<Cow<'_, str>> {
 pub fn collect_attrs(
     owner: &dyn ast::HasAttrs,
 ) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
-    let inner_attrs =
-        inner_attributes(owner.syntax()).into_iter().flatten().zip(iter::repeat(true));
+    let inner_attrs = inner_attributes(owner.syntax())
+        .into_iter()
+        .flatten()
+        .zip(iter::repeat(true));
     let outer_attrs = ast::AttrDocCommentIter::from_syntax_node(owner.syntax())
         .filter(|el| match el {
             Either::Left(attr) => attr.kind().is_outer(),
@@ -504,10 +546,16 @@ fn inner_attributes(
 // Split it up into a `cfg` subtree and the `attr` subtrees.
 fn parse_cfg_attr_input(
     subtree: &TopSubtree,
-) -> Option<(tt::TokenTreesView<'_>, impl Iterator<Item = tt::TokenTreesView<'_>>)> {
-    let mut parts = subtree
-        .token_trees()
-        .split(|tt| matches!(tt, tt::TtElement::Leaf(tt::Leaf::Punct(Punct { char: ',', .. }))));
+) -> Option<(
+    tt::TokenTreesView<'_>,
+    impl Iterator<Item = tt::TokenTreesView<'_>>,
+)> {
+    let mut parts = subtree.token_trees().split(|tt| {
+        matches!(
+            tt,
+            tt::TtElement::Leaf(tt::Leaf::Punct(Punct { char: ',', .. }))
+        )
+    });
     let cfg = parts.next()?;
     Some((cfg, parts.filter(|it| !it.is_empty())))
 }

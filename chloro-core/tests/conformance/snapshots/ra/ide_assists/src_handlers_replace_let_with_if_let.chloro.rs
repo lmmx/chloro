@@ -1,7 +1,7 @@
 use ide_db::ty_filter::TryEnum;
 use syntax::{
     AstNode, T,
-    ast::{self, edit_in_place::Indent, edit::IndentLevel, syntax_factory::SyntaxFactory},
+    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
 };
 
 use crate::{AssistContext, AssistId, Assists};
@@ -55,9 +55,9 @@ pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>
                     .map(|it| it.happy_case());
                 match happy_variant {
                     None => original_pat,
-                    Some(var_name) => {
-                        make.tuple_struct_pat(make.ident_path(var_name), [original_pat]).into()
-                    }
+                    Some(var_name) => make
+                        .tuple_struct_pat(make.ident_path(var_name), [original_pat])
+                        .into(),
                 }
             };
 
@@ -82,7 +82,9 @@ pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>
 #[cfg(test)]
 mod tests {
     use crate::tests::check_assist;
+
     use super::*;
+
     #[test]
     fn replace_let_unknown_enum() {
         check_assist(
@@ -104,6 +106,7 @@ fn main() {
             ",
         )
     }
+
     #[test]
     fn replace_let_else() {
         check_assist(

@@ -64,14 +64,17 @@ impl ObligationCause {
 /// scope. The eventual result is usually a `Selection` (defined below).
 #[derive(Clone, Debug, TypeVisitable, TypeFoldable)]
 pub struct Obligation<'db, T> {
-    /// The reason we have to prove this thing.
     #[type_foldable(identity)]
     #[type_visitable(ignore)]
+    /// The reason we have to prove this thing.
     pub cause: ObligationCause,
+
     /// The environment in which we should prove this thing.
     pub param_env: ParamEnv<'db>,
+
     /// The thing we are trying to prove.
     pub predicate: T,
+
     /// If we started proving this as a result of trying to prove
     /// something else, track the total depth to ensure termination.
     /// If this goes over a certain threshold, we abort compilation --
@@ -153,7 +156,6 @@ impl<'db, P> From<Obligation<'db, P>> for Goal<'db, P> {
 }
 
 pub(crate) type PredicateObligation<'db> = Obligation<'db, Predicate<'db>>;
-
 pub(crate) type TraitObligation<'db> = Obligation<'db, TraitPredicate<'db>>;
 
 pub(crate) type PredicateObligations<'db> = Vec<PredicateObligation<'db>>;
@@ -198,7 +200,12 @@ impl<'db, O> Obligation<'db, O> {
         predicate: impl Upcast<DbInterner<'db>, O>,
     ) -> Obligation<'db, O> {
         let predicate = predicate.upcast(tcx);
-        Obligation { cause, param_env, recursion_depth, predicate }
+        Obligation {
+            cause,
+            param_env,
+            recursion_depth,
+            predicate,
+        }
     }
 
     pub fn with<P>(
@@ -206,7 +213,13 @@ impl<'db, O> Obligation<'db, O> {
         tcx: DbInterner<'db>,
         value: impl Upcast<DbInterner<'db>, P>,
     ) -> Obligation<'db, P> {
-        Obligation::with_depth(tcx, self.cause.clone(), self.recursion_depth, self.param_env, value)
+        Obligation::with_depth(
+            tcx,
+            self.cause.clone(),
+            self.recursion_depth,
+            self.param_env,
+            value,
+        )
     }
 }
 

@@ -18,6 +18,7 @@ pub(crate) fn bad_rtn(ctx: &DiagnosticsContext<'_>, d: &hir::BadRtn) -> Diagnost
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn fn_traits_also_emit() {
         check_diagnostics(
@@ -30,6 +31,7 @@ fn foo<
         "#,
         );
     }
+
     #[test]
     fn bad_rtn() {
         check_diagnostics(

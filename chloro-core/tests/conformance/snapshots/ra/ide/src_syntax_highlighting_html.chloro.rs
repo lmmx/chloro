@@ -48,7 +48,10 @@ pub(crate) fn highlight_as_html_with_config(
         let class = r.highlight.to_string().replace('.', " ");
         let color = match (rainbow, r.binding_hash) {
             (true, Some(hash)) => {
-                format!(" data-binding-hash=\"{hash}\" style=\"color: {};\"", rainbowify(hash))
+                format!(
+                    " data-binding-hash=\"{hash}\" style=\"color: {};\"",
+                    rainbowify(hash)
+                )
             }
             _ => "".into(),
         };
@@ -62,17 +65,17 @@ pub(crate) fn highlight_as_html(db: &RootDatabase, file_id: FileId, rainbow: boo
     highlight_as_html_with_config(
         db,
         &HighlightConfig {
-        strings: true,
-        comments: true,
-        punctuation: true,
-        specialize_punctuation: true,
-        specialize_operator: true,
-        operator: true,
-        inject_doc_comment: true,
-        macro_bang: true,
-        syntactic_name_ref_highlighting: false,
-        minicore: MiniCore::default(),
-    },
+            strings: true,
+            comments: true,
+            punctuation: true,
+            specialize_punctuation: true,
+            specialize_operator: true,
+            operator: true,
+            inject_doc_comment: true,
+            macro_bang: true,
+            syntactic_name_ref_highlighting: false,
+            minicore: MiniCore::default(),
+        },
         file_id,
         rainbow,
     )

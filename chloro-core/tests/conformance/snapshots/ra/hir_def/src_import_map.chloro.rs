@@ -68,7 +68,12 @@ impl ImportMap {
         for (k, v) in self.item_to_info_map.iter() {
             format_to!(out, "{:?} ({:?}) -> ", k, v.1);
             for v in &v.0 {
-                format_to!(out, "{}:{:?}, ", v.name.display(db, Edition::CURRENT), v.container);
+                format_to!(
+                    out,
+                    "{}:{:?}, ",
+                    v.name.display(db, Edition::CURRENT),
+                    v.container
+                );
             }
             format_to!(out, "\n");
         }
@@ -104,7 +109,12 @@ impl ImportMap {
             .dedup_by(|&(_, (_, lhs, _)), &(_, (_, rhs, _))| lhs.eq_ignore_ascii_case(rhs));
 
         let mut insert = |name: &str, start, end| {
-            builder.insert(name.to_ascii_lowercase(), ((start as u64) << 32) | end as u64).unwrap()
+            builder
+                .insert(
+                    name.to_ascii_lowercase(),
+                    ((start as u64) << 32) | end as u64,
+                )
+                .unwrap()
         };
 
         if let Some((mut last, (_, name, _))) = iter.next() {
@@ -118,8 +128,15 @@ impl ImportMap {
             insert(last_name, last, importables.len());
         }
 
-        let importables = importables.into_iter().map(|(item, _, idx)| (item, idx)).collect();
-        Arc::new(ImportMap { item_to_info_map: map, fst: builder.into_map(), importables })
+        let importables = importables
+            .into_iter()
+            .map(|(item, _, idx)| (item, idx))
+            .collect();
+        Arc::new(ImportMap {
+            item_to_info_map: map,
+            fst: builder.into_map(),
+            importables,
+        })
     }
 
     pub fn import_info_for(&self, item: ItemInNs) -> Option<&[ImportInfo]> {
@@ -152,7 +169,11 @@ impl ImportMap {
 
             let visible_items = mod_data.scope.entries().filter_map(|(name, per_ns)| {
                 let per_ns = per_ns.filter_visibility(|vis| vis == Visibility::Public);
-                if per_ns.is_none() { None } else { Some((name, per_ns)) }
+                if per_ns.is_none() {
+                    None
+                } else {
+                    Some((name, per_ns))
+                }
             });
 
             for (name, per_ns) in visible_items {
@@ -197,8 +218,9 @@ impl ImportMap {
                         );
                     }
 
-                    let (infos, _) =
-                        map.entry(item).or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::No));
+                    let (infos, _) = map
+                        .entry(item)
+                        .or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::No));
                     infos.reserve_exact(1);
                     infos.push(import_info);
 
@@ -251,8 +273,9 @@ impl ImportMap {
                 complete: do_not_complete,
             };
 
-            let (infos, _) =
-                map.entry(assoc_item).or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::Yes));
+            let (infos, _) = map
+                .entry(assoc_item)
+                .or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::Yes));
             infos.reserve_exact(1);
             infos.push(assoc_item_info);
         }
@@ -260,7 +283,6 @@ impl ImportMap {
 }
 
 impl Eq for ImportMap {}
-
 impl PartialEq for ImportMap {
     fn eq(&self, other: &Self) -> bool {
         // `fst` and `importables` are built from `map`, so we don't need to compare them.
@@ -321,11 +343,14 @@ impl SearchMode {
                     let m = if case_sensitive {
                         name.match_indices(query_char).next()
                     } else {
-                        name.match_indices([query_char, query_char.to_ascii_uppercase()]).next()
+                        name.match_indices([query_char, query_char.to_ascii_uppercase()])
+                            .next()
                     };
                     match m {
                         Some((index, _)) => {
-                            name = name[index..].strip_prefix(|_: char| true).unwrap_or_default();
+                            name = name[index..]
+                                .strip_prefix(|_: char| true)
+                                .unwrap_or_default();
                             true
                         }
                         None => false,
@@ -370,15 +395,24 @@ impl Query {
 
     /// Fuzzy finds items instead of exact matching.
     pub fn fuzzy(self) -> Self {
-        Self { search_mode: SearchMode::Fuzzy, ..self }
+        Self {
+            search_mode: SearchMode::Fuzzy,
+            ..self
+        }
     }
 
     pub fn prefix(self) -> Self {
-        Self { search_mode: SearchMode::Prefix, ..self }
+        Self {
+            search_mode: SearchMode::Prefix,
+            ..self
+        }
     }
 
     pub fn exact(self) -> Self {
-        Self { search_mode: SearchMode::Exact, ..self }
+        Self {
+            search_mode: SearchMode::Exact,
+            ..self
+        }
     }
 
     /// Specifies whether we want to include associated items in the result.
@@ -388,7 +422,10 @@ impl Query {
 
     /// Respect casing of the query string when matching.
     pub fn case_sensitive(self) -> Self {
-        Self { case_sensitive: true, ..self }
+        Self {
+            case_sensitive: true,
+            ..self
+        }
     }
 
     fn matches_assoc_mode(&self, is_trait_assoc_item: IsTraitAssocItem) -> bool {
@@ -410,8 +447,12 @@ pub fn search_dependencies(
 ) -> FxHashSet<(ItemInNs, Complete)> {
     let _p = tracing::info_span!("search_dependencies", ?query).entered();
 
-    let import_maps: Vec<_> =
-        krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
+    let import_maps: Vec<_> = krate
+        .data(db)
+        .dependencies
+        .iter()
+        .map(|dep| db.import_map(dep.crate_id))
+        .collect();
 
     let mut op = fst::map::OpBuilder::new();
 
@@ -451,10 +492,18 @@ fn search_maps(
 ) -> FxHashSet<(ItemInNs, Complete)> {
     let mut res = FxHashSet::default();
     while let Some((_, indexed_values)) = stream.next() {
-        for &IndexedValue { index: import_map_idx, value } in indexed_values {
+        for &IndexedValue {
+            index: import_map_idx,
+            value,
+        } in indexed_values
+        {
             let end = (value & 0xFFFF_FFFF) as usize;
             let start = (value >> 32) as usize;
-            let ImportMap { item_to_info_map, importables, .. } = &*import_maps[import_map_idx];
+            let ImportMap {
+                item_to_info_map,
+                importables,
+                ..
+            } = &*import_maps[import_map_idx];
             let importables = &importables[start..end];
 
             let iter = importables
@@ -467,7 +516,9 @@ fn search_maps(
                         .then(|| (item, &import_infos[info_idx as usize]))
                 })
                 .filter(|&(_, info)| {
-                    query.search_mode.check(&query.query, query.case_sensitive, info.name.as_str())
+                    query
+                        .search_mode
+                        .check(&query.query, query.case_sensitive, info.name.as_str())
                 })
                 .map(|(item, import_info)| (item, import_info.complete));
             res.extend(iter);
@@ -482,8 +533,11 @@ mod tests {
     use base_db::RootQueryDb;
     use expect_test::{Expect, expect};
     use test_fixture::WithFixture;
+
     use crate::{ItemContainerId, Lookup, nameres::assoc::TraitItems, test_db::TestDB};
+
     use super::*;
+
     impl ImportMap {
         fn fmt_for_test(&self, db: &dyn DefDatabase) -> String {
             let mut importable_paths: Vec<_> = self
@@ -505,6 +559,7 @@ mod tests {
             importable_paths.join("\n")
         }
     }
+
     fn check_search(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         crate_name: &str,
@@ -558,6 +613,7 @@ mod tests {
             .collect::<String>();
         expect.assert_eq(&actual)
     }
+
     fn assoc_item_path(
         db: &dyn DefDatabase,
         dependency_imports: &ImportMap,
@@ -588,6 +644,7 @@ mod tests {
             assoc_item_name.display(db, Edition::CURRENT)
         ))
     }
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let db = TestDB::with_files(ra_fixture);
         let all_crates = db.all_crates();
@@ -608,23 +665,35 @@ mod tests {
 
         expect.assert_eq(&actual)
     }
+
     fn render_path(db: &dyn DefDatabase, info: &ImportInfo) -> String {
         let mut module = info.container;
         let mut segments = vec![&info.name];
 
         let def_map = module.def_map(db);
-        assert!(def_map.block_id().is_none(), "block local items should not be in `ImportMap`");
+        assert!(
+            def_map.block_id().is_none(),
+            "block local items should not be in `ImportMap`"
+        );
 
         while let Some(parent) = module.containing_module(db) {
             let parent_data = &def_map[parent.local_id];
-            let (name, _) =
-                parent_data.children.iter().find(|(_, id)| **id == module.local_id).unwrap();
+            let (name, _) = parent_data
+                .children
+                .iter()
+                .find(|(_, id)| **id == module.local_id)
+                .unwrap();
             segments.push(name);
             module = parent;
         }
 
-        segments.iter().rev().map(|it| it.display(db, Edition::CURRENT)).join("::")
+        segments
+            .iter()
+            .rev()
+            .map(|it| it.display(db, Edition::CURRENT))
+            .join("::")
     }
+
     #[test]
     fn smoke() {
         check(
@@ -666,6 +735,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn prefers_shortest_path() {
         check(
@@ -689,6 +759,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn type_reexport_cross_crate() {
         // Reexports need to be visible from a crate, even if the original crate exports the item
@@ -713,6 +784,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn macro_reexport() {
         check(
@@ -736,6 +808,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn module_reexport() {
         // Reexporting modules from a dependency adds all contents to the import map.
@@ -761,6 +834,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn cyclic_module_reexport() {
         // A cyclic reexport does not hang.
@@ -787,6 +861,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn private_macro() {
         check(
@@ -802,6 +877,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn namespacing() {
         check(
@@ -837,6 +913,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn fuzzy_import_trait_and_assoc_items() {
         cov_mark::check!(type_aliases_ignored);
@@ -866,6 +943,7 @@ mod tests {
             "#]],
         );
     }
+
     #[test]
     fn assoc_items_filtering() {
         let ra_fixture = r#"
@@ -885,7 +963,9 @@ mod tests {
         check_search(
             ra_fixture,
             "main",
-            Query::new("fmt".to_owned()).fuzzy().assoc_search_mode(AssocSearchMode::AssocItemsOnly),
+            Query::new("fmt".to_owned())
+                .fuzzy()
+                .assoc_search_mode(AssocSearchMode::AssocItemsOnly),
             expect![[r#"
                 dep::fmt::Display::FMT_CONST (a)
                 dep::fmt::Display::format_function (a)
@@ -896,12 +976,15 @@ mod tests {
         check_search(
             ra_fixture,
             "main",
-            Query::new("fmt".to_owned()).fuzzy().assoc_search_mode(AssocSearchMode::Exclude),
+            Query::new("fmt".to_owned())
+                .fuzzy()
+                .assoc_search_mode(AssocSearchMode::Exclude),
             expect![[r#"
                 dep::fmt (t)
             "#]],
         );
     }
+
     #[test]
     fn search_mode() {
         let ra_fixture = r#"
@@ -955,6 +1038,7 @@ pub mod fmt {
             "#]],
         );
     }
+
     #[test]
     fn name_only() {
         let ra_fixture = r#"
@@ -994,6 +1078,7 @@ pub mod fmt {
             "#]],
         );
     }
+
     #[test]
     fn search_casing() {
         let ra_fixture = r#"
@@ -1026,6 +1111,7 @@ pub mod fmt {
             "#]],
         );
     }
+
     #[test]
     fn unicode_fn_name() {
         let ra_fixture = r#"

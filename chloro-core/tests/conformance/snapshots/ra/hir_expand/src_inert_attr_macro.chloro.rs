@@ -66,16 +66,25 @@ macro_rules! template {
 
 macro_rules! ungated {
     ($attr:ident, $typ:expr, $tpl:expr, $duplicates:expr $(, @only_local: $only_local:expr)? $(,)?) => {
-        BuiltinAttribute { name: stringify!($attr), template: $tpl }
+        BuiltinAttribute {
+            name: stringify!($attr),
+            template: $tpl,
+        }
     };
 }
 
 macro_rules! gated {
     ($attr:ident, $typ:expr, $tpl:expr, $duplicates:expr $(, @only_local: $only_local:expr)?, $gate:ident, $msg:expr $(,)?) => {
-        BuiltinAttribute { name: stringify!($attr), template: $tpl }
+        BuiltinAttribute {
+            name: stringify!($attr),
+            template: $tpl,
+        }
     };
     ($attr:ident, $typ:expr, $tpl:expr, $duplicates:expr $(, @only_local: $only_local:expr)?, $msg:expr $(,)?) => {
-        BuiltinAttribute { name: stringify!($attr), template: $tpl }
+        BuiltinAttribute {
+            name: stringify!($attr),
+            template: $tpl,
+        }
     };
 }
 
@@ -103,7 +112,11 @@ macro_rules! rustc_attr {
 #[allow(unused_macros)]
 macro_rules! experimental {
     ($attr:ident) => {
-        concat!("the `#[", stringify!($attr), "]` attribute is an experimental feature")
+        concat!(
+            "the `#[",
+            stringify!($attr),
+            "]` attribute is an experimental feature"
+        )
     };
 }
 

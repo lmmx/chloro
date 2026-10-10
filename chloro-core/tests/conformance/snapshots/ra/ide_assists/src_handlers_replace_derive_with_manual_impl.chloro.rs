@@ -71,7 +71,9 @@ pub(crate) fn replace_derive_with_manual_impl(
     let current_module = ctx.sema.scope(adt.syntax())?.module();
     let current_crate = current_module.krate();
     let current_edition = current_crate.edition(ctx.db());
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(current_crate));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(current_crate));
 
     let found_traits = items_locator::items_with_name(
         ctx.db(),
@@ -106,7 +108,17 @@ pub(crate) fn replace_derive_with_manual_impl(
         )?;
     }
     if no_traits_found {
-        add_assist(acc, ctx, &attr, &current_derives, &args, &path, &path, None, &adt)?;
+        add_assist(
+            acc,
+            ctx,
+            &attr,
+            &current_derives,
+            &args,
+            &path,
+            &path,
+            None,
+            &adt,
+        )?;
     }
     Some(())
 }
@@ -131,57 +143,62 @@ fn add_assist(
         label,
         target,
         |builder| {
-        let insert_after = Position::after(adt.syntax());
-        let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
-        let impl_def = impl_def_from_trait(
-            &ctx.sema,
-            ctx.config,
-            adt,
-            &annotated_name,
-            trait_,
-            replace_trait_path,
-            impl_is_unsafe,
-        );
+            let insert_after = Position::after(adt.syntax());
+            let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
+            let impl_def = impl_def_from_trait(
+                &ctx.sema,
+                ctx.config,
+                adt,
+                &annotated_name,
+                trait_,
+                replace_trait_path,
+                impl_is_unsafe,
+            );
 
-        let mut editor = builder.make_editor(attr.syntax());
-        update_attribute(&mut editor, old_derives, old_tree, old_trait_path, attr);
+            let mut editor = builder.make_editor(attr.syntax());
+            update_attribute(&mut editor, old_derives, old_tree, old_trait_path, attr);
 
-        let trait_path = make::ty_path(replace_trait_path.clone());
+            let trait_path = make::ty_path(replace_trait_path.clone());
 
-        let (impl_def, first_assoc_item) = if let Some(impl_def) = impl_def {
-            (
-                impl_def.clone(),
-                impl_def.assoc_item_list().and_then(|list| list.assoc_items().next()),
-            )
-        } else {
-            (generate_trait_impl(impl_is_unsafe, adt, trait_path), None)
-        };
+            let (impl_def, first_assoc_item) = if let Some(impl_def) = impl_def {
+                (
+                    impl_def.clone(),
+                    impl_def
+                        .assoc_item_list()
+                        .and_then(|list| list.assoc_items().next()),
+                )
+            } else {
+                (generate_trait_impl(impl_is_unsafe, adt, trait_path), None)
+            };
 
-        if let Some(cap) = ctx.config.snippet_cap {
-            if let Some(first_assoc_item) = first_assoc_item {
-                if let ast::AssocItem::Fn(ref func) = first_assoc_item
-                    && let Some(m) = func.syntax().descendants().find_map(ast::MacroCall::cast)
-                    && m.syntax().text() == "todo!()"
+            if let Some(cap) = ctx.config.snippet_cap {
+                if let Some(first_assoc_item) = first_assoc_item {
+                    if let ast::AssocItem::Fn(ref func) = first_assoc_item
+                        && let Some(m) = func.syntax().descendants().find_map(ast::MacroCall::cast)
+                        && m.syntax().text() == "todo!()"
+                    {
+                        // Make the `todo!()` a placeholder
+                        builder.add_placeholder_snippet(cap, m);
+                    } else {
+                        // If we haven't already added a snippet, add a tabstop before the generated function
+                        builder.add_tabstop_before(cap, first_assoc_item);
+                    }
+                } else if let Some(l_curly) =
+                    impl_def.assoc_item_list().and_then(|it| it.l_curly_token())
                 {
-                    // Make the `todo!()` a placeholder
-                    builder.add_placeholder_snippet(cap, m);
-                } else {
-                    // If we haven't already added a snippet, add a tabstop before the generated function
-                    builder.add_tabstop_before(cap, first_assoc_item);
+                    builder.add_tabstop_after_token(cap, l_curly);
                 }
-            } else if let Some(l_curly) =
-                impl_def.assoc_item_list().and_then(|it| it.l_curly_token())
-            {
-                builder.add_tabstop_after_token(cap, l_curly);
             }
-        }
 
-        editor.insert_all(
-            insert_after,
-            vec![make::tokens::blank_line().into(), impl_def.syntax().clone().into()],
-        );
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    },
+            editor.insert_all(
+                insert_after,
+                vec![
+                    make::tokens::blank_line().into(),
+                    impl_def.syntax().clone().into(),
+                ],
+            );
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
     )
 }
 
@@ -204,8 +221,12 @@ fn impl_def_from_trait(
         IgnoreAssocItems::DocHiddenAttrPresent
     };
 
-    let trait_items =
-        filter_assoc_items(sema, &trait_.items(sema.db), DefaultMethods::No, ignore_items);
+    let trait_items = filter_assoc_items(
+        sema,
+        &trait_.items(sema.db),
+        DefaultMethods::No,
+        ignore_items,
+    );
 
     if trait_items.is_empty() {
         return None;
@@ -214,8 +235,9 @@ fn impl_def_from_trait(
 
     let assoc_items =
         add_trait_assoc_items_to_impl(sema, config, &trait_items, trait_, &impl_def, &target_scope);
-    let assoc_item_list = if let Some((first, other)) =
-        assoc_items.split_first().map(|(first, other)| (first.clone_subtree(), other))
+    let assoc_item_list = if let Some((first, other)) = assoc_items
+        .split_first()
+        .map(|(first, other)| (first.clone_subtree(), other))
     {
         let first_item = if let ast::AssocItem::Fn(ref func) = first
             && let Some(body) = gen_trait_fn_body(func, trait_path, adt, None)
@@ -227,7 +249,10 @@ fn impl_def_from_trait(
         } else {
             Some(first.clone())
         };
-        let items = first_item.into_iter().chain(other.iter().cloned()).collect();
+        let items = first_item
+            .into_iter()
+            .chain(other.iter().cloned())
+            .collect();
         make::assoc_item_list(Some(items))
     } else {
         make::assoc_item_list(None)
@@ -236,7 +261,10 @@ fn impl_def_from_trait(
 
     let impl_def = impl_def.clone_subtree();
     let mut editor = SyntaxEditor::new(impl_def.syntax().clone());
-    editor.replace(impl_def.assoc_item_list()?.syntax(), assoc_item_list.syntax());
+    editor.replace(
+        impl_def.assoc_item_list()?.syntax(),
+        assoc_item_list.syntax(),
+    );
     let impl_def = ast::Impl::cast(editor.finish().new_root().clone())?;
     Some(impl_def)
 }
@@ -256,11 +284,14 @@ fn update_attribute(
 
     if has_more_derives {
         // Make the paths into flat lists of tokens in a vec
-        let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
-            node.descendants_with_tokens()
-                .filter_map(|element| element.into_token())
-                .collect::<Vec<_>>()
-        });
+        let tt = new_derives
+            .iter()
+            .map(|path| path.syntax().clone())
+            .map(|node| {
+                node.descendants_with_tokens()
+                    .filter_map(|element| element.into_token())
+                    .collect::<Vec<_>>()
+            });
         // ...which are interspersed with ", "
         let tt = Itertools::intersperse(tt, vec![make::token(T![,]), make::tokens::single_space()]);
         // ...wrap them into the appropriate `NodeOrToken` variant
@@ -272,8 +303,11 @@ fn update_attribute(
         editor.replace(old_tree.syntax(), new_tree.syntax());
     } else {
         // Remove the attr and any trailing whitespace
-        if let Some(line_break) =
-            attr.syntax().next_sibling_or_token().filter(|t| t.kind() == WHITESPACE)
+
+        if let Some(line_break) = attr
+            .syntax()
+            .next_sibling_or_token()
+            .filter(|t| t.kind() == WHITESPACE)
         {
             editor.delete(line_break)
         }
@@ -285,7 +319,9 @@ fn update_attribute(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn add_custom_impl_debug_record_struct() {
         check_assist(
@@ -402,6 +438,7 @@ impl core::fmt::Debug for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_debug_tuple_enum() {
         check_assist(
@@ -530,6 +567,7 @@ impl Default for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_hash_record_struct() {
         check_assist(
@@ -557,6 +595,7 @@ impl core::hash::Hash for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_hash_tuple_struct() {
         check_assist(
@@ -578,6 +617,7 @@ impl core::hash::Hash for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_hash_enum() {
         check_assist(
@@ -604,6 +644,7 @@ impl core::hash::Hash for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_clone_record_struct() {
         check_assist(
@@ -630,6 +671,7 @@ impl Clone for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_clone_tuple_struct() {
         check_assist(
@@ -650,6 +692,7 @@ impl Clone for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_clone_empty_struct() {
         check_assist(
@@ -670,6 +713,7 @@ impl Clone for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_clone_enum() {
         check_assist(
@@ -699,6 +743,7 @@ impl Clone for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_clone_tuple_enum() {
         check_assist(
@@ -728,6 +773,7 @@ impl Clone for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_clone_record_enum() {
         check_assist(
@@ -761,6 +807,7 @@ impl Clone for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_ord_record_struct() {
         check_assist(
@@ -785,6 +832,7 @@ impl PartialOrd for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_ord_record_struct_multi_field() {
         check_assist(
@@ -821,6 +869,7 @@ impl PartialOrd for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_ord_tuple_struct() {
         check_assist(
@@ -849,6 +898,7 @@ impl PartialOrd for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_record_struct() {
         check_assist(
@@ -875,6 +925,7 @@ impl PartialEq for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_tuple_struct() {
         check_assist(
@@ -895,6 +946,7 @@ impl PartialEq for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_empty_struct() {
         check_assist(
@@ -915,6 +967,7 @@ impl PartialEq for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_enum() {
         check_assist(
@@ -941,6 +994,7 @@ impl PartialEq for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_single_variant_tuple_enum() {
         check_assist(
@@ -967,6 +1021,7 @@ impl PartialEq for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_partial_tuple_enum() {
         check_assist(
@@ -996,6 +1051,7 @@ impl PartialEq for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_tuple_enum() {
         check_assist(
@@ -1026,6 +1082,7 @@ impl PartialEq for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_tuple_enum_generic() {
         check_assist(
@@ -1056,6 +1113,7 @@ impl<T: PartialEq, U: PartialEq> PartialEq for Either<T, U> {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_tuple_enum_generic_existing_bounds() {
         check_assist(
@@ -1086,6 +1144,7 @@ impl<T: PartialEq + Error, U: Clone + PartialEq> PartialEq for Either<T, U> {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_partial_eq_record_enum() {
         check_assist(
@@ -1198,6 +1257,7 @@ impl Debug for Foo {$0}
             "#,
         )
     }
+
     #[test]
     fn add_custom_impl_for_with_visibility_modifier() {
         check_assist(
@@ -1218,6 +1278,7 @@ impl Debug for Foo {$0}
             "#,
         )
     }
+
     #[test]
     fn add_custom_impl_when_multiple_inputs() {
         check_assist(
@@ -1235,6 +1296,7 @@ impl Debug for Foo {$0}
             "#,
         )
     }
+
     #[test]
     fn add_custom_impl_default_generic_record_struct() {
         check_assist(
@@ -1261,6 +1323,7 @@ impl<T: Default, U: Default> Default for Foo<T, U> {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_clone_generic_tuple_struct_with_bounds() {
         check_assist(
@@ -1281,6 +1344,7 @@ impl<T: Clone> Clone for Foo<T> {
 "#,
         )
     }
+
     #[test]
     fn test_ignore_derive_macro_without_input() {
         check_assist_not_applicable(
@@ -1292,6 +1356,7 @@ struct Foo {}
             "#,
         )
     }
+
     #[test]
     fn test_ignore_if_cursor_on_param() {
         check_assist_not_applicable(
@@ -1312,6 +1377,7 @@ struct Foo {}
             "#,
         )
     }
+
     #[test]
     fn test_ignore_if_not_derive() {
         check_assist_not_applicable(
@@ -1323,6 +1389,7 @@ struct Foo {}
             "#,
         )
     }
+
     #[test]
     fn works_at_start_of_file() {
         check_assist_not_applicable(
@@ -1334,6 +1401,7 @@ struct S;
             "#,
         );
     }
+
     #[test]
     fn add_custom_impl_keep_path() {
         check_assist(
@@ -1355,6 +1423,7 @@ impl Clone for Foo {
 "#,
         )
     }
+
     #[test]
     fn add_custom_impl_replace_path() {
         check_assist(
@@ -1376,6 +1445,7 @@ impl core::fmt::Debug for Foo {
 "#,
         )
     }
+
     #[test]
     fn unsafeness_of_a_trait_observed() {
         check_assist(

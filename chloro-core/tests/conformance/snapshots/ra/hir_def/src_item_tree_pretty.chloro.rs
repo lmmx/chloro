@@ -7,15 +7,21 @@ use span::{Edition, ErasedFileAstId};
 use crate::{
     item_tree::{
         Const, DefDatabase, Enum, ExternBlock, ExternCrate, FieldsShape, Function, Impl, ItemTree,
-        MacroCall, MacroRules, Macro2, Mod, ModItemId, ModKind, RawAttrs, RawVisibilityId, Static,
+        Macro2, MacroCall, MacroRules, Mod, ModItemId, ModKind, RawAttrs, RawVisibilityId, Static,
         Struct, Trait, TypeAlias, Union, Use, UseTree, UseTreeKind,
     },
     visibility::RawVisibility,
 };
 
 pub(super) fn print_item_tree(db: &dyn DefDatabase, tree: &ItemTree, edition: Edition) -> String {
-    let mut p =
-        Printer { db, tree, buf: String::new(), indent_level: 0, needs_indent: true, edition };
+    let mut p = Printer {
+        db,
+        tree,
+        buf: String::new(),
+        indent_level: 0,
+        needs_indent: true,
+        edition,
+    };
 
     p.print_attrs(&tree.top_attrs, true, "\n");
     p.blank();
@@ -93,7 +99,10 @@ impl Printer<'_> {
                 "#{}[{}{}]{}",
                 inner,
                 attr.path.display(self.db, self.edition),
-                attr.input.as_ref().map(|it| it.to_string()).unwrap_or_default(),
+                attr.input
+                    .as_ref()
+                    .map(|it| it.to_string())
+                    .unwrap_or_default(),
                 separated_by,
             );
         }
@@ -164,7 +173,10 @@ impl Printer<'_> {
 
         match item {
             ModItemId::Use(ast_id) => {
-                let Use { visibility, use_tree } = &self.tree[ast_id];
+                let Use {
+                    visibility,
+                    use_tree,
+                } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
                 self.print_visibility(*visibility);
                 w!(self, "use ");
@@ -172,7 +184,11 @@ impl Printer<'_> {
                 wln!(self, ";");
             }
             ModItemId::ExternCrate(ast_id) => {
-                let ExternCrate { name, alias, visibility } = &self.tree[ast_id];
+                let ExternCrate {
+                    name,
+                    alias,
+                    visibility,
+                } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
                 self.print_visibility(*visibility);
                 w!(self, "extern crate {}", name.display(self.db, self.edition));
@@ -199,7 +215,11 @@ impl Printer<'_> {
                 wln!(self, "fn {};", name.display(self.db, self.edition));
             }
             ModItemId::Struct(ast_id) => {
-                let Struct { visibility, name, shape: kind } = &self.tree[ast_id];
+                let Struct {
+                    visibility,
+                    name,
+                    shape: kind,
+                } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
                 self.print_visibility(*visibility);
                 w!(self, "struct {}", name.display(self.db, self.edition));
@@ -222,7 +242,11 @@ impl Printer<'_> {
                 let Enum { name, visibility } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
                 self.print_visibility(*visibility);
-                w!(self, "enum {} {{ ... }}", name.display(self.db, self.edition));
+                w!(
+                    self,
+                    "enum {} {{ ... }}",
+                    name.display(self.db, self.edition)
+                );
             }
             ModItemId::Const(ast_id) => {
                 let Const { name, visibility } = &self.tree[ast_id];
@@ -248,7 +272,11 @@ impl Printer<'_> {
                 let Trait { name, visibility } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
                 self.print_visibility(*visibility);
-                w!(self, "trait {} {{ ... }}", name.display(self.db, self.edition));
+                w!(
+                    self,
+                    "trait {} {{ ... }}",
+                    name.display(self.db, self.edition)
+                );
             }
             ModItemId::Impl(ast_id) => {
                 let Impl {} = &self.tree[ast_id];
@@ -264,7 +292,11 @@ impl Printer<'_> {
                 wln!(self);
             }
             ModItemId::Mod(ast_id) => {
-                let Mod { name, visibility, kind } = &self.tree[ast_id];
+                let Mod {
+                    name,
+                    visibility,
+                    kind,
+                } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
                 self.print_visibility(*visibility);
                 w!(self, "mod {}", name.display(self.db, self.edition));
@@ -284,7 +316,11 @@ impl Printer<'_> {
                 }
             }
             ModItemId::MacroCall(ast_id) => {
-                let MacroCall { path, expand_to, ctxt } = &self.tree[ast_id];
+                let MacroCall {
+                    path,
+                    expand_to,
+                    ctxt,
+                } = &self.tree[ast_id];
                 let _ = writeln!(
                     self,
                     "// AstId: {:#?}, SyntaxContextId: {}, ExpandTo: {:?}",
@@ -297,13 +333,21 @@ impl Printer<'_> {
             ModItemId::MacroRules(ast_id) => {
                 let MacroRules { name } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
-                wln!(self, "macro_rules! {} {{ ... }}", name.display(self.db, self.edition));
+                wln!(
+                    self,
+                    "macro_rules! {} {{ ... }}",
+                    name.display(self.db, self.edition)
+                );
             }
             ModItemId::Macro2(ast_id) => {
                 let Macro2 { name, visibility } = &self.tree[ast_id];
                 self.print_ast_id(ast_id.erase());
                 self.print_visibility(*visibility);
-                wln!(self, "macro {} {{ ... }}", name.display(self.db, self.edition));
+                wln!(
+                    self,
+                    "macro {} {{ ... }}",
+                    name.display(self.db, self.edition)
+                );
             }
         }
 

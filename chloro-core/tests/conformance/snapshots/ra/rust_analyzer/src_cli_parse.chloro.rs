@@ -1,5 +1,4 @@
 //! Read Rust code on stdin, print syntax tree on stdout.
-
 use ide::Edition;
 use syntax::{AstNode, SourceFile};
 

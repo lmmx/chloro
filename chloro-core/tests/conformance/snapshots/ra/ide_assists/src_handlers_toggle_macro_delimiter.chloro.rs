@@ -106,7 +106,9 @@ fn macro_semicolon(makro: &ast::MacroCall) -> Option<SyntaxToken> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_par() {
         check_assist(
@@ -149,6 +151,7 @@ fn foo() {
             "#,
         );
     }
+
     #[test]
     fn test_braces() {
         check_assist(
@@ -169,6 +172,7 @@ sth![ ];
             "#,
         )
     }
+
     #[test]
     fn test_brackets() {
         check_assist(
@@ -189,6 +193,7 @@ sth!( );
             "#,
         )
     }
+
     #[test]
     fn test_indent() {
         check_assist(
@@ -213,6 +218,7 @@ mod abc {
             "#,
         )
     }
+
     #[test]
     fn test_unrelated_par() {
         check_assist_not_applicable(
@@ -229,6 +235,7 @@ prt!(($03 + 5));
             "#,
         )
     }
+
     #[test]
     fn test_longer_macros() {
         check_assist(
@@ -253,6 +260,7 @@ prt!{(3 + 5)}
 "#,
         )
     }
+
     // FIXME @alibektas : Inner macro_call is not seen as such. So this doesn't work.
     #[test]
     fn test_nested_macros() {

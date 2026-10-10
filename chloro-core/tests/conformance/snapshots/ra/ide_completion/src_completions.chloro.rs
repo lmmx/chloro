@@ -37,10 +37,14 @@ use crate::{
     },
     item::Builder,
     render::{
-        RenderContext, const_::render_const, function::{render_fn, render_method},
-        literal::{render_struct_literal, render_variant_lit}, macro_::render_macro,
-        pattern::{render_struct_pat, render_variant_pat}, render_expr, render_field,
-        render_path_resolution, render_pattern_resolution, render_tuple_field,
+        RenderContext,
+        const_::render_const,
+        function::{render_fn, render_method},
+        literal::{render_struct_literal, render_variant_lit},
+        macro_::render_macro,
+        pattern::{render_struct_pat, render_variant_pat},
+        render_expr, render_field, render_path_resolution, render_pattern_resolution,
+        render_tuple_field,
         type_alias::{render_type_alias, render_type_alias_with_eq},
         union_literal::render_union_literal,
     },
@@ -92,7 +96,9 @@ impl Completions {
     }
 
     pub(crate) fn add_nameref_keywords_with_colon(&mut self, ctx: &CompletionContext<'_>) {
-        ["self::", "crate::"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
+        ["self::", "crate::"]
+            .into_iter()
+            .for_each(|kw| self.add_keyword(ctx, kw));
 
         if ctx.depth_from_crate_root > 0 {
             self.add_keyword(ctx, "super::");
@@ -100,7 +106,9 @@ impl Completions {
     }
 
     pub(crate) fn add_nameref_keywords(&mut self, ctx: &CompletionContext<'_>) {
-        ["self", "crate"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
+        ["self", "crate"]
+            .into_iter()
+            .for_each(|kw| self.add_keyword(ctx, kw));
 
         if ctx.depth_from_crate_root > 0 {
             self.add_keyword(ctx, "super");
@@ -134,8 +142,12 @@ impl Completions {
         kw: &str,
         snippet: &str,
     ) {
-        let mut item =
-            CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+        let mut item = CompletionItem::new(
+            CompletionItemKind::Keyword,
+            ctx.source_range(),
+            kw,
+            ctx.edition,
+        );
 
         match ctx.config.snippet_cap {
             Some(cap) => {
@@ -160,8 +172,12 @@ impl Completions {
         kw: &str,
         snippet: &str,
     ) {
-        let mut item =
-            CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+        let mut item = CompletionItem::new(
+            CompletionItemKind::Keyword,
+            ctx.source_range(),
+            kw,
+            ctx.edition,
+        );
 
         match ctx.config.snippet_cap {
             Some(cap) => item.insert_snippet(cap, snippet),
@@ -414,7 +430,10 @@ impl Completions {
         if !ctx.check_stability(Some(&type_alias.attrs(ctx.db))) {
             return;
         }
-        self.add_opt(render_type_alias_with_eq(RenderContext::new(ctx), type_alias));
+        self.add_opt(render_type_alias_with_eq(
+            RenderContext::new(ctx),
+            type_alias,
+        ));
     }
 
     pub(crate) fn add_qualified_enum_variant(
@@ -427,7 +446,9 @@ impl Completions {
         if !ctx.check_stability_and_hidden(variant) {
             return;
         }
-        if let Some(builder) = render_variant_lit(RenderContext::new(ctx), path_ctx, None, variant, Some(path)) {
+        if let Some(builder) =
+            render_variant_lit(RenderContext::new(ctx), path_ctx, None, variant, Some(path))
+        {
             self.add(builder.build(ctx.db));
         }
     }
@@ -442,13 +463,19 @@ impl Completions {
         if !ctx.check_stability_and_hidden(variant) {
             return;
         }
-        if let PathCompletionCtx { kind: PathKind::Pat { pat_ctx }, .. } = path_ctx {
+        if let PathCompletionCtx {
+            kind: PathKind::Pat { pat_ctx },
+            ..
+        } = path_ctx
+        {
             cov_mark::hit!(enum_variant_pattern_path);
             self.add_variant_pat(ctx, pat_ctx, Some(path_ctx), variant, local_name);
             return;
         }
 
-        if let Some(builder) = render_variant_lit(RenderContext::new(ctx), path_ctx, local_name, variant, None) {
+        if let Some(builder) =
+            render_variant_lit(RenderContext::new(ctx), path_ctx, local_name, variant, None)
+        {
             self.add(builder.build(ctx.db));
         }
     }
@@ -468,7 +495,9 @@ impl Completions {
         };
         let doc_aliases = ctx.doc_aliases(&field);
         let item = render_field(
-            RenderContext::new(ctx).private_editable(is_private_editable).doc_aliases(doc_aliases),
+            RenderContext::new(ctx)
+                .private_editable(is_private_editable)
+                .doc_aliases(doc_aliases),
             dot_access,
             receiver,
             field,
@@ -651,7 +680,9 @@ fn enum_variants_with_paths(
     if let Some(impl_) = impl_.and_then(|impl_| ctx.sema.to_def(impl_))
         && impl_.self_ty(ctx.db).as_adt() == Some(hir::Adt::Enum(enum_))
     {
-        variants.iter().for_each(|variant| process_variant(*variant));
+        variants
+            .iter()
+            .for_each(|variant| process_variant(*variant));
     }
 
     for variant in variants {

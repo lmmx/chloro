@@ -2,71 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5772 bytes
-Chloro size:   5775 bytes
+Chloro size:   5772 bytes
 Rustfmt size:  5772 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //     }
- // }
- // ```
--pub(crate) fn generate_is_empty_from_len(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_is_empty_from_len(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
-     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
-     let fn_name = fn_node.name()?;
- 
- #[cfg(test)]
- mod tests {
-     use crate::tests::{check_assist, check_assist_not_applicable};
--
-     use super::*;
--
-     #[test]
-     fn len_function_not_present() {
-         cov_mark::check!(len_function_not_present);
- "#,
-         );
-     }
--
-     #[test]
-     fn len_function_with_parameters() {
-         cov_mark::check!(len_function_with_parameters);
- "#,
-         );
-     }
--
-     #[test]
-     fn is_empty_already_implemented() {
-         cov_mark::check!(is_empty_already_implemented);
- "#,
-         );
-     }
--
-     #[test]
-     fn len_fn_different_return_type() {
-         cov_mark::check!(len_fn_different_return_type);
- "#,
-         );
-     }
--
-     #[test]
-     fn generate_is_empty() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn multiple_functions_in_impl() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn multiple_impls() {
-         check_assist_not_applicable(
+✓ Outputs are IDENTICAL

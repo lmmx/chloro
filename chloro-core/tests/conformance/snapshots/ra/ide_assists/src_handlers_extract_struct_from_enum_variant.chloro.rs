@@ -17,7 +17,8 @@ use syntax::{
     SyntaxNode, T,
     ast::{
         self, AstNode, HasAttrs, HasGenericParams, HasName, HasVisibility,
-        edit::{AstNodeEdit, IndentLevel}, make,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
     },
     match_ast, ted,
 };
@@ -107,11 +108,15 @@ pub(crate) fn extract_struct_from_enum_variant(
             let generic_params = enum_ast
                 .generic_param_list()
                 .and_then(|known_generics| extract_generic_params(&known_generics, &field_list));
-            let generics = generic_params.as_ref().map(|generics| generics.clone_for_update());
+            let generics = generic_params
+                .as_ref()
+                .map(|generics| generics.clone_for_update());
 
             // resolve GenericArg in field_list to actual type
-            let field_list = if let Some((target_scope, source_scope)) =
-                ctx.sema.scope(enum_ast.syntax()).zip(ctx.sema.scope(field_list.syntax()))
+            let field_list = if let Some((target_scope, source_scope)) = ctx
+                .sema
+                .scope(enum_ast.syntax())
+                .zip(ctx.sema.scope(field_list.syntax()))
             {
                 let field_list = field_list.reset_indent();
                 let field_list =
@@ -128,8 +133,13 @@ pub(crate) fn extract_struct_from_enum_variant(
                 field_list.clone_for_update()
             };
 
-            let def =
-                create_struct_def(variant_name.clone(), &variant, &field_list, generics, &enum_ast);
+            let def = create_struct_def(
+                variant_name.clone(),
+                &variant,
+                &field_list,
+                generics,
+                &enum_ast,
+            );
 
             let enum_ast = variant.parent_enum();
             let indent = enum_ast.indent_level();
@@ -188,27 +198,40 @@ fn extract_generic_params(
     known_generics: &ast::GenericParamList,
     field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>,
 ) -> Option<ast::GenericParamList> {
-    let mut generics = known_generics.generic_params().map(|param| (param, false)).collect_vec();
+    let mut generics = known_generics
+        .generic_params()
+        .map(|param| (param, false))
+        .collect_vec();
 
     let tagged_one = match field_list {
         Either::Left(field_list) => field_list
             .fields()
             .filter_map(|f| f.ty())
-            .fold(false, |tagged, ty| tag_generics_in_variant(&ty, &mut generics) || tagged),
+            .fold(false, |tagged, ty| {
+                tag_generics_in_variant(&ty, &mut generics) || tagged
+            }),
         Either::Right(field_list) => field_list
             .fields()
             .filter_map(|f| f.ty())
-            .fold(false, |tagged, ty| tag_generics_in_variant(&ty, &mut generics) || tagged),
+            .fold(false, |tagged, ty| {
+                tag_generics_in_variant(&ty, &mut generics) || tagged
+            }),
     };
 
-    let generics = generics.into_iter().filter_map(|(param, tag)| tag.then_some(param));
+    let generics = generics
+        .into_iter()
+        .filter_map(|(param, tag)| tag.then_some(param));
     tagged_one.then(|| make::generic_param_list(generics))
 }
 
 fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, bool)]) -> bool {
     let mut tagged_one = false;
 
-    for token in ty.syntax().descendants_with_tokens().filter_map(SyntaxElement::into_token) {
+    for token in ty
+        .syntax()
+        .descendants_with_tokens()
+        .filter_map(SyntaxElement::into_token)
+    {
         for (param, tag) in generics.iter_mut().filter(|(_, tag)| !tag) {
             match param {
                 ast::GenericParam::LifetimeParam(lt)
@@ -305,7 +328,10 @@ fn create_struct_def(
         enum_
             .attrs()
             .flat_map(|it| {
-                vec![it.syntax().clone_for_update().into(), make::tokens::single_newline().into()]
+                vec![
+                    it.syntax().clone_for_update().into(),
+                    make::tokens::single_newline().into(),
+                ]
             })
             .collect(),
     );
@@ -378,8 +404,14 @@ fn apply_references(
     }
     // deep clone to prevent cycle
     let path = make::path_from_segments(iter::once(segment.clone_subtree()), false);
-    ted::insert_raw(ted::Position::before(segment.syntax()), path.clone_for_update().syntax());
-    ted::insert_raw(ted::Position::before(segment.syntax()), make::token(T!['(']));
+    ted::insert_raw(
+        ted::Position::before(segment.syntax()),
+        path.clone_for_update().syntax(),
+    );
+    ted::insert_raw(
+        ted::Position::before(segment.syntax()),
+        make::token(T!['(']),
+    );
     ted::insert_raw(ted::Position::after(&node), make::token(T![')']));
 }
 
@@ -390,7 +422,11 @@ fn process_references(
     enum_module_def: &ModuleDef,
     variant_hir_name: &Name,
     refs: Vec<FileReference>,
-) -> Vec<(ast::PathSegment, SyntaxNode, Option<(ImportScope, hir::ModPath)>)> {
+) -> Vec<(
+    ast::PathSegment,
+    SyntaxNode,
+    Option<(ImportScope, hir::ModPath)>,
+)> {
     // we have to recollect here eagerly as we are about to edit the tree we need to calculate the changes
     // and corresponding nodes up front
     refs.into_iter()
@@ -399,7 +435,9 @@ fn process_references(
             let segment = builder.make_mut(segment);
             let scope_node = builder.make_syntax_mut(scope_node);
             if !visited_modules.contains(&module) {
-                let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+                let cfg = ctx
+                    .config
+                    .find_path_config(ctx.sema.is_nightly(module.krate()));
                 let mod_path = module.find_use_path(
                     ctx.sema.db,
                     *enum_module_def,
@@ -423,8 +461,12 @@ fn reference_to_node(
     sema: &hir::Semantics<'_, RootDatabase>,
     reference: FileReference,
 ) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
-    let segment =
-        reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
+    let segment = reference
+        .name
+        .as_name_ref()?
+        .syntax()
+        .parent()
+        .and_then(ast::PathSegment::cast)?;
 
     // filter out the reference in marco
     let segment_range = segment.syntax().text_range();
@@ -449,7 +491,9 @@ fn reference_to_node(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_with_marco() {
         check_assist(
@@ -488,6 +532,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn issue_16197() {
         check_assist(
@@ -540,6 +585,7 @@ enum Foo {
 "#,
         );
     }
+
     #[test]
     fn test_extract_struct_several_fields_tuple() {
         check_assist(
@@ -550,6 +596,7 @@ enum Foo {
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_several_fields_named() {
         check_assist(
@@ -560,6 +607,7 @@ enum A { One(One) }"#,
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_one_field_named() {
         check_assist(
@@ -570,6 +618,7 @@ enum A { One(One) }"#,
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_carries_over_generics() {
         check_assist(
@@ -580,6 +629,7 @@ enum A { One(One) }"#,
 enum En<T> { Var(Var<T>) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_carries_over_attributes() {
         check_assist(
@@ -598,6 +648,7 @@ struct Variant { field: u32 }
 enum Enum { Variant(Variant) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_indent_to_parent_enum() {
         check_assist(
@@ -618,6 +669,7 @@ enum Enum {
 }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_indent_to_parent_enum_in_mod() {
         check_assist(
@@ -642,6 +694,7 @@ mod indenting {
 }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_keep_comments_and_attrs_one_field_named() {
         check_assist(
@@ -670,6 +723,7 @@ enum A {
 }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_keep_comments_and_attrs_several_fields_named() {
         check_assist(
@@ -704,6 +758,7 @@ enum A {
 }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_keep_comments_and_attrs_several_fields_tuple() {
         check_assist(
@@ -715,6 +770,7 @@ struct One(/* comment */ #[attr] u32, /* another */ u32 /* tail */);
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_move_struct_variant_comments() {
         check_assist(
@@ -743,6 +799,7 @@ enum A {
 }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_move_tuple_variant_comments() {
         check_assist(
@@ -767,6 +824,7 @@ enum A {
 }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_keep_existing_visibility_named() {
         check_assist(
@@ -778,6 +836,7 @@ struct One { a: u32, pub(crate) b: u32, pub(super) c: u32, d: u32 }
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_keep_existing_visibility_tuple() {
         check_assist(
@@ -789,6 +848,7 @@ struct One(u32, pub(crate) u32, pub(super) u32, u32);
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_enum_variant_name_value_namespace() {
         check_assist(
@@ -801,6 +861,7 @@ struct One(u32, u32);
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_no_visibility() {
         check_assist(
@@ -812,6 +873,7 @@ struct One(u32, u32);
 enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_pub_visibility() {
         check_assist(
@@ -823,6 +885,7 @@ pub struct One(pub u32, pub u32);
 pub enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_pub_in_mod_visibility() {
         check_assist(
@@ -834,6 +897,7 @@ pub(in something) struct One { pub(in something) a: u32, pub(in something) b: u3
 pub(in something) enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_pub_crate_visibility() {
         check_assist(
@@ -845,6 +909,7 @@ pub(crate) struct One { pub(crate) a: u32, pub(crate) b: u32, pub(crate) c: u32 
 pub(crate) enum A { One(One) }"#,
         );
     }
+
     #[test]
     fn test_extract_struct_with_complex_imports() {
         check_assist(
@@ -895,6 +960,7 @@ fn another_fn() {
 }"#,
         );
     }
+
     #[test]
     fn extract_record_fix_references() {
         check_assist(
@@ -921,6 +987,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn extract_record_fix_references2() {
         check_assist(
@@ -947,6 +1014,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn test_several_files() {
         check_assist(
@@ -981,6 +1049,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn test_several_files_record() {
         check_assist(
@@ -1015,6 +1084,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn test_extract_struct_record_nested_call_exp() {
         check_assist(
@@ -1041,10 +1111,12 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn test_extract_enum_not_applicable_for_element_with_no_fields() {
         check_assist_not_applicable(extract_struct_from_enum_variant, r#"enum A { $0One }"#);
     }
+
     #[test]
     fn test_extract_enum_not_applicable_if_struct_exists() {
         cov_mark::check!(test_extract_enum_not_applicable_if_struct_exists);
@@ -1056,18 +1128,22 @@ enum A { $0One(u8, u32) }
 "#,
         );
     }
+
     #[test]
     fn test_extract_not_applicable_one_field() {
         check_assist_not_applicable(extract_struct_from_enum_variant, r"enum A { $0One(u32) }");
     }
+
     #[test]
     fn test_extract_not_applicable_no_field_tuple() {
         check_assist_not_applicable(extract_struct_from_enum_variant, r"enum A { $0None() }");
     }
+
     #[test]
     fn test_extract_not_applicable_no_field_named() {
         check_assist_not_applicable(extract_struct_from_enum_variant, r"enum A { $0None {} }");
     }
+
     #[test]
     fn test_extract_struct_only_copies_needed_generics() {
         check_assist(
@@ -1090,6 +1166,7 @@ enum X<'a, 'b, 'x> {
 "#,
         );
     }
+
     #[test]
     fn test_extract_struct_with_lifetime_type_const() {
         check_assist(
@@ -1110,6 +1187,7 @@ enum X<'b, T, V, const C: usize> {
 "#,
         );
     }
+
     #[test]
     fn test_extract_struct_without_generics() {
         check_assist(
@@ -1132,6 +1210,7 @@ enum X<'a, 'b> {
 "#,
         );
     }
+
     #[test]
     fn test_extract_struct_keeps_trait_bounds() {
         check_assist(

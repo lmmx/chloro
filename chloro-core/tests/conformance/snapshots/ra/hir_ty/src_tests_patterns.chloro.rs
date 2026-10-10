@@ -947,7 +947,8 @@ fn foo(foo: Foo) {
 
 #[test]
 fn macro_pat() {
-    check_types(r#"
+    check_types(
+        r#"
 macro_rules! pat {
     ($name:ident) => { Enum::Variant1($name) }
 }
@@ -966,7 +967,8 @@ fn f(e: Enum) {
         Enum::Variant2 => {}
     }
 }
-    "#)
+    "#,
+    )
 }
 
 #[test]

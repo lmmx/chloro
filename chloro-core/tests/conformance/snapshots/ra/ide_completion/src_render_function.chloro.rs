@@ -9,16 +9,14 @@ use syntax::{AstNode, SmolStr, ToSmolStr, format_smolstr};
 use crate::{
     CallableSnippets,
     context::{
-        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx,
-        PathKind,
+        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx, PathKind,
     },
     item::{
         Builder, CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevanceFn,
         CompletionRelevanceReturnType, CompletionRelevanceTraitInfo,
     },
     render::{
-        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match,
-        match_types,
+        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
     },
 };
 
@@ -46,7 +44,12 @@ pub(crate) fn render_method(
     func: hir::Function,
 ) -> Builder {
     let _p = tracing::info_span!("render_method").entered();
-    render(ctx, local_name, func, FuncKind::Method(dot_access, receiver))
+    render(
+        ctx,
+        local_name,
+        func,
+        FuncKind::Method(dot_access, receiver),
+    )
 }
 
 fn render(
@@ -62,9 +65,16 @@ fn render(
     let (call, escaped_call) = match &func_kind {
         FuncKind::Method(_, Some(receiver)) => (
             format_smolstr!("{}.{}", receiver, name.as_str()),
-            format_smolstr!("{}.{}", receiver, name.display(ctx.db(), completion.edition)),
+            format_smolstr!(
+                "{}.{}",
+                receiver,
+                name.display(ctx.db(), completion.edition)
+            ),
         ),
-        _ => (name.as_str().to_smolstr(), name.display(db, completion.edition).to_smolstr()),
+        _ => (
+            name.as_str().to_smolstr(),
+            name.display(db, completion.edition).to_smolstr(),
+        ),
     };
     let has_self_param = func.self_param(db).is_some();
     let mut item = CompletionItem::new(
@@ -81,12 +91,11 @@ fn render(
     let ret_type = func.ret_type(db);
     let assoc_item = func.as_assoc_item(db);
 
-    let trait_info =
-        assoc_item.and_then(|trait_| trait_.container_or_implemented_trait(db)).map(|trait_| {
-            CompletionRelevanceTraitInfo {
-                notable_trait: completion.is_doc_notable_trait(trait_),
-                is_op_method: completion.is_ops_trait(trait_),
-            }
+    let trait_info = assoc_item
+        .and_then(|trait_| trait_.container_or_implemented_trait(db))
+        .map(|trait_| CompletionRelevanceTraitInfo {
+            notable_trait: completion.is_doc_notable_trait(trait_),
+            is_op_method: completion.is_ops_trait(trait_),
         });
 
     let (has_dot_receiver, has_call_parens, cap) = match func_kind {
@@ -95,17 +104,28 @@ fn render(
             has_call_parens,
             ..
         }) => (false, has_call_parens, ctx.completion.config.snippet_cap),
-        FuncKind::Method(&DotAccess { kind: DotAccessKind::Method, .. }, _) => {
-            (true, true, ctx.completion.config.snippet_cap)
-        }
-        FuncKind::Method(DotAccess { kind: DotAccessKind::Field { .. }, .. }, _) => {
-            (true, false, ctx.completion.config.snippet_cap)
-        }
+        FuncKind::Method(
+            &DotAccess {
+                kind: DotAccessKind::Method,
+                ..
+            },
+            _,
+        ) => (true, true, ctx.completion.config.snippet_cap),
+        FuncKind::Method(
+            DotAccess {
+                kind: DotAccessKind::Field { .. },
+                ..
+            },
+            _,
+        ) => (true, false, ctx.completion.config.snippet_cap),
         _ => (false, false, None),
     };
-    let complete_call_parens = cap
-        .filter(|_| !has_call_parens)
-        .and_then(|cap| Some((cap, params(ctx.completion, func, &func_kind, has_dot_receiver)?)));
+    let complete_call_parens = cap.filter(|_| !has_call_parens).and_then(|cap| {
+        Some((
+            cap,
+            params(ctx.completion, func, &func_kind, has_dot_receiver)?,
+        ))
+    });
 
     let function = assoc_item
         .and_then(|assoc_item| assoc_item.implementing_ty(db))
@@ -133,7 +153,13 @@ fn render(
         FuncKind::Function(path_ctx) => {
             super::path_ref_match(completion, path_ctx, &ret_type, &mut item);
         }
-        FuncKind::Method(DotAccess { receiver: Some(receiver), .. }, _) => {
+        FuncKind::Method(
+            DotAccess {
+                receiver: Some(receiver),
+                ..
+            },
+            _,
+        ) => {
             if let Some(original_expr) = completion.sema.original_ast_node(receiver.clone())
                 && let Some(ref_mode) = compute_ref_match(completion, &ret_type)
             {
@@ -174,7 +200,11 @@ fn render(
             if let Some(actm) = assoc_item
                 && let Some(trt) = actm.container_or_implemented_trait(db)
             {
-                item.trait_name(trt.name(db).display_no_db(ctx.completion.edition).to_smolstr());
+                item.trait_name(
+                    trt.name(db)
+                        .display_no_db(ctx.completion.edition)
+                        .to_smolstr(),
+                );
             }
         }
     }
@@ -194,13 +224,15 @@ fn compute_return_type_match(
         CompletionRelevanceReturnType::DirectConstructor
     } else if ret_type
         .type_arguments()
-        .any(|ret_type_arg| match_types(ctx.completion, &self_type, &ret_type_arg).is_some()) {
+        .any(|ret_type_arg| match_types(ctx.completion, &self_type, &ret_type_arg).is_some())
+    {
         // fn([..]) -> Result<Self, E> OR Wrapped<Foo, Self>
         CompletionRelevanceReturnType::Constructor
     } else if ret_type
         .as_adt()
         .map(|adt| adt.name(db).as_str().ends_with("Builder"))
-        .unwrap_or(false) {
+        .unwrap_or(false)
+    {
         // fn([..]) -> [..]Builder
         CompletionRelevanceReturnType::Builder
     } else {
@@ -227,8 +259,10 @@ pub(super) fn add_call_parens<'b>(
         let snippet = if let Some(CallableSnippets::FillArguments) = ctx.config.callable {
             let offset = if self_param.is_some() { 2 } else { 1 };
             let function_params_snippet =
-                params.iter().enumerate().format_with(", ", |(index, param), f| {
-                    match param.name(ctx.db) {
+                params
+                    .iter()
+                    .enumerate()
+                    .format_with(", ", |(index, param), f| match param.name(ctx.db) {
                         Some(n) => {
                             let smol_str = n.display_no_db(ctx.edition).to_smolstr();
                             let text = smol_str.as_str().trim_start_matches('_');
@@ -242,8 +276,7 @@ pub(super) fn add_call_parens<'b>(
                             };
                             f(&format_args!("${{{}:{name}}}", index + offset))
                         }
-                    }
-                });
+                    });
             match self_param {
                 Some(self_param) => {
                     format!(
@@ -283,7 +316,9 @@ pub(super) fn add_call_parens<'b>(
             }
         }
     }
-    builder.label(SmolStr::from_iter([&name, label_suffix])).insert_snippet(cap, snippet)
+    builder
+        .label(SmolStr::from_iter([&name, label_suffix]))
+        .insert_snippet(cap, snippet)
 }
 
 fn ref_of_param(ctx: &CompletionContext<'_>, arg: &str, ty: &hir::Type<'_>) -> &'static str {
@@ -291,7 +326,11 @@ fn ref_of_param(ctx: &CompletionContext<'_>, arg: &str, ty: &hir::Type<'_>) -> &
         for (name, local) in ctx.locals.iter().sorted_by_key(|&(k, _)| k.clone()) {
             if name.as_str() == arg {
                 return if local.ty(ctx.db) == derefed_ty {
-                    if ty.is_mutable_reference() { "&mut " } else { "&" }
+                    if ty.is_mutable_reference() {
+                        "&mut "
+                    } else {
+                        "&"
+                    }
                 } else {
                     ""
                 };
@@ -358,7 +397,10 @@ fn params_display(ctx: &CompletionContext<'_>, detail: &mut String, func: hir::F
         format_to!(
             detail,
             "{}",
-            assoc_fn_params.iter().map(|p| p.ty().display(ctx.db, ctx.display_target)).format(", ")
+            assoc_fn_params
+                .iter()
+                .map(|p| p.ty().display(ctx.db, ctx.display_target))
+                .format(", ")
         );
     }
 
@@ -399,6 +441,7 @@ mod tests {
         CallableSnippets, CompletionConfig,
         tests::{TEST_CONFIG, check_edit, check_edit_with_config},
     };
+
     #[test]
     fn inserts_parens_for_function_calls() {
         cov_mark::check!(inserts_parens_for_function_calls);
@@ -486,6 +529,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn parens_for_method_call_as_assoc_fn() {
         check_edit(
@@ -506,11 +550,15 @@ fn main() { S::foo(${1:&self});$0 }
 "#,
         );
     }
+
     #[test]
     fn suppress_arg_snippets() {
         cov_mark::check!(suppress_arg_snippets);
         check_edit_with_config(
-            CompletionConfig { callable: Some(CallableSnippets::AddParentheses), ..TEST_CONFIG },
+            CompletionConfig {
+                callable: Some(CallableSnippets::AddParentheses),
+                ..TEST_CONFIG
+            },
             "with_args",
             r#"
 fn with_args(x: i32, y: String) {}
@@ -522,6 +570,7 @@ fn main() { with_args($0); }
 "#,
         );
     }
+
     #[test]
     fn strips_underscores_from_args() {
         check_edit(
@@ -536,6 +585,7 @@ fn main() { foo(${1:foo}, ${2:bar}, ${3:ho_ge_});$0 }
 "#,
         );
     }
+
     #[test]
     fn insert_ref_when_matching_local_in_scope() {
         check_edit(
@@ -558,6 +608,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn insert_mut_ref_when_matching_local_in_scope() {
         check_edit(
@@ -580,6 +631,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn insert_ref_when_matching_local_in_scope_for_method() {
         check_edit(
@@ -612,6 +664,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trim_mut_keyword_in_func_completion() {
         check_edit(
@@ -632,6 +685,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn complete_pattern_args_with_type_name_if_adt() {
         check_edit(
@@ -664,6 +718,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn complete_fn_param() {
         // has mut kw
@@ -692,6 +747,7 @@ fn f(foo: (), mut bar: u32) {}
 "#,
         );
     }
+
     #[test]
     fn complete_fn_mut_param_add_comma() {
         // add leading and trailing comma
@@ -707,6 +763,7 @@ fn g(foo: (), mut bar: u32, baz: ())
 "#,
         );
     }
+
     #[test]
     fn complete_fn_mut_param_has_attribute() {
         check_edit(
@@ -745,6 +802,7 @@ fn g(foo: (), #[baz = "qux"] mut bar: u32)
 "#,
         );
     }
+
     #[test]
     fn complete_semicolon_for_unit() {
         cov_mark::check!(complete_semicolon);
@@ -794,7 +852,10 @@ fn bar() {
 "#,
         );
         check_edit_with_config(
-            CompletionConfig { add_semicolon_to_unit: false, ..TEST_CONFIG },
+            CompletionConfig {
+                add_semicolon_to_unit: false,
+                ..TEST_CONFIG
+            },
             r#"foo"#,
             r#"
 fn foo(a: i32) {}
@@ -810,6 +871,7 @@ fn bar() {
 "#,
         );
     }
+
     #[test]
     fn complete_comma_for_unit_match_arm() {
         cov_mark::check!(complete_semicolon);
@@ -852,6 +914,7 @@ fn bar() {
 "#,
         );
     }
+
     #[test]
     fn no_semicolon_in_closure_ret() {
         check_edit(

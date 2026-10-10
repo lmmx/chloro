@@ -10,7 +10,6 @@ use syntax::{
 use std::hash::Hash;
 
 const REGION_START: &str = "// region:";
-
 const REGION_END: &str = "// endregion";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -31,6 +30,7 @@ pub enum FoldKind {
     Statics,
     TypeAliases,
     ExternCrates,
+    // endregion: item runs
 }
 
 #[derive(Debug)]
@@ -85,7 +85,10 @@ pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
                         continue;
                     }
                 }
-                res.push(Fold { range: element.text_range(), kind });
+                res.push(Fold {
+                    range: element.text_range(),
+                    kind,
+                });
                 continue;
             }
         }
@@ -110,7 +113,10 @@ pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
                     } else if let Some(range) =
                         contiguous_range_for_comment(comment, &mut visited_comments)
                     {
-                        res.push(Fold { range, kind: FoldKind::Comment })
+                        res.push(Fold {
+                            range,
+                            kind: FoldKind::Comment,
+                        })
                     }
                 }
             }
@@ -231,7 +237,10 @@ where
     }
 
     if first != last {
-        Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
+        Some(TextRange::new(
+            first.syntax().text_range().start(),
+            last.syntax().text_range().end(),
+        ))
     } else {
         // The group consists of only one element, therefore it cannot be folded
         None
@@ -289,7 +298,10 @@ fn contiguous_range_for_comment(
     }
 
     if first != last {
-        Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
+        Some(TextRange::new(
+            first.syntax().text_range().start(),
+            last.syntax().text_range().end(),
+        ))
     } else {
         // The group consists of only one element, therefore it cannot be folded
         None
@@ -309,7 +321,9 @@ fn fold_range_for_multiline_match_arm(match_arm: ast::MatchArm) -> Option<TextRa
 #[cfg(test)]
 mod tests {
     use test_utils::extract_tags;
+
     use super::*;
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (ranges, text) = extract_tags(ra_fixture, "fold");
@@ -325,8 +339,16 @@ mod tests {
         );
 
         for (fold, (range, attr)) in folds.iter().zip(ranges.into_iter()) {
-            assert_eq!(fold.range.start(), range.start(), "mismatched start of folding ranges");
-            assert_eq!(fold.range.end(), range.end(), "mismatched end of folding ranges");
+            assert_eq!(
+                fold.range.start(),
+                range.start(),
+                "mismatched start of folding ranges"
+            );
+            assert_eq!(
+                fold.range.end(),
+                range.end(),
+                "mismatched end of folding ranges"
+            );
 
             let kind = match fold.kind {
                 FoldKind::Comment => "comment",
@@ -348,6 +370,7 @@ mod tests {
             assert_eq!(kind, &attr.unwrap());
         }
     }
+
     #[test]
     fn test_fold_func_with_multiline_param_list() {
         check(
@@ -364,6 +387,7 @@ mod tests {
 "#,
         );
     }
+
     #[test]
     fn test_fold_comments() {
         check(
@@ -388,6 +412,7 @@ fn main() <fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_fold_imports() {
         check(
@@ -400,6 +425,7 @@ use std::<fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_fold_mods() {
         check(
@@ -430,6 +456,7 @@ mod inline2 <fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_fold_import_groups() {
         check(
@@ -447,6 +474,7 @@ use std::collections::VecDeque;</fold>
 "#,
         );
     }
+
     #[test]
     fn test_fold_import_and_groups() {
         check(
@@ -466,6 +494,7 @@ use std::collections::<fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_folds_structs() {
         check(
@@ -475,6 +504,7 @@ struct Foo <fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_folds_traits() {
         check(
@@ -484,6 +514,7 @@ trait Foo <fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_folds_macros() {
         check(
@@ -494,6 +525,7 @@ macro_rules! foo <fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_fold_match_arms() {
         check(
@@ -507,9 +539,11 @@ fn main() <fold block>{
 "#,
         );
     }
+
     #[test]
     fn test_fold_multiline_non_block_match_arm() {
-        check(r#"
+        check(
+            r#"
             fn main() <fold block>{
                 match foo <fold block>{
                     block => <fold block>{
@@ -532,11 +566,14 @@ fn main() <fold block>{
                     }</fold></fold>,
                 }</fold>
             }</fold>
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn fold_big_calls() {
-        check(r#"
+        check(
+            r#"
 fn main() <fold block>{
     frobnicate<fold arglist>(
         1,
@@ -544,39 +581,51 @@ fn main() <fold block>{
         3,
     )</fold>
 }</fold>
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_record_literals() {
-        check(r#"
+        check(
+            r#"
 const _: S = S <fold block>{
 
 }</fold>;
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_multiline_params() {
-        check(r#"
+        check(
+            r#"
 <fold function>fn foo<fold arglist>(
     x: i32,
     y: String,
 )</fold> {}</fold>
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_multiline_array() {
-        check(r#"
+        check(
+            r#"
 const FOO: [usize; 4] = <fold array>[
     1,
     2,
     3,
     4,
 ]</fold>;
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_region() {
-        check(r#"
+        check(
+            r#"
 // 1. some normal comment
 <fold region>// region: test
 // 2. some normal comment
@@ -585,25 +634,34 @@ fn f() {}
 // endregion</fold>
 fn f2() {}
 // endregion: test</fold>
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_consecutive_const() {
-        check(r#"
+        check(
+            r#"
 <fold consts>const FIRST_CONST: &str = "first";
 const SECOND_CONST: &str = "second";</fold>
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_consecutive_static() {
-        check(r#"
+        check(
+            r#"
 <fold statics>static FIRST_STATIC: &str = "first";
 static SECOND_STATIC: &str = "second";</fold>
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_where_clause() {
-        check(r#"
+        check(
+            r#"
 fn foo()
 <fold whereclause>where
     A: Foo,
@@ -614,28 +672,36 @@ fn foo()
 fn bar()
 <fold whereclause>where
     A: Bar,</fold> {}
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_return_type() {
-        check(r#"
+        check(
+            r#"
 fn foo()<fold returntype>-> (
     bool,
     bool,
 )</fold> { (true, true) }
 
 fn bar() -> (bool, bool) { (true, true) }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn fold_generics() {
-        check(r#"
+        check(
+            r#"
 type Foo<T, U> = foo<fold arglist><
     T,
     U,
 ></fold>;
-"#)
+"#,
+        )
     }
+
     #[test]
     fn test_fold_doc_comments_with_multiline_paramlist_function() {
         check(

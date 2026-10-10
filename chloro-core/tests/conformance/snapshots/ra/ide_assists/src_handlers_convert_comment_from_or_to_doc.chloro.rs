@@ -78,11 +78,7 @@ fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     )
 }
 
-fn comment_to_doc(
-    acc: &mut Assists,
-    comment: ast::Comment,
-    style: CommentPlacement,
-) -> Option<()> {
+fn comment_to_doc(acc: &mut Assists, comment: ast::Comment, style: CommentPlacement) -> Option<()> {
     let target = if comment.kind().shape.is_line() {
         line_comments_text_range(&comment)?
     } else {
@@ -197,10 +193,11 @@ fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
     // `use` or `const`.
     let parent = comment.syntax().parent();
     let par_kind = parent.as_ref().map(|parent| parent.kind());
-    matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST))
-    .then_some(
-        CommentPlacement::Outer,
+    matches!(
+        par_kind,
+        Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST)
     )
+    .then_some(CommentPlacement::Outer)
 }
 
 /// The line -> block assist can  be invoked from anywhere within a sequence of line comments.
@@ -248,8 +245,11 @@ fn line_comments_text_range(comment: &ast::Comment) -> Option<TextRange> {
     let comments = relevant_line_comments(comment);
     let first = comments.first()?;
     let indentation = IndentLevel::from_token(first.syntax());
-    let start =
-        first.syntax().text_range().start().checked_sub((indentation.0 as u32 * 4).into())?;
+    let start = first
+        .syntax()
+        .text_range()
+        .start()
+        .checked_sub((indentation.0 as u32 * 4).into())?;
     let end = comments.last()?.syntax().text_range().end();
     Some(TextRange::new(start, end))
 }
@@ -257,7 +257,9 @@ fn line_comments_text_range(comment: &ast::Comment) -> Option<TextRange> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn module_comment_to_doc() {
         check_assist(
@@ -276,6 +278,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn single_line_comment_to_doc() {
         check_assist(
@@ -296,6 +299,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn multi_line_comment_to_doc() {
         check_assist(
@@ -318,6 +322,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn single_line_doc_to_comment() {
         check_assist(
@@ -338,6 +343,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn multi_line_doc_to_comment() {
         check_assist(
@@ -360,6 +366,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn single_line_block_comment_to_doc() {
         check_assist(
@@ -380,6 +387,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn multi_line_block_comment_to_doc() {
         check_assist(
@@ -404,6 +412,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn single_line_block_doc_to_comment() {
         check_assist(
@@ -424,6 +433,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn multi_line_block_doc_to_comment() {
         check_assist(
@@ -448,6 +458,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn single_inner_line_comment_to_doc() {
         check_assist_not_applicable(
@@ -460,6 +471,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn single_inner_line_doc_to_comment() {
         check_assist(
@@ -478,6 +490,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn multi_inner_line_doc_to_comment() {
         check_assist(
@@ -515,6 +528,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn single_inner_line_block_doc_to_comment() {
         check_assist(
@@ -533,6 +547,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn multi_inner_line_block_doc_to_comment() {
         check_assist(
@@ -555,6 +570,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn not_overeager() {
         check_assist_not_applicable(
@@ -568,6 +584,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn all_possible_items() {
         check_assist(
@@ -659,6 +676,7 @@ mod tests {
             }"#,
         );
     }
+
     #[test]
     fn no_inner_comments() {
         check_assist_not_applicable(

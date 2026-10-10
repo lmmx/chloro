@@ -5,7 +5,6 @@
 //! This module tests tt <-> syntax tree conversion specifically. In particular,
 //! it, among other things, check that we convert `tt` to the right kind of
 //! syntax node depending on the macro call-site.
-
 use expect_test::expect;
 
 use crate::macro_expansion_tests::check;

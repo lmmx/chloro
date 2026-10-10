@@ -28,7 +28,11 @@ impl LspError {
 
 impl fmt::Display for LspError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Language Server request failed with {}. ({})", self.code, self.message)
+        write!(
+            f,
+            "Language Server request failed with {}. ({})",
+            self.code, self.message
+        )
     }
 }
 
@@ -57,7 +61,10 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
 
         hasher.update([u8::from(relevance.trait_.is_some())]);
         if let Some(trait_) = &relevance.trait_ {
-            hasher.update([u8::from(trait_.is_op_method), u8::from(trait_.notable_trait)]);
+            hasher.update([
+                u8::from(trait_.is_op_method),
+                u8::from(trait_.notable_trait),
+            ]);
         }
 
         match relevance.postfix_match {
@@ -68,7 +75,10 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
 
         hasher.update([u8::from(relevance.function.is_some())]);
         if let Some(function) = &relevance.function {
-            hasher.update([u8::from(function.has_params), u8::from(function.has_self_param)]);
+            hasher.update([
+                u8::from(function.has_params),
+                u8::from(function.has_self_param),
+            ]);
             let discriminant: u8 = match function.return_type {
                 CompletionRelevanceReturnType::Other => 0,
                 CompletionRelevanceReturnType::DirectConstructor => 1,
@@ -107,6 +117,7 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
     //
     // Documentation hashing is skipped too, as it's a large blob to process,
     // while not really making completion properties more unique as they are already.
+
     let kind_tag = item.kind.tag();
     hasher.update(kind_tag.len().to_ne_bytes());
     hasher.update(kind_tag);

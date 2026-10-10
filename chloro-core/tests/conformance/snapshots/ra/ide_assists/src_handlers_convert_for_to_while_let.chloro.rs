@@ -1,4 +1,7 @@
-use hir::{Name, sym::self};
+use hir::{
+    Name,
+    sym::{self},
+};
 use ide_db::{famous_defs::FamousDefs, syntax_helpers::suggest_name};
 use syntax::{
     AstNode,
@@ -57,7 +60,10 @@ pub(crate) fn convert_for_loop_to_while_let(
             {
                 (expr, Some(make.name_ref(method.as_str())))
             } else if let ast::Expr::RefExpr(_) = iterable {
-                (make::expr_paren(iterable).into(), Some(make.name_ref("into_iter")))
+                (
+                    make::expr_paren(iterable).into(),
+                    Some(make.name_ref("into_iter")),
+                )
             } else {
                 (iterable, Some(make.name_ref("into_iter")))
             };
@@ -152,15 +158,15 @@ fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &a
         cov_mark::hit!(test_already_impls_iterator);
         Some(it_typ.impls_trait(sema.db, iter_trait, &[]))
     })()
-    .unwrap_or(
-        false,
-    )
+    .unwrap_or(false)
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn each_to_for_simple_for() {
         check_assist(
@@ -182,6 +188,7 @@ fn main() {
 }",
         )
     }
+
     #[test]
     fn each_to_for_for_in_range() {
         check_assist(
@@ -218,6 +225,7 @@ fn main() {
 }"#,
         )
     }
+
     #[test]
     fn each_to_for_not_available_in_body() {
         cov_mark::check!(not_available_in_body);
@@ -232,6 +240,7 @@ fn main() {
 }",
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed() {
         check_assist(
@@ -272,6 +281,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed_no_iter_method() {
         check_assist(
@@ -297,6 +307,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed_no_iter_method_mut() {
         check_assist(
@@ -322,6 +333,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed_mut() {
         check_assist(
@@ -362,6 +374,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed_mut_behind_var() {
         check_assist(
@@ -385,6 +398,7 @@ fn main() {
 }",
         )
     }
+
     #[test]
     fn each_to_for_already_impls_iterator() {
         cov_mark::check!(test_already_impls_iterator);

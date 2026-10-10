@@ -54,14 +54,18 @@ impl<'db> ActiveParameter<'db> {
     }
 
     pub fn ident(&self) -> Option<ast::Name> {
-        self.src.as_ref().and_then(|param| match param.value.as_ref().right()?.pat()? {
-            ast::Pat::IdentPat(ident) => ident.name(),
-            _ => None,
-        })
+        self.src
+            .as_ref()
+            .and_then(|param| match param.value.as_ref().right()?.pat()? {
+                ast::Pat::IdentPat(ident) => ident.name(),
+                _ => None,
+            })
     }
 
     pub fn attrs(&self) -> Option<AstChildren<ast::Attr>> {
-        self.src.as_ref().and_then(|param| Some(param.value.as_ref().right()?.attrs()))
+        self.src
+            .as_ref()
+            .and_then(|param| Some(param.value.as_ref().right()?.attrs()))
     }
 }
 
@@ -76,7 +80,10 @@ pub fn callable_for_token<'db>(
     let calling_node = parent
         .ancestors()
         .filter_map(ast::CallableExpr::cast)
-        .find(|it| it.arg_list().is_some_and(|it| it.syntax().text_range().contains(offset)))?;
+        .find(|it| {
+            it.arg_list()
+                .is_some_and(|it| it.syntax().text_range().contains(offset))
+        })?;
 
     callable_for_node(sema, &calling_node, offset)
 }
@@ -88,7 +95,10 @@ pub fn callable_for_arg_list<'db>(
     at: TextSize,
 ) -> Option<(hir::Callable<'db>, Option<usize>)> {
     debug_assert!(arg_list.syntax().text_range().contains(at));
-    let callable = arg_list.syntax().parent().and_then(ast::CallableExpr::cast)?;
+    let callable = arg_list
+        .syntax()
+        .parent()
+        .and_then(ast::CallableExpr::cast)?;
     callable_for_node(sema, &callable, at)
 }
 

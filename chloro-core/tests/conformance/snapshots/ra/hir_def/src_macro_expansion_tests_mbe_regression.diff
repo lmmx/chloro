@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29035 bytes
-Chloro size:   29034 bytes
+Chloro size:   29035 bytes
 Rustfmt size:  29035 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[test]
- fn test_winapi_struct() {
-     // from https://github.com/retep998/winapi-rs/blob/a7ef2bca086aae76cf6c4ce4c2552988ed9798ad/src/macros.rs#L366
--
-     check(
-         r#"
- macro_rules! STRUCT {
+✓ Outputs are IDENTICAL

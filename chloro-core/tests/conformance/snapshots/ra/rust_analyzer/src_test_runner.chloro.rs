@@ -4,8 +4,8 @@
 use crossbeam_channel::Sender;
 use paths::{AbsPath, Utf8Path};
 use project_model::TargetKind;
-use serde_derive::Deserialize;
 use serde::Deserialize as _;
+use serde_derive::Deserialize;
 use toolchain::Tool;
 
 use crate::{
@@ -53,7 +53,9 @@ pub(crate) struct CargoTestOutputParser {
 
 impl CargoTestOutputParser {
     pub(crate) fn new(test_target: &TestTarget) -> Self {
-        Self { target: test_target.clone() }
+        Self {
+            target: test_target.clone(),
+        }
     }
 }
 
@@ -67,7 +69,9 @@ impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
             output: if let Ok(message) = CargoTestOutput::deserialize(&mut deserializer) {
                 message
             } else {
-                CargoTestOutput::Custom { text: line.to_owned() }
+                CargoTestOutput::Custom {
+                    text: line.to_owned(),
+                }
             },
         })
     }
@@ -120,7 +124,10 @@ impl CargoTestHandle {
             cmd.arg(format!("--{cargo_target}"));
             cmd.arg(&test_target.target);
         } else {
-            tracing::warn!("Running test for unknown cargo target {:?}", test_target.kind);
+            tracing::warn!(
+                "Running test for unknown cargo target {:?}",
+                test_target.kind
+            );
         }
 
         // --no-fail-fast is needed to ensure that all requested tests will run

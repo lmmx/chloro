@@ -45,7 +45,8 @@ pub fn layout_of_adt_query<'db>(
             (
                 r,
                 sig.repr.unwrap_or_default(),
-                sig.flags.intersects(StructFlags::IS_UNSAFE_CELL | StructFlags::IS_UNSAFE_PINNED),
+                sig.flags
+                    .intersects(StructFlags::IS_UNSAFE_CELL | StructFlags::IS_UNSAFE_PINNED),
             )
         }
         AdtId::UnionId(id) => {
@@ -68,7 +69,10 @@ pub fn layout_of_adt_query<'db>(
         .iter()
         .map(|it| it.iter().map(|it| &**it).collect::<Vec<_>>())
         .collect::<SmallVec<[_; 1]>>();
-    let variants = variants.iter().map(|it| it.iter().collect()).collect::<IndexVec<_, _>>();
+    let variants = variants
+        .iter()
+        .map(|it| it.iter().collect())
+        .collect::<IndexVec<_, _>>();
     let result = if matches!(def, AdtId::UnionId(..)) {
         cx.calc.layout_of_union(&repr, &variants)?
     } else {
@@ -81,7 +85,9 @@ pub fn layout_of_adt_query<'db>(
             |min, max| repr_discr(dl, &repr, min, max).unwrap_or((Integer::I8, false)),
             variants.iter_enumerated().filter_map(|(id, _)| {
                 let AdtId::EnumId(e) = def else { return None };
-                let d = db.const_eval_discriminant(e.enum_variants(db).variants[id.0].0).ok()?;
+                let d = db
+                    .const_eval_discriminant(e.enum_variants(db).variants[id.0].0)
+                    .ok()?;
                 Some((id, d))
             }),
             !matches!(def, AdtId::EnumId(..))
@@ -125,7 +131,10 @@ fn layout_scalar_valid_range(db: &dyn HirDatabase, def: AdtId) -> (Bound<u128>, 
         }
         Bound::Unbounded
     };
-    (get(sym::rustc_layout_scalar_valid_range_start), get(sym::rustc_layout_scalar_valid_range_end))
+    (
+        get(sym::rustc_layout_scalar_valid_range_start),
+        get(sym::rustc_layout_scalar_valid_range_end),
+    )
 }
 
 /// Finds the appropriate Integer type and signedness for the given
@@ -147,7 +156,11 @@ fn repr_discr(
 
     if let Some(ity) = repr.int {
         let discr = Integer::from_attr(dl, ity);
-        let fit = if ity.is_signed() { signed_fit } else { unsigned_fit };
+        let fit = if ity.is_signed() {
+            signed_fit
+        } else {
+            unsigned_fit
+        };
         if discr < fit {
             return Err(LayoutError::UserReprTooSmall);
         }

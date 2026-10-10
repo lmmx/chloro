@@ -7,7 +7,11 @@ use syntax::{
     AstNode,
     SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
     SyntaxNode, T,
-    ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
+    ast::{
+        self,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+    },
 };
 
 use crate::{
@@ -63,8 +67,9 @@ fn if_expr_to_guarded_return(
     let if_token_range = if_expr.if_token()?.text_range();
     let if_cond_range = cond.syntax().text_range();
 
-    let cursor_in_range =
-        if_token_range.cover(if_cond_range).contains_range(ctx.selection_trimmed());
+    let cursor_in_range = if_token_range
+        .cover(if_cond_range)
+        .contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
@@ -74,7 +79,11 @@ fn if_expr_to_guarded_return(
     let then_branch = if_expr.then_branch()?;
     let then_block = then_branch.stmt_list()?;
 
-    let parent_block = if_expr.syntax().parent()?.ancestors().find_map(ast::BlockExpr::cast)?;
+    let parent_block = if_expr
+        .syntax()
+        .parent()?
+        .ancestors()
+        .find_map(ast::BlockExpr::cast)?;
 
     if parent_block.tail_expr()? != if_expr.clone().into() {
         return None;
@@ -93,9 +102,15 @@ fn if_expr_to_guarded_return(
         })?
         .reset_indent();
 
-    then_block.syntax().first_child_or_token().map(|t| t.kind() == T!['{'])?;
+    then_block
+        .syntax()
+        .first_child_or_token()
+        .map(|t| t.kind() == T!['{'])?;
 
-    then_block.syntax().last_child_or_token().filter(|t| t.kind() == T!['}'])?;
+    then_block
+        .syntax()
+        .last_child_or_token()
+        .filter(|t| t.kind() == T!['}'])?;
 
     let then_block_items = then_block.dedent(IndentLevel(1));
 
@@ -167,22 +182,28 @@ fn let_stmt_to_guarded_return(
 
     let let_token_range = let_stmt.let_token()?.text_range();
     let let_pattern_range = pat.syntax().text_range();
-    let cursor_in_range =
-        let_token_range.cover(let_pattern_range).contains_range(ctx.selection_trimmed());
+    let cursor_in_range = let_token_range
+        .cover(let_pattern_range)
+        .contains_range(ctx.selection_trimmed());
 
     if !cursor_in_range || let_stmt.let_else().is_some() {
         return None;
     }
 
-    let try_enum =
-        ctx.sema.type_of_expr(&expr).and_then(|ty| TryEnum::from_ty(&ctx.sema, &ty.adjusted()))?;
+    let try_enum = ctx
+        .sema
+        .type_of_expr(&expr)
+        .and_then(|ty| TryEnum::from_ty(&ctx.sema, &ty.adjusted()))?;
 
     let happy_pattern = try_enum.happy_pattern(pat);
     let target = let_stmt.syntax().text_range();
 
     let early_expression: ast::Expr = {
-        let parent_block =
-            let_stmt.syntax().parent()?.ancestors().find_map(ast::BlockExpr::cast)?;
+        let parent_block = let_stmt
+            .syntax()
+            .parent()?
+            .ancestors()
+            .find_map(ast::BlockExpr::cast)?;
         let parent_container = parent_block.syntax().parent()?;
 
         early_expression(parent_container, &ctx.sema)?
@@ -246,7 +267,11 @@ fn flat_let_chain(mut expr: ast::Expr) -> Vec<ast::Expr> {
         if !matches!(rhs, ast::Expr::LetExpr(_))
             && let Some(last) = chains.pop_if(|last| !matches!(last, ast::Expr::LetExpr(_)))
         {
-            chains.push(make::expr_bin_op(rhs, ast::BinaryOp::LogicOp(ast::LogicOp::And), last));
+            chains.push(make::expr_bin_op(
+                rhs,
+                ast::BinaryOp::LogicOp(ast::LogicOp::And),
+                last,
+            ));
         } else {
             chains.push(rhs);
         }
@@ -284,13 +309,18 @@ fn is_early_block(then_block: &ast::StmtList) -> bool {
         _ => None,
     };
     then_block.tail_expr().is_some_and(is_early_expr)
-        || then_block.statements().filter_map(into_expr).any(is_early_expr)
+        || then_block
+            .statements()
+            .filter_map(into_expr)
+            .any(is_early_expr)
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn convert_inside_fn() {
         check_assist(
@@ -320,6 +350,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_inside_fn_return_option() {
         check_assist(
@@ -350,6 +381,7 @@ fn ret_option() -> Option<()> {
 "#,
         );
     }
+
     #[test]
     fn convert_inside_closure() {
         check_assist(
@@ -383,6 +415,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_let_inside_fn() {
         check_assist(
@@ -410,6 +443,7 @@ fn main(n: Option<String>) {
 "#,
         );
     }
+
     #[test]
     fn convert_if_let_result() {
         check_assist(
@@ -429,6 +463,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_if_let_has_never_type_else_block() {
         check_assist(
@@ -475,6 +510,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_if_let_result_inside_let() {
         check_assist(
@@ -498,6 +534,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_if_let_chain_result() {
         check_assist(
@@ -636,6 +673,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_let_ok_inside_fn() {
         check_assist(
@@ -663,6 +701,7 @@ fn main(n: Option<String>) {
 "#,
         );
     }
+
     #[test]
     fn convert_let_mut_ok_inside_fn() {
         check_assist(
@@ -690,6 +729,7 @@ fn main(n: Option<String>) {
 "#,
         );
     }
+
     #[test]
     fn convert_let_ref_ok_inside_fn() {
         check_assist(
@@ -717,6 +757,7 @@ fn main(n: Option<&str>) {
 "#,
         );
     }
+
     #[test]
     fn convert_inside_while() {
         check_assist(
@@ -744,6 +785,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_let_inside_while() {
         check_assist(
@@ -769,6 +811,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_inside_loop() {
         check_assist(
@@ -796,6 +839,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_let_inside_loop() {
         check_assist(
@@ -821,6 +865,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_let_inside_for() {
         check_assist(
@@ -846,6 +891,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_let_stmt_inside_fn() {
         check_assist(
@@ -871,6 +917,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_let_stmt_inside_fn_return_option() {
         check_assist(
@@ -896,6 +943,7 @@ fn ret_option() -> Option<i32> {
 "#,
         );
     }
+
     #[test]
     fn convert_let_stmt_inside_loop() {
         check_assist(
@@ -925,6 +973,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_arbitrary_if_let_patterns() {
         check_assist(
@@ -978,6 +1027,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_already_converted_if() {
         check_assist_not_applicable(
@@ -991,6 +1041,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_already_converted_loop() {
         check_assist_not_applicable(
@@ -1006,6 +1057,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_return() {
         check_assist_not_applicable(
@@ -1019,6 +1071,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_else_branch() {
         check_assist_not_applicable(
@@ -1034,6 +1087,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_let_else_branch() {
         check_assist_not_applicable(
@@ -1046,6 +1100,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_statements_after_if() {
         check_assist_not_applicable(
@@ -1060,6 +1115,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_statements_inside_if() {
         check_assist_not_applicable(
@@ -1075,6 +1131,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_inside_if_stmt() {
         check_assist_not_applicable(
@@ -1088,6 +1145,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_inside_let_initializer() {
         check_assist_not_applicable(

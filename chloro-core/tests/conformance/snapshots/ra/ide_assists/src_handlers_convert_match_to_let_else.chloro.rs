@@ -36,7 +36,9 @@ pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'
         return None;
     }
 
-    let Some(ast::Expr::MatchExpr(initializer)) = let_stmt.initializer() else { return None };
+    let Some(ast::Expr::MatchExpr(initializer)) = let_stmt.initializer() else {
+        return None;
+    };
     let initializer_expr = initializer.expr()?;
 
     let (extracting_arm, diverging_arm) = find_arms(ctx, &initializer)?;
@@ -105,8 +107,10 @@ fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Opti
             let name_ref = path.syntax().descendants().find_map(ast::NameRef::cast)?;
             match NameRefClass::classify(&ctx.sema, &name_ref)? {
                 NameRefClass::Definition(Definition::Local(local), _) => {
-                    let source =
-                        local.sources(ctx.db()).into_iter().map(|x| x.into_ident_pat()?.name());
+                    let source = local
+                        .sources(ctx.db())
+                        .into_iter()
+                        .map(|x| x.into_ident_pat()?.name());
                     source.collect()
                 }
                 _ => None,
@@ -132,8 +136,9 @@ fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> Syn
     for extracted_syntax in extracted {
         // If `extracted` variable is a record field, we should rename it to `binding`,
         // otherwise we just need to replace `extracted` with `binding`.
-        if let Some(record_pat_field) =
-            extracted_syntax.ancestors().find_map(ast::RecordPatField::cast)
+        if let Some(record_pat_field) = extracted_syntax
+            .ancestors()
+            .find_map(ast::RecordPatField::cast)
         {
             if let Some(name_ref) = record_pat_field.field_name() {
                 editor.replace(
@@ -161,7 +166,9 @@ fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> Syn
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn should_not_be_applicable_for_non_diverging_match() {
         cov_mark::check!(non_diverging_match);
@@ -178,6 +185,7 @@ fn foo(opt: Option<()>) {
 "#,
         );
     }
+
     #[test]
     fn or_pattern_multiple_binding() {
         check_assist(
@@ -210,6 +218,7 @@ fn foo(opt: Option<Foo>) -> Result<u32, ()> {
     "#,
         );
     }
+
     #[test]
     fn indent_level() {
         check_assist(
@@ -256,6 +265,7 @@ fn foo(opt: Option<Foo>) -> Result<u32, ()> {
     "#,
         );
     }
+
     #[test]
     fn should_not_be_applicable_if_extracting_arm_is_not_an_identity_expr() {
         cov_mark::check_count!(extracting_arm_is_not_an_identity_expr, 2);
@@ -288,6 +298,7 @@ fn foo(opt: Option<()>) {
 "#,
         );
     }
+
     #[test]
     fn should_not_be_applicable_if_extracting_arm_has_guard() {
         cov_mark::check!(extracting_arm_has_guard);
@@ -304,6 +315,7 @@ fn foo(opt: Option<()>) {
 "#,
         );
     }
+
     #[test]
     fn basic_pattern() {
         check_assist(
@@ -324,6 +336,7 @@ fn foo(opt: Option<()>) {
     "#,
         );
     }
+
     #[test]
     fn keeps_modifiers() {
         check_assist(
@@ -344,6 +357,7 @@ fn foo(opt: Option<()>) {
     "#,
         );
     }
+
     #[test]
     fn nested_pattern() {
         check_assist(
@@ -364,6 +378,7 @@ fn foo(opt: Option<Result<()>>) {
     "#,
         );
     }
+
     #[test]
     fn works_with_any_diverging_block() {
         check_assist(
@@ -436,6 +451,7 @@ fn foo(opt: Option<()>) {
     "#,
         );
     }
+
     #[test]
     fn struct_pattern() {
         check_assist(
@@ -466,6 +482,7 @@ fn foo(opt: Option<Point>) {
     "#,
         );
     }
+
     #[test]
     fn renames_whole_binding() {
         check_assist(
@@ -488,6 +505,7 @@ fn foo(opt: Option<i32>) -> Option<i32> {
     "#,
         );
     }
+
     #[test]
     fn complex_pattern() {
         check_assist(
@@ -508,6 +526,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn diverging_block() {
         check_assist(

@@ -13,11 +13,19 @@ use crate::{
 pub(crate) fn complete_use_path(
     acc: &mut Completions,
     ctx: &CompletionContext<'_>,
-    path_ctx @ PathCompletionCtx { qualified, use_tree_parent, .. }: &PathCompletionCtx<'_>,
+    path_ctx @ PathCompletionCtx {
+        qualified,
+        use_tree_parent,
+        ..
+    }: &PathCompletionCtx<'_>,
     name_ref: &Option<ast::NameRef>,
 ) {
     match qualified {
-        Qualified::With { path, resolution: Some(resolution), super_chain_len } => {
+        Qualified::With {
+            path,
+            resolution: Some(resolution),
+            super_chain_len,
+        } => {
             acc.add_super_keyword(ctx, *super_chain_len);
 
             // only show `self` in a new use-tree when the qualifier doesn't end in self
@@ -31,7 +39,11 @@ pub(crate) fn complete_use_path(
             }
 
             let mut already_imported_names = FxHashSet::default();
-            if let Some(list) = ctx.token.parent_ancestors().find_map(ast::UseTreeList::cast) {
+            if let Some(list) = ctx
+                .token
+                .parent_ancestors()
+                .find_map(ast::UseTreeList::cast)
+            {
                 let use_tree = list.parent_use_tree();
                 if use_tree.path().as_ref() == Some(path) {
                     for tree in list.use_trees().filter(|tree| tree.is_simple_path()) {
@@ -104,8 +116,9 @@ pub(crate) fn complete_use_path(
                     }
                     ScopeDef::ModuleDef(hir::ModuleDef::Adt(hir::Adt::Enum(e))) => {
                         // exclude prelude enum
-                        let is_builtin =
-                            res.krate(ctx.db).is_some_and(|krate| krate.is_builtin(ctx.db));
+                        let is_builtin = res
+                            .krate(ctx.db)
+                            .is_some_and(|krate| krate.is_builtin(ctx.db));
 
                         if !is_builtin {
                             let item = CompletionItem::new(
@@ -125,6 +138,9 @@ pub(crate) fn complete_use_path(
             });
             acc.add_nameref_keywords_with_colon(ctx);
         }
-        Qualified::TypeAnchor { .. } | Qualified::With { resolution: None, .. } => {}
+        Qualified::TypeAnchor { .. }
+        | Qualified::With {
+            resolution: None, ..
+        } => {}
     }
 }

@@ -2,7 +2,7 @@ use hir::{AsAssocItem, AssocItemContainer, FileRange, HasCrate, HasSource};
 use ide_db::{assists::AssistId, defs::Definition, search::SearchScope};
 use syntax::{
     SyntaxKind,
-    ast::{self, AstNode, edit_in_place::Indent, edit::IndentLevel},
+    ast::{self, AstNode, edit::IndentLevel, edit_in_place::Indent},
 };
 
 use crate::assist_context::{AssistContext, Assists};
@@ -54,8 +54,11 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     // NOTE: We can technically provide this assist for default methods in trait definitions, but
     // it's somewhat complex to handle it correctly when the const's name conflicts with
     // supertrait's item. We may want to consider implementing it in the future.
-    let AssocItemContainer::Impl(impl_) =
-        ctx.sema.to_def(&parent_fn)?.as_assoc_item(db)?.container(db)
+    let AssocItemContainer::Impl(impl_) = ctx
+        .sema
+        .to_def(&parent_fn)?
+        .as_assoc_item(db)?
+        .container(db)
     else {
         return None;
     };
@@ -116,8 +119,10 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
             // Heuristically inserting the extracted const after the consecutive existing consts
             // from the beginning of assoc items. We assume there are no inherent assoc type as
             // above.
-            let last_const =
-                items.assoc_items().take_while(|it| matches!(it, ast::AssocItem::Const(_))).last();
+            let last_const = items
+                .assoc_items()
+                .take_while(|it| matches!(it, ast::AssocItem::Const(_)))
+                .last();
             let insert_offset = match &last_const {
                 Some(it) => it.syntax().text_range().end(),
                 None => match items.l_curly_token() {
@@ -145,7 +150,9 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn not_applicable_to_top_level_const() {
         check_assist_not_applicable(
@@ -155,6 +162,7 @@ const C$0: () = ();
 "#,
         );
     }
+
     #[test]
     fn not_applicable_to_free_fn() {
         check_assist_not_applicable(
@@ -166,6 +174,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_when_at_const_body() {
         check_assist_not_applicable(
@@ -180,6 +189,7 @@ impl S {
             "#,
         );
     }
+
     #[test]
     fn not_applicable_when_inside_const_body_block() {
         check_assist_not_applicable(
@@ -196,6 +206,7 @@ impl S {
             "#,
         );
     }
+
     #[test]
     fn not_applicable_to_trait_impl_fn() {
         check_assist_not_applicable(
@@ -212,6 +223,7 @@ impl Trait for () {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_to_non_assoc_fn_inside_impl() {
         check_assist_not_applicable(
@@ -228,6 +240,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_when_const_with_same_name_exists() {
         check_assist_not_applicable(
@@ -256,6 +269,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn move_const_simple_body() {
         check_assist(
@@ -284,6 +298,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn move_const_simple_body_existing_const() {
         check_assist(
@@ -317,6 +332,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn move_const_block_body() {
         check_assist(
@@ -353,6 +369,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn correct_indent_when_nested() {
         check_assist(
@@ -385,6 +402,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_const_in_nested_scope_with_same_name_in_other_scope() {
         check_assist(

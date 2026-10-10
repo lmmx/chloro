@@ -2,59 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8787 bytes
-Chloro size:   8742 bytes
+Chloro size:   8787 bytes
 Rustfmt size:  8787 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- };
- use syntax::{
-     AstNode, T,
--    ast::{
--        self,
--        edit::{AstNodeEdit, IndentLevel},
--        make,
--        syntax_factory::SyntaxFactory,
--    },
-+    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory},
- };
- 
- use crate::assist_context::{AssistContext, Assists};
- #[cfg(test)]
- mod tests {
-     use super::*;
--
-     use crate::tests::{check_assist, check_assist_by_label, check_assist_not_applicable};
--
-     #[test]
-     fn test_desugar_try_expr_not_applicable() {
-         check_assist_not_applicable(
-             "#,
-         );
-     }
--
-     #[test]
-     fn test_desugar_try_expr_option() {
-         check_assist(
-             "#,
-         );
-     }
--
-     #[test]
-     fn test_desugar_try_expr_result() {
-         check_assist(
-             "#,
-         );
-     }
--
-     #[test]
-     fn test_desugar_try_expr_option_let_else() {
-         check_assist_by_label(
-             "Replace try expression with let else",
-         );
-     }
--
-     #[test]
-     fn test_desugar_try_expr_result_let_else() {
-         check_assist_by_label(
+✓ Outputs are IDENTICAL

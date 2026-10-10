@@ -59,6 +59,7 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
     }
 
     // until this is ok
+
     acc.add(
         AssistId::refactor_inline("inline_type_alias_uses"),
         "Inline type alias into all uses",
@@ -73,7 +74,11 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
 
                 let (path_types, path_type_uses) =
                     split_refs_and_uses(builder, refs, |path_type| {
-                        path_type.syntax().ancestors().nth(3).and_then(ast::PathType::cast)
+                        path_type
+                            .syntax()
+                            .ancestors()
+                            .nth(3)
+                            .and_then(ast::PathType::cast)
                     });
                 path_type_uses
                     .iter()
@@ -166,9 +171,10 @@ pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 impl Replacement {
     fn replace_generic(&self, concrete_type: &ast::Type) -> SyntaxNode {
         match self {
-            Replacement::Generic { lifetime_map, const_and_type_map } => {
-                create_replacement(lifetime_map, const_and_type_map, concrete_type)
-            }
+            Replacement::Generic {
+                lifetime_map,
+                const_and_type_map,
+            } => create_replacement(lifetime_map, const_and_type_map, concrete_type),
             Replacement::Plain => concrete_type.syntax().clone_subtree().clone_for_update(),
         }
     }
@@ -188,8 +194,10 @@ fn inline(alias_def: &ast::TypeAlias, alias_instance: &ast::PathType) -> Option<
             cov_mark::hit!(no_generics_params);
             return None;
         }
-        let instance_args =
-            alias_instance.syntax().descendants().find_map(ast::GenericArgList::cast);
+        let instance_args = alias_instance
+            .syntax()
+            .descendants()
+            .find_map(ast::GenericArgList::cast);
 
         Replacement::Generic {
             lifetime_map: LifetimeMap::new(&instance_args, &alias_generics)?,
@@ -389,13 +397,15 @@ impl ConstOrTypeGeneric {
     }
 
     fn replacement_value(&self) -> Option<SyntaxNode> {
-        Some(match self {
-            ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
-            ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
-            ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
-            ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
-        }
-        .clone_for_update())
+        Some(
+            match self {
+                ConstOrTypeGeneric::ConstArg(ca) => ca.expr()?.syntax().clone(),
+                ConstOrTypeGeneric::TypeArg(ta) => ta.syntax().clone(),
+                ConstOrTypeGeneric::ConstParam(cp) => cp.default_val()?.syntax().clone(),
+                ConstOrTypeGeneric::TypeParam(tp) => tp.default_type()?.syntax().clone(),
+            }
+            .clone_for_update(),
+        )
     }
 }
 
@@ -445,6 +455,7 @@ fn generic_args_to_const_and_type_generics(
 mod test {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn empty_generic_params() {
         cov_mark::check!(no_generics_params);
@@ -458,6 +469,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn too_many_generic_args() {
         cov_mark::check!(too_many_generic_args);
@@ -471,6 +483,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn too_many_lifetimes() {
         cov_mark::check!(too_many_lifetimes);
@@ -484,6 +497,7 @@ fn f<'a>() {
 "#,
         );
     }
+
     // This must be supported in order to support "inline_alias_to_users" or
     // whatever it will be called.
     #[test]
@@ -498,6 +512,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn primitive_arg() {
         check_assist(
@@ -516,6 +531,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_generic_replacements() {
         check_assist(
@@ -534,6 +550,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn param_expression() {
         check_assist(
@@ -552,6 +569,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn param_default_value() {
         check_assist(
@@ -570,6 +588,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn all_param_types() {
         check_assist(
@@ -590,6 +609,7 @@ fn foo<'inner2, 'outer2, Outer2, const INNER2: usize, Inner2, const OUTER2: usiz
 "#,
         );
     }
+
     #[test]
     fn omitted_lifetimes() {
         check_assist(
@@ -608,6 +628,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn omitted_type() {
         check_assist(
@@ -626,6 +647,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn omitted_everything() {
         check_assist(
@@ -646,6 +668,7 @@ fn main() {
 "#,
         );
     }
+
     // This doesn't actually cause the GenericArgsList to contain a AssocTypeArg.
     #[test]
     fn arg_associated_type() {
@@ -675,6 +698,7 @@ impl Tra for Str {
 "#,
         );
     }
+
     #[test]
     fn param_default_associated_type() {
         check_assist(
@@ -703,6 +727,7 @@ impl Tra for Str {
 "#,
         );
     }
+
     #[test]
     fn function_pointer() {
         check_assist(
@@ -723,6 +748,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn closure() {
         check_assist(
@@ -741,6 +767,7 @@ fn main() {
 "#,
         );
     }
+
     // Type aliases can't be used in traits, but someone might use the assist to
     // fix the error.
     #[test]
@@ -751,6 +778,7 @@ fn main() {
             r#"type A = std::io::Write; fn f<T>() where T: std::io::Write {}"#,
         );
     }
+
     #[test]
     fn function_parameter() {
         check_assist(
@@ -765,6 +793,7 @@ fn f(a: impl std::io::Write) {}
 "#,
         );
     }
+
     #[test]
     fn arg_expression() {
         check_assist(
@@ -783,6 +812,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn alias_instance_generic_path() {
         check_assist(
@@ -801,6 +831,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn generic_type() {
         check_assist(
@@ -815,6 +846,7 @@ fn f(a: Vec<String>) {}
 "#,
         );
     }
+
     #[test]
     fn missing_replacement_param() {
         cov_mark::check!(missing_replacement_param);
@@ -828,6 +860,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn full_path_type_is_replaced() {
         check_assist(
@@ -850,6 +883,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inline_self_type() {
         check_assist(
@@ -917,8 +951,10 @@ trait Tr {
 "#,
         );
     }
+
     mod inline_type_alias_uses {
         use crate::{handlers::inline_type_alias::inline_type_alias_uses, tests::check_assist};
+
         #[test]
         fn inline_uses() {
             check_assist(
@@ -941,6 +977,7 @@ fn foo() {
 "#,
             );
         }
+
         #[test]
         fn inline_uses_across_files() {
             check_assist(
@@ -975,6 +1012,7 @@ fn foo() {
 "#,
             );
         }
+
         #[test]
         fn inline_uses_across_files_2() {
             check_assist(

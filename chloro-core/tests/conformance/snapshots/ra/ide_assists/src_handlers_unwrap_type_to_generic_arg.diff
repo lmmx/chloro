@@ -2,55 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3114 bytes
-Chloro size:   3120 bytes
+Chloro size:   3114 bytes
 Rustfmt size:  3114 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //     todo!()
- // }
- // ```
--pub(crate) fn unwrap_type_to_generic_arg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn unwrap_type_to_generic_arg(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
-     let path_type = ctx.find_node_at_offset::<ast::PathType>()?;
-     let path = path_type.path()?;
-     let segment = path.segment()?;
- mod tests {
-     use super::*;
-     use crate::tests::{check_assist, check_assist_not_applicable};
--
-     #[test]
-     fn test_unwrap_type_to_generic_arg() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn unwrap_type_to_generic_arg_not_applicable_for_non_generic_arg_list() {
-         check_assist_not_applicable(
- "#,
-         );
-     }
--
-     #[test]
-     fn unwrap_type_to_generic_arg_not_applicable_for_multiple_generic_args() {
-         check_assist_not_applicable(
- "#,
-         );
-     }
--
-     #[test]
-     fn unwrap_type_to_generic_arg_with_lifetime_and_const() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn unwrap_type_to_generic_arg_in_let_stmt() {
-         check_assist(
+✓ Outputs are IDENTICAL

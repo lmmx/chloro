@@ -3,22 +3,21 @@
 //! Of particular interest is the `feature_flags` hash map: while other fields
 //! configure the server itself, feature flags are passed into analysis, and
 //! tweak things like automatic insertion of `()` in completions.
-
 use std::{env, fmt, iter, ops::Not, sync::OnceLock};
 
 use cfg::{CfgAtom, CfgDiff};
 use hir::Symbol;
-use ide_db::{
-    MiniCore, SnippetCap,
-    assists::ExprFillDefaultMode,
-    imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
-};
 use ide::{
     AnnotationConfig, AssistConfig, CallHierarchyConfig, CallableSnippets, CompletionConfig,
     CompletionFieldsToResolve, DiagnosticsConfig, GenericParameterHints, GotoDefinitionConfig,
     GotoImplementationConfig, HighlightConfig, HighlightRelatedConfig, HoverConfig, HoverDocFormat,
     InlayFieldsToResolve, InlayHintsConfig, JoinLinesConfig, MemoryLayoutHoverConfig,
     MemoryLayoutHoverRenderKind, RenameConfig, Snippet, SnippetScope, SourceRootId,
+};
+use ide_db::{
+    MiniCore, SnippetCap,
+    assists::ExprFillDefaultMode,
+    imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
 };
 use itertools::{Either, Itertools};
 use paths::{Utf8Path, Utf8PathBuf};
@@ -39,8 +38,8 @@ use vfs::{AbsPath, AbsPathBuf, VfsPath};
 use crate::{
     diagnostics::DiagnosticsMapConfig,
     flycheck::{CargoOptions, FlycheckConfig},
-    lsp_ext::{WorkspaceSymbolSearchKind, WorkspaceSymbolSearchScope},
     lsp::capabilities::ClientCapabilities,
+    lsp_ext::{WorkspaceSymbolSearchKind, WorkspaceSymbolSearchScope},
 };
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
@@ -62,6 +61,14 @@ pub enum MaxSubstitutionLength {
     Limit(usize),
 }
 
+// Defines the server-side configuration of the rust-analyzer. We generate *parts* of VS Code's
+// `package.json` config from this. Run `cargo test` to re-generate that file.
+//
+// However, editor specific config, which the server doesn't know about, should be specified
+// directly in `package.json`.
+//
+// To deprecate an option by replacing it with another name use `new_name` | `old_name` so that we
+// keep parsing the old name.
 config_data! {
     /// Configs that apply on a workspace-wide scope. There are 2 levels on which a global
     /// configuration can be configured
@@ -993,28 +1000,40 @@ pub struct Config {
     root_path: AbsPathBuf,
     snippets: Vec<Snippet>,
     client_info: Option<ClientInfo>,
+
     default_config: &'static DefaultConfigData,
     /// Config node that obtains its initial value during the server initialization and
     /// by receiving a `lsp_types::notification::DidChangeConfiguration`.
     client_config: (FullConfigInput, ConfigErrors),
+
     /// Config node whose values apply to **every** Rust project.
     user_config: Option<(GlobalWorkspaceLocalConfigInput, ConfigErrors)>,
+
     ratoml_file: FxHashMap<SourceRootId, (RatomlFile, ConfigErrors)>,
+
     /// Clone of the value that is stored inside a `GlobalState`.
     source_root_parent_map: Arc<FxHashMap<SourceRootId, SourceRootId>>,
+
     /// Use case : It is an error to have an empty value for `check_command`.
     /// Since it is a `global` command at the moment, its final value can only be determined by
     /// traversing through `global` configs and the `client` config. However the non-null value constraint
     /// is config level agnostic, so this requires an independent error storage
     validation_errors: ConfigErrors,
+
     detached_files: Vec<AbsPathBuf>,
 }
 
 impl fmt::Debug for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Config")
-            .field("discovered_projects_from_filesystem", &self.discovered_projects_from_filesystem)
-            .field("discovered_projects_from_command", &self.discovered_projects_from_command)
+            .field(
+                "discovered_projects_from_filesystem",
+                &self.discovered_projects_from_filesystem,
+            )
+            .field(
+                "discovered_projects_from_command",
+                &self.discovered_projects_from_command,
+            )
             .field("workspace_roots", &self.workspace_roots)
             .field("caps", &self.caps)
             .field("root_path", &self.root_path)
@@ -1030,6 +1049,7 @@ impl fmt::Debug for Config {
     }
 }
 
+// Delegate capability fetching methods
 impl std::ops::Deref for Config {
     type Target = ClientCapabilities;
 
@@ -1080,7 +1100,10 @@ impl Config {
                     ConfigErrors(
                         toml_errors
                             .into_iter()
-                            .map(|(a, b)| ConfigErrorInner::Toml { config_key: a, error: b })
+                            .map(|(a, b)| ConfigErrorInner::Toml {
+                                config_key: a,
+                                error: b,
+                            })
                             .map(Arc::new)
                             .collect(),
                     ),
@@ -1152,7 +1175,10 @@ impl Config {
                     ConfigErrors(
                         json_errors
                             .into_iter()
-                            .map(|(a, b)| ConfigErrorInner::Json { config_key: a, error: b })
+                            .map(|(a, b)| ConfigErrorInner::Json {
+                                config_key: a,
+                                error: b,
+                            })
                             .map(Arc::new)
                             .collect(),
                     ),
@@ -1263,10 +1289,13 @@ impl Config {
         }
 
         if config.check_command(None).is_empty() {
-            config.validation_errors.0.push(Arc::new(ConfigErrorInner::Json {
-                config_key: "/check/command".to_owned(),
-                error: serde_json::Error::custom("expected a non-empty string"),
-            }));
+            config
+                .validation_errors
+                .0
+                .push(Arc::new(ConfigErrorInner::Json {
+                    config_key: "/check/command".to_owned(),
+                    error: serde_json::Error::custom("expected a non-empty string"),
+                }));
         }
 
         (config, should_update)
@@ -1283,7 +1312,13 @@ impl Config {
                 .1
                 .0
                 .iter()
-                .chain(config.user_config.as_ref().into_iter().flat_map(|it| it.1.0.iter()))
+                .chain(
+                    config
+                        .user_config
+                        .as_ref()
+                        .into_iter()
+                        .flat_map(|it| it.1.0.iter()),
+                )
                 .chain(config.ratoml_file.values().flat_map(|it| it.1.0.iter()))
                 .chain(config.validation_errors.0.iter())
                 .cloned()
@@ -1304,7 +1339,8 @@ impl Config {
             }
         }
 
-        self.discovered_projects_from_command.push(ProjectJsonFromCommand { data, buildfile });
+        self.discovered_projects_from_command
+            .push(ProjectJsonFromCommand { data, buildfile });
     }
 }
 
@@ -1312,7 +1348,8 @@ impl Config {
 pub struct ConfigChange {
     user_config_change: Option<Arc<str>>,
     client_config_change: Option<serde_json::Value>,
-    ratoml_file_change: Option<FxHashMap<SourceRootId, (RatomlFileKind, VfsPath, Option<Arc<str>>)>>,
+    ratoml_file_change:
+        Option<FxHashMap<SourceRootId, (RatomlFileKind, VfsPath, Option<Arc<str>>)>>,
     source_map_change: Option<Arc<FxHashMap<SourceRootId, SourceRootId>>>,
 }
 
@@ -1395,13 +1432,16 @@ pub struct LensConfig {
     pub debug: bool,
     pub update_test: bool,
     pub interpret: bool,
+
     // implementations
     pub implementations: bool,
+
     // references
     pub method_refs: bool,
     pub refs_adt: bool,   // for Struct, Enum, Union and Trait
     pub refs_trait: bool, // for Struct, Enum, Union and Trait
     pub enum_variant_refs: bool,
+
     // annotations
     pub location: AnnotationLocation,
     pub filter_adjacent_derive_implementations: bool,
@@ -1425,7 +1465,14 @@ impl From<AnnotationLocation> for ide::AnnotationLocation {
 
 impl LensConfig {
     pub fn any(&self) -> bool {
-        self.run || self.debug || self.update_test || self.implementations || self.method_refs || self.refs_adt || self.refs_trait || self.enum_variant_refs
+        self.run
+            || self.debug
+            || self.update_test
+            || self.implementations
+            || self.method_refs
+            || self.refs_adt
+            || self.refs_trait
+            || self.enum_variant_refs
     }
 
     pub fn none(&self) -> bool {
@@ -1551,7 +1598,6 @@ pub struct WorkspaceSymbolConfig {
     /// How many items are returned at most.
     pub search_limit: usize,
 }
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ClientCommandsConfig {
     pub run_single: bool,
@@ -1590,12 +1636,18 @@ impl fmt::Display for ConfigErrors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let errors = self.0.iter().format_with("\n", |inner, f| {
             match &**inner {
-                ConfigErrorInner::Json { config_key: key, error: e } => {
+                ConfigErrorInner::Json {
+                    config_key: key,
+                    error: e,
+                } => {
                     f(key)?;
                     f(&": ")?;
                     f(e)
                 }
-                ConfigErrorInner::Toml { config_key: key, error: e } => {
+                ConfigErrorInner::Toml {
+                    config_key: key,
+                    error: e,
+                } => {
                     f(key)?;
                     f(&": ")?;
                     f(e)
@@ -1604,7 +1656,12 @@ impl fmt::Display for ConfigErrors {
             }?;
             f(&";")
         });
-        write!(f, "invalid config value{}:\n{}", if self.0.len() == 1 { "" } else { "s" }, errors)
+        write!(
+            f,
+            "invalid config value{}:\n{}",
+            if self.0.len() == 1 { "" } else { "s" },
+            errors
+        )
     }
 }
 
@@ -1628,7 +1685,11 @@ impl Config {
             workspace_roots,
             client_info: client_info.map(|it| ClientInfo {
                 name: it.name,
-                version: it.version.as_deref().map(Version::parse).and_then(Result::ok),
+                version: it
+                    .version
+                    .as_deref()
+                    .map(Version::parse)
+                    .and_then(Result::ok),
             }),
             client_config: (FullConfigInput::default(), ConfigErrors(vec![])),
             default_config: DEFAULT_CONFIG_DATA.get_or_init(|| Box::leak(Box::default())),
@@ -1665,10 +1726,12 @@ impl Config {
         fn sort_objects_by_field(json: &mut serde_json::Value) {
             if let serde_json::Value::Object(object) = json {
                 let old = std::mem::take(object);
-                old.into_iter().sorted_by(|(k, _), (k2, _)| k.cmp(k2)).for_each(|(k, mut v)| {
-                    sort_objects_by_field(&mut v);
-                    object.insert(k, v);
-                });
+                old.into_iter()
+                    .sorted_by(|(k, _), (k2, _)| k.cmp(k2))
+                    .for_each(|(k, mut v)| {
+                        sort_objects_by_field(&mut v);
+                        object.insert(k, v);
+                    });
             }
         }
         sort_objects_by_field(&mut s);
@@ -1715,7 +1778,10 @@ impl Config {
     }
 
     pub fn call_hierarchy<'a>(&self, minicore: MiniCore<'a>) -> CallHierarchyConfig<'a> {
-        CallHierarchyConfig { exclude_tests: self.references_excludeTests().to_owned(), minicore }
+        CallHierarchyConfig {
+            exclude_tests: self.references_excludeTests().to_owned(),
+            minicore,
+        }
     }
 
     pub fn completion<'a>(
@@ -1731,7 +1797,9 @@ impl Config {
             enable_self_on_the_fly: self.completion_autoself_enable(source_root).to_owned(),
             enable_auto_iter: *self.completion_autoIter_enable(source_root),
             enable_auto_await: *self.completion_autoAwait_enable(source_root),
-            enable_private_editable: self.completion_privateEditable_enable(source_root).to_owned(),
+            enable_private_editable: self
+                .completion_privateEditable_enable(source_root)
+                .to_owned(),
             full_function_signatures: self
                 .completion_fullFunctionSignatures_enable(source_root)
                 .to_owned(),
@@ -1759,9 +1827,10 @@ impl Config {
                 .completion_autoimport_exclude(source_root)
                 .iter()
                 .map(|it| match it {
-                    AutoImportExclusion::Path(path) => {
-                        (path.clone(), ide_completion::AutoImportExclusionType::Always)
-                    }
+                    AutoImportExclusion::Path(path) => (
+                        path.clone(),
+                        ide_completion::AutoImportExclusionType::Always,
+                    ),
                     AutoImportExclusion::Verbose { path, r#type } => (
                         path.clone(),
                         match r#type {
@@ -1818,6 +1887,7 @@ impl Config {
         DiagnosticsConfig {
             enabled: true,
             disable_experimental: false,
+            ..self.diagnostics(source_root)
         }
     }
 
@@ -1858,13 +1928,15 @@ impl Config {
         };
         HoverConfig {
             links_in_hover: self.hover_links_enable().to_owned(),
-            memory_layout: self.hover_memoryLayout_enable().then_some(MemoryLayoutHoverConfig {
-                size: self.hover_memoryLayout_size().map(mem_kind),
-                offset: self.hover_memoryLayout_offset().map(mem_kind),
-                alignment: self.hover_memoryLayout_alignment().map(mem_kind),
-                padding: self.hover_memoryLayout_padding().map(mem_kind),
-                niches: self.hover_memoryLayout_niches().unwrap_or_default(),
-            }),
+            memory_layout: self
+                .hover_memoryLayout_enable()
+                .then_some(MemoryLayoutHoverConfig {
+                    size: self.hover_memoryLayout_size().map(mem_kind),
+                    offset: self.hover_memoryLayout_offset().map(mem_kind),
+                    alignment: self.hover_memoryLayout_alignment().map(mem_kind),
+                    padding: self.hover_memoryLayout_padding().map(mem_kind),
+                    niches: self.hover_memoryLayout_niches().unwrap_or_default(),
+                }),
             documentation: self.hover_documentation_enable().to_owned(),
             format: {
                 if self.caps.hover_markdown_support() {
@@ -1900,9 +1972,15 @@ impl Config {
             sized_bound: self.inlayHints_implicitSizedBoundHints_enable().to_owned(),
             parameter_hints: self.inlayHints_parameterHints_enable().to_owned(),
             generic_parameter_hints: GenericParameterHints {
-                type_hints: self.inlayHints_genericParameterHints_type_enable().to_owned(),
-                lifetime_hints: self.inlayHints_genericParameterHints_lifetime_enable().to_owned(),
-                const_hints: self.inlayHints_genericParameterHints_const_enable().to_owned(),
+                type_hints: self
+                    .inlayHints_genericParameterHints_type_enable()
+                    .to_owned(),
+                lifetime_hints: self
+                    .inlayHints_genericParameterHints_lifetime_enable()
+                    .to_owned(),
+                const_hints: self
+                    .inlayHints_genericParameterHints_const_enable()
+                    .to_owned(),
             },
             chaining_hints: self.inlayHints_chainingHints_enable().to_owned(),
             discriminant_hints: match self.inlayHints_discriminantHints_enable() {
@@ -2019,12 +2097,16 @@ impl Config {
             specialize_punctuation: self
                 .semanticHighlighting_punctuation_specialization_enable()
                 .to_owned(),
-            macro_bang: self.semanticHighlighting_punctuation_separate_macro_bang().to_owned(),
+            macro_bang: self
+                .semanticHighlighting_punctuation_separate_macro_bang()
+                .to_owned(),
             operator: self.semanticHighlighting_operator_enable().to_owned(),
             specialize_operator: self
                 .semanticHighlighting_operator_specialization_enable()
                 .to_owned(),
-            inject_doc_comment: self.semanticHighlighting_doc_comment_inject_enable().to_owned(),
+            inject_doc_comment: self
+                .semanticHighlighting_doc_comment_inject_enable()
+                .to_owned(),
             syntactic_name_ref_highlighting: false,
             minicore,
         }
@@ -2055,8 +2137,11 @@ impl Config {
     }
 
     fn discovered_projects(&self) -> Vec<ManifestOrProjectJson> {
-        let exclude_dirs: Vec<_> =
-            self.files_exclude().iter().map(|p| self.root_path.join(p)).collect();
+        let exclude_dirs: Vec<_> = self
+            .files_exclude()
+            .iter()
+            .map(|p| self.root_path.join(p))
+            .collect();
 
         let mut projects = vec![];
         for fs_proj in &self.discovered_projects_from_filesystem {
@@ -2098,7 +2183,9 @@ impl Config {
                         .map(Into::into)
                 }
                 ManifestOrProjectJson::DiscoveredProjectJson { data, buildfile } => {
-                    let root_path = buildfile.parent().expect("Unable to get parent of buildfile");
+                    let root_path = buildfile
+                        .parent()
+                        .expect("Unable to get parent of buildfile");
 
                     Some(ProjectJson::new(None, root_path, data.clone()).into())
                 }
@@ -2157,7 +2244,10 @@ impl Config {
     }
 
     pub fn lru_query_capacities_config(&self) -> Option<&FxHashMap<Box<str>, u16>> {
-        self.lru_query_capacities().is_empty().not().then(|| self.lru_query_capacities())
+        self.lru_query_capacities()
+            .is_empty()
+            .not()
+            .then(|| self.lru_query_capacities())
     }
 
     pub fn proc_macro_srv(&self) -> Option<AbsPathBuf> {
@@ -2194,7 +2284,9 @@ impl Config {
     }
 
     pub fn excluded(&self) -> impl Iterator<Item = AbsPathBuf> + use<'_> {
-        self.files_exclude().iter().map(|it| self.root_path.join(it))
+        self.files_exclude()
+            .iter()
+            .map(|it| self.root_path.join(it))
     }
 
     pub fn notifications(&self) -> NotificationsConfig {
@@ -2226,8 +2318,10 @@ impl Config {
                 RustLibSource::Path(self.root_path.join(sysroot))
             }
         });
-        let sysroot_src =
-            self.cargo_sysrootSrc(source_root).as_ref().map(|sysroot| self.root_path.join(sysroot));
+        let sysroot_src = self
+            .cargo_sysrootSrc(source_root)
+            .as_ref()
+            .map(|sysroot| self.root_path.join(sysroot));
         let extra_includes = self
             .vfs_extraIncludes(source_root)
             .iter()
@@ -2301,7 +2395,8 @@ impl Config {
     }
 
     pub(crate) fn completion_snippets_default() -> FxIndexMap<String, SnippetDef> {
-        serde_json::from_str(r#"{
+        serde_json::from_str(
+            r#"{
             "Ok": {
                 "postfix": "ok",
                 "body": "Ok(${receiver})",
@@ -2341,7 +2436,8 @@ impl Config {
                 "description": "Put the expression into an `Rc`",
                 "scope": "expr"
             }
-        }"#)
+        }"#,
+        )
         .unwrap()
     }
 
@@ -2426,7 +2522,8 @@ impl Config {
                     features: match self
                         .check_features(source_root)
                         .clone()
-                        .unwrap_or_else(|| self.cargo_features(source_root).clone()) {
+                        .unwrap_or_else(|| self.cargo_features(source_root).clone())
+                    {
                         CargoFeaturesDef::All => vec![],
                         CargoFeaturesDef::Selected(it) => it,
                     },
@@ -2490,7 +2587,9 @@ impl Config {
         LensConfig {
             run: *self.lens_enable() && *self.lens_run_enable(),
             debug: *self.lens_enable() && *self.lens_debug_enable(),
-            update_test: *self.lens_enable() && *self.lens_updateTest_enable() && *self.lens_run_enable(),
+            update_test: *self.lens_enable()
+                && *self.lens_updateTest_enable()
+                && *self.lens_run_enable(),
             interpret: *self.lens_enable() && *self.lens_run_enable() && *self.interpret_tests(),
             implementations: *self.lens_enable() && *self.lens_implementations_enable(),
             method_refs: *self.lens_enable() && *self.lens_references_method_enable(),
@@ -2499,7 +2598,7 @@ impl Config {
             enum_variant_refs: *self.lens_enable() && *self.lens_references_enumVariant_enable(),
             location: *self.lens_location(),
             filter_adjacent_derive_implementations: *self
-            .gotoImplementations_filterAdjacentDerives(),
+                .gotoImplementations_filterAdjacentDerives(),
         }
     }
 
@@ -2580,7 +2679,10 @@ impl Config {
     }
 
     pub fn client_is_neovim(&self) -> bool {
-        self.client_info.as_ref().map(|it| it.name == "Neovim").unwrap_or_default()
+        self.client_info
+            .as_ref()
+            .map(|it| it.name == "Neovim")
+            .unwrap_or_default()
     }
 }
 // Deserialization definitions
@@ -2662,9 +2764,7 @@ macro_rules! create_bool_or_string_serde {
         }
     };
 }
-
 create_bool_or_string_serde!(true_or_always<true, "always">);
-
 create_bool_or_string_serde!(false_or_never<false, "never">);
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
@@ -2683,22 +2783,28 @@ pub(crate) struct SnippetDef {
     #[serde(with = "single_or_array")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     prefix: Vec<String>,
+
     #[serde(with = "single_or_array")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     postfix: Vec<String>,
+
     #[serde(with = "single_or_array")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     body: Vec<String>,
+
     #[serde(with = "single_or_array")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     requires: Vec<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
+
     scope: SnippetScopeDef,
 }
 
 mod single_or_array {
     use serde::{Deserialize, Serialize};
+
     pub(super) fn deserialize<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -2729,6 +2835,7 @@ mod single_or_array {
 
         deserializer.deserialize_any(SingleOrVec)
     }
+
     pub(super) fn serialize<S>(vec: &[String], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -2761,9 +2868,7 @@ where
     let path = String::deserialize(de)?;
 
     AbsPathBuf::try_from(path.as_ref())
-    .map_err(
-        |err| serde::de::Error::custom(format!("invalid path name: {err:?}")),
-    )
+        .map_err(|err| serde::de::Error::custom(format!("invalid path name: {err:?}")))
 }
 
 fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
@@ -2834,7 +2939,7 @@ pub(crate) enum InvocationStrategy {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-struct CheckOnSaveTargets(Vec<String>);
+struct CheckOnSaveTargets(#[serde(with = "single_or_array")] Vec<String>);
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -3299,8 +3404,8 @@ struct GlobalWorkspaceLocalConfigInput {
 }
 
 impl GlobalWorkspaceLocalConfigInput {
-    const FIELDS: &'static [&'static [&'static str]] = &[GlobalConfigInput::FIELDS, LocalConfigInput::FIELDS];
-
+    const FIELDS: &'static [&'static [&'static str]] =
+        &[GlobalConfigInput::FIELDS, LocalConfigInput::FIELDS];
     fn from_toml(
         toml: toml::Table,
         error_sink: &mut Vec<(String, toml::de::Error)>,
@@ -3325,8 +3430,8 @@ struct WorkspaceLocalConfigInput {
 
 impl WorkspaceLocalConfigInput {
     #[allow(dead_code)]
-    const FIELDS: &'static [&'static [&'static str]] = &[WorkspaceConfigInput::FIELDS, LocalConfigInput::FIELDS];
-
+    const FIELDS: &'static [&'static [&'static str]] =
+        &[WorkspaceConfigInput::FIELDS, LocalConfigInput::FIELDS];
     fn from_toml(toml: toml::Table, error_sink: &mut Vec<(String, toml::de::Error)>) -> Self {
         Self {
             workspace: WorkspaceConfigInput::from_toml(&toml, error_sink),
@@ -3408,13 +3513,13 @@ fn toml_pointer<'a>(toml: &'a toml::Table, pointer: &str) -> Option<&'a toml::Va
     let mut parts = pointer.split('/').skip(1);
     let first = parts.next()?;
     let init = toml.get(first)?;
-    parts.map(|x| x.replace("~1", "/").replace("~0", "~")).try_fold(init, |target, token| {
-        match target {
+    parts
+        .map(|x| x.replace("~1", "/").replace("~0", "~"))
+        .try_fold(init, |target, token| match target {
             toml::Value::Table(table) => table.get(&token),
             toml::Value::Array(list) => parse_index(&token).and_then(move |x| list.get(x)),
             _ => None,
-        }
-    })
+        })
 }
 
 type SchemaField = (&'static str, &'static str, &'static [&'static str], String);
@@ -3936,8 +4041,10 @@ fn validate_toml_table(
             // This is a table config, any entry in it is therefore valid
             toml::Value::Table(_) if verify(ptr) => (),
             toml::Value::Table(table) => validate_toml_table(known_ptrs, table, ptr, error_sink),
-            _ if !verify(ptr) => error_sink
-                .push((ptr.replace('_', "/"), toml::de::Error::custom("unexpected field"))),
+            _ if !verify(ptr) => error_sink.push((
+                ptr.replace('_', "/"),
+                toml::de::Error::custom("unexpected field"),
+            )),
             _ => (),
         }
 
@@ -3947,19 +4054,24 @@ fn validate_toml_table(
 
 #[cfg(test)]
 fn manual(fields: &[SchemaField]) -> String {
-    fields.iter().fold(String::new(), |mut acc, (field, _ty, doc, default)| {
-        let id = field.replace('_', ".");
-        let name = format!("rust-analyzer.{id}");
-        let doc = doc_comment_to_string(doc);
-        if default.contains('\n') {
-            format_to_acc!(
-                acc,
-                "## {name} {{#{id}}}\n\nDefault:\n```json\n{default}\n```\n\n{doc}\n\n"
-            )
-        } else {
-            format_to_acc!(acc, "## {name} {{#{id}}}\n\nDefault: `{default}`\n\n{doc}\n\n")
-        }
-    })
+    fields
+        .iter()
+        .fold(String::new(), |mut acc, (field, _ty, doc, default)| {
+            let id = field.replace('_', ".");
+            let name = format!("rust-analyzer.{id}");
+            let doc = doc_comment_to_string(doc);
+            if default.contains('\n') {
+                format_to_acc!(
+                    acc,
+                    "## {name} {{#{id}}}\n\nDefault:\n```json\n{default}\n```\n\n{doc}\n\n"
+                )
+            } else {
+                format_to_acc!(
+                    acc,
+                    "## {name} {{#{id}}}\n\nDefault: `{default}`\n\n{doc}\n\n"
+                )
+            }
+        })
 }
 
 fn doc_comment_to_string(doc: &[&str]) -> String {
@@ -3971,8 +4083,11 @@ fn doc_comment_to_string(doc: &[&str]) -> String {
 #[cfg(test)]
 mod tests {
     use std::{borrow::Cow, fs};
+
     use test_utils::{ensure_file_contents, project_root};
+
     use super::*;
+
     #[test]
     fn generate_package_json_config() {
         let s = Config::json_schema();
@@ -4028,19 +4143,26 @@ mod tests {
             ensure_file_contents(package_json_path.as_std_path(), &package_json)
         }
     }
+
     #[test]
     fn generate_config_documentation() {
         let docs_path = project_root().join("docs/book/src/configuration_generated.md");
         let expected = FullConfigInput::manual();
         ensure_file_contents(docs_path.as_std_path(), &expected);
     }
+
     fn remove_ws(text: &str) -> String {
         text.replace(char::is_whitespace, "")
     }
+
     #[test]
     fn proc_macro_srv_null() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(
+            AbsPathBuf::assert(project_root()),
+            Default::default(),
+            vec![],
+            None,
+        );
 
         let mut change = ConfigChange::default();
         change.change_client_config(serde_json::json!({
@@ -4051,10 +4173,15 @@ mod tests {
         (config, _, _) = config.apply_change(change);
         assert_eq!(config.proc_macro_srv(), None);
     }
+
     #[test]
     fn proc_macro_srv_abs() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(
+            AbsPathBuf::assert(project_root()),
+            Default::default(),
+            vec![],
+            None,
+        );
         let mut change = ConfigChange::default();
         change.change_client_config(serde_json::json!({
         "procMacro" : {
@@ -4062,12 +4189,20 @@ mod tests {
         }}));
 
         (config, _, _) = config.apply_change(change);
-        assert_eq!(config.proc_macro_srv(), Some(AbsPathBuf::assert(project_root())));
+        assert_eq!(
+            config.proc_macro_srv(),
+            Some(AbsPathBuf::assert(project_root()))
+        );
     }
+
     #[test]
     fn proc_macro_srv_rel() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(
+            AbsPathBuf::assert(project_root()),
+            Default::default(),
+            vec![],
+            None,
+        );
 
         let mut change = ConfigChange::default();
 
@@ -4083,10 +4218,15 @@ mod tests {
             Some(AbsPathBuf::try_from(project_root().join("./server")).unwrap())
         );
     }
+
     #[test]
     fn cargo_target_dir_unset() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(
+            AbsPathBuf::assert(project_root()),
+            Default::default(),
+            vec![],
+            None,
+        );
 
         let mut change = ConfigChange::default();
 
@@ -4099,15 +4239,23 @@ mod tests {
         assert!(matches!(
             config.flycheck(None),
             FlycheckConfig::CargoCommand {
-                options: CargoOptions { target_dir_config: TargetDirectoryConfig::None, .. },
+                options: CargoOptions {
+                    target_dir_config: TargetDirectoryConfig::None,
+                    ..
+                },
                 ..
             }
         ));
     }
+
     #[test]
     fn cargo_target_dir_subdir() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(
+            AbsPathBuf::assert(project_root()),
+            Default::default(),
+            vec![],
+            None,
+        );
 
         let mut change = ConfigChange::default();
         change.change_client_config(serde_json::json!({
@@ -4116,7 +4264,10 @@ mod tests {
 
         (config, _, _) = config.apply_change(change);
 
-        assert_eq!(config.cargo_targetDir(None), &Some(TargetDirectory::UseSubdirectory(true)));
+        assert_eq!(
+            config.cargo_targetDir(None),
+            &Some(TargetDirectory::UseSubdirectory(true))
+        );
         let ws_target_dir =
             Utf8PathBuf::from(std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_owned()));
         assert!(matches!(
@@ -4128,10 +4279,15 @@ mod tests {
                 == Some(ws_target_dir.join("rust-analyzer"))
         ));
     }
+
     #[test]
     fn cargo_target_dir_relative_dir() {
-        let mut config =
-            Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+        let mut config = Config::new(
+            AbsPathBuf::assert(project_root()),
+            Default::default(),
+            vec![],
+            None,
+        );
 
         let mut change = ConfigChange::default();
         change.change_client_config(serde_json::json!({
@@ -4142,7 +4298,9 @@ mod tests {
 
         assert_eq!(
             config.cargo_targetDir(None),
-            &Some(TargetDirectory::Directory(Utf8PathBuf::from("other_folder")))
+            &Some(TargetDirectory::Directory(Utf8PathBuf::from(
+                "other_folder"
+            )))
         );
         assert!(matches!(
             config.flycheck(None),

@@ -38,11 +38,9 @@ impl Indel {
     pub fn insert(offset: TextSize, text: String) -> Indel {
         Indel::replace(TextRange::empty(offset), text)
     }
-
     pub fn delete(range: TextRange) -> Indel {
         Indel::replace(range, String::new())
     }
-
     pub fn replace(range: TextRange, replace_with: String) -> Indel {
         Indel {
             delete: range,
@@ -123,14 +121,18 @@ impl TextEdit {
     }
 
     pub fn union(&mut self, other: TextEdit) -> Result<(), TextEdit> {
-        let iter_merge =
-            self.iter().merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
+        let iter_merge = self
+            .iter()
+            .merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
         if !check_disjoint(&mut iter_merge.clone()) {
             return Err(other);
         }
 
         // Only dedup deletions and replacements, keep all insertions
-        self.indels = iter_merge.dedup_by(|a, b| a == b && !a.delete.is_empty()).cloned().collect();
+        self.indels = iter_merge
+            .dedup_by(|a, b| a == b && !a.delete.is_empty())
+            .cloned()
+            .collect();
         Ok(())
     }
 
@@ -160,7 +162,6 @@ impl TextEdit {
 
 impl IntoIterator for TextEdit {
     type Item = Indel;
-
     type IntoIter = std::vec::IntoIter<Indel>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -170,7 +171,6 @@ impl IntoIterator for TextEdit {
 
 impl<'a> IntoIterator for &'a TextEdit {
     type Item = &'a Indel;
-
     type IntoIter = std::slice::Iter<'a, Indel>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -182,30 +182,29 @@ impl TextEditBuilder {
     pub fn is_empty(&self) -> bool {
         self.indels.is_empty()
     }
-
     pub fn replace(&mut self, range: TextRange, replace_with: String) {
         self.indel(Indel::replace(range, replace_with));
     }
-
     pub fn delete(&mut self, range: TextRange) {
         self.indel(Indel::delete(range));
     }
-
     pub fn insert(&mut self, offset: TextSize, text: String) {
         self.indel(Indel::insert(offset, text));
     }
-
     pub fn finish(self) -> TextEdit {
-        let TextEditBuilder { mut indels, annotation } = self;
+        let TextEditBuilder {
+            mut indels,
+            annotation,
+        } = self;
         assert_disjoint_or_equal(&mut indels);
         indels = coalesce_indels(indels);
         TextEdit { indels, annotation }
     }
-
     pub fn invalidates_offset(&self, offset: TextSize) -> bool {
-        self.indels.iter().any(|indel| indel.delete.contains_inclusive(offset))
+        self.indels
+            .iter()
+            .any(|indel| indel.delete.contains_inclusive(offset))
     }
-
     pub fn indel(&mut self, indel: Indel) {
         self.indels.push(indel);
         if self.indels.len() <= 16 {
@@ -227,7 +226,10 @@ fn check_disjoint<'a, I>(indels: &mut I) -> bool
 where
     I: std::iter::Iterator<Item = &'a Indel> + Clone,
 {
-    indels.clone().zip(indels.skip(1)).all(|(l, r)| l.delete.end() <= r.delete.start() || l == r)
+    indels
+        .clone()
+        .zip(indels.skip(1))
+        .all(|(l, r)| l.delete.end() <= r.delete.start() || l == r)
 }
 
 fn coalesce_indels(indels: Vec<Indel>) -> Vec<Indel> {
@@ -248,9 +250,11 @@ fn coalesce_indels(indels: Vec<Indel>) -> Vec<Indel> {
 #[cfg(test)]
 mod tests {
     use super::{TextEdit, TextEditBuilder, TextRange};
+
     fn range(start: u32, end: u32) -> TextRange {
         TextRange::new(start.into(), end.into())
     }
+
     #[test]
     fn test_apply() {
         let mut text = "_11h1_2222_xx3333_4444_6666".to_owned();
@@ -264,6 +268,7 @@ mod tests {
 
         assert_eq!(text, "_1111_2222_3333_4444_5555_6666")
     }
+
     #[test]
     fn test_union() {
         let mut edit1 = TextEdit::delete(range(7, 11));
@@ -275,6 +280,7 @@ mod tests {
         assert!(edit1.union(edit2).is_ok());
         assert_eq!(edit1.indels.len(), 3);
     }
+
     #[test]
     fn test_union_with_duplicates() {
         let mut builder1 = TextEditBuilder::default();
@@ -290,12 +296,14 @@ mod tests {
         assert!(edit1.union(edit2).is_ok());
         assert_eq!(edit1.indels.len(), 3);
     }
+
     #[test]
     fn test_union_panics() {
         let mut edit1 = TextEdit::delete(range(7, 11));
         let edit2 = TextEdit::delete(range(9, 13));
         assert!(edit1.union(edit2).is_err());
     }
+
     #[test]
     fn test_coalesce_disjoint() {
         let mut builder = TextEditBuilder::default();
@@ -305,6 +313,7 @@ mod tests {
 
         assert_eq!(edit.indels.len(), 2);
     }
+
     #[test]
     fn test_coalesce_adjacent() {
         let mut builder = TextEditBuilder::default();
@@ -316,6 +325,7 @@ mod tests {
         assert_eq!(edit.indels[0].insert, "aabb");
         assert_eq!(edit.indels[0].delete, range(1, 5));
     }
+
     #[test]
     fn test_coalesce_adjacent_series() {
         let mut builder = TextEditBuilder::default();

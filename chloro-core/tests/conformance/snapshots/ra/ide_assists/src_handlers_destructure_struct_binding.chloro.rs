@@ -43,10 +43,7 @@ use crate::{
 //     let baz2 = &baz;
 // }
 // ```
-pub(crate) fn destructure_struct_binding(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn destructure_struct_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let data = collect_data(ident_pat, ctx)?;
 
@@ -88,22 +85,33 @@ struct StructEditData {
 
 fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<StructEditData> {
     let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
-    let hir::Adt::Struct(struct_type) = ty.strip_references().as_adt()? else { return None };
+    let hir::Adt::Struct(struct_type) = ty.strip_references().as_adt()? else {
+        return None;
+    };
 
     let module = ctx.sema.scope(ident_pat.syntax())?.module();
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(module.krate()));
     let struct_def = hir::ModuleDef::from(struct_type);
     let kind = struct_type.kind(ctx.db());
     let struct_def_path = module.find_path(ctx.db(), struct_def, cfg)?;
 
-    let is_non_exhaustive = struct_def.attrs(ctx.db())?.by_key(sym::non_exhaustive).exists();
-    let is_foreign_crate = struct_def.module(ctx.db()).is_some_and(|m| m.krate() != module.krate());
+    let is_non_exhaustive = struct_def
+        .attrs(ctx.db())?
+        .by_key(sym::non_exhaustive)
+        .exists();
+    let is_foreign_crate = struct_def
+        .module(ctx.db())
+        .is_some_and(|m| m.krate() != module.krate());
 
     let fields = struct_type.fields(ctx.db());
     let n_fields = fields.len();
 
-    let visible_fields =
-        fields.into_iter().filter(|field| field.is_visible_from(ctx.db(), module)).collect_vec();
+    let visible_fields = fields
+        .into_iter()
+        .filter(|field| field.is_visible_from(ctx.db(), module))
+        .collect_vec();
 
     if visible_fields.is_empty() {
         return None;
@@ -226,7 +234,9 @@ fn destructure_pat(
     // If the binding is nested inside a record, we need to wrap the new
     // destructured pattern in a non-shorthand record field
     let destructured_pat = if data.need_record_field_name {
-        make.record_pat_field(make.name_ref(&name.to_string()), new_pat).syntax().clone()
+        make.record_pat_field(make.name_ref(&name.to_string()), new_pat)
+            .syntax()
+            .clone()
     } else {
         new_pat.syntax().clone()
     };
@@ -235,10 +245,7 @@ fn destructure_pat(
     editor.replace(data.ident_pat.syntax(), destructured_pat);
 }
 
-fn generate_field_names(
-    ctx: &AssistContext<'_>,
-    data: &StructEditData,
-) -> Vec<(SmolStr, SmolStr)> {
+fn generate_field_names(ctx: &AssistContext<'_>, data: &StructEditData) -> Vec<(SmolStr, SmolStr)> {
     match data.kind {
         hir::StructKind::Tuple => data
             .visible_fields
@@ -253,7 +260,10 @@ fn generate_field_names(
             .visible_fields
             .iter()
             .map(|field| {
-                let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
+                let field_name = field
+                    .name(ctx.db())
+                    .display_no_db(data.edition)
+                    .to_smolstr();
                 let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
                 (field_name, new_name)
             })
@@ -297,7 +307,12 @@ fn build_usage_edit(
     usage: &FileReference,
     field_names: &FxHashMap<SmolStr, SmolStr>,
 ) -> Option<(SyntaxNode, SyntaxNode)> {
-    match usage.name.syntax().ancestors().find_map(ast::FieldExpr::cast) {
+    match usage
+        .name
+        .syntax()
+        .ancestors()
+        .find_map(ast::FieldExpr::cast)
+    {
         Some(field_expr) => Some({
             let field_name: SmolStr = field_expr.name_ref()?.to_string().into();
             let new_field_name = field_names.get(&field_name)?;
@@ -311,7 +326,10 @@ fn build_usage_edit(
                     ref_data.wrap_expr(new_expr).syntax().clone_for_update(),
                 )
             } else {
-                (field_expr.syntax().clone(), new_expr.syntax().clone_for_update())
+                (
+                    field_expr.syntax().clone(),
+                    new_expr.syntax().clone_for_update(),
+                )
             }
         }),
         None => Some((
@@ -329,7 +347,9 @@ fn build_usage_edit(
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn record_struct() {
         check_assist(
@@ -358,6 +378,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn tuple_struct() {
         check_assist(
@@ -386,6 +407,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn unit_struct() {
         check_assist_not_applicable(
@@ -399,6 +421,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn in_foreign_crate() {
         check_assist(
@@ -421,6 +444,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn non_exhaustive_record_appends_rest() {
         check_assist(
@@ -442,6 +466,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn non_exhaustive_tuple_not_applicable() {
         check_assist_not_applicable(
@@ -460,6 +485,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn non_exhaustive_unit_not_applicable() {
         check_assist_not_applicable(
@@ -476,6 +502,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn record_private_fields_appends_rest() {
         check_assist(
@@ -498,6 +525,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn tuple_private_fields_not_applicable() {
         check_assist_not_applicable(
@@ -514,6 +542,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn nested_inside_record() {
         check_assist(
@@ -538,6 +567,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn nested_inside_tuple() {
         check_assist(
@@ -562,6 +592,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn mut_record() {
         check_assist(
@@ -586,6 +617,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn mut_record_field() {
         check_assist(
@@ -602,6 +634,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn ref_record_field() {
         check_assist(
@@ -622,6 +655,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn ref_mut_record_field() {
         check_assist(
@@ -642,6 +676,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn ref_mut_record_renamed_field() {
         check_assist(
@@ -662,6 +697,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn mut_ref() {
         check_assist(
@@ -684,6 +720,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn ref_not_add_parenthesis_and_deref_record() {
         check_assist(
@@ -706,6 +743,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn ref_not_add_parenthesis_and_deref_tuple() {
         check_assist(
@@ -728,6 +766,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn record_struct_name_collision() {
         check_assist(
@@ -756,6 +795,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn tuple_struct_name_collision() {
         check_assist(
@@ -782,6 +822,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn record_struct_name_collision_nested_scope() {
         check_assist(
@@ -814,6 +855,7 @@ mod tests {
             "#,
         )
     }
+
     #[test]
     fn record_struct_no_public_members() {
         check_assist_not_applicable(

@@ -13,7 +13,7 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T,
-    ast::{self, HasName, edit_in_place::Indent, edit::IndentLevel, make},
+    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
 };
 
 use crate::{
@@ -51,9 +51,18 @@ use crate::{
 // }
 // ```
 pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-    let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
-        find_bool_node(ctx)?;
-    let target_module = ctx.sema.scope(&target_node)?.module().nearest_non_block_module(ctx.db());
+    let BoolNodeData {
+        target_node,
+        name,
+        ty_annotation,
+        initializer,
+        definition,
+    } = find_bool_node(ctx)?;
+    let target_module = ctx
+        .sema
+        .scope(&target_node)?
+        .module()
+        .nearest_non_block_module(ctx.db());
 
     let target = name.syntax().text_range();
     acc.add(
@@ -73,7 +82,14 @@ pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -
             let usages = definition.usages(&ctx.sema).all();
             add_enum_def(edit, ctx, &usages, target_node, &target_module);
             let mut delayed_mutations = Vec::new();
-            replace_usages(edit, ctx, usages, definition, &target_module, &mut delayed_mutations);
+            replace_usages(
+                edit,
+                ctx,
+                usages,
+                definition,
+                &target_module,
+                &mut delayed_mutations,
+            );
             for (scope, path) in delayed_mutations {
                 insert_use(&scope, path, &ctx.config.insert_use);
             }
@@ -101,7 +117,11 @@ fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
         }
 
         let local_definition = Definition::Local(def);
-        match ident_pat.syntax().parent().and_then(Either::<ast::Param, ast::LetStmt>::cast)? {
+        match ident_pat
+            .syntax()
+            .parent()
+            .and_then(Either::<ast::Param, ast::LetStmt>::cast)?
+        {
             Either::Left(param) => Some(BoolNodeData {
                 target_node: param.syntax().clone(),
                 name,
@@ -188,7 +208,9 @@ fn bool_expr_to_enum_expr(expr: ast::Expr) -> ast::Expr {
         make::expr_if(
             expr,
             make::tail_only_block_expr(true_expr),
-            Some(ast::ElseBranch::Block(make::tail_only_block_expr(false_expr))),
+            Some(ast::ElseBranch::Block(make::tail_only_block_expr(
+                false_expr,
+            ))),
         )
         .into()
     }
@@ -209,7 +231,11 @@ fn replace_usages(
         let refs_with_imports = augment_references_with_imports(ctx, references, target_module);
 
         refs_with_imports.into_iter().rev().for_each(
-            |FileReferenceWithImport { range, name, import_data }| {
+            |FileReferenceWithImport {
+                 range,
+                 name,
+                 import_data,
+             }| {
                 // replace the usages in patterns and expressions
                 if let Some(ident_pat) = name.syntax().ancestors().find_map(ast::IdentPat::cast) {
                     cov_mark::hit!(replaces_record_pat_shorthand);
@@ -284,12 +310,19 @@ fn replace_usages(
                         receiver.syntax().text_range(),
                         format!("({receiver} == Bool::True)"),
                     );
-                } else if name.syntax().ancestors().find_map(ast::UseTree::cast).is_none() {
+                } else if name
+                    .syntax()
+                    .ancestors()
+                    .find_map(ast::UseTree::cast)
+                    .is_none()
+                {
                     // for any other usage in an expression, replace it with a check that it is the true variant
-                    if let Some((record_field, expr)) =
-                        name.as_name_ref().and_then(ast::RecordExprField::for_field_name).and_then(
-                            |record_field| record_field.expr().map(|expr| (record_field, expr)),
-                        )
+                    if let Some((record_field, expr)) = name
+                        .as_name_ref()
+                        .and_then(ast::RecordExprField::for_field_name)
+                        .and_then(|record_field| {
+                            record_field.expr().map(|expr| (record_field, expr))
+                        })
                     {
                         utils::replace_record_field_expr(
                             ctx,
@@ -334,7 +367,9 @@ fn augment_references_with_imports(
         .into_iter()
         .filter_map(|FileReference { range, name, .. }| {
             let name = name.into_name_like()?;
-            ctx.sema.scope(name.syntax()).map(|scope| (range, name, scope.module()))
+            ctx.sema
+                .scope(name.syntax())
+                .map(|scope| (range, name, scope.module()))
         })
         .map(|(range, name, ref_module)| {
             // if the referenced module is not the same as the target one and has not been seen before, add an import
@@ -345,8 +380,9 @@ fn augment_references_with_imports(
 
                 ImportScope::find_insert_use_container(name.syntax(), &ctx.sema).and_then(
                     |import_scope| {
-                        let cfg =
-                            ctx.config.find_path_config(ctx.sema.is_nightly(target_module.krate()));
+                        let cfg = ctx
+                            .config
+                            .find_path_config(ctx.sema.is_nightly(target_module.krate()));
                         let path = ref_module
                             .find_use_path(
                                 ctx.sema.db,
@@ -368,7 +404,11 @@ fn augment_references_with_imports(
                 None
             };
 
-            FileReferenceWithImport { range, name, import_data }
+            FileReferenceWithImport {
+                range,
+                name,
+                import_data,
+            }
         })
         .collect()
 }
@@ -376,7 +416,12 @@ fn augment_references_with_imports(
 fn find_assignment_usage(name: &ast::NameLike) -> Option<ast::Expr> {
     let bin_expr = name.syntax().ancestors().find_map(ast::BinExpr::cast)?;
 
-    if !bin_expr.lhs()?.syntax().descendants().contains(name.syntax()) {
+    if !bin_expr
+        .lhs()?
+        .syntax()
+        .descendants()
+        .contains(name.syntax())
+    {
         cov_mark::hit!(dont_assign_incorrect_ref);
         return None;
     }
@@ -391,7 +436,10 @@ fn find_assignment_usage(name: &ast::NameLike) -> Option<ast::Expr> {
 fn find_negated_usage(name: &ast::NameLike) -> Option<(ast::PrefixExpr, ast::Expr)> {
     let prefix_expr = name.syntax().ancestors().find_map(ast::PrefixExpr::cast)?;
 
-    if !matches!(prefix_expr.expr()?, ast::Expr::PathExpr(_) | ast::Expr::FieldExpr(_)) {
+    if !matches!(
+        prefix_expr.expr()?,
+        ast::Expr::PathExpr(_) | ast::Expr::FieldExpr(_)
+    ) {
         cov_mark::hit!(dont_overwrite_expression_inside_negation);
         return None;
     }
@@ -433,13 +481,19 @@ fn find_record_pat_field_usage(name: &ast::NameLike) -> Option<ast::Pat> {
 
 fn find_assoc_const_usage(name: &ast::NameLike) -> Option<(ast::Type, ast::Expr)> {
     let const_ = name.syntax().parent().and_then(ast::Const::cast)?;
-    const_.syntax().parent().and_then(ast::AssocItemList::cast)?;
+    const_
+        .syntax()
+        .parent()
+        .and_then(ast::AssocItemList::cast)?;
 
     Some((const_.ty()?, const_.body()?))
 }
 
 fn find_method_call_expr_usage(name: &ast::NameLike) -> Option<ast::Expr> {
-    let method_call = name.syntax().ancestors().find_map(ast::MethodCallExpr::cast)?;
+    let method_call = name
+        .syntax()
+        .ancestors()
+        .find_map(ast::MethodCallExpr::cast)?;
     let receiver = method_call.receiver()?;
 
     if !receiver.syntax().descendants().contains(name.syntax()) {
@@ -519,10 +573,10 @@ fn make_bool_enum(make_pub: bool) -> ast::Enum {
     make::enum_(
         [derive_eq],
         if make_pub {
-        Some(make::visibility_pub())
-    } else {
-        None
-    },
+            Some(make::visibility_pub())
+        } else {
+            None
+        },
         make::name("Bool"),
         None,
         None,
@@ -537,7 +591,9 @@ fn make_bool_enum(make_pub: bool) -> ast::Enum {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn parameter_with_first_param_usage() {
         check_assist(
@@ -561,6 +617,7 @@ fn function(foo: Bool, bar: bool) {
 "#,
         )
     }
+
     #[test]
     fn no_duplicate_enums() {
         check_assist(
@@ -587,6 +644,7 @@ fn function(foo: bool, bar: Bool) {
 "#,
         )
     }
+
     #[test]
     fn parameter_with_last_param_usage() {
         check_assist(
@@ -610,6 +668,7 @@ fn function(foo: bool, bar: Bool) {
 "#,
         )
     }
+
     #[test]
     fn parameter_with_middle_param_usage() {
         check_assist(
@@ -633,6 +692,7 @@ fn function(foo: bool, bar: Bool, baz: bool) {
 "#,
         )
     }
+
     #[test]
     fn parameter_with_closure_usage() {
         check_assist(
@@ -652,6 +712,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_with_usage() {
         check_assist(
@@ -679,6 +740,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_with_usage_negated() {
         cov_mark::check!(replaces_negation);
@@ -707,6 +769,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_with_type_annotation() {
         cov_mark::check!(replaces_ty_annotation);
@@ -727,6 +790,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_with_non_literal_initializer() {
         check_assist(
@@ -746,6 +810,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_binexpr_usage() {
         check_assist(
@@ -775,6 +840,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_unop_usage() {
         check_assist(
@@ -802,6 +868,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_assigned_later() {
         cov_mark::check!(replaces_assignment);
@@ -824,6 +891,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_does_not_apply_recursively() {
         check_assist(
@@ -853,6 +921,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_nested_in_negation() {
         cov_mark::check!(dont_overwrite_expression_inside_negation);
@@ -883,15 +952,20 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_non_bool() {
         cov_mark::check!(not_applicable_non_bool_local);
-        check_assist_not_applicable(convert_bool_to_enum, r#"
+        check_assist_not_applicable(
+            convert_bool_to_enum,
+            r#"
 fn main() {
     let $0foo = 1;
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn local_variable_cursor_not_on_ident() {
         check_assist_not_applicable(
@@ -903,6 +977,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_variable_non_ident_pat() {
         check_assist_not_applicable(
@@ -914,6 +989,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_var_init_struct_usage() {
         check_assist(
@@ -943,6 +1019,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn local_var_init_struct_usage_in_macro() {
         check_assist(
@@ -984,6 +1061,7 @@ fn new() -> Struct {
 "#,
         )
     }
+
     #[test]
     fn field_struct_basic() {
         cov_mark::check!(replaces_record_expr);
@@ -1022,6 +1100,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_enum_basic() {
         cov_mark::check!(replaces_record_pat);
@@ -1064,6 +1143,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_enum_cross_file() {
         // FIXME: The import is missing
@@ -1114,6 +1194,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_enum_shorthand() {
         cov_mark::check!(replaces_record_pat_shorthand);
@@ -1162,6 +1243,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_enum_replaces_literal_patterns() {
         cov_mark::check!(replaces_literal_pat);
@@ -1200,6 +1282,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_enum_keeps_wildcard_patterns() {
         check_assist(
@@ -1237,6 +1320,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_union_basic() {
         check_assist(
@@ -1274,6 +1358,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_negated() {
         check_assist(
@@ -1309,6 +1394,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_in_mod_properly_indented() {
         check_assist(
@@ -1344,6 +1430,7 @@ mod foo {
 "#,
         )
     }
+
     #[test]
     fn field_multiple_initializations() {
         check_assist(
@@ -1383,6 +1470,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_assigned_to_another() {
         cov_mark::check!(dont_assign_incorrect_ref);
@@ -1425,6 +1513,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_initialized_with_other() {
         check_assist(
@@ -1462,6 +1551,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_method_chain_usage() {
         check_assist(
@@ -1493,6 +1583,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn field_in_macro() {
         check_assist(
@@ -1532,6 +1623,7 @@ fn new() -> Struct {
 "#,
         )
     }
+
     #[test]
     fn field_non_bool() {
         cov_mark::check!(not_applicable_non_bool_field);
@@ -1548,6 +1640,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn const_basic() {
         check_assist(
@@ -1575,6 +1668,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn const_in_module() {
         check_assist(
@@ -1608,6 +1702,7 @@ mod foo {
 "#,
         )
     }
+
     #[test]
     fn const_in_module_with_import() {
         check_assist(
@@ -1645,6 +1740,7 @@ mod foo {
 "#,
         )
     }
+
     #[test]
     fn const_cross_file() {
         check_assist(
@@ -1682,6 +1778,7 @@ pub const FOO: Bool = Bool::True;
 "#,
         )
     }
+
     #[test]
     fn const_cross_file_and_module() {
         check_assist(
@@ -1727,6 +1824,7 @@ pub mod bar {
 "#,
         )
     }
+
     #[test]
     fn const_in_impl_cross_file() {
         check_assist(
@@ -1770,6 +1868,7 @@ fn foo() -> bool {
 "#,
         )
     }
+
     #[test]
     fn const_in_trait() {
         check_assist(
@@ -1809,6 +1908,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn const_non_bool() {
         cov_mark::check!(not_applicable_non_bool_const);
@@ -1823,6 +1923,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn static_basic() {
         check_assist(
@@ -1852,6 +1953,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn static_non_bool() {
         cov_mark::check!(not_applicable_non_bool_static);
@@ -1868,6 +1970,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn not_applicable_to_other_names() {
         check_assist_not_applicable(convert_bool_to_enum, "fn $0main() {}")

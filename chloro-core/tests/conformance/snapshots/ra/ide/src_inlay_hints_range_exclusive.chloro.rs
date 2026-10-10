@@ -3,7 +3,6 @@
 //! for i in 0../* < */10 {}
 //! if let ../* < */100 = 50 {}
 //! ```
-
 use ide_db::famous_defs::FamousDefs;
 use syntax::{SyntaxToken, T, ast};
 
@@ -17,9 +16,12 @@ pub(super) fn hints(
 ) -> Option<()> {
     (config.range_exclusive_hints && range.end().is_some())
         .then(|| {
-            range.op_token().filter(|token| token.kind() == T![..]).map(|token| {
-                acc.push(inlay_hint(token));
-            })
+            range
+                .op_token()
+                .filter(|token| token.kind() == T![..])
+                .map(|token| {
+                    acc.push(inlay_hint(token));
+                })
         })
         .flatten()
 }
@@ -43,10 +45,14 @@ mod tests {
         InlayHintsConfig,
         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
+
     #[test]
     fn range_exclusive_expression_bounded_above_hints() {
         check_with_config(
-            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                range_exclusive_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     let a = 0..10;
@@ -58,10 +64,14 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn range_exclusive_expression_unbounded_above_no_hints() {
         check_with_config(
-            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                range_exclusive_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     let a = 0..;
@@ -69,10 +79,14 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn range_inclusive_expression_no_hints() {
         check_with_config(
-            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                range_exclusive_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     let a = 0..=10;
@@ -80,10 +94,14 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn range_exclusive_pattern_bounded_above_hints() {
         check_with_config(
-            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                range_exclusive_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     if let 0..10 = 0 {}
@@ -93,10 +111,14 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn range_exclusive_pattern_unbounded_above_no_hints() {
         check_with_config(
-            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                range_exclusive_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     if let 0.. = 0 {}
@@ -104,10 +126,14 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn range_inclusive_pattern_no_hints() {
         check_with_config(
-            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                range_exclusive_hints: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 fn main() {
     if let 0..=10 = 0 {}

@@ -2,39 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 639689 bytes
-Chloro size:   639690 bytes
+Chloro size:   639771 bytes
 Rustfmt size:  639771 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-             warn_since: None,
-             deny_since: None,
-         },
--        children: &[
--            "non_camel_case_types",
--            "non_snake_case",
--            "non_upper_case_globals",
--        ],
-+        children: &["non_camel_case_types", "non_snake_case", "non_upper_case_globals"],
-     },
-     LintGroup {
-         lint: Lint {
-             warn_since: None,
-             deny_since: None,
-         },
--        children: &[
--            "refining_impl_trait_reachable",
--            "refining_impl_trait_internal",
--        ],
-+        children: &["refining_impl_trait_reachable", "refining_impl_trait_internal"],
-     },
-     LintGroup {
-         lint: Lint {
-         deny_since: None,
-     },
- ];
-+
- pub const CLIPPY_LINT_GROUPS: &[LintGroup] = &[
-     LintGroup {
-         lint: Lint {
+✓ Outputs are IDENTICAL

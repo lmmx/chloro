@@ -86,14 +86,15 @@ use crate::{
     expr_store::ExpressionStoreSourceMap,
     hir::generics::{LocalLifetimeParamId, LocalTypeOrConstParamId},
     nameres::{
-        LocalDefMap, assoc::{ImplItems, TraitItems}, block_def_map, crate_def_map,
-        crate_local_def_map, diagnostics::DefDiagnostics,
+        LocalDefMap,
+        assoc::{ImplItems, TraitItems},
+        block_def_map, crate_def_map, crate_local_def_map,
+        diagnostics::DefDiagnostics,
     },
     signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
 };
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
-
 /// A wrapper around three booleans
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct FindPathConfig {
@@ -184,24 +185,18 @@ impl<N: AstIdNode> HasModule for AssocItemLoc<N> {
 
 pub trait AstIdLoc {
     type Container;
-
-    type Ast;
-
+    type Ast: AstNode;
     fn ast_id(&self) -> AstId<Self::Ast>;
-
     fn container(&self) -> Self::Container;
 }
 
 impl<N: AstIdNode> AstIdLoc for ItemLoc<N> {
     type Container = ModuleId;
-
     type Ast = N;
-
     #[inline]
     fn ast_id(&self) -> AstId<Self::Ast> {
         self.id
     }
-
     #[inline]
     fn container(&self) -> Self::Container {
         self.container
@@ -210,14 +205,11 @@ impl<N: AstIdNode> AstIdLoc for ItemLoc<N> {
 
 impl<N: AstIdNode> AstIdLoc for AssocItemLoc<N> {
     type Container = ItemContainerId;
-
     type Ast = N;
-
     #[inline]
     fn ast_id(&self) -> AstId<Self::Ast> {
         self.id
     }
-
     #[inline]
     fn container(&self) -> Self::Container {
         self.container
@@ -254,11 +246,14 @@ macro_rules! impl_loc {
 }
 
 type FunctionLoc = AssocItemLoc<ast::Fn>;
-
-impl_intern!(FunctionId, FunctionLoc, intern_function, lookup_intern_function);
+impl_intern!(
+    FunctionId,
+    FunctionLoc,
+    intern_function,
+    lookup_intern_function
+);
 
 type StructLoc = ItemLoc<ast::Struct>;
-
 impl_intern!(StructId, StructLoc, intern_struct, lookup_intern_struct);
 
 impl StructId {
@@ -275,7 +270,6 @@ impl StructId {
 }
 
 pub type UnionLoc = ItemLoc<ast::Union>;
-
 impl_intern!(UnionId, UnionLoc, intern_union, lookup_intern_union);
 
 impl UnionId {
@@ -292,7 +286,6 @@ impl UnionId {
 }
 
 pub type EnumLoc = ItemLoc<ast::Enum>;
-
 impl_intern!(EnumId, EnumLoc, intern_enum, lookup_intern_enum);
 
 impl EnumId {
@@ -311,15 +304,12 @@ impl EnumId {
 }
 
 type ConstLoc = AssocItemLoc<ast::Const>;
-
 impl_intern!(ConstId, ConstLoc, intern_const, lookup_intern_const);
 
 pub type StaticLoc = AssocItemLoc<ast::Static>;
-
 impl_intern!(StaticId, StaticLoc, intern_static, lookup_intern_static);
 
 pub type TraitLoc = ItemLoc<ast::Trait>;
-
 impl_intern!(TraitId, TraitLoc, intern_trait, lookup_intern_trait);
 
 impl TraitId {
@@ -330,11 +320,14 @@ impl TraitId {
 }
 
 type TypeAliasLoc = AssocItemLoc<ast::TypeAlias>;
-
-impl_intern!(TypeAliasId, TypeAliasLoc, intern_type_alias, lookup_intern_type_alias);
+impl_intern!(
+    TypeAliasId,
+    TypeAliasLoc,
+    intern_type_alias,
+    lookup_intern_type_alias
+);
 
 type ImplLoc = ItemLoc<ast::Impl>;
-
 impl_intern!(ImplId, ImplLoc, intern_impl, lookup_intern_impl);
 
 impl ImplId {
@@ -344,25 +337,29 @@ impl ImplId {
     }
 
     #[inline]
-    pub fn impl_items_with_diagnostics(
-        self,
-        db: &dyn DefDatabase,
-    ) -> &(ImplItems, DefDiagnostics) {
+    pub fn impl_items_with_diagnostics(self, db: &dyn DefDatabase) -> &(ImplItems, DefDiagnostics) {
         ImplItems::of(db, self)
     }
 }
 
 type UseLoc = ItemLoc<ast::Use>;
-
 impl_intern!(UseId, UseLoc, intern_use, lookup_intern_use);
 
 type ExternCrateLoc = ItemLoc<ast::ExternCrate>;
-
-impl_intern!(ExternCrateId, ExternCrateLoc, intern_extern_crate, lookup_intern_extern_crate);
+impl_intern!(
+    ExternCrateId,
+    ExternCrateLoc,
+    intern_extern_crate,
+    lookup_intern_extern_crate
+);
 
 type ExternBlockLoc = ItemLoc<ast::ExternBlock>;
-
-impl_intern!(ExternBlockId, ExternBlockLoc, intern_extern_block, lookup_intern_extern_block);
+impl_intern!(
+    ExternBlockId,
+    ExternBlockLoc,
+    intern_extern_block,
+    lookup_intern_extern_block
+);
 
 #[salsa::tracked]
 impl ExternBlockId {
@@ -378,9 +375,12 @@ pub struct EnumVariantLoc {
     pub parent: EnumId,
     pub index: u32,
 }
-
-impl_intern!(EnumVariantId, EnumVariantLoc, intern_enum_variant, lookup_intern_enum_variant);
-
+impl_intern!(
+    EnumVariantId,
+    EnumVariantLoc,
+    intern_enum_variant,
+    lookup_intern_enum_variant
+);
 impl_loc!(EnumVariantLoc, id: Variant, parent: EnumId);
 
 impl EnumVariantId {
@@ -404,9 +404,7 @@ pub struct Macro2Loc {
     pub allow_internal_unsafe: bool,
     pub edition: Edition,
 }
-
 impl_intern!(Macro2Id, Macro2Loc, intern_macro2, lookup_intern_macro2);
-
 impl_loc!(Macro2Loc, id: MacroDef, container: ModuleId);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -417,9 +415,12 @@ pub struct MacroRulesLoc {
     pub flags: MacroRulesLocFlags,
     pub edition: Edition,
 }
-
-impl_intern!(MacroRulesId, MacroRulesLoc, intern_macro_rules, lookup_intern_macro_rules);
-
+impl_intern!(
+    MacroRulesId,
+    MacroRulesLoc,
+    intern_macro_rules,
+    lookup_intern_macro_rules
+);
 impl_loc!(MacroRulesLoc, id: MacroRules, container: ModuleId);
 
 bitflags::bitflags! {
@@ -447,9 +448,12 @@ pub struct ProcMacroLoc {
     pub kind: ProcMacroKind,
     pub edition: Edition,
 }
-
-impl_intern!(ProcMacroId, ProcMacroLoc, intern_proc_macro, lookup_intern_proc_macro);
-
+impl_intern!(
+    ProcMacroId,
+    ProcMacroLoc,
+    intern_proc_macro,
+    lookup_intern_proc_macro
+);
 impl_loc!(ProcMacroLoc, id: Fn, container: CrateRootModuleId);
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
@@ -458,7 +462,6 @@ pub struct BlockLoc {
     /// The containing module.
     pub module: ModuleId,
 }
-
 impl_intern!(BlockId, BlockLoc, intern_block, lookup_intern_block);
 
 /// A `ModuleId` that is always a crate's root module.
@@ -503,7 +506,6 @@ impl PartialEq<ModuleId> for CrateRootModuleId {
         other.block.is_none() && other.local_id == DefMap::ROOT && self.krate == other.krate
     }
 }
-
 impl PartialEq<CrateRootModuleId> for ModuleId {
     fn eq(&self, other: &CrateRootModuleId) -> bool {
         other == self
@@ -512,7 +514,11 @@ impl PartialEq<CrateRootModuleId> for ModuleId {
 
 impl From<CrateRootModuleId> for ModuleId {
     fn from(CrateRootModuleId { krate }: CrateRootModuleId) -> Self {
-        ModuleId { krate, block: None, local_id: DefMap::ROOT }
+        ModuleId {
+            krate,
+            block: None,
+            local_id: DefMap::ROOT,
+        }
     }
 }
 
@@ -531,7 +537,13 @@ impl From<Crate> for CrateRootModuleId {
 impl TryFrom<ModuleId> for CrateRootModuleId {
     type Error = ();
 
-    fn try_from(ModuleId { krate, block, local_id }: ModuleId) -> Result<Self, Self::Error> {
+    fn try_from(
+        ModuleId {
+            krate,
+            block,
+            local_id,
+        }: ModuleId,
+    ) -> Result<Self, Self::Error> {
         if block.is_none() && local_id == DefMap::ROOT {
             Ok(CrateRootModuleId { krate })
         } else {
@@ -584,9 +596,16 @@ impl ModuleId {
     pub fn name(self, db: &dyn DefDatabase) -> Option<Name> {
         let def_map = self.def_map(db);
         let parent = def_map[self.local_id].parent?;
-        def_map[parent].children.iter().find_map(|(name, module_id)| {
-            if *module_id == self.local_id { Some(name.clone()) } else { None }
-        })
+        def_map[parent]
+            .children
+            .iter()
+            .find_map(|(name, module_id)| {
+                if *module_id == self.local_id {
+                    Some(name.clone())
+                } else {
+                    None
+                }
+            })
     }
 
     /// Returns the module containing `self`, either the parent `mod`, or the module (or block) containing
@@ -668,7 +687,6 @@ impl TypeParamId {
     pub fn parent(&self) -> GenericDefId {
         self.0.parent
     }
-
     pub fn local_id(&self) -> LocalTypeOrConstParamId {
         self.0.local_id
     }
@@ -695,7 +713,6 @@ impl ConstParamId {
     pub fn parent(&self) -> GenericDefId {
         self.0.parent
     }
-
     pub fn local_id(&self) -> LocalTypeOrConstParamId {
         self.0.local_id
     }
@@ -728,7 +745,6 @@ pub enum ItemContainerId {
     ImplId(ImplId),
     TraitId(TraitId),
 }
-
 impl_from!(ModuleId for ItemContainerId);
 
 /// A Data Type
@@ -738,7 +754,6 @@ pub enum AdtId {
     UnionId(UnionId),
     EnumId(EnumId),
 }
-
 impl_from!(StructId, UnionId, EnumId for AdtId);
 
 /// A macro
@@ -748,7 +763,6 @@ pub enum MacroId {
     MacroRulesId(MacroRulesId),
     ProcMacroId(ProcMacroId),
 }
-
 impl_from!(Macro2Id, MacroRulesId, ProcMacroId for MacroId);
 
 impl MacroId {
@@ -764,7 +778,6 @@ pub enum GenericParamId {
     ConstParamId(ConstParamId),
     LifetimeParamId(LifetimeParamId),
 }
-
 impl_from!(TypeParamId, LifetimeParamId, ConstParamId for GenericParamId);
 
 /// The defs which can be visible in the module.
@@ -782,7 +795,6 @@ pub enum ModuleDefId {
     BuiltinType(BuiltinType),
     MacroId(MacroId),
 }
-
 impl_from!(
     MacroId(Macro2Id, MacroRulesId, ProcMacroId),
     ModuleId,
@@ -817,9 +829,11 @@ impl GeneralConstId {
 
     pub fn name(self, db: &dyn DefDatabase) -> String {
         match self {
-            GeneralConstId::StaticId(it) => {
-                db.static_signature(it).name.display(db, Edition::CURRENT).to_string()
-            }
+            GeneralConstId::StaticId(it) => db
+                .static_signature(it)
+                .name
+                .display(db, Edition::CURRENT)
+                .to_string(),
             GeneralConstId::ConstId(const_id) => {
                 db.const_signature(const_id).name.as_ref().map_or_else(
                     || "_".to_owned(),
@@ -837,8 +851,13 @@ pub enum DefWithBodyId {
     StaticId(StaticId),
     ConstId(ConstId),
     VariantId(EnumVariantId),
+    // /// All fields of a variant are inference roots
+    // VariantId(VariantId),
+    // /// The signature can contain inference roots in a bunch of places
+    // /// like const parameters or const arguments in paths
+    // This should likely be kept on its own with a separate query
+    // GenericDefId(GenericDefId),
 }
-
 impl_from!(FunctionId, ConstId, StaticId for DefWithBodyId);
 
 impl From<EnumVariantId> for DefWithBodyId {
@@ -865,6 +884,10 @@ pub enum AssocItemId {
     TypeAliasId(TypeAliasId),
 }
 
+// FIXME: not every function, ... is actually an assoc item. maybe we should make
+// sure that you can only turn actual assoc items into AssocItemIds. This would
+// require not implementing From, and instead having some checked way of
+// casting them, and somehow making the constructors private, which would be annoying.
 impl_from!(FunctionId, ConstId, TypeAliasId for AssocItemId);
 
 impl From<AssocItemId> for ModuleDefId {
@@ -891,7 +914,6 @@ pub enum GenericDefId {
     TraitId(TraitId),
     TypeAliasId(TypeAliasId),
 }
-
 impl_from!(
     AdtId(StructId, EnumId, UnionId),
     ConstId,
@@ -917,7 +939,10 @@ impl GenericDefId {
             Loc::Value: ast::HasGenericParams,
         {
             let src = def.lookup(db).source(db);
-            (src.file_id, ast::HasGenericParams::generic_param_list(&src.value))
+            (
+                src.file_id,
+                ast::HasGenericParams::generic_param_list(&src.value),
+            )
         }
 
         match self {
@@ -972,7 +997,6 @@ pub enum CallableDefId {
 }
 
 impl_from!(FunctionId, StructId, EnumVariantId for CallableDefId);
-
 impl From<CallableDefId> for ModuleDefId {
     fn from(def: CallableDefId) -> ModuleDefId {
         match def {
@@ -1059,7 +1083,6 @@ impl From<ItemContainerId> for AttrDefId {
         }
     }
 }
-
 impl From<AssocItemId> for AttrDefId {
     fn from(assoc: AssocItemId) -> Self {
         match assoc {
@@ -1069,7 +1092,6 @@ impl From<AssocItemId> for AttrDefId {
         }
     }
 }
-
 impl From<VariantId> for AttrDefId {
     fn from(vid: VariantId) -> Self {
         match vid {
@@ -1086,7 +1108,6 @@ pub enum VariantId {
     StructId(StructId),
     UnionId(UnionId),
 }
-
 impl_from!(EnumVariantId, StructId, UnionId for VariantId);
 
 impl VariantId {
@@ -1121,7 +1142,6 @@ impl VariantId {
 pub trait HasModule {
     /// Returns the enclosing module this thing is defined within.
     fn module(&self, db: &dyn DefDatabase) -> ModuleId;
-
     /// Returns the crate this thing is defined within.
     #[inline]
     #[doc(alias = "crate")]
@@ -1319,9 +1339,7 @@ impl HasModule for AttrDefId {
                 GenericParamId::ConstParamId(it) => it.parent(),
                 GenericParamId::LifetimeParamId(it) => it.parent,
             }
-            .module(
-                db,
-            ),
+            .module(db),
             AttrDefId::MacroId(it) => it.module(db),
             AttrDefId::ExternCrateId(it) => it.module(db),
             AttrDefId::UseId(it) => it.module(db),
@@ -1348,7 +1366,6 @@ impl ModuleDefId {
         })
     }
 }
-
 /// Helper wrapper for `AstId` with `ModPath`
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct AstIdWithPath<T: AstIdNode> {
@@ -1358,7 +1375,10 @@ struct AstIdWithPath<T: AstIdNode> {
 
 impl<T: AstIdNode> AstIdWithPath<T> {
     fn new(file_id: HirFileId, ast_id: FileAstId<T>, path: Interned<ModPath>) -> AstIdWithPath<T> {
-        AstIdWithPath { ast_id: AstId::new(file_id, ast_id), path }
+        AstIdWithPath {
+            ast_id: AstId::new(file_id, ast_id),
+            path,
+        }
     }
 }
 
@@ -1371,7 +1391,10 @@ pub fn macro_call_as_call_id(
     krate: Crate,
     resolver: impl Fn(&ModPath) -> Option<MacroDefId> + Copy,
     eager_callback: &mut dyn FnMut(
-        InFile<(syntax::AstPtr<ast::MacroCall>, span::FileAstId<ast::MacroCall>)>,
+        InFile<(
+            syntax::AstPtr<ast::MacroCall>,
+            span::FileAstId<ast::MacroCall>,
+        )>,
         MacroCallId,
     ),
 ) -> Result<ExpandResult<Option<MacroCallId>>, UnresolvedMacro> {
@@ -1392,7 +1415,11 @@ pub fn macro_call_as_call_id(
             value: Some(def.make_call(
                 db,
                 krate,
-                MacroCallKind::FnLike { ast_id, expand_to, eager: None },
+                MacroCallKind::FnLike {
+                    ast_id,
+                    expand_to,
+                    eager: None,
+                },
                 call_site,
             )),
             err: None,
@@ -1455,7 +1482,10 @@ impl Complete {
             }
             let action = segments[1].symbol();
             if *action == sym::completions {
-                match ra_attr.token_tree_value().map(|tt| tt.token_trees().flat_tokens()) {
+                match ra_attr
+                    .token_tree_value()
+                    .map(|tt| tt.token_trees().flat_tokens())
+                {
                     Some([tt::TokenTree::Leaf(tt::Leaf::Ident(ident))]) => {
                         if ident.sym == sym::ignore_flyimport {
                             do_not_complete = Complete::IgnoreFlyimport;

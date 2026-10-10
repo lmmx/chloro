@@ -37,8 +37,10 @@ fn fixes(
     let filter_map_name_range = filter_map_call.name_ref()?.ident_token()?.text_range();
     let filter_map_args = filter_map_call.arg_list()?;
 
-    let range_to_replace =
-        TextRange::new(filter_map_name_range.start(), next_expr.syntax().text_range().end());
+    let range_to_replace = TextRange::new(
+        filter_map_name_range.start(),
+        next_expr.syntax().text_range().end(),
+    );
     let replacement = format!("find_map{}", filter_map_args.syntax().text());
     let trigger_range = next_expr.syntax().text_range();
 
@@ -61,6 +63,7 @@ mod tests {
         DiagnosticsConfig,
         tests::{check_diagnostics_with_config, check_fix},
     };
+
     #[track_caller]
     pub(crate) fn check_diagnostics(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let mut config = DiagnosticsConfig::test_sample();
@@ -68,6 +71,7 @@ mod tests {
         config.disabled.insert("E0599".to_owned());
         check_diagnostics_with_config(config, ra_fixture)
     }
+
     #[test]
     fn replace_filter_map_next_with_find_map2() {
         check_diagnostics(
@@ -79,6 +83,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_filter_map_next_dont_work_for_not_sized_issues_16596() {
         check_diagnostics(
@@ -93,6 +98,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_filter_map_next_with_find_map_no_diagnostic_without_next() {
         check_diagnostics(
@@ -106,6 +112,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_filter_map_next_with_find_map_no_diagnostic_with_intervening_methods() {
         check_diagnostics(
@@ -120,6 +127,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_filter_map_next_with_find_map_no_diagnostic_if_not_in_chain() {
         check_diagnostics(
@@ -133,6 +141,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn replace_with_find_map() {
         check_fix(
@@ -149,6 +158,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn respect_lint_attributes_for_clippy_equivalent() {
         check_diagnostics(

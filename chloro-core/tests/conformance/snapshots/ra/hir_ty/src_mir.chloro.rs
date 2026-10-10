@@ -25,7 +25,8 @@ use crate::{
     lang_items::is_box,
     next_solver::{
         Const, DbInterner, ErrorGuaranteed, GenericArgs, ParamEnv, Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
+        infer::{InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
     },
 };
 
@@ -50,7 +51,6 @@ pub(crate) use monomorphization::monomorphized_mir_body_cycle_result;
 use super::consteval::try_const_usize;
 
 pub type BasicBlockId<'db> = Idx<BasicBlock<'db>>;
-
 pub type LocalId<'db> = Idx<Local<'db>>;
 
 fn return_slot<'db>() -> LocalId<'db> {
@@ -104,10 +104,7 @@ pub enum OperandKind<'db> {
     /// [UCG#188]: https://github.com/rust-lang/unsafe-code-guidelines/issues/188
     Move(Place<'db>),
     /// Constants are already semantically values, and remain unchanged.
-    Constant {
-        konst: Const<'db>,
-        ty: Ty<'db>,
-    },
+    Constant { konst: Const<'db>, ty: Ty<'db> },
     /// NON STANDARD: This kind of operand returns an immutable reference to that static memory. Rustc
     /// handles it with the `Constant` variant somehow.
     Static(StaticId),
@@ -139,7 +136,11 @@ impl<'db> Operand<'db> {
         generic_args: GenericArgs<'db>,
     ) -> Operand<'db> {
         let interner = DbInterner::new_with(db, None, None);
-        let ty = Ty::new_fn_def(interner, CallableDefId::FunctionId(func_id).into(), generic_args);
+        let ty = Ty::new_fn_def(
+            interner,
+            CallableDefId::FunctionId(func_id).into(),
+            generic_args,
+        );
         Operand::from_bytes(Box::default(), ty)
     }
 }
@@ -151,14 +152,8 @@ pub enum ProjectionElem<V, T> {
     // FIXME: get rid of this, and use FieldId for tuples and closures
     ClosureField(usize),
     Index(V),
-    ConstantIndex {
-        offset: u64,
-        from_end: bool,
-    },
-    Subslice {
-        from: u64,
-        to: u64,
-    },
+    ConstantIndex { offset: u64, from_end: bool },
+    Subslice { from: u64, to: u64 },
     //Downcast(Option<Symbol>, VariantIdx),
     OpaqueCast(T),
 }
@@ -213,12 +208,14 @@ impl<V, T> ProjectionElem<V, T> {
                 }
             },
             ProjectionElem::Field(Either::Right(f)) => match base.kind() {
-                TyKind::Tuple(subst) => {
-                    subst.as_slice().get(f.index as usize).copied().unwrap_or_else(|| {
+                TyKind::Tuple(subst) => subst
+                    .as_slice()
+                    .get(f.index as usize)
+                    .copied()
+                    .unwrap_or_else(|| {
                         never!("Out of bound tuple field");
                         Ty::new_error(interner, ErrorGuaranteed)
-                    })
-                }
+                    }),
                 ty => {
                     never!("Only tuple has tuple field: {:?}", ty);
                     Ty::new_error(interner, ErrorGuaranteed)
@@ -277,7 +274,10 @@ pub struct ProjectionStore<'db> {
 
 impl Default for ProjectionStore<'_> {
     fn default() -> Self {
-        let mut this = Self { id_to_proj: Default::default(), proj_to_id: Default::default() };
+        let mut this = Self {
+            id_to_proj: Default::default(),
+            proj_to_id: Default::default(),
+        };
         // Ensure that [] will get the id 0 which is used in `ProjectionId::Empty`
         this.intern(Box::new([]));
         this
@@ -339,7 +339,10 @@ pub struct Place<'db> {
 impl<'db> Place<'db> {
     fn is_parent(&self, child: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
         self.local == child.local
-            && child.projection.lookup(store).starts_with(self.projection.lookup(store))
+            && child
+                .projection
+                .lookup(store)
+                .starts_with(self.projection.lookup(store))
     }
 
     /// The place itself is not included
@@ -348,9 +351,14 @@ impl<'db> Place<'db> {
         store: &'a ProjectionStore<'db>,
     ) -> impl Iterator<Item = Place<'db>> + 'a {
         let projection = self.projection.lookup(store);
-        (0..projection.len()).map(|x| &projection[0..x]).filter_map(move |x| {
-            Some(Place { local: self.local, projection: store.intern_if_exist(x)? })
-        })
+        (0..projection.len())
+            .map(|x| &projection[0..x])
+            .filter_map(move |x| {
+                Some(Place {
+                    local: self.local,
+                    projection: store.intern_if_exist(x)?,
+                })
+            })
     }
 
     fn project(&self, projection: PlaceElem<'db>, store: &mut ProjectionStore<'db>) -> Place<'db> {
@@ -363,7 +371,10 @@ impl<'db> Place<'db> {
 
 impl<'db> From<LocalId<'db>> for Place<'db> {
     fn from(local: LocalId<'db>) -> Self {
-        Self { local, projection: ProjectionId::EMPTY }
+        Self {
+            local,
+            projection: ProjectionId::EMPTY,
+        }
     }
 }
 
@@ -376,6 +387,7 @@ pub enum AggregateKind<'db> {
     Adt(VariantId, GenericArgs<'db>),
     Union(UnionId, FieldId),
     Closure(Ty<'db>),
+    //Coroutine(LocalDefId, SubstsRef, Movability),
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -383,6 +395,10 @@ pub struct SwitchTargets<'db> {
     /// Possible values. The locations to branch to in each case
     /// are found in the corresponding indices from the `targets` vector.
     values: SmallVec<[u128; 1]>,
+
+    /// Possible branch sites. The last element of this vector is used
+    /// for the otherwise branch, so targets.len() == values.len() + 1
+    /// should hold.
     //
     // This invariant is quite non-obvious and also could be improved.
     // One way to make this invariant is to have something like this instead:
@@ -392,9 +408,6 @@ pub struct SwitchTargets<'db> {
     //
     // However we’ve decided to keep this as-is until we figure a case
     // where some other approach seems to be strictly better than other.
-    /// Possible branch sites. The last element of this vector is used
-    /// for the otherwise branch, so targets.len() == values.len() + 1
-    /// should hold.
     targets: SmallVec<[BasicBlockId<'db>; 2]>,
 }
 
@@ -445,7 +458,9 @@ impl<'db> SwitchTargets<'db> {
     /// specific value. This cannot fail, as it'll return the `otherwise`
     /// branch if there's not a specific match for the value.
     pub fn target_for_value(&self, value: u128) -> BasicBlockId<'db> {
-        self.iter().find_map(|(v, t)| (v == value).then_some(t)).unwrap_or_else(|| self.otherwise())
+        self.iter()
+            .find_map(|(v, t)| (v == value).then_some(t))
+            .unwrap_or_else(|| self.otherwise())
     }
 }
 
@@ -458,9 +473,7 @@ pub struct Terminator<'db> {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TerminatorKind<'db> {
     /// Block has one successor; we continue execution there.
-    Goto {
-        target: BasicBlockId<'db>,
-    },
+    Goto { target: BasicBlockId<'db> },
 
     /// Switches based on the computed value.
     ///
@@ -473,6 +486,7 @@ pub enum TerminatorKind<'db> {
     SwitchInt {
         /// The discriminant value being tested.
         discr: Operand<'db>,
+
         targets: SwitchTargets<'db>,
     },
 
@@ -594,6 +608,9 @@ pub enum TerminatorKind<'db> {
         /// `true` if this is from a call in HIR rather than from an overloaded
         /// operator. True for overloaded function call.
         from_hir_call: bool,
+        // This `Span` is the span of the function, without the dot and receiver
+        // (e.g. `foo(a, b)` in `x.foo(a, b)`
+        //fn_span: Span,
     },
 
     /// Evaluates the operand, which must have type `bool`. If it is not equal to `expected`,
@@ -679,6 +696,7 @@ pub enum TerminatorKind<'db> {
     },
 }
 
+// Order of variants in this enum matter: they are used to compare borrow kinds.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum BorrowKind {
     /// Data must be immutable and is aliasable.
@@ -706,11 +724,10 @@ pub enum BorrowKind {
     Shallow,
 
     /// Data is mutable and not aliasable.
-    Mut {
-        kind: MutBorrowKind,
-    },
+    Mut { kind: MutBorrowKind },
 }
 
+// Order of variants in this enum matter: they are used to compare borrow kinds.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum MutBorrowKind {
     /// Data must be immutable but not aliasable. This kind of borrow cannot currently
@@ -726,14 +743,18 @@ impl BorrowKind {
     fn from_hir(m: hir_def::type_ref::Mutability) -> Self {
         match m {
             hir_def::type_ref::Mutability::Shared => BorrowKind::Shared,
-            hir_def::type_ref::Mutability::Mut => BorrowKind::Mut { kind: MutBorrowKind::Default },
+            hir_def::type_ref::Mutability::Mut => BorrowKind::Mut {
+                kind: MutBorrowKind::Default,
+            },
         }
     }
 
     fn from_rustc(m: rustc_ast_ir::Mutability) -> Self {
         match m {
             rustc_ast_ir::Mutability::Not => BorrowKind::Shared,
-            rustc_ast_ir::Mutability::Mut => BorrowKind::Mut { kind: MutBorrowKind::Default },
+            rustc_ast_ir::Mutability::Mut => BorrowKind::Mut {
+                kind: MutBorrowKind::Default,
+            },
         }
     }
 }
@@ -811,24 +832,24 @@ impl BinOp {
 impl Display for BinOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-                BinOp::Add => "+",
-                BinOp::Sub => "-",
-                BinOp::Mul => "*",
-                BinOp::Div => "/",
-                BinOp::Rem => "%",
-                BinOp::BitXor => "^",
-                BinOp::BitAnd => "&",
-                BinOp::BitOr => "|",
-                BinOp::Shl => "<<",
-                BinOp::Shr => ">>",
-                BinOp::Eq => "==",
-                BinOp::Lt => "<",
-                BinOp::Le => "<=",
-                BinOp::Ne => "!=",
-                BinOp::Ge => ">=",
-                BinOp::Gt => ">",
-                BinOp::Offset => "`offset`",
-            })
+            BinOp::Add => "+",
+            BinOp::Sub => "-",
+            BinOp::Mul => "*",
+            BinOp::Div => "/",
+            BinOp::Rem => "%",
+            BinOp::BitXor => "^",
+            BinOp::BitAnd => "&",
+            BinOp::BitOr => "|",
+            BinOp::Shl => "<<",
+            BinOp::Shr => ">>",
+            BinOp::Eq => "==",
+            BinOp::Lt => "<",
+            BinOp::Le => "<=",
+            BinOp::Ne => "!=",
+            BinOp::Ge => ">=",
+            BinOp::Gt => ">",
+            BinOp::Offset => "`offset`",
+        })
     }
 }
 
@@ -854,10 +875,22 @@ impl From<hir_def::hir::CmpOp> for BinOp {
         match value {
             hir_def::hir::CmpOp::Eq { negated: false } => BinOp::Eq,
             hir_def::hir::CmpOp::Eq { negated: true } => BinOp::Ne,
-            hir_def::hir::CmpOp::Ord { ordering: Ordering::Greater, strict: false } => BinOp::Ge,
-            hir_def::hir::CmpOp::Ord { ordering: Ordering::Greater, strict: true } => BinOp::Gt,
-            hir_def::hir::CmpOp::Ord { ordering: Ordering::Less, strict: false } => BinOp::Le,
-            hir_def::hir::CmpOp::Ord { ordering: Ordering::Less, strict: true } => BinOp::Lt,
+            hir_def::hir::CmpOp::Ord {
+                ordering: Ordering::Greater,
+                strict: false,
+            } => BinOp::Ge,
+            hir_def::hir::CmpOp::Ord {
+                ordering: Ordering::Greater,
+                strict: true,
+            } => BinOp::Gt,
+            hir_def::hir::CmpOp::Ord {
+                ordering: Ordering::Less,
+                strict: false,
+            } => BinOp::Le,
+            hir_def::hir::CmpOp::Ord {
+                ordering: Ordering::Less,
+                strict: true,
+            } => BinOp::Lt,
         }
     }
 }
@@ -910,7 +943,6 @@ pub enum Rvalue<'db> {
     /// `Shallow` borrows are disallowed after drop lowering.
     Ref(BorrowKind, Place<'db>),
 
-    // ThreadLocalRef(DefId),
     /// Creates a pointer/reference to the given thread local.
     ///
     /// The yielded type is a `*mut T` if the static is mutable, otherwise if the static is extern a
@@ -922,9 +954,9 @@ pub enum Rvalue<'db> {
     ///
     /// **Needs clarification**: Are there weird additional semantics here related to the runtime
     /// nature of this operation?
+    // ThreadLocalRef(DefId),
     ThreadLocalRef(std::convert::Infallible),
 
-    // AddressOf(Mutability, Place),
     /// Creates a pointer with the indicated mutability to the place.
     ///
     /// This is generated by pointer casts like `&v as *const _` or raw address of expressions like
@@ -932,6 +964,7 @@ pub enum Rvalue<'db> {
     ///
     /// Like with references, the semantics of this operation are heavily dependent on the aliasing
     /// model.
+    // AddressOf(Mutability, Place),
     AddressOf(std::convert::Infallible),
 
     /// Yields the length of the place, as a `usize`.
@@ -950,7 +983,6 @@ pub enum Rvalue<'db> {
     Cast(CastKind, Operand<'db>, Ty<'db>),
 
     // FIXME link to `pointer::offset` when it hits stable.
-    //BinaryOp(BinOp, Box<(Operand, Operand)>),
     /// * `Offset` has the same semantics as `pointer::offset`, except that the second
     ///   parameter may be a `usize` as well.
     /// * The comparison operations accept `bool`s, `char`s, signed or unsigned integers, floats,
@@ -963,6 +995,7 @@ pub enum Rvalue<'db> {
     ///   types and return a value of that type.
     /// * The remaining operations accept signed integers, unsigned integers, or floats with
     ///   matching types and return a value of that type.
+    //BinaryOp(BinOp, Box<(Operand, Operand)>),
     BinaryOp(std::convert::Infallible),
 
     /// Same as `BinaryOp`, but yields `(T, bool)` with a `bool` indicating an error condition.
@@ -981,8 +1014,8 @@ pub enum Rvalue<'db> {
     /// Other combinations of types and operators are unsupported.
     CheckedBinaryOp(BinOp, Operand<'db>, Operand<'db>),
 
-    //NullaryOp(NullOp, Ty),
     /// Computes a value as described by the operation.
+    //NullaryOp(NullOp, Ty),
     NullaryOp(std::convert::Infallible),
 
     /// Exactly like `BinaryOp`, but less operands.
@@ -1051,7 +1084,6 @@ pub enum StatementKind<'db> {
     //Intrinsic(Box<NonDivergingIntrinsic>),
     Nop,
 }
-
 impl<'db> StatementKind<'db> {
     fn with_span(self, span: MirSpan) -> Statement<'db> {
         Statement { kind: self, span }
@@ -1068,6 +1100,7 @@ pub struct Statement<'db> {
 pub struct BasicBlock<'db> {
     /// List of statements in this block.
     pub statements: Vec<Statement<'db>>,
+
     /// Terminator for this block.
     ///
     /// N.B., this should generally ONLY be `None` during construction.
@@ -1077,6 +1110,7 @@ pub struct BasicBlock<'db> {
     /// out the terminator temporarily with `None` while they continue
     /// to recurse over the set of basic blocks.
     pub terminator: Option<Terminator<'db>>,
+
     /// If true, this block lies on an unwind path. This is used
     /// during codegen where distinct kinds of basic blocks may be
     /// generated (particularly for MSVC cleanup). Unwind blocks must
@@ -1175,7 +1209,12 @@ impl<'db> MirBody<'db> {
                         f(place, &mut self.projection_store);
                         for_operand(value, &mut f, &mut self.projection_store);
                     }
-                    TerminatorKind::Call { func, args, destination, .. } => {
+                    TerminatorKind::Call {
+                        func,
+                        args,
+                        destination,
+                        ..
+                    } => {
                         for_operand(func, &mut f, &mut self.projection_store);
                         args.iter_mut()
                             .for_each(|x| for_operand(x, &mut f, &mut self.projection_store));
@@ -1184,7 +1223,9 @@ impl<'db> MirBody<'db> {
                     TerminatorKind::Assert { cond, .. } => {
                         for_operand(cond, &mut f, &mut self.projection_store);
                     }
-                    TerminatorKind::Yield { value, resume_arg, .. } => {
+                    TerminatorKind::Yield {
+                        value, resume_arg, ..
+                    } => {
                         for_operand(value, &mut f, &mut self.projection_store);
                         f(resume_arg, &mut self.projection_store);
                     }
@@ -1212,7 +1253,11 @@ impl<'db> MirBody<'db> {
         param_locals.shrink_to_fit();
         closures.shrink_to_fit();
         for (_, b) in basic_blocks.iter_mut() {
-            let BasicBlock { statements, terminator: _, is_cleanup: _ } = b;
+            let BasicBlock {
+                statements,
+                terminator: _,
+                is_cleanup: _,
+            } = b;
             statements.shrink_to_fit();
         }
     }
@@ -1233,7 +1278,10 @@ impl MirSpan {
             MirSpan::ExprId(expr) => matches!(body[expr], Expr::Ref { .. }),
             // FIXME: Figure out if this is correct wrt. match ergonomics.
             MirSpan::BindingId(binding) => {
-                matches!(body[binding].mode, BindingAnnotation::Ref | BindingAnnotation::RefMut)
+                matches!(
+                    body[binding].mode,
+                    BindingAnnotation::Ref | BindingAnnotation::RefMut
+                )
             }
             MirSpan::PatId(_) | MirSpan::SelfParam | MirSpan::Unknown => false,
         }

@@ -1,5 +1,4 @@
 //! Complete fields in record literals and patterns.
-
 use ide_db::SymbolKind;
 use syntax::{
     SmolStr,
@@ -17,16 +16,24 @@ pub(crate) fn complete_record_pattern_fields(
     ctx: &CompletionContext<'_>,
     pattern_ctx: &PatternContext,
 ) {
-    if let PatternContext { record_pat: Some(record_pat), .. } = pattern_ctx {
-        let ty = ctx.sema.type_of_pat(&ast::Pat::RecordPat(record_pat.clone()));
+    if let PatternContext {
+        record_pat: Some(record_pat),
+        ..
+    } = pattern_ctx
+    {
+        let ty = ctx
+            .sema
+            .type_of_pat(&ast::Pat::RecordPat(record_pat.clone()));
         let missing_fields = match ty.as_ref().and_then(|t| t.original.as_adt()) {
             Some(hir::Adt::Union(un)) => {
                 // ctx.sema.record_pat_missing_fields will always return
                 // an empty Vec on a union literal. This is normally
                 // reasonable, but here we'd like to present the full list
                 // of fields if the literal is empty.
-                let were_fields_specified =
-                    record_pat.record_pat_field_list().and_then(|fl| fl.fields().next()).is_some();
+                let were_fields_specified = record_pat
+                    .record_pat_field_list()
+                    .and_then(|fl| fl.fields().next())
+                    .is_some();
 
                 match were_fields_specified {
                     false => un
@@ -49,7 +56,9 @@ pub(crate) fn complete_record_expr_fields(
     record_expr: &ast::RecordExpr,
     &dot_prefix: &bool,
 ) {
-    let ty = ctx.sema.type_of_expr(&Expr::RecordExpr(record_expr.clone()));
+    let ty = ctx
+        .sema
+        .type_of_expr(&Expr::RecordExpr(record_expr.clone()));
 
     let missing_fields = match ty.as_ref().and_then(|t| t.original.as_adt()) {
         Some(hir::Adt::Union(un)) => {
@@ -57,8 +66,10 @@ pub(crate) fn complete_record_expr_fields(
             // an empty Vec on a union literal. This is normally
             // reasonable, but here we'd like to present the full list
             // of fields if the literal is empty.
-            let were_fields_specified =
-                record_expr.record_expr_field_list().and_then(|fl| fl.fields().next()).is_some();
+            let were_fields_specified = record_expr
+                .record_expr_field_list()
+                .and_then(|fl| fl.fields().next())
+                .is_some();
 
             match were_fields_specified {
                 false => un
@@ -113,12 +124,14 @@ pub(crate) fn add_default_update(
             SmolStr::new_static(completion_text),
             ctx.edition,
         );
-        let completion_text =
-            completion_text.strip_prefix(ctx.token.text()).unwrap_or(completion_text);
-        item.insert_text(completion_text).set_relevance(CompletionRelevance {
-            postfix_match: Some(CompletionRelevancePostfixMatch::Exact),
-            ..Default::default()
-        });
+        let completion_text = completion_text
+            .strip_prefix(ctx.token.text())
+            .unwrap_or(completion_text);
+        item.insert_text(completion_text)
+            .set_relevance(CompletionRelevance {
+                postfix_match: Some(CompletionRelevancePostfixMatch::Exact),
+                ..Default::default()
+            });
         item.add_to(acc, ctx.db);
     }
 }
@@ -135,8 +148,13 @@ fn complete_fields(
             &DotAccess {
                 receiver: None,
                 receiver_ty: None,
-                kind: DotAccessKind::Field { receiver_is_ambiguous_float_literal: false },
-                ctx: DotAccessExprCtx { in_block_expr: false, in_breakable: None },
+                kind: DotAccessKind::Field {
+                    receiver_is_ambiguous_float_literal: false,
+                },
+                ctx: DotAccessExprCtx {
+                    in_block_expr: false,
+                    in_breakable: None,
+                },
             },
             None,
             field,
@@ -148,10 +166,12 @@ fn complete_fields(
 #[cfg(test)]
 mod tests {
     use ide_db::SnippetCap;
+
     use crate::{
         CompletionConfig,
         tests::{TEST_CONFIG, check_edit, check_edit_with_config},
     };
+
     #[test]
     fn literal_struct_completion_edit() {
         check_edit(
@@ -176,6 +196,7 @@ fn baz() {
             "#,
         )
     }
+
     #[test]
     fn literal_struct_completion_shorthand() {
         check_edit(
@@ -202,9 +223,13 @@ fn baz() {
             "#,
         )
     }
+
     #[test]
     fn enum_variant_no_snippets() {
-        let conf = CompletionConfig { snippet_cap: SnippetCap::new(false), ..TEST_CONFIG };
+        let conf = CompletionConfig {
+            snippet_cap: SnippetCap::new(false),
+            ..TEST_CONFIG
+        };
         // tuple variant
         check_edit_with_config(
             conf.clone(),
@@ -261,6 +286,7 @@ impl Enum {
 "#,
         )
     }
+
     #[test]
     fn literal_struct_impl_self_completion() {
         check_edit(
@@ -315,6 +341,7 @@ impl submod::Foo {
             "#,
         )
     }
+
     #[test]
     fn literal_struct_completion_from_sub_modules() {
         check_edit(
@@ -343,6 +370,7 @@ fn f() -> submod::Struct {
             "#,
         )
     }
+
     #[test]
     fn literal_struct_complexion_module() {
         check_edit(
@@ -373,6 +401,7 @@ fn baz() {
             "#,
         );
     }
+
     #[test]
     fn default_completion_edit() {
         check_edit(
@@ -472,6 +501,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn callable_field_struct_init() {
         check_edit(

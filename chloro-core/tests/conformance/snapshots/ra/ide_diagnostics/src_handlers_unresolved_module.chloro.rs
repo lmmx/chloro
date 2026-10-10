@@ -44,7 +44,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Option<Vec<
                     &format!("Create module at `{candidate}`"),
                     FileSystemEdit::CreateFile {
                         dst: AnchoredPathBuf {
-                            anchor: d.decl.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+                            anchor: d
+                                .decl
+                                .file_id
+                                .original_file(ctx.sema.db)
+                                .file_id(ctx.sema.db),
                             path: candidate.clone(),
                         },
                         initial_contents: "".to_owned(),
@@ -60,6 +64,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Option<Vec<
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn unresolved_module() {
         check_diagnostics(
@@ -73,6 +78,7 @@ mod baz {}
 "#,
         );
     }
+
     #[test]
     fn test_unresolved_module_diagnostic() {
         check_diagnostics(

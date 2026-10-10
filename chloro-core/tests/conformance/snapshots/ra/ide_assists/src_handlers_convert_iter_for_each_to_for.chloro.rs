@@ -50,15 +50,19 @@ pub(crate) fn convert_iter_for_each_to_for(
     let body = closure.body()?;
 
     let stmt = method.syntax().parent().and_then(ast::ExprStmt::cast);
-    let range = stmt.as_ref().map_or(method.syntax(), AstNode::syntax).text_range();
+    let range = stmt
+        .as_ref()
+        .map_or(method.syntax(), AstNode::syntax)
+        .text_range();
 
     acc.add(
         AssistId::refactor_rewrite("convert_iter_for_each_to_for"),
         "Replace this `Iterator::for_each` with a for loop",
         range,
         |builder| {
-            let indent =
-                stmt.as_ref().map_or_else(|| method.indent_level(), ast::ExprStmt::indent_level);
+            let indent = stmt
+                .as_ref()
+                .map_or_else(|| method.indent_level(), ast::ExprStmt::indent_level);
 
             let block = match body {
                 ast::Expr::BlockExpr(block) => block,
@@ -191,9 +195,7 @@ fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &a
         cov_mark::hit!(test_already_impls_iterator);
         Some(it_typ.impls_trait(sema.db, iter_trait, &[]))
     })()
-    .unwrap_or(
-        false,
-    )
+    .unwrap_or(false)
 }
 
 fn validate_method_call_expr(
@@ -201,7 +203,11 @@ fn validate_method_call_expr(
     expr: ast::MethodCallExpr,
 ) -> Option<(ast::Expr, ast::Expr)> {
     let name_ref = expr.name_ref()?;
-    if !name_ref.syntax().text_range().contains_range(ctx.selection_trimmed()) {
+    if !name_ref
+        .syntax()
+        .text_range()
+        .contains_range(ctx.selection_trimmed())
+    {
         cov_mark::hit!(test_for_each_not_applicable_invalid_cursor_pos);
         return None;
     }
@@ -219,13 +225,17 @@ fn validate_method_call_expr(
     let krate = module.krate();
 
     let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
-    it_type.impls_trait(sema.db, iter_trait, &[]).then_some((expr, receiver))
+    it_type
+        .impls_trait(sema.db, iter_trait, &[])
+        .then_some((expr, receiver))
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_for_each_in_method_stmt() {
         check_assist(
@@ -249,6 +259,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_for_each_in_method() {
         check_assist(
@@ -272,6 +283,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_for_each_without_braces_stmt() {
         check_assist(
@@ -293,6 +305,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn test_for_each_not_applicable() {
         check_assist_not_applicable(
@@ -304,6 +317,7 @@ fn main() {
 }"#,
         )
     }
+
     #[test]
     fn test_for_each_not_applicable_invalid_cursor_pos() {
         cov_mark::check!(test_for_each_not_applicable_invalid_cursor_pos);
@@ -316,6 +330,7 @@ fn main() {
 }"#,
         )
     }
+
     #[test]
     fn each_to_for_not_for() {
         check_assist_not_applicable(
@@ -326,6 +341,7 @@ x.iter_mut().$0for_each(|v| *v *= 2);
         ",
         )
     }
+
     #[test]
     fn each_to_for_simple_for() {
         check_assist(
@@ -346,6 +362,7 @@ fn main() {
 }",
         )
     }
+
     #[test]
     fn each_to_for_for_in_range() {
         check_assist(
@@ -381,6 +398,7 @@ fn main() {
 }"#,
         )
     }
+
     #[test]
     fn each_to_for_not_available_in_body() {
         cov_mark::check!(not_available_in_body);
@@ -395,6 +413,7 @@ fn main() {
 }",
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed() {
         check_assist(
@@ -434,6 +453,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed_no_iter_method() {
         check_assist(
@@ -458,6 +478,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed_mut() {
         check_assist(
@@ -497,6 +518,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn each_to_for_for_borrowed_mut_behind_var() {
         check_assist(
@@ -519,6 +541,7 @@ fn main() {
 }",
         )
     }
+
     #[test]
     fn each_to_for_already_impls_iterator() {
         cov_mark::check!(test_already_impls_iterator);
