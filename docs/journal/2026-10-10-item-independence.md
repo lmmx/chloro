@@ -90,7 +90,9 @@ Findings:
   configuration only. It is not a proof.
 - **Perturbing the input changes nothing here.** The perturbed fixtures give the same
   classes as the formatted fixtures.
-- **Standalone formatting is not a cheap check.** It costs 1.6x the in-file cycles on the
+- **Standalone formatting is not a cheap check** (what each timing includes is set out in
+  [2026-10-10-green-attribute-queries.md](2026-10-10-green-attribute-queries.md); the two
+  timings measure different quantities). It costs 1.6x the in-file cycles on the
   fixtures (6,810 against 4,317 Mcycles for the equal units) and 3.4x on the registry
   (86,858 against 25,181). Each standalone run parses its unit as a file, and the
   registry's 714k small `CONST` units are dominated by that fixed cost per tree. A cache

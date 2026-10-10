@@ -2,6 +2,12 @@
 
 Follows [2026-10-10-item-independence.md](2026-10-10-item-independence.md).
 
+*Corrected in [2026-10-10-green-attribute-queries.md](2026-10-10-green-attribute-queries.md):
+the harness no longer uses `transmute`. The span pass now computes chloro's `rustc_span`
+rule and is checked against chloro's own `rustc_span`. The flat-against-green traversal
+ranking below does not hold under the corrected harness; red-against-green and the
+construction results do.*
+
 **Question.** What do three syntax-tree substrates cost when they do identical work? This
 compares representations; it does not choose one.
 
