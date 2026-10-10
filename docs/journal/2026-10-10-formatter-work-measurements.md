@@ -331,9 +331,9 @@ index 8d1056f..8b0139d 100644
 +    crate::x1::rec("rewrite_comment", orig);
      identify_comment(orig, shape, config, false)
  }
- 
+
 @@ -443,6 +444,7 @@ pub(crate) trait FindUncommented {
- 
+
  impl FindUncommented for str {
      fn find_uncommented(&self, pat: &str) -> Option<usize> {
 +        crate::x1::rec("find_uncommented", self);
@@ -341,7 +341,7 @@ index 8d1056f..8b0139d 100644
          let mut needle_iter = pat.chars();
          let mut classes = CharClasses::new(self);
 @@ -511,10 +513,12 @@ pub(crate) fn find_comment_end(s: &str) -> Option<usize> {
- 
+
  /// Returns `true` if text contains any comment.
  pub(crate) fn contains_comment(text: &str) -> bool {
 +    crate::x1::rec("contains_comment", text);
@@ -362,7 +362,7 @@ index 8d1056f..8b0139d 100644
      pos: usize,
      status: CharClassesStatus,
 @@ -643,7 +648,9 @@ pub(crate) struct CharClasses<'a> {
- 
+
  impl<'a> CharClasses<'a> {
      pub(crate) fn new(src: &'a str) -> CharClasses<'a> {
 +        crate::x1::rec("CharClasses::new", src);
@@ -388,7 +388,7 @@ index 8d1056f..8b0139d 100644
          let mut char_kind = FullCodeCharKind::Normal;
          self.status = match self.status {
 @@ -838,6 +847,7 @@ pub(crate) struct LineClasses<'a> {
- 
+
  impl<'a> LineClasses<'a> {
      pub(crate) fn new(s: &'a str) -> Self {
 +        crate::x1::rec("LineClasses::new", s);
@@ -396,7 +396,7 @@ index 8d1056f..8b0139d 100644
              base: CharClasses::new(s).peekable(),
              src: s,
 @@ -899,6 +909,7 @@ struct UngroupedCommentCodeSlices<'a> {
- 
+
  impl<'a> UngroupedCommentCodeSlices<'a> {
      fn new(code: &'a str) -> UngroupedCommentCodeSlices<'a> {
 +        crate::x1::rec("UngroupedCommentCodeSlices::new", code);
@@ -404,7 +404,7 @@ index 8d1056f..8b0139d 100644
              slice: code,
              iter: CharClasses::new(code),
 @@ -974,6 +985,7 @@ pub(crate) struct CommentCodeSlices<'a> {
- 
+
  impl<'a> CommentCodeSlices<'a> {
      pub(crate) fn new(slice: &'a str) -> CommentCodeSlices<'a> {
 +        crate::x1::rec("CommentCodeSlices::new", slice);
@@ -422,7 +422,7 @@ index 8d1056f..8b0139d 100644
          // `LostComment` error, which only matters when formatting a macro definition body.
 @@ -1060,9 +1074,11 @@ pub(crate) fn recover_comment_removed(
  }
- 
+
  pub(crate) fn filter_normal_code(code: &str) -> Cow<'_, str> {
 +    crate::x1::rec("filter_normal_code", code);
      if !code.contains('/') {
@@ -453,14 +453,14 @@ index 0ab57aa..39d908c 100644
 +    impl Drop for Pop { fn drop(&mut self) { crate::x1::pop_src() } }
 +    let _pop = Pop;
      let file = parse(source, config.edition().to_ra())?;
- 
+
      // `#![rustfmt::skip]` on the file: echo the input.
 diff --git a/chloro-core/src/formatter/nodes.rs b/chloro-core/src/formatter/nodes.rs
 index 57482e4..2c19403 100644
 --- a/chloro-core/src/formatter/nodes.rs
 +++ b/chloro-core/src/formatter/nodes.rs
 @@ -212,6 +212,7 @@ pub(crate) fn contains_skip(attrs: &[Attribute]) -> bool {
- 
+
  /// The span of `node` without its outer attributes and doc comments.
  pub(crate) fn span_without_attrs(node: &SyntaxNode) -> Span {
 +    crate::x1::rec_o("span_without_attrs", true, 0);
@@ -505,21 +505,21 @@ index 7bc36c5..9b8ad7b 100644
      for child in node.green().children() {
 @@ -139,7 +140,9 @@ impl<'a> SnippetProvider<'a> {
      }
- 
+
      pub(crate) fn span_to_snippet(&self, span: Span) -> Option<&'a str> {
 -        self.src.get(span.lo as usize..span.hi as usize)
 +        let r = self.src.get(span.lo as usize..span.hi as usize);
 +        if let Some(s) = r { crate::x1::rec("span_to_snippet / snippet", s); }
 +        r
      }
- 
+
      pub(crate) fn snippet(&self, span: Span) -> &'a str {
 diff --git a/chloro-core/src/formatter/utils.rs b/chloro-core/src/formatter/utils.rs
 index b40505a..ba36301 100644
 --- a/chloro-core/src/formatter/utils.rs
 +++ b/chloro-core/src/formatter/utils.rs
 @@ -124,6 +124,7 @@ pub(crate) fn semicolon_for_expr(context: &RewriteContext<'_>, expr: &ast::Expr)
- 
+
  /// Computes the length of the given string, as it would appear in the output.
  pub(crate) fn unicode_str_width(s: &str) -> usize {
 +    crate::x1::rec("unicode_str_width", s);
@@ -528,7 +528,7 @@ index b40505a..ba36301 100644
      }
 @@ -154,6 +155,7 @@ pub(crate) fn wrap_str(s: String, max_width: usize, shape: Shape) -> Option<Stri
  }
- 
+
  pub(crate) fn filtered_str_fits(snippet: &str, max_width: usize, shape: Shape) -> bool {
 +    crate::x1::rec("filtered_str_fits", snippet);
      let snippet = &*filter_normal_code(snippet);
@@ -543,7 +543,7 @@ index 64baf68..afcce7d 100644
  pub mod debug;
  pub mod formatter;
 +pub mod x1;
- 
+
  pub use formatter::config::Config;
  pub use formatter::{format_source, format_source_with_config};
 diff --git a/chloro-core/src/x1.rs b/chloro-core/src/x1.rs
@@ -612,7 +612,7 @@ index 8a63890..5d2454a 100644
 @@ -250,7 +250,7 @@ impl<'a> RewriteContext<'a> {
          self.is_loop_block.get()
      }
- 
+
 -    fn flags(&self) -> u8 {
 +    pub(crate) fn flags(&self) -> u8 {
          u8::from(self.inside_macro.get())
@@ -634,13 +634,13 @@ index f3f2db2..63cfa20 100644
 +        crate::x9::uncached(expr.syntax(), 0, &(shape, expr_type as u8, context.flags()), || format_expr_uncached(expr, expr_type, context, shape))
      })
  }
- 
+
 diff --git a/chloro-core/src/formatter/patterns.rs b/chloro-core/src/formatter/patterns.rs
 index bbd6dca..4e9f18f 100644
 --- a/chloro-core/src/formatter/patterns.rs
 +++ b/chloro-core/src/formatter/patterns.rs
 @@ -87,6 +87,12 @@ impl Rewrite for RangeOperand {
- 
+
  impl Rewrite for ast::Pat {
      fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
 +        crate::x9::uncached(self.syntax(), 1, &shape, || X9Pat::rewrite_x9(self, context, shape))
@@ -657,7 +657,7 @@ index 0838fbd..d51aea8 100644
 --- a/chloro-core/src/formatter/types.rs
 +++ b/chloro-core/src/formatter/types.rs
 @@ -809,6 +809,12 @@ pub(crate) fn generic_param_span(param: &ast::GenericParam) -> Span {
- 
+
  impl Rewrite for ast::Type {
      fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
 +        crate::x9::uncached(self.syntax(), 2, &shape, || X9Type::rewrite_x9(self, context, shape))
@@ -678,7 +678,7 @@ index 64baf68..c32d895 100644
  pub mod debug;
  pub mod formatter;
 +pub mod x9;
- 
+
  pub use formatter::config::Config;
  pub use formatter::{format_source, format_source_with_config};
 diff --git a/chloro-core/src/x9.rs b/chloro-core/src/x9.rs
@@ -805,7 +805,7 @@ index 8d1056f..20a30b5 100644
 --- a/chloro-core/src/formatter/comment.rs
 +++ b/chloro-core/src/formatter/comment.rs
 @@ -443,9 +443,34 @@ pub(crate) trait FindUncommented {
- 
+
  impl FindUncommented for str {
      fn find_uncommented(&self, pat: &str) -> Option<usize> {
 +        if crate::x8::check() {
@@ -848,7 +848,7 @@ index 8d1056f..20a30b5 100644
 +            None => Some(this.len() - pat.len()),
          }
      }
- 
+
 -    fn find_last_uncommented(&self, pat: &str) -> Option<usize> {
 -        if let Some(left) = self.find_uncommented(pat) {
 -            let mut result = left;
@@ -862,10 +862,10 @@ index 8d1056f..20a30b5 100644
 -        }
 -    }
  }
- 
+
  /// Returns the first byte position after the first comment. The given string
 @@ -511,6 +524,15 @@ pub(crate) fn find_comment_end(s: &str) -> Option<usize> {
- 
+
  /// Returns `true` if text contains any comment.
  pub(crate) fn contains_comment(text: &str) -> bool {
 +    if crate::x8::check() {
@@ -922,7 +922,7 @@ index 0ab57aa..b915cc5 100644
 +    X8_PENDING.with(|p| *p.borrow_mut() = Some(crate::x8::Index { base, len: source.len(), starts, comments }));
      (!rejected_by_rustc(&file, edition)).then_some(file)
  }
- 
+
 @@ -66,6 +81,11 @@ pub(crate) fn format_text(
      is_macro_def: bool,
  ) -> Option<Formatted> {
@@ -932,7 +932,7 @@ index 0ab57aa..b915cc5 100644
 +    struct Pop;
 +    impl Drop for Pop { fn drop(&mut self) { crate::x8::STACK.with(|s| { s.borrow_mut().pop(); }) } }
 +    let _pop = Pop;
- 
+
      // `#![rustfmt::skip]` on the file: echo the input.
      if contains_skip(&inner_attributes(file.syntax())) {
 diff --git a/chloro-core/src/lib.rs b/chloro-core/src/lib.rs
@@ -944,7 +944,7 @@ index 64baf68..76380f0 100644
  pub mod debug;
  pub mod formatter;
 +pub mod x8;
- 
+
  pub use formatter::config::Config;
  pub use formatter::{format_source, format_source_with_config};
 diff --git a/chloro-core/src/x8.rs b/chloro-core/src/x8.rs
