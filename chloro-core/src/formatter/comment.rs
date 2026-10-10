@@ -136,24 +136,26 @@ pub(crate) fn combine_strs_with_missing_comments(
     shape: Shape,
     allow_extend: bool,
 ) -> Option<String> {
-    let mut result =
-        String::with_capacity(prev_str.len() + next_str.len() + shape.indent.width() + 128);
-    result.push_str(prev_str);
-    let mut allow_one_line = !prev_str.contains('\n') && !next_str.contains('\n');
-    let first_sep =
+    let first_sep = || {
         if prev_str.is_empty() || next_str.is_empty() || trimmed_last_line_width(prev_str) == 0 {
             ""
         } else {
             " "
-        };
-    let mut one_line_width =
-        last_line_width(prev_str) + first_line_width(next_str) + first_sep.len();
-
+        }
+    };
     let indent = shape.indent;
     let missing_comment = rewrite_missing_comment(span, shape, context)?;
 
     if missing_comment.is_empty() {
-        if allow_extend && one_line_width <= shape.width {
+        // The common case, with nothing between the two strings: only the separator is
+        // left to choose.
+        let mut result = String::with_capacity(prev_str.len() + next_str.len() + 1);
+        result.push_str(prev_str);
+        let first_sep = first_sep();
+        if allow_extend
+            && last_line_width(prev_str) + first_line_width(next_str) + first_sep.len()
+                <= shape.width
+        {
             result.push_str(first_sep);
         } else if !prev_str.is_empty() {
             result.push_str(&indent.to_string_with_newline(context.config))
@@ -161,6 +163,14 @@ pub(crate) fn combine_strs_with_missing_comments(
         result.push_str(next_str);
         return Some(result);
     }
+
+    let mut result =
+        String::with_capacity(prev_str.len() + next_str.len() + shape.indent.width() + 128);
+    result.push_str(prev_str);
+    let mut allow_one_line = !prev_str.contains('\n') && !next_str.contains('\n');
+    let first_sep = first_sep();
+    let mut one_line_width =
+        last_line_width(prev_str) + first_line_width(next_str) + first_sep.len();
 
     // We have a missing comment between the first expression and the second expression.
     // Peek the original source code and find out whether there is a newline between the first

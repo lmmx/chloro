@@ -213,14 +213,24 @@ pub(crate) fn contains_skip(attrs: &[Attribute]) -> bool {
 /// The span of `node` without its outer attributes and doc comments.
 pub(crate) fn span_without_attrs(node: &SyntaxNode) -> Span {
     let full = node_range_span(node);
-    let first = node.children_with_tokens().find(|el| match el {
-        NodeOrToken::Token(t) => !t.kind().is_trivia(),
-        NodeOrToken::Node(n) => n.kind() != SyntaxKind::ATTR,
-    });
-    match first {
-        Some(el) => full.with_lo(el.text_range().start().into()),
-        None => full,
+    // The first child that is neither trivia nor an attribute, found on the green tree.
+    let mut lo = full.lo();
+    for child in node.green().children() {
+        let (kind, len) = match child {
+            NodeOrToken::Token(t) => (t.kind(), t.text_len()),
+            NodeOrToken::Node(n) => (n.kind(), n.text_len()),
+        };
+        let kind = RustLanguage::kind_from_raw(kind);
+        let skipped = match child {
+            NodeOrToken::Token(_) => kind.is_trivia(),
+            NodeOrToken::Node(_) => kind == SyntaxKind::ATTR,
+        };
+        if !skipped {
+            return full.with_lo(lo);
+        }
+        lo += BytePos::from(len);
     }
+    full
 }
 
 /// Whether `node` has a direct child token of `kind`: a generated `x_token().is_some()`
