@@ -57,14 +57,7 @@ impl Attribute {
             Attribute::Doc(_) => None,
             Attribute::Normal(a) => {
                 let path = child::<ast::Meta>(a.syntax())?.path()?;
-                Some(
-                    path.syntax()
-                        .descendants_with_tokens()
-                        .filter_map(|e| e.into_token())
-                        .filter(|t| !t.kind().is_trivia())
-                        .map(|t| t.text().to_string())
-                        .collect(),
-                )
+                Some(non_trivia_text(path.syntax()))
             }
         }
     }
@@ -143,6 +136,26 @@ pub(crate) fn split_top_level_commas(tt: &SyntaxNode) -> Vec<Vec<SyntaxToken>> {
     parts
 }
 
+/// The text of the non-trivia tokens under `node`, in source order, read from the green tree
+/// (no cursor node per descendant).
+pub(crate) fn non_trivia_text(node: &SyntaxNode) -> String {
+    fn push(green: &rowan::GreenNodeData, out: &mut String) {
+        for child in green.children() {
+            match child {
+                NodeOrToken::Node(n) => push(n, out),
+                NodeOrToken::Token(t) => {
+                    if !RustLanguage::kind_from_raw(t.kind()).is_trivia() {
+                        out.push_str(t.text());
+                    }
+                }
+            }
+        }
+    }
+    let mut out = String::new();
+    push(&node.green(), &mut out);
+    out
+}
+
 /// `true` if `node` starts with an attribute or an outer doc comment. Reads the green tree,
 /// which avoids creating cursor nodes for the common case of a node without attributes.
 fn has_leading_attrs(node: &SyntaxNode) -> bool {
@@ -191,9 +204,31 @@ pub(crate) fn outer_attributes(node: &SyntaxNode) -> Vec<Attribute> {
     attrs
 }
 
+/// `false` when no direct child of `container` can be an inner attribute: no attribute with
+/// a `!` token and no comment starting `//!` or `/*!`. Reads the green tree, so a container
+/// without inner attributes (nearly every block and module) costs no cursor node per child.
+/// A `true` only means [`inner_attributes`] has to look.
+fn may_have_inner_attrs(container: &SyntaxNode) -> bool {
+    container.green().children().any(|child| match child {
+        NodeOrToken::Node(n) => {
+            RustLanguage::kind_from_raw(n.kind()) == SyntaxKind::ATTR
+                && n.children().any(|c| {
+                    matches!(c, NodeOrToken::Token(t) if RustLanguage::kind_from_raw(t.kind()) == T![!])
+                })
+        }
+        NodeOrToken::Token(t) => {
+            RustLanguage::kind_from_raw(t.kind()) == SyntaxKind::COMMENT
+                && (t.text().starts_with("//!") || t.text().starts_with("/*!"))
+        }
+    })
+}
+
 /// Inner attributes (`#![...]`, `//!`) that are direct children of a container node such as
 /// a source file, an item list or a statement list.
 pub(crate) fn inner_attributes(container: &SyntaxNode) -> Vec<Attribute> {
+    if !may_have_inner_attrs(container) {
+        return Vec::new();
+    }
     container
         .children_with_tokens()
         .filter_map(|child| match child {
@@ -572,5 +607,90 @@ mod tests {
             .map(Attribute::is_skip)
             .collect();
         assert_eq!(skips, [true, true, false]);
+    }
+
+    /// Sources covering inner and outer attributes and doc comments in files, modules, blocks
+    /// and item lists, plain comments that look like doc comments, and attribute paths with
+    /// whitespace and comments inside.
+    const ATTRIBUTE_SOURCES: &[&str] = &[
+        "#![allow(dead_code)]\n//! inner line doc\n/*! inner block doc */\n// plain\nfn f() {}\n",
+        "/// outer doc\n//// plain, four slashes\n/*** plain block */\n/**/\n#[test]\nfn f() {}\n",
+        "fn f() {\n    #![allow(unused)]\n    //! inner doc in a block\n    let a = 1;\n}\n",
+        "fn f() {\n    /// outer doc on a statement\n    let a = 1;\n    // plain\n    a\n}\n",
+        "mod m {\n    #![cfg(test)]\n    fn f() {}\n}\nmod n {\n    #[test]\n    fn f() {}\n}\n",
+        "impl S {\n    #![doc = \"x\"]\n    fn f() {}\n}\ntrait T {\n    //! trait doc\n    fn g();\n}\n",
+        "extern \"C\" {\n    #![allow(x)]\n    fn h();\n}\nfn f() { if a { #![allow(x)] } }\n",
+        "#[rustfmt /* c */ :: skip]\n#[ derive ( Debug ) ]\n#[cfg_attr(rustfmt, rustfmt::skip)]\nstruct S;\n",
+        "#[r#raw::path]\n#[a::b::<c>]\nfn f() {}\n",
+    ];
+
+    /// The red-cursor computation `inner_attributes` replaced.
+    fn inner_attributes_by_cursor(container: &SyntaxNode) -> Vec<Attribute> {
+        container
+            .children_with_tokens()
+            .filter_map(|child| match child {
+                NodeOrToken::Token(t) if is_inner_doc_comment(&t) => Some(Attribute::Doc(t)),
+                NodeOrToken::Node(n) => ast::Attr::cast(n)
+                    .filter(|a| has_token(a.syntax(), T![!]))
+                    .map(Attribute::Normal),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn inner_attributes_match_a_cursor_walk_on_every_node() {
+        for src in ATTRIBUTE_SOURCES {
+            let file = SourceFile::parse(src, Edition::CURRENT).tree();
+            for node in file.syntax().descendants() {
+                assert_eq!(
+                    inner_attributes(&node),
+                    inner_attributes_by_cursor(&node),
+                    "{node:?} in {src:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn inner_attributes_are_found() {
+        let file = SourceFile::parse(ATTRIBUTE_SOURCES[0], Edition::CURRENT).tree();
+        let attrs = inner_attributes(file.syntax());
+        assert_eq!(attrs.len(), 3);
+        assert!(attrs.iter().all(|a| a.style() == AttrStyle::Inner));
+    }
+
+    #[test]
+    fn non_trivia_text_matches_a_cursor_walk_on_every_node() {
+        for src in ATTRIBUTE_SOURCES {
+            let file = SourceFile::parse(src, Edition::CURRENT).tree();
+            for node in file.syntax().descendants() {
+                let by_cursor: String = node
+                    .descendants_with_tokens()
+                    .filter_map(|e| e.into_token())
+                    .filter(|t| !t.kind().is_trivia())
+                    .map(|t| t.text().to_string())
+                    .collect();
+                assert_eq!(non_trivia_text(&node), by_cursor, "{node:?} in {src:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn attribute_paths_drop_whitespace_and_comments() {
+        let file = SourceFile::parse(ATTRIBUTE_SOURCES[7], Edition::CURRENT).tree();
+        let item = file.items().next().unwrap();
+        let paths: Vec<_> = outer_attributes(item.syntax())
+            .iter()
+            .map(Attribute::path_text)
+            .collect();
+        assert_eq!(
+            paths,
+            [
+                Some("rustfmt::skip".to_string()),
+                Some("derive".to_string()),
+                Some("cfg_attr".to_string())
+            ]
+        );
     }
 }
