@@ -66,6 +66,18 @@ Non-default values of the stable options are compared with `rustfmt --config` by
 local cargo registry (`-- --root ~/.cargo/registry/src -n 6000 default`), a corpus chloro
 was not developed against, gave identical output for 5384 of 5386 files.
 
+## Performance
+
+rustfmt chooses a layout by trying several and keeping the first that fits, so chloro does
+the same work rustfmt does; it memoizes rewrites to keep nested code from multiplying it,
+and reads rust-analyzer's green tree where the typed API would allocate. Single-threaded and
+in process it formats about 3.5 MB/s; a `chloro` process on one large file takes
+0.35x–0.71x the time of a `rustfmt` process. The CLI formats files in parallel.
+
+```sh
+cargo run --release -p chloro-core --example bench -- -w 10   # throughput, 10 slowest files
+```
+
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/tree/master/crates
 
 <!-- just: conf-md -->

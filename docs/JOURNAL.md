@@ -130,6 +130,53 @@ normalised source); `&const { .. }` overflowed as a last argument (rustc's `Cons
 not a `Block`); rustc rejects chained comparisons, which leaves clap's
 `arg!(-c --config <FILE> "..")` unformatted.
 
+## Performance
+
+rustfmt's output is defined by trial and fallback: a rewrite returns `None` when it does not
+fit, and the caller tries the next layout (one line, overflowing the last argument,
+vertical, a chain on one line, then broken). Each attempt rewrites the whole subtree again.
+chloro has to run the same attempts, since the output depends on which one fits first, so
+the port started at a third of the speed of the proof of concept (2.7 MB/s against 8.2 MB/s
+on the same machine). The proof of concept made one pass with one layout per node and
+matched rustfmt on 233 of 1220 files.
+
+Every performance change is checked to be behaviour-preserving, not just conformant:
+`examples/bench.rs --record` hashes the output for every fixture and every file of a cargo
+registry (6800 files), and `--check` after the change must report no difference.
+Instruction counts come from callgrind on a fixed 49-file sample (minimum of three runs; the
+allocator's internals vary by about 2% between runs).
+
+Changes, in the order they were made:
+
+- Rewrites of expressions are memoized per top-level item, keyed by node, shape and context
+  flags (`RewriteContext::memoize`). Three effects of a rewrite on the run (the macro failure
+  flag, the lost comment flag and the skipped line ranges) are only written during
+  formatting and read afterwards; they are recorded with the result and replayed on a hit.
+  Retries compound with nesting: on `ide-assists/src/handlers/desugar_try_expr.rs`
+  (nested calls in closures in chains) the instruction count fell from 696M to 26M, and
+  the wall time from 88 ms to 3 ms. On typical code the hit rate is low and the gain small.
+- Red nodes: rowan allocates a red node for every child an accessor looks at, including on a
+  miss. Presence checks of modifier tokens (`has_token`), typed child lookups (`child`),
+  node text (`node_text`), single-identifier paths and the first significant child of a node
+  read the green tree instead, creating a red node only for the node returned.
+- Macro arguments are spliced under a detached root padded to the token tree's offset,
+  instead of into a copy of the whole tree, which copied every ancestor's child list per
+  macro call.
+- The comment scanner jumps over runs of plain code in its `Normal` state, where only `r`,
+  `"`, `'` and `/` can change its state.
+- Smaller items: the width of multi-line ASCII text in one pass, chain items without
+  `format!`, no separator scans when no comment lies between two strings, and no
+  trailing-comma scan of struct literals outside macros.
+
+Tried and reverted, because they did not pay: building green trees without rowan's
+`NodeCache` (the interning saves more allocations than its hashing costs), `mimalloc` (about
+10%, not worth a dependency of the library), caching the trailing-comma scan by span, and
+replacing the remaining `expr()`/`path()` accessors (within noise).
+
+What is left is spread out: parsing by rust-analyzer's parser is a quarter of the
+instructions, allocation (mostly red nodes and growing strings) about a fifth, and the rest
+is rustfmt's algorithm.
+
 ## Measurements
 
 - Conformance: 1219 of 1220 files identical to rustfmt; every output is idempotent
@@ -144,8 +191,10 @@ not a `Block`); rustc rejects chained comparisons, which leaves clap's
   identically; the two differing files are listed under Missing.
 - Self-formatting: chloro's own sources, formatted by `cargo fmt`, are a fixed point of
   chloro.
-- Speed: 3.1 MB/s single-threaded over the conformance corpus (13.8 MB in 4.4 s). On the
-  five largest fixtures (167–640 KB) a chloro process takes 0.45x–0.91x the wall time of a
+- Speed (`cargo run --release -p chloro-core --example bench`, one thread, in process):
+  3.5 MB/s over the conformance corpus, against 2.7 MB/s for the port before the
+  performance work and 8.2 MB/s for the proof of concept, on the same machine. On the five
+  largest fixtures (167–640 KB) a chloro process takes 0.35x–0.71x the wall time of a
   `rustfmt` process on the same file.
 
 ## Current State
@@ -175,16 +224,17 @@ not a `Block`); rustc rejects chained comparisons, which leaves clap's
 - Width heuristics follow rustfmt's `use_small_heuristics` resolution, scaling above
   `max_width = 100` only (chloro-core/src/formatter/config.rs:295)
 - rustc's block expression kinds (`Block`, `Gen`, `TryBlock`, `ConstBlock`) are recovered
-  from rust-analyzer's single `BlockExpr` (chloro-core/src/formatter/nodes.rs:224-255)
+  from rust-analyzer's single `BlockExpr` (chloro-core/src/formatter/nodes.rs:288-320)
 - Macro call arguments are re-parsed with rust-analyzer's parser and spliced into the tree
-  at their original offsets (chloro-core/src/formatter/macro_args.rs:187-365)
+  at their original offsets, under a detached root padded to the token tree's offset
+  (chloro-core/src/formatter/macro_args.rs:189-366)
 - `?Trait` macro arguments parse as types, as in rustc
-  (chloro-core/src/formatter/macro_args.rs:231)
+  (chloro-core/src/formatter/macro_args.rs:233)
 - `macro_rules!` bodies are formatted through `format_snippet` and `format_code_block` with
-  metavariables renamed, as in rustfmt (chloro-core/src/formatter/macros.rs:591,
+  metavariables renamed, as in rustfmt (chloro-core/src/formatter/macros.rs:592,
   chloro-core/src/formatter/formatting.rs:229-256)
 - `use`, `extern crate` and out-of-line `mod` declarations are sorted within blank-line
-  groups, with 2024 version sorting (chloro-core/src/formatter/reorder.rs:271,
+  groups, with 2024 version sorting (chloro-core/src/formatter/reorder.rs:272,
   chloro-core/src/formatter/sort.rs)
 - 1219 of 1220 conformance fixtures format identically to the rustfmt snapshots and all
   1220 outputs are idempotent (chloro-core/examples/conform.rs)
@@ -192,6 +242,13 @@ not a `Block`); rustc rejects chained comparisons, which leaves clap's
   from the files under Missing (chloro-core/examples/config_matrix.rs)
 - 5384 of 5386 cargo registry files format identically to rustfmt
   (`config_matrix --root ~/.cargo/registry/src default`)
+- Expression rewrites are memoized per top-level item, with their effects on the run
+  replayed on a hit (chloro-core/src/formatter/context.rs:261-324,
+  chloro-core/src/formatter/expr.rs:109)
+- Hot syntax queries read the green tree and create a red node only for the node returned
+  (chloro-core/src/formatter/nodes.rs:236-286)
+- chloro-core/examples/bench.rs measures in-process throughput and records or checks a hash
+  of every output, so that a performance change can be shown to change no output
 - chloro-core/examples/fmt_stdin.rs formats stdin with options given as `key=value`
   arguments, for side-by-side checks against rustfmt
 - The CLI formats files and directories and takes rustfmt options as
