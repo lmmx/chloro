@@ -205,22 +205,34 @@ All runs use `rustfmt 1.9.0-stable` and `--edition 2024` unless the option says 
 - **Option matrix:** results below; the command is
   `cargo run --release -p chloro-core --example config_matrix -- -n 1220`.
 
-  *Re-run on the final commit in progress when this entry was first committed.* The last
-  completed run predates the performance commits (code of `2cf80a3`–`06849d2`): every option value
-  matched on every fixture rustfmt accepts except `0024_many_type_parens.rs`, plus
-  `0054_float_split_scientific_notation.rs` under `hard_tabs=true`, `tab_spaces=2` and
-  `newline_style=Windows`, and `inline/err/impl_type.rs` under `newline_style=Windows`.
-  `edition=2021` 843/844, `edition=2018` 842/843, `edition=2015` 837/838 (0024 only).
+  Run on `9202b42` (the final code of the phase), after the performance commits. Of the
+  1022 fixtures rustfmt accepts with `--edition 2024` (fewer for older editions):
+
+  | option values | identical | differing files |
+  |---|---|---|
+  | 25 values: `max_width=80`, `max_width=120`, `use_small_heuristics=Max`/`Off`, `fn_call_width=40`, `chain_width=40`, `struct_lit_width=0`, `array_width=30`, `single_line_if_else_max_width=0`, `single_line_let_else_max_width=0`, `reorder_imports=false`, `reorder_modules=false`, `remove_nested_parens=false`, `short_array_element_width_threshold=4`, `match_arm_leading_pipes=Always`/`Preserve`, `fn_params_layout=Vertical`/`Compressed`, `match_block_trailing_comma=true`, `merge_derives=false`, `use_try_shorthand=true`, `use_field_init_shorthand=true`, `force_explicit_abi=false`, `style_edition=2021`, `style_edition=2015` | 1021/1022 each | `err/0024_many_type_parens.rs` |
+  | `hard_tabs=true`, `tab_spaces=2` | 1020/1022 each | `0024`, `err/0054_float_split_scientific_notation.rs` |
+  | `newline_style=Windows` | 1019/1022 | `0024`, `0054`, `inline/err/impl_type.rs` |
+  | `edition=2021` | 843/844 | `0024` |
+  | `edition=2018` | 842/843 | `0024` |
+  | `edition=2015` | 837/838 | `0024` |
+
+  Every count and every differing file is the same as in the last run before the
+  performance commits (code of `2cf80a3`–`06849d2`) — the output hashes cover only the
+  default configuration, and this run is the evidence that the performance commits changed
+  no output under non-default options either. Every differing file is listed under Missing.
 
 - **Registry corpus:** results below; the command is
   `config_matrix --root ~/.cargo/registry/src -n 6000 -v default`. The corpus is the cargo
   registry of this container, so it is not a fixed corpus. Rebuilding it in another container
   gives a different set of files.
 
-  *Re-run on the final commit in progress when this entry was first committed.* The last
-  completed run predates the performance commits and the `use self;` fix: 5384 of 5386
-  files identical; the two differing files are `ra_ap_parser-0.0.307/test_data/parser/err/0024_many_type_parens.rs`
-  and `facet-core-0.30.0/src/macros.rs` (both under Missing).
+  Run on `9202b42`: 5420 of the 5422 registry files rustfmt accepts are identical. The
+  two differing files are `ra_ap_parser-0.0.307/test_data/parser/err/0024_many_type_parens.rs`
+  and `facet-core-0.30.0/src/macros.rs`, both listed under Missing. The first run (before
+  the performance commits and the `use self;` fix) gave 5384 of 5386 with the same two
+  differing files; the registry held fewer files then (the `mimalloc` experiment downloaded
+  more crates).
 
 - **Self-formatting:** chloro's own sources, formatted with `cargo fmt`, are a fixed point
   of chloro (`src/tests/formatter/self_format.rs`).
@@ -429,6 +441,15 @@ earlier host.
 - `examples/config_matrix.rs` compares 31 non-default option values with `rustfmt --config`
   and, with `--root`, any directory of Rust files with rustfmt's defaults
   (chloro-core/examples/config_matrix.rs)
+- At `9202b42`, every one of the 31 option values matches `rustfmt --config` on every
+  accepted fixture except `0024_many_type_parens.rs`, plus
+  `0054_float_split_scientific_notation.rs` under `hard_tabs`, `tab_spaces` and
+  `newline_style=Windows` and `inline/err/impl_type.rs` under `newline_style=Windows`
+  (chloro-core/examples/config_matrix.rs)
+- At `9202b42`, 5420 of the 5422 cargo registry files rustfmt accepts format identically
+  with rustfmt's defaults — the two differing files are the `0024_many_type_parens.rs` copy
+  in `ra_ap_parser-0.0.307` and `facet-core-0.30.0/src/macros.rs`
+  (`config_matrix --root ~/.cargo/registry/src -n 6000 -v default`)
 - `examples/bench.rs` measures in-process throughput and records or checks a hash of every
   output (chloro-core/examples/bench.rs)
 - `examples/fmt_stdin.rs` formats stdin with options given as `key=value` arguments
