@@ -1,16 +1,25 @@
-# 2026-10-10: rustfmt port, conformance and performance
+# 2026-10-10: Performance work and phase 1 checkpoint
 
-Phase 1 of the work on the `claude/gifted-wright-d4z4rp` branch, written as a checkpoint
+Checkpoint of phase 1 of the work on the `claude/gifted-wright-d4z4rp` branch, written
 before a new phase starts. The branch is open as
 [lmmx/chloro#85](https://github.com/lmmx/chloro/pull/85) and is **not merged**; the next
-phase continues on the same PR. Head of the branch at the time of writing: `2cac5d7`, plus the
-commit that adds this entry.
+phase continues on the same PR. Head of the branch when this entry was first written:
+`2cac5d7`.
+
+This entry covers the whole phase. The design of the port as of 2026-10-09 — the
+module-for-module map to rustfmt's sources and how the adaptation layers (spans, node
+shapes, macro-argument re-parsing with separator-bounded windows) work — is recorded in
+more detail in [2026-10-09-rustfmt-port.md](2026-10-09-rustfmt-port.md). Commits
+`f019ca5` and `6f2d59e` wrote that entry and a performance section by mistake into
+`docs/JOURNAL.md`, the path of the journal format file; `docs/JOURNAL.md` now holds the
+unmodified format file from lmmx/giacometti, the 2026-10-09 content is in its own entry, and
+the 2026-10-10 performance content is in this entry.
 
 The freeform sections record what was asked, what was decided and why, what was measured
 and how, which experiments were tried (including the ones that failed), and what is still
 open. Statements are marked as measured, probed (checked by running rustfmt on a test
-input), or hypothesis. The closing sections use the
-[giacometti format](https://github.com/lmmx/giacometti/blob/master/docs/JOURNAL.md) (Current State, Stubbed, Missing, Divergence).
+input), or hypothesis. The closing sections follow the [journal format](../JOURNAL.md)
+(Current State, Stubbed, Missing, Divergence).
 
 ## What was asked
 
@@ -20,7 +29,9 @@ input), or hypothesis. The closing sections use the
 - Commit as the developer who already committed on the repository (Louis Maddox,
   `lmmx@users.noreply.github.com`); no "Claude Code" in author, co-author or message.
 - Avoid churn in the public API.
-- Keep this journal: freeform sections first, then the giacometti sections.
+- Keep the development journal: entries under `docs/journal/YYYY-MM-DD-title.md` with the
+  giacometti sections as a tail, and freeform sections before them where there is more to
+  record. `docs/JOURNAL.md` is the format file itself, copied unmodified from lmmx/giacometti.
 - Use the conformance tests to drive correctness.
 - Mid-phase hint from the user: rustfmt is easier to reproduce once it is decomposed by
   its configurable settings. Taken up as `Config`, one field per stable rustfmt option,
@@ -56,10 +67,10 @@ input), or hypothesis. The closing sections use the
 | `97b412f` | source normalised as rustc loads it (BOM, CRLF) |
 | `2cf80a3` | every `use` item has a visibility (`use self;` removed) |
 | `06849d2` | `config_matrix -v` |
-| `f019ca5` | journal and README |
+| `f019ca5` | journal (written at `docs/JOURNAL.md` by mistake; moved to `2026-10-09-rustfmt-port.md`) and README |
 | `bcef0f9` | `examples/bench.rs`: in-process benchmark and output-hash record/check |
 | `2d8a579` … `9202b42` | eleven performance commits (see Performance) |
-| `6f2d59e`, `2cac5d7` | performance section in journal and README |
+| `6f2d59e`, `2cac5d7` | performance section in `docs/JOURNAL.md` (by mistake; content now in this entry) and README |
 
 ## Decisions and their reasons
 
