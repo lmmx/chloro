@@ -195,7 +195,7 @@ All runs use `rustfmt 1.9.0-stable` and `--edition 2024` unless the option says 
   `cargo run --release -p chloro-core --example config_matrix -- -n 1220`.
 
   *Re-run on the final commit in progress when this entry was first committed.* The last
-  completed run predates the performance commits (it ran on `06849d2`): every option value
+  completed run predates the performance commits (code of `2cf80a3`–`06849d2`): every option value
   matched on every fixture rustfmt accepts except `0024_many_type_parens.rs`, plus
   `0054_float_split_scientific_notation.rs` under `hard_tabs=true`, `tab_spaces=2` and
   `newline_style=Windows`, and `inline/err/impl_type.rs` under `newline_style=Windows`.
