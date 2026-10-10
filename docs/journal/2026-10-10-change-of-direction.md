@@ -101,11 +101,13 @@ phase 1 ended.
 
 | corpus | `c4d74ee` (proof of concept) | `bcef0f9` (port, before perf) | `9202b42` (port, now) |
 |---|---|---|---|
-| fixtures, best of 5, two passes | 8.24, 8.96 MB/s | 2.75, 2.81 MB/s | 3.64, 3.59 MB/s |
-| registry, best of 3 | 8.61 MB/s | 1.73 MB/s | 4.65 MB/s |
+| fixtures, best of 5, four passes | 8.24–8.96 MB/s | 2.69–2.81 MB/s | 3.42–3.64 MB/s |
+| registry, best of 3, two passes | 7.91–8.61 MB/s | 1.62–1.73 MB/s | 4.45–4.65 MB/s |
+
+The ranges cover the exploratory runs and the reproduction run (see Reproduction).
 
 On the registry the memo (`2d8a579`) matters more than on the fixtures: `bcef0f9` is at
-1.73 MB/s.
+1.62–1.73 MB/s.
 
 ### 2. The parse floor
 
@@ -114,11 +116,11 @@ differ in what is built from the parser's events.
 
 | mode | fixtures | registry |
 |---|---|---|
-| `lex` (lexer only) | 125 MB/s | 98 MB/s |
+| `lex` (lexer only) | 110–125 MB/s | 93–98 MB/s |
 | `events` (lexer + parser, no tree) | 41–43 MB/s | 42 MB/s |
-| `flat` (events + trivia into two flat arrays) | 31–33 MB/s | 27 MB/s |
-| `rowan` (events + trivia into a rowan tree, as `formatting::parse`) | 13.0–14.2 MB/s | 13.1 MB/s |
-| `rowan-walk` (as `rowan`, then a walk of every red node and token) | 12.8 MB/s | 11.0 MB/s |
+| `flat` (events + trivia into two flat arrays) | 31–33 MB/s | 27–28 MB/s |
+| `rowan` (events + trivia into a rowan tree, as `formatting::parse`) | 13.0–14.3 MB/s | 12.8–13.1 MB/s |
+| `rowan-walk` (as `rowan`, then a walk of every red node and token) | 12.8–12.9 MB/s | 11.0 MB/s |
 
 Instructions for the whole fixture corpus, one round (callgrind, measured):
 
@@ -134,8 +136,9 @@ Findings (measured):
   about 1.0 s on the fixtures.
 - A formatter that reads a rowan tree built this way cannot exceed about 13–14 MB/s on
   these corpora, even if formatting cost nothing.
-- The proof of concept's 8.2–9.0 MB/s is about 60–65% of that ceiling.
-- The same parser feeding a flat array tree reaches 27–33 MB/s.
+- The proof of concept's 8.2–9.0 MB/s on the fixtures is about 60–65% of that ceiling.
+- The same parser feeding a flat array tree reaches 27–33 MB/s — construction only, with no
+  typed accessors, so not the same work as building a rowan tree.
 - Reusing one `NodeCache` across files saves 6% of instructions. Wall-clock results were
   11.85–15.08 MB/s with the shared cache against 11.40–12.70 MB/s without, over three
   single-round runs: not separable from noise.
@@ -149,12 +152,15 @@ still in each output.
 
 | version | doubled spaces left as written |
 |---|---|
-| `c4d74ee` | 62.4% |
+| `c4d74ee` | 64.9% |
 | `9202b42` | 3.7% |
 
-The counts cover the 1025 fixtures the port formats; files returned unchanged are left out.
+The counts cover the 1025 fixtures the port formats; files the port returns unchanged are
+left out for both versions (`survival`'s REF argument). An exploratory count with a
+regular expression, which skipped adjacent runs, gave 62.4% for `c4d74ee` on the same
+files.
 
-- The proof of concept leaves about three fifths of inter-token spacing as written: it
+- The proof of concept leaves about two thirds of inter-token spacing as written: it
   copies that code instead of laying it out.
 - The port's 3.7% consists mostly of comments, macro bodies and lines left as written
   (read from a sample of the surviving lines). rustfmt also leaves those as written. The
@@ -337,9 +343,9 @@ test functions whose body is one call with a raw string literal.
 | instructions | 387 M | 615 M | 210 M |
 | instructions, minus parse | 177 M | 405 M (2.3x) | |
 
-On all 7262 items: 0.318–0.325 s (`c4d74ee`) against 0.401–0.412 s (`9202b42`). Parsing
-the 7262 small files into rowan trees takes 0.226 s, and the flat-array build takes
-0.038 s. The difference shows a large fixed cost per rowan tree.
+On all 7262 items: 0.313–0.326 s (`c4d74ee`) against 0.401–0.417 s (`9202b42`). Parsing
+the 7262 small files into rowan trees takes 0.226–0.236 s, and the flat-array build takes
+0.034–0.038 s. The difference shows a large fixed cost per rowan tree.
 
 Where `9202b42` spends the extra instructions on the `fn` items (callgrind, measured,
 exclusive):
@@ -397,7 +403,7 @@ The gain is 2–8%, at the edge of noise, and not pursued.
 Established (measured):
 1. **Most of the proof of concept's lead comes from work the proof of concept does not
    do:**
-   - it lays out about two fifths of inter-token positions and copies the rest (Evidence 3);
+   - it lays out about a third of inter-token positions and copies the rest (Evidence 3);
    - its own formatting code is 1.6% of its instructions (Evidence 4);
    - it scored 233/1220 conformance (phase 1, `examples/conform.rs`).
 2. **Per-node dispatch does not distinguish the two versions:** both dispatch per node kind
@@ -477,88 +483,291 @@ the transfers are predictions, **not measured**):
 | `bd3bad1`, `6b07131` macro splicing | cheaper re-parsed macro arguments | not applicable until macro arguments are formatted |
 | `03e063f`, `9202b42` | `format!` removal, Fx hashing | yes, in kind — the proof of concept builds with `format!` throughout |
 
-## The next ceiling
+## Two budgets: formatting and representation
 
-Budget arithmetic on the fixtures (13.9 MB), from Evidence 2:
+The port spends about 1.0 s of its 3.85–4.06 s on the fixtures lexing, parsing and building
+the rowan tree. It spends about 2.85–3.05 s formatting (Evidence 1, 2).
 
-| target | total time | tree build, rowan (1.0 s) | tree build, flat arrays (0.43 s) |
-|---|---|---|---|
-| 8.2 MB/s, the proof of concept | 1.70 s | 0.70 s left for formatting | 1.27 s left |
-| 16 MB/s, about 2x the proof of concept | 0.87 s | impossible | 0.44 s left |
-| 25 MB/s | 0.56 s | impossible | 0.13 s left |
+| change | best case on the fixtures (13.9 MB) |
+|---|---|
+| tree construction free, formatting unchanged | 13.9 / 2.85 s = 4.9 MB/s — below the proof of concept |
+| formatting free, rowan tree unchanged | 13.9 / 1.0 s = 13.9 MB/s — the rowan ceiling |
 
-- **Above about 13–14 MB/s,** no amount of work on formatting helps while the tree is a
-  rowan tree built per file. That holds for the proof of concept as much as the port.
-- **Recovering the proof of concept** therefore cannot by itself go "substantially beyond"
-  8.2 MB/s. Its ceiling is the same rowan ceiling.
-- **At 16 MB/s with a flat tree,** formatting gets 0.44 s for 13.9 MB. That is about 6x less
-  than the port's 2.8 s now, and less than the proof of concept's 0.6 s, which covers only
-  two fifths of the layout work.
-- **The flat build** stores kind, parent, sibling and token ranges, but not token text
-  interning or a typed API. A typed layer over it would cost something. **Not measured.**
+- **Beating the proof of concept** at all requires cheaper *formatting* — that is, less
+  formatter work per byte. No representation change does it alone.
+- **Going far beyond about 13 MB/s** requires a cheaper *representation* as well, whatever
+  the formatter.
+- **Formatting cost includes navigation:** the red tree is 10.3% and typed accessors 2.9% of
+  the port's instructions on the sample (Evidence 4).
 
-## Recovery branch: decision deferred to the evidence
+The two axes are measured separately below. Neither result substitutes for an end-to-end
+measurement.
+
+## Parser speculation and layout speculation
+
+These are different mechanisms and are kept apart throughout.
+
+- **Parser speculation** (read, `ra_ap_parser` 0.0.307): rust-analyzer's parser does not
+  backtrack.
+  - It is predictive, with at most four tokens of lookahead: `Parser::nth` asserts
+    `n <= 3` (`ra_ap_parser/src/parser.rs:52-60`).
+  - `Marker::abandon` turns a start event into a tombstone, popped if it is the last event
+    (`parser.rs:329-340`).
+  - `CompletedMarker::precede` opens a parent *after* its first child through
+    `forward_parent` (`parser.rs:208-210`, resolved in `event.rs:93-120`): binary
+    expressions, method chains, field and index access, calls and casts all open their
+    node after the operand. No parse is ever undone.
+  - The crate documents that its prefix entry points cannot implement "rollback and try
+    another alternative" (`lib.rs:130-138`).
+- **Parser speculation inside chloro:**
+  - `macro_args.rs` re-parses macro arguments, trying expression, type, pattern or item
+    fragments;
+  - `format_snippet` re-parses `macro_rules!` bodies.
+
+  `parse_macro_args` is 5.2% of the sample's instructions (callgrind, inclusive,
+  measured).
+- **Layout speculation** (measured, Evidence 7):
+  - 1.73 uncached rewrites per expression node;
+  - 0.75% of rewrites return `None`;
+  - 50.2 MB of strings built for 14.2 MB of output.
+
+  This cost belongs to the formatter and does not depend on how syntax is stored.
+
+Consequences:
+- An event log's cheap rollback (truncate to a checkpoint) has nothing to roll back in this
+  parser.
+- A tree that is cheap to build does not make layout speculation cheaper.
+- A design that drops the tree can make layout speculation *more* expensive, if every
+  retried rewrite must recover syntax again.
+
+## What syntax information the formatter needs
+
+From the port's source (read; counts of call sites under `chloro-core/src/formatter/`) and
+the sample profile (measured).
+
+| need | in the port |
+|---|---|
+| downward typed access | `ast::*` accessors and `children()`/`children_with_tokens()` (24 and 20 sites); `SyntaxKind` read 836,515 times on the sample |
+| byte ranges | `text_range()` (17 sites), every rustc span (`span.rs`) |
+| source text by range | `snippet(` (120 sites) |
+| comments | found by rescanning source text between spans (`contains_comment` 46 sites, `CharClasses` 80, `recover_comment_removed` 7), as rustfmt does on rustc's trivia-free AST — not read from the tree's comment tokens |
+| upward navigation | `parent()` at 3 sites (`nodes.rs:410`, `visitor.rs:501-502`), `ancestors()` at none |
+| sibling navigation | none (`next_sibling`, `prev_sibling`, `siblings_with_tokens`: 0 sites) |
+| random access within a statement or item | every layout retry re-reads the whole subtree under a new shape (Evidence 7) |
+| context across items | `use`/`mod` reordering within blank-line groups (`reorder.rs`), blank lines and comments between items (from source text) |
+| macros | re-parsed fragments spliced at their source offsets (`macro_args.rs`) |
+| malformed syntax | none represented: any lexer or parser error, or a rustc-rejected construct (`rustc_compat.rs`), returns the file unchanged (`formatting.rs:40-60`) — but the error must be known before output is kept, so the whole file is parsed |
+
+The formatter reads syntax top-down. It needs kinds, byte ranges and the source text, and
+needs random access only within the statement or item being laid out. It rarely navigates
+upward, never sideways, and takes comments from text rather than from trivia tokens. A
+representation that serves these needs is smaller than rowan's API. The inventory counts
+call sites, not calls; dynamic counts per operation are experiment X1.
+
+## The design space below rowan
+
+Option 1 is the port's current representation; options 2–7 move away from it. Each entry
+states what the option removes, what it adds, how it handles lookahead and backtracking,
+and what it must keep. "Evidence" cites a measurement or says none exists.
+
+**1. Rowan, with cheaper construction or caching.**
+- Removes:
+  - per-file `NodeCache` setup and repeated interning, with one cache shared across files;
+  - red `NodeData` allocations — 343,219 on the sample, about half of all allocations in
+    the 64–127-byte bucket — with a cursor over `GreenNodeData`, whose children and
+    lengths rowan exposes. This needs no fork.
+- Adds:
+  - a policy for the cache's memory growth;
+  - for the green cursor, a typed accessor layer of its own, because `ra_ap_syntax`'s
+    `ast` API is built on red nodes.
+- Lookahead and backtracking: unchanged.
+- Keeps: everything; rowan is lossless.
+- Evidence:
+  - a shared cache saves 6% of construction instructions (measured);
+  - wall time 9.9–12.9 against 11.0–12.9 MB/s over three single-round pairs, not
+    separable from noise (measured);
+  - the rowan ceiling of about 13–14 MB/s stays.
+
+**2. Flat-array CST, whole file or per top-level item.**
+- Removes: green interning, `Arc` nodes, red nodes, and the copy of token text (offsets
+  into the source suffice, because the source is kept).
+- Adds:
+  - a typed accessor layer over the arrays, covering every `ast::*` method the port calls;
+  - an arena splice for re-parsed macro fragments.
+- Per-item variant:
+  - the parser still runs over the whole file (`TopEntryPoint::SourceFile`), so the
+    variant materialises each item's slice of the events and discards it after
+    formatting;
+  - it bounds retained memory (not measured);
+  - it needs items that are independent of each other, which `use` reordering and
+    comments between items break (see the table above).
+- Lookahead and backtracking: as rowan.
+- Keeps: kinds, ranges, token kinds; trivia as tokens.
+- Evidence:
+  - construction alone: 31.4 MB/s fixtures, 27.6 MB/s registry, against rowan's 14.3 and
+    12.8 (measured);
+  - on 7262 single-item files, 0.034–0.038 s against 0.226–0.236 s (measured);
+  - the flat build has no typed API, so the comparison is **not equivalent work**;
+  - end-to-end effect: **none measured**.
+
+**3. Checkpointable event log, then materialisation.**
+- `ra_ap_parser`'s `Output` already is a compact event log, and `intersperse_trivia`
+  already materialises it (read). Options 1 and 2 are two materialisation targets of this
+  same log.
+- The option's distinguishing property, rollback by truncation, has no use here: the
+  parser never backtracks (see "Parser speculation").
+- It could serve chloro's own macro-argument attempts, which already parse each attempt
+  into its own small `Output`.
+- Evidence: events at 42 MB/s, lexing included (measured).
+- Distinct benefit beyond options 1 and 2: none identified.
+
+**4. Direct event streaming, with selective buffering and rollback.**
+- Removes: the event vector (a small part of the 0.325 s `events` time) and
+  materialisation.
+- Adds:
+  - a formatter that rebuilds structure from events;
+  - a streaming interface to the parser — `ra_ap_parser` returns a complete `Output`
+    (read), so streaming means changing or forking the parser.
+- Lookahead and backtracking:
+  - parser rollback: never needed;
+  - `forward_parent` means the kind of an enclosing expression arrives after its operand
+    is complete, so the consumer cannot know a statement's outermost node until the
+    statement ends;
+  - rustfmt's layout needs every subexpression's width before it emits the first byte of
+    the statement;
+  - trivia attachment (`intersperse_trivia` puts leading comments inside items) looks
+    ahead too.
+- Keeps: everything the formatter later reads, in its buffers.
+- Read conclusion: the buffering needed is at least one statement, and with use-group
+  reordering a group of items. The design reduces to option 2 per statement or per item,
+  plus a parser change.
+- Evidence: none measured. Experiment X6 measures the reach of `forward_parent`.
+
+**5. Parser state that returns only what the consumer needs.**
+- This is the model of rustc's parser and of `syn`: recursive descent returning typed
+  results, with no general event log. rustfmt itself works this way, on rustc's AST.
+- Removes:
+  - the event log and materialisation;
+  - the second token pass (`to_input`);
+  - typed-accessor indirection.
+- Adds:
+  - a Rust parser owned by this project, which must accept and reject exactly what rustc
+    does;
+  - a choice about trivia. rustc's AST drops trivia, which forces rustfmt's text rescans
+    for comments — `comment` + `utils` are 12.4% of the port's instructions on the
+    sample (measured).
+- Lookahead and backtracking: the parser's own.
+- Keeps: what the formatter asks for (see the needs table above).
+- Upper bound, against option 2 on the fixtures: the materialisation step (flat 0.443 s
+  against events 0.325 s, measured), unless the new parser is faster than
+  rust-analyzer's.
+- Evidence: none.
+
+**6. Recognition on demand from source text; scannerless parsing.**
+- What could be skipped:
+  - on-demand recognition skips syntax nobody reads;
+  - the port lays out all but 3.7% of inter-token positions (Evidence 3);
+  - files must parse completely before any output counts, since a parse error anywhere
+    returns the file unchanged.
+
+  So the part that could be skipped is bounded by `#[rustfmt::skip]` items, unformattable
+  macro bodies and the like.
+- Repeated recognition: the formatter retries layouts 1.73 times per node (Evidence 7).
+  Without memoisation, re-recognising syntax per retry multiplies parsing cost.
+  `macro_args.rs` is chloro's existing example of on-demand re-recognition, at 5.2% of the
+  sample.
+- Scannerless parsing merges lexing into the grammar. It helps where tokenisation depends
+  on parse context. rust-analyzer handles Rust's cases — `>>` versus two `>`, float
+  splitting in `x.0.1`, contextual keywords — with joint-token flags, `FloatSplit` and
+  contextual-keyword checks on a separate lexer (read). That lexer runs at 93–125 MB/s
+  (measured).
+- Read conclusion: nothing relevant to this workload.
+- Evidence: the 3.7% bound (measured); the lexer speed (measured).
+
+**7. The per-node specialised formatter, on only the representation it needs.**
+- This combines a representation choice from options 1–5 with a formatter that decides
+  each node's layout once and writes into an output buffer, as the proof of concept does.
+- Removes: layout speculation, to the extent that rustfmt's choices can be computed
+  without trial. Examples: measuring a node's single-line width once, bottom-up; deciding
+  from widths; falling back to trial only where rustfmt's choice depends on whether a
+  nested rewrite succeeds.
+- Adds: a decision procedure that has to reproduce rustfmt's trial-and-fallback outcomes
+  exactly — the main conformance risk of this whole list.
+- Lookahead and backtracking: no parser speculation; layout speculation where the decision
+  procedure falls back to trial.
+- Keeps: the needs table above.
+- Evidence:
+  - on the agreement corpus, the port does 2.3–2.4x the proof of concept's formatting work
+    for identical, rustfmt-identical output (measured; simple items only, Evidence 8);
+  - how much of rustfmt's layout search could be decided without trial: **not measured**
+    (X9).
+
+### Ranking
+
+| option | evidence so far | implementation cost | risk to conformance | likely end-to-end gain |
+|---|---|---|---|---|
+| 7 decide-once formatter | agreement-corpus gap 2.3–2.4x on simple items | high | high | largest potential; formatting is about 2.85 of 3.85 s |
+| 2 flat CST, whole file | construction 2.2–2.4x faster than rowan; no end-to-end data | high (typed layer over every accessor) | low: same parser, same trivia rules | raises the ceiling from about 13 to about 27–31 MB/s; needs formatter gains to matter |
+| 2 flat CST, per item | as whole-file, plus a lower fixed cost per tree | as whole-file, plus cross-item context | as whole-file | memory; speed beyond whole-file not shown |
+| 1 cheaper rowan | 6% fewer construction instructions; wall not separable | low | none | small; ceiling unchanged |
+| 5 own typed parser | none | very high | high (rustc acceptance) | at most about 0.12 s over option 2 on the fixtures, unless the parser is faster |
+| 3 event log | the log already in place; nothing to roll back | none | none | nothing beyond options 1 and 2 |
+| 4 streaming | none; buffering reduces it to option 2 per statement | high (parser change) | medium | not more than option 2 |
+| 6 on demand / scannerless | parsing must cover the whole file; at most 3.7% unread | high | high | small |
+
+The less a representation materialises, the further down this table it sits. That is
+because of the measured needs above, not a preference: the formatter reads most of the
+syntax, more than once per node, so materialising it once is cheaper than recognising it
+again.
+
+## Experiment matrix (none run yet)
+
+Each experiment runs on scratch copies or behind unchanged signatures. Each is checked
+with the output-hash check (1238 fixtures and the registry), conformance (`conform`), and
+the option matrix whenever output could change. Each is reported as instructions (minimum
+of three callgrind runs on the sample) and wall time (interleaved runs against
+`9202b42`).
+
+| id | option | question | method | decides |
+|---|---|---|---|---|
+| X1 | all | Which syntax operations run, how often, on how many bytes? | counters in a scratch copy: typed child lookups by type, `text_range`, `snippet` bytes, `contains_comment` calls and bytes, `CharClasses` bytes, `parent()` | the minimum representation; whether text rescans or tree navigation dominate |
+| X2 | 1 | Does a shared `NodeCache` help end to end? | `formatting::parse` with one cache per thread, in a scratch copy | whether option 1 is worth anything |
+| X3 | 1, 2 | What does red-node navigation cost end to end? | a green-only cursor for `rustc_compat.rs`, compared with the red tree on the same pass | the share of the 10.3% red-tree cost that is avoidable |
+| X4 | 2 | Can a flat CST under a typed shim match rowan's decisions, and at what cost? | flat tree + accessors for `rustc_compat.rs`; whole-file and per-item builds; identical accept/reject on all files | the cost of the typed layer, which the construction benchmark omits |
+| X5 | 3 | Does chloro's parser-level speculation matter? | inclusive cost of `parse_macro_args` and `format_snippet` across the corpora | whether a rollback mechanism has anything to save |
+| X6 | 4 | How far must a streaming consumer buffer? | over `Output`, the distance in tokens from each `forward_parent` child to its parent; the share of statements whose outermost kind arrives last | whether streaming is anything but option 2 per statement |
+| X7 | 6 | How much syntax does a conformant formatter never read? | bytes in `#[rustfmt::skip]` items, unformatted macro bodies and literals, against the total | the bound on on-demand recognition |
+| X8 | formatter | How much does rescanning text for comments and literal widths cost? | `contains_comment` and `filtered_str_fits` answered from tokens behind the same signatures (E2 earlier) | the cost of rustfmt's trivia-free design, in any representation |
+| X9 | 7 | How much of the layout search could be decided once? | in a scratch copy: inclusive instructions of first against repeat rewrites per (node, shape); share of expression nodes whose final output is their single-line form | the ceiling for a decide-once formatter |
+| X10 | 7 | What does the proof of concept's approach cost when it does the work? | per-construct cost on the agreement corpus, extended with item kinds that include `let` statements once a conformant direct implementation of one construct exists | whether per-node specialisation keeps its 2.3–2.4x advantage on layout-heavy code |
+
+X1, X5, X6, X7 and X9 are measurement only and change no behaviour. They answer which work
+is necessary before any option is built. X2, X3, X4 and X8 are small changes, each
+reversible. X10 depends on the others.
+
+## Recovery branch: decision open
 
 The request was to create a recovery branch from `c4d74ee` and port the conformance fixes
-onto it. The evidence above does not support that as a route to speed:
-- the proof of concept's speed comes mostly from not doing the work (Evidence 3, 4);
+onto it. The evidence so far:
+- the proof of concept's lead comes mostly from work it does not do (Evidence 3, 4);
 - the work it skips is rustfmt's layout search, which conformance needs (phase 1);
-- its ceiling is the same rowan ceiling (Evidence 2).
+- on code where it does the same work, it does it with about 2.3–2.4x less formatting
+  work (Evidence 8).
 
-Rebuilding conformance on it would re-implement the port.
-
-The parts of the proof of concept the evidence supports keeping:
-- formatting a child once where its result does not depend on the width given;
-- reading comments from the tree instead of from text.
-
-Both are ideas to test inside whichever base carries the conformance work, not reasons to
-change the base.
+The last point keeps per-node specialisation in play as option 7. It does not show that
+the proof of concept's code is the base on which to build. X9 and X10 are the measurements
+that bear on this.
 
 No recovery branch has been created. `origin/master` (`c4d74ee`) stays untouched as the
-baseline. Whether to create the recovery branch anyway is the user's decision.
-
-## Proposed experiments (none run)
-
-Ordered by cost. Each one has a pass criterion fixed before it runs.
-
-1. **E1 — flat tree under a typed shim, on one whole-tree pass.** Smallest test of the
-   direction "keep the port's algorithm, replace its substrate".
-   - Build the flat tree of `examples/parse_floor.rs` with the trivia rules of
-     `intersperse_trivia`.
-   - Add typed accessors with the method names that `rustc_compat.rs` uses (`kind`,
-     `children`, `parent`, `text_range`, the `ast::*` accessors it calls).
-   - Run `rejected_by_rustc` on both trees.
-   - Pass: identical accept/reject decisions on all 1238 fixtures and all registry files;
-     flat build + pass at least 2x faster than rowan build + pass;
-     `chloro-core/src/formatter/rustc_compat.rs` changes only in imports.
-   - The shim's fidelity and cost are the unknowns that decide whether the whole formatter
-     can move.
-2. **E2 — token-based text queries.** Answer `contains_comment` and `filtered_str_fits` for
-   string literals from the token stream instead of `CharClasses`, behind the same
-   signatures.
-   - Pass: 0 changed output hashes on 1238 fixtures and the registry; option matrix
-     unchanged; at least 8% fewer instructions on the sample (the `comment` + `utils`
-     share is 12.4%).
-   - This is the first measurement of how much of the port's overhead is the rustfmt
-     text-rescan design.
-3. **E3 — share of repeated rewrites.** In a scratch copy, attribute the inclusive
-   instructions of `format_expr_uncached` to first and repeat rewrites of each (node,
-   shape). This measures the most that shape-independence or a measure-first pass could
-   save, before any design work.
-4. **E4 — flat tree per top-level item** (suggested by the user's reading; Sampson,
-   "Flattening ASTs"). This is the variant of E1 that builds the flat tree per item and
-   discards it after formatting. The rowan cost per tree on 7262 small files (0.226 s
-   against 0.038 s flat, Evidence 8) suggests a fixed cost per tree that this variant
-   avoids. Peak memory is **not measured**.
-
-Deferred, as asked: parallel formatting of top-level items; a rowan fork (excluded); a
-child cache, which E1 makes moot if it passes.
+performance baseline: 8.66–8.71 MB/s on the fixtures, 7.91–8.61 MB/s on the registry
+(Evidence 1). No architecture has been chosen.
 
 ## Unresolved questions
 
 - How much of the port's formatting cost on layout-heavy code (`let`, chains, closures,
   `match`) is overhead? Evidence 8 covers only code the proof of concept formats correctly.
-- How much does a typed shim over a flat tree cost? E1 measures this.
+- How much does a typed accessor layer cost on a flat CST or a green cursor (X3, X4)?
+- How much of rustfmt's layout search can be decided without trial (X9)?
 - Does instruction-cache pressure explain part of the time-to-instruction ratio? This needs
   hardware counters.
 - The fixtures are rust-analyzer's own rustfmt-formatted sources. Throughput on
@@ -569,26 +778,53 @@ child cache, which E1 makes moot if it passes.
 
 ## Reproduction
 
-Commands, from the repository root, with `W` an empty scratch directory:
+The script below produced the reproduction run. It is the exact script used, apart from
+two changes: the `survival` reference argument (added after the run), and the order of
+the survival loop, so that the port's output exists before it serves as the reference.
+Arguments: the repository and an empty scratch directory. It needs `rustfmt` 1.9.0 on
+`PATH` for `agree --rustfmt`. A full run took about 25 minutes on the host above.
 
 ```sh
+#!/bin/sh
+# Reproduces the measurements of docs/journal/2026-10-10-change-of-direction.md.
+# Usage: reproduce.sh REPO WORK   (WORK: an empty scratch directory)
+set -e
+REPO=$1; W=$2; F=$REPO/chloro-core/tests/conformance/fixtures
+R=$(ls -d ~/.cargo/registry/src/*/ | head -1)
+EX=$REPO/chloro-core/examples
+mkdir -p $W
 for c in c4d74ee bcef0f9 9202b42; do
-  mkdir -p $W/$c && git archive $c | tar -x -C $W/$c
-  cp chloro-core/examples/{bench,fmt_dir,alloc_count}.rs $W/$c/chloro-core/examples/
-  (cd $W/$c && cargo build --release -p chloro-core --example bench --example fmt_dir --example alloc_count)
+  [ -d $W/$c ] || { mkdir -p $W/$c; git -C $REPO archive $c | tar -x -C $W/$c; }
+  mkdir -p $W/$c/chloro-core/examples
+  cp $EX/bench.rs $EX/fmt_dir.rs $EX/alloc_count.rs $W/$c/chloro-core/examples/
+  (cd $W/$c && cargo build -q --release --offline -p chloro-core --example bench --example fmt_dir --example alloc_count)
 done
-F=chloro-core/tests/conformance/fixtures
-cargo build --release -p chloro-core --example parse_floor --example spacing
-$W/c4d74ee/target/release/examples/bench -n 5 --root $F           # Evidence 1, per commit
-target/release/examples/parse_floor rowan $F -n 5                  # Evidence 2, per mode
-$W/9202b42/target/release/examples/alloc_count $F                  # Evidence 6, per commit
-target/release/examples/spacing perturb $F $W/pert                 # Evidence 3
-$W/9202b42/target/release/examples/fmt_dir $W/pert $W/out/9202b42/pert   # and $F → .../orig
-target/release/examples/spacing survival $F $W/pert $W/out/9202b42/orig $W/out/9202b42/pert
-target/release/examples/spacing split $F $W/items                  # Evidence 8
-target/release/examples/spacing perturb $W/items $W/items_pert
-# fmt_dir both versions over $W/items_pert, then:
-target/release/examples/spacing agree $W/items_pert $W/items_out/c4d74ee $W/items_out/9202b42 $W/agree --rustfmt
+(cd $REPO && cargo build -q --release --offline -p chloro-core --example parse_floor --example spacing)
+PF=$REPO/target/release/examples/parse_floor; SP=$REPO/target/release/examples/spacing
+echo "== throughput, fixtures (two interleaved passes)"
+for r in 1 2; do for c in c4d74ee bcef0f9 9202b42; do echo -n "$c "; $W/$c/target/release/examples/bench -n 5 --root $F; done; done
+echo "== throughput, registry"
+for c in c4d74ee bcef0f9 9202b42; do echo -n "$c "; $W/$c/target/release/examples/bench -n 3 --root $R; done
+echo "== parse floor, fixtures"
+for m in lex events rowan rowan-walk flat; do $PF $m $F -n 5; done
+for r in 1 2 3; do $PF rowan-shared $F -n 1; $PF rowan $F -n 1; done
+echo "== parse floor, registry"
+for m in lex events rowan flat; do $PF $m $R -n 3; done
+echo "== allocations, fixtures"
+for c in c4d74ee bcef0f9 9202b42; do echo -n "$c "; $W/$c/target/release/examples/alloc_count $F | head -1; done
+echo "== spacing survival, fixtures"
+$SP perturb $F $W/pert
+for c in 9202b42 c4d74ee; do
+  $W/$c/target/release/examples/fmt_dir $F $W/out/$c/orig
+  $W/$c/target/release/examples/fmt_dir $W/pert $W/out/$c/pert
+  echo -n "$c "; $SP survival $F $W/pert $W/out/$c/orig $W/out/$c/pert $W/out/9202b42/pert
+done
+echo "== item agreement corpus"
+$SP split $F $W/items; $SP perturb $W/items $W/items_pert
+for c in c4d74ee 9202b42; do $W/$c/target/release/examples/fmt_dir $W/items_pert $W/items_out/$c; done
+rm -rf $W/agree; $SP agree $W/items_pert $W/items_out/c4d74ee $W/items_out/9202b42 $W/agree --rustfmt
+for r in 1 2; do for c in c4d74ee 9202b42; do echo -n "$c "; $W/$c/target/release/examples/bench -n 10 --root $W/agree; done; done
+$PF rowan $W/agree -n 10; $PF flat $W/agree -n 10
 ```
 
 callgrind and cachegrind runs use
@@ -635,6 +871,9 @@ used scratch patches to `9202b42` and are described where used.
 - No recovery branch from `c4d74ee` — `origin/master` stays the untouched baseline
 - No flat-tree implementation beyond the measurement in `examples/parse_floor.rs`, which
   stores no token text and has no typed accessors (chloro-core/examples/parse_floor.rs)
+- No end-to-end formatter measurement on any representation other than rowan — the flat
+  build, the shared `NodeCache` and the event-only parse are measured without formatting
+  (chloro-core/examples/parse_floor.rs)
 - No hardware performance counters in this container (`perf` not installed) — instruction
   cache effects are known only from cachegrind's simulation
 - No fixed, checked-in second corpus — the registry corpus depends on the container's cargo

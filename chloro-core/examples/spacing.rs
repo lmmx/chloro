@@ -4,7 +4,7 @@
 //! ```text
 //! cargo run --release -p chloro-core --example spacing -- split SRC DST
 //! cargo run --release -p chloro-core --example spacing -- perturb SRC DST
-//! cargo run --release -p chloro-core --example spacing -- survival ORIG PERT OUT_ORIG OUT_PERT
+//! cargo run --release -p chloro-core --example spacing -- survival ORIG PERT OUT_ORIG OUT_PERT [REF]
 //! cargo run --release -p chloro-core --example spacing -- agree PERT OUT_A OUT_B DST [--rustfmt]
 //! ```
 //!
@@ -18,7 +18,8 @@
 //!   in the output for the unperturbed input. The result is the number of doubled spaces
 //!   the formatter left as written, against the number injected. Files whose perturbed
 //!   output equals the perturbed input (returned unchanged: parse error, `rustfmt::skip`)
-//!   are left out.
+//!   are left out; with REF, another formatter's OUT_PERT, the files left out are those REF
+//!   returned unchanged, so that two formatters are compared on one set of files.
 //! - `agree` copies to DST every file of PERT whose two outputs are equal, differ from the
 //!   input and, with `--rustfmt`, equal `rustfmt --edition 2024` reading the file on stdin.
 //!
@@ -111,13 +112,13 @@ fn perturb(src: &Path, dst: &Path) {
     }
 }
 
-fn survival(orig: &Path, pert: &Path, out_orig: &Path, out_pert: &Path) {
+fn survival(orig: &Path, pert: &Path, out_orig: &Path, out_pert: &Path, reference: &Path) {
     let (mut files, mut injected, mut survived) = (0, 0i64, 0i64);
     for path in rs_files(pert) {
         let rel = path.strip_prefix(pert).unwrap();
         let input = read(&path);
         let output = read(&out_pert.join(rel));
-        if output == input {
+        if read(&reference.join(rel)) == input {
             continue;
         }
         files += 1;
@@ -194,7 +195,13 @@ fn main() {
     match args.first().map(String::as_str) {
         Some("split") => split(p(1), p(2)),
         Some("perturb") => perturb(p(1), p(2)),
-        Some("survival") => survival(p(1), p(2), p(3), p(4)),
+        Some("survival") => survival(
+            p(1),
+            p(2),
+            p(3),
+            p(4),
+            p(if args.len() > 5 { 5 } else { 4 }),
+        ),
         Some("agree") => agree(
             p(1),
             p(2),
