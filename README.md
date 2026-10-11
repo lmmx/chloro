@@ -93,7 +93,7 @@ rustfmt chooses a layout by trying several and keeping the first that fits, so c
 the same work rustfmt does; it memoizes rewrites to keep nested code from multiplying it,
 and reads rust-analyzer's green tree where the typed API would allocate. Single-threaded and
 in process it formats about 4.1 MB/s on the rust-analyzer fixtures and 5.7 MB/s on a local
-cargo registry; a `chloro` process on one large file takes 0.35x–0.71x the time of a
+cargo registry; a `chloro` process on one large file takes 0.28x–0.56x the time of a
 `rustfmt` process. The CLI formats files in parallel.
 
 ```sh

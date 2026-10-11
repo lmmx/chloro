@@ -109,17 +109,33 @@ Measurement tools added (`chloro-core/examples/`):
 - **Attribution of D1's gain** between futex syscalls and cross-thread frees.
 - **Parallel formatting of items.**
 
+## Against rustfmt (measured)
+
+Re-measured as in the performance-checkpoint entry: the five largest fixtures (167–640 KB),
+`examples/fmt_stdin.rs` against `rustfmt --edition 2024`, both reading stdin, best of 5, on
+the host of the table above.
+
+| file | size | chloro | rustfmt | ratio |
+|---|---|---|---|---|
+| `lints.rs` | 640 KB | 0.105 s | 0.242 s | 0.43 |
+| `nodes.rs` | 322 KB | 0.104 s | 0.186 s | 0.56 |
+| `lib.rs` | 228 KB | 0.091 s | 0.162 s | 0.56 |
+| `tests.rs` | 210 KB | 0.024 s | 0.083 s | 0.28 |
+| `config.rs` | 167 KB | 0.035 s | 0.104 s | 0.33 |
+
+chloro takes 0.28x–0.56x of rustfmt's wall time, against 0.35x–0.71x before phase 2. README
+updated.
+
 ## Current State
 
 - Single-threaded formatting on green-tree reads where G1 and G2 apply
   (chloro-core/src/formatter/formatting.rs:35-59, chloro-core/src/formatter/nodes.rs)
 - Conformance 1219/1220 reproducible from a fresh checkout
   (chloro-core/tests/conformance/snapshots/ra/)
-- README states 4.1 MB/s on the fixtures and 5.7 MB/s on the registry (README.md)
+- README states 4.1 MB/s on the fixtures, 5.7 MB/s on the registry, and 0.28x–0.56x of
+  rustfmt's wall time (README.md)
 
 ## Missing
 
 - The proof of concept's throughput is not matched (2.2–2.3x on the fixtures, 1.45x on the
   registry)
-- The README's process-time comparison with rustfmt (0.35x–0.71x) predates phase 2; chloro
-  has become faster since, so it now overstates chloro's time and has not been re-measured
