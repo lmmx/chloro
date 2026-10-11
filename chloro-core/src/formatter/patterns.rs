@@ -209,9 +209,12 @@ fn rewrite_ident_pat(
         ""
     };
     // `ref mut x`: rustc's `ByRef::Yes(Mut)`.
-    let (ref_kw, mut_infix) = match (p.ref_token(), p.mut_token()) {
-        (Some(_), Some(_)) => ("ref", "mut"),
-        (Some(_), None) => ("ref", ""),
+    let (ref_kw, mut_infix) = match (
+        has_token(p.syntax(), T![ref]),
+        has_token(p.syntax(), T![mut]),
+    ) {
+        (true, true) => ("ref", "mut"),
+        (true, false) => ("ref", ""),
         _ => ("", ""),
     };
     let name = p.name()?;

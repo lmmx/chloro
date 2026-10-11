@@ -235,11 +235,14 @@ fn rewrite_closure_fn_decl(
     } else {
         ""
     };
-    let coro = match (closure.async_token(), closure.gen_token()) {
-        (Some(_), Some(_)) => "async gen ",
-        (Some(_), None) => "async ",
-        (None, Some(_)) => "gen ",
-        (None, None) => "",
+    let coro = match (
+        has_token(closure.syntax(), T![async]),
+        has_token(closure.syntax(), T![gen]),
+    ) {
+        (true, true) => "async gen ",
+        (true, false) => "async ",
+        (false, true) => "gen ",
+        (false, false) => "",
     };
     let capture_str = if has_token(closure.syntax(), T![move]) {
         "move "

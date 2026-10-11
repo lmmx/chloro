@@ -269,11 +269,14 @@ fn format_expr_uncached(
             Some(e) => rewrite_unary_prefix(context, "do yeet ", &e, shape),
         },
         ast::Expr::RefExpr(r) => {
-            let operator_str = match (r.raw_token(), r.const_token(), r.mut_token()) {
-                (Some(_), _, Some(_)) => "&raw mut ",
-                (Some(_), _, None) => "&raw const ",
-                (None, _, Some(_)) => "&mut ",
-                (None, _, None) => "&",
+            let operator_str = match (
+                has_token(r.syntax(), T![raw]),
+                has_token(r.syntax(), T![mut]),
+            ) {
+                (true, true) => "&raw mut ",
+                (true, false) => "&raw const ",
+                (false, true) => "&mut ",
+                (false, false) => "&",
             };
             rewrite_unary_prefix(context, operator_str, &r.expr()?, shape)
         }

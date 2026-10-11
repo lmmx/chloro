@@ -693,4 +693,50 @@ mod tests {
             ]
         );
     }
+
+    /// `has_token` answers what the generated `x_token().is_some()` accessors answer, on every
+    /// node whose keyword tokens the formatter checks this way.
+    #[test]
+    fn has_token_matches_the_generated_token_accessors() {
+        let src = "fn f() {\n    let x = 1;\n    let ref a = x;\n    let mut b = x;\n    \
+                   let ref mut c = x;\n    super let d = 1;\n    let e = &raw const x;\n    \
+                   let g = &raw mut b;\n    let h = &mut b;\n    let i = &x;\n    \
+                   let j = async || 1;\n    let k = gen || 1;\n    let l = async gen || 1;\n    \
+                   let m = move || 1;\n    match x { ref n @ 1 => {}, _ => {} }\n}\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut seen = [0usize; 7];
+        for node in file.syntax().descendants() {
+            if let Some(p) = ast::IdentPat::cast(node.clone()) {
+                assert_eq!(has_token(&node, T![ref]), p.ref_token().is_some(), "{node}");
+                assert_eq!(has_token(&node, T![mut]), p.mut_token().is_some(), "{node}");
+                seen[0] += usize::from(p.ref_token().is_some());
+                seen[1] += usize::from(p.mut_token().is_some());
+            } else if let Some(r) = ast::RefExpr::cast(node.clone()) {
+                assert_eq!(has_token(&node, T![raw]), r.raw_token().is_some(), "{node}");
+                assert_eq!(has_token(&node, T![mut]), r.mut_token().is_some(), "{node}");
+                seen[2] += usize::from(r.raw_token().is_some());
+            } else if let Some(c) = ast::ClosureExpr::cast(node.clone()) {
+                assert_eq!(
+                    has_token(&node, T![async]),
+                    c.async_token().is_some(),
+                    "{node}"
+                );
+                assert_eq!(has_token(&node, T![gen]), c.gen_token().is_some(), "{node}");
+                seen[3] += usize::from(c.async_token().is_some());
+                seen[4] += usize::from(c.gen_token().is_some());
+            } else if let Some(l) = ast::LetStmt::cast(node.clone()) {
+                assert_eq!(
+                    has_token(&node, T![super]),
+                    l.super_token().is_some(),
+                    "{node}"
+                );
+                seen[5] += usize::from(l.super_token().is_some());
+                seen[6] += 1;
+            }
+        }
+        assert!(
+            seen.iter().all(|&n| n > 0),
+            "every keyword occurs: {seen:?}"
+        );
+    }
 }

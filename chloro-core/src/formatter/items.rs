@@ -133,7 +133,7 @@ impl Rewrite for ast::LetStmt {
             return None;
         }
         // rustfmt does not format `super let` yet.
-        if self.super_token().is_some() {
+        if has_token(self.syntax(), T![super]) {
             return None;
         }
         let span = item_span(self.syntax());
