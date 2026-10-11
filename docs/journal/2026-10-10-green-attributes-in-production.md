@@ -87,6 +87,12 @@ Callgrind counts for `9202b42` on the 49-file sample (minimum of three, `setarch
 - The third run of a triple is often a high outlier, even idle (for example 603.9M and
   605.2M against 595.3M). The minimum of three handles this.
 - **Mechanism: unknown.**
+
+> **Correction (2026-10-11):** the mechanism is found, and the second bullet above is wrong:
+> `bench` was not single-threaded. `ra_ap_syntax`'s `Parse` sends every dropped tree to a
+> background thread. The quiet minimum (595.3M) is the run where that thread never ran and
+> no tree was freed. See
+> [2026-10-11-parse-drop-thread.md](2026-10-11-parse-drop-thread.md).
 - **Practice from here:** instruction counts are taken only when nothing else runs. All
   builds being compared are measured in one window. Counts taken under load are discarded.
 
