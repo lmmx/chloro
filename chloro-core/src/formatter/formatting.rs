@@ -6,7 +6,8 @@ use std::rc::Rc;
 
 use ra_ap_parser::{LexedStr, StrStep, TopEntryPoint};
 use ra_ap_syntax::ast::AstNode;
-use ra_ap_syntax::{Edition, SourceFile, SyntaxTreeBuilder};
+use ra_ap_syntax::{Edition, RustLanguage, SourceFile, SyntaxKind, SyntaxNode};
+use rowan::{GreenNodeBuilder, Language};
 
 use super::comment::{CharClasses, LineClasses};
 use super::config::{NewlineStyle, Settings};
@@ -31,6 +32,32 @@ pub(crate) struct Formatted {
     pub(crate) skipped_range: Vec<(usize, usize)>,
 }
 
+/// `ra_ap_syntax::SyntaxTreeBuilder` without its `Parse`: `finish` returns the root node.
+/// Dropping a `Parse` sends its green tree to a background thread (`ParseNodeDropper`), so the
+/// tree is freed by whichever thread lets go of it last. Building the tree here keeps chloro
+/// single-threaded: no channel send or futex wake per parse, no frees from another thread,
+/// and instruction counts that do not depend on thread scheduling.
+#[derive(Default)]
+pub(crate) struct TreeBuilder(GreenNodeBuilder<'static>);
+
+impl TreeBuilder {
+    pub(crate) fn token(&mut self, kind: SyntaxKind, text: &str) {
+        self.0.token(RustLanguage::kind_to_raw(kind), text);
+    }
+
+    pub(crate) fn start_node(&mut self, kind: SyntaxKind) {
+        self.0.start_node(RustLanguage::kind_to_raw(kind));
+    }
+
+    pub(crate) fn finish_node(&mut self) {
+        self.0.finish_node();
+    }
+
+    pub(crate) fn finish(self) -> SyntaxNode {
+        SyntaxNode::new_root(self.0.finish())
+    }
+}
+
 /// Parses `source`, or returns `None` when it does not parse. rustfmt refuses to format
 /// a file with a syntax error; so does chloro.
 ///
@@ -44,7 +71,7 @@ fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
     }
     let input = lexed.to_input(edition);
     let output = TopEntryPoint::SourceFile.parse(&input, edition);
-    let mut builder = SyntaxTreeBuilder::default();
+    let mut builder = TreeBuilder::default();
     let mut has_error = false;
     lexed.intersperse_trivia(&output, &mut |step| match step {
         StrStep::Token { kind, text } => builder.token(kind, text),
@@ -55,7 +82,7 @@ fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
     if has_error {
         return None;
     }
-    let file = SourceFile::cast(builder.finish().syntax_node())?;
+    let file = SourceFile::cast(builder.finish())?;
     (!rejected_by_rustc(&file, edition)).then_some(file)
 }
 
@@ -341,6 +368,34 @@ pub(crate) fn format_code_block(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tree_builder_builds_the_tree_syntax_tree_builder_builds() {
+        let source = "//! doc\n#[cfg(x)]\nfn f<T: ?Sized>(a: &T) -> u8 { m!(a, b); 1 }\n";
+        let lexed = LexedStr::new(Edition::Edition2024, source);
+        let input = lexed.to_input(Edition::Edition2024);
+        let output = TopEntryPoint::SourceFile.parse(&input, Edition::Edition2024);
+        let mut ours = TreeBuilder::default();
+        let mut theirs = ra_ap_syntax::SyntaxTreeBuilder::default();
+        lexed.intersperse_trivia(&output, &mut |step| match step {
+            StrStep::Token { kind, text } => {
+                ours.token(kind, text);
+                theirs.token(kind, text);
+            }
+            StrStep::Enter { kind } => {
+                ours.start_node(kind);
+                theirs.start_node(kind);
+            }
+            StrStep::Exit => {
+                ours.finish_node();
+                theirs.finish_node();
+            }
+            StrStep::Error { .. } => panic!("{source:?} does not parse"),
+        });
+        let (ours, theirs) = (ours.finish(), theirs.finish().syntax_node());
+        assert_eq!(format!("{ours:#?}"), format!("{theirs:#?}"));
+        assert_eq!(ours.green(), theirs.green());
+    }
 
     #[test]
     fn trailing_newlines_are_truncated_to_one() {

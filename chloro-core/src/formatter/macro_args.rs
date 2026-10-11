@@ -19,11 +19,10 @@
 //! and comment recovery work on macro arguments exactly as on the rest of the file.
 
 use ra_ap_parser::{Edition, LexedStr, PrefixEntryPoint, Step, StrStep, TopEntryPoint};
-use ra_ap_syntax::{
-    AstNode, GreenNode, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxTreeBuilder, T, ast,
-};
+use ra_ap_syntax::{AstNode, GreenNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast};
 
 use super::context::RewriteContext;
+use super::formatting::TreeBuilder;
 use super::macros::MacroArg;
 use super::rustc_compat::subtree_rejected_by_rustc;
 use super::span::{BytePos, Span, mk_sp};
@@ -242,7 +241,7 @@ impl<'a> MacroTokens<'a> {
         let lexed = LexedStr::new(self.edition, &self.text[path.lo..path.hi]);
         let input = lexed.to_input(self.edition);
         let output = TopEntryPoint::Type.parse(&input, self.edition);
-        let mut builder = SyntaxTreeBuilder::default();
+        let mut builder = TreeBuilder::default();
         builder.start_node(SyntaxKind::DYN_TRAIT_TYPE);
         builder.start_node(SyntaxKind::TYPE_BOUND_LIST);
         builder.start_node(SyntaxKind::TYPE_BOUND);
@@ -263,7 +262,7 @@ impl<'a> MacroTokens<'a> {
         if has_error {
             return None;
         }
-        let node = builder.finish().syntax_node();
+        let node = builder.finish();
         Some(Fragment {
             kind: FragmentKind::Ty,
             lo: self.toks[start].lo,
@@ -276,7 +275,7 @@ impl<'a> MacroTokens<'a> {
         let lexed = LexedStr::new(self.edition, text);
         let input = lexed.to_input(self.edition);
         let output = kind.top_entry().parse(&input, self.edition);
-        let mut builder = SyntaxTreeBuilder::default();
+        let mut builder = TreeBuilder::default();
         let mut has_error = false;
         lexed.intersperse_trivia(&output, &mut |step| match step {
             StrStep::Token { kind, text } => builder.token(kind, text),
@@ -287,7 +286,7 @@ impl<'a> MacroTokens<'a> {
         if has_error {
             return None;
         }
-        let root = builder.finish().syntax_node();
+        let root = builder.finish();
         let node = if kind == FragmentKind::Item {
             // `MacroItems` wraps the item; the fragment is the single item inside.
             let mut items = root.children();
